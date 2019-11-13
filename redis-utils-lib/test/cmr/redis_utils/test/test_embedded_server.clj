@@ -6,7 +6,6 @@
    [taoensso.carmine :as carmine :refer [wcar]]))
 
 (use-fixtures :once test-util/embedded-redis-server-fixture)
-(use-fixtures :each test-util/reset-redis-fixture)
 
 (deftest test-basic-redis
   (testing "Able to reach redis server..."

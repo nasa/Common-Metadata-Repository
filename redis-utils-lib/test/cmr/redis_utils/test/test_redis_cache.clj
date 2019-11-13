@@ -9,7 +9,6 @@
    [taoensso.carmine :as carmine :refer [wcar]]))
 
 (use-fixtures :once test-util/embedded-redis-server-fixture)
-(use-fixtures :each test-util/reset-redis-fixture)
 
 (deftest test-redis-cache-with-expire
   (testing "Redis cache with default timeout..."
