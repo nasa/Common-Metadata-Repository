@@ -16,14 +16,14 @@ require 'action_view'
 require 'action_dispatch'
 require 'rgeo'
 require 'geo_ruby'
-require 'gems/cmr_metadata_preview-0.1.0/app/helpers/cmr_metadata_preview/cmr_metadata_preview_helper'
-require 'gems/cmr_metadata_preview-0.1.0/app/helpers/cmr_metadata_preview/options_helper'
-require 'gems/cmr_metadata_preview-0.1.0/app/helpers/cmr_metadata_preview/data_contacts_helper'
-require 'gems/cmr_metadata_preview-0.1.0/app/helpers/cmr_metadata_preview/citation_information_preview_helper'
-require 'gems/cmr_metadata_preview-0.1.0/app/helpers/cmr_metadata_preview/additional_information_fields_helper'
-require 'gems/cmr_metadata_preview-0.1.0/app/helpers/cmr_metadata_preview/related_urls_preview_helper'
-require 'gems/cmr_metadata_preview-0.1.0/app/helpers/cmr_metadata_preview/overview_fields_helper'
-require 'gems/cmr_metadata_preview-0.1.0/app/helpers/cmr_metadata_preview/spatial_temporal_helper'
+require 'app/helpers/cmr_metadata_preview/cmr_metadata_preview_helper'
+require 'app/helpers/cmr_metadata_preview/options_helper'
+require 'app/helpers/cmr_metadata_preview/data_contacts_helper'
+require 'app/helpers/cmr_metadata_preview/citation_information_preview_helper'
+require 'app/helpers/cmr_metadata_preview/additional_information_fields_helper'
+require 'app/helpers/cmr_metadata_preview/related_urls_preview_helper'
+require 'app/helpers/cmr_metadata_preview/overview_fields_helper'
+require 'app/helpers/cmr_metadata_preview/spatial_temporal_helper'
 
 include ActionView::Helpers
 include ActionDispatch::Routing
@@ -48,7 +48,7 @@ def edit_collection_path(*args)
 end
 
 def resource_prefix
-  "gems/cmr_metadata_preview-0.1.0/app/views/"
+  "app/views/"
 end
 
 ####################################################################################################
