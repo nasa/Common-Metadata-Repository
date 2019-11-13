@@ -21,14 +21,14 @@
   [v]
   (when v (edn/read-string v)))
 
-;; Implements the CmrCache protocol by saving data in Redis
+;; Implements the CmrCache protocol by saving data in Redis.
 (defrecord RedisCache
   [
    ;; A collection of keys used by this cache. Only these keys will be deleted from the backend
-   ;; store on calls to reset
+   ;; store on calls to reset.
    keys-to-track
 
-   ;; The time to live for the key
+   ;; The time to live for the key in seconds.
    ttl
 
    ;; Refresh the time to live when GET operations are called on key.
@@ -75,7 +75,7 @@
       :keys-to-track
        The keys that are to be managed by this cache.
       :ttl
-       The time to live for the key. If nil assumes key will never expire. NOTE:
+       The time to live for the key in seconds. If nil assumes key will never expire. NOTE:
        The key is not guaranteed to stay in the cache for up to ttl. If the
        cache becomes full any key that is not set to persist will
        be a candidate for eviction.
