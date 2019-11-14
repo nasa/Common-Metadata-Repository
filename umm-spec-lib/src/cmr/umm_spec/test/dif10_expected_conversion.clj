@@ -358,4 +358,5 @@
                                  ;; description from umm-coll is already an object.
                                  {:Description description})))
       (update :ArchiveAndDistributionInformation expected-archive-dist-info)
+      (assoc-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem] nil)
       js/parse-umm-c))
