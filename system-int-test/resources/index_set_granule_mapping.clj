@@ -220,6 +220,10 @@
  :created-at {:format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ",
               :doc_values true,
               :type "date"},
+ :production-date {:type "date",
+                   :format
+                   "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                   :doc_values true},
  :platform-sn.lowercase-doc-values {:doc_values true,
                                     :index "not_analyzed",
                                     :type "string"},
