@@ -69,8 +69,13 @@
         ;; Create a map of property keys to generators for those properties
         prop-gens (into {} (for [[k subtype] properties]
                              [k (schema-type->generator schema nil subtype)]))
+        any-of-required (as-> (get schema-type :anyOf) any-of
+                          (map :required any-of)
+                          (when (seq any-of)
+                            (rand-nth any-of)))
         ;; Figure out which properties are required and which are optional
-        required-properties (set (map keyword (:required schema-type)))
+        required-properties (set (map keyword (concat (:required schema-type)
+                                                      any-of-required)))
         optional-properties (vec (set/difference (set (keys properties)) required-properties))
         ;; Every object must have at least one field
         min-optional-fields (if (empty? required-properties) 1 0)]

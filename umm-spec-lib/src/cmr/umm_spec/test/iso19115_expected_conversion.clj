@@ -392,4 +392,5 @@
       (update :DOI iso-shared/expected-doi)
       (update :UseConstraints iso-shared/expected-use-constraints)
       (update :ArchiveAndDistributionInformation iso-shared/expected-archive-dist-info)
+      (assoc-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem] nil)
       js/parse-umm-c))

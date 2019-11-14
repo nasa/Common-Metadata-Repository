@@ -87,6 +87,7 @@
         (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
         (update-in [:HorizontalSpatialDomain :Geometry]
                    assoc :CoordinateSystem "GEODETIC" :Points nil :GPolygons nil :Lines nil)
+        (assoc-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem] nil)
         conversion-util/prune-empty-maps)
     (umm-c/map->SpatialExtentType su/not-provided-spatial-extent)))
 
