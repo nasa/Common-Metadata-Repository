@@ -603,6 +603,7 @@
      :project-refs.lowercase-doc-values (m/doc-values m/string-field-mapping)
 
      :created-at (m/doc-values m/date-field-mapping)
+     :production-date (m/doc-values m/date-field-mapping)
      :revision-date m/date-field-mapping
      :revision-date-doc-values (m/doc-values m/date-field-mapping)
      :revision-date-stored-doc-values (-> m/date-field-mapping m/stored m/doc-values)
