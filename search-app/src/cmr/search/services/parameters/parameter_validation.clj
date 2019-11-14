@@ -175,6 +175,7 @@
    :temporal exclude-plus-and-or-option
    :created-at cpv/and-option
    :passes cpv/and-option
+   :production-date cpv/and-option
    :revision-date cpv/and-option})
 
 (defmethod cpv/valid-parameter-options :tag
@@ -290,7 +291,7 @@
   [temporal]
   (every? string? temporal))
 
-(defn temporal-format-validation
+(defn- temporal-format-validation
   "Validates that temporal datetime parameter conforms to the :date-time-no-ms format,
   start-day and end-day are integer between 1 and 366"
   [concept-type params]
@@ -316,7 +317,7 @@
          temporal)
         ["The valid format for temporal parameters are temporal[]=startdate,stopdate and temporal[]=startdate,stopdate,startday,endday"]))))
 
-(defn updated-since-validation
+(defn- updated-since-validation
   "Validates updated-since parameter conforms to formats in data-time-parser NS"
   [concept-type params]
   (when-let [param-value (:updated-since params)]
@@ -325,7 +326,7 @@
       (let [updated-since-val (if (sequential? param-value) (first param-value) param-value)]
         (cpv/validate-date-time "updated_since" updated-since-val)))))
 
-(defn tag-data-validation
+(defn- tag-data-validation
   "Validates tag-data parameter must be a map"
   [concept-type params]
   (when-let [param-value (:tag-data params)]
@@ -350,45 +351,51 @@
             (cpv/validate-date-time (str param-name" end") end-date)))))
     date-range))
 
-(defn revision-date-validation
+(defn- sequential-multi-date-validation
+  "Validates the given date parameter contains valid date time strings."
+  [concept-type params param-key]
+  (when-let [value (param-key params)]
+    (let [value (if (sequential? value)
+                  value
+                  [value])]
+      (validate-multi-date-range value (name param-key)))))
+
+(defn- revision-date-validation
   "Validates that revision date parameter contains valid date time strings."
   [concept-type params]
-  (when-let [revision-date (:revision-date params)]
-    (let [revision-date (if (sequential? revision-date)
-                          revision-date
-                          [revision-date])]
-      (validate-multi-date-range revision-date "revision-date"))))
+  (sequential-multi-date-validation concept-type params :revision-date))
 
-(defn created-at-validation
+(defn- production-date-validation
+  "Validates that production date parameter contains valid date time strings."
   [concept-type params]
-  "Validates that created-at parameter contains valid datetime strings."
-  (when-let [created-at (:created-at params)]
-    (let [created-at (if (sequential? created-at)
-                      created-at
-                      [created-at])]
-      (validate-multi-date-range created-at "created-at"))))
+  (sequential-multi-date-validation concept-type params :production-date))
 
-(defn attribute-validation
+(defn- created-at-validation
+  "Validates that created-at parameter contains valid datetime strings."
+  [concept-type params]
+  (sequential-multi-date-validation concept-type params :created-at))
+
+(defn- attribute-validation
   [concept-type params]
   (when-let [attributes (:attribute params)]
     (if (sequential? attributes)
       (mapcat #(-> % attrib/parse-value :errors) attributes)
       [(attrib-msg/attributes-must-be-sequence-msg)])))
 
-(defn science-keywords-validation-for-field
+(defn- science-keywords-validation-for-field
   "Performs science keywords subfield validation."
   [field concept-type params]
   (validation-util/nested-field-validation-for-subfield
    field concept-type params (msg/science-keyword-invalid-format-msg)))
 
-(defn variables-validation
+(defn- variables-validation
   "Validates the variables-h search parameters are in the format of e.g.
    variables-h[0][measurement]=value."
   [concept-type params]
   (validation-util/nested-field-validation-for-subfield
    :variables-h concept-type params (msg/variable-invalid-format-msg)))
 
-(defn temporal-facets-subfields-validation
+(defn- temporal-facets-subfields-validation
   "Performs temporal facets subfield validation."
   [concept-type params]
   (validation-util/nested-field-validation-for-subfield
@@ -400,7 +407,7 @@
    :month 12
    :day 31})
 
-(defn valid-value-for-date-field?
+(defn- valid-value-for-date-field?
   "Returns true if the provided value is valid for the given date field and false otherwise."
   [value field]
   (let [parsed-value (try
@@ -410,7 +417,7 @@
     (and (not (nil? parsed-value))
          (<= 1 parsed-value (max-value-for-date-field field)))))
 
-(defn temporal-facet-date-validation
+(defn- temporal-facet-date-validation
   "Validates that the given temporal date field in all temporal-facet parameters are valid."
   [date-field concept-type params]
   (when-let [param-values (:temporal-facet params)]
@@ -431,17 +438,17 @@
           []
           values)))))
 
-(defn temporal-facet-year-validation
+(defn- temporal-facet-year-validation
   "Validates that the years provided in all temporal-facet parameters are valid."
   [concept-type params]
   (temporal-facet-date-validation :year concept-type params))
 
-(defn temporal-facet-month-validation
+(defn- temporal-facet-month-validation
   "Validates that the months provided in all temporal-facet parameters are valid."
   [concept-type params]
   (temporal-facet-date-validation :month concept-type params))
 
-(defn temporal-facet-day-validation
+(defn- temporal-facet-day-validation
   "Validates that the days provided in all temporal-facet parameters are valid."
   [concept-type params]
   (temporal-facet-date-validation :day concept-type params))
@@ -469,7 +476,7 @@
       (catch NumberFormatException e
         [(apply error-message-fn args)]))))
 
-(defn cloud-cover-validation
+(defn- cloud-cover-validation
   "Validates cloud cover range values are numeric"
   [concept-type params]
   (when-let [cloud-cover (:cloud-cover params)]
@@ -477,7 +484,7 @@
       (cpv/validate-numeric-range-param cloud-cover nil)
       (validate-legacy-numeric-range-param cloud-cover nil))))
 
-(defn orbit-number-validation
+(defn- orbit-number-validation
   "Validates that the orbital number is either a single number or a range in the format
   start,stop, or in the catlog-rest style orbit_number[value], orbit_number[minValue],
   orbit_number[maxValue]."
@@ -487,7 +494,7 @@
       (cpv/validate-numeric-range-param orbit-number-param on-msg/invalid-orbit-number-msg)
       (validate-legacy-numeric-range-param orbit-number-param on-msg/invalid-orbit-number-msg))))
 
-(defn equator-crossing-longitude-validation
+(defn- equator-crossing-longitude-validation
   "Validates that the equator-crossing-longitude parameter is a single number or
   a valid range string."
   [concept-type params]
@@ -497,13 +504,13 @@
       (validate-legacy-numeric-range-param equator-crossing-longitude
                                            on-msg/non-numeric-equator-crossing-longitude-parameter))))
 
-(defn equator-crossing-date-validation
+(defn- equator-crossing-date-validation
   "Validates that the equator_crossing_date parameter is a valid date range string."
   [concept-type params]
   (when-let [equator-crossing-date (:equator-crossing-date params)]
     (parser/date-time-range-string-validation equator-crossing-date)))
 
-(defn exclude-validation
+(defn- exclude-validation
   "Validates that the key(s) supplied in 'exclude' param value are in exclude-params set"
   [concept-type params]
   (when-let [exclude-kv (:exclude params)]
@@ -517,7 +524,7 @@
             ["Invalid format for exclude parameter, must be in the format of exclude[name][]=value"]))
         [(msg/invalid-exclude-param-msg invalid-exclude-params)]))))
 
-(defn boolean-value-validation
+(defn- boolean-value-validation
   "Validates that all of the boolean parameters have values of true, false or unset."
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
@@ -582,30 +589,30 @@
   (when-let [spatial-param (spatial-type params)]
     (mapcat #(:errors (spatial-codec/url-decode spatial-type %)) (flatten [spatial-param]))))
 
-(defn polygon-validation
+(defn- polygon-validation
   ([params] (polygon-validation nil params))
   ([_ params] (spatial-validation params :polygon)))
 
-(defn bounding-box-validation
+(defn- bounding-box-validation
   ([params] (bounding-box-validation nil params))
   ([_ params] (spatial-validation params :bounding-box)))
 
-(defn point-validation
+(defn- point-validation
   ([params] (point-validation nil params))
   ([_ params] (spatial-validation params :point)))
 
-(defn line-validation
+(defn- line-validation
   ([params] (line-validation nil params))
   ([_ params] (spatial-validation params :line)))
 
-(defn collection-concept-id-validation
+(defn- collection-concept-id-validation
   "Validates the collection-concept-id(s)"
   [concept-type params]
   ;; collection-concept-ids can be either a vector or a single value.
   (when-let [c-concept-ids (util/seqify (:collection-concept-id params))]
     (mapcat (partial cc/concept-id-validation :collection-concept-id) c-concept-ids)))
 
-(defn timeline-start-date-validation
+(defn- timeline-start-date-validation
   "Validates the timeline start date parameter"
   [concept-type params]
   (let [start-date (:start-date params)]
@@ -613,7 +620,7 @@
       (cpv/validate-date-time "Timeline parameter start_date" start-date)
       ["start_date is a required parameter for timeline searches"])))
 
-(defn timeline-end-date-validation
+(defn- timeline-end-date-validation
   "Validates the timeline end date parameter"
   [concept-type params]
   (let [end-date (:end-date params)]
@@ -621,7 +628,7 @@
       (cpv/validate-date-time "Timeline parameter end_date" end-date)
       ["end_date is a required parameter for timeline searches"])))
 
-(defn timeline-range-validation
+(defn- timeline-range-validation
   "Validates the start date is before the end date"
   [concept-type params]
   (try
@@ -643,7 +650,7 @@
              (not= "true" (:include-highlights params)))
     ["Highlights options are not allowed unless the include-highlights is true."]))
 
-(defn highlights-numeric-options-validation
+(defn- highlights-numeric-options-validation
   "Validates that the highlights option (if present) is an integer greater than zero."
   [concept-type params]
   (keep
@@ -673,7 +680,7 @@
   "A list of the valid values for timeline intervals."
   #{"year" "month" "day" "hour" "minute" "second"})
 
-(defn timeline-interval-validation
+(defn- timeline-interval-validation
   "Validates the timeline interval parameter"
   [concept-type params]
   (if-let [interval (:interval params)]
@@ -682,7 +689,7 @@
             " year, month, day, hour, minute, or second.")])
     ["interval is a required parameter for timeline searches"]))
 
-(defn boosts-validation
+(defn- boosts-validation
   "Validates that all the provided fields in the boosts parameter are valid and that the values
   are numeric."
   [concept-type params]
@@ -732,6 +739,7 @@
              [temporal-format-validation
               created-at-validation
               updated-since-validation
+              production-date-validation
               revision-date-validation
               orbit-number-validation
               equator-crossing-longitude-validation
@@ -793,7 +801,7 @@
    (partial cpv/validate-map [:science-keywords-h])
    (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords-h])])
 
-(defn validate-parameter-data-types
+(defn- validate-parameter-data-types
   "Validates data types of parameters.  Unlike other validations, this returns a tuple of
   [safe-params errors] where errors contains the usual list of errors and safe-params
   contains only params whose data type is correct.  Dissoc'ing invalid data types from
@@ -840,7 +848,7 @@
     :point
     :polygon})
 
-(defn unrecognized-tile-params-validation
+(defn- unrecognized-tile-params-validation
   "Validates that no invalid parameters were supplied to tile search"
   [params]
   (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))

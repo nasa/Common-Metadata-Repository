@@ -98,6 +98,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Updated since](#g-updated-since)
     * [Revision date](#g-revision-date)
     * [Created at](#g-created-at)
+    * [Production date](#g-production-date)
     * [Cloud cover](#g-cloud-cover)
     * [Platform](#g-platform)
     * [Instrument](#g-instrument)
@@ -295,7 +296,7 @@ Here is a list of supported extensions and their corresponding MimeTypes:
 
 The CMR operating environment imposes a hard limit of 180 seconds on any request, after which a 504 error is
 returned. To avoid this, the CMR has an internal query timeout of 170 seconds - any query taking longer will time
-out and a subset of the total hit results will be returned instead of an error. The response for queries that time 
+out and a subset of the total hit results will be returned instead of an error. The response for queries that time
 out will include the `CMR-Time-Out` header set to `true`.
 
 ### <a name="supported-result-formats"></a> Supported Result Formats
@@ -1869,6 +1870,14 @@ Find granules which have revision date within the ranges of datetimes. The datet
  Find granules which were created within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
+
+#### <a name="g-production-date"></a> Find granules by production_date
+
+This supports option `and`.
+
+Find granules which have production date within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&production_date\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&production_date\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="g-cloud-cover"></a> Find granules by cloud_cover
 
