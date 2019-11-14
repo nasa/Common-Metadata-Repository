@@ -105,6 +105,7 @@
    :point :point
    :polygon :polygon
    :producer-granule-id :string
+   :production-date :multi-date-range
    :project :string
    :feature-id :string
    :crid-id :string

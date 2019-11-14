@@ -32,7 +32,7 @@
                                                      :foo 1
                                                      :bar 2})))))
   (is (= ["Parameter [page_size] was not recognized."]
-         (pv/unrecognized-tile-params-validation {:page-size 1
+         (#'pv/unrecognized-tile-params-validation {:page-size 1
                                                   :point "50, 50"})))
   (testing "invalid options param names"
     (is (= [] (cpv/unrecognized-params-in-options-validation :collection valid-params)))
@@ -117,57 +117,57 @@
   ;; Orbit Number
   (testing "Valid exact orbit_number"
     (is (= []
-           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10")))))
+           (#'pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10")))))
   (testing "Valid orbit_number range"
     (is (= []
-           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "1,2")))))
+           (#'pv/orbit-number-validation :granule (assoc valid-params :orbit-number "1,2")))))
   (testing "Non-numeric single orbit-number"
     (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-msg java.lang.Double "A")]
-           (pv/orbit-number-validation :granlue (assoc valid-params :orbit-number "A")))))
+           (#'pv/orbit-number-validation :granlue (assoc valid-params :orbit-number "A")))))
   (testing "Non-numeric start-orbit-number"
     (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-msg java.lang.Double "A")]
-           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "A,10")))))
+           (#'pv/orbit-number-validation :granule (assoc valid-params :orbit-number "A,10")))))
   (testing "Non-numeric stop-orbit-number"
     (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-msg java.lang.Double "A")]
-           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,A")))))
+           (#'pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,A")))))
 
   ;; Equator Crossing Longitude
   (testing "Valid equator-crossing-longitude range"
     (is (= []
-           (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,120")))))
+           (#'pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,120")))))
   (testing "Non-numeric equator-crossing-longitude"
     (is (= [(com-msg/invalid-msg java.lang.Double "A")]
-           (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "A,10")))))
+           (#'pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "A,10")))))
   (testing "Non-numeric equator-crossing-longitude"
     (is (= [(com-msg/invalid-msg java.lang.Double "A")]
-           (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,A")))))
+           (#'pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,A")))))
 
   ;; Point, Line, Polygon and Bounding-Box
   (testing "a spatial parameter can be a multi-valued parameter"
     (is (empty?
-         (pv/bounding-box-validation :granule {:bounding-box ["-180,-90,180,90","-20,-20,20,20"]}))))
+         (#'pv/bounding-box-validation :granule {:bounding-box ["-180,-90,180,90","-20,-20,20,20"]}))))
   (testing "a geometry parameter which is invalid returns a parsing error"
     (is (= ["[10.0,-.3] is not a valid URL encoded point"]
-           (pv/point-validation :granule {:point "10.0,-.3"}))))
+           (#'pv/point-validation :granule {:point "10.0,-.3"}))))
 
   ;; Boolean parameter validations
   (testing "valid boolean parameters do not return an error"
     (is (= []
-           (pv/boolean-value-validation :collection {:hierarchical-facets "TRUE"
+           (#'pv/boolean-value-validation :collection {:hierarchical-facets "TRUE"
                                                      :downloadable "uNSet"}))))
   (testing "boolean parameters with an invalid value return an error"
     (is (= ["Parameter hierarchical_facets must take value of true, false, or unset, but was [not-right]"]
-           (pv/boolean-value-validation :collection {:hierarchical-facets "not-right"})))))
+           (#'pv/boolean-value-validation :collection {:hierarchical-facets "not-right"})))))
 
 (deftest temporal-format-validation :collection-start-date-test
   (testing "valid-start-date"
-    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00Z"]})))
-    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00"]})))
-    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00.123Z"]})))
-    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00.123"]}))))
+    (is (empty? (#'pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00Z"]})))
+    (is (empty? (#'pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00"]})))
+    (is (empty? (#'pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00.123Z"]})))
+    (is (empty? (#'pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00.123"]}))))
   (testing "invalid-start-date"
     (are [start-date]
-         (let [error (pv/temporal-format-validation :collection {:temporal [start-date]})]
+         (let [error (#'pv/temporal-format-validation :collection {:temporal [start-date]})]
            (is (= 1 (count error)))
            (re-find (re-pattern "temporal start datetime is invalid:") (first error)))
          "2014-13-05T00:00:00Z"
@@ -178,13 +178,13 @@
 
 (deftest temporal-format-validation :collection-end-date-test
   (testing "valid-end-date"
-    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00Z"]})))
-    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00"]})))
-    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00.123Z"]})))
-    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00.123"]}))))
+    (is (empty? (#'pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00Z"]})))
+    (is (empty? (#'pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00"]})))
+    (is (empty? (#'pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00.123Z"]})))
+    (is (empty? (#'pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00.123"]}))))
   (testing "invalid-end-date"
     (are [end-date]
-         (let [error (pv/temporal-format-validation :collection {:temporal [end-date]})]
+         (let [error (#'pv/temporal-format-validation :collection {:temporal [end-date]})]
            (is (= 1 (count error)))
            (re-find (re-pattern "temporal end datetime is invalid:") (first error)))
          ",2014-13-05T00:00:00Z"
@@ -195,7 +195,7 @@
 
 (deftest validate-temporal-start-day-test
   (testing "valid-start-day"
-    (are [start-day] (empty? (pv/temporal-format-validation
+    (are [start-day] (empty? (#'pv/temporal-format-validation
                                :collection
                                {:temporal [(str "2014-04-05T18:45:51Z,," start-day)]}))
          "1"
@@ -203,7 +203,7 @@
          "10"))
   (testing "invalid-start-day"
     (are [start-day err-msg] (= [err-msg]
-                                (pv/temporal-format-validation
+                                (#'pv/temporal-format-validation
                                   :collection
                                   {:temporal [(str "2014-04-05T18:45:51Z,," start-day)]}))
          "x" "temporal_start_day [x] must be an integer between 1 and 366"
@@ -212,7 +212,7 @@
 
 (deftest validate-temporal-end-day-test
   (testing "valid-end-day"
-    (are [end-day] (empty? (pv/temporal-format-validation
+    (are [end-day] (empty? (#'pv/temporal-format-validation
                              :collection
                              {:temporal [(str "2014-04-05T18:45:51Z,," end-day)]}))
          "1"
@@ -220,7 +220,7 @@
          "10"))
   (testing "invalid-end-day"
     (are [end-day err-msg] (= [err-msg]
-                              (pv/temporal-format-validation
+                              (#'pv/temporal-format-validation
                                 :collection
                                 {:temporal [(str "2013-04-05T18:45:51Z,2014-04-05T18:45:51Z,," end-day)]}))
          "x" "temporal_end_day [x] must be an integer between 1 and 366"
@@ -229,15 +229,15 @@
 
 (deftest validate-attributes-is-a-sequence
   (is (= [(attrib-msg/attributes-must-be-sequence-msg)]
-         (pv/attribute-validation :granule {:attribute "foo"}))))
+         (#'pv/attribute-validation :granule {:attribute "foo"}))))
 
 (deftest validate-science-keywords-is-a-map
   (is (= []
-         (pv/science-keywords-validation-for-field
+         (#'pv/science-keywords-validation-for-field
           :science-keywords :collection {:science-keywords {:0 {:category "Cat1"}}})))
   (are [value]
     (= [(msg/science-keyword-invalid-format-msg)]
-       (pv/science-keywords-validation-for-field
+       (#'pv/science-keywords-validation-for-field
         :science-keywords :collection {:science-keywords value}))
     "foo"
     ["foo"]
@@ -246,7 +246,7 @@
 (deftest validate-science-keywords-search-terms
   (are [term]
     (= []
-       (pv/science-keywords-validation-for-field
+       (#'pv/science-keywords-validation-for-field
         :science-keywords :collection {:science-keywords {:0 {term "value"}}}))
 
     :category
@@ -259,12 +259,12 @@
 
   (is (= [(str "Parameter [categories] is not a valid [science_keywords] search term. "
                valid-sience-keywords-search-term-msg)]
-         (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"}}})))
+         (#'pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"}}})))
   (is (= [(str "Parameter [categories] is not a valid [science_keywords] search term. "
                valid-sience-keywords-search-term-msg)
           (str "Parameter [topics] is not a valid [science_keywords] search term. "
                valid-sience-keywords-search-term-msg)]
-         (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"
+         (#'pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"
                                                                                                          :topics "Topic1"}}}))))
 
 (deftest validate-parameters-test
@@ -296,18 +296,18 @@
 
 (deftest exclude-validation-test
   (testing "concept-id is a valid key to exclude"
-    (is (= nil (pv/exclude-validation :granule {:exclude {:concept-id "G1-PROV1"}})))
-    (is (= nil (pv/exclude-validation :granule {:exclude {:concept-id "G1-CPROV1"}}))))
+    (is (= nil (#'pv/exclude-validation :granule {:exclude {:concept-id "G1-PROV1"}})))
+    (is (= nil (#'pv/exclude-validation :granule {:exclude {:concept-id "G1-CPROV1"}}))))
   (testing "after parameter replacement, anything other than concept-id is not a valid key to exclude"
     (is (= ["Parameter(s) [echo-collection-id] can not be used with exclude."]
-           (pv/exclude-validation :granule {:exclude {:echo-collection-id "G1-PROV1"}})))
+           (#'pv/exclude-validation :granule {:exclude {:echo-collection-id "G1-PROV1"}})))
     (is (= ["Parameter(s) [echo-granule-id] can not be used with exclude."]
-           (pv/exclude-validation :granule {:exclude {:echo-granule-id "G1-PROV1"}})))
+           (#'pv/exclude-validation :granule {:exclude {:echo-granule-id "G1-PROV1"}})))
     (is (= ["Parameter(s) [dummy] can not be used with exclude."]
-           (pv/exclude-validation :granule {:exclude {:dummy "G1-PROV1"}}))))
+           (#'pv/exclude-validation :granule {:exclude {:dummy "G1-PROV1"}}))))
   (testing "collection-concept-id is an invalid value to exclude"
     (is (= ["Exclude collection is not supported, {:concept-id \"C1-PROV1\"}"]
-           (pv/exclude-validation :granule {:exclude {:concept-id "C1-PROV1"}})))))
+           (#'pv/exclude-validation :granule {:exclude {:concept-id "C1-PROV1"}})))))
 
 (deftest assoc-keys->param-name-fn-test
   (is (= "foo_bar" (cpv/assoc-keys->param-name [:foo-bar])))
@@ -350,12 +350,12 @@
              (cpv/validate-all-map-values cpv/validate-map [:root] params))))))
 
 (deftest collection-concept-id-validation-test
-  (is (empty? (pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Valid"})))
+  (is (empty? (#'pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Valid"})))
   (is (= ["Collection-concept-id [C1234-Invalid'] is not valid."]
-         (pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Invalid'"})))
+         (#'pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Invalid'"})))
   (is (= ["Collection-concept-id [C1234-Invalid'] is not valid."
           "Collection-concept-id [C5678-Invalid'] is not valid."]
-         (pv/collection-concept-id-validation :granule
+         (#'pv/collection-concept-id-validation :granule
                                               {:collection-concept-id ["C1234-Invalid'"
                                                                        "C5678-Invalid'"
                                                                        "C5678-Valid"]}))))
@@ -363,11 +363,11 @@
 (deftest valid-year-test
   (testing "Valid years"
     (doseq [year (map inc (range 9999))]
-      (is (= true (pv/valid-value-for-date-field? year :year)))))
+      (is (= true (#'pv/valid-value-for-date-field? year :year)))))
   (testing "Invalid years"
     (util/are3
       [year]
-      (is (= false (pv/valid-value-for-date-field? year :year)))
+      (is (= false (#'pv/valid-value-for-date-field? year :year)))
 
       "foo" "foo"
       -5 -5
@@ -378,11 +378,11 @@
 (deftest valid-month-test
   (testing "Valid months"
     (doseq [month (map inc (range 12))]
-      (is (= true (pv/valid-value-for-date-field? month :month)))))
+      (is (= true (#'pv/valid-value-for-date-field? month :month)))))
   (testing "Invalid months"
     (util/are3
       [month]
-      (is (= false (pv/valid-value-for-date-field? month :month)))
+      (is (= false (#'pv/valid-value-for-date-field? month :month)))
 
       "foo" "foo"
       -5 -5
@@ -394,11 +394,11 @@
 (deftest valid-day-test
   (testing "Valid days"
     (doseq [day (map inc (range 31))]
-      (is (= true (pv/valid-value-for-date-field? day :day)))))
+      (is (= true (#'pv/valid-value-for-date-field? day :day)))))
   (testing "Invalid days"
     (util/are3
       [day]
-      (is (= false (pv/valid-value-for-date-field? day :day)))
+      (is (= false (#'pv/valid-value-for-date-field? day :day)))
 
       "foo" "foo"
       -5 -5
