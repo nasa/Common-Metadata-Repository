@@ -67,6 +67,42 @@
     (update spatial-domain :Type #(csk/->Camel_Snake_Case %)))
    vertical-spatial-domains))
 
+(defn- convert-horizontal-data-resolutions
+  "Converts UMM Spatial Extent values to DIF10 Horizontal_Coordinate_System."
+  [spatial-extent]
+  (when-let [horizontal-data-resolution (first (get-in spatial-extent [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolutions]))]
+    (let [x (:XDimension horizontal-data-resolution)
+          y (:YDimension horizontal-data-resolution)]
+      (when (or x y)
+        [:Geographic_Coordinate_System
+         [:GeographicCoordinateUnits (:Unit horizontal-data-resolution)]
+         [:LatitudeResolution (:YDimension horizontal-data-resolution)]
+         [:LongitudeResolution (:XDimension horizontal-data-resolution)]]))))
+
+(defn- convert-geodetic-model
+  "Converts UMM Horizontal Coordinate System GeodeticModel to DIF10 GeodeticModel."
+  [spatial-extent]
+  (when-let [geodetic-model (get-in spatial-extent [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel])]
+    (let [datum-name (get geodetic-model :HorizontalDatumName)
+          ellipsoid-name (get geodetic-model :EllipsoidName)
+          semi-major-axis (get geodetic-model :SemiMajorAxis)
+          denominator-of-flattening-ratio (get geodetic-model :DenominatorOfFlatteningRatio)]
+      [:Geodetic_Model
+       [:Horizontal_DatumName datum-name]
+       [:Ellipsoid_Name ellipsoid-name]
+       [:Semi_Major_Axis semi-major-axis]
+       [:Denominator_Of_Flattening_Ratio denominator-of-flattening-ratio]])))
+
+(defn- convert-local-coordinate-sys
+  "Converts UMM Horizontal Coordinate System GeodeticModel to DIF10 GeodeticModel."
+  [spatial-extent]
+  (when-let [local-coordinate-sys (get-in spatial-extent [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :LocalCoordinateSystem])]
+    (let [geo-reference-information (get local-coordinate-sys :GeoReferenceInformation)
+          description (get local-coordinate-sys :Description)]
+      [:Local_Coordinate_System
+       [:Description description]
+       [:GeoReference_Information geo-reference-information]])))
+
 (defn spatial-element
   "Returns DIF10 Spatial_Coverage element from given UMM-C record."
   [c]
@@ -97,6 +133,10 @@
         (elements-from vert :Type :Value)])
      [:Spatial_Info
       [:Spatial_Coverage_Type u/not-provided]
+      [:Horizontal_Coordinate_System
+       (convert-geodetic-model sp)
+       (convert-horizontal-data-resolutions sp)
+       (convert-local-coordinate-sys sp)]
       (for [sys (:TilingIdentificationSystems c)]
         [:TwoD_Coordinate_System
          [:TwoD_Coordinate_System_Name (:TilingIdentificationSystemName sys)]

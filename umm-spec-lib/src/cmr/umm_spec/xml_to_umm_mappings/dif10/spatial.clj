@@ -3,9 +3,11 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.util :as u]))
 
 (def dif10-spatial-type->umm-spatial-type
@@ -47,18 +49,121 @@
    :GPolygons          (map parse-polygon (select g "Polygon"))
    :Lines              (map parse-line (select g "Line"))})
 
+
+(def unit-key-map
+  {"Decimal Degrees" [#"[\d\.]+\s*deg" #"[\d\.]+\s*degree" #"[\d\.]+\s*degrees"]
+   "Kilometers" [#"[\d\.]+\s*km" #"[\d\.]+\s*kilo"]
+   "Meters" [#"[\d\.]+\s*m" #"[\d\.]+\s*meter"]
+   "Nautical Miles" [#"[\d\.]+\s*nm" #"[\d\.]+\s*nautical mile" #"[\d\.]+\s*nautical miles"]
+   "Statue Miles" [#"[\d\.]+\s*sm" #"[\d\.]+\s*mile" #"[\d\.]+\s*miles" #"[\d\.]+\s*statue miles"]})
+
+(defn- guess-units
+  "Tries to determine the units of resolution value."
+  [value]
+  (when value
+    (let [value (string/trim (string/lower-case value))
+          unit-keys (keys unit-key-map)
+          matches (for [unit unit-keys
+                        :let [regexs (get unit-key-map unit)]
+                        :when (seq (remove nil? (map #(re-matches % value) regexs)))]
+                    unit)]
+      (when (seq matches)
+        (first matches)))))
+
+(defn- parse-dimension
+  "Tries to get number from dimension string."
+  [value]
+  (when value
+    (as-> value value
+         (re-find #"([\d\.]+)" value)
+         (second value)
+         (when value
+           (read-string value)))))
+
+(defn- parse-data-resolution
+  "Parses Data_Resolution element into HorizontalDataResolution."
+  [data-resolution]
+  (let [x (parse-dimension (value-of data-resolution "Latitude_Resolution"))
+        y (parse-dimension (value-of data-resolution "Longitude_Resolution"))
+        unit (or (guess-units (value-of data-resolution "Longitude_Resolution")) u/not-provided)]
+    (util/remove-nil-keys
+      {:YDimension x
+       :XDimension y
+       :Unit unit
+       :HorizontalResolutionProcessingLevelEnum u/not-provided})))
+
+(defn- parse-horizontal-data-resolutions
+  "Parses the dif10 elements needed to populate HorizontalDataResolutions.
+   Uses Horizontal_Coordinate_System under Geographic_Coordinate_System (LatitudeResolution and LongitudeResolution),
+   Otherwise uses  Data_Resolution. When looking at Data_Resolution though there can be more than 1,
+   so for each one that includes a Latitude and Longitude Resolution adds a new Horizontal Resolution."
+  [doc]
+  (let [[geo-coor-sys] (select doc "/DIF/Spatial_Coverage/Spatial_Info/Horizontal_Coordinate_System/Geographic_Coordinate_System")
+        [data-res] (select doc "/DIF/Data_Resolution")]
+    (when (or geo-coor-sys data-res)
+      (if geo-coor-sys
+        (u/remove-empty-records
+         [(util/remove-nil-keys
+            {:YDimension (when-let [y (value-of geo-coor-sys "LatitudeResolution")]
+                           (read-string y))
+             :XDimension (when-let [x (value-of geo-coor-sys "LongitudeResolution")]
+                           (read-string x))
+             :Unit (value-of geo-coor-sys "GeographicCoordinateUnits")
+             :HorizontalResolutionProcessingLevelEnum (when (or
+                                                             (value-of geo-coor-sys "LatitudeResolution")
+                                                             (value-of geo-coor-sys "LongitudeResolution"))
+                                                        u/not-provided)})])
+        [(parse-data-resolution data-res)]))))
+
+(defn- parse-local-coord-system
+  "Parses the dif10 elements needed for LocalCoordinateSystem values."
+  [spatial-coverage]
+  (when-let [[local-coordinate-sys] (select spatial-coverage (str "Spatial_Info/Horizontal_Coordinate_System/"
+                                                                  "Local_Coordinate_System"))]
+    (umm-c/map->LocalCoordinateSystemType
+      (util/remove-nil-keys
+        {:Description (value-of local-coordinate-sys "Description")
+         :GeoReferenceInformation (value-of local-coordinate-sys "GeoReference_Information")}))))
+
+(defn- parse-geodetic-model
+  "Parses the dif10 elements needed for GeodeticModel values."
+  [spatial-coverage]
+  (when-let [[geodetic-model] (select spatial-coverage (str "Spatial_Info/Horizontal_Coordinate_System/"
+                                                            "Geodetic_Model"))]
+    (umm-c/map->GeodeticModelType
+     (util/remove-nil-keys
+      {:HorizontalDatumName (value-of geodetic-model "Horizontal_DatumName")
+       :EllipsoidName (value-of geodetic-model "Ellipsoid_Name")
+       :SemiMajorAxis (when-let [axis (value-of geodetic-model "Semi_Major_Axis")]
+                        (read-string axis))
+       :DenominatorOfFlatteningRatio (when-let [denom (value-of geodetic-model "Denominator_Of_Flattening_Ratio")]
+                                       (read-string denom))}))))
+
+(defn- parse-horizontal-spatial-domains
+  "Parses the dif10 elements needed for HorizontalSpatialDomain values."
+  [doc]
+  (let [[spatial-coverage] (select doc "/DIF/Spatial_Coverage")
+        [geom] (select spatial-coverage "Geometry")
+        horizontal-data-resolutions (seq (parse-horizontal-data-resolutions doc))
+        local-coordinate-sys (parse-local-coord-system spatial-coverage)
+        geodetic-model (parse-geodetic-model spatial-coverage)]
+    (util/remove-nil-keys
+      {:Geometry (parse-geometry geom)
+       :ZoneIdentifier (value-of spatial-coverage "Zone_Identifier")
+       :ResolutionAndCoordinateSystem {:GeodeticModel geodetic-model
+                                       :LocalCoordinateSystem local-coordinate-sys
+                                       :HorizontalDataResolutions horizontal-data-resolutions}})))
+
 (defn parse-spatial
   "Returns UMM-C spatial map from DIF 10 XML document."
   [doc]
   (let [[spatial] (select doc "/DIF/Spatial_Coverage")]
     {:SpatialCoverageType (dif10-spatial-type->umm-spatial-type (value-of spatial "Spatial_Coverage_Type"))
      :GranuleSpatialRepresentation (value-of spatial "Granule_Spatial_Representation")
-     :HorizontalSpatialDomain      (let [[geom] (select spatial "Geometry")]
-                                     {:Geometry (parse-geometry geom)
-                                      :ZoneIdentifier (value-of spatial "Zone_Identifier")})
+     :HorizontalSpatialDomain      (parse-horizontal-spatial-domains doc)
      :VerticalSpatialDomains       (spatial-conversion/convert-vertical-spatial-domains-from-xml
                                     (select spatial "Vertical_Spatial_Info"))
-     :OrbitParameters              (let [[o] (select spatial "Orbit_Parameters")]
+     :OrbitParameters             (let [[o] (select spatial "Orbit_Parameters")]
                                      {:SwathWidth (value-of o "Swath_Width")
                                       :Period (value-of o "Period")
                                       :InclinationAngle (value-of o "Inclination_Angle")
