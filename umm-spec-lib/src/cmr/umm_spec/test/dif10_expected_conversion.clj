@@ -84,6 +84,26 @@
   (seq (for [related-url related-urls]
          (assoc related-url :FileSize nil :MimeType nil))))
 
+(defn- expected-horizontal-data-resolution
+  [horizontal-data-resolution]
+  (let [x (:XDimension horizontal-data-resolution)
+        y (:YDimension horizontal-data-resolution)
+        unit (:Unit horizontal-data-resolution)]
+    (when (or x y)
+      (-> horizontal-data-resolution
+        util/remove-nil-keys
+        (select-keys [:XDimension :YDimension :Unit :HorizontalResolutionProcessingLevelEnum])
+        (assoc :HorizontalResolutionProcessingLevelEnum su/not-provided)
+        umm-c/map->HorizontalDataResolutionType))))
+
+(defn- expected-horizontal-data-resolutions
+  "Retains only the first horizontal-data-resolution, and removes unsupported dif10 values."
+  [horizontal-data-resolutions]
+  (let [horizontal-data-resolution (first horizontal-data-resolutions)
+        horizontal-data-resolution (expected-horizontal-data-resolution horizontal-data-resolution)]
+    (when (seq (util/remove-nil-keys horizontal-data-resolution))
+      [(util/remove-nil-keys horizontal-data-resolution)])))
+
 (defn- expected-dif10-spatial-extent
   "For SpatialCoverageType DIF 10 doesn't have an ORBITAL_VERTICAL value so it gets
    translated into HORIZONTAL_VERTICAL"
@@ -92,6 +112,10 @@
         (assoc spatial-extent :SpatialCoverageType "HORIZONTAL_VERTICAL")
         spatial-extent)
       (update-in [:HorizontalSpatialDomain :Geometry] conversion-util/geometry-with-coordinate-system)
+      (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem] dissoc :Description)
+      (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel] umm-c/map->GeodeticModelType)
+      (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :LocalCoordinateSystem] umm-c/map->LocalCoordinateSystemType)
+      (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolutions] expected-horizontal-data-resolutions)
       (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] conversion-util/fix-echo10-dif10-polygon)
       (update [:VerticalSpatialDomains] spatial-conversion/drop-invalid-vertical-spatial-domains)
       conversion-util/prune-empty-maps))
@@ -358,5 +382,4 @@
                                  ;; description from umm-coll is already an object.
                                  {:Description description})))
       (update :ArchiveAndDistributionInformation expected-archive-dist-info)
-      (assoc-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem] nil)
       js/parse-umm-c))
