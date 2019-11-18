@@ -137,12 +137,36 @@
                (ru-gen/resource-urls (:RelatedUrls umm-coll))
                (ru-gen/browse-urls (:RelatedUrls umm-coll)))))
 
+(defn- expected-horizontal-data-resolution
+  [horizontal-data-resolution]
+  (let [x (:XDimension horizontal-data-resolution)
+        y (:YDimension horizontal-data-resolution)
+        unit (:Unit horizontal-data-resolution)]
+    (when (or x y)
+      (-> horizontal-data-resolution
+        util/remove-nil-keys
+        (select-keys [:XDimension :YDimension :Unit :HorizontalResolutionProcessingLevelEnum])
+        (assoc :HorizontalResolutionProcessingLevelEnum su/not-provided)
+        umm-c/map->HorizontalDataResolutionType))))
+
+(defn- expected-horizontal-data-resolutions
+  "Retains only the first horizontal-data-resolution, and removes unsupported ECHO10 values."
+  [horizontal-data-resolutions]
+  (let [horizontal-data-resolution (first horizontal-data-resolutions)
+        horizontal-data-resolution (expected-horizontal-data-resolution horizontal-data-resolution)]
+    (when (seq (util/remove-nil-keys horizontal-data-resolution))
+      [(util/remove-nil-keys horizontal-data-resolution)])))
+
 (defn- expected-echo10-spatial-extent
   "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."
   [spatial-extent]
   (as-> spatial-extent se
         (update se :VerticalSpatialDomains spatial-conversion/drop-invalid-vertical-spatial-domains)
-        (update se :HorizontalSpatialDomain assoc :ResolutionAndCoordinateSystem nil)
+        (update-in se [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolutions] expected-horizontal-data-resolutions)
+        (update-in se [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem] assoc :Description nil)
+        (update-in se [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel] umm-c/map->GeodeticModelType)
+        (update-in se [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :LocalCoordinateSystem] umm-c/map->LocalCoordinateSystemType)
+        (update-in se [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolutions] expected-horizontal-data-resolutions)
         (conversion-util/prune-empty-maps se)
         (if (get-in se [:HorizontalSpatialDomain :Geometry])
           (update-in se [:HorizontalSpatialDomain :Geometry] conversion-util/geometry-with-coordinate-system)

@@ -220,6 +220,7 @@
           (elements-from (:Coordinate1 sys) :MinimumValue :MaximumValue)]
          [:Coordinate2
           (elements-from (:Coordinate2 sys) :MinimumValue :MaximumValue)]])]
+     (spatial/spatial-info-element c)
      (ru/generate-access-urls (:RelatedUrls c))
      (ru/generate-resource-urls (:RelatedUrls c))
      (spatial/spatial-element c)
