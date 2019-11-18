@@ -49,43 +49,12 @@
    :GPolygons          (map parse-polygon (select g "Polygon"))
    :Lines              (map parse-line (select g "Line"))})
 
-
-(def unit-key-map
-  {"Decimal Degrees" [#"[\d\.]+\s*deg" #"[\d\.]+\s*degree" #"[\d\.]+\s*degrees"]
-   "Kilometers" [#"[\d\.]+\s*km" #"[\d\.]+\s*kilo"]
-   "Meters" [#"[\d\.]+\s*m" #"[\d\.]+\s*meter"]
-   "Nautical Miles" [#"[\d\.]+\s*nm" #"[\d\.]+\s*nautical mile" #"[\d\.]+\s*nautical miles"]
-   "Statue Miles" [#"[\d\.]+\s*sm" #"[\d\.]+\s*mile" #"[\d\.]+\s*miles" #"[\d\.]+\s*statue miles"]})
-
-(defn- guess-units
-  "Tries to determine the units of resolution value."
-  [value]
-  (when value
-    (let [value (string/trim (string/lower-case value))
-          unit-keys (keys unit-key-map)
-          matches (for [unit unit-keys
-                        :let [regexs (get unit-key-map unit)]
-                        :when (seq (remove nil? (map #(re-matches % value) regexs)))]
-                    unit)]
-      (when (seq matches)
-        (first matches)))))
-
-(defn- parse-dimension
-  "Tries to get number from dimension string."
-  [value]
-  (when value
-    (as-> value value
-         (re-find #"([\d\.]+)" value)
-         (second value)
-         (when value
-           (read-string value)))))
-
 (defn- parse-data-resolution
   "Parses Data_Resolution element into HorizontalDataResolution."
   [data-resolution]
-  (let [x (parse-dimension (value-of data-resolution "Latitude_Resolution"))
-        y (parse-dimension (value-of data-resolution "Longitude_Resolution"))
-        unit (or (guess-units (value-of data-resolution "Longitude_Resolution")) u/not-provided)]
+  (let [x (u/parse-dimension (value-of data-resolution "Latitude_Resolution"))
+        y (u/parse-dimension (value-of data-resolution "Longitude_Resolution"))
+        unit (or (u/guess-units (value-of data-resolution "Longitude_Resolution")) u/not-provided)]
     (util/remove-nil-keys
       {:YDimension x
        :XDimension y
