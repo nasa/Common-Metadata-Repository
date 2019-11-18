@@ -1,0 +1,405 @@
+<Collection>
+    <ShortName>Mapping Short Name 1.14</ShortName>
+    <VersionId>1.14</VersionId>
+    <InsertTime>2002-01-01T00:00:00.000Z</InsertTime>
+    <LastUpdate>2003-01-01T00:00:00.000Z</LastUpdate>
+    <DeleteTime>2024-01-01T00:00:00.000Z</DeleteTime>
+    <LongName>Not provided</LongName>
+    <DataSetId>Mapping Example for UMM-C 1.14</DataSetId>
+    <Description>This record is a Mapping Example.</Description>
+    <DOI>
+        <DOI>10.1234/DOIID</DOI>
+        <Authority>https://doi.org/</Authority>
+    </DOI>
+    <CollectionDataType>SCIENCE_QUALITY</CollectionDataType>
+    <RevisionDate>2007-01-01T00:00:00.000Z</RevisionDate>
+    <SuggestedUsage>This record is to be used to demonstrate how the CMR maps from one specification to another</SuggestedUsage>
+    <ProcessingCenter>NASA/MSFC/AMSR-E SIPS</ProcessingCenter>
+    <ProcessingLevelId>3</ProcessingLevelId>
+    <ProcessingLevelDescription>GRID</ProcessingLevelDescription>
+    <ArchiveCenter>NSIDC</ArchiveCenter>
+    <VersionDescription>Mapping Version 1 Description</VersionDescription>
+    <CitationForExternalPublication>Other Citation Details</CitationForExternalPublication>
+    <CollectionState>ACTIVE</CollectionState>
+    <RestrictionFlag>1</RestrictionFlag>
+    <RestrictionComment>Testing</RestrictionComment>
+    <DataFormat>netCDF-4</DataFormat>
+    <SpatialKeywords>
+        <Keyword>LocationKeywordDetailedLocation</Keyword>
+        <Keyword>SVALBARD</Keyword>
+    </SpatialKeywords>
+    <TemporalKeywords>
+        <Keyword>TemporalKeyword1</Keyword>
+        <Keyword>TemporalKeyword2</Keyword>
+    </TemporalKeywords>
+    <Temporal>
+        <PrecisionOfSeconds>1</PrecisionOfSeconds>
+        <EndsAtPresentFlag>false</EndsAtPresentFlag>
+        <RangeDateTime>
+            <BeginningDateTime>2001-01-01T00:00:00.000Z</BeginningDateTime>
+            <EndingDateTime>2001-06-01T00:00:00.000Z</EndingDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>PROCESSOR</Role>
+            <OrganizationName>NASA/MSFC/AMSR-E SIPS</OrganizationName>
+        </Contact>
+        <Contact>
+            <Role>ARCHIVER</Role>
+            <OrganizationName>NSIDC</OrganizationName>
+        </Contact>
+        <Contact>
+            <Role>ORIGINATOR</Role>
+            <OrganizationName>NASA/MSFC/AMSR-E SIPS</OrganizationName>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Data Center Personnel First Name</FirstName>
+                    <MiddleName>Data Center Personnel Middle Name</MiddleName>
+                    <LastName>Data Center Personnel Last Name</LastName>
+                    <JobPosition>Science Contact</JobPosition>
+                </ContactPerson>
+                <ContactPerson>
+                    <FirstName>Data Center Personnel First Name</FirstName>
+                    <MiddleName>Data Center Personnel Middle Name</MiddleName>
+                    <LastName>Data Center Personnel Last Name</LastName>
+                    <JobPosition>INVESTIGATOR</JobPosition>
+                </ContactPerson>
+                <ContactPerson>
+                    <FirstName>Data Center Personnel First Name</FirstName>
+                    <MiddleName>Data Center Personnel Middle Name</MiddleName>
+                    <LastName>Data Center Personnel Last Name</LastName>
+                    <JobPosition>DATA CENTER CONTACT</JobPosition>
+                </ContactPerson>
+                <ContactPerson>
+                    <FirstName>Data Center Personnel2 First Name</FirstName>
+                    <MiddleName>Data Center Personnel2 Middle Name</MiddleName>
+                    <LastName>Data Center Personnel2 Last Name</LastName>
+                    <JobPosition>TECHNICAL CONTACT</JobPosition>
+                </ContactPerson>
+                <ContactPerson>
+                    <FirstName>Data Center Personnel2 First Name</FirstName>
+                    <MiddleName>Data Center Personnel2 Middle Name</MiddleName>
+                    <LastName>Data Center Personnel2 Last Name</LastName>
+                    <JobPosition>DATA CENTER CONTACT</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+        <Contact>
+            <Role>DISTRIBUTOR</Role>
+            <HoursOfService>8am-5pm (Mountain Time) Monday through Friday</HoursOfService>
+            <Instructions>contact by e-mail first</Instructions>
+            <OrganizationName>NSIDC</OrganizationName>
+            <OrganizationAddresses>
+                <Address>
+                    <StreetAddress>1540 30th St Campus Box 449</StreetAddress>
+                    <City>Boulder</City>
+                    <StateProvince>CO</StateProvince>
+                    <PostalCode>80303-0449</PostalCode>
+                    <Country>USA</Country>
+                </Address>
+            </OrganizationAddresses>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>303-492-6199</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>303-492-2468</Number>
+                    <Type>Fax</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>nsidc@kryos.colorado.edu</Email>
+            </OrganizationEmails>
+        </Contact>
+        <Contact>
+            <Role>TECHNICAL CONTACT</Role>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Personnel First Name</FirstName>
+                    <MiddleName>Personnel Middle Name</MiddleName>
+                    <LastName>Personnel Last Name</LastName>
+                    <JobPosition>METADATA AUTHOR</JobPosition>
+                </ContactPerson>
+                <ContactPerson>
+                    <FirstName>Personnel First Name</FirstName>
+                    <MiddleName>Personnel Middle Name</MiddleName>
+                    <LastName>Personnel Last Name</LastName>
+                    <JobPosition>DATA CENTER CONTACT</JobPosition>
+                </ContactPerson>
+                <ContactPerson>
+                    <FirstName>Personnel2 First Name</FirstName>
+                    <MiddleName>Personnel2 Middle Name</MiddleName>
+                    <LastName>Personnel2 Last Name</LastName>
+                    <JobPosition>TECHNICAL CONTACT</JobPosition>
+                </ContactPerson>
+                <ContactPerson>
+                    <FirstName>Personnel2 First Name</FirstName>
+                    <MiddleName>Personnel2 Middle Name</MiddleName>
+                    <LastName>Personnel2 Last Name</LastName>
+                    <JobPosition>DATA CENTER CONTACT</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SNOW WATER EQUIVALENT</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>RAIN</DetailedVariableKeyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SNOW WATER EQUIVALENT</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>SLEET</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>AQUA</ShortName>
+            <LongName>Earth Observing System, AQUA</LongName>
+            <Type>Earth Observation Satellites</Type>
+            <Characteristics>
+                <Characteristic>
+                    <Name>PlatformCaracteristicName</Name>
+                    <Description>Platform Characteristics Description</Description>
+                    <DataType>INT</DataType>
+                    <Unit>Degrees</Unit>
+                    <Value>50</Value>
+                </Characteristic>
+            </Characteristics>
+            <Instruments>
+                <Instrument>
+                    <ShortName>AMSR-E</ShortName>
+                    <LongName>Advanced Microwave Scanning Radiometer-EOS</LongName>
+                    <Technique>Broadband scanning radiometry</Technique>
+                    <NumberOfSensors>1</NumberOfSensors>
+                    <Characteristics>
+                        <Characteristic>
+                            <Name>InstrumentCaracteristicName</Name>
+                            <Description>Instrument Characteristics Description</Description>
+                            <DataType>INT</DataType>
+                            <Unit>Calvin</Unit>
+                            <Value>150</Value>
+                        </Characteristic>
+                    </Characteristics>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>AMSR-E</ShortName>
+                            <LongName>Advanced Microwave Scanning Radiometer-EOS</LongName>
+                            <Technique>Radiometry</Technique>
+                            <Characteristics>
+                                <Characteristic>
+                                    <Name>ChildInstrumentCaracteristicName</Name>
+                                    <Description>Child Instrument Characteristics Description</Description>
+                                    <DataType>INT</DataType>
+                                    <Unit>Pascals</Unit>
+                                    <Value>250</Value>
+                                </Characteristic>
+                            </Characteristics>
+                        </Sensor>
+                    </Sensors>
+                    <OperationModes>
+                        <OperationMode>Mode1</OperationMode>
+                        <OperationMode>Mode2</OperationMode>
+                    </OperationModes>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <AdditionalAttributes>
+        <AdditionalAttribute>
+            <Name>SomeOtherFullElement</Name>
+            <DataType>INT</DataType>
+            <Description>Metadata Description</Description>
+            <Value>2</Value>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>An Additional Attribute Name</Name>
+            <DataType>INT</DataType>
+            <Description>An Additional Attribute Description</Description>
+            <ParameterRangeBegin>1</ParameterRangeBegin>
+            <ParameterRangeEnd>10</ParameterRangeEnd>
+            <Value>5</Value>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>An Additional Attribute Name 2</Name>
+            <DataType>INT</DataType>
+            <Description>An Additional Attribute Description 2</Description>
+            <ParameterRangeBegin>2</ParameterRangeBegin>
+            <ParameterRangeEnd>11</ParameterRangeEnd>
+            <Value>6</Value>
+        </AdditionalAttribute>
+    </AdditionalAttributes>
+    <CollectionAssociations>
+        <CollectionAssociation>
+            <ShortName>C1234453343-ECHO_REST</ShortName>
+            <VersionId>1</VersionId>
+            <CollectionType>SCIENCE ASSOCIATED</CollectionType>
+            <CollectionUse>This is a description of the metadata association</CollectionUse>
+        </CollectionAssociation>
+        <CollectionAssociation>
+            <ShortName>C1234453342-ECHO_REST</ShortName>
+            <VersionId>2</VersionId>
+            <CollectionType>LARGER CITATION WORKS</CollectionType>
+            <CollectionUse>This is a description of the metadata association 2</CollectionUse>
+        </CollectionAssociation>
+    </CollectionAssociations>
+    <Campaigns>
+        <Campaign>
+            <ShortName>AMSRICE06</ShortName>
+            <LongName>Advanced Microwave Scanning Radiometer Sea Ice Product Validation</LongName>
+            <StartDate>2000-01-01T00:00:00.000Z</StartDate>
+            <EndDate>2018-01-01T00:00:00.000Z</EndDate>
+        </Campaign>
+    </Campaigns>
+    <TwoDCoordinateSystems>
+        <TwoDCoordinateSystem>
+            <TwoDCoordinateSystemName>MODIS Tile EASE</TwoDCoordinateSystemName>
+            <Coordinate1>
+                <MinimumValue>-100</MinimumValue>
+                <MaximumValue>-50</MaximumValue>
+            </Coordinate1>
+            <Coordinate2>
+                <MinimumValue>50</MinimumValue>
+                <MaximumValue>100</MaximumValue>
+            </Coordinate2>
+        </TwoDCoordinateSystem>
+    </TwoDCoordinateSystems>
+    <SpatialInfo>
+      <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+      <HorizontalCoordinateSystem>
+        <GeodeticModel>
+          <HorizontalDatumName>North American Datum 1983</HorizontalDatumName>
+          <EllipsoidName>GRS 1980</EllipsoidName>
+          <SemiMajorAxis>6378137</SemiMajorAxis>
+          <DenominatorOfFlatteningRatio>298.257222101</DenominatorOfFlatteningRatio>
+        </GeodeticModel>
+        <GeographicCoordinateSystem>
+          <GeographicCoordinateUnits>Decimal Degrees</GeographicCoordinateUnits>
+          <LatitudeResolution>0.5</LatitudeResolution>
+          <LongitudeResolution>0.5</LongitudeResolution>
+        </GeographicCoordinateSystem>
+      </HorizontalCoordinateSystem>
+    </SpatialInfo>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>http://www.foo.com</URL>
+            <URLDescription>Testing Related url GET DATA translations</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>http://wwwghcc.msfc.nasa.gov/AMSR/qa.html</URL>
+            <Description>quality documentation</Description>
+            <Type>PublicationURL : VIEW RELATED INFORMATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://wwwghcc.msfc.nasa.gov/AMSR/qa.html</URL>
+            <Description>quality documentation</Description>
+            <Type>VIEW RELATED INFORMATION : PUBLICATIONS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://nsidc.org/data/docs/daac/ae_swe_ease-grids.gd.html</URL>
+            <Description>Guide Document for this product at NSIDC</Description>
+            <Type>VIEW RELATED INFORMATION : USER'S GUIDE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://nsidc.org/data/amsre/</URL>
+            <Description>AMSR-E/AMSR Product page at NSIDC</Description>
+            <Type>PublicationURL : VIEW RELATED INFORMATION</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <ZoneIdentifier>1</ZoneIdentifier>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <GPolygon>
+                    <Boundary>
+                        <Point>
+                            <PointLongitude>-10</PointLongitude>
+                            <PointLatitude>10</PointLatitude>
+                        </Point>
+                        <Point>
+                            <PointLongitude>10</PointLongitude>
+                            <PointLatitude>10</PointLatitude>
+                        </Point>
+                        <Point>
+                            <PointLongitude>10</PointLongitude>
+                            <PointLatitude>-10</PointLatitude>
+                        </Point>
+                        <Point>
+                            <PointLongitude>-10</PointLongitude>
+                            <PointLatitude>-10</PointLatitude>
+                        </Point>
+                    </Boundary>
+                    <ExclusiveZone>
+                        <Boundary>
+                            <Point>
+                                <PointLongitude>-5</PointLongitude>
+                                <PointLatitude>-1</PointLatitude>
+                            </Point>
+                            <Point>
+                                <PointLongitude>-1</PointLongitude>
+                                <PointLatitude>-1</PointLatitude>
+                            </Point>
+                            <Point>
+                                <PointLongitude>-1</PointLongitude>
+                                <PointLatitude>-5</PointLatitude>
+                            </Point>
+                            <Point>
+                                <PointLongitude>-5</PointLongitude>
+                                <PointLatitude>-5</PointLatitude>
+                            </Point>
+                        </Boundary>
+                        <Boundary>
+                            <Point>
+                                <PointLongitude>0</PointLongitude>
+                                <PointLatitude>5</PointLatitude>
+                            </Point>
+                            <Point>
+                                <PointLongitude>5</PointLongitude>
+                                <PointLatitude>5</PointLatitude>
+                            </Point>
+                            <Point>
+                                <PointLongitude>5</PointLongitude>
+                                <PointLatitude>0</PointLatitude>
+                            </Point>
+                            <Point>
+                                <PointLongitude>0</PointLongitude>
+                                <PointLatitude>0</PointLatitude>
+                            </Point>
+                        </Boundary>
+                    </ExclusiveZone>
+                </GPolygon>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <VerticalSpatialDomain>
+            <Type>Maximum Altitude</Type>
+            <Value>100</Value>
+        </VerticalSpatialDomain>
+        <VerticalSpatialDomain>
+            <Type>Minimum Altitude</Type>
+            <Value>1</Value>
+        </VerticalSpatialDomain>
+        <OrbitParameters>
+            <SwathWidth>22</SwathWidth>
+            <Period>1</Period>
+            <InclinationAngle>4</InclinationAngle>
+            <NumberOfOrbits>1</NumberOfOrbits>
+            <StartCircularLatitude>1</StartCircularLatitude>
+        </OrbitParameters>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

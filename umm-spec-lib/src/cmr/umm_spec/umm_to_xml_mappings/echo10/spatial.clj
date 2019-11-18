@@ -42,6 +42,53 @@
   [:Line
    (map point-element (:Points line))])
 
+(defn- convert-horizontal-data-resolutions
+  "Converts UMM Spatial Extent values to ECHO10 GeographicCoordinateSystem"
+  [spatial-extent]
+  (when-let [horizontal-data-resolution (first (get-in spatial-extent [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolutions]))]
+    (let [x (:XDimension horizontal-data-resolution)
+          y (:YDimension horizontal-data-resolution)]
+      (when (or x y)
+        [:GeographicCoordinateSystem
+         [:GeographicCoordinateUnits (:Unit horizontal-data-resolution)]
+         [:LatitudeResolution (:YDimension horizontal-data-resolution)]
+         [:LongitudeResolution (:XDimension horizontal-data-resolution)]]))))
+
+(defn- convert-geodetic-model
+  "Converts UMM Horizontal Coordinate System GeodeticModel to ECHO10 GeodeticModel."
+  [spatial-extent]
+  (when-let [geodetic-model (get-in spatial-extent [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel])]
+    (let [datum-name (get geodetic-model :HorizontalDatumName)
+          ellipsoid-name (get geodetic-model :EllipsoidName)
+          semi-major-axis (get geodetic-model :SemiMajorAxis)
+          denominator-of-flattening-ratio (get geodetic-model :DenominatorOfFlatteningRatio)]
+      [:GeodeticModel
+       [:HorizontalDatumName datum-name]
+       [:EllipsoidName ellipsoid-name]
+       [:SemiMajorAxis semi-major-axis]
+       [:DenominatorOfFlatteningRatio denominator-of-flattening-ratio]])))
+
+(defn- convert-local-coordinate-sys
+  "Converts UMM Horizontal Coordinate System GeodeticModel to ECHO10 GeodeticModel."
+  [spatial-extent]
+  (when-let [local-coordinate-sys (get-in spatial-extent [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :LocalCoordinateSystem])]
+    (let [geo-reference-information (get local-coordinate-sys :GeoReferenceInformation)
+          description (get local-coordinate-sys :Description)]
+      [:LocalCoordinateSystem
+       [:Description description]
+       [:GeoReferenceInformation geo-reference-information]])))
+
+(defn spatial-info-element
+  "Returns ECHO10 SpatialInfo element from given UMM-C record"
+  [c]
+  (let [sp (:SpatialExtent c)]
+    [:SpatialInfo
+     (elements-from sp :SpatialCoverageType)
+     [:HorizontalCoordinateSystem
+      (convert-geodetic-model sp)
+      (convert-horizontal-data-resolutions sp)
+      (convert-local-coordinate-sys sp)]]))
+
 (defn spatial-element
   "Returns ECHO10 Spatial element from given UMM-C record."
   [c]

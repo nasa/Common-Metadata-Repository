@@ -2158,7 +2158,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       data etc.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="SpatialCoverageType">
+      <xs:element name="SpatialCoverageType" minOccurs="0">
         <xs:annotation>
           <xs:documentation>This attribute denotes whether the
           locality/coverage requires horizontal, vertical, or both
