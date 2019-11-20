@@ -125,6 +125,7 @@
 
     (POST "/clear-cache" []
       (debug "dev system /clear-cache")
+      (redis/reset)
       (doseq [[service-name clear-cache-fn] service-clear-cache-fns]
         (clear-cache-fn (app-context system service-name)))
       (debug "dev system /clear-cache complete")
