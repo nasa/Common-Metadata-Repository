@@ -24,6 +24,11 @@
   "The default value in seconds to use to expire keys. Default is 24 hours."
   {:default 86400 :type Long})
 
+(defconfig redis-max-scan-keys
+  "The maximum amount of keys to search for on each iteration of scan aswell as return
+  to user."
+  {:default 2000 :type Long})
+
 (defn redis-conn-opts
   "Redis connection options to be used with wcar."
   []

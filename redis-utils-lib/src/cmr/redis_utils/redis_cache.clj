@@ -8,7 +8,7 @@
    [clojure.edn :as edn]
    [cmr.common.cache :as cache]
    [cmr.redis-utils.config :as config]
-   [cmr.redis-utils.redis :refer [wcar*]]
+   [cmr.redis-utils.redis :as redis :refer [wcar*]]
    [taoensso.carmine :as carmine]))
 
 (defn serialize
@@ -37,7 +37,7 @@
   cache/CmrCache
   (get-keys
     [this]
-    (map deserialize (wcar* (carmine/keys "*"))))
+    (map deserialize (redis/get-keys)))
 
   (get-value
     [this key]
