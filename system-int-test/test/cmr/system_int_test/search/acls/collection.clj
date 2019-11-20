@@ -425,6 +425,7 @@
         user1-token (e/login (s/context) "user1")
         user2-token (e/login (s/context) "user2")]
 
+    (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
     (index/wait-until-indexed)
 
     ;; A logged out token is normally not useful
