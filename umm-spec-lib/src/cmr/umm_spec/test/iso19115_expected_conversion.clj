@@ -352,6 +352,30 @@
                               cc)))))
     [{}]))
 
+(defn- safe-trim
+  [value]
+  (if (string? value)
+    (string/trim value)
+    value))
+
+(defn- expected-geodetic-model
+  "Trims all the string values, returns model version of map."
+  [geodetic-model]
+  (when geodetic-model
+    (-> geodetic-model
+        (update :EllipsoidName safe-trim)
+        (update :HorizontalDatumName safe-trim)
+        umm-c/map->GeodeticModelType)))
+
+(defn- expected-local-coordinate-system
+  "Trims all the string values, returns model version of map."
+  [local-coordinate-system]
+  (when local-coordinate-system
+    (-> local-coordinate-system
+        (update :Description safe-trim)
+        (update :GeoReferenceInformation safe-trim)
+        umm-c/map->LocalCoordinateSystemType)))
+
 (defn umm-expected-conversion-iso19115
   [umm-coll]
   (-> umm-coll
@@ -392,5 +416,7 @@
       (update :DOI iso-shared/expected-doi)
       (update :UseConstraints iso-shared/expected-use-constraints)
       (update :ArchiveAndDistributionInformation iso-shared/expected-archive-dist-info)
-      (assoc-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem] nil)
+      (update-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel] expected-geodetic-model)
+      (update-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :LocalCoordinateSystem] expected-local-coordinate-system)
+      (util/update-in-each [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolutions] util/remove-nil-keys)
       js/parse-umm-c))
