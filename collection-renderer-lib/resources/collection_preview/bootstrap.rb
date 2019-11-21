@@ -16,25 +16,27 @@ require 'action_view'
 require 'action_dispatch'
 require 'rgeo'
 require 'geo_ruby'
-require 'app/helpers/cmr_metadata_preview/cmr_metadata_preview_helper'
-require 'app/helpers/cmr_metadata_preview/options_helper'
-require 'app/helpers/cmr_metadata_preview/data_contacts_helper'
-require 'app/helpers/cmr_metadata_preview/citation_information_preview_helper'
 require 'app/helpers/cmr_metadata_preview/additional_information_fields_helper'
-require 'app/helpers/cmr_metadata_preview/related_urls_preview_helper'
+require 'app/helpers/cmr_metadata_preview/citation_information_preview_helper'
+require 'app/helpers/cmr_metadata_preview/cmr_metadata_preview_helper'
+require 'app/helpers/cmr_metadata_preview/data_contacts_helper'
+require 'app/helpers/cmr_metadata_preview/fields_helper'
+require 'app/helpers/cmr_metadata_preview/options_helper'
 require 'app/helpers/cmr_metadata_preview/overview_fields_helper'
+require 'app/helpers/cmr_metadata_preview/related_urls_preview_helper'
 require 'app/helpers/cmr_metadata_preview/spatial_temporal_helper'
 
 include ActionView::Helpers
 include ActionDispatch::Routing
 
-include CmrMetadataPreview::DataContactsHelper
-include CmrMetadataPreview::OptionsHelper
-include CmrMetadataPreview::CmrMetadataPreviewHelper
-include CmrMetadataPreview::CitationInformationPreviewHelper
 include CmrMetadataPreview::AdditionalInformationFieldsHelper
-include CmrMetadataPreview::RelatedUrlsPreviewHelper
+include CmrMetadataPreview::CitationInformationPreviewHelper
+include CmrMetadataPreview::CmrMetadataPreviewHelper
+include CmrMetadataPreview::DataContactsHelper
+include CmrMetadataPreview::FieldsHelper
+include CmrMetadataPreview::OptionsHelper
 include CmrMetadataPreview::OverviewFieldsHelper
+include CmrMetadataPreview::RelatedUrlsPreviewHelper
 include CmrMetadataPreview::SpatialTemporalHelper
 
 
