@@ -73,7 +73,21 @@
    :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                    :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                               :Geometry {:CoordinateSystem "GEODETIC"
-                                                         :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}
+                                                         :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}
+
+                                             :ResolutionAndCoordinateSystem
+                                             {:HorizontalDataResolutions [{:HorizontalResolutionProcessingLevelEnum "Non Gridded"
+                                                                           :XDimension 0.5
+                                                                           :YDimension 0.5
+                                                                           :Unit "Decimal Degrees"}
+                                                                          {:HorizontalResolutionProcessingLevelEnum "Gridded"
+                                                                           :XDimension 0.2
+                                                                           :Unit "Kilometers"}]
+                                              :Description "ResolutionAndCoordinateSystem Description value."
+                                              :GeodeticModel {:HorizontalDatumName "North American Datum 1983"
+                                                              :EllipsoidName "GRS 1980"
+                                                              :SemiMajorAxis 6378137
+                                                              :DenominatorOfFlatteningRatio 298.257222101}}}
                    :VerticalSpatialDomains [{:Type "Atmosphere Layer"
                                              :Value "Some kind of value"}
                                             {:Type "Maximum Depth"

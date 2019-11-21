@@ -24,6 +24,16 @@
   (let [value (subs str start (some #(when % %) args))]
     (str/trim (subs value (inc (.indexOf value ":"))))))
 
+(defn get-substring-with-sort
+  "get-substring but sorts and removes nil values in args."
+  [str start & args]
+  (let [args (->> args
+                  sort
+                  (remove nil?)
+                  (remove #(< % start)))
+        value (subs str start (some #(when % %) args))]
+    (str/trim (subs value (inc (.indexOf value ":"))))))
+
 (def description-string-field-re-pattern
   "Returns the pattern that matches all the related fields in description-string"
   (re-pattern "URLContentType:|Description:|Type:|Subtype:|Checksum:"))

@@ -284,6 +284,7 @@
       (generate-datestamp c)
       [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
       [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]
+      (spatial/generate-spatial-representation-infos c)
       (spatial/coordinate-system-element c)
       (generate-metadata-dates c)
       [:gmd:identificationInfo
@@ -353,6 +354,10 @@
              [:gco:CharacterString (extent-description-string c)]]
             (spatial/generate-zone-identifier c)
             (spatial/spatial-extent-elements c)
+            (spatial/generate-resolution-and-coordinate-system-description c)
+            (spatial/generate-resolution-and-coordinate-system-geodetic-model c)
+            (spatial/generate-resolution-and-coordinate-system-local-coords c)
+            (spatial/generate-resolution-and-coordinate-system-horizontal-data-resolutions c)
             (spatial/generate-vertical-domain c)
             (spatial/generate-orbit-parameters c)
             (for [temporal (:TemporalExtents c)
