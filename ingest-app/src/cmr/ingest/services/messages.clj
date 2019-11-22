@@ -53,8 +53,10 @@
   "Error message when FileDistributionInformation -> Format is
   not in the KMS."
   [archive-and-distribution-information]
-  (format "Format [%s] was not a valid keyword."
-          (:Format archive-and-distribution-information)))
+  (format "Format [%s] within ArchiveAndDistributionInformation [%s] was not a valid keyword."
+    (get-in archive-and-distribution-information
+            [:Format :FileDistributionInformation])
+    archive-and-distribution-information))
 
 (defn directory-name-not-matches-kms-keywords
    "Error msg when DirectoryName's ShortName is not in the KMS."

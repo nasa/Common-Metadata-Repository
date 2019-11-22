@@ -65,7 +65,7 @@
    :concepts [:short-name :long-name :uuid]
    :iso-topic-categories [:iso-topic-category :uuid]
    :related-urls [:type :subtype :uuid]
-   :granule-data-format [:granule-data-format :uuid]})
+   :granule-data-format [:pref-label :uuid]})
 
 (def keyword-scheme->expected-field-names
   "Maps each keyword scheme to the expected field names to be returned by KMS. We changed
@@ -81,7 +81,7 @@
   (merge keyword-scheme->leaf-field-name
          {:science-keywords :term
           :spatial-keywords :category
-          :granule-data-format :uuid}))
+          :pref-label :uuid}))
 
 (def cmr-to-gcmd-keyword-scheme-aliases
   "Map of all keyword schemes which are referred to with a different name within CMR and GCMD."
