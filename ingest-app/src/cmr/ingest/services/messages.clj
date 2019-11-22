@@ -49,15 +49,6 @@
    (format "Data center short name [%s] was not a valid keyword."
           (:ShortName data-center)))
 
-(defn data-format-not-matches-kms-keywords
-  "Error message when FileDistributionInformation -> Format is
-  not in the KMS."
-  [archive-and-distribution-information]
-  (format "Format [%s] within ArchiveAndDistributionInformation [%s] was not a valid keyword."
-    (get-in archive-and-distribution-information
-            [:Format :FileDistributionInformation])
-    archive-and-distribution-information))
-
 (defn directory-name-not-matches-kms-keywords
    "Error msg when DirectoryName's ShortName is not in the KMS."
    [directory-name]

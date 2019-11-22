@@ -35,8 +35,7 @@
    :science-keywords :uuid
    :concepts :short-name
    :iso-topic-categories :uuid
-   :related-urls :uuid
-   :granule-data-format :uuid})
+   :related-urls :uuid})
 
 (def keyword-scheme->gcmd-resource-name
   "Maps each keyword scheme to the GCMD resource name"
@@ -49,8 +48,7 @@
    :science-keywords "sciencekeywords?format=csv"
    :concepts "idnnode?format=csv"
    :iso-topic-categories "isotopiccategory?format=csv"
-   :related-urls "rucontenttype?format=csv"
-   :granule-data-format "granuledataformat?format=csv"})
+   :related-urls "rucontenttype?format=csv"})
 
 (def keyword-scheme->field-names
   "Maps each keyword scheme to its subfield names."
@@ -64,8 +62,7 @@
                       :detailed-variable :uuid]
    :concepts [:short-name :long-name :uuid]
    :iso-topic-categories [:iso-topic-category :uuid]
-   :related-urls [:type :subtype :uuid]
-   :granule-data-format [:pref-label :uuid]})
+   :related-urls [:type :subtype :uuid]})
 
 (def keyword-scheme->expected-field-names
   "Maps each keyword scheme to the expected field names to be returned by KMS. We changed
@@ -80,8 +77,7 @@
   "Maps each keyword scheme to a field that must be present for a keyword to be valid."
   (merge keyword-scheme->leaf-field-name
          {:science-keywords :term
-          :spatial-keywords :category
-          :pref-label :uuid}))
+          :spatial-keywords :category}))
 
 (def cmr-to-gcmd-keyword-scheme-aliases
   "Map of all keyword schemes which are referred to with a different name within CMR and GCMD."
