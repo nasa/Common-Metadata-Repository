@@ -146,3 +146,52 @@
 (defmethod interface/migrate-umm-version [:variable "1.4" "1.5"]
   [context v & _]
   (assoc v :AcquisitionSourceName "Not Provided"))
+
+(def ^:private default-measurement-object
+  "not_specified")
+
+(defn- measurement_1_6->measurement_1_5
+  "Returns the v1.5 of MeasurementIdentifier for the given v1.6 MeasurementIdentifier"
+  [measurement]
+  (let [{:keys [MeasurementObject MeasurementQuantities]} measurement
+        object (if MeasurementObject
+                 MeasurementObject
+                 default-measurement-object)
+        quantity (:Value (first MeasurementQuantities))]
+    {:MeasurementName (util/remove-nil-keys {:MeasurementObject object
+                                             :MeasurementQuantity quantity})
+     :MeasurementSource "OTHER"}))
+
+(defn- dimension_type_1_6->dimension_type_1_5
+  "Returns the v1.5 of Dimension Type for the given v1.6 Dimension Type"
+  [dimension-type]
+  (if (contains? #{"ALONG_TRACK_DIMENSION", "CROSS_TRACK_DIMENSION"} dimension-type)
+    "OTHER"
+    dimension-type))
+
+(defn- dimension_1_6->dimension_1_5
+  "Returns the v1.5 of Dimension for the given v1.6 Dimension"
+  [dimension]
+  (update dimension :Type dimension_type_1_6->dimension_type_1_5))
+
+(defn- measurement_1_5->measurement_1_6
+  "Returns the v1.6 of MeasurementIdentifier for the given v1.5 MeasurementIdentifier"
+  [measurement]
+  (let [{:keys [MeasurementObject MeasurementQuantity]} (:MeasurementName measurement)
+        quantities (when MeasurementQuantity
+                     [{:Value MeasurementQuantity}])]
+    (util/remove-nil-keys {:MeasurementContextMedium "not_specified"
+                           :MeasurementObject (if MeasurementObject
+                                                MeasurementObject
+                                                "not_specified")
+                           :MeasurementQuantities quantities})))
+
+(defmethod interface/migrate-umm-version [:variable "1.6" "1.5"]
+  [context v & _]
+  (-> v
+      (util/update-in-each [:MeasurementIdentifiers] measurement_1_6->measurement_1_5)
+      (util/update-in-each [:Dimensions] dimension_1_6->dimension_1_5)))
+
+(defmethod interface/migrate-umm-version [:variable "1.5" "1.6"]
+  [context v & _]
+  (util/update-in-each v [:MeasurementIdentifiers] measurement_1_5->measurement_1_6))
