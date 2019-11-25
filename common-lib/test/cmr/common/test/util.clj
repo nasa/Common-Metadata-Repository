@@ -111,7 +111,11 @@
 (deftest remove-nil-keys-test
   (is (= {:a true :c "value" :d false :e "" :f " "}
          (util/remove-nil-keys
-           {:a true :b nil :c "value" :d false :e "" :f " "}))))
+          {:a true :b nil :c "value" :d false :e "" :f " "})))
+  ;; remove-nil-keys will not go down to the enclosed maps
+  (is (= {:a true :c {:d false :e nil :f " "} :g "value"}
+         (util/remove-nil-keys
+          {:a true :b nil :c {:d false :e nil :f " "} :g "value"}))))
 
 (deftest scrub-token-test
   (let [token-with-at-least-15-chars "1234567890abcdefg"

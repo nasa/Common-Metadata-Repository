@@ -138,22 +138,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ScienceKeywordType)
 
-;; The elements of this section apply to a measurement name. The measurement name is structured
-;; according to the form defined by Scott Peckham. This is: <object>_<quantity>.
-(defrecord MeasurementNameType
-  [
-   ;; This element allows authors to identify the object part of the measurement. For example:
-   ;; land_subsurface_water-sat, land_surface, land_surface_air, land_surface_air_flow,
-   ;; land_surface_air_heat, specific_humidity, radiative_flux, q.
-   MeasurementObject
-
-   ;; This element allows authors to identify the quantity part of the measurement. For example:
-   ;; zone-top, incoming-latent, incoming-sensible, standard_error, detection_minimum,
-   ;; at_top_of_atmosphere_model, at_sea_level, error_limit, detection_limit
-   MeasurementQuantity
-  ])
-(record-pretty-printer/enable-record-pretty-printing MeasurementNameType)
-
 ;; Valid range data value of a variable: minimum and maximum values. For example, '-100, 5000'.
 (defrecord ValidRangeType
   [
@@ -185,15 +169,24 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing SizeEstimationType)
 
-;; The elements of this section apply to a measurement.
+;; The elements of this section allow authors to provide community sourced words or phrases to
+;; further describe the variable data.
 (defrecord MeasurementIdentifierType
   [
-   ;; This element allows authors to provide community sourced words or phrases to further describe
-   ;; the variable data.
-   MeasurementName
+   ;; This element describes the context/medium within which the measurement was made.
+   MeasurementContextMedium
 
-   ;; This element allows authors to identify the source of the measurements.
-   MeasurementSource
+   ;; This element contains the URI for the context/medium.
+   MeasurementContextMediumURI
+
+   ;; This element describes the object which was measured.
+   MeasurementObject
+
+   ;; This element contains the URI for the object which was measured.
+   MeasurementObjectURI
+
+   ;; This element contains the quantity or quantities which was/were measured.
+   MeasurementQuantities
   ])
 (record-pretty-printer/enable-record-pretty-printing MeasurementIdentifierType)
 
@@ -230,7 +223,7 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing AverageCompressionInformationType)
 
-;; The index ranges consist of a LatRange and an LonRange.
+;; The index ranges consist of a LatRange and a LonRange.
 (defrecord IndexRangesType
   [
    ;; The LatRange consists of an index range for latitude.
@@ -240,6 +233,18 @@
    LonRange
   ])
 (record-pretty-printer/enable-record-pretty-printing IndexRangesType)
+
+;; The elements of this section apply to a measurement name. The measurement name is structured
+;; according to the form defined by Scott Peckham. This is: <object>_<quantity>.
+(defrecord MeasurementQuantityType
+  [
+   ;; This element describes the value for the quantity which was measured.
+   Value
+
+   ;; This element contains the URI for the quantity which was measured.
+   MeasurementQuantityURI
+  ])
+(record-pretty-printer/enable-record-pretty-printing MeasurementQuantityType)
 
 ;; The elements of this section apply to a variable.
 (defrecord CharacteristicsType

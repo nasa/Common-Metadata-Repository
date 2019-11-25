@@ -281,3 +281,63 @@
   (is (= variable-concept-14
          (vm/migrate-umm {} :variable "1.5" "1.4"
                          (assoc variable-concept-14  :AcquisitionSourceName "OMI")))))
+
+(def variable-concept-15
+  {:Name "var1"
+   :LongName "variable 1"
+   :Definition "first variable"
+   :DataType "float"
+   :Dimensions [{:Name "x" :Size 0.0 :Type "DEPTH_DIMENSION"}
+                {:Name "y" :Size 0.0 :Type "OTHER"}]
+   :Sets [{:Name "empty" :Type "general" :Size 0 :Index 0}]
+   :Scale 1.0
+   :Offset 0
+   :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
+                     :IndexRanges {:LatRange [-45 45]
+                                   :LonRange [90 180]}}
+   :MeasurementIdentifiers [{:MeasurementName {:MeasurementObject "radiative_flux"
+                                               :MeasurementQuantity "incoming-sensible"}
+                             :MeasurementSource "BODC"}
+                            {:MeasurementName {:MeasurementObject "brightness"}
+                             :MeasurementSource "OTHER"}
+                            {:MeasurementName {:MeasurementQuantity "blinding"}
+                             :MeasurementSource "OTHER"}]
+   :SamplingIdentifiers [{:SamplingMethod "radiometric detection"
+                          :MeasurementConditions "Sampled Particle Size Range: 90 - 600 nm"
+                          :ReportingConditions "STP: 1013 mb and 273 K"}]})
+
+(deftest migrate-15->16
+  (is (= (assoc variable-concept-15
+                :MeasurementIdentifiers [{:MeasurementContextMedium "not_specified"
+                                          :MeasurementObject "radiative_flux"
+                                          :MeasurementQuantities [{:Value "incoming-sensible"}]}
+                                         {:MeasurementContextMedium "not_specified"
+                                          :MeasurementObject "brightness"}
+                                         {:MeasurementContextMedium "not_specified"
+                                          :MeasurementObject "not_specified"
+                                          :MeasurementQuantities [{:Value "blinding"}]}])
+         (vm/migrate-umm {} :variable "1.5" "1.6" variable-concept-15))))
+
+(deftest migrate-16->15
+  (is (= (assoc variable-concept-15
+                :MeasurementIdentifiers [{:MeasurementName {:MeasurementObject "Brightness"
+                                                            :MeasurementQuantity "Temperature"}
+                                          :MeasurementSource "OTHER"}
+                                         {:MeasurementName {:MeasurementObject "radiative_flux"}
+                                          :MeasurementSource "OTHER"}])
+         (vm/migrate-umm {} :variable "1.6" "1.5"
+                         (assoc variable-concept-15
+                                :Dimensions [{:Name "x" :Size 0.0 :Type "DEPTH_DIMENSION"}
+                                             {:Name "y" :Size 0.0 :Type "CROSS_TRACK_DIMENSION"}]
+                                :MeasurementIdentifiers
+                                [{:MeasurementContextMedium "Atmosphere"
+                                  :MeasurementContextMediumURI "http://purl.obolibrary.org/obo/ENVO_01000810"
+                                  :MeasurementObject "Brightness"
+                                  :MeasurementQuantities
+                                  [{:Value "Temperature"
+                                    :MeasurementQuantityURI "http://www.ontobee.org/ontology/PATO?iri=http://purl.obolibrary.org/obo/PATO_0000146"}
+                                   {:Value "lumen"
+                                    :MeasurementQuantityURI "http://www.ontobee.org/ontology/lumen"}]}
+                                 {:MeasurementContextMedium "Surface"
+                                  :MeasurementContextMediumURI "http://purl.obolibrary.org/obo/ENVO_01000811"
+                                  :MeasurementObject "radiative_flux"}])))))
