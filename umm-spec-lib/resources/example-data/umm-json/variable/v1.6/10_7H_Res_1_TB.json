@@ -1,0 +1,41 @@
+
+{
+  "Name": "_10_7H_Res_1_TB",
+  "LongName": "Low_Res_Swath:10.7H_Res.1_TB",
+  "Definition": "Low_Res_Swath:10.7H_Res.1_TB in units of Kelvin",
+  "VariableType": "SCIENCE_VARIABLE",
+  "Units": "Kelvin",
+  "DataType": "int16",
+  "Scale": 0.009999999776,
+  "Offset": 327.6799927,
+  "Dimensions": [
+    { "Name": "DataTrack_lo", "Size": 2002, "Type":  "ALONG_TRACK_DIMENSION"},
+    { "Name": "DataXTrack_lo", "Size": 243, "Type":  "CROSS_TRACK_DIMENSION"}
+  ],
+  "ScienceKeywords": [
+    { "Category": "EARTH SCIENCE", "Topic": "SPECTRAL/ENGINEERING", "Term": "MICROWAVE", "VariableLevel1": "BRIGHTNESS TEMPERATURE"},
+    { "Category": "EARTH SCIENCE", "Topic": "SPECTRAL/ENGINEERING", "Term": "MICROWAVE", "VariableLevel1": "MICROWAVE IMAGERY"}
+  ],
+  "ValidRanges": [
+    { "Min": 0, "Max": 1 }
+  ],
+
+  "FillValues": [
+    { "Value": -9999.0, "Type": "SCIENCE_FILLVALUE" }
+  ],
+
+  "Sets": [
+    { "Name": "Data_Fields", "Type": "General", "Size": 99 , "Index": 31 }
+  ],
+  "AcquisitionSourceName": "VIIRS",
+  "MeasurementIdentifiers": [
+      {
+        "MeasurementContextMedium": "Atmosphere",
+        "MeasurementContextMediumURI": "http://purl.obolibrary.org/obo/ENVO_01000810",
+        "MeasurementObject": "Brightness",
+        "MeasurementQuantities": [
+            {"Value": "Temperature", "MeasurementQuantityURI": "http://www.ontobee.org/ontology/PATO?iri=http://purl.obolibrary.org/obo/PATO_0000146"}
+         ]
+      }
+  ]
+}
