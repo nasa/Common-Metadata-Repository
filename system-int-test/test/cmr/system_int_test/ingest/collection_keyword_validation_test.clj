@@ -50,12 +50,11 @@
   ;; For a list of the valid keywords during testing see dev-system/resources/kms_examples
   (testing "Keyword validation using validation endpoint"
     (let [concept (data-umm-c/collection-concept
-                       {:Platforms [(data-umm-cmn/platform {:ShortName "foo"
-                                                            :LongName "Airbus A340-600"
-                                                            :Type "Aircraft"})]
-                        :DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"]
-                                                                 :ShortName "SomeCenter"})]})
-
+                   {:Platforms [(data-umm-cmn/platform {:ShortName "foo"
+                                                        :LongName "Airbus A340-600"
+                                                        :Type "Aircraft"})]
+                    :DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"]
+                                                             :ShortName "SomeCenter"})]})
           response (ingest/validate-concept concept {:validate-keywords true})]
       (is (= {:status 422
               :errors [{:path ["Platforms" 0]
@@ -65,57 +64,6 @@
                         :errors [(str "Data center short name [SomeCenter] was not a valid "
                                       "keyword.")]}]}
              response))))
-
- (testing "ArchiveAndDistributionInformation keyword validation"
-    (let [format (data-umm-c/collection-concept
-                   {:ArchiveAndDistributionInformation
-                      {:FileDistributionInformation
-                       [(data-umm-c/file-distribution-information
-                         {:FormatType "Native"
-                          :AverageFileSize 50
-                          :AverageFileSizeUnit "MB"
-                          :Fees "None currently"
-                          :Format "8-track tape"})]}}
-                  :umm-json)
-          response (ingest/validate-concept format {:validate-keywords true})]
-
-      (is (= {:status 422
-              :errors [{:path ["ArchiveAndDistributionInformation"
-                               "FileDistributionInformation"
-                               0]
-                        :errors [(str "Format [8-track tape] was not a valid keyword.")]}]}
-             response)))
-
-
-  (are3 [attribs]
-        (assert-valid-keywords attribs)
-
-        "Valid Case Sensitive"
-        {:ArchiveAndDistributionInformation
-          {:FileDistributionInformation
-           [{:FormatType "Native"
-               :AverageFileSize 50
-               :AverageFileSizeUnit "MB"
-               :Fees "None currently"
-               :Format "HDF"}]}}
-
-        "Valid Case Insensitive"
-        {:ArchiveAndDistributionInformation
-         {:FileDistributionInformation
-          [{:FormatType "Native"
-             :AverageFileSize 50
-             :AverageFileSizeUnit "MB"
-             :Fees "None currently"
-             :Format "hdf"}]}}
-
-        "Valid Case Sensitive"
-        {:ArchiveAndDistributionInformation
-         {:FileDistributionInformation
-          [{:FormatType "Native"
-            :AverageFileSize 50
-            :AverageFileSizeUnit "MB"
-            :Fees "None currently"
-            :Format "JPEG"}]}})
 
   (testing "Project keyword validation"
     (are2 [short-name long-name]
@@ -439,4 +387,4 @@
           "Invalid Subregion"
           {:Category "CONTINENT"
            :Type "AFRICA"
-           :Subregion1 "WESTERN ASIA"}))))
+           :Subregion1 "WESTERN ASIA"})))
