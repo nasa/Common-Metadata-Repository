@@ -419,4 +419,5 @@
       (update-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel] expected-geodetic-model)
       (update-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :LocalCoordinateSystem] expected-local-coordinate-system)
       (util/update-in-each [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolutions] util/remove-nil-keys)
+      (util/update-in-each [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolutions] umm-c/map->HorizontalDataResolutionType)
       js/parse-umm-c))

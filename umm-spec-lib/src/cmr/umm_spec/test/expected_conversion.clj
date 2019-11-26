@@ -70,24 +70,29 @@
                       {:Category "CONTINENT"
                        :Type "Somewhereville"
                        :DetailedLocation "Detailed Somewhereville"}]
+   :SpatialInformation {:SpatialCoverageType "HORIZONTAL"}
    :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
+                   :SpatialCoverageType "HORIZONTAL"
                    :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                               :Geometry {:CoordinateSystem "GEODETIC"
                                                          :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}
 
                                              :ResolutionAndCoordinateSystem
-                                             {:HorizontalDataResolutions [{:HorizontalResolutionProcessingLevelEnum "Non Gridded"
-                                                                           :XDimension 0.5
-                                                                           :YDimension 0.5
-                                                                           :Unit "Decimal Degrees"}
-                                                                          {:HorizontalResolutionProcessingLevelEnum "Gridded"
-                                                                           :XDimension 0.2
-                                                                           :Unit "Kilometers"}]
+                                             {:HorizontalDataResolutions [(umm-coll-models/map->HorizontalDataResolutionType
+                                                                            {:HorizontalResolutionProcessingLevelEnum "Non Gridded"
+                                                                             :XDimension 0.5
+                                                                             :YDimension 0.5
+                                                                             :Unit "Decimal Degrees"})
+                                                                          (umm-coll-models/map->HorizontalDataResolutionType
+                                                                            {:HorizontalResolutionProcessingLevelEnum "Gridded"
+                                                                             :XDimension 0.2
+                                                                             :Unit "Kilometers"})]
                                               :Description "ResolutionAndCoordinateSystem Description value."
-                                              :GeodeticModel {:HorizontalDatumName "North American Datum 1983"
-                                                              :EllipsoidName "GRS 1980"
-                                                              :SemiMajorAxis 6378137
-                                                              :DenominatorOfFlatteningRatio 298.257222101}}}
+                                              :GeodeticModel (umm-coll-models/map->GeodeticModelType
+                                                               {:HorizontalDatumName "North American Datum 1983"
+                                                                :EllipsoidName "GRS 1980"
+                                                                :SemiMajorAxis 6378137
+                                                                :DenominatorOfFlatteningRatio 298.257222101})}}
                    :VerticalSpatialDomains [{:Type "Atmosphere Layer"
                                              :Value "Some kind of value"}
                                             {:Type "Maximum Depth"

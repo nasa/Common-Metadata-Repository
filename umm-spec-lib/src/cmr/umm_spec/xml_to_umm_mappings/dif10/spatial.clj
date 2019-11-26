@@ -55,11 +55,12 @@
   (let [x (u/parse-dimension (value-of data-resolution "Latitude_Resolution"))
         y (u/parse-dimension (value-of data-resolution "Longitude_Resolution"))
         unit (or (u/guess-units (value-of data-resolution "Longitude_Resolution")) u/not-provided)]
-    (util/remove-nil-keys
+    (umm-c/map->HorizontalDataResolutionType
+     (util/remove-nil-keys
       {:YDimension x
        :XDimension y
        :Unit unit
-       :HorizontalResolutionProcessingLevelEnum u/not-provided})))
+       :HorizontalResolutionProcessingLevelEnum u/not-provided}))))
 
 (defn- parse-horizontal-data-resolutions
   "Parses the dif10 elements needed to populate HorizontalDataResolutions.
@@ -72,7 +73,8 @@
     (when (or geo-coor-sys data-res)
       (if geo-coor-sys
         (u/remove-empty-records
-         [(util/remove-nil-keys
+         [(umm-c/map->HorizontalDataResolutionType
+           (util/remove-nil-keys
             {:YDimension (when-let [y (value-of geo-coor-sys "LatitudeResolution")]
                            (read-string y))
              :XDimension (when-let [x (value-of geo-coor-sys "LongitudeResolution")]
@@ -81,7 +83,7 @@
              :HorizontalResolutionProcessingLevelEnum (when (or
                                                              (value-of geo-coor-sys "LatitudeResolution")
                                                              (value-of geo-coor-sys "LongitudeResolution"))
-                                                        u/not-provided)})])
+                                                        u/not-provided)}))])
         [(parse-data-resolution data-res)]))))
 
 (defn- parse-local-coord-system
