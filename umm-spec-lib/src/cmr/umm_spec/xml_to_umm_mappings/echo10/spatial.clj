@@ -51,7 +51,8 @@
   [spatial-info]
   (when-let [[geo-coor-sys] (select spatial-info "HorizontalCoordinateSystem/GeographicCoordinateSystem")]
     (u/remove-empty-records
-     [(util/remove-nil-keys
+     [(umm-c/map->HorizontalDataResolutionType
+       (util/remove-nil-keys
         {:YDimension (when-let [y (value-of geo-coor-sys "LatitudeResolution")]
                        (read-string y))
          :XDimension (when-let [x (value-of geo-coor-sys "LongitudeResolution")]
@@ -60,7 +61,7 @@
          :HorizontalResolutionProcessingLevelEnum (when (or
                                                          (value-of geo-coor-sys "LatitudeResolution")
                                                          (value-of geo-coor-sys "LongitudeResolution"))
-                                                    u/not-provided)})])))
+                                                    u/not-provided)}))])))
 
 (defn- parse-local-coord-system
   "Parses the ECHO10 elements needed for LocalCoordinateSystem values."
@@ -92,12 +93,13 @@
         local-coordinate-sys (parse-local-coord-system spatial-info)
         geodetic-model (parse-geodetic-model spatial-info)
         [horiz] (select doc "/Collection/Spatial/HorizontalSpatialDomain")]
-    (util/remove-nil-keys
+    (umm-c/map->HorizontalSpatialDomainType
+     (util/remove-nil-keys
       {:Geometry (parse-geometry (first (select horiz "Geometry")))
        :ZoneIdentifier (value-of horiz "ZoneIdentifier")
        :ResolutionAndCoordinateSystem {:GeodeticModel geodetic-model
                                        :LocalCoordinateSystem local-coordinate-sys
-                                       :HorizontalDataResolutions horizontal-data-resolutions}})))
+                                       :HorizontalDataResolutions horizontal-data-resolutions}}))))
 
 (defn parse-spatial
   "Returns UMM-C spatial map from ECHO10 XML document."

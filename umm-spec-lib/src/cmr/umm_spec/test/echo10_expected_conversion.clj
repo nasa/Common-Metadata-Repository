@@ -154,8 +154,8 @@
   [horizontal-data-resolutions]
   (let [horizontal-data-resolution (first horizontal-data-resolutions)
         horizontal-data-resolution (expected-horizontal-data-resolution horizontal-data-resolution)]
-    (when (seq (util/remove-nil-keys horizontal-data-resolution))
-      [(util/remove-nil-keys horizontal-data-resolution)])))
+    (when (seq horizontal-data-resolution)
+      [horizontal-data-resolution])))
 
 (defn- expected-echo10-spatial-extent
   "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."

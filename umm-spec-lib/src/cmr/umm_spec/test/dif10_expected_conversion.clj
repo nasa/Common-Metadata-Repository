@@ -91,18 +91,18 @@
         unit (:Unit horizontal-data-resolution)]
     (when (or x y)
       (-> horizontal-data-resolution
-        util/remove-nil-keys
-        (select-keys [:XDimension :YDimension :Unit :HorizontalResolutionProcessingLevelEnum])
-        (assoc :HorizontalResolutionProcessingLevelEnum su/not-provided)
-        umm-c/map->HorizontalDataResolutionType))))
+          (select-keys [:XDimension :YDimension :Unit :HorizontalResolutionProcessingLevelEnum])
+          (assoc :HorizontalResolutionProcessingLevelEnum su/not-provided)
+          util/remove-nil-keys
+          umm-c/map->HorizontalDataResolutionType))))
 
 (defn- expected-horizontal-data-resolutions
   "Retains only the first horizontal-data-resolution, and removes unsupported dif10 values."
   [horizontal-data-resolutions]
   (let [horizontal-data-resolution (first horizontal-data-resolutions)
         horizontal-data-resolution (expected-horizontal-data-resolution horizontal-data-resolution)]
-    (when (seq (util/remove-nil-keys horizontal-data-resolution))
-      [(util/remove-nil-keys horizontal-data-resolution)])))
+    (when (seq horizontal-data-resolution)
+      [horizontal-data-resolution])))
 
 (defn- expected-dif10-spatial-extent
   "For SpatialCoverageType DIF 10 doesn't have an ORBITAL_VERTICAL value so it gets
