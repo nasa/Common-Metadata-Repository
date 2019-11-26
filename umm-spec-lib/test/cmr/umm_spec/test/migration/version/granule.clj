@@ -14,10 +14,11 @@
    [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
 (deftest test-version-steps
-  (with-bindings {#'cmr.umm-spec.versioning/versions {:granule ["1.4" "1.5"]}}
+  (with-bindings {#'cmr.umm-spec.versioning/versions {:granule ["1.4" "1.5" "1.6"]}}
     (is (= [] (#'vm/version-steps :granule "1.5" "1.5")))
     (is (= [["1.4" "1.5"]] (#'vm/version-steps :granule "1.4" "1.5")))
-    (is (= [["1.5" "1.4"]] (#'vm/version-steps :granule "1.5" "1.4")))))
+    (is (= [["1.5" "1.4"]] (#'vm/version-steps :granule "1.5" "1.4")))
+    (is (= [["1.4" "1.5"] ["1.5" "1.6"]] (#'vm/version-steps :granule "1.4" "1.6")))))
 
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-g-generator)
@@ -202,3 +203,189 @@
                                                               :Tiles ["1L" "1R" "2F"]}
                                                              {:Pass 2
                                                               :Tiles ["3L","3R","4F"]}]}}}}))))
+
+(deftest migrate-1_5-up-to-1_6
+  (is (= {:MetadataSpecification
+             {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6"
+              :Name "UMM-G"
+              :Version "1.6"}
+           :DataGranule {:ArchiveAndDistributionInformation
+                           [{:Name "GranuleZipFile"
+                             :Size 23
+                             :SizeUnit "KB"
+                             :Format "ZIP"
+                             :MimeType "application/x-hdf5"
+                             :Files [{:Name "GranuleFileName1"
+                                      :Size 10
+                                      :SizeUnit "KB"
+                                      :Format "NETCDF-4"
+                                      :MimeType "application/x-netcdf"
+                                      :FormatType "Native"
+                                      :SizeInBytes 1024}
+                                     {:Name "GranuleFileName2"
+                                      :Size 1
+                                      :SizeUnit "KB"
+                                      :Format "ASCII"
+                                      :MimeType "application/x-hdf5"
+                                      :FormatType "NA"
+                                      :SizeInBytes 10248592}]}
+                            {:Name "SupportedGranuleFileNotInPackage"
+                             :Size 11
+                             :SizeUnit "KB"
+                             :SizeInBytes 849324895784093
+                             :Format "NETCDF-CF"
+                             :FormatType "Supported"
+                             :MimeType "application/x-netcdf"}]
+                          :Identifiers
+                           [{:Identifier "acos_LtCO2_090421_v201201_B7310A_161220013536s.nc4 and here are some extra characters so that this is too long for 1.5"
+                             :IdentifierType "ProducerGranuleId"
+                             :IdentifierName "Now this is the story all about how my life got flip-turned upside-down and I'd like to take a minute just sit right there"}]}
+             :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                            :Type "GET SERVICE"
+                            :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+                            :MimeType "APPEARS"}
+                           {:URL "https://example-1"
+                            :Type "GET DATA"
+                            :Subtype "USER FEEDBACK PAGE"}
+                           {:URL "https://example-2.hdf"
+                            :Type "GET DATA"
+                            :Subtype "OPENDAP DATA"
+                            :MimeType "application/x-hdf5"}]}
+         (vm/migrate-umm {} :granule "1.5" "1.6"
+                         {:MetadataSpecification
+                            {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.5"
+                             :Name "UMM-G"
+                             :Version "1.5"}
+                          :DataGranule {:ArchiveAndDistributionInformation
+                                          [{:Name "GranuleZipFile"
+                                            :Size 23
+                                            :SizeUnit "KB"
+                                            :Format "ZIP"
+                                            :MimeType "application/x-hdf5"
+                                            :Files [{:Name "GranuleFileName1"
+                                                     :Size 10
+                                                     :SizeUnit "KB"
+                                                     :Format "NETCDF-4"
+                                                     :MimeType "application/x-netcdf"
+                                                     :FormatType "Native"
+                                                     :SizeInBytes 1024}
+                                                    {:Name "GranuleFileName2"
+                                                     :Size 1
+                                                     :SizeUnit "KB"
+                                                     :Format "ASCII"
+                                                     :MimeType "application/x-hdf5"
+                                                     :FormatType "NA"
+                                                     :SizeInBytes 10248592}]}
+                                           {:Name "SupportedGranuleFileNotInPackage"
+                                            :Size 11
+                                            :SizeUnit "KB"
+                                            :SizeInBytes 849324895784093
+                                            :Format "NETCDF-CF"
+                                            :FormatType "Supported"
+                                            :MimeType "application/x-netcdf"}]
+                                         :Identifiers
+                                          [{:Identifier "acos_LtCO2_090421_v201201_B7310A_161220013536s.nc4 and here are some extra characters so that this is too long for 1.5"
+                                            :IdentifierType "ProducerGranuleId"
+                                            :IdentifierName "Now this is the story all about how my life got flip-turned upside-down and I'd like to take a minute just sit right there"}]}
+                            :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                                           :Type "GET SERVICE"
+                                           :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+                                           :MimeType "APPEARS"}
+                                          {:URL "https://example-1"
+                                           :Type "GET DATA"
+                                           :Subtype "USER FEEDBACK PAGE"}
+                                          {:URL "https://example-2.hdf"
+                                           :Type "GET DATA"
+                                           :Subtype "OPENDAP DATA"
+                                           :MimeType "application/x-hdf5"}]}))))
+(deftest migrate-1_6-down-to-1_5
+ (is (= {:MetadataSpecification
+          {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.5"
+           :Name "UMM-G"
+           :Version "1.5"}
+          :DataGranule {:ArchiveAndDistributionInformation
+                         [{:Name "GranuleZipFile"
+                           :Size 23
+                           :SizeUnit "KB"
+                           :Format "ZIP"
+                           :MimeType "application/x-hdf5"
+                           :Files [{:Name "GranuleFileName1"
+                                    :Size 10
+                                    :SizeUnit "KB"
+                                    :Format "NETCDF-4"
+                                    :MimeType "application/x-netcdf"
+                                    :FormatType "Native"}
+                                   {:Name "GranuleFileName2"
+                                    :Size 1
+                                    :SizeUnit "KB"
+                                    :Format "ASCII"
+                                    :MimeType "application/x-hdf5"
+                                    :FormatType "NA"}]}
+                          {:Name "SupportedGranuleFileNotInPackage"
+                           :Size 11
+                           :SizeUnit "KB"
+                           :Format "NETCDF-CF"
+                           :FormatType "Supported"
+                           :MimeType "application/x-netcdf"}]
+                        :Identifiers
+                          [{:Identifier "acos_LtCO2_090421_v201201_B7310A_161220013536s.nc4 and here are some extra char"
+                            :IdentifierType "ProducerGranuleId"
+                            :IdentifierName "Now this is the story all about how my life got flip-turned upside-down and I'd"}]}
+          :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                         :Type "GET SERVICE"
+                         :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+                         :MimeType "APPEARS"}
+                        {:URL "https://example-1"
+                         :Type "GET DATA"
+                         :Subtype "USER FEEDBACK PAGE"}
+                        {:URL "https://example-2.hdf"
+                         :Type "GET DATA"
+                         :Subtype "OPENDAP DATA"
+                         :MimeType "application/x-hdf5"}]}
+        (vm/migrate-umm {} :granule "1.6" "1.5"
+                        {:MetadataSpecification
+                           {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.5"
+                            :Name "UMM-G"
+                            :Version "1.5"}
+                         :DataGranule {:ArchiveAndDistributionInformation
+                                         [{:Name "GranuleZipFile"
+                                           :Size 23
+                                           :SizeUnit "KB"
+                                           :Format "ZIP"
+                                           :MimeType "application/x-hdf5"
+                                           :Files [{:Name "GranuleFileName1"
+                                                    :Size 10
+                                                    :SizeUnit "KB"
+                                                    :Format "NETCDF-4"
+                                                    :MimeType "application/x-netcdf"
+                                                    :FormatType "Native"
+                                                    :SizeInBytes 1024}
+                                                   {:Name "GranuleFileName2"
+                                                    :Size 1
+                                                    :SizeUnit "KB"
+                                                    :Format "ASCII"
+                                                    :MimeType "application/x-hdf5"
+                                                    :FormatType "NA"
+                                                    :SizeInBytes 10248592}]}
+                                          {:Name "SupportedGranuleFileNotInPackage"
+                                           :Size 11
+                                           :SizeUnit "KB"
+                                           :SizeInBytes 849324895784093
+                                           :Format "NETCDF-CF"
+                                           :FormatType "Supported"
+                                           :MimeType "application/x-netcdf"}]
+                                        :Identifiers
+                                         [{:Identifier "acos_LtCO2_090421_v201201_B7310A_161220013536s.nc4 and here are some extra characters so that this is too long for 1.5"
+                                           :IdentifierType "ProducerGranuleId"
+                                           :IdentifierName "Now this is the story all about how my life got flip-turned upside-down and I'd like to take a minute just sit right there"}]}
+                           :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                                          :Type "GET SERVICE"
+                                          :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+                                          :MimeType "APPEARS"}
+                                         {:URL "https://example-1"
+                                          :Type "GET DATA"
+                                          :Subtype "USER FEEDBACK PAGE"}
+                                         {:URL "https://example-2.hdf"
+                                          :Type "GET DATA"
+                                          :Subtype "OPENDAP DATA"
+                                          :MimeType "application/x-hdf5"}]}))))

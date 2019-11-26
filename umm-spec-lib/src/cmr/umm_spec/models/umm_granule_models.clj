@@ -414,7 +414,21 @@
    ;; This field describes the name of the actual file.
    Name
 
-   ;; The size of the file.
+   ;; The size in Bytes of the volume of data contained in the granule. Bytes are defined as eight
+   ;; bits. Please use this element instead of or inclusive with the Size element. The issue with
+   ;; the size element is that if CMR data providers use a unit other than Bytes, end users don't
+   ;; know how the granule size was calculated. For example, if the unit was MegaBytes, the size
+   ;; could be calculated by using 1000xE2 Bytes (MegaBytes) or 1024xE2 Bytes (mebibytes) and
+   ;; therefore there is no systematic way to know the actual size of a granule by using the granule
+   ;; metadata record.
+   SizeInBytes
+
+   ;; The size of the volume of data contained in the granule. Please use the SizeInBytes element
+   ;; either instead of this one or inclusive of this one. The issue with the size element is that
+   ;; if CMR data providers use a unit other than Bytes, end users don't know how the granule size
+   ;; was calculated. For example, if the unit was MegaBytes, the size could be calculated by using
+   ;; 1000xE2 Bytes (MegaBytes) or 1024xE2 Bytes (mebibytes) and therefore there is no systematic
+   ;; way to know the actual size of a granule by using the granule metadata record.
    Size
 
    ;; The unit of the file size.
@@ -619,7 +633,21 @@
    ;; This field describes the name of the actual file.
    Name
 
-   ;; The size of the file.
+   ;; The size in Bytes of the volume of data contained in the granule. Bytes are defined as eight
+   ;; bits. Please use this element instead of or inclusive with the Size element. The issue with
+   ;; the size element is that if CMR data providers use a unit other than Bytes, end users don't
+   ;; know how the granule size was calculated. For example, if the unit was MegaBytes, the size
+   ;; could be calculated by using 1000xE2 Bytes (MegaBytes) or 1024xE2 Bytes (mebibytes) and
+   ;; therefore there is no systematic way to know the actual size of a granule by using the granule
+   ;; metadata record.
+   SizeInBytes
+
+   ;; The size of the volume of data contained in the granule. Please use the SizeInBytes element
+   ;; either instead of this one or inclusive of this one. The issue with the size element is that
+   ;; if CMR data providers use a unit other than Bytes, end users don't know how the granule size
+   ;; was calculated. For example, if the unit was MegaBytes, the size could be calculated by using
+   ;; 1000xE2 Bytes (MegaBytes) or 1024xE2 Bytes (mebibytes) and therefore there is no systematic
+   ;; way to know the actual size of a granule by using the granule metadata record.
    Size
 
    ;; The unit of the file size.
@@ -747,30 +775,44 @@
 ;; is either a tar or a zip file.
 (defrecord ArchiveAndDistributionInformationType
   [
-   ;; This field describes the name of the actual file.
-   Name
-
-   ;; The size of the file.
+   ;; The size of the volume of data contained in the granule. Please use the SizeInBytes element
+   ;; either instead of this one or inclusive of this one. The issue with the size element is that
+   ;; if CMR data providers use a unit other than Bytes, end users don't know how the granule size
+   ;; was calculated. For example, if the unit was MegaBytes, the size could be calculated by using
+   ;; 1000xE2 Bytes (MegaBytes) or 1024xE2 Bytes (mebibytes) and therefore there is no systematic
+   ;; way to know the actual size of a granule by using the granule metadata record.
    Size
 
    ;; The unit of the file size.
    SizeUnit
 
-   ;; This element defines a single format for a distributable artifact.
-   Format
-
-   ;; The mime type of the resource.
-   MimeType
-
    ;; Allows the provider to provide the checksum value for the file.
    Checksum
-
-   ;; Allows the provider to add the list of the files that are included in this one.
-   Files
 
    ;; Allows the provider to state whether the distributable item's format is its native format or
    ;; another supported format.
    FormatType
+
+   ;; This element defines a single format for a distributable artifact.
+   Format
+
+   ;; Allows the provider to add the list of the files that are included in this one.
+   Files
+
+   ;; The mime type of the resource.
+   MimeType
+
+   ;; The size in Bytes of the volume of data contained in the granule. Bytes are defined as eight
+   ;; bits. Please use this element instead of or inclusive with the Size element. The issue with
+   ;; the size element is that if CMR data providers use a unit other than Bytes, end users don't
+   ;; know how the granule size was calculated. For example, if the unit was MegaBytes, the size
+   ;; could be calculated by using 1000xE2 Bytes (MegaBytes) or 1024xE2 Bytes (mebibytes) and
+   ;; therefore there is no systematic way to know the actual size of a granule by using the granule
+   ;; metadata record.
+   SizeInBytes
+
+   ;; This field describes the name of the actual file.
+   Name
   ])
 (record-pretty-printer/enable-record-pretty-printing ArchiveAndDistributionInformationType)
 

@@ -101,16 +101,16 @@
                                   mt/mime-type->format)]
           (is (= {:format :umm-json :version versioning/current-granule-version}
                  response-format))
-          (is (= (:metadata umm-g-gran) (:body response))))
+          (is (= (:metadata umm-g-gran) (:body response)))
 
-        "without specifying accept format"
-        nil
+          "without specifying accept format"
+          nil
 
-        "specifying umm json accept format without version"
-        "application/vnd.nasa.cmr.umm+json"
+          "specifying umm json accept format without version"
+          "application/vnd.nasa.cmr.umm+json"
 
-        "specifying umm json accept format with version"
-        (str "application/vnd.nasa.cmr.umm+json;version=" versioning/current-granule-version)))
+          "specifying umm json accept format with version"
+          (str "application/vnd.nasa.cmr.umm+json;version=" versioning/current-granule-version))))
 
     (testing "retrieve UMM-G granule in UMM JSON format in specific UMM version"
       (let [accept-format "application/vnd.nasa.cmr.umm+json;version=1.4"

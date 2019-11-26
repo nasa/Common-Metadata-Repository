@@ -61,6 +61,44 @@
     (update-in g [:SpatialExtent :HorizontalSpatialDomain] dissoc :Track)
     g))
 
+(defn- dissoc-size-in-bytes
+  "Migrate v1.6 ArchiveAndDistributionInformation to v1.5 by removing
+  SizeInBytes if applicable"
+  [g]
+  (-> g
+      (util/update-in-all [:ArchiveAndDistributionInformation]
+                          dissoc
+                          :SizeInBytes)
+
+      (util/update-in-all [:ArchiveAndDistributionInformation :FilePackageType]
+                          dissoc
+                          :SizeInBytes)
+
+      (util/update-in-all [:ArchiveAndDistributionInformation :FileType]
+                          dissoc
+                          :SizeInBytes)
+      (util/update-in-all [:ArchiveAndDistributionInformation :Files]
+                          dissoc
+                          :SizeInBytes)))
+
+(defn- safe-subs
+  "If `end` is beyond the end of a string, use the actual length of the string instead"
+  [string begin end]
+  (when string
+    (if (> (count string) end)
+      (subs string begin end)
+      (subs string begin (count string)))))
+
+(defn- truncate-filename-type
+  "Migrate v1.6 FileNameType to v1.5 by truncating FilePackageType/Name and
+  FileType/Name fields to 80 characters or less"
+  [g]
+  (map (fn [id]
+         (-> id
+             (assoc :Identifier (safe-subs (:Identifier id) 0 79))
+             (assoc :IdentifierName (safe-subs (:IdentifierName id) 0 79))))
+       g))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Granule Migration Implementations
 
@@ -90,3 +128,19 @@
       (util/update-in-all [:DataGranule :ArchiveAndDistributionInformation :Files :MimeType]
                           v1-5-mime-type->v1-4-mime-type)
       util/remove-empty-maps))
+
+(defmethod interface/migrate-umm-version [:granule "1.6" "1.5"]
+  [context g & _]
+  (-> g
+      (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.5"
+                                     :Name "UMM-G"
+                                     :Version "1.5"})
+      (update :DataGranule dissoc-size-in-bytes)
+      (update-in [:DataGranule :Identifiers] truncate-filename-type)))
+
+(defmethod interface/migrate-umm-version [:granule "1.5" "1.6"]
+  [context g & _]
+  (-> g
+      (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6"
+                                     :Name "UMM-G"
+                                     :Version "1.6"})))
