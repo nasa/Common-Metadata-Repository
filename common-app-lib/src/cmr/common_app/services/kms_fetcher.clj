@@ -41,8 +41,7 @@
    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]
    :concepts [:short-name]
    :iso-topic-categories [:iso-topic-category]
-   :related-urls [:type :subtype]
-   :granule-data-format [:pref-label :uuid]})
+   :related-urls [:type :subtype]})
 
 (def FIELD_NOT_PRESENT
   "A string to indicate that a field is not present within a KMS keyword."
@@ -75,7 +74,6 @@
   "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way
   as used in the KMS cache."
   [context]
-  (def keyword-scheme :granule-data-format)
   (kms-lookup/create-kms-index
    (into {}
          (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
