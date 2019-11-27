@@ -1350,7 +1350,7 @@ Find collections matching any of the 'spatial_keyword' param values
 
 #### <a name="c-science-keywords"></a> Find collections by science_keywords
 
-This supports option _or_.
+This supports option _or_. Subfields of science_keywords search parameter include: category, topic, term, variable-level-1, variable-level-2, variable-level-3 and detailed-variable.
 
 Find collections matching 'science_keywords' param value
 
