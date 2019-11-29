@@ -2,7 +2,7 @@
   "Defines common xpaths and functions used by various namespaces in ISO19115-2."
   (:require
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]))
 
@@ -109,21 +109,21 @@
   "Returns a map of string keys and values from a comma-separated list of equals-separated pairs."
   [description-str]
   (when (and (string? description-str)
-             (not (str/blank? description-str)))
+             (not (string/blank? description-str)))
     (into {}
-          (for [pair-str (str/split description-str #",")]
-            (let [[k v] (str/split pair-str #"=")]
-              [(str/trim k) (str/trim (or v ""))])))))
+          (for [pair-str (string/split description-str #",")]
+            (let [[k v] (string/split pair-str #"=")]
+              [(string/trim k) (string/trim (or v ""))])))))
 
 (defn sanitize-value
   "Returns a key-value string value without \",\" or \"=\" characters."
   [x]
-  (str/replace x #"[,=]" ""))
+  (string/replace x #"[,=]" ""))
 
 (defn key-val-str
   "Returns map encoded as ISO key-value string e.g. for use in the extent description."
   [m]
-  (str/join ","
+  (string/join ","
             (for [[k v] m]
               (str k "=" (sanitize-value v)))))
 
@@ -151,3 +151,9 @@
                   :when date-type]
               {:Date date
                :Type date-type})))
+
+(defn safe-trim
+  [value]
+  (if (string? value)
+    (string/trim value)
+    value))

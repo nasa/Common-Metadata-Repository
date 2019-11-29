@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial
   "Functions for parsing UMM spatial records out of ISO 19115-2 XML documents."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
@@ -93,7 +93,7 @@
   \"SwathWidth: 2.0 Period: 96.7 InclinationAngle: 94.0 NumberOfOrbits: 2.0 StartCircularLatitude: 50.0\""
   [doc]
   (when-let [orbit-string (value-of doc orbit-string-xpath)]
-    (into {} (for [[k ^String v] (partition 2 (str/split orbit-string #":? "))]
+    (into {} (for [[k ^String v] (partition 2 (string/split orbit-string #":? "))]
                [(keyword k) (Double/parseDouble v)]))))
 
 (defn parse-vertical-domains
@@ -279,19 +279,20 @@
 (defn- parse-horizontal-spatial-domain
   "Parse the horizontal domain from the ISO XML document. Horizontal domains are encoded in an ISO XML"
   [doc extent-info sanitize?]
-  (util/remove-nil-keys
-   {:Geometry (parse-geometry doc extent-info sanitize?)
-    :ZoneIdentifier (value-of doc zone-identifier-xpath)
-    :ResolutionAndCoordinateSystem (util/remove-nil-keys
-                                    {:Description (when-let [description-string
-                                                             (value-of doc res-and-coord-desc-xpath)]
-                                                    (let [description-index
-                                                          (util/get-index-or-nil description-string "Description:")]
-                                                      (iso-shared-distrib/get-substring-with-sort
-                                                       description-string description-index (count description-string))))
-                                     :GeodeticModel (parse-geodetic-model doc)
-                                     :LocalCoordinateSystem (parse-local-coord-sys doc)
-                                     :HorizontalDataResolutions (parse-horizontal-data-resolutions doc)})}))
+  (let [description (when-let [description-string
+                               (value-of doc res-and-coord-desc-xpath)]
+                      (let [description-index
+                            (util/get-index-or-nil description-string "Description:")]
+                        (iso-shared-distrib/get-substring-with-sort
+                         description-string description-index (count description-string))))]
+    (util/remove-nil-keys
+     {:Geometry (parse-geometry doc extent-info sanitize?)
+      :ZoneIdentifier (value-of doc zone-identifier-xpath)
+      :ResolutionAndCoordinateSystem (util/remove-nil-keys
+                                      {:Description (iso/safe-trim description)
+                                       :GeodeticModel (parse-geodetic-model doc)
+                                       :LocalCoordinateSystem (parse-local-coord-sys doc)
+                                       :HorizontalDataResolutions (parse-horizontal-data-resolutions doc)})})))
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from ISO XML document."
