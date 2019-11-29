@@ -4,9 +4,12 @@
    [cmr.common.test.time-util :as tu]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :refer [are2 are3]]
-   [cmr.umm-spec.acl-matchers :as a]))
+   [cmr.umm-spec.acl-matchers :as a]
+   [taoensso.timbre :as t]))
 
 (use-fixtures :each tk/freeze-resume-time-fixture)
+
+(t/set-level! :error)
 
 (defn acl-with-cat-identity
   "Creates an acl with the given catalog item identity"
