@@ -4,6 +4,10 @@
    [cmr.common.util :as util]
    [cmr.umm-spec.migration.version.interface :as interface]))
 
+(def ^:private v1-5-identifier-name-max-length
+  "Max length allowed for `Identifiers` fields in v1.5"
+  80)
+
 (def ^:private v1-4-url-subtype-enum->v1-5-url-subtype-enum
   "Defines RelatedUrlSubTypeEnum that needs to be changed from v1.4 to v1.5"
   {"ALGORITHM THEORETICAL BASIS DOCUMENT" "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
@@ -81,22 +85,15 @@
                           dissoc
                           :SizeInBytes)))
 
-(defn- safe-subs
-  "If `end` is beyond the end of a string, use the actual length of the string instead"
-  [string begin end]
-  (when string
-    (if (> (count string) end)
-      (subs string begin end)
-      (subs string begin (count string)))))
-
 (defn- truncate-filename-type
   "Migrate v1.6 FileNameType to v1.5 by truncating FilePackageType/Name and
   FileType/Name fields to 80 characters or less"
   [g]
   (map (fn [id]
          (-> id
-             (assoc :Identifier (safe-subs (:Identifier id) 0 79))
-             (assoc :IdentifierName (safe-subs (:IdentifierName id) 0 79))))
+             (assoc :IdentifierName (util/trunc (:IdentifierName id) v1-5-identifier-name-max-length))
+             (assoc :Identifier (util/trunc (:Identifier id) v1-5-identifier-name-max-length))
+             util/remove-nil-keys))
        g))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

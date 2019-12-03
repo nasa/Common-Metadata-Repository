@@ -640,9 +640,11 @@
                          collection
                          (:concept-id collection)
                          {:granule-ur "Gran1"
-                          :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"})})
+                          :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"
+                                                                     :identifiers [:identifier "a very nice granule :)"
+                                                                                   :identifier-type "a type of identifier"]})})
                         (data-core/item->concept {:format :umm-json
-                                                  :version "1.4"}))
+                                                  :version "1.6"}))
             {:keys [status] :as response} (ingest/ingest-concept granule)]
         (is (#{200 201} status) (pr-str response))))
 

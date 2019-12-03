@@ -101,15 +101,16 @@
 (defn data-granule
   "Returns a data-granule with the given attributes"
   [attribs]
-  (let [{:keys [producer-gran-id day-night size production-date-time feature-ids crid-ids]} attribs]
-    (when (or size producer-gran-id day-night production-date-time feature-ids crid-ids)
+  (let [{:keys [producer-gran-id day-night size production-date-time feature-ids crid-ids identifiers]} attribs]
+    (when (or size producer-gran-id day-night production-date-time feature-ids crid-ids identifiers)
       (g/map->DataGranule {:producer-gran-id producer-gran-id
                            :day-night day-night
                            :production-date-time (or production-date-time
                                                      (p/parse-datetime "2010-01-01T12:00:00Z"))
                            :size size
                            :feature-ids feature-ids
-                           :crid-ids crid-ids}))))
+                           :crid-ids crid-ids
+                           :identifiers identifiers}))))
 
 (defn orbit-calculated-spatial-domain
   "Returns an orbit-calculated-spatial-domain with the given attributes"

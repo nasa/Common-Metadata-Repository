@@ -389,7 +389,7 @@
                                                                     :project-refs ["proj1"]}))
 
           concept (d/item->concept granule {:format :umm-json
-                                            :version "1.4"})
+                                            :version "1.6"})
           _ (ingest/ingest-concept concept)
           expected-granule-urs (vp/source-granule->virtual-granule-urs granule)
           all-expected-granule-urs (cons (:granule-ur granule) expected-granule-urs)]
