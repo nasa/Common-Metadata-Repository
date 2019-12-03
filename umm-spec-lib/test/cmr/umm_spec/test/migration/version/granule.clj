@@ -328,9 +328,11 @@
                            :FormatType "Supported"
                            :MimeType "application/x-netcdf"}]
                         :Identifiers
-                          [{:Identifier "acos_LtCO2_090421_v201201_B7310A_161220013536s.nc4 and here are some extra char"
+                          [{:Identifier "acos_LtCO2_090421_v201201_B7310A_161220013536s.nc4 and here are some extra chara"
                             :IdentifierType "ProducerGranuleId"
-                            :IdentifierName "Now this is the story all about how my life got flip-turned upside-down and I'd"}]}
+                            :IdentifierName "Now this is the story all about how my life got flip-turned upside-down and I'd "}
+                           {:Identifier "And here is one without an IdentifierName"
+                            :IdentifierType "ProducerGranuleId"}]}
           :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
                          :Type "GET SERVICE"
                          :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
@@ -377,7 +379,9 @@
                                         :Identifiers
                                          [{:Identifier "acos_LtCO2_090421_v201201_B7310A_161220013536s.nc4 and here are some extra characters so that this is too long for 1.5"
                                            :IdentifierType "ProducerGranuleId"
-                                           :IdentifierName "Now this is the story all about how my life got flip-turned upside-down and I'd like to take a minute just sit right there"}]}
+                                           :IdentifierName "Now this is the story all about how my life got flip-turned upside-down and I'd like to take a minute just sit right there"}
+                                          {:Identifier "And here is one without an IdentifierName"
+                                           :IdentifierType "ProducerGranuleId"}]}
                            :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
                                           :Type "GET SERVICE"
                                           :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
