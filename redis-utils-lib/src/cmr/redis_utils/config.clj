@@ -29,6 +29,14 @@
   to user."
   {:default 2000 :type Long})
 
+(defconfig redis-num-retries
+  "The number of times to retry a failed Redis command."
+  {:default 3 :type Long})
+
+(defconfig redis-retry-interval
+  "The number of milliseconds to wait between Redis retry command."
+  {:default 100 :type Long})
+
 (defn redis-conn-opts
   "Redis connection options to be used with wcar."
   []

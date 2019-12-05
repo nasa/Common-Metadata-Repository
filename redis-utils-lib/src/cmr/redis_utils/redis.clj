@@ -2,18 +2,29 @@
   "Used to implement functions for calling Redis."
   (:require
    [clojure.set :refer [union]]
-   [cmr.common.log :refer [error]]
+   [cmr.common.log :refer [error info]]
    [cmr.redis-utils.config :as config]
    [taoensso.carmine :as carmine :refer [wcar]]))
 
 (defmacro wcar*
-  "Safe call redis with conn opts. For available commands refer to Redis docuemntation or:
+  "Safe call redis with conn opts and retries.
+  For available commands refer to Redis docuemntation or:
   https://github.com/ptaoussanis/carmine/blob/master/src/taoensso/carmine/commands.edn."
   [& body]
-  `(try
-     (carmine/wcar (config/redis-conn-opts) ~@body)
-     (catch Exception e#
-       (error "Redis failed with exception " e#))))
+  `(let [with-retry#
+         (fn with-retry# [num-retries#]
+             (try
+               (carmine/wcar (config/redis-conn-opts) ~@body)
+               (catch Exception e#
+                 (if (> num-retries# 0)
+                   (do
+                     (info (format "Redis failed with exception %s. Retrying %d more times."
+                                   e#
+                                   (dec num-retries#)))
+                     (Thread/sleep (config/redis-retry-interval))
+                     (with-retry# (dec num-retries#)))
+                   (error "Redis failed with exception " e#)))))]
+     (with-retry# (config/redis-num-retries))))
 
 (defn healthy?
   "Returns true if able to reach Redis."
