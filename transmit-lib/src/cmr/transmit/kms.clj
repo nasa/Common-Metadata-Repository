@@ -33,6 +33,7 @@
    :temporal-keywords :temporal-resolution-range
    :spatial-keywords :uuid
    :science-keywords :uuid
+   :measurement-name :object
    :concepts :short-name
    :iso-topic-categories :uuid
    :related-urls :uuid
@@ -47,6 +48,7 @@
    :temporal-keywords "temporalresolutionrange?format=csv"
    :spatial-keywords "locations?format=csv"
    :science-keywords "sciencekeywords?format=csv"
+   :measurement-name "measurementname?format=csv"
    :concepts "idnnode?format=csv"
    :iso-topic-categories "isotopiccategory?format=csv"
    :related-urls "rucontenttype?format=csv"
@@ -62,6 +64,7 @@
    :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3 :uuid]
    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3
                       :detailed-variable :uuid]
+   :measurement-name [:context-medium :object :quantity :uuid]
    :concepts [:short-name :long-name :uuid]
    :iso-topic-categories [:iso-topic-category :uuid]
    :related-urls [:type :subtype :uuid]
@@ -205,4 +208,4 @@
     keywords))
 
 (comment
-  (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :spatial-keywords))
+  (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :measurement-name))
