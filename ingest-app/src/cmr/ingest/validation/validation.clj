@@ -199,3 +199,36 @@
                    (mapcat #(% context concept)
                            (bv/business-rule-validations
                             (:concept-type concept)))))
+
+(defn- measurement-validation
+  "A validation that checks that the measurement matches a known KMS field. Takes the following arguments:
+
+  * kms-index - The keywords map as returned by kms-fetcher/get-kms-index
+  * msg-fn - A function taking the invalid measurements and returning the error to return to the user
+    if it doesn't match."
+  [kms-index msg-fn]
+  (v/every
+    (fn [field-path value]
+      (when-let [invalid-measurements (kms-lookup/lookup-by-measurement kms-index value)]
+        {field-path [(msg-fn invalid-measurements)]}))))
+
+(defn- variable-keyword-validations
+  "Creates validations that check various collection fields to see if they match KMS keywords."
+  [context]
+  (let [kms-index (kms-fetcher/get-kms-index context)]
+    {:MeasurementIdentifiers (measurement-validation
+                              kms-index msg/measurements-not-matches-kms-keywords)}))
+
+(defn umm-spec-validate-variable
+  "Validate variable through umm-spec validation functions. If warn? flag is
+  true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
+  [variable context warn?]
+  (when-let [err-messages (seq (umm-spec-validation/validate-variable
+                                variable
+                                [(variable-keyword-validations context)]))]
+    (if (or (config/return-umm-spec-validation-errors)
+            (not warn?))
+      (errors/throw-service-errors :invalid-data err-messages)
+      (do
+        (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+        err-messages))))
