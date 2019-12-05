@@ -36,6 +36,11 @@
    :concepts [:short-name]
    :iso-topic-categories [:iso-topic-category]})
 
+(def kms-scheme->fields-for-umm-var-lookup
+  "Maps the KMS keyword scheme to the list of fields that should be matched when comparing fields
+  between UMM-Var and KMS."
+  {:measurement-name [:context-medium :object :quantity]})
+
 (defn- normalize-for-lookup
   "Takes a map (either a UMM-C keyword or a KMS keyword) or string m,
   and a list of fields from the map which we want to use for comparison.
@@ -111,22 +116,38 @@
                               [(str/upper-case location) location-keyword-map]))]
     (merge location-keywords duplicate-keywords)))
 
+(defn generate-lookup-by-measurement-name
+  "Create a map with the measurement field values defined in UMM-Var map to the KMS keywords."
+  [gcmd-keywords-map]
+  (into {}
+        (let [keyword-scheme :measurement-name
+              keyword-maps (:measurement-name gcmd-keywords-map)]
+          [[keyword-scheme (let [fields (get kms-scheme->fields-for-umm-var-lookup
+                                             keyword-scheme)]
+                             (into {}
+                                   (map (fn [keyword-map]
+                                          [(normalize-for-lookup keyword-map fields)
+                                           keyword-map])
+                                        keyword-maps)))]])))
+
 (defn create-kms-index
   "Creates the KMS index structure to be used for fast lookups."
   [kms-keywords-map]
   (let [short-name-lookup-map (generate-lookup-by-short-name-map kms-keywords-map)
         umm-c-lookup-map (generate-lookup-by-umm-c-map kms-keywords-map)
-        location-lookup-map (generate-lookup-by-location-map kms-keywords-map)]
+        location-lookup-map (generate-lookup-by-location-map kms-keywords-map)
+        measurement-lookup-map (generate-lookup-by-measurement-name kms-keywords-map)]
     (merge kms-keywords-map
            {:short-name-index short-name-lookup-map
             :umm-c-index umm-c-lookup-map
-            :locations-index location-lookup-map})))
+            :locations-index location-lookup-map
+            :measurement-index measurement-lookup-map})))
 
 (defn deflate
   "Takes a KMS index and returns a minimal version to store more efficiently and in a way that
   the index can be recreated in a way to reduce the memory usage."
   [kms-index]
-  (dissoc kms-index :short-name-index :umm-c-index :locations-index))
+  (dissoc kms-index :short-name-index :umm-c-index :locations-index :measurement-index))
 
 (defn lookup-by-short-name
   "Takes a kms-index, the keyword scheme, and a short name and returns the full KMS hierarchy for
@@ -173,6 +194,21 @@
 (defmethod lookup-by-umm-c-keyword :default
   [kms-index keyword-scheme umm-c-keyword]
   (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
-        comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup
-                                                            keyword-scheme))]
+        comparison-map (normalize-for-lookup umm-c-keyword
+                                             (kms-scheme->fields-for-umm-c-lookup keyword-scheme))]
     (get-in kms-index [:umm-c-index keyword-scheme comparison-map])))
+
+(defn lookup-by-measurement
+  [kms-index value]
+  (let [{:keys [MeasurementContextMedium MeasurementObject MeasurementQuantities]} value
+        measurements (if (seq MeasurementQuantities)
+                       (map (fn [quantity]
+                              {:context-medium MeasurementContextMedium
+                               :object MeasurementObject
+                               :quantity (:Value quantity)})
+                            MeasurementQuantities)
+                       [{:context-medium MeasurementContextMedium
+                         :object MeasurementObject}])
+        invalid-measurements (remove #(get-in kms-index [:measurement-index :measurement-name %])
+                                     measurements)]
+    (seq invalid-measurements)))

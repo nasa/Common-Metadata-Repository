@@ -12,7 +12,8 @@
    [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]
-   [cmr.ingest.validation.validation :as v]))
+   [cmr.ingest.validation.validation :as v]
+   [cmr.umm-spec.umm-spec-core :as spec]))
 
 (defn- validate-and-prepare-variable-concept
   "Validate variable concept, set the concept format and returns the concept;
@@ -35,13 +36,16 @@
       request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
     (let [concept (validate-and-prepare-variable-concept concept)
+          {:keys [format metadata]} concept
+          variable (spec/parse-metadata request-context :variable format metadata)
+          _ (v/umm-spec-validate-variable variable request-context false)
           concept-with-user-id (api-core/set-user-id concept request-context headers)
           ;; Log the ingest attempt
           _ (info (format "Ingesting service %s from client %s"
-                          (api-core/concept->loggable-string concept-with-user-id) 
+                          (api-core/concept->loggable-string concept-with-user-id)
                           (:client-id request-context)))
           save-variable-result (ingest/save-variable request-context concept-with-user-id)]
-      ;; Log the successful ingest, with the metadata size in bytes. 
+      ;; Log the successful ingest, with the metadata size in bytes.
       (api-core/log-concept-with-metadata-size concept-with-user-id request-context)
       (api-core/generate-ingest-response headers save-variable-result))))
 

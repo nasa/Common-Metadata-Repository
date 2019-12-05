@@ -69,6 +69,10 @@
   "The order of fields that should be displayed in the spatial keyword human readable list."
   [:Category :Type :Subregion1 :Subregion2 :Subregion3])
 
+(def measurement-keyword-attribute-order
+  "The order of fields that should be displayed in the measurement keyword human readable list."
+  [:context-medium :object :quantity])
+
 (defn- keyword->human-attrib-list
   "Converts a keyword into a human readable list of attributes with their values."
   [k attribute-order]
@@ -93,6 +97,17 @@
   [lk]
   (format "Location keyword %s was not a valid keyword combination."
           (keyword->human-attrib-list lk location-keyword-attribute-order)))
+
+(defn- measurement-not-matches-kms-keywords
+  "Returns the invalid measurement keywords message"
+  [measurment]
+  (format "Measurement keyword %s was not a valid keyword combination."
+          (keyword->human-attrib-list measurment measurement-keyword-attribute-order)))
+
+(defn measurements-not-matches-kms-keywords
+  "Returns the invalid measurement keywords message for a list of measurements"
+  [measurments]
+  (string/join " " (map measurement-not-matches-kms-keywords measurments)))
 
 (def token-required-for-variable-modification
   "Variables cannot be modified without a valid user token.")
