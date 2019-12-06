@@ -36,8 +36,8 @@
       request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
     (let [concept (validate-and-prepare-variable-concept concept)
-          {:keys [format metadata]} concept
-          variable (spec/parse-metadata request-context :variable format metadata)
+          {concept-format :format metadata :metadata} concept
+          variable (spec/parse-metadata request-context :variable concept-format metadata)
           _ (v/umm-spec-validate-variable variable request-context false)
           concept-with-user-id (api-core/set-user-id concept request-context headers)
           ;; Log the ingest attempt
