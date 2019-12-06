@@ -34,7 +34,8 @@
    :providers [:short-name]
    :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3]
    :concepts [:short-name]
-   :iso-topic-categories [:iso-topic-category]})
+   :iso-topic-categories [:iso-topic-category]
+   :granule-data-format [:format]})
 
 (def kms-scheme->fields-for-umm-var-lookup
   "Maps the KMS keyword scheme to the list of fields that should be matched when comparing fields
@@ -174,6 +175,19 @@
   insensitively."
   (fn [kms-index keyword-scheme umm-c-keyword]
     keyword-scheme))
+
+(defmethod lookup-by-umm-c-keyword :granule-data-format
+  [kms-index keyword-scheme umm-c-keyword]
+  (let [comparison-map (normalize-for-lookup
+                          (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
+                          (kms-scheme->fields-for-umm-c-lookup keyword-scheme))]
+    (as-> kms-index index
+          (get index keyword-scheme)
+          (map #(set/rename-keys % {:granule-data-format :format}) index)
+          (filter #(= (str/lower-case (:format %))
+                      (str/lower-case (:format comparison-map)))
+                  index)
+          (seq index))))
 
 (defmethod lookup-by-umm-c-keyword :platforms
   [kms-index keyword-scheme umm-c-keyword]

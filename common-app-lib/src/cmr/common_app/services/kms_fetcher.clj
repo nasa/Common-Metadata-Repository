@@ -42,7 +42,8 @@
    :measurement-name [:context-medium :object :quantity]
    :concepts [:short-name]
    :iso-topic-categories [:iso-topic-category]
-   :related-urls [:type :subtype]})
+   :related-urls [:type :subtype]
+   :granule-data-format [:granule-data-format :uuid]})
 
 (def FIELD_NOT_PRESENT
   "A string to indicate that a field is not present within a KMS keyword."

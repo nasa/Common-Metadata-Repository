@@ -413,7 +413,21 @@
                              "subregion_2"
                              [{"value" "ANGOLA",
                                "uuid"
-                               "9b0a194d-d617-4fed-9625-df176319892d"}]}]}]}]}})
+                               "9b0a194d-d617-4fed-9625-df176319892d"}]}]}]}]}
+   :granule-data-format {"granule_data_format"
+                          [{"value" "JPEG", "uuid"
+                            [{"value" "7972d59f-0d8d-4332-9a2d-d538d90976ba",
+                              "uuid" "7972d59f-0d8d-4332-9a2d-d538d90976ba"}]}
+                           {"value" "Value3", "uuid"
+                            [{"value" "45e4f52a-80ae-4ef3-882f-c2849eb4e18a",
+                              "uuid" "45e4f52a-80ae-4ef3-882f-c2849eb4e18a"}]}
+                           {"value" "HDF", "uuid"
+                            [{"value" "a0664fe4-ac04-4de7-91ba-ecbccfc0807f",
+                              "uuid" "a0664fe4-ac04-4de7-91ba-ecbccfc0807f"}]}
+                           {"value" "hdf", "uuid"
+                            [{"value" "c5796028-6835-49f9-be6c-cf26f363623b",
+                              "uuid" "c5796028-6835-49f9-be6c-cf26f363623b"}]}]}})
+
 
 (deftest get-keywords-test
   (util/are2
@@ -443,14 +457,17 @@
     :temporal-keywords (:temporal-keywords expected-hierarchy)
 
     "Testing correct keyword hierarchy returned for spatial keywords."
-    :spatial-keywords (:spatial-keywords expected-hierarchy)))
+    :spatial-keywords (:spatial-keywords expected-hierarchy)
+
+    "Testing correct keyword heirarchy returned for granule data format"
+    :granule-data-format (:granule-data-format expected-hierarchy)))
 
 (deftest invalid-keywords-test
   (testing "Invalid keyword scheme returns 400 error"
     (is (= {:status 400
             :errors [(str "The keyword scheme [foo] is not supported. Valid schemes are:"
-                          " providers, measurement_name, spatial_keywords, related_urls,"
-                          " iso_topic_categories, instruments,"
-                          " science_keywords, concepts, temporal_keywords, platforms,"
+                          " providers, measurement_name, spatial_keywords, granule_data_format,"
+                          " related_urls, iso_topic_categories,"
+                          " instruments, science_keywords, concepts, temporal_keywords, platforms,"
                           " archive_centers, data_centers, location_keywords, and projects.")]}
            (search/get-keywords-by-keyword-scheme :foo)))))
