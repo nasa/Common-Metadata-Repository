@@ -42,11 +42,19 @@
     (let [{:keys [producer-gran-id
                   day-night
                   production-date-time
-                  size]} data-granule
+                  size
+                  size-in-bytes
+                  checksum]} data-granule
           day-night (if day-night day-night "UNSPECIFIED")]
       (x/element :DataGranule {}
                  (when size
                    (x/element :SizeMBDataGranule {} size))
+                 (when size-in-bytes
+                   (x/element :DataGranuleSizeInBytes {} size-in-bytes))
+                 (when checksum
+                   (x/element :Checksum {}
+                     (x/element :Value {} (:value checksum))
+                     (x/element :Algorithm {} (:algorithm checksum))))
                  (when producer-gran-id
                    (x/element :ProducerGranuleId {} producer-gran-id))
                  (x/element :DayNightFlag {} day-night)
@@ -64,16 +72,30 @@
                            :version-id version-id
                            :entry-id entry-id})))
 
+(defn xml-elem->Checksum
+  "Returns a UMM Checksum from a parsed DataGranule Content XML structure"
+  [data-granule-element]
+  (when-let [checksum-element (cx/element-at-path data-granule-element [:Checksum])]
+    (g/map->Checksum
+      {:value (cx/string-at-path checksum-element [:Value]) 
+       :algorithm (cx/string-at-path checksum-element [:Algorithm])})))
+
 (defn- xml-elem->DataGranule
   "Returns a UMM data-granule element from a parsed Granule XML structure"
   [granule-content-node]
   (let [data-gran-node (cx/element-at-path granule-content-node [:DataGranule])
         size (cx/double-at-path data-gran-node [:SizeMBDataGranule])
+        size-in-bytes (cx/double-at-path data-gran-node [:DataGranuleSizeInBytes])
+        checksum (xml-elem->Checksum data-gran-node) 
         producer-gran-id (cx/string-at-path data-gran-node [:ProducerGranuleId])
         day-night (cx/string-at-path data-gran-node [:DayNightFlag])
         production-date-time (cx/datetime-at-path data-gran-node [:ProductionDateTime])]
     (when (or size producer-gran-id day-night production-date-time)
       (g/map->DataGranule {:size size
+                           :size-in-bytes size-in-bytes
+                           :checksum (when checksum
+                                       (g/map->Checksum {:value (:value checksum)
+                                                         :algorithm (:algorithm checksum)}))
                            :producer-gran-id producer-gran-id
                            :day-night (if day-night day-night "UNSPECIFIED")
                            :production-date-time production-date-time}))))
