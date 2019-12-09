@@ -1,5 +1,5 @@
 (ns cmr.ingest.config
-  "Contains functions to retrieve metadata db specific configuration"
+  "Contains functions to retrieve ingest specific configuration"
   (:require
    [cmr.common-app.config :as common-config]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -96,4 +96,8 @@
 
 (defconfig return-umm-spec-validation-errors
   "Flag for whether or not UMM Spec validation errors should be returned for collections."
+  {:default false :type Boolean})
+
+(defconfig validate-umm-var-keywords
+  "Flag for whether or not to validate UMM-Var against KMS keywords."
   {:default false :type Boolean})

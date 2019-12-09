@@ -3,9 +3,11 @@
   For variable permissions tests, see `provider-ingest-permissions-test`."
   (:require
    [clojure.test :refer :all]
+   [cmr.common-app.test.side-api :as side]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3]]
+   [cmr.ingest.config :as ingest-config]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -355,103 +357,132 @@
           (is (= (+ initial-revision-id 2) revision-id)))))))
 
 (deftest variable-ingest-validation-test
-  (let [{token :token} (variable-util/setup-update-acl
-                        (s/context) "PROV1" "user1" "update-group")]
-    (are3 [measurements expected-status expected-errors]
-      (let [concept (variable-util/make-variable-concept
-                     {:MeasurementIdentifiers measurements})
-            {:keys [status errors]} (ingest/ingest-concept concept
-                                                           (variable-util/token-opts token))]
-        (is (= expected-status status))
-        (is (= expected-errors errors)))
+  (testing "ingest validation on UMM-Var KMS keywords"
+    (let [{token :token} (variable-util/setup-update-acl
+                          (s/context) "PROV1" "user1" "update-group")]
+      ;; Turn on UMM-Var keywords validation
+      (side/eval-form `(ingest-config/set-validate-umm-var-keywords! true))
+      (are3 [measurements expected-status expected-errors]
+        (let [concept (variable-util/make-variable-concept
+                       {:MeasurementIdentifiers measurements})
+              {:keys [status errors]} (ingest/ingest-concept concept
+                                                             (variable-util/token-opts token))]
+          (is (= expected-status status))
+          (is (= expected-errors errors)))
 
-      "valid measurements single"
-      [{:MeasurementContextMedium "atmosphere-at_cloud_top"
-        :MeasurementObject "air"
-        :MeasurementQuantities [{:Value "temperature"}]}]
-      201
-      nil
+        "valid measurements single"
+        [{:MeasurementContextMedium "atmosphere-at_cloud_top"
+          :MeasurementObject "air"
+          :MeasurementQuantities [{:Value "temperature"}]}]
+        201
+        nil
 
-      "valid measurements multiple"
-      [{:MeasurementContextMedium "atmosphere-at_cloud_top"
-        :MeasurementObject "air"
-        :MeasurementQuantities [{:Value "temperature"}]}
-       {:MeasurementContextMedium "atmosphere"
-        :MeasurementObject "cloud_top"
-        :MeasurementQuantities [{:Value "temperature"
-                                 :MeasurementQuantityURI "https://example.com"}
-                                {:Value "height"}]}
-       {:MeasurementContextMedium "atmosphere"
-        :MeasurementObject "freezing_level"}]
-      200
-      nil
+        "valid measurements multiple"
+        [{:MeasurementContextMedium "atmosphere-at_cloud_top"
+          :MeasurementObject "air"
+          :MeasurementQuantities [{:Value "temperature"}]}
+         {:MeasurementContextMedium "atmosphere"
+          :MeasurementObject "cloud_top"
+          :MeasurementQuantities [{:Value "temperature"
+                                   :MeasurementQuantityURI "https://example.com"}
+                                  {:Value "height"}]}
+         {:MeasurementContextMedium "atmosphere"
+          :MeasurementObject "freezing_level"}]
+        200
+        nil
 
-      "invalid ContextMedium"
-      [{:MeasurementContextMedium "atmosphere-at_cloud"
-        :MeasurementObject "air"
-        :MeasurementQuantities [{:Value "temperature"}]}]
-      422
-      [{:path ["MeasurementIdentifiers" 0],
-        :errors
-        ["Measurement keyword Context Medium [atmosphere-at_cloud], Object [air], and Quantity [temperature] was not a valid keyword combination."]}]
+        "invalid ContextMedium"
+        [{:MeasurementContextMedium "atmosphere-at_cloud"
+          :MeasurementObject "air"
+          :MeasurementQuantities [{:Value "temperature"}]}]
+        422
+        [{:path ["MeasurementIdentifiers" 0],
+          :errors
+          ["Measurement keyword Context Medium [atmosphere-at_cloud], Object [air], and Quantity [temperature] was not a valid keyword combination."]}]
 
-      "invalid measurement context medium, no MeasurementQuantities"
-      [{:MeasurementContextMedium "atom"
-        :MeasurementObject "freezing_level"}]
-      422
-      [{:path ["MeasurementIdentifiers" 0],
-        :errors
-        ["Measurement keyword Context Medium [atom] and Object [freezing_level] was not a valid keyword combination."]}]
+        "invalid measurement context medium, no MeasurementQuantities"
+        [{:MeasurementContextMedium "atom"
+          :MeasurementObject "freezing_level"}]
+        422
+        [{:path ["MeasurementIdentifiers" 0],
+          :errors
+          ["Measurement keyword Context Medium [atom] and Object [freezing_level] was not a valid keyword combination."]}]
 
-      "Missing measurement context medium"
-      [{:MeasurementObject "air"
-        :MeasurementQuantities [{:Value "temperature"}]}]
-      400
-      ["#/MeasurementIdentifiers/0: required key [MeasurementContextMedium] not found"]
+        "Missing measurement context medium"
+        [{:MeasurementObject "air"
+          :MeasurementQuantities [{:Value "temperature"}]}]
+        400
+        ["#/MeasurementIdentifiers/0: required key [MeasurementContextMedium] not found"]
 
-      "invalid MeasurementObject"
-      [{:MeasurementContextMedium "atmosphere-at_cloud_top"
-        :MeasurementObject "wind"
-        :MeasurementQuantities [{:Value "temperature"}]}]
-      422
-      [{:path ["MeasurementIdentifiers" 0],
-        :errors
-        ["Measurement keyword Context Medium [atmosphere-at_cloud_top], Object [wind], and Quantity [temperature] was not a valid keyword combination."]}]
+        "invalid MeasurementObject"
+        [{:MeasurementContextMedium "atmosphere-at_cloud_top"
+          :MeasurementObject "wind"
+          :MeasurementQuantities [{:Value "temperature"}]}]
+        422
+        [{:path ["MeasurementIdentifiers" 0],
+          :errors
+          ["Measurement keyword Context Medium [atmosphere-at_cloud_top], Object [wind], and Quantity [temperature] was not a valid keyword combination."]}]
 
-      "invalid MeasurementQuantities"
-      [{:MeasurementContextMedium "atmosphere-at_cloud_top"
-        :MeasurementObject "air"
-        :MeasurementQuantities [{:Value "temp"}]}]
-      422
-      [{:path ["MeasurementIdentifiers" 0],
-        :errors
-        ["Measurement keyword Context Medium [atmosphere-at_cloud_top], Object [air], and Quantity [temp] was not a valid keyword combination."]}]
+        "invalid MeasurementQuantities"
+        [{:MeasurementContextMedium "atmosphere-at_cloud_top"
+          :MeasurementObject "air"
+          :MeasurementQuantities [{:Value "temp"}]}]
+        422
+        [{:path ["MeasurementIdentifiers" 0],
+          :errors
+          ["Measurement keyword Context Medium [atmosphere-at_cloud_top], Object [air], and Quantity [temp] was not a valid keyword combination."]}]
 
-      "invalid MeasurementQuantities in a list"
-      [{:MeasurementContextMedium "atmosphere-at_cloud_top"
-        :MeasurementObject "air"
-        :MeasurementQuantities [{:Value "temperature"} {:Value "second"}]}]
-      422
-      [{:path ["MeasurementIdentifiers" 0],
-        :errors
-        ["Measurement keyword Context Medium [atmosphere-at_cloud_top], Object [air], and Quantity [second] was not a valid keyword combination."]}]
+        "invalid MeasurementQuantities in a list"
+        [{:MeasurementContextMedium "atmosphere-at_cloud_top"
+          :MeasurementObject "air"
+          :MeasurementQuantities [{:Value "temperature"} {:Value "second"}]}]
+        422
+        [{:path ["MeasurementIdentifiers" 0],
+          :errors
+          ["Measurement keyword Context Medium [atmosphere-at_cloud_top], Object [air], and Quantity [second] was not a valid keyword combination."]}]
 
-      "invalid measurements multiple"
-      [{:MeasurementContextMedium "atmosphere-at_cloud_top"
-        :MeasurementObject "air"
-        :MeasurementQuantities [{:Value "temperature"}]}
-       {:MeasurementContextMedium "atmosphere"
-        :MeasurementObject "cloud_top"
-        :MeasurementQuantities [{:Value "temp"
-                                 :MeasurementQuantityURI "https://example.com"}
-                                {:Value "hot"}]}
-       {:MeasurementContextMedium "atom"
-        :MeasurementObject "freezing_level"}]
-      422
-      [{:path ["MeasurementIdentifiers" 1],
-        :errors
-        [(str "Measurement keyword Context Medium [atmosphere], Object [cloud_top], and Quantity [temp] was not a valid keyword combination. "
-              "Measurement keyword Context Medium [atmosphere], Object [cloud_top], and Quantity [hot] was not a valid keyword combination.")]}
-       {:path ["MeasurementIdentifiers" 2],
-        :errors
-        ["Measurement keyword Context Medium [atom] and Object [freezing_level] was not a valid keyword combination."]}])))
+        "invalid measurements multiple"
+        [{:MeasurementContextMedium "atmosphere-at_cloud_top"
+          :MeasurementObject "air"
+          :MeasurementQuantities [{:Value "temperature"}]}
+         {:MeasurementContextMedium "atmosphere"
+          :MeasurementObject "cloud_top"
+          :MeasurementQuantities [{:Value "temp"
+                                   :MeasurementQuantityURI "https://example.com"}
+                                  {:Value "hot"}]}
+         {:MeasurementContextMedium "atom"
+          :MeasurementObject "freezing_level"}]
+        422
+        [{:path ["MeasurementIdentifiers" 1],
+          :errors
+          [(str "Measurement keyword Context Medium [atmosphere], Object [cloud_top], and Quantity [temp] was not a valid keyword combination. "
+                "Measurement keyword Context Medium [atmosphere], Object [cloud_top], and Quantity [hot] was not a valid keyword combination.")]}
+         {:path ["MeasurementIdentifiers" 2],
+          :errors
+          ["Measurement keyword Context Medium [atom] and Object [freezing_level] was not a valid keyword combination."]}])
+      (side/eval-form `(ingest-config/set-validate-umm-var-keywords! false))))
+
+  (testing "ingest validation on UMM-Var KMS keywords is off by default"
+    (let [{token :token} (variable-util/setup-update-acl
+                          (s/context) "PROV1" "user1" "update-group")]
+      (are3 [measurements expected-status expected-errors]
+        (let [concept (variable-util/make-variable-concept
+                       {:MeasurementIdentifiers measurements})
+              {:keys [status errors]} (ingest/ingest-concept concept
+                                                             (variable-util/token-opts token))]
+          (is (= expected-status status))
+          (is (= expected-errors errors)))
+
+        "valid measurements single"
+        [{:MeasurementContextMedium "atmosphere-at_cloud_top"
+          :MeasurementObject "air"
+          :MeasurementQuantities [{:Value "temperature"}]}]
+        200
+        nil
+
+        "invalid ContextMedium is OK when UMM-Var keywords validation is off"
+        [{:MeasurementContextMedium "atmosphere-invalid"
+          :MeasurementObject "air"
+          :MeasurementQuantities [{:Value "temperature"}]}]
+        200
+        nil))))
