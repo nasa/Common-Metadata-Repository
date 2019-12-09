@@ -30,11 +30,11 @@
   "AcquisitionSourceName": "VIIRS",
   "MeasurementIdentifiers": [
       {
-        "MeasurementContextMedium": "Atmosphere",
+        "MeasurementContextMedium": "atmosphere",
         "MeasurementContextMediumURI": "http://purl.obolibrary.org/obo/ENVO_01000810",
-        "MeasurementObject": "Brightness",
+        "MeasurementObject": "cloud_top",
         "MeasurementQuantities": [
-            {"Value": "Temperature", "MeasurementQuantityURI": "http://www.ontobee.org/ontology/PATO?iri=http://purl.obolibrary.org/obo/PATO_0000146"}
+            {"Value": "air", "MeasurementQuantityURI": "http://www.ontobee.org/ontology/PATO?iri=http://purl.obolibrary.org/obo/PATO_0000146"}
          ]
       }
   ]

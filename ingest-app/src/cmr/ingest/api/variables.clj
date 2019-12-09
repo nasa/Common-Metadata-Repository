@@ -11,6 +11,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
+   [cmr.ingest.config :as ingest-config]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.validation.validation :as v]
    [cmr.umm-spec.umm-spec-core :as spec]))
@@ -38,7 +39,8 @@
     (let [concept (validate-and-prepare-variable-concept concept)
           {concept-format :format metadata :metadata} concept
           variable (spec/parse-metadata request-context :variable concept-format metadata)
-          _ (v/umm-spec-validate-variable variable request-context false)
+          _ (v/umm-spec-validate-variable
+             variable request-context (not (ingest-config/validate-umm-var-keywords)))
           concept-with-user-id (api-core/set-user-id concept request-context headers)
           ;; Log the ingest attempt
           _ (info (format "Ingesting service %s from client %s"
