@@ -14,10 +14,14 @@ const cmrGranuleUrl = `${cmrRootUrl}/search/granules.json?concept_id=`;
  */
 const getEchoToken = async () => {
   console.log(process.env.CMR_ENVIRONMENT);
-  const response = await getSecureParam(`/${process.env.CMR_ENVIRONMENT}/browse-scaler/CMR_ECHO_SYSTEM_TOKEN`);
+  const response = await getSecureParam(
+    `/${process.env.CMR_ENVIRONMENT}/browse-scaler/CMR_ECHO_SYSTEM_TOKEN`
+  );
 
   if (response === undefined) {
     throw new Error('ECHO Token not found. Please update config!');
+  } else {
+    console.log('Retrieved ECHO TOKEN');
   }
 
   return response;
@@ -31,7 +35,7 @@ const getEchoToken = async () => {
  * @returns {JSON} the collection associated with the supplied id
  */
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
-  const token = getEchoToken();
+  const token = await getEchoToken();
   const response = await fetch(cmrEndpoint + conceptId, {
     method: 'GET',
     headers: {
