@@ -9,8 +9,8 @@
 			<Description>No Related URLs, Phone instead of Telephone, no access constraint descr
 		               description, No science keywords</Description>
                         <DOI>
-													<DOI>10.5067/IAGYM8Q26QRE</DOI>
-													<Authority>https://doi.org/</Authority>
+                          <MissingReason>Not Applicable</MissingReason>
+                          <Explanation>The collection is a near real time collection that does not have a DOI.</Explanation>
                         </DOI>
 			<Orderable>false</Orderable>
 			<Visible>true</Visible>
