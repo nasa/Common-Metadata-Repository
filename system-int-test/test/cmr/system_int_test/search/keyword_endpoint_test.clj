@@ -414,7 +414,7 @@
                              [{"value" "ANGOLA",
                                "uuid"
                                "9b0a194d-d617-4fed-9625-df176319892d"}]}]}]}]}
-   :granule-data-format {"granule_data_format"
+   :granule-data-format {"granuledataformat"
                           [{"value" "JPEG", "uuid"
                             [{"value" "7972d59f-0d8d-4332-9a2d-d538d90976ba",
                               "uuid" "7972d59f-0d8d-4332-9a2d-d538d90976ba"}]}
