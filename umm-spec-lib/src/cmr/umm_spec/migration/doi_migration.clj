@@ -34,3 +34,11 @@
   (if (get-in c [:DOI :DOI])
     (update c :DOI dissoc :MissingReason :Explanation)
     (assoc c :DOI nil)))
+
+(defn migrate-doi-down-to-1_10
+  "Removes DOI if a MissingReason or Explanation is found"
+  [c]
+  (if (or (get-in c [:DOI :Explanation])
+          (get-in c [:DOI :MissingReason]))
+    (dissoc c :DOI)
+    c))
