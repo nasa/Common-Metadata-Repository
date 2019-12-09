@@ -251,7 +251,9 @@
 
 (defmethod interface/migrate-umm-version [:collection "1.11" "1.10"]
   [context c & _]
-  (related-url/migrate-down-from-1_11 c))
+  (-> c
+      related-url/migrate-down-from-1_11
+      doi/migrate-doi-down-to-1_10))
 
 (defmethod interface/migrate-umm-version [:collection "1.11" "1.12"]
   [context c & _]

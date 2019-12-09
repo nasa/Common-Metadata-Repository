@@ -4,7 +4,7 @@
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
-   [cmr.common.util :refer [remove-empty-maps]]
+   [cmr.common.util :as util :refer [remove-empty-maps]]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
@@ -1728,13 +1728,13 @@
 
 (deftest migrate-1-11-to-1-10
   (let [result (vm/migrate-umm {} :collection "1.11" "1.10" exp-conv/example-collection-record)]
-    (is (= related-urls-UMM-1-10-example
+    (is (= (dissoc related-urls-UMM-1-10-example :DOI)
            result))))
 
 (deftest migrate-1-11-down-to-1-10-no-related-urls
   (let [collection (dissoc exp-conv/example-collection-record :RelatedUrls)
         result (vm/migrate-umm {} :collection "1.11" "1.10" collection)]
-    (is (= (dissoc related-urls-UMM-1-10-example :RelatedUrls)
+    (is (= (dissoc related-urls-UMM-1-10-example :DOI :RelatedUrls)
            result))))
 
 (def related-urls-UMM-1-11-example
