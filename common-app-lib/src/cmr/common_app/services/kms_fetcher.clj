@@ -43,7 +43,7 @@
    :concepts [:short-name]
    :iso-topic-categories [:iso-topic-category]
    :related-urls [:type :subtype]
-   :granule-data-format [:granule-data-format :uuid]})
+   :granule-data-format [:granuledataformat :uuid]})
 
 (def FIELD_NOT_PRESENT
   "A string to indicate that a field is not present within a KMS keyword."
@@ -95,6 +95,7 @@
   [context]
   (let [cache (cache/context->cache context kms-cache-key)
         gcmd-keywords-map (fetch-gcmd-keywords-map context)]
+    (info "Refreshed KMS cache.")
     (cache/set-value cache kms-cache-key gcmd-keywords-map)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
