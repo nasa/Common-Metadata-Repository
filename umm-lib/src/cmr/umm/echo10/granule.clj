@@ -84,15 +84,15 @@
   "Returns a UMM data-granule element from a parsed Granule XML structure"
   [granule-content-node]
   (let [data-gran-node (cx/element-at-path granule-content-node [:DataGranule])
-        size (cx/double-at-path data-gran-node [:SizeMBDataGranule])
         size-in-bytes (cx/double-at-path data-gran-node [:DataGranuleSizeInBytes])
+        size (cx/double-at-path data-gran-node [:SizeMBDataGranule])
         checksum (xml-elem->Checksum data-gran-node) 
         producer-gran-id (cx/string-at-path data-gran-node [:ProducerGranuleId])
         day-night (cx/string-at-path data-gran-node [:DayNightFlag])
         production-date-time (cx/datetime-at-path data-gran-node [:ProductionDateTime])]
-    (when (or size producer-gran-id day-night production-date-time)
-      (g/map->DataGranule {:size size
-                           :size-in-bytes size-in-bytes
+    (when (or size-in-bytes size checksum producer-gran-id day-night production-date-time)
+      (g/map->DataGranule {:size-in-bytes size-in-bytes
+                           :size size
                            :checksum (when checksum
                                        (g/map->Checksum {:value (:value checksum)
                                                          :algorithm (:algorithm checksum)}))
