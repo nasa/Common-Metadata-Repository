@@ -160,13 +160,18 @@
 (defn- parse-doi
   "There could be multiple DOIs under Collection, just take the first one for now."
   [doc]
-  (let [doi (first (select doc "Collection/DOI"))
-        doi-value (value-of doi "DOI")
-        authority (value-of doi "Authority")]
-    (when (or doi-value authority)
-      (util/remove-nil-keys
-       {:DOI doi-value
-        :Authority authority}))))
+  (when-let [doi (first (select doc "Collection/DOI"))]
+    (let [doi-value (value-of doi "DOI")
+          authority (value-of doi "Authority")
+          missing-reason (value-of doi "MissingReason")
+          explanation (value-of doi "Explanation")]
+      (if (or doi-value authority)
+        (util/remove-nil-keys
+         {:DOI doi-value
+          :Authority authority})
+        (util/remove-nil-keys
+         {:MissingReason missing-reason
+          :Explanation explanation})))))
 
 (defn- parse-archive-dist-info
   "Parses ArchiveAndDistributionInformation out of Echo 10 XML into UMM-C"
