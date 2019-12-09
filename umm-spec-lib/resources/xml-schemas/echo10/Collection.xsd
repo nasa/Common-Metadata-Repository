@@ -225,7 +225,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       </xs:element>
       <xs:element name="DOI" type="DoiType" minOccurs="0">
         <xs:annotation>
-          <xs:documentation>This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as an OnlineResource. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of http://dx.doi.org/ should be used.</xs:documentation>
+          <xs:documentation>This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as an OnlineResource. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections. For those that want to specify that a DOI is not applicable for their record use the second option.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" name="CollectionDataType">
@@ -451,6 +451,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
+      <xs:element name="UseConstraints" type="UseConstraintsType" minOccurs="0"/>
       <xs:element minOccurs="0" name="Price" type="DollarAmount">
         <xs:annotation>
           <xs:documentation>The price for ordering the
@@ -541,6 +542,35 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <xs:documentation>The list of browse image urls
             associated with this collection.</xs:documentation>
           </xs:annotation>
+        </xs:element>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="UseConstraintsType">
+    <xs:sequence>
+      <xs:element name="Description" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>This sub-element either contains a license summary or free-text description that details the permitted use or limitation of this collection.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="4000" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:choice minOccurs="0">
+        <xs:element name="LicenseUrl" type="OnlineResource"/>
+        <xs:element name="LicenseText">
+          <xs:annotation>
+            <xs:documentation>This element holds the actual license text. If this element is used the LicenseUrl element cannot be used.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1" />
+              <xs:maxLength value="20000" />
+            </xs:restriction>
+          </xs:simpleType>
         </xs:element>
       </xs:choice>
     </xs:sequence>
@@ -2158,7 +2188,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       data etc.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="SpatialCoverageType" minOccurs="0">
+      <xs:element name="SpatialCoverageType">
         <xs:annotation>
           <xs:documentation>This attribute denotes whether the
           locality/coverage requires horizontal, vertical, or both
