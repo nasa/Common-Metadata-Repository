@@ -183,7 +183,7 @@
                           (kms-scheme->fields-for-umm-c-lookup keyword-scheme))]
     (as-> kms-index index
           (get index keyword-scheme)
-          (map #(set/rename-keys % {:granule-data-format :format}) index)
+          (map #(set/rename-keys % {:granuledataformat :format}) index)
           (filter #(= (str/lower-case (:format %))
                       (str/lower-case (:format comparison-map)))
                   index)
