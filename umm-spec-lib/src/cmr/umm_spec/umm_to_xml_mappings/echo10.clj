@@ -156,10 +156,12 @@
        (if (:DOI doi)
          [:DOI
           [:DOI (:DOI doi)]
-          [:Authority (:Authority doi)]]
+          (when (:Authority doi)
+            [:Authority (:Authority doi)])]
          [:DOI
           [:MissingReason (:MissingReason doi)]
-          [:Explanation (:Explanation doi)]]))
+          (when (:Explanation doi)
+            [:Explanation (:Explanation doi)])]))
      [:CollectionDataType (:CollectionDataType c)]
      (when-let [revision-date (dates/metadata-update-date c)]
        [:RevisionDate (f/unparse (f/formatters :date-time) revision-date)])

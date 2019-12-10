@@ -167,11 +167,15 @@
           explanation (value-of doi "Explanation")]
       (if (or doi-value authority)
         (util/remove-nil-keys
-         {:DOI doi-value
-          :Authority authority})
+         {:DOI (when doi-value
+                   doi-value)
+          :Authority (when authority
+                       authority)})
         (util/remove-nil-keys
-         {:MissingReason missing-reason
-          :Explanation explanation})))))
+         {:MissingReason (when missing-reason
+                           missing-reason)
+          :Explanation (when explanation
+                         explanation)})))))
 
 (defn- parse-archive-dist-info
   "Parses ArchiveAndDistributionInformation out of Echo 10 XML into UMM-C"
