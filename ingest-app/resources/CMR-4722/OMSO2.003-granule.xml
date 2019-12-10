@@ -7,7 +7,7 @@
     <VersionId>003</VersionId>
   </Collection>
   <DataGranule>
-    <DataGranuleSizeInBytes>39379224.7772217</DataGranuleSizeInBytes>
+    <DataGranuleSizeInBytes>39379225</DataGranuleSizeInBytes>
     <SizeMBDataGranule>39.3792247772217</SizeMBDataGranule>
     <Checksum>
       <Value>1234567890</Value>

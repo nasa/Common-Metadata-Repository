@@ -84,7 +84,7 @@
   "Returns a UMM data-granule element from a parsed Granule XML structure"
   [granule-content-node]
   (let [data-gran-node (cx/element-at-path granule-content-node [:DataGranule])
-        size-in-bytes (cx/double-at-path data-gran-node [:DataGranuleSizeInBytes])
+        size-in-bytes (cx/integer-at-path data-gran-node [:DataGranuleSizeInBytes])
         size (cx/double-at-path data-gran-node [:SizeMBDataGranule])
         checksum (xml-elem->Checksum data-gran-node) 
         producer-gran-id (cx/string-at-path data-gran-node [:ProducerGranuleId])

@@ -60,7 +60,7 @@
     </Collection>
     <RestrictionFlag>5.3</RestrictionFlag>
     <DataGranule>
-      <DataGranuleSizeInBytes>71938552.87</DataGranuleSizeInBytes>
+      <DataGranuleSizeInBytes>71938553</DataGranuleSizeInBytes>
       <SizeMBDataGranule>71.93855287</SizeMBDataGranule>
       <Checksum>
         <Value>1234567890</Value>
@@ -239,7 +239,7 @@
                        {:entry-title "R1_SCANSAR_FRAME"})
      :access-value 5.3
      :data-granule (umm-g/map->DataGranule
-                     {:size-in-bytes 71938552.87
+                     {:size-in-bytes 71938553
                       :size 71.93855287
                       :checksum (umm-g/map->Checksum
                                   {:value "1234567890"
