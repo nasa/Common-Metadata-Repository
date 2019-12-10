@@ -354,7 +354,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
     </xs:annotation>
     <xs:sequence>
       <xs:element minOccurs="0" name="DataGranuleSizeInBytes"
-      type="xs:double">
+      type="xs:unsignedLong">
         <xs:annotation>
           <xs:documentation>The attribute will indicate the
           volume of data in bytes contained in the
