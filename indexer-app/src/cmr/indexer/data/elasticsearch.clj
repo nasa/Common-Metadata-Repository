@@ -1,24 +1,26 @@
 (ns cmr.indexer.data.elasticsearch
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [clojurewerkz.elastisch.rest.document :as doc]
-            [clojurewerkz.elastisch.rest.bulk :as bulk]
-            [cmr.indexer.data.bulk :as cmr-bulk]
-            [clj-http.client :as client]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.concepts :as cs]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.util :as util]
-            [cmr.elastic-utils.connect :as es]
-            [cmr.elastic-utils.index-util :as esi]
-            [cmr.transmit.index-set :as index-set]
-            [cmr.indexer.data.index-set :as idx-set]
-            [cmr.umm.umm-core :as umm]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [cmr.common.time-keeper :as tk]
-            [cheshire.core :as json]
-            [cmr.indexer.data.concept-parser :as cp]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clojurewerkz.elastisch.rest.bulk :as bulk]
+   [clojurewerkz.elastisch.rest.document :as doc]
+   [cmr.common.concepts :as cs]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as tk]
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.connect :as es]
+   [cmr.elastic-utils.index-util :as esi]
+   [cmr.indexer.config :as config]
+   [cmr.indexer.data.concept-parser :as cp]
+   [cmr.indexer.data.bulk :as cmr-bulk]
+   [cmr.indexer.data.index-set :as idx-set]
+   [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
+   [cmr.transmit.index-set :as index-set]
+   [cmr.umm.umm-core :as umm]))
 
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
@@ -160,9 +162,10 @@
 
   (start
     [this system]
-    (let [context {:system system}
-          conn (es/try-connect (:config this))]
-      (assoc this :conn conn)))
+    (let [conn (es/try-connect (:config this))
+          this (assoc this :conn conn)]
+      (index-set-es/create-index this config/idx-cfg-for-index-sets)
+      this))
 
   (stop [this system]
         this))

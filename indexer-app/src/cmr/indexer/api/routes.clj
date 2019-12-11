@@ -1,28 +1,27 @@
 (ns cmr.indexer.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
-            [compojure.core :refer :all]
-            [clojure.string :as string]
-            [ring.util.response :as r]
-            [ring.middleware.json :as ring-json]
-            [clojure.stacktrace :refer [print-stack-trace]]
-            [clojure.walk :as walk]
-            [cheshire.core :as json]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.api.errors :as errors]
-            [cmr.common.cache :as cache]
-            [cmr.acl.core :as acl]
-
-            ;; These must be required here to make multimethod implementations available.
-            [cmr.indexer.data.concepts.collection]
-            [cmr.indexer.data.concepts.granule]
-            [cmr.indexer.data.concepts.tag]
-
-            [cmr.indexer.services.index-service :as index-svc]
-            [cmr.common.api.context :as context]
-            [cmr.common-app.api.health :as common-health]
-            [cmr.common-app.api.routes :as common-routes]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.stacktrace :refer [print-stack-trace]]
+   [clojure.string :as string]
+   [clojure.walk :as walk]
+   [compojure.core :refer :all]
+   [compojure.handler :as handler]
+   [compojure.route :as route]
+   [cmr.acl.core :as acl] ;; These must be required here to make multimethod implementations available.
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
+   [cmr.common.cache :as cache]
+   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.indexer.data.concepts.collection]
+   [cmr.indexer.data.concepts.granule]
+   [cmr.indexer.data.concepts.tag]
+   [cmr.indexer.services.index-service :as index-svc]
+   [cmr.indexer.services.index-set-service :as index-set-svc]
+   [ring.middleware.json :as ring-json]
+   [ring.util.response :as r]))
 
 (defn- ignore-conflict?
   "Return false if ignore_conflict parameter is set to false; otherwise return true"
@@ -105,6 +104,47 @@
             (index-svc/delete-concept
               request-context concept-id revision-id (assoc options :all-revisions-index? false))
             {:status 204})))
+
+      (context "/index-sets" []
+        (POST "/" {body :body request-context :request-context params :params headers :headers}
+          (let [index-set (walk/keywordize-keys body)]
+            (acl/verify-ingest-management-permission request-context :update)
+            (r/created (index-set-svc/create-index-set request-context index-set))))
+
+        ;; respond with index-sets in elastic
+        (GET "/" {request-context :request-context params :params headers :headers}
+          (acl/verify-ingest-management-permission request-context :read)
+          (r/response (index-set-svc/get-index-sets request-context)))
+
+        (context "/:id" [id]
+          (GET "/" {request-context :request-context params :params headers :headers}
+            (acl/verify-ingest-management-permission request-context :read)
+            (r/response (index-set-svc/get-index-set request-context id)))
+
+          (PUT "/" {request-context :request-context body :body params :params headers :headers}
+            (let [index-set (walk/keywordize-keys body)]
+              (acl/verify-ingest-management-permission request-context :update)
+              (index-set-svc/update-index-set request-context index-set)
+              {:status 200}))
+
+          (DELETE "/" {request-context :request-context params :params headers :headers}
+            (acl/verify-ingest-management-permission request-context :update)
+            (index-set-svc/delete-index-set request-context id)
+            {:status 204})
+
+          (context "/rebalancing-collections/:concept-id" [concept-id]
+
+            ;; Marks the collection as rebalancing in the index set.
+            (POST "/start" {request-context :request-context params :params}
+              (acl/verify-ingest-management-permission request-context :update)
+              (index-set-svc/mark-collection-as-rebalancing request-context id concept-id (:target params))
+              {:status 200})
+
+            ;; Marks the collection as completed rebalancing
+            (POST "/finalize" {request-context :request-context}
+              (acl/verify-ingest-management-permission request-context :update)
+              (index-set-svc/finalize-collection-rebalancing request-context id concept-id)
+              {:status 200}))))
 
       (common-health/health-api-routes index-svc/health))
 
