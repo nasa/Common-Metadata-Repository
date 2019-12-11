@@ -25,6 +25,12 @@
    delete-time
    ])
 
+(defrecord Checksum
+  [
+   value
+   algorithm
+   ])
+
 (defrecord DataGranule
   [
    ;; maps to  Granule/DataGranule/ProducerGranuleID in echo granule schema
@@ -36,8 +42,14 @@
    ;; maps to Granule/DataGranule/ProductionDateTime
    production-date-time
 
+   ;; maps to Granule/DataGranule/DataGranuleSizeInBytes
+   size-in-bytes
+
    ;; maps to Granule/DataGranule/SizeMBDataGranule
    size
+
+   ;; maps to Granule/DataGranule/Checksum
+   checksum
 
    ;; currently not mapped to any echo10/iso-smap granule schema.
    crid-ids

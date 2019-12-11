@@ -60,6 +60,12 @@
     </Collection>
     <RestrictionFlag>5.3</RestrictionFlag>
     <DataGranule>
+      <DataGranuleSizeInBytes>71938553</DataGranuleSizeInBytes>
+      <SizeMBDataGranule>71.93855287</SizeMBDataGranule>
+      <Checksum>
+        <Value>1234567890</Value>
+        <Algorithm>Fletcher-32</Algorithm>
+      </Checksum>
       <ProducerGranuleId>0000000.0000001.hdf</ProducerGranuleId>
       <DayNightFlag>NIGHT</DayNightFlag>
     </DataGranule>
@@ -233,7 +239,12 @@
                        {:entry-title "R1_SCANSAR_FRAME"})
      :access-value 5.3
      :data-granule (umm-g/map->DataGranule
-                     {:producer-gran-id "0000000.0000001.hdf"
+                     {:size-in-bytes 71938553
+                      :size 71.93855287
+                      :checksum (umm-g/map->Checksum
+                                  {:value "1234567890"
+                                   :algorithm "Fletcher-32"})
+                      :producer-gran-id "0000000.0000001.hdf"
                       :day-night "NIGHT"})
      :project-refs ["Short Name-240" "Short Name-241"]
      :cloud-cover 0.8

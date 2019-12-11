@@ -8,7 +8,12 @@
     <VersionId>003</VersionId>
   </Collection>
   <DataGranule>
+    <DataGranuleSizeInBytes>39379225</DataGranuleSizeInBytes>
     <SizeMBDataGranule>39.3792247772217</SizeMBDataGranule>
+    <Checksum>
+      <Value>1234567890</Value>
+      <Algorithm>Fletcher-32</Algorithm>
+    </Checksum>
     <ProducerGranuleId>OMI-Aura_L2-OMSO2_2004m1001t0003-o01132_v003-2016m0615t191111.he5</ProducerGranuleId>
     <DayNightFlag>DAY</DayNightFlag>
     <ProductionDateTime>2016-06-15T19:11:11.000Z</ProductionDateTime>
