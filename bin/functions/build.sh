@@ -168,8 +168,6 @@ function build_uberdocker () {
         build_docker_proj bootstrap
         cd $CMR_DIR/virtual-product-app
         build_docker_proj virtual-product
-        cd $CMR_DIR/index-set-app
-        build_docker_proj index-set
         cd $CMR_DIR/indexer-app
         build_docker_proj indexer
         cd $CMR_DIR/ingest-app

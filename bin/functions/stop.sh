@@ -51,7 +51,6 @@ function stop_uberdocker () {
     if [[ $OPT == "separate" ]]; then
         stop_docker_proj ingest
         stop_docker_proj indexer
-        stop_docker_proj index-set
         stop_docker_proj virtual-product
         stop_docker_proj bootstrap
         stop_docker_proj search

@@ -320,6 +320,7 @@ applications, as well as several libraries and support applications.
 
 - indexer-app
   - This handles indexing collections, granules, and tags in Elasticsearch
+  - Maintains the set of indexes in elasticsearch for each concept
   - Main method: cmr.indexer.runner
 
 - ingest-app
@@ -342,10 +343,6 @@ applications, as well as several libraries and support applications.
   products that a provider generates on demand from users. This takes place when
    a user places an order or downloads a product through a URL
   - Main method: cmr.virtual_product.runner
-
-- index-set-app
-  - An application that maintains the set of indexes in elasticsearch for each concept
-  - Main method: cmr.index_set.runner
 
 - metadata-db-app
   - A database that maintains revisioned copies of metadata for the CMR

@@ -14,8 +14,6 @@
    [cmr.elastic-utils.config :as elastic-config]
    [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
    [cmr.elastic-utils.test-util :as elastic-test-util]
-   [cmr.index-set.data.elasticsearch :as es-index]
-   [cmr.index-set.system :as index-set-system]
    [cmr.indexer.config :as indexer-config]
    [cmr.indexer.system :as indexer-system]
    [cmr.ingest.config :as ingest-config]
@@ -60,8 +58,6 @@
                :stop mock-echo-system/stop}
    :metadata-db {:start mdb-system/start
                  :stop mdb-system/stop}
-   :index-set {:start index-set-system/start
-               :stop index-set-system/stop}
    :indexer {:start indexer-system/dev-start
              :stop indexer-system/stop}
    :ingest {:start ingest-system/start
@@ -77,7 +73,7 @@
 
 (def app-startup-order
   "Defines the order in which applications should be started"
-  [:mock-echo :metadata-db :access-control :index-set :indexer :ingest :search :virtual-product :bootstrap])
+  [:mock-echo :metadata-db :access-control :indexer :ingest :search :virtual-product :bootstrap])
 
 (defn- update-app-web-server-options
   "Update the web configuration options for the passed app system."
@@ -278,7 +274,6 @@
               :metadata-db (create-metadata-db-app db-component queue-broker)
               :bootstrap (when-not db-component (create-bootstrap-app queue-broker))
               :indexer (create-indexer-app queue-broker)
-              :index-set (index-set-system/create-system)
               :ingest (create-ingest-app db queue-broker)
               :search (create-search-app db-component queue-broker)
               :virtual-product (create-virtual-product-app queue-broker)})

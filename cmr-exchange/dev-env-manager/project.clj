@@ -115,11 +115,6 @@
                                         "libs/common-app-lib/src"
                                         "libs/oracle-lib/src"
                                         "libs/transmit-lib/src"]}
-             :index-set {:main cmr.index-set.runner
-                         :source-paths ["apps/index-set-app/src"
-                                        "libs/acl-lib/src"
-                                        "libs/common-app-lib/src"
-                                        "libs/elastic-utils-lib/src"]}
              :indexer {:main cmr.indexer.runner
                        :source-paths ["apps/indexer-app/src"
                                       "libs/acl-lib/src"

@@ -27,17 +27,12 @@
   {:ok? true
    :dependencies {:oracle {:ok? true}}})
 
-(def good-index-set-db-health
-  {:ok? true
-   :dependencies {:elastic_search {:ok? true}, :echo {:ok? true}}})
-
 (def good-indexer-health
   {:ok? true
    :dependencies {:elastic_search {:ok? true}
                   :echo {:ok? true}
                   :message-queue {:ok? true}
-                  :metadata-db good-metadata-db-health
-                  :index-set good-index-set-db-health}})
+                  :metadata-db good-metadata-db-health}})
 
 (def good-ingest-health
   {:ok? true
@@ -65,10 +60,6 @@
    (is (= "User-agent: *" (first body)))
    (is (= "Disallow: /" (second body)))))
 
-(deftest index-set-health-test
-  (is (= [200 {:elastic_search {:ok? true} :echo {:ok? true}}]
-         (get-app-health (url/index-set-health-url)))))
-
 (deftest metadata-db-health-test
   (s/only-with-real-database
     (is (= [200 {:oracle {:ok? true}}]
@@ -79,8 +70,7 @@
     (is (= [200 {:elastic_search {:ok? true}
                  :echo {:ok? true}
                  :message-queue {:ok? true}
-                 :metadata-db good-metadata-db-health
-                 :index-set good-index-set-db-health}]
+                 :metadata-db good-metadata-db-health}]
            (get-app-health (url/indexer-health-url))))))
 
 (deftest ingest-health-test
@@ -95,8 +85,7 @@
 (deftest search-health-test
   (s/only-with-real-database
     (is (= [200 {:echo {:ok? true}
-                 :internal-metadata-db good-metadata-db-health
-                 :index-set good-index-set-db-health}]
+                 :internal-metadata-db good-metadata-db-health}]
            (get-app-health (url/search-health-url))))))
 
 (deftest bootstrap-health-test

@@ -80,7 +80,6 @@
 
 (def-app-conn-config access-control {:port 3011})
 (def-app-conn-config bootstrap {:port 3006})
-(def-app-conn-config index-set {:port 3005})
 (def-app-conn-config indexer {:port 3004})
 (def-app-conn-config ingest {:port 3002})
 (def-app-conn-config kms {:port 2999, :relative-root-url "/kms"})
@@ -195,10 +194,6 @@
              :host (indexer-host)
              :port (indexer-port)
              :context (indexer-relative-root-url)}
-   :index-set {:protocol (index-set-protocol)
-               :host (index-set-host)
-               :port (index-set-port)
-               :context (index-set-relative-root-url)}
    :bootstrap {:protocol (bootstrap-protocol)
                :host (bootstrap-host)
                :port (bootstrap-port)

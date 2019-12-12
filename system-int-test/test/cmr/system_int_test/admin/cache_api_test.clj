@@ -85,9 +85,6 @@
          "kms"
          "token-imp"
          "usage-metrics-cache"]
-        (url/index-set-read-caches-url) [
-         "health"
-         "token-imp"]
         (url/mdb-read-caches-url) [
          "health"
          "token-imp"]
@@ -141,7 +138,6 @@
           (is (= 401 (:status response)))
           (is (= ["You do not have permission to perform that action."] errors)))
         (url/indexer-read-caches-url)
-        (url/index-set-read-caches-url)
         (url/mdb-read-caches-url)
         (url/ingest-read-caches-url)
         (url/access-control-read-caches-url)
@@ -177,7 +173,6 @@
           (is (= 401 (:status response)))
           (is (= ["You do not have permission to perform that action."] errors)))
         (str (url/indexer-read-caches-url) "/acls")
-        (str (url/index-set-read-caches-url) "/acls")
         (str (url/mdb-read-caches-url) "/acls")
         (str (url/ingest-read-caches-url) "/acls")
         (str (url/access-control-read-caches-url) "/acls")
@@ -201,10 +196,6 @@
         (url/indexer-read-caches-url) "acls" ["acls"]
         (url/indexer-read-caches-url) "indexer-index-set-cache" ["concept-indices" "concept-mapping-types"]
         (url/indexer-read-caches-url) "token-imp" [["ABC-2" "read"] ["ABC-1" "read"]]
-        (url/index-set-read-caches-url) "token-imp" [["mock-echo-system-token" "update"]
-                                                     ["mock-echo-system-token" "read"]
-                                                     ["ABC-1" "read"]
-                                                     ["ABC-2" "read"]]
         (url/mdb-read-caches-url) "token-imp" [["mock-echo-system-token" "update"]
                                                ["ABC-1" "read"]
                                                ["ABC-2" "read"]]
@@ -239,7 +230,6 @@
           (is (= 401 (:status response)))
           (is (= ["You do not have permission to perform that action."] errors)))
         (str (url/indexer-read-caches-url) "/acls/acls")
-        (str (url/index-set-read-caches-url) "/acls/acls")
         (str (url/mdb-read-caches-url) "/acls/acls")
         (str (url/access-control-read-caches-url) "/acls/acls")
         (str (url/ingest-read-caches-url) "/acls/acls")

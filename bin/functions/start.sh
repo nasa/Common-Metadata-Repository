@@ -86,7 +86,6 @@ function start_uberdocker () {
         cd_and_start_docker_app search
         cd_and_start_docker_app bootstrap
         cd_and_start_docker_app virtual-product
-        cd_and_start_docker_app index-set
         cd_and_start_docker_app indexer
         cd_and_start_docker_app ingest
     elif [[ $OPT == "together" || -z $1 ]]; then
