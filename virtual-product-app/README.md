@@ -69,23 +69,12 @@ Example healthy response body:
               }
             }
           },
-          "index-set": {
-            "ok?": true,
-            "dependencies": {
-              "elastic_search": {
-                "ok?": true
-              },
-              "echo": {
-                "ok?": true
-              }
-            }
-          },
-          "rabbit-mq": {
+          "message-queue": {
             "ok?": true
           }
         }
       },
-      "rabbit-mq": {
+      "message-queue": {
         "ok?": true
       }
     }
@@ -101,7 +90,7 @@ Example healthy response body:
       }
     }
   },
-  "rabbit-mq": {
+  "message-queue": {
     "ok?": true
   }
 }
@@ -152,23 +141,12 @@ Example unhealthy response body:
               }
             }
           },
-          "index-set": {
-            "ok?": true,
-            "dependencies": {
-              "elastic_search": {
-                "ok?": true
-              },
-              "echo": {
-                "ok?": true
-              }
-            }
-          },
-          "rabbit-mq": {
+          "message-queue": {
             "ok?": true
           }
         }
       },
-      "rabbit-mq": {
+      "message-queue": {
         "ok?": true
       }
     }
@@ -184,7 +162,7 @@ Example unhealthy response body:
       }
     }
   },
-  "rabbit-mq": {
+  "message-queue": {
     "ok?": true
   }
 }

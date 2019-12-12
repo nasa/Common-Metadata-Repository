@@ -18,7 +18,6 @@
             [lein-shell "0.4.0"]]
   :profiles {:uberjar {:modules {:dirs ["access-control-app"
                                         "bootstrap-app"
-                                        "index-set-app"
                                         "indexer-app"
                                         "ingest-app"
                                         "metadata-db-app"

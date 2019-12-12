@@ -104,7 +104,7 @@ The provider API only supports requests and responses in JSON.
 Returns a list of the configured providers in the CMR.
 
 ```bash
-curl %CMR-ENDPOINT%/providers 
+curl %CMR-ENDPOINT%/providers
 ```
 
 ```json
@@ -207,17 +207,6 @@ Example healthy response body:
             "ok?" : true
           }
         }
-      },
-      "index-set" : {
-        "ok?" : true,
-        "dependencies" : {
-          "elastic_search" : {
-            "ok?" : true
-          },
-          "echo" : {
-            "ok?" : true
-          }
-        }
       }
     }
   }
@@ -259,17 +248,6 @@ Example unhealthy response body:
         "ok?" : true,
         "dependencies" : {
           "oracle" : {
-            "ok?" : true
-          },
-          "echo" : {
-            "ok?" : true
-          }
-        }
-      },
-      "index-set" : {
-        "ok?" : true,
-        "dependencies" : {
-          "elastic_search" : {
             "ok?" : true
           },
           "echo" : {

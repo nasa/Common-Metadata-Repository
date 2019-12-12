@@ -316,7 +316,7 @@
   You can also run a single test function using this runner by passing a test
   function var:
   ```
-  (ltest/run-test #'cmr.system-int-test.health-test/index-set-health-test)
+  (ltest/run-test #'cmr.system-int-test.health-test/ingest-health-test)
   ```
 
   Note that none of the `(ltest/*)` functions silence logging; only the

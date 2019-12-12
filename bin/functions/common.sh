@@ -19,7 +19,6 @@ function get_cmr_port () {
 	case "$APP" in
 		'access-control') echo 3011;;
 		'bootstrap') echo 3006;;
-		'index-set') echo 3005;;
 		'indexer') echo 3004;;
 		'ingest') echo 3002;;
 		'metadata-db') echo 3001;;

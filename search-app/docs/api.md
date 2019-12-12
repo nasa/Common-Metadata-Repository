@@ -4032,7 +4032,7 @@ Example healthy response body:
       }
     }
   },
-  "index-set" : {
+  "indexer" : {
     "ok?" : true,
     "dependencies" : {
       "elastic_search" : {
@@ -4064,7 +4064,7 @@ Example un-healthy response body:
       }
     }
   },
-  "index-set" : {
+  "indexer" : {
     "ok?" : false,
     "dependencies" : {
       "elastic_search" : {

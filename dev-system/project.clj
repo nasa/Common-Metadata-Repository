@@ -8,7 +8,6 @@
    :cmr-common-lib "0.1.1-SNAPSHOT"
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
    :cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
-   :cmr-index-set-app "0.1.0-SNAPSHOT"
    :cmr-indexer-app "0.1.0-SNAPSHOT"
    :cmr-ingest-app "0.1.0-SNAPSHOT"
    :cmr-message-queue-lib "0.1.0-SNAPSHOT"

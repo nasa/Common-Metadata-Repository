@@ -241,17 +241,6 @@ Example healthy response body:
             "ok?" : true
           }
         }
-      },
-      "index-set" : {
-        "ok?" : true,
-        "dependencies" : {
-          "elastic_search" : {
-            "ok?" : true
-          },
-          "echo" : {
-            "ok?" : true
-          }
-        }
       }
     }
   }
@@ -302,21 +291,6 @@ Example un-healthy response body:
         "dependencies" : {
           "oracle" : {
             "ok?" : true
-          },
-          "echo" : {
-            "ok?" : true
-          }
-        }
-      },
-      "index-set" : {
-        "ok?" : false,
-        "problem" : {
-          "elastic_search" : {
-            "ok?" : false,
-            "problem" : {
-              "status" : "Inaccessible",
-              "problem" : "Unable to get elasticsearch cluster health, caught exception: Connection refused"
-            }
           },
           "echo" : {
             "ok?" : true

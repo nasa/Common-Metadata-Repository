@@ -432,24 +432,6 @@
   (format "http://localhost:%s/jobs/index_recently_replicated" (transmit-config/bootstrap-port)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Index Set URLs
-
-(defn index-set-reset-url
-  "Delete and re-create the index set in elastic. Only development team to use this functionality."
-  []
-  (format "http://localhost:%s/reset" (transmit-config/index-set-port)))
-
-(defn index-set-read-caches-url
-  "URL to read the index-set caches."
-  []
-  (format "http://localhost:%s/caches" (transmit-config/index-set-port)))
-
-(defn index-set-health-url
-  "URL to check index-set health."
-  []
-  (format "http://localhost:%s/health" (transmit-config/index-set-port)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Indexer URLs
 
 (defn indexer-reset-url

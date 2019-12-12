@@ -20,7 +20,6 @@
    ;; Services for reseting
    [cmr.access-control.api.routes :as access-control]
    [cmr.common.cache :as cache]
-   [cmr.index-set.services.index-service :as index-set-service]
    [cmr.indexer.services.index-service :as indexer-service]
    [cmr.ingest.services.ingest-service :as ingest-service]
    [cmr.metadata-db.services.concept-service :as mdb-service]
@@ -76,7 +75,6 @@
   "A map of services to clear cache functions."
   {:indexer cache/reset-caches
    :access-control cache/reset-caches
-   :index-set cache/reset-caches
    :metadata-db cache/reset-caches
    :search cache/reset-caches
    :ingest cache/reset-caches})

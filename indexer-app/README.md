@@ -75,16 +75,8 @@ Example healthy response body:
       }
     }
   },
-  "index-set" : {
-    "ok?" : true,
-    "dependencies" : {
-      "elastic_search" : {
-        "ok?" : true
-      },
-      "echo" : {
-        "ok?" : true
-      }
-    }
+  "message-queue": {
+    "ok?": true
   }
 }
 ```
@@ -111,17 +103,10 @@ Example un-healthy response body:
       }
     }
   },
-  "index-set" : {
-    "ok?" : true,
-    "dependencies" : {
-      "elastic_search" : {
-        "ok?" : true
-      },
-      "echo" : {
-        "ok?" : true
-      }
-    }
+  "message-queue": {
+    "ok?": true
   }
+
 }
 ```
 
@@ -138,6 +123,44 @@ By default, a comparison is run between the existing elasticsearch indexes and w
 ### Reindex all tags
 
     curl -XPOST http://localhost:3004/reindex-tags?token=XXXX'
+
+### Create index-set using json string
+
+```
+curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST "http://localhost:3004/index-sets" -d "{\"index-set\":{\"name\":\"cmr-base-index-set\",\"create-reason\":\"include message about reasons for creating this index set\",\"granule\":{\"index-names\":[\"G2-PROV1\",\"G4-Prov3\",\"g5_prov5\"],\"mapping\":{\"granule\":{\"_all\":{\"enabled\":false},\"properties\":{\"collection-concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"},\"concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"}},\"dynamic\":\"strict\",\"_source\":{\"enabled\":false},\"_id\":{\"path\":\"concept-id\"}}},\"settings\":{\"index\":{\"number_of_replicas\":0,\"refresh_interval\":\"10s\",\"number_of_shards\":1}}},\"collection\":{\"index-names\":[\"C4-collections\",\"c6_Collections\"],\"mapping\":{\"collection\":{\"_all\":{\"enabled\":false},\"properties\":{\"entry-title\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"},\"concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"}},\"dynamic\":\"strict\",\"_source\":{\"enabled\":false},\"_id\":{\"path\":\"concept-id\"}}},\"settings\":{\"index\":{\"number_of_replicas\":0,\"refresh_interval\":\"20s\",\"number_of_shards\":1}}},\"id\":3}}"
+```
+
+### Get index-set by id
+
+    curl -XGET "http://localhost:3004/index-sets/3"
+
+### Get all index-sets
+
+    curl -XGET "http://localhost:3004/index-sets"
+
+### Delete index-set by id
+
+    curl -XDELETE "http://localhost:3004/index-sets/3"
+
+### Mark a collection as rebalancing
+
+There are multiple granule indexes for performance. Larger collections are split out into their own indexes. Smaller collections are grouped in a small_collections index. When calling the endpoint the `target` query parameter is required, and it has two valid values, `separate-index` and `small-collections`. In either case the collection is added to the list of collections being rebalanced. If `target=separate-index` a new granule index is created in addition to updating the index-set.
+
+    curl -XPOST http://localhost:3004/index-sets/3/rebalancing-collections/C5-PROV1/start?target=separate-index
+
+### Finalize a rebalancing collection
+
+Finalizing a rebalancing collection removes the collection from the list of collections are are being rebalanced and updates the index-set appropriately based on what the target destination was set to on the call to start.
+
+    curl -XPOST http://localhost:3004/index-sets/3/rebalancing-collections/C5-PROV1/finalize
+
+### Reset for dev purposes
+
+    curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST "http://localhost:3004/reset"
+
+### See indices listing
+
+   curl http://localhost:9210/index_sets/_aliases?pretty=1
 
 ### Ignore version conflict
 
@@ -160,6 +183,98 @@ An uncaught error such as indexer dying or running out of memory will be handled
 ##### Alerts
 
 The indexer has a background job that monitors the RabbitMQ message queue size and logs it. If the message queue size exceeds the configured size (CMR_INDEXER_WARN_QUEUE_SIZE) we will log extra infomation that splunk can detect. We will add a splunk alert to look for the log mesage indicating the queue size has exceeded threshhold and email CMR Operations.
+
+## Sample outputs
+
+- Get all index-sets response
+[{:id 3,
+  :name "cmr-base-index-set",
+  :concepts
+  {:collection
+   {:c6_Collections "3_c6_collections",
+    :C4-collections "3_c4_collections"},
+   :granule
+   {:g5_prov5 "3_g5_prov5",
+    :G4-Prov3 "3_g4_prov3",
+    :G2-PROV1 "3_g2_prov1"}}}
+ {:id 55,
+  :name "cmr-base-index-set",
+  :concepts
+  {:collection
+   {:c6_Collections "55_c6_collections",
+    :C4-collections "55_c4_collections"},
+   :granule
+   {:g5_prov5 "55_g5_prov5",
+    :G4-Prov3 "55_g4_prov3",
+    :G2-PROV1 "55_g2_prov1"}}}]
+
+- Get an index-set by id response
+    {:index-set
+ {:concepts
+  {:collection
+   {:c6_Collections "3_c6_collections",
+    :C4-collections "3_c4_collections"},
+   :granule
+   {:g5_prov5 "3_g5_prov5",
+    :G4-Prov3 "3_g4_prov3",
+    :G2-PROV1 "3_g2_prov1"}},
+  :name "cmr-base-index-set",
+  :create-reason
+  "include message about reasons for creating this index set",
+  :granule
+  {:index-names ["G2-PROV1" "G4-Prov3" "g5_prov5"],
+   :mapping
+   {:granule
+    {:_all {:enabled false},
+     :properties
+     {:collection-concept-id
+      {:store "yes",
+       :index_options "docs",
+       :omit_norms "true",
+       :type "string",
+       :index "not_analyzed"},
+      :concept-id
+      {:store "yes",
+       :index_options "docs",
+       :omit_norms "true",
+       :type "string",
+       :index "not_analyzed"}},
+     :dynamic "strict",
+     :_source {:enabled false},
+     :_id {:path "concept-id"}}},
+   :settings
+   {:index
+    {:number_of_replicas 0,
+     :refresh_interval "10s",
+     :number_of_shards 1}}},
+  :collection
+  {:index-names ["C4-collections" "c6_Collections"],
+   :mapping
+   {:collection
+    {:_all {:enabled false},
+     :properties
+     {:entry-title
+      {:store "yes",
+       :index_options "docs",
+       :omit_norms "true",
+       :type "string",
+       :index "not_analyzed"},
+      :concept-id
+      {:store "yes",
+       :index_options "docs",
+       :omit_norms "true",
+       :type "string",
+       :index "not_analyzed"}},
+     :dynamic "strict",
+     :_source {:enabled false},
+     :_id {:path "concept-id"}}},
+   :settings
+   {:index
+    {:number_of_replicas 0,
+     :refresh_interval "20s",
+     :number_of_shards 1}}},
+  :id 3}}
+
 
 ## License
 
