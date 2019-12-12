@@ -96,6 +96,9 @@
         "mdb-reset"
         (url/mdb-reset-url) :post
 
+        "index-set-reset"
+        (url/index-set-reset-url) :post
+
         "reindex-collection-permitted-groups"
         (url/reindex-collection-permitted-groups-url) :post
 
