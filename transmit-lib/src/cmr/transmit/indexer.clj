@@ -71,7 +71,7 @@
                                          start-rebalance-collection-url target))
 
 (defn finalize-rebalancing-collection
-  "Finalizes the rebalancing collection specified in the index set application."
+  "Finalizes the rebalancing collection specified in the indexer application."
   [context index-set-id concept-id]
   (submit-rebalancing-collection-request context index-set-id concept-id
                                          finalize-rebalance-collection-url nil))
