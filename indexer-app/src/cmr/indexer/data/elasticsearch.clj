@@ -19,7 +19,7 @@
    [cmr.indexer.data.bulk :as cmr-bulk]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
-   [cmr.transmit.index-set :as index-set]
+   [cmr.indexer.services.index-set-service :as index-set-svc]
    [cmr.umm.umm-core :as umm]))
 
 (def MAX_BULK_OPERATIONS_PER_REQUEST
@@ -85,7 +85,7 @@
   update. Takes either the context which will be used to request index sets or the existing
   and expected index sets."
   ([context]
-   (let [existing-index-set (index-set/get-index-set context idx-set/index-set-id)
+   (let [existing-index-set (index-set-svc/get-index-set context idx-set/index-set-id false)
          extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
          expected-index-set (idx-set/index-set extra-granule-indexes)]
      (requires-update? existing-index-set expected-index-set)))
@@ -96,14 +96,14 @@
 (defn create-indexes
   "Create elastic index for each index name"
   [context]
-  (let [existing-index-set (index-set/get-index-set context idx-set/index-set-id)
+  (let [existing-index-set (index-set-svc/get-index-set context idx-set/index-set-id false)
         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
         expected-index-set (idx-set/index-set extra-granule-indexes)]
     (cond
       (nil? existing-index-set)
       (do
         (info "Index set does not exist so creating it.")
-        (idx-set/create context expected-index-set)
+        (index-set-svc/create-index-set context expected-index-set)
         (info "Creating collection index alias.")
         (esi/create-index-alias (context->conn context)
                                 (idx-set/collections-index)
@@ -123,7 +123,7 @@
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
   [context params]
-  (let [existing-index-set (index-set/get-index-set context idx-set/index-set-id)
+  (let [existing-index-set (index-set-svc/get-index-set context idx-set/index-set-id false)
         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
         ;; We use the extra granule indexes from the existing configured index set when determining
         ;; the expected index set.
@@ -132,7 +132,7 @@
             (requires-update? existing-index-set expected-index-set))
       (do
         (info "Updating the index set to " (pr-str expected-index-set))
-        (idx-set/update context expected-index-set)
+        (index-set-svc/update-index-set context expected-index-set)
         (info "Creating colleciton index alias.")
         (esi/create-index-alias (context->conn context)
                                 (idx-set/collections-index)
@@ -145,7 +145,7 @@
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
   [context]
-  (idx-set/reset context)
+  (index-set-svc/reset context)
   (create-indexes context))
 
 (defrecord ESstore

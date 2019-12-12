@@ -17,7 +17,7 @@
    [cmr.common.util :as util]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
    [cmr.search.services.query-walkers.provider-id-extractor :as pex]
-   [cmr.transmit.index-set :as index-set])
+   [cmr.transmit.indexer :as indexer])
   ;; Required to be available at runtime.
   (:require
    [cmr.search.data.elastic-relevancy-scoring]
@@ -45,7 +45,7 @@
 (defn- fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
   [context]
-  (let [fetched-index-set (index-set/get-index-set context index-set-id)
+  (let [fetched-index-set (indexer/get-index-set context index-set-id)
         ;; We want to make sure collections in the process of being moved to a separate granule
         ;; index continue to use the small collections index for search.
         rebalancing-targets-map (get-in fetched-index-set [:index-set :granule :rebalancing-targets])

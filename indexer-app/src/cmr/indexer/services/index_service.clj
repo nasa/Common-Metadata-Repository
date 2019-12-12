@@ -32,7 +32,6 @@
    [cmr.message-queue.services.queue :as queue]
    [cmr.redis-utils.redis :as redis]
    [cmr.transmit.echo.rest :as rest]
-   [cmr.transmit.index-set :as tis]
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.transmit.metadata-db2 :as meta-db2]
    [cmr.transmit.search :as search]
@@ -672,7 +671,6 @@
   {:elastic_search #(es-util/health % :db)
    :echo rest/health
    :metadata-db meta-db2/get-metadata-db-health
-   :index-set tis/get-index-set-health
    :message-queue (fn [context]
                     (when-let [qb (get-in context [:system :queue-broker])]
                       (queue-protocol/health qb)))})
