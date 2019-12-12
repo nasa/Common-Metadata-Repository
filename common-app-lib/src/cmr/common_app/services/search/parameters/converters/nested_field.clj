@@ -19,6 +19,10 @@
   "The subfields of the granule pass nested field."
   [:pass :tiles])
 
+(def measurement-identifier-subfields
+  "The subfields of the variable measurement identifier nested field."
+  [:contextmedium :object :quantity])
+
 (defn get-subfield-names
   "Returns all of the subfields for the provided nested field. All nested field queries also support
   'any'."
@@ -34,6 +38,7 @@
       :variables variable-subfields
       :temporal-facet temporal-facet-subfields
       :passes pass-subfields
+      :measurement-identifiers measurement-identifier-subfields
       ;; else
       (conj (kms/keyword-scheme->field-names
              (kms/translate-keyword-scheme-to-gcmd base-parent-field))

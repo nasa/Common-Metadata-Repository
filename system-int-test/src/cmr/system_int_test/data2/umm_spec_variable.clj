@@ -60,3 +60,13 @@
          (variable attribs)
          (assoc :provider-id provider-id :native-id native-id)
          (d/umm-var->concept concept-format)))))
+
+(defn measurement-identifier
+  "Returns the UMM-Var MeasurementIdentifier for the given attributes map"
+  [attribs]
+  (let [{:keys [context-medium object quantities]} attribs]
+    (umm-v/map->MeasurementIdentifierType
+      {:MeasurementContextMedium context-medium
+       :MeasurementObject object
+       :MeasurementQuantities (seq (map #(umm-v/map->MeasurementQuantityType {:Value %})
+                                        quantities))})))

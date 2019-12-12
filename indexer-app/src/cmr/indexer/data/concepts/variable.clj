@@ -10,6 +10,27 @@
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.transmit.metadata-db :as mdb]))
 
+(defn- measurement-quantity->elastic-doc
+  "Returns the elastic document for the given measurement quantity"
+  [quantity]
+  (let [value (:Value quantity)]
+    {:quantity value
+     :quantity.lowercase (util/safe-lowercase value)}))
+
+(defn- measurement-identifier->elastic-doc
+  "Converts a measurement identifier into the portion going in an elastic document for indexing."
+  [measurement-identifier]
+  (let [{context-medium :MeasurementContextMedium
+         object :MeasurementObject
+         quantities :MeasurementQuantities} measurement-identifier
+        base-doc {:contextmedium context-medium
+                  :contextmedium.lowercase (util/safe-lowercase context-medium)
+                  :object object
+                  :object.lowercase (util/safe-lowercase object)}]
+    (if (seq quantities)
+      (map #(merge base-doc (measurement-quantity->elastic-doc %)) quantities)
+      [base-doc])))
+
 (defmethod es/parsed-concept->elastic-doc :variable
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
@@ -63,6 +84,8 @@
        :user-id user-id
        :revision-date revision-date
        :metadata-format (name (mt/format-key format))
+       :measurement-identifiers (mapcat measurement-identifier->elastic-doc
+                                        (:MeasurementIdentifiers parsed-concept))
        ;; associated collections saved in elasticsearch for retrieving purpose in the format of:
        ;; [{"concept_id":"C1200000007-PROV1"}, {"concept_id":"C1200000008-PROV1","revision_id":5}]
        :collections-gzip-b64 (when (seq variable-associations)
