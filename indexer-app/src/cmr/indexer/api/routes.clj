@@ -30,10 +30,63 @@
     false
     true))
 
+(def ^:private index-set-routes
+  "Routes providing index-set operations"
+  (context "/index-sets" []
+    (POST "/" {body :body request-context :request-context params :params headers :headers}
+      (let [index-set (walk/keywordize-keys body)]
+        (acl/verify-ingest-management-permission request-context :update)
+        (r/created (index-set-svc/create-index-set request-context index-set))))
+
+    ;; respond with index-sets in elastic
+    (GET "/" {request-context :request-context params :params headers :headers}
+      (acl/verify-ingest-management-permission request-context :read)
+      (r/response (index-set-svc/get-index-sets request-context)))
+
+    (POST "/reset" {request-context :request-context params :params headers :headers}
+      (acl/verify-ingest-management-permission request-context :update)
+      (cache/reset-caches request-context)
+      (index-set-svc/reset request-context)
+      {:status 204})
+
+    (context "/:id" [id]
+      (GET "/" {request-context :request-context params :params headers :headers}
+        (acl/verify-ingest-management-permission request-context :read)
+        (r/response (index-set-svc/get-index-set request-context id)))
+
+      (PUT "/" {request-context :request-context body :body params :params headers :headers}
+        (let [index-set (walk/keywordize-keys body)]
+          (acl/verify-ingest-management-permission request-context :update)
+          (index-set-svc/update-index-set request-context index-set)
+          {:status 200}))
+
+      (DELETE "/" {request-context :request-context params :params headers :headers}
+        (acl/verify-ingest-management-permission request-context :update)
+        (index-set-svc/delete-index-set request-context id)
+        {:status 204})
+
+      (context "/rebalancing-collections/:concept-id" [concept-id]
+
+        ;; Marks the collection as rebalancing in the index set.
+        (POST "/start" {request-context :request-context params :params}
+          (acl/verify-ingest-management-permission request-context :update)
+          (index-set-svc/mark-collection-as-rebalancing request-context id concept-id (:target params))
+          {:status 200})
+
+        ;; Marks the collection as completed rebalancing
+        (POST "/finalize" {request-context :request-context}
+          (acl/verify-ingest-management-permission request-context :update)
+          (index-set-svc/finalize-collection-rebalancing request-context id concept-id)
+          {:status 200})))))
+
 ;; Note for future. We should cleanup this API. It's not very well layed out.
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
+
+      ;; Routes for index-set services
+      index-set-routes
+
        ;; for NGAP deployment health check
       (GET "/" {} {:status 200})
 
@@ -104,47 +157,6 @@
             (index-svc/delete-concept
               request-context concept-id revision-id (assoc options :all-revisions-index? false))
             {:status 204})))
-
-      (context "/index-sets" []
-        (POST "/" {body :body request-context :request-context params :params headers :headers}
-          (let [index-set (walk/keywordize-keys body)]
-            (acl/verify-ingest-management-permission request-context :update)
-            (r/created (index-set-svc/create-index-set request-context index-set))))
-
-        ;; respond with index-sets in elastic
-        (GET "/" {request-context :request-context params :params headers :headers}
-          (acl/verify-ingest-management-permission request-context :read)
-          (r/response (index-set-svc/get-index-sets request-context)))
-
-        (context "/:id" [id]
-          (GET "/" {request-context :request-context params :params headers :headers}
-            (acl/verify-ingest-management-permission request-context :read)
-            (r/response (index-set-svc/get-index-set request-context id)))
-
-          (PUT "/" {request-context :request-context body :body params :params headers :headers}
-            (let [index-set (walk/keywordize-keys body)]
-              (acl/verify-ingest-management-permission request-context :update)
-              (index-set-svc/update-index-set request-context index-set)
-              {:status 200}))
-
-          (DELETE "/" {request-context :request-context params :params headers :headers}
-            (acl/verify-ingest-management-permission request-context :update)
-            (index-set-svc/delete-index-set request-context id)
-            {:status 204})
-
-          (context "/rebalancing-collections/:concept-id" [concept-id]
-
-            ;; Marks the collection as rebalancing in the index set.
-            (POST "/start" {request-context :request-context params :params}
-              (acl/verify-ingest-management-permission request-context :update)
-              (index-set-svc/mark-collection-as-rebalancing request-context id concept-id (:target params))
-              {:status 200})
-
-            ;; Marks the collection as completed rebalancing
-            (POST "/finalize" {request-context :request-context}
-              (acl/verify-ingest-management-permission request-context :update)
-              (index-set-svc/finalize-collection-rebalancing request-context id concept-id)
-              {:status 200}))))
 
       (common-health/health-api-routes index-svc/health))
 

@@ -85,7 +85,7 @@
   update. Takes either the context which will be used to request index sets or the existing
   and expected index sets."
   ([context]
-   (let [existing-index-set (index-set-svc/get-index-set context idx-set/index-set-id false)
+   (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
          extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
          expected-index-set (idx-set/index-set extra-granule-indexes)]
      (requires-update? existing-index-set expected-index-set)))
@@ -96,7 +96,7 @@
 (defn create-indexes
   "Create elastic index for each index name"
   [context]
-  (let [existing-index-set (index-set-svc/get-index-set context idx-set/index-set-id false)
+  (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
         expected-index-set (idx-set/index-set extra-granule-indexes)]
     (cond
@@ -123,7 +123,7 @@
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
   [context params]
-  (let [existing-index-set (index-set-svc/get-index-set context idx-set/index-set-id false)
+  (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
         ;; We use the extra granule indexes from the existing configured index set when determining
         ;; the expected index set.
