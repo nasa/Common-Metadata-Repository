@@ -10,9 +10,7 @@
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
-   [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.connection :as transmit-conn]
-   [cmr.transmit.index-set :as index-set]
+   [cmr.indexer.services.index-set-service :as index-set-svc]
    [cmr.transmit.metadata-db :as meta-db]))
 
 ;; The number of shards to use for the collections index, the granule indexes containing granules
@@ -793,59 +791,6 @@
        (map :name)
        (remove #(= % "small_collections"))))
 
-(defn reset
-  "Reset configured elastic indexes"
-  [context]
-  (let [index-set-root-url (transmit-conn/root-url
-                             (transmit-config/context->app-connection context :index-set))
-        index-set-reset-url (format "%s/reset" index-set-root-url)]
-    (client/request
-      {:method :post
-       :url index-set-reset-url
-       :content-type :json
-       :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-       :accept :json})))
-
-(defn create
-  "Submit a request to create index-set"
-  [context index-set]
-  (let [index-set-root-url (transmit-conn/root-url
-                             (transmit-config/context->app-connection context :index-set))
-        index-set-url (format "%s/index-sets" index-set-root-url)
-        response (client/request
-                   {:method :post
-                    :url index-set-url
-                    :body (cheshire/generate-string index-set)
-                    :content-type :json
-                    :accept :json
-                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                    :throw-exceptions false})
-        status (:status response)]
-    (when-not (= 201 status)
-      (errors/internal-error! (format "Failed to create index-set: %s, errors: %s"
-                                      (pr-str index-set)
-                                      (:body response))))))
-
-(defn update
-  "Submit a request to update an index-set"
-  [context index-set]
-  (let [index-set-root-url (transmit-conn/root-url
-                             (transmit-config/context->app-connection context :index-set))
-        index-set-url (format "%s/index-sets/%s" index-set-root-url (get-in index-set [:index-set :id]))
-        response (client/request
-                   {:method :put
-                    :url index-set-url
-                    :body (cheshire/generate-string index-set)
-                    :content-type :json
-                    :accept :json
-                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                    :throw-exceptions false})
-        status (:status response)]
-    (when-not (= 200 status)
-      (errors/internal-error! (format "Failed to create index-set: %s, errors: %s"
-                                      (pr-str index-set)
-                                      (:body response))))))
-
 (defn fetch-concept-type-index-names
   "Fetch a map containing index names for each concept type from index-set app along with the list
    of rebalancing collections"
@@ -853,7 +798,7 @@
    (let [index-set-id (get-in (index-set context) [:index-set :id])]
      (fetch-concept-type-index-names context index-set-id)))
   ([context index-set-id]
-   (let [fetched-index-set (index-set/get-index-set context index-set-id)]
+   (let [fetched-index-set (index-set-svc/get-index-set context index-set-id false)]
      {:index-names (get-in fetched-index-set [:index-set :concepts])
       :rebalancing-collections (get-in fetched-index-set
                                        [:index-set :granule :rebalancing-collections])})))
@@ -864,7 +809,7 @@
    (let [index-set-id (get-in (index-set context) [:index-set :id])]
      (fetch-concept-mapping-types context index-set-id)))
   ([context index-set-id]
-   (let [fetched-index-set (index-set/get-index-set context index-set-id)
+   (let [fetched-index-set (index-set-svc/get-index-set context index-set-id false)
          get-concept-mapping-fn (fn [concept-type]
                                   (-> (get-in fetched-index-set [:index-set concept-type :mapping])
                                       keys

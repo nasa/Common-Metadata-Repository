@@ -86,10 +86,12 @@
 
 (defn get-index-set
   "Fetch index-set associated with an index-set id."
-  [context index-set-id]
-  (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
-        idx-mapping-type (first (keys mapping))]
-    (es/get-index-set (context->es-store context) index-name idx-mapping-type index-set-id)))
+  ([context index-set-id]
+   (get-index-set context index-set-id true))
+  ([context index-set-id throw?]
+   (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
+         idx-mapping-type (first (keys mapping))]
+     (es/get-index-set (context->es-store context) index-name idx-mapping-type index-set-id throw?))))
 
 (defn index-set-id-validation
   "Verify id is a positive integer."

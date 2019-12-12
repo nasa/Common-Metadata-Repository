@@ -13,7 +13,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.indexer.data.index-set :as indexer-index-set]
    [cmr.indexer.system :as indexer-system]
-   [cmr.transmit.index-set :as index-set]))
+   [cmr.transmit.indexer :as indexer]))
 
 (def request-type->dispatcher
   "A map of request types to which dispatcher to use for asynchronous requests."
@@ -163,8 +163,8 @@
     (when (= "separate-index" target)
       (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id))
     ;; This will throw an exception if the collection is already rebalancing
-    (index-set/add-rebalancing-collection context indexer-index-set/index-set-id concept-id
-                                          (csk/->kebab-case-keyword target))
+    (indexer/add-rebalancing-collection context indexer-index-set/index-set-id concept-id
+                                        (csk/->kebab-case-keyword target))
 
     ;; Clear the cache so that the newest index set data will be used.
     ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
@@ -189,13 +189,13 @@
 (defn finalize-rebalance-collection
   "Finalizes collection rebalancing."
   [context concept-id]
-  (let [fetched-index-set (index-set/get-index-set context indexer-index-set/index-set-id)
+  (let [fetched-index-set (indexer/get-index-set context indexer-index-set/index-set-id)
         target (get-in fetched-index-set [:index-set :granule :rebalancing-targets (keyword concept-id)])]
     (info (format "Finalizing rebalancing granules for collection [%s] to target [%s]."
                   concept-id target))
     (rebalancing-collections/validate-target target concept-id)
     ;; This will throw an exception if the collection is not rebalancing
-    (index-set/finalize-rebalancing-collection context indexer-index-set/index-set-id concept-id)
+    (indexer/finalize-rebalancing-collection context indexer-index-set/index-set-id concept-id)
     ;; Clear the cache so that the newest index set data will be used.
     ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
     (cache/reset-caches context)
