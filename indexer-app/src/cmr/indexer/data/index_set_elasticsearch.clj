@@ -10,6 +10,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es]
+   [cmr.indexer.config :as config]
    [cmr.indexer.services.messages :as m]))
 
 (defn- decode-field
@@ -68,22 +69,15 @@
 
 (defn get-index-set
   "Fetch index-set associated with an id."
-  ([es-store index-name idx-mapping-type index-set-id]
-   (get-index-set es-store index-name idx-mapping-type index-set-id true))
-  ([{:keys [conn]} index-name idx-mapping-type index-set-id throw?]
-   (when (esi/exists? conn index-name)
-     (let [result (doc/get conn index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")
-           index-set-json-str (get-in result [:fields :index-set-request])]
-       (cond
-         (not (or result throw?))
-         nil
-
-         result
-         (decode-field (first index-set-json-str))
-
-         :else
-         (errors/throw-service-error :not-found
-                                     (m/index-set-not-found-msg index-set-id)))))))
+  [context index-set-id]
+  (let [conn (get-in context [:system :db :conn])
+        {:keys [index-name mapping]} config/idx-cfg-for-index-sets
+        idx-mapping-type (first (keys mapping))]
+    (when (esi/exists? conn index-name)
+      (let [result (doc/get conn index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")
+            index-set-json-str (get-in result [:fields :index-set-request])]
+        (when result
+          (decode-field (first index-set-json-str)))))))
 
 (defn get-index-set-ids
   "Fetch ids of all index-sets in elastic."

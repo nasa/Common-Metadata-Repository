@@ -86,12 +86,10 @@
 
 (defn get-index-set
   "Fetch index-set associated with an index-set id."
-  ([context index-set-id]
-   (get-index-set context index-set-id true))
-  ([context index-set-id throw?]
-   (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
-         idx-mapping-type (first (keys mapping))]
-     (es/get-index-set (context->es-store context) index-name idx-mapping-type index-set-id throw?))))
+  [context index-set-id]
+  (or (es/get-index-set context index-set-id)
+      (errors/throw-service-error :not-found
+                                  (m/index-set-not-found-msg index-set-id))))
 
 (defn index-set-id-validation
   "Verify id is a positive integer."
@@ -334,13 +332,3 @@
     ;; delete indices assoc with index-set
     (doseq [id index-set-ids]
       (delete-index-set context (str id)))))
-
-(defn health
-  "Returns the health state of the app."
-  [context]
-  (let [elastic-health (es-util/health context :index)
-        echo-rest-health (echo-rest/health context)
-        ok? (and (:ok? elastic-health) (:ok? echo-rest-health))]
-    {:ok? ok?
-     :dependencies {:elastic_search elastic-health
-                    :echo echo-rest-health}}))

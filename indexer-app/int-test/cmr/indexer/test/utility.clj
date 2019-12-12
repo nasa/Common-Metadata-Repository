@@ -38,7 +38,7 @@
 
 (defn reset-url
   []
-  (format "%s/%s" (indexer-root-url) "reset"))
+  (format "%s/%s" (index-sets-url) "reset"))
 
 (def cmr-concepts [:collection :granule])
 

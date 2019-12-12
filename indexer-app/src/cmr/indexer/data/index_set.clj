@@ -10,7 +10,7 @@
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
-   [cmr.indexer.services.index-set-service :as index-set-svc]
+   [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
    [cmr.transmit.metadata-db :as meta-db]))
 
 ;; The number of shards to use for the collections index, the granule indexes containing granules
@@ -788,7 +788,7 @@
    (let [index-set-id (get-in (index-set context) [:index-set :id])]
      (fetch-concept-type-index-names context index-set-id)))
   ([context index-set-id]
-   (let [fetched-index-set (index-set-svc/get-index-set context index-set-id false)]
+   (let [fetched-index-set (index-set-es/get-index-set context index-set-id)]
      {:index-names (get-in fetched-index-set [:index-set :concepts])
       :rebalancing-collections (get-in fetched-index-set
                                        [:index-set :granule :rebalancing-collections])})))
@@ -799,7 +799,7 @@
    (let [index-set-id (get-in (index-set context) [:index-set :id])]
      (fetch-concept-mapping-types context index-set-id)))
   ([context index-set-id]
-   (let [fetched-index-set (index-set-svc/get-index-set context index-set-id false)
+   (let [fetched-index-set (index-set-es/get-index-set context index-set-id)
          get-concept-mapping-fn (fn [concept-type]
                                   (-> (get-in fetched-index-set [:index-set concept-type :mapping])
                                       keys
