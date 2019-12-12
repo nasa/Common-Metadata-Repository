@@ -137,7 +137,8 @@
    :provider :string
    :native-id :string
    :concept-id :string
-   :keyword :keyword})
+   :keyword :keyword
+   :measurement-identifiers :measurement-identifiers})
 
 (defmethod common-params/param-mappings :service
   [_]
@@ -338,6 +339,23 @@
           [(cqm/string-condition :collection-data-type value case-sensitive pattern)
            (cqm/map->MissingCondition {:field :collection-data-type})])
         (cqm/string-condition :collection-data-type value case-sensitive pattern)))))
+
+;; Converts variable measurement identifiers parameter and values into conditions
+(defmethod common-params/parameter->condition :measurement-identifiers
+  [context concept-type param value options]
+  (let [case-sensitive? (common-params/case-sensitive-field? concept-type param options)
+        pattern? (common-params/pattern-field? concept-type param options)
+        group-operation (common-params/group-operation param options :and)]
+    (if (map? (first (vals value)))
+      ;; If multiple measurement-identifiers are passed in like the following
+      ;; -> measurement-identifiers[0][contextmedium]=foo&measurement-identifiers[1][contextmedium]=bar
+      ;; then this recurses back into this same function to handle each separately
+      (gc/group-conds
+        group-operation
+        (map #(common-params/parameter->condition context concept-type param % options)
+             (vals value)))
+      ;; Creates the nested condition for a group of measurement-identifiers fields and values.
+      (nf/parse-nested-condition param value case-sensitive? pattern?))))
 
 (defn- reverse-has-granules-sort
   "The has-granules sort is the opposite of natural sorting. Collections with granules are first then

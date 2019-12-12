@@ -33,6 +33,12 @@
        "should be in the format of temporal_facet[0/group number (if multiple groups are present)]"
        "[year]."))
 
+(defn measurement-identifiers-invalid-format-msg
+  []
+  (str "Parameter measurement_identifiers is invalid, "
+       "should be in the format of measurement_identifiers[0/group number (if multiple groups "
+       "are present)][contextmedium/object/quantity]."))
+
 (defn invalid-exclude-param-msg
   "Creates a message saying supplied parameter(s) are not in exclude params set."
   [params-set]

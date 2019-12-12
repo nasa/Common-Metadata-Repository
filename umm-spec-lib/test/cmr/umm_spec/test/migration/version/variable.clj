@@ -50,7 +50,7 @@
                    :MeasurementSource "BODC"}
                   {:MeasurementName "brightness"
                    :MeasurementSource "not matched"}
-                  {:MeasuremntName "length"}]})
+                  {:MeasurementName "length"}]})
 
 (def variable-concept-12
   {:Name "var1"

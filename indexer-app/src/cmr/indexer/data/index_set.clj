@@ -225,6 +225,15 @@
   {:start-date m/date-field-mapping
    :end-date m/date-field-mapping})
 
+(defnestedmapping measurement-identifiers-mapping
+  "Defines mappings for variable measurement identifiers."
+  {:contextmedium m/string-field-mapping
+   :contextmedium.lowercase m/string-field-mapping
+   :object m/string-field-mapping
+   :object.lowercase m/string-field-mapping
+   :quantity m/string-field-mapping
+   :quantity.lowercase m/string-field-mapping})
+
 (def spatial-coverage-fields
   "Defines the sets of fields shared by collections and granules for indexing spatial data."
   {;; Minimum Bounding Rectangle Fields
@@ -686,6 +695,7 @@
    :user-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-date (-> m/date-field-mapping m/stored m/doc-values)
    :metadata-format (-> m/string-field-mapping m/stored m/doc-values)
+   :measurement-identifiers measurement-identifiers-mapping
    ;; associated collections stored as EDN gzipped and base64 encoded for retrieving purpose
    :collections-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))})
 

@@ -189,7 +189,8 @@
    :variable-name cpv/string-param-options
    :measurement cpv/string-param-options
    :native-id cpv/string-param-options
-   :provider cpv/string-param-options})
+   :provider cpv/string-param-options
+   :measurement-identifiers cpv/string-plus-or-options})
 
 (defmethod cpv/valid-parameter-options :service
   [_]
@@ -400,6 +401,13 @@
   [concept-type params]
   (validation-util/nested-field-validation-for-subfield
    :temporal-facet concept-type params (msg/temporal-facets-invalid-format-msg)))
+
+(defn- measurement-identifiers-validation
+  "Validates the measurement_identifiers search parameters are in the format of e.g.
+   measurement_identifiers[0][contextmedium]=value."
+  [concept-type params]
+  (validation-util/nested-field-validation-for-subfield
+   :measurement-identifiers concept-type params (msg/measurement-identifiers-invalid-format-msg)))
 
 (def max-value-for-date-field
   "Defines the maximum valid value for each date field."
@@ -762,7 +770,8 @@
               temporal-facet-day-validation])
    :tag cpv/common-validations
    :variable (concat cpv/common-validations
-                     [boolean-value-validation])
+                     [boolean-value-validation
+                      measurement-identifiers-validation])
    :service (concat cpv/common-validations
                     [boolean-value-validation])})
 
@@ -799,7 +808,9 @@
    (partial cpv/validate-map [:science-keywords])
    (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords])
    (partial cpv/validate-map [:science-keywords-h])
-   (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords-h])])
+   (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords-h])
+   (partial cpv/validate-map [:measurement-identifiers])
+   (partial cpv/validate-all-map-values cpv/validate-map [:measurement-identifiers])])
 
 (defn- validate-parameter-data-types
   "Validates data types of parameters.  Unlike other validations, this returns a tuple of
