@@ -26,7 +26,7 @@
   (str (rebalance-collection-url conn index-set-id concept-id) "/finalize"))
 
 (defn get-index-set
-  "Submit a request to index-set app to fetch an index-set assoc with an id"
+  "Submit a request to indexer to fetch an index-set assoc with an id"
   [context id]
   (let [conn (config/context->app-connection context :indexer)
         response (client/request
