@@ -439,6 +439,11 @@
   []
   (format "http://localhost:%s/reset" (transmit-config/indexer-port)))
 
+(defn index-set-reset-url
+  "Delete and re-create the index set in elastic. Only development team to use this functionality."
+  []
+  (format "http://localhost:%s/index-sets/reset" (transmit-config/indexer-port)))
+
 (defn indexer-update-indexes
   "Updates the indexes in the indexer to update mappings and settings"
   []
