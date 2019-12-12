@@ -28,7 +28,7 @@
 (defn get-index-set
   "Submit a request to index-set app to fetch an index-set assoc with an id"
   [context id]
-  (let [conn (config/context->app-connection context :index-set)
+  (let [conn (config/context->app-connection context :indexer)
         response (client/request
                    (merge
                      (config/conn-params conn)
@@ -51,7 +51,7 @@
   "A helper function for submitting a request to modify the list of rebalancing collections."
   [context index-set-id concept-id url-fn target]
   (let [query-params (when target {:target (name target)})]
-    (h/request context :index-set
+    (h/request context :indexer
                {:url-fn #(url-fn % index-set-id concept-id)
                 :method :post
                 :http-options {:headers {config/token-header (config/echo-system-token)}
