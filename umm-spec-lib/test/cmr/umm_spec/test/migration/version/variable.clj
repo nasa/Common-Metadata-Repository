@@ -175,7 +175,9 @@
           :MeasurementIdentifiers [{:MeasurementSource "BODC"
                                     :MeasurementName {:MeasurementObject "radiative_flux"}}
                                    {:MeasurementSource "OTHER"
-                                    :MeasurementName {:MeasurementObject "brightness"}}]}
+                                    :MeasurementName {:MeasurementObject "brightness"}}
+                                   {:MeasurementSource "OTHER",
+                                    :MeasurementName {:MeasurementObject "length"}}]}
 
          (vm/migrate-umm {} :variable "1.1" "1.2" variable-concept-11))))
 
