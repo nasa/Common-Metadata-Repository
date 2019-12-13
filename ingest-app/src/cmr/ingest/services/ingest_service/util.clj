@@ -1,6 +1,7 @@
 (ns cmr.ingest.services.ingest-service.util
   (:require
    [cheshire.core :as json]
+   [clojure.string :as str]
    [cmr.common.cache :as cache]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -20,11 +21,12 @@
 (defn fix-ingest-concept-format
   "Fixes formats"
   [concept-type fmt]
-  (if (or
-        (not (mt/umm-json? fmt))
-        (mt/version-of fmt))
-    fmt
-    (str fmt ";version=" (config/ingest-accept-umm-version concept-type))))
+  (let [fmt (str/replace fmt #"[\"']" "")]
+    (if (or
+          (not (mt/umm-json? fmt))
+          (mt/version-of fmt))
+      fmt
+      (str fmt ";version=" (config/ingest-accept-umm-version concept-type)))))
 
 (defn reset
   "Resets the queue broker"

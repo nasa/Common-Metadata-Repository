@@ -103,7 +103,10 @@
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
   [version]
   (let [version-splitted (str/split version #"\.")]
-    (str/join "." (map #(if (> 10 (Integer. %)) (str "0" %) %) version-splitted))))
+    (try
+      (str/join "." (map #(if (> 10 (Integer. %)) (str "0" %) %) version-splitted))
+      (catch Exception e
+        (if-errors-throw :bad-request [(str "Invalid umm version: " version)])))))
 
 (defn- compare-versions-with-padded-zeros
   "Compare the umm-version and accepted umm-version
