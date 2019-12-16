@@ -187,94 +187,97 @@ The indexer has a background job that monitors the RabbitMQ message queue size a
 ## Sample outputs
 
 - Get all index-sets response
+```
 [{:id 3,
-  :name "cmr-base-index-set",
-  :concepts
-  {:collection
-   {:c6_Collections "3_c6_collections",
-    :C4-collections "3_c4_collections"},
-   :granule
-   {:g5_prov5 "3_g5_prov5",
-    :G4-Prov3 "3_g4_prov3",
-    :G2-PROV1 "3_g2_prov1"}}}
- {:id 55,
-  :name "cmr-base-index-set",
-  :concepts
-  {:collection
-   {:c6_Collections "55_c6_collections",
-    :C4-collections "55_c4_collections"},
-   :granule
-   {:g5_prov5 "55_g5_prov5",
-    :G4-Prov3 "55_g4_prov3",
-    :G2-PROV1 "55_g2_prov1"}}}]
+    :name "cmr-base-index-set",
+    :concepts
+    {:collection
+     {:c6_Collections "3_c6_collections",
+      :C4-collections "3_c4_collections"},
+     :granule
+     {:g5_prov5 "3_g5_prov5",
+      :G4-Prov3 "3_g4_prov3",
+      :G2-PROV1 "3_g2_prov1"}}}
+   {:id 55,
+    :name "cmr-base-index-set",
+    :concepts
+    {:collection
+     {:c6_Collections "55_c6_collections",
+      :C4-collections "55_c4_collections"},
+     :granule
+     {:g5_prov5 "55_g5_prov5",
+      :G4-Prov3 "55_g4_prov3",
+      :G2-PROV1 "55_g2_prov1"}}}]
+```
 
 - Get an index-set by id response
-    {:index-set
- {:concepts
-  {:collection
-   {:c6_Collections "3_c6_collections",
-    :C4-collections "3_c4_collections"},
-   :granule
-   {:g5_prov5 "3_g5_prov5",
-    :G4-Prov3 "3_g4_prov3",
-    :G2-PROV1 "3_g2_prov1"}},
-  :name "cmr-base-index-set",
-  :create-reason
-  "include message about reasons for creating this index set",
-  :granule
-  {:index-names ["G2-PROV1" "G4-Prov3" "g5_prov5"],
-   :mapping
-   {:granule
-    {:_all {:enabled false},
-     :properties
-     {:collection-concept-id
-      {:store "yes",
-       :index_options "docs",
-       :omit_norms "true",
-       :type "string",
-       :index "not_analyzed"},
-      :concept-id
-      {:store "yes",
-       :index_options "docs",
-       :omit_norms "true",
-       :type "string",
-       :index "not_analyzed"}},
-     :dynamic "strict",
-     :_source {:enabled false},
-     :_id {:path "concept-id"}}},
-   :settings
-   {:index
-    {:number_of_replicas 0,
-     :refresh_interval "10s",
-     :number_of_shards 1}}},
-  :collection
-  {:index-names ["C4-collections" "c6_Collections"],
-   :mapping
-   {:collection
-    {:_all {:enabled false},
-     :properties
-     {:entry-title
-      {:store "yes",
-       :index_options "docs",
-       :omit_norms "true",
-       :type "string",
-       :index "not_analyzed"},
-      :concept-id
-      {:store "yes",
-       :index_options "docs",
-       :omit_norms "true",
-       :type "string",
-       :index "not_analyzed"}},
-     :dynamic "strict",
-     :_source {:enabled false},
-     :_id {:path "concept-id"}}},
-   :settings
-   {:index
-    {:number_of_replicas 0,
-     :refresh_interval "20s",
-     :number_of_shards 1}}},
-  :id 3}}
-
+```
+{:index-set
+   {:concepts
+    {:collection
+     {:c6_Collections "3_c6_collections",
+      :C4-collections "3_c4_collections"},
+     :granule
+     {:g5_prov5 "3_g5_prov5",
+      :G4-Prov3 "3_g4_prov3",
+      :G2-PROV1 "3_g2_prov1"}},
+    :name "cmr-base-index-set",
+    :create-reason
+    "include message about reasons for creating this index set",
+    :granule
+    {:index-names ["G2-PROV1" "G4-Prov3" "g5_prov5"],
+     :mapping
+     {:granule
+      {:_all {:enabled false},
+       :properties
+       {:collection-concept-id
+        {:store "yes",
+         :index_options "docs",
+         :omit_norms "true",
+         :type "string",
+         :index "not_analyzed"},
+        :concept-id
+        {:store "yes",
+         :index_options "docs",
+         :omit_norms "true",
+         :type "string",
+         :index "not_analyzed"}},
+       :dynamic "strict",
+       :_source {:enabled false},
+       :_id {:path "concept-id"}}},
+     :settings
+     {:index
+      {:number_of_replicas 0,
+       :refresh_interval "10s",
+       :number_of_shards 1}}},
+    :collection
+    {:index-names ["C4-collections" "c6_Collections"],
+     :mapping
+     {:collection
+      {:_all {:enabled false},
+       :properties
+       {:entry-title
+        {:store "yes",
+         :index_options "docs",
+         :omit_norms "true",
+         :type "string",
+         :index "not_analyzed"},
+        :concept-id
+        {:store "yes",
+         :index_options "docs",
+         :omit_norms "true",
+         :type "string",
+         :index "not_analyzed"}},
+       :dynamic "strict",
+       :_source {:enabled false},
+       :_id {:path "concept-id"}}},
+     :settings
+     {:index
+      {:number_of_replicas 0,
+       :refresh_interval "20s",
+       :number_of_shards 1}}},
+    :id 3}}
+```
 
 ## License
 
