@@ -85,7 +85,8 @@
 (deftest search-health-test
   (s/only-with-real-database
     (is (= [200 {:echo {:ok? true}
-                 :internal-metadata-db good-metadata-db-health}]
+                 :internal-metadata-db good-metadata-db-health
+                 :indexer good-indexer-health}]
            (get-app-health (url/search-health-url))))))
 
 (deftest bootstrap-health-test
