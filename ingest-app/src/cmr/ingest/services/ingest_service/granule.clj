@@ -1,13 +1,11 @@
 (ns cmr.ingest.services.ingest-service.granule
   (:require
-   [clojure.string :as str]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.ingest.services.helper :as h]
    [cmr.ingest.services.ingest-service.collection :as collection]
-   [cmr.ingest.services.ingest-service.util :as ingest-util] 
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.metadata-db :as mdb]
@@ -64,22 +62,21 @@
    (validate-granule
     context concept get-granule-parent-collection-and-concept))
   ([context concept fetch-parent-collection-concept-fn]
-   (let [concept (update-in concept [:format] (partial ingest-util/fix-ingest-concept-format :granule))]
-     (v/validate-concept-request concept)
-     (v/validate-concept-metadata concept)
+   (v/validate-concept-request concept)
+   (v/validate-concept-metadata concept)
 
-     (let [granule (umm-legacy/parse-concept context concept)
-           [parent-collection-concept
-            umm-spec-collection](fetch-parent-collection-concept-fn
-                                 context concept granule)]
-       ;; UMM Validation
-       (v/validate-granule-umm-spec context umm-spec-collection granule)
+   (let [granule (umm-legacy/parse-concept context concept)
+         [parent-collection-concept
+          umm-spec-collection](fetch-parent-collection-concept-fn
+                               context concept granule)]
+     ;; UMM Validation
+     (v/validate-granule-umm-spec context umm-spec-collection granule)
      
-       ;; Add extra fields for the granule
-       (let [gran-concept (add-extra-fields-for-granule
-                           context concept granule parent-collection-concept)]
-         (v/validate-business-rules context gran-concept)
-         [parent-collection-concept gran-concept])))))
+     ;; Add extra fields for the granule
+     (let [gran-concept (add-extra-fields-for-granule
+                         context concept granule parent-collection-concept)]
+       (v/validate-business-rules context gran-concept)
+       [parent-collection-concept gran-concept]))))
 
 (defn validate-granule-with-parent-collection
   "Validate a granule concept along with a parent collection. Throws a service error if any

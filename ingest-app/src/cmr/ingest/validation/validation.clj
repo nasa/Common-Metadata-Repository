@@ -17,6 +17,7 @@
     [cmr.umm-spec.umm-json :as umm-json]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]
+    [cmr.umm-spec.versioning :as umm-versioning]
     [cmr.umm.umm-core :as umm]
     [cmr.umm.validation.validation-core :as umm-validation]))
 
@@ -103,10 +104,7 @@
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
   [version]
   (let [version-splitted (str/split version #"\.")]
-    (try
-      (str/join "." (map #(if (> 10 (Integer. %)) (str "0" %) %) version-splitted))
-      (catch Exception e
-        (if-errors-throw :bad-request [(str "Invalid umm version: " version)])))))
+    (str/join "." (map #(if (> 10 (Integer. %)) (str "0" %) %) version-splitted))))
 
 (defn- compare-versions-with-padded-zeros
   "Compare the umm-version and accepted umm-version
@@ -116,21 +114,30 @@
         accepted-umm-version-with-padded-zeros (pad-zeros-to-version accepted-umm-version)]
     (compare umm-version-with-padded-zeros accepted-umm-version-with-padded-zeros)))
 
+(defn umm-version-valid?
+  "Check if umm-version is valid for concept-type."
+  [umm-version concept-type]
+  (let [valid-umm-versions (concept-type umm-versioning/versions)]
+    (some #(= umm-version %) valid-umm-versions)))
+
 (defn-timed validate-concept-metadata
   [concept]
   (if-errors-throw :bad-request
                    (if (mt/umm-json? (:format concept))
                      (let [umm-version (mt/version-of (:format concept))
-                           accept-version (config/ingest-accept-umm-version (:concept-type concept))]
+                           concept-type (:concept-type concept)
+                           accept-version (config/ingest-accept-umm-version concept-type)]
                        ;; when the umm-version goes to 1.10 and accept-version is 1.9, we need
                        ;; to compare the versions with padded zeros.
-                       (if (>= 0 (compare-versions-with-padded-zeros umm-version accept-version))
-                         (umm-spec/validate-metadata (:concept-type concept)
-                                                     (:format concept)
-                                                     (:metadata concept))
-                         [(str "UMM JSON version " accept-version  " or lower can be ingested. "
-                               "Any version above that is considered in-development "
-                               "and cannot be ingested at this time.")]))
+                       (if (umm-version-valid? umm-version concept-type) 
+                         (if (>= 0 (compare-versions-with-padded-zeros umm-version accept-version))
+                           (umm-spec/validate-metadata (:concept-type concept)
+                                                       (:format concept)
+                                                       (:metadata concept))
+                           [(str "UMM JSON version " accept-version  " or lower can be ingested. "
+                                 "Any version above that is considered in-development "
+                                 "and cannot be ingested at this time.")])
+                        [(str "Invalid UMM JSON schema version: " umm-version )]))
                      (umm/validate-concept-xml concept))))
 
 (defn validate-collection-umm-spec-schema
