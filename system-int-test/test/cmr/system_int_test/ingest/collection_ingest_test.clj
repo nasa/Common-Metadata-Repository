@@ -710,7 +710,18 @@
                   :metadata     "{\"foo\":\"bar\"}"}
         response (ingest/ingest-concept coll-map {:accept-format :json})]
     (is (= 400 (:status response)))
-    (is (= ["Unknown UMM JSON schema version: \"1.0009\""]
+    (is (= ["Invalid UMM JSON schema version: 1.0009"]
+           (:errors response)))))
+
+(deftest ingest-invalid-umm-version-with-quotes
+  (let [coll-map {:provider-id  "PROV1"
+                  :native-id    "umm_json_coll_V1"
+                  :concept-type :collection
+                  :format       "application/vnd.nasa.cmr.umm+json;version=\"1.1\""
+                  :metadata     "{\"foo\":\"bar\"}"}
+        response (ingest/ingest-concept coll-map {:accept-format :json})]
+    (is (= 400 (:status response)))
+    (is (= ["Invalid UMM JSON schema version: \"1.1\""]
            (:errors response)))))
 
 ;; Verify ingest of collection with string larger than 80 characters for project(campaign) long name is successful (CMR-1361)

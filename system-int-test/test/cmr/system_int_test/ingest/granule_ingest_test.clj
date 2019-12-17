@@ -658,7 +658,7 @@
                                                   :version "1.1"}))
             {:keys [status errors]} (ingest/ingest-concept granule)]
         (is (= 400 status))
-        (is (= ["Unknown UMM JSON schema version: \"1.1\""] errors))))
+        (is (= ["Invalid UMM JSON schema version: 1.1"] errors))))
 
     (testing "Ingest UMM-G granule with empty body"
       (let [granule (-> (granule/granule-with-umm-spec-collection
