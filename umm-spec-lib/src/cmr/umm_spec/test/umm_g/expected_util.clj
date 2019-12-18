@@ -83,6 +83,10 @@
                     :crid-ids ["CRIDValue"]
                     :feature-ids ["FeatureIdValue1" "FeatureIdValue2"]
                     :production-date-time (dtp/parse-datetime "2018-07-19T12:01:01.000Z")
+                    :size-in-bytes 23000
+                    :checksum (umm-lib-g/map->Checksum
+                                {:value "E51569BF48DD0FD0640C6503A46D4753"
+                                 :algorithm "MD5"})
                     :size 23.0})
     :temporal (umm-lib-g/map->GranuleTemporal
                {:range-date-time (umm-c/map->RangeDateTime
