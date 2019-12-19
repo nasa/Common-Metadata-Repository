@@ -35,6 +35,17 @@
                  (x/element :Campaign {}
                             (x/element :ShortName {} pref))))))
 
+(defn- get-size-in-mb
+  "Get size in megabytes based on the size-unit."
+  [size size-unit]
+  (condp = size-unit
+    "KB" (/ size 1000)
+    "MB" size
+    "GB" (* size 1000)
+    "TB" (* size 1000000)
+    "PB" (* size 1000000000)
+    size))
+
 (defn generate-data-granule
   "Generates the DataGranule element of an ECHO10 XML from a UMM Granule data-granule entry."
   [data-granule]
@@ -43,14 +54,16 @@
                   day-night
                   production-date-time
                   size
+                  size-unit
                   size-in-bytes
                   checksum]} data-granule
-          day-night (if day-night day-night "UNSPECIFIED")]
+          day-night (if day-night day-night "UNSPECIFIED")
+          size-mb (get-size-in-mb size size-unit)]
       (x/element :DataGranule {}
                  (when size-in-bytes
                    (x/element :DataGranuleSizeInBytes {} size-in-bytes))
                  (when size
-                   (x/element :SizeMBDataGranule {} size))
+                   (x/element :SizeMBDataGranule {} size-mb))
                  (when checksum
                    (x/element :Checksum {}
                      (x/element :Value {} (:value checksum))
@@ -93,6 +106,7 @@
     (when (or size-in-bytes size checksum producer-gran-id day-night production-date-time)
       (g/map->DataGranule {:size-in-bytes size-in-bytes
                            :size size
+                           :size-unit "MB"
                            :checksum (when checksum
                                        (g/map->Checksum {:value (:value checksum)
                                                          :algorithm (:algorithm checksum)}))

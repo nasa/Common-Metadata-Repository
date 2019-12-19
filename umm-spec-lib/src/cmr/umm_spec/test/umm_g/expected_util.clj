@@ -87,7 +87,8 @@
                     :checksum (umm-lib-g/map->Checksum
                                 {:value "E51569BF48DD0FD0640C6503A46D4753"
                                  :algorithm "MD5"})
-                    :size 23.0})
+                    :size-unit "MB"
+                    :size 0.023})
     :temporal (umm-lib-g/map->GranuleTemporal
                {:range-date-time (umm-c/map->RangeDateTime
                                   {:beginning-date-time (dtp/parse-datetime "2018-07-17T00:00:00.000Z")

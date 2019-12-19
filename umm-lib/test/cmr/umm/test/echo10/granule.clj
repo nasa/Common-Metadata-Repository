@@ -43,10 +43,15 @@
         (= 0 (count (g/validate-xml xml)))))))
 
 (defspec generate-and-parse-granule-test 100
+  ;; this is to compare umm->echo10->umm and umm.
+  ;; from echo10 to umm, size-unit becomes "MB" regardless of what it is originally.
+  ;; Need to strip off the size-unit from both the expected and the actual.
   (for-all [granule gran-gen/granules]
     (let [xml (echo10/umm->echo10-xml granule)
           parsed (g/parse-granule xml)
-          expected-parsed (umm->expected-parsed-echo10 granule)]
+          parsed (update-in parsed [:data-granule] dissoc :size-unit)
+          expected-parsed (umm->expected-parsed-echo10 granule)
+          expected-parsed (update-in expected-parsed [:data-granule] dissoc :size-unit)]
       (= parsed expected-parsed))))
 
 (def all-fields-granule-xml
@@ -241,6 +246,7 @@
      :data-granule (umm-g/map->DataGranule
                      {:size-in-bytes 71938553
                       :size 71.93855287
+                      :size-unit "MB"
                       :checksum (umm-g/map->Checksum
                                   {:value "1234567890"
                                    :algorithm "Fletcher-32"})

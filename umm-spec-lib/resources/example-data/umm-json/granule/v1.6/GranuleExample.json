@@ -25,8 +25,8 @@
     "ArchiveAndDistributionInformation": [{
       "Name": "GranuleZipFile",
       "SizeInBytes": 23000,
-      "Size": 23.0,
-      "SizeUnit": "KB",
+      "Size": 0.023,
+      "SizeUnit": "MB",
       "Format": "ZIP",
       "MimeType": "application/zip",
       "Checksum": {
