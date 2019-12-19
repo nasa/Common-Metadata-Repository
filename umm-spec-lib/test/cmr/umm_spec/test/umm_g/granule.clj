@@ -28,7 +28,7 @@
       (is (= expected actual)))))
 
 (def sample-umm-g-granule
-  (slurp (io/file (io/resource "example-data/umm-json/granule/v1.4/GranuleExample.json"))))
+  (slurp (io/file (io/resource "example-data/umm-json/granule/v1.6/GranuleExample.json"))))
 
 (deftest parse-granule-test
   (testing "parse granule"

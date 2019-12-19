@@ -47,10 +47,10 @@
                   checksum]} data-granule
           day-night (if day-night day-night "UNSPECIFIED")]
       (x/element :DataGranule {}
-                 (when size
-                   (x/element :SizeMBDataGranule {} size))
                  (when size-in-bytes
                    (x/element :DataGranuleSizeInBytes {} size-in-bytes))
+                 (when size
+                   (x/element :SizeMBDataGranule {} size))
                  (when checksum
                    (x/element :Checksum {}
                      (x/element :Value {} (:value checksum))
