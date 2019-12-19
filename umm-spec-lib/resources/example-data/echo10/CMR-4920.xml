@@ -1,0 +1,243 @@
+<Collection>
+    <ShortName>Test CMR-4920-Echo10-Missing</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>1970-01-01T00:00:00.000Z</InsertTime>
+    <LastUpdate>1970-01-01T00:00:00.000Z</LastUpdate>
+    <LongName>Not provided</LongName>
+    <DataSetId>Test CMR-4920-Echo10-Missing</DataSetId>
+    <Description>The AM-1 First EOS Polar Orbiting Satellite, 10:30 AM Descending Equator Crossing data set contains calibrated and geolocated at-aperture radiances for 36 discrete bands located in the 0.4 to 14.4 micron region of electromagentic spectrum. These data are generated from the MODIS Level 1A scans of raw radiance and in the process converted to geophysical units of W/(m^2 um sr). In addition, the Earth Bi-directional Reflectance Distribution Function (BRDF) may be determined for the solar reflective bands (1-19, 26) through knowledge of the solar irradiance (e.g., determined from MODIS solar diffuser data, and from the target illumination geometry).  Additional data are provided including quality flags, error estimates and calibration data.
+
+Visible, shortwave infrared, and near infrared measurements are only made during the daytime, while radiances for the thermal infrared region (bands 20-25, 27-36) are measured continuously.
+
+The Shortname for this product is MOD021KM and is stored in the Earth Observing System Hierarchical Data Format (HDF-EOS). A typical file size will be approximately 115 MB.
+
+Environmental information derived from MODIS L1B measurements will offer a comprehensive and unprecedented look at terrestrial, atmospheric, and ocean phenomenology for a wide and diverse community of users throughout the world.
+
+See the MODIS Characterization Support Team webpage for more C6 product information at:
+
+http://mcst.gsfc.nasa.gov/l1b/product-information
+
+
+or visit Science Team homepage at:
+http://modis.gsfc.nasa.gov/data/dataprod/</Description>
+    <DOI>
+        <MissingReason>Not Applicable</MissingReason>
+        <Explanation>Test explanation for CMR-4920</Explanation>
+    </DOI>
+    <RevisionDate>2018-02-20T21:12:04.598Z</RevisionDate>
+    <SuggestedUsage>Science Research</SuggestedUsage>
+    <ProcessingLevelId>1B</ProcessingLevelId>
+    <VersionDescription>AM-1_TERRA_CollectionTest_MPM Version 1 Data Collection Processing and Reprocessing</VersionDescription>
+    <CitationForExternalPublication>This data set was provided by NASA EOS project</CitationForExternalPublication>
+    <CollectionState>ACTIVE</CollectionState>
+    <SpatialKeywords>
+        <Keyword>EQUATORIAL</Keyword>
+        <Keyword>CHILE</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <PrecisionOfSeconds>4</PrecisionOfSeconds>
+        <EndsAtPresentFlag>true</EndsAtPresentFlag>
+        <RangeDateTime>
+            <BeginningDateTime>1999-12-18T00:00:00.000Z</BeginningDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>ORIGINATOR</Role>
+            <Instructions>Contact for data content concerns</Instructions>
+            <OrganizationName>NASA/GSFC/SED/ESD/HBSL/BISB/MODAPS</OrganizationName>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Not provided</FirstName>
+                    <LastName>MODAPS OPERATION TEAM</LastName>
+                    <JobPosition>DATA CENTER CONTACT</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SPECTRAL/ENGINEERING</TopicKeyword>
+            <TermKeyword>INFRARED WAVELENGTHS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>INFRARED RADIANCE</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SPECTRAL/ENGINEERING</TopicKeyword>
+            <TermKeyword>INFRARED WAVELENGTHS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>REFLECTED INFRARED</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>ATMOSPHERE</TopicKeyword>
+            <TermKeyword>ATMOSPHERIC PHENOMENA</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>HURRICANES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>TERRA</ShortName>
+            <LongName>Earth Observing System, TERRA (AM-1)</LongName>
+            <Type>Earth Observation Satellites</Type>
+            <Characteristics>
+                <Characteristic>
+                    <Name>EquatorCrossingTime</Name>
+                    <Description>Local time of the equator crossing and direction (ascending or descending)</Description>
+                    <DataType>STRING</DataType>
+                    <Unit>Local Mean Time</Unit>
+                    <Value>10:30, descending</Value>
+                </Characteristic>
+            </Characteristics>
+            <Instruments>
+                <Instrument>
+                    <ShortName>MODIS</ShortName>
+                    <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                    <Technique>Imaging Spectroradiometry</Technique>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Cross-track Scanning Radiometer</LongName>
+                            <Technique>Radiometry</Technique>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <AdditionalAttributes>
+        <AdditionalAttribute>
+            <Name>SCI_ABNORM</Name>
+            <DataType>INT</DataType>
+            <Description>Flag set (to 0) if science_abnormal, the L1A engineering data ground-set flag that indicates potentially abnormal science data due to things other than MODIS (such as maneuvers, data link, etc.), was set for at least one scan in the granule.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>VeryHighConfidentClearPct</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>SuccessfulRetrievalPct_Land</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>SuccessfulRetrievalPct_Ocean</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>SuccessfulRetrievalPct_IR</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>SuccessfulRetrievalPct_NIR</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>CloudCoverFractionPct_VIS</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>IceCloudDetectedPct_VIS</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>SuccessCloudOptPropRtrPct_VIS</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>SuccessCloudPhaseRtrPct_IR</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>SuccessCloudTopPropRtrPct_IR</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>SuccessfulRetrievalPct</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>ClearPct250m</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>CloudCoverPct250m</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>HighConfidentClearPct</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>LowConfidentClearPct</Name>
+            <DataType>FLOAT</DataType>
+            <Description>None</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>SCI_STATE</Name>
+            <DataType>INT</DataType>
+            <Description>Flag set (to 0) if science_state, the L1A engineering data flag that indicates the Normal/Test configuration of the MODIS instrument, was set for at least one scan in the granule.</Description>
+        </AdditionalAttribute>
+    </AdditionalAttributes>
+    <Campaigns>
+        <Campaign>
+            <ShortName>EOSDIS</ShortName>
+            <LongName>Earth Observing System Data Information System</LongName>
+        </Campaign>
+    </Campaigns>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>http://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=02</URL>
+            <Description>Overview of MODIS Level 1B Products</Description>
+            <Type>VIEW RELATED INFORMATION : GENERAL DOCUMENTATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://modaps.nascom.nasa.gov/services/about/products/MOD021KM.html</URL>
+            <Description>MOD021KM Product Information at MODAPS Services</Description>
+            <Type>PublicationURL : VIEW RELATED INFORMATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://mcst.gsfc.nasa.gov/l1b/product-information</URL>
+            <Description>MODIS Level 1B Product Information Page at MCST</Description>
+            <Type>PublicationURL : VIEW RELATED INFORMATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://mcst.gsfc.nasa.gov/l1b/documents</URL>
+            <Description>Obtain Product User's Guide at MODIS Level 1B Product Information Page</Description>
+            <Type>VIEW RELATED INFORMATION : USER'S GUIDE</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>90.0</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-90.0</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>GEODETIC</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>
