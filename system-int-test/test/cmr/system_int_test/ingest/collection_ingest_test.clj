@@ -742,3 +742,14 @@
           {:keys [status]} (ingest/ingest-concept
                             (ingest/concept :collection "PROV1" "foo" :dif coll-metadata))]
       (is (= 201 status)))))
+
+(deftest CMR-4920-DOI-test
+  (testing "Ingest echo10 collection with new DOI values"
+    (let [concept (data-umm-c/collection-concept {:EntryTitle "E1"
+                                                  :ShortName "S1"
+                                                  :DOI {:MissingReason "Not Applicable"
+                                                        :Explanation "Explanation String"}
+                                                  :concept-id "C1-PROV1"} :echo10)
+          response (ingest/ingest-concept concept {:raw? true})]
+      (is (= {:concept-id "C1-PROV1" :revision-id 1}
+             (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id]))))))
