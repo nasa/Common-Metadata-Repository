@@ -354,7 +354,7 @@
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
-						<xs:maxLength value="50" />
+						<xs:maxLength value="100" />
 						<xs:minLength value="1"></xs:minLength>
 					</xs:restriction>
 				</xs:simpleType>
@@ -641,33 +641,58 @@
         <xs:enumeration value="EXTERNAL_DATA"/>
       </xs:restriction>
     </xs:simpleType>
-    <xs:complexType name="DoiType">
-      <xs:annotation>
-        <xs:documentation>This entity describes the digital object identifier, and who created it.</xs:documentation>
-      </xs:annotation>
-      <xs:sequence>
-        <xs:element name="DOI">
-          <xs:annotation>
-            <xs:documentation>This element describes the digital object identifier.</xs:documentation>
-          </xs:annotation>
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:maxLength value="1024"/>
-              <xs:minLength value="1"/>
-            </xs:restriction>
-          </xs:simpleType>
-        </xs:element>
-        <xs:element name="Authority" minOccurs="0">
-          <xs:annotation>
-            <xs:documentation>This element describes who created the digital object identifier. This is not the group who issues the DOI ID and registers it, but the group to which the identifier belongs i.e. a DAAC or a scientist team.</xs:documentation>
-          </xs:annotation>
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:maxLength value="80" />
-              <xs:minLength value="1"></xs:minLength>
-            </xs:restriction>
-          </xs:simpleType>
-        </xs:element>
-      </xs:sequence>
-    </xs:complexType>
+	<xs:complexType name="DoiType">
+		<xs:annotation>
+			<xs:documentation>This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as an OnlineResource. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections. For those that want to specify that a DOI is not applicable for their record use the second option.</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:sequence>
+				<xs:element name="DOI">
+					<xs:annotation>
+						<xs:documentation>This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as an OnlineResource.</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:maxLength value="1024"/>
+							<xs:minLength value="1"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="Authority" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used.</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:maxLength value="80" />
+							<xs:minLength value="1"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:sequence>
+			<xs:sequence>
+				<xs:element name="MissingReason">
+					<xs:annotation>
+						<xs:documentation>This element stores the fact that the DOI (Digital Object Identifier) is not applicable.</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:enumeration value="Not Applicable"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="Explanation" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>This element describes the reason the DOI is not applicable.</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:maxLength value="80" />
+							<xs:minLength value="1"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:sequence>
+		</xs:choice>
+	</xs:complexType>
 </xs:schema>
