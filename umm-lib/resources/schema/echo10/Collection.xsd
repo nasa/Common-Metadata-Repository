@@ -225,7 +225,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       </xs:element>
       <xs:element name="DOI" type="DoiType" minOccurs="0">
         <xs:annotation>
-          <xs:documentation>This element describes the digital object identifier, and who created it.</xs:documentation>
+          <xs:documentation>This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as an OnlineResource. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections. For those that want to specify that a DOI is not applicable for their record use the second option.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" name="CollectionDataType">
@@ -2158,7 +2158,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       data etc.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="SpatialCoverageType">
+      <xs:element name="SpatialCoverageType" minOccurs="0">
         <xs:annotation>
           <xs:documentation>This attribute denotes whether the
           locality/coverage requires horizontal, vertical, or both
