@@ -39,11 +39,11 @@
   "Get size in megabytes based on the size-unit."
   [size size-unit]
   (condp = size-unit
-    "KB" (/ size 1000)
+    "KB" (/ size 1024)
     "MB" size
-    "GB" (* size 1000)
-    "TB" (* size 1000000)
-    "PB" (* size 1000000000)
+    "GB" (* size 1024)
+    "TB" (* size 1024 1024)
+    "PB" (* size 1024 1024 1024)
     size))
 
 (defn generate-data-granule
