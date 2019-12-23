@@ -40,6 +40,9 @@
                            seq)
          :production-date-time ProductionDateTime
          :size (get (first ArchiveAndDistributionInformation) :Size)
+         :size-unit (let [SizeUnit (get (first ArchiveAndDistributionInformation) :SizeUnit)]
+                      (when (not= "NA" SizeUnit)
+                        SizeUnit))
          :size-in-bytes (get (first ArchiveAndDistributionInformation) :SizeInBytes)
          :checksum (when-let [checksum (get (first ArchiveAndDistributionInformation) :Checksum)]
                      (g/map->Checksum
@@ -51,7 +54,7 @@
   [data-granule]
   (when data-granule
     (let [{:keys [producer-gran-id day-night crid-ids feature-ids
-                  production-date-time size size-in-bytes checksum]} data-granule]
+                  production-date-time size size-unit size-in-bytes checksum]} data-granule]
       {:DayNightFlag (get umm-lib-day-night->umm-g-day-night day-night "Unspecified")
        :Identifiers (let [producer-gran-id (when producer-gran-id
                                              [{:Identifier producer-gran-id
@@ -68,4 +71,6 @@
                                             :Checksum (when checksum
                                                         {:Value (:value checksum)
                                                          :Algorithm (:algorithm checksum)})  
-                                            :SizeUnit "NA"}]})))
+                                            :SizeUnit (if size-unit
+                                                        size-unit
+                                                        "NA")}]})))

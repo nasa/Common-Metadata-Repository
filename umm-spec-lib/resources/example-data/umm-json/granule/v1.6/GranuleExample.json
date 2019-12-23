@@ -24,9 +24,9 @@
   "DataGranule": {
     "ArchiveAndDistributionInformation": [{
       "Name": "GranuleZipFile",
-      "SizeInBytes": 23000,
-      "Size": 23.0,
-      "SizeUnit": "KB",
+      "SizeInBytes": 23552,
+      "Size": 0.023,
+      "SizeUnit": "MB",
       "Format": "ZIP",
       "MimeType": "application/zip",
       "Checksum": {

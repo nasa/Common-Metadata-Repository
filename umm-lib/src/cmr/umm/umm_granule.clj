@@ -45,8 +45,11 @@
    ;; maps to Granule/DataGranule/DataGranuleSizeInBytes
    size-in-bytes
 
-   ;; maps to Granule/DataGranule/SizeMBDataGranule
+   ;; maps to Granule/DataGranule/SizeMBDataGranule in echo10 granule schema
    size
+
+   ;; maps to SizeUnit in UMM-G schema
+   size-unit
 
    ;; maps to Granule/DataGranule/Checksum
    checksum
