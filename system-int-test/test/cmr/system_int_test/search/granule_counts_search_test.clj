@@ -277,7 +277,7 @@
 
     (testing "has_granules parameter"
 
-      (let [results (search/find-refs :collection {"has_granules" "true"})]
+      (let [results (search/find-refs :collection {"has_granules" "TRuE"})]
         (is (= (set (map :concept-id [coll1 coll3 coll4 coll5 coll6 orbit-coll]))
                (set (map :id (:refs results))))))
 
@@ -456,7 +456,7 @@
                       coll11 coll12 coll13 coll14
                       coll15 coll16 coll17]
                      (search/find-refs :collection
-                                       {:has_granules_or_cwic true
+                                       {:has_granules_or_cwic true 
                                         :page-size 20}
                                        {:snake-kebab? false})))
 
