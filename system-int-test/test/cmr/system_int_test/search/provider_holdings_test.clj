@@ -136,6 +136,15 @@
                (set (:results response))))))
 
     (testing "Retrieving provider holdings from the search application in various formats"
+       
+      (testing "Retrieve all provider holdings in unsupported format"
+        (try 
+          (search/provider-holdings-in-format :opendata {:token user-token})
+          (catch clojure.lang.ExceptionInfo e 
+            (is (= {:status 400
+                    :body "{\"errors\":[\"Unsupported format: opendata on the provider holdings endpoint.\"]}"}
+                   (select-keys (ex-data e) [:status :body]))))))
+
       (doseq [format [:xml :json :csv]]
         (testing (str (name format) " Response")
           (testing "Retrieve all provider holdings"
