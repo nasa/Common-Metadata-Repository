@@ -119,13 +119,22 @@
       remove-nil-keys
       remove-empty-maps))
 
+(defn- migrate-spatial-coverage-type
+  "Migrate the SpatialCoverageType value in 1.14 to the value in 1.13."
+  [spatial-coverage-type]
+  (if (or (= "HORIZONTAL_ORBITAL" spatial-coverage-type)
+          (= "HORIZONTAL_VERTICAL_ORBITAL" spatial-coverage-type))
+    "ORBITAL"
+    spatial-coverage-type))
+
 (defn migrate-down-to-1_13
-  "Migrates Distributions from 1.13 to 1.14"
+  "Migrates Distributions from 1.14 to 1.13"
   [c]
   (-> c
       migrate-geodetic-model-down
       migrate-horizontal-data-resolutions
       migrate-local-coordinate-system-down
       (update-in [:SpatialExtent :HorizontalSpatialDomain] dissoc :ResolutionAndCoordinateSystem)
+      (update-in [:SpatialExtent :SpatialCoverageType] migrate-spatial-coverage-type)
       remove-nil-keys
       remove-empty-maps))
