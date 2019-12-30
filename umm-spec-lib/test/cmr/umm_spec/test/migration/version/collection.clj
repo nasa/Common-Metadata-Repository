@@ -1974,8 +1974,12 @@
            result))))
 
 (deftest migrate-1-14-to-1-13
-  (let [expected-1-14-1-13-result example-collection-1-13
-        result (vm/migrate-umm {} :collection "1.14" "1.13"
-                               example-collection-1-14)]
+  (let [expected-1-14-1-13-result (assoc-in example-collection-1-13 [:SpatialExtent :SpatialCoverageType] "ORBITAL")
+        result1 (vm/migrate-umm {} :collection "1.14" "1.13"
+                  (assoc-in example-collection-1-14 [:SpatialExtent :SpatialCoverageType] "HORIZONTAL_ORBITAL"))
+        result2 (vm/migrate-umm {} :collection "1.14" "1.13"
+                  (assoc-in example-collection-1-14 [:SpatialExtent :SpatialCoverageType] "HORIZONTAL_VERTICAL_ORBITAL"))]
     (is (= expected-1-14-1-13-result
-           result))))
+           result1))
+    (is (= expected-1-14-1-13-result
+           result2))))

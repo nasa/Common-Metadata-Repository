@@ -155,7 +155,7 @@
     },
     "SpatialCoverageTypeEnum": {
       "type": "string",
-      "enum": ["HORIZONTAL", "VERTICAL", "ORBITAL", "HORIZONTAL_VERTICAL", "ORBITAL_VERTICAL"]
+      "enum": ["HORIZONTAL", "VERTICAL", "ORBITAL", "HORIZONTAL_VERTICAL", "ORBITAL_VERTICAL", "HORIZONTAL_ORBITAL", "HORIZONTAL_VERTICAL_ORBITAL"]
     },
     "HorizontalSpatialDomainType": {
       "type": "object",

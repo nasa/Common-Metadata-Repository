@@ -10,7 +10,9 @@
    "VERTICAL" "Vertical"
    "ORBITAL" "Orbit"
    "HORIZONTAL_VERTICAL" "HorizontalVertical"
-   "ORBITAL_VERTICAL" "HorizontalVertical"})
+   "ORBITAL_VERTICAL" "HorizontalVertical"
+   "HORIZONTAL_ORBITAL" "Orbit"
+   "HORIZONTAL_VERTICAL_ORBITAL" "Orbit"})
 
 (defn- point-contents
   "Returns the inner lon/lat elements for a DIF Point element from a UMM PointType record."
