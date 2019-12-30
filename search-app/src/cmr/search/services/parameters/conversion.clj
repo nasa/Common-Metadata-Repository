@@ -298,11 +298,11 @@
   [_ _ _ value _]
   (if (= "unset" value)
     cqm/match-all
-    (qm/->HasGranulesCondition (= "true" value))))
+    (qm/->HasGranulesCondition (= "true" (str/lower-case value)))))
 
 (defmethod common-params/parameter->condition :has-granules-or-cwic
   [_ _ _ value _]
-  (qm/->HasGranulesOrCwicCondition (= "true" value)))
+  (qm/->HasGranulesOrCwicCondition (= "true" (str/lower-case value))))
 
 (defn- collection-data-type-matches-science-quality?
   "Convert the collection-data-type parameter with wildcards to a regex. This function
