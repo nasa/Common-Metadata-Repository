@@ -1,10 +1,12 @@
 (ns cmr.search.results-handlers.provider-holdings
   "Defines functions to generate xml and json string for provider-holdings"
-  (:require [clojure.set :as set]
-            [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cheshire.core :as json]
-            [clojure.data.csv :as csv])
+  (:require 
+    [cheshire.core :as json] 
+    [clojure.data.csv :as csv]
+    [clojure.data.xml :as x]
+    [clojure.set :as set]
+    [cmr.common.services.errors :as service-errors]
+    [cmr.common.xml :as cx])
   (:import
     [java.io StringWriter]))
 
@@ -73,3 +75,8 @@
                             (map cmr-provider-holding->echo-provider-holding provider-holdings)
                             provider-holdings)]
     (json/generate-string provider-holdings)))
+
+(defmethod provider-holdings->string :default
+  [result-format provider-holdings options]
+  (service-errors/throw-service-error
+    :bad-request (format "Unsupported format: %s on the provider holdings endpoint." (name result-format))))
