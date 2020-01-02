@@ -42,7 +42,7 @@ function getClient() {
 exports.cacheImage = (key, image) => {
   getClient().set(key, image, 'EX', redisKeyExpireSeconds, err => {
     if (err) {
-      console.error(`Unable to cache image: ${err}`);
+      console.error(`Unable to cache image ${key}: ${err}`);
     }
   });
 };
@@ -56,16 +56,16 @@ exports.getImageFromCache = async key => {
   let client = getClient();
   return promisify(client.get).bind(client)(key)
     .catch(err => {
-      console.error("Unable to retrieve image from Redis.");
+      console.error(`Unable to retrieve image ${key} from Redis.`);
       return null;
     })
     .then(image => {
       // workaround for bad cache entries that have the string "null" for the value
       if (image && image !== 'null') {
-        console.log('got image from cache');
+        console.log(`got image ${key} from cache`);
         return image;
       }
-      console.log('image is not in cache');
+      console.log(`image ${key} is not in cache`);
       return null;
     });
 };
