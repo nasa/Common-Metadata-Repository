@@ -137,12 +137,20 @@
 
     (testing "Retrieving provider holdings from the search application in various formats"
        
-      (testing "Retrieve all provider holdings in unsupported format"
+      (testing "Retrieve all provider holdings in unsupported format opendata"
         (try 
           (search/provider-holdings-in-format :opendata {:token user-token})
           (catch clojure.lang.ExceptionInfo e 
             (is (= {:status 400
                     :body "{\"errors\":[\"Unsupported format: opendata on the provider holdings endpoint.\"]}"}
+                   (select-keys (ex-data e) [:status :body]))))))
+
+      (testing "Retrieve all provider holdings in unsupported format umm-json"
+        (try
+          (search/provider-holdings-in-format :umm-json {:token user-token})
+          (catch clojure.lang.ExceptionInfo e
+            (is (= {:status 400
+                    :body "{\"errors\":[\"Unsupported format: umm-json-results on the provider holdings endpoint.\"]}"}
                    (select-keys (ex-data e) [:status :body]))))))
 
       (doseq [format [:xml :json :csv]]
