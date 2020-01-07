@@ -53,7 +53,6 @@
   "Converts a request context into a map of HTTP headers that need to be sent."
   [context]
   (when-let [request-id (context->request-id context)]
-    ;;{REQUEST_ID_HEADER request-id X_REQUEST_ID_HEADER request-id}))
     {REQUEST_ID_HEADER request-id}))
 
 (defn context->user-id
