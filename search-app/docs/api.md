@@ -190,7 +190,7 @@ The Maximum URL Length supported by CMR is indirectly controlled by the Request 
 
 #### <a name="cors-header-support"></a> CORS Header support
 
-The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Echo-Token and Client-Id. Custom response headers supported are CMR-Hits, CMR-Request-Id, and CMR-Scroll-Id.
+The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Echo-Token and Client-Id. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id and CMR-Scroll-Id.
 
 #### <a name="query-parameters"></a> Query Parameters
 
@@ -257,9 +257,12 @@ These are query parameters that control what extra data is included with collect
     * `curl -H "Accept: application/xml" -i "%CMR-ENDPOINT%/collections"`
   * `Echo-Token` - specifies an ECHO token to use to authenticate yourself.
   * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
+  * `X-Request-Id` - This provides standard X-Request-Id support to allow user to pass in some random ID which will be logged on the server side for debugging purpose.
+  * `CMR-Request-Id` - This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems.  
 
-  * The response headers include CMR-Hits and CMR-Took which indicate the number of result hits
-     and the time to build and execute the query, respectively. The CMR-Request-Id header returns the unique id generated for the client request. This can be used to help debug client errors.
+  * The response headers include the following: 
+    CMR-Hits and CMR-Took indicate the number of result hits and the time to build and execute the query, respectively. 
+    CMR-Request-Id and X-Request-Id return the same value - the value passed in through CMR-Request-Id request header or X-Request-Id request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors. 
 
 #### <a name="extensions"></a> Extensions
 

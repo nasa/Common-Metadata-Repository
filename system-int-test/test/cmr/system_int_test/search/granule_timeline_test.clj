@@ -282,5 +282,5 @@
                                                      :include-headers true})
               headers (:headers response)]
           (is (= "application/json;charset=utf-8" (get headers "Content-Type")))
-          (is (= "CMR-Hits, CMR-Request-Id, CMR-Scroll-Id, CMR-Timed-Out"
+          (is (= "CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Timed-Out"
                  (get headers "Access-Control-Expose-Headers"))))))))

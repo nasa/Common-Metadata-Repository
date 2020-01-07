@@ -30,11 +30,15 @@
   "The HTTP header field containing the current request id. Ring converts all headers to lowercase."
   "cmr-request-id")
 
+(def X_REQUEST_ID_HEADER
+  "The HTTP header field containing the current request id. Ring converts all headers to lowercase."
+  "x-request-id")
+
 (defn build-request-context
   "Creates a request context. Takes the current system and an HTTP Request"
   [system request]
-  (let [{{request-id REQUEST_ID_HEADER} :headers} request]
-    (request-context system request-id)))
+  (let [{{request-id REQUEST_ID_HEADER x-request-id X_REQUEST_ID_HEADER} :headers} request]
+    (request-context system (or request-id x-request-id))))
 
 (defn build-request-context-handler
   "This is a ring handler that will extract trace info from the current request."
@@ -49,6 +53,7 @@
   "Converts a request context into a map of HTTP headers that need to be sent."
   [context]
   (when-let [request-id (context->request-id context)]
+    ;;{REQUEST_ID_HEADER request-id X_REQUEST_ID_HEADER request-id}))
     {REQUEST_ID_HEADER request-id}))
 
 (defn context->user-id
