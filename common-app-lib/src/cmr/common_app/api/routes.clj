@@ -18,6 +18,10 @@
   "The HTTP response header field containing the current request id."
   "CMR-Request-Id")
 
+(def RESPONSE_X_REQUEST_ID_HEADER
+  "The HTTP response header field containing the current request id."
+  "X-Request-Id")
+
 (def TOKEN_HEADER "echo-token")
 
 (def CONTENT_TYPE_HEADER "Content-Type")
@@ -56,7 +60,7 @@
   dev-system/resources/cors_headers_test.html"
   [content-type results]
   (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
-          CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, CMR-Scroll-Id, CMR-Timed-Out"
+          CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Timed-Out"
           CORS_ORIGIN_HEADER "*"}
          (when (:timed-out results) {TIMED_OUT_HEADER "true"})
          (when (:hits results) {HITS_HEADER (str (:hits results))})
@@ -80,7 +84,7 @@
    :headers {CONTENT_TYPE_HEADER "text/plain; charset=utf-8"
              CORS_ORIGIN_HEADER "*"
              CORS_METHODS_HEADER "POST, GET, OPTIONS"
-             CORS_CUSTOM_ALLOWED_HEADER "Echo-Token, Accept, Content-Type, Client-Id, CMR-Request-Id, CMR-Scroll-Id"
+             CORS_CUSTOM_ALLOWED_HEADER "Echo-Token, Accept, Content-Type, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id"
              ;; the value in seconds for how long the response to the preflight request can be cached
              ;; set to 30 days
              CORS_MAX_AGE_HEADER "2592000"}})
@@ -210,5 +214,6 @@
     (if-let [request-id (cxt/context->request-id context)]
       (-> request
           (handler)
-          (assoc-in [:headers RESPONSE_REQUEST_ID_HEADER] request-id))
+          (assoc-in [:headers RESPONSE_REQUEST_ID_HEADER] request-id)
+          (assoc-in [:headers RESPONSE_X_REQUEST_ID_HEADER] request-id))
       ((ring-json/wrap-json-response handler) request))))

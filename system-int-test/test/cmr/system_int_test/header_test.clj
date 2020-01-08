@@ -18,6 +18,7 @@
                                     (dc/collection-concept {:short-name "Foo"})
                                     {:raw? true})
         ingest-request-id (ingest-headers "cmr-request-id")
+        ingest-x-request-id (ingest-headers "x-request-id")
         _ (index/wait-until-indexed)
         {search-headers :headers} (search/find-concepts-in-format
                                     "application/echo10+xml" :collection {})
@@ -26,10 +27,13 @@
         cmr-hits (search-headers "CMR-Hits")
         cmr-took (search-headers "CMR-Took")
         search-request-id (search-headers "CMR-Request-Id")
+        search-x-request-id (search-headers "X-Request-Id")
         req-id-regex #"\w{8}-\w{4}-\w{4}-\w{4}-\w{12}"]
     (is (re-matches #"application\/echo10\+xml.*" content-type))
     (is (= aca-origin "*"))
     (is (= cmr-hits "1"))
+    (is (= ingest-request-id ingest-x-request-id))
+    (is (= search-request-id search-x-request-id))
     (is (re-matches req-id-regex ingest-request-id))
     (is (re-matches req-id-regex search-request-id))
     (is (re-matches #"\d+" cmr-took))))
@@ -39,38 +43,94 @@
   [headers cmr-request-id-value]
   (= cmr-request-id-value (get headers routes/RESPONSE_REQUEST_ID_HEADER)))
 
-(deftest cmr-request-id-provided-in-header
-  (testing "cmr-request-id is in ingest response header if it is provided in the request header"
+(defn- x-request-id-in-header?
+  "Returns true if the given headers contain X-Request-Id with the given value."
+  [headers x-request-id-value]
+  (= x-request-id-value (get headers routes/RESPONSE_X_REQUEST_ID_HEADER)))
+
+(deftest request-id-provided-in-header
+  (testing "both cmr-request-id and x-request-id are in ingest response header if cmr-request-id is provided in the request header"
     (let [cmr-request-id "testing-request-id"
           {:keys [headers]} (ingest/ingest-concept
                               (dc/collection-concept {:short-name "Foo"})
                               {:cmr-request-id cmr-request-id
                                :raw? true})]
-      (is (cmr-request-id-in-header? headers cmr-request-id))))
-
-  (testing "cmr-request-id is in ingest response header in error conditions"
+      (is (cmr-request-id-in-header? headers cmr-request-id))
+      (is (x-request-id-in-header? headers cmr-request-id))))
+  (testing "both cmr-request-id and x-request-id are in ingest response header if x-request-id is provided in the request header"
+    (let [x-request-id "testing-request-id"
+          {:keys [headers]} (ingest/ingest-concept
+                              (dc/collection-concept {:short-name "Foo"})
+                              {:x-request-id x-request-id
+                               :raw? true})]
+      (is (x-request-id-in-header? headers x-request-id))
+      (is (cmr-request-id-in-header? headers x-request-id))))
+  (testing "both cmr-request-id and x-request-id are in ingest response header, with the same value as cmr-request-id provided, if both cmr-request-id and x-request-id are provided with different values."
+    (let [cmr-request-id "testing-request-id"
+          x-request-id "testing-x-request-id"
+          {:keys [headers]} (ingest/ingest-concept
+                              (dc/collection-concept {:short-name "Foo"})
+                              {:cmr-request-id cmr-request-id
+                               :x-request-id x-request-id
+                               :raw? true})]
+      (is (cmr-request-id-in-header? headers cmr-request-id))
+      (is (x-request-id-in-header? headers cmr-request-id))))
+  (testing "both cmr-request-id and x-request-id are in ingest response header in error conditions when cmr-request-id is provided."
     (let [cmr-request-id "testing-request-id"
           {:keys [headers]} (ingest/ingest-concept
                               (assoc (dc/collection-concept {}) :metadata "bad metadata")
                               {:cmr-request-id cmr-request-id
                                :raw? true})]
-      (is (cmr-request-id-in-header? headers cmr-request-id))))
-
-  (testing "cmr-request-id is in search response header if it is provided in the request header"
+      (is (cmr-request-id-in-header? headers cmr-request-id))
+      (is (x-request-id-in-header? headers cmr-request-id))))
+  (testing "both cmr-request-id and x-request-id are in ingest response header in error conditions when x-request-id is provided."
+    (let [x-request-id "testing-request-id"
+          {:keys [headers]} (ingest/ingest-concept
+                              (assoc (dc/collection-concept {}) :metadata "bad metadata")
+                              {:x-request-id x-request-id
+                               :raw? true})]
+      (is (x-request-id-in-header? headers x-request-id))
+      (is (cmr-request-id-in-header? headers x-request-id))))
+  (testing "both cmr-request-id and x-request-id are in search response header if cmr-request-id is provided in the request header"
     (let [cmr-request-id "testing-request-id"
           {:keys [headers]} (search/find-concepts-in-format
                               "application/echo10+xml" :collection {}
                               {:headers {:cmr-request-id cmr-request-id}})]
+      (is (cmr-request-id-in-header? headers cmr-request-id))
+      (is (x-request-id-in-header? headers cmr-request-id))))
+  (testing "both cmr-request-id and x-request-id are in search response header if x-request-id is provided in the request header"
+    (let [x-request-id "testing-request-id"
+          {:keys [headers]} (search/find-concepts-in-format
+                              "application/echo10+xml" :collection {}
+                              {:headers {:x-request-id x-request-id}})]
+      (is (x-request-id-in-header? headers x-request-id))
+      (is (cmr-request-id-in-header? headers x-request-id))))
+  (testing "both cmr-request-id and x-request-id are in search response header, with the same value as cmr-request-id provided, if both cmr-request-id and x-request-id are provided with different values."
+    (let [cmr-request-id "testing-request-id"
+          x-request-id "testing-x-request-id"
+          {:keys [headers]} (search/find-concepts-in-format
+                              "application/echo10+xml" :collection {}
+                              {:headers {:cmr-request-id cmr-request-id :x-request-id x-request-id}})]
+      (is (x-request-id-in-header? headers cmr-request-id))
       (is (cmr-request-id-in-header? headers cmr-request-id))))
-
-  (testing "cmr-request-id is in search response header in error conditions"
+  (testing "both cmr-request-id and x-request-id are in search response header in error conditions when cmr-request-id is provided"
     (let [cmr-request-id "testing-request-id"
           {:keys [headers]} (search/find-concepts-in-format
                               "application/echo10+xml" :collection
                               {:unsupported true}
                               {:headers {:cmr-request-id cmr-request-id}
                                :throw-exceptions false})]
-      (is (cmr-request-id-in-header? headers cmr-request-id)))))
+      (is (cmr-request-id-in-header? headers cmr-request-id))
+      (is (x-request-id-in-header? headers cmr-request-id))))
+  (testing "both cmr-request-id and x-request-id are in search response header in error conditions when x-request-id is provided"
+    (let [x-request-id "testing-request-id"
+          {:keys [headers]} (search/find-concepts-in-format
+                              "application/echo10+xml" :collection
+                              {:unsupported true}
+                              {:headers {:x-request-id x-request-id}
+                               :throw-exceptions false})]
+      (is (x-request-id-in-header? headers x-request-id))
+      (is (cmr-request-id-in-header? headers x-request-id)))))
 
 (deftest cors-headers
   (testing "allowed headers in options search request"
@@ -80,6 +140,7 @@
       (is (some #{"Echo-Token"} allowed-headers))
       (is (some #{"Client-Id"} allowed-headers))
       (is (some #{"CMR-Request-Id"} allowed-headers))
+      (is (some #{"X-Request-Id"} allowed-headers))
       (is (some #{"CMR-Scroll-Id"} allowed-headers))))
 
   (testing "exposed headers in search request"
@@ -88,4 +149,5 @@
                               (string/split #", "))]
       (is (some #{"CMR-Hits"} exposed-headers))
       (is (some #{"CMR-Request-Id"} exposed-headers))
+      (is (some #{"X-Request-Id"} exposed-headers))
       (is (some #{"CMR-Scroll-Id"} exposed-headers)))))

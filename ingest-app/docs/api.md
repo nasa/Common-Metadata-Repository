@@ -99,6 +99,14 @@ If this header is set to true, translation to UMM JSON will not add default valu
 
 The user id header allows specifying the user-id to use when saving or deleting a collection concept. This header is currently ignored for granule concepts. If user-id header is not specified, user id is retrieved using the token supplied during the ingest.
 
+#### <a name="x-request-id"></a> X-Request-Id Header
+
+This provides standard X-Request-Id support to allow user to pass in some random ID which will be logged on the server side for debugging purpose.
+
+#### <a name="cmr-request-id"></a> CMR-Request-Id Header
+
+This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems. 
+
 ***
 
 ### <a name="responses"></a> Responses
@@ -107,9 +115,17 @@ The user id header allows specifying the user-id to use when saving or deleting 
 
 #### <a name="CMR-Request-Id-header"></a> cmr-request-id
 
-This header returns the unique id assigned to the request. This can be used to help debug client errors. The value is a long string of the form
+This header returns the value passed in through CMR-Request-Id request header or X-Request-Id request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors. The generated value is a long string of the form
 
     828ef0b8-a876-4579-85db-3cc9d1b5f6e5
+
+#### <a name="X-Request-Id-header"></a> x-request-id
+
+This header returns the value passed in through CMR-Request-Id or X-Request-Id request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors. The generated value is a long string of the form
+
+    828ef0b8-a876-4579-85db-3cc9d1b5f6e5
+
+Note: X-Request-Id response header always contains the same value as the CMR-Request-Id response header.
 
 #### <a name="http-status-codes"></a> HTTP Status Codes
 
