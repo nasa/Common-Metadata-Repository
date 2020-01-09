@@ -78,5 +78,8 @@
 
 (defmethod provider-holdings->string :default
   [result-format provider-holdings options]
-  (service-errors/throw-service-error
-    :bad-request (format "Unsupported format: %s on the provider holdings endpoint." (name result-format))))
+  (let [result-format (if-let [format (:format result-format)]
+                        (name format)
+                        (name result-format))]
+    (service-errors/throw-service-error
+      :bad-request (format "Unsupported format: %s on the provider holdings endpoint." result-format))))
