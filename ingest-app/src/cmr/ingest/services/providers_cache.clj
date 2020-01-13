@@ -1,14 +1,19 @@
 (ns cmr.ingest.services.providers-cache
   "Defines functions for creating, configuring and retrieving values from providers cache.
-  The providers cache is a TTL cache with only one key :providers and all providers as its value."
+  The providers cache is a consistent cache with only one key :providers and all providers as its value."
   (:require [cmr.common.cache :as cache]
             [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.common.cache.in-memory-cache :as mem-cache]
-            [cmr.ingest.services.provider-service :as ps]))
+            [cmr.ingest.services.provider-service :as ps]
+            [cmr.transmit.cache.consistent-cache :as consistent-cache]))
 
 (def providers-cache-key
   "The cache key for the providers cache."
   :providers)
+
+(def providers-keys-to-track
+  "The collection of keys which should be deleted from redis whenever someone attempts to clear the
+  providers cache."
+  [":providers-hash-code"])
 
 (defconfig providers-cache-time-seconds
   "The number of seconds providers information will be cached."
@@ -17,7 +22,9 @@
 (defn create-providers-cache
   "Creates a cache for providers."
   []
-  (mem-cache/create-in-memory-cache :ttl {} {:ttl (* 1000 (providers-cache-time-seconds))}))
+  (consistent-cache/create-consistent-cache
+   {:ttl (providers-cache-time-seconds)
+    :keys-to-track providers-keys-to-track}))
 
 (defn get-providers-from-cache
   [context]
