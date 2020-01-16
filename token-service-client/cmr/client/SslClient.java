@@ -25,7 +25,7 @@ public class SslClient {
 	// Launchpad Token Service root url, this is set to the Sandbox
 	private static final String LAUNCHPAD_TOKEN_SERVICE_URL_ROOT = "https://api.launchpad-sbx.nasa.gov/";
 	// full path of cacerts which has the PKI certificate for connecting to token service
-	private static final String CACERTS_PATH = "/Users/yliu10/cacerts";
+	private static final String CACERTS_PATH = "/path-to-cacerts/cacerts";
 	// keystore password
 	private static final String KEYSTORE_PASSWD = "xxxxxx";
 
