@@ -4,9 +4,9 @@ This is a sample JAVA client to demonstrate getting token and validating token w
 
 The following configurations (in source code) need to be updated to the user's own settings to test against Token Service.
 
-LAUNCHPAD_TOKEN_SERVICE_URL_ROOT: Launchpad Token Service root url, default to the Sandbox url
-CACERTS_PATH: full path of cacerts which has the PKI certificate for connecting to token service
-KEYSTORE_PASSWD: keystore password user used to update the cacerts
+- LAUNCHPAD_TOKEN_SERVICE_URL_ROOT: Launchpad Token Service root url, default to the Sandbox url
+- CACERTS_PATH: full path of cacerts which has the PKI certificate for connecting to token service
+- KEYSTORE_PASSWD: keystore password user used to update the cacerts
 
 
 ## Compile
