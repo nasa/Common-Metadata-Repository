@@ -18,7 +18,7 @@ For example `jest cmr.test.js` will run that test file. Test output is produced 
 
 # Testing locally using lambci
 
-The lambda can be executed locally using Docker and the lambci/lambda image. The `local_test.sh` script will do this.
+The lambda can be executed locally using Docker and the lambci/lambda image. The `local_test.sh` script will do this. Run it after the building step.
 
 ```
 ./local_test.sh <event json file>
