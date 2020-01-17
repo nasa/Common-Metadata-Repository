@@ -1,4 +1,4 @@
-FROM node:8.10
+FROM node:12
 
 # Create and define the node_modules's cache directory.
 RUN mkdir /usr/src/cache
