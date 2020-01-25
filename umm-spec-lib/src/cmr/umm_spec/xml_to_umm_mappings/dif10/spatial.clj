@@ -56,14 +56,15 @@
         y (u/parse-dimension (value-of data-resolution "Longitude_Resolution"))
         unit (or (u/guess-units (value-of data-resolution "Longitude_Resolution")) u/not-provided)]
     (umm-c/map->HorizontalDataResolutionType
-     (util/remove-nil-keys
-      {:YDimension x
-       :XDimension y
-       :Unit unit
-       :HorizontalResolutionProcessingLevelEnum u/not-provided}))))
+      {:GenericResolutions (u/remove-empty-records
+                             [(umm-c/map->HorizontalDataGenericResolutionType
+                                (util/remove-nil-keys
+                                  {:YDimension x
+                                   :XDimension y
+                                   :Unit unit}))])})))
 
 (defn- parse-horizontal-data-resolutions
-  "Parses the dif10 elements needed to populate HorizontalDataResolutions.
+  "Parses the dif10 elements needed to populate HorizontalDataResolution.
    Uses Horizontal_Coordinate_System under Geographic_Coordinate_System (LatitudeResolution and LongitudeResolution),
    Otherwise uses  Data_Resolution. When looking at Data_Resolution though there can be more than 1,
    so for each one that includes a Latitude and Longitude Resolution adds a new Horizontal Resolution."
@@ -72,19 +73,16 @@
         [data-res] (select doc "/DIF/Data_Resolution")]
     (when (or geo-coor-sys data-res)
       (if geo-coor-sys
-        (u/remove-empty-records
-         [(umm-c/map->HorizontalDataResolutionType
-           (util/remove-nil-keys
-            {:YDimension (when-let [y (value-of geo-coor-sys "LatitudeResolution")]
-                           (read-string y))
-             :XDimension (when-let [x (value-of geo-coor-sys "LongitudeResolution")]
-                           (read-string x))
-             :Unit (value-of geo-coor-sys "GeographicCoordinateUnits")
-             :HorizontalResolutionProcessingLevelEnum (when (or
-                                                             (value-of geo-coor-sys "LatitudeResolution")
-                                                             (value-of geo-coor-sys "LongitudeResolution"))
-                                                        u/not-provided)}))])
-        [(parse-data-resolution data-res)]))))
+        (umm-c/map->HorizontalDataResolutionType
+          {:GenericResolutions (u/remove-empty-records
+                                 [(umm-c/map->HorizontalDataGenericResolutionType
+                                    (util/remove-nil-keys
+                                      {:YDimension (when-let [y (value-of geo-coor-sys "LatitudeResolution")]
+                                                     (read-string y))
+                                       :XDimension (when-let [x (value-of geo-coor-sys "LongitudeResolution")]
+                                                     (read-string x))
+                                       :Unit (value-of geo-coor-sys "GeographicCoordinateUnits")}))])})
+        (parse-data-resolution data-res)))))
 
 (defn- parse-local-coord-system
   "Parses the dif10 elements needed for LocalCoordinateSystem values."
@@ -115,7 +113,7 @@
   [doc]
   (let [[spatial-coverage] (select doc "/DIF/Spatial_Coverage")
         [geom] (select spatial-coverage "Geometry")
-        horizontal-data-resolutions (seq (parse-horizontal-data-resolutions doc))
+        horizontal-data-resolutions (parse-horizontal-data-resolutions doc)
         local-coordinate-sys (parse-local-coord-system spatial-coverage)
         geodetic-model (parse-geodetic-model spatial-coverage)]
     (util/remove-nil-keys
@@ -123,7 +121,7 @@
        :ZoneIdentifier (value-of spatial-coverage "Zone_Identifier")
        :ResolutionAndCoordinateSystem {:GeodeticModel geodetic-model
                                        :LocalCoordinateSystem local-coordinate-sys
-                                       :HorizontalDataResolutions horizontal-data-resolutions}})))
+                                       :HorizontalDataResolution horizontal-data-resolutions}})))
 
 (defn parse-spatial
   "Returns UMM-C spatial map from DIF 10 XML document."

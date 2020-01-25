@@ -12,6 +12,7 @@
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.relations :as r]
    [cmr.spatial.ring-relations :as rr]
+   [cmr.umm-spec.migration.spatial-extent-migration :as sp-ext-migration]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm.umm-spatial :as umm-s]))
 
@@ -73,19 +74,20 @@
           dimension]]]])))
 
 (defn generate-spatial-representation-infos
-  "Returns spatialRepresentationInfo from HorizontalDataResolutions values."
+  "Returns spatialRepresentationInfo from HorizontalDataResolution values."
   [c]
-  (when-let [horizontal-data-resolutions (get-in c [:SpatialExtent :HorizontalSpatialDomain
-                                                    :ResolutionAndCoordinateSystem :HorizontalDataResolutions])]
-    [:gmd:spatialRepresentationInfo
-     [:gmd:MD_GridSpatialRepresentation
-      [:gmd:numberOfDimensions
-       [:gco:Integer
-        (count (mapcat #(vals (select-keys % [:XDimension :YDimension])) horizontal-data-resolutions))]]
-      (mapcat spatial-representation-info
-              (map-indexed vector horizontal-data-resolutions))
-      [:gmd:cellGeometry {:gco:nilReason "inapplicable"}]
-      [:gmd:transformationParameterAvailability {:gco:nilReason "inapplicable"}]]]))
+  (when-let [group-horizontal-data-resolutions (get-in c [:SpatialExtent :HorizontalSpatialDomain
+                                                          :ResolutionAndCoordinateSystem :HorizontalDataResolution])]
+    (let [horizontal-data-resolutions (sp-ext-migration/degroup-resolutions group-horizontal-data-resolutions)]
+      [:gmd:spatialRepresentationInfo
+       [:gmd:MD_GridSpatialRepresentation
+        [:gmd:numberOfDimensions
+         [:gco:Integer
+          (count (mapcat #(vals (select-keys % [:XDimension :YDimension])) horizontal-data-resolutions))]]
+        (mapcat spatial-representation-info
+                (map-indexed vector horizontal-data-resolutions))
+        [:gmd:cellGeometry {:gco:nilReason "inapplicable"}]
+        [:gmd:transformationParameterAvailability {:gco:nilReason "inapplicable"}]]])))
 
 (defn coordinate-system-element
   "Returns the spatial coordinate system ISO XML element for a given UMM-C collection record."
@@ -146,19 +148,20 @@
 (defn generate-resolution-and-coordinate-system-horizontal-data-resolutions
   "Returns a sequence of ISO MENDS elements from the given UMM-C collection record."
   [c]
-  (when-let [horizontal-data-resolutions (get-in c [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem
-                                                    :HorizontalDataResolutions])]
-    (for [[id indexed-horizontal-data-resolution] (map-indexed vector horizontal-data-resolutions)]
-      [:gmd:geographicElement
-       [:gmd:EX_GeographicDescription {:id (str "horizontalresolutionandcoordinatesystem_horizontaldataresolutions" id)}
-        [:gmd:geographicIdentifier
-         [:gmd:MD_Identifier
-          [:gmd:code
-           [:gco:CharacterString (resolution-and-coordinates-map->string indexed-horizontal-data-resolution)]]
-          [:gmd:codeSpace
-            [:gco:CharacterString "gov.nasa.esdis.umm.horizontalresolutionandcoordinatesystem_GeographicCoordinateSystems"]]
-          [:gmd:description
-           [:gco:CharacterString "HorizontalResolutionAndCoordinateSystem_GeographicCoordinateSystems"]]]]]])))
+  (when-let [group-horizontal-data-resolutions (get-in c [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem
+                                                          :HorizontalDataResolution])]
+    (let [horizontal-data-resolutions (sp-ext-migration/degroup-resolutions group-horizontal-data-resolutions)]
+      (for [[id indexed-horizontal-data-resolution] (map-indexed vector horizontal-data-resolutions)]
+        [:gmd:geographicElement
+         [:gmd:EX_GeographicDescription {:id (str "horizontalresolutionandcoordinatesystem_horizontaldataresolutions" id)}
+          [:gmd:geographicIdentifier
+           [:gmd:MD_Identifier
+            [:gmd:code
+             [:gco:CharacterString (resolution-and-coordinates-map->string indexed-horizontal-data-resolution)]]
+            [:gmd:codeSpace
+              [:gco:CharacterString "gov.nasa.esdis.umm.horizontalresolutionandcoordinatesystem_GeographicCoordinateSystems"]]
+            [:gmd:description
+             [:gco:CharacterString "HorizontalResolutionAndCoordinateSystem_GeographicCoordinateSystems"]]]]]]))))
 
 (defn generate-resolution-and-coordinate-system-local-coords
   "Returns a sequence of ISO MENDS elements from the given UMM-C collection record."

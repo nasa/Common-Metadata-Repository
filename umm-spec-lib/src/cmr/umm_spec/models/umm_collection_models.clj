@@ -236,6 +236,15 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PaleoTemporalCoverageType)
 
+;; Varies Resolution object describes a data product that has a number of resolution values.
+(defrecord HorizontalDataResolutionVariesType
+  [
+   ;; Horizontal Resolution Level describes if the data product has a number of undefined resolution
+   ;; values.
+   HorizontalResolutionProcessingLevelEnum
+  ])
+(record-pretty-printer/enable-record-pretty-printing HorizontalDataResolutionVariesType)
+
 ;; This sub-element either contains a license summary or free-text description that details the
 ;; permitted use or limitation of this collection.
 (defrecord UseConstraintsDescriptionType
@@ -337,6 +346,14 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing LocalCoordinateSystemType)
 
+;; Point Resolution object describes a data product that is from a point source.
+(defrecord HorizontalDataResolutionPointType
+  [
+   ;; Horizontal Resolution Level describes if the data product is from a point source.
+   HorizontalResolutionProcessingLevelEnum
+  ])
+(record-pretty-printer/enable-record-pretty-printing HorizontalDataResolutionPointType)
+
 ;; This element defines a single artifact that is distributed by the data provider. This element
 ;; only includes the distributable artifacts that can be obtained by the user without the user
 ;; having to invoke a service. These should be documented in the UMM-S specification.
@@ -405,12 +422,29 @@
    ;; different in the two horizontal dimensions. Also, it is different from the spatial resolution
    ;; of an instrument, which is the minimum distance between points that an instrument can see as
    ;; distinct.
-   HorizontalDataResolutions
+   HorizontalDataResolution
 
    ;; This element describes the local coordinate system for the data product.
    LocalCoordinateSystem
   ])
 (record-pretty-printer/enable-record-pretty-printing ResolutionAndCoordinateSystemType)
+
+;; Generic Resolutions object describes general resolution data for a data product where it is not
+;; known if a data product is gridded or not.
+(defrecord HorizontalDataGenericResolutionType
+  [
+   ;; The minimum difference between two adjacent values on a horizontal plane in the X axis. In
+   ;; most cases this is along the longitudinal axis.
+   XDimension
+
+   ;; The minimum difference between two adjacent values on a horizontal plan in the Y axis. In most
+   ;; cases this is along the latitudinal axis.
+   YDimension
+
+   ;; Units of measure used for the XDimension and YDimension values.
+   Unit
+  ])
+(record-pretty-printer/enable-record-pretty-printing HorizontalDataGenericResolutionType)
 
 (defrecord BoundingRectangleType
   [
@@ -438,42 +472,28 @@
 ;; is the minimum distance between points that an instrument can see as distinct.
 (defrecord HorizontalDataResolutionType
   [
-   ;; This element describes the angle of the measurement with respect to the instrument that gives
-   ;; an understanding of the specified resolution.
-   ViewingAngleType
+   ;; Varies Resolution object describes a data product that has a number of resolution values.
+   VariesResolution
 
-   ;; Units of measure used for the XDimension and YDimension values.
-   Unit
+   ;; Point Resolution object describes a data product that is from a point source.
+   PointResolution
 
-   ;; The minimum difference between two adjacent values on a horizontal plan in the Y axis. In most
-   ;; cases this is along the latitudinal axis.
-   YDimension
+   ;; Non Gridded Resolutions object describes resolution data for non gridded data products.
+   NonGriddedResolutions
 
-   ;; The maximum, minimum difference between two adjacent values on a horizontal plan in the Y
-   ;; axis. In most cases this is along the latitudinal axis.
-   MaximumYDimension
+   ;; Non Gridded Range Resolutions object describes range resolution data for non gridded data
+   ;; products.
+   NonGriddedRangeResolutions
 
-   ;; This element describes the instrument scanning direction.
-   ScanDirection
+   ;; Gridded Resolutions object describes resolution data for gridded data products.
+   GriddedResolutions
 
-   ;; The minimum difference between two adjacent values on a horizontal plane in the X axis. In
-   ;; most cases this is along the longitudinal axis.
-   XDimension
+   ;; Gridded Range Resolutions object describes range resolution data for gridded data products.
+   GriddedRangeResolutions
 
-   ;; The minimum, minimum difference between two adjacent values on a horizontal plane in the X
-   ;; axis. In most cases this is along the longitudinal axis.
-   MinimumXDimension
-
-   ;; Horizontal Resolution Level describes if the data product is gridded.
-   HorizontalResolutionProcessingLevelEnum
-
-   ;; The maximum, minimum difference between two adjacent values on a horizontal plane in the X
-   ;; axis. In most cases this is along the longitudinal axis.
-   MaximumXDimension
-
-   ;; The minimum, minimum difference between two adjacent values on a horizontal plan in the Y
-   ;; axis. In most cases this is along the latitudinal axis.
-   MinimumYDimension
+   ;; Generic Resolutions object describes general resolution data for a data product where it is
+   ;; not known if a data product is gridded or not.
+   GenericResolutions
   ])
 (record-pretty-printer/enable-record-pretty-printing HorizontalDataResolutionType)
 
@@ -636,6 +656,38 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing SpatialInformationType)
 
+;; Non Gridded Range Resolutions object describes range resolution data for non gridded data
+;; products.
+(defrecord HorizontalDataResolutionNonGriddedRangeType
+  [
+   ;; The minimum, minimum difference between two adjacent values on a horizontal plane in the X
+   ;; axis. In most cases this is along the longitudinal axis.
+   MinimumXDimension
+
+   ;; The minimum, minimum difference between two adjacent values on a horizontal plan in the Y
+   ;; axis. In most cases this is along the latitudinal axis.
+   MinimumYDimension
+
+   ;; The maximum, minimum difference between two adjacent values on a horizontal plane in the X
+   ;; axis. In most cases this is along the longitudinal axis.
+   MaximumXDimension
+
+   ;; The maximum, minimum difference between two adjacent values on a horizontal plan in the Y
+   ;; axis. In most cases this is along the latitudinal axis.
+   MaximumYDimension
+
+   ;; Units of measure used for the XDimension and YDimension values.
+   Unit
+
+   ;; This element describes the angle of the measurement with respect to the instrument that gives
+   ;; an understanding of the specified resolution.
+   ViewingAngleType
+
+   ;; This element describes the instrument scanning direction.
+   ScanDirection
+  ])
+(record-pretty-printer/enable-record-pretty-printing HorizontalDataResolutionNonGriddedRangeType)
+
 ;; This element defines a single archive artifact which a data provider would like to inform an end
 ;; user that it exists.
 (defrecord FileArchiveInformationType
@@ -695,6 +747,30 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing OrbitParametersType)
 
+;; Gridded Range Resolutions object describes range resolution data for gridded data products.
+(defrecord HorizontalDataResolutionGriddedRangeType
+  [
+   ;; The minimum, minimum difference between two adjacent values on a horizontal plane in the X
+   ;; axis. In most cases this is along the longitudinal axis.
+   MinimumXDimension
+
+   ;; The minimum, minimum difference between two adjacent values on a horizontal plan in the Y
+   ;; axis. In most cases this is along the latitudinal axis.
+   MinimumYDimension
+
+   ;; The maximum, minimum difference between two adjacent values on a horizontal plane in the X
+   ;; axis. In most cases this is along the longitudinal axis.
+   MaximumXDimension
+
+   ;; The maximum, minimum difference between two adjacent values on a horizontal plan in the Y
+   ;; axis. In most cases this is along the latitudinal axis.
+   MaximumYDimension
+
+   ;; Units of measure used for the XDimension and YDimension values.
+   Unit
+  ])
+(record-pretty-printer/enable-record-pretty-printing HorizontalDataResolutionGriddedRangeType)
+
 ;; This element and all of its sub elements exist for display purposes. It allows a data provider to
 ;; provide archive and distribution information up front to an end user, to help them decide if they
 ;; can use the product.
@@ -723,6 +799,29 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing DirectoryNameType)
 
+;; Non Gridded Resolutions object describes resolution data for non gridded data products.
+(defrecord HorizontalDataResolutionNonGriddedType
+  [
+   ;; The minimum difference between two adjacent values on a horizontal plane in the X axis. In
+   ;; most cases this is along the longitudinal axis.
+   XDimension
+
+   ;; The minimum difference between two adjacent values on a horizontal plan in the Y axis. In most
+   ;; cases this is along the latitudinal axis.
+   YDimension
+
+   ;; Units of measure used for the XDimension and YDimension values.
+   Unit
+
+   ;; This element describes the angle of the measurement with respect to the instrument that gives
+   ;; an understanding of the specified resolution.
+   ViewingAngleType
+
+   ;; This element describes the instrument scanning direction.
+   ScanDirection
+  ])
+(record-pretty-printer/enable-record-pretty-printing HorizontalDataResolutionNonGriddedType)
+
 ;; This element defines how the data may or may not be used after access is granted to assure the
 ;; protection of privacy or intellectual property. This includes license text, license URL, or any
 ;; special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the
@@ -749,3 +848,19 @@
    DepthSystemDefinition
   ])
 (record-pretty-printer/enable-record-pretty-printing VerticalCoordinateSystemType)
+
+;; Gridded Resolutions object describes resolution data for gridded data products.
+(defrecord HorizontalDataResolutionGriddedType
+  [
+   ;; The minimum difference between two adjacent values on a horizontal plane in the X axis. In
+   ;; most cases this is along the longitudinal axis.
+   XDimension
+
+   ;; The minimum difference between two adjacent values on a horizontal plan in the Y axis. In most
+   ;; cases this is along the latitudinal axis.
+   YDimension
+
+   ;; Units of measure used for the XDimension and YDimension values.
+   Unit
+  ])
+(record-pretty-printer/enable-record-pretty-printing HorizontalDataResolutionGriddedType)

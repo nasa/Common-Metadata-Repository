@@ -27,7 +27,7 @@
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-   [cmr.umm-spec.test.expected-conversion :as expected-conversation]
+   [cmr.umm-spec.test.expected-conversion :as expected-conversion]
    [cmr.umm-spec.test.location-keywords-helper :as location-keywords-helper]
    [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
@@ -638,7 +638,7 @@
        :iso-smap ["Exception while parsing invalid XML: Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
 
 (deftest ingest-umm-json
-  (let [json (umm-spec/generate-metadata test-context expected-conversation/curr-ingest-ver-example-collection-record :umm-json)
+  (let [json (umm-spec/generate-metadata test-context expected-conversion/curr-ingest-ver-example-collection-record :umm-json)
         coll-map {:provider-id "PROV1"
                   :native-id "umm_json_coll_V1"
                   :revision-id "1"
@@ -648,6 +648,7 @@
                   :metadata json}
         response (ingest/ingest-concept coll-map)]
     (is (= 201 (:status response)))
+    (is (= nil (:errors response)))
     (index/wait-until-indexed)
     (is (mdb/concept-exists-in-mdb? (:concept-id response) 1))
     (is (= 1 (:revision-id response)))
@@ -663,7 +664,7 @@
         (is (= 2 (:revision-id response))))))
 
   (testing "ingesting UMM JSON with parsing errors"
-    (let [json (umm-spec/generate-metadata test-context (assoc expected-conversation/curr-ingest-ver-example-collection-record
+    (let [json (umm-spec/generate-metadata test-context (assoc expected-conversion/curr-ingest-ver-example-collection-record
                                                          :DataDates
                                                          [{:Date "invalid date"
                                                            :Type "CREATE"}])
@@ -679,7 +680,7 @@
       (is (= 400 (:status response))))))
 
 (deftest ingest-old-json-versions
-  (let [json     (umm-spec/generate-metadata test-context expected-conversation/example-collection-record "application/vnd.nasa.cmr.umm+json;version=1.0")
+  (let [json     (umm-spec/generate-metadata test-context expected-conversion/example-collection-record "application/vnd.nasa.cmr.umm+json;version=1.0")
         coll-map {:provider-id  "PROV1"
                   :native-id    "umm_json_coll_V1"
                   :concept-type :collection

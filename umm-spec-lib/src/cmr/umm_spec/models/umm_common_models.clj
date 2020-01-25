@@ -311,6 +311,7 @@
    ;; blank.
    Value
 
+   ;; The name (1 word description) of the additional attribute.
    Name
 
    ;; Free-text description of the additional attribute.

@@ -72,8 +72,12 @@
 (defn- convert-horizontal-data-resolutions
   "Converts UMM Spatial Extent values to DIF10 Geographic_Coordinate_System"
   [spatial-extent]
-  (when-let [horizontal-data-resolution (first (get-in spatial-extent [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolutions]))]
-    (let [x (:XDimension horizontal-data-resolution)
+  (when-let [horizontal-data-resolutions (get-in spatial-extent [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution])]
+    (let [;; get the first entry in the resolution groups that contains :XDimention or :YDimension.
+          horizontal-data-resolution (or (first (:NonGriddedResolutions horizontal-data-resolutions))
+                                         (first (:GriddedResolutions horizontal-data-resolutions))
+                                         (first (:GenericResolutions horizontal-data-resolutions)))
+          x (:XDimension horizontal-data-resolution)
           y (:YDimension horizontal-data-resolution)]
       (when (or x y)
         [:Geographic_Coordinate_System

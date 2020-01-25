@@ -9,9 +9,11 @@
    [cmr.common.test.test-check-ext :as ext :refer [checking checking-with-seed]]
    [cmr.common.util :refer [update-in-each update-in-all are3]]
    [cmr.common.xml.simple-xpath :refer [select context]]
+   [cmr.system-int-test.ingest.collection-translation-test :as coll-tran-test]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iu]
    [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.test.expected-conversion :as expected-conversion]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.test.umm-generators :as umm-gen]
@@ -148,7 +150,15 @@
   (doseq [metadata-format tested-collection-formats]
     (testing (str metadata-format)
       (let [expected (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
-            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)]
+            expected (update-in
+                       expected
+                       [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                       coll-tran-test/remove-all-nil-keys-from-hdr)
+            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)
+            actual (update-in
+                     actual
+                     [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                     coll-tran-test/remove-all-nil-keys-from-hdr)]
         (is (= (convert-to-sets expected) (convert-to-sets actual)))))))
 
 (deftest validate-umm-json-example-record
@@ -175,7 +185,15 @@
                                            {:Date (t/date-time 2013)
                                             :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
+          expected (update-in
+                     expected
+                     [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                     coll-tran-test/remove-all-nil-keys-from-hdr)
           actual (xml-round-trip :collection metadata-format umm-record)
+          actual (update-in
+                   actual
+                   [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                   coll-tran-test/remove-all-nil-keys-from-hdr)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]
@@ -203,7 +221,15 @@
                                          {:Date (t/date-time 2013)
                                           :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
+          expected (update-in
+                     expected
+                     [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                     coll-tran-test/remove-all-nil-keys-from-hdr)
           actual (xml-round-trip :collection metadata-format umm-record)
+          actual (update-in
+                   actual
+                   [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                   coll-tran-test/remove-all-nil-keys-from-hdr)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]

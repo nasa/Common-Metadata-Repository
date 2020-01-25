@@ -90,19 +90,22 @@
         y (:YDimension horizontal-data-resolution)
         unit (:Unit horizontal-data-resolution)]
     (when (or x y)
-      (-> horizontal-data-resolution
-          (select-keys [:XDimension :YDimension :Unit :HorizontalResolutionProcessingLevelEnum])
-          (assoc :HorizontalResolutionProcessingLevelEnum su/not-provided)
-          util/remove-nil-keys
-          umm-c/map->HorizontalDataResolutionType))))
+      (umm-c/map->HorizontalDataResolutionType
+        {:GenericResolutions [(umm-c/map->HorizontalDataGenericResolutionType
+                                 (util/remove-nil-keys
+                                   {:XDimension x
+                                    :YDimension y
+                                    :Unit unit}))]}))))
 
 (defn- expected-horizontal-data-resolutions
   "Retains only the first horizontal-data-resolution, and removes unsupported dif10 values."
   [horizontal-data-resolutions]
-  (let [horizontal-data-resolution (first horizontal-data-resolutions)
+  (let [horizontal-data-resolution (or (first (:NonGriddedResolutions horizontal-data-resolutions))
+                                       (first (:GriddedResolutions horizontal-data-resolutions))
+                                       (first (:GenericResolutions horizontal-data-resolutions)))
         horizontal-data-resolution (expected-horizontal-data-resolution horizontal-data-resolution)]
     (when (seq horizontal-data-resolution)
-      [horizontal-data-resolution])))
+      horizontal-data-resolution)))
 
 (defn- translate-non-exist-spatial-coverage-type
   "For SpatialCoverageType DIF 10 doesn't have an ORBITAL_VERTICAL value so it gets
@@ -125,7 +128,7 @@
       (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem] dissoc :Description)
       (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel] umm-c/map->GeodeticModelType)
       (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :LocalCoordinateSystem] umm-c/map->LocalCoordinateSystemType)
-      (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolutions] expected-horizontal-data-resolutions)
+      (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution] expected-horizontal-data-resolutions)
       (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] conversion-util/fix-echo10-dif10-polygon)
       (update [:VerticalSpatialDomains] spatial-conversion/drop-invalid-vertical-spatial-domains)
       conversion-util/prune-empty-maps))

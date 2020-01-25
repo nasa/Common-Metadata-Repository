@@ -78,15 +78,21 @@
                                                          :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}
 
                                              :ResolutionAndCoordinateSystem
-                                             {:HorizontalDataResolutions [(umm-coll-models/map->HorizontalDataResolutionType
-                                                                            {:HorizontalResolutionProcessingLevelEnum "Non Gridded"
-                                                                             :XDimension 0.5
+                                             {:HorizontalDataResolution
+                                               (umm-coll-models/map->HorizontalDataResolutionType
+                                                 {:NonGriddedResolutions [(umm-coll-models/map->HorizontalDataResolutionNonGriddedType
+                                                                            {:XDimension 0.5
                                                                              :YDimension 0.5
-                                                                             :Unit "Decimal Degrees"})
-                                                                          (umm-coll-models/map->HorizontalDataResolutionType
-                                                                            {:HorizontalResolutionProcessingLevelEnum "Gridded"
-                                                                             :XDimension 0.2
-                                                                             :Unit "Kilometers"})]
+                                                                             :Unit "Decimal Degrees"})]
+                                                  :NonGriddedRangeResolutions [(umm-coll-models/map->HorizontalDataResolutionNonGriddedRangeType
+                                                                                 {:MinimumXDimension 1
+                                                                                  :MaximumXDimension 2
+                                                                                  :ViewingAngleType "At Nadir"
+                                                                                  :ScanDirection "Along Track"
+                                                                                  :Unit "Meters"})]
+                                                  :GriddedResolutions [(umm-coll-models/map->HorizontalDataResolutionGriddedType
+                                                                         {:XDimension 0.2
+                                                                          :Unit "Kilometers"})]})
                                               :Description "ResolutionAndCoordinateSystem Description value."
                                               :GeodeticModel (umm-coll-models/map->GeodeticModelType
                                                                {:HorizontalDatumName "North American Datum 1983"

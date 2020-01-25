@@ -1946,17 +1946,16 @@
                       :EllipsoidName "WGS 84"
                       :SemiMajorAxis 6378140.0
                       :DenominatorOfFlatteningRatio 298.257}
-      :HorizontalDataResolutions [{:HorizontalResolutionProcessingLevelEnum "Varies"
+      :HorizontalDataResolutions [{:HorizontalResolutionProcessingLevelEnum "Gridded"
                                    :XDimension 5
                                    :YDimension 10
                                    :Unit "Kilometers"}
-                                  {:HorizontalResolutionProcessingLevelEnum "Point"
+                                  {:HorizontalResolutionProcessingLevelEnum "Not provided"
                                    :XDimension 10
                                    :YDimension 5
                                    :Unit "Meters"}]
       :LocalCoordinateSystem {:GeoReferenceInformation "Just a reference."
                               :Description "Just a Description"}}}}})
-
 
 
 (deftest migrate-1-13-to-1-14
@@ -1983,3 +1982,176 @@
            result1))
     (is (= expected-1-14-1-13-result
            result2))))
+
+(def sample-collection-1-14
+  {:SpatialExtent
+   {:HorizontalSpatialDomain
+    {:ResolutionAndCoordinateSystem
+     {:Description "This is a description."
+      :GeodeticModel {:HorizontalDatumName "World Geodetic System of 1984 (WGS84)"
+                      :EllipsoidName "WGS 84"
+                      :SemiMajorAxis 6378140.0
+                      :DenominatorOfFlatteningRatio 298.257}
+      :HorizontalDataResolutions [{:HorizontalResolutionProcessingLevelEnum "Varies"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Varies"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Point"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Point"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Not provided"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Not provided"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Non Gridded"
+                                   :XDimension 1
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Non Gridded"
+                                   :YDimension 2
+                                   :Unit "Kilometers"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Non Gridded Range"
+                                   :MinimumXDimension 1
+                                   :MaximumXDimension 2
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Non Gridded Range"
+                                   :MinimumXDimension 1
+                                   :MaximumXDimension 2
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Non Gridded Range"
+                                   :MinimumYDimension 1
+                                   :MaximumYDimension 2
+                                   :Unit "Kilometers"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Gridded"
+                                   :XDimension 1
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Gridded"
+                                   :YDimension 1
+                                   :Unit "Kilometers"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Not provided"
+                                   :XDimension 1
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Not provided"
+                                   :YDimension 1
+                                   :Unit "Kilometers"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Gridded Range"
+                                   :MinimumXDimension 1
+                                   :MaximumXDimension 2
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Gridded Range"
+                                   :MinimumYDimension 1
+                                   :MaximumYDimension 2
+                                   :Unit "Kilometers"}]
+      :LocalCoordinateSystem {:GeoReferenceInformation "Just a reference."
+                              :Description "Just a Description"}}}}})
+
+(def sample-collection-1-14-Migrated
+  {:SpatialExtent
+   {:HorizontalSpatialDomain
+    {:ResolutionAndCoordinateSystem
+     {:Description "This is a description."
+      :GeodeticModel {:HorizontalDatumName "World Geodetic System of 1984 (WGS84)"
+                      :EllipsoidName "WGS 84"
+                      :SemiMajorAxis 6378140.0
+                      :DenominatorOfFlatteningRatio 298.257}
+      :HorizontalDataResolutions [{:HorizontalResolutionProcessingLevelEnum "Varies"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Point"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Non Gridded"
+                                   :XDimension 1
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Non Gridded"
+                                   :YDimension 2
+                                   :Unit "Kilometers"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Non Gridded Range"
+                                   :MinimumXDimension 1
+                                   :MaximumXDimension 2
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Non Gridded Range"
+                                   :MinimumXDimension 1
+                                   :MaximumXDimension 2
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Non Gridded Range"
+                                   :MinimumYDimension 1
+                                   :MaximumYDimension 2
+                                   :Unit "Kilometers"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Gridded"
+                                   :XDimension 1
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Gridded"
+                                   :YDimension 1
+                                   :Unit "Kilometers"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Not provided"
+                                   :XDimension 1
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Not provided"
+                                   :YDimension 1
+                                   :Unit "Kilometers"}
+
+                                  {:HorizontalResolutionProcessingLevelEnum "Gridded Range"
+                                   :MinimumXDimension 1
+                                   :MaximumXDimension 2
+                                   :Unit "Kilometers"}
+                                  {:HorizontalResolutionProcessingLevelEnum "Gridded Range"
+                                   :MinimumYDimension 1
+                                   :MaximumYDimension 2
+                                   :Unit "Kilometers"}]
+      :LocalCoordinateSystem {:GeoReferenceInformation "Just a reference."
+                              :Description "Just a Description"}}}}})
+
+(def sample-collection-1-15
+  {:SpatialExtent
+   {:HorizontalSpatialDomain
+    {:ResolutionAndCoordinateSystem
+     {:Description "This is a description."
+      :GeodeticModel {:HorizontalDatumName "World Geodetic System of 1984 (WGS84)"
+                      :EllipsoidName "WGS 84"
+                      :SemiMajorAxis 6378140.0
+                      :DenominatorOfFlatteningRatio 298.257}
+      :HorizontalDataResolution
+        {:VariesResolution {:HorizontalResolutionProcessingLevelEnum "Varies"}
+         :PointResolution {:HorizontalResolutionProcessingLevelEnum "Point"}
+         :NonGriddedResolutions [{:XDimension 1
+                                  :Unit "Kilometers"}
+                                 {:YDimension 2
+                                  :Unit "Kilometers"}]
+         :NonGriddedRangeResolutions [{:MinimumXDimension 1
+                                       :MaximumXDimension 2
+                                       :Unit "Kilometers"}
+                                      {:MinimumXDimension 1
+                                       :MaximumXDimension 2
+                                       :Unit "Kilometers"}
+                                      {:MinimumYDimension 1
+                                       :MaximumYDimension 2
+                                       :Unit "Kilometers"}]
+         :GriddedResolutions [{:XDimension 1
+                               :Unit "Kilometers"}
+                              {:YDimension 1
+                               :Unit "Kilometers"}]
+         :GenericResolutions [{:XDimension 1
+                               :Unit "Kilometers"}
+                              {:YDimension 1
+                               :Unit "Kilometers"}]
+         :GriddedRangeResolutions [{:MinimumXDimension 1
+                                    :MaximumXDimension 2
+                                    :Unit "Kilometers"}
+                                   {:MinimumYDimension 1
+                                    :MaximumYDimension 2
+                                    :Unit "Kilometers"}]}
+      :LocalCoordinateSystem {:GeoReferenceInformation "Just a reference."
+                              :Description "Just a Description"}}}}})
+
+(deftest migrate-1-14-to-1-15
+  (let [result (vm/migrate-umm {} :collection "1.14" "1.15" sample-collection-1-14)]
+    (is (= sample-collection-1-15
+           result))))
+
+(deftest migrate-1-15-to-1-14
+  (let [result (vm/migrate-umm {} :collection "1.15" "1.14" sample-collection-1-15)]
+    (is (= sample-collection-1-14-Migrated
+           result))))
