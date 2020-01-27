@@ -92,7 +92,7 @@
     c))
 
 (defn- migrate-horizontal-data-resolutions
-  "Migrates HorizontalDataResolution from 1.14, using the first found, to the values in 1.13."
+  "Migrates HorizontalDataResolutions from 1.14, using the first found, to the values in 1.13."
   [c]
   (if-let [horizontal-data-resolution (first (get-in
                                               c
