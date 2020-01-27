@@ -370,6 +370,34 @@
         (update :GeoReferenceInformation iso-util/safe-trim)
         umm-c/map->LocalCoordinateSystemType)))
 
+(defn update-horizontal-data-resolutions
+  "Add the type and remove nil keys in HorizontalDataResolution."
+  [c]
+  (if (seq (get-in c [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]))
+    (-> c
+        (util/update-in-each
+          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :NonGriddedResolutions]
+          util/remove-nil-keys)
+        (util/update-in-each
+          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :NonGriddedRangeResolutions]
+          util/remove-nil-keys)
+        (util/update-in-each
+          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :GeneticResolutions]
+          util/remove-nil-keys)
+        (util/update-in-each
+          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :GriddedResolutions]
+          util/remove-nil-keys)
+        (util/update-in-each
+          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :GriddedRangeResolutions]
+          util/remove-nil-keys)
+        (update-in
+          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+          util/remove-nil-keys)
+        (update-in
+          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+          umm-c/map->HorizontalDataResolutionType))
+    c))
+
 (defn umm-expected-conversion-iso19115
   [umm-coll]
   (-> umm-coll
@@ -413,6 +441,5 @@
       (update-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :Description] iso-util/safe-trim)
       (update-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel] expected-geodetic-model)
       (update-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :LocalCoordinateSystem] expected-local-coordinate-system)
-      (util/update-in-each [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolutions] util/remove-nil-keys)
-      (util/update-in-each [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolutions] umm-c/map->HorizontalDataResolutionType)
+      (update-horizontal-data-resolutions)
       js/parse-umm-c))

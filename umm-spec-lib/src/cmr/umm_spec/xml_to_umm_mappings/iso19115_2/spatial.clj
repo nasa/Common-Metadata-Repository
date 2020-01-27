@@ -7,8 +7,10 @@
    [cmr.common.xml.simple-xpath :refer [select text]]
    [cmr.spatial.encoding.gmd :as gmd]
    [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.migration.spatial-extent-migration :as sp-ext-mg]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
+   [cmr.umm-spec.util :as umm-spec-util]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as iso-shared-distrib]))
 
 (def coordinate-system-xpath
@@ -210,14 +212,46 @@
     ele-index
     (remove #(= % ele-index) indexes)))
 
+(defn- group-resolutions
+  "Returns horizontal-data-resolutions in groups."
+  [horizontal-data-resolutions]
+  (when (seq horizontal-data-resolutions)
+    (let [varies (first (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/varies))
+          point (first (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/point))
+          non-gridded (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/non-gridded)
+          non-gridded-range (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/non-gridded-range)
+          gridded (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/gridded)
+          generic (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/not-provided)
+          gridded-range (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/gridded-range)]
+     (umm-c/map->HorizontalDataResolutionType
+       {:VariesResolution (when (seq varies)
+                            (umm-c/map->HorizontalDataResolutionVariesType
+                              varies))
+        :PointResolution (when (seq point)
+                           (umm-c/map->HorizontalDataResolutionPointType
+                             point))
+        :NonGriddedResolutions (when (seq non-gridded)
+                                 (map umm-c/map->HorizontalDataResolutionNonGriddedType
+                                      (sp-ext-mg/remove-enum-from-group non-gridded)))
+        :NonGriddedRangeResolutions (when (seq non-gridded-range)
+                                      (map umm-c/map->HorizontalDataResolutionNonGriddedRangeType
+                                           (sp-ext-mg/remove-enum-from-group non-gridded-range)))
+        :GriddedResolutions (when (seq gridded)
+                              (map umm-c/map->HorizontalDataResolutionGriddedType
+                                   (sp-ext-mg/remove-enum-from-group gridded)))
+        :GenericResolutions (when (seq generic)
+                              (map umm-c/map->HorizontalDataGenericResolutionType
+                                   (sp-ext-mg/remove-enum-from-group generic)))
+       :GriddedRangeResolutions (when (seq gridded-range)
+                                  (map umm-c/map->HorizontalDataResolutionGriddedRangeType
+                                       (sp-ext-mg/remove-enum-from-group gridded-range)))}))))
+
 (defn- parse-horizontal-data-resolutions
-  "Parses HorizontalDataResolutions from the ISO XML document"
+  "Parses HorizontalDataResolution from the ISO XML document"
   [doc]
   (when-let [horizontal-data-resolutions (select doc horizontal-data-resolutions-xpath)]
     (for [horizontal-data-resolution horizontal-data-resolutions
           :let [resolution-string (first (:content horizontal-data-resolution))
-                xdimension-index (util/get-index-or-nil resolution-string "XDimension:")
-                ydimension-index (util/get-index-or-nil resolution-string "YDimension:")
                 unit-index (util/get-index-or-nil resolution-string "Unit:")
                 horizontal-resolution-processing-level-enum-index (util/get-index-or-nil
                                                                    resolution-string
@@ -229,6 +263,13 @@
                 scan-direction-index (util/get-index-or-nil resolution-string "ScanDirection:")
                 viewing-angle-type-index (util/get-index-or-nil resolution-string "ViewingAngleType:")
                 end-index (count resolution-string)
+                ;;x/ydimension won't appear together with min/max x/ydimensions and
+                xdimension-index (when (and (nil? minimum-xdimension-index)
+                                            (nil? maximum-xdimension-index))
+                                   (util/get-index-or-nil resolution-string "XDimension:"))
+                ydimension-index (when (and (nil? minimum-ydimension-index)
+                                            (nil? maximum-ydimension-index))
+                                   (util/get-index-or-nil resolution-string "YDimension:"))
                 indexes [viewing-angle-type-index scan-direction-index maximum-xdimension-index
                          minimum-xdimension-index maximum-ydimension-index minimum-ydimension-index
                          xdimension-index ydimension-index horizontal-resolution-processing-level-enum-index
@@ -253,8 +294,7 @@
                                      (get-substring-with-index resolution-string indexes viewing-angle-type-index))
                 horizontal-resolution-processing-level-enum (when horizontal-resolution-processing-level-enum-index
                                                               (get-substring-with-index resolution-string indexes horizontal-resolution-processing-level-enum-index))]]
-      (umm-c/map->HorizontalDataResolutionType
-       (util/remove-nil-keys
+      (util/remove-nil-keys
         {:XDimension (when (seq xdimension)
                        (read-string xdimension))
          :YDimension (when (seq ydimension)
@@ -274,7 +314,7 @@
          :ViewingAngleType (when (seq viewing-angle-type)
                              viewing-angle-type)
          :HorizontalResolutionProcessingLevelEnum (when (seq horizontal-resolution-processing-level-enum)
-                                                    horizontal-resolution-processing-level-enum)})))))
+                                                    horizontal-resolution-processing-level-enum)}))))
 
 (defn- parse-horizontal-spatial-domain
   "Parse the horizontal domain from the ISO XML document. Horizontal domains are encoded in an ISO XML"
@@ -292,7 +332,7 @@
                                       {:Description (iso/safe-trim description)
                                        :GeodeticModel (parse-geodetic-model doc)
                                        :LocalCoordinateSystem (parse-local-coord-sys doc)
-                                       :HorizontalDataResolutions (parse-horizontal-data-resolutions doc)})})))
+                                       :HorizontalDataResolution (group-resolutions (parse-horizontal-data-resolutions doc))})})))
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from ISO XML document."

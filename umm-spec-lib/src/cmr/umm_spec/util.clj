@@ -143,6 +143,30 @@
   "place holder string value for not provided string field"
   "Not provided")
 
+(def point
+  "place holder string value for point string field"
+  "Point")
+
+(def varies
+  "place holder string value for varies string field"
+  "Varies")
+
+(def non-gridded
+  "place holder string value for non gridded string field"
+  "Non Gridded")
+
+(def non-gridded-range
+  "place holder string value for non gridded range string field"
+  "Non Gridded Range")
+
+(def gridded
+  "place holder string value for gridded string field"
+  "Gridded")
+
+(def gridded-range
+  "place holder string value for gridded range string field"
+  "Gridded Range")
+
 (def NOT-PROVIDED
   "place holder string value for NOT PROVIDED string field"
   "NOT PROVIDED")

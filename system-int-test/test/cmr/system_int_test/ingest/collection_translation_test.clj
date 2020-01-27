@@ -3,7 +3,7 @@
     [clojure.java.io :as io]
     [clojure.test :refer :all]
     [cmr.common.mime-types :as mime-types]
-    [cmr.common.util :refer [update-in-each]]
+    [cmr.common.util :as util :refer [update-in-each]]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
@@ -40,6 +40,17 @@
       (update :ContactPersons set)
       (update :RelatedUrls set)))
 
+(defn- remove-all-nil-keys-from-hdr
+  "Remove all the nil keys inside HorizontalDataResolution."
+  [hdr]
+  (-> hdr
+      (update-in-each [:NonGriddedResolutions] util/remove-nil-keys)
+      (update-in-each [:NonGriddedRangeResolutions] util/remove-nil-keys)
+      (update-in-each [:GeneticResolutions] util/remove-nil-keys)
+      (update-in-each [:GriddedResolutions] util/remove-nil-keys)
+      (update-in-each [:GriddedRangeResolutions] util/remove-nil-keys)
+      (util/remove-nil-keys)))
+
 (deftest translate-metadata
   (doseq [input-format valid-formats
           output-format valid-formats]
@@ -48,12 +59,20 @@
             expected (expected-conversion/convert expected-conversion/example-collection-record input-format output-format)
             expected (update-in-each expected [:Platforms] update-in-each [:Instruments] assoc
                                                :NumberOfInstruments nil)
+            expected (update-in
+                       expected
+                       [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                       remove-all-nil-keys-from-hdr)
             expected (convert-to-sets expected)
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
             content-type (first (mime-types/extract-mime-types (:content-type headers)))
             parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)
             parsed-umm-json (update-in-each parsed-umm-json [:Platforms] update-in-each [:Instruments] assoc
                                                              :NumberOfInstruments nil)
+            parsed-umm-json (update-in
+                              parsed-umm-json
+                              [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                              remove-all-nil-keys-from-hdr)
             parsed-umm-json (convert-to-sets parsed-umm-json)]
 
         (is (= 200 status) body)

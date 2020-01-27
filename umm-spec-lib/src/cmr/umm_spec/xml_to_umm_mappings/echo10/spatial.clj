@@ -47,21 +47,18 @@
    :Lines              (map parse-line (select geometry-element "Line"))})
 
 (defn- parse-horizontal-data-resolutions
-  "Parses the ECHO10 elements needed for HorizontalDataResolutions values."
+  "Parses the ECHO10 elements needed for HorizontalDataResolution values."
   [spatial-info]
   (when-let [[geo-coor-sys] (select spatial-info "HorizontalCoordinateSystem/GeographicCoordinateSystem")]
-    (u/remove-empty-records
-     [(umm-c/map->HorizontalDataResolutionType
-       (util/remove-nil-keys
-        {:YDimension (when-let [y (value-of geo-coor-sys "LatitudeResolution")]
-                       (read-string y))
-         :XDimension (when-let [x (value-of geo-coor-sys "LongitudeResolution")]
-                       (read-string x))
-         :Unit (value-of geo-coor-sys "GeographicCoordinateUnits")
-         :HorizontalResolutionProcessingLevelEnum (when (or
-                                                         (value-of geo-coor-sys "LatitudeResolution")
-                                                         (value-of geo-coor-sys "LongitudeResolution"))
-                                                    u/not-provided)}))])))
+    (umm-c/map->HorizontalDataResolutionType
+      {:GenericResolutions (u/remove-empty-records
+                             [(umm-c/map->HorizontalDataGenericResolutionType
+                               (util/remove-nil-keys
+                                 {:YDimension (when-let [y (value-of geo-coor-sys "LatitudeResolution")]
+                                                (read-string y))
+                                  :XDimension (when-let [x (value-of geo-coor-sys "LongitudeResolution")]
+                                                (read-string x))
+                                  :Unit (value-of geo-coor-sys "GeographicCoordinateUnits")}))])})))
 
 (defn- parse-local-coord-system
   "Parses the ECHO10 elements needed for LocalCoordinateSystem values."
@@ -89,7 +86,7 @@
   "Parses the ECHO10 elements needed for HorizontalSpatialDomain values."
   [doc]
   (let [[spatial-info] (select doc "/Collection/SpatialInfo")
-        horizontal-data-resolutions (seq (parse-horizontal-data-resolutions spatial-info))
+        horizontal-data-resolutions (parse-horizontal-data-resolutions spatial-info)
         local-coordinate-sys (parse-local-coord-system spatial-info)
         geodetic-model (parse-geodetic-model spatial-info)
         [horiz] (select doc "/Collection/Spatial/HorizontalSpatialDomain")]
@@ -99,7 +96,7 @@
        :ZoneIdentifier (value-of horiz "ZoneIdentifier")
        :ResolutionAndCoordinateSystem {:GeodeticModel geodetic-model
                                        :LocalCoordinateSystem local-coordinate-sys
-                                       :HorizontalDataResolutions horizontal-data-resolutions}}))))
+                                       :HorizontalDataResolution horizontal-data-resolutions}}))))
 
 (defn parse-spatial
   "Returns UMM-C spatial map from ECHO10 XML document."

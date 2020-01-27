@@ -7,11 +7,12 @@
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as ext :refer [checking checking-with-seed]]
-   [cmr.common.util :refer [update-in-each update-in-all are3]]
+   [cmr.common.util :as util :refer [update-in-each update-in-all are3]]
    [cmr.common.xml.simple-xpath :refer [select context]]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iu]
    [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.test.expected-conversion :as expected-conversion]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.test.umm-generators :as umm-gen]
@@ -144,11 +145,30 @@
              (format "Parsing example file %s and converting to %s and then parsing again did not result in expected umm."
                      example-file target-format)))))))
 
+(defn- remove-all-nil-keys-from-hdr
+  "Remove all the nil keys inside HorizontalDataResolution."
+  [hdr]
+  (-> hdr
+      (update-in-each [:NonGriddedResolutions] util/remove-nil-keys)
+      (update-in-each [:NonGriddedRangeResolutions] util/remove-nil-keys)
+      (update-in-each [:GeneticResolutions] util/remove-nil-keys)
+      (update-in-each [:GriddedResolutions] util/remove-nil-keys)
+      (update-in-each [:GriddedRangeResolutions] util/remove-nil-keys)
+      (util/remove-nil-keys)))
+
 (deftest roundtrip-example-collection-record
   (doseq [metadata-format tested-collection-formats]
     (testing (str metadata-format)
       (let [expected (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
-            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)]
+            expected (update-in
+                       expected
+                       [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                       remove-all-nil-keys-from-hdr)
+            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)
+            actual (update-in
+                     actual
+                     [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                     remove-all-nil-keys-from-hdr)]
         (is (= (convert-to-sets expected) (convert-to-sets actual)))))))
 
 (deftest validate-umm-json-example-record
@@ -175,7 +195,15 @@
                                            {:Date (t/date-time 2013)
                                             :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
+          expected (update-in
+                     expected
+                     [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                     remove-all-nil-keys-from-hdr)
           actual (xml-round-trip :collection metadata-format umm-record)
+          actual (update-in
+                   actual
+                   [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                   remove-all-nil-keys-from-hdr)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]
@@ -203,7 +231,15 @@
                                          {:Date (t/date-time 2013)
                                           :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
+          expected (update-in
+                     expected
+                     [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                     remove-all-nil-keys-from-hdr)
           actual (xml-round-trip :collection metadata-format umm-record)
+          actual (update-in
+                   actual
+                   [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
+                   remove-all-nil-keys-from-hdr)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]
