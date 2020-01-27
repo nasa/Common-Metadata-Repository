@@ -8,6 +8,7 @@
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
     [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+    [cmr.umm-spec.test.generate-and-parse :as generate-and-parse]
     [cmr.umm-spec.test.location-keywords-helper :as location-keywords-helper]
     [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
@@ -40,17 +41,6 @@
       (update :ContactPersons set)
       (update :RelatedUrls set)))
 
-(defn remove-all-nil-keys-from-hdr
-  "Remove all the nil keys inside HorizontalDataResolution."
-  [hdr]
-  (-> hdr
-      (update-in-each [:NonGriddedResolutions] util/remove-nil-keys)
-      (update-in-each [:NonGriddedRangeResolutions] util/remove-nil-keys)
-      (update-in-each [:GeneticResolutions] util/remove-nil-keys)
-      (update-in-each [:GriddedResolutions] util/remove-nil-keys)
-      (update-in-each [:GriddedRangeResolutions] util/remove-nil-keys)
-      (util/remove-nil-keys)))
-
 (deftest translate-metadata
   (doseq [input-format valid-formats
           output-format valid-formats]
@@ -62,7 +52,7 @@
             expected (update-in
                        expected
                        [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
-                       remove-all-nil-keys-from-hdr)
+                       generate-and-parse/remove-all-nil-keys-from-hdr)
             expected (convert-to-sets expected)
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
             content-type (first (mime-types/extract-mime-types (:content-type headers)))
@@ -72,7 +62,7 @@
             parsed-umm-json (update-in
                               parsed-umm-json
                               [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
-                              remove-all-nil-keys-from-hdr)
+                              generate-and-parse/remove-all-nil-keys-from-hdr)
             parsed-umm-json (convert-to-sets parsed-umm-json)]
 
         (is (= 200 status) body)
