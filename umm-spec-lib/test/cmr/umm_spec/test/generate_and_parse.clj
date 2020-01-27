@@ -145,7 +145,7 @@
              (format "Parsing example file %s and converting to %s and then parsing again did not result in expected umm."
                      example-file target-format)))))))
 
-(defn remove-all-nil-keys-from-hdr
+(defn- remove-all-nil-keys-from-hdr
   "Remove all the nil keys inside HorizontalDataResolution."
   [hdr]
   (-> hdr
