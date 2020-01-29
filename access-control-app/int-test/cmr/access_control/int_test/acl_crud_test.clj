@@ -1288,8 +1288,8 @@
                       [:catalog_item_identity :collection_identifier])))))))
 
 (deftest CMR-6147-subscription-mmt-acl-test
-  (let [token (echo-util/login (test-util/conn-context) "user6147")
-        group1 (test-util/ingest-group token {:name "group1"} ["user6147"])
+  (let [token (echo-util/login (test-util/conn-context) "admin")
+        group1 (test-util/ingest-group token {:name "group1"} ["user1"])
         subscription-acl {:group_permissions [{:user_type "guest"
                                                :permissions ["read"]}
                                               {:user_type "registered"
@@ -1315,9 +1315,9 @@
                   params
                   {:token token}))))
 
-        "user1 permissions EMAIL_SUBSCRIPTION_MANAGEMENT"
+        "user in group permissions EMAIL_SUBSCRIPTION_MANAGEMENT"
         ["read" "create" "update" "delete"]
-        {:user_id "user6147"
+        {:user_id "user1"
          :provider "PROV1"
          :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}
 
@@ -1327,9 +1327,9 @@
          :provider "PROV1"
          :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}
 
-        "user2 permissions EMAIL_SUBSCRIPTION_MANAGEMENT"
+        "user not in group permissions EMAIL_SUBSCRIPTION_MANAGEMENT"
         ["read" "update"]
-        {:user_id "otheruser"
+        {:user_id "user2"
          :provider "PROV1"
          :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}))))
 
