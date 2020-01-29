@@ -1287,6 +1287,52 @@
               (get-in (access-control/get-acl (test-util/conn-context) (:concept_id acl4) {:token token})
                       [:catalog_item_identity :collection_identifier])))))))
 
+(deftest CMR-6147-subscription-mmt-acl-test
+  (let [token (echo-util/login (test-util/conn-context) "user6147")
+        group1 (test-util/ingest-group token {:name "group1"} ["user6147"])
+        subscription-acl {:group_permissions [{:user_type "guest"
+                                               :permissions ["read"]}
+                                              {:user_type "registered"
+                                               :permissions ["read" "update"]}
+                                              {:group_id (:concept_id group1) 
+                                               :permissions ["read" "create" "delete" "update"]}]
+                          :provider_identity {:provider_id "PROV1"
+                                              :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}}
+        acl (access-control/create-acl (test-util/conn-context)
+                                       subscription-acl 
+                                       {:token token})]
+    (is (= subscription-acl
+           (access-control/get-acl (test-util/conn-context)
+                                   (:concept_id acl)
+                                   {:token token})))
+
+    (testing "MMT SUBACRIPTION Acl permissions"
+      (are3 [perms params]
+        (is (= {"EMAIL_SUBSCRIPTION_MANAGEMENT" perms}
+               (json/parse-string
+                 (access-control/get-permissions
+                  (test-util/conn-context)
+                  params
+                  {:token token}))))
+
+        "user1 permissions EMAIL_SUBSCRIPTION_MANAGEMENT"
+        ["read" "create" "update" "delete"]
+        {:user_id "user6147"
+         :provider "PROV1"
+         :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}
+
+        "guest permissions EMAIL_SUBSCRIPTION_MANAGEMENT"
+        ["read"]
+        {:user_type "guest"
+         :provider "PROV1"
+         :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}
+
+        "user2 permissions EMAIL_SUBSCRIPTION_MANAGEMENT"
+        ["read" "update"]
+        {:user_id "otheruser"
+         :provider "PROV1"
+         :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}))))
+
 (deftest CMR-5797-draft-mmt-acl-test
   (let [token (echo-util/login (test-util/conn-context) "admin")
         user1-token (echo-util/login (test-util/conn-context) "user1")
