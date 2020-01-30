@@ -1,0 +1,73 @@
+---
+openapi: 3.0.0
+info:
+  title: CMR Autocomplete API
+  description: Autocomplete usage
+  version: 0.1.0
+
+paths:
+  /autocomplete:
+    get:
+      summary: Returns a list of autocomplete-suggestions
+      parameters:
+        - name: q
+          in: query
+          required: true
+          example: ice
+          schema:
+            type: string
+        - name: type
+          description: optional comma separated list of types to include
+          examples:
+            single:
+              value: platform
+            multi:
+              value: 'platform,project,instrument,science_keyword'
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A suggestion response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestionResponse'
+              example:
+                query: ex
+                results:
+                  - type: platform
+                    suggestions:
+                      - EXOS-A
+                      - EXPLORER-9
+                  - type: instrument
+                    suggestions:
+                      - EXRAD
+                  - type: provider
+                    suggestions:
+                      - PURDUE/EXTENSION
+
+        '400':
+          description: Bad query or not term provided
+components:
+  schemas:
+    SuggestionResponse:
+      properties:
+        query:
+          description: Original term provided
+          type: string
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SuggestionCollection'
+    SuggestionCollection:
+      properties:
+        type:
+          type: string
+          example: platform
+        suggestions:
+          type: array
+          items:
+            example: '"EXOS-A","EROS-A1","ALOS-2","ALOS"'
+            type: string

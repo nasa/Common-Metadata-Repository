@@ -1,0 +1,16 @@
+{
+  "env": {
+    "jest": true
+  },
+  "extends": [
+    "airbnb"
+  ],
+  "plugins": [
+    "jest",
+    "prettier"
+  ],
+  "rules": {
+    "no-console": "error",
+    "object-curly-spacing": "warn"
+  }
+}
