@@ -440,6 +440,7 @@ For system, provider, and single instance identities, the grantable permissions 
 | DASHBOARD_DAAC_CURATOR          | create, read, update, delete |
 | NON_NASA_DRAFT_USER             | create, read, update, delete |
 | NON_NASA_DRAFT_APPROVER         | create, read, update, delete |
+| EMAIL_SUBSCRIPTION_MANAGEMENT   | create, read, update, delete |
 
 #### Single Instance Identity
 

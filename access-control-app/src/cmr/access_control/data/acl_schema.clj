@@ -75,7 +75,8 @@
    "DATA_QUALITY_SUMMARY_ASSIGNMENT"
    "PROVIDER_CALENDAR_EVENT"
    "NON_NASA_DRAFT_USER"
-   "NON_NASA_DRAFT_APPROVER"])
+   "NON_NASA_DRAFT_APPROVER"
+   "EMAIL_SUBSCRIPTION_MANAGEMENT"])
 
 (def valid-permissions
   "A collection of valid permissions for group permissions"
