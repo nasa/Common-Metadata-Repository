@@ -1287,7 +1287,7 @@
               (get-in (access-control/get-acl (test-util/conn-context) (:concept_id acl4) {:token token})
                       [:catalog_item_identity :collection_identifier])))))))
 
-(deftest CMR-6147-subscription-mmt-acl-test
+(deftest CMR-6147-email-subscription-acl-test
   (let [token (echo-util/login (test-util/conn-context) "admin")
         group1 (test-util/ingest-group token {:name "group1"} ["user1"])
         subscription-acl {:group_permissions [{:user_type "guest"
@@ -1306,7 +1306,7 @@
                                    (:concept_id acl)
                                    {:token token})))
 
-    (testing "MMT SUBSCRIPTION Acl permissions"
+    (testing "EMAIL SUBSCRIPTION Acl permissions"
       (are3 [perms params]
         (is (= {"EMAIL_SUBSCRIPTION_MANAGEMENT" perms}
                (json/parse-string
