@@ -29,7 +29,6 @@
     "jest-junit": "^10.0.0",
     "nodemon": "^2.0.2",
     "prettier": "^1.19.1",
-    "serverless-offline": "^5.12.1",
-    "sinon": "^8.1.1"
+    "serverless-offline": "^5.12.1"
   }
 }
