@@ -1306,7 +1306,7 @@
                                    (:concept_id acl)
                                    {:token token})))
 
-    (testing "MMT SUBACRIPTION Acl permissions"
+    (testing "MMT SUBSCRIPTION Acl permissions"
       (are3 [perms params]
         (is (= {"EMAIL_SUBSCRIPTION_MANAGEMENT" perms}
                (json/parse-string
