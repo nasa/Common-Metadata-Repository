@@ -6,6 +6,7 @@ const mockRedis = {};
 
 const idx = new FlexSearch('speed');
 idx.add(0, 'ice');
+idx.add(1, 'icesat');
 const strIdx = idx.export();
 
 // Setup
@@ -15,7 +16,7 @@ beforeEach(() => {
     .mockResolvedValue(strIdx);
 });
 
-test('it should return a SuggestionCollection', async () => {
+test('GIVEN valid input WHEN a query is made THEN it should return a SuggestionCollection', async () => {
   const result = await suggest(mockRedis, 'instrument', 'scan');
 
   expect(result).toHaveProperty('type');

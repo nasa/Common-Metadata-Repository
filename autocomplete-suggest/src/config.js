@@ -1,3 +1,5 @@
+// config.js
+
 const CMR_SEARCH_API = process.env.CMR_API || 'https://cmr.earthdata.nasa.gov/search';
 
 const REDIS_HOST = process.env.REDIS_URL || 'localhost';
