@@ -1,19 +1,15 @@
 // handler.js
 
-const bluebird = require('bluebird');
-const redis = require('redis');
+const elasticsearch = require('elasticsearch');
 
 const LOG = require('./logger');
-const suggest = require('./suggest');
 
 const {
-  REDIS_HOST,
-  REDIS_PORT,
-  REDIS_PASSWORD,
+  ELASTICSEARCH_HOST,
+  ELASTICSEARCH_PORT,
+  ELASTICSEARCH_VERSION,
 } = require('./config');
 
-bluebird.promisifyAll(redis.RedisClient.prototype);
-bluebird.promisifyAll(redis.Multi.prototype);
 
 const HTTP_OK = 200;
 const HTTP_CLIENT_ERROR = 400;
@@ -35,32 +31,6 @@ const buildResult = (message, statusCode) => {
 };
 
 /**
- * Configures a redis client
- * @returns {RedisClient}
- */
-const createRedisClient = () => {
-  const redisOpts = {
-    password: REDIS_PASSWORD,
-  };
-
-  const client = redis.createClient(
-    REDIS_PORT,
-    REDIS_HOST,
-    redisOpts,
-  );
-
-  client.on('connect', () => LOG.debug(`Redis client connected to ${REDIS_HOST}:${REDIS_PORT}`));
-  client.on('end', () => LOG.debug('Redis client disconnected'));
-
-  client.on('error', (err) => {
-    const { message } = err;
-    LOG.error(`An error occurred with the redis connection: ${message}`);
-  });
-
-  return client;
-};
-
-/**
  *
  * @param event
  * @returns {Promise<{body: string, statusCode: *}>}
@@ -78,31 +48,28 @@ module.exports.suggestHandler = async (event) => {
     );
   }
 
-  let typeList;
-  if (types) {
-    typeList = types
-      .split(',')
-      .map((t) => t.toLowerCase().trim())
-      .filter((t) => t);
-  }
-
-  const client = createRedisClient();
-
-  let redisTypeKeys;
-  if (Array.isArray(typeList) && typeList.length) {
-    redisTypeKeys = typeList.map((t) => `AUTOCOMPLETE_FACET_KEY_${t}`);
-  } else {
-    const keyList = await client.getAsync('AUTOCOMPLETE_FACET_KEY_LIST');
-    redisTypeKeys = JSON.parse(keyList);
-  }
+  const esClient = new elasticsearch.Client({
+    host: `${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}`,
+    apiVersion: ELASTICSEARCH_VERSION,
+  });
 
   try {
-    const results = await Promise.all(redisTypeKeys.map((key) => suggest(client, key, q)));
+    const response = await esClient.search({
+      index: 'autocomplete',
+      type: '_doc',
+      body: {
+        query: {
+          match: {
+            facets: q,
+          },
+        },
+      },
+    });
 
     return buildResult(
       {
         query: q,
-        results,
+        results: response.hits.hits,
       },
       HTTP_OK,
     );
@@ -115,7 +82,5 @@ module.exports.suggestHandler = async (event) => {
       },
       HTTP_SERVER_ERROR,
     );
-  } finally {
-    client.quit();
   }
 };
