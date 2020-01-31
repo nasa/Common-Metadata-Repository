@@ -3,8 +3,8 @@
 # Production
 
 ```bash
-export REDIS_PORT=<aws redis port>
-export REDIS_HOST=<aws redis host>
+export REDIS_PORT=<redis port>
+export REDIS_HOST=<redis host>
 
 # optional
 export REDIS_PASSWORD=<redis password>
