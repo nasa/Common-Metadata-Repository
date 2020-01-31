@@ -5,10 +5,19 @@
 ```bash
 export REDIS_PORT=<aws redis port>
 export REDIS_HOST=<aws redis host>
+
+# optional
+export REDIS_PASSWORD=<redis password>
 ```
 
 # Development
 
+## Run Unit Tests
+```bash
+yarn test
+```
+
+## Run Live Development Environment
 ```bash
 # Install depdendencies
 yarn install
@@ -21,10 +30,3 @@ serverless offline
 
 curl -XGET http://localhost:3000/autocomplete?q=<your term>
 ```
-
-# Architecture
-redis stores indexed hashes from flexsearch
-retrieve those hashes based on facets provided, or all
-
-
-update/generate hashes daily? hourly?
