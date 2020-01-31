@@ -184,7 +184,8 @@
                             :small_collections
                             (keyword concept-id))
         :completion-message (format "Completed reindex of [%s] for rebalancing granule indexes."
-                                    concept-id)}))))
+                                    concept-id)
+        :rebalancing-collection? true}))))
 
 (defn finalize-rebalance-collection
   "Finalizes collection rebalancing."
@@ -217,4 +218,7 @@
   "Returns a map of counts of granules in the collection in metadata db, the small collections index,
    and in the separate collection index if it exists."
   [context concept-id]
-  (rebalance-util/rebalancing-collection-counts context concept-id))
+  (assoc
+   (rebalance-util/rebalancing-collection-counts context concept-id)
+   :rebalancing-status
+   (rebalance-util/rebalancing-collection-status context concept-id)))

@@ -36,6 +36,10 @@
   [index-set-id concept-id]
   (str (rebalance-collection-url index-set-id concept-id) "/finalize"))
 
+(defn update-collection-rebalance-status-url
+  [index-set-id concept-id]
+  (str (rebalance-collection-url index-set-id concept-id) "/update-status"))
+
 (defn reset-url
   []
   (format "%s/%s" (index-sets-url) "reset"))
@@ -180,7 +184,7 @@
     {:status status :errors (:errors body) :response (assoc response :body body)}))
 
 (defn mark-collection-as-rebalancing
-  "Submits a request to mark a colleciton as rebalancing"
+  "Submits a request to mark a collection as rebalancing"
   [id concept-id]
   (let [response (client/request
                   {:method :post
@@ -194,12 +198,26 @@
     {:status status :errors (:errors body) :response (assoc response :body body)}))
 
 (defn finalize-rebalancing-collection
-  "Submits a request to finalize a rebalancing colleciton"
+  "Submits a request to finalize a rebalancing collection"
   [id concept-id]
   (let [response (client/request
                   {:method :post
                    :url (finalize-rebalance-collection-url id concept-id)
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :accept :json
+                   :throw-exceptions false})
+        status (:status response)
+        body (safe-decode response)]
+    {:status status :errors (:errors body) :response (assoc response :body body)}))
+
+(defn update-rebalancing-collection-status
+  "Submits a request to update the collection rebalancing status"
+  [id concept-id to-status]
+  (let [response (client/request
+                  {:method :post
+                   :url (update-collection-rebalance-status-url id concept-id)
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :query-params {:status to-status}
                    :accept :json
                    :throw-exceptions false})
         status (:status response)
