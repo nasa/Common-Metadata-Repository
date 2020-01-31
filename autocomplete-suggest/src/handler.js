@@ -97,7 +97,7 @@ module.exports.suggestHandler = async (event) => {
   }
 
   try {
-    const results = await Promise.all(redisTypeKeys.map((key) => suggest(client, q, key)));
+    const results = await Promise.all(redisTypeKeys.map((key) => suggest(client, key, q)));
 
     return buildResult(
       {
