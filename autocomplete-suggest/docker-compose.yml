@@ -1,7 +1,58 @@
 version: "3.7"
 
 services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+    container_name: es01
+    environment:
+      - node.name=es01
+      - discovery.seed_hosts=es02
+      - cluster.name=cmr-ac-cluster
+      - cluster.initial_master_nodes=es01,es02
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - "es01_data:/usr/share/elasticsearch/data"
+    ports:
+      - 9200:9200
+    networks:
+      - elastic
+
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+    container_name: es02
+    environment:
+      - node.name=es02
+      - discovery.seed_hosts=es01
+      - cluster.name=cmr-ac-cluster
+      - cluster.initial_master_nodes=es01,es02
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - "es02_data:/usr/share/elasticsearch/data"
+    networks:
+      - elastic
+
   redis:
     image: redis
     ports:
       - 6379:6379
+
+volumes:
+  es01_data:
+    driver: local
+  es02_data:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge
+
