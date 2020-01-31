@@ -2,6 +2,8 @@
 
 const FlexSearch = require('flexsearch');
 
+const LOG = require('./logger');
+
 /**
  * @typedef {object} SuggestionCollection
  * @property {string} type The type of suggestion, equating to a facet in CMR search
@@ -24,11 +26,23 @@ const suggest = async (redis, type, query, opts) => {
     ...opts,
   };
 
-  const index = new FlexSearch('speed');
+  let flexsearchIndex;
+  let suggestions = [];
 
-  const data = await redis.getAsync(type);
-  index.import(data);
-  const suggestions = index.search(query, updatedOpts.limit);
+  try {
+    flexsearchIndex = await redis.getAsync(type);
+
+    if (!flexsearchIndex) {
+      LOG.error(`No redis key [${type}] found`);
+    } else {
+      const index = new FlexSearch('speed');
+      index.import(flexsearchIndex);
+      suggestions = index.search(query, updatedOpts.limit);
+    }
+  } catch (err) {
+    const { message } = err;
+    LOG.error(`An error occurred accessing redis: ${message}`);
+  }
 
   return {
     suggestions,
