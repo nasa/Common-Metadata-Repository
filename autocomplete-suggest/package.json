@@ -4,7 +4,7 @@
   "description": "Autocomplete functionality to aid in searching CMR collections",
   "license": "Apache-2.0",
   "scripts": {
-    "test": "jest --coverage",
+    "test": "jest --verbose --coverage",
     "start": "serverless offline"
   },
   "main": "src/handler.js",

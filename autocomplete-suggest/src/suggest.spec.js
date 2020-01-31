@@ -4,10 +4,10 @@ const suggest = require('./suggest');
 
 const mockRedis = {};
 
-const idx = new FlexSearch('speed');
-idx.add(0, 'ice');
-idx.add(1, 'icesat');
-const strIdx = idx.export();
+const instrumentIndex = new FlexSearch('speed');
+instrumentIndex.add(0, 'ice');
+instrumentIndex.add(1, 'icesat');
+const strIdx = instrumentIndex.export();
 
 // Setup
 beforeEach(() => {
@@ -27,7 +27,33 @@ test('GIVEN valid input WHEN a query is made THEN it should return a SuggestionC
 });
 
 
-test('it should get suggestions from redis', async () => {
+test('GIVEN a redis client WHEN queried THEN it should pull from redis', async () => {
   await suggest(mockRedis, 'instrument', 'ice');
   expect(mockRedis.getAsync).toHaveBeenCalled();
+});
+
+test('GIVEN redis WHEN redis returns nothing THEN an empty suggestions array is returned', async () => {
+  // GIVEN
+  mockRedis.getAsync.mockResolvedValue(null);
+
+  // WHEN
+  const result = await suggest(mockRedis, 'instrument', 'auger');
+
+  // THEN
+  expect(result).toHaveProperty('suggestions');
+  expect(result.suggestions.length).toBe(0);
+});
+
+test('GIVEN redis errors out WHEN redis returns nothing THEN an empty suggestions array is returned', async () => {
+  // GIVEN
+  mockRedis.getAsync.mockImplementation(() => {
+    throw new Error('Fake redis connection error');
+  });
+
+  // WHEN
+  const result = await suggest(mockRedis, 'provider', 'ORNL_DAA');
+
+  // THEN
+  expect(result).toHaveProperty('suggestions');
+  expect(result.suggestions.length).toBe(0);
 });

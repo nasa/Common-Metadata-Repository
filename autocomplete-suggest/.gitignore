@@ -1,7 +1,10 @@
 # package directories
 node_modules
 jspm_packages
+
+# testing output
 coverage
+junit.xml
 
 # Serverless directories
 .serverless
