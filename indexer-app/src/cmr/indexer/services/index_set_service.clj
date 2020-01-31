@@ -286,6 +286,10 @@
                           index-set
                           [:index-set :granule :rebalancing-targets]
                           assoc concept-id target)
+                        (update-in
+                         index-set
+                         [:index-set :granule :rebalancing-status]
+                         assoc concept-id "IN_PROGRESS")
                         (if (= "small-collections" target)
                           (do
                              (validate-granule-index-exists index-set concept-id)
@@ -311,11 +315,35 @@
                           index-set
                           [:index-set :granule :rebalancing-targets]
                           dissoc (keyword concept-id))
+                        (update-in
+                         index-set
+                         [:index-set :granule :rebalancing-status]
+                         dissoc (keyword concept-id))
                         (if (= "small-collections" target)
                           (remove-granule-index-from-index-set index-set concept-id)
                           index-set))]
     ;; Update the index set. This will create the new collection indexes as needed.
     (update-index-set context index-set)))
+
+(defn update-collection-rebalancing-status
+  "Update the collection rebalancing status."
+  [context index-set-id concept-id status]
+  (rebalancing-collections/validate-status status)
+  (info (format "Updating collection rebalancing status for collection [%s] to status [%s]."
+                concept-id status))
+  (let [index-set (get-index-set context index-set-id)]
+    (when-not (get-in index-set [:index-set :granule :rebalancing-status (keyword concept-id)])
+      (errors/throw-service-error
+       :bad-request
+       (format
+         "The index set does not contain the rebalancing collection [%s]"
+         concept-id)))
+    (update-index-set
+     context
+     (update-in
+      index-set
+      [:index-set :granule :rebalancing-status]
+      assoc concept-id status))))
 
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-

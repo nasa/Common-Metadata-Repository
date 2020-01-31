@@ -821,6 +821,15 @@
       :variable (get-concept-mapping-fn :variable)
       :service (get-concept-mapping-fn :service)})))
 
+(defn fetch-rebalancing-collection-info
+  "Fetch rebalancing collections, their targets, and status."
+  ([context]
+   (let [index-set-id (get-in (index-set context) [:index-set :id])]
+     (fetch-rebalancing-collection-info context index-set-id)))
+  ([context index-set-id]
+   (let [fetched-index-set (get-in (index-set-es/get-index-set context index-set-id) [:index-set :granule])]
+     (select-keys fetched-index-set [:rebalancing-collections :rebalancing-status :rebalancing-targets]))))
+
 (def index-set-cache-key
   "The name of the cache used for caching index set related data."
   :indexer-index-set-cache)
