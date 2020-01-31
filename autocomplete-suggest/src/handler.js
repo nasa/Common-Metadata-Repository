@@ -67,6 +67,7 @@ const createRedisClient = () => {
  */
 module.exports.suggestHandler = async (event) => {
   const { q, types } = event.queryStringParameters;
+
   if (!q) {
     return buildResult(
       {
@@ -77,13 +78,22 @@ module.exports.suggestHandler = async (event) => {
     );
   }
 
+  let typeList;
+  if (types) {
+    typeList = types
+      .split(',')
+      .map((t) => t.toLowerCase().trim())
+      .filter((t) => t);
+  }
+
   const client = createRedisClient();
 
   let redisTypeKeys;
-  if (Array.isArray(types) && types.length) {
-    redisTypeKeys = types.map((t) => `AUTOCOMPLETE_FACET_KEY_${t}`);
+  if (Array.isArray(typeList) && typeList.length) {
+    redisTypeKeys = typeList.map((t) => `AUTOCOMPLETE_FACET_KEY_${t}`);
   } else {
-    redisTypeKeys = await client.getAsync('AUTOCOMPLETE_FACET_KEY_LIST');
+    const keyList = await client.getAsync('AUTOCOMPLETE_FACET_KEY_LIST');
+    redisTypeKeys = JSON.parse(keyList);
   }
 
   try {

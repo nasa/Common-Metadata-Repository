@@ -6,9 +6,12 @@ info:
   version: 0.1.0
 
 paths:
-  /autocomplete:
+  /search/collection/autocomplete:
     get:
-      summary: Returns a list of autocomplete-suggestions
+      tags:
+        - autocomplete
+      summary: Autocomplete end-point
+      description: Returns a list of autocomplete-suggestions
       parameters:
         - name: q
           in: query
@@ -22,11 +25,23 @@ paths:
             single:
               value: platform
             multi:
-              value: 'platform,project,instrument,science_keyword'
+              value: 'platform,project,instrument,science_keywords'
           in: query
           required: false
           schema:
             type: string
+            enum:
+              - platforms
+              - instruments
+              - projects
+              - temporal_keywords
+              - providers
+              - spatial_keywords
+              - science_keywords
+              - archive_centers
+              - data_centers
+              - granule-data-format
+              - measurement-name
       responses:
         '200':
           description: A suggestion response
@@ -50,6 +65,24 @@ paths:
 
         '400':
           description: Bad query or not term provided
+
+  /search/collection/autocomplete/types:
+    get:
+      tags:
+        - autocomplete
+      summary: Return valid facet types to filter with
+      description: Returns a list of autocomplete-suggestion valid types available to filter
+      responses:
+        '200':
+          description: List of available types to search for with the main endpoint
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: ['platform', 'instrument', 'project', 'provider', 'spatial_keyword']
+
 components:
   schemas:
     SuggestionResponse:
