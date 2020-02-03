@@ -152,8 +152,8 @@
     (when (and variable-concept-id associated-concept-id)
       (let [;;get variable name for the variable-concept-id from cmr_variables.
             variable (->> @(:concepts-atom db)
-                            (filter #(= variable-concept-id (:concept-id %)))
-                            first)
+                          (filter #(= variable-concept-id (:concept-id %)))
+                          first)
             variable-name (get-in variable [:extra-fields :variable-name])
 
             ;;get all the variable associations with variable concept id being different from variable-concept-id
@@ -419,9 +419,9 @@
 
   (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
                      (when (variable-association-concept? concept)
-                          (or (validate-same-provider-variable-association concept)
-                              (validate-collection-not-associated-with-another-variable-with-same-name db concept)
-                              (validate-variable-not-associated-with-another-collection db concept))))]
+                       (or (validate-same-provider-variable-association concept)
+                           (validate-collection-not-associated-with-another-variable-with-same-name db concept)
+                           (validate-variable-not-associated-with-another-collection db concept))))]
    ;; There was a concept id, native id mismatch with earlier concepts
    error
    ;; Concept id native id pair was valid
