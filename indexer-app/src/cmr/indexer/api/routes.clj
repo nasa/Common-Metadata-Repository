@@ -73,7 +73,7 @@
           (index-set-svc/mark-collection-as-rebalancing request-context id concept-id (:target params))
           {:status 200})
 
-        ;; Update the status of collection being rebalanced to COMPLETE or IN_PROGRESS.
+        ;; Update the status of collection being rebalanced
         (POST "/update-status" {request-context :request-context params :params}
           (acl/verify-ingest-management-permission request-context :update)
           (index-set-svc/update-collection-rebalancing-status request-context id concept-id (:status params))
