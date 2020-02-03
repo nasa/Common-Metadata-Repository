@@ -233,6 +233,13 @@
              (set (comparable-variable-associations expected-tas))]
             [status (set (comparable-variable-associations body))])))))
 
+(defn assert-variable-association-bad-request
+  "Assert the variable association response when status code is 200 is correct."
+  [err-msg response]
+  (let [{:keys [status body errors]} response]
+     (is (= 400 status))
+     (is (= errors err-msg))))
+
 (defn assert-variable-dissociation-response-ok?
   "Assert the variable association response when status code is 200 is correct."
   [coll-variable-associations response]
