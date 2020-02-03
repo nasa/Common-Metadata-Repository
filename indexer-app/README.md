@@ -154,6 +154,12 @@ Finalizing a rebalancing collection removes the collection from the list of coll
 
     curl -XPOST http://localhost:3004/index-sets/3/rebalancing-collections/C5-PROV1/finalize
 
+### Update a rebalancing collection's status
+
+Make changes to the collection's rebalancing status. This will update a mapping of collection id to rebalancing status in the index-set.
+
+    curl -XPOST http://localhost:3004/index-sets/3/rebalancing-collections/C5-PROV1/update-status?status=COMPLETE
+
 ### Reset for dev purposes
 
     curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST "http://localhost:3004/reset"

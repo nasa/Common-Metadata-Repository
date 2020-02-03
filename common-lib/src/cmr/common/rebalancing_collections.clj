@@ -32,5 +32,6 @@
   (when-not (some #{status} allowed-status)
     (errors/throw-service-errors
      :bad-request
-     [(format "Invalid status [%s]. Only IN_PROGRESS or COMPLETE are allowed."
-              status)])))
+     [(format "Invalid status [%s]. Only %s are allowed."
+              status
+              (pr-str allowed-status))])))

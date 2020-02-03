@@ -186,7 +186,7 @@
        util/sample-index-set-id
        coll)
       (is (= {:status 400
-              :errors ["Invalid status [INVALID_STATUS]. Only IN_PROGRESS or COMPLETE are allowed."]}
+              :errors ["Invalid status [INVALID_STATUS]. Only [\"IN_PROGRESS\" \"COMPLETE\"] are allowed."]}
            (select-keys
             (util/update-rebalancing-collection-status
              util/sample-index-set-id
@@ -194,7 +194,7 @@
              "INVALID_STATUS")
             [:errors :status])))
       (is (= {:status 400
-              :errors ["Invalid status []. Only IN_PROGRESS or COMPLETE are allowed."]}
+              :errors ["Invalid status []. Only [\"IN_PROGRESS\" \"COMPLETE\"] are allowed."]}
            (select-keys
             (util/update-rebalancing-collection-status
              util/sample-index-set-id
