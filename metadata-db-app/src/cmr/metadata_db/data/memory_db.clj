@@ -161,7 +161,7 @@
             v-associations (->> @(:concepts-atom db)
                                 (filter #(not= variable-concept-id (get-in % [:extra-fields :variable-concept-id])))
                                 (filter #(= associated-concept-id (get-in % [:extra-fields :associated-concept-id]))))
-            v-concept-ids (map #(get-in % [:extra-fields :variable-concept-id]) v-associations)
+            v-concept-ids-in-aassociations (map #(get-in % [:extra-fields :variable-concept-id]) v-associations)
 
             ;;get all the deleted variable associations with variable concept id being different from variable-concept-id
             ;;and associated with the associated-concept-id, from cmr_variable_association
@@ -169,16 +169,16 @@
                                         (filter #(not= variable-concept-id (get-in % [:extra-fields :variable-concept-id])))
                                         (filter #(= associated-concept-id (get-in % [:extra-fields :associated-concept-id])))
                                         (filter #(= true (:deleted %))))
-            deleted-v-concept-ids (map #(get-in % [:extra-fields :variable-concept-id]) deleted-v-associations) 
+            v-concept-ids-in-deleted-associations (map #(get-in % [:extra-fields :variable-concept-id]) deleted-v-associations)
 
             ;;find the first v-concept-id in v-concept-ids that has variable name being variable-name.
             ;;from cmr_variables table.
             v-concept-id-same-name (->> @(:concepts-atom db)
                                         (filter #(concept-id-in-list?
-                                                   v-concept-ids
+                                                   v-concept-ids-in-aassociations
                                                    (:concept-id %)))
                                         (filter #(concept-id-not-in-list?
-                                                   deleted-v-concept-ids
+                                                   v-concept-ids-in-deleted-associations
                                                    (:concept-id %))) 
                                         (filter #(= variable-name (get-in % [:extra-fields :variable-name])))
                                         first
@@ -202,17 +202,17 @@
                                       (filter #(= variable-concept-id (get-in % [:extra-fields :variable-concept-id])))
                                       (filter #(not= associated-concept-id (get-in % [:extra-fields :associated-concept-id])))
                                       (filter #(= true (:deleted %))))
-            ;;The variable can be associated with other collections if the associations are already deleted.
-            ;;so these associated concept ids are allowed.
-            allowed-associated-concept-ids (map #(get-in % [:extra-fields :associated-concept-id]) deleted-associations)
+            associated-concept-ids-in-deleted-associations
+             (map #(get-in % [:extra-fields :associated-concept-id]) deleted-associations)
 
             ;;Get all the same variable and other collection associations that are not deleted 
             first-concept (->> @(:concepts-atom db)
                                (filter #(= variable-concept-id (get-in % [:extra-fields :variable-concept-id])))
                                (filter #(not= associated-concept-id (get-in % [:extra-fields :associated-concept-id])))
                                (filter #(= false (:deleted %)))
+                               ;; need to exclude the collections that are referenced in the deleted associations. 
                                (filter #(concept-id-not-in-list?
-                                          allowed-associated-concept-ids
+                                          associated-concept-ids-in-deleted-associations
                                           (get-in % [:extra-fields :associated-concept-id])))
                                first)
             associated_concept_id (get-in first-concept [:extra-fields :associated-concept-id])]
