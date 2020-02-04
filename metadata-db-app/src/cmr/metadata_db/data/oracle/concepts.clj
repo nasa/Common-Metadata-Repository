@@ -413,20 +413,13 @@
                         :transaction-id (long (:transaction_id result))})
           (su/query conn stmt)))))
 
-(defn- variable-association-concept?
-  "Check if the concept is a variable association concept."
-  [concept]
-  (let [variable-concept-id (get-in concept [:extra-fields :variable-concept-id])
-        associated-concept-id (get-in concept [:extra-fields :associated-concept-id])]
-    (and variable-concept-id associated-concept-id)))
-
 (defn save-concept
   [db provider concept]
   (try
     (j/with-db-transaction
      [conn db]
      (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
-                        (when (variable-association-concept? concept)
+                        (when (= :variable-association (:concept-type concept))
                           (or (validate-same-provider-variable-association concept)
                               (validate-collection-not-associated-with-another-variable-with-same-name db concept)
                               (validate-variable-not-associated-with-another-collection db concept))))]

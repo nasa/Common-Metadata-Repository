@@ -132,11 +132,6 @@
        :existing-concept-id existing-concept-id
        :existing-native-id existing-native-id})))
 
-(defn- concept-id-not-in-list?
-  "Check if the concept-id is not in the list of concept-ids."
-  [list concept-id]
-  (not (some #(= concept-id %) list)))
-
 (defn- concept-id-in-list?
   "Check if the concept-id is in the list of concept-ids."
   [list concept-id]
@@ -177,9 +172,9 @@
                                         (filter #(concept-id-in-list?
                                                    v-concept-ids-in-aassociations
                                                    (:concept-id %)))
-                                        (filter #(concept-id-not-in-list?
-                                                   v-concept-ids-in-deleted-associations
-                                                   (:concept-id %))) 
+                                        (filter #(not (concept-id-in-list?
+                                                        v-concept-ids-in-deleted-associations
+                                                        (:concept-id %))))
                                         (filter #(= variable-name (get-in % [:extra-fields :variable-name])))
                                         first
                                         :concept-id)]
@@ -211,9 +206,9 @@
                                (filter #(not= associated-concept-id (get-in % [:extra-fields :associated-concept-id])))
                                (filter #(= false (:deleted %)))
                                ;; need to exclude the collections that are referenced in the deleted associations. 
-                               (filter #(concept-id-not-in-list?
-                                          associated-concept-ids-in-deleted-associations
-                                          (get-in % [:extra-fields :associated-concept-id])))
+                               (filter #(not (concept-id-in-list?
+                                               associated-concept-ids-in-deleted-associations
+                                               (get-in % [:extra-fields :associated-concept-id]))))
                                first)
             associated_concept_id (get-in first-concept [:extra-fields :associated-concept-id])]
         (when associated_concept_id
@@ -406,19 +401,12 @@
            {:revision-id revision-id :transaction-id transaction-id}))
        @(:concepts-atom db)))
 
-(defn- variable-association-concept?
-  "Check if the concept is a variable association concept."
-  [concept]
-  (let [variable-concept-id (get-in concept [:extra-fields :variable-concept-id])
-        associated-concept-id (get-in concept [:extra-fields :associated-concept-id])]
-    (and variable-concept-id associated-concept-id)))
-
 (defn save-concept
   [db provider concept]
   {:pre [(:revision-id concept)]}
 
   (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
-                     (when (variable-association-concept? concept)
+                     (when (= :variable-association (:concept-type concept))
                        (or (validate-same-provider-variable-association concept)
                            (validate-collection-not-associated-with-another-variable-with-same-name db concept)
                            (validate-variable-not-associated-with-another-collection db concept))))]

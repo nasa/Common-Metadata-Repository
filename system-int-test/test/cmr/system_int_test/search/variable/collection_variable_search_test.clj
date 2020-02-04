@@ -50,14 +50,12 @@
                                              :LongName "Measurement4"})]
 
     ;; create variable associations
-    ;; Variable1 is associated with coll1 and coll2
-    (au/associate-by-concept-ids token variable1-concept-id [{:concept-id (:concept-id coll1)}
-                                                             {:concept-id (:concept-id coll2)}])
-    ;; Variable2 is associated with coll2 and coll3
-    (au/associate-by-concept-ids token variable2-concept-id [{:concept-id (:concept-id coll2)}
-                                                             {:concept-id (:concept-id coll3)}])
-    ;; SomeVariable is associated with coll4
-    (au/associate-by-concept-ids token variable3-concept-id [{:concept-id (:concept-id coll4)}])
+    ;; Variable1 is associated with coll1
+    (au/associate-by-concept-ids token variable1-concept-id [{:concept-id (:concept-id coll1)}])
+    ;; Variable2 is associated with coll2
+    (au/associate-by-concept-ids token variable2-concept-id [{:concept-id (:concept-id coll2)}])
+    ;; SomeVariable is associated with coll3
+    (au/associate-by-concept-ids token variable3-concept-id [{:concept-id (:concept-id coll3)}])
     (index/wait-until-indexed)
 
     (testing "search collections by variables"
@@ -68,22 +66,22 @@
           (d/refs-match? items (search/find-refs :collection params)))
 
         "single variable search"
-        [coll1 coll2] "Variable1" {}
+        [coll1] "Variable1" {}
 
         "no matching variable"
         [] "Variable3" {}
 
         "multiple variables"
-        [coll1 coll2 coll3] ["Variable1" "Variable2"] {}
+        [coll1 coll2] ["Variable1" "Variable2"] {}
 
         "AND option false"
-        [coll1 coll2 coll3] ["Variable1" "Variable2"] {:and false}
+        [coll1 coll2] ["Variable1" "Variable2"] {:and false}
 
         "AND option true"
-        [coll2] ["Variable1" "Variable2"] {:and true}
+        [] ["Variable1" "Variable2"] {:and true}
 
         "pattern true"
-        [coll1 coll2 coll3] "Var*" {:pattern true}
+        [coll1 coll2] "Var*" {:pattern true}
 
         "pattern false"
         [] "Var*" {:pattern false}
@@ -92,7 +90,7 @@
         [] "Var*" {}
 
         "ignore-case true"
-        [coll1 coll2] "variable1" {:ignore-case true}
+        [coll1] "variable1" {:ignore-case true}
 
         "ignore-case false"
         [] "variable1" {:ignore-case false}))
@@ -105,7 +103,7 @@
           (d/refs-match? items (search/find-refs :collection params)))
 
         "single variable search"
-        [coll1 coll2] variable1-concept-id {}
+        [coll1] variable1-concept-id {}
 
         "variable concept id search is case sensitive"
         [] (string/lower-case variable1-concept-id) {}
@@ -114,13 +112,13 @@
         [] variable4-concept-id {}
 
         "multiple variables"
-        [coll1 coll2 coll3] [variable1-concept-id variable2-concept-id] {}
+        [coll1 coll2] [variable1-concept-id variable2-concept-id] {}
 
         "AND option false"
-        [coll1 coll2 coll3] [variable1-concept-id variable2-concept-id] {:and false}
+        [coll1 coll2] [variable1-concept-id variable2-concept-id] {:and false}
 
         "AND option true"
-        [coll2] [variable1-concept-id variable2-concept-id] {:and true}))
+        [] [variable1-concept-id variable2-concept-id] {:and true}))
 
     (testing "search collections by variable native-ids"
       (are3 [items variable options]
@@ -130,22 +128,22 @@
           (d/refs-match? items (search/find-refs :collection params)))
 
         "single variable search"
-        [coll1 coll2] "var1" {}
+        [coll1] "var1" {}
 
         "no matching variable"
         [] "var3" {}
 
         "multiple variables"
-        [coll1 coll2 coll3] ["var1" "var2"] {}
+        [coll1 coll2] ["var1" "var2"] {}
 
         "AND option false"
-        [coll1 coll2 coll3] ["var1" "var2"] {:and false}
+        [coll1 coll2] ["var1" "var2"] {:and false}
 
         "AND option true"
-        [coll2] ["var1" "var2"] {:and true}
+        [] ["var1" "var2"] {:and true}
 
         "pattern true"
-        [coll1 coll2 coll3] "var*" {:pattern true}
+        [coll1 coll2] "var*" {:pattern true}
 
         "pattern false"
         [] "var*" {:pattern false}
@@ -154,7 +152,7 @@
         [] "var*" {}
 
         "ignore-case true"
-        [coll1 coll2] "VAR1" {:ignore-case true}
+        [coll1] "VAR1" {:ignore-case true}
 
         "ignore-case false"
         [] "VAR1" {:ignore-case false}))
@@ -167,22 +165,22 @@
           (d/refs-match? items (search/find-refs :collection params)))
 
         "single measurement search"
-        [coll1 coll2] "Measurement1" {}
+        [coll1] "Measurement1" {}
 
         "no matching measurement"
         [] "Measurement3" {}
 
         "multiple measurements"
-        [coll1 coll2 coll3 coll4] ["Measurement1" "Measurement2"] {}
+        [coll1 coll2 coll3] ["Measurement1" "Measurement2"] {}
 
         "AND option false"
-        [coll1 coll2 coll3 coll4] ["Measurement1" "Measurement2"] {:and false}
+        [coll1 coll2 coll3] ["Measurement1" "Measurement2"] {:and false}
 
         "AND option true"
-        [coll2] ["Measurement1" "Measurement2"] {:and true}
+        [] ["Measurement1" "Measurement2"] {:and true}
 
         "pattern true"
-        [coll1 coll2 coll3 coll4] "M*" {:pattern true}
+        [coll1 coll2 coll3] "M*" {:pattern true}
 
         "pattern false"
         [] "M*" {:pattern false}
@@ -191,7 +189,7 @@
         [] "M*" {}
 
         "ignore-case true"
-        [coll1 coll2] "measurement1" {:ignore-case true}
+        [coll1] "measurement1" {:ignore-case true}
 
         "ignore-case false"
         [] "measurement1" {:ignore-case false}))
@@ -205,7 +203,7 @@
           (d/refs-match? items (search/find-refs :collection search-params)))
 
         "single measurement search"
-        [coll1 coll2]
+        [coll1]
         {:0 {:measurement "Measurement1"}}
         {}
 
@@ -215,25 +213,25 @@
         {}
 
         "multiple measurements"
-        [coll2]
+        []
         {:0 {:measurement "Measurement1"}
          :1 {:measurement "Measurement2"}}
         {}
 
         "multiple measurements option OR true"
-        [coll1 coll2 coll3 coll4]
+        [coll1 coll2 coll3]
         {:0 {:measurement "Measurement1"}
          :1 {:measurement "Measurement2"}}
         {:or true}
 
         "multiple measurements option OR false"
-        [coll2]
+        []
         {:0 {:measurement "Measurement1"}
          :1 {:measurement "Measurement2"}}
         {:or false}
 
         "single variable search"
-        [coll1 coll2]
+        [coll1]
         {:0 {:variable "Variable1"}}
         {}
 
@@ -243,29 +241,29 @@
         {}
 
         "multiple variables"
-        [coll2]
+        []
         {:0 {:variable "Variable1"}
          :1 {:variable "Variable2"}}
         {}
 
         "multiple variables option OR true"
-        [coll1 coll2 coll3]
+        [coll1 coll2]
         {:0 {:variable "Variable1"}
          :1 {:variable "Variable2"}}
         {:or true}
 
         "multiple variables option OR false"
-        [coll2]
+        []
         {:0 {:variable "Variable1"}
          :1 {:variable "Variable2"}}
         {:or false}
 
         "pattern true"
-        [coll1 coll2 coll3]
+        [coll1 coll2]
         {:0 {:variable "V*"}}
         {:pattern true}
 
-        "pattern true"
+        "pattern false"
         []
         {:0 {:variable "V*"}}
         {:pattern false}
@@ -276,7 +274,7 @@
         {}
 
         "ignore-case true"
-        [coll1 coll2]
+        [coll1]
         {:0 {:measurement "measurement1"}}
         {:ignore-case true}
 
@@ -286,18 +284,18 @@
         {:ignore-case false}
 
         "default ignore-case is true"
-        [coll1 coll2]
+        [coll1]
         {:0 {:measurement "measurement1"}}
         {}
 
         "not combined variable fields"
-        [coll2 coll3 coll4]
+        [coll2 coll3]
         {:0 {:variable "Variable2"}
          :1 {:measurement "Measurement2"}}
         {:or true}
 
         "combined variable fields"
-        [coll2 coll3]
+        [coll2]
         {:0 {:variable "Variable2"
              :measurement "Measurement2"}}
         {:or true}))))
