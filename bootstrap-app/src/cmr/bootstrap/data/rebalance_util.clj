@@ -44,6 +44,13 @@
        :separate-index (granule-count-for-collection indexer-context sep-index concept-id)}
       {:small-collections small-count})))
 
+(defn rebalancing-collection-status
+  "Returns the status of the rebalancing collections."
+  [context concept-id]
+  (let [indexer-context {:system (helper/get-indexer (:system context))}
+        rebalancing-info (index-set/fetch-rebalancing-collection-info indexer-context)]
+    (get (:rebalancing-status rebalancing-info) (keyword concept-id) "NOT_REBALANCING")))
+
 (defn delete-collection-granules-from-small-collections
   "Deletes by query any granules in small collections for the given collection"
   [context concept-id]

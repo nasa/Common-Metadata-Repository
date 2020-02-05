@@ -8,6 +8,10 @@
   "The potential targets for a rebalancing collections operation."
   ["separate-index" "small-collections"])
 
+(def allowed-status
+  "The potential status for a rebalancing collection."
+  ["IN_PROGRESS" "COMPLETE"])
+
 (defn validate-target
   "Validates the target is set to one of the allowed values."
   [target concept-id]
@@ -21,3 +25,13 @@
        :bad-request
        [(format "Invalid target index [%s]. Only separate-index or small-collections are allowed."
                 target)]))))
+
+(defn validate-status
+  "Validates the target is set to one of the allowed values."
+  [status]
+  (when-not (some #{status} allowed-status)
+    (errors/throw-service-errors
+     :bad-request
+     [(format "Invalid status [%s]. Only %s are allowed."
+              status
+              (pr-str allowed-status))])))

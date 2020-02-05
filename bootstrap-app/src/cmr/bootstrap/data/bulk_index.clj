@@ -14,7 +14,9 @@
     [cmr.common.log :refer (debug info warn error)]
     [cmr.common.util :as util]
     [cmr.indexer.data.elasticsearch :as es]
+    [cmr.indexer.data.index-set :as index-set]
     [cmr.indexer.services.index-service :as index]
+    [cmr.indexer.services.index-set-service :as index-set-service]
     [cmr.metadata-db.data.concepts :as db]
     [cmr.metadata-db.data.providers :as p]
     [cmr.metadata-db.services.provider-service :as provider-service]
@@ -58,7 +60,7 @@
 
 (defn index-granules-for-collection
   "Index the granules for the given collection."
-  [system provider-id collection-id {:keys [target-index-key completion-message]}]
+  [system provider-id collection-id {:keys [target-index-key completion-message rebalancing-collection?]}]
   (info "Indexing granule data for collection" collection-id)
   (let [db (helper/get-metadata-db-db system)
         provider (p/get-provider db provider-id)
@@ -72,6 +74,12 @@
     (info "Indexed" num-granules "granule(s) for provider" provider-id "collection" collection-id)
     (when completion-message
       (info completion-message))
+    (when rebalancing-collection?
+      (index-set-service/update-collection-rebalancing-status
+       {:system (helper/get-indexer system)}
+       index-set/index-set-id
+       collection-id
+       "COMPLETE"))
     num-granules))
 
 (defn- index-granules-for-provider

@@ -69,7 +69,7 @@ Fetches the status of rebalancing. It returns counts of the collection in the sm
 curl -i  -H "Accept: application/json" http://localhost:3006/rebalancing_collections/C5-PROV1/status
 
 HTTP/1.1 200 OK
-{"small-collections":4,"separate-index":4}
+{"small-collections":4,"separate-index":4, "rebalancing-status": "COMPLETE"}
 ```
 
 

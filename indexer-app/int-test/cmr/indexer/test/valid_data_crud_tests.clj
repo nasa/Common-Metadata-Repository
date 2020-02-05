@@ -169,6 +169,63 @@
     (is (= 200 (:status (util/finalize-rebalancing-collection util/sample-index-set-id "C5-PROV1"))))
     (assert-rebalancing-collections [] ["C5-PROV1" "C6-PROV1"])))
 
+(deftest update-rebalancing-collection-status-test
+  (util/create-index-set util/sample-index-set)
+  (testing "Update status of collection not being rebalanced"
+    (is (= {:status 400
+            :errors ["The index set does not contain the rebalancing collection [C1234]"]}
+           (select-keys
+            (util/update-rebalancing-collection-status
+             util/sample-index-set-id
+             "C1234"
+             "COMPLETE")
+            [:errors :status]))))
+  (testing "Update status with invalid status value"
+    (let [coll "test-invalid-status"]
+      (util/mark-collection-as-rebalancing
+       util/sample-index-set-id
+       coll)
+      (is (= {:status 400
+              :errors ["Invalid status [INVALID_STATUS]. Only [\"IN_PROGRESS\" \"COMPLETE\"] are allowed."]}
+           (select-keys
+            (util/update-rebalancing-collection-status
+             util/sample-index-set-id
+             coll
+             "INVALID_STATUS")
+            [:errors :status])))
+      (is (= {:status 400
+              :errors ["Invalid status []. Only [\"IN_PROGRESS\" \"COMPLETE\"] are allowed."]}
+           (select-keys
+            (util/update-rebalancing-collection-status
+             util/sample-index-set-id
+             coll
+             nil)
+            [:errors :status])))))
+  (let [coll "C5-PROV1"
+        _ (util/mark-collection-as-rebalancing
+           util/sample-index-set-id
+           coll)]
+    (testing "Status is IN_PROGRESS when rebalancing starts"
+      (is (= "IN_PROGRESS"
+             (get (get-in (util/get-index-set util/sample-index-set-id)
+                          [:response :body :index-set :granule :rebalancing-status])
+                  (keyword coll)))))
+    (testing "Change status from IN_PROGRESS to COMPLETE"
+      (is (= 200
+             (:status (util/update-rebalancing-collection-status
+                       util/sample-index-set-id
+                       coll
+                       "COMPLETE"))))
+      (is (= "COMPLETE"
+             (get (get-in (util/get-index-set util/sample-index-set-id)
+                          [:response :body :index-set :granule :rebalancing-status])
+                  (keyword coll)))))
+    (testing "Finalizing rebalancing clears from rebalancing-status"
+      (util/finalize-rebalancing-collection util/sample-index-set-id coll)
+      (is (nil?
+           (get (get-in (util/get-index-set util/sample-index-set-id)
+                        [:response :body :index-set :granule :rebalancing-status])
+                (keyword coll)))))))
 
 ;; Verify creating same index-set twice will result in 409
 (deftest create-index-set-twice-test

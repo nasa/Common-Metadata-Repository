@@ -71,7 +71,7 @@
       (bootstrap/finalize-rebalance-collection coll2-id)
       (index/wait-until-indexed)
 
-      (assert-rebalance-status {:small-collections 0 :separate-index 3} coll2)
+      (assert-rebalance-status {:small-collections 0 :separate-index 3 :rebalancing-status "NOT_REBALANCING"} coll2)
 
       (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1]))
       (bootstrap/bulk-delete-concepts "PROV1" :granule (map :concept-id [gran1 gran3 gran4]))
