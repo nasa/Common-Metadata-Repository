@@ -1,6 +1,16 @@
 version: "3.7"
 
 services:
+  es162:
+    image: elasticsearch:1.6.2
+    container_name: es162
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - 9201:9200
+    volumes:
+      - es162_data:/usr/share/elasticsearch/data
+
   es01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
     container_name: es01
@@ -16,7 +26,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - "es01_data:/usr/share/elasticsearch/data"
+      - es01_data:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
     networks:
@@ -37,9 +47,19 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - "es02_data:/usr/share/elasticsearch/data"
+      - es02_data:/usr/share/elasticsearch/data
     networks:
       - elastic
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.5.2
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es01:9200
+    networks:
+      - elastic
+    ports:
+      - 5601:5601
 
   redis:
     image: redis
@@ -47,7 +67,7 @@ services:
     ports:
       - 6379:6379
     volumes:
-      - "redis_data:/data"
+      - redis_data:/data
 
 volumes:
   es01_data:
@@ -56,8 +76,9 @@ volumes:
     driver: local
   redis_data:
     driver: local
+  es162_data:
+    driver: local
 
 networks:
   elastic:
     driver: bridge
-

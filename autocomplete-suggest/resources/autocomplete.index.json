@@ -1,0 +1,12 @@
+{
+  "mappings": {
+    "properties": {
+      "type": {
+        "type": "text"
+      },
+      "value": {
+        "type": "search_as_you_type"
+      }
+    }
+  }
+}
