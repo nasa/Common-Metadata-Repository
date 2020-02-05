@@ -8,3 +8,5 @@ junit.xml
 
 # Serverless directories
 .serverless
+
+.env

@@ -1,0 +1,54 @@
+<style>
+    .queryForm {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+    }
+
+    .queryForm input {
+        width: 300px;
+    }
+
+    .queryForm label {
+        display: inline-block;
+        width: 135px;
+        text-align: right;
+    }
+</style>
+<body>
+
+<form class="queryForm">
+    <div class="block">
+        <label for="cmr_ac_target">Autocomplete Target</label>
+        <input id="cmr_ac_target"
+               value="http://localhost:3000/autocomplete">
+    </div>
+
+    <div class="block">
+        <label for="ac_query">query</label>
+        <input id="ac_query"
+               oninput="handler()"/>
+    </div>
+</form>
+
+<label for="results">Results</label>
+<pre id="results"></pre>
+
+<script type="text/javascript">
+  function handler() {
+    const query = document.getElementById('ac_query').value;
+    const cmr = document.getElementById('cmr_ac_target').value;
+
+    if (!query) {
+      return document.getElementById('results').innerHTML = '';
+    }
+
+    console.time(query);
+    fetch(`${cmr}?q=${query}`)
+      .then((data) => data.json())
+      .then((data) => document.getElementById('results').innerHTML = JSON.stringify(data.results, null, 2))
+      .finally(() => console.timeEnd(query))
+  }
+
+</script>
+</body>

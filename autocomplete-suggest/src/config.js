@@ -1,24 +1,25 @@
 // config.js
 
-const CMR_SEARCH_API = process.env.CMR_API || 'https://cmr.earthdata.nasa.gov/search';
+const CMR_SEARCH_API = process.env.CMR_API;
 
+const ES_HTTP_SCHEMA = process.env.ES_HTTP_SCHEMA || 'http';
+const ES_HOST = process.env.ES_HOST || 'localhost';
+const ES_PORT = process.env.ES_PORT || '9200';
+const ES_INDEX = process.env.ES_INDEX || 'autocomplete';
+const { ES_API_KEY } = process.env;
+const { ES_VERSION } = process.env;
 
-const REDIS_HOST = process.env.REDIS_URL || 'localhost';
-const REDIS_PORT = process.env.REDIS_PORT || 6379;
-const { REDIS_PASSWORD } = process.env;
-
-const ELASTICSEARCH_HOST = process.env.ELASTICSEARCH_URL || 'localhost';
-const ELASTICSEARCH_PORT = process.env.ELASTICSEARCH_PORT || 9200;
-const { ELASTICSEARCH_VERSION } = process.env;
+const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
 
 module.exports = {
   CMR_SEARCH_API,
 
-  ELASTICSEARCH_HOST,
-  ELASTICSEARCH_PORT,
-  ELASTICSEARCH_VERSION,
+  ES_VERSION,
+  ES_INDEX,
+  ES_HOST,
+  ES_PORT,
+  ES_HTTP_SCHEMA,
+  ES_API_KEY,
 
-  REDIS_HOST,
-  REDIS_PORT,
-  REDIS_PASSWORD,
+  LOG_LEVEL,
 };

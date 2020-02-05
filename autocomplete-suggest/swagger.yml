@@ -34,14 +34,8 @@ paths:
               - platforms
               - instruments
               - projects
-              - temporal_keywords
               - providers
               - spatial_keywords
-              - science_keywords
-              - archive_centers
-              - data_centers
-              - granule-data-format
-              - measurement-name
       responses:
         '200':
           description: A suggestion response
@@ -53,15 +47,11 @@ paths:
                 query: ex
                 results:
                   - type: platform
-                    suggestions:
-                      - EXOS-A
-                      - EXPLORER-9
+                    value: ICECUBE
+                    score: 0.341234
                   - type: instrument
-                    suggestions:
-                      - EXRAD
-                  - type: provider
-                    suggestions:
-                      - PURDUE/EXTENSION
+                    value: ICE AUGER
+                    score: 0.289343
 
         '400':
           description: Bad query or not term provided
@@ -91,16 +81,22 @@ components:
           description: Original term provided
           type: string
         results:
+          description: Scored matches for autocomplete, returned in decending score value
           type: array
           items:
-            $ref: '#/components/schemas/SuggestionCollection'
-    SuggestionCollection:
+            $ref: '#/components/schemas/Suggestion'
+    Suggestion:
       properties:
         type:
+          description: Type of the search facet
           type: string
-          example: platform
-        suggestions:
-          type: array
-          items:
-            example: '"EXOS-A","EROS-A1","ALOS-2","ALOS"'
-            type: string
+          example: 'platform'
+        value:
+          description: Value of the facet filter
+          type: string
+          example: 'CUBESAT'
+        score:
+          description: match score against query
+          type: number
+          example: 0.425123
+
