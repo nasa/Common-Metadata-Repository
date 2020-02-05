@@ -1,4 +1,5 @@
-(ns cmr.search.services.association-service
+ed:   variable_association_test.clj
+/co(ns cmr.search.services.association-service
   "Provides functions for associating and dissociating variables/services to collections.
   Tag association is keyed off tag-key rather than concept-id like variable/service association.
   So the code is slightly different and we have pushed off the potential refactoring until later."
@@ -153,16 +154,21 @@
             {assoc-concept-type {:concept-id concept-id :revision-id revision-id}
              :associated-item associated-item}))
         (catch clojure.lang.ExceptionInfo e ; Report a specific error in the case of a conflict, otherwise throw error
-          (if (= :conflict (:type (ex-data e)))
-            {:errors (format association-conflict-error-message
-                             (if (= :insert operation) "associate" "dissociate")
-                             source-concept-type-str
-                             source-concept-id
-                             coll-concept-id
-                             (if (= :insert operation) "association" "dissociation")
-                             source-concept-type-str)
-             :associated-item associated-item}
-            (throw e)))))))
+          (let [exception-data (ex-data e)
+                type (:type exception-data)
+                errors (:errors exception-data)]
+            (cond
+              (= :conflict type)  {:errors (format association-conflict-error-message
+                                                   (if (= :insert operation) "associate" "dissociate")
+                                                   source-concept-type-str
+                                                   source-concept-id
+                                                   coll-concept-id
+                                                   (if (= :insert operation) "association" "dissociation")
+                                                   source-concept-type-str)
+                                   :associated-item associated-item}
+              (= :can-not-associate type) {:errors errors
+                                           :associated-item associated-item}
+              :else (throw e))))))))
 
 (defn- update-associations
   "Based on the input operation type (:insert or :delete), insert or delete associations,

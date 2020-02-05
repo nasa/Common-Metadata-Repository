@@ -52,21 +52,11 @@
 
     (testing "Associate variable with collections by concept-ids"
       (let [response (association-util/associate-by-concept-ids
-                      token concept-id [{:concept-id c1-p1}])
-            response1 (association-util/associate-by-concept-ids
-                      token concept-id [{:concept-id c3-p2}])
-            response2 (association-util/associate-by-concept-ids
-                      token concept-id [{:concept-id c2-p1}])]
+                      token concept-id [{:concept-id c1-p1}])]
         (vu/assert-variable-association-response-ok?
           {["C1200000013-PROV1"] {:concept-id "VA1200000026-CMR"
-                                 :revision-id 1}}
-          response)
-        (vu/assert-variable-association-bad-request
-          ["Variable [V1200000025-PROV1] and collection [C1200000019-PROV2] can not be associated because they do not belong to the same provider."]
-          response1)
-        (vu/assert-variable-association-bad-request
-          ["Variable [V1200000025-PROV1] and collection [C1200000014-PROV1] can not be associated because the variable is already associated with another collection [C1200000013-PROV1]."]
-          response2)))
+                                  :revision-id 1}}
+          response)))
 
     (testing "Associate to no collections"
       (let [response (association-util/associate-by-concept-ids token concept-id [])]
@@ -210,8 +200,9 @@
                       concept-id
                       (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
        (is (= 200 (:status response1)))
-       (is (= 400 (:status response2)))
-       (is (string/includes? (:errors response2) "can not be associated because the variable is already associated with another collection")))
+       (is (= 200 (:status response2)))
+       (is (string/includes? (some #(when (not= nil %) %) (map :errors (:body response2)))
+                             "can not be associated because the variable is already associated with another collection")))
 
     ;; Associate the variable with every prov2 collection is not allowed.
     ;; it can not be associated with any because they are from different provider.
@@ -219,8 +210,9 @@
                      prov3-token
                      concept-id
                      (map #(hash-map :concept-id (:concept-id %)) all-prov2-colls))]
-       (is (= 400 (:status response)))
-       (is (string/includes? (:errors response) "can not be associated because they do not belong to the same provider")))
+       (is (= 200 (:status response)))
+       (is (string/includes? (some #(when (not= nil %) %) (map :errors (:body response)))
+                             "can not be associated because they do not belong to the same provider")))
 
     ;; only one prov1 collection can be associated with the variable.
     (assert-variable-associated [c1-p1])
@@ -337,8 +329,9 @@
                         [{:concept-id (:concept-id coll2)
                           :revision-id (:revision-id coll2)}])]
         (is (= 200 (:status response1)))
-        (is (= 400 (:status response2)))
-        (is (string/includes? (:errors response2) "can not be associated because the variable is already associated with another collection")))
+        (is (= 200 (:status response2)))
+        (is (string/includes? (some #(when (not= nil %) %) (map :errors (:body response2)))
+                              "can not be associated because the variable is already associated with another collection")))
 
       (assert-variable-associated [coll1])
 

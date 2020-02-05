@@ -276,16 +276,16 @@
                        provider-id))
 
     :variable-association-not-same-provider
-    (cmsg/data-error :bad-request
+    (cmsg/data-error :can-not-associate
                      str
                      (:error-message result))
     :collection-associated-with-variable-same-name
-    (cmsg/data-error :bad-request
+    (cmsg/data-error :can-not-associate
                      str
                      (:error-message result))
 
     :variable-associated-with-another-collection
-    (cmsg/data-error :bad-request
+    (cmsg/data-error :can-not-associate
                      str
                      (:error-message result))
 
