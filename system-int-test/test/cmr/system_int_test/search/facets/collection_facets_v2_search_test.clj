@@ -106,8 +106,7 @@
     ;; create variable associations
     (au/associate-by-concept-ids token
                                  variable1-concept-id
-                                 [{:concept-id (:concept-id coll1)}
-                                  {:concept-id (:concept-id coll2)}])
+                                 [{:concept-id (:concept-id coll1)}])
     (au/associate-by-concept-ids token
                                  variable2-concept-id
                                  [{:concept-id (:concept-id coll2)}]))
@@ -690,12 +689,10 @@
     ;; SomeVariable is associated with coll4
     (au/associate-by-concept-ids token
                                  variable1-concept-id
-                                 [{:concept-id (:concept-id coll1)}
-                                  {:concept-id (:concept-id coll2)}])
+                                 [{:concept-id (:concept-id coll1)}])
     (au/associate-by-concept-ids token
                                  variable2-concept-id
-                                 [{:concept-id (:concept-id coll2)}
-                                  {:concept-id (:concept-id coll3)}])
+                                 [{:concept-id (:concept-id coll2)}])
     (au/associate-by-concept-ids token
                                  variable3-concept-id
                                  [{:concept-id (:concept-id coll4)}])
@@ -715,10 +712,10 @@
       (testing "search by variables param filters the other facets, but not variables facets"
         (let [facets-result (search-and-return-v2-facets
                              {:variables-h {:0 {:variable "Variable1"}}})]
-          (assert-facet-field facets-result "Measurements" "Measurement1" 2)
-          (assert-facet-field facets-result "Measurements" "Measurement2" 3)
+          (assert-facet-field facets-result "Measurements" "Measurement1" 1)
+          (assert-facet-field facets-result "Measurements" "Measurement2" 2)
           (assert-facet-field facets-result "Platforms" "P1" 1)
-          (assert-facet-field facets-result "Platforms" "P2" 1)
+          (assert-facet-field facets-result "Platforms" "P2" nil)
           (assert-facet-field-not-exist facets-result "Platforms" "P3")))
 
       (testing "search by both variables param and regular param"
@@ -737,7 +734,7 @@
                               :variables-h {:0 {:variable "Variable1"}}})]
           (assert-facet-field facets-result "Measurements" "Measurement1" 1)
           (assert-facet-field facets-result "Platforms" "P1" 1)
-          (assert-facet-field facets-result "Platforms" "P2" 1)
+          (assert-facet-field facets-result "Platforms" "P2" nil)
           (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
           (assert-facet-field-not-exist facets-result "Platforms" "P3")))
       (dev-sys-util/eval-in-dev-sys
