@@ -231,3 +231,18 @@
                          (search/find-refs
                            :collection
                            {:science-keywords-h {:0 {:any "biosphere"}}}))))))
+
+(deftest search-by-granule-data-format-humanized
+  (let [aadi1 {:ArchiveAndDistributionInformation
+               {:FileDistributionInformation
+                [(data-umm-c/file-distribution-information
+                  {:FormatType "Binary"
+                   :AverageFileSize 50
+                   :AverageFileSizeUnit "MB"
+                   :Fees "None currently"
+                   :Format "NetCDF-3"})]}}
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection aadi1))]
+    (index/wait-until-indexed)
+    (testing "search collections by humanized granule data format"
+      (is (d/refs-match? [coll1]
+                         (search/find-refs :collection {:granule-data-format "NetCDF"}))))))

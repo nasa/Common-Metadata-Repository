@@ -5,6 +5,46 @@
       "entries are treated as comments. For details on humanizers and the format, see",
       "https://wiki.earthdata.nasa.gov/display/CMR/Humanizing+Facets+Design",
 
+      {
+          "field": "granule_data_format",
+          "order": 0,
+          "replacement_value": "NetCDF",
+          "reportable": true,
+          "source_value": "NetCDF Classic",
+          "type": "alias"
+      },
+      {
+          "field": "granule_data_format",
+          "order": 0,
+          "replacement_value": "NetCDF",
+          "reportable": true,
+          "source_value": "NetCDF-3",
+          "type": "alias"
+      },
+      {
+          "field": "granule_data_format",
+          "order": 0,
+          "replacement_value": "NetCDF",
+          "reportable": true,
+          "source_value": "NetCDF-4",
+          "type": "alias"
+      },
+      {
+          "field": "granule_data_format",
+          "order": 0,
+          "replacement_value": "NetCDF",
+          "reportable": true,
+          "source_value": "NetCDF-CF",
+          "type": "alias"
+      },
+      {
+          "field": "granule_data_format",
+          "order": 0,
+          "replacement_value": "NetCDF",
+          "reportable": true,
+          "source_value": "NetCDF-CF/Radial",
+          "type": "alias"
+      },
       {"type": "trim_whitespace", "field": "platform", "order": -100},
       {"type": "trim_whitespace", "field": "instrument", "order": -100},
       {"type": "trim_whitespace", "field": "science_keyword", "order": -100},

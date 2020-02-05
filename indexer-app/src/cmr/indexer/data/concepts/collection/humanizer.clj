@@ -34,6 +34,20 @@
                                 (add-humanized-lowercase value-with-priorities))]
     {field value-with-lowercases}))
 
+(defn humanized-field->elastic-doc
+  "Extracts humanized fields from the science keyword and places them into an elastic doc with
+  the same shape/keys as science-keyword->elastic-doc."
+  [field]
+  (let [humanized-fields (filter #(-> % key namespace (= "cmr.humanized")) field)
+        humanized-fields-with-raw-values (util/map-values :value humanized-fields)
+        ns-stripped-fields (util/map-keys->kebab-case humanized-fields-with-raw-values)]
+    (merge
+     ns-stripped-fields
+     ;; Create "*.lowercase" versions of the fields
+     (->> ns-stripped-fields
+          (util/map-keys #(keyword (str (name %) ".lowercase")))
+          (util/map-values #(util/safe-lowercase %))))))
+
 (defn collection-humanizers-elastic
   "Given a umm-spec collection, returns humanized elastic search fields"
   [context collection]
@@ -41,8 +55,11 @@
                     collection (humanizer-fetcher/get-humanizer-instructions context))
         extract-fields (partial extract-humanized-elastic-fields humanized)]
     (merge
-      {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
+      {:science-keywords.humanized (map humanized-field->elastic-doc
                                         (:ScienceKeywords humanized))}
+      {:granule-data-format.humanized (map humanized-field->elastic-doc
+                                           (get-in humanized [:ArchiveAndDistributionInformation
+                                                              :FileDistributionInformation]))}
       (extract-fields [:Platforms :cmr.humanized/ShortName] :platform-sn)
       (extract-fields [:Platforms :Instruments :cmr.humanized/ShortName] :instrument-sn)
       (extract-fields [:Projects :cmr.humanized/ShortName] :project-sn)
