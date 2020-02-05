@@ -40,6 +40,86 @@
         "type": "alias"
     },
     {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": ".csv",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": ".CSV",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "ASCII-csv",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "Comma Delimited XYZ",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "Comma Separated Values",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "Comma-Separated Values (.csv)",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "Comma-separated values (ASCII)",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "CSV",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "CSV (ASCII)",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "CSV (Comma delimited text file)",
+        "type": "alias"
+    },
+    {
         "field": "instrument",
         "order": -100,
         "type": "trim_whitespace"

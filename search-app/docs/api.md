@@ -54,6 +54,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Science keywords](#c-science-keywords)
     * [TwoD coordinate system](#c-twod-coordinate-system)
     * [Collection data type](#c-collection-data-type)
+    * [Granule data format](#c-granule-data-format)
     * [Online only](#c-online-only)
     * [Downloadable](#c-downloadable)
     * [Browse only](#c-browse-only)
@@ -260,9 +261,9 @@ These are query parameters that control what extra data is included with collect
   * `X-Request-Id` - This provides standard X-Request-Id support to allow user to pass in some random ID which will be logged on the server side for debugging purpose.
   * `CMR-Request-Id` - This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems.  
 
-  * The response headers include the following: 
-    CMR-Hits and CMR-Took indicate the number of result hits and the time to build and execute the query, respectively. 
-    CMR-Request-Id and X-Request-Id return the same value - the value passed in through CMR-Request-Id request header or X-Request-Id request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors. 
+  * The response headers include the following:
+    CMR-Hits and CMR-Took indicate the number of result hits and the time to build and execute the query, respectively.
+    CMR-Request-Id and X-Request-Id return the same value - the value passed in through CMR-Request-Id request header or X-Request-Id request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors.
 
 #### <a name="extensions"></a> Extensions
 
@@ -1387,6 +1388,10 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
      curl "%CMR-ENDPOINT%/collections?collection_data_type\[\]=NEAR_REAL_TIME&collection_data_type\[\]=OTHER"
 
+#### <a name="c-granule-data-format"></a> Find collections by format of data in granules
+
+   curl "%CMR-ENDPOINT%/collections?granule_data_format=NetCDF"
+   
 #### <a name="c-online-only"></a> Find collections by online_only
 
     curl "%CMR-ENDPOINT%/collections?online_only=true"
