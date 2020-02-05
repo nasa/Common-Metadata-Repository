@@ -173,10 +173,9 @@
   ArchiveAndDistributionInformation -> FileDistributionInformation"
   [file-distribution-information]
   (->> file-distribution-information
-       (map #(:Format %))
+       (map :Format)
        distinct
-       (remove #(nil? %))
-       concat))
+       (remove nil?)))
 
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
@@ -312,10 +311,7 @@
                                     (some #(= (common-config/cwic-tag) %)
                                           (map :tag-key.lowercase tags))))
             :granule-data-format granule-data-format
-            :granule-data-format.humanized (-> humanized-values
-                                              :granule-data-format.humanized
-                                              first
-                                              :format)
+            :granule-data-format.lowercase (map str/lower-case granule-data-format)
             :entry-id entry-id
             :entry-id.lowercase (str/lower-case entry-id)
             :entry-title (str/trim entry-title)

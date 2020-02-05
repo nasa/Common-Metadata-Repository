@@ -53,6 +53,20 @@
      :uuid uuid
      :uuid.lowercase (util/safe-lowercase uuid)}))
 
+(defn humanized-science-keyword->elastic-doc
+  "Extracts humanized fields from the science keyword and places them into an elastic doc with
+  the same shape/keys as science-keyword->elastic-doc."
+  [science-keyword]
+  (let [humanized-fields (filter #(-> % key namespace (= "cmr.humanized")) science-keyword)
+        humanized-fields-with-raw-values (util/map-values :value humanized-fields)
+        ns-stripped-fields (util/map-keys->kebab-case humanized-fields-with-raw-values)]
+    (merge
+     ns-stripped-fields
+     ;; Create "*.lowercase" versions of the fields
+     (->> ns-stripped-fields
+          (util/map-keys #(keyword (str (name %) ".lowercase")))
+          (util/map-values #(util/safe-lowercase %))))))
+
 (defn- science-keyword->facet-fields
   [science-keyword]
   (let [science-keyword-upper-case (util/map-values normalize-sk-field-value science-keyword)

@@ -44,7 +44,7 @@
                           :doi :doi-stored
                           :granule-end-date :granule-end-date-stored
                           :granule-start-date :granule-start-date-stored
-                          :granule-data-format :granule-data-format.humanized
+                          :granule-data-format-h :granule-data-format.humanized
                           :instrument :instrument-sn
                           :instrument-h :instrument-sn.humanized2
                           :measurement :measurements
@@ -122,7 +122,7 @@
    :doi-stored :doi
    :granule-end-date-stored :granule-end-date
    :granule-start-date-stored :granule-start-date
-   :granule-data-format.humanized :granule-data-format
+   :granule-data-format.humanized :granule-data-format-h
    :instrument-sn :instrument
    :instrument-sn.humanized2 :instrument-h
    :measurements :measurement

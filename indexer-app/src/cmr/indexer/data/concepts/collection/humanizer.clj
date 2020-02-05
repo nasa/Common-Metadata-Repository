@@ -1,11 +1,12 @@
 (ns cmr.indexer.data.concepts.collection.humanizer
   "Contains functions to converting collection into elasticsearch humanized collection docs"
   (:require
-    [clojure.string :as str]
-    [cmr.common.util :as util]
-    [cmr.common-app.humanizer :as humanizer]
-    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
-    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]))
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.common-app.humanizer :as humanizer]
+   [cmr.indexer.data.concepts.collection.science-keyword :as sk]
+   [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]))
 
 (defn- add-humanized-lowercase
   "Adds a :value.lowercase field to a humanized object"
@@ -34,20 +35,6 @@
                                 (add-humanized-lowercase value-with-priorities))]
     {field value-with-lowercases}))
 
-(defn humanized-field->elastic-doc
-  "Extracts humanized fields from the science keyword and places them into an elastic doc with
-  the same shape/keys as science-keyword->elastic-doc."
-  [field]
-  (let [humanized-fields (filter #(-> % key namespace (= "cmr.humanized")) field)
-        humanized-fields-with-raw-values (util/map-values :value humanized-fields)
-        ns-stripped-fields (util/map-keys->kebab-case humanized-fields-with-raw-values)]
-    (merge
-     ns-stripped-fields
-     ;; Create "*.lowercase" versions of the fields
-     (->> ns-stripped-fields
-          (util/map-keys #(keyword (str (name %) ".lowercase")))
-          (util/map-values #(util/safe-lowercase %))))))
-
 (defn collection-humanizers-elastic
   "Given a umm-spec collection, returns humanized elastic search fields"
   [context collection]
@@ -55,11 +42,13 @@
                     collection (humanizer-fetcher/get-humanizer-instructions context))
         extract-fields (partial extract-humanized-elastic-fields humanized)]
     (merge
-      {:science-keywords.humanized (map humanized-field->elastic-doc
+      {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
                                         (:ScienceKeywords humanized))}
-      {:granule-data-format.humanized (map humanized-field->elastic-doc
-                                           (get-in humanized [:ArchiveAndDistributionInformation
-                                                              :FileDistributionInformation]))}
+      (set/rename-keys (extract-fields [:ArchiveAndDistributionInformation
+                                        :FileDistributionInformation
+                                        :cmr.humanized/Format]
+                                       :granule-data-format)
+                       {:granule-data-format.humanized2 :granule-data-format.humanized})
       (extract-fields [:Platforms :cmr.humanized/ShortName] :platform-sn)
       (extract-fields [:Platforms :Instruments :cmr.humanized/ShortName] :instrument-sn)
       (extract-fields [:Projects :cmr.humanized/ShortName] :project-sn)
