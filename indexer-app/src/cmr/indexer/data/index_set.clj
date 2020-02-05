@@ -232,6 +232,12 @@
    :quantity m/string-field-mapping
    :quantity.lowercase m/string-field-mapping})
 
+(defnestedmapping granule-data-format-mapping
+  "Defines mappings for collection Format fields.
+  ArchiveAndDistributionInformation -> FileDistributionInformation -> Format"
+  {:format (m/stored m/string-field-mapping)
+   :format.lowercase m/string-field-mapping})
+
 (def spatial-coverage-fields
   "Defines the sets of fields shared by collections and granules for indexing spatial data."
   {;; Minimum Bounding Rectangle Fields
@@ -377,6 +383,9 @@
           ;; hierarchical facets
           :science-keywords science-keywords-field-mapping
           :science-keywords.humanized science-keywords-field-mapping
+
+          :granule-data-format                  (m/stored m/string-field-mapping)
+          :granule-data-format.humanized        granule-data-format-mapping
 
           :platforms platform-hierarchical-mapping
           :instruments instrument-hierarchical-mapping
