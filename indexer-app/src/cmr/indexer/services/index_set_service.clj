@@ -343,7 +343,7 @@
      (update-in
       index-set
       [:index-set :granule :rebalancing-status]
-      assoc concept-id status))))
+      assoc (keyword concept-id) status))))
 
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-
