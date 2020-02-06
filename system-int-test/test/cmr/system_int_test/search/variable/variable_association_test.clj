@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.variable.variable-association-test
   "This tests associating variables with collections."
   (:require
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.collection :as collection]
@@ -51,14 +52,11 @@
 
     (testing "Associate variable with collections by concept-ids"
       (let [response (association-util/associate-by-concept-ids
-                      token concept-id [{:concept-id c1-p1}
-                                        {:concept-id c3-p2}])]
+                      token concept-id [{:concept-id c1-p1}])]
         (vu/assert-variable-association-response-ok?
-         {["C1200000013-PROV1"] {:concept-id "VA1200000026-CMR"
-                                 :revision-id 1}
-          ["C1200000019-PROV2"] {:concept-id "VA1200000027-CMR"
-                                 :revision-id 1}}
-         response)))
+          {["C1200000013-PROV1"] {:concept-id "VA1200000026-CMR"
+                                  :revision-id 1}}
+          response)))
 
     (testing "Associate to no collections"
       (let [response (association-util/associate-by-concept-ids token concept-id [])]
@@ -70,11 +68,9 @@
       (let [response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id c1-p1}
                                         {:concept-id c1-p1 :revision-id 1}])]
-        (association-util/assert-invalid-data-error
-         [(format (str "Unable to create variable association on a collection revision and the whole "
-                       "collection at the same time for the following collections: %s.")
-                  c1-p1)]
-         response)))
+        (is (= 400 (:status response)))
+        (is (= "Only one collection allowed in the list because a variable can only be associated with one collection."
+               (:error response)))))
 
     (testing "Associate to non-existent collections"
       (let [response (association-util/associate-by-concept-ids
@@ -100,16 +96,6 @@
                                                                 [{:concept-id c4-p3}])]
         (vu/assert-variable-association-response-ok?
          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
-         response)))
-
-    (testing "Variable association mixed response"
-      (let [response (association-util/associate-by-concept-ids
-                      token concept-id [{:concept-id c2-p1}
-                                        {:concept-id "C100-P5"}])]
-        (vu/assert-variable-association-response-ok?
-         {["C1200000014-PROV1"] {:concept-id "VA1200000028-CMR"
-                                 :revision-id 1}
-          ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
          response)))))
 
 (deftest associate-variable-failure-test
@@ -191,11 +177,40 @@
         assert-variable-associated (partial vu/assert-variable-associated-with-query
                                             prov3-token {:variable-name variable-name})]
     (index/wait-until-indexed)
-    ;; Associate the variable with every collection
-    (association-util/associate-by-concept-ids
-     prov3-token
-     concept-id
-     (map #(hash-map :concept-id (:concept-id %)) all-colls))
+    ;; Associate the variable with every prov1 collection is not allowed.
+    ;; it can only be associated to one of the prov1 collections.
+    (let [response1 (association-util/associate-by-concept-ids
+                      prov3-token
+                      concept-id
+                      (map #(hash-map :concept-id (:concept-id %)) [c1-p1]))
+          response2 (association-util/associate-by-concept-ids
+                      prov3-token
+                      concept-id
+                      (map #(hash-map :concept-id (:concept-id %)) [c2-p1]))
+          response3 (association-util/associate-by-concept-ids
+                      prov3-token
+                      concept-id
+                      (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
+       (is (= 200 (:status response1)))
+       (is (= 200 (:status response2)))
+       (is (string/includes? (:errors (first (:body response2))) 
+                             "can not be associated because the variable is already associated with another collection")) 
+       (is (= 400 (:status response3)))
+       (is (= "Only one collection allowed in the list because a variable can only be associated with one collection."
+              (:error response3))))
+
+    ;; Associate the variable with every prov2 collection is not allowed.
+    ;; it can not be associated with any because they are from different provider.
+    (let [response (association-util/associate-by-concept-ids
+                     prov3-token
+                     concept-id
+                     (map #(hash-map :concept-id (:concept-id %)) [c1-p2]))]
+       (is (= 200 (:status response)))
+       (is (string/includes? (:errors (first (:body response)))
+                             "can not be associated because they do not belong to the same provider")))
+
+    ;; only one prov1 collection can be associated with the variable.
+    (assert-variable-associated [c1-p1])
 
     (testing "Successfully dissociate variable with collections"
       (let [{:keys [status]} (association-util/dissociate-by-concept-ids
@@ -203,7 +218,7 @@
                               concept-id
                               (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
         (is (= 200 status))
-        (assert-variable-associated (concat all-prov2-colls all-prov3-colls))))
+        (assert-variable-associated [])))
 
     (testing "Dissociate non-existent collections"
       (let [response (association-util/dissociate-by-concept-ids
@@ -297,25 +312,33 @@
           {:keys [concept-id]} (vu/ingest-variable-with-attrs {:Name variable-name})]
 
       (index/wait-until-indexed)
-      (association-util/associate-by-concept-ids
-       token
-       concept-id
-       [{:concept-id (:concept-id coll1)}
-        {:concept-id (:concept-id coll2)
-         :revision-id (:revision-id coll2)}])
-      (assert-variable-associated [coll1 coll2])
+      ;; only one collection can be associated with a variable.
+      (let [response1 (association-util/associate-by-concept-ids
+                        token
+                        concept-id
+                        [{:concept-id (:concept-id coll1)
+                          :revision-id (:revision-id coll1)}])
+            response2 (association-util/associate-by-concept-ids
+                        token
+                        concept-id
+                        [{:concept-id (:concept-id coll2)
+                          :revision-id (:revision-id coll2)}])]
+        (is (= 200 (:status response1)))
+        (is (= 200 (:status response2)))
+        (is (string/includes? (some #(when (not= nil %) %) (map :errors (:body response2)))
+                              "can not be associated because the variable is already associated with another collection")))
+
+      (assert-variable-associated [coll1])
 
       (let [response (association-util/dissociate-by-concept-ids
                       token concept-id
                       [{:concept-id "C100-P5"} ;; non-existent collection
-                       {:concept-id (:concept-id coll1)} ;; success
-                       {:concept-id (:concept-id coll2) :revision-id 1} ;; success
+                       {:concept-id (:concept-id coll1) :revision-id 1} ;; success
                        {:concept-id (:concept-id coll3)}])] ;; no variable association
 
         (vu/assert-variable-dissociation-response-ok?
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
-          ["C1200000012-PROV1"] {:concept-id "VA1200000016-CMR" :revision-id 2}
-          ["C1200000013-PROV1" 1] {:concept-id "VA1200000017-CMR" :revision-id 2}
+          ["C1200000012-PROV1" 1] {:concept-id "VA1200000016-CMR" :revision-id 2}
           ["C1200000014-PROV1"]
           {:warnings [(format "Variable [%s] is not associated with collection [C1200000014-PROV1]."
                               concept-id)]}}
@@ -437,7 +460,7 @@
                                                [{:concept-id coll2-id}])
     (index/wait-until-indexed)
     ;; verify association
-    (assert-variable-association token [coll1 coll2] "variable1")
+    (assert-variable-association token [coll1] "variable1")
     (assert-variable-association token [coll2] "variable2")
 
     ;; associate variable2 to coll1, coll2 and coll3
@@ -448,8 +471,8 @@
                                                 {:concept-id coll3-id}])
     (index/wait-until-indexed)
     ;; verify association
-    (assert-variable-association token [coll1 coll2] "variable1")
-    (assert-variable-association token [coll1 coll2 coll3] "variable2")
+    (assert-variable-association token [coll1] "variable1")
+    (assert-variable-association token [coll2] "variable2")
 
     ;; dissociate variable1 from coll1
     (association-util/dissociate-by-concept-ids token
@@ -457,15 +480,14 @@
                                                 [{:concept-id coll1-id}])
     (index/wait-until-indexed)
     ;; verify association
-    (assert-variable-association token [coll2] "variable1")
-    (assert-variable-association token [coll1 coll2 coll3] "variable2")
+    (assert-variable-association token [] "variable1")
+    (assert-variable-association token [coll2] "variable2")
 
-    ;; dissociate variable2 from coll1 and coll2
+    ;; dissociate variable2 from coll2
     (association-util/dissociate-by-concept-ids token
                                                 variable2-concept-id
-                                                [{:concept-id coll1-id}
-                                                 {:concept-id coll2-id}])
+                                                [{:concept-id coll2-id}])
     (index/wait-until-indexed)
     ;; verify association
-    (assert-variable-association token [coll2] "variable1")
-    (assert-variable-association token [coll3] "variable2")))
+    (assert-variable-association token [] "variable1")
+    (assert-variable-association token [] "variable2")))

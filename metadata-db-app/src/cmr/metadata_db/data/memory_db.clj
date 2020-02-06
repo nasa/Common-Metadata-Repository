@@ -3,6 +3,7 @@
   (:require
    [clj-time.core :as t]
    [clj-time.format :as f]
+   [clojure.string :as string]
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as p]
    [cmr.common.lifecycle :as lifecycle]
@@ -130,6 +131,106 @@
                               concept-id native-id existing-concept-id existing-native-id)
        :existing-concept-id existing-concept-id
        :existing-native-id existing-native-id})))
+
+(defn- concept-id-in-list?
+  "Check if the concept-id is in the list of concept-ids."
+  [list concept-id]
+  (some #(= concept-id %) list))
+
+(defn validate-collection-not-associated-with-another-variable-with-same-name
+  "Validates that collection in the concept is not associated with a different
+  variable, which has the same name as the variable in the concept.
+  Returns nil if valid and an error response if invalid."
+  [db concept]
+  (let [variable-concept-id (get-in concept [:extra-fields :variable-concept-id])
+        associated-concept-id (get-in concept [:extra-fields :associated-concept-id])]
+    (when (and variable-concept-id associated-concept-id)
+      (let [;;get variable name for the variable-concept-id from cmr_variables.
+            variable (->> @(:concepts-atom db)
+                          (filter #(= variable-concept-id (:concept-id %)))
+                          first)
+            variable-name (get-in variable [:extra-fields :variable-name])
+
+            ;;get all the variable associations with variable concept id being different from variable-concept-id
+            ;;and associated with the associated-concept-id, from cmr_variable_associations
+            v-associations (->> @(:concepts-atom db)
+                                (filter #(not= variable-concept-id (get-in % [:extra-fields :variable-concept-id])))
+                                (filter #(= associated-concept-id (get-in % [:extra-fields :associated-concept-id]))))
+            v-concept-ids-in-aassociations (map #(get-in % [:extra-fields :variable-concept-id]) v-associations)
+
+            ;;get all the deleted variable associations with variable concept id being different from variable-concept-id
+            ;;and associated with the associated-concept-id, from cmr_variable_association
+            deleted-v-associations (->> @(:concepts-atom db)
+                                        (filter #(not= variable-concept-id (get-in % [:extra-fields :variable-concept-id])))
+                                        (filter #(= associated-concept-id (get-in % [:extra-fields :associated-concept-id])))
+                                        (filter #(= true (:deleted %))))
+            v-concept-ids-in-deleted-associations (map #(get-in % [:extra-fields :variable-concept-id]) deleted-v-associations)
+
+            ;;find the first v-concept-id in v-concept-ids that has variable name being variable-name.
+            ;;from cmr_variables table.
+            v-concept-id-same-name (->> @(:concepts-atom db)
+                                        (filter #(concept-id-in-list?
+                                                   v-concept-ids-in-aassociations
+                                                   (:concept-id %)))
+                                        (filter #(not (concept-id-in-list?
+                                                        v-concept-ids-in-deleted-associations
+                                                        (:concept-id %))))
+                                        (filter #(= variable-name (get-in % [:extra-fields :variable-name])))
+                                        first
+                                        :concept-id)]
+        (when v-concept-id-same-name
+          {:error :collection-associated-with-variable-same-name
+           :error-message (format (str "Variable [%s] and collection [%s] can not be associated "
+                                       "because the collection is already associated with another variable [%s] with same name.")
+                                  variable-concept-id associated-concept-id v-concept-id-same-name)})))))
+
+(defn validate-variable-not-associated-with-another-collection
+  "Validates that variable in the concept is not associated with a different collection
+  from the collection in the concept.
+  Returns nil if valid and an error response if invalid."
+  [db concept]
+  (let [variable-concept-id (get-in concept [:extra-fields :variable-concept-id])
+        associated-concept-id (get-in concept [:extra-fields :associated-concept-id])]
+    (when (and variable-concept-id associated-concept-id)
+      (let [;;Get all the same variable and other collection associations that are deleted.
+            deleted-associations (->> @(:concepts-atom db)
+                                      (filter #(= variable-concept-id (get-in % [:extra-fields :variable-concept-id])))
+                                      (filter #(not= associated-concept-id (get-in % [:extra-fields :associated-concept-id])))
+                                      (filter #(= true (:deleted %))))
+            associated-concept-ids-in-deleted-associations
+             (map #(get-in % [:extra-fields :associated-concept-id]) deleted-associations)
+
+            ;;Get all the same variable and other collection associations that are not deleted 
+            first-concept (->> @(:concepts-atom db)
+                               (filter #(= variable-concept-id (get-in % [:extra-fields :variable-concept-id])))
+                               (filter #(not= associated-concept-id (get-in % [:extra-fields :associated-concept-id])))
+                               (filter #(= false (:deleted %)))
+                               ;; need to exclude the collections that are referenced in the deleted associations. 
+                               (filter #(not (concept-id-in-list?
+                                               associated-concept-ids-in-deleted-associations
+                                               (get-in % [:extra-fields :associated-concept-id]))))
+                               first)
+            associated_concept_id (get-in first-concept [:extra-fields :associated-concept-id])]
+        (when associated_concept_id
+          {:error :variable-associated-with-another-collection
+           :error-message (format (str "Variable [%s] and collection [%s] can not be associated "
+                                       "because the variable is already associated with another collection [%s].")
+                                  variable-concept-id associated-concept-id associated_concept_id)})))))
+
+(defn validate-same-provider-variable-association
+  "Validates that variable and the collection in the concept being saved are from the same provider.
+  Returns nil if valid and an error response if invalid."
+  [concept]
+  (let [variable-concept-id (get-in concept [:extra-fields :variable-concept-id])
+        associated-concept-id (get-in concept [:extra-fields :associated-concept-id])]
+    (when (and variable-concept-id associated-concept-id)
+      (let [v-provider-id (second (string/split variable-concept-id #"-"))
+            c-provider-id (second (string/split associated-concept-id #"-"))]
+        (when (not= v-provider-id c-provider-id)
+          {:error :variable-association-not-same-provider
+           :error-message (format (str "Variable [%s] and collection [%s] can not be associated "
+                                       "because they do not belong to the same provider.")
+                                  variable-concept-id associated-concept-id)})))))
 
 (defn- delete-time
   "Returns the parsed delete-time extra field of a concept."
@@ -304,7 +405,11 @@
   [db provider concept]
   {:pre [(:revision-id concept)]}
 
-  (if-let [error (validate-concept-id-native-id-not-changing db provider concept)]
+  (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
+                     (when (= :variable-association (:concept-type concept))
+                       (or (validate-same-provider-variable-association concept)
+                           (validate-collection-not-associated-with-another-variable-with-same-name db concept)
+                           (validate-variable-not-associated-with-another-collection db concept))))]
    ;; There was a concept id, native id mismatch with earlier concepts
    error
    ;; Concept id native id pair was valid

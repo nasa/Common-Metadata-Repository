@@ -24,9 +24,7 @@
                                                           :short-name "s2"}})
         associated-variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
         var-association1 (concepts/create-and-save-concept
-                          :variable-association coll1 associated-variable 1 3)
-        var-association2 (concepts/create-and-save-concept
-                          :variable-association coll2 associated-variable 2 2)]
+                          :variable-association coll1 associated-variable 1 3)]
     (testing "find latest revisions"
       (are3 [variable-associations params]
         (is (= (set variable-associations)
@@ -39,18 +37,18 @@
         {:associated-concept-id "C1200000000-REG_PROV"}
 
         "with metadata"
-        [var-association1 var-association2]
+        [var-association1]
         {}
 
         "exclude metadata"
-        [(dissoc var-association1 :metadata) (dissoc var-association2 :metadata)]
+        [(dissoc var-association1 :metadata)]
         {:exclude-metadata true}))
 
     (testing "find all revisions"
       (let [num-of-variable-associations (-> (util/find-concepts :variable-association {})
                                              :concepts
                                              count)]
-        (is (= 5 num-of-variable-associations))))))
+        (is (= 3 num-of-variable-associations))))))
 
 (deftest find-variable-associations-with-invalid-parameters
   (testing "extra parameters"

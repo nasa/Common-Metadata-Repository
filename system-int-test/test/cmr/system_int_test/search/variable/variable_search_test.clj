@@ -565,8 +565,7 @@
           variable3 (variables/ingest-variable variable3-concept)
           variable1-concept-id (:concept-id variable1)
           variable2-concept-id (:concept-id variable2)
-          variable1-assoc-colls [{:concept-id (:concept-id coll1)}
-                                 {:concept-id (:concept-id coll2)}]
+          variable1-assoc-colls [{:concept-id (:concept-id coll1)}]
           variable2-assoc-colls [{:concept-id (:concept-id coll3)
                                   :revision-id 1}]
           ;; Add the variable info to variable concepts for comparision with UMM JSON result
@@ -613,10 +612,10 @@
             (testing "delete collection affect the associated collections in search result"
               (let [coll1-concept (mdb/get-concept (:concept-id coll1))
                     _ (ingest/delete-concept coll1-concept)
-                    ;; Now variable1 is only associated to coll2, as coll1 is deleted
+                    ;; Now variable1 is not associated with any collection, as coll1 is deleted
                     expected-variable1 (assoc expected-variable1
                                               :associated-collections
-                                              [{:concept-id (:concept-id coll2)}])]
+                                              nil)]
                 (index/wait-until-indexed)
 
                 (du/assert-variable-umm-jsons-match

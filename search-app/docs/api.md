@@ -3513,10 +3513,18 @@ Access to variable and variable association is granted through the provider via 
 
 A variable identified by its concept id can be associated with collections through a list of collection concept revisions. The variable association request normally returns status code 200 with a response that consists of a list of individual variable association responses, one for each variable association attempted to create. Each individual variable association response has an `associated_item` field and either a `variable_association` field with the variable association concept id and revision id when the variable association succeeded or an `errors` field with detailed error message when the variable association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during variable association. Here is a sample variable association request and its response:
 
+Note: The following new features are added to support UVG:
+1. Each variable can only be associated with one collection.
+2. Each collection can only be associated with variables that don't share the same name.
+3. variable and collection can only be associated if they are from the same provider.
+
+Future work:
+1. Currently we are not addressing any existing data that don't satisfy the above new requirements. 
+2. We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list. A ticket is filed to address these issues in the future if necessary.
+
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
-'[{"concept_id": "C1200000005-PROV1"},
-  {"concept_id": "C1200000006-PROV1"}]'
+'[{"concept_id": "C1200000005-PROV1"}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
@@ -3530,14 +3538,6 @@ Content-Length: 168
     },
     "associated_item":{
       "concept_id":"C1200000005-PROV1"
-    }
-  },
-  {
-    "errors":[
-      "Collection [C1200000006-PROV1] does not exist or is not visible."
-    ],
-    "associated_item":{
-      "concept_id":"C1200000006-PROV1"
     }
   }
 ]
