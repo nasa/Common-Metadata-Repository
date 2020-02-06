@@ -1,5 +1,4 @@
-ed:   variable_association_test.clj
-/co(ns cmr.search.services.association-service
+(ns cmr.search.services.association-service
   "Provides functions for associating and dissociating variables/services to collections.
   Tag association is keyed off tag-key rather than concept-id like variable/service association.
   So the code is slightly different and we have pushed off the potential refactoring until later."

@@ -68,11 +68,9 @@
       (let [response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id c1-p1}
                                         {:concept-id c1-p1 :revision-id 1}])]
-        (association-util/assert-invalid-data-error
-         [(format (str "Unable to create variable association on a collection revision and the whole "
-                       "collection at the same time for the following collections: %s.")
-                  c1-p1)]
-         response)))
+        (is (= 400 (:status response)))
+        (is (= "Only one collection allowed in the list because a variable can only be associated with one collection."
+               (:error response)))))
 
     (testing "Associate to non-existent collections"
       (let [response (association-util/associate-by-concept-ids
@@ -98,16 +96,6 @@
                                                                 [{:concept-id c4-p3}])]
         (vu/assert-variable-association-response-ok?
          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
-         response)))
-
-    (testing "Variable association mixed response"
-      (let [response (association-util/associate-by-concept-ids
-                      token concept-id [{:concept-id c2-p1}
-                                        {:concept-id "C100-P5"}])]
-        (vu/assert-variable-association-response-ok?
-         {["C1200000014-PROV1"] {:concept-id "VA1200000026-CMR"
-                                 :revision-id 1}
-          ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
          response)))))
 
 (deftest associate-variable-failure-test
@@ -198,20 +186,27 @@
           response2 (association-util/associate-by-concept-ids
                       prov3-token
                       concept-id
+                      (map #(hash-map :concept-id (:concept-id %)) [c2-p1]))
+          response3 (association-util/associate-by-concept-ids
+                      prov3-token
+                      concept-id
                       (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
        (is (= 200 (:status response1)))
        (is (= 200 (:status response2)))
-       (is (string/includes? (some #(when (not= nil %) %) (map :errors (:body response2)))
-                             "can not be associated because the variable is already associated with another collection")))
+       (is (string/includes? (:errors (first (:body response2))) 
+                             "can not be associated because the variable is already associated with another collection")) 
+       (is (= 400 (:status response3)))
+       (is (= "Only one collection allowed in the list because a variable can only be associated with one collection."
+              (:error response3))))
 
     ;; Associate the variable with every prov2 collection is not allowed.
     ;; it can not be associated with any because they are from different provider.
     (let [response (association-util/associate-by-concept-ids
                      prov3-token
                      concept-id
-                     (map #(hash-map :concept-id (:concept-id %)) all-prov2-colls))]
+                     (map #(hash-map :concept-id (:concept-id %)) [c1-p2]))]
        (is (= 200 (:status response)))
-       (is (string/includes? (some #(when (not= nil %) %) (map :errors (:body response)))
+       (is (string/includes? (:errors (first (:body response)))
                              "can not be associated because they do not belong to the same provider")))
 
     ;; only one prov1 collection can be associated with the variable.

@@ -9,6 +9,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.search.services.association-service :as assoc-service]
+   [cmr.search.services.association-validation :as assoc-validation]
    [compojure.core :refer :all]
    [compojure.route :as route]))
 
@@ -42,8 +43,13 @@
   (validate-association-content-type headers)
   (info (format "Associate %s [%s] on collections: %s by client: %s."
                 (name concept-type) concept-id body (:client-id context)))
-  (api-response
-   (assoc-service/associate-to-collections context concept-type concept-id body)))
+  (if (and (> (count (assoc-validation/associations-json->associations body)) 1)
+           (= :variable concept-type))
+    (api-response
+      400
+      {:error "Only one collection allowed in the list because a variable can only be associated with one collection."})
+    (api-response
+     (assoc-service/associate-to-collections context concept-type concept-id body))))
 
 (defn dissociate-concept-from-collections
   "Dissociate the given concept by concept type and concept id from a list of
