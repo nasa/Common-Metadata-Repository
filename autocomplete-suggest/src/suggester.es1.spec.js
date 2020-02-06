@@ -1,4 +1,4 @@
-// suggester.es7.spec.js
+// suggester.es1.spec.js
 
 jest.mock('@elastic/elasticsearch');
 
@@ -12,7 +12,7 @@ const esClient = new es.Client({ node: 'http://foo:9200' });
 
 const ES1Suggester = require('./suggester.es1');
 
-const ES7_RESPONSE_GOOD = {
+const ES1_RESPONSE_GOOD = {
   body: {
     took: 10,
     timed_out: false,
@@ -43,7 +43,7 @@ const ES7_RESPONSE_GOOD = {
     },
   },
 };
-const ES7_RESPONSE_EMPTY = {
+const ES1_RESPONSE_EMPTY = {
   body: {
     took: 10,
     timed_out: false,
@@ -81,7 +81,7 @@ test(
   'GIVEN es returns hits WHEN queried THEN an array of suggestions is returned',
   async () => {
     // GIVEN
-    esClient.search = jest.fn().mockResolvedValue(ES7_RESPONSE_GOOD);
+    esClient.search = jest.fn().mockResolvedValue(ES1_RESPONSE_GOOD);
 
     const results = await suggester.autocomplete('foo');
     expect(results).toHaveLength(1);
@@ -97,7 +97,7 @@ test(
   'GIVEN es returns no hits WHEN autocomplete THEN an empty array is returned',
   async () => {
     // GIVEN
-    esClient.search = jest.fn().mockResolvedValue(ES7_RESPONSE_EMPTY);
+    esClient.search = jest.fn().mockResolvedValue(ES1_RESPONSE_EMPTY);
 
     const results = await suggester.autocomplete('bar');
     expect(results).toHaveLength(0);

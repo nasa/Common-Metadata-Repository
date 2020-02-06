@@ -23,3 +23,4 @@ test('GIVEN elasticsearch version 7 WHEN create is called THEN ES7 client is ret
 test('GIVEN invalid key WHEN creating THEN null is returned', () => {
   expect(SuggesterFactory.create('foo')).toBeNull();
 });
+
