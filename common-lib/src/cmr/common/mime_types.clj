@@ -81,7 +81,10 @@
    :opendata         "application/opendata+json"
    :native           "application/metadata+xml"
    :edn              "application/edn"
-   :opendap          "application/x-netcdf"})
+   :opendap          "application/x-netcdf"
+   :octet-stream     "application/octet-stream"
+   :shapefile        "application/shapefile+zip"
+   :multi-part-form  "multipart/form-data"})
 
 (defn format->mime-type
   "Converts a format structure (a keyword or map containing :format and :version) to a mime type.

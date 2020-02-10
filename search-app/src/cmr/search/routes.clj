@@ -14,6 +14,7 @@
    [cmr.common.api.context :as cmr-context]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.mime-types :as mt]
+   [cmr.search.api.multipart :as mp]
    [cmr.common.services.errors :as svc-errors]
    [cmr.search.api.routes :as api-routes]
    [cmr.search.services.messages.common-messages :as msg]
@@ -21,7 +22,8 @@
    [compojure.core :refer [GET context routes]]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params]))
+   [ring.middleware.params :as params]
+   [ring.middleware.multipart-params :refer [wrap-multipart-params]]))
 
 (defn find-query-str-mixed-arity-param
   "Return the first parameter that has mixed arity, i.e., appears with both single and multivalued in
@@ -71,9 +73,9 @@
     mt/json
     mt/xml))
 
-(defconfig test-environment 
-   "Flag that indicates if the environment is test environment"
-   {:default false :type Boolean})
+(defconfig test-environment
+  "Flag that indicates if the environment is test environment"
+  {:default false :type Boolean})
 
 (def robots-txt-non-test-environment-response
   "Returns the robots.txt response for a non-test environment."
@@ -84,7 +86,7 @@
   "Returns the robots.txt response for a test environment."
   {:status 200
    :body (slurp (io/resource "public/test-environment-robots.txt"))})
- 
+
 (defn- get-robots-txt-response
   "Get the proper robots-txt-response depending on the test-env."
   [test-env]
@@ -97,13 +99,13 @@
     (routes
       ;; Return robots.txt from the root /robots.txt and at the context (e.g.
       ;; /search/robots.txt)
-      (GET "/robots.txt" req (get-robots-txt-response test-environment))
-      (context
-        relative-root-url []
-        (GET "/robots.txt" req (get-robots-txt-response test-environment)))
-      (api-routes/build-routes system)
-      (site-routes/build-routes system)
-      (common-pages/not-found))))
+     (GET "/robots.txt" req (get-robots-txt-response test-environment))
+     (context
+       relative-root-url []
+       (GET "/robots.txt" req (get-robots-txt-response test-environment)))
+     (api-routes/build-routes system)
+     (site-routes/build-routes system)
+     (common-pages/not-found))))
 
 (defn handlers [system]
   (-> (build-routes system)
@@ -121,4 +123,5 @@
       (cmr-context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
       params/wrap-params
-      copy-of-body-handler))
+      copy-of-body-handler
+      wrap-multipart-params))

@@ -2,6 +2,7 @@
   "Defines the API for search-by-concept in the CMR."
   (:require
    [clojure.string :as string]
+   [clojure.walk :as walk]
    [clj-http.client :as client]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
@@ -12,6 +13,7 @@
    [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
    [cmr.search.api.core :as core-api]
+   [cmr.search.data.shapefile :as shapefile]
    [cmr.search.services.parameters.legacy-parameters :as lp]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
@@ -43,6 +45,21 @@
       (re-matches concept-type-w-extension)
       second
       keyword))
+
+(defn fix-form-params
+  "Change multi-form params into normal params.
+  NOTE: the shapefile paramer data will be 'fixed' as well, which means losing 'content-type';
+  therefore this function should only be called AFTER the shapefile has been extracted."
+  [params]
+  (walk/postwalk 
+    (fn [sub-form]
+      ;; only replace the sub-form if it has keys :content and :content-type
+      (if (and 
+            (map? sub-form)
+            (every? #(contains? sub-form %) [:content :content-type]))
+        (:content sub-form)
+        sub-form))
+    params))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Support Functions
@@ -78,8 +95,8 @@
                   (rfh/printable-result-format result-format)
                   (pr-str params)))
     (svc-errors/throw-service-error
-      :too-many-requests
-      "Excessive query rate. Please contact support@earthdata.nasa.gov.")))
+     :too-many-requests
+     "Excessive query rate. Please contact support@earthdata.nasa.gov.")))
 
 (defn- reject-all-granule-query?
   "Return true if the all granule query will be rejected."
@@ -156,12 +173,20 @@
   "Invokes query service to parse the parameters query, find results, and
   return the response"
   [ctx path-w-extension params headers body]
-  (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
+  (let [shapefile (:shapefile params)
+        shapefile-format (:content-type shapefile)
+        shapefile (:tempfile shapefile)
+        params (fix-form-params (dissoc params :shapefile))
+        params (if shapefile
+                (merge params {:shapefile shapefile :shapefile-format shapefile-format})
+                params)
+        _ (println params)
+        concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
         scroll-id-and-search-params (core-api/get-scroll-id-and-search-params-from-cache ctx short-scroll-id)
         scroll-id (:scroll-id scroll-id-and-search-params)
         cached-search-params (:search-params scroll-id-and-search-params)
-        ctx (assoc ctx :query-string body :scroll-id scroll-id)
+        ctx (assoc ctx :query-string body :scroll-id scroll-id :shapefile shapefile :shapefile-format shapefile-format)
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (block-excessive-queries ctx concept-type result-format params)
@@ -192,7 +217,9 @@
       (= mt/json content-type-header)
       (find-concepts-by-json-query ctx path-w-extension params headers body)
 
-      (or (nil? content-type-header) (= mt/form-url-encoded content-type-header))
+      (or (nil? content-type-header)
+          (= mt/form-url-encoded content-type-header)
+          (re-find (re-pattern mt/multi-part-form) content-type-header))
       (find-concepts-by-parameters ctx path-w-extension params headers body)
 
       :else
@@ -224,7 +251,6 @@
   [ctx params]
   (core-api/search-response ctx {:results (query-svc/find-tiles-by-geometry ctx params)
                                  :result-format mt/json}))
-
 
 (defn- find-data-json
   "Retrieve all public collections with gov.nasa.eosdis tag as opendata."
@@ -263,6 +289,11 @@
     ;; Find concepts - form encoded or JSON
     (POST "/"
       {params :params headers :headers ctx :request-context body :body-copy}
+      ; (let [form-data (or (get-in params [:form-data :content]) "")
+      ;       new-params (parse-params form-data "UTF-8")
+      ;       params (merge (dissoc params :form-data) new-params)]
+      ;   (println params)
+      (println params)
       (find-concepts ctx path-w-extension params headers body))))
 
 (def granule-timeline-routes
@@ -278,17 +309,17 @@
 (def find-deleted-concepts-routes
   "Routes for finding deleted granules and collections."
   (routes
-    (context ["/:path-w-extension" :path-w-extension #"(?:deleted-collections)(?:\..+)?"] [path-w-extension]
-      (OPTIONS "/" req common-routes/options-response)
-      (GET "/"
-        {params :params headers :headers ctx :request-context}
-        (get-deleted-collections ctx path-w-extension params headers)))
+   (context ["/:path-w-extension" :path-w-extension #"(?:deleted-collections)(?:\..+)?"] [path-w-extension]
+     (OPTIONS "/" req common-routes/options-response)
+     (GET "/"
+       {params :params headers :headers ctx :request-context}
+       (get-deleted-collections ctx path-w-extension params headers)))
 
-    (context ["/:path-w-extension" :path-w-extension #"(?:deleted-granules)(?:\..+)?"] [path-w-extension]
-      (OPTIONS "/" req common-routes/options-response)
-      (GET "/"
-        {params :params headers :headers ctx :request-context}
-        (get-deleted-granules ctx path-w-extension params headers)))))
+   (context ["/:path-w-extension" :path-w-extension #"(?:deleted-granules)(?:\..+)?"] [path-w-extension]
+     (OPTIONS "/" req common-routes/options-response)
+     (GET "/"
+       {params :params headers :headers ctx :request-context}
+       (get-deleted-granules ctx path-w-extension params headers)))))
 
 (def aql-search-routes
   "Routes for finding concepts using the ECHO Alternative Query Language (AQL)."

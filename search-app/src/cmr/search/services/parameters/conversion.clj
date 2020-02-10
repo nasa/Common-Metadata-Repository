@@ -66,6 +66,8 @@
    :updated-since :updated-since
    :version :string
    :facets-size :string
+   :shapefile :string
+   :shapefile-format :string
 
    ;; Tag parameters
    :tag-data :tag-query
@@ -122,7 +124,9 @@
    :updated-since :updated-since
    :version :collection-query
    :cycle :int
-   :passes :passes})
+   :passes :passes
+   :shapefile :string
+   :shapefile-format :string})
 
 (defmethod common-params/param-mappings :tag
   [_]
