@@ -33,11 +33,16 @@
                  [ring/ring-core "1.7.1"]
                  [ring/ring-json "0.4.0"]
                  [selmer "1.12.5"]
+                 [org.geotools/gt-shapefile "23-SNAPSHOT"]
+                 [org.geotools/gt-geojsondatastore "23-SNAPSHOT"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
                  [metosin/ring-swagger-ui "2.1.4-0"]
                  [metosin/ring-swagger "0.22.14"]
-                 [prismatic/schema "1.1.9"]]
+                 [prismatic/schema "1.1.9"]
+                 [org.geotools/gt-shapefile "23-SNAPSHOT"]
+                 [org.geotools/gt-geojsondatastore "23-SNAPSHOT"]]
+  :repositories {"osgeo" "https://download.osgeo.org/webdav/geotools"}
   :plugins [[lein-exec "0.3.7"]
             [test2junit "1.3.3"]]
   :repl-options {:init-ns user
@@ -93,7 +98,7 @@
             "test-out" ["test2junit"]
             ;; Linting aliases
             "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
-                          ["with-profile" "lint" "kibit"]]
+                     ["with-profile" "lint" "kibit"]]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]

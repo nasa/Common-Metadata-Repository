@@ -959,3 +959,15 @@
       (and (> token-length 5)
            (<= token-length 14)) (str (subs token 0 (- token-length 5)) "XXX")
       :else "XXX")))
+
+(defn human-list
+  "Given a vector of strings, return a string joing the elements of the collection with 'separator', except for 
+  the last two which are joined with \"'separator' 'final-separator' \".
+  Example: (fancy-join [\"One\" \"Two\" \"Three\"] \",\" \"or\") => \"One, Two, or Three\""
+  [coll separator final-separator]
+  (let [spaced-sep (str separator " ")]
+    (if (< (count coll) 3)
+      (string/join (format " %s " final-separator) coll)
+      (let [front (string/join spaced-sep (subvec coll 0 (- (count coll) 1)))
+            back (format "%s %s %s" separator final-separator (last coll))]
+        (str front back)))))
