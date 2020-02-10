@@ -25,7 +25,8 @@
    :data-center :organization.humanized2
    :project :project-sn.humanized2
    :processing-level-id :processing-level-id.humanized2
-   :variables :variables})
+   :variables :variables
+   :granule-data-format :granule-data-format.humanized})
 
 (defmethod v2-facets/facets-v2-params->elastic-fields :collection
   [_]
@@ -37,8 +38,8 @@
 
 (def collection-facets-v2-params-with-default-size
   "A map with collection facets parameters and the default term size values."
-  (zipmap collection-facets-v2-params 
-          (repeat (count collection-facets-v2-params) v2-facets/DEFAULT_TERMS_SIZE)))  
+  (zipmap collection-facets-v2-params
+          (repeat (count collection-facets-v2-params) v2-facets/DEFAULT_TERMS_SIZE)))
 
 (defmethod v2-facets/facets-v2-params :collection
   [_]

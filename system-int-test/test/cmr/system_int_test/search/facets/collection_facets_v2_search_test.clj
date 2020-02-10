@@ -57,6 +57,12 @@
 (def sk6 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
                                            :Topic "Popular"
                                            :Term "Omega"}))
+(def gdf1 {:FileDistributionInformation
+           [{:FormatType "Binary"
+             :AverageFileSize 50
+             :AverageFileSizeUnit "MB"
+             :Fees "None currently"
+             :Format "NetCDF-3"}]})
 
 (def facets-size-error-msg
   "Collection parameter facets_size needs to be passed in like facets_size[platform]=n1&facets_size[instrument]=n2 with n1 and n2 being a positive integer, which will be translated into a map with positive integer string values like {:platform \"1\" :instrument \"2\"}")
@@ -88,7 +94,8 @@
                             (fu/projects "proj1" "PROJ2")
                             (fu/platforms fu/FROM_KMS 2 2 1)
                             (fu/processing-level-id "PL1")
-                            {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]})
+                            {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
+                             :ArchiveAndDistributionInformation gdf1})
         coll2 (fu/make-coll 2 "PROV1"
                             (fu/science-keywords sk1 sk3)
                             (fu/projects "proj1" "PROJ2")
@@ -114,7 +121,7 @@
   (testing "No fields applied for facets"
     (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets))))
   (testing "Facets size applied for facets"
-    (is (= fr/expected-v2-facets-apply-links-with-facets-size 
+    (is (= fr/expected-v2-facets-apply-links-with-facets-size
            (search-and-return-v2-facets {:facets-size {:platform 1}}))))
   (testing "Facets size applied for facets, with selecting facet that exists, but outside of the facets size range."
     (is (= fr/expected-v2-facets-apply-links-with-selecting-facet-outside-of-facets-size
@@ -151,7 +158,7 @@
       (is (= fr/expected-v2-facets-remove-links (search-and-return-v2-facets search-params))))
     (testing "Some fields not applied for facets"
       (let [response (search-and-return-v2-facets
-                      (dissoc search-params :platform-h :project-h :data-center-h))]
+                      (dissoc search-params :platform-h :project-h :data-center-h :granule-data-format-h))]
         (is (not (fu/applied? response :platform-h)))
         (is (not (fu/applied? response :project-h)))
         (is (not (fu/applied? response :data-center-h)))
