@@ -5,6 +5,7 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.cache :as cache]
+   [cmr.search.api.autocomplete :as autocomplete-api]
    [cmr.search.api.community-usage-metrics :as metrics-api]
    [cmr.search.api.concepts-lookup :as concepts-lookup-api]
    [cmr.search.api.concepts-search :as concepts-search-api]
@@ -84,6 +85,9 @@
 
         ;; Provider holdings
         providers-api/holdings-routes
+
+        ;; Add routes for autocomplete 
+        autocomplete-api/autocomplete-api-routes
 
         ;; Resets the application back to it's initial state.
         (POST "/reset"
