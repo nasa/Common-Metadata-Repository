@@ -304,8 +304,11 @@
         "Single Polygon"
         "james_test_box.zip" [whole-world very-wide-cart esri-point washington-dc richmond]
 
+        "Single Polygon box"
+        "box.zip" [whole-world very-wide-cart washington-dc richmond]
+        
         "Single Polygon with holes"
-        "box.zip" [whole-world very-wide-cart washington-dc richmond]))))
+        "polygon_with_hole.zip" [whole-world very-wide-cart richmond]))))
 
    ;  (testing "polygon searches"
    ;    (are [shapefile items]
