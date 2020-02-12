@@ -6,8 +6,9 @@
    [clj-time.format :as f]
    [clojurewerkz.elastisch.rest.bulk :as bulk]
    [clojurewerkz.elastisch.rest.document :as doc]
-   [cmr.common.concepts :as cs]
    [cmr.common-app.config :as common-config]
+   [cmr.common-app.services.search.elastic-search-index :as common-esi]
+   [cmr.common.concepts :as cs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
@@ -16,8 +17,8 @@
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
-   [cmr.indexer.data.concept-parser :as cp]
    [cmr.indexer.data.bulk :as cmr-bulk]
+   [cmr.indexer.data.concept-parser :as cp]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
    [cmr.indexer.services.index-set-service :as index-set-svc]
@@ -26,27 +27,6 @@
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
   100)
-
-(defmulti context->conn
-  "Returns the elastisch connection in the context based on search engine type or
-   indexer ES engine configuration. The search engine is set when bootstrap wants to just
-   search on a given ES index based on its configuration."
-  (fn [context]
-    (or (:search-engine context)
-        (common-config/index-es-engine-key))))
-
-(defmethod context->conn :old
-  [context]
-  (get-in context [:system :db :conn]))
-
-(defmethod context->conn :new
-  [context]
-  (get-in context [:system :new-db :conn]))
-
-(defmethod context->conn :both
-  [context]
-  {:old (get-in context [:system :db :conn])
-   :new (get-in context [:system :new-db :conn])})
 
 (defmulti get-elastic-version
   "Get the proper elastic document version for the concept based on type.
@@ -122,7 +102,7 @@
         (info "Index set does not exist so creating it.")
         (index-set-svc/create-index-set context expected-index-set)
         (info "Creating collection index alias.")
-        (esi/create-index-alias (context->conn context)
+        (esi/create-index-alias (common-esi/context->conn context)
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
 
@@ -151,7 +131,7 @@
         (info "Updating the index set to " (pr-str expected-index-set))
         (index-set-svc/update-index-set context expected-index-set)
         (info "Creating colleciton index alias.")
-        (esi/create-index-alias (context->conn context)
+        (esi/create-index-alias (common-esi/context->conn context)
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
       (do
@@ -334,7 +314,7 @@
   ([context docs {:keys [all-revisions-index?]}]
    (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
      (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
-           conn (context->conn context)
+           conn (common-esi/context->conn context)
            response (bulk/bulk conn bulk-operations)]
       (handle-bulk-index-response response)))))
 
@@ -342,7 +322,7 @@
   "Save the document in Elasticsearch, raise error if failed."
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
   (doseq [es-index es-indexes]
-    (let [conn (context->conn context)
+    (let [conn (common-esi/context->conn context)
           {:keys [ttl ignore-conflict? all-revisions-index?]} options
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           result (try-elastic-operation
@@ -360,7 +340,7 @@
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."
   [context es-index es-type elastic-id]
-  (doc/get (context->conn context) es-index es-type elastic-id))
+  (doc/get (common-esi/context->conn context) es-index es-type elastic-id))
 
 (defn delete-document
   "Delete the document from Elasticsearch, raise error if failed."
@@ -370,7 +350,7 @@
    (doseq [es-index es-indexes]
      ;; Cannot use elastisch for deletion as we require special headers on delete
      (let [{:keys [admin-token]} (context->es-config context)
-           {:keys [uri http-opts]} (context->conn context)
+           {:keys [uri http-opts]} (common-esi/context->conn context)
            {:keys [ignore-conflict? all-revisions-index?]} options
            elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
            delete-url (if elastic-version
@@ -394,7 +374,7 @@
   "Delete document that match the given query"
   [context es-index es-type query]
   (let [{:keys [admin-token]} (context->es-config context)
-        {:keys [uri http-opts]} (context->conn context)
+        {:keys [uri http-opts]} (common-esi/context->conn context)
         delete-url (format "%s/%s/%s/_query" uri es-index es-type)]
     (client/delete delete-url
                    (merge http-opts

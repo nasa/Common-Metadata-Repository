@@ -7,6 +7,7 @@
    [clojurewerkz.elastisch.rest.document :as esd]
    [clojurewerkz.elastisch.rest.index :as esri]
    [clojurewerkz.elastisch.rest.response :as esrsp]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common-app.services.search.results-model :as results]
@@ -36,11 +37,49 @@
   (fn [concept-type query]
     [concept-type (qm/base-result-format query)]))
 
-(defn context->search-index
-  "Returns the search index given a context. This assumes that the search index is always located in a
+(defmulti context->es-store
+  "Returns the elastisch store in the context based on search engine type or
+   indexer ES engine configuration. The search engine is set when bootstrap wants to just
+   search on a given ES index based on its configuration."
+  (fn [context]
+    (common-config/index-es-engine-key)))
+
+(defmethod context->es-store :old
+  [context]
+  (get-in context [:system :db]))
+
+(defmethod context->es-store :new
+  [context]
+  (get-in context [:system :new-db]))
+
+(defmethod context->es-store :both
+  [context]
+  {:old (get-in context [:system :db])
+   :new (get-in context [:system :new-db])})
+
+(defn context->conn
+  "Returns the connection given a context. This assumes that the search index is always located in a
    system using the :search-index key."
   [context]
-  (get-in context [:system :search-index]))
+  (let [es-store (context->es-store context)]
+    (if-let [{old-store :old} es-store]
+      {:old (:conn old-store)
+       :new (get-in es-store [:new :conn])})
+    (:conn (context->es-store context))))
+
+(defmulti context->search-index
+  "Returns the search index given a context. This assumes that the search index is always located in a
+   system using the :search-index key."
+  (fn [context]
+    (common-config/search-es-engine-key)))
+
+(defmethod context->search-index :old
+  [context]
+  (get-in context [:system :db]))
+
+(defmethod context->search-index :new
+  [context]
+  (get-in context [:system :new-db]))
 
 (defn context->search-conn
   "Returns the connection given a context. This assumes that the search index is always located in a
@@ -251,5 +290,5 @@
 
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."
-  []
-  (->ElasticSearchIndex (es-config/elastic-config) nil))
+  [config]
+  (->ElasticSearchIndex config nil))

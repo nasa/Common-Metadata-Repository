@@ -42,7 +42,6 @@
             (name k)))
         rebalancing-targets-map))
 
-
 (defn- fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
   [context]

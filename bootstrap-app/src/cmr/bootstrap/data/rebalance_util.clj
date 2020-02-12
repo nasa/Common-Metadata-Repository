@@ -5,6 +5,7 @@
    [clojurewerkz.elastisch.rest.document :as esd]
    [cmr.bootstrap.embedded-system-helper :as helper]
    [cmr.common-app.config :as common-config]
+   [cmr.common-app.services.search.elastic-search-index :as esi]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.data.elasticsearch :as indexer-es]
    [cmr.indexer.data.index-set :as index-set]
@@ -23,8 +24,7 @@
 (defn- granule-count-for-collection
   "Gets the granule count for the collection in the elastic index."
   [indexer-context index-name concept-id]
-  (let [conn (indexer-es/context->conn
-              (assoc indexer-context :search-engine (common-config/search-es-engine-key)))
+  (let [conn (esi/context->search-conn indexer-context)
         query (es-query-for-collection-concept-id concept-id)]
     (:count (es-helper/count-query conn index-name granule-mapping-type-name query))))
 

@@ -6,12 +6,13 @@
    [cmr.access-control.config :as config]
    [cmr.access-control.data.access-control-index :as access-control-index]
    [cmr.access-control.data.group-fetcher :as gf]
+   [cmr.access-control.routes :as routes]
    [cmr.access-control.services.event-handler :as event-handler]
    [cmr.access-control.test.bootstrap :as bootstrap]
-   [cmr.access-control.routes :as routes]
    [cmr.acl.acl-fetcher :as af]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common.api.web-server :as web-server]
@@ -22,6 +23,7 @@
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.message-queue.config :as queue-config]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.transmit.config :as transmit-config]))
@@ -74,19 +76,45 @@
    :port (access-control-public-port)
    :relative-root-url (transmit-config/access-control-relative-root-url)})
 
-(def ^:private component-order
-  "Defines the order to start the components."
-  [:log :caches :search-index :queue-broker :scheduler :web :nrepl])
+(def ^:private old-component-order
+  "Defines the order to start the components with old ES."
+  [:log :caches :db :queue-broker :scheduler :web :nrepl])
+
+(def ^:private new-component-order
+  "Defines the order to start the components with new ES."
+  [:log :caches :new-db :queue-broker :scheduler :web :nrepl])
+
+(def ^:private both-component-order
+  "Defines the order to start the components with both ES engines."
+  [:log :caches :db :new-db :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
   (atom nil))
 
+(defmulti access-control-component-order
+  "Returns the elastisch connection in the context based on indexer ES engine configuration"
+  (fn []
+    (common-config/index-es-engine-key)))
+
+(defmethod access-control-component-order :old
+  []
+  old-component-order)
+
+(defmethod access-control-component-order :new
+  []
+  new-component-order)
+
+(defmethod access-control-component-order :both
+  []
+  both-component-order)
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
   (let [sys {:log (log/create-logger-with-log-level (log-level))
-             :search-index (search-index/create-elastic-search-index)
+             :db (search-index/create-elastic-search-index (es-config/elastic-config))
+             :new-db (search-index/create-elastic-search-index (es-config/new-elastic-config))
              :web (web-server/create-web-server (transmit-config/access-control-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
@@ -109,7 +137,7 @@
   an updated instance of the system."
   [system]
   (info "Access Control system starting")
-  (let [started-system (common-sys/start system component-order)]
+  (let [started-system (common-sys/start system (access-control-component-order))]
     (when (:queue-broker system)
       (event-handler/subscribe-to-events {:system started-system}))
 
@@ -119,7 +147,7 @@
 (def stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
-  (common-sys/stop-fn "access-control" component-order))
+  (common-sys/stop-fn "access-control" (access-control-component-order)))
 
 (defn dev-start
   "Starts the system but performs extra calls to make sure all indexes are created in elastic and
@@ -127,9 +155,16 @@
   [system]
   (let [started-system (start system)]
     (try
-      (access-control-index/create-index-or-update-mappings (:search-index started-system))
+      (let [index-es-engine-key (common-config/index-es-engine-key)]
+        (when (= :both index-es-engine-key)
+          (access-control-index/create-index-or-update-mappings (:db started-system))
+          (access-control-index/create-index-or-update-mappings (:new-db started-system)))
+        (when (= :old index-es-engine-key)
+          (access-control-index/create-index-or-update-mappings (:db started-system)))
+        (when (= :new index-es-engine-key)
+          (access-control-index/create-index-or-update-mappings (:new-db started-system))))
       (bootstrap/bootstrap started-system)
       (catch Exception e
-        (common-sys/stop started-system component-order)
+        (common-sys/stop started-system (access-control-component-order))
         (throw e)))
     started-system))

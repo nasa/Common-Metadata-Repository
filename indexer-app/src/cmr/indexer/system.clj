@@ -35,15 +35,15 @@
    [cmr.transmit.config :as transmit-config]))
 
 (def ^:private old-component-order
-  "Defines the order to start the components."
+  "Defines the order to start the components with old ES."
   [:log :caches :db :scheduler :queue-broker :web :nrepl])
 
 (def ^:private new-component-order
-  "Defines the order to start the components."
+  "Defines the order to start the components with new ES."
   [:log :caches :new-db :scheduler :queue-broker :web :nrepl])
 
 (def ^:private both-component-order
-  "Defines the order to start the components."
+  "Defines the order to start the components with both ES engines."
   [:log :caches :db :new-db :scheduler :queue-broker :web :nrepl])
 
 (def system-holder

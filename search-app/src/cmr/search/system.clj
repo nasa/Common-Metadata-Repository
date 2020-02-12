@@ -7,6 +7,7 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.search :as search]
@@ -20,6 +21,7 @@
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.orbits.orbits-runtime :as orbits-runtime]
    [cmr.search.data.elastic-search-index :as idx]
@@ -83,16 +85,40 @@
    :port (search-public-port)
    :relative-root-url (transmit-config/search-relative-root-url)})
 
-(def ^:private component-order
+(def ^:private old-component-order
   "Defines the order to start the components."
   [:log
    :caches
    collection-renderer/system-key
    orbits-runtime/system-key
-   :search-index
+   :db
    :scheduler
    :web
    :nrepl])
+
+(def ^:private new-component-order
+  "Defines the order to start the components."
+  [:log
+   :caches
+   collection-renderer/system-key
+   orbits-runtime/system-key
+   :new-db
+   :scheduler
+   :web
+   :nrepl])
+
+(defmulti search-component-order
+  "Returns the elastisch connection in the context based on indexer ES engine configuration"
+  (fn []
+    (common-config/search-es-engine-key)))
+
+(defmethod search-component-order :old
+  []
+  old-component-order)
+
+(defmethod search-component-order :new
+  []
+  new-component-order)
 
 (def system-holder
   "Required for jobs"
@@ -107,7 +133,8 @@
              ;; An embedded version of the metadata db app to allow quick retrieval of data
              ;; from oracle.
              :embedded-systems {:metadata-db metadata-db}
-             :search-index (common-idx/create-elastic-search-index)
+             :db (common-idx/create-elastic-search-index (es-config/elastic-config))
+             :new-db (common-idx/create-elastic-search-index (es-config/new-elastic-config))
              :web (web-server/create-web-server (transmit-config/search-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
@@ -156,7 +183,7 @@
   (info "search System starting")
   (let [started-system (-> this
                            (update-in [:embedded-systems :metadata-db] mdb-system/start)
-                           (common-sys/start component-order))]
+                           (common-sys/start (search-component-order)))]
     (info "search System started")
     started-system))
 
@@ -166,7 +193,7 @@
   [this]
   (info "search System shutting down")
   (let [stopped-system (-> this
-                           (common-sys/stop component-order)
+                           (common-sys/stop (search-component-order))
                            (update-in [:embedded-systems :metadata-db] mdb-system/stop))]
     (info "search System stopped")
     stopped-system))

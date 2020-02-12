@@ -15,6 +15,8 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.config :as common-config]
+   [cmr.common-app.services.search.elastic-search-index :as es-index]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.cache :as cache]
    [cmr.common.log :refer (debug info warn error)]
@@ -191,7 +193,12 @@
    (reset ctx true))
   ([ctx bootstrap-data]
    (cache/reset-caches ctx)
-   (index/reset (-> ctx :system :search-index))
+   (if (= :both (common-config/index-es-engine-key))
+     (do
+       (index/reset (-> ctx :system :db))
+       (index/reset (-> ctx :system :new-db)))
+     (index/reset (es-index/context->es-store ctx)))
+
    (when bootstrap-data
      (bootstrap/bootstrap (:system ctx)))))
 
@@ -204,7 +211,11 @@
       {:status 204})
     (POST "/db-migrate" {ctx :request-context}
       (acl/verify-ingest-management-permission ctx :update)
-      (index/create-index-or-update-mappings (-> ctx :system :search-index))
+      (if (= :both (common-config/index-es-engine-key))
+        (do
+          (index/create-index-or-update-mappings (-> ctx :system :db))
+          (index/create-index-or-update-mappings (-> ctx :system :new-db)))
+        (index/create-index-or-update-mappings (es-index/context->es-store ctx)))
       {:status 204})))
 
 ;;; Handler
