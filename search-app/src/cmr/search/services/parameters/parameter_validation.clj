@@ -38,7 +38,7 @@
     cpv/basic-params-config
     {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
                      :include-facets :hierarchical-facets :include-highlights :include-tags
-                     :all-revisions :shapefile :shapefile-format}
+                     :all-revisions :shapefile}
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :doi :native-id :platform :platform-h :processing-level-id
@@ -52,7 +52,7 @@
   [_]
   (cpv/merge-params-config
     cpv/basic-params-config
-    {:single-value #{:echo-compatible :include-facets :shapefile :shapefile-format}
+    {:single-value #{:echo-compatible :include-facets :shapefile}
      :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
                        :producer-granule-id :project :version :native-id :provider :entry-title
                        :platform :sensor :feature-id :crid-id :cycle}
@@ -722,7 +722,7 @@
 (defn shapefile-format-validation
   "Validates that the shapefile format value is one of the accepted formats"
   [concept-type params]
-  (when-let [shapefile-format (:shapefile-format params)]
+  (when-let [shapefile-format (get-in params [:shapefile :content-type])]
     (when (not (contains? valid-shapefile-formats shapefile-format))
       [(format "Shapefile format [%s] is not supported. It must be one of %s"
                shapefile-format

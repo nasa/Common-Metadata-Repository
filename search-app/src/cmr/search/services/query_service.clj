@@ -70,6 +70,8 @@
     cmr.search.services.parameters.converters.pass
     cmr.search.services.parameters.converters.science-keyword
     cmr.search.services.parameters.converters.spatial
+    cmr.search.services.parameters.converters.shapefile
+    cmr.search.services.parameters.converters.geometry
     cmr.search.services.parameters.converters.temporal
     cmr.search.services.parameters.converters.temporal-facet
     cmr.search.services.parameters.converters.two-d-coordinate-system
@@ -204,6 +206,8 @@
                                        (common-search/find-concepts
                                          context concept-type query))
         total-took (+ query-creation-time find-concepts-time)]
+    (println "PARAMS:")
+    (println params)
     (info (format "Found %d %ss in %d ms from client %s in format %s with params %s."
                   (:hits results) (name concept-type) total-took (:client-id context)
                   (rfh/printable-result-format (:result-format query)) (pr-str params)))

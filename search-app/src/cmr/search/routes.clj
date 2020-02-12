@@ -14,7 +14,6 @@
    [cmr.common.api.context :as cmr-context]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.mime-types :as mt]
-   [cmr.search.api.multipart :as mp]
    [cmr.common.services.errors :as svc-errors]
    [cmr.search.api.routes :as api-routes]
    [cmr.search.services.messages.common-messages :as msg]

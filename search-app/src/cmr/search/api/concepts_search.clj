@@ -173,20 +173,12 @@
   "Invokes query service to parse the parameters query, find results, and
   return the response"
   [ctx path-w-extension params headers body]
-  (let [shapefile (:shapefile params)
-        shapefile-format (:content-type shapefile)
-        shapefile (:tempfile shapefile)
-        params (fix-form-params (dissoc params :shapefile))
-        params (if shapefile
-                (merge params {:shapefile shapefile :shapefile-format shapefile-format})
-                params)
-        _ (println params)
-        concept-type (concept-type-path-w-extension->concept-type path-w-extension)
+  (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
         scroll-id-and-search-params (core-api/get-scroll-id-and-search-params-from-cache ctx short-scroll-id)
         scroll-id (:scroll-id scroll-id-and-search-params)
         cached-search-params (:search-params scroll-id-and-search-params)
-        ctx (assoc ctx :query-string body :scroll-id scroll-id :shapefile shapefile :shapefile-format shapefile-format)
+        ctx (assoc ctx :query-string body :scroll-id scroll-id)
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (block-excessive-queries ctx concept-type result-format params)
@@ -289,10 +281,6 @@
     ;; Find concepts - form encoded or JSON
     (POST "/"
       {params :params headers :headers ctx :request-context body :body-copy}
-      ; (let [form-data (or (get-in params [:form-data :content]) "")
-      ;       new-params (parse-params form-data "UTF-8")
-      ;       params (merge (dissoc params :form-data) new-params)]
-      ;   (println params)
       (println params)
       (find-concepts ctx path-w-extension params headers body))))
 
