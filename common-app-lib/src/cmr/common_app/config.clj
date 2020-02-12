@@ -21,3 +21,21 @@
 (defconfig release-version
   "Contains the release version of CMR."
   {:default "dev"})
+
+(defconfig index-es-engine
+  "Name of the ES engine used for indexing, possible values are: old, new."
+  {:default "old"})
+
+(defconfig search-es-engine
+  "Name of the ES engine used for searching, possible values are: old, new."
+  {:default "old"})
+
+(defn index-es-engine-key
+  "Returns the configured CMR_INDEX_ES_ENGINE value in keyword"
+  []
+  (keyword (index-es-engine)))
+
+(defn search-es-engine-key
+  "Returns the configured CMR_SEARCH_ES_ENGINE value in keyword"
+  []
+  (keyword (search-es-engine)))

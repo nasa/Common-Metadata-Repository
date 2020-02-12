@@ -4,6 +4,7 @@
    [clj-http.client :as client]
    [clojurewerkz.elastisch.rest :as esr]
    [clojurewerkz.elastisch.rest.index :as esi]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [clojurewerkz.elastisch.rest.document :as doc]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug error info warn]]
@@ -28,7 +29,7 @@
   "Create elastic index"
   [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
-    (when-not (esi/exists? conn index-name)
+    (when-not (esi-helper/exists? conn index-name)
       (try
         (esi/create conn index-name :settings settings :mappings mapping)
         (catch clojure.lang.ExceptionInfo e
@@ -42,7 +43,7 @@
   [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
     (try
-      (if (esi/exists? conn index-name)
+      (if (esi-helper/exists? conn index-name)
         ;; The index exists. Update the mappings.
         (doseq [[type-name type-mapping] mapping]
           (let [response (esi/update-mapping
@@ -63,7 +64,7 @@
 (defn index-set-exists?
   "Check index-set existence in elastic."
   [{:keys [conn]} index-name idx-mapping-type index-set-id]
-  (when (esi/exists? conn index-name)
+  (when (esi-helper/exists? conn index-name)
     ;; result will be nil if doc doeesn't exist
     (doc/get conn index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")))
 
@@ -73,7 +74,7 @@
   (let [conn (get-in context [:system :db :conn])
         {:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
-    (when (esi/exists? conn index-name)
+    (when (esi-helper/exists? conn index-name)
       (let [result (doc/get conn index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")
             index-set-json-str (get-in result [:fields :index-set-request])]
         (when result
@@ -82,21 +83,21 @@
 (defn get-index-set-ids
   "Fetch ids of all index-sets in elastic."
   [{:keys [conn]} index-name idx-mapping-type]
-  (when (esi/exists? conn index-name)
+  (when (esi-helper/exists? conn index-name)
     (let [result (doc/search conn index-name idx-mapping-type "fields" "index-set-id")]
       (map #(-> % :fields :index-set-id) (get-in result [:hits :hits])))))
 
 (defn get-index-sets
   "Fetch all index-sets in elastic."
   [{:keys [conn]} index-name idx-mapping-type]
-  (when (esi/exists? conn index-name)
+  (when (esi-helper/exists? conn index-name)
     (let [result (doc/search conn index-name idx-mapping-type "fields" "index-set-request")]
       (map (comp #(decode-field (first % )) :index-set-request :fields) (get-in result [:hits :hits])))))
 
 (defn delete-index
   "Delete given elastic index"
   [{:keys [conn config]} index-name]
-  (when (esi/exists? conn index-name)
+  (when (esi-helper/exists? conn index-name)
     (let [admin-token (:admin-token config)
           response (client/delete (esr/index-url conn index-name)
                                   {:headers {"Authorization" admin-token

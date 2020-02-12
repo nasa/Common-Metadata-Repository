@@ -15,6 +15,7 @@
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as e]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
    [cmr.search.services.query-walkers.provider-id-extractor :as pex]
    [cmr.transmit.indexer :as indexer])
@@ -175,16 +176,12 @@
                  "1_services")
    :type-name "service"})
 
-(defn context->conn
-  [context]
-  (get-in context [:system :search-index :conn]))
-
 (defn get-collection-permitted-groups
   "NOTE: Use for debugging only. Gets collections along with their currently permitted groups. This
   won't work if more than 10,000 collections exist in the CMR."
   [context]
   (let [index-info (common-esi/concept-type->index-info context :collection nil)
-        results (esd/search (context->conn context)
+        results (es-helper/search (common-esi/context->search-conn context)
                             (:index-name index-info)
                             [(:type-name index-info)]
                             :query (q/match-all)

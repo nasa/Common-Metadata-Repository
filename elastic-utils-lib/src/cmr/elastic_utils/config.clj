@@ -12,6 +12,14 @@
   "Port elastic is listening on."
   {:default 9210 :type Long})
 
+(defconfig new-elastic-host
+  "Elastic host or VIP for new ES."
+  {:default "localhost"})
+
+(defconfig new-elastic-port
+  "Port for new ES is listening on."
+  {:default 9209 :type Long})
+
 (defconfig elastic-admin-token
     "Token used for basic auth authentication with elastic."
     {:default (str "Basic " (b64/encode (.getBytes "echo-elasticsearch")))})
@@ -41,6 +49,17 @@
   []
   {:host (elastic-host)
    :port (elastic-port)
+   ;; This can be set to specify an Apached HTTP retry handler function to use. The arguments of the
+   ;; function is that as specified in clj-http's documentation. It returns true or false of whether
+   ;; to retry again
+   :retry-handler nil
+   :admin-token (elastic-admin-token)})
+
+(defn new-elastic-config
+  "Returns the elastic config for new ES as a map"
+  []
+  {:host (new-elastic-host)
+   :port (new-elastic-port)
    ;; This can be set to specify an Apached HTTP retry handler function to use. The arguments of the
    ;; function is that as specified in clj-http's documentation. It returns true or false of whether
    ;; to retry again

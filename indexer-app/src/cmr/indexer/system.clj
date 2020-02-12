@@ -7,6 +7,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.api.web-server :as web]
@@ -33,9 +34,17 @@
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.transmit.config :as transmit-config]))
 
-(def ^:private component-order
+(def ^:private old-component-order
   "Defines the order to start the components."
   [:log :caches :db :scheduler :queue-broker :web :nrepl])
+
+(def ^:private new-component-order
+  "Defines the order to start the components."
+  [:log :caches :new-db :scheduler :queue-broker :web :nrepl])
+
+(def ^:private both-component-order
+  "Defines the order to start the components."
+  [:log :caches :db :new-db :scheduler :queue-broker :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -55,11 +64,29 @@
   "App logging level"
   {:default "info"})
 
+(defmulti indexer-component-order
+  "Returns the elastisch connection in the context based on indexer ES engine configuration"
+  (fn []
+    (common-config/index-es-engine-key)))
+
+(defmethod indexer-component-order :old
+  []
+  old-component-order)
+
+(defmethod indexer-component-order :new
+  []
+  new-component-order)
+
+(defmethod indexer-component-order :both
+  []
+  both-component-order)
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
   (let [sys {:log (log/create-logger-with-log-level (log-level))
              :db (es/create-elasticsearch-store (es-config/elastic-config))
+             :new-db (es/create-elasticsearch-store (es-config/new-elastic-config))
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)
@@ -88,7 +115,7 @@
   and start it running. Returns an updated instance of the system."
   [system]
   (info "Indexer system starting")
-  (let [started-system (common-sys/start system component-order)]
+  (let [started-system (common-sys/start system (indexer-component-order))]
 
     (when (:queue-broker system)
       (event-handler/subscribe-to-events {:system started-system}))
@@ -107,11 +134,11 @@
       (when (es/requires-update? context)
         (es/update-indexes context {}))
       (catch Exception e
-        (common-sys/stop started-system component-order)
+        (common-sys/stop started-system (indexer-component-order))
         (throw e)))
     started-system))
 
 (def stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
-  (common-sys/stop-fn "indexer" component-order))
+  (common-sys/stop-fn "indexer" (indexer-component-order)))

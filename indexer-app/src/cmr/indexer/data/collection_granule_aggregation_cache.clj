@@ -9,7 +9,6 @@
    [clj-time.format :as f]
    [clojurewerkz.elastisch.query :as esq]
    [clojurewerkz.elastisch.rest.document :as esd]
-   [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.common-app.services.search.datetime-helper :as datetime-helper]
    [cmr.common.cache :as c]
    [cmr.common.cache.fallback-cache :as fallback-cache]
@@ -20,9 +19,11 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.services.index-service :as index-service]
    [cmr.redis-utils.redis-cache :as redis-cache]
+   [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.transmit.metadata-db :as meta-db]))
 
 (def coll-gran-aggregate-cache-key
@@ -102,7 +103,7 @@
   "Searches across all the granule indexes to aggregate by collection. Returns a map of collection
    concept id to collection information. The collection will only be in the map if it has granules."
   [context]
-  (-> (esd/search (es/context->conn context)
+  (-> (es-helper/search (es/context->conn context)
                   "1_*" ;; Searching all indexes
                   ["granule"] ;; With the granule type.
                   {:query (esq/match-all)
@@ -117,7 +118,7 @@
   [context granules-updated-in-last-n]
   (let [revision-date (t/minus (tk/now) (t/seconds granules-updated-in-last-n))
         revision-date-str (datetime-helper/utc-time->elastic-time revision-date)]
-   (-> (esd/search (es/context->conn context)
+   (-> (es-helper/search (es/context->conn context)
                    "1_*" ;; Searching all indexes
                    ["granule"] ;; With the granule type.
                    {:query {:filtered {:query (esq/match-all)

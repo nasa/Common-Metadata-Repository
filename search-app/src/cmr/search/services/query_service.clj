@@ -29,6 +29,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.results-handlers.provider-holdings :as ph]
@@ -490,7 +491,7 @@
         params (dissoc (common-params/sanitize-params params) :sort-key)
         _ (pv/validate-deleted-granules-params params)
         query (make-deleted-granules-query params)
-        results (esd/search (common-idx/context->conn context)
+        results (es-helper/search (common-idx/context->search-conn context)
                             deleted-granule-index-name
                             deleted-granule-type-name
                             query)

@@ -7,6 +7,7 @@
    [clojurewerkz.elastisch.rest.bulk :as bulk]
    [clojurewerkz.elastisch.rest.document :as doc]
    [cmr.common.concepts :as cs]
+   [cmr.common-app.config :as common-config]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
@@ -26,10 +27,26 @@
   "The maximum number of operations to batch in a single request"
   100)
 
-(defn context->conn
-  "Returns the elastisch connection in the context"
+(defmulti context->conn
+  "Returns the elastisch connection in the context based on search engine type or
+   indexer ES engine configuration. The search engine is set when bootstrap wants to just
+   search on a given ES index based on its configuration."
+  (fn [context]
+    (or (:search-engine context)
+        (common-config/index-es-engine-key))))
+
+(defmethod context->conn :old
   [context]
   (get-in context [:system :db :conn]))
+
+(defmethod context->conn :new
+  [context]
+  (get-in context [:system :new-db :conn]))
+
+(defmethod context->conn :both
+  [context]
+  {:old (get-in context [:system :db :conn])
+   :new (get-in context [:system :new-db :conn])})
 
 (defmulti get-elastic-version
   "Get the proper elastic document version for the concept based on type.

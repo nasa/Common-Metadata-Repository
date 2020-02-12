@@ -17,6 +17,7 @@
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.connect :as es]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.transmit.connection :as transmit-conn])
   (:import
    clojure.lang.ExceptionInfo
@@ -41,7 +42,7 @@
   [context]
   (get-in context [:system :search-index]))
 
-(defn context->conn
+(defn context->search-conn
   "Returns the connection given a context. This assumes that the search index is always located in a
    system using the :search-index key."
   [context]
@@ -98,7 +99,8 @@
   "Performs a scroll search, handling errors where possible."
   [context scroll-id]
   (try
-    (esd/scroll (context->conn context) scroll-id :scroll (es-config/elastic-scroll-timeout))
+    (es-helper/scroll
+     (context->search-conn context) scroll-id {:scroll (es-config/elastic-scroll-timeout)})
     (catch ExceptionInfo e
            (handle-es-exception e scroll-id))))
 
@@ -109,8 +111,8 @@
     (if (> max-retries 0)
       (if-let [scroll-id (:scroll-id query)]
         (scroll-search context scroll-id)
-        (esd/search
-         (context->conn context) (:index-name index-info) [(:type-name index-info)] query))
+        (es-helper/search
+         (context->search-conn context) (:index-name index-info) [(:type-name index-info)] query))
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
     (catch UnknownHostException e
       (info (format
@@ -227,7 +229,7 @@
   "Make changes written to Elasticsearch available for search. See
    https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-refresh.html"
   [context]
-  (esri/refresh (context->conn context)))
+  (esri/refresh (context->search-conn context)))
 
 (defrecord ElasticSearchIndex
   [
