@@ -123,7 +123,7 @@
        {:apply
         "http://localhost:3003/collections.json?page_size=0&include_facets=v2&processing_level_id_h%5B%5D=PL1"},
        :has_children false}]}
-    {:title nil,
+    {:title "Granule Data Format",
      :type "group",
      :applied false,
      :has_children true,
@@ -168,7 +168,7 @@
            :type "group",
            :has_children true,
            :children
-           [{:title nil,
+           [{:title "Granule Data Format",
              :type "group",
              :applied false,
              :has_children true,
@@ -950,7 +950,7 @@
                {:apply
                 "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&page_size=0&include_facets=v2&processing_level_id_h%5B%5D=PL1"},
                :has_children false}]}
-            {:title nil,
+            {:title "Granule Data Format",
              :type "group",
              :applied false,
              :has_children true,
@@ -998,7 +998,7 @@
            :type "group",
            :has_children true,
            :children
-           [{:title nil,
+           [{:title "Granule Data Format",
              :type "group",
              :applied false,
              :has_children true,
@@ -1191,7 +1191,7 @@
              :type "group",
              :has_children true,
              :children
-             [{:title nil,
+             [{:title "Granule Data Format",
                :type "group",
                :applied false,
                :has_children true,
