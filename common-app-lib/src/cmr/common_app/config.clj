@@ -23,7 +23,7 @@
   {:default "dev"})
 
 (defconfig index-es-engine
-  "Name of the ES engine used for indexing, possible values are: old, new."
+  "Name of the ES engine used for indexing, possible values are: old, new, both."
   {:default "old"})
 
 (defconfig search-es-engine

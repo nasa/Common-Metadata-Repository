@@ -3,7 +3,6 @@
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
    [clojurewerkz.elastisch.rest :as esr]
-   [clojurewerkz.elastisch.rest.index :as esi]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
    [clojurewerkz.elastisch.rest.document :as doc]
    [cmr.common.lifecycle :as lifecycle]
@@ -31,7 +30,7 @@
   (let [{:keys [index-name settings mapping]} idx-w-config]
     (when-not (esi-helper/exists? conn index-name)
       (try
-        (esi/create conn index-name :settings settings :mappings mapping)
+        (esi-helper/create conn index-name {:settings settings :mappings mapping})
         (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
                 error (:error body)]
@@ -46,15 +45,15 @@
       (if (esi-helper/exists? conn index-name)
         ;; The index exists. Update the mappings.
         (doseq [[type-name type-mapping] mapping]
-          (let [response (esi/update-mapping
-                           conn index-name (name type-name) :mapping type-mapping :ignore_conflicts false)]
+          (let [response (esi-helper/update-mapping
+                           conn index-name (name type-name) {:mapping type-mapping :ignore_conflicts false})]
             (when-not (= {:acknowledged true} response)
               (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
                                            (pr-str response))))))
         ;; The index does not exist. Create it.
         (do
           (info "Index" index-name "does not exist so it will be created")
-          (esi/create conn index-name :settings settings :mappings mapping)))
+          (esi-helper/create conn index-name {:settings settings :mappings mapping})))
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
               error (:error body)]
@@ -113,7 +112,7 @@
   (try
     (let [conn (get-in context [:system :db :conn])
           result (doc/put conn es-index es-mapping-type doc-id es-doc)
-          _ (esi/refresh conn es-index)
+          _ (esi-helper/refresh conn es-index)
           {:keys [error status]} result]
       (when (:error result)
         ;; service layer to rollback index-set create  progress on error

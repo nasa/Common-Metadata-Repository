@@ -6,12 +6,11 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [clojurewerkz.elastisch.rest :as esr]
-   [clojurewerkz.elastisch.rest.document :as doc]
-   [clojurewerkz.elastisch.rest.index :as esi]
    [cmr.common.cache :as cache]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.test.test-util :as tu]
    [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.index-set :as idx-set]))
 
@@ -114,11 +113,12 @@
   "Fixture that creates an index and drops it."
   [f]
   (let [conn (get-in @context [:system :db :conn])]
-    (esi/create conn "tests" :settings idx-set/collection-setting-v2 :mappings idx-set/collection-mapping)
+    (esi-helper/create
+     conn "tests" {:settings idx-set/collection-setting-v2 :mappings idx-set/collection-mapping})
     (try
       (f)
       (finally
-        (esi/delete conn "tests")))))
+        (esi-helper/delete conn "tests")))))
 
 ;; Run once for the whole test suite
 (use-fixtures
