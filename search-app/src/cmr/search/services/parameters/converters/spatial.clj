@@ -12,8 +12,8 @@
   (let [shape (spatial-codec/url-decode type value)]
     (when-let [errors (:errors shape)]
       (errors/internal-error!
-        (format "Shape format was invalid [%s]. Issues should have be handled in validation."
-                (str/join ", " errors))))
+       (format "Shape format was invalid [%s]. Issues should have been handled in validation."
+               (str/join ", " errors))))
     (qm/->SpatialCondition shape)))
 
 (defn url-value->spatial-conditions
