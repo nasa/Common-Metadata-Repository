@@ -294,23 +294,23 @@
 
     (testing "Search by ESRI shapefile"
       (are3 [shapefile items]
-         (let [found (search/find-refs-with-multi-part-form-post
-                        :collection
-                        [{:name "shapefile"
-                          :content (io/file shapefile)
-                          :mime-type "application/shapefile+zip"}])]
-            (is (d/refs-match? items found)))
+            (let [found (search/find-refs-with-multi-part-form-post
+                         :collection
+                         [{:name "shapefile"
+                           :content (io/file shapefile)
+                           :mime-type "application/shapefile+zip"}])]
+              (d/assert-refs-match items found))
 
-        "Single Polygon"
-        "james_test_box.zip" [whole-world very-wide-cart esri-point washington-dc richmond]
+            "Single Polygon box"
+            "box.zip" [whole-world very-wide-cart washington-dc richmond]
 
-        "Single Polygon box"
-        "box.zip" [whole-world very-wide-cart washington-dc richmond]
-        
-        "Single Polygon with holes"
-        "polygon_with_hole.zip" [whole-world very-wide-cart richmond]))))
+            "One feature, single Polygon with holes"
+            "polygon_with_hole.zip" [whole-world very-wide-cart richmond]
 
-   ;  (testing "polygon searches"
+            "Multiple features, single Polygon, with holes"
+            "test_box_with_holes.zip" [whole-world very-wide-cart richmond]))))
+
+            ;  (testing "polygon searches"
    ;    (are [shapefile items]
    ;         (let [found (search/find-refs-with-multi-part-form-post
    ;                      :collection

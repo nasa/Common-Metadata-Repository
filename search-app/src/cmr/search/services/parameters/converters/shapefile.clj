@@ -19,7 +19,11 @@
    (org.geotools.data DataStoreFinder FileDataStoreFinder Query)
    (org.geotools.data.simple SimpleFeatureSource)
    (org.geotools.data.geojson GeoJSONDataStore)
+   (org.geotools.geometry.jts JTS)
+   (org.geotools.referencing CRS)
    (org.geotools.util URLs)))
+
+(def EPSG-4326-CRS (CRS/decode "EPSG:4326" true))
 
 (defn- unzip-file
   "Unzip a file (of type File) into a temporary directory and return the directory path as a File"
@@ -77,17 +81,35 @@
           :let [sub-geometry (.getGeometryN geometry index)]]
       (geo/geometry->condition sub-geometry))))
 
+(defn transform-to-epsg-4326
+  "Transform the geometry to WGS84 (EPSG-4326) CRS if is not already"
+  [geometry src-crs]
+  ;; if the source CRS is defined and not already EPSG-4326 then transform the geometry to WGS84
+  (if (and src-crs
+           (not (= (.getName src-crs) (.getName EPSG-4326-CRS))))
+    (let [_ (println (.getName src-crs))
+          _ (println (CRS/getAxisOrder src-crs))
+          _ (println (.getName EPSG-4326-CRS))
+          _ (println (CRS/getAxisOrder EPSG-4326-CRS))
+          transform (CRS/findMathTransform src-crs EPSG-4326-CRS false)
+          new-geometry (JTS/transform geometry transform)
+          _ (println new-geometry)]
+      new-geometry)
+    geometry))
+
 (defn feature->conditions
   "Process the contents of a Feature to return query conditions"
   [feature]
-  (let [properties (.getProperties feature)
+  (let [crs (when (.getDefaultGeometryProperty feature)
+              (-> feature .getDefaultGeometryProperty .getDescriptor .getCoordinateReferenceSystem))
+        properties (.getProperties feature)
         _ (println feature)
         _ (println (format "Found [%d] properties" (count properties)))
         _ (doseq [p properties] (println (.getName p)))
         _ (doseq [p properties] (println (.getValue p)))
         geometry-props (filter (fn [p] (geo/geometry? (.getValue p))) properties) ;; TODO need to handle Associations here
         _ (println (format "Found [%d] geometries" (count geometry-props)))
-        geometries (map #(.getValue  %) geometry-props)]
+        geometries (map #(-> % .getValue (transform-to-epsg-4326 crs)) geometry-props)]
     (flatten (map (fn [g] (geometry->conditions g)) geometries))))
 
 ; (defn feature->conditions-bak
@@ -118,12 +140,16 @@
         data-store (FileDataStoreFinder/getDataStore shp-file)
         feature-source (.getFeatureSource data-store)
         collection (.getFeatures feature-source)
+        _ (println (format "NUMBER OF FEATURES: %d" (.size collection)))
         iterator (.features collection)]
     (try
       (loop [conditions []]
         (if (.hasNext iterator)
-          (let [feature (.next iterator)]
-            (recur (conj conditions (gc/or-conds (feature->conditions feature)))))
+          (let [feature (.next iterator)
+                feature-conditions (feature->conditions feature)]
+            (if (> (count feature-conditions) 0)
+              (recur (conj conditions (gc/or-conds feature-conditions)))
+              (recur conditions)))
           conditions))
       (finally (do
                  (.close iterator)
