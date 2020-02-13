@@ -16,7 +16,7 @@
    :project-h "Projects"
    :platform-h "Platforms"
    :instrument-h "Instruments"
-   :processing-level-id-h "Processing levels"
+   :processing-level-id-h "Processing Levels"
    :science-keywords-h "Keywords"
    :variables-h "Measurements"
    :temporal "Temporal"
