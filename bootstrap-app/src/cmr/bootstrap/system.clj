@@ -12,6 +12,7 @@
    [cmr.bootstrap.data.virtual-products :as vp]
    [cmr.bootstrap.services.dispatch.core :as dispatch]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.api.web-server :as web]
@@ -47,6 +48,19 @@
   "Required for jobs"
   (atom nil))
 
+(defn- add-es-retry-handler
+  "Add ES retry handler to indexer ES engine"
+  [indexer]
+  (if (= :both (common-config/index-es-engine-key))
+    (-> indexer
+        (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler)
+        (assoc-in [:new-db :config :retry-handler] bi/elastic-retry-handler))
+    (if (= :new (common-config/index-es-engine-key))
+      (-> indexer
+          (assoc-in [:new-db :config :retry-handler] bi/elastic-retry-handler))
+      (-> indexer
+          (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler)))))
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
@@ -60,7 +74,7 @@
                     (assoc-in [:caches g/parent-collection-cache-key]
                               (mem-cache/create-in-memory-cache :lru {} {:threshold 2000}))
                     ;; Specify an Elasticsearch http retry handler
-                    (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
+                    add-es-retry-handler)
         queue-broker (queue-broker/create-queue-broker (bootstrap-config/queue-config))
         sys {:log (log/create-logger-with-log-level (log-level))
              :embedded-systems {:metadata-db metadata-db
