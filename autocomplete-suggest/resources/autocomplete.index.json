@@ -1,6 +1,11 @@
 {
   "mappings": {
     "properties": {
+      "concept-id": {
+        "type": "string",
+        "index": "not_analyzed",
+        "store": true
+      },
       "type": {
         "type": "text"
       },

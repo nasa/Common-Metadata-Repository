@@ -1,12 +1,10 @@
 const { Client } = require('@elastic/elasticsearch');
 
-const es1Client = new Client({
-  node: 'http://localhost:9201',
+const esClient = new Client({
+  node: 'http://localhost:9210',
 });
 
-const es7Client = new Client({
-  node: 'http://localhost:9200',
-});
+const AC_INDEX_NAME = 'autocomplete';
 
 const collectionDataType = require('./resources/collection_data_type_list');
 const granuleDataFormat = require('./resources/granule_data_format_list');
@@ -16,7 +14,7 @@ const project = require('./resources/project_list');
 const provider = require('./resources/provider_list');
 const spatialKeyword = require('./resources/spatial_keyword_list');
 
-const data = {
+const AC_DATA = {
   collectionDataType,
   granuleDataFormat,
   instrument,
@@ -26,80 +24,64 @@ const data = {
   spatialKeyword,
 };
 
-const es1indexMapping = require('../resources/autocomplete.index.1.6.2');
-const es7indexMapping = require('../resources/autocomplete.index');
+const AC_INDEX_MAPPING = require('../resources/autocomplete.index.1.6.2');
 
-async function deleteIndexes() {
+async function deleteIndex(index) {
   try {
-    await es1Client.indices.delete({ index: 'autocomplete' });
+    await esClient
+      .indices
+      .delete({ index });
   } catch (err) {
-    console.error(err);
-  }
 
-  try {
-    await es7Client.indices.delete({ index: 'autocomplete' });
-  } catch (err) {
-    console.error(err);
   }
 }
 
-async function createIndexes() {
+async function createIndex(mapping, index) {
   try {
-    await es1Client.indices.create(
-      {
-        index: 'autocomplete',
-        body: es1indexMapping,
-      },
-    );
+    await esClient
+      .indices
+      .create(
+        {
+          index,
+          body: mapping,
+        },
+      );
   } catch (err) {
-    console.error(err);
-  }
 
-  try {
-    await es7Client.indices.create(
-      {
-        index: 'autocomplete',
-        body: es7indexMapping,
-      },
-    );
-  } catch (err) {
-    console.error(err);
   }
 }
 
 async function inject(indexes) {
-  const es1body = Object.keys(indexes)
+  const body = Object.keys(indexes)
     .flatMap((type) => indexes[type].map((value) => ({ type, value })))
-    .flatMap((suggestion) => [{ index: { _index: 'autocomplete', _type: 'suggestion' } }, suggestion]);
-
-  const es7body = Object.keys(indexes)
-    .flatMap((type) => indexes[type].map((value) => ({ type, value })))
-    .flatMap((suggestion) => [{ index: { _index: 'autocomplete' } }, suggestion]);
+    .flatMap((suggestion) => [{ index: { _index: AC_INDEX_NAME, _type: 'suggestion' } }, suggestion]);
 
   try {
-    await es1Client.bulk({ refresh: true, body: es1body });
+    await esClient.bulk({
+      refresh: true,
+      body,
+    });
   } catch (err) {
-    console.error(err);
-  }
 
-  try {
-    await es7Client.bulk({ refresh: true, body: es7body });
-  } catch (err) {
-    console.error(err);
   }
 }
 
 
 (async () => {
+  /* eslint-disable no-console */
+  console.time('refresh autocomplete');
   console.time('deleted in :');
-  await deleteIndexes();
+  await deleteIndex(AC_INDEX_NAME);
   console.timeEnd('deleted in :');
 
   console.time('created in :');
-  await createIndexes();
+  await createIndex(AC_INDEX_MAPPING, AC_INDEX_NAME);
   console.timeEnd('created in :');
 
   console.time('populated in :');
-  await inject(data);
+  await inject(AC_DATA);
   console.timeEnd('populated in :');
+  console.log('===============================');
+  console.timeEnd('refresh autocomplete');
+  /* eslint-enable no-console */
 })();
