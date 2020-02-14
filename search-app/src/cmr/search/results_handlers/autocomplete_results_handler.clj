@@ -10,7 +10,6 @@
   (let [{[type]  :type
          [value] :value}(:fields elastic-result)
         score (:_score elastic-result)]
-    (println elastic-result)
     {:score score
      :type  type
      :value value}))
