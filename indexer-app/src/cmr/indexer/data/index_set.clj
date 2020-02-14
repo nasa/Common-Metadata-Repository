@@ -688,13 +688,13 @@
    :description (m/not-indexed (m/stored m/string-field-mapping))
    :originator-id.lowercase (m/stored m/string-field-mapping)})
 
-(defmapping autocomplete-mapping :autocomplete
+(defmapping autocomplete-mapping :suggestion
   "Defines the elasticsearch mapping for storing autocomplete suggestions.
    These are the fields that will be stored in an Elasticsearch document."
   {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
-   :type (-> m/string-field-mapping m/string-field-mapping)
-   :value {:type "string" :analyzer "autocomplete_analyzer"}})
+   :type {:type "string" :index "analyzed" :store "yes"}
+   :value {:type "string" :analyzer "autocomplete_analyzer" :index "analyzed" :store "yes"}})
 
 (defmapping variable-mapping :variable
   "Defines the elasticsearch mapping for storing variables. These are the

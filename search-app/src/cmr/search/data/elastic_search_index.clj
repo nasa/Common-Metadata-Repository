@@ -158,7 +158,7 @@
 
 (defmethod common-esi/concept-type->index-info :autocomplete
   [context _ query]
-  {:index-name "autocomplete"
+  {:index-name "1_autocomplete"
    :type-name "suggestion"})
 
 (defmethod common-esi/concept-type->index-info :tag

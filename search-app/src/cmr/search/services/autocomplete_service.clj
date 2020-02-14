@@ -13,7 +13,6 @@
         query     (qm/query
                    {:concept-type  :autocomplete
                     :condition     condition
-                    :result-fields [:type :value]})]
-    (qe/execute-query context query)))
-
-;
+                    :result-fields [:type :value]})
+        results   (qe/execute-query context query)]
+    results))
