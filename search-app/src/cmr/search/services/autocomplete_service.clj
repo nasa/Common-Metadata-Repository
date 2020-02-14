@@ -9,11 +9,11 @@
 (defn autocomplete
   "Execute elasticsearch query to get autocomplete suggestions"
   [context term]
-  (let [condition qm/match-all
+  (let [condition (qm/text-condition :value term)
         query     (qm/query
                    {:concept-type  :autocomplete
                     :condition     condition
                     :result-fields [:type :value]})]
     (qe/execute-query context query)))
 
-;(qm/string-condition :value term)
+;
