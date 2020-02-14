@@ -156,6 +156,11 @@
                  (collections-index-alias))
    :type-name "collection"})
 
+(defmethod common-esi/concept-type->index-info :autocomplete
+  [context _ query]
+  {:index-name "autocomplete"
+   :type-name "suggestion"})
+
 (defmethod common-esi/concept-type->index-info :tag
   [context _ query]
   {:index-name "1_tags"
