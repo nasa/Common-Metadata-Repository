@@ -1609,6 +1609,8 @@ Currently the only supported shapefile format is ESRI, and all the sub-files (*.
 
   curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
+Internally a WGS 84 Coordinate Reference System (CRS) is used. The system will attempt to tranform shapefile geometry that uses a differnt CRS, but this is not guaranteed to work and the request will be rejected if a suitable tranformation is not found.
+
 **NOTE:** This is an experimental feature and may not be enabled in all environments.
 
 #### <a name="c-additional-attribute"></a> Find collections by additional attribute
