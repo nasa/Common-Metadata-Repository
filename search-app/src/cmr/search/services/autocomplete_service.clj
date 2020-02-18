@@ -15,4 +15,6 @@
                     :condition     condition
                     :result-fields [:type :value]})
         results   (qe/execute-query context query)]
-    results))
+    (let [hits  (:hits results)
+          items (:items results)]
+      {:hits hits :items items})))
