@@ -1,6 +1,7 @@
 (ns cmr.search.api.autocomplete
   "Defines the API for autocomplete-suggest in the CMR."
   (:require
+    [clojure.string :as str]
     [cmr.common.log :refer (debug info warn error)]
     [cmr.common.services.errors :as svc-errors]
     [cmr.search.services.autocomplete-service :as ac]
@@ -15,9 +16,12 @@
 (defn- get-autocomplete-suggestions
   "Invokes Elasticsearch for autocomplete query result"
   [ctx params]
-  (let [term (:q params)]
+  (let [term      (:q params)
+        raw-types (:types params)]
     (if term
-      (let [results (ac/autocomplete ctx term)]
+      (let [types   (if raw-types
+                      (filter #(not (empty? %)) (map str/trim (str/split raw-types #","))))
+            results (ac/autocomplete ctx term types)]
         {:status  200
          :headers {common-routes/CONTENT_TYPE_HEADER (str (mt/format->mime-type :json) "; charset=utf-8")
                    common-routes/CORS_ORIGIN_HEADER  "*"}
