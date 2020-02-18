@@ -20,7 +20,8 @@
    "project" [[:Projects :ShortName]]
    "processing_level" [[:ProcessingLevel :Id]]
    "organization" [[:DataCenters :ShortName]]
-   "tiling_system_name" [[:TilingIdentificationSystems :TilingIdentificationSystemName]]})
+   "tiling_system_name" [[:TilingIdentificationSystems :TilingIdentificationSystemName]]
+   "granule_data_format" [[:ArchiveAndDistributionInformation :FileDistributionInformation :Format]]})
 
 (defmulti to-human
   "Map of humanizer JSON type values to functions which take a field value and

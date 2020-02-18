@@ -1,5 +1,125 @@
 [
     {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "NetCDF",
+        "reportable": true,
+        "source_value": "NetCDF Classic",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "NetCDF",
+        "reportable": true,
+        "source_value": "NetCDF-3",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "NetCDF",
+        "reportable": true,
+        "source_value": "NetCDF-4",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "NetCDF",
+        "reportable": true,
+        "source_value": "NetCDF-CF",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "NetCDF",
+        "reportable": true,
+        "source_value": "NetCDF-CF/Radial",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": ".csv",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": ".CSV",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "ASCII-csv",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "Comma Delimited XYZ",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "Comma Separated Values",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "Comma-Separated Values (.csv)",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "Comma-separated values (ASCII)",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "CSV",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "CSV (ASCII)",
+        "type": "alias"
+    },
+    {
+        "field": "granule_data_format",
+        "order": 0,
+        "replacement_value": "CSV",
+        "reportable": true,
+        "source_value": "CSV (Comma delimited text file)",
+        "type": "alias"
+    },
+    {
         "field": "instrument",
         "order": -100,
         "type": "trim_whitespace"
@@ -22,6 +142,24 @@
         "field": "instrument",
         "order": 0,
         "source_value": "NOT APPLICABLE",
+        "type": "ignore"
+    },
+    {
+        "field": "instrument",
+        "order": 0,
+        "source_value": "Not Applicable",
+        "type": "ignore"
+    },
+    {
+        "field": "instrument",
+        "order": 0,
+        "source_value": "NOT PROVIDED",
+        "type": "ignore"
+    },
+    {
+        "field": "instrument",
+        "order": 0,
+        "source_value": "Not Provided",
         "type": "ignore"
     },
     {
@@ -53,6 +191,27 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Accelerometer",
+        "reportable": true,
+        "source_value": "ACCELEROMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Accelerometer",
+        "reportable": true,
+        "source_value": "Accelerometers",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Acoustic Sounders",
+        "reportable": true,
+        "source_value": "ACOUSTIC SOUNDERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Aerosol Collector",
         "reportable": true,
         "source_value": "AEROSOL COLLECTOR",
@@ -60,7 +219,28 @@
     },
     {
         "field": "instrument",
-        "replacement_value": "Aethaelometer",
+        "replacement_value": "Aerosol Collector",
+        "reportable": true,
+        "source_value": "AEROSOL COLLECTORS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Aerosol/Cloud Particle Sizer",
+        "reportable": true,
+        "source_value": "AEROSOL/CLOUD PARTICALE SIZER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Aerosol/Cloud Particle Sizer",
+        "reportable": true,
+        "source_value": "AEROSOL/CLOUD PARTICLE SIZER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "AETHALOMETER",
         "reportable": true,
         "source_value": "AETHAELOMETER",
         "type": "alias"
@@ -76,7 +256,35 @@
         "field": "instrument",
         "replacement_value": "AltiKa Altimeter",
         "reportable": true,
+        "source_value": "ALTIKA Altimeter",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "AltiKa Altimeter",
+        "reportable": true,
         "source_value": "AltiKa",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Altimeter",
+        "reportable": true,
+        "source_value": "ALTIMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Altimeter",
+        "reportable": true,
+        "source_value": "ALTIMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Altimeter",
+        "reportable": true,
+        "source_value": "Altimeters",
         "type": "alias"
     },
     {
@@ -95,9 +303,44 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Anemometer",
+        "reportable": true,
+        "source_value": "ANEMOMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Aneroid Pressure Sensor",
         "reportable": true,
         "source_value": "ANEROID BAROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "APS (Aerodynamic Particle Sizer)",
+        "reportable": true,
+        "source_value": "APS - AERODYNAMIC PARTICLE SIZER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "APS (Aerodynamic Particle Sizer)",
+        "reportable": true,
+        "source_value": "APS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Aquarius_Radiometer",
+        "reportable": true,
+        "source_value": "AQUARIUS_RADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Aquarius_Scatterometer",
+        "reportable": true,
+        "source_value": "AQUARIUS_SCATTEROMETER",
         "type": "alias"
     },
     {
@@ -109,9 +352,51 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Atomic Absorption Spectrometer",
+        "reportable": true,
+        "source_value": "AA (ATOMIC ABSORPTION) SPECTROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Barometer",
         "reportable": true,
         "source_value": "BAROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Barometer",
+        "reportable": true,
+        "source_value": "BAROMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "C-SAR",
+        "reportable": true,
+        "source_value": "SENTINEL-1 C-SAR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Camera",
+        "reportable": true,
+        "source_value": "CAMERA",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Camera",
+        "reportable": true,
+        "source_value": "CAMERAS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Camera",
+        "reportable": true,
+        "source_value": "Cameras",
         "type": "alias"
     },
     {
@@ -126,6 +411,13 @@
         "replacement_value": "Ceilometer",
         "reportable": true,
         "source_value": "CEILOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Ceilometer",
+        "reportable": true,
+        "source_value": "CEILOMETERS",
         "type": "alias"
     },
     {
@@ -151,6 +443,62 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Clock",
+        "reportable": true,
+        "source_value": "CLOCKS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Clock",
+        "reportable": true,
+        "source_value": "Clocks",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "CloudSat-CPR",
+        "reportable": true,
+        "source_value": "CLOUDSAT-CPR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Compass",
+        "reportable": true,
+        "source_value": "COMPASS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Compass",
+        "reportable": true,
+        "source_value": "COMPASSES",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Coring Devices",
+        "reportable": true,
+        "source_value": "CORING DEVICES",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "CrIS",
+        "reportable": true,
+        "source_value": "CRIS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "CTD",
+        "reportable": true,
+        "source_value": "CTD RECORDER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Densiometer",
         "reportable": true,
         "source_value": "DENSIOMETER",
@@ -161,6 +509,13 @@
         "replacement_value": "Dewpoint Hydrometer",
         "reportable": true,
         "source_value": "DEWPOINT HYDROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Dewpoint Hygrometer",
+        "reportable": true,
+        "source_value": "DEW POINT HYGOMETER",
         "type": "alias"
     },
     {
@@ -200,6 +555,13 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Electric Field Mill",
+        "reportable": true,
+        "source_value": "ELECTRIC FIELD MILL",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Enhanced Thematic Mapper +",
         "reportable": true,
         "source_value": "ETM+ (ENHANCED THEMATIC MAPPER PLUS)",
@@ -214,6 +576,34 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "FLUOROMETERS",
+        "reportable": true,
+        "source_value": "FLUOROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Fluxgate Magnetometers",
+        "reportable": true,
+        "source_value": "FLUXGATE MAGNETOMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "FTIR Spectrometer",
+        "reportable": true,
+        "source_value": "FTS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Galileo P",
+        "reportable": true,
+        "source_value": "GALILEO P",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "GHIS",
         "reportable": true,
         "source_value": "GLOBAL HAWK IN-FLIGHT TURBULENCE SENSOR (GHIS)",
@@ -221,9 +611,30 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "GNSS RECEIVER",
+        "reportable": true,
+        "source_value": "GNSS RECEIVERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "GOES-11 Imager",
+        "reportable": true,
+        "source_value": "GOES-11 IMAGER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "GOES-12 Imager",
         "reportable": true,
         "source_value": "GOES-12 IMAGER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "GOES-13 Imager",
+        "reportable": true,
+        "source_value": "GOES-13 IMAGER",
         "type": "alias"
     },
     {
@@ -258,6 +669,13 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Gravimeters",
+        "reportable": true,
+        "source_value": "GRAVIMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Gust Probe",
         "reportable": true,
         "source_value": "GUST PROBE",
@@ -265,9 +683,30 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Gust Probe",
+        "reportable": true,
+        "source_value": "GUST PROBES",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "High Spectral Resolution Lidar",
+        "reportable": true,
+        "source_value": "HGH SPECTRAL RES LIDAR (HSRL) NAV DATA (APPLANIX)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "High Spectral Resolution Lidar",
         "reportable": true,
         "source_value": "HIGH SPECTRAL RESOLUTION LIDAR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "High Spectral Resolution Lidar",
+        "reportable": true,
+        "source_value": "HSRL",
         "type": "alias"
     },
     {
@@ -293,9 +732,23 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Humidity Sensor",
+        "reportable": true,
+        "source_value": "HUMIDITY SENSORS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Hydrophone",
         "reportable": true,
         "source_value": "HYDROPHONE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Hydrophone",
+        "reportable": true,
+        "source_value": "HYDROPHONES",
         "type": "alias"
     },
     {
@@ -307,9 +760,16 @@
     },
     {
         "field": "instrument",
-        "replacement_value": "HYPERION",
+        "replacement_value": "Hygrometer",
         "reportable": true,
-        "source_value": "HYPERION (HYPERSPECTRAL IMAGER)",
+        "source_value": "HYGROMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Hyperion",
+        "reportable": true,
+        "source_value": "HYPERION",
         "type": "alias"
     },
     {
@@ -321,9 +781,23 @@
     },
     {
         "field": "instrument",
-        "replacement_value": "Imaging Infrared Radiometer",
+        "replacement_value": "Imaging Infrared Radiometer (IIR)",
+        "reportable": true,
+        "source_value": "IIR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Imaging Infrared Radiometer (IIR)",
         "reportable": true,
         "source_value": "IMAGING INFRARED RADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Imaging Infrared Radiometer (IIR)",
+        "reportable": true,
+        "source_value": "Imaging Infrared Radiometer",
         "type": "alias"
     },
     {
@@ -356,9 +830,72 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Infrared Thermometer",
+        "reportable": true,
+        "source_value": "INFRARED THERMOMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "InSitu",
+        "reportable": true,
+        "source_value": "In Situ/Laboratory Instruments",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Integrating Nephelometer",
+        "reportable": true,
+        "source_value": "INT. NEPHELOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Integrating Nephelometer",
+        "reportable": true,
+        "source_value": "INTEGRATING NEPHELOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Ion Chromatograph",
         "reportable": true,
         "source_value": "ION CHROMATOGRAPH",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Ion Chromatograph",
+        "reportable": true,
+        "source_value": "ION CHROMATOGRAPHS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "IRNSS ANTENNA",
+        "reportable": true,
+        "source_value": "IRNSS ANTENAA",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Isotopic Ratio Mass Spectrometer",
+        "reportable": true,
+        "source_value": "ISOTOPIC RATIO MASS SPECTROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Ku-Band Radar",
+        "reportable": true,
+        "source_value": "KU-BAND RADAR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "LIDAR",
+        "reportable": true,
+        "source_value": "LIDAR ALTIMETERS",
         "type": "alias"
     },
     {
@@ -379,7 +916,28 @@
         "field": "instrument",
         "replacement_value": "Model",
         "reportable": true,
+        "source_value": "Comp",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Model",
+        "reportable": true,
         "source_value": "COMPUTER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "MODEL",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "MODELS",
         "type": "alias"
     },
     {
@@ -447,6 +1005,13 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Nephelometer",
+        "reportable": true,
+        "source_value": "NEPHELOMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Net Radiometer",
         "reportable": true,
         "source_value": "NET RADIOMETER",
@@ -468,6 +1033,13 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Ozonesonde",
+        "reportable": true,
+        "source_value": "OZONESONDES",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "PALSAR",
         "reportable": true,
         "source_value": "PALSAR (Phased Array type L-band Synthetic Aperture Radar)",
@@ -485,6 +1057,13 @@
         "replacement_value": "PARABOLA Radiometer",
         "reportable": true,
         "source_value": "PARABOLA RADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Particle Detectors",
+        "reportable": true,
+        "source_value": "PARTICLE DETECTORS",
         "type": "alias"
     },
     {
@@ -517,6 +1096,20 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Photometer",
+        "reportable": true,
+        "source_value": "PHOTOMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Photometer",
+        "reportable": true,
+        "source_value": "Photometers",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "POLDER-1",
         "reportable": true,
         "source_value": "POLDER",
@@ -538,9 +1131,58 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Pressure Sensor",
+        "reportable": true,
+        "source_value": "PRESSURE SENSOR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Pressure Sensor",
+        "reportable": true,
+        "source_value": "PRESSURE SENSORS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Pressure Transducer",
+        "reportable": true,
+        "source_value": "PRESSURE TRANSDUCER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Pressure Transducer",
+        "reportable": true,
+        "source_value": "PRESSURE TRANSDUCERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Probes",
+        "reportable": true,
+        "source_value": "PROBES",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Proton Transfer Mass Spectrometer",
         "reportable": true,
         "source_value": "PTR-MS (PROTON TRANSFER MASS SPECTROMETER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Psychrometer",
+        "reportable": true,
+        "source_value": "PSYCHROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Psychrometer",
+        "reportable": true,
+        "source_value": "PSYCHROMETERS",
         "type": "alias"
     },
     {
@@ -552,6 +1194,13 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Pyranometer",
+        "reportable": true,
+        "source_value": "PYRANOMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Pyrgeometer",
         "reportable": true,
         "source_value": "PYRGEOMETER",
@@ -559,9 +1208,44 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Pyrgeometer",
+        "reportable": true,
+        "source_value": "PYRGEOMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Pyrheliometer",
+        "reportable": true,
+        "source_value": "PYRHELIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Pyrheliometer",
+        "reportable": true,
+        "source_value": "PYRHELIOMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Pyrometers",
+        "reportable": true,
+        "source_value": "PYROMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Radar Altimeter",
         "reportable": true,
         "source_value": "RADAR ALTIMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Radar Altimeter",
+        "reportable": true,
+        "source_value": "RADAR ALTIMETERS",
         "type": "alias"
     },
     {
@@ -580,9 +1264,37 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Radiometer",
+        "reportable": true,
+        "source_value": "RADIOMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Radiometer",
+        "reportable": true,
+        "source_value": "Radiometers",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Radiosonde",
         "reportable": true,
         "source_value": "RADIOSONDE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Radiosonde",
+        "reportable": true,
+        "source_value": "RADIOSONDES",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Radiosonde",
+        "reportable": true,
+        "source_value": "Radiosondes",
         "type": "alias"
     },
     {
@@ -597,7 +1309,35 @@
         "field": "instrument",
         "replacement_value": "Rawindsonde",
         "reportable": true,
+        "source_value": "Rawindsondes",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Rawindsonde",
+        "reportable": true,
         "source_value": "RAWINSONDE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Rawindsonde",
+        "reportable": true,
+        "source_value": "RAWINSONDES",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Rawindsonde",
+        "reportable": true,
+        "source_value": "Rawinsondes",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "RF Antenna",
+        "reportable": true,
+        "source_value": "RF ANTENNA",
         "type": "alias"
     },
     {
@@ -609,9 +1349,37 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Scanning Electron Microscope (SEM)",
+        "reportable": true,
+        "source_value": "SCANNING ELECTRON MICROSCOPES",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Scanning Electron Microscope (SEM)",
+        "reportable": true,
+        "source_value": "SEM",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Scintillation Counter",
         "reportable": true,
         "source_value": "SCINTILLATION COUNTER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "SeaWiFS",
+        "reportable": true,
+        "source_value": "SEAWIFS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Seismometers",
+        "reportable": true,
+        "source_value": "SEISMOMETERS",
         "type": "alias"
     },
     {
@@ -630,6 +1398,62 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "SMAP L-Band Radar",
+        "reportable": true,
+        "source_value": "SMAP L-BAND RADAR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "SMAP L-Band Radar",
+        "reportable": true,
+        "source_value": "SMAP_RADAR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "SMAP L-Band Radiometer",
+        "reportable": true,
+        "source_value": "SMAP L-BAND RADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "SMAP L-Band Radiometer",
+        "reportable": true,
+        "source_value": "SMAP_RADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Soil Depth Probe",
+        "reportable": true,
+        "source_value": "SOIL DEPTH PROBE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Soil Moisture Probe",
+        "reportable": true,
+        "source_value": "SOIL MOISTURE PROBE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Soil Sampler",
+        "reportable": true,
+        "source_value": "SOIL SAMPLER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Soil Temperature Probe",
+        "reportable": true,
+        "source_value": "SOIL TEMPERATURE PROBE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Spectrometer",
         "reportable": true,
         "source_value": "cavity ringdown spectrometer",
@@ -644,6 +1468,20 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Spectrometer",
+        "reportable": true,
+        "source_value": "SPECTROMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Spectrometer",
+        "reportable": true,
+        "source_value": "Spectrometers",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Spectrophotometer",
         "reportable": true,
         "source_value": "SPECTROPHOTOMETER",
@@ -654,6 +1492,27 @@
         "replacement_value": "Spectroradiometer",
         "reportable": true,
         "source_value": "SPECTRORADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Spectroradiometer",
+        "reportable": true,
+        "source_value": "SPECTRORADIOMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Spectroradiometer",
+        "reportable": true,
+        "source_value": "Spectroradiometers",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "SSM/I",
+        "reportable": true,
+        "source_value": "SSMI",
         "type": "alias"
     },
     {
@@ -679,6 +1538,13 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Sun Photometer",
+        "reportable": true,
+        "source_value": "SUN PHOTOMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Surface Acoustic Wave Hygrometer",
         "reportable": true,
         "source_value": "SURFACE ACOUSTIC WAVE HYGROMETER",
@@ -693,6 +1559,13 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Telescopes",
+        "reportable": true,
+        "source_value": "TELESCOPES",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Temperature Probe",
         "reportable": true,
         "source_value": "TEMPERATURE PROBE",
@@ -700,9 +1573,23 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Temperature Probe",
+        "reportable": true,
+        "source_value": "TEMPERATURE PROBES",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Temperature Sensor",
         "reportable": true,
         "source_value": "TEMPERATURE SENSOR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Temperature Sensor",
+        "reportable": true,
+        "source_value": "TEMPERATURE SENSORS",
         "type": "alias"
     },
     {
@@ -756,6 +1643,20 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Thermistor",
+        "reportable": true,
+        "source_value": "THERMISTORS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Thermistor",
+        "reportable": true,
+        "source_value": "Thermistors",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Thermocouple",
         "reportable": true,
         "source_value": "THERMOCOUPLE",
@@ -766,6 +1667,20 @@
         "replacement_value": "Thermometer",
         "reportable": true,
         "source_value": "THERMOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Thermometer",
+        "reportable": true,
+        "source_value": "THERMOMETERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Thermometer",
+        "reportable": true,
+        "source_value": "Thermometers",
         "type": "alias"
     },
     {
@@ -812,9 +1727,37 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "UV Ozone Detector",
+        "reportable": true,
+        "source_value": "UV OZONE DETECTORS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Vegetation-1",
+        "reportable": true,
+        "source_value": "VEGETATION-1",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Visual Observations",
+        "reportable": true,
+        "source_value": "VISUAL OBSERVATIONS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Water Level Gauge",
         "reportable": true,
         "source_value": "WATER LEVEL GAUGE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Wide Field Camera",
+        "reportable": true,
+        "source_value": "WFC",
         "type": "alias"
     },
     {
@@ -833,15 +1776,47 @@
     },
     {
         "field": "instrument",
+        "replacement_value": "Wind Profiler",
+        "reportable": true,
+        "source_value": "WIND PROFILERS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
         "replacement_value": "Wind Scatterometer",
         "reportable": true,
         "source_value": "WIND SCATTEROMETER",
         "type": "alias"
     },
     {
+        "field": "instrument",
+        "replacement_value": "WindSat",
+        "reportable": true,
+        "source_value": "WINDSAT",
+        "type": "alias"
+    },
+    {
         "field": "organization",
         "order": -100,
         "type": "trim_whitespace"
+    },
+    {
+        "field": "organization",
+        "order": 0,
+        "source_value": "NOT APPLICABLE",
+        "type": "ignore"
+    },
+    {
+        "field": "organization",
+        "order": 0,
+        "source_value": "Not Applicable",
+        "type": "ignore"
+    },
+    {
+        "field": "organization",
+        "order": 0,
+        "source_value": "NOT PROVIDED",
+        "type": "ignore"
     },
     {
         "field": "organization",
@@ -862,9 +1837,17 @@
     {
         "field": "organization",
         "order": 0,
-        "replacement_value": "Alaska Satellite Facility (ASF)",
+        "replacement_value": "Agriculture and Agri-Food Canada (AAFC)",
         "reportable": true,
-        "source_value": "Alaska Satellite Facility",
+        "source_value": "CA/AGR",
+        "type": "alias"
+    },
+    {
+        "field": "organization",
+        "order": 0,
+        "replacement_value": "Alaska Satellite Facility",
+        "reportable": true,
+        "source_value": "ASF",
         "type": "alias"
     },
     {
@@ -928,6 +1911,14 @@
         "order": 0,
         "replacement_value": "Atmospheric Science Data Center (ASDC)",
         "reportable": true,
+        "source_value": "LaRC DAAC",
+        "type": "alias"
+    },
+    {
+        "field": "organization",
+        "order": 0,
+        "replacement_value": "Atmospheric Science Data Center (ASDC)",
+        "reportable": true,
         "source_value": "LaRC",
         "type": "alias"
     },
@@ -937,6 +1928,14 @@
         "replacement_value": "Atmospheric Science Data Center (ASDC)",
         "reportable": true,
         "source_value": "NASA Langley ASDC User Services",
+        "type": "alias"
+    },
+    {
+        "field": "organization",
+        "order": 0,
+        "replacement_value": "Atmospheric Science Data Center (ASDC)",
+        "reportable": true,
+        "source_value": "NASA/LARC/SD/ASDC",
         "type": "alias"
     },
     {
@@ -1121,6 +2120,14 @@
         "replacement_value": "Earth Space Research (ESR)",
         "reportable": true,
         "source_value": "Earth Space Research",
+        "type": "alias"
+    },
+    {
+        "field": "organization",
+        "order": 0,
+        "replacement_value": "EUMETSAT Ocean and Sea Ice Satellite Application Facility (OSI SAF)",
+        "reportable": true,
+        "source_value": "EUMETSAT/OSISAF",
         "type": "alias"
     },
     {
@@ -1616,14 +2623,6 @@
         "order": 0,
         "replacement_value": "NA",
         "reportable": true,
-        "source_value": "ASDC User Services",
-        "type": "ignore"
-    },
-    {
-        "field": "organization",
-        "order": 0,
-        "replacement_value": "NA",
-        "reportable": true,
         "source_value": "CMC",
         "type": "ignore"
     },
@@ -1681,30 +2680,6 @@
         "replacement_value": "NA",
         "reportable": true,
         "source_value": "Jason-1",
-        "type": "ignore"
-    },
-    {
-        "field": "organization",
-        "order": 0,
-        "replacement_value": "NA",
-        "reportable": true,
-        "source_value": "Langley DAAC User Services",
-        "type": "ignore"
-    },
-    {
-        "field": "organization",
-        "order": 0,
-        "replacement_value": "NA",
-        "reportable": true,
-        "source_value": "LP DAAC User Services",
-        "type": "ignore"
-    },
-    {
-        "field": "organization",
-        "order": 0,
-        "replacement_value": "NA",
-        "reportable": true,
-        "source_value": "NASA Langley ASDC User Services",
         "type": "ignore"
     },
     {
@@ -1992,6 +2967,14 @@
         "order": 0,
         "replacement_value": "Ocean Biology Distributed Active Archive Center (OB.DAAC)",
         "reportable": true,
+        "source_value": "NASA/GSFC/SED/ESD/GCDC/OB.DAAC",
+        "type": "alias"
+    },
+    {
+        "field": "organization",
+        "order": 0,
+        "replacement_value": "Ocean Biology Distributed Active Archive Center (OB.DAAC)",
+        "reportable": true,
         "source_value": "OB.DAAC",
         "type": "alias"
     },
@@ -2104,6 +3087,14 @@
         "order": 0,
         "replacement_value": "Remote Sensing Systems (RSS)",
         "reportable": true,
+        "source_value": "Remote Sensing Sensing Systems (RSS)",
+        "type": "alias"
+    },
+    {
+        "field": "organization",
+        "order": 0,
+        "replacement_value": "Remote Sensing Systems (RSS)",
+        "reportable": true,
         "source_value": "Remote Sensing System",
         "type": "alias"
     },
@@ -2129,6 +3120,14 @@
         "replacement_value": "Remote Sensing Systems (RSS)",
         "reportable": true,
         "source_value": "REMSS",
+        "type": "alias"
+    },
+    {
+        "field": "organization",
+        "order": 0,
+        "replacement_value": "Remote Sensing Systems (RSS)",
+        "reportable": true,
+        "source_value": "RSS",
         "type": "alias"
     },
     {
@@ -2358,6 +3357,14 @@
     {
         "field": "organization",
         "order": 0,
+        "replacement_value": "University of Texas Institute for Geophysics (UTIG)",
+        "reportable": true,
+        "source_value": "UTX-AUSTIN/IG",
+        "type": "alias"
+    },
+    {
+        "field": "organization",
+        "order": 0,
         "replacement_value": "USGS Long Term Archive (LTA)",
         "reportable": true,
         "source_value": "LTA",
@@ -2407,10 +3414,54 @@
     },
     {
         "field": "platform",
+        "order": 0,
+        "source_value": "NOT APPLICABLE",
+        "type": "ignore"
+    },
+    {
+        "field": "platform",
+        "order": 0,
+        "source_value": "Not Applicable",
+        "type": "ignore"
+    },
+    {
+        "field": "platform",
+        "order": 0,
+        "source_value": "NOT PROVIDED",
+        "type": "ignore"
+    },
+    {
+        "field": "platform",
+        "order": 0,
+        "source_value": "Not Provided",
+        "type": "ignore"
+    },
+    {
+        "field": "platform",
+        "order": 0,
+        "source_value": "Not provided",
+        "type": "ignore"
+    },
+    {
+        "field": "platform",
         "order": 10,
         "priority": 10,
         "source_value": "Terra",
         "type": "priority"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "ADEOS-I",
+        "reportable": true,
+        "source_value": "ADEOS-1",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "ADEOS-II",
+        "reportable": true,
+        "source_value": "ADEOS-2",
+        "type": "alias"
     },
     {
         "field": "platform",
@@ -2444,7 +3495,28 @@
         "field": "platform",
         "replacement_value": "Balloon",
         "reportable": true,
+        "source_value": "BALLOON-BORNE INSTRMNTS PORTERVILLE",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Balloon",
+        "reportable": true,
         "source_value": "BALLOON-BORNE INSTRUMENT",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Balloon",
+        "reportable": true,
+        "source_value": "BALLOONS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Balloon",
+        "reportable": true,
+        "source_value": "Balloons",
         "type": "alias"
     },
     {
@@ -2477,6 +3549,34 @@
     },
     {
         "field": "platform",
+        "replacement_value": "Beidou",
+        "reportable": true,
+        "source_value": "BEIDOU",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Buoy",
+        "reportable": true,
+        "source_value": "BUOY",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Buoy",
+        "reportable": true,
+        "source_value": "BUOYS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Buoy",
+        "reportable": true,
+        "source_value": "Buoys",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
         "replacement_value": "Buoy",
         "reportable": true,
         "source_value": "DRIFTING BUOY",
@@ -2484,21 +3584,42 @@
     },
     {
         "field": "platform",
-        "replacement_value": "Buoys",
+        "replacement_value": "CloudSat",
         "reportable": true,
-        "source_value": "BUOY",
+        "source_value": "CLOUDSAT",
         "type": "alias"
     },
     {
         "field": "platform",
-        "replacement_value": "Convair CV-580",
+        "replacement_value": "Convair CV-580 Aircraft",
+        "reportable": true,
+        "source_value": "AIRCRAFT/CONVAIR-580",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Convair CV-580 Aircraft",
+        "reportable": true,
+        "source_value": "CONVAIR CV-580",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Convair CV-580 Aircraft",
+        "reportable": true,
+        "source_value": "Convair CV-580",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Convair CV-580 Aircraft",
         "reportable": true,
         "source_value": "CV-580",
         "type": "alias"
     },
     {
         "field": "platform",
-        "replacement_value": "Convair CV-580",
+        "replacement_value": "Convair CV-580 Aircraft",
         "reportable": true,
         "source_value": "CV580",
         "type": "alias"
@@ -2526,9 +3647,86 @@
     },
     {
         "field": "platform",
+        "replacement_value": "DMSP 5D-2/F10",
+        "reportable": true,
+        "source_value": "DMSP-F10",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "DMSP 5D-2/F11",
+        "reportable": true,
+        "source_value": "DMSP-F11",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "DMSP 5D-2/F13",
+        "reportable": true,
+        "source_value": "DMSP-F13",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "DMSP 5D-2/F14",
+        "reportable": true,
+        "source_value": "DMSP-F14",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "DMSP 5D-3/F15",
+        "reportable": true,
+        "source_value": "DMSP-F15",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "DMSP 5D-3/F16",
+        "reportable": true,
+        "source_value": "DMSP-F16",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "DMSP 5D-3/F17",
+        "reportable": true,
+        "source_value": "DMSP-F17",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "DMSP 5D-3/F18",
+        "reportable": true,
+        "source_value": "DMSP-F18",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "DMSP",
+        "reportable": true,
+        "source_value": "DMSP (Defense Meteorological Satellite Program)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
         "replacement_value": "Earth Observing-1",
         "reportable": true,
         "source_value": "EO-1 (EARTH OBSERVING 1)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Etalon-1",
+        "reportable": true,
+        "source_value": "ETALON-1",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Etalon-2",
+        "reportable": true,
+        "source_value": "ETALON-2",
         "type": "alias"
     },
     {
@@ -2543,6 +3741,69 @@
         "replacement_value": "Field Survey",
         "reportable": true,
         "source_value": "FIELD SURVEY",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Field Survey",
+        "reportable": true,
+        "source_value": "FIELD SURVEYS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Field Survey",
+        "reportable": true,
+        "source_value": "Field Surveys",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Fishing Vessels",
+        "reportable": true,
+        "source_value": "FISHING VESSELS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Fixed Observation Stations",
+        "reportable": true,
+        "source_value": "FIXED OBSERVATION STATIONS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Galileo",
+        "reportable": true,
+        "source_value": "GALILEO",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Geodynamic Stations",
+        "reportable": true,
+        "source_value": "GEODYNAMIC STATIONS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Geomagnetic Stations",
+        "reportable": true,
+        "source_value": "GEOMAGNETIC STATIONS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Geostationary Satellites",
+        "reportable": true,
+        "source_value": "GEOSTATIONARY SATELLITES",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Global Hawk UAV",
+        "reportable": true,
+        "source_value": "GLOBAL HAWK UAV",
         "type": "alias"
     },
     {
@@ -2575,6 +3836,20 @@
     },
     {
         "field": "platform",
+        "replacement_value": "Gravity Stations",
+        "reportable": true,
+        "source_value": "GRAVITY STATIONS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Great Wall Station",
+        "reportable": true,
+        "source_value": "GREAT WALL STATION",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
         "order": 0,
         "replacement_value": "Ground Station",
         "reportable": true,
@@ -2591,6 +3866,13 @@
     },
     {
         "field": "platform",
+        "replacement_value": "Ground Station",
+        "reportable": true,
+        "source_value": "Ground Stations",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
         "replacement_value": "Ground-based Observation",
         "reportable": true,
         "source_value": "GROUND-BASED OBSERVATION",
@@ -2600,7 +3882,70 @@
         "field": "platform",
         "replacement_value": "Ground-based Observation",
         "reportable": true,
+        "source_value": "GROUND-BASED OBSERVATIONS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Ground-based Observation",
+        "reportable": true,
+        "source_value": "Ground-based Observations",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Ground-based Observation",
+        "reportable": true,
         "source_value": "GROUND-BASED PAN NETWORK CALIFORNIA",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Ground-based Observation",
+        "reportable": true,
+        "source_value": "GROUND-BASED PANDOR NETWORK",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Ground-based Observation",
+        "reportable": true,
+        "source_value": "GROUND-BASED PANDORA NETWORK TEXAS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Helicopter",
+        "reportable": true,
+        "source_value": "HELICOPTER",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Huron Ground Site",
+        "reportable": true,
+        "source_value": "HURON GROUND SITE",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "ICESat",
+        "reportable": true,
+        "source_value": "ICESAT",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "ICESat",
+        "reportable": true,
+        "source_value": "ICESAT-1",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "ICESat-2",
+        "reportable": true,
+        "source_value": "ICESAT-2",
         "type": "alias"
     },
     {
@@ -2619,6 +3964,13 @@
     },
     {
         "field": "platform",
+        "replacement_value": "International Space Station",
+        "reportable": true,
+        "source_value": "ISS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
         "replacement_value": "JASON-1",
         "reportable": true,
         "source_value": "Jason-1 Geodetic",
@@ -2626,9 +3978,23 @@
     },
     {
         "field": "platform",
+        "replacement_value": "JASON-3",
+        "reportable": true,
+        "source_value": "Jason-3",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
         "replacement_value": "JERS-1",
         "reportable": true,
         "source_value": "JERS-1 (JAPANESE EARTH RESOURCES SATELLITE-1)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "King Air",
+        "reportable": true,
+        "source_value": "KINGAIR",
         "type": "alias"
     },
     {
@@ -2647,6 +4013,13 @@
     },
     {
         "field": "platform",
+        "replacement_value": "Landsat",
+        "reportable": true,
+        "source_value": "LANDSAT",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
         "replacement_value": "Landsat-2",
         "reportable": true,
         "source_value": "LANDSAT-2 (LAND REMOTE-SENSING SATELLITE-2)",
@@ -2661,6 +4034,13 @@
     },
     {
         "field": "platform",
+        "replacement_value": "Landsat-5",
+        "reportable": true,
+        "source_value": "LANDSAT-5",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
         "replacement_value": "Landsat-7",
         "reportable": true,
         "source_value": "L7",
@@ -2671,6 +4051,41 @@
         "replacement_value": "Landsat-7",
         "reportable": true,
         "source_value": "LANDSAT-7 (LAND REMOTE-SENSING SATELLITE-7)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Landsat-7",
+        "reportable": true,
+        "source_value": "LANDSAT-7",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Landsat-8",
+        "reportable": true,
+        "source_value": "LANDSAT-8",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Mesonet",
+        "reportable": true,
+        "source_value": "MESONET",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Meteor-3",
+        "reportable": true,
+        "source_value": "METEOR-3",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Meteor-3M",
+        "reportable": true,
+        "source_value": "METEOR-3M",
         "type": "alias"
     },
     {
@@ -2691,9 +4106,51 @@
     },
     {
         "field": "platform",
+        "replacement_value": "Meteorological Station",
+        "reportable": true,
+        "source_value": "Meteorological Stations",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "METEOSAT-10",
+        "reportable": true,
+        "source_value": "Meteosat-10",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "METEOSAT-9",
+        "reportable": true,
+        "source_value": "Meteosat-9",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "MetOp-A",
+        "reportable": true,
+        "source_value": "METOP-A",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "MetOp-B",
+        "reportable": true,
+        "source_value": "METOP-B",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
         "replacement_value": "Mission Report",
         "reportable": true,
         "source_value": "MISSION REPORT",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Mobile Stations/Vehicles",
+        "reportable": true,
+        "source_value": "MOBILE STATIONS/VEHICLES",
         "type": "alias"
     },
     {
@@ -2728,7 +4185,49 @@
         "field": "platform",
         "replacement_value": "Model",
         "reportable": true,
+        "source_value": "COMPUTERS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "Computers",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "Environmental Modeling",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Model",
+        "reportable": true,
         "source_value": "MODEL",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "MODELS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "Models",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "Models/Analyses",
         "type": "alias"
     },
     {
@@ -2810,6 +4309,20 @@
     },
     {
         "field": "platform",
+        "replacement_value": "Radiosonde",
+        "reportable": true,
+        "source_value": "RADIOSONDES",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Radiosonde",
+        "reportable": true,
+        "source_value": "Radiosondes",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
         "replacement_value": "RapidEye",
         "reportable": true,
         "source_value": "RAPIDEYE",
@@ -2824,9 +4337,65 @@
     },
     {
         "field": "platform",
+        "replacement_value": "Satellite",
+        "reportable": true,
+        "source_value": "SATELLITE",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Satellite",
+        "reportable": true,
+        "source_value": "SATELLITES",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "SEASAT-1",
+        "reportable": true,
+        "source_value": "SEASAT 1",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "SENTINEL-3A",
+        "reportable": true,
+        "source_value": "Sentinel-3A",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
         "replacement_value": "Ship",
         "reportable": true,
         "source_value": "SHIP",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Ship",
+        "reportable": true,
+        "source_value": "SHIPS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "SMAP",
+        "reportable": true,
+        "source_value": "SMAP Observatory",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Sounding Rockets",
+        "reportable": true,
+        "source_value": "SOUNDING ROCKETS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Space Shuttles",
+        "reportable": true,
+        "source_value": "SPACE SHUTTLES",
         "type": "alias"
     },
     {
@@ -2845,7 +4414,14 @@
     },
     {
         "field": "platform",
-        "replacement_value": "Suomi NPP",
+        "replacement_value": "Submarine",
+        "reportable": true,
+        "source_value": "SUBMARINE",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Suomi-NPP",
         "reportable": true,
         "source_value": "NPP",
         "type": "alias"
@@ -2854,7 +4430,35 @@
         "field": "platform",
         "replacement_value": "Suomi-NPP",
         "reportable": true,
+        "source_value": "NPP-VIIRS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Suomi-NPP",
+        "reportable": true,
         "source_value": "Suomi NPP",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Suomi-NPP",
+        "reportable": true,
+        "source_value": "SUOMI-NPP",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Surface Water Weir",
+        "reportable": true,
+        "source_value": "SURFACE WATER WEIR",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Surface",
+        "reportable": true,
+        "source_value": "SURFACE",
         "type": "alias"
     },
     {
@@ -2880,6 +4484,27 @@
         "type": "capitalize"
     },
     {
+        "field": "platform",
+        "replacement_value": "UMBC Ground Site",
+        "reportable": true,
+        "source_value": "UMBC GROUND SITE",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "UND CITATION II",
+        "reportable": true,
+        "source_value": "UND Citation II",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Weather Stations",
+        "reportable": true,
+        "source_value": "WEATHER STATIONS",
+        "type": "alias"
+    },
+    {
         "field": "processing_level",
         "order": -100,
         "type": "trim_whitespace"
@@ -2888,6 +4513,36 @@
         "field": "processing_level",
         "order": 0,
         "source_value": "NA",
+        "type": "ignore"
+    },
+    {
+        "field": "processing_level",
+        "order": 0,
+        "source_value": "NOT APPLICABLE",
+        "type": "ignore"
+    },
+    {
+        "field": "processing_level",
+        "order": 0,
+        "source_value": "Not Applicable",
+        "type": "ignore"
+    },
+    {
+        "field": "processing_level",
+        "order": 0,
+        "source_value": "NOT PROVIDED",
+        "type": "ignore"
+    },
+    {
+        "field": "processing_level",
+        "order": 0,
+        "source_value": "Not provided",
+        "type": "ignore"
+    },
+    {
+        "field": "processing_level",
+        "order": 0,
+        "source_value": "TEMPLATE_PROCESSLEVELID",
         "type": "ignore"
     },
     {
@@ -2919,7 +4574,31 @@
         "order": 0,
         "replacement_value": "1 - Radiance",
         "reportable": true,
+        "source_value": "1C",
+        "type": "alias"
+    },
+    {
+        "field": "processing_level",
+        "order": 0,
+        "replacement_value": "1 - Radiance",
+        "reportable": true,
+        "source_value": "L1C",
+        "type": "alias"
+    },
+    {
+        "field": "processing_level",
+        "order": 0,
+        "replacement_value": "1 - Radiance",
+        "reportable": true,
         "source_value": "Level 1",
+        "type": "alias"
+    },
+    {
+        "field": "processing_level",
+        "order": 0,
+        "replacement_value": "1 - Radiance",
+        "reportable": true,
+        "source_value": "Level 1C",
         "type": "alias"
     },
     {
@@ -2935,23 +4614,7 @@
         "order": 0,
         "replacement_value": "1A - Radiance",
         "reportable": true,
-        "source_value": "1C",
-        "type": "alias"
-    },
-    {
-        "field": "processing_level",
-        "order": 0,
-        "replacement_value": "1A - Radiance",
-        "reportable": true,
         "source_value": "Level 1A",
-        "type": "alias"
-    },
-    {
-        "field": "processing_level",
-        "order": 0,
-        "replacement_value": "1A - Radiance",
-        "reportable": true,
-        "source_value": "Level 1C",
         "type": "alias"
     },
     {
@@ -3047,6 +4710,14 @@
         "order": 0,
         "replacement_value": "2 - Geophys. Variables, Sensor Coordinates",
         "reportable": true,
+        "source_value": "L2",
+        "type": "alias"
+    },
+    {
+        "field": "processing_level",
+        "order": 0,
+        "replacement_value": "2 - Geophys. Variables, Sensor Coordinates",
+        "reportable": true,
         "source_value": "Level 2",
         "type": "alias"
     },
@@ -3077,7 +4748,7 @@
     {
         "field": "processing_level",
         "order": 0,
-        "replacement_value": "3 - Gridded Geophysical Variables",
+        "replacement_value": "3 - Gridded Observations",
         "reportable": true,
         "source_value": "2G",
         "type": "alias"
@@ -3085,7 +4756,7 @@
     {
         "field": "processing_level",
         "order": 0,
-        "replacement_value": "3 - Gridded Geophysical Variables",
+        "replacement_value": "3 - Gridded Observations",
         "reportable": true,
         "source_value": "3",
         "type": "alias"
@@ -3093,7 +4764,15 @@
     {
         "field": "processing_level",
         "order": 0,
-        "replacement_value": "3 - Gridded Geophysical Variables",
+        "replacement_value": "3 - Gridded Observations",
+        "reportable": true,
+        "source_value": "3A",
+        "type": "alias"
+    },
+    {
+        "field": "processing_level",
+        "order": 0,
+        "replacement_value": "3 - Gridded Observations",
         "reportable": true,
         "source_value": "3C",
         "type": "alias"
@@ -3101,7 +4780,7 @@
     {
         "field": "processing_level",
         "order": 0,
-        "replacement_value": "3 - Gridded Geophysical Variables",
+        "replacement_value": "3 - Gridded Observations",
         "reportable": true,
         "source_value": "3U",
         "type": "alias"
@@ -3109,7 +4788,7 @@
     {
         "field": "processing_level",
         "order": 0,
-        "replacement_value": "3 - Gridded Geophysical Variables",
+        "replacement_value": "3 - Gridded Observations",
         "reportable": true,
         "source_value": "Level 2G",
         "type": "alias"
@@ -3117,7 +4796,7 @@
     {
         "field": "processing_level",
         "order": 0,
-        "replacement_value": "3 - Gridded Geophysical Variables",
+        "replacement_value": "3 - Gridded Observations",
         "reportable": true,
         "source_value": "Level 3",
         "type": "alias"
@@ -3125,7 +4804,7 @@
     {
         "field": "processing_level",
         "order": 0,
-        "replacement_value": "3 - Gridded Geophysical Variables",
+        "replacement_value": "3 - Gridded Observations",
         "reportable": true,
         "source_value": "Level 3C",
         "type": "alias"
@@ -3133,7 +4812,7 @@
     {
         "field": "processing_level",
         "order": 0,
-        "replacement_value": "3 - Gridded Geophysical Variables",
+        "replacement_value": "3 - Gridded Observations",
         "reportable": true,
         "source_value": "Level 3U",
         "type": "alias"
@@ -3169,17 +4848,591 @@
     },
     {
         "field": "project",
-        "replacement_value": "Aqua",
-        "reportable": true,
-        "source_value": "AQUA",
-        "type": "capitalize"
+        "order": 0,
+        "source_value": "AA",
+        "type": "ignore"
     },
     {
         "field": "project",
-        "replacement_value": "Aura",
-        "reportable": true,
+        "order": 0,
+        "source_value": "ACE",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "ACRIM III",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "ACRIMII",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "ADEOS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "ADEOS-2",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "AIM",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "AIRMISR",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "AIRMSPI",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "ALOS-2",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "AMI",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "AQUA",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "Aqua",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "ARGO",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "ASPECT",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "ATLAS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "ATMS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
         "source_value": "AURA",
-        "type": "capitalize"
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "Aura",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "BAPMON",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "CALIPSO",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "CAR",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "CBR",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "CD",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "CESM",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "CHAMP",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "CLOUDSAT",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "CrIS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "DART",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "DSCOVR",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "EPI",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "EPIC",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "ERBE",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "GAW",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "GERB",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "GMCC",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "GMS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "GOES",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "GOME",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "GOSAT",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "GPM",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "GRACE",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "GTS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "HAMSTRAD",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "ICECUBE 1",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "ICOADS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "IMPROVE",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "JASON-1",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "JERS-1",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "LASE",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "LIS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "LVIS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "MAPS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "MERRA",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "MERRA-2",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "MESA",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "MISR",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "MOPITT",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "NOBM",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "NOT APPLICABLE",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "Not Applicable",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "NOT PROVIDED",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "Not Provided",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "Not provided",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "NPP",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "OSTM/JASON-2",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "PRISM",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "QUIKSCAT",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "RAPID",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "S-NPP",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "SAGE I",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "SAGE II",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "SAGE III",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "SAR",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "SDO",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "SEAWIFS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "SEAWINDS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "SMMR",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "SMP",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "SORCE",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "SRTM",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "SUOMI-NPP",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "TERRA",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "Terra",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "TES",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "TIMED",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "TOMS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "TOPEX/POSEIDON",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "TRMM",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "UARS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "source_value": "WWLLN",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "replacement_value": "Denali, AK",
+        "reportable": true,
+        "source_value": "Denali National Park, AK",
+        "type": "alias"
+    },
+    {
+        "field": "project",
+        "replacement_value": "Glaciers, Greenland",
+        "reportable": true,
+        "source_value": "Glaciers and Ice, Greenland",
+        "type": "alias"
+    },
+    {
+        "field": "project",
+        "replacement_value": "IFloodS",
+        "reportable": true,
+        "source_value": "IFLOODS",
+        "type": "alias"
+    },
+    {
+        "field": "project",
+        "replacement_value": "IPHEx",
+        "reportable": true,
+        "source_value": "IPHEX",
+        "type": "alias"
+    },
+    {
+        "field": "project",
+        "replacement_value": "LANDSAT-7",
+        "reportable": true,
+        "source_value": "LANDSAT 7",
+        "type": "alias"
+    },
+    {
+        "field": "project",
+        "replacement_value": "MARINE MAMMALS PROJECT",
+        "reportable": true,
+        "source_value": "MARINE_MAMMALS_PROGRAM",
+        "type": "alias"
     },
     {
         "field": "project",
@@ -3187,6 +5440,13 @@
         "replacement_value": "MEaSUREs",
         "reportable": true,
         "source_value": "MEASURES",
+        "type": "alias"
+    },
+    {
+        "field": "project",
+        "replacement_value": "Mt. Pinatubo, Philippines",
+        "reportable": true,
+        "source_value": "Mt. Pinatubo,Philippines",
         "type": "alias"
     },
     {
@@ -3219,10 +5479,31 @@
     },
     {
         "field": "project",
-        "replacement_value": "Terra",
+        "replacement_value": "Nimbus",
         "reportable": true,
-        "source_value": "TERRA",
-        "type": "capitalize"
+        "source_value": "NIMBUS",
+        "type": "alias"
+    },
+    {
+        "field": "project",
+        "replacement_value": "Rosamond Lake, CA",
+        "reportable": true,
+        "source_value": "Rosamond Dry Lake, CA",
+        "type": "alias"
+    },
+    {
+        "field": "project",
+        "replacement_value": "Tonzi Ranch, CA",
+        "reportable": true,
+        "source_value": "Tonzi Ranch, California",
+        "type": "alias"
+    },
+    {
+        "field": "project",
+        "replacement_value": "Toolik, AK",
+        "reportable": true,
+        "source_value": "Toolik, Alaska",
+        "type": "alias"
     },
     {
         "field": "project",
@@ -3241,6 +5522,36 @@
         "field": "science_keyword",
         "order": -10,
         "type": "capitalize"
+    },
+    {
+        "field": "science_keyword",
+        "order": 0,
+        "source_value": "NOT APPLICABLE",
+        "type": "ignore"
+    },
+    {
+        "field": "science_keyword",
+        "order": 0,
+        "source_value": "Not Applicable",
+        "type": "ignore"
+    },
+    {
+        "field": "science_keyword",
+        "order": 0,
+        "source_value": "NOT PROVIDED",
+        "type": "ignore"
+    },
+    {
+        "field": "science_keyword",
+        "order": 0,
+        "source_value": "Not Provided",
+        "type": "ignore"
+    },
+    {
+        "field": "science_keyword",
+        "order": 0,
+        "source_value": "Not provided",
+        "type": "ignore"
     },
     {
         "field": "science_keyword",

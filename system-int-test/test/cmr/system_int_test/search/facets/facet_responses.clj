@@ -24,7 +24,7 @@
        :count 2,
        :links
        {:apply
-        "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Popular"}
+        "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Popular"},
        :has_children true}
       {:title "Topic1",
        :type "filter",
@@ -110,7 +110,7 @@
        {:apply
         "http://localhost:3003/collections.json?page_size=0&include_facets=v2&project_h%5B%5D=PROJ2"},
        :has_children false}]}
-    {:title "Processing levels",
+    {:title "Processing Levels",
      :type "group",
      :applied false,
      :has_children true,
@@ -122,6 +122,19 @@
        :links
        {:apply
         "http://localhost:3003/collections.json?page_size=0&include_facets=v2&processing_level_id_h%5B%5D=PL1"},
+       :has_children false}]}
+    {:title "Granule Data Format",
+     :type "group",
+     :applied false,
+     :has_children true,
+     :children
+     [{:title "NetCDF",
+       :type "filter",
+       :applied false,
+       :count 1,
+       :links
+       {:apply
+        "http://localhost:3003/collections.json?page_size=0&include_facets=v2&granule_data_format_h%5B%5D=NetCDF"},
        :has_children false}]}
     {:title "Measurements",
      :type "group",
@@ -152,185 +165,198 @@
   fields so that the search parameters are applied. This tests that the applied parameter is set
   to true correctly and that the generated links specify a link to remove each search parameter."
   {:title "Browse Collections",
-   :type "group",
-   :has_children true,
-   :children
-   [{:title "Keywords",
-     :type "group",
-     :applied true,
-     :has_children true,
-     :children
-     [{:title "Popular",
-       :type "filter",
-       :applied false,
-       :count 1,
-       :links
-       {:apply
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&science_keywords_h%5B1%5D%5Btopic%5D=Popular&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children true}
-      {:title "Topic1",
-       :type "filter",
-       :applied true,
-       :count 1,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1"},
-       :has_children true,
-       :children
-       [{:title "Term1",
-         :type "filter",
-         :applied true,
-         :count 1,
-         :links
-         {:remove
-          "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-         :has_children true,
-         :children
-         [{:title "Level1-1",
-           :type "filter",
-           :applied true,
-           :count 1,
-           :links
-           {:remove
-            "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+           :type "group",
            :has_children true,
            :children
-           [{:title "Level1-2",
-             :type "filter",
-             :applied true,
-             :count 1,
-             :links
-             {:remove
-              "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+           [{:title "Granule Data Format",
+             :type "group",
+             :applied false,
              :has_children true,
              :children
-             [{:title "Level1-3",
+             [{:title "NetCDF",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&granule_data_format_h%5B%5D=NetCDF&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}
+            {:title "Processing Levels",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "PL1",
                :type "filter",
                :applied true,
                :count 1,
                :links
                {:remove
-                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-               :has_children false}]}]}]}]}]}
-    {:title "Platforms",
-     :type "group",
-     :applied true,
-     :has_children true,
-     :children
-     [{:title "diadem-1D",
-       :type "filter",
-       :applied true,
-       :count 1,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}
-      {:title "DMSP 5B/F3",
-       :type "filter",
-       :applied false,
-       :count 1,
-       :links
-       {:apply
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&platform_h%5B%5D=DMSP+5B%2FF3&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}]}
-    {:title "Instruments",
-     :type "group",
-     :applied true,
-     :has_children true,
-     :children
-     [{:title "ATM",
-       :type "filter",
-       :applied true,
-       :count 1,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}
-      {:title "lVIs",
-       :type "filter",
-       :applied false,
-       :count 1,
-       :links
-       {:apply
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h%5B%5D=lVIs&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}]}
-    {:title "Organizations",
-     :type "group",
-     :applied true,
-     :has_children true,
-     :children
-     [{:title "DOI/USGS/CMG/WHSC",
-       :type "filter",
-       :applied true,
-       :count 1,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}]}
-    {:title "Projects",
-     :type "group",
-     :applied true,
-     :has_children true,
-     :children
-     [{:title "proj1",
-       :type "filter",
-       :applied true,
-       :count 1,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}
-      {:title "PROJ2",
-       :type "filter",
-       :applied false,
-       :count 1,
-       :links
-       {:apply
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&project_h%5B%5D=PROJ2&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}]}
-    {:title "Processing levels",
-     :type "group",
-     :applied true,
-     :has_children true,
-     :children
-     [{:title "PL1",
-       :type "filter",
-       :applied true,
-       :count 1,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}]}
-    {:title "Measurements",
-     :type "group",
-     :applied true,
-     :has_children true,
-     :children
-     [{:title "Measurement1",
-       :type "filter",
-       :applied true,
-       :count 1,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children true,
-       :children
-       [{:title "Variable1",
-         :type "filter",
-         :applied true,
-         :count 1,
-         :links
-         {:remove
-          "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-         :has_children false}]}
-      {:title "Measurement2",
-       :type "filter",
-       :applied false,
-       :count 1,
-       :links
-       {:apply
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&variables_h%5B1%5D%5Bmeasurement%5D=Measurement2&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children true}]}]})
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}
+            {:title "Keywords",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "Popular",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&science_keywords_h%5B1%5D%5Btopic%5D=Popular&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children true}
+              {:title "Topic1",
+               :type "filter",
+               :applied true,
+               :count 1,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1"},
+               :has_children true,
+               :children
+               [{:title "Term1",
+                 :type "filter",
+                 :applied true,
+                 :count 1,
+                 :links
+                 {:remove
+                  "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+                 :has_children true,
+                 :children
+                 [{:title "Level1-1",
+                   :type "filter",
+                   :applied true,
+                   :count 1,
+                   :links
+                   {:remove
+                    "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+                   :has_children true,
+                   :children
+                   [{:title "Level1-2",
+                     :type "filter",
+                     :applied true,
+                     :count 1,
+                     :links
+                     {:remove
+                      "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+                     :has_children true,
+                     :children
+                     [{:title "Level1-3",
+                       :type "filter",
+                       :applied true,
+                       :count 1,
+                       :links
+                       {:remove
+                        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+                       :has_children false}]}]}]}]}]}
+            {:title "Platforms",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "diadem-1D",
+               :type "filter",
+               :applied true,
+               :count 1,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}
+              {:title "DMSP 5B/F3",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&platform_h%5B%5D=DMSP+5B%2FF3&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}
+            {:title "Instruments",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "ATM",
+               :type "filter",
+               :applied true,
+               :count 1,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}
+              {:title "lVIs",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h%5B%5D=lVIs&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}
+            {:title "Organizations",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "DOI/USGS/CMG/WHSC",
+               :type "filter",
+               :applied true,
+               :count 1,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}
+            {:title "Projects",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "proj1",
+               :type "filter",
+               :applied true,
+               :count 1,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}
+              {:title "PROJ2",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&project_h%5B%5D=PROJ2&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}
+            {:title "Measurements",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "Measurement1",
+               :type "filter",
+               :applied true,
+               :count 1,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children true,
+               :children
+               [{:title "Variable1",
+                 :type "filter",
+                 :applied true,
+                 :count 1,
+                 :links
+                 {:remove
+                  "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+                 :has_children false}]}
+              {:title "Measurement2",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&variables_h%5B1%5D%5Bmeasurement%5D=Measurement2&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children true}]}]})
 
 (def partial-v2-facets
   "Expected facet results with some facets present and some not included because there were not any
@@ -354,7 +380,7 @@
        {:apply
         "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Popular"},
        :has_children true}]}
-    {:title "Processing levels",
+    {:title "Processing Levels",
      :type "group",
      :applied false,
      :has_children true,
@@ -373,117 +399,117 @@
   the search terms will be included in the facet response along with a remove link so that the user
   can remove that search term from their query."
   {:title "Browse Collections",
-   :type "group",
-   :has_children true,
-   :children
-   [{:title "Keywords",
-     :applied true,
-     :children
-     [{:title "Topic1",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1"},
-       :has_children false}
-      {:title "Term1",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}
-      {:title "Level1-1",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}
-      {:title "Level1-2",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1",}
-       :has_children false}
-      {:title "Level1-3",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}]}
-    {:title "Platforms",
-     :type "group",
-     :applied true,
-     :has_children true,
-     :children
-     [{:title "ASTER-p0",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}]}
-    {:title "Instruments",
-     :type "group",
-     :applied true,
-     :has_children true,
-     :children
-     [{:title "ATM",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}]}
-    {:title "Organizations",
-     :type "group",
-     :applied true,
-     :has_children true,
-     :children
-     [{:title "DOI/USGS/CMG/WHSC",
-       :type "filter"
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}]}
-    {:title "Projects",
-     :type "group",
-     :applied true,
-     :has_children true,
-     :children
-     [{:title "proj1",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}]}
-    {:title "Processing levels",
-     :type "group",
-     :applied true,
-     :has_children true,
-     :children
-     [{:title "PL1",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}]}]})
+           :type "group",
+           :has_children true,
+           :children
+           [{:title "Processing Levels",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "PL1",
+               :type "filter",
+               :applied true,
+               :count 0,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}
+            {:title "Keywords",
+             :applied true,
+             :children
+             [{:title "Topic1",
+               :type "filter",
+               :applied true,
+               :count 0,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1"},
+               :has_children false}
+              {:title "Term1",
+               :type "filter",
+               :applied true,
+               :count 0,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}
+              {:title "Level1-1",
+               :type "filter",
+               :applied true,
+               :count 0,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}
+              {:title "Level1-2",
+               :type "filter",
+               :applied true,
+               :count 0,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}
+              {:title "Level1-3",
+               :type "filter",
+               :applied true,
+               :count 0,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}
+            {:title "Platforms",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "ASTER-p0",
+               :type "filter",
+               :applied true,
+               :count 0,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}
+            {:title "Instruments",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "ATM",
+               :type "filter",
+               :applied true,
+               :count 0,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}
+            {:title "Organizations",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "DOI/USGS/CMG/WHSC",
+               :type "filter",
+               :applied true,
+               :count 0,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}
+            {:title "Projects",
+             :type "group",
+             :applied true,
+             :has_children true,
+             :children
+             [{:title "proj1",
+               :type "filter",
+               :applied true,
+               :count 0,
+               :links
+               {:remove
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}]})
 
 (def expected-facets-modis-and-aster-no-results-found
   "Expected facet response when searching for MODIS keyword and MODIS or ASTER platform and no
@@ -812,7 +838,7 @@
 (def expected-v2-facets-apply-links-with-facets-size
   "Expected facets to be returned in the facets v2 response. The structure of the v2 facet response
   is documented in https://wiki.earthdata.nasa.gov/display/CMR/Updated+facet+response. This response
-  is generated for the search 
+  is generated for the search
   http://localhost:3003/collections.json?page_size=0&include_facets=v2&facets_size[platform]=1
   without any query parameters selected and with a couple of collections that have science keywords,
   projects, platforms, instruments, organizations, and processing levels in their metadata. This
@@ -911,7 +937,7 @@
                {:apply
                 "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&page_size=0&include_facets=v2&project_h%5B%5D=PROJ2"},
                :has_children false}]}
-            {:title "Processing levels",
+            {:title "Processing Levels",
              :type "group",
              :applied false,
              :has_children true,
@@ -923,6 +949,19 @@
                :links
                {:apply
                 "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&page_size=0&include_facets=v2&processing_level_id_h%5B%5D=PL1"},
+               :has_children false}]}
+            {:title "Granule Data Format",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "NetCDF",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&page_size=0&include_facets=v2&granule_data_format_h%5B%5D=NetCDF"},
                :has_children false}]}
             {:title "Measurements",
              :type "group",
@@ -946,7 +985,7 @@
                 "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&page_size=0&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement2"},
                :has_children true}]}]})
 
-(def expected-v2-facets-apply-links-with-selecting-facet-outside-of-facets-size 
+(def expected-v2-facets-apply-links-with-selecting-facet-outside-of-facets-size
   "Expected facets to be returned in the facets v2 response. The structure of the v2 facet response
   is documented in https://wiki.earthdata.nasa.gov/display/CMR/Updated+facet+response. This response
   is generated for the search
@@ -959,7 +998,33 @@
            :type "group",
            :has_children true,
            :children
-           [{:title "Keywords",
+           [{:title "Granule Data Format",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "NetCDF",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&platform_h=diadem-1D&page_size=0&include_facets=v2&granule_data_format_h%5B%5D=NetCDF"},
+               :has_children false}]}
+            {:title "Processing Levels",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "PL1",
+               :type "filter",
+               :applied false,
+               :count 2,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&platform_h=diadem-1D&page_size=0&include_facets=v2&processing_level_id_h%5B%5D=PL1"},
+               :has_children false}]}
+            {:title "Keywords",
              :type "group",
              :applied false,
              :has_children true,
@@ -1056,19 +1121,6 @@
                {:apply
                 "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&platform_h=diadem-1D&page_size=0&include_facets=v2&project_h%5B%5D=PROJ2"},
                :has_children false}]}
-            {:title "Processing levels",
-             :type "group",
-             :applied false,
-             :has_children true,
-             :children
-             [{:title "PL1",
-               :type "filter",
-               :applied false,
-               :count 2,
-               :links
-               {:apply
-                "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&platform_h=diadem-1D&page_size=0&include_facets=v2&processing_level_id_h%5B%5D=PL1"},
-               :has_children false}]}
             {:title "Measurements",
              :type "group",
              :applied false,
@@ -1091,7 +1143,7 @@
                 "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&platform_h=diadem-1D&page_size=0&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement2"},
                :has_children true}]}]})
 
-(def expected-v2-facets-apply-links-with-facets-size-and-non-existing-selecting-facet 
+(def expected-v2-facets-apply-links-with-facets-size-and-non-existing-selecting-facet
   "Expected facets to be returned in the facets v2 response. The structure of the v2 facet response
   is documented in https://wiki.earthdata.nasa.gov/display/CMR/Updated+facet+response. This response
   is generated for the search
@@ -1126,7 +1178,7 @@
                 "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&page_size=0&include_facets=v2"},
                :has_children false}]}]})
 
-(def expected-v2-facets-apply-links-with-selecting-facet-without-facets-size 
+(def expected-v2-facets-apply-links-with-selecting-facet-without-facets-size
   "Expected facets to be returned in the facets v2 response. The structure of the v2 facet response
   is documented in https://wiki.earthdata.nasa.gov/display/CMR/Updated+facet+response. This response
   is generated for the search
@@ -1135,11 +1187,37 @@
   projects, platforms, instruments, organizations, and processing levels in their metadata. This
   tests that the applied parameter is set to false correctly and that the generated links specify a
   a link to add each search parameter to apply that value to a search."
-{:title "Browse Collections",
+  {:title "Browse Collections",
            :type "group",
            :has_children true,
            :children
-           [{:title "Keywords",
+           [{:title "Granule Data Format",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "NetCDF",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&granule_data_format_h%5B%5D=NetCDF"},
+               :has_children false}]}
+            {:title "Processing Levels",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "PL1",
+               :type "filter",
+               :applied false,
+               :count 2,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&processing_level_id_h%5B%5D=PL1"},
+               :has_children false}]}
+            {:title "Keywords",
              :type "group",
              :applied false,
              :has_children true,
@@ -1235,19 +1313,6 @@
                :links
                {:apply
                 "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&project_h%5B%5D=PROJ2"},
-               :has_children false}]}
-            {:title "Processing levels",
-             :type "group",
-             :applied false,
-             :has_children true,
-             :children
-             [{:title "PL1",
-               :type "filter",
-               :applied false,
-               :count 2,
-               :links
-               {:apply
-                "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&processing_level_id_h%5B%5D=PL1"},
                :has_children false}]}
             {:title "Measurements",
              :type "group",

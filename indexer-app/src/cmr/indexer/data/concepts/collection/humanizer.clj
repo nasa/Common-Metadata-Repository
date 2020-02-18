@@ -1,11 +1,12 @@
 (ns cmr.indexer.data.concepts.collection.humanizer
   "Contains functions to converting collection into elasticsearch humanized collection docs"
   (:require
-    [clojure.string :as str]
-    [cmr.common.util :as util]
-    [cmr.common-app.humanizer :as humanizer]
-    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
-    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]))
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.common-app.humanizer :as humanizer]
+   [cmr.indexer.data.concepts.collection.science-keyword :as sk]
+   [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]))
 
 (defn- add-humanized-lowercase
   "Adds a :value.lowercase field to a humanized object"
@@ -43,6 +44,11 @@
     (merge
       {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
                                         (:ScienceKeywords humanized))}
+      (set/rename-keys (extract-fields [:ArchiveAndDistributionInformation
+                                        :FileDistributionInformation
+                                        :cmr.humanized/Format]
+                                       :granule-data-format)
+                       {:granule-data-format.humanized2 :granule-data-format.humanized})
       (extract-fields [:Platforms :cmr.humanized/ShortName] :platform-sn)
       (extract-fields [:Platforms :Instruments :cmr.humanized/ShortName] :instrument-sn)
       (extract-fields [:Projects :cmr.humanized/ShortName] :project-sn)

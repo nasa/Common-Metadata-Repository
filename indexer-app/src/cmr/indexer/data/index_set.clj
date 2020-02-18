@@ -399,6 +399,10 @@
           :science-keywords science-keywords-field-mapping
           :science-keywords.humanized science-keywords-field-mapping
 
+          :granule-data-format                  (m/stored m/string-field-mapping)
+          :granule-data-format.lowercase        m/string-field-mapping
+          :granule-data-format.humanized        prioritized-humanizer-mapping
+
           :platforms platform-hierarchical-mapping
           :instruments instrument-hierarchical-mapping
           :archive-centers data-center-hierarchical-mapping

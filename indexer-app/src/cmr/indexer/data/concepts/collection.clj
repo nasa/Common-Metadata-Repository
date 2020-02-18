@@ -168,6 +168,15 @@
         has-variables (or (:has-variables variable-docs) (:has-variables service-docs))]
     (merge variable-docs service-docs {:has-variables has-variables})))
 
+(defn- get-granule-data-format
+  "Returns the Format field from
+  ArchiveAndDistributionInformation -> FileDistributionInformation"
+  [file-distribution-information]
+  (->> file-distribution-information
+       (map :Format)
+       distinct
+       (remove nil?)))
+
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
@@ -280,7 +289,11 @@
                                   granule-end-date)
         humanized-values (humanizer/collection-humanizers-elastic context collection)
         tags (map tag/tag-association->elastic-doc tag-associations)
-        has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))]
+        has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))
+        granule-data-format (get-granule-data-format
+                             (get-in collection [:ArchiveAndDistributionInformation
+                                                 :FileDistributionInformation]))]
+
     (merge {:concept-id concept-id
             :doi-stored doi
             :doi.lowercase doi-lowercase
@@ -297,6 +310,8 @@
                                    (some?
                                     (some #(= (common-config/cwic-tag) %)
                                           (map :tag-key.lowercase tags))))
+            :granule-data-format granule-data-format
+            :granule-data-format.lowercase (map str/lower-case granule-data-format)
             :entry-id entry-id
             :entry-id.lowercase (str/lower-case entry-id)
             :entry-title (str/trim entry-title)
