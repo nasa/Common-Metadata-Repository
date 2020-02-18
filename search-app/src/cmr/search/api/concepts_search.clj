@@ -95,8 +95,8 @@
                   (rfh/printable-result-format result-format)
                   (pr-str params)))
     (svc-errors/throw-service-error
-     :too-many-requests
-     "Excessive query rate. Please contact support@earthdata.nasa.gov.")))
+      :too-many-requests
+      "Excessive query rate. Please contact support@earthdata.nasa.gov.")))
 
 (defn- reject-all-granule-query?
   "Return true if the all granule query will be rejected."
@@ -281,7 +281,6 @@
     ;; Find concepts - form encoded or JSON
     (POST "/"
       {params :params headers :headers ctx :request-context body :body-copy}
-      (println params)
       (find-concepts ctx path-w-extension params headers body))))
 
 (def granule-timeline-routes
@@ -297,17 +296,17 @@
 (def find-deleted-concepts-routes
   "Routes for finding deleted granules and collections."
   (routes
-   (context ["/:path-w-extension" :path-w-extension #"(?:deleted-collections)(?:\..+)?"] [path-w-extension]
-     (OPTIONS "/" req common-routes/options-response)
-     (GET "/"
-       {params :params headers :headers ctx :request-context}
-       (get-deleted-collections ctx path-w-extension params headers)))
+    (context ["/:path-w-extension" :path-w-extension #"(?:deleted-collections)(?:\..+)?"] [path-w-extension]
+      (OPTIONS "/" req common-routes/options-response)
+      (GET "/"
+        {params :params headers :headers ctx :request-context}
+        (get-deleted-collections ctx path-w-extension params headers)))
 
-   (context ["/:path-w-extension" :path-w-extension #"(?:deleted-granules)(?:\..+)?"] [path-w-extension]
-     (OPTIONS "/" req common-routes/options-response)
-     (GET "/"
-       {params :params headers :headers ctx :request-context}
-       (get-deleted-granules ctx path-w-extension params headers)))))
+    (context ["/:path-w-extension" :path-w-extension #"(?:deleted-granules)(?:\..+)?"] [path-w-extension]
+      (OPTIONS "/" req common-routes/options-response)
+      (GET "/"
+        {params :params headers :headers ctx :request-context}
+        (get-deleted-granules ctx path-w-extension params headers)))))
 
 (def aql-search-routes
   "Routes for finding concepts using the ECHO Alternative Query Language (AQL)."

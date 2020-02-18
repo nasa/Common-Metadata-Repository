@@ -34,7 +34,7 @@
                                                :sr coord-sys
                                                :geometries shapes})}))))
 
-(deftest spatial-search-test
+(deftest collection-shapefile-search-test
   (let [;; Lines
         normal-line (make-coll :geodetic "normal-line"
                                (l/ords->line-string :geodetic [22.681 -8.839, 18.309 -11.426, 22.705 -6.557]))

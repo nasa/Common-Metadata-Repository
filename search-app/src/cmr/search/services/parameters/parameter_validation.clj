@@ -717,7 +717,7 @@
 
 (def ^:private valid-shapefile-formats
   "Valid shapefile formats"
-  #{mt/shapefile mt/json mt/kml})   
+  #{mt/shapefile})   
           
 (defn shapefile-format-validation
   "Validates that the shapefile format value is one of the accepted formats"
@@ -726,7 +726,7 @@
     (when (not (contains? valid-shapefile-formats shapefile-format))
       [(format "Shapefile format [%s] is not supported. It must be one of %s"
                shapefile-format
-               (util/human-list (vec valid-shapefile-formats) "," "or"))])))
+               (util/human-join (vec valid-shapefile-formats) "," "or"))])))
 
 (def parameter-validations
   "Lists of parameter validation functions by concept type"

@@ -1,14 +1,16 @@
 (ns cmr.search.services.parameters.converters.shapefile
   "Contains parameter converters for shapefile parameter"
-  (:require [cmr.common-app.services.search.params :as p]
-            [cmr.search.models.query :as qm]
-            [cmr.common.mime-types :as mt]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common.util :as util]
-            [cmr.common.services.errors :as errors]
-            [cmr.search.services.parameters.converters.geometry :as geo]
-            [clojure.java.io :as io]
-            [clojure.string :as str])
+  (:require 
+    [clojure.java.io :as io]
+    [clojure.string :as str]
+    [cmr.common.config :as cfg :refer [defconfig]]
+    [cmr.common.mime-types :as mt]
+    [cmr.common-app.services.search.group-query-conditions :as gc]
+    [cmr.common-app.services.search.params :as p]
+    [cmr.common.services.errors :as errors]
+    [cmr.search.models.query :as qm]
+    [cmr.search.services.parameters.converters.geometry :as geo]
+    [cmr.common.util :as util])
   (:import
    (java.io BufferedInputStream File FileReader FileOutputStream FileInputStream)
    (java.nio.file Files)
@@ -25,6 +27,10 @@
    (org.geotools.util URLs)))
 
 (def EPSG-4326-CRS (CRS/decode "EPSG:4326" true))
+
+(defconfig enable-shapefile-parameter-flag
+  "Flag that indicates if we allow spatial searching by shapefile."
+  {:default true :type Boolean})
 
 (defn- unzip-file
   "Unzip a file (of type File) into a temporary directory and return the directory path as a File"
@@ -122,7 +128,7 @@
                  (-> data-store .getFeatureReader .close))))))
 
 (defmulti shapefile->conditions
-  "Convers a shapefile to query conditions based on shapefile format"
+  "Converts a shapefile to query conditions based on shapefile format"
   (fn [shapefile-info]
     (:content-type shapefile-info)))
 
@@ -134,4 +140,6 @@
 
 (defmethod p/parameter->condition :shapefile
   [_context concept-type param value options]
-  (shapefile->conditions value))
+  (if (enable-shapefile-parameter-flag)
+    (shapefile->conditions value)
+    (errors/throw-service-error :bad-request "Searching by shapefile is not enabled")))
