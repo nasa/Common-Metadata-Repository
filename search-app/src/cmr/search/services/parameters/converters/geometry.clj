@@ -38,13 +38,13 @@
   [coords]
   (flatten (map (fn [coord] [(.getX coord) (.getY coord)]) coords)))
 
-(defn line-string->ring
+(defn line-string-ring->ring
   "Convert a JTS LineString to a spatial lib ring"
   [line-string]
   (rr/ords->ring :geodetic (coords->ords (.getCoordinates line-string))))
 
 (defn polygon->shape
-  "Convert a JTS Polygon to a spatial lib shape that can be used in Spatial query"
+  "Convert a JTS Polygon to a spatial lib shape that can be used in a Spatial query"
   [polygon]
   (let [boundary-ring (.reverse (.getExteriorRing polygon))
         num-interior-rings (.getNumInteriorRing polygon)
@@ -53,7 +53,18 @@
                            (.getInteriorRingN polygon i))
                          [])
         all-rings (concat [boundary-ring] interior-rings)]
-    (poly/polygon :geodetic (map line-string->ring all-rings))))
+    (poly/polygon :geodetic (map line-string-ring->ring all-rings))))
+
+(defn point->shape
+  "Convert a JTS Point to a spatial lib shape that can be used in a Spatial query"
+  [point]
+  (point/point (.getX point) (.getY point)))
+
+(defn line->shape
+  "Convert a LineString or LinearRing to a spatial lib shape that can be used in a Spatial query"
+  [line]
+  (let [ordinates (coords->ords (.getCoordinates line))]
+    (l/ords->line-string :geodetic ordinates)))
 
 ; (defmethod url-decode :point
 ;   [type s]
@@ -94,6 +105,27 @@
 (defmethod geometry->condition "Polygon"
   [geometry]
   (let [shape (polygon->shape geometry)
+        condition (qm/->SpatialCondition shape)
+        _ (println condition)]
+    condition))
+
+(defmethod geometry->condition "Point"
+  [geometry]
+  (let [shape (point->shape geometry)
+        condition (qm/->SpatialCondition shape)
+        _ (println condition)]
+    condition))
+
+(defmethod geometry->condition "LineString"
+  [geometry]
+  (let [shape (line->shape geometry)
+        condition (qm/->SpatialCondition shape)
+        _ (println condition)]
+    condition))
+
+(defmethod geometry->condition "LinearRing"
+  [geometry]
+  (let [shape (line->shape geometry)
         condition (qm/->SpatialCondition shape)
         _ (println condition)]
     condition))
