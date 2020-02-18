@@ -580,7 +580,7 @@
     (let [response (client/post (url/search-url concept-type)
                                 {:accept mime-types/xml
                                  :multipart form
-                                 :throw-exceptions false
+                                 :throw-exceptions true
                                  :connection-manager (s/conn-mgr)})]
       (parse-reference-response false response))))
 
