@@ -206,8 +206,6 @@
                                        (common-search/find-concepts
                                          context concept-type query))
         total-took (+ query-creation-time find-concepts-time)]
-    (println "PARAMS:")
-    (println params)
     (info (format "Found %d %ss in %d ms from client %s in format %s with params %s."
                   (:hits results) (name concept-type) total-took (:client-id context)
                   (rfh/printable-result-format (:result-format query)) (pr-str params)))

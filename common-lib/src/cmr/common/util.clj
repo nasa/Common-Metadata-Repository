@@ -960,7 +960,7 @@
            (<= token-length 14)) (str (subs token 0 (- token-length 5)) "XXX")
       :else "XXX")))
 
-(defn human-list
+(defn human-join
   "Given a vector of strings, return a string joing the elements of the collection with 'separator', except for 
   the last two which are joined with \"'separator' 'final-separator' \".
   Example: (fancy-join [\"One\" \"Two\" \"Three\"] \",\" \"or\") => \"One, Two, or Three\""

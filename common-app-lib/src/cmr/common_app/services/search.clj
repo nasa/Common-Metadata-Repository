@@ -40,7 +40,6 @@
   "Validates a query model. Throws an exception to return to user with errors.
   Returns the query model if validation is successful so it can be chained with other calls."
   [context query]
-  (println query)
   (if-let [errors (seq (qv/validate query))]
     (errors/throw-service-errors :bad-request errors)
     query))

@@ -73,6 +73,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Bounding Box](#c-bounding-box)
         * [Point](#c-point)
         * [Line](#c-line)
+    * [Shapefile](#c-shapefile)
     * [Additional Attribute](#c-additional-attribute)
     * [Author](#c-author)
     * [With/without granules](#c-has-granules)
@@ -93,6 +94,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Bounding Box](#g-bounding-box)
         * [Point](#g-point)
         * [Line](#g-line)
+    * [Shapefile](#g-shapefile)
     * [Orbit number](#g-orbit-number)
     * [Orbit equator crossing longitude](#g-orbit-equator-crossing-longitude)
     * [Orbit equator crossing date](#g-orbit-equator-crossing-date)
@@ -1599,6 +1601,16 @@ Lines are provided as a list of comma separated values representing coordinates 
 
 Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are AND'd in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon.
 
+#### <a name="c-shapefile"></a> Find collections by shapefile
+
+A shapefile can be uploaded with a query to restrict results to those that overlap the geometry in the shapefile. Note that unlike the spatial parameters, geometry in the shapefile is OR'd together, not AND'd. So if a collection overlaps _any_ of the geometry in the shapefile it will match. Note also that the `shapefile` parameter supports shapefiles containing polygons with holes.
+
+Currently the only supported shapefile format is ESRI, and all the sub-files (*.shp, *.shx, etc.) must be uploaded in a single zip file. Shapefile upload is only supported using POST with `multipart/form-data` and the mime type for the shapefile must be given as `application/shapefile+zip`.
+
+  curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
+
+**NOTE:** This is an experimental feature and may not be enabled in all environments.
+
 #### <a name="c-additional-attribute"></a> Find collections by additional attribute
 
 Find an additional attribute with name "PERCENTAGE" only
@@ -1823,6 +1835,14 @@ The parameters used for searching granules by spatial are the same as the spatia
 ##### <a name="g-line"></a> Line
 
     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
+
+#### <a name="g-shapefile"></a> Find granules by shapefile
+
+As with collections, a shapefile can be uploaded to find granules that overlap the shapefile's geometry. (See [Find collections by shapefile](#c-shapefile) for more details.)
+
+  curl -XPOST "%CMR-ENDPOINT%/granules" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
+
+**NOTE**: This is an experimental feature and may not be enabled in all environments.
 
 #### <a name="g-orbit-number"></a> Find granules by orbit number
 

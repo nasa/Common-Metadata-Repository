@@ -98,13 +98,13 @@
     (routes
       ;; Return robots.txt from the root /robots.txt and at the context (e.g.
       ;; /search/robots.txt)
-     (GET "/robots.txt" req (get-robots-txt-response test-environment))
-     (context
-       relative-root-url []
-       (GET "/robots.txt" req (get-robots-txt-response test-environment)))
-     (api-routes/build-routes system)
-     (site-routes/build-routes system)
-     (common-pages/not-found))))
+      (GET "/robots.txt" req (get-robots-txt-response test-environment))
+      (context
+        relative-root-url []
+        (GET "/robots.txt" req (get-robots-txt-response test-environment)))
+      (api-routes/build-routes system)
+      (site-routes/build-routes system)
+      (common-pages/not-found))))
 
 (defn handlers [system]
   (-> (build-routes system)

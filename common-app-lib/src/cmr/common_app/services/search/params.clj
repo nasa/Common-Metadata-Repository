@@ -98,8 +98,8 @@
 (defmethod parameter->condition :default
   [_context concept-type param value options]
   (errors/internal-error!
-   (format "Could not find parameter handler for [%s] with concept-type [%s]"
-           param concept-type)))
+    (format "Could not find parameter handler for [%s] with concept-type [%s]"
+            param concept-type)))
 
 (defn string-parameter->condition
   [concept-type param value options]
