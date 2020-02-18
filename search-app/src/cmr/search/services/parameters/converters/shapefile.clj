@@ -4,6 +4,7 @@
     [clojure.java.io :as io]
     [clojure.string :as str]
     [cmr.common.config :as cfg :refer [defconfig]]
+    [cmr.common.log :refer (debug)]
     [cmr.common.mime-types :as mt]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.params :as p]
@@ -42,7 +43,7 @@
               target-file #(File. (.toString target-dir) (str %))]
           (doseq [entry entries :when (not (.isDirectory ^java.util.zip.ZipEntry entry))
                   :let [f (target-file entry)]]
-            (println (.getName entry))
+            (debug (format "Zip file entry: [%s]" (.getName entry)))
             (io/copy (.getInputStream zip entry) f))))
       (.toFile target-dir))
     (catch Exception e
@@ -69,17 +70,18 @@
   ;; if the source CRS is defined and not already WGS84 then transform the geometry to WGS84
   (if (and src-crs
            (not (= (.getName src-crs) (.getName EPSG-4326-CRS))))
-    (let [_ (println (.getName src-crs))
-          _ (println (CRS/getAxisOrder src-crs))
-          _ (println (.getName EPSG-4326-CRS))
-          _ (println (CRS/getAxisOrder EPSG-4326-CRS))
+    (let [src-crs-name (.getName src-crs)
+          _ (debug (format "Source CRS: [%s]" src-crs-name))
+          _ (debug (format "Source axis order: [%s]" (CRS/getAxisOrder src-crs)))
+          _ (debug (format "Destination CRS: [%s]" (.getName EPSG-4326-CRS)))
+          _ (debug (format "Destination axis order: [%s]" (CRS/getAxisOrder EPSG-4326-CRS)))
           transform (CRS/findMathTransform src-crs EPSG-4326-CRS false)]
       ; if we didn't find a tranform send an error message
       (if transform
         (let [new-geometry (JTS/transform geometry transform)
-              _ (println new-geometry)]
+              _ (debug (format "New geometry: [%s" new-geometry))]
           new-geometry)
-        (errors/throw-service-error :bad-request "Cannot transform CRS to WGS84")))
+        (errors/throw-service-error :bad-request (format "Cannot transform source CRS [%s] to WGS 84" src-crs-name))))
     geometry))
 
 (defn feature->conditions
@@ -88,12 +90,12 @@
   (let [crs (when (.getDefaultGeometryProperty feature)
               (-> feature .getDefaultGeometryProperty .getDescriptor .getCoordinateReferenceSystem))
         properties (.getProperties feature)
-        _ (doseq [p properties] (println (.getName p)))
-        _ (doseq [p properties] (println (.getValue p)))
-        geometry-props (filter (fn [p] (geo/geometry? (.getValue p))) properties) ;; TODO need to handle Associations here
-        _ (println (format "Found [%d] geometries" (count geometry-props)))
+        _ (doseq [p properties] (debug (.getName p)))
+        _ (doseq [p properties] (debug (.getValue p)))
+        geometry-props (filter (fn [p] (geo/geometry? (.getValue p))) properties)
+        _ (debug (format "Found [%d] geometries" (count geometry-props)))
         geometries (map #(-> % .getValue (transform-to-epsg-4326 crs)) geometry-props)
-        _ (println (format "Transformed [%d] geometries" (count geometries)))]
+        _ (debug (format "Transformed [%d] geometries" (count geometries)))]
     (flatten (map (fn [g] (geometry->conditions g)) geometries))))
 
 (defn esri-shapefile->condition-vec
@@ -101,7 +103,6 @@
   [shapefile-info]
   (let [file (:tempfile shapefile-info)
         temp-dir (unzip-file file)
-        _ (println (format "Created temp dir [%s" (.toString temp-dir)))
         shp-file (find-shp-file temp-dir)
         _ (when (nil? shp-file) (errors/throw-service-error :bad-request (format "Incomplete shapefile: missing .shp file")))
         data-store (FileDataStoreFinder/getDataStore shp-file)
@@ -109,7 +110,7 @@
         feature-source (.getFeatureSource data-store)
         _ (when (nil? feature-source) (errors/throw-service-error :bad-request (format "Error parsing shapefile - cannot create FeatureSource")))
         collection (.getFeatures feature-source)
-        _ (println (format "Found [%d] features" (.size collection)))
+        _ (debug (format "Found [%d] features" (.size collection)))
         _ (if (< (.size collection) 1) (errors/throw-service-error :bad-request (format "Shapefile has no features")))
         iterator (.features collection)]
     (try

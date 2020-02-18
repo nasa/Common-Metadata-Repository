@@ -125,10 +125,10 @@
 (defmethod parameter->condition :exclude
   [context concept-type param value options]
   (gc/or-conds
-   (map (fn [[exclude-param exclude-val]]
-          (qm/map->NegatedCondition
-           {:condition (parameter->condition context concept-type exclude-param exclude-val options)}))
-        value)))
+    (map (fn [[exclude-param exclude-val]]
+           (qm/map->NegatedCondition
+             {:condition (parameter->condition context concept-type exclude-param exclude-val options)}))
+         value)))
 
 (defmethod parameter->condition :boolean
   [_context concept-type param value options]

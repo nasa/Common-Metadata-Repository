@@ -46,21 +46,6 @@
       second
       keyword))
 
-(defn fix-form-params
-  "Change multi-form params into normal params.
-  NOTE: the shapefile paramer data will be 'fixed' as well, which means losing 'content-type';
-  therefore this function should only be called AFTER the shapefile has been extracted."
-  [params]
-  (walk/postwalk 
-    (fn [sub-form]
-      ;; only replace the sub-form if it has keys :content and :content-type
-      (if (and 
-            (map? sub-form)
-            (every? #(contains? sub-form %) [:content :content-type]))
-        (:content sub-form)
-        sub-form))
-    params))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Support Functions
 

@@ -34,8 +34,8 @@
                  [ring/ring-core "1.7.1"]
                  [ring/ring-json "0.4.0"]
                  [selmer "1.12.5"]
-                 [org.geotools/gt-shapefile "23-SNAPSHOT"]
-                 [org.geotools/gt-geojsondatastore "23-SNAPSHOT"]
+                 [org.geotools/gt-shapefile "22.3"]
+                 [org.geotools/gt-geojsondatastore "22.3"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
                  [metosin/ring-swagger-ui "2.1.4-0"]
