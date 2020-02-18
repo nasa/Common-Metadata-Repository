@@ -66,38 +66,6 @@
   (let [ordinates (coords->ords (.getCoordinates line))]
     (l/ords->line-string :geodetic ordinates)))
 
-; (defmethod url-decode :point
-;   [type s]
-;   (if-let [match (re-matches point-regex s)]
-;     (let [[_ ^String lon-s ^String lat-s] match]
-;       (point/point (Double. lon-s) (Double. lat-s)))
-;     {:errors [(smsg/shape-decode-msg :point s)]}))
-
-; (defmethod url-decode :bounding-box
-;   [type s]
-;   (if-let [match (re-matches mbr-regex s)]
-;     (let [[_
-;            ^String w
-;            ^String s
-;            ^String e
-;            ^String n] match]
-;       (mbr/mbr (Double. w) (Double. n) (Double. e) (Double. s)))
-;     {:errors [(smsg/shape-decode-msg :bounding-box s)]}))
-
-; (defmethod url-decode :polygon
-;   [type s]
-;   (if-let [match (re-matches polygon-regex s)]
-;     (let [ordinates (map #(Double. ^String %) (str/split s #","))]
-;       (poly/polygon :geodetic [(rr/ords->ring :geodetic ordinates)]))
-;     {:errors [(smsg/shape-decode-msg :polygon s)]}))
-
-; (defmethod url-decode :line
-;   [type s]
-;   (if-let [match (re-matches line-regex s)]
-;     (let [ordinates (map #(Double. ^String %) (str/split s #","))]
-;       (l/ords->line-string :geodetic ordinates))
-;     {:errors [(smsg/shape-decode-msg :line s)]}))
-
 (defmulti geometry->condition
   "Convert a Geometry object to a query condition"
   (fn [geometry] (.getGeometryType geometry)))
@@ -105,27 +73,23 @@
 (defmethod geometry->condition "Polygon"
   [geometry]
   (let [shape (polygon->shape geometry)
-        condition (qm/->SpatialCondition shape)
-        _ (println condition)]
+        condition (qm/->SpatialCondition shape)]
     condition))
 
 (defmethod geometry->condition "Point"
   [geometry]
   (let [shape (point->shape geometry)
-        condition (qm/->SpatialCondition shape)
-        _ (println condition)]
+        condition (qm/->SpatialCondition shape)]
     condition))
 
 (defmethod geometry->condition "LineString"
   [geometry]
   (let [shape (line->shape geometry)
-        condition (qm/->SpatialCondition shape)
-        _ (println condition)]
+        condition (qm/->SpatialCondition shape)]
     condition))
 
 (defmethod geometry->condition "LinearRing"
   [geometry]
   (let [shape (line->shape geometry)
-        condition (qm/->SpatialCondition shape)
-        _ (println condition)]
+        condition (qm/->SpatialCondition shape)]
     condition))
