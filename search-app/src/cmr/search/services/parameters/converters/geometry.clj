@@ -26,7 +26,8 @@
    (org.geotools.data DataStoreFinder FileDataStoreFinder Query)
    (org.geotools.data.simple SimpleFeatureSource)
    (org.geotools.data.geojson GeoJSONDataStore)
-   (org.geotools.util URLs)))
+   (org.geotools.util URLs)
+   (org.locationtech.jts.geom Coordinate Geometry LineString Point Polygon)))
 
 (defn geometry?
   "Returns true if the object is of type Geometry"
@@ -36,16 +37,16 @@
 (defn coords->ords
   "Convert an array of JTS Coordinate to an array of Doubles"
   [coords]
-  (flatten (map (fn [coord] [(.getX coord) (.getY coord)]) coords)))
+  (mapcat (fn [^Coordinate coord] [(.getX coord) (.getY coord)]) coords))
 
 (defn line-string-ring->ring
   "Convert a JTS LineString to a spatial lib ring"
-  [line-string]
+  [^LineString line-string]
   (rr/ords->ring :geodetic (coords->ords (.getCoordinates line-string))))
 
 (defn polygon->shape
   "Convert a JTS Polygon to a spatial lib shape that can be used in a Spatial query"
-  [polygon]
+  [^Polygon polygon]
   (let [boundary-ring (.reverse (.getExteriorRing polygon))
         num-interior-rings (.getNumInteriorRing polygon)
         interior-rings (if (> num-interior-rings 0)
@@ -57,18 +58,18 @@
 
 (defn point->shape
   "Convert a JTS Point to a spatial lib shape that can be used in a Spatial query"
-  [point]
+  [^Point point]
   (point/point (.getX point) (.getY point)))
 
 (defn line->shape
   "Convert a LineString or LinearRing to a spatial lib shape that can be used in a Spatial query"
-  [line]
+  [^LineString line]
   (let [ordinates (coords->ords (.getCoordinates line))]
     (l/ords->line-string :geodetic ordinates)))
 
 (defmulti geometry->condition
   "Convert a Geometry object to a query condition"
-  (fn [geometry] (.getGeometryType geometry)))
+  (fn [^Geometry geometry] (.getGeometryType geometry)))
 
 (defmethod geometry->condition "Polygon"
   [geometry]

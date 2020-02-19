@@ -27,11 +27,13 @@
    (org.geotools.referencing CRS)
    (org.geotools.util URLs)))
 
-(def EPSG-4326-CRS (CRS/decode "EPSG:4326" true))
+(def EPSG-4326-CRS 
+  "The CRS object for WGS 84"
+  (CRS/decode "EPSG:4326" true))
 
 (defconfig enable-shapefile-parameter-flag
   "Flag that indicates if we allow spatial searching by shapefile."
-  {:default true :type Boolean})
+  {:default false :type Boolean})
 
 (defn- unzip-file
   "Unzip a file (of type File) into a temporary directory and return the directory path as a File"
@@ -98,20 +100,33 @@
         _ (debug (format "Transformed [%d] geometries" (count geometries)))]
     (flatten (map (fn [g] (geometry->conditions g)) geometries))))
 
+(defn- error-if
+  "Throw a service error with the given message if `f` applied to `item` is true. 
+  Otherwise just return `item`."
+  [item f message]
+  (if (f item)
+    (errors/throw-service-error :bad-request message)
+    item))
+
 (defn esri-shapefile->condition-vec
   "Converts a shapefile to a vector of SpatialConditions"
   [shapefile-info]
   (let [file (:tempfile shapefile-info)
         temp-dir (unzip-file file)
-        shp-file (find-shp-file temp-dir)
-        _ (when (nil? shp-file) (errors/throw-service-error :bad-request (format "Incomplete shapefile: missing .shp file")))
-        data-store (FileDataStoreFinder/getDataStore shp-file)
-        _ (when (nil? data-store) (errors/throw-service-error :bad-request (format "Error parsing shapefile - cannot create DataStore")))
-        feature-source (.getFeatureSource data-store)
-        _ (when (nil? feature-source) (errors/throw-service-error :bad-request (format "Error parsing shapefile - cannot create FeatureSource")))
-        collection (.getFeatures feature-source)
+        shp-file (error-if
+                   (find-shp-file temp-dir) 
+                   nil?
+                   "Incomplete shapefile: missing .shp file")
+        data-store (error-if (FileDataStoreFinder/getDataStore shp-file)
+                              nil?
+                              "Error parsing shapefile - cannot create DataStore")
+        feature-source (error-if (.getFeatureSource data-store)
+                                 nil?
+                                 "Error parsing shapefile - cannot create FeatureSource")
+        collection (error-if (.getFeatures feature-source)
+                             #(< (.size %) 1)
+                             "Shapefile has no features")
         _ (debug (format "Found [%d] features" (.size collection)))
-        _ (if (< (.size collection) 1) (errors/throw-service-error :bad-request (format "Shapefile has no features")))
         iterator (.features collection)]
     (try
       (loop [conditions []]

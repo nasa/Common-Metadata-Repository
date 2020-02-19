@@ -3,6 +3,8 @@
     [clojure.test :refer :all]
     [clojure.java.io :as io]
     [cmr.common.util :as util :refer [are3]]
+    [cmr.common-app.test.side-api :as side]
+    [cmr.search.services.parameters.converters.shapefile :as shapefile]
     [cmr.spatial.line-string :as l]
     [cmr.spatial.mbr :as m]
     [cmr.spatial.point :as p]
@@ -35,7 +37,8 @@
                                                :geometries shapes})}))))
 
 (deftest collection-shapefile-search-test
-  (let [;; Lines
+  (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
+        ;; Lines
         normal-line (make-coll :geodetic "normal-line"
                                (l/ords->line-string :geodetic [22.681 -8.839, 18.309 -11.426, 22.705 -6.557]))
         along-am-line (make-coll :geodetic "along-am-line"

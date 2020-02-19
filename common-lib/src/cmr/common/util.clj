@@ -961,7 +961,7 @@
       :else "XXX")))
 
 (defn human-join
-  "Given a vector of strings, return a string joing the elements of the collection with 'separator', except for 
+  "Given a vector of strings, return a string joining the elements of the collection with 'separator', except for 
   the last two which are joined with \"'separator' 'final-separator' \".
   Example: (fancy-join [\"One\" \"Two\" \"Three\"] \",\" \"or\") => \"One, Two, or Three\""
   [coll separator final-separator]
