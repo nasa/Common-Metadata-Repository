@@ -2,6 +2,8 @@
   "Integration tests for autocomplete collection search facets"
   (:require
     [clojure.test :refer :all]
+    [cheshire.core :as json]
+    [clojurewerkz.elastisch.rest :as esr]
     [cmr.common.util :as util
      :refer              [are3]]
     [cmr.system-int-test.data2.core :as d]
@@ -13,22 +15,63 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest autocomplete-suggest-test
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection {:ShortName "OneShort" :Version "V1" :EntryTitle "E1"}))
-        coll2 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection {:ShortName "OnlyShort" :Version "V2" :EntryTitle "E2"}))
-        coll3 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection {:ShortName "OneShort" :Version "V3" :EntryTitle "E3j"}))]
+  (let [conn (esr/connect "http://localhost:9210")
+        _    (esr/post conn "http://localhost:9210/1_autocomplete/suggestion"
+                       {:headers {:Content-Type "application/json"}
+                        :body {:value "foo" :type "instrument"}})]
     (index/wait-until-indexed)
 
-    (testing "value only search"
-             (let [results (search/get-autocomplete-suggestions "foo")]
-               (is (= 0 (count (:items results))))))
+    (testing "returned result form test"
+             (let [response (search/get-autocomplete-suggestions "foo")
+                   body (:body response)
+                   data (json/parse-string body true)]
+               (is (contains? data :query))
+               (is (contains? data :results))
+               (is (contains? (:results data) :items))))
 
-    (testing "value with type search"
-             (let [results (search/get-autocomplete-with-type-suggestions "foo" ["instrument"])]
-               (is (= 0 (count (:items results))))))
+    (testing "missing query param response test"
+             (is
+              (thrown? clojure.lang.ExceptionInfo
+                       (search/get-autocomplete-suggestions))))
 
-    (testing "value with multiple type search"
-             (let [results (search/get-autocomplete-with-type-suggestions "foo" ["instrument" "platform"])]
-               (is (= 0 (count (:items results))))))))
+    (testing "partial value match search"
+             (let [response (search/get-autocomplete-suggestions "f")
+                   body (:body response)
+                   data (json/parse-string body true)]
+               (is (= 1 (count (:items (:results data)))))))
+
+    (testing "full value match search"
+             (let [response (search/get-autocomplete-suggestions "foo")
+                   body (:body response)
+                   data (json/parse-string body true)]
+               (is (= 1 (count (:items (:results data)))))))
+
+    (testing "full value with extra value match search"
+             (let [response (search/get-autocomplete-suggestions "foos")
+                   body (:body response)
+                   data (json/parse-string body true)]
+               (is (= 0 (count (:items (:results data)))))))
+
+    (testing "case sensitivity test"
+             (let [response (search/get-autocomplete-suggestions "FOO")
+                   body (:body response)
+                   data (json/parse-string body true)]
+               (is (= 1 (count (:items (:results data)))))))
+
+    (testing "bad value search with no results"
+             (let [response (search/get-autocomplete-suggestions "zee")
+                   body (:body response)
+                   data (json/parse-string body true)]
+               (is (= 0 (count (:items (:results data)))))))
+
+    (testing "search with type filter"
+             (let [response (search/get-autocomplete-suggestions "foo" ["instrument"])
+                   body (:body response)
+                   data (json/parse-string body true)]
+               (is (= 1 (count (:items (:results data)))))))
+
+    (testing "search with type filter with no results"
+             (let [response (search/get-autocomplete-suggestions "foo" ["platform"])
+                   body (:body response)
+                   data (json/parse-string body true)]
+               (is (= 0 (count (:items (:results data)))))))))

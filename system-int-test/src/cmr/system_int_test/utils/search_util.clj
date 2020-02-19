@@ -247,6 +247,16 @@
                  :throw-exceptions true
                  :connection-manager (s/conn-mgr)})))
 
+(defn get-autocomplete-suggestions
+  "Executes a query to the autocomplete endpoint with the given value and returns the results."
+  ([]
+   (client/get (url/autocomplete-url)))
+  ([term]
+   (client/get (url/autocomplete-url term)))
+  ([term types-list]
+   (let [types (str/join "," types-list)]
+     (client/get (url/autocomplete-url term types)))))
+
 (defn- parse-timeline-interval
   "Parses the timeline response interval component into a more readable and comparable format."
   [[start end num-grans]]
