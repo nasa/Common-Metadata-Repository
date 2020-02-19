@@ -16,9 +16,9 @@
 
 (deftest autocomplete-suggest-test
   (let [conn (esr/connect "http://localhost:9210")
-        _    (esr/post conn "http://localhost:9210/1_autocomplete/suggestion"
-                       {:headers {:Content-Type "application/json"}
-                        :body {:value "foo" :type "instrument"}})]
+        _ (esr/post conn "http://localhost:9210/1_autocomplete/suggestion"
+                    {:headers {:Content-Type "application/json"}
+                     :body {:value "foo" :type "instrument"}})]
     (index/wait-until-indexed)
 
     (testing "returned result form test"
@@ -30,9 +30,8 @@
                (is (contains? (:results data) :items))))
 
     (testing "missing query param response test"
-             (is
-              (thrown? clojure.lang.ExceptionInfo
-                       (search/get-autocomplete-suggestions))))
+             (is (thrown? clojure.lang.ExceptionInfo
+                          (search/get-autocomplete-suggestions))))
 
     (testing "partial value match search"
              (let [response (search/get-autocomplete-suggestions "f")
@@ -66,6 +65,12 @@
 
     (testing "search with type filter"
              (let [response (search/get-autocomplete-suggestions "foo" ["instrument"])
+                   body (:body response)
+                   data (json/parse-string body true)]
+               (is (= 1 (count (:items (:results data)))))))
+
+    (testing "search with multiple types filter"
+             (let [response (search/get-autocomplete-suggestions "foo" ["instrument" "platform" "project" "provider"])
                    body (:body response)
                    data (json/parse-string body true)]
                (is (= 1 (count (:items (:results data)))))))

@@ -16,7 +16,7 @@
    (let [condition (if (empty? types)
                      (qm/text-condition :value term)
                      (gc/and-conds
-                      [(gc/or-conds (map #(qm/text-condition :type %) types))
+                      [(gc/or-conds (map (partial qm/text-condition :type) types))
                        (qm/text-condition :value term)]))
          query     (qm/query
                     {:concept-type  :autocomplete

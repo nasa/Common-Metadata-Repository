@@ -19,15 +19,15 @@
   (let [term      (:q params)
         raw-types (:types params)]
     (if term
-      (let [types   (if raw-types
-                      (filter #(not (empty? %))
-                              (map str/lower-case (map str/trim (str/split raw-types #",")))))
+      (let [types (if raw-types
+                    (filter #(not (empty? %))
+                      (map str/lower-case (map str/trim (str/split raw-types #",")))))
             results (ac/autocomplete ctx (str/lower-case term) types)]
-        {:status  200
+        {:status 200
          :headers {common-routes/CONTENT_TYPE_HEADER (str (mt/format->mime-type :json) "; charset=utf-8")
                    common-routes/CORS_ORIGIN_HEADER  "*"}
-         :body    {:query   term
-                   :results results}})
+         :body {:query term
+                :results results}})
       (svc-errors/throw-service-errors
        :bad-request
        ["Missing param [q]" "Usage [/autocomplete?q=<term>]"]))))
