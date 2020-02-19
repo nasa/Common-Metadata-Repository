@@ -3,6 +3,8 @@
    [clojure.test :refer :all]
    [clojure.java.io :as io]
    [cmr.common.util :as util :refer [are3]]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.search.services.parameters.converters.shapefile :as shapefile]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
@@ -24,7 +26,8 @@
   (poly/polygon [(apply umm-s/ords->ring ords)]))
 
 (deftest granule-shapefile-search-test
-  (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+  (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
+        geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                                                                                     :EntryTitle "E1"
                                                                                     :ShortName "S1"
                                                                                     :Version "V1"}))
@@ -104,7 +107,7 @@
         "box.zip" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
 
         "Corrupt zip file"
-       "corrupt_file.zip" {:name "provider" :content "PROV1"} #"Error while uncompressing zip file: invalid END header \(bad central directory offset\)"
+        "corrupt_file.zip" {:name "provider" :content "PROV1"} #"Error while uncompressing zip file: invalid END header \(bad central directory offset\)"
         
         "Missing .shp file"
         "missing_shapefile_shp.zip" {:name "provider" :content "PROV1"} #"Incomplete shapefile: missing .shp file"))
