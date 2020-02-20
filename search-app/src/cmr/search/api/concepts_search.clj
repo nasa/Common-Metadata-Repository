@@ -13,7 +13,6 @@
    [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
    [cmr.search.api.core :as core-api]
-   [cmr.search.data.shapefile :as shapefile]
    [cmr.search.services.parameters.legacy-parameters :as lp]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
