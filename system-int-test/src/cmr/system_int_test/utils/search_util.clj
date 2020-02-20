@@ -250,7 +250,7 @@
 (defn get-autocomplete-suggestions
   "Executes a query to the autocomplete endpoint with the given value and returns the results."
   ([]
-   (client/get (url/autocomplete-url)))
+   (client/get (url/autocomplete-url) {:throw-exceptions false}))
   ([term]
    (client/get (url/autocomplete-url term)))
   ([term types-list]

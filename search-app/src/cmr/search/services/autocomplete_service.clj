@@ -21,8 +21,8 @@
                        (qm/text-condition :value term)]))
          query     (qm/query
                     {:concept-type :autocomplete
-                     :page-size (:page-size opts 20)
-                     :offset (:offset opts 0)
+                     :page-size (:page-size opts)
+                     :offset (:offset opts)
                      :condition condition
                      :result-fields [:type :value]})
          results   (qe/execute-query context query)]
