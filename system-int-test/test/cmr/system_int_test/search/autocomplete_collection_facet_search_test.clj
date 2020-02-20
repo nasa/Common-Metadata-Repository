@@ -4,8 +4,7 @@
     [clojure.test :refer :all]
     [cheshire.core :as json]
     [clojurewerkz.elastisch.rest :as esr]
-    [cmr.common.util :as util
-     :refer              [are3]]
+    [cmr.common.util :as util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.ingest-util :as ingest]
