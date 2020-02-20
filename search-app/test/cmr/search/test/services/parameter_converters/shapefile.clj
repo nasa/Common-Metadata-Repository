@@ -44,7 +44,7 @@
         (is (= "Error while uncompressing zip file: invalid END header (bad central directory offset)"
                (.getMessage e))))))
 
-  (testing "corrupt zip file"
+  (testing "missing zip file"
     (try
       (let [shp-file (io/file (io/resource "shapefiles/missing_shapefile_shp.zip"))]
         (shapefile/esri-shapefile->condition-vec {:tempfile shp-file}))

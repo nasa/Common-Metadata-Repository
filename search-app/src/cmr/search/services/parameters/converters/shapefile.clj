@@ -73,18 +73,18 @@
   ;; if the source CRS is defined and not already WGS84 then transform the geometry to WGS84
   (if (and src-crs
            (not (= (.getName src-crs) (.getName EPSG-4326-CRS))))
-    (let [src-crs-name (.getName src-crs)
-          _ (debug (format "Source CRS: [%s]" src-crs-name))
-          _ (debug (format "Source axis order: [%s]" (CRS/getAxisOrder src-crs)))
-          _ (debug (format "Destination CRS: [%s]" (.getName EPSG-4326-CRS)))
-          _ (debug (format "Destination axis order: [%s]" (CRS/getAxisOrder EPSG-4326-CRS)))
-          transform (try 
-                      (CRS/findMathTransform src-crs EPSG-4326-CRS false)
-                      (catch Exception e))]
-      ; if we didn't find a tranform send an error message
-      (if transform
-        (let [new-geometry (JTS/transform geometry transform)
-              _ (debug (format "New geometry: [%s" new-geometry))]
+    (let [src-crs-name (.getName src-crs)]
+      (debug (format "Source CRS: [%s]" src-crs-name))
+      (debug (format "Source axis order: [%s]" (CRS/getAxisOrder src-crs)))
+      (debug (format "Destination CRS: [%s]" (.getName EPSG-4326-CRS)))
+      (debug (format "Destination axis order: [%s]" (CRS/getAxisOrder EPSG-4326-CRS)))
+      ; If we find a tranform use it to tranform the geometry, 
+      ; otherwise send an error message
+      (if-let [transform (try 
+                          (CRS/findMathTransform src-crs EPSG-4326-CRS false)
+                          (catch Exception e))]
+        (let [new-geometry (JTS/transform geometry transform)]
+          (debug (format "New geometry: [%s" new-geometry))
           new-geometry)
         (errors/throw-service-error :bad-request (format "Cannot transform source CRS [%s] to WGS 84" src-crs-name))))
     geometry))
