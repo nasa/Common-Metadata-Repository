@@ -1,20 +1,11 @@
 (ns cmr.search.services.parameters.converters.geometry
   "Contains parameter converters for shapefile parameter"
   (:require
-   [cmr.common-app.services.search.params :as p]
-   [cmr.common.mime-types :as mt]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common.util :as util]
-   [cmr.common.services.errors :as errors]
    [cmr.search.models.query :as qm]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.point :as point]
-   [cmr.spatial.geodetic-ring :as gr]
    [cmr.spatial.line-string :as l]
-   [cmr.spatial.ring-relations :as rr]
-   [cmr.spatial.mbr :as mbr]
-   [cmr.common.regex-builder :as rb]
-   [clojure.string :as str])
+   [cmr.spatial.ring-relations :as rr])
   (:import
    (java.io BufferedReader File FileReader FileOutputStream FileInputStream)
    (java.nio.file Files)

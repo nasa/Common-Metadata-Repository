@@ -20,7 +20,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(defn polygon
+(defn- polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise
   order."
   [& ords]
