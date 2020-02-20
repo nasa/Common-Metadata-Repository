@@ -34,7 +34,7 @@
      (is (contains? (:results data) :items))))
 
   (testing "missing query param response test"
-   (let [response (search/get-autocomplete-suggestions)]
+   (let [response (search/get-autocomplete-suggestions nil {:throw-exceptions false})]
      (is (= 400 (:status response)))))
 
   (testing "partial value match search"
@@ -68,19 +68,19 @@
      (is (= 0 (count (:items (:results data)))))))
 
   (testing "search with type filter"
-   (let [response (search/get-autocomplete-suggestions "foo" ["instrument"])
+   (let [response (search/get-autocomplete-suggestions "foo" ["instrument"] nil)
          body (:body response)
          data (json/parse-string body true)]
      (is (= 1 (count (:items (:results data)))))))
 
   (testing "search with multiple types filter"
-   (let [response (search/get-autocomplete-suggestions "foo" ["instrument" "platform" "project" "provider"])
+   (let [response (search/get-autocomplete-suggestions "foo" ["instrument" "platform" "project" "provider"] nil)
          body (:body response)
          data (json/parse-string body true)]
      (is (= 1 (count (:items (:results data)))))))
 
   (testing "search with type filter with no results"
-   (let [response (search/get-autocomplete-suggestions "foo" ["platform"])
+   (let [response (search/get-autocomplete-suggestions "foo" ["platform"] nil)
          body (:body response)
          data (json/parse-string body true)]
      (is (= 0 (count (:items (:results data))))))))

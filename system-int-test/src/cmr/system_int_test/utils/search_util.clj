@@ -249,13 +249,13 @@
 
 (defn get-autocomplete-suggestions
   "Executes a query to the autocomplete endpoint with the given value and returns the results."
-  ([]
-   (client/get (url/autocomplete-url) {:throw-exceptions false}))
   ([term]
-   (client/get (url/autocomplete-url term)))
-  ([term types-list]
+   (get-autocomplete-suggestions term nil))
+  ([term opts]
+   (client/get (url/autocomplete-url term) opts))
+  ([term types-list opts]
    (let [types (str/join "," types-list)]
-     (client/get (url/autocomplete-url term types)))))
+     (client/get (url/autocomplete-url term types) opts))))
 
 (defn- parse-timeline-interval
   "Parses the timeline response interval component into a more readable and comparable format."
