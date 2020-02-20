@@ -16,9 +16,12 @@
         bar (esd/create conn "1_autocomplete" "suggestion" {:value "bar" :type "platform"})
         baz (esd/create conn "1_autocomplete" "suggestion" {:value "baz" :type "instrument"})]
     (index/wait-until-indexed)
-    (f)))
+    (f)
+    (esd/delete conn "1_autocomplete" "suggestion" (:_id foo))
+    (esd/delete conn "1_autocomplete" "suggestion" (:_id bar))
+    (esd/delete conn "1_autocomplete" "suggestion" (:_id baz))
+    (index/wait-until-indexed)))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 (use-fixtures :each autocomplete-fixture)
 
 (deftest autocomplete-suggest-test

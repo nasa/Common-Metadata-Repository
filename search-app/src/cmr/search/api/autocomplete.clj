@@ -57,11 +57,11 @@
       (svc-errors/throw-service-errors
        :bad-request
        ["Missing param [q]"
-        "Usage [/autocomplete?q=<term>[&types=[&page_size=[&page_number=]]]]"
+        "Usage [/autocomplete?q=<term>[&types=[&page-size=[&page-number=]]]]"
         "q : query string to search for suggestions"
         "types : comma separated list of types"
         "page-size : maximum number of suggestions : default 20"
-        "page-number : offset of results : default 0"]))))
+        "page-number : results page : default 0"]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions
