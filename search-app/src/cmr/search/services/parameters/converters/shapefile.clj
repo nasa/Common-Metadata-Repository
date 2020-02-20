@@ -38,8 +38,8 @@
 (defn- unzip-file
   "Unzip a file (of type File) into a temporary directory and return the directory path as a File"
   [source]
-  (try
-    (let [target-dir (Files/createTempDirectory "Shapes" (into-array FileAttribute []))]
+  (let [target-dir (Files/createTempDirectory "Shapes" (into-array FileAttribute []))]
+    (try
       (with-open [zip (ZipFile. source)]
         (let [entries (enumeration-seq (.entries zip))
               target-file #(File. (.toString target-dir) (str %))]
@@ -47,9 +47,10 @@
                   :let [f (target-file entry)]]
             (debug (format "Zip file entry: [%s]" (.getName entry)))
             (io/copy (.getInputStream zip entry) f))))
-      (.toFile target-dir))
-    (catch Exception e
-      (errors/throw-service-error :bad-request (str "Error while uncompressing zip file: " (.getMessage e))))))
+      (.toFile target-dir)
+      (catch Exception e
+        (.delete (.toFile target-dir))
+        (errors/throw-service-error :bad-request (str "Error while uncompressing zip file: " (.getMessage e)))))))
 
 (defn find-shp-file
   "Find the .shp file in the given directory (File) and return it as a File"
@@ -77,7 +78,9 @@
           _ (debug (format "Source axis order: [%s]" (CRS/getAxisOrder src-crs)))
           _ (debug (format "Destination CRS: [%s]" (.getName EPSG-4326-CRS)))
           _ (debug (format "Destination axis order: [%s]" (CRS/getAxisOrder EPSG-4326-CRS)))
-          transform (CRS/findMathTransform src-crs EPSG-4326-CRS false)]
+          transform (try 
+                      (CRS/findMathTransform src-crs EPSG-4326-CRS false)
+                      (catch Exception e))]
       ; if we didn't find a tranform send an error message
       (if transform
         (let [new-geometry (JTS/transform geometry transform)
@@ -98,50 +101,55 @@
         _ (debug (format "Found [%d] geometries" (count geometry-props)))
         geometries (map #(-> % .getValue (transform-to-epsg-4326 crs)) geometry-props)
         _ (debug (format "Transformed [%d] geometries" (count geometries)))]
-    (flatten (map (fn [g] (geometry->conditions g)) geometries))))
+    (mapcat (fn [g] (geometry->conditions g)) geometries)))
 
 (defn- error-if
   "Throw a service error with the given message if `f` applied to `item` is true. 
-  Otherwise just return `item`."
-  [item f message]
+  Otherwise just return `item`. Removes the temporary directory `temp-dir` first."
+  [item f message ^File temp-dir]
   (if (f item)
-    (errors/throw-service-error :bad-request message)
+    (do
+      (.delete temp-dir)
+      (errors/throw-service-error :bad-request message))
     item))
 
 (defn esri-shapefile->condition-vec
   "Converts a shapefile to a vector of SpatialConditions"
   [shapefile-info]
-  (let [file (:tempfile shapefile-info)
-        temp-dir (unzip-file file)
-        shp-file (error-if
-                   (find-shp-file temp-dir) 
-                   nil?
-                   "Incomplete shapefile: missing .shp file")
-        data-store (error-if (FileDataStoreFinder/getDataStore shp-file)
-                              nil?
-                              "Error parsing shapefile - cannot create DataStore")
-        feature-source (error-if (.getFeatureSource data-store)
-                                 nil?
-                                 "Error parsing shapefile - cannot create FeatureSource")
-        collection (error-if (.getFeatures feature-source)
-                             #(< (.size %) 1)
-                             "Shapefile has no features")
-        _ (debug (format "Found [%d] features" (.size collection)))
-        iterator (.features collection)]
-    (try
-      (loop [conditions []]
-        (if (.hasNext iterator)
-          (let [feature (.next iterator)
-                feature-conditions (feature->conditions feature)]
-            (if (> (count feature-conditions) 0)
-              (recur (conj conditions (gc/or-conds feature-conditions)))
-              (recur conditions)))
-          conditions))
-      (catch Exception e
-        (errors/throw-service-error :bad-request "Failed to parse shapefile"))
-      (finally (do
-                 (.close iterator)
-                 (-> data-store .getFeatureReader .close))))))
+  (try
+    (let [file (:tempfile shapefile-info)
+          ^File temp-dir (unzip-file file)
+          shp-file (error-if
+                    (find-shp-file temp-dir) 
+                    nil?
+                    "Incomplete shapefile: missing .shp file"
+                    temp-dir)
+          data-store (FileDataStoreFinder/getDataStore shp-file)
+          feature-source (.getFeatureSource data-store)
+          collection (error-if (.getFeatures feature-source)
+                              #(< (.size %) 1)
+                              "Shapefile has no features"
+                              temp-dir)
+          _ (debug (format "Found [%d] features" (.size collection)))
+          iterator (.features collection)]
+      (try
+        (loop [conditions []]
+          (if (.hasNext iterator)
+            (let [feature (.next iterator)
+                  feature-conditions (feature->conditions feature)]
+              (if (> (count feature-conditions) 0)
+                (recur (conj conditions (gc/or-conds feature-conditions)))
+                (recur conditions)))
+            conditions))
+        (finally (do
+                  (.close iterator)
+                  (-> data-store .getFeatureReader .close)
+                  (.delete temp-dir)))))
+    (catch Exception e
+      (let [{:keys [type errors]} (ex-data e)]
+        (if (and type errors)
+          (throw e) ;; This was a more specific service error so just re-throw it
+          (errors/throw-service-error :bad-request "Failed to parse shapefile"))))))
 
 (defmulti shapefile->conditions
   "Converts a shapefile to query conditions based on shapefile format"
