@@ -58,6 +58,5 @@
 
 (def autocomplete-api-routes
   (context "/autocomplete" []
-           (GET "/"
-                {params :params ctx :request-context}
-                (get-autocomplete-suggestions ctx params))))
+     (GET "/" {params :params ctx :request-context}
+        (get-autocomplete-suggestions ctx params))))
