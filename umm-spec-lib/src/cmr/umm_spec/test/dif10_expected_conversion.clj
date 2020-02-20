@@ -18,7 +18,8 @@
   [cmr.umm-spec.url :as url]
   [cmr.umm-spec.util :as su]
   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
-  [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]))
+  [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]
+  [cmr.umm-spec.xml-to-umm-mappings.distributed-format-util :as format-util]))
 
 (def dif10-roles
  {"Technical Contact" "Technical Contact"
@@ -336,10 +337,25 @@
   (when-let [media (first media)]
     [media]))
 
+(defn- expected-dist-parsed-format
+  "I could not figure out how to not create this function using the update call in the expand-file-dist-infos function below. So this function exists to replace the new value with the old."
+  [old-value new-value]
+  new-value)
+
+(defn- expand-file-dist-infos
+  "Parse each format to see if the format contains multiple values. If it does then replace the distribution info that exists and add new ones for each multple format that exists."
+  [file-dist-info]
+  (let [formats (get (select-keys file-dist-info [:Format]) :Format)
+        parsed-format (format-util/parse-distribution-formats formats)]
+    (for [[index value] (map-indexed vector parsed-format)]
+      (if (= index 0)
+        (update file-dist-info :Format expected-dist-parsed-format value)
+        (conj (update file-dist-info :Format expected-dist-parsed-format value))))))
+
 (defn- expected-file-dist-info
   "Created expected FileDistributionInformation for ArchiveAndDistributionInformation map."
   [file-dist-infos]
-  (when file-dist-infos
+  (when-let [file-dist-infos (flatten (map expand-file-dist-infos file-dist-infos))]
     (for [file-dist-info file-dist-infos]
       (-> file-dist-info
           (select-keys [:Fees :Format :FormatType
