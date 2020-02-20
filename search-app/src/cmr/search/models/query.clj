@@ -230,7 +230,7 @@
 (defmethod common-qm/concept-type->default-query-attribs :autocomplete
   [_]
   {:condition (common-qm/->MatchAllCondition)
-   :page-size :unlimited
+   :page-size common-qm/default-page-size
    :offset common-qm/default-offset
    :sort-keys (common-qm/default-sort-keys :autocomplete)
    :result-format :json
