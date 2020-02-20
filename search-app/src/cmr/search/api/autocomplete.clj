@@ -48,6 +48,7 @@
        :bad-request
        ["Missing param [q]"
         "Usage [/autocomplete?q=<term>[&types=[&limit=[&offset=]]]]"
+        "q : query string to search for suggestions"
         "types : comma separated list of types"
         "limit : maximum number of suggestions : default 20"
         "offset : offset of results : default 0"]))))
