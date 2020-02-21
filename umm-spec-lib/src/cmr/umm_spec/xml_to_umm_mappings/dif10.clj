@@ -20,6 +20,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.dif10.paleo-temporal :as pt]
    [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
    [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
+   [cmr.umm-spec.xml-to-umm-mappings.distributed-format-util :as format-util]
    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
    [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
@@ -197,6 +198,28 @@
         :OnlineResource (when-let [linkage (value-of data-set-citation "Online_Resource")]
                           {:Linkage linkage})}))))
 
+(defn- add-distribution-infos
+  "This function creates a distribution information map."
+  [media size unit fees format]
+  {:Media media
+   :AverageFileSize size
+   :AverageFileSizeUnit unit
+   :Format format
+   :Fees fees
+   :FormatType "Native"})
+
+(defn- add-dist-info-for-multi-formats
+  "This method takes the value of a format and parses it into multiple formats
+   if the metadata includes multiple formats. Then this function creates new
+   distribution information maps for each format."
+  [media size unit formats fees]
+  (when (or media size unit formats fees)
+    (let [distributions
+          (map
+               #(add-distribution-infos media size unit fees %)
+               (format-util/parse-distribution-formats formats))]
+      (seq distributions))))
+
 (defn- parse-archive-dist-info
   "Parses ArchiveAndDistributionInformation out of DIF XML into UMM-C"
   [doc]
@@ -208,17 +231,13 @@
                     media (value-of distribution "Distribution_Media")
                     media (when media
                             [media])
-                    format (value-of distribution "Distribution_Format")
+                    formats (value-of distribution "Distribution_Format")
+                    format (format-util/parse-distribution-formats formats)
                     fees (value-of distribution "Fees")]]
-          (when (or fees format Size Unit)
-            {:Media media
-             :AverageFileSize Size
-             :AverageFileSizeUnit Unit
-             :Format format
-             :Fees fees
-             :FormatType "Native"}))]
+          (when (or fees formats Size Unit)
+             (add-dist-info-for-multi-formats media Size Unit formats fees)))]
     (when (seq distributions)
-      {:FileDistributionInformation distributions})))
+      {:FileDistributionInformation (flatten distributions)})))
 
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
