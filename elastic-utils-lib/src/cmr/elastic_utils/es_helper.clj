@@ -14,6 +14,6 @@
   (doc/count conn index mapping-type query))
 
 (defn scroll
-  "Performs a count query over one or more indexes and types"
+  "Performs a scroll query, fetching the next page of results from a query given a scroll id"
   [conn scroll-id opts]
   (doc/scroll conn scroll-id opts))
