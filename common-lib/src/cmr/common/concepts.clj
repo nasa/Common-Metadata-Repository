@@ -17,7 +17,8 @@
     :tag
     :tag-association
     :variable
-    :variable-association})
+    :variable-association
+    :subscription})
 
 (def concept-prefix->concept-type
   "Maps a concept id prefix to the concept type"
@@ -31,7 +32,8 @@
    "T" :tag
    "TA" :tag-association
    "V" :variable
-   "VA" :variable-association})
+   "VA" :variable-association
+   "SUB" :subscription})
 
 (def concept-type->concept-prefix
   "Maps a concept type to the concept id prefix"

@@ -32,13 +32,15 @@
    :service (into common-columns [:provider_id :service_name :user_id])
    :acl (into common-columns [:provider_id :user_id :acl_identity])
    :humanizer (into common-columns [:user_id])
+   :subscription (into common-columns
+                       [:user_id :description :email_address :collection_concept_id])
    :variable (into common-columns [:provider_id :variable_name :measurement :user_id :fingerprint])
    :variable-association (into common-columns
                                [:associated_concept_id :associated_revision_id
                                 :variable_concept_id :user_id])
    :service-association (into common-columns
-                               [:associated_concept_id :associated_revision_id
-                                :service_concept_id :user_id])})
+                              [:associated_concept_id :associated_revision_id
+                               :service_concept_id :user_id])})
 
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept
