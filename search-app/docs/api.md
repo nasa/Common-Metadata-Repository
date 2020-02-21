@@ -1131,10 +1131,18 @@ Note: ISO 8601 does not allow open-ended time intervals but the CMR API does all
 
 Auto-completion assistance for building queries. This functionality may be used to help build queries. The facet autocomplete functionality does not search for collections directly. Instead it will return suggestions of facets to help narrow a search by providing a list of available facets to construct a CMR collections search.
     
-    curl "%CMR-ENDPOINT%/autocomplete?q=<term>"
+    curl "%CMR-ENDPOINT%/autocomplete?q=<term>[&types=<types>]"
         
 Collection facet autocompletion results are paged. See [Paging Details](#paging-details) for more information on how to page through autocomplete search results.
 
+#### Autocomplete Parameters
+  * `q` The string on which to search. The term is case insensitive.
+  * `types` Comma separated list of types to include in the results set. If left blank all facet types will be returned.
+ 
+__Example Query__
+
+     curl "%CMR-ENDPOINT%/autocomplete?q=ice"
+ 
 __Example Result__
 
 ```json
@@ -1176,15 +1184,19 @@ __Example Result__
 }
 ```
 
+__Example Query__
+
+     curl "%CMR-ENDPOINT%/autocomplete?q=ice&types=platform,project"
+     
 __Example Result with Type Filter__
 ```json
 {
   "query": {
     "query": "ice",
-    "types": ["platform"]
+    "types": ["platform","project"]
   },
   "results": {
-    "hits": 5,
+    "hits": 3,
     "items": [
       {
         "score": 9.013778,
@@ -1198,7 +1210,7 @@ __Example Result with Type Filter__
       },
       {
         "score": 8.921176,
-        "type": "platform",
+        "type": "project",
         "value": "ICEYE"
       }
     ]
