@@ -48,8 +48,8 @@
                          :C274211-USGS_EROS "1_c274211_usgs_eros"},
                :tag {:tags "1_tags"}
                :variable {:variables "1_variables"}}
-    :autocomplete {:indexes[{:name "autocomplete"
-                             :settings i/autocomplete-settings}]
+    :autocomplete {:indexes [{:name "autocomplete"
+                              :settings i/autocomplete-settings}]
                    :mapping i/autocomplete-mapping}}})
 
 (def valid-item-resp
