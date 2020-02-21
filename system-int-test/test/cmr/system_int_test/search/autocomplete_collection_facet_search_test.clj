@@ -5,13 +5,14 @@
     [cheshire.core :as json]
     [clojurewerkz.elastisch.rest :as esr]
     [clojurewerkz.elastisch.rest.document :as esd]
+    [cmr.system-int-test.utils.url-helper :as url]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.search-util :as search]))
 
 (defn autocomplete-fixture
   [f]
-  (let [conn (esr/connect "http://localhost:9210")
+  (let [conn (esr/connect (url/elastic-root))
         foo (esd/create conn "1_autocomplete" "suggestion" {:value "foo" :type "instrument"})
         bar (esd/create conn "1_autocomplete" "suggestion" {:value "bar" :type "platform"})
         baz (esd/create conn "1_autocomplete" "suggestion" {:value "baz" :type "instrument"})]
@@ -32,10 +33,6 @@
      (is (contains? data :query))
      (is (contains? data :results))
      (is (contains? (:results data) :items))))
-
-  (testing "missing query param response test"
-   (let [response (search/get-autocomplete-suggestions nil {:throw-exceptions false})]
-     (is (= 400 (:status response)))))
 
   (testing "partial value match search"
    (let [response (search/get-autocomplete-suggestions "f")
@@ -84,3 +81,8 @@
          body (:body response)
          data (json/parse-string body true)]
      (is (= 0 (count (:items (:results data))))))))
+
+(deftest autocomplete-usage-test
+  (testing "missing query param response test"
+           (let [response (search/get-autocomplete-suggestions nil {:throw-exceptions false})]
+             (is (= 400 (:status response))))))

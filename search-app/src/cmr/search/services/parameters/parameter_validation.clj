@@ -85,6 +85,15 @@
      :always-case-sensitive #{}
      :disallow-pattern #{}}))
 
+(defmethod cpv/params-config :autocomplete
+  [_]
+  (cpv/merge-params-config
+   cpv/basic-params-config
+   {:single-value #{}
+    :multiple-value #{}
+    :always-case-sensitive #{}
+    :disallow-pattern #{}}))
+
 (def exclude-params
   "Map of concept-type to parameters which can be used to exclude items from results."
   {:collection #{:tag-key}
@@ -199,6 +208,10 @@
   {:name cpv/string-param-options
    :native-id cpv/string-param-options
    :provider cpv/string-param-options})
+
+(defmethod cpv/valid-parameter-options :autocomplete
+  [_]
+  {})
 
 (defmethod cpv/valid-query-level-params :collection
   [_]

@@ -14,7 +14,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Support Functions
 
-(def page-size-default 20)
+(def page-size-default 10)
 (def page-num-default 0)
 
 (defn- string-param-or-default->int
