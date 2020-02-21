@@ -70,6 +70,8 @@
     cmr.search.services.parameters.converters.pass
     cmr.search.services.parameters.converters.science-keyword
     cmr.search.services.parameters.converters.spatial
+    cmr.search.services.parameters.converters.shapefile
+    cmr.search.services.parameters.converters.geometry
     cmr.search.services.parameters.converters.temporal
     cmr.search.services.parameters.converters.temporal-facet
     cmr.search.services.parameters.converters.two-d-coordinate-system

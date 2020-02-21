@@ -25,6 +25,7 @@
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [net.sf.saxon/Saxon-HE "9.9.0-2"]
+                 [commons-io/commons-io "2.6"]
                  [org.apache.httpcomponents/httpclient "4.5.6"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/data.csv "0.1.4"]
@@ -33,11 +34,14 @@
                  [ring/ring-core "1.7.1"]
                  [ring/ring-json "0.4.0"]
                  [selmer "1.12.5"]
+                 [org.geotools/gt-shapefile "22.3"]
+                 [org.geotools/gt-geojsondatastore "22.3"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
                  [metosin/ring-swagger-ui "2.1.4-0"]
                  [metosin/ring-swagger "0.22.14"]
                  [prismatic/schema "1.1.9"]]
+  :repositories {"osgeo" "https://download.osgeo.org/webdav/geotools"}
   :plugins [[lein-exec "0.3.7"]
             [test2junit "1.3.3"]]
   :repl-options {:init-ns user
@@ -57,6 +61,7 @@
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
+                   :resource-paths ["resources" "test/resources"]
                    :source-paths ["src" "dev" "test"]
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]}

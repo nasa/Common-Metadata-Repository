@@ -2,6 +2,7 @@
   "Defines the API for search-by-concept in the CMR."
   (:require
    [clojure.string :as string]
+   [clojure.walk :as walk]
    [clj-http.client :as client]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
@@ -192,7 +193,9 @@
       (= mt/json content-type-header)
       (find-concepts-by-json-query ctx path-w-extension params headers body)
 
-      (or (nil? content-type-header) (= mt/form-url-encoded content-type-header))
+      (or (nil? content-type-header)
+          (= mt/form-url-encoded content-type-header)
+          (re-find (re-pattern mt/multi-part-form) content-type-header))
       (find-concepts-by-parameters ctx path-w-extension params headers body)
 
       :else
@@ -224,7 +227,6 @@
   [ctx params]
   (core-api/search-response ctx {:results (query-svc/find-tiles-by-geometry ctx params)
                                  :result-format mt/json}))
-
 
 (defn- find-data-json
   "Retrieve all public collections with gov.nasa.eosdis tag as opendata."
