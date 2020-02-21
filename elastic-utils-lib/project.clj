@@ -8,7 +8,7 @@
                [potemkin]]
   :dependencies [[cheshire "5.8.1"]
                  [clj-http "2.3.0"]
-                 [clojurewerkz/elastisch "2.2.2"]
+                 [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [log4j/log4j "1.2.17"]
