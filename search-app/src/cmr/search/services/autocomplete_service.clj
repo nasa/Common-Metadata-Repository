@@ -1,9 +1,6 @@
 (ns cmr.search.services.autocomplete-service
   "Service for autocomplete functionality"
   (:require
-    [clojure.string :as str]
-    [cheshire.core :as json]
-    [cmr.common-app.services.search.params :as common-params]
     [cmr.common-app.services.search.query-execution :as qe]
     [cmr.common-app.services.search.query-model :as qm]
     [cmr.common-app.services.search.group-query-conditions :as gc]))
