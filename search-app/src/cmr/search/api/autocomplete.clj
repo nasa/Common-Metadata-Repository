@@ -27,12 +27,35 @@
   [s]
   (str/lower-case (str/trim s)))
 
-(defn- get-autocomplete-suggestions
-  "Invokes Elasticsearch for autocomplete query result"
+(defn- process-autocomplete-query
+  "Process and autocomplete and return value"
+  [ctx query types params]
+  (let [term (lower-case-and-trim query)
+        types (when types
+                (filter #(not (empty? %))
+                        (map lower-case-and-trim (str/split types #","))))
+        page-size (string-param-or-default->int (:page-size params) page-size-default)
+        page-num (string-param-or-default->int (:page-num params) page-num-default)
+        offset (* page-size page-num)
+        opts (assoc params :types types
+                    :page-size page-size
+                    :offset offset)
+        results (ac/autocomplete ctx term opts)]
+    {:status 200
+     :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)
+               common-routes/CORS_ORIGIN_HEADER  "*"}
+     :body {:query {:query term
+                    :types (if types types [])
+                    :page-size (:page-size opts)
+                    :page-num (:offset opts)}
+            :results results}}))
+
+(defn- get-autocomplete-suggestions-handler
+  "Validate params and invoke autocomplete"
   [ctx path-w-extension params headers]
-  (let [params (core-api/process-params :autocomplete params path-w-extension headers mt/json)
-        query (:q params)
-        type-param (:types params)]
+  (let [opts (core-api/process-params :autocomplete params path-w-extension headers mt/json)
+        query (:q opts)
+        types (:types opts)]
     (when-not query
       (svc-errors/throw-service-errors
        :bad-request
@@ -42,30 +65,12 @@
         "types : comma separated list of types"
         "page-size : maximum number of suggestions : default 20"
         "page-number : results page : default 0"]))
-    (let [term (lower-case-and-trim query)
-          types (when type-param
-                  (filter #(not (empty? %))
-                          (map lower-case-and-trim (str/split type-param #","))))
-          page-size (string-param-or-default->int (:page-size params) page-size-default)
-          page-num (string-param-or-default->int (:page-num params) page-num-default)
-          offset (* page-size page-num)
-          opts (assoc params :types types
-                      :page-size page-size
-                      :offset offset)
-          results (ac/autocomplete ctx term opts)]
-      {:status 200
-       :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)
-                 common-routes/CORS_ORIGIN_HEADER  "*"}
-       :body {:query {:query term
-                      :types (if types types [])
-                      :page-size (:page-size opts)
-                      :page-num (:offset opts)}
-              :results results}})))
+    (process-autocomplete-query ctx query types opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions
 
 (def autocomplete-api-routes
   (context ["/:path-w-extension" :path-w-extension #"(?:autocomplete)(?:\..+)?"] [path-w-extension]
-     (GET "/" {params :params headers :headers ctx :request-context}
-        (get-autocomplete-suggestions ctx path-w-extension params headers))))
+    (GET "/" {params :params headers :headers ctx :request-context}
+      (get-autocomplete-suggestions-handler ctx path-w-extension params headers))))
