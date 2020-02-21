@@ -1,24 +1,31 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.distributed-format-util
-  "Defines a utility to parse out multiple distribution format values as a string into vector components."
+  "Defines a utility to parse out multiple distribution format values as a
+   string into vector components."
   (:require
    [clojure.string :as string]))
 
 (defn parse-distribution-formats-replace-comma-and-with-comma
-  "Replace ', and' (comma space and) with just ', ' (comma space). The input is a string and the output is either the replaced string or the input string if no changes occured."
+  "Replace ', and' (comma space and) with just ', ' (comma space). The input
+  is a string and the output is either the replaced string or the input string
+  if no changes occured."
   [formats]
   (if (string/includes? formats ",")
     (string/replace formats #", and " ", ")
     formats))
 
 (defn parse-distribution-formats-replace-comma-or-with-comma
-  "Replace ', or' (comma space or) with just ', ' (comma space). The input is a string and the output is either the replaced string or the input string if no changes occured."
+  "Replace ', or' (comma space or) with just ', ' (comma space). The input is a
+   string and the output is either the replaced string or the input string if no
+   changes occured."
   [formats]
   (if (string/includes? formats ",")
     (string/replace formats #", or " ", ")
     formats))
 
 (defn parse-distribution-formats-split-by-slash-input-string
-  "Split the incomming string by '/' except for 'ar/info' and 'arc/info' with insensitive case. The result is a vector of split string if '/' exists or the input string if '/' doesn't exsit."
+  "Split the incomming string by '/' except for 'ar/info' and 'arc/info' with
+   insensitive case. The result is a vector of split string if '/' exists or
+   the input string if '/' doesn't exsit."
   [formats]
   (if (string/includes? formats "/")
     (if-not (or (string/includes? (string/lower-case formats) "ar/info")
@@ -28,7 +35,9 @@
     formats))
 
 (defn parse-distribution-formats-split-by-slash
-  "Split the incomming string or vector of strings by '/' except for 'ar/info' and 'arc/info' with insensitive case. The result is a vector of split string if '/' exists or the input string if '/' doesn't exsit."
+  "Split the incomming string or vector of strings by '/' except for 'ar/info'
+   and 'arc/info' with insensitive case. The result is a vector of split string
+   if '/' exists or the input string if '/' doesn't exsit."
   [formats]
   (if (instance? String formats)
     (parse-distribution-formats-split-by-slash-input-string formats)
@@ -36,7 +45,9 @@
       (map parse-distribution-formats-split-by-slash-input-string formats))))
 
 (defn parse-distribution-formats-split-by-and-input-string
-  "Split the incomming string by ' and ' except for .r followed by any 2 characters followed by ' and ' and .q plus anything after. The result is a vector of split string if ' and ' exists or the input string if ' and ' does not exist."
+  "Split the incomming string by ' and ' except for .r followed by any 2 characters
+   followed by ' and ' and .q plus anything after. The result is a vector of split
+   string if ' and ' exists or the input string if ' and ' does not exist."
   [formats]
   (if (string/includes? formats " and ")
     (if-not (boolean (re-find #"\.r.?.? and \.q" formats))
@@ -45,7 +56,10 @@
     formats))
 
 (defn parse-distribution-formats-split-by-and
-  "Split the incomming string or vector of strings by ' and ' except for .r followed by any 2 characters followed by ' and ' and .q plus anything after. The result is a vector of split string if ' and ' exists or the input string if ' and ' does not exist."
+  "Split the incomming string or vector of strings by ' and ' except for .r followed
+   by any 2 characters followed by ' and ' and .q plus anything after. The result is
+   a vector of split string if ' and ' exists or the input string if ' and ' does not
+   exist."
   [formats]
   (if (instance? String formats)
     (parse-distribution-formats-split-by-and-input-string formats)
@@ -53,7 +67,8 @@
       (map parse-distribution-formats-split-by-and-input-string formats))))
 
 (defn parse-distribution-formats-split-by-or-input-string
-  "Split the incomming string by ' or ' The result is a vector of split string if ' or ' exists or the input string if ' or ' does not exist."
+  "Split the incomming string by ' or ' The result is a vector of split string if ' or '
+   exists or the input string if ' or ' does not exist."
   [formats]
   (if (string/includes? formats " or ")
     (string/split formats #" *or *")
@@ -68,7 +83,8 @@
       (map parse-distribution-formats-split-by-or-input-string formats))))
 
 (defn parse-distribution-formats-split-by-comma-input-string
-  "Split the incomming string by ', ' The result is a vector of split string if ', ' exists or the input string if ', ' does not exist."
+  "Split the incomming string by ', ' The result is a vector of split
+   string if ', ' exists or the input string if ', ' does not exist."
   [formats]
   (if (string/includes? formats ",")
     (string/split formats #", *")
@@ -83,7 +99,8 @@
       (map parse-distribution-formats-split-by-comma-input-string formats))))
 
 (defn parse-distribution-formats-split-by-dash-input-string
-  "Split the incomming string by ' - ' The result is a vector of split string if ' - ' exists or the input string if ' - ' does not exist."
+  "Split the incomming string by ' - ' The result is a vector of split
+   string if ' - ' exists or the input string if ' - ' does not exist."
   [formats]
   (if (string/includes? formats " - ")
     (string/split formats #" - ")
@@ -98,13 +115,12 @@
       (map parse-distribution-formats-split-by-dash-input-string formats))))
 
 (defn parse-distribution-formats-split-by-semicolon-input-string
-  "Split the incomming string by ';' except for ;amp and ;gt. The result is a vector of split string if ';' exists or the input string if ';' does not exist."
+  "Split the incomming string by ';' except for ;amp and ;gt. The result
+   is a vector of split string if ';' exists or the input string if ';'
+   does not exist."
   [formats]
   (if (string/includes? formats ";")
-    (if-not (or (string/includes? formats ";amp")
-                (string/includes? formats ";gt"))
-      (string/split formats #" *; *")
-      formats)
+    (string/split formats #" *; *(?!amp)(?!gt)")
     formats))
 
 (defn parse-distribution-formats-split-by-semicolon
@@ -116,7 +132,9 @@
       (map parse-distribution-formats-split-by-semicolon-input-string formats))))
 
 (defn parse-distribution-formats
-  "Split the incoming string by all above types. The replacing of (, and) and (, or) by a comma space needs to be done first. Then the rest of the order doesn't matter."
+  "Split the incoming string by all above types. The replacing of (, and) and
+   (, or) by a comma space needs to be done first. Then the rest of the order
+   doesn't matter."
   [formats]
   (if-not (nil? formats)
     (let [result (->> formats

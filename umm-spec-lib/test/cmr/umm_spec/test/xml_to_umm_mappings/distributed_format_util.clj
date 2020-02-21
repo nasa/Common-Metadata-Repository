@@ -17,8 +17,9 @@
       (is (= "hello, good, andgoodby"
              (util/parse-distribution-formats-replace-comma-and-with-comma test-string)))))
 
-  (testing "Do not replace ', and ' (comma space and) with just ', ' (comma space). The input string is a string
-            and the output is with the ', and ' replaced with ', '."
+  (testing "Do not replace ', and ' (comma space and) with just ', ' (comma space).
+            The input string is a string and the output is with the ', and ' replaced
+            with ', '."
     (let [test-string "hello, good,and goodby"]
       (is (= "hello, good,and goodby"
              (util/parse-distribution-formats-replace-comma-and-with-comma test-string))))))
@@ -42,7 +43,8 @@
              (util/parse-distribution-formats-replace-comma-and-with-comma test-string))))))
 
 (deftest split-slash-test
-  "Test spliting a string or vector of strings by '/' with the excpetion of ar/info or arc/info case insensitive."
+  "Test spliting a string or vector of strings by '/' with the excpetion of ar/info
+   or arc/info case insensitive."
 
   (testing "Split the string by slash '/'."
     (let [test-string "hello/good/goodby"]
@@ -64,7 +66,8 @@
       (is (= ["hello" "good" "goodby"]
              (util/parse-distribution-formats-split-by-slash test-string)))))
 
-  (testing "Do not split the string by slash '/' if the data includes 'ArC/Info'. The input is a vector."
+  (testing "Do not split the string by slash '/' if the data includes 'ArC/Info'.
+            The input is a vector."
     (let [test-string ["hello" "ArC/Info" "goodby"]]
       (is (= ["hello" "ArC/Info" "goodby"]
              (util/parse-distribution-formats-split-by-slash test-string)))))
@@ -75,7 +78,8 @@
              (util/parse-distribution-formats-split-by-slash test-string))))))
 
 (deftest split-and-test
-  "Test spliting a string or vector of strings by ' and ' with the excpetion of .r followed by any 2 characters followed by ' and .q' may be followed by other characters."
+  "Test spliting a string or vector of strings by ' and ' with the excpetion of .r
+   followed by any 2 characters followed by ' and .q' may be followed by other characters."
 
   (testing "Split the string by ' and '."
     (let [test-string "hello and good and goodby"]
@@ -171,7 +175,7 @@
 
   (testing "do not split the string by ';'."
     (let [test-string "hello ;amp good ;gt hello;amp ;gtgoodby ok;gt"]
-      (is (= "hello ;amp good ;gt hello;amp ;gtgoodby ok;gt"
+      (is (= ["hello ;amp good ;gt hello;amp ;gtgoodby ok;gt"]
              (util/parse-distribution-formats-split-by-semicolon-input-string test-string)))))
 
   (testing "Split the string by ';'. The input is a vector"
@@ -180,7 +184,9 @@
              (util/parse-distribution-formats-split-by-semicolon test-string))))))
 
 (deftest parse-distribution-formats-test
-  "Test parsing a string by different split characters of (, and) (, or) (/) (and) (or) (,) (-) and (;).  The initial input is a string, the output is either a string or a vector of strings."
+  "Test parsing a string by different split characters of (, and) (, or) (/) (and)
+   (or) (,) (-) and (;).  The initial input is a string, the output is either a
+   string or a vector of strings."
 
   (testing "Split the string by all types."
     (let [test-string "hello, and good, or goodby XML/HTML, XML1 and HTML2 or XSLX, OK - one;two"]

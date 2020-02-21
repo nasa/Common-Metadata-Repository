@@ -209,13 +209,16 @@
    :FormatType "Native"})
 
 (defn- add-dist-info-for-multi-formats
-  "This method takes the value of a format and parses it into multiple formats if the metadata includes multiple formats. Then this function creates new distribution information maps for each format."
+  "This method takes the value of a format and parses it into multiple formats
+   if the metadata includes multiple formats. Then this function creates new
+   distribution information maps for each format."
   [media size unit formats fees]
   (when (or media size unit formats fees)
     (let [distributions
-          (map #(add-distribution-infos media size unit fees %) (format-util/parse-distribution-formats formats))]
-      (when distributions
-        (seq distributions)))))
+          (map
+               #(add-distribution-infos media size unit fees %)
+               (format-util/parse-distribution-formats formats))]
+      (seq distributions))))
 
 (defn- parse-archive-dist-info
   "Parses ArchiveAndDistributionInformation out of DIF XML into UMM-C"

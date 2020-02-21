@@ -337,20 +337,17 @@
   (when-let [media (first media)]
     [media]))
 
-(defn- expected-dist-parsed-format
-  "I could not figure out how to not create this function using the update call in the expand-file-dist-infos function below. So this function exists to replace the new value with the old."
-  [old-value new-value]
-  new-value)
-
 (defn- expand-file-dist-infos
-  "Parse each format to see if the format contains multiple values. If it does then replace the distribution info that exists and add new ones for each multple format that exists."
+  "Parse each format to see if the format contains multiple values. If it does
+   then replace the distribution info that exists and add new ones for each
+   multple format that exists."
   [file-dist-info]
   (let [formats (get (select-keys file-dist-info [:Format]) :Format)
         parsed-format (format-util/parse-distribution-formats formats)]
     (for [[index value] (map-indexed vector parsed-format)]
       (if (= index 0)
-        (update file-dist-info :Format expected-dist-parsed-format value)
-        (conj (update file-dist-info :Format expected-dist-parsed-format value))))))
+        (assoc file-dist-info :Format value)
+        (conj (assoc file-dist-info :Format value))))))
 
 (defn- expected-file-dist-info
   "Created expected FileDistributionInformation for ArchiveAndDistributionInformation map."
