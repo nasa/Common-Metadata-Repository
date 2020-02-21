@@ -20,7 +20,7 @@
 (defn- string-param-or-default->int
   [s default]
   (if s
-    (Integer/parseInt s 10)
+    (Integer/parseInt s)
     default))
 
 (defn- lower-case-and-trim
