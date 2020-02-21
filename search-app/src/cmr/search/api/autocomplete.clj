@@ -1,7 +1,7 @@
 (ns cmr.search.api.autocomplete
   "Defines the API for autocomplete-suggest in the CMR."
   (:require
-    [clojure.string :as str]
+    [clojure.string :as string]
     [compojure.core :refer :all]
     [cmr.common.log :refer (debug info warn error)]
     [cmr.common.mime-types :as mt]
@@ -25,7 +25,7 @@
 
 (defn- lower-case-and-trim
   [s]
-  (str/lower-case (str/trim s)))
+  (string/lower-case (string/trim s)))
 
 (defn- process-autocomplete-query
   "Process and autocomplete and return value"
@@ -33,21 +33,22 @@
   (let [term (lower-case-and-trim query)
         types (when types
                 (filter #(not (empty? %))
-                        (map lower-case-and-trim (str/split types #","))))
+                        (map lower-case-and-trim (string/split types #","))))
         page-size (string-param-or-default->int (:page-size params) page-size-default)
-        page-num (string-param-or-default->int (:page-num params) page-num-default)
-        offset (* page-size page-num)
+        offset (if (:page-num params)
+                 (* page-size (string-param-or-default->int (:page-num params) page-num-default))
+                 (if (:offset params)
+                   (string-param-or-default->int (:offset params) page-num-default)
+                   page-num-default))
         opts (assoc params :types types
-                    :page-size page-size
-                    :offset offset)
+                           :page-size page-size
+                           :offset offset)
         results (ac/autocomplete ctx term opts)]
     {:status 200
      :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)
                common-routes/CORS_ORIGIN_HEADER  "*"}
      :body {:query {:query term
-                    :types (if types types [])
-                    :page-size (:page-size opts)
-                    :page-num (:offset opts)}
+                    :types (if types types [])}
             :results results}}))
 
 (defn- get-autocomplete-suggestions-handler
@@ -63,8 +64,8 @@
         "Usage [/autocomplete?q=<term>[&types=[&page-size=[&page-number=]]]]"
         "q : query string to search for suggestions"
         "types : comma separated list of types"
-        "page-size : maximum number of suggestions : default 20"
-        "page-number : results page : default 0"]))
+        "offset : maximum number of suggestions : default 0"
+        "page_size : results page : default 20"]))
     (process-autocomplete-query ctx query types opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

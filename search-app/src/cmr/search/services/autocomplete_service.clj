@@ -10,22 +10,21 @@
 
 (defn autocomplete
   "Execute elasticsearch query to get autocomplete suggestions"
-  ([context term]
-   (autocomplete context term nil))
-  ([context term opts]
-   (let [condition (if (empty? (:types opts))
-                     (qm/text-condition :value term)
-                     (gc/and-conds
-                      [(gc/or-conds (map (partial qm/text-condition :type)
-                                         (:types opts)))
-                       (qm/text-condition :value term)]))
-         query     (qm/query
-                    {:concept-type :autocomplete
-                     :page-size (:page-size opts)
-                     :offset (:offset opts)
-                     :condition condition
-                     :result-fields [:type :value]})
-         results   (qe/execute-query context query)
-         hits (:hits results)
-         items (:items results)]
-       {:hits hits :items items})))
+  [context term opts]
+  (let [condition (if (empty? (:types opts))
+                    (qm/text-condition :value term)
+                    (gc/and-conds
+                     [(gc/or-conds
+                        (map (partial qm/text-condition :type)
+                             (:types opts)))
+                      (qm/text-condition :value term)]))
+        query     (qm/query
+                   {:concept-type :autocomplete
+                    :page-size (:page-size opts)
+                    :offset (:offset opts)
+                    :condition condition
+                    :result-fields [:type :value]})
+        results   (qe/execute-query context query)
+        hits      (:hits results)
+        items     (:items results)]
+    {:hits hits :items items}))
