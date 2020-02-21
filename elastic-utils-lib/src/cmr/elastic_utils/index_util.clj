@@ -3,7 +3,7 @@
   (:require
    [clj-time.format :as f]
    [clojurewerkz.elastisch.rest.document :as doc]
-   [clojurewerkz.elastisch.rest.index :as esi]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.connect :as esc]))
@@ -120,18 +120,18 @@
   * elastic-store - A component containing an elastic connection under the :conn key"
   [index-name index-settings type-name mappings elastic-store]
   (let [conn (:conn elastic-store)]
-    (if (esi/exists? conn index-name)
+    (if (esi-helper/exists? conn index-name)
       (do
         (info (format "Updating %s mappings and settings" index-name))
-        (let [response (esi/update-mapping conn index-name type-name :mapping mappings :ignore_conflicts false)]
+        (let [response (esi-helper/update-mapping conn index-name type-name {:mapping mappings :ignore_conflicts false})]
           (when-not (= {:acknowledged true} response)
             (errors/internal-error!
              (str "Unexpected response when updating elastic mappings: " (pr-str response))))))
       (do
         (info (format "Creating %s index" index-name))
-        (esi/create conn index-name :settings {:index index-settings} :mappings mappings)
+        (esi-helper/create conn index-name {:settings {:index index-settings} :mappings mappings})
         (esc/wait-for-healthy-elastic elastic-store)))
-    (esi/refresh conn index-name)))
+    (esi-helper/refresh conn index-name)))
 
 (defmacro try-elastic-operation
   "Handles any Elasticsearch exceptions from the body and converts them to internal errors. We do this
@@ -148,9 +148,9 @@
   "Development time helper function to delete an index and recreate it to empty all data."
   [index-name index-settings type-name mappings elastic-store]
   (let [conn (:conn elastic-store)]
-    (when (esi/exists? conn index-name)
+    (when (esi-helper/exists? conn index-name)
       (info "Deleting the cubby index")
-      (esi/delete conn index-name))
+      (esi-helper/delete conn index-name))
     (create-index-or-update-mappings index-name index-settings type-name mappings elastic-store)))
 
 (defn save-elastic-doc
@@ -212,4 +212,4 @@
 (defn create-index-alias
   "Creates the alias for the index."
   [conn index alias]
-  (esi/update-aliases conn [{:add {:index index :alias alias}}]))
+  (esi-helper/update-aliases conn [{:add {:index index :alias alias}}]))

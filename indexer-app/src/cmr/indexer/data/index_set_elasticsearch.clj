@@ -30,7 +30,7 @@
   (let [{:keys [index-name settings mapping]} idx-w-config]
     (when-not (esi/exists? conn index-name)
       (try
-        (esi/create conn index-name :settings settings :mappings mapping)
+        (esi/create conn index-name {:settings settings :mappings mapping})
         (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
                 error (:error body)]
@@ -46,14 +46,14 @@
         ;; The index exists. Update the mappings.
         (doseq [[type-name type-mapping] mapping]
           (let [response (esi/update-mapping
-                           conn index-name (name type-name) :mapping type-mapping :ignore_conflicts false)]
+                           conn index-name (name type-name) {:mapping type-mapping :ignore_conflicts false})]
             (when-not (= {:acknowledged true} response)
               (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
                                            (pr-str response))))))
         ;; The index does not exist. Create it.
         (do
           (info "Index" index-name "does not exist so it will be created")
-          (esi/create conn index-name :settings settings :mappings mapping)))
+          (esi/create conn index-name {:settings settings :mappings mapping})))
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
               error (:error body)]
@@ -65,7 +65,7 @@
   [{:keys [conn]} index-name idx-mapping-type index-set-id]
   (when (esi/exists? conn index-name)
     ;; result will be nil if doc doeesn't exist
-    (doc/get conn index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")))
+    (doc/get conn index-name idx-mapping-type (str index-set-id) {"fields" "index-set-id,index-set-name,index-set-request"})))
 
 (defn get-index-set
   "Fetch index-set associated with an id."
@@ -74,7 +74,7 @@
         {:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
     (when (esi/exists? conn index-name)
-      (let [result (doc/get conn index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")
+      (let [result (doc/get conn index-name idx-mapping-type (str index-set-id) {"fields" "index-set-id,index-set-name,index-set-request"})
             index-set-json-str (get-in result [:fields :index-set-request])]
         (when result
           (decode-field (first index-set-json-str)))))))
@@ -83,14 +83,14 @@
   "Fetch ids of all index-sets in elastic."
   [{:keys [conn]} index-name idx-mapping-type]
   (when (esi/exists? conn index-name)
-    (let [result (doc/search conn index-name idx-mapping-type "fields" "index-set-id")]
+    (let [result (doc/search conn index-name idx-mapping-type {"fields" "index-set-id"})]
       (map #(-> % :fields :index-set-id) (get-in result [:hits :hits])))))
 
 (defn get-index-sets
   "Fetch all index-sets in elastic."
   [{:keys [conn]} index-name idx-mapping-type]
   (when (esi/exists? conn index-name)
-    (let [result (doc/search conn index-name idx-mapping-type "fields" "index-set-request")]
+    (let [result (doc/search conn index-name idx-mapping-type {"fields" "index-set-request"})]
       (map (comp #(decode-field (first % )) :index-set-request :fields) (get-in result [:hits :hits])))))
 
 (defn delete-index
@@ -137,4 +137,4 @@
       (errors/internal-error! (m/index-set-doc-delete-msg result)))))
 
 (comment
-  (doc/get "index-sets" "set" "1" "fields" "index-set-id,index-set-name,index-set-request"))
+  (doc/get "index-sets" "set" "1" {"fields" "index-set-id,index-set-name,index-set-request"}))

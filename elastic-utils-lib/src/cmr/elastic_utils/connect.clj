@@ -49,7 +49,7 @@
   "Waits for the elasticsearch cluster health to reach yellow. Pass in a elasticsearch store that
   has a :conn key with the elastisch connection"
   [elastic-store]
-  (when (:timed_out (admin/cluster-health (:conn elastic-store) :wait_for_status "yellow" :timeout "3s"))
+  (when (:timed_out (admin/cluster-health (:conn elastic-store) {:wait_for_status "yellow" :timeout "3s"}))
     (errors/internal-error! "Timed out waiting for elasticsearch to reach a healthy state")))
 
 (defn- get-elastic-health
