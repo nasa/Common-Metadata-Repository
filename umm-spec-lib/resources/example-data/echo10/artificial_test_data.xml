@@ -30,6 +30,7 @@ Socioeconomic Data and Applications Center (SEDAC). http://dx.doi.org/10.7927/H4
 			<RestrictionFlag>0</RestrictionFlag>
 			<Price>0</Price>
 			<DataFormat>XLS, PDF, PNG</DataFormat>
+			<DataFormat>HTML</DataFormat>
 			<SpatialKeywords>
 				<Keyword>Africa</Keyword>
 				<Keyword>Asia</Keyword>

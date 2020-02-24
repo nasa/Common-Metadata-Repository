@@ -177,17 +177,30 @@
           :Explanation (when explanation
                          explanation)})))))
 
-(defn- parse-archive-dist-info
-  "Parses ArchiveAndDistributionInformation out of Echo 10 XML into UMM-C"
+(defn parse-and-set-archive-dist-info
+  "Parses price and data formats out of Echo 10 XML into UMM-C. The price
+   is the same for all formats.  There is no way to distinguish them in
+   ECHO 10."
   [doc]
   (let [price (value-of doc "Collection/Price")
-        format (value-of doc "Collection/DataFormat")]
-    (when (or price
-              format)
-      {:FileDistributionInformation [{:Fees price
-                                      :Format (or format
-                                                  u/not-provided)
-                                      :FormatType "Native"}]})))
+        formats (select doc "Collection/DataFormat")]
+    (if (and price (not formats))
+      [{:Fees price
+        :Format u/not-provided
+        :FormatType "Native"}]
+      (for [format formats]
+        (cmr.common.util/remove-nil-keys
+          {:Fees price
+           :Format (value-of format ".")
+           :FormatType "Native"})))))
+
+(defn parse-archive-dist-info
+  "Parses ArchiveAndDistributionInformation out of Echo 10 XML into UMM-C"
+  [doc]
+  (let [distribution (parse-and-set-archive-dist-info doc)]
+    (if (empty? distribution)
+      nil
+      {:FileDistributionInformation distribution})))
 
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."

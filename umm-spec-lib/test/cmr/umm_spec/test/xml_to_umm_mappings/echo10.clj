@@ -1,6 +1,10 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.echo10
   (:require
+   [clojure.java.io :as io]
+   [clojure.string :as string]
    [clojure.test :refer :all]
+   [cmr.common.util :as common-util :refer [are3]]
+   [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as contact]))
 
 (deftest echo10-contact-role-test
@@ -43,3 +47,66 @@
                (:ShortName data-center)))
         (is (= 85 (count (:ShortName data-center))))
         (is (< 85 (count (:LongName data-center)))))))))
+
+(deftest echo10-multiple-data-formats-test
+  "This tests the echo 10 parse-archive-dist-info function"
+  
+  (let [base-record (slurp (io/resource "example-data/echo10/artificial_test_data.xml"))
+        expected-single-dataformat-without-price {:FileDistributionInformation [{:FormatType "Native",
+                                                                                 :Format "XLS, PDF, PNG"}]}
+        actual-single-dataformat-without-price (-> base-record
+                                                   (string/replace #"<Price>0</Price>" "")
+                                                   (string/replace #"<DataFormat>HTML</DataFormat>" ""))
+        expected-multi-dataformat-without-price {:FileDistributionInformation [{:FormatType "Native",
+                                                                                :Format "XLS, PDF, PNG"}
+                                                                               {:FormatType "Native",
+                                                                                :Format "HTML"}]}
+        actual-multi-dataformat-without-price (-> base-record
+                                                  (string/replace #"<Price>0</Price>" ""))
+        expected-single-dataformat-with-price {:FileDistributionInformation [{:FormatType "Native",
+                                                                              :Fees "0",
+                                                                              :Format "XLS, PDF, PNG"}]}
+        actual-single-dataformat-with-price (-> base-record
+                                                (string/replace #"<DataFormat>HTML</DataFormat>" ""))
+        expected-multi-dataformat-with-price {:FileDistributionInformation [{:FormatType "Native",
+                                                                             :Fees "0",
+                                                                             :Format "XLS, PDF, PNG"}
+                                                                            {:FormatType "Native",
+                                                                             :Fees "0",
+                                                                             :Format "HTML"}]}
+        expected-price-without-dataformat {:FileDistributionInformation [{:FormatType "Native",
+                                                                          :Fees "0",
+                                                                          :Format "Not provided"}]}
+        actual-price-without-dataformat (-> base-record
+                                            (string/replace #"<DataFormat>.*</DataFormat>" ""))
+        actual-no-price-no-dataformat (-> base-record
+                                          (string/replace #"<Price>.*</Price>" "")
+                                          (string/replace #"<DataFormat>.*</DataFormat>" ""))]
+
+    (are3 [expected-result test-string]
+      (is (= expected-result
+             (echo10/parse-archive-dist-info test-string)))
+
+      "Single DataFormat test without Price"
+      expected-single-dataformat-without-price
+      actual-single-dataformat-without-price
+
+      "Multi DataFormat test without Price"
+      expected-multi-dataformat-without-price
+      actual-multi-dataformat-without-price
+
+      "Single DataFormat test with Price"
+      expected-single-dataformat-with-price
+      actual-single-dataformat-with-price
+
+      "Multi DataFormat test with Price"
+      expected-multi-dataformat-with-price
+      base-record
+
+      "Price without DataFormat"
+      expected-price-without-dataformat
+      actual-price-without-dataformat
+
+      "Price without DataFormat"
+      nil
+      actual-no-price-no-dataformat)))

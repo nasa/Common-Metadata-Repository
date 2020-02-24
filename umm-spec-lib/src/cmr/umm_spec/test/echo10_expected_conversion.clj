@@ -33,15 +33,18 @@
       (catch NumberFormatException e))))
 
 (defn- expected-file-dist-info
-  "Created expected FileDistributionInformation for ArchiveAndDistributionInformation map."
-  [file-dist-info]
-  (when-let [file-dist-info (first file-dist-info)]
-    (-> file-dist-info
-        (select-keys [:Fees :Format :FormatType])
-        (assoc :FormatType "Native")
-        (update :Fees echo10-expected-fees)
-        umm-c/map->FileDistributionInformationType
-        vector)))
+  "Created expected FileDistributionInformation for ArchiveAndDistributionInformation map.
+   In ECHO 10 there is only 1 price (fees) but there can be many data formats. The first fee
+   applies to all data formats."
+  [file-dist-infos]
+  (when file-dist-infos
+   (let [first-price (echo10-expected-fees (get (select-keys (first file-dist-infos) [:Fees]) :Fees))]
+    (for [file-dist-info file-dist-infos]
+      (-> file-dist-info
+          (select-keys [:Format :FormatType])
+          (assoc :FormatType "Native")
+          (assoc :Fees first-price)
+          umm-c/map->FileDistributionInformationType)))))
 
 (defn- expected-archive-dist-info
   "Creates expected ArchiveAndDistributionInformation for echo10."

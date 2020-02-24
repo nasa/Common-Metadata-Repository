@@ -140,6 +140,7 @@
 (defn umm-c-to-echo10-xml
   "Returns ECHO10 XML structure from UMM collection record c."
   [c]
+  (def c c)
   (xml
     [:Collection
      [:ShortName (:ShortName c)]
@@ -187,10 +188,13 @@
                  ;; expectes a string in %9.2f format, so we have to
                  ;;ignore 'Free', 'Gratis', etc.
                  (catch NumberFormatException e)))]
-     [:DataFormat (-> c
-                      :ArchiveAndDistributionInformation
-                      :FileDistributionInformation
-                      first :Format)]
+     ; Go through all of the FileDistributionInformation elements and set the
+     ; ECHO 10 DataFormats.
+     (let [data-formats (-> c
+                            :ArchiveAndDistributionInformation
+                            :FileDistributionInformation)]
+       (for [data-format data-formats]
+         [:DataFormat (:Format data-format)]))
      [:SpatialKeywords
       (for [kw (lk/location-keywords->spatial-keywords (:LocationKeywords c))]
         [:Keyword kw])]
