@@ -23,8 +23,9 @@
     (esd/delete conn "1_autocomplete" "suggestion" (:_id baz))
     (index/wait-until-indexed)))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
-(use-fixtures :each autocomplete-fixture)
+(use-fixtures :each (join-fixtures
+                     [(ingest/reset-fixture)
+                      autocomplete-fixture]))
 
 (deftest autocomplete-suggest-test
   (testing "returned result form test"
