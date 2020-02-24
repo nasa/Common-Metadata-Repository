@@ -84,6 +84,7 @@ If this header is set to true then ingest will validate that collection keywords
 * Data Centers - short name
 * Directory Names - short name
 * ISO Topic Categories - iso topic category
+* Granule Data Format - granule data format
 
 Note that when multiple fields are present the combination of keywords are validated to match a known combination.
 
@@ -105,7 +106,7 @@ This provides standard X-Request-Id support to allow user to pass in some random
 
 #### <a name="cmr-request-id"></a> CMR-Request-Id Header
 
-This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems. 
+This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems.
 
 ***
 
@@ -638,7 +639,7 @@ Example output:
 ```
 ## <a name="translate-granule"></a> Translate Granule Metadata
 
-Granule metadata can be translated between metadata standards using the translate API in Ingest. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header. The supported input formats are ECHO10, ISO SMAP and UMM-G. The supported output formats are ECHO10, ISO SMAP, UMM-G and ISO19115. 
+Granule metadata can be translated between metadata standards using the translate API in Ingest. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header. The supported input formats are ECHO10, ISO SMAP and UMM-G. The supported output formats are ECHO10, ISO SMAP, UMM-G and ISO19115.
 
 Example: Translate ECHO10 metadata to UMM-G
 
