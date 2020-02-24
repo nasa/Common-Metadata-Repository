@@ -29,16 +29,16 @@
         {:keys [category type subregion-1 subregion-2 subregion-3 uuid detailed-location]}
         hierarchical-location]
     {:category category
-     :category.lowercase (str/lower-case category)
+     :category-lowercase (str/lower-case category)
      :type type
-     :type.lowercase (str/lower-case type)
+     :type-lowercase (str/lower-case type)
      :subregion-1 subregion-1
-     :subregion-1.lowercase (str/lower-case subregion-1)
+     :subregion-1-lowercase (str/lower-case subregion-1)
      :subregion-2 subregion-2
-     :subregion-2.lowercase (str/lower-case subregion-2)
+     :subregion-2-lowercase (str/lower-case subregion-2)
      :subregion-3 subregion-3
-     :subregion-3.lowercase (str/lower-case subregion-3)
+     :subregion-3-lowercase (str/lower-case subregion-3)
      :uuid uuid
-     :uuid.lowercase (when uuid (str/lower-case uuid))
+     :uuid-lowercase (when uuid (str/lower-case uuid))
      :detailed-location detailed-location
-     :detailed-location.lowercase (util/safe-lowercase detailed-location)}))
+     :detailed-location-lowercase (util/safe-lowercase detailed-location)}))

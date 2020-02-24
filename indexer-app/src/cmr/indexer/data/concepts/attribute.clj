@@ -58,7 +58,7 @@
                               #(coll-psa/parse-value type %))
                         (:values psa-ref))}
        {:name (:name psa-ref)
-        (str field-name ".lowercase") (map (comp str/lower-case
+        (str field-name "-lowercase") (map (comp str/lower-case
                                                  #(value->elastic-value type %)
                                                  #(coll-psa/parse-value type %))
                                            (:values psa-ref))}]
@@ -94,7 +94,7 @@
     (if (some #{data-type} [:string :boolean :time-string :date-string :datetime-string])
       [(assoc aa-map field-name (value->elastic-value data-type parsed-value))
        (assoc aa-map
-              (str field-name ".lowercase")
+              (str field-name "-lowercase")
               (util/safe-lowercase (value->elastic-value data-type parsed-value)))]
       [(assoc aa-map field-name (value->elastic-value data-type parsed-value))])))
 

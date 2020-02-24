@@ -69,18 +69,18 @@
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-data-center]
     {:level-0 level-0
-     :level-0.lowercase (str/lower-case level-0)
+     :level-0-lowercase (str/lower-case level-0)
      :level-1 level-1
-     :level-1.lowercase (str/lower-case level-1)
+     :level-1-lowercase (str/lower-case level-1)
      :level-2 level-2
-     :level-2.lowercase (str/lower-case level-2)
+     :level-2-lowercase (str/lower-case level-2)
      :level-3 level-3
-     :level-3.lowercase (str/lower-case level-3)
+     :level-3-lowercase (str/lower-case level-3)
      :short-name short-name
-     :short-name.lowercase (str/lower-case short-name)
+     :short-name-lowercase (str/lower-case short-name)
      :long-name long-name
-     :long-name.lowercase (str/lower-case long-name)
+     :long-name-lowercase (str/lower-case long-name)
      :url url
-     :url.lowercase (when url (str/lower-case url))
+     :url-lowercase (when url (str/lower-case url))
      :uuid uuid
-     :uuid.lowercase (when uuid (str/lower-case uuid))}))
+     :uuid-lowercase (when uuid (str/lower-case uuid))}))

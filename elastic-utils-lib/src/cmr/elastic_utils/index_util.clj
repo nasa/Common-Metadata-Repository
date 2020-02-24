@@ -15,13 +15,11 @@
     (f/unparse (f/formatters :date-time) date-time)))
 
 (def string-field-mapping
-  {:type "string" :index "not_analyzed"})
+  {:type "keyword"})
 
 (def text-field-mapping
   "Used for analyzed text fields"
-  {:type "string"
-   ; these fields will be split into multiple terms using the analyzer
-   :index "analyzed"
+  {:type "text"
    ; Norms are metrics about fields that elastic can use to weigh certian fields more than
    ; others when computing a document relevance. A typical example is field length - short
    ; fields are weighted more heavily than long feilds. We don't need them for scoring.
@@ -32,7 +30,7 @@
    :index_options "docs"})
 
 (def date-field-mapping
-  {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"})
+  {:type "date"})
 
 (def double-field-mapping
   {:type "double"})
@@ -44,22 +42,17 @@
   {:type "integer"})
 
 (def bool-field-mapping
-  {:type "boolean"
-   ;; Cannot use doc values using Elasticsearch 1.6, however we can update the fielddata cache
-   ;; at index time rather than on the first query. See
-   ;; https://www.elastic.co/guide/en/elasticsearch/reference/1.6/fielddata-formats.html and
-   ;; https://www.elastic.co/guide/en/elasticsearch/guide/1.x/preload-fielddata.html
-   :fielddata {:loading "eager"}})
+  {:type "boolean"})
 
 (defn stored
   "modifies a mapping to indicate that it should be stored"
   [field-mapping]
-  (assoc field-mapping :store "yes"))
+  (assoc field-mapping :store true))
 
 (defn not-indexed
   "modifies a mapping to indicate that it should not be indexed and thus is not searchable."
   [field-mapping]
-  (assoc field-mapping :index "no"))
+  (assoc field-mapping :index false))
 
 (defn doc-values
   "Modifies a mapping to indicate that it should use doc values instead of the field data cache
@@ -82,13 +75,10 @@
   ([mapping-name mapping-type docstring mapping-settings properties]
    `(def ~mapping-name
       ~docstring
-      {~mapping-type
-       (merge {:dynamic "strict"
+      (merge {:dynamic "strict"
                :_source {:enabled false}
-               :_all {:enabled false}
-               :_ttl {:enabled true}
                :properties ~properties}
-              ~mapping-settings)})))
+              ~mapping-settings))))
 
 (defmacro defnestedmapping
   "Defines a new nested mapping type for an elasticsearch index. The argument after the
@@ -106,8 +96,6 @@
       (merge ~mapping-settings
              {:type "nested"
               :dynamic "strict"
-              :_source {:enabled false}
-              :_all {:enabled false}
               :properties ~properties}))))
 
 (defn create-index-or-update-mappings
@@ -123,7 +111,7 @@
     (if (esi-helper/exists? conn index-name)
       (do
         (info (format "Updating %s mappings and settings" index-name))
-        (let [response (esi-helper/update-mapping conn index-name type-name {:mapping mappings :ignore_conflicts false})]
+        (let [response (esi-helper/update-mapping conn index-name type-name {:mapping mappings})]
           (when-not (= {:acknowledged true} response)
             (errors/internal-error!
              (str "Unexpected response when updating elastic mappings: " (pr-str response))))))

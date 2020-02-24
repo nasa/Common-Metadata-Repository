@@ -21,16 +21,16 @@
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name} i-class :class} full-instrument]
     {:category category
-     :category.lowercase (str/lower-case category)
+     :category-lowercase (str/lower-case category)
      :class i-class
-     :class.lowercase (str/lower-case i-class)
+     :class-lowercase (str/lower-case i-class)
      :type type
-     :type.lowercase (str/lower-case type)
+     :type-lowercase (str/lower-case type)
      :subtype subtype
-     :subtype.lowercase (str/lower-case subtype)
+     :subtype-lowercase (str/lower-case subtype)
      :short-name short-name
-     :short-name.lowercase (str/lower-case short-name)
+     :short-name-lowercase (str/lower-case short-name)
      :long-name long-name
-     :long-name.lowercase (str/lower-case long-name)
+     :long-name-lowercase (str/lower-case long-name)
      :uuid uuid
-     :uuid.lowercase (when uuid (str/lower-case uuid))}))
+     :uuid-lowercase (when uuid (str/lower-case uuid))}))

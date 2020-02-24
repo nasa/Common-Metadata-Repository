@@ -17,7 +17,7 @@
                     "_id"      {"path" "index-set-id"}
                     :properties {:index-set-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
                                  :index-set-name {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                 :index-set-name.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
+                                 :index-set-name-lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
                                  :index-set-request {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}})
 
 (defconfig index-queue-name

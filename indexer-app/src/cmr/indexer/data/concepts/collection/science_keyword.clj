@@ -37,21 +37,21 @@
         {:keys [uuid]} (kms-lookup/lookup-by-umm-c-keyword kms-index :science-keywords
                                                            science-keyword-kebab-key)]
     {:category category
-     :category.lowercase (util/safe-lowercase category)
+     :category-lowercase (util/safe-lowercase category)
      :topic topic
-     :topic.lowercase (util/safe-lowercase topic)
+     :topic-lowercase (util/safe-lowercase topic)
      :term term
-     :term.lowercase (util/safe-lowercase term)
+     :term-lowercase (util/safe-lowercase term)
      :variable-level-1 variable-level-1
-     :variable-level-1.lowercase (util/safe-lowercase variable-level-1)
+     :variable-level-1-lowercase (util/safe-lowercase variable-level-1)
      :variable-level-2 variable-level-2
-     :variable-level-2.lowercase (util/safe-lowercase variable-level-2)
+     :variable-level-2-lowercase (util/safe-lowercase variable-level-2)
      :variable-level-3 variable-level-3
-     :variable-level-3.lowercase (util/safe-lowercase variable-level-3)
+     :variable-level-3-lowercase (util/safe-lowercase variable-level-3)
      :detailed-variable detailed-variable
-     :detailed-variable.lowercase (util/safe-lowercase detailed-variable)
+     :detailed-variable-lowercase (util/safe-lowercase detailed-variable)
      :uuid uuid
-     :uuid.lowercase (util/safe-lowercase uuid)}))
+     :uuid-lowercase (util/safe-lowercase uuid)}))
 
 (defn humanized-science-keyword->elastic-doc
   "Extracts humanized fields from the science keyword and places them into an elastic doc with
@@ -62,9 +62,9 @@
         ns-stripped-fields (util/map-keys->kebab-case humanized-fields-with-raw-values)]
     (merge
      ns-stripped-fields
-     ;; Create "*.lowercase" versions of the fields
+     ;; Create "*-lowercase" versions of the fields
      (->> ns-stripped-fields
-          (util/map-keys #(keyword (str (name %) ".lowercase")))
+          (util/map-keys #(keyword (str (name %) "-lowercase")))
           (util/map-values #(util/safe-lowercase %))))))
 
 (defn- science-keyword->facet-fields

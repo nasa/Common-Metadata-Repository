@@ -15,15 +15,15 @@
         project-short-names ["ESI" "EPI" "EVI"]]
     {:concept-id concept-id
      :entry-title entry-title
-     :entry-title.lowercase (string/lower-case entry-title)
+     :entry-title-lowercase (string/lower-case entry-title)
      :provider-id provider-id
-     :provider-id.lowercase (string/lower-case provider-id)
+     :provider-id-lowercase (string/lower-case provider-id)
      :short-name short-name
-     :short-name.lowercase (string/lower-case short-name)
+     :short-name-lowercase (string/lower-case short-name)
      :version-id version-id
-     :version-id.lowercase (string/lower-case version-id)
+     :version-id-lowercase (string/lower-case version-id)
      :project-sn2 project-short-names
-     :project-sn2.lowercase (map string/lower-case project-short-names)}))
+     :project-sn2-lowercase (map string/lower-case project-short-names)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

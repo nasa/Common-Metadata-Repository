@@ -1,7 +1,12 @@
 (ns cmr.elastic-utils.es-index-helper
   "Defines helper functions for invoking ES index"
   (:require
-   [clojurewerkz.elastisch.rest.index :as esi]))
+   [cheshire.core :as json]
+   [clj-http.client :as http]
+   [clojurewerkz.elastisch.rest :as rest]
+   [clojurewerkz.elastisch.rest.index :as esi]
+   [clojurewerkz.elastisch.rest.utils :refer [join-names]])
+  (:import clojurewerkz.elastisch.rest.Connection))
 
 (defn exists?
   [conn index-name]
@@ -10,12 +15,21 @@
 (defn update-mapping
   "Register or modify specific mapping definition"
   [conn index-name-or-names type-name opts]
-  (esi/update-mapping conn index-name-or-names type-name opts))
+  (let [{:keys [mapping]} opts]
+    (rest/put conn
+              (rest/index-mapping-url conn (join-names index-name-or-names))
+              {:content-type :json
+               :body mapping
+               :query-params (dissoc opts :mapping)})))
 
 (defn create
   "Create an index"
   [conn index-name opts]
-  (esi/create conn index-name opts))
+  (let [{:keys [settings mappings]} opts]
+    (rest/put conn (rest/index-url conn index-name)
+              {:content-type :json
+               :body (cond-> {:settings (or settings {})}
+                             mappings (assoc :mappings mappings))})))
 
 (defn refresh
  "refresh an index"
