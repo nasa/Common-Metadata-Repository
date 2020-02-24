@@ -1,60 +1,38 @@
 (ns cmr.elastic-utils.embedded-elastic-server
   "Used to run an in memory Elasticsearch server."
   (:require
-   [clj-http.client :as client]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.util :as util])
   (:import
-   (org.elasticsearch.common.settings ImmutableSettings ImmutableSettings$Builder)
-   (org.elasticsearch.common.logging.log4j LogConfigurator)
-   (org.elasticsearch.node Node NodeBuilder)))
-
-(comment
-  (def settings (create-settings {:http-port 9201
-                                  :transport-port 9203
-                                  :data-dir"es_data2"}))
-  (def env (org.elasticsearch.env.Environment. settings))
-  (.configFile env))
-
-(defn- setup-logging
-  "Sets up elastic search logging."
-  [settings]
-  (LogConfigurator/configure settings))
+   (org.codelibs.elasticsearch.runner ElasticsearchClusterRunner
+                                      ElasticsearchClusterRunner$Builder)
+   (org.elasticsearch.common.settings Settings 
+                                      Settings$Builder)))
 
 (defn- create-settings
-  "Creates an Elastic Search Immutable Settings"
-  [{:keys [http-port transport-port ^String data-dir]}]
-  (let [^ImmutableSettings$Builder builder (ImmutableSettings/settingsBuilder)]
-    (.. builder
-        (put "node.name" "embedded-elastic")
-        (put "path.conf" ".")
-        (put "path.data" data-dir)
-        (put "http.port" (str http-port))
-        (put "transport.tcp.port" (str transport-port))
-        (put "index.store.type" "memory")
-        ;; dynamic scripting configurations
-        (put "scipt.inline" "on")
-        (put "script.search" "on")
-        build)))
+  "Implements the Builder interface in order to configure the elasticsearch settings."
+  [http-port transport-port data-dir]
+  (proxy [ElasticsearchClusterRunner$Builder] []
+    (build [index ^Settings$Builder settingsBuilder]
+      (.. settingsBuilder
+          (put "node.name" "embedded-elastic")
+          (put "path.data" data-dir)
+          (put "http.port" (str http-port))
+          (put "transport.tcp.port" (str transport-port))
+          (put "index.store.type" "memory")))))
 
-(defn- build-node
-  "Creates the internal elastic search node that will run."
-  [^ImmutableSettings node-settings]
-  (let [^NodeBuilder builder (NodeBuilder/nodeBuilder)]
-    (.. builder
-        (settings node-settings)
-
-        (clusterName "embedded-cluster")
-
-        ;;Is the node going to be allowed to allocate data (shards) to it or not.
-        (data true)
-
-        ;;The node is local within a JVM. It will not try to connect to nodes outside
-        (local true)
-
-        ;; Starts the node
-        node)))
+(defn build-node
+  "Build cluster node to run on http-port and transport-port with data-dir."
+  [http-port transport-port data-dir]
+  (let [^ElasticsearchClusterRunner node (ElasticsearchClusterRunner.)]
+    (.build
+     (.onBuild node (create-settings http-port transport-port data-dir))
+     (-> (ElasticsearchClusterRunner/newConfigs)
+         (.numOfNode 1)
+         (.useLogger)
+         (.clusterName "cmr-embedded-elastic")))
+    node))
 
 (defrecord ElasticServer
   [
@@ -69,21 +47,17 @@
   (start
     [this system]
     (debug "Starting elastic server on port" http-port)
-    (let [node-settings (create-settings this)
-          _ (setup-logging node-settings)
-          this (assoc this :node (build-node node-settings))]
-      ;; See http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/cluster-health.html
-      (client/get
-        (format
-          "http://localhost:%s/_cluster/health?wait_for_status=yellow&timeout=50s"
-          (:http-port this)))
-      this))
+    (let [^ElasticsearchClusterRunner node (build-node http-port transport-port data-dir)]
+      ;; ensureYellow takes variable arguments. Will not recognize 0-arity call. Must pass array coerced to java.lang.String.
+      (.ensureYellow node (into-array java.lang.String []))
+      (assoc this :node node)))
 
   (stop
     [this system]
-    (when-let [^Node node (:node this)]
+    (when-let [^ElasticsearchClusterRunner node (:node this)]
       (do
         (.close node)
+        (.clean node)
         (util/delete-recursively (:data-dir this))))
     (assoc this :node nil)))
 
@@ -92,7 +66,6 @@
    (create-server 9200 9300 "data"))
   ([http-port transport-port data-dir]
    (->ElasticServer http-port transport-port data-dir nil)))
-
 
 (comment
 
