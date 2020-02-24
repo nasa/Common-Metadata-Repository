@@ -15,7 +15,7 @@
 (defn es-query-for-collection-concept-id
   "Returns an elasticsearch query to find granules in the collection."
   [concept-id]
-  {:filtered {:query (q/match-all)
+  {:bool {:must (q/match-all)
               :filter (q/term :collection-concept-id concept-id)}})
 
 (defn- granule-count-for-collection

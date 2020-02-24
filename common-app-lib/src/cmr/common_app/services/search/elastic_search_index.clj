@@ -17,6 +17,7 @@
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.connect :as es]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.transmit.connection :as transmit-conn])
   (:import
    clojure.lang.ExceptionInfo
@@ -72,7 +73,7 @@
      :sort sort-params
      :size page-size
      :from offset
-     :fields fields
+     :stored_fields fields
      :aggs aggregations
      :scroll scroll-timeout
      :scroll-id scroll-id
@@ -98,7 +99,7 @@
   "Performs a scroll search, handling errors where possible."
   [context scroll-id]
   (try
-    (esd/scroll (context->conn context) scroll-id :scroll (es-config/elastic-scroll-timeout))
+    (es-helper/scroll (context->conn context) scroll-id :scroll (es-config/elastic-scroll-timeout))
     (catch ExceptionInfo e
            (handle-es-exception e scroll-id))))
 
@@ -109,7 +110,7 @@
     (if (> max-retries 0)
       (if-let [scroll-id (:scroll-id query)]
         (scroll-search context scroll-id)
-        (esd/search
+        (es-helper/search
          (context->conn context) (:index-name index-info) [(:type-name index-info)] query))
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
     (catch UnknownHostException e

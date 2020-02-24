@@ -145,8 +145,8 @@
   [coll]
   (json/generate-string
    {:query
-    {:filtered
-     {:query
+    {:bool
+     {:must
       {:match_all {}
        :filter {:term {:collection-concept-id-doc-values (:concept-id coll)}}}}}}))
 

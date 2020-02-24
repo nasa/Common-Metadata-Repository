@@ -120,7 +120,7 @@
    (-> (esd/search (es/context->conn context)
                    "1_*" ;; Searching all indexes
                    ["granule"] ;; With the granule type.
-                   {:query {:filtered {:query (esq/match-all)
+                   {:query {:bool {:must (esq/match-all)
                                        :filter {:range {:revision-date-doc-values
                                                         {:gte revision-date-str}}}}}
                     :size 0

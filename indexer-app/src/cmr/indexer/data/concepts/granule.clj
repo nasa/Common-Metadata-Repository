@@ -155,8 +155,8 @@
             :collection-concept-seq-id-doc-values (:sequence-number (concepts/parse-concept-id parent-collection-id))
 
             :entry-title EntryTitle
-            :entry-title.lowercase (string/lower-case EntryTitle)
-            :entry-title.lowercase-doc-values (string/lower-case EntryTitle)
+            :entry-title-lowercase (string/lower-case EntryTitle)
+            :entry-title-lowercase-doc-values (string/lower-case EntryTitle)
             :metadata-format (-> format
                                  mt/base-mime-type-of
                                  mt/base-mime-type-to-format
@@ -165,27 +165,27 @@
             :coordinate-system (when granule-spatial-representation
                                  (csk/->SCREAMING_SNAKE_CASE_STRING granule-spatial-representation))
 
-            :short-name.lowercase (when ShortName (string/lower-case ShortName))
-            :short-name.lowercase-doc-values (when ShortName (string/lower-case ShortName))
-            :version-id.lowercase (when Version (string/lower-case Version))
-            :version-id.lowercase-doc-values (when Version (string/lower-case Version))
+            :short-name-lowercase (when ShortName (string/lower-case ShortName))
+            :short-name-lowercase-doc-values (when ShortName (string/lower-case ShortName))
+            :version-id-lowercase (when Version (string/lower-case Version))
+            :version-id-lowercase-doc-values (when Version (string/lower-case Version))
 
             :native-id native-id
             :native-id-stored native-id
-            :native-id.lowercase (string/lower-case native-id)
+            :native-id-lowercase (string/lower-case native-id)
 
             :provider-id provider-id
             :provider-id-doc-values provider-id
-            :provider-id.lowercase (string/lower-case provider-id)
-            :provider-id.lowercase-doc-values (string/lower-case provider-id)
+            :provider-id-lowercase (string/lower-case provider-id)
+            :provider-id-lowercase-doc-values (string/lower-case provider-id)
 
             :granule-ur granule-ur
-            :granule-ur.lowercase2 (string/lower-case granule-ur)
+            :granule-ur-lowercase2 (string/lower-case granule-ur)
             :producer-gran-id producer-gran-id
-            :producer-gran-id.lowercase2 (when producer-gran-id (string/lower-case producer-gran-id))
+            :producer-gran-id-lowercase2 (when producer-gran-id (string/lower-case producer-gran-id))
             :day-night day-night
             :day-night-doc-values day-night
-            :day-night.lowercase (when day-night (string/lower-case day-night))
+            :day-night-lowercase (when day-night (string/lower-case day-night))
             :access-value access-value
             :access-value-doc-values access-value
 
@@ -193,21 +193,21 @@
             :readable-granule-name-sort2 (string/lower-case (or producer-gran-id granule-ur))
 
             :platform-sn platform-short-names
-            :platform-sn.lowercase  (map string/lower-case platform-short-names)
-            :platform-sn.lowercase-doc-values  (map string/lower-case platform-short-names)
+            :platform-sn-lowercase  (map string/lower-case platform-short-names)
+            :platform-sn-lowercase-doc-values  (map string/lower-case platform-short-names)
             :instrument-sn instrument-short-names
-            :instrument-sn.lowercase  (map string/lower-case instrument-short-names)
-            :instrument-sn.lowercase-doc-values  (map string/lower-case instrument-short-names)
+            :instrument-sn-lowercase  (map string/lower-case instrument-short-names)
+            :instrument-sn-lowercase-doc-values  (map string/lower-case instrument-short-names)
             :sensor-sn sensor-short-names
-            :sensor-sn.lowercase  (map string/lower-case sensor-short-names)
-            :sensor-sn.lowercase-doc-values  (map string/lower-case sensor-short-names)
+            :sensor-sn-lowercase  (map string/lower-case sensor-short-names)
+            :sensor-sn-lowercase-doc-values  (map string/lower-case sensor-short-names)
             :project-refs project-refs
-            :project-refs.lowercase (map string/lower-case project-refs)
-            :project-refs.lowercase-doc-values (map string/lower-case project-refs)
+            :project-refs-lowercase (map string/lower-case project-refs)
+            :project-refs-lowercase-doc-values (map string/lower-case project-refs)
             :feature-id feature-ids
-            :feature-id.lowercase (map string/lower-case feature-ids)
+            :feature-id-lowercase (map string/lower-case feature-ids)
             :crid-id crid-ids
-            :crid-id.lowercase (map string/lower-case crid-ids)
+            :crid-id-lowercase (map string/lower-case crid-ids)
             :size size
             :size-doc-values size
             :size-double-doc-values size
@@ -227,7 +227,7 @@
             :end-date (index-util/date->elastic end-date)
             :end-date-doc-values (index-util/date->elastic end-date)
             :two-d-coord-name two-d-coord-name
-            :two-d-coord-name.lowercase (when two-d-coord-name (string/lower-case two-d-coord-name))
+            :two-d-coord-name-lowercase (when two-d-coord-name (string/lower-case two-d-coord-name))
             :start-coordinate-1 start-coordinate-1
             :end-coordinate-1 end-coordinate-1
             :start-coordinate-2 start-coordinate-2
