@@ -26,6 +26,7 @@
    [cmr.search.data.elastic-results-to-query-results]
    ;;
    ;; Result handlers - required here to avoid circular dependency in query service
+   [cmr.search.results-handlers.autocomplete-results-handler]
    [cmr.search.results-handlers.atom-json-results-handler]
    [cmr.search.results-handlers.atom-results-handler]
    [cmr.search.results-handlers.csv-results-handler]
