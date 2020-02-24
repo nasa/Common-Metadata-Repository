@@ -33,7 +33,6 @@
   []
   (h/sql (format "CREATE TABLE METADATA_DB.cmr_subscriptions (%s, %s)" subscriptions-column-sql subscriptions-constraint-sql)))
 
-
 (defn- create-subscriptions-indices
   []
   (h/sql "CREATE INDEX subscriptions_crdi ON cmr_subscriptions (concept_id, revision_id, deleted)"))

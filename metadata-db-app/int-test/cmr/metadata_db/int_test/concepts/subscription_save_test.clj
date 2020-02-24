@@ -50,6 +50,7 @@
           ["Subscription could not be associated with provider [REG_PROV]. Subscription is system level entity."])))
 
 (deftest force-delete-subscription-test
+  "Testing physically removing a specific revision of a subscription from the database."
   (cd-spec/general-force-delete-test :subscription ["CMR"]))
 
 (deftest find-subscriptions
