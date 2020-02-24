@@ -140,7 +140,6 @@
 (defn umm-c-to-echo10-xml
   "Returns ECHO10 XML structure from UMM collection record c."
   [c]
-  (def c c)
   (xml
     [:Collection
      [:ShortName (:ShortName c)]
