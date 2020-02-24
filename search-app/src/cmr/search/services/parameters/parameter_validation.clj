@@ -10,6 +10,7 @@
    [cmr.common-app.services.search.params :as common-params]
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common.concepts :as cc]
+   [cmr.common.mime-types :as mt]
    [cmr.common.config :as cfg]
    [cmr.common.date-time-parser :as dt-parser]
    [cmr.common.date-time-range-parser :as dtr-parser]
@@ -37,7 +38,7 @@
     cpv/basic-params-config
     {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
                      :include-facets :hierarchical-facets :include-highlights :include-tags
-                     :all-revisions}
+                     :all-revisions :shapefile}
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :doi :native-id :platform :platform-h :processing-level-id
@@ -51,7 +52,7 @@
   [_]
   (cpv/merge-params-config
     cpv/basic-params-config
-    {:single-value #{:echo-compatible :include-facets}
+    {:single-value #{:echo-compatible :include-facets :shapefile}
      :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
                        :producer-granule-id :project :version :native-id :provider :entry-title
                        :platform :sensor :feature-id :crid-id :cycle}
@@ -714,6 +715,19 @@
                 (format "Cannot set relevance boost on field [%s]." (csk/->snake_case_string field)))))
           (seq boosts))))
 
+(def ^:private valid-shapefile-formats
+  "Valid shapefile formats"
+  #{mt/shapefile})   
+          
+(defn shapefile-format-validation
+  "Validates that the shapefile format value is one of the accepted formats"
+  [concept-type params]
+  (when-let [shapefile-format (get-in params [:shapefile :content-type])]
+    (when (not (contains? valid-shapefile-formats shapefile-format))
+      [(format "Shapefile format [%s] is not supported. It must be one of %s"
+               shapefile-format
+               (util/human-join (vec valid-shapefile-formats) "," "or"))])))
+
 (def parameter-validations
   "Lists of parameter validation functions by concept type"
   {:collection (concat
@@ -743,7 +757,8 @@
                  include-tags-parameter-validation
                  collection-include-facets-validation
                  no-facets-size-without-include-facets-v2
-                 collection-facets-size-validation])
+                 collection-facets-size-validation
+                 shapefile-format-validation])
    :granule (concat
              cpv/common-validations
              [temporal-format-validation
@@ -769,7 +784,8 @@
               temporal-facets-subfields-validation
               temporal-facet-year-validation
               temporal-facet-month-validation
-              temporal-facet-day-validation])
+              temporal-facet-day-validation
+              shapefile-format-validation])
    :tag cpv/common-validations
    :variable (concat cpv/common-validations
                      [boolean-value-validation

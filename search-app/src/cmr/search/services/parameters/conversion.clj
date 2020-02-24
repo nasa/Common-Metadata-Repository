@@ -66,6 +66,7 @@
    :updated-since :updated-since
    :version :string
    :facets-size :string
+   :shapefile :shapefile
 
    ;; Tag parameters
    :tag-data :tag-query
@@ -122,7 +123,8 @@
    :updated-since :updated-since
    :version :collection-query
    :cycle :int
-   :passes :passes})
+   :passes :passes
+   :shapefile :shapefile})
 
 (defmethod common-params/param-mappings :tag
   [_]
@@ -252,20 +254,20 @@
   (let [field-condition (common-params/parameter->condition context :collection param value options)
         exclude-collection (= "true" (get-in options [param :exclude-collection]))
         collection-cond (gc/and-conds
-                         [(qm/->CollectionQueryCondition field-condition)
-                          (cqm/map->MissingCondition {:field param})])]
+                          [(qm/->CollectionQueryCondition field-condition)
+                           (cqm/map->MissingCondition {:field param})])]
     (if exclude-collection
       field-condition
       (gc/or-conds
-       [field-condition
-        collection-cond]))))
+        [field-condition
+         collection-cond]))))
 
 (defmethod common-params/parameter->condition :updated-since
   [_context concept-type param value options]
   (cqm/map->DateRangeCondition
     {:field param
      :start-date (parser/parse-datetime
-                   (if (sequential? value) (first value) value))
+                  (if (sequential? value) (first value) value))
      :end-date nil}))
 
 (defmethod common-params/parameter->condition :multi-date-range
@@ -375,7 +377,7 @@
 (defmethod common-params/parse-query-level-params :collection
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                :collection params lp/param-aliases)
+                                 :collection params lp/param-aliases)
         query-attribs (reverse-has-granules-sort query-attribs)
         {:keys [begin-tag end-tag snippet-length num-snippets]} (get-in params [:options :highlights])
         result-features (concat (when (= (:include-granule-counts params) "true")
@@ -387,7 +389,7 @@
                                     [:hierarchical-facets]
                                     [:facets]))
                                 (when (= "v2" (util/safe-lowercase (:include-facets params)))
-                                    [:facets-v2])
+                                  [:facets-v2])
                                 (when (= (:include-highlights params) "true")
                                   [:highlights])
                                 (when (:has-granules-created-at params)

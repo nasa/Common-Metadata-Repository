@@ -198,6 +198,7 @@
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
           spatial-script (shape->script-cond shape)
+        ; check the MBR first before doing the more expensive check
           spatial-cond (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])]
       (if orbital-cond
         (gc/or-conds [spatial-cond orbital-cond])
