@@ -36,6 +36,13 @@
      (is (contains? data :results))
      (is (contains? (:results data) :items))))
 
+  (testing "returns CMR-Hits header"
+   (let [response (search/get-autocomplete-suggestions "foo")
+         headers (:headers response)]
+     (is (:CMR-Hits headers))
+     (println (json/parse-string (:body response) true))
+     (is (= "1" (:CMR-Hits headers)))))
+
   (testing "partial value match search"
    (let [response (search/get-autocomplete-suggestions "f")
          body (:body response)
@@ -87,4 +94,7 @@
 (deftest autocomplete-usage-test
   (testing "missing query param response test"
            (let [response (search/get-autocomplete-suggestions nil {:throw-exceptions false})]
-             (is (= 400 (:status response))))))
+             (is (= 400 (:status response)))))
+
+  (testing "types array"
+           (is (= true false))))

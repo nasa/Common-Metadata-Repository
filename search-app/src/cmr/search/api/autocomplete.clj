@@ -43,10 +43,12 @@
         opts (assoc params :types types
                            :page-size page-size
                            :offset offset)
-        results (ac/autocomplete ctx term opts)]
+        results (ac/autocomplete ctx term opts)
+        cmr-hits (str (count (:items results)))]
     {:status 200
      :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)
-               common-routes/CORS_ORIGIN_HEADER  "*"}
+               common-routes/CORS_ORIGIN_HEADER  "*"
+               common-routes/HITS_HEADER cmr-hits}
      :body {:query {:query term
                     :types (if types types [])}
             :results results}}))

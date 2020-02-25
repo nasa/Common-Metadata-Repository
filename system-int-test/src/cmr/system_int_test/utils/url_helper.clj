@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.utils.url-helper
   "helper to provide the urls to various service endpoints"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.config :as config]
    [cmr.elastic-utils.config :as es-config]
    [cmr.transmit.config :as transmit-config]
@@ -241,13 +241,16 @@
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
 
 (defn autocomplete-url
-  "Autocomplete URL with query term and optional types"
+  "Autocomplete URL with query term and optional types collection"
   ([term]
-   (if term
-    (format "http://localhost:%s/autocomplete?q=%s" (transmit-config/search-port) term)
-    (format "http://localhost:%s/autocomplete" (transmit-config/search-port))))
+   (if-not term
+    (format "http://localhost:%s/autocomplete" (transmit-config/search-port)))
+    (format "http://localhost:%s/autocomplete?q=%s" (transmit-config/search-port) term))
   ([term types]
-   (format "http://localhost:%s/autocomplete?q=%s&types=%s" (transmit-config/search-port) term types)))
+   (format "http://localhost:%s/autocomplete?q=%s&%s"
+           (transmit-config/search-port)
+           term
+           (string/join "&" (map #(str "type[]=" %) types)))))
 
 (defn enable-search-writes-url
   []

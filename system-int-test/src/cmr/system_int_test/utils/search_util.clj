@@ -253,9 +253,8 @@
    (get-autocomplete-suggestions term nil))
   ([term opts]
    (client/get (url/autocomplete-url term) opts))
-  ([term types-list opts]
-   (let [types (str/join "," types-list)]
-     (client/get (url/autocomplete-url term types) opts))))
+  ([term types opts]
+   (client/get (url/autocomplete-url term types) opts)))
 
 (defn- parse-timeline-interval
   "Parses the timeline response interval component into a more readable and comparable format."
