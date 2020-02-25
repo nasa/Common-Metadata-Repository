@@ -189,7 +189,7 @@
         :Format u/not-provided
         :FormatType "Native"}]
       (for [format formats]
-        (cmr.common.util/remove-nil-keys
+        (util/remove-nil-keys
           {:Fees price
            :Format (value-of format ".")
            :FormatType "Native"})))))

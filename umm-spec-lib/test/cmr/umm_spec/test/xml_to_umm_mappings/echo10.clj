@@ -50,7 +50,7 @@
 
 (deftest echo10-multiple-data-formats-test
   "This tests the echo 10 parse-archive-dist-info function"
-  
+
   (let [base-record (slurp (io/resource "example-data/echo10/artificial_test_data.xml"))
         expected-single-dataformat-without-price {:FileDistributionInformation [{:FormatType "Native",
                                                                                  :Format "XLS, PDF, PNG"}]}
@@ -107,6 +107,6 @@
       expected-price-without-dataformat
       actual-price-without-dataformat
 
-      "Price without DataFormat"
+      "No Price and no DataFormats"
       nil
       actual-no-price-no-dataformat)))

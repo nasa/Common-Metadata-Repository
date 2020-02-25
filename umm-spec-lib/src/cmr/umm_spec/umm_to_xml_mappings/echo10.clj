@@ -189,11 +189,8 @@
                  (catch NumberFormatException e)))]
      ; Go through all of the FileDistributionInformation elements and set the
      ; ECHO 10 DataFormats.
-     (let [data-formats (-> c
-                            :ArchiveAndDistributionInformation
-                            :FileDistributionInformation)]
-       (for [data-format data-formats]
-         [:DataFormat (:Format data-format)]))
+     (for [data-format (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])]
+       [:DataFormat (:Format data-format)])
      [:SpatialKeywords
       (for [kw (lk/location-keywords->spatial-keywords (:LocationKeywords c))]
         [:Keyword kw])]

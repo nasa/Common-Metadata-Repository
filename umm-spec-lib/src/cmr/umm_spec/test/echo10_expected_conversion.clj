@@ -38,10 +38,10 @@
    applies to all data formats."
   [file-dist-infos]
   (when file-dist-infos
-   (let [first-price (echo10-expected-fees (get (select-keys (first file-dist-infos) [:Fees]) :Fees))]
+   (let [first-price (echo10-expected-fees (:Fees (first file-dist-infos)))]
     (for [file-dist-info file-dist-infos]
       (-> file-dist-info
-          (select-keys [:Format :FormatType])
+          (select-keys [:Format])
           (assoc :FormatType "Native")
           (assoc :Fees first-price)
           umm-c/map->FileDistributionInformationType)))))
