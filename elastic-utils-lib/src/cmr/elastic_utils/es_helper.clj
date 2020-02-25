@@ -5,6 +5,7 @@
    [clj-http.client :as http]
    [clojurewerkz.elastisch.rest :as rest]
    [clojurewerkz.elastisch.rest.document :as doc]
+   [clojurewerkz.elastisch.rest.response :refer [not-found? hits-from]]
    [clojurewerkz.elastisch.rest.utils :refer [join-names]]))
 
 (defn search
@@ -14,7 +15,8 @@
         qp (select-keys opts qk)
         body (apply dissoc (concat [opts] qk))]
     (rest/post conn (rest/search-url conn (join-names index))
-               {:body body
+               {:content-type :json
+                :body body
                 :query-params qp})))
 
 (defn count-query
@@ -26,3 +28,62 @@
   "Performs a scroll query, fetching the next page of results from a query given a scroll id"
   [conn scroll-id opts]
   (doc/scroll conn scroll-id opts))
+
+(defn doc-get
+  "Fetches and returns a document by id or `nil` if it does not exist."
+  ([conn index mapping-type id]
+   (doc-get conn index mapping-type id nil))
+  ([conn index mapping-type id opts]
+   (let [result (if (empty? opts)
+                  (rest/get conn (rest/record-url conn index "_doc" id))
+                  (rest/get conn (rest/record-url conn index "_doc" id) {:query-params opts}))]
+     (if (not-found? result)
+       nil
+       result))))
+
+(defn put
+  "Creates or updates a document in the search index, using the provided document id"
+  ([conn index mapping-type id document]
+   (put conn index mapping-type id document nil))
+  ([conn index mapping-type id document opts]
+   (if (empty? opts)
+     (rest/put conn (rest/record-url conn index "_doc" id)
+               {:content-type :json
+                :body document})
+     (rest/put conn (rest/record-url conn index "_doc" id)
+               {:content-type :json
+                :body document
+                :query-params opts}))))
+
+(defn delete
+  "Deletes document from the index."
+  ([conn index mapping-type id]
+   (delete conn index mapping-type id nil))
+  ([conn index mapping-type id opts]
+   (if (empty? opts)
+     (rest/delete conn(rest/record-url conn index "_doc" id))
+     (rest/delete conn(rest/record-url conn index "_doc" id) {:query-params opts}))))
+
+(defn delete-by-query
+  "Performs a delete-by-query operation over one or more indexes and types.
+  Multiple indexes and types can be specified by passing in a seq of strings,
+  otherwise specifying a string suffices."
+  ([conn index mapping-type query]
+   (delete-by-query conn index mapping-type query nil))
+  ([conn index mapping-type query opts]
+   (if (empty? opts)
+     (rest/post conn
+                (rest/delete-by-query-url
+                 conn
+                 (join-names index)
+                 (join-names mapping-type))
+                {:query-params (select-keys opts
+                                            (conj doc/optional-delete-query-parameters
+                                                  :ignore_unavailable))
+                 :body {:query query}})
+     (rest/post conn
+                (rest/delete-by-query-url
+                 conn
+                 (join-names index)
+                 (join-names mapping-type))
+                {:body {:query query}}))))

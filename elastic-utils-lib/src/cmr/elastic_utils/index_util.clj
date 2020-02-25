@@ -3,6 +3,7 @@
   (:require
    [clj-time.format :as f]
    [clojurewerkz.elastisch.rest.document :as doc]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
@@ -158,14 +159,12 @@
    (let [conn (:conn elastic-store)
          {:keys [ttl ignore-conflict? refresh?]} options
          elastic-options (merge {:version version :version_type "external_gte"}
-                                (when ttl
-                                  {:ttl ttl})
                                 ;; Force refresh of the index when specified.
                                 ;; NOTE: This has performance implications and should be used sparingly.
                                 (when refresh?
                                   {:refresh "true"}))
          result (try-elastic-operation
-                 (doc/put conn index-name type-name elastic-id doc elastic-options))]
+                 (es-helper/put conn index-name type-name elastic-id doc elastic-options))]
      (if (:error result)
        (if (= 409 (:status result))
          (if ignore-conflict?
@@ -190,12 +189,12 @@
    (let [elastic-options (if (:refresh? options)
                            {:refresh "true"}
                            {})]
-     (doc/delete (:conn elastic-store) index-name type-name id elastic-options))))
+     (es-helper/delete (:conn elastic-store) index-name type-name id elastic-options))))
 
 (defn delete-by-query
   "Delete document that match the given query"
   [elastic-store index-name type-name query]
-  (doc/delete-by-query (:conn elastic-store) index-name type-name query))
+  (es-helper/delete-by-query (:conn elastic-store) index-name type-name query))
 
 (defn create-index-alias
   "Creates the alias for the index."
