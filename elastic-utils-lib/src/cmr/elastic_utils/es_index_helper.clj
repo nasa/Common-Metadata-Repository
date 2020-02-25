@@ -44,4 +44,6 @@
 (defn update-aliases
   "update index aliases"
   [conn actions]
-  (esi/update-aliases conn actions))
+  (rest/post conn (rest/index-aliases-batch-url conn)
+             {:content-type :json
+              :body {:actions actions}}))

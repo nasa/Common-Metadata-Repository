@@ -3,13 +3,15 @@
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
    [clojurewerkz.elastisch.rest :as esr]
-   [clojurewerkz.elastisch.rest.index :as esi]
    [clojurewerkz.elastisch.rest.document :as doc]
+   [clojurewerkz.elastisch.rest.index :as esi]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug error info warn]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es]
+   [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.indexer.config :as config]
    [cmr.indexer.services.messages :as m]))
 
@@ -28,9 +30,9 @@
   "Create elastic index"
   [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
-    (when-not (esi/exists? conn index-name)
+    (when-not (esi-helper/exists? conn index-name)
       (try
-        (esi/create conn index-name {:settings settings :mappings mapping})
+        (esi-helper/create conn index-name {:settings settings :mappings mapping})
         (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
                 error (:error body)]
@@ -42,10 +44,10 @@
   [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
     (try
-      (if (esi/exists? conn index-name)
+      (if (esi-helper/exists? conn index-name)
         ;; The index exists. Update the mappings.
         (doseq [[type-name type-mapping] mapping]
-          (let [response (esi/update-mapping
+          (let [response (esi-helper/update-mapping
                            conn index-name (name type-name) {:mapping type-mapping :ignore_conflicts false})]
             (when-not (= {:acknowledged true} response)
               (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
@@ -53,7 +55,7 @@
         ;; The index does not exist. Create it.
         (do
           (info "Index" index-name "does not exist so it will be created")
-          (esi/create conn index-name {:settings settings :mappings mapping})))
+          (esi-helper/create conn index-name {:settings settings :mappings mapping})))
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
               error (:error body)]
@@ -63,9 +65,14 @@
 (defn index-set-exists?
   "Check index-set existence in elastic."
   [{:keys [conn]} index-name idx-mapping-type index-set-id]
-  (when (esi/exists? conn index-name)
+  (when (esi-helper/exists? conn index-name)
     ;; result will be nil if doc doeesn't exist
-    (doc/get conn index-name idx-mapping-type (str index-set-id) {"fields" "index-set-id,index-set-name,index-set-request"})))
+    (es-helper/doc-get
+     conn
+     index-name
+     idx-mapping-type
+     (str index-set-id)
+     {"_source" "index-set-id,index-set-name,index-set-request"})))
 
 (defn get-index-set
   "Fetch index-set associated with an id."
@@ -73,30 +80,32 @@
   (let [conn (get-in context [:system :db :conn])
         {:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
-    (when (esi/exists? conn index-name)
-      (let [result (doc/get conn index-name idx-mapping-type (str index-set-id) {"fields" "index-set-id,index-set-name,index-set-request"})
-            index-set-json-str (get-in result [:fields :index-set-request])]
-        (when result
-          (decode-field (first index-set-json-str)))))))
+    (when-let [result (index-set-exists?
+                       (get-in context [:system :db]) index-name idx-mapping-type index-set-id)]
+      (-> result
+          (get-in [:_source :index-set-request])
+          decode-field))))
 
 (defn get-index-set-ids
   "Fetch ids of all index-sets in elastic."
   [{:keys [conn]} index-name idx-mapping-type]
-  (when (esi/exists? conn index-name)
-    (let [result (doc/search conn index-name idx-mapping-type {"fields" "index-set-id"})]
-      (map #(-> % :fields :index-set-id) (get-in result [:hits :hits])))))
+  (when (esi-helper/exists? conn index-name)
+    (let [result (es-helper/search
+                  conn index-name idx-mapping-type {"_source" "index-set-id"})]
+      (map #(-> % :_source :index-set-id) (get-in result [:hits :hits])))))
 
 (defn get-index-sets
   "Fetch all index-sets in elastic."
   [{:keys [conn]} index-name idx-mapping-type]
-  (when (esi/exists? conn index-name)
-    (let [result (doc/search conn index-name idx-mapping-type {"fields" "index-set-request"})]
-      (map (comp #(decode-field (first % )) :index-set-request :fields) (get-in result [:hits :hits])))))
+  (when (esi-helper/exists? conn index-name)
+    (let [result (es-helper/search
+                  conn index-name idx-mapping-type {"_source" "index-set-request"})]
+      (map (comp #(decode-field (first % )) :index-set-request :_source) (get-in result [:hits :hits])))))
 
 (defn delete-index
   "Delete given elastic index"
   [{:keys [conn config]} index-name]
-  (when (esi/exists? conn index-name)
+  (when (esi-helper/exists? conn index-name)
     (let [admin-token (:admin-token config)
           response (client/delete (esr/index-url conn index-name)
                                   {:headers {"Authorization" admin-token
@@ -111,8 +120,8 @@
   [context es-index es-mapping-type doc-id es-doc]
   (try
     (let [conn (get-in context [:system :db :conn])
-          result (doc/put conn es-index es-mapping-type doc-id es-doc)
-          _ (esi/refresh conn es-index)
+          result (es-helper/put conn es-index es-mapping-type doc-id es-doc)
+          _ (esi-helper/refresh conn es-index)
           {:keys [error status]} result]
       (when (:error result)
         ;; service layer to rollback index-set create  progress on error
@@ -137,4 +146,4 @@
       (errors/internal-error! (m/index-set-doc-delete-msg result)))))
 
 (comment
-  (doc/get "index-sets" "set" "1" {"fields" "index-set-id,index-set-name,index-set-request"}))
+  (es-helper/doc-get "index-sets" "set" "1" {"fields" "index-set-id,index-set-name,index-set-request"}))
