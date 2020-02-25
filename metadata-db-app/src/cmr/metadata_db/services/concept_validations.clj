@@ -180,6 +180,11 @@
                                   concept-id-matches-concept-fields-validation-no-provider
                                   humanizer-native-id-validation)))
 
+(def subscription-concept-validation
+  "Builds a function that validates a concept map that has no provider and returns a list of errors"
+  (util/compose-validations (conj base-concept-validations
+                                  concept-id-matches-concept-fields-validation-no-provider)))
+
 (def validate-concept-default
   "Validates a concept. Throws an error if invalid."
   (util/build-validator :invalid-data default-concept-validation))
@@ -199,6 +204,10 @@
 (def validate-humanizer-concept
   "validates a humanizer concept. Throws an error if invalid."
   (util/build-validator :invalid-data humanizer-concept-validation))
+
+(def validate-subscription-concept
+  "validates a subscription concept. Throws an error if invalid."
+  (util/build-validator :invalid-data subscription-concept-validation))
 
 (defmulti validate-concept
   "Validates a concept. Throws an error if invalid."
@@ -220,6 +229,10 @@
 (defmethod validate-concept :humanizer
   [concept]
   (validate-humanizer-concept concept))
+
+(defmethod validate-concept :subscription
+  [concept]
+  (validate-subscription-concept concept))
 
 (defmethod validate-concept :service-association
   [concept]
