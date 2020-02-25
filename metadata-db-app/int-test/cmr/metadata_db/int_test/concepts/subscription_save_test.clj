@@ -31,8 +31,8 @@
 
   (testing "save after delete"
     (let [concept (c-spec/gen-concept :subscription "CMR" 1 {})
-          {:keys [email-address concept-id revision-id metadata]} (util/save-concept concept)
-          delete-response (util/delete-concept concept-id)]
+          {:keys [concept-id revision-id]} (util/save-concept concept)
+          delete-response (util/delete-concept concept-id nil nil "user1")]
       (is (= 201 (:status delete-response)))
       (is (= (inc revision-id) (:revision-id delete-response)))
       (c-spec/save-concept-test concept 201 (+ revision-id 2) nil))))
