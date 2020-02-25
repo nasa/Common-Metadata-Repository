@@ -29,6 +29,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Open Data](#open-data)
     * [XML Reference](#xml-reference)
   * [Temporal Range Searches](#temporal-range-searches)
+  * [Facet Autocompletion](#autocomplete-facets)
   * [Collection Search By Parameters](#collection-search-by-parameters)
     * [Find all collections](#find-all-collections)
     * [Concept id](#c-concept-id)
@@ -1127,6 +1128,97 @@ A couple of parameters used in search expect a date range as input. For example,
 `P1Y2M10DT2H30M/2008-05-11T15:30:00Z` - matches data between `2008-07-11T16:30:00Z` and a date 1 year 2 months 10 days 2 hours and 30 minutes before that or `2007-05-01T14:00:00Z`.
 
 Note: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of intervals which are open ended on one side. For example, `2000-01-01T10:00:00Z/` and `/2000-01-01T10:00:00Z` are valid ranges.
+
+### <a name="autocomplete-facets"></a> Facet Autocompletion
+
+Auto-completion assistance for building queries. This functionality may be used to help build queries. The facet autocomplete functionality does not search for collections directly. Instead it will return suggestions of facets to help narrow a search by providing a list of available facets to construct a CMR collections search.
+    
+    curl "%CMR-ENDPOINT%/autocomplete?q=<term>[&types=<types>]"
+        
+Collection facet autocompletion results are paged. See [Paging Details](#paging-details) for more information on how to page through autocomplete search results.
+
+#### Autocomplete Parameters
+  * `q` The string on which to search. The term is case insensitive.
+  * `types` Comma separated list of types to include in the results set. If left blank all facet types will be returned.
+ 
+__Example Query__
+
+     curl "%CMR-ENDPOINT%/autocomplete?q=ice"
+ 
+__Example Result__
+
+```json
+{
+  "query": {
+    "query": "ice",
+    "types": []
+  },
+  "results": {
+    "hits": 5,
+    "items": [
+      {
+        "score": 9.115073,
+        "type": "instrument",
+        "value": "ICE AUGERS"
+      },
+      {
+        "score": 9.115073,
+        "type": "instrument",
+        "value": "ICECUBE"
+      },
+      {
+        "score": 9.013778,
+        "type": "platform",
+        "value": "ICESat-2"
+      },
+      {
+        "score": 8.921176,
+        "type": "platform",
+        "value": "Sea Ice Mass Balance Station"
+      },
+      {
+        "score": 8.921176,
+        "type": "platform",
+        "value": "ICEYE"
+      }
+    ]
+  }
+}
+```
+
+__Example Query__
+
+     curl "%CMR-ENDPOINT%/autocomplete?q=ice&types=platform,project"
+     
+__Example Result with Type Filter__
+```json
+{
+  "query": {
+    "query": "ice",
+    "types": ["platform","project"]
+  },
+  "results": {
+    "hits": 3,
+    "items": [
+      {
+        "score": 9.013778,
+        "type": "platform",
+        "value": "ICESat-2"
+      },
+      {
+        "score": 8.921176,
+        "type": "platform",
+        "value": "Sea Ice Mass Balance Station"
+      },
+      {
+        "score": 8.921176,
+        "type": "project",
+        "value": "ICEYE"
+      }
+    ]
+  }
+}
+```
 
 ### <a name="collection-search-by-parameters"></a> Collection Search Examples
 

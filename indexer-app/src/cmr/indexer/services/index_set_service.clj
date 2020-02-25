@@ -18,7 +18,7 @@
 
 (def searchable-concept-types
   "Defines the concept types that are indexed in elasticsearch and thus searchable."
-  [:collection :granule :deleted-granule :tag :variable :service])
+  [:collection :granule :deleted-granule :tag :variable :service :autocomplete])
 
 (defn context->es-store
   [context]

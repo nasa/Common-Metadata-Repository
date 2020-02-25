@@ -240,6 +240,15 @@
   [type]
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
 
+(defn autocomplete-url
+  "Autocomplete URL with query term and optional types"
+  ([term]
+   (if term
+    (format "http://localhost:%s/autocomplete?q=%s" (transmit-config/search-port) term)
+    (format "http://localhost:%s/autocomplete" (transmit-config/search-port))))
+  ([term types]
+   (format "http://localhost:%s/autocomplete?q=%s&types=%s" (transmit-config/search-port) term types)))
+
 (defn enable-search-writes-url
   []
   (format "http://localhost:%s/enable-writes" (transmit-config/search-port)))
