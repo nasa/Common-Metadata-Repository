@@ -82,9 +82,10 @@
 
 (defn- delete-concept
   "Mark a concept as deleted (create a tombstone)."
-  [context params concept-id revision-id]
+  [context params concept-id revision-id user-id]
   (let [{:keys [revision-id]} (concept-service/save-concept-revision
                                 context {:concept-id concept-id
+                                         :user-id user-id
                                          :revision-id (as-int revision-id)
                                          :revision-date (:revision-date params)
                                          :deleted true})]
@@ -138,13 +139,13 @@
       (POST "/" {:keys [request-context params body]}
         (save-concept-revision request-context params body))
       ;; mark a concept as deleted (add a tombstone) specifying the revision the tombstone should have
-      (DELETE "/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
+      (DELETE "/:concept-id/:revision-id" {{:keys [concept-id revision-id user-id] :as params} :params
                                            request-context :request-context}
-        (delete-concept request-context params concept-id revision-id))
+        (delete-concept request-context params concept-id revision-id user-id))
       ;; mark a concept as deleted (add a tombstone)
-      (DELETE "/:concept-id" {{:keys [concept-id] :as params} :params
+      (DELETE "/:concept-id" {{:keys [concept-id user-id] :as params} :params
                               request-context :request-context}
-        (delete-concept request-context params concept-id nil))
+        (delete-concept request-context params concept-id nil user-id))
       ;; remove a specific revision of a concept form the database
       (DELETE "/force-delete/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
                                                         request-context :request-context}

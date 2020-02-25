@@ -31,5 +31,6 @@
                                      :tag {}
                                      :variable {}
                                      :service {}
-                                     :deleted-granule {}}}]
+                                     :deleted-granule {}
+                                     :autocomplete {}}}]
     (is (= pruned-index-set (svc/prune-index-set (:index-set util/sample-index-set))))))

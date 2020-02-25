@@ -4,6 +4,12 @@
    [cmr.common-app.services.search.query-model :as common-qm]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
+(defrecord AutocompleteSuggestion
+  [
+    ;; platform, instrument, project...
+    type
+    value])
+
 (defrecord SpatialCondition
   [
    ;; One of cmr.spatial polygon, line, point, or mbr
@@ -170,6 +176,12 @@
   [{:field :entry-title :order :asc}
    {:field :provider-id :order :asc}])
 
+(defmethod common-qm/default-sort-keys :autocomplete
+  [_]
+  [{:field :_score :order :desc}
+   {:field :type :order :asc}
+   {:field :value :order :asc}])
+
 (defmethod common-qm/concept-type->default-query-attribs :granule
   [_]
   {:condition (common-qm/->MatchAllCondition)
@@ -212,6 +224,16 @@
    :page-size common-qm/default-page-size
    :offset common-qm/default-offset
    :result-format :xml
+   :echo-compatible? false
+   :all-revisions? false})
+
+(defmethod common-qm/concept-type->default-query-attribs :autocomplete
+  [_]
+  {:condition (common-qm/->MatchAllCondition)
+   :page-size common-qm/default-page-size
+   :offset common-qm/default-offset
+   :sort-keys (common-qm/default-sort-keys :autocomplete)
+   :result-format :json
    :echo-compatible? false
    :all-revisions? false})
 

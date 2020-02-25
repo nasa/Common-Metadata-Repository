@@ -12,7 +12,7 @@
   {:repo "https://git.earthdata.nasa.gov/scm/cmr/cmr_metadata_preview.git"
    :version "cmr_metadata_preview-0.2.0"
    :commit-id (or (System/getenv "CMR_METADATA_PREVIEW_COMMIT")
-                  "91cd5b93d51")})
+                  "92d73f5436210d1d56fcf769e6011d20d8959ebd")})
 
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."

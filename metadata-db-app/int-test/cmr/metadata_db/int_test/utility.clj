@@ -265,15 +265,19 @@
   "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the
   tombstone."
   ([concept-id]
-   (delete-concept concept-id nil nil))
+   (delete-concept concept-id nil nil nil))
   ([concept-id revision-id]
-   (delete-concept concept-id revision-id nil))
+   (delete-concept concept-id revision-id nil nil))
   ([concept-id revision-id revision-date]
+   (delete-concept concept-id revision-id revision-date nil))
+  ([concept-id revision-id revision-date user-id]
    (let [url (if revision-id
                (format "%s%s/%s" (concepts-url) concept-id revision-id)
                (format "%s%s" (concepts-url) concept-id))
-         query-params (when revision-date
-                        {:revision-date (str revision-date)})
+         query-params (merge (when revision-date
+                               {:revision-date (str revision-date)})
+                             (when user-id
+                               {:user-id user-id}))
          response (client/delete url
                                  {:throw-exceptions false
                                   :query-params query-params

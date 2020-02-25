@@ -48,6 +48,10 @@
   "Number of shards to use for the services index."
   {:default 5 :type Long})
 
+(defconfig elastic-autocomplete-index-num-shards
+  "Number of shards to use for the autocomplete index"
+  {:default 5 :type Long})
+
 (defconfig collections-index-alias
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
@@ -80,6 +84,22 @@
                        {:number_of_shards (elastic-variable-index-num-shards)
                         :number_of_replicas 1,
                         :refresh_interval "1s"}})
+
+(def autocomplete-settings {:index
+                            {:number_of_shards (elastic-autocomplete-index-num-shards)
+                             :number_of_replicas 1
+                             :refresh_interval "1s"}
+                           :analysis
+                            {:filter
+                             {:autocomplete_filter
+                              {:type "edge_ngram"
+                               :min_gram 1
+                               :max_gram 8}}
+                             :analyzer
+                             {:autocomplete_analyzer
+                              {:type "custom"
+                               :tokenizer "standard"
+                               :filter ["lowercase" "autocomplete_filter"]}}}})
 
 (def service-setting {:index
                        {:number_of_shards (elastic-service-index-num-shards)
@@ -671,6 +691,14 @@
    :description (m/not-indexed (m/stored m/string-field-mapping))
    :originator-id.lowercase (m/stored m/string-field-mapping)})
 
+(defmapping autocomplete-mapping :suggestion
+  "Defines the elasticsearch mapping for storing autocomplete suggestions.
+   These are the fields that will be stored in an Elasticsearch document."
+  {:_id  {:path "concept-id"}}
+  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :type {:type "string" :index "analyzed" :store "yes"}
+   :value {:type "string" :analyzer "autocomplete_analyzer" :index "analyzed" :store "yes"}})
+
 (defmapping variable-mapping :variable
   "Defines the elasticsearch mapping for storing variables. These are the
   fields that will be stored in an Elasticsearch document."
@@ -779,6 +807,10 @@
                            {:name "all-variable-revisions"
                             :settings variable-setting}]
                           :mapping variable-mapping}
+               :autocomplete {:indexes
+                              [{:name "autocomplete"
+                                :settings autocomplete-settings}]
+                              :mapping autocomplete-mapping}
                :service {:indexes
                          [{:name "services"
                            :settings service-setting}

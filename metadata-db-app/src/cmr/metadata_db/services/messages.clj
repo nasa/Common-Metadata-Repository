@@ -209,6 +209,11 @@
   (format "Humanizer could not be associated with provider [%s]. Humanizer is system level entity."
           provider-id))
 
+(defn subscriptions-only-system-level
+  [provider-id]
+  (format "Subscription could not be associated with provider [%s]. Subscription is system level entity."
+          provider-id))
+
 (defn services-only-system-level
   [provider-id]
   (format "Service could not be associated with provider [%s]. Services are system level entities."

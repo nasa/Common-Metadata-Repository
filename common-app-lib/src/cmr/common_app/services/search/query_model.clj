@@ -371,6 +371,7 @@
   (negated-condition (exist-condition field)))
 
 (defn string-condition
+  "Returns a string condition"
   ([field value]
    (string-condition field value false false))
   ([field value case-sensitive? pattern?]
