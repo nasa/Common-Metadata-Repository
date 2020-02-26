@@ -46,23 +46,17 @@
   ([conn index mapping-type id document]
    (put conn index mapping-type id document nil))
   ([conn index mapping-type id document opts]
-   (if (empty? opts)
-     (rest/put conn (rest/record-url conn index "_doc" id)
-               {:content-type :json
-                :body document})
-     (rest/put conn (rest/record-url conn index "_doc" id)
-               {:content-type :json
-                :body document
-                :query-params opts}))))
+   (rest/put conn (rest/record-url conn index "_doc" id)
+             {:content-type :json
+              :body document
+              :query-params opts})))
 
 (defn delete
   "Deletes document from the index."
   ([conn index mapping-type id]
    (delete conn index mapping-type id nil))
   ([conn index mapping-type id opts]
-   (if (empty? opts)
-     (rest/delete conn(rest/record-url conn index "_doc" id))
-     (rest/delete conn(rest/record-url conn index "_doc" id) {:query-params opts}))))
+   (rest/delete conn(rest/record-url conn index "_doc" id) {:query-params opts})))
 
 (defn delete-by-query
   "Performs a delete-by-query operation over one or more indexes and types.
@@ -71,19 +65,12 @@
   ([conn index mapping-type query]
    (delete-by-query conn index mapping-type query nil))
   ([conn index mapping-type query opts]
-   (if (empty? opts)
-     (rest/post conn
-                (rest/delete-by-query-url
-                 conn
-                 (join-names index)
-                 (join-names mapping-type))
-                {:query-params (select-keys opts
-                                            (conj doc/optional-delete-query-parameters
-                                                  :ignore_unavailable))
-                 :body {:query query}})
-     (rest/post conn
-                (rest/delete-by-query-url
-                 conn
-                 (join-names index)
-                 (join-names mapping-type))
-                {:body {:query query}}))))
+   (rest/post conn
+              (rest/delete-by-query-url
+               conn
+               (join-names index)
+               (join-names mapping-type))
+              {:query-params (select-keys opts
+                                          (conj doc/optional-delete-query-parameters
+                                                :ignore_unavailable))
+               :body {:query query}})))
