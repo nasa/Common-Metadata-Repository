@@ -242,10 +242,12 @@
 
 (defn autocomplete-url
   "Autocomplete URL with query term and optional types collection"
+  ([]
+   (autocomplete-url nil))
   ([term]
    (if-not term
-    (format "http://localhost:%s/autocomplete" (transmit-config/search-port)))
-    (format "http://localhost:%s/autocomplete?q=%s" (transmit-config/search-port) term))
+    (format "http://localhost:%s/autocomplete" (transmit-config/search-port))
+    (format "http://localhost:%s/autocomplete?q=%s" (transmit-config/search-port) term)))
   ([term types]
    (format "http://localhost:%s/autocomplete?q=%s&%s"
            (transmit-config/search-port)

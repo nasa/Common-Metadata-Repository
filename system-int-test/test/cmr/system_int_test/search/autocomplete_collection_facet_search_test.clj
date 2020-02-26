@@ -27,74 +27,70 @@
                      [(ingest/reset-fixture)
                       autocomplete-fixture]))
 
-(deftest autocomplete-suggest-test
-  (testing "returned result form test"
-   (let [response (search/get-autocomplete-suggestions "foo")
-         body (:body response)
-         data (json/parse-string body true)]
-     (is (contains? data :query))
-     (is (contains? data :results))
-     (is (contains? (:results data) :items))))
+(deftest autocomplete-response-test
+  (testing "response form test"
+     (let [response (search/get-autocomplete-suggestions "foo")
+           body (:body response)
+           data (json/parse-string body true)]
+       (is (contains? data :feed))
+       (is (contains? (:feed data) :entry))))
 
   (testing "returns CMR-Hits header"
-   (let [response (search/get-autocomplete-suggestions "foo")
-         headers (:headers response)]
-     (is (:CMR-Hits headers))
-     (println (json/parse-string (:body response) true))
-     (is (= "1" (:CMR-Hits headers)))))
+     (let [response (search/get-autocomplete-suggestions "foo")
+           headers (:headers response)]
+       (is (:CMR-Hits headers))
+       (is (= "1" (:CMR-Hits headers))))))
 
+(deftest autocomplete-functionality-test
   (testing "partial value match search"
    (let [response (search/get-autocomplete-suggestions "f")
          body (:body response)
          data (json/parse-string body true)]
-     (is (= 1 (count (:items (:results data)))))))
+     (is (= 1 (count (:entry (:feed data)))))))
 
   (testing "full value match search"
    (let [response (search/get-autocomplete-suggestions "foo")
          body (:body response)
          data (json/parse-string body true)]
-     (is (= 1 (count (:items (:results data)))))))
+     (is (= 1 (count (:entry (:feed data)))))))
 
   (testing "full value with extra value match search"
    (let [response (search/get-autocomplete-suggestions "foos")
          body (:body response)
          data (json/parse-string body true)]
-     (is (= 0 (count (:items (:results data)))))))
+     (is (= 0 (count (:entry (:feed data)))))))
 
   (testing "case sensitivity test"
    (let [response (search/get-autocomplete-suggestions "FOO")
          body (:body response)
          data (json/parse-string body true)]
-     (is (= 1 (count (:items (:results data)))))))
+     (is (= 1 (count (:entry (:feed data)))))))
 
   (testing "bad value search with no results"
    (let [response (search/get-autocomplete-suggestions "zee")
          body (:body response)
          data (json/parse-string body true)]
-     (is (= 0 (count (:items (:results data)))))))
+     (is (= 0 (count (:entry (:feed data)))))))
 
   (testing "search with type filter"
    (let [response (search/get-autocomplete-suggestions "foo" ["instrument"] nil)
          body (:body response)
          data (json/parse-string body true)]
-     (is (= 1 (count (:items (:results data)))))))
+     (is (= 1 (count (:entry (:feed data)))))))
 
   (testing "search with multiple types filter"
    (let [response (search/get-autocomplete-suggestions "foo" ["instrument" "platform" "project" "provider"] nil)
          body (:body response)
          data (json/parse-string body true)]
-     (is (= 1 (count (:items (:results data)))))))
+     (is (= 1 (count (:entry (:feed data)))))))
 
   (testing "search with type filter with no results"
    (let [response (search/get-autocomplete-suggestions "foo" ["platform"] nil)
          body (:body response)
          data (json/parse-string body true)]
-     (is (= 0 (count (:items (:results data))))))))
+     (is (= 0 (count (:entry (:feed data))))))))
 
 (deftest autocomplete-usage-test
   (testing "missing query param response test"
-           (let [response (search/get-autocomplete-suggestions nil {:throw-exceptions false})]
-             (is (= 400 (:status response)))))
-
-  (testing "types array"
-           (is (= true false))))
+     (let [response (search/get-autocomplete-suggestions nil {:throw-exceptions false})]
+       (is (= 400 (:status response))))))

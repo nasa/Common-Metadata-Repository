@@ -27,13 +27,22 @@
   [s]
   (string/lower-case (string/trim s)))
 
+(defn- ac-results->response-header-map
+  [results]
+  (let [hits (str (:hits results 0))]
+    {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)
+     common-routes/CORS_ORIGIN_HEADER  "*"
+     common-routes/HITS_HEADER hits}))
+
+(defn- ac-results->response-body
+  [results]
+  {:feed
+   {:entry (:items results)}})
+
 (defn- process-autocomplete-query
   "Process and autocomplete and return value"
   [ctx query types params]
   (let [term (lower-case-and-trim query)
-        types (when types
-                (filter #(not (empty? %))
-                        (map lower-case-and-trim (string/split types #","))))
         page-size (string-param-or-default->int (:page-size params) page-size-default)
         offset (if (:page-num params)
                  (* page-size (string-param-or-default->int (:page-num params) page-num-default))
@@ -44,30 +53,20 @@
                            :page-size page-size
                            :offset offset)
         results (ac/autocomplete ctx term opts)
-        cmr-hits (str (count (:items results)))]
+        headers (ac-results->response-header-map results)
+        body (ac-results->response-body results)]
     {:status 200
-     :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)
-               common-routes/CORS_ORIGIN_HEADER  "*"
-               common-routes/HITS_HEADER cmr-hits}
-     :body {:query {:query term
-                    :types (if types types [])}
-            :results results}}))
+     :headers headers
+     :body body}))
 
 (defn- get-autocomplete-suggestions-handler
   "Validate params and invoke autocomplete"
   [ctx path-w-extension params headers]
   (let [opts (core-api/process-params :autocomplete params path-w-extension headers mt/json)
         query (:q opts)
-        types (:types opts)]
+        types (:type opts)]
     (when-not query
-      (svc-errors/throw-service-errors
-       :bad-request
-       ["Missing param [q]"
-        "Usage [/autocomplete?q=<term>[&types=[&page-size=[&page-number=]]]]"
-        "q : query string to search for suggestions"
-        "types : comma separated list of types"
-        "offset : maximum number of suggestions : default 0"
-        "page_size : results page : default 20"]))
+      (svc-errors/throw-service-errors :bad-request ["Missing param [q]"]))
     (process-autocomplete-query ctx query types opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
