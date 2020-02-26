@@ -1133,29 +1133,27 @@ Note: ISO 8601 does not allow open-ended time intervals but the CMR API does all
 
 Auto-completion assistance for building queries. This functionality may be used to help build queries. The facet autocomplete functionality does not search for collections directly. Instead it will return suggestions of facets to help narrow a search by providing a list of available facets to construct a CMR collections search.
     
-    curl "%CMR-ENDPOINT%/autocomplete?q=<term>[&types=<types>]"
+    curl "%CMR-ENDPOINT%/autocomplete?q=<term>[&type\[\]=<type1>[&type\[\]=<type2>]"
         
 Collection facet autocompletion results are paged. See [Paging Details](#paging-details) for more information on how to page through autocomplete search results.
 
 #### Autocomplete Parameters
   * `q` The string on which to search. The term is case insensitive.
-  * `types` Comma separated list of types to include in the results set. If left blank all facet types will be returned.
+  * `type[]` Optional list of types to include in the search. This may be any number of valid facet types.
  
 __Example Query__
 
      curl "%CMR-ENDPOINT%/autocomplete?q=ice"
  
 __Example Result__
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+CMR-Hits: 15
 
-```json
 {
-  "query": {
-    "query": "ice",
-    "types": []
-  },
-  "results": {
-    "hits": 5,
-    "items": [
+  "feed": {
+    "entry": [
       {
         "score": 9.115073,
         "type": "instrument",
@@ -1188,18 +1186,17 @@ __Example Result__
 
 __Example Query__
 
-     curl "%CMR-ENDPOINT%/autocomplete?q=ice&types=platform,project"
+     curl "%CMR-ENDPOINT%/autocomplete?q=ice&type[]=platform&type[]=project"
      
 __Example Result with Type Filter__
-```json
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+CMR-Hits: 3
+
 {
-  "query": {
-    "query": "ice",
-    "types": ["platform","project"]
-  },
-  "results": {
-    "hits": 3,
-    "items": [
+  "feed": {
+    "entry": [
       {
         "score": 9.013778,
         "type": "platform",
