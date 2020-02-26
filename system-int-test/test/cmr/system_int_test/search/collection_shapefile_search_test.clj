@@ -125,7 +125,7 @@
         "test_box_with_holes.zip" [whole-world very-wide-cart richmond]
 
         "Polygon across the antimeridian"
-        "antimeridian.zip" [whole-world very-tall-cart across-am-poly across-am-br along-am-line am-point]
+        "antimeridian.zip" [whole-world very-wide-cart across-am-poly across-am-br along-am-line am-point]
 
         "Line near North pole"
         "np_line.zip" [on-np whole-world]
