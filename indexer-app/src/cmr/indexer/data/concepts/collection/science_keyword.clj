@@ -57,7 +57,7 @@
   "Extracts humanized fields from the science keyword and places them into an elastic doc with
   the same shape/keys as science-keyword->elastic-doc."
   [science-keyword]
-  (let [humanized-fields (filter #(-> % key namespace (= "cmr.humanized")) science-keyword)
+  (let [humanized-fields (filter #(-> % key namespace (= "cmr-humanized")) science-keyword)
         humanized-fields-with-raw-values (util/map-values :value humanized-fields)
         ns-stripped-fields (util/map-keys->kebab-case humanized-fields-with-raw-values)]
     (merge

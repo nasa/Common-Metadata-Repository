@@ -26,7 +26,8 @@
   "Create an index"
   [conn index-name opts]
   (let [{:keys [settings mappings]} opts]
-    (rest/put conn (rest/index-url conn index-name)
+    (rest/put conn
+              (rest/index-url conn index-name)
               {:content-type :json
                :body (cond-> {:settings (or settings {})}
                              mappings (assoc :mappings mappings))})))
@@ -44,6 +45,7 @@
 (defn update-aliases
   "update index aliases"
   [conn actions]
-  (rest/post conn (rest/index-aliases-batch-url conn)
+  (rest/post conn
+             (rest/index-aliases-batch-url conn)
              {:content-type :json
               :body {:actions actions}}))

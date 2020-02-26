@@ -419,8 +419,8 @@
                                           [(:tag-key ta) (util/remove-nil-keys
                                                           {:data (:data ta)})])))))
 
-            :processing-level-id-lowercase.humanized (-> humanized-values
-                                                         :processing-level-id.humanized2
+            :processing-level-id-lowercase-humanized (-> humanized-values
+                                                         :processing-level-id-humanized2
                                                          first
                                                          :value-lowercase)
             :associations-gzip-b64 (associations->gzip-base64-str

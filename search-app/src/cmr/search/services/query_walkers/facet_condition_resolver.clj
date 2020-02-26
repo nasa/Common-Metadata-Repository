@@ -12,7 +12,7 @@
   [c field-key]
   (boolean (or
             ;; The first check handles the data-center-h field since its query condition field
-            ;; :organization.humanized2.value does not match the regex on the second check
+            ;; :organization-humanized2.value does not match the regex on the second check
             ;; The first check alone will not work for science-keywords
             ;; Note that this check only applies for collection facets and not granule facets
             (= (str (get (fvrf/facets-v2-params->elastic-fields :collection) field-key) ".value")

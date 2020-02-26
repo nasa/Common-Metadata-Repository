@@ -7,7 +7,7 @@
   (:import
    (org.codelibs.elasticsearch.runner ElasticsearchClusterRunner
                                       ElasticsearchClusterRunner$Builder)
-   (org.elasticsearch.common.settings Settings 
+   (org.elasticsearch.common.settings Settings
                                       Settings$Builder)))
 
 (defn- create-settings
@@ -19,8 +19,7 @@
           (put "node.name" "embedded-elastic")
           (put "path.data" data-dir)
           (put "http.port" (str http-port))
-          (put "transport.tcp.port" (str transport-port))
-          (put "index.store.type" "memory")))))
+          (put "transport.tcp.port" (str transport-port))))))
 
 (defn build-node
   "Build cluster node to run on http-port and transport-port with data-dir."

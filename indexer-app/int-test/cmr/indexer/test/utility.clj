@@ -69,8 +69,8 @@
                                         :_source {:enabled false},
                                         :_all {:enabled false},
                                         :_id   {:path "concept-id"},
-                                        :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                                     :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}
+                                        :properties {:concept-id  {:type "string" :index "not_analyzed" :norms false :index_options "docs" :store "yes"},
+                                                     :entry-title {:type "string" :index "not_analyzed" :norms false :index_options "docs" :store "yes"}}}}}
     :granule {:indexes
               [{:name "small_collections"
                 :settings {:index {:number_of_shards 1,
@@ -91,8 +91,8 @@
                                   :_source { "enabled" false},
                                   :_all {"enabled" false},
                                   :_id  {:path "concept-id"},
-                                  :properties {:concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                               :collection-concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}}})
+                                  :properties {:concept-id {:type "string" :index "not_analyzed" :norms false :index_options "docs" :store "yes"},
+                                               :collection-concept-id {:type "string" :index "not_analyzed" :norms false :index_options "docs" :store "yes"}}}}}}})
 
 (def invalid-sample-index-set
   {:index-set
@@ -109,8 +109,8 @@
                                         :_source {:enabled false},
                                         :_all {:enabled false},
                                         :_id   {:path "concept-id"},
-                                        :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                                     :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}
+                                        :properties {:concept-id  {:type "string" :index "not_analyzed" :norms false :index_options "docs" :store "yes"},
+                                                     :entry-title {:type "string" :index "not_analyzed" :norms false :index_options "docs" :store "yes"}}}}}
     :granule {:indexes
               [{:name "G2-PROV1"
                 :settings {:index {:number_of_shards 1,
@@ -128,8 +128,8 @@
                                   :_source { "enabled" false},
                                   :_all {"enabled" false},
                                   :_id  {:path "concept-id"},
-                                  :properties {:concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                               :collection-concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}}})
+                                  :properties {:concept-id {:type "string" :index "not_analyzed" :norms false :index_options "docs" :store "yes"},
+                                               :collection-concept-id {:type "string" :index "not_analyzed" :norms false :index_options "docs" :store "yes"}}}}}}})
 
 (def index-set-w-invalid-idx-prop
   {:index-set
@@ -149,8 +149,8 @@
                                         :_source {:enabled false},
                                         :_all {:enabled false},
                                         :_id   {:path "concept-id"},
-                                        :properties {:concept-id  {:type "XXX" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                                     :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}}})
+                                        :properties {:concept-id  {:type "XXX" :index "not_analyzed" :norms false :index_options "docs" :store "yes"},
+                                                     :entry-title {:type "string" :index "not_analyzed" :norms false :index_options "docs" :store "yes"}}}}}}})
 
 
 ;;; utility methods

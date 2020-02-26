@@ -11,14 +11,12 @@
    :settings {"index" {"number_of_shards" 1
                        "number_of_replicas"  1
                        "refresh_interval" "30s"}}
-   :mapping {"set" { "dynamic"  "strict"
-                    "_source"  {"enabled" true}
-                    "_all"     {"enabled" false}
-                    "_id"      {"path" "index-set-id"}
-                    :properties {:index-set-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                 :index-set-name {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                 :index-set-name-lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                                 :index-set-request {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}})
+   :mapping {"dynamic"  "strict"
+             "_source"  {"enabled" true}
+             :properties {:index-set-id  {:type "keyword" :norms false :index_options "docs" :store true}
+                          :index-set-name {:type "keyword" :norms false :index_options "docs" :store true}
+                          :index-set-name-lowercase {:type "keyword" :norms false :index_options "docs"}
+                          :index-set-request {:type "keyword" :norms false :index_options "docs" :store true}}}})
 
 (defconfig index-queue-name
   "The queue containing ingest events for the indexer"

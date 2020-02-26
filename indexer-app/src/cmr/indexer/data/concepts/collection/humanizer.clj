@@ -24,7 +24,7 @@
   for that path"
   [humanized-collection path base-es-field]
   (let [prefix (subs (str base-es-field) 1)
-        field (keyword (str prefix ".humanized2"))
+        field (keyword (str prefix "-humanized2"))
         value-with-priorities (util/get-in-all humanized-collection path)
         value-with-priorities (if (sequential? value-with-priorities)
                                 (map select-indexable-humanizer-fields value-with-priorities)
@@ -42,15 +42,15 @@
                     collection (humanizer-fetcher/get-humanizer-instructions context))
         extract-fields (partial extract-humanized-elastic-fields humanized)]
     (merge
-      {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
+      {:science-keywords-humanized (map sk/humanized-science-keyword->elastic-doc
                                         (:ScienceKeywords humanized))}
       (set/rename-keys (extract-fields [:ArchiveAndDistributionInformation
                                         :FileDistributionInformation
-                                        :cmr.humanized/Format]
+                                        :cmr-humanized/Format]
                                        :granule-data-format)
-                       {:granule-data-format.humanized2 :granule-data-format.humanized})
-      (extract-fields [:Platforms :cmr.humanized/ShortName] :platform-sn)
-      (extract-fields [:Platforms :Instruments :cmr.humanized/ShortName] :instrument-sn)
-      (extract-fields [:Projects :cmr.humanized/ShortName] :project-sn)
-      (extract-fields [:ProcessingLevel :cmr.humanized/Id] :processing-level-id)
-      (extract-fields [:DataCenters :cmr.humanized/ShortName] :organization))))
+                       {:granule-data-format-humanized2 :granule-data-format-humanized})
+      (extract-fields [:Platforms :cmr-humanized/ShortName] :platform-sn)
+      (extract-fields [:Platforms :Instruments :cmr-humanized/ShortName] :instrument-sn)
+      (extract-fields [:Projects :cmr-humanized/ShortName] :project-sn)
+      (extract-fields [:ProcessingLevel :cmr-humanized/Id] :processing-level-id)
+      (extract-fields [:DataCenters :cmr-humanized/ShortName] :organization))))

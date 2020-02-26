@@ -72,39 +72,39 @@
                               {:ShortName "org-B"}]}
 
                {:ProcessingLevel {:Id "level-A"
-                                  :cmr.humanized/Id {:value "level-A" :priority 0}}
+                                  :cmr-humanized/Id {:value "level-A" :priority 0}}
                 :Platforms [{:ShortName "plat-A"
-                             :cmr.humanized/ShortName {:value "plat-A" :priority 0}
+                             :cmr-humanized/ShortName {:value "plat-A" :priority 0}
                              :Instruments [{:ShortName "inst-A"
-                                            :cmr.humanized/ShortName {:value "inst-A" :priority 0}}
+                                            :cmr-humanized/ShortName {:value "inst-A" :priority 0}}
                                            {:ShortName "inst-B"
-                                            :cmr.humanized/ShortName {:value "inst-B" :priority 0}}
+                                            :cmr-humanized/ShortName {:value "inst-B" :priority 0}}
                                            {:ShortName "inst-C"
-                                            :cmr.humanized/ShortName {:value "inst-C" :priority 0}}]}
+                                            :cmr-humanized/ShortName {:value "inst-C" :priority 0}}]}
                             {:ShortName "plat-B"
-                             :cmr.humanized/ShortName {:value "plat-B" :priority 0}}]
+                             :cmr-humanized/ShortName {:value "plat-B" :priority 0}}]
                 :Projects [{:ShortName "proj-A"
-                            :cmr.humanized/ShortName {:value "proj-A" :priority 0}}
+                            :cmr-humanized/ShortName {:value "proj-A" :priority 0}}
                            {:ShortName "proj-B"
-                            :cmr.humanized/ShortName {:value "proj-B" :priority 0}}]
+                            :cmr-humanized/ShortName {:value "proj-B" :priority 0}}]
                 :ScienceKeywords [{:Category "sk-A"
-                                    :cmr.humanized/Category {:value "sk-A" :priority 0}
+                                    :cmr-humanized/Category {:value "sk-A" :priority 0}
                                     :Topic "sk-B"
-                                    :cmr.humanized/Topic {:value "sk-B" :priority 0}
+                                    :cmr-humanized/Topic {:value "sk-B" :priority 0}
                                     :Term "sk-C"
-                                    :cmr.humanized/Term {:value "sk-C" :priority 0}
+                                    :cmr-humanized/Term {:value "sk-C" :priority 0}
                                     :VariableLevel1 "sk-D"
-                                    :cmr.humanized/VariableLevel1 {:value "sk-D" :priority 0}
+                                    :cmr-humanized/VariableLevel1 {:value "sk-D" :priority 0}
                                     :VariableLevel2 "sk-E"
-                                    :cmr.humanized/VariableLevel2 {:value "sk-E" :priority 0}
+                                    :cmr-humanized/VariableLevel2 {:value "sk-E" :priority 0}
                                     :VariableLevel3 "sk-F"
-                                    :cmr.humanized/VariableLevel3 {:value "sk-F" :priority 0}
+                                    :cmr-humanized/VariableLevel3 {:value "sk-F" :priority 0}
                                     :DetailedVariable "sk-G"
-                                    :cmr.humanized/DetailedVariable {:value "sk-G" :priority 0}}]
+                                    :cmr-humanized/DetailedVariable {:value "sk-G" :priority 0}}]
                 :DataCenters [{:ShortName "org-A"
-                                 :cmr.humanized/ShortName {:value "org-A" :priority 0}},
+                                 :cmr-humanized/ShortName {:value "org-A" :priority 0}},
                                 {:ShortName "org-B"
-                                 :cmr.humanized/ShortName {:value "org-B" :priority 0}}]}))
+                                 :cmr-humanized/ShortName {:value "org-B" :priority 0}}]}))
 
   (testing "humanize with changes"
     (humanizes [{:type "alias" :field "platform" :replacement_value "plat-human"}
@@ -136,43 +136,43 @@
                                               {:TilingIdentificationSystemName "tis-B"}]}
 
                {:ProcessingLevel {:Id "level-A"
-                                  :cmr.humanized/Id {:value "level-human" :priority 0}}
+                                  :cmr-humanized/Id {:value "level-human" :priority 0}}
                 :Platforms [{:ShortName "plat-A"
-                             :cmr.humanized/ShortName {:value "plat-human" :priority 0}
+                             :cmr-humanized/ShortName {:value "plat-human" :priority 0}
                              :Instruments [{:ShortName "inst-A"
-                                            :cmr.humanized/ShortName {:value "inst-human" :priority 0}}
+                                            :cmr-humanized/ShortName {:value "inst-human" :priority 0}}
                                            {:ShortName "inst-B"
-                                            :cmr.humanized/ShortName {:value "inst-human" :priority 0}}
+                                            :cmr-humanized/ShortName {:value "inst-human" :priority 0}}
                                            {:ShortName "inst-C"
-                                            :cmr.humanized/ShortName {:value "inst-human" :priority 0}}]}
+                                            :cmr-humanized/ShortName {:value "inst-human" :priority 0}}]}
                             {:ShortName "plat-B"
-                             :cmr.humanized/ShortName {:value "plat-human" :priority 0}}]
+                             :cmr-humanized/ShortName {:value "plat-human" :priority 0}}]
                 :Projects [{:ShortName "proj-A"
-                            :cmr.humanized/ShortName {:value "proj-human" :priority 0}}
+                            :cmr-humanized/ShortName {:value "proj-human" :priority 0}}
                            {:ShortName "proj-B"
-                            :cmr.humanized/ShortName {:value "proj-human" :priority 0}}]
+                            :cmr-humanized/ShortName {:value "proj-human" :priority 0}}]
                 :ScienceKeywords [{:Category "sk-A"
-                                    :cmr.humanized/Category {:value "sk-human" :priority 0}
+                                    :cmr-humanized/Category {:value "sk-human" :priority 0}
                                     :Topic "sk-B"
-                                    :cmr.humanized/Topic {:value "sk-human" :priority 0}
+                                    :cmr-humanized/Topic {:value "sk-human" :priority 0}
                                     :Term "sk-C"
-                                    :cmr.humanized/Term {:value "sk-human" :priority 0}
+                                    :cmr-humanized/Term {:value "sk-human" :priority 0}
                                     :VariableLevel1 "sk-D"
-                                    :cmr.humanized/VariableLevel1 {:value "sk-human" :priority 0}
+                                    :cmr-humanized/VariableLevel1 {:value "sk-human" :priority 0}
                                     :VariableLevel2 "sk-E"
-                                    :cmr.humanized/VariableLevel2 {:value "sk-human" :priority 0}
+                                    :cmr-humanized/VariableLevel2 {:value "sk-human" :priority 0}
                                     :VariableLevel3 "sk-F"
-                                    :cmr.humanized/VariableLevel3 {:value "sk-human" :priority 0}
+                                    :cmr-humanized/VariableLevel3 {:value "sk-human" :priority 0}
                                     :DetailedVariable "sk-G"
-                                    :cmr.humanized/DetailedVariable {:value "sk-human" :priority 0}}]
+                                    :cmr-humanized/DetailedVariable {:value "sk-human" :priority 0}}]
                 :DataCenters [{:ShortName "org-A"
-                               :cmr.humanized/ShortName {:value "org-human" :priority 0}},
+                               :cmr-humanized/ShortName {:value "org-human" :priority 0}},
                               {:ShortName "org-B"
-                               :cmr.humanized/ShortName {:value "org-human" :priority 0}}]
+                               :cmr-humanized/ShortName {:value "org-human" :priority 0}}]
                 :TilingIdentificationSystems [{:TilingIdentificationSystemName "tis-A"
-                                               :cmr.humanized/TilingIdentificationSystemName {:value "tiling-human" :priority 0}}
+                                               :cmr-humanized/TilingIdentificationSystemName {:value "tiling-human" :priority 0}}
                                               {:TilingIdentificationSystemName "tis-B"
-                                               :cmr.humanized/TilingIdentificationSystemName {:value "tiling-human" :priority 0}}]}))
+                                               :cmr-humanized/TilingIdentificationSystemName {:value "tiling-human" :priority 0}}]}))
 
   (testing "humanize with source value selection"
     (humanizes [{:type "alias" :field "platform" :source_value "plat-X" :replacement_value "plat-Y"}
@@ -203,41 +203,41 @@
                 :TilingIdentificationSystems [{:TilingIdentificationSystemName "tis-A"}]}
 
                {:ProcessingLevel {:Id "level-X"
-                                  :cmr.humanized/Id {:value "level-Y" :priority 0}}
+                                  :cmr-humanized/Id {:value "level-Y" :priority 0}}
                 :Platforms [{:ShortName "plat-A"
-                             :cmr.humanized/ShortName {:value "plat-A" :priority 0}
+                             :cmr-humanized/ShortName {:value "plat-A" :priority 0}
                              :Instruments [{:ShortName "inst-A"
-                                            :cmr.humanized/ShortName {:value "inst-A" :priority 0}}
+                                            :cmr-humanized/ShortName {:value "inst-A" :priority 0}}
                                            {:ShortName "inst-X"
-                                            :cmr.humanized/ShortName {:value "inst-Y" :priority 0}}
+                                            :cmr-humanized/ShortName {:value "inst-Y" :priority 0}}
                                            {:ShortName "inst-C"
-                                            :cmr.humanized/ShortName {:value "inst-C" :priority 0}}]}
+                                            :cmr-humanized/ShortName {:value "inst-C" :priority 0}}]}
                             {:ShortName "plat-X"
-                             :cmr.humanized/ShortName {:value "plat-Y" :priority 0}}]
+                             :cmr-humanized/ShortName {:value "plat-Y" :priority 0}}]
                 :Projects [{:ShortName "proj-X"
-                            :cmr.humanized/ShortName {:value "proj-Y" :priority 0}}
+                            :cmr-humanized/ShortName {:value "proj-Y" :priority 0}}
                            {:ShortName "proj-B"
-                            :cmr.humanized/ShortName {:value "proj-B" :priority 0}}]
+                            :cmr-humanized/ShortName {:value "proj-B" :priority 0}}]
                 :ScienceKeywords [{:Category "sk-X"
-                                    :cmr.humanized/Category {:value "sk-Y" :priority 0}
+                                    :cmr-humanized/Category {:value "sk-Y" :priority 0}
                                     :Topic "sk-B"
-                                    :cmr.humanized/Topic {:value "sk-B" :priority 0}
+                                    :cmr-humanized/Topic {:value "sk-B" :priority 0}
                                     :Term "sk-X"
-                                    :cmr.humanized/Term {:value "sk-Y" :priority 0}
+                                    :cmr-humanized/Term {:value "sk-Y" :priority 0}
                                     :VariableLevel1 "sk-D"
-                                    :cmr.humanized/VariableLevel1 {:value "sk-D" :priority 0}
+                                    :cmr-humanized/VariableLevel1 {:value "sk-D" :priority 0}
                                     :VariableLevel2 "sk-X"
-                                    :cmr.humanized/VariableLevel2 {:value "sk-Y" :priority 0}
+                                    :cmr-humanized/VariableLevel2 {:value "sk-Y" :priority 0}
                                     :VariableLevel3 "sk-F"
-                                    :cmr.humanized/VariableLevel3 {:value "sk-F" :priority 0}
+                                    :cmr-humanized/VariableLevel3 {:value "sk-F" :priority 0}
                                     :DetailedVariable "sk-X"
-                                    :cmr.humanized/DetailedVariable {:value "sk-Y" :priority 0}}]
+                                    :cmr-humanized/DetailedVariable {:value "sk-Y" :priority 0}}]
                 :DataCenters [{:ShortName "org-X"
-                                 :cmr.humanized/ShortName {:value "org-Y" :priority 0}}
+                                 :cmr-humanized/ShortName {:value "org-Y" :priority 0}}
                               {:ShortName "org-X"
-                                 :cmr.humanized/ShortName {:value "org-Y" :priority 0}}]
+                                 :cmr-humanized/ShortName {:value "org-Y" :priority 0}}]
                 :TilingIdentificationSystems [{:TilingIdentificationSystemName "tis-A"
-                                               :cmr.humanized/TilingIdentificationSystemName {:value "tis-B" :priority 0}}]}))
+                                               :cmr-humanized/TilingIdentificationSystemName {:value "tis-B" :priority 0}}]}))
 
   (testing "humanize with sort order"
     (humanizes [{:type "alias" :field "organization" :source_value "A" :replacement_value "X" :order 0}
@@ -245,11 +245,11 @@
 
                {:DataCenters [{:ShortName "A"}]}
 
-               {:DataCenters [{:ShortName "A" :cmr.humanized/ShortName {:value "Y" :priority 0}}]})
+               {:DataCenters [{:ShortName "A" :cmr-humanized/ShortName {:value "Y" :priority 0}}]})
 
     (humanizes [{:type "alias" :field "organization" :source_value "A" :replacement_value "X" :order 1}
                 {:type "alias" :field "organization" :source_value "X" :replacement_value "Y" :order 0}]
 
                {:DataCenters [{:ShortName "A"}]}
 
-               {:DataCenters [{:ShortName "A" :cmr.humanized/ShortName {:value "X" :priority 0}}]})))
+               {:DataCenters [{:ShortName "A" :cmr-humanized/ShortName {:value "X" :priority 0}}]})))
