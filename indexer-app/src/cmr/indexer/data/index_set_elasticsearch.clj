@@ -136,7 +136,7 @@
   "Delete the document from elastic, raise error on failure."
   [context index-name mapping-type id]
   (let [{:keys [host port admin-token]} (get-in context [:system :db :config])
-        delete-doc-url (format "http://%s:%s/%s/%s/%s?refresh=true" host port index-name mapping-type id)
+        delete-doc-url (format "http://%s:%s/%s/_doc/%s?refresh=true" host port index-name id)
         result (client/delete delete-doc-url
                               {:headers {"Authorization" admin-token
                                          "Confirm-delete-action" "true"}

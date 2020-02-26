@@ -82,7 +82,7 @@
                                                                   object-identity-types)
                                                   :include-full-acl true
                                                   :page-size page-size})
-        total-pages (int (Math/ceil (/ (get-in response [:hits :value]) page-size)))]
+        total-pages (int (Math/ceil (/ (:hits response) page-size)))]
     (if (> total-pages 1)
       ;; Take the items from first page of the response from above,
       ;; and concat each page after that in sequence.

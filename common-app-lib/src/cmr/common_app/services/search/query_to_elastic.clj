@@ -163,19 +163,13 @@
                                     [:gte :lte])]
      (cond
        (and min-value max-value)
-       {:range {field {greater-than min-value less-than max-value}
-                :execution execution
-                :_cache use-cache}}
+       {:range {field {greater-than min-value less-than max-value}}}
 
        min-value
-       {:range {field {greater-than min-value}
-                :execution execution
-                :_cache use-cache}}
+       {:range {field {greater-than min-value}}}
 
        max-value
-       {:range {field {less-than max-value}
-                :execution execution
-                :_cache use-cache}}
+       {:range {field {less-than max-value}}}
 
        :else
        (errors/internal-error! (m/nil-min-max-msg))))))
