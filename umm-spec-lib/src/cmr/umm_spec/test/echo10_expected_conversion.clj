@@ -32,18 +32,27 @@
       (format "%9.2f" (Double. fees))
       (catch NumberFormatException e))))
 
+(defn find-first-available-distribution-price
+  "Find the first FileDistributionInformation object that contains the sub element of Fees."
+  [file-dist-infos]
+  (loop [dist file-dist-infos]
+    (if (:Fees (first dist))
+      (echo10-expected-fees (:Fees (first dist)))
+      (when-not (empty? dist)
+        (recur (rest dist))))))
+
 (defn- expected-file-dist-info
   "Created expected FileDistributionInformation for ArchiveAndDistributionInformation map.
    In ECHO 10 there is only 1 price (fees) but there can be many data formats. The first fee
    applies to all data formats."
   [file-dist-infos]
   (when file-dist-infos
-   (let [first-price (echo10-expected-fees (:Fees (first file-dist-infos)))]
+   (let [price (find-first-available-distribution-price file-dist-infos)]
     (for [file-dist-info file-dist-infos]
       (-> file-dist-info
           (select-keys [:Format])
           (assoc :FormatType "Native")
-          (assoc :Fees first-price)
+          (assoc :Fees price)
           umm-c/map->FileDistributionInformationType)))))
 
 (defn- expected-archive-dist-info
