@@ -100,7 +100,7 @@
   (when (esi-helper/exists? conn index-name)
     (let [result (es-helper/search
                   conn index-name idx-mapping-type {"_source" "index-set-request"})]
-      (map (comp #(decode-field (first % )) :index-set-request :_source) (get-in result [:hits :hits])))))
+      (map (comp #(decode-field (first %)) :index-set-request :_source) (get-in result [:hits :hits])))))
 
 (defn delete-index
   "Delete given elastic index"
