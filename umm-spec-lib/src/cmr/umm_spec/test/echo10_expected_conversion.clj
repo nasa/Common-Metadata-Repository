@@ -42,7 +42,7 @@
    In ECHO 10 there is only 1 price (fees) but there can be many data formats. The first fee
    applies to all data formats."
   [file-dist-infos]
-  (when file-dist-infos
+  (when-let [file-dist-infos (flatten (map conversion-util/expand-file-dist-infos file-dist-infos))]
    (let [price (find-first-available-distribution-price file-dist-infos)]
     (for [file-dist-info file-dist-infos]
       (-> file-dist-info
