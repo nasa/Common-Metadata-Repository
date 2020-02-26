@@ -29,19 +29,21 @@
                  [org.apache.httpcomponents/httpclient "4.5.6"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/data.csv "0.1.4"]
+                 [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.reader "1.3.2"]
                  [ring/ring-codec "1.1.1"]
                  [ring/ring-core "1.7.1"]
                  [ring/ring-json "0.4.0"]
                  [selmer "1.12.5"]
-                 [org.geotools/gt-shapefile "22.3"]
-                 [org.geotools/gt-geojsondatastore "22.3"]
+                 [org.geotools/gt-shapefile "23-SNAPSHOT"]
+                 [org.geotools/gt-geojsondatastore "23-SNAPSHOT"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
                  [metosin/ring-swagger-ui "2.1.4-0"]
                  [metosin/ring-swagger "0.22.14"]
                  [prismatic/schema "1.1.9"]]
-  :repositories {"osgeo" "https://download.osgeo.org/webdav/geotools"}
+  :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]
+                 ["boundless" "https://repo.boundlessgeo.com/main"]]
   :plugins [[lein-exec "0.3.7"]
             [test2junit "1.3.3"]]
   :repl-options {:init-ns user
