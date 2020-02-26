@@ -198,8 +198,7 @@
   "Parses ArchiveAndDistributionInformation out of Echo 10 XML into UMM-C"
   [doc]
   (let [distribution (parse-and-set-archive-dist-info doc)]
-    (if (empty? distribution)
-      nil
+    (when-not (empty? distribution)
       {:FileDistributionInformation distribution})))
 
 (defn- parse-echo10-xml

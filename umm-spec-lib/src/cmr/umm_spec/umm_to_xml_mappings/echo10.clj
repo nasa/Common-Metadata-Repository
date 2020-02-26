@@ -187,8 +187,8 @@
                  ;; expectes a string in %9.2f format, so we have to
                  ;;ignore 'Free', 'Gratis', etc.
                  (catch NumberFormatException e)))]
-     ; Go through all of the FileDistributionInformation elements and set the
-     ; ECHO 10 DataFormats.
+     ;; Go through all of the FileDistributionInformation elements and set the
+     ;; ECHO 10 DataFormats.
      (for [data-format (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])]
        [:DataFormat (:Format data-format)])
      [:SpatialKeywords
