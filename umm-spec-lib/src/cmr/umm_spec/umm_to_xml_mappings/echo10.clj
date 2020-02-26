@@ -140,11 +140,7 @@
 (defn find-first-available-distribution-price
   "Find the first FileDistributionInformation object that contains the sub element of Fees."
   [c]
-  (loop [dist (:FileDistributionInformation (:ArchiveAndDistributionInformation c))]
-    (if (:Fees (first dist))
-      (:Fees (first dist))
-      (when-not (empty? dist)
-        (recur (rest dist))))))
+  (some :Fees (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])))
 
 (defn umm-c-to-echo10-xml
   "Returns ECHO10 XML structure from UMM collection record c."

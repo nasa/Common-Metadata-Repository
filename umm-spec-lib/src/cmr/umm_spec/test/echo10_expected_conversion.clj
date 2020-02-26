@@ -35,11 +35,7 @@
 (defn find-first-available-distribution-price
   "Find the first FileDistributionInformation object that contains the sub element of Fees."
   [file-dist-infos]
-  (loop [dist file-dist-infos]
-    (if (:Fees (first dist))
-      (echo10-expected-fees (:Fees (first dist)))
-      (when-not (empty? dist)
-        (recur (rest dist))))))
+  (echo10-expected-fees (some :Fees file-dist-infos)))
 
 (defn- expected-file-dist-info
   "Created expected FileDistributionInformation for ArchiveAndDistributionInformation map.
