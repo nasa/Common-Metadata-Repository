@@ -84,6 +84,7 @@
    :opendap          "application/x-netcdf"
    :octet-stream     "application/octet-stream"
    :shapefile        "application/shapefile+zip"
+   :geojson          "application/geo+json"
    :multi-part-form  "multipart/form-data"})
 
 (defn format->mime-type

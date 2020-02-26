@@ -1605,7 +1605,26 @@ Note: A query could consist of multiple spatial parameters of different types, t
 
 A shapefile can be uploaded with a query to restrict results to those that overlap the geometry in the shapefile. Note that unlike the spatial parameters, geometry in the shapefile is OR'd together, not AND'd. So if a collection overlaps _any_ of the geometry in the shapefile it will match. Note also that the `shapefile` parameter supports shapefiles containing polygons with holes.
 
-Currently the only supported shapefile format is ESRI, and all the sub-files (*.shp, *.shx, etc.) must be uploaded in a single zip file. Shapefile upload is only supported using POST with `multipart/form-data` and the mime type for the shapefile must be given as `application/shapefile+zip`.
+Currently the only supported shapefile formats are ESRI and GeoJSON. For ESRI all the sub-files (*.shp, *.shx, etc.) must be uploaded in a single zip file.
+
+Regarding polygon ring winding, ESRI shapefiles **must** follow the ESRI standard, i.e., exterior (boundar) rings are clockwise, and holes are counter-clockwise. GeoJSON follows must follow the RFC7946 specification, i.e., exterior rings are counterclockwise, and holes are clockwise.
+
+**Note:** GeoJSON support is under development and should be considered less stable than ESRI shapfile support. In particular, GeoJSON files with features that contain no geometry will fail. For example, the following file is known to fail:
+
+```
+{
+  "type": "FeatureCollection",
+  "name": "single_point_dc",
+  "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+  "features": [
+    { "type": "Feature", "properties": { "id": 1 }, "geometry": null },
+    { "type": "Feature", "properties": { "id": null }, "geometry": null },
+    { "type": "Feature", "properties": { "id": null }, "geometry": { "type": "Point", "coordinates": [ -77.0, 38.9 ] } }
+  ]
+
+```
+
+Shapefile upload is only supported using POST with `multipart/form-data` and the mime type for the shapefile must be given as `application/shapefile+zip`.
 
   curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
 

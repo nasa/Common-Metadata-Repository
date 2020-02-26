@@ -1,11 +1,13 @@
 (ns cmr.search.services.parameters.converters.geometry
   "Contains parameter converters for shapefile parameter"
   (:require
+   [cmr.common.log :refer (debug)]
    [cmr.search.models.query :as qm]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.point :as point]
    [cmr.spatial.line-string :as l]
-   [cmr.spatial.ring-relations :as rr])
+   [cmr.spatial.ring-relations :as rr]
+   [clojure.math.numeric-tower :as math])
   (:import
    (java.io BufferedReader File FileReader FileOutputStream FileInputStream)
    (java.nio.file Files)
@@ -18,7 +20,8 @@
    (org.geotools.data.simple SimpleFeatureSource)
    (org.geotools.data.geojson GeoJSONDataStore)
    (org.geotools.util URLs)
-   (org.locationtech.jts.geom Coordinate Geometry LineString Point Polygon)))
+   (org.locationtech.jts.algorithm Orientation)
+   (org.locationtech.jts.geom Coordinate Geometry GeometryFactory LineString Point Polygon PrecisionModel)))
 
 (defn geometry?
   "Returns true if the object is of type Geometry"
@@ -35,16 +38,30 @@
   [^LineString line-string]
   (rr/ords->ring :geodetic (coords->ords (.getCoordinates line-string))))
 
+(defn force-ccw-orientation
+  "Forces a LineString to be in counter-clockwise orientation"
+  [^LineString line-string winding]
+  (let [coords (.getCoordinates line-string)]
+    (if (and 
+          (> (count coords) 3)
+          (= winding :cw))
+      (.reverse line-string)
+      line-string)))
+
 (defn polygon->shape
-  "Convert a JTS Polygon to a spatial lib shape that can be used in a Spatial query"
-  [^Polygon polygon]
-  (let [boundary-ring (.reverse (.getExteriorRing polygon))
+  "Convert a JTS Polygon to a spatial lib shape that can be used in a Spatial query.
+  The `context` map can be used to provide information about winding. Accepted keys
+  are `:boundary-winding` and `:hole-winding`. Accepted values are `:cw` and `ccw`."
+  [^Polygon polygon context]
+  (let [boundary-ring (force-ccw-orientation (.getExteriorRing polygon) (:boundary-winding context))
         num-interior-rings (.getNumInteriorRing polygon)
+        _ (debug (format "NUM INTERIOR RINGS: [%d]" num-interior-rings))
         interior-rings (if (> num-interior-rings 0)
                          (for [i (range num-interior-rings)]
-                           (.getInteriorRingN polygon i))
+                           (force-ccw-orientation (.getInteriorRingN polygon i) (:hole-winding context)))
                          [])
-        all-rings (concat [boundary-ring] interior-rings)]
+        all-rings (concat [boundary-ring] interior-rings)
+        _ (debug (format "RINGS: [%s]" (vec all-rings)))]
     (poly/polygon :geodetic (map line-string-ring->ring all-rings))))
 
 (defn point->shape
@@ -59,29 +76,29 @@
     (l/ords->line-string :geodetic ordinates)))
 
 (defmulti geometry->condition
-  "Convert a Geometry object to a query condition"
-  (fn [^Geometry geometry] (.getGeometryType geometry)))
+  "Convert a Geometry object to a query condition.
+  The `context` map can be used to provided additional information."
+  (fn [^Geometry geometry context] (.getGeometryType geometry)))
 
 (defmethod geometry->condition "Polygon"
-  [geometry]
-  (let [shape (polygon->shape geometry)
-        condition (qm/->SpatialCondition shape)]
-    condition))
+  [geometry context]
+  (let [shape (polygon->shape geometry context)]
+    (qm/->SpatialCondition shape)))
 
 (defmethod geometry->condition "Point"
-  [geometry]
+  [geometry context]
   (let [shape (point->shape geometry)
         condition (qm/->SpatialCondition shape)]
     condition))
 
 (defmethod geometry->condition "LineString"
-  [geometry]
+  [geometry context]
   (let [shape (line->shape geometry)
         condition (qm/->SpatialCondition shape)]
     condition))
 
 (defmethod geometry->condition "LinearRing"
-  [geometry]
+  [geometry context]
   (let [shape (line->shape geometry)
         condition (qm/->SpatialCondition shape)]
     condition))
