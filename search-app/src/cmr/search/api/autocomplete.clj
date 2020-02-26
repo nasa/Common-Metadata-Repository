@@ -43,9 +43,11 @@
   "Process and autocomplete and return value"
   [ctx query types params]
   (let [term (lower-case-and-trim query)
-        page-size (string-param-or-default->int (:page-size params) page-size-default)
-        offset (if (:page-num params)
-                 (* page-size (string-param-or-default->int (:page-num params) page-num-default))
+        page-size (string-param-or-default->int (:page_size params) page-size-default)
+        offset (if (:page_num params)
+                 ;; page_num was provided, convert to offset by multiplying by page_size
+                 (* page-size (string-param-or-default->int (:page_num params) page-num-default))
+                 ;; page_num was not provided, check for 'offset' instead
                  (if (:offset params)
                    (string-param-or-default->int (:offset params) page-num-default)
                    page-num-default))
@@ -65,7 +67,7 @@
   (let [opts (core-api/process-params :autocomplete params path-w-extension headers mt/json)
         query (:q opts)
         types (:type opts)]
-    (when-not query
+    (when (empty? query)
       (svc-errors/throw-service-errors :bad-request ["Missing param [q]"]))
     (process-autocomplete-query ctx query types opts)))
 
