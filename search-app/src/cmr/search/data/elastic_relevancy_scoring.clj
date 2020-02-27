@@ -39,8 +39,8 @@
    :default 0.2})
 
 (def keyword-score-bin-script
-  "Groovy script used by elastic to bin the keyword score based on bin-size"
-  (slurp (io/resource "bin_keyword_score.groovy")))
+  "Painless script used by elastic to bin the keyword score based on bin-size"
+  (slurp (io/resource "bin_keyword_score.painless")))
 
 (defconfig community-usage-bin-size
   "When sort-use-relevancy-score is true, the community usage score should
@@ -49,8 +49,8 @@
    :default 400.0})
 
 (def community-usage-bin-script
-  "Groovy script used by elastic to bin the community usage value based on bin-size"
-  (slurp (io/resource "bin_community_usage.groovy")))
+  "Painless script used by elastic to bin the community usage value based on bin-size"
+  (slurp (io/resource "bin_community_usage.painless")))
 
 (defn score-sort-order
   "Determine the keyword sort order based on the sort-use-relevancy-score config and the presence
@@ -69,29 +69,30 @@
                                 (sort-use-temporal-relevancy))]
     (seq
      (concat
-       (when use-keyword-sort?
-         (if (sort-bin-keyword-scores)
-           [{:_script {:params {:binSize (keyword-score-bin-size)}
-                       :script keyword-score-bin-script
-                       :type :number
-                       :order :desc}}]
-           [{:_score {:order :desc}}]))
-       (when use-temporal-sort?
-         [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])
-       ;; We only include this if one of the others is present
-       (when (and (or use-temporal-sort? use-keyword-sort?)
-                  (sort-use-relevancy-score))
-         [{:_script {:params {:binSize  (community-usage-bin-size)}
-                     :type :number
-                     :script community-usage-bin-script
-                     :order :desc
-                     :missing 0}}])
-       ;; If end-date is nil, collection is ongoing so use today so ongoing
-       ;; collections will be at the top
-       (when use-keyword-sort?
-         [{:end-date {:order :desc
-                      :missing (time-coerce/to-long (time/now))}}
-          {:processing-level-id-lowercase-humanized {:order :desc}}])))))
+      (when use-keyword-sort?
+        (if (sort-bin-keyword-scores)
+          [{:_script {:type :number
+                      :script {:params {:binSize (keyword-score-bin-size)}
+                               :source keyword-score-bin-script}
+                      :order :desc}}]
+          [{:_score {:order :desc}}]))
+      (when use-temporal-sort?
+        [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])
+      ;; We only include this if one of the others is present
+      (when (and (or use-temporal-sort? use-keyword-sort?)
+                 (sort-use-relevancy-score))
+        [{:_script {:type :number
+                    :script {:params {:binSize  (community-usage-bin-size)}
+                             :source community-usage-bin-script
+                             ; :missing 0
+                             }
+                    :order :desc}}])
+      ;; If end-date is nil, collection is ongoing so use today so ongoing
+      ;; collections will be at the top
+      (when use-keyword-sort?
+        [{:end-date {:order :desc
+                     :missing (time-coerce/to-long (time/now))}}
+         {:processing-level-id-lowercase-humanized {:order :desc}}])))))
 
 (defn- temporal-sort-order
   "If there are temporal ranges in the query and temporal relevancy sorting is turned on,

@@ -1,4 +1,4 @@
-/* Elastic groovy script to calculate the temporal overlap of a collection over the input ranges.
+/* Elastic painless script to calculate the temporal overlap of a collection over the input ranges.
 
    Collection temporal ranges are in doc['temporal-ranges'], which is a list of dates with no
    overlaps. When sorted, they will be in the order: start-date, end-date, start-date, end-date...
@@ -9,10 +9,15 @@
 */
 
 def totalOverlap = 0;
-def sortedCollectionRanges = doc['temporal-ranges'].values.toSorted();
-for (range in temporalRanges)
+def sortedCollectionRanges = [];
+if (doc['temporal-ranges'].size() > 0)
 {
-  for (i = 0; i < sortedCollectionRanges.size(); i+= 2)
+  sortedCollectionRanges = doc['temporal-ranges'].value.toSorted();
+}
+
+for (range in params.temporalRanges)
+{
+  for (int i = 0; i < sortedCollectionRanges.size(); i+= 2)
   {
      def overlapStartDate = range.start_date;
      if (sortedCollectionRanges[i] > overlapStartDate)
@@ -31,7 +36,7 @@ for (range in temporalRanges)
      }
   }
 }
-if (rangeSpan > 0) { totalOverlap / rangeSpan; }
+if (params.rangeSpan > 0) { totalOverlap / params.rangeSpan; }
 else
 {
   0; /* Temporal overlap is 0 */
