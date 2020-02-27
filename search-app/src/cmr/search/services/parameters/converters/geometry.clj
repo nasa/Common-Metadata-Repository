@@ -1,7 +1,7 @@
 (ns cmr.search.services.parameters.converters.geometry
   "Contains parameter converters for shapefile parameter"
   (:require
-   [cmr.common.log :refer (debug)]
+   [cmr.common.log :refer [debug]]
    [cmr.search.models.query :as qm]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.point :as point]
@@ -50,18 +50,18 @@
 
 (defn polygon->shape
   "Convert a JTS Polygon to a spatial lib shape that can be used in a Spatial query.
-  The `context` map can be used to provide information about winding. Accepted keys
-  are `:boundary-winding` and `:hole-winding`. Accepted values are `:cw` and `ccw`."
-  [^Polygon polygon context]
-  (let [boundary-ring (force-ccw-orientation (.getExteriorRing polygon) (:boundary-winding context))
+  The `options` map can be used to provide information about winding. Accepted keys
+  are `:boundary-winding` and `:hole-winding`. Accepted values are `:cw` and `:ccw`."
+  [^Polygon polygon options]
+  (let [boundary-ring (force-ccw-orientation (.getExteriorRing polygon) (:boundary-winding options))
         num-interior-rings (.getNumInteriorRing polygon)
-        _ (debug (format "NUM INTERIOR RINGS: [%d]" num-interior-rings))
         interior-rings (if (> num-interior-rings 0)
                          (for [i (range num-interior-rings)]
-                           (force-ccw-orientation (.getInteriorRingN polygon i) (:hole-winding context)))
+                           (force-ccw-orientation (.getInteriorRingN polygon i) (:hole-winding options)))
                          [])
-        all-rings (concat [boundary-ring] interior-rings)
-        _ (debug (format "RINGS: [%s]" (vec all-rings)))]
+          all-rings (concat [boundary-ring] interior-rings)]
+    (debug (format "NUM INTERIOR RINGS: [%d]" num-interior-rings))
+    (debug (format "RINGS: [%s]" (vec all-rings)))
     (poly/polygon :geodetic (map line-string-ring->ring all-rings))))
 
 (defn point->shape
@@ -77,28 +77,28 @@
 
 (defmulti geometry->condition
   "Convert a Geometry object to a query condition.
-  The `context` map can be used to provided additional information."
-  (fn [^Geometry geometry context] (.getGeometryType geometry)))
+  The `options` map can be used to provided additional information."
+  (fn [^Geometry geometry options] (.getGeometryType geometry)))
 
 (defmethod geometry->condition "Polygon"
-  [geometry context]
-  (let [shape (polygon->shape geometry context)]
+  [geometry options]
+  (let [shape (polygon->shape geometry options)]
     (qm/->SpatialCondition shape)))
 
 (defmethod geometry->condition "Point"
-  [geometry context]
+  [geometry options]
   (let [shape (point->shape geometry)
         condition (qm/->SpatialCondition shape)]
     condition))
 
 (defmethod geometry->condition "LineString"
-  [geometry context]
+  [geometry options]
   (let [shape (line->shape geometry)
         condition (qm/->SpatialCondition shape)]
     condition))
 
 (defmethod geometry->condition "LinearRing"
-  [geometry context]
+  [geometry options]
   (let [shape (line->shape geometry)
         condition (qm/->SpatialCondition shape)]
     condition))

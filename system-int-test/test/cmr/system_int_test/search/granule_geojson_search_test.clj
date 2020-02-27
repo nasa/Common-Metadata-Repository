@@ -26,8 +26,8 @@
   (poly/polygon [(apply umm-s/ords->ring ords)]))
 
 (deftest granule-shapefile-search-test
-  (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
-        geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+  (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
+  (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                                                                                     :EntryTitle "E1"
                                                                                     :ShortName "S1"
                                                                                     :Version "V1"}))
@@ -106,8 +106,8 @@
         "All granules query"
         "polygon_with_hole.geojson" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
 
-        "Features with no geometry"
-        "single_point_dc_BAD.geojson" {:name "provider" :content "PROV1"} #"Failed to parse GeoJSON file"))
+        "Failed to parse GeoJSON file"
+        "invalid_json.geojson" {:name "provider" :content "PROV1"} #"Failed to parse GeoJSON file"))
         
 
     (testing "Search by GeoJSON shapefile"
@@ -152,4 +152,7 @@
         "dc_richmond_line.geojson" [whole-world very-wide-cart washington-dc richmond]
 
         "Single Point Washington DC"
-        "single_point_dc.geojson" [whole-world very-wide-cart washington-dc]))))
+        "single_point_dc.geojson" [whole-world very-wide-cart washington-dc]
+        
+        "Single Point with empty features"
+        "single_point_dc_empty_features.geojson" [whole-world very-wide-cart washington-dc]))))
