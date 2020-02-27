@@ -408,6 +408,7 @@ For system, provider, and single instance identities, the grantable permissions 
 | SYSTEM_CALENDAR_EVENT                | create, update, delete       |
 | DASHBOARD_ADMIN                      | create, read, update, delete |
 | DASHBOARD_ARC_CURATOR                | create, read, update, delete |
+| DASHBOARD_MDQ_CURATOR                | create, read, update, delete |
 
 #### Provider Identity
 | Target                          | Grantable Permissions        |
