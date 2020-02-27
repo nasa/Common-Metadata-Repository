@@ -4,12 +4,13 @@
     [clojure.java.io :as io]
     [clojure.string :as str]
     [cmr.common.config :as cfg :refer [defconfig]]
-    [cmr.common.log :refer (debug)]
+    [cmr.common.log :refer [debug]]
     [cmr.common.mime-types :as mt]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.params :as p]
     [cmr.common.services.errors :as errors]
     [cmr.search.models.query :as qm]
+    [cmr.search.services.parameters.converters.geojson :as geojson]
     [cmr.search.services.parameters.converters.geometry :as geo]
     [cmr.common.util :as util])
   (:import
@@ -157,9 +158,9 @@
 (defn geojson->conditions-vec
   "Converts a geojson file to a vector of SpatialConditions"
   [shapefile-info]
-  ; TODO: handle Features with no geometry properly - CMR-6241
   (try
     (let [file (:tempfile shapefile-info)
+          _ (geojson/sanitize-geojson file)
           url (URLs/fileToUrl file)
           data-store (GeoJSONDataStore. url)
           feature-source (.getFeatureSource data-store)
