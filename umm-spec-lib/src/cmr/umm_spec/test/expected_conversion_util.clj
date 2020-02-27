@@ -229,9 +229,6 @@
    then replace the distribution info that exists and add new ones for each
    multple format that exists."
   [file-dist-info]
-  (let [formats (get (select-keys file-dist-info [:Format]) :Format)
+  (let [formats (:Format file-dist-info)
         parsed-format (format-util/parse-distribution-formats formats)]
-    (for [[index value] (map-indexed vector parsed-format)]
-      (if (= index 0)
-        (assoc file-dist-info :Format value)
-        (conj (assoc file-dist-info :Format value))))))
+    (map #(assoc file-dist-info :Format %) parsed-format)))

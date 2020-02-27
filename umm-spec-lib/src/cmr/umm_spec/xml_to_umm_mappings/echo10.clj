@@ -205,7 +205,7 @@
       [{:Fees price
         :Format u/not-provided
         :FormatType "Native"}]
-      (flatten (map #(add-data-formats price %) (select doc "Collection/DataFormat"))))))
+      (mapcat #(add-data-formats price %) (select doc "Collection/DataFormat")))))
 
 (defn parse-archive-dist-info
   "Parses ArchiveAndDistributionInformation out of Echo 10 XML into UMM-C"
