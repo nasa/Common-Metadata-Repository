@@ -212,7 +212,8 @@
 
 (defmethod cpv/valid-parameter-options :autocomplete
   [_]
-  {})
+  {:q cpv/string-param-options
+   :type cpv/string-plus-or-options})
 
 (defmethod cpv/valid-query-level-params :collection
   [_]
