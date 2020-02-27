@@ -183,11 +183,9 @@
   es-type is the elasticsearch mapping
   es-doc is the elasticsearch document to be passed on to elasticsearch
   elastic-id is the _id of the document in the index
-  revision-id is the version of the document in elasticsearch
-  ttl time-to-live in milliseconds"
+  revision-id is the version of the document in elasticsearch"
   [f conn es-index es-type es-doc elastic-id revision-id ttl]
-  (let [options {:version revision-id :version_type "external_gte"}
-        options (if ttl (merge options {:ttl ttl}) options)]
+  (let [options {:version revision-id :version_type "external_gte"}]
     (try
       (f conn es-index es-type elastic-id es-doc options)
       (catch clojure.lang.ExceptionInfo e
@@ -212,7 +210,7 @@
 
 (defn- non-tombstone-concept->bulk-elastic-doc
   "Takes a non-tombstoned concept map (a normal revision) and returns an elastic document suitable
-   with ttl fields for bulk indexing. "
+   with ttl fields for bulk indexing."
   [context concept]
   (let [parsed-concept (cp/parse-concept context concept)
         delete-time (get-in parsed-concept

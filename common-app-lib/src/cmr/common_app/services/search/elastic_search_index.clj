@@ -191,7 +191,7 @@
   (loop [offset 0 prev-items [] took-total 0 timed-out false]
     (let [results (send-query-to-elastic
                     context (assoc query :offset offset :page-size unlimited-page-size))
-          total-hits (get-in results [:hits :total])
+          total-hits (get-in results [:hits :total :value])
           current-items (get-in results [:hits :hits])]
 
       (when (> total-hits max-unlimited-hits)
@@ -218,7 +218,7 @@
   (let [start (System/currentTimeMillis)
         e-results (send-query-to-elastic context query)
         elapsed (- (System/currentTimeMillis) start)
-        hits (get-in e-results [:hits :total])]
+        hits (get-in e-results [:hits :total :value])]
     (info "Elastic query took" (:took e-results) "ms. Connection elapsed:" elapsed "ms")
     (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits])))
                (errors/internal-error! "Failed to retrieve all hits.")))
