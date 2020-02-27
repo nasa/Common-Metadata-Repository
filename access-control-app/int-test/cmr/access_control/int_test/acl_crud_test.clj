@@ -1287,6 +1287,48 @@
               (get-in (access-control/get-acl (test-util/conn-context) (:concept_id acl4) {:token token})
                       [:catalog_item_identity :collection_identifier])))))))
 
+(deftest CMR-6233-dashboard-mdq-curator-acl-test
+  (let [token (echo-util/login (test-util/conn-context) "admin")
+        group1 (test-util/ingest-group token {:name "group1"} ["user1"])
+        mdq-curator-acl {:group_permissions [{:user_type "guest"
+                                              :permissions ["read"]}
+                                             {:user_type "registered"
+                                              :permissions ["read" "update"]}
+                                             {:group_id (:concept_id group1)
+                                              :permissions ["read" "create" "delete" "update"]}]
+                          :system_identity {:target "DASHBOARD_MDQ_CURATOR"}}
+        acl (access-control/create-acl (test-util/conn-context)
+                                       mdq-curator-acl
+                                       {:token token})]
+    (is (= mdq-curator-acl
+           (access-control/get-acl (test-util/conn-context)
+                                   (:concept_id acl)
+                                   {:token token})))
+
+    (testing "DASHBOARD MDQ CURATOR  Acl permissions"
+      (are3 [perms params]
+        (is (= {"DASHBOARD_MDQ_CURATOR" perms}
+               (json/parse-string
+                 (access-control/get-permissions
+                  (test-util/conn-context)
+                  params
+                  {:token token}))))
+
+        "user in group permissions DASHBOARD_MDQ_CURATOR"
+        ["read" "create" "update" "delete"]
+        {:user_id "user1"
+         :system_object "DASHBOARD_MDQ_CURATOR"}
+
+        "guest permissions DASHBOARD_MDQ_CURATOR"
+        ["read"]
+        {:user_type "guest"
+         :system_object "DASHBOARD_MDQ_CURATOR"}
+
+        "user not in group permissions DASHBOARD_MDQ_CURATOR"
+        ["read" "update"]
+        {:user_id "user2"
+         :system_object "DASHBOARD_MDQ_CURATOR"}))))
+
 (deftest CMR-6147-email-subscription-acl-test
   (let [token (echo-util/login (test-util/conn-context) "admin")
         group1 (test-util/ingest-group token {:name "group1"} ["user1"])

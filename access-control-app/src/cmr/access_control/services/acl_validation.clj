@@ -71,7 +71,8 @@
                               "INGEST_MANAGEMENT_ACL"                [r u]
                               "SYSTEM_CALENDAR_EVENT"                [c u d]
                               "DASHBOARD_ADMIN"                      [c r u d]
-                              "DASHBOARD_ARC_CURATOR"                [c r u d]}})
+                              "DASHBOARD_ARC_CURATOR"                [c r u d]
+                              "DASHBOARD_MDQ_CURATOR"                [c r u d]}})
 
 (comment
   ;; evaluate the following expression to generate Markdown for the API docs
