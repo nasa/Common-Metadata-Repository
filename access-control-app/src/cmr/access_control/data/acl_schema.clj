@@ -40,7 +40,8 @@
    "INGEST_MANAGEMENT_ACL"
    "SYSTEM_CALENDAR_EVENT"
    "DASHBOARD_ADMIN"
-   "DASHBOARD_ARC_CURATOR"])
+   "DASHBOARD_ARC_CURATOR"
+   "DASHBOARD_MDQ_CURATOR"])
 
 (def ingest-management-acl-target "INGEST_MANAGEMENT_ACL")
 (def provider-catalog-item-acl-target "CATALOG_ITEM_ACL")
