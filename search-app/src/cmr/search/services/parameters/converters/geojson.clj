@@ -31,9 +31,7 @@
   will be overwritten by the santized version. `file` is a Java File object."
   [file]
   (let [json-str (slurp file)
-        _ (println json-str)
         geojson (json/parse-string json-str)
-        _ (println geojson)
         sanitized-map (reduce (fn [s, f] (f s))
                               geojson
                               geojson-sanitizers)]
