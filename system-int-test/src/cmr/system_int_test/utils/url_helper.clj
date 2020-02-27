@@ -244,9 +244,9 @@
   ([]
    (autocomplete-url nil))
   ([query]
-   (if-not query
-     (format "http://localhost:%s/autocomplete" (transmit-config/search-port))
-     (format "http://localhost:%s/autocomplete?%s" (transmit-config/search-port) query))))
+   (if query
+     (format "http://localhost:%s/autocomplete?%s" (transmit-config/search-port) query)
+     (format "http://localhost:%s/autocomplete" (transmit-config/search-port)))))
 
 (defn enable-search-writes-url
   []
