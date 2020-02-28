@@ -105,7 +105,7 @@
                                "\"TAXONOMY_ENTRY\" \"USER_CONTEXT\" \"USER\" \"GROUP\" \"ANY_ACL\" "
                                "\"EVENT_NOTIFICATION\" \"EXTENDED_SERVICE\" \"SYSTEM_OPTION_DEFINITION\" "
                                "\"SYSTEM_OPTION_DEFINITION_DEPRECATION\" \"INGEST_MANAGEMENT_ACL\" \"SYSTEM_CALENDAR_EVENT\" "
-                               "\"DASHBOARD_ADMIN\" \"DASHBOARD_ARC_CURATOR\"]")
+                               "\"DASHBOARD_ADMIN\" \"DASHBOARD_ARC_CURATOR\" \"DASHBOARD_MDQ_CURATOR\"]")
         prov-target-err (str "Parameter [target] must be one of: [\"AUDIT_REPORT\" "
                              "\"OPTION_ASSIGNMENT\" \"OPTION_DEFINITION\" \"OPTION_DEFINITION_DEPRECATION\" "
                              "\"DATASET_INFORMATION\" \"PROVIDER_HOLDINGS\" \"EXTENDED_SERVICE\" \"PROVIDER_ORDER\" "

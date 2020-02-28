@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.collection-shapefile-search-test
+(ns cmr.system-int-test.search.collection-geojson-search-test
   (:require
     [clojure.test :refer :all]
     [clojure.java.io :as io]
@@ -26,7 +26,7 @@
   [& ords]
   (poly/polygon [(apply umm-s/ords->ring ords)]))
 
-(defn make-coll
+(defn- make-coll
   [coord-sys et & shapes]
   (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
     (d/ingest "PROV1"
@@ -36,9 +36,9 @@
                                                :sr coord-sys
                                                :geometries shapes})}))))
 
-(deftest collection-shapefile-search-test
-  (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
-        ;; Lines
+(deftest collection-geojson-search-test
+  (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
+  (let [;; Lines
         normal-line (make-coll :geodetic "normal-line"
                                (l/ords->line-string :geodetic [22.681 -8.839, 18.309 -11.426, 22.705 -6.557]))
         along-am-line (make-coll :geodetic "along-am-line"
@@ -89,49 +89,46 @@
         esri-point (make-coll :geodetic "esri-point" (p/point -80 35))]
     (index/wait-until-indexed)
 
-    (testing "Search by ESRI shapefile"
+    (testing "Search by GeoJSON shapefile"
       (are3 [shapefile items]
-            (let [found (search/find-refs-with-multi-part-form-post
-                         :collection
-                         [{:name "shapefile"
-                           :content (io/file (io/resource (str "shapefiles/" shapefile)))
-                           :mime-type "application/shapefile+zip"}
-                          {:name "provider"
-                           :content "PROV1"}])]
-              (d/assert-refs-match items found))
+        (let [found (search/find-refs-with-multi-part-form-post
+                     :collection
+                     [{:name "shapefile"
+                       :content (io/file (io/resource (str "shapefiles/" shapefile)))
+                       :mime-type "application/geo+json"}
+                      {:name "provider"
+                       :content "PROV1"}])]
+          (d/assert-refs-match items found))
 
         "Single Polygon box around VA and DC"
-        "box.zip" [whole-world very-wide-cart washington-dc richmond]
+        "box.geojson" [whole-world very-wide-cart washington-dc richmond]
 
         "Single Polygon box over North pole"
-        "north_pole_poly.zip" [north-pole touches-np on-np whole-world very-tall-cart]
+        "north_pole_poly.geojson" [north-pole touches-np on-np whole-world very-tall-cart along-am-line]
 
         "Single Polygon over Antartica"
-        "antartica.zip" [south-pole touches-sp on-sp whole-world very-tall-cart]
+        "antartica.geojson" [south-pole touches-sp on-sp whole-world wide-south very-tall-cart]
 
         "Single Polygon over Southern Africa"
-        "southern_africa.zip" [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
+        "southern_africa.geojson" [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
 
         "Single Polygon around Virgina with hole around DC"
-        "polygon_with_hole.zip" [whole-world very-wide-cart richmond]
+        "polygon_with_hole.geojson" [whole-world very-wide-cart richmond]
 
         "Single feature, multiple polygons around DC and Richnmond"
-        "multi-poly.zip" [whole-world very-wide-cart washington-dc richmond]
+        "multi-poly.geojson" [whole-world very-wide-cart washington-dc richmond]
 
         "Multiple feature, single Polygons around DC and Richnmond"
-        "multi-feature.zip" [whole-world very-wide-cart washington-dc richmond]
+        "multi-feature.geojson" [whole-world very-wide-cart washington-dc richmond]
         
-        "Single Polygon, with holes"
-        "test_box_with_holes.zip" [whole-world very-wide-cart richmond]
-
         "Polygon across the antimeridian"
-        "antimeridian.zip" [whole-world very-wide-cart across-am-poly across-am-br along-am-line am-point]
+        "antimeridian.geojson" [whole-world across-am-poly across-am-br am-point very-tall-cart very-wide-cart along-am-line]
 
         "Line near North pole"
-        "np_line.zip" [on-np whole-world]
+        "np_line.geojson" [on-np whole-world]
 
         "Line from DC to Richmond"
-        "dc_richmond_line.zip" [whole-world very-wide-cart washington-dc richmond]
+        "dc_richmond_line.geojson" [whole-world very-wide-cart washington-dc richmond]
 
         "Single Point Washington DC"
-        "single_point_dc.zip" [whole-world very-wide-cart washington-dc]))))
+        "single_point_dc.geojson" [whole-world very-wide-cart washington-dc]))))
