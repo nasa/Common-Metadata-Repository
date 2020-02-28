@@ -232,7 +232,6 @@
                     media (when media
                             [media])
                     formats (value-of distribution "Distribution_Format")
-                    format (format-util/parse-distribution-formats formats)
                     fees (value-of distribution "Fees")]]
           (when (or fees formats Size Unit)
              (add-dist-info-for-multi-formats media Size Unit formats fees)))]
