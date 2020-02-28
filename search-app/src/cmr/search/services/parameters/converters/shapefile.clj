@@ -4,12 +4,13 @@
     [clojure.java.io :as io]
     [clojure.string :as str]
     [cmr.common.config :as cfg :refer [defconfig]]
-    [cmr.common.log :refer (debug)]
+    [cmr.common.log :refer [debug]]
     [cmr.common.mime-types :as mt]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.params :as p]
     [cmr.common.services.errors :as errors]
     [cmr.search.models.query :as qm]
+    [cmr.search.services.parameters.converters.geojson :as geojson]
     [cmr.search.services.parameters.converters.geometry :as geo]
     [cmr.common.util :as util])
   (:import
@@ -25,7 +26,8 @@
    (org.geotools.data.geojson GeoJSONDataStore)
    (org.geotools.geometry.jts JTS)
    (org.geotools.referencing CRS)
-   (org.geotools.util URLs)))
+   (org.geotools.util URLs)
+   (org.opengis.feature.type Name)))
 
 (def EPSG-4326-CRS 
   "The CRS object for WGS 84"
@@ -60,12 +62,13 @@
 
 (defn geometry->conditions
   "Get one or more conditions for the given Geometry. This will only
-  return more than one condition if the Geometry is a GeometryCollection."
-  [geometry]
+  return more than one condition if the Geometry is a GeometryCollection.
+  The `context` map can be used to provided additional information."
+  [geometry context]
   (let [num-geometries (.getNumGeometries geometry)]
     (for [index (range 0 num-geometries)
           :let [sub-geometry (.getGeometryN geometry index)]]
-      (geo/geometry->condition sub-geometry))))
+      (geo/geometry->condition sub-geometry context))))
 
 (defn transform-to-epsg-4326
   "Transform the geometry to WGS84 CRS if is not already"
@@ -90,8 +93,9 @@
     geometry))
 
 (defn feature->conditions
-  "Process the contents of a Feature to return query conditions"
-  [feature]
+  "Process the contents of a Feature to return query conditions.
+  The `context` map can be used to pass along additional info."
+  [feature context]
   (let [crs (when (.getDefaultGeometryProperty feature)
               (-> feature .getDefaultGeometryProperty .getDescriptor .getCoordinateReferenceSystem))
         properties (.getProperties feature)
@@ -101,15 +105,15 @@
         _ (debug (format "Found [%d] geometries" (count geometry-props)))
         geometries (map #(-> % .getValue (transform-to-epsg-4326 crs)) geometry-props)
         _ (debug (format "Transformed [%d] geometries" (count geometries)))]
-    (mapcat (fn [g] (geometry->conditions g)) geometries)))
+    (mapcat (fn [g] (geometry->conditions g context)) geometries)))
 
 (defn- error-if
   "Throw a service error with the given message if `f` applied to `item` is true. 
-  Otherwise just return `item`. Removes the temporary directory `temp-dir` first."
-  [item f message ^File temp-dir]
+  Otherwise just return `item`. Removes the temporary file/directory `temp-file` first."
+  [item f message ^File temp-file]
   (if (f item)
     (do
-      (.delete temp-dir)
+      (.delete temp-file)
       (errors/throw-service-error :bad-request message))
     item))
 
@@ -126,17 +130,17 @@
                     temp-dir)
           data-store (FileDataStoreFinder/getDataStore shp-file)
           feature-source (.getFeatureSource data-store)
-          collection (error-if (.getFeatures feature-source)
-                              #(< (.size %) 1)
-                              "Shapefile has no features"
-                              temp-dir)
-          _ (debug (format "Found [%d] features" (.size collection)))
-          iterator (.features collection)]
+          features (error-if (.getFeatures feature-source)
+                             #(< (.size %) 1)
+                             "Shapefile has no features"
+                             temp-dir)
+          _ (debug (format "Found [%d] features" (.size features)))
+          iterator (.features features)]
       (try
         (loop [conditions []]
           (if (.hasNext iterator)
             (let [feature (.next iterator)
-                  feature-conditions (feature->conditions feature)]
+                  feature-conditions (feature->conditions feature {:boundary-winding :cw})]
               (if (> (count feature-conditions) 0)
                 (recur (conj conditions (gc/or-conds feature-conditions)))
                 (recur conditions)))
@@ -151,6 +155,39 @@
           (throw e) ;; This was a more specific service error so just re-throw it
           (errors/throw-service-error :bad-request "Failed to parse shapefile"))))))
 
+(defn geojson->conditions-vec
+  "Converts a geojson file to a vector of SpatialConditions"
+  [shapefile-info]
+  (try
+    (let [file (:tempfile shapefile-info)
+          _ (geojson/sanitize-geojson file)
+          url (URLs/fileToUrl file)
+          data-store (GeoJSONDataStore. url)
+          feature-source (.getFeatureSource data-store)
+          features (error-if (.getFeatures feature-source)
+                             #(or (nil? %) (< (.size %) 1))
+                             "GeoJSON file has no features"
+                             file)
+          iterator (.features features)]
+        (try
+          (loop [conditions []]
+            (if (.hasNext iterator)
+              (let [feature (.next iterator)
+                    feature-conditions (feature->conditions feature {:hole-winding :cw})]
+                (if (> (count feature-conditions) 0)
+                  (recur (conj conditions (gc/or-conds feature-conditions)))
+                  (recur conditions)))
+              conditions))
+          (finally (do
+                    (.close iterator)
+                    (-> data-store .getFeatureReader .close)
+                    (.delete file)))))
+    (catch Exception e
+      (let [{:keys [type errors]} (ex-data e)]
+        (if (and type errors)
+          (throw e) ;; This was a more specific service error so just re-throw it
+          (errors/throw-service-error :bad-request "Failed to parse GeoJSON file"))))))
+
 (defmulti shapefile->conditions
   "Converts a shapefile to query conditions based on shapefile format"
   (fn [shapefile-info]
@@ -160,6 +197,12 @@
 (defmethod shapefile->conditions mt/shapefile
   [shapefile-info]
   (let [conditions-vec (esri-shapefile->condition-vec shapefile-info)]
+    (gc/or-conds (flatten conditions-vec))))
+
+;; GeoJSON
+(defmethod shapefile->conditions mt/geojson
+  [shapefile-info]
+  (let [conditions-vec (geojson->conditions-vec shapefile-info)]
     (gc/or-conds (flatten conditions-vec))))
 
 (defmethod p/parameter->condition :shapefile

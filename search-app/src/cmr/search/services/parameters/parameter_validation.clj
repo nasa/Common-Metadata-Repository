@@ -212,7 +212,8 @@
 
 (defmethod cpv/valid-parameter-options :autocomplete
   [_]
-  {})
+  {:q cpv/string-param-options
+   :type cpv/string-plus-or-options})
 
 (defmethod cpv/valid-query-level-params :collection
   [_]
@@ -730,7 +731,7 @@
 
 (def ^:private valid-shapefile-formats
   "Valid shapefile formats"
-  #{mt/shapefile})   
+  #{mt/shapefile mt/geojson})   
           
 (defn shapefile-format-validation
   "Validates that the shapefile format value is one of the accepted formats"

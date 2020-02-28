@@ -5,6 +5,7 @@
     [clojure.test :refer :all]
     [cmr.common.util :as util :refer [are3]]
     [cmr.search.services.parameters.converters.shapefile :as shapefile]
+    [cmr.search.services.parameters.converters.geometry :as geometry]
     [cmr.search.services.messages.attribute-messages :as msg]
     [cmr.search.models.query :as qm]
     [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -24,8 +25,34 @@
     (org.geotools.geometry.jts JTS JTSFactoryFinder)
     (org.geotools.referencing CRS)
     (org.geotools.util URLs)
-    (org.locationtech.jts.geom GeometryFactory Coordinate  Point)))
+    (org.locationtech.jts.geom GeometryFactory Geometry Coordinate LineString Point)
+    (org.locationtech.jts.geom.impl CoordinateArraySequence)))
 
+
+(defn- geometry-equal?
+  "Compares two Geometry objects to see if they are equal (have the same points)"
+  [^Geometry geom1 ^Geometry geom2]
+  (= (.compareTo geom1 geom2)) 0)
+
+(defn- coords->line-string
+  "Create a LineString from a vector of coordinate pairs"
+  [raw-coords]
+  (let [coords (map (fn [raw-coord] (Coordinate. (nth raw-coord 0) (nth raw-coord 1))) raw-coords)
+        coord-sequence (CoordinateArraySequence. (into-array Coordinate coords))
+        geometry-factory (GeometryFactory.)]
+    (LineString. coord-sequence geometry-factory)))
+
+
+(deftest force-ccw-orientation
+  (let [^LineString line-3-points-cw (coords->line-string [[10.0,0.0], [0.0,0.0], [10.0,0.0]])
+        ^LineString line-4-points-cw (coords->line-string [[10.0,0.0], [0.0,0.0], [0.0,10.0], [10.0,0.0]])
+        ^LineString line-4-points-ccw (coords->line-string [[10.0,0.0], ,[0.0, 10.0], [0.0,0.0], [10.0,0.0]])]
+    (testing "too few points results in no change"
+      (is (= line-3-points-cw (geometry/force-ccw-orientation line-3-points-cw :cw))))
+    (testing "already counter-clockwise resutls in no change"
+      (is (= line-4-points-ccw (geometry/force-ccw-orientation line-4-points-ccw :ccw))))
+    (testing "too few points results in no change"
+      (is (geometry-equal? (.reverse line-4-points-cw) (geometry/force-ccw-orientation line-3-points-cw :cw))))))
 
 (deftest shapefile-exceptions
   (testing "empty file"
