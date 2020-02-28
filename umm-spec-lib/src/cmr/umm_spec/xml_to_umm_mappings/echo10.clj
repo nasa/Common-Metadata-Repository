@@ -26,6 +26,7 @@
    "IN WORK" "ACTIVE"
    "ACTIVE" "ACTIVE"
    "PLANNED" "PLANNED"
+   "DEPRECATED" "DEPRECATED"
    "NOT APPLICABLE" "NOT APPLICABLE"})
 
 (defn parse-temporal

@@ -14,13 +14,6 @@
    [cmr.umm-spec.umm-to-xml-mappings.dif9.spatial-extent :as spatial]
    [cmr.umm-spec.util :as u]))
 
-(def coll-progress-mapping
-  "Mapping from known collection progress values to values supported for DIF9 Data_Set_Progress."
-  {"COMPLETE" "COMPLETE"
-   "ACTIVE" "ACTIVE"
-   "PLANNED" "PLANNED"
-   "NOT APPLICABLE" "NOT APPLICABLE"})
-
 (def dif9-xml-namespaces
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
@@ -126,9 +119,7 @@
           [:Epoch Epoch]
           [:Stage Stage]
           [:Detailed_Classification DetailedClassification]])])
-    (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
-                            (get coll-progress-mapping (string/upper-case coll-progress)))]
-      [:Data_Set_Progress c-progress])
+    [:Data_Set_Progress (:CollectionProgress c)]
     (for [mbr (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles)]
       [:Spatial_Coverage
        [:Southernmost_Latitude (:SouthBoundingCoordinate mbr)]

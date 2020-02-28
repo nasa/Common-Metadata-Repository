@@ -287,3 +287,12 @@
 (defmethod interface/migrate-umm-version [:collection "1.15" "1.14"]
   [context c & _]
   (spatial-extent/migrate-down-to-1_14 c))
+
+(defmethod interface/migrate-umm-version [:collection "1.15" "1.15.1"]
+  [context c & _]
+  ;; Don't need to migrate Collection Progress - we just added a new enumeration value.
+  c)
+
+(defmethod interface/migrate-umm-version [:collection "1.15.1" "1.15"]
+  [context c & _]
+  (coll-progress-migration/migrate-down-to-1_15 c))

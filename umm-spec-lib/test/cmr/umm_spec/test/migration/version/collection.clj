@@ -2155,3 +2155,9 @@
   (let [result (vm/migrate-umm {} :collection "1.15" "1.14" sample-collection-1-15)]
     (is (= sample-collection-1-14-Migrated
            result))))
+
+(deftest migrate-1-15-1-to-1-15
+  "Test the migration of collections from version 1.15.1 to 1.15"
+  (let [result (vm/migrate-umm {} :collection "1.15.1" "1.15" {:CollectionProgress "DEPRECATED"})]
+    (is (= {:CollectionProgress "COMPLETE"}
+           result))))

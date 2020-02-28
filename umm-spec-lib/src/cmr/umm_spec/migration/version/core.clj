@@ -27,24 +27,36 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions
+(def ^:private values-are-equal 0)
+(def ^:private begin-less-than-end -1)
+(def ^:private begin-greater-than-end 1)
 
 (defn- customized-compare
   "Customizing the compare because normal string compare results in
    1.n > 1.10 and doesn't convert the version_steps correctly(1< n <10).
-   Assuming the version only contains two parts part1.part2.
-   both part1 and part2 are integers."
+   The inputs assume the version only contains integers separated by dots.
+   This scheme allows version numbers like 1.10.2 and 1.10.3.25 etc."
   [begin end]
-  (let [begin-parts (string/split begin #"\.")
-        end-parts (string/split end #"\.")
-        begin-part1 (read-string (first begin-parts))
-        begin-part2 (read-string (last begin-parts))
-        end-part1 (read-string (first end-parts))
-        end-part2 (read-string (last end-parts))
-        part1-compare (- begin-part1 end-part1)
-        part2-compare (- begin-part2 end-part2)]
-    (if (zero? part1-compare)
-      part2-compare
-      part1-compare)))
+  (let [begin-tmp (map #(Integer/parseInt %) (clojure.string/split begin #"\."))
+        end-tmp (map #(Integer/parseInt %) (clojure.string/split end #"\."))]
+    (loop [begin begin-tmp
+           end end-tmp]
+      (println begin end)
+      ;; if both are empty then the two values are equal.
+      (if (and (empty? begin) (empty? end))
+        values-are-equal
+        ;; if the start is empty then it is smaller
+        (if (empty? begin)
+          begin-less-than-end
+          ;; if the end is empty then start is bigger.
+          (if (empty? end)
+            begin-greater-than-end
+            (let [result (- (first begin) (first end))]
+              ;; If the result is zero the values are equal so go to the next number
+              ;; and compare the next set. Otherwise return if start is greater or less than end.
+              (if (zero? result)
+                (recur (rest begin) (rest end))
+                result))))))))
 
 (defn- version-steps
   "Returns a sequence of version steps between begin and end, inclusive."

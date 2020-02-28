@@ -754,3 +754,13 @@
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C1-PROV1" :revision-id 1}
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id]))))))
+
+(deftest CMR-6174-Collection-Progress-test
+  (testing "Ingest UMM-C 1.15.1 collection with new Collection Progress DEPRECATED value"
+    (let [concept (data-umm-c/collection-concept {:EntryTitle "E2"
+                                                  :ShortName "S2"
+                                                  :CollectionProgress "DEPRECATED"
+                                                  :concept-id "C2-PROV1"} :umm-json)
+          response (ingest/ingest-concept concept {:raw? true})]
+      (is (= {:concept-id "C2-PROV1" :revision-id 1}
+             (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id]))))))
