@@ -6,7 +6,7 @@
   the tables differently depending on what changes had been made. This would cause subsequent
   migrations to fail."
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]
             [cmr.metadata-db.data.oracle.concept-tables :as ct]))
 

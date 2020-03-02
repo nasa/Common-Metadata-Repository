@@ -5,7 +5,7 @@
             [cmr.oracle.user :as o]
             [cmr.oracle.config :as oracle-config]
             [cmr.ingest.config :as ingest-config]
-            [config.migrate-config :as mc]
+            [config.ingest-migrate-config :as mc]
             [cmr.oracle.sql-utils :as su])
   (:gen-class))
 
@@ -35,7 +35,11 @@
         (drop-user)
 
         (= "migrate" op)
-        (drift/run args)
+        (drift/run
+         (conj
+          args
+          "-c"
+          "config.ingest-migrate-config/app-migrate-config"))
 
         :else
         (info "Unsupported operation: " op))

@@ -4,7 +4,7 @@
    [clojure.java.jdbc :as j]
    [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]
    [cmr.metadata-db.services.concept-service :as s]
-   [config.migrate-config :as config]
+   [config.mdb-migrate-config :as config]
    [cmr.metadata-db.data.oracle.providers]
    [cmr.metadata-db.data.providers :as p]
    [cmr.metadata-db.services.concept-validations :as v]))

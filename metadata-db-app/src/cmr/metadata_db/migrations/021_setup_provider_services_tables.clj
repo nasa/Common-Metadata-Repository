@@ -1,6 +1,6 @@
 (ns cmr.metadata-db.migrations.021-setup-provider-services-tables
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]
             [cmr.metadata-db.data.oracle.concept-tables :as ct]))
 

@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.migrations.010-add-new-granule-indexes
   "Adds additional index"
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]))
 
 (defn up

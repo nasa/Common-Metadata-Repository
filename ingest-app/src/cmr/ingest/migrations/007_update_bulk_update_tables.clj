@@ -1,6 +1,6 @@
 (ns cmr.ingest.migrations.007-update-bulk-update-tables
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]))
+            [config.ingest-migrate-config :as config]))
 
 (defn up
   "Migrates the database up to version 7."

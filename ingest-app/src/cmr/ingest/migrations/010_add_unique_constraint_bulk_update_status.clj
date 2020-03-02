@@ -1,7 +1,7 @@
 (ns cmr.ingest.migrations.010-add-unique-constraint-bulk-update-status
   (:require
    [clojure.java.jdbc :as j]
-   [config.migrate-config :as config]))
+   [config.ingest-migrate-config :as config]))
 
 (defn up
   "Migrates the database up to version 10."
