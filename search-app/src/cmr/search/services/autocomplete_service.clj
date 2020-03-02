@@ -14,7 +14,6 @@
                      [(gc/or-conds
                        (map (partial qm/text-condition :type) types))
                       (qm/text-condition :value term)]))
-        _ (println opts)
         query     (qm/query
                    {:concept-type :autocomplete
                     :page-size (:page-size opts)

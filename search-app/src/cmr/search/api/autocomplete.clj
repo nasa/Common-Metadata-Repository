@@ -56,10 +56,10 @@
 (defn- get-autocomplete-suggestions-handler
   "Validate params and invoke autocomplete"
   [ctx path-w-extension params headers]
-  (let [params (core-api/process-params :autocomplete params path-w-extension headers mt/json)
-        params (common-params/sanitize-params params)
-        params (pv/validate-parameters :autocomplete params)
-        [params opts] (common-params/default-parse-query-level-params :autocomplete params)
+  (let [[params opts] (as-> (core-api/process-params :autocomplete params path-w-extension headers mt/json) params
+                            (common-params/sanitize-params params)
+                            (pv/validate-parameters :autocomplete params)
+                            (common-params/default-parse-query-level-params :autocomplete params))
         query (lower-case-and-trim (:q params))
         types (:type params)]
     (when (empty? query)
