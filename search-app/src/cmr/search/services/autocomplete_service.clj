@@ -20,7 +20,5 @@
                     :offset (:offset opts)
                     :condition condition
                     :result-fields [:type :value]})
-        results   (qe/execute-query context query)
-        hits      (:hits results)
-        items     (:items results)]
-    {:hits hits :items items}))
+        results (qe/execute-query context query)]
+    results))

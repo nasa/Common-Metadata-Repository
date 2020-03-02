@@ -11,3 +11,13 @@
     {:score score
      :type  type
      :value value}))
+
+(defmethod elastic-results/elastic-results->query-results [:autocomplete :json]
+  [context query elastic-results]
+  (let [hits (get-in elastic-results [:hits :total])
+        took (:took elastic-results)
+        elastic-matches (get-in elastic-results [:hits :hits])
+        items (mapv #(elastic-results/elastic-result->query-result-item context query %) elastic-matches)]
+    {:items items
+     :hits hits
+     :took took}))
