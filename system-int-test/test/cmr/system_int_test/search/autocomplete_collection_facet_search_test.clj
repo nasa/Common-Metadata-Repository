@@ -138,9 +138,9 @@
      (is (= a b))))
 
   (testing "page_num should yield different 'first' results test"
-   (let [page-one-entry (as-> (query->json-response-body "q=b&page_size=2&page_num=1") response1
-                              (response-body->entries response1))
+   (let [page-one (as-> (query->json-response-body "q=b&page_size=1&page_num=1") response
+                        (response-body->entries response))
 
-         page-two-entry (as-> (query->json-response-body "q=b&page_size=2&page_num=2") response2
-                              (response-body->entries response2))]
-     (is (not= page-one-entry page-two-entry)))))
+         page-two(as-> (query->json-response-body "q=b&page_size=1&page_num=2") response
+                       (response-body->entries response))]
+     (is (not= page-one page-two)))))
