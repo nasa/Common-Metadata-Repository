@@ -20,7 +20,8 @@
               (rest/index-mapping-url conn (join-names index-name-or-names))
               {:content-type :json
                :body mapping
-               :query-params (dissoc opts :mapping)})))
+               :query-params (dissoc opts :mapping)
+               :throw-exceptions true})))
 
 (defn create
   "Create an index"
@@ -30,7 +31,8 @@
               (rest/index-url conn index-name)
               {:content-type :json
                :body (cond-> {:settings (or settings {})}
-                             mappings (assoc :mappings mappings))})))
+                             mappings (assoc :mappings mappings))
+               :throw-exceptions true})))
 
 (defn refresh
  "refresh an index"

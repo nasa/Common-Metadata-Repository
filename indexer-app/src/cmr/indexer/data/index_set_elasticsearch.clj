@@ -36,7 +36,8 @@
         (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
                 error (:error body)]
-            (info (format "error creating %s elastic index, elastic reported error: %s" index-name error))
+            (info (format "error creating %s elastic index, elastic reported error: %s"
+                          index-name error))
             (throw e)))))))
 
 (defn update-index
@@ -46,9 +47,9 @@
     (try
       (if (esi-helper/exists? conn index-name)
         ;; The index exists. Update the mappings.
-        (doseq [[type-name type-mapping] mapping]
+        (doseq [[type-name] mapping]
           (let [response (esi-helper/update-mapping
-                           conn index-name (name type-name) {:mapping type-mapping :ignore_conflicts false})]
+                           conn index-name (name type-name) {:mapping mapping})]
             (when-not (= {:acknowledged true} response)
               (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
                                            (pr-str response))))))
@@ -59,7 +60,8 @@
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
               error (:error body)]
-          (info (format "error updating %s elastic index, elastic reported error: %s" index-name error))
+          (info (format "error updating %s elastic index, elastic reported error: %s"
+                        index-name error))
           (throw e))))))
 
 (defn index-set-exists?
@@ -100,7 +102,8 @@
   (when (esi-helper/exists? conn index-name)
     (let [result (es-helper/search
                   conn index-name idx-mapping-type {"_source" "index-set-request"})]
-      (map (comp #(decode-field (first %)) :index-set-request :_source) (get-in result [:hits :hits])))))
+      (map #(decode-field (get-in % [:_source :index-set-request]))
+           (get-in result [:hits :hits])))))
 
 (defn delete-index
   "Delete given elastic index"
