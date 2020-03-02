@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.migrations.031-assign-transaction-ids-for-collections-services-tags-and-access-groups
   (:require [clojure.java.jdbc :as j]
             [cmr.metadata-db.services.concept-validations :as v]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]
             [cmr.metadata-db.migrations.028-create-global-transaction-sequence :as m28]
             [cmr.oracle.sql-utils :as utils]))

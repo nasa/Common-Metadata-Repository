@@ -1,7 +1,7 @@
 (ns cmr.bootstrap.migrations.003-drop-quartz-tables
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
-            [config.mdb-migrate-helper :as h]))
+            [config.bootstrap-migrate-config :as config]
+            [config.bootstrap-migrate-helper :as h]))
 
 (defn up
   "Migrates the database up to version 3."
@@ -179,4 +179,3 @@
   (h/sql "CREATE INDEX idx_qrtz_ft_jg ON qrtz_fired_triggers(SCHED_NAME,JOB_GROUP)")
   (h/sql "CREATE INDEX idx_qrtz_ft_t_g ON qrtz_fired_triggers(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)")
   (h/sql "CREATE INDEX idx_qrtz_ft_tg ON qrtz_fired_triggers(SCHED_NAME,TRIGGER_GROUP)"))
-

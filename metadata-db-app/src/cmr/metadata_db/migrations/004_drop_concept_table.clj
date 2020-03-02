@@ -1,6 +1,6 @@
 (ns cmr.metadata-db.migrations.004-drop-concept-table
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]))
 
 (defn up

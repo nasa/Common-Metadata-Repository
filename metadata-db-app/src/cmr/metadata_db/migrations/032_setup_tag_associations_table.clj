@@ -1,6 +1,6 @@
 (ns cmr.metadata-db.migrations.032-setup-tag-associations-table
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]))
 
 (def ^:private tag-assocs-column-sql

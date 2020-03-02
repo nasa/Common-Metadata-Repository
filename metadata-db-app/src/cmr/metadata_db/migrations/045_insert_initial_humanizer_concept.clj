@@ -1,5 +1,5 @@
 (ns cmr.metadata-db.migrations.045-insert-initial-humanizer-concept
-  (:require [config.migrate-config :as config]
+  (:require [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]
             [cmr.metadata-db.data.oracle.concepts]
             [cmr.metadata-db.data.concepts :as c]

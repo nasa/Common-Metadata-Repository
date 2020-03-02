@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.migrations.049-add-created-at-to-collection-tables
   "Adds created_at column to collection tables."
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]))
 
 (defn- add-created-at 

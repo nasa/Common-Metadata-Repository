@@ -1,6 +1,6 @@
 (ns cmr.metadata-db.migrations.040-create-acls-table
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]))
 
 (def ^:private acls-column-sql

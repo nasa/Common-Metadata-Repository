@@ -3,7 +3,7 @@
   (:require
    [clojure.java.jdbc :as j]
    [config.mdb-migrate-helper :as h]
-   [config.migrate-config :as config]))
+   [config.mdb-migrate-config :as config]))
 
 (defn- add-created-at
   []

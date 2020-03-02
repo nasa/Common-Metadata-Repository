@@ -6,7 +6,7 @@
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.sql-utils :as su]
    [cmr.oracle.user :as o]
-   [config.migrate-config :as mc]
+   [config.bootstrap-migrate-config :as mc]
    [drift.execute :as drift])
   (:gen-class))
 
@@ -37,7 +37,11 @@
         (drop-user)
 
         (= "migrate" op)
-        (drift/run args)
+        (drift/run
+         (conj
+          args
+          "-c" 
+          "config.bootstrap-migrate-config/app-migrate-config"))
 
         :else
         (info "Unsupported operation: " op))

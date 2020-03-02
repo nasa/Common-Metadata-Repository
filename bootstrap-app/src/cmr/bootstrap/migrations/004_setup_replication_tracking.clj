@@ -1,6 +1,6 @@
 (ns cmr.bootstrap.migrations.004-setup-replication-tracking
   (:require
-   [config.mdb-migrate-helper :as h]))
+   [config.bootstrap-migrate-helper :as h]))
 
 (defn up
   "Migrates the database up to version 4."

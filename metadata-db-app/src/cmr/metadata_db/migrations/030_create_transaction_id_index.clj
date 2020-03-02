@@ -1,6 +1,6 @@
 (ns cmr.metadata-db.migrations.030-create-transaction-id-index
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]
             [cmr.oracle.sql-utils :as utils]))
 

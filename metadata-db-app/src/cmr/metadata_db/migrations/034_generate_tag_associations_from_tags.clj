@@ -5,7 +5,7 @@
    [clojure.string :as str]
    [cmr.metadata-db.services.concept-service :as cs]
    [config.mdb-migrate-helper :as h]
-   [config.migrate-config :as config]))
+   [config.mdb-migrate-config :as config]))
 
 (defn up
   "Migrates the database up to version 34."
