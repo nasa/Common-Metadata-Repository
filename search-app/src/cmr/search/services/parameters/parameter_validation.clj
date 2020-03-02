@@ -215,6 +215,10 @@
   {:q cpv/string-param-options
    :type cpv/string-plus-or-options})
 
+;;(defmethod cpv/valid-query-level-params :autocomplete
+;;  [_]
+;;  #{:q :type})
+
 (defmethod cpv/valid-query-level-params :collection
   [_]
   #{:include-granule-counts :include-has-granules :include-facets :hierarchical-facets

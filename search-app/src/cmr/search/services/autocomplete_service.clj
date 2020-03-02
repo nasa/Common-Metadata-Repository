@@ -7,14 +7,14 @@
 
 (defn autocomplete
   "Execute elasticsearch query to get autocomplete suggestions"
-  [context term opts]
-  (let [condition (if (empty? (:types opts))
+  [context term types opts]
+  (let [condition (if (empty? types)
                     (qm/text-condition :value term)
                     (gc/and-conds
                      [(gc/or-conds
-                        (map (partial qm/text-condition :type)
-                             (:types opts)))
+                       (map (partial qm/text-condition :type) types))
                       (qm/text-condition :value term)]))
+        _ (println opts)
         query     (qm/query
                    {:concept-type :autocomplete
                     :page-size (:page-size opts)
