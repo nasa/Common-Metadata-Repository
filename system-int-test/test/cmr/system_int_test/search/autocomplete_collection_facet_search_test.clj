@@ -28,12 +28,6 @@
                      [(ingest/reset-fixture)
                       autocomplete-fixture]))
 
-;;(deftest test-autocomplete-short
-;; (testing "the test"
-;;  (let [response (search/get-autocomplete-suggestions "q=b&type[]=platform")]
-;;    (println (json/parse-string (:body response) true))
-;;    (is (= 200 (:status response))))))
-
 (defn- query->json-response-body
   ([query]
    (query->json-response-body query nil))
@@ -144,14 +138,9 @@
      (is (= a b))))
 
   (testing "page_num should yield different 'first' results test"
-   (let [everything (response-body->entries (query->json-response-body "q=*&page_size=2"))
-         _ (println everything)
-
-          page-one-entry (as-> (query->json-response-body "q=b&page_size=2&page_num=1") response1
+   (let [page-one-entry (as-> (query->json-response-body "q=b&page_size=2&page_num=1") response1
                               (response-body->entries response1))
 
          page-two-entry (as-> (query->json-response-body "q=b&page_size=2&page_num=2") response2
-                              (response-body->entries response2))
-         _ (println page-one-entry)
-         _ (println page-two-entry)]
+                              (response-body->entries response2))]
      (is (not= page-one-entry page-two-entry)))))
