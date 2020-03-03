@@ -116,10 +116,10 @@
         "polygon_with_hole.geojson" [whole-world very-wide-cart richmond]
 
         "Single feature, multiple polygons around DC and Richnmond"
-        "multi-poly.geojson" [whole-world very-wide-cart washington-dc richmond]
+        "multi_poly.geojson" [whole-world very-wide-cart washington-dc richmond]
 
         "Multiple feature, single Polygons around DC and Richnmond"
-        "multi-feature.geojson" [whole-world very-wide-cart washington-dc richmond]
+        "multi_feature.geojson" [whole-world very-wide-cart washington-dc richmond]
         
         "Polygon across the antimeridian"
         "antimeridian.geojson" [whole-world across-am-poly across-am-br am-point very-tall-cart very-wide-cart along-am-line]

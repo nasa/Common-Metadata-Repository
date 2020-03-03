@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="test_box_with_holes" id="test_box_with_holes">
+	<SimpleField name="id" type="float"></SimpleField>
+</Schema>
+<Folder><name>test_box_with_holes</name>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+      <MultiGeometry></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+      <MultiGeometry></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-80.9092783215166,40.2062248855424 -80.9432857458458,36.5164193458197 -75.4680904288379,36.5844341944781 -75.6721349748134,40.223228597707 -80.9092783215166,40.2062248855424</coordinates></LinearRing></outerBoundaryIs><innerBoundaryIs><LinearRing><coordinates>-77.4915321764278,39.2540170043236 -77.4235173277693,38.5908722299034 -76.5903354317029,38.5398610934095 -76.5733317195383,39.2710207164882 -77.4915321764278,39.2540170043236</coordinates></LinearRing></innerBoundaryIs></Polygon></MultiGeometry>
+  </Placemark>
+</Folder>
+</Document></kml>

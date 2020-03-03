@@ -24,9 +24,13 @@
    (org.geotools.data DataStoreFinder FileDataStoreFinder Query)
    (org.geotools.data.simple SimpleFeatureSource)
    (org.geotools.data.geojson GeoJSONDataStore)
+  ;  (org.geotools.data.kml KMLDataStoreFactory)
    (org.geotools.geometry.jts JTS)
+   (org.geotools.kml.v22 KMLConfiguration KML)
    (org.geotools.referencing CRS)
    (org.geotools.util URLs)
+   (org.geotools.xsd Parser StreamingParser PullParser)
+   (org.opengis.feature.simple SimpleFeature)
    (org.opengis.feature.type Name)))
 
 (def EPSG-4326-CRS 
@@ -63,12 +67,13 @@
 (defn geometry->conditions
   "Get one or more conditions for the given Geometry. This will only
   return more than one condition if the Geometry is a GeometryCollection.
-  The `context` map can be used to provided additional information."
-  [geometry context]
+  The `options` map can be used to provided additional information."
+  [geometry options]
   (let [num-geometries (.getNumGeometries geometry)]
+    (debug (format "NUM SUB GEOMETRIES: [%d]" num-geometries))
     (for [index (range 0 num-geometries)
           :let [sub-geometry (.getGeometryN geometry index)]]
-      (geo/geometry->condition sub-geometry context))))
+      (geo/geometry->condition sub-geometry options))))
 
 (defn transform-to-epsg-4326
   "Transform the geometry to WGS84 CRS if is not already"
@@ -99,13 +104,14 @@
   (let [crs (when (.getDefaultGeometryProperty feature)
               (-> feature .getDefaultGeometryProperty .getDescriptor .getCoordinateReferenceSystem))
         properties (.getProperties feature)
-        _ (doseq [p properties] (debug (.getName p)))
-        _ (doseq [p properties] (debug (.getValue p)))
+        _ (doseq [p properties] (debug (.getName p)) (debug (.getValue p)))
         geometry-props (filter (fn [p] (geo/geometry? (.getValue p))) properties)
         _ (debug (format "Found [%d] geometries" (count geometry-props)))
         geometries (map #(-> % .getValue (transform-to-epsg-4326 crs)) geometry-props)
-        _ (debug (format "Transformed [%d] geometries" (count geometries)))]
-    (mapcat (fn [g] (geometry->conditions g context)) geometries)))
+        _ (debug (format "Transformed [%d] geometries" (count geometries)))
+        conditions (mapcat (fn [g] (geometry->conditions g context)) geometries)]
+    (debug (format "CONDITIONS: %s" conditions))
+    conditions))
 
 (defn- error-if
   "Throw a service error with the given message if `f` applied to `item` is true. 
@@ -188,6 +194,29 @@
           (throw e) ;; This was a more specific service error so just re-throw it
           (errors/throw-service-error :bad-request "Failed to parse GeoJSON file"))))))
 
+(defn kml->conditions-vec
+  "Converts a kml file to a vector of SpatialConditions"
+  [shapefile-info]
+  (try
+    (let [file (:tempfile shapefile-info)
+          input-stream (FileInputStream. file)
+          parser (PullParser. (KMLConfiguration.) input-stream SimpleFeature)]
+      (try
+        (loop [conditions []]
+          (if-let [feature (.parse parser)]
+            (let [feature-conditions (feature->conditions feature {})]
+              (if (> (count feature-conditions) 0)
+                (recur (conj conditions (gc/or-conds feature-conditions)))
+                (recur conditions)))
+            conditions))
+        (finally (do
+                  (.delete file)))))
+    (catch Exception e
+      (let [{:keys [type errors]} (ex-data e)]
+        (if (and type errors)
+          (throw e) ;; This was a more specific service error so just re-throw it
+          (errors/throw-service-error :bad-request "Failed to parse KML file"))))))
+
 (defmulti shapefile->conditions
   "Converts a shapefile to query conditions based on shapefile format"
   (fn [shapefile-info]
@@ -203,6 +232,12 @@
 (defmethod shapefile->conditions mt/geojson
   [shapefile-info]
   (let [conditions-vec (geojson->conditions-vec shapefile-info)]
+    (gc/or-conds (flatten conditions-vec))))
+
+;; KML
+(defmethod shapefile->conditions mt/kml
+  [shapefile-info]
+  (let [conditions-vec (kml->conditions-vec shapefile-info)]
     (gc/or-conds (flatten conditions-vec))))
 
 (defmethod p/parameter->condition :shapefile

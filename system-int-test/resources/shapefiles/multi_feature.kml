@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="multi_feature" id="multi_feature">
+	<SimpleField name="id" type="float"></SimpleField>
+</Schema>
+<Folder><name>multi_feature</name>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+	<ExtendedData><SchemaData schemaUrl="#multi_feature">
+		<SimpleData name="id">1</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-77.1377221316327,38.9284277113552 -77.023271980584,38.7845475214654 -76.8793917906942,38.8662976293574 -77.0330819935311,39.0003678063001 -77.1377221316327,38.9284277113552</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+	<ExtendedData><SchemaData schemaUrl="#multi_feature">
+		<SimpleData name="id">2</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-77.6151427617216,37.6694760498194 -77.6184127660373,37.4471157563533 -77.2554422869971,37.430765734775 -77.2652522999442,37.6727460541351 -77.6151427617216,37.6694760498194</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
+  </Placemark>
+</Folder>
+</Document></kml>
