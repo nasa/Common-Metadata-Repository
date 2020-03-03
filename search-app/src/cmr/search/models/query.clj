@@ -179,6 +179,7 @@
 (defmethod common-qm/default-sort-keys :autocomplete
   [_]
   [{:field :_score :order :desc}
+   ;; TODO: remove sorting by type field after relevancy works, will be unneeccsary
    {:field :type :order :asc}
    {:field :value :order :asc}])
 

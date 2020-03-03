@@ -16,6 +16,11 @@
 
 ;; Note: the suffix "-h" on parameters denotes the humanized version of a parameter
 
+(defmethod common-params/param-mappings :autocomplete
+  [_]
+  {:q :string
+   :type :string})
+
 (defmethod common-params/param-mappings :collection
   [_]
   {:archive-center :string

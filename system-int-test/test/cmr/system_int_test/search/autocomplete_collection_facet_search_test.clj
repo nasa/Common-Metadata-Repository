@@ -16,7 +16,7 @@
   (let [conn (esr/connect (url/elastic-root))
         foo (esd/create conn "1_autocomplete" "suggestion" {:value "foo" :type "instrument"})
         bar (esd/create conn "1_autocomplete" "suggestion" {:value "bar" :type "platform"})
-        baz (esd/create conn "1_autocomplete" "suggestion" {:value "baz" :type "instrument"})]
+        baz (esd/create conn "1_autocomplete" "suggestion" {:value "baaz" :type "instrument"})]
     (index/wait-until-indexed)
     (f)
     (esd/delete conn "1_autocomplete" "suggestion" (:_id foo))
@@ -53,7 +53,7 @@
      (let [response (search/get-autocomplete-suggestions "q=foo")
            headers (:headers response)]
        (is (:CMR-Hits headers))
-       (is (= "1" (:CMR-Hits headers))))))
+       (is (:CMR-Took headers)))))
 
 (deftest autocomplete-functionality-test
   (testing "value search"
@@ -86,16 +86,22 @@
     "q=foo&type[]=platform" 0)))
 
 (deftest autocomplete-usage-test
-  (testing "invalid or missing query param tests"
+  (testing "invalid or missing query param tests: "
    (are3
     [query]
     (is (= 400 (:status (search/get-autocomplete-suggestions query {:throw-exceptions false}))))
 
-    "no query param provided"
+    "no query provided"
     nil
 
     "blank query provided"
-    "q=  "))
+    "q=  "
+
+    "page_size too large"
+    "q=ice&page_size=999999999"
+
+    "page_size non-positive"
+    "q=ice&page_size=-1"))
 
   (testing "page_size test"
    (are3
@@ -123,10 +129,18 @@
     "page size 100"
     "q=*&page_size=100" 3 3))
 
-  (testing "page_num should yield different 'first' results test"
-   (let [page-one-entry (as-> (query->json-response-body "q=b&page_size=1") response
-                              (first (response-body->entries response)))
+  (testing "page_num should default to 1"
+   (let [a (as-> (query->json-response-body "q=b") response
+                 (first (response-body->entries response)))
 
-         page-two-entry (as-> (query->json-response-body "q=b&page_size=1&page_num=1") response
-                              (first (response-body->entries response)))]
-     (is (not (= page-one-entry page-two-entry))))))
+         b (as-> (query->json-response-body "q=b&page_num=1") response
+                 (first (response-body->entries response)))]
+     (is (= a b))))
+
+  (testing "page_num should yield different 'first' results test"
+   (let [page-one (as-> (query->json-response-body "q=b&page_size=1&page_num=1") response
+                        (response-body->entries response))
+
+         page-two(as-> (query->json-response-body "q=b&page_size=1&page_num=2") response
+                       (response-body->entries response))]
+     (is (not= page-one page-two)))))
