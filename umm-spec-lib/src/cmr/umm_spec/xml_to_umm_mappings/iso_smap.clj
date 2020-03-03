@@ -26,8 +26,10 @@
 (def coll-progress-mapping
   "Mapping from values supported for ISO-SMAP ProgressCode to UMM CollectionProgress."
   {"COMPLETED" "COMPLETE"
-   "HISTORICALARCHIVE" "COMPLETE"
-   "OBSOLETE" "COMPLETE"
+   "HISTORICALARCHIVE" "DEPRECATED"
+   "OBSOLETE" "DEPRECATED"
+   "RETIRED" "DEPRECATED"
+   "DEPRECATED" "DEPRECATED"
    "ONGOING" "ACTIVE"
    "PLANNED" "PLANNED"
    "UNDERDEVELOPMENT" "PLANNED"

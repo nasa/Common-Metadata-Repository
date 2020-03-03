@@ -10,6 +10,7 @@
   {"COMPLETE" "completed"
    "ACTIVE" "onGoing"
    "PLANNED" "planned"
+   "DEPRECATED" "deprecated"
    "NOT APPLICABLE" "NOT APPLICABLE"})
 
 (defn generate-collection-progress
@@ -23,6 +24,6 @@
                       :codeListValue ""}
                     c-progress]
                    [:gmd:MD_ProgressCode
-                     {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode") 
+                     {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode")
                       :codeListValue c-progress}
                     c-progress])]))

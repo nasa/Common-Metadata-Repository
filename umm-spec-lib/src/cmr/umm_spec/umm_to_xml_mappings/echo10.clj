@@ -13,13 +13,6 @@
    [cmr.umm-spec.util :refer [with-default]]
    [cmr.umm-spec.util :as spec-util]))
 
-(def coll-progress-mapping
-  "Mapping from known collection progress values to values supported for ECHO10 Collection_State."
-  {"COMPLETE" "COMPLETE"
-   "ACTIVE" "ACTIVE"
-   "PLANNED" "PLANNED"
-   "NOT APPLICABLE" "NOT APPLICABLE"})
-
 (defn characteristic-mapping
   [data]
   [:Characteristic
@@ -177,9 +170,7 @@
      (dc/generate-archive-centers c)
      [:VersionDescription (:VersionDescription c)]
      (generate-collection-citations c)
-     (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
-                             (get coll-progress-mapping (string/upper-case coll-progress)))]
-       [:CollectionState c-progress])
+     [:CollectionState (:CollectionProgress c)]
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
      [:Price (when-let [price-str (find-first-available-distribution-price c)]
