@@ -41,7 +41,6 @@
         end-tmp (map #(Integer/parseInt %) (clojure.string/split end #"\."))]
     (loop [begin begin-tmp
            end end-tmp]
-      (println begin end)
       ;; if both are empty then the two values are equal.
       (if (and (empty? begin) (empty? end))
         values-are-equal
