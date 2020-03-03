@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="dc_richmond_line" id="dc_richmond_line">
+	<SimpleField name="id" type="float"></SimpleField>
+</Schema>
+<Folder><name>dc_richmond_line</name>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+      <MultiGeometry><LineString><coordinates>-77.0,38.9 -77.2262220527612,38.7746507721438 -77.4700404286778,38.5795960714105 -77.5976774362096,38.3683600592786 -77.5838223374389,38.1732321115495 -77.540476848387,38.0052683414736 -77.5133859177297,37.7397772210311 -77.4519061367011,37.5519469655017 -77.4,37.54</coordinates></LineString></MultiGeometry>
+  </Placemark>
+</Folder>
+</Document></kml>

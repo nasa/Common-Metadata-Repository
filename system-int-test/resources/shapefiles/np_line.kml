@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="np_line" id="np_line">
+	<SimpleField name="id" type="float"></SimpleField>
+</Schema>
+<Folder><name>np_line</name>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+      <MultiGeometry><LineString><coordinates>-37.5898206297053,82.4621816088352 -24.3103218645476,87.0208155132923 -9.24700983242838,88.0118228838265 7.0055110443318,84.4441963499035 10.1767346300411,81.8675771865147 29.6004790925106,83.2549875052625</coordinates></LineString></MultiGeometry>
+  </Placemark>
+</Folder>
+</Document></kml>

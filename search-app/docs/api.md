@@ -1698,7 +1698,7 @@ Currently the only supported shapefile formats are ESRI and GeoJSON. For ESRI al
 
 Regarding polygon ring winding, ESRI shapefiles **must** follow the ESRI standard, i.e., exterior (boundary) rings are clockwise, and holes are counter-clockwise. GeoJSON **must** follow the RFC7946 specification, i.e., exterior rings are counterclockwise, and holes are clockwise.
 
-Shapefile upload is only supported using POST with `multipart/form-data` and the mime type for the shapefile must be given as `application/shapefile+zip`.
+Shapefile upload is only supported using POST with `multipart/form-data` and the mime type for the shapefile must be given as `application/shapefile+zip`, `application/geo+json`, or `application/vnd.google-earth.kml+xml`.
 
   curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
 

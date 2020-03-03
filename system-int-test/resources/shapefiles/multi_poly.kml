@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="multi_poly" id="multi_poly">
+	<SimpleField name="id" type="float"></SimpleField>
+</Schema>
+<Folder><name>multi_poly</name>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-77.12464211437,38.9186176984082 -77.0101919633213,38.7845475214654 -76.8826617950099,38.8728376379887 -77.0396220021624,38.9970978019845 -77.12464211437,38.9186176984082</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-77.611872757406,37.6662060455037 -77.6184127660373,37.4438457520377 -77.2489022783658,37.430765734775 -77.2816023215225,37.6662060455037 -77.611872757406,37.6662060455037</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
+  </Placemark>
+</Folder>
+</Document></kml>

@@ -2,11 +2,13 @@
   "Contains parameter converters for shapefile parameter"
   (:require
    [cmr.common.log :refer [debug]]
+   [clojure.pprint :as pprint]
    [cmr.search.models.query :as qm]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.point :as point]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.validation :as v]
    [clojure.math.numeric-tower :as math])
   (:import
    (java.io BufferedReader File FileReader FileOutputStream FileInputStream)
@@ -53,13 +55,16 @@
   The `options` map can be used to provide information about winding. Accepted keys
   are `:boundary-winding` and `:hole-winding`. Accepted values are `:cw` and `:ccw`."
   [^Polygon polygon options]
-  (let [boundary-ring (force-ccw-orientation (.getExteriorRing polygon) (:boundary-winding options))
+  (let [boundary-ring (.getExteriorRing polygon)
+        _ (debug (format "BOUNDARY RING: %s" boundary-ring))
+        boundary-ring (force-ccw-orientation boundary-ring (:boundary-winding options))
+        _ (debug (format "BOUNDARY RING: %s" boundary-ring))
         num-interior-rings (.getNumInteriorRing polygon)
         interior-rings (if (> num-interior-rings 0)
                          (for [i (range num-interior-rings)]
                            (force-ccw-orientation (.getInteriorRingN polygon i) (:hole-winding options)))
                          [])
-          all-rings (concat [boundary-ring] interior-rings)]
+        all-rings (concat [boundary-ring] interior-rings)]
     (debug (format "NUM INTERIOR RINGS: [%d]" num-interior-rings))
     (debug (format "RINGS: [%s]" (vec all-rings)))
     (poly/polygon :geodetic (map line-string-ring->ring all-rings))))
@@ -78,7 +83,13 @@
 (defmulti geometry->condition
   "Convert a Geometry object to a query condition.
   The `options` map can be used to provided additional information."
-  (fn [^Geometry geometry options] (.getGeometryType geometry)))
+  (fn [^Geometry geometry options] 
+    (.getGeometryType geometry)))
+    
+(defmethod geometry->condition "MultiPolygon"
+  [geometry options]
+  (let [shape (polygon->shape geometry options)]
+    (qm/->SpatialCondition shape)))
 
 (defmethod geometry->condition "Polygon"
   [geometry options]
@@ -87,18 +98,16 @@
 
 (defmethod geometry->condition "Point"
   [geometry options]
-  (let [shape (point->shape geometry)
-        condition (qm/->SpatialCondition shape)]
-    condition))
+  (let [shape (point->shape geometry)]
+    (pprint/pprint shape)
+    (qm/->SpatialCondition shape)))
 
 (defmethod geometry->condition "LineString"
   [geometry options]
-  (let [shape (line->shape geometry)
-        condition (qm/->SpatialCondition shape)]
-    condition))
+  (let [shape (line->shape geometry)]
+    (qm/->SpatialCondition shape)))
 
 (defmethod geometry->condition "LinearRing"
   [geometry options]
-  (let [shape (line->shape geometry)
-        condition (qm/->SpatialCondition shape)]
-    condition))
+  (let [shape (line->shape geometry)]
+    (qm/->SpatialCondition shape)))

@@ -731,7 +731,7 @@
 
 (def ^:private valid-shapefile-formats
   "Valid shapefile formats"
-  #{mt/shapefile mt/geojson})   
+  #{mt/shapefile mt/geojson mt/kml})   
           
 (defn shapefile-format-validation
   "Validates that the shapefile format value is one of the accepted formats"
