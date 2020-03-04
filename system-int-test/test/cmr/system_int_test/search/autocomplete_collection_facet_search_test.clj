@@ -57,24 +57,24 @@
 
 (deftest autocomplete-response-test
   (testing "response form test"
-     (let [response (search/get-autocomplete-suggestions "q=foo")
-           body (:body response)
-           data (json/parse-string body true)]
-       (is (contains? data :feed))
-       (is (contains? (:feed data) :entry))))
+   (let [response (search/get-autocomplete-suggestions "q=foo")
+         body (:body response)
+         data (json/parse-string body true)]
+     (is (contains? data :feed))
+     (is (contains? (:feed data) :entry))))
 
   (testing "returns CMR-Hits header"
-     (let [response (search/get-autocomplete-suggestions "q=foo")
-           headers (:headers response)]
-       (is (:CMR-Hits headers))
-       (is (:CMR-Took headers))))
+   (let [response (search/get-autocomplete-suggestions "q=foo")
+         headers (:headers response)]
+     (is (:CMR-Hits headers))
+     (is (:CMR-Took headers))))
 
   (testing "entries return in descending score order"
-           (let [response (query->json-response-body "q=bar")
-                 entries (response-body->entries response)
-                 a (first entries)
-                 b (second entries)]
-             (is (> (:score a) (:score b))))))
+   (let [response (query->json-response-body "q=bar")
+         entries (response-body->entries response)
+         a (first entries)
+         b (second entries)]
+     (is (> (:score a) (:score b))))))
 
 (deftest autocomplete-functionality-test
   (testing "value search"
