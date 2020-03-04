@@ -29,10 +29,9 @@
 
 (def formats
   "Shapfile formats to be tested"
-  {
-    "ESRI" {:extension "zip" :mime-type mt/shapefile}
-    "GeoJSON" {:extension "geojson" :mime-type mt/geojson}
-    "KML" {:extension "kml" :mime-type mt/kml}})
+  {"ESRI" {:extension "zip" :mime-type mt/shapefile}
+   "GeoJSON" {:extension "geojson" :mime-type mt/geojson}
+   "KML" {:extension "kml" :mime-type mt/kml}})
   
 (deftest granule-shapefile-search-test
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
@@ -160,8 +159,7 @@
 
     (doseq [fmt (keys formats)
             :let [{extension :extension mime-type :mime-type} (get formats fmt)]]
-      (debug (format "%s %s %s" fmt extension mime-type))
-      (testing "Search by shapefile"
+      (testing (format "Search by %s shapefile" fmt)
         (are3 [shapefile items]
               (let [found (search/find-refs-with-multi-part-form-post
                             :granule
