@@ -9,16 +9,11 @@
   "Execute elasticsearch query to get autocomplete suggestions"
   [context term types opts]
   (let [condition (if (empty? types)
-                    (qm/text-condition :value term)
-                    (gc/and-conds
-                     [(gc/or-conds
-                       (map (partial qm/text-condition :type) types))
-                      (qm/text-condition :value term)]))
-        query     (qm/query
-                   {:concept-type :autocomplete
-                    :page-size (:page-size opts)
-                    :offset (:offset opts)
-                    :condition condition
-                    :result-fields [:type :value]})
-        results (qe/execute-query context query)]
-    results))
+                    (qm/match :value term)
+                    (qm/match-filter :value term (gc/or-conds (map (partial qm/text-condition :type) types))))
+        query (qm/query {:concept-type :autocomplete
+                         :page-size (:page-size opts)
+                         :offset (:offset opts)
+                         :condition condition
+                         :result-fields [:type :value]})]
+    (qe/execute-query context query)))
