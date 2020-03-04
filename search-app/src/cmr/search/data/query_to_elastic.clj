@@ -116,6 +116,11 @@
   {:provider :provider-id
    :name :service-name})
 
+(defmethod q2e/elastic-field->query-field-mappings :autocomplete
+  [_]
+  {:value :value
+   :type :type})
+
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
   {:authors :author

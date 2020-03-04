@@ -90,6 +90,14 @@
     {:query {:filtered {:query (q/match-all)
                         :filter core-query}}}))
 
+(defmethod query->elastic :autocomplete
+  [query]
+  (let [{:keys [concept-type condition]} (query-expense/order-conditions query)
+        core-query (condition->elastic condition concept-type)]
+    (if (:filter core-query)
+      {:query {:filtered core-query}}
+      {:query core-query})))
+
 (defmulti concept-type->sort-key-map
   "Returns a submaps for the concept type of the sort key fields given by the user to the elastic
   sort field to use. If a sort key is not in this map it means that it can be used directly with
@@ -263,7 +271,6 @@
       (query-field->elastic-field field concept-type)
       min-value max-value (numeric-range-execution-mode) (numeric-range-use-cache) exclusive?))
 
-
   cmr.common_app.services.search.query_model.NumericRangeIntersectionCondition
   (condition->elastic
     [{:keys [min-field max-field min-value max-value]} concept-type]
@@ -318,4 +325,16 @@
   cmr.common_app.services.search.query_model.MatchNoneCondition
   (condition->elastic
     [_ _]
-    {:term {:match_none "none"}}))
+    {:term {:match_none "none"}})
+
+  cmr.common_app.services.search.query_model.MatchCondition
+  (condition->elastic
+   [{:keys [field value]} _]
+   {:match {field value}})
+
+  cmr.common_app.services.search.query_model.MatchFilterCondition
+  (condition->elastic
+   [{:keys [field value filter]} concept-type]
+   (let [filter (condition->elastic filter concept-type)]
+     {:query {:match {field value}}
+      :filter filter})))
