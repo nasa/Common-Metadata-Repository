@@ -77,7 +77,11 @@
                :body {:query query}})))
 
 (defn ^:private bulk-with-url
-  ([conn url operations] (bulk-with-url conn url operations nil))
+  "Construct the bulk URL and form body to specification provided by:
+  https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
+  and perform post."
+  ([conn url operations]
+   (bulk-with-url conn url operations nil))
   ([conn url operations opts]
    (let [bulk-json (map json/encode operations)
          bulk-json (-> bulk-json
