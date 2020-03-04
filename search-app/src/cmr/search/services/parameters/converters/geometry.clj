@@ -2,13 +2,11 @@
   "Contains parameter converters for shapefile parameter"
   (:require
    [cmr.common.log :refer [debug]]
-   [clojure.pprint :as pprint]
    [cmr.search.models.query :as qm]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.point :as point]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.ring-relations :as rr]
-   [cmr.spatial.validation :as v]
    [clojure.math.numeric-tower :as math])
   (:import
    (java.io BufferedReader File FileReader FileOutputStream FileInputStream)
@@ -56,9 +54,9 @@
   are `:boundary-winding` and `:hole-winding`. Accepted values are `:cw` and `:ccw`."
   [^Polygon polygon options]
   (let [boundary-ring (.getExteriorRing polygon)
-        _ (debug (format "BOUNDARY RING: %s" boundary-ring))
+        _ (debug (format "BOUNDARY RING BEFORE FORCE-CCW: %s" boundary-ring))
         boundary-ring (force-ccw-orientation boundary-ring (:boundary-winding options))
-        _ (debug (format "BOUNDARY RING: %s" boundary-ring))
+        _ (debug (format "BOUNDARY RING AFTER FORCE-CCW: %s" boundary-ring))
         num-interior-rings (.getNumInteriorRing polygon)
         interior-rings (if (> num-interior-rings 0)
                          (for [i (range num-interior-rings)]

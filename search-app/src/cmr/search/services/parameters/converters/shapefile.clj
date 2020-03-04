@@ -24,7 +24,6 @@
    (org.geotools.data DataStoreFinder FileDataStoreFinder Query)
    (org.geotools.data.simple SimpleFeatureSource)
    (org.geotools.data.geojson GeoJSONDataStore)
-  ;  (org.geotools.data.kml KMLDataStoreFactory)
    (org.geotools.geometry.jts JTS)
    (org.geotools.kml.v22 KMLConfiguration KML)
    (org.geotools.referencing CRS)
