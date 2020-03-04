@@ -216,8 +216,7 @@
                  (query-field->elastic-field field concept-type)
                  (field->lowercase-field concept-type field))
          values (if case-sensitive? values (map str/lower-case values))]
-     {:terms {field values
-              :execution "plain"}}))
+     {:terms {field values}}))
 
   cmr.common_app.services.search.query_model.BooleanCondition
   (condition->elastic

@@ -4,7 +4,6 @@
    [clj-http.client :as client]
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojurewerkz.elastisch.rest.bulk :as bulk]
    [cmr.common.concepts :as cs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
@@ -268,9 +267,8 @@
       (when elastic-doc
         (let [elastic-doc (merge elastic-doc
                                  {:_id elastic-id
-                                  :_type type
-                                  :_version elastic-version
-                                  :_version_type version-type})]
+                                  :version elastic-version
+                                  :version_type version-type})]
           ;; Return one elastic document for each index we're writing to.
           (util/doall-recursive (mapv #(assoc elastic-doc :_index %) index-names)))))
 
@@ -316,7 +314,7 @@
    (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
      (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
            conn (context->conn context)
-           response (bulk/bulk conn bulk-operations)]
+           response (es-helper/bulk conn bulk-operations)]
       (handle-bulk-index-response response)))))
 
 (defn save-document-in-elastic

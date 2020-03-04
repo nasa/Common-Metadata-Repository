@@ -50,19 +50,13 @@
           elastic-version (:revision-id concept)
           index-name (access-control-index/concept-type->index-name type)
           elastic-doc (parsed-concept->elastic-doc context concept concept)
-          version-type (if (:force-version? options)
-                         ;; "the document will be indexed regardless of the version of the stored
-                         ;; document or if there is no existing document. The given version will be
-                         ;; used as the new version and will be stored with the new document."
-                         "force"
-                         ;; "only index the document if the given version is equal or higher than
-                         ;; the version of the stored document."
-                         "external_gte")
+          ;; "only index the document if the given version is equal or higher than
+          ;; the version of the stored document."
+          version-type "external_gte"
           elastic-doc (merge elastic-doc
                              {:_id concept-id
-                              :_type (name type)
-                              :_version elastic-version
-                              :_version_type version-type})]
+                              :version elastic-version
+                              :version_type version-type})]
       (assoc elastic-doc :_index index-name))
 
     (catch Throwable e

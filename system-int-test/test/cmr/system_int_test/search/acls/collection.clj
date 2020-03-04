@@ -411,7 +411,7 @@
 
       ;; A force reindex all collections will make elastic take the earlier version of the
       ;; collections.
-      (ingest/reindex-all-collections {:force-version true})
+      (ingest/reindex-all-collections {:force-version false})
       (index/wait-until-indexed)
       (d/assert-refs-match [] (search/find-refs :collection {:short-name "short2"}))
       (d/assert-refs-match [coll2-1] (search/find-refs :collection {:short-name "short1"})))))
