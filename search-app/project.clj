@@ -38,7 +38,6 @@
                  [org.geotools/gt-shapefile "23-SNAPSHOT"]
                  [org.geotools/gt-geojsondatastore "23-SNAPSHOT"]
                  [org.geotools.xsd/gt-xsd-kml "23-SNAPSHOT"]
-                 [org.geotools/gt-kml "23-SNAPSHOT"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
                  [metosin/ring-swagger-ui "2.1.4-0"]

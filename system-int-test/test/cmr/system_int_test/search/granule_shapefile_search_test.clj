@@ -2,6 +2,8 @@
   (:require
    [clojure.test :refer :all]
    [clojure.java.io :as io]
+   [cmr.common.log :refer [debug]]
+   [cmr.common.mime-types :as mt]
    [cmr.common.util :as util :refer [are3]]
    [cmr.common-app.test.side-api :as side]
    [cmr.search.services.parameters.converters.shapefile :as shapefile]
@@ -19,15 +21,22 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(defn polygon
+(defn- polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
   The polygon will be closed automatically."
   [& ords]
   (poly/polygon [(apply umm-s/ords->ring ords)]))
 
+(def formats
+  "Shapfile formats to be tested"
+  {
+    "ESRI" {:extension "zip" :mime-type mt/shapefile}
+    "GeoJSON" {:extension "geojson" :mime-type mt/geojson}
+    "KML" {:extension "kml" :mime-type mt/kml}})
+  
 (deftest granule-shapefile-search-test
-  (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
-        geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+  (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
+  (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                                                                                     :EntryTitle "E1"
                                                                                     :ShortName "S1"
                                                                                     :Version "V1"}))
@@ -50,7 +59,8 @@
 
         ;; Lines
         normal-line (make-gran "normal-line" (l/ords->line-string :geodetic [22.681 -8.839, 18.309 -11.426, 22.705 -6.557]))
-        normal-line-cart (make-cart-gran "normal-line-cart" (l/ords->line-string :cartesian [16.439 -13.463,  31.904 -13.607, 31.958 -10.401]))
+        along-am-line (make-gran "along-am-line" (l/ords->line-string :geodetic [-180 0 -180 85]))
+        normal-line-cart (make-cart-gran "normal-line-cart" (l/ords->line-string :cartesian [16.439 -13.463, 31.904 -13.607, 31.958 -10.401]))
 
         ;; Bounding rectangles
         whole-world (make-gran "whole-world" (m/mbr -180 90 180 -90))
@@ -91,7 +101,7 @@
         am-point (make-gran "am-point" (p/point 180 22))]
     (index/wait-until-indexed)
 
-    (testing "Esri ShapefileFailure cases"
+    (testing "ESRI Shapefile Failure cases"
       (are3 [shapefile additional-params regex]
         (is (re-find regex
                      (first (:errors (search/find-refs-with-multi-part-form-post
@@ -112,49 +122,85 @@
         "Missing .shp file"
         "missing_shapefile_shp.zip" {:name "provider" :content "PROV1"} #"Incomplete shapefile: missing .shp file"))
 
-    (testing "Search by ESRI shapefile"
-      (are3 [shapefile items]
-            (let [found (search/find-refs-with-multi-part-form-post
-                         :granule
-                         [{:name "shapefile"
-                           :content (io/file (io/resource (str "shapefiles/" shapefile)))
-                           :mime-type "application/shapefile+zip"}
-                          {:name "provider"
-                           :content "PROV1"}])]
-              (d/assert-refs-match items found))
+    (testing "GeoJSON Failure cases"
+      (are3 [shapefile additional-params regex]
+        (is (re-find regex
+                      (first (:errors (search/find-refs-with-multi-part-form-post
+                                        :granule
+                                        (let [params [{:name "shapefile"
+                                                       :content (io/file (io/resource (str "shapefiles/" shapefile)))
+                                                       :mime-type "application/geo+json"}]]
+                                          (if (seq additional-params)
+                                            (conj params additional-params)
+                                            params)))))))
+                                  
+        "All granules query"
+        "polygon_with_hole.geojson" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
 
-        "Single Polygon box around VA and DC"
-        "box.zip" [whole-world very-wide-cart washington-dc richmond]
+        "Failed to parse GeoJSON file"
+        "invalid_json.geojson" {:name "provider" :content "PROV1"} #"Failed to parse GeoJSON file"))
 
-        "Single Polygon box over North pole"
-        "north_pole_poly.zip" [north-pole touches-np on-np whole-world very-tall-cart]
+    (testing "KML Failure cases"
+      (are3 [shapefile additional-params regex]
+        (is (re-find regex
+                     (first (:errors (search/find-refs-with-multi-part-form-post
+                                       :granule
+                                       (let [params [{:name "shapefile"
+                                                      :content (io/file (io/resource (str "shapefiles/" shapefile)))
+                                                      :mime-type "application/vnd.google-earth.kml+xml"}]]
+                                          (if (seq additional-params)
+                                            (conj params additional-params)
+                                            params)))))))
+                                  
+        "All granules query"
+        "polygon_with_hole.kml" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
 
-        "Single Polygon over Antartica"
-        "antartica.zip" [south-pole touches-sp on-sp whole-world very-tall-cart]
+        "Failed to parse kml file"
+        "invalid.kml" {:name "provider" :content "PROV1"} #"Failed to parse KML file"))
 
-        "Single Polygon over Southern Africa"
-        "southern_africa.zip" [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
+    (doseq [fmt (keys formats)
+            :let [{extension :extension mime-type :mime-type} (get formats fmt)]]
+      (debug (format "%s %s %s" fmt extension mime-type))
+      (testing "Search by shapefile"
+        (are3 [shapefile items]
+              (let [found (search/find-refs-with-multi-part-form-post
+                            :granule
+                            [{:name "shapefile"
+                              :content (io/file (io/resource (str "shapefiles/" shapefile "." extension)))
+                              :mime-type mime-type}
+                             {:name "provider"
+                              :content "PROV1"}])]
+                (d/assert-refs-match items found))
 
-        "Single Polygon around Virgina with hole around DC"
-        "polygon_with_hole.zip" [whole-world very-wide-cart richmond]
+          "Single Polygon box around VA and DC"
+          "box" [whole-world very-wide-cart washington-dc richmond]
 
-        "Single feature, multiple polygons around DC and Richnmond"
-        "multi_poly.zip" [whole-world very-wide-cart washington-dc richmond]
+          "Single Polygon box over North pole"
+          "np_poly" [north-pole touches-np on-np whole-world very-tall-cart along-am-line]
 
-        "Multiple feature, single Polygons around DC and Richnmond"
-        "multi_feature.zip" [whole-world very-wide-cart washington-dc richmond]
-        
-        "Single Polygon, with holes"
-        "test_box_with_holes.zip" [whole-world very-wide-cart richmond]
+          "Single Polygon over Antartica"
+          "antartica" [south-pole touches-sp on-sp whole-world very-tall-cart]
 
-        "Polygon across the antimeridian"
-        "antimeridian.zip" [whole-world very-wide-cart across-am-poly across-am-br am-point]
+          "Single Polygon over Southern Africa"
+          "southern_africa" [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
 
-        "Line near North pole"
-        "np_line.zip" [on-np whole-world]
+          "Single Polygon around Virgina with hole around DC"
+          "polygon_with_hole" [whole-world very-wide-cart richmond]
 
-        "Line from DC to Richmond"
-        "dc_richmond_line.zip" [whole-world very-wide-cart washington-dc richmond]
+          "Single feature, multiple polygons around DC and Richnmond"
+          "multi_poly" [whole-world very-wide-cart washington-dc richmond]
 
-        "Single Point Washington DC"
-        "single_point_dc.zip" [whole-world very-wide-cart washington-dc]))))
+          "Multiple feature, single Polygons around DC and Richnmond"
+          "multi_feature" [whole-world very-wide-cart washington-dc richmond]
+
+          "Polygon across the antimeridian"
+          "antimeridian" [whole-world across-am-poly across-am-br am-point very-wide-cart along-am-line]
+
+          "Line near North pole"
+          "np_line" [on-np whole-world]
+
+          "Line from DC to Richmond"
+          "dc_richmond_line" [whole-world very-wide-cart washington-dc richmond]
+
+          "Single Point Washington DC"
+          "single_point_dc" [whole-world very-wide-cart washington-dc])))))

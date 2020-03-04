@@ -2,6 +2,8 @@
   (:require
     [clojure.test :refer :all]
     [clojure.java.io :as io]
+    [cmr.common.log :refer [debug]]
+    [cmr.common.mime-types :as mt]
     [cmr.common.util :as util :refer [are3]]
     [cmr.common-app.test.side-api :as side]
     [cmr.search.services.parameters.converters.shapefile :as shapefile]
@@ -25,6 +27,12 @@
   order."
   [& ords]
   (poly/polygon [(apply umm-s/ords->ring ords)]))
+
+(def formats
+  "Shapfile formats to be tested"
+  {"ESRI" {:extension "zip" :mime-type mt/shapefile}
+   "GeoJSON" {:extension "geojson" :mime-type mt/geojson}
+   "KML" {:extension "kml" :mime-type mt/kml}})
 
 (defn make-coll
   [coord-sys et & shapes]
@@ -89,49 +97,49 @@
         esri-point (make-coll :geodetic "esri-point" (p/point -80 35))]
     (index/wait-until-indexed)
 
-    (testing "Search by ESRI shapefile"
-      (are3 [shapefile items]
-            (let [found (search/find-refs-with-multi-part-form-post
-                         :collection
-                         [{:name "shapefile"
-                           :content (io/file (io/resource (str "shapefiles/" shapefile)))
-                           :mime-type "application/shapefile+zip"}
-                          {:name "provider"
-                           :content "PROV1"}])]
-              (d/assert-refs-match items found))
+    (doseq [fmt (keys formats)
+            :let [{extension :extension mime-type :mime-type} (get formats fmt)]]
+      (debug (format "%s %s %s" fmt extension mime-type))
+      (testing "Search by shapefile"
+        (are3 [shapefile items]
+              (let [found (search/find-refs-with-multi-part-form-post
+                            :collection
+                            [{:name "shapefile"
+                              :content (io/file (io/resource (str "shapefiles/" shapefile "." extension)))
+                              :mime-type mime-type}
+                             {:name "provider"
+                              :content "PROV1"}])]
+                (d/assert-refs-match items found))
 
-        "Single Polygon box around VA and DC"
-        "box.zip" [whole-world very-wide-cart washington-dc richmond]
+          "Single Polygon box around VA and DC"
+          "box" [whole-world very-wide-cart washington-dc richmond]
 
-        "Single Polygon box over North pole"
-        "north_pole_poly.zip" [north-pole touches-np on-np whole-world very-tall-cart]
+          "Single Polygon box over North pole"
+          "np_poly" [north-pole touches-np on-np whole-world very-tall-cart along-am-line]
 
-        "Single Polygon over Antartica"
-        "antartica.zip" [south-pole touches-sp on-sp whole-world very-tall-cart]
+          "Single Polygon over Antartica"
+          "antartica" [south-pole touches-sp on-sp whole-world very-tall-cart]
 
-        "Single Polygon over Southern Africa"
-        "southern_africa.zip" [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
+          "Single Polygon over Southern Africa"
+          "southern_africa" [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
 
-        "Single Polygon around Virgina with hole around DC"
-        "polygon_with_hole.zip" [whole-world very-wide-cart richmond]
+          "Single Polygon around Virgina with hole around DC"
+          "polygon_with_hole" [whole-world very-wide-cart richmond]
 
-        "Single feature, multiple polygons around DC and Richnmond"
-        "multi-poly.zip" [whole-world very-wide-cart washington-dc richmond]
+          "Single feature, multiple polygons around DC and Richnmond"
+          "multi_poly" [whole-world very-wide-cart washington-dc richmond]
 
-        "Multiple feature, single Polygons around DC and Richnmond"
-        "multi-feature.zip" [whole-world very-wide-cart washington-dc richmond]
-        
-        "Single Polygon, with holes"
-        "test_box_with_holes.zip" [whole-world very-wide-cart richmond]
+          "Multiple feature, single Polygons around DC and Richnmond"
+          "multi_feature" [whole-world very-wide-cart washington-dc richmond]
 
-        "Polygon across the antimeridian"
-        "antimeridian.zip" [whole-world very-wide-cart across-am-poly across-am-br along-am-line am-point]
+          "Polygon across the antimeridian"
+          "antimeridian" [whole-world across-am-poly across-am-br am-point very-wide-cart along-am-line]
 
-        "Line near North pole"
-        "np_line.zip" [on-np whole-world]
+          "Line near North pole"
+          "np_line" [on-np whole-world]
 
-        "Line from DC to Richmond"
-        "dc_richmond_line.zip" [whole-world very-wide-cart washington-dc richmond]
+          "Line from DC to Richmond"
+          "dc_richmond_line" [whole-world very-wide-cart washington-dc richmond]
 
-        "Single Point Washington DC"
-        "single_point_dc.zip" [whole-world very-wide-cart washington-dc]))))
+          "Single Point Washington DC"
+          "single_point_dc" [whole-world very-wide-cart washington-dc])))))
