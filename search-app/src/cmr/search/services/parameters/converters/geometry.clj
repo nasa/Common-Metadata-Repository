@@ -99,7 +99,6 @@
 (defmethod geometry->condition "Point"
   [geometry options]
   (let [shape (point->shape geometry)]
-    (pprint/pprint shape)
     (qm/->SpatialCondition shape)))
 
 (defmethod geometry->condition "LineString"
