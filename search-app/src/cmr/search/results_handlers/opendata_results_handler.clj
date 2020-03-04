@@ -158,13 +158,8 @@
         personnel (json/decode personnel true)
         related-urls  (map #(json/decode % true) related-urls)
         collection-citations (map #(json/decode % true) collection-citations)
-        start-date (when start-date (string/replace (str start-date) #"\+0000" "Z"))
-        end-date (when end-date (string/replace (str end-date) #"\+0000" "Z"))
-        revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))
-        granule-start-date (when granule-start-date
-                             (string/replace (str granule-start-date) #"\+0000" ".000Z"))
-        granule-end-date (when granule-end-date
-                           (string/replace (str granule-end-date) #"\+0000" ".000Z"))]
+        start-date (when start-date (string/replace (str start-date) #"\.000Z" "Z"))
+        end-date (when end-date (string/replace (str end-date) #"\.000Z" "Z"))]
     (merge {:id concept-id
             :concept-id concept-id
             :title entry-title

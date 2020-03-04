@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as http]
+   [clojure.string :as string]
    [clojurewerkz.elastisch.rest :as rest]
    [clojurewerkz.elastisch.rest.document :as doc]
    [clojurewerkz.elastisch.rest.response :refer [not-found? hits-from]]
@@ -74,3 +75,22 @@
                                           (conj doc/optional-delete-query-parameters
                                                 :ignore_unavailable))
                :body {:query query}})))
+
+(defn ^:private bulk-with-url
+  ([conn url operations] (bulk-with-url conn url operations nil))
+  ([conn url operations opts]
+   (let [bulk-json (map json/encode operations)
+         bulk-json (-> bulk-json
+                       (interleave (repeat "\n"))
+                       (string/join))]
+     (rest/post-string conn url
+                       {:body bulk-json
+                        :content-type "application/x-ndjson"
+                        :query-params opts}))))
+
+(defn bulk
+  "Performs a bulk operation"
+  ([conn operations] (bulk conn operations nil))
+  ([conn operations params]
+   (when (not-empty operations)
+     (bulk-with-url conn (rest/bulk-url conn) operations params))))
