@@ -229,10 +229,23 @@
   [])
 
 (defrecord MatchCondition
-  [field value])
+  [
+    ;; The field being searched
+    field
+
+    ;; The value of the field
+    value])
 
 (defrecord MatchFilterCondition
-  [field value filter])
+  [
+    ;; The field being searched
+    field
+
+    ;; The value of the field
+    value
+
+    ;; A filter condition for the match.
+    filter])
 
 (defrecord RelatedItemQueryCondition
   [
