@@ -5,23 +5,37 @@
     [cheshire.core :as json]
     [clojurewerkz.elastisch.rest :as esr]
     [clojurewerkz.elastisch.rest.document :as esd]
+    [cmr.common.log :as log :refer [debug]]
     [cmr.common.util :refer [are3]]
     [cmr.system-int-test.utils.url-helper :as url]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.search-util :as search]))
 
+(def ^:private test-values [{:value "foo" :type "instrument"}
+                            {:value "bar" :type "platform"}
+                            {:value "baaz" :type "instrument"}
+                            {:value "africa" :type "spatial_keyword"}
+                            {:value "antarctica" :type "spatial_keyword"}
+                            {:value "arctic" :type "spatial_keyword"}
+                            {:value "asia" :type "spatial_keyword"}
+                            {:value "australia" :type "spatial_keyword"}
+                            {:value "europe" :type "spatial_keyword"}
+                            {:value "north america" :type "spatial_keyword"}
+                            {:value "south america" :type "spatial_keyword"}
+                            {:value "arctic ocean" :type "spatial_keyword"}
+                            {:value "atlantic ocean" :type "spatial_keyword"}
+                            {:value "pacific ocean" :type "spatial_keyword"}
+                            {:value "indian ocean" :type "spatial_keyword"}])
+
 (defn autocomplete-fixture
   [f]
   (let [conn (esr/connect (url/elastic-root))
-        foo (esd/create conn "1_autocomplete" "suggestion" {:value "foo" :type "instrument"})
-        bar (esd/create conn "1_autocomplete" "suggestion" {:value "bar" :type "platform"})
-        baz (esd/create conn "1_autocomplete" "suggestion" {:value "baaz" :type "instrument"})]
+        documents (map #(esd/create conn "1_autocomplete" "suggestion" %) test-values)]
+    (doseq [doc documents] (debug "ingested " doc))
     (index/wait-until-indexed)
     (f)
-    (esd/delete conn "1_autocomplete" "suggestion" (:_id foo))
-    (esd/delete conn "1_autocomplete" "suggestion" (:_id bar))
-    (esd/delete conn "1_autocomplete" "suggestion" (:_id baz))
+    (doseq [doc documents] (esd/delete conn "1_autocomplete" "suggestion" (:_id doc)))
     (index/wait-until-indexed)))
 
 (use-fixtures :each (join-fixtures
@@ -43,17 +57,24 @@
 
 (deftest autocomplete-response-test
   (testing "response form test"
-     (let [response (search/get-autocomplete-suggestions "q=foo")
-           body (:body response)
-           data (json/parse-string body true)]
-       (is (contains? data :feed))
-       (is (contains? (:feed data) :entry))))
+   (let [response (search/get-autocomplete-suggestions "q=foo")
+         body (:body response)
+         data (json/parse-string body true)]
+     (is (contains? data :feed))
+     (is (contains? (:feed data) :entry))))
 
   (testing "returns CMR-Hits header"
-     (let [response (search/get-autocomplete-suggestions "q=foo")
-           headers (:headers response)]
-       (is (:CMR-Hits headers))
-       (is (:CMR-Took headers)))))
+   (let [response (search/get-autocomplete-suggestions "q=foo")
+         headers (:headers response)]
+     (is (:CMR-Hits headers))
+     (is (:CMR-Took headers))))
+
+  (testing "entries return in descending score order"
+   (let [response (query->json-response-body "q=bar")
+         entries (response-body->entries response)
+         a (first entries)
+         b (second entries)]
+     (is (> (:score a) (:score b))))))
 
 (deftest autocomplete-functionality-test
   (testing "value search"
@@ -68,7 +89,7 @@
     "q=foo" 1
 
     "full value with extra value match"
-    "q=foos" 0
+    "q=foos" 1
 
     "case sensitivity test"
     "q=FOO" 1
@@ -115,19 +136,16 @@
         (is (= expected (count entry)))))
 
     "page size 0"
-    "q=*&page_size=0" 0 3
+    "q=an&page_size=0" 0 9
 
     "page size 1"
-    "q=*&page_size=1" 1 3
+    "q=an&page_size=1" 1 9
 
     "page size 2"
-    "q=*&page_size=2" 2 3
-
-    "page size 3"
-    "q=*&page_size=3" 3 3
+    "q=an&page_size=2" 2 9
 
     "page size 100"
-    "q=*&page_size=100" 3 3))
+    "q=an*&page_size=100" 9 9))
 
   (testing "page_num should default to 1"
    (let [a (as-> (query->json-response-body "q=b") response

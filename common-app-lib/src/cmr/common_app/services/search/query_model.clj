@@ -228,6 +228,25 @@
 (defrecord MatchNoneCondition
   [])
 
+(defrecord MatchCondition
+  [
+    ;; The field being searched
+    field
+
+    ;; The value of the field
+    value])
+
+(defrecord MatchFilterCondition
+  [
+    ;; The field being searched
+    field
+
+    ;; The value of the field
+    value
+
+    ;; A filter condition for the match.
+    filter])
+
 (defrecord RelatedItemQueryCondition
   [
    ;; The concept type being found by the inner condition
@@ -346,6 +365,14 @@
 (def match-all
   (->MatchAllCondition))
 
+(defn match
+  [field value]
+  (->MatchCondition field value))
+
+(defn match-filter
+  ([field value filter]
+  (->MatchFilterCondition field value filter)))
+
 (defn text-condition
   [field query-str]
   (->TextCondition field query-str))
@@ -429,4 +456,6 @@
   StringRangeCondition
   MatchAllCondition
   MatchNoneCondition
+  MatchCondition
+  MatchFilterCondition
   RelatedItemQueryCondition)
