@@ -101,7 +101,7 @@
   "Fixture that starts an instance of elastic in the JVM runs the tests and then shuts it down."
   [f]
   (let [http-port (:port test-config)
-        server (lifecycle/start (elastic-server/create-server http-port 9215 "es_data/indexer_test") nil)]
+        server (lifecycle/start (elastic-server/create-server http-port 9215 "es_data/indexer_test" "error") nil)]
     (reset! context {:system {:db {:config test-config
                                    :conn (esr/connect (str "http://localhost:" http-port))}}})
     (try

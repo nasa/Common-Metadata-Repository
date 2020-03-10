@@ -97,6 +97,9 @@
   [system]
   (update-in system [:apps] set-web-server-options))
 
+(def in-memory-elastic-log-level-atom
+  (atom :info))
+
 (defmulti create-elastic
   "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
   in memory if applicable."
@@ -108,7 +111,8 @@
   (let [http-port (elastic-config/elastic-port)]
     (elastic-server/create-server http-port
                                   (+ http-port 10)
-                                  "es_data/dev_system")))
+                                  "es_data/dev_system"
+                                  (name @in-memory-elastic-log-level-atom))))
 
 (defmethod create-elastic :external
   [_]

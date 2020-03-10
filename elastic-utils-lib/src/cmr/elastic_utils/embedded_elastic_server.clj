@@ -12,21 +12,22 @@
 
 (defn- create-settings
   "Implements the Builder interface in order to configure the elasticsearch settings."
-  [http-port transport-port data-dir]
+  [http-port transport-port data-dir log-level]
   (proxy [ElasticsearchClusterRunner$Builder] []
     (build [index ^Settings$Builder settingsBuilder]
       (.. settingsBuilder
           (put "node.name" "embedded-elastic")
           (put "path.data" data-dir)
+          (put "logger.level" log-level)
           (put "http.port" (str http-port))
           (put "transport.tcp.port" (str transport-port))))))
 
 (defn build-node
   "Build cluster node to run on http-port and transport-port with data-dir."
-  [http-port transport-port data-dir]
+  [http-port transport-port data-dir log-level]
   (let [^ElasticsearchClusterRunner node (ElasticsearchClusterRunner.)]
     (.build
-     (.onBuild node (create-settings http-port transport-port data-dir))
+     (.onBuild node (create-settings http-port transport-port data-dir log-level))
      (-> (ElasticsearchClusterRunner/newConfigs)
          (.numOfNode 1)
          (.useLogger)
@@ -38,6 +39,7 @@
    http-port
    transport-port
    data-dir
+   log-level
    node]
 
 
@@ -46,7 +48,7 @@
   (start
     [this system]
     (debug "Starting elastic server on port" http-port)
-    (let [^ElasticsearchClusterRunner node (build-node http-port transport-port data-dir)]
+    (let [^ElasticsearchClusterRunner node (build-node http-port transport-port data-dir log-level)]
       ;; ensureYellow takes variable arguments. Will not recognize 0-arity call. Must pass array coerced to java.lang.String.
       (.ensureYellow node (into-array java.lang.String []))
       (assoc this :node node)))
@@ -64,7 +66,9 @@
   ([]
    (create-server 9200 9300 "data"))
   ([http-port transport-port data-dir]
-   (->ElasticServer http-port transport-port data-dir nil)))
+   (create-server http-port transport-port data-dir "info"))
+  ([http-port transport-port data-dir log-level]
+   (->ElasticServer http-port transport-port data-dir log-level nil)))
 
 (comment
 
