@@ -65,7 +65,7 @@
 (defn humanizer-key
   "Prefixes a key with the humanizer namespace"
   [key]
-  (keyword "cmr.humanized" (name key)))
+  (keyword "cmr-humanized" (name key)))
 
 (defn- humanizer-matches?
   "Tests whether the given humanizer config applies to parent[key]"

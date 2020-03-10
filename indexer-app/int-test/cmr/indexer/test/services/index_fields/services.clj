@@ -15,11 +15,11 @@
     {:concept-id concept-id
      :native-id native-id
      :entry-title entry-title
-     :entry-title.lowercase (string/lower-case entry-title)
+     :entry-title-lowercase (string/lower-case entry-title)
      :provider-id provider-id
-     :provider-id.lowercase (string/lower-case provider-id)
+     :provider-id-lowercase (string/lower-case provider-id)
      :service-name service-name
-     :service-name.lowercase (string/lower-case service-name)
+     :service-name-lowercase (string/lower-case service-name)
      :keyword "kw1 kw2 kw3"}))
 
 (defn- es-doc-svc-rev-2
@@ -33,11 +33,11 @@
     {:concept-id concept-id
      :native-id native-id
      :entry-title entry-title
-     :entry-title.lowercase (string/lower-case entry-title)
+     :entry-title-lowercase (string/lower-case entry-title)
      :provider-id provider-id
-     :provider-id.lowercase (string/lower-case provider-id)
+     :provider-id-lowercase (string/lower-case provider-id)
      :service-name service-name
-     :service-name.lowercase (string/lower-case service-name)
+     :service-name-lowercase (string/lower-case service-name)
      :keyword "keyword1 keyword2 keyword3"}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

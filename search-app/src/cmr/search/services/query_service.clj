@@ -478,7 +478,7 @@
         filters (if (seq parent-collection-id)
                   (conj filters {:term {:parent-collection-id parent-collection-id}})
                   filters)]
-    {:query {:filtered {:query (esq/match-all)
+    {:query {:bool {:must (esq/match-all)
                         :filter {:and {:filters filters}}}}
      :fields [:concept-id :revision-date :provider-id
               :granule-ur :parent-collection-id]}))

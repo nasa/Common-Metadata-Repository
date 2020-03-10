@@ -3,7 +3,8 @@
   (:require
    [clj-time.format :as f]
    [clojurewerkz.elastisch.rest.document :as doc]
-   [clojurewerkz.elastisch.rest.index :as esi]
+   [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.connect :as esc]))
@@ -15,24 +16,22 @@
     (f/unparse (f/formatters :date-time) date-time)))
 
 (def string-field-mapping
-  {:type "string" :index "not_analyzed"})
+  {:type "keyword"})
 
 (def text-field-mapping
   "Used for analyzed text fields"
-  {:type "string"
-   ; these fields will be split into multiple terms using the analyzer
-   :index "analyzed"
+  {:type "text"
    ; Norms are metrics about fields that elastic can use to weigh certian fields more than
    ; others when computing a document relevance. A typical example is field length - short
    ; fields are weighted more heavily than long feilds. We don't need them for scoring.
-   :omit_norms "true"
+   :norms false
    ; split the text on whitespace, but don't do any stemmming, etc.
    :analyzer "whitespace"
    ; Don't bother storing term positions or term frequencies in this field
    :index_options "docs"})
 
 (def date-field-mapping
-  {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"})
+  {:type "date"})
 
 (def double-field-mapping
   {:type "double"})
@@ -44,22 +43,17 @@
   {:type "integer"})
 
 (def bool-field-mapping
-  {:type "boolean"
-   ;; Cannot use doc values using Elasticsearch 1.6, however we can update the fielddata cache
-   ;; at index time rather than on the first query. See
-   ;; https://www.elastic.co/guide/en/elasticsearch/reference/1.6/fielddata-formats.html and
-   ;; https://www.elastic.co/guide/en/elasticsearch/guide/1.x/preload-fielddata.html
-   :fielddata {:loading "eager"}})
+  {:type "boolean"})
 
 (defn stored
   "modifies a mapping to indicate that it should be stored"
   [field-mapping]
-  (assoc field-mapping :store "yes"))
+  (assoc field-mapping :store true))
 
 (defn not-indexed
   "modifies a mapping to indicate that it should not be indexed and thus is not searchable."
   [field-mapping]
-  (assoc field-mapping :index "no"))
+  (assoc field-mapping :index false))
 
 (defn doc-values
   "Modifies a mapping to indicate that it should use doc values instead of the field data cache
@@ -82,13 +76,10 @@
   ([mapping-name mapping-type docstring mapping-settings properties]
    `(def ~mapping-name
       ~docstring
-      {~mapping-type
-       (merge {:dynamic "strict"
+      (merge {:dynamic "strict"
                :_source {:enabled false}
-               :_all {:enabled false}
-               :_ttl {:enabled true}
                :properties ~properties}
-              ~mapping-settings)})))
+              ~mapping-settings))))
 
 (defmacro defnestedmapping
   "Defines a new nested mapping type for an elasticsearch index. The argument after the
@@ -106,8 +97,6 @@
       (merge ~mapping-settings
              {:type "nested"
               :dynamic "strict"
-              :_source {:enabled false}
-              :_all {:enabled false}
               :properties ~properties}))))
 
 (defn create-index-or-update-mappings
@@ -120,18 +109,18 @@
   * elastic-store - A component containing an elastic connection under the :conn key"
   [index-name index-settings type-name mappings elastic-store]
   (let [conn (:conn elastic-store)]
-    (if (esi/exists? conn index-name)
+    (if (esi-helper/exists? conn index-name)
       (do
         (info (format "Updating %s mappings and settings" index-name))
-        (let [response (esi/update-mapping conn index-name type-name :mapping mappings :ignore_conflicts false)]
+        (let [response (esi-helper/update-mapping conn index-name type-name {:mapping mappings})]
           (when-not (= {:acknowledged true} response)
             (errors/internal-error!
              (str "Unexpected response when updating elastic mappings: " (pr-str response))))))
       (do
         (info (format "Creating %s index" index-name))
-        (esi/create conn index-name :settings {:index index-settings} :mappings mappings)
+        (esi-helper/create conn index-name {:settings {:index index-settings} :mappings mappings})
         (esc/wait-for-healthy-elastic elastic-store)))
-    (esi/refresh conn index-name)))
+    (esi-helper/refresh conn index-name)))
 
 (defmacro try-elastic-operation
   "Handles any Elasticsearch exceptions from the body and converts them to internal errors. We do this
@@ -148,9 +137,9 @@
   "Development time helper function to delete an index and recreate it to empty all data."
   [index-name index-settings type-name mappings elastic-store]
   (let [conn (:conn elastic-store)]
-    (when (esi/exists? conn index-name)
+    (when (esi-helper/exists? conn index-name)
       (info "Deleting the cubby index")
-      (esi/delete conn index-name))
+      (esi-helper/delete conn index-name))
     (create-index-or-update-mappings index-name index-settings type-name mappings elastic-store)))
 
 (defn save-elastic-doc
@@ -170,14 +159,12 @@
    (let [conn (:conn elastic-store)
          {:keys [ttl ignore-conflict? refresh?]} options
          elastic-options (merge {:version version :version_type "external_gte"}
-                                (when ttl
-                                  {:ttl ttl})
                                 ;; Force refresh of the index when specified.
                                 ;; NOTE: This has performance implications and should be used sparingly.
                                 (when refresh?
                                   {:refresh "true"}))
          result (try-elastic-operation
-                 (doc/put conn index-name type-name elastic-id doc elastic-options))]
+                 (es-helper/put conn index-name type-name elastic-id doc elastic-options))]
      (if (:error result)
        (if (= 409 (:status result))
          (if ignore-conflict?
@@ -202,14 +189,14 @@
    (let [elastic-options (if (:refresh? options)
                            {:refresh "true"}
                            {})]
-     (doc/delete (:conn elastic-store) index-name type-name id elastic-options))))
+     (es-helper/delete (:conn elastic-store) index-name type-name id elastic-options))))
 
 (defn delete-by-query
   "Delete document that match the given query"
   [elastic-store index-name type-name query]
-  (doc/delete-by-query (:conn elastic-store) index-name type-name query))
+  (es-helper/delete-by-query (:conn elastic-store) index-name type-name query))
 
 (defn create-index-alias
   "Creates the alias for the index."
   [conn index alias]
-  (esi/update-aliases conn [{:add {:index index :alias alias}}]))
+  (esi-helper/update-aliases conn [{:add {:index index :alias alias}}]))

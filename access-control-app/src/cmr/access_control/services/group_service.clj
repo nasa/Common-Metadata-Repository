@@ -201,8 +201,9 @@
    (if-let [concept-id (->> (search-for-groups
                               context {:name (:name group)
                                        :provider (get group :provider-id SYSTEM_PROVIDER_ID)})
-                            :results
-                            :items
+                            :hits
+                            :hits
+                            :_source
                             (some :concept_id))]
 
      ;; The group exists. Check if its latest revision is a tombstone.

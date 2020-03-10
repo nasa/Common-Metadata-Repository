@@ -350,13 +350,10 @@
   sets and index-set docs."
   [context]
   (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
-        idx-mapping-type (first (keys mapping))
-        index-set-ids (map
-                        first
-                        (es/get-index-set-ids
-                          (context->es-store context)
-                          index-name
-                          idx-mapping-type))]
+        index-set-ids (es/get-index-set-ids
+                       (context->es-store context)
+                       index-name
+                       "_doc")]
     ;; delete indices assoc with index-set
     (doseq [id index-set-ids]
       (delete-index-set context (str id)))))

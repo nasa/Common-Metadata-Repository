@@ -36,7 +36,7 @@
   :filter {...}
   }
   ]
-  :query {:filtered {:query {:match-all {}}
+  :query {:bool {:must {:match-all {}}
   :filter primary-query}}}}
 
   See http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html
@@ -58,7 +58,7 @@
    :spatial-keyword 1.1
    :temporal-keyword 1.1
    :version-id 1.0
-   :entry-title 2.2 
+   :entry-title 2.2
    :provider 1.0
    :two-d-coord-name 1.0
    :processing-level-id 1.0
@@ -123,7 +123,7 @@
   "Create an or filter containing the science keyword fields related to keyword searches"
   [keywd]
   (let [processed-keyword (process-keyword keywd)]
-    (map (fn [field] {:regexp {(keyword (str "science-keywords." (name field) ".lowercase"))
+    (map (fn [field] {:regexp {(keyword (str "science-keywords." (name field) "-lowercase"))
                                processed-keyword}})
          [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])))
 
@@ -167,52 +167,52 @@
   [keywords specified-boosts]
   (let [get-boost-fn #(get-boost specified-boosts %)]
     [;; long-name
-     (keywords->regex-filter :long-name.lowercase keywords (get-boost-fn :short-name))
+     (keywords->regex-filter :long-name-lowercase keywords (get-boost-fn :short-name))
      ;; short-name
-     (keywords->boosted-exact-match-filter :short-name.lowercase keywords (get-boost-fn :short-name))
+     (keywords->boosted-exact-match-filter :short-name-lowercase keywords (get-boost-fn :short-name))
      ;; entry-id
-     (keywords->boosted-exact-match-filter :entry-id.lowercase keywords (get-boost-fn :entry-id))
+     (keywords->boosted-exact-match-filter :entry-id-lowercase keywords (get-boost-fn :entry-id))
 
      ;; project (ECHO campaign)
-     (keywords->name-filter :project-ln.lowercase :project-sn2.lowercase keywords
+     (keywords->name-filter :project-ln-lowercase :project-sn2-lowercase keywords
                             (get-boost-fn :project))
      ;; platform
-     (keywords->name-filter :platform-ln.lowercase :platform-sn.lowercase keywords
+     (keywords->name-filter :platform-ln-lowercase :platform-sn-lowercase keywords
                             (get-boost-fn :platform))
      ;; instrument
-     (keywords->name-filter :instrument-ln.lowercase :instrument-sn.lowercase keywords
+     (keywords->name-filter :instrument-ln-lowercase :instrument-sn-lowercase keywords
                             (get-boost-fn :instrument))
      ;; science keywords
      (keywords->sk-filter keywords (get-boost-fn :science-keywords))
      ;; spatial-keyword
-     (keywords->boosted-exact-match-filter :spatial-keyword.lowercase keywords
+     (keywords->boosted-exact-match-filter :spatial-keyword-lowercase keywords
                                            (get-boost-fn :spatial-keyword))
      ;; temporal-keyword
-     (keywords->boosted-exact-match-filter :temporal-keyword.lowercase keywords
+     (keywords->boosted-exact-match-filter :temporal-keyword-lowercase keywords
                                            (get-boost-fn :temporal-keyword))
      ;; version-id
-     (keywords->boosted-exact-match-filter :version-id.lowercase keywords
+     (keywords->boosted-exact-match-filter :version-id-lowercase keywords
                                            (get-boost-fn :version-id))
 
      ;; entry-title
-     (keywords->regex-filter :entry-title.lowercase keywords
+     (keywords->regex-filter :entry-title-lowercase keywords
                              (get-boost-fn :entry-title))
 
      ;; doi
-     (keywords->boosted-exact-match-filter :doi.lowercase keywords
+     (keywords->boosted-exact-match-filter :doi-lowercase keywords
                                            (get-boost-fn :doi))
      ;; provider-id
-     (keywords->boosted-exact-match-filter :provider-id.lowercase keywords
+     (keywords->boosted-exact-match-filter :provider-id-lowercase keywords
                                            (get-boost-fn :provider))
 
      ;; two-d-coord-name
-     (keywords->boosted-exact-match-filter :two-d-coord-name.lowercase keywords
+     (keywords->boosted-exact-match-filter :two-d-coord-name-lowercase keywords
                                            (get-boost-fn :two-d-coord-name))
 
      ;; processing-level-id
-     (keywords->boosted-exact-match-filter :processing-level-id.lowercase keywords
+     (keywords->boosted-exact-match-filter :processing-level-id-lowercase keywords
                                            (get-boost-fn :processing-level-id))
 
      ;; data-center
-     (keywords->boosted-exact-match-filter :data-center.lowercase keywords
+     (keywords->boosted-exact-match-filter :data-center-lowercase keywords
                                            (get-boost-fn :data-center))]))

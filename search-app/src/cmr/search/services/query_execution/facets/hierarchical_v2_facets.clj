@@ -17,7 +17,7 @@
 (defn- nested-fields-mappings
   "Returns nested field mappings for the given field, ignoring humanizer suffixes"
   [field]
-  (let [stripped-field (string/replace (string/replace (name field) #"-h$" "") #"\.humanized$" "")]
+  (let [stripped-field (string/replace (string/replace (name field) #"-h$" "") #"\-humanized$" "")]
     (condp = stripped-field
       "variables" nested-field/variable-subfields
       "temporal-facet" nested-field/temporal-facet-subfields

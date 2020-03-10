@@ -1,0 +1,11 @@
+/* Elastic painless script to round the community usage to the nearest binSize.
+   Round to 2 decimal places to avoid slight differences from math, which would defeat
+   the purpose of the script.
+*/
+
+def binnedScore = 0;
+if (doc['usage-relevancy-score'].size() > 0)
+{
+binnedScore = params.binSize * (double)Math.round(doc['usage-relevancy-score'].value / params.binSize);
+}
+Math.round(binnedScore * 100.0)/100.0;

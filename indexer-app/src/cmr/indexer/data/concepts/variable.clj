@@ -15,7 +15,7 @@
   [quantity]
   (let [value (:Value quantity)]
     {:quantity value
-     :quantity.lowercase (util/safe-lowercase value)}))
+     :quantity-lowercase (util/safe-lowercase value)}))
 
 (defn- measurement-identifier->elastic-doc
   "Converts a measurement identifier into the portion going in an elastic document for indexing."
@@ -24,9 +24,9 @@
          object :MeasurementObject
          quantities :MeasurementQuantities} measurement-identifier
         base-doc {:contextmedium context-medium
-                  :contextmedium.lowercase (util/safe-lowercase context-medium)
+                  :contextmedium-lowercase (util/safe-lowercase context-medium)
                   :object object
-                  :object.lowercase (util/safe-lowercase object)}]
+                  :object-lowercase (util/safe-lowercase object)}]
     (if (seq quantities)
       (map #(merge base-doc (measurement-quantity->elastic-doc %)) quantities)
       [base-doc])))
@@ -54,13 +54,13 @@
        :concept-seq-id concept-seq-id
        :deleted deleted
        :variable-name variable-name
-       :variable-name.lowercase (string/lower-case variable-name)
+       :variable-name-lowercase (string/lower-case variable-name)
        :measurement measurement
-       :measurement.lowercase (string/lower-case measurement)
+       :measurement-lowercase (string/lower-case measurement)
        :provider-id provider-id
-       :provider-id.lowercase (string/lower-case provider-id)
+       :provider-id-lowercase (string/lower-case provider-id)
        :native-id native-id
-       :native-id.lowercase (string/lower-case native-id)
+       :native-id-lowercase (string/lower-case native-id)
        :keyword keyword-values
        :user-id user-id
        :revision-date revision-date}
@@ -69,17 +69,17 @@
        :concept-seq-id concept-seq-id
        :deleted deleted
        :variable-name variable-name
-       :variable-name.lowercase (string/lower-case variable-name)
+       :variable-name-lowercase (string/lower-case variable-name)
        :alias alias
-       :alias.lowercase (util/safe-lowercase alias)
+       :alias-lowercase (util/safe-lowercase alias)
        :measurement measurement
-       :measurement.lowercase (string/lower-case measurement)
+       :measurement-lowercase (string/lower-case measurement)
        :instrument instrument
-       :instrument.lowercase (string/lower-case instrument)
+       :instrument-lowercase (string/lower-case instrument)
        :provider-id provider-id
-       :provider-id.lowercase (string/lower-case provider-id)
+       :provider-id-lowercase (string/lower-case provider-id)
        :native-id native-id
-       :native-id.lowercase (string/lower-case native-id)
+       :native-id-lowercase (string/lower-case native-id)
        :keyword keyword-values
        :user-id user-id
        :revision-date revision-date
@@ -116,10 +116,10 @@
         {:keys [variable-name measurement]} extra-fields
         {:keys [originator-id data]} variable-association]
     {:measurement measurement
-     :measurement.lowercase (string/lower-case measurement)
+     :measurement-lowercase (string/lower-case measurement)
      :variable variable-name
-     :variable.lowercase (string/lower-case variable-name)
-     :originator-id.lowercase  (util/safe-lowercase originator-id)}))
+     :variable-lowercase (string/lower-case variable-name)
+     :originator-id-lowercase  (util/safe-lowercase originator-id)}))
 
 (defn variable-associations->elastic-doc
   "Converts the variable association into the portion going in the collection elastic document."
@@ -132,10 +132,10 @@
         measurements (map :measurement variable-fields)]
     {:has-variables (some? (seq variable-concepts))
      :variable-names variable-names
-     :variable-names.lowercase (map string/lower-case variable-names)
+     :variable-names-lowercase (map string/lower-case variable-names)
      :variable-concept-ids variable-concept-ids
      :variable-native-ids variable-native-ids
-     :variable-native-ids.lowercase (map string/lower-case variable-native-ids)
+     :variable-native-ids-lowercase (map string/lower-case variable-native-ids)
      :measurements measurements
-     :measurements.lowercase (map string/lower-case measurements)
+     :measurements-lowercase (map string/lower-case measurements)
      :variables (map variable-concept->elastic-doc variable-concepts)}))

@@ -19,14 +19,14 @@
 (def collection-facets-v2-params->elastic-fields
   "Defines the mapping of the base search parameters for the v2 facets fields to its field names
    in elasticsearch."
-  {:science-keywords :science-keywords.humanized
-   :platform :platform-sn.humanized2
-   :instrument :instrument-sn.humanized2
-   :data-center :organization.humanized2
-   :project :project-sn.humanized2
-   :processing-level-id :processing-level-id.humanized2
+  {:science-keywords :science-keywords-humanized
+   :platform :platform-sn-humanized2
+   :instrument :instrument-sn-humanized2
+   :data-center :organization-humanized2
+   :project :project-sn-humanized2
+   :processing-level-id :processing-level-id-humanized2
    :variables :variables
-   :granule-data-format :granule-data-format.humanized})
+   :granule-data-format :granule-data-format-humanized})
 
 (defmethod v2-facets/facets-v2-params->elastic-fields :collection
   [_]

@@ -1,5 +1,5 @@
 (ns cmr.indexer.data.bulk
-  "Implementation of elastisch bulk index preparation that supports _version and _version_type.
+  "Implementation of elastisch bulk index preparation that supports version and version_type.
   The origninal implementation is in clojurewerkz.elastisch.rest.bulk namespace.")
 
 (def ^:private special-operation-keys
@@ -10,9 +10,8 @@
    :_routing
    :_timestamp
    :_ttl
-   :_type
-   :_version
-   :_version_type])
+   :version
+   :version_type])
 
 (defn index-operation
   "Takes a document map and extracts the keys/values related to indexing instructions and

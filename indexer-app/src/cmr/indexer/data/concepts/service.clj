@@ -35,11 +35,11 @@
        :revision-id revision-id
        :deleted deleted
        :service-name service-name
-       :service-name.lowercase (string/lower-case service-name)
+       :service-name-lowercase (string/lower-case service-name)
        :provider-id provider-id
-       :provider-id.lowercase (string/lower-case provider-id)
+       :provider-id-lowercase (string/lower-case provider-id)
        :native-id native-id
-       :native-id.lowercase (string/lower-case native-id)
+       :native-id-lowercase (string/lower-case native-id)
        :keyword keyword-values
        :user-id user-id
        :revision-date revision-date}
@@ -47,13 +47,13 @@
        :revision-id revision-id
        :deleted deleted
        :service-name service-name
-       :service-name.lowercase (string/lower-case service-name)
+       :service-name-lowercase (string/lower-case service-name)
        :long-name long-name
-       :long-name.lowercase (string/lower-case long-name)
+       :long-name-lowercase (string/lower-case long-name)
        :provider-id provider-id
-       :provider-id.lowercase (string/lower-case provider-id)
+       :provider-id-lowercase (string/lower-case provider-id)
        :native-id native-id
-       :native-id.lowercase (string/lower-case native-id)
+       :native-id-lowercase (string/lower-case native-id)
        :keyword keyword-values
        :user-id user-id
        :revision-date revision-date
@@ -125,7 +125,7 @@
         service-names (map #(get-in % [:extra-fields :service-name]) service-concepts)
         service-concept-ids (map :concept-id service-concepts)]
     {:service-names service-names
-     :service-names.lowercase (map string/lower-case service-names)
+     :service-names-lowercase (map string/lower-case service-names)
      :service-concept-ids service-concept-ids
      :has-formats (boolean (some #(has-formats? context %) service-concepts))
      :has-spatial-subsetting (boolean (some #(has-spatial-subsetting? context %) service-concepts))

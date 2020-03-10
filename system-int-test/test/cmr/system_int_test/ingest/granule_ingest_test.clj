@@ -118,7 +118,7 @@
                                          io/resource
                                          slurp
                                          edn/read-string)
-        actual-granule-index-fields (:properties (index-set/granule-mapping :granule))]
+        actual-granule-index-fields (:properties index-set/granule-mapping)]
     (is (= allowed-granule-index-fields actual-granule-index-fields))))
 
 ;; Verify a new granule is ingested successfully.

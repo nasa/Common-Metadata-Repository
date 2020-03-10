@@ -65,7 +65,7 @@
   "A helper for converting elastic results into metadata results."
   [context query elastic-results]
   (let [{:keys [concept-type result-format result-features]} query
-        hits (get-in elastic-results [:hits :total])
+        hits (get-in elastic-results [:hits :total :value])
         scroll-id (:_scroll_id elastic-results)
         timed-out (:timed_out elastic-results)
         elastic-matches (get-in elastic-results [:hits :hits])

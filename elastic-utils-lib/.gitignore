@@ -9,4 +9,5 @@ pom.xml.asc
 /.nrepl-port
 /es_data
 test2junit
+/resources/docker/data
 build.xml

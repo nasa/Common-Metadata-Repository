@@ -7,7 +7,7 @@
    :cmr-common-app-lib "0.1.0-SNAPSHOT"
    :cmr-common-lib "0.1.1-SNAPSHOT"
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
-   :cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
+   ;:cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
    :cmr-indexer-app "0.1.0-SNAPSHOT"
    :cmr-ingest-app "0.1.0-SNAPSHOT"
    :cmr-message-queue-lib "0.1.0-SNAPSHOT"
@@ -54,8 +54,6 @@
                [ring/ring-codec]]
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            [org.clojure/clojure "1.10.0"]
-                           ;; Add groovy to support groovy scripting in elastic
-                           [org.codehaus.groovy/groovy-all "2.4.0"]
                            [ring/ring-codec "1.1.1"]]
                   project-dependencies)
   :plugins [[lein-environ "1.1.0"]
