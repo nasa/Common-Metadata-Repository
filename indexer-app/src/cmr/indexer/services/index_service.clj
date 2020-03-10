@@ -32,10 +32,12 @@
    [cmr.message-queue.services.queue :as queue]
    [cmr.redis-utils.redis :as redis]
    [cmr.transmit.echo.rest :as rest]
+   [cmr.transmit.kms :as kms]
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.transmit.metadata-db2 :as meta-db2]
    [cmr.transmit.search :as search]
-   [cmr.umm.umm-core :as umm]))
+   [cmr.umm.umm-core :as umm]
+   [cmr.indexer.data.concepts.collection.humanizer :as humanizer]))
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
@@ -174,6 +176,119 @@
 
 (def REINDEX_BATCH_SIZE 2000)
 
+(defn- suggestion-doc
+  [collection-id key-name value-map]
+  ; We want to pull Science Keywords from KMS because they are controlled
+  (when-not (= key-name "science-keywords")
+   (map (fn [value]
+         {:type key-name
+          :value (val value)
+          :field-name (name (key value))
+          :_index "1_autocomplete"
+          :_type "suggestion"})
+       (seq value-map))))
+
+(defn- get-suggestion-docs
+  "Given the humanized fields from a collection, assemble elastic doc for each
+  value available for indexing into elasticsearch"
+  [humanized-fields concept-id]
+  (for [humanized-field humanized-fields
+        :let [key (key humanized-field)
+              key-name (-> key
+                           name
+                           (s/replace #"(\.humanized2|\.humanized|-sn|-id)" ""))
+              value-map (as-> humanized-field h
+                              (val h)
+                              (map util/remove-nil-keys h)
+                              (map #(dissoc % :priority) h))
+              suggestion-docs (->> value-map
+                                   (map #(suggestion-doc concept-id key-name %))
+                                   (remove nil?))]]
+    suggestion-docs))
+
+(defn- positions
+  "Return a map of the index of each item that matches the predicate"
+  [pred coll]
+  (keep-indexed (fn [idx x]
+                  (when (pred x)
+                    idx))
+                coll))
+
+(defn- science-keywords->elastic-docs
+  "Convert hierarchical science-keywords to colon-separated elastic docs for indexing"
+  [science-keywords keyword-hierarchy]
+  (for [sk-map science-keywords
+         :let [values (->> keyword-hierarchy
+                           (map #(get sk-map %))
+                           (remove nil?))
+               ; take the leaf keyword and store it as the field name
+               terminal-key (->> keyword-hierarchy
+                                 (map #(get sk-map %))
+                                 (positions nil?)
+                                 first
+                                 (nth keyword-hierarchy)
+                                 name)]]
+     {:type "science-keywords"
+       :value (s/join ":" values)
+       :field terminal-key
+       :_index "1_autocomplete"
+       :_type "suggestion"}))
+
+(defn- get-science-keyword-elastic-docs
+  "Fetch science keywords and marshall them into indexable format"
+  [context]
+  (let [science-keywords (map #(dissoc % :uuid)
+                              (kms/get-keywords-for-keyword-scheme
+                               context :science-keywords))
+        keyword-hierarchy [:topic :category :variable-level-1 :variable-level-2
+                           :variable-level-3 :detailed-variable]]
+    (science-keywords->elastic-docs science-keywords keyword-hierarchy)))
+
+
+(defn- reindex-science-keyword-suggestions
+  "Reindex all science keywords for the suggestion index"
+  [context]
+  (let [science-keyword-docs (get-science-keyword-elastic-docs context)]
+    (bulk-index context science-keyword-docs {:all-revisions-index? false
+                                              :force-version? false})))
+
+(defn- collection->suggestion-doc
+  "Convert collection concept metadata to UMM-C and pull facet fields
+  to be indexed as autocomplete suggestion doc"
+  [context collection]
+  (let [concept-id (:concept-id collection)
+        parsed-concept (cp/parse-concept context collection)
+        humanized-fields (humanizer/collection-humanizers-elastic context parsed-concept)
+        suggestion-docs (get-suggestion-docs humanized-fields concept-id)]
+    (flatten suggestion-docs)))
+
+
+(defn- reindex-suggestion-for-provider
+  "Reindex autocomplete suggestion for a given provider"
+  [context provider-id]
+  (info "Reindexing latest autocomplete suggestions for provider" provider-id)
+  (let [latest-collection-batches (meta-db/find-in-batches
+                                    context
+                                    :collection
+                                    REINDEX_BATCH_SIZE
+                                    {:provider-id provider-id :latest true})
+        latest-suggestion-batches (flatten
+                                   (map #(collection->suggestion-doc
+                                          context %)
+                                       (first latest-collection-batches)))]
+    (bulk-index context latest-suggestion-batches {:all-revisions-index? false
+                                                   :force-version? false})))
+
+(defn reindex-autocomplete-suggestions
+  "Reindexes all autocomplete suggestions in the providers given."
+  [context]
+  (let [provider-ids (meta-db/get-providers context)]
+    (reindex-science-keyword-suggestions context)
+
+    (doseq [provider-id provider-ids]
+     (reindex-suggestion-for-provider context provider-id))))
+
+
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
 
@@ -200,6 +315,7 @@
      ;; Redis to indicate to indexers that they should fetch the latest ACLs. Without expiring
      ;; these here we'll think we have the latest.
      (acl-fetcher/expire-consistent-cache-hashes context))
+   (reindex-science-keyword-suggestions context)
 
    (doseq [provider-id provider-ids]
      (when (or (nil? all-revisions-index?) (not all-revisions-index?))
