@@ -263,7 +263,7 @@
     (flatten suggestion-docs)))
 
 
-(defn- reindex-suggestion-for-provider
+(defn- reindex-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
   [context provider-id]
   (info "Reindexing latest autocomplete suggestions for provider" provider-id)
@@ -286,7 +286,7 @@
     (reindex-science-keyword-suggestions context)
 
     (doseq [provider-id provider-ids]
-     (reindex-suggestion-for-provider context provider-id))))
+     (reindex-suggestions-for-provider context provider-id))))
 
 
 (defn reindex-provider-collections
