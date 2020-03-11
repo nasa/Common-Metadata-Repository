@@ -224,13 +224,19 @@
                ; take the leaf keyword and store it as the field name
                terminal-key (->> keyword-hierarchy
                                  (map #(get sk-map %))
-                                 (positions nil?)
-                                 first
-                                 (nth keyword-hierarchy)
-                                 name)]]
+                                 (positions nil?))
+               ; no nil items in `terminal-key` simply means that there were no
+               ; keys in `keyword-hierarchy` that were not present in the
+               ; science-keywords object
+               keyword-field (if (empty? terminal-key)
+                               (last keyword-hierarchy)
+                               (->> terminal-key
+                                    first
+                                    (nth keyword-hierarchy)
+                                    name))]]
      {:type "science-keywords"
        :value (s/join ":" values)
-       :field terminal-key
+       :field keyword-field
        :_index "1_autocomplete"
        :_type "suggestion"}))
 
