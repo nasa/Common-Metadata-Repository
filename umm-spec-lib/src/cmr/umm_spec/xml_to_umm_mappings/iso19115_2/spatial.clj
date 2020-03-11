@@ -6,7 +6,7 @@
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
    [cmr.spatial.encoding.gmd :as gmd]
-   [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.iso19115-2-util :as iso-util]
    [cmr.umm-spec.migration.spatial-extent-migration :as sp-ext-mg]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
@@ -17,8 +17,13 @@
   (str "/gmi:MI_Metadata/gmd:referenceSystemInfo/gmd:MD_ReferenceSystem"
        "/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString"))
 
+(def spatial-extent-xpath
+  (str "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification"
+       "/gmd:extent/gmd:EX_Extent[@id='boundingExtent']"))
+
 (def geographic-element-xpath
-  (str iso/extent-xpath "/gmd:geographicElement"))
+  (str spatial-extent-xpath
+       "/gmd:geographicElement"))
 
 (def orbit-string-xpath
   (let [id-xpath "gmd:EX_GeographicDescription/gmd:geographicIdentifier/gmd:MD_Identifier"]
@@ -329,18 +334,19 @@
      {:Geometry (parse-geometry doc extent-info sanitize?)
       :ZoneIdentifier (value-of doc zone-identifier-xpath)
       :ResolutionAndCoordinateSystem (util/remove-nil-keys
-                                      {:Description (iso/safe-trim description)
+                                      {:Description (iso-util/safe-trim description)
                                        :GeodeticModel (parse-geodetic-model doc)
                                        :LocalCoordinateSystem (parse-local-coord-sys doc)
                                        :HorizontalDataResolution (group-resolutions (parse-horizontal-data-resolutions doc))})})))
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from ISO XML document."
-  [doc extent-info sanitize?]
-  {:SpatialCoverageType (get extent-info "SpatialCoverageType")
-   :GranuleSpatialRepresentation (or (get extent-info "SpatialGranuleSpatialRepresentation")
-                                     (when sanitize? "NO_SPATIAL"))
-   :HorizontalSpatialDomain (parse-horizontal-spatial-domain doc extent-info sanitize?)
-   :VerticalSpatialDomains (spatial-conversion/drop-invalid-vertical-spatial-domains
-                            (parse-vertical-domains doc))
-   :OrbitParameters (parse-orbit-parameters doc)})
+  [doc sanitize?]
+  (let [extent-info (iso-util/get-extent-info-map doc spatial-extent-xpath)]
+    {:SpatialCoverageType (get extent-info "SpatialCoverageType")
+     :GranuleSpatialRepresentation (or (get extent-info "SpatialGranuleSpatialRepresentation")
+                                       (when sanitize? "NO_SPATIAL"))
+     :HorizontalSpatialDomain (parse-horizontal-spatial-domain doc extent-info sanitize?)
+     :VerticalSpatialDomains (spatial-conversion/drop-invalid-vertical-spatial-domains
+                              (parse-vertical-domains doc))
+     :OrbitParameters (parse-orbit-parameters doc)}))
