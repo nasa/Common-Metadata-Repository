@@ -96,12 +96,8 @@
   (let [{short-name :ShortName long-name :LongName} record]
     (if (seq long-name) (str short-name keyword-separator-join long-name) short-name)))
 
-(def extent-xpath
-  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent[@id='boundingExtent']")
-
-(def extent-alt-xpath
-  (str "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent"
-       "/gmd:EX_Extent[@id='boundingExtent']/gmd:geographicElement"
+(def partial-spatial-extent-alt-xpath
+  (str "/gmd:geographicElement"
        "/gmd:EX_GeographicDescription[@id='GranuleSpatialRepresentation']"
        "/gmd:geographicIdentifier/gmd:MD_Identifier"))
 
@@ -130,12 +126,12 @@
 (defn get-extent-info-map
   "Returns a map of equal-separated pairs from the comma-separated list in the ISO document's extent
   description element."
-  [doc]
-  (let [[extent-el] (select doc extent-xpath)
+  [doc spatial-extent-xpath]
+  (let [[extent-el] (select doc spatial-extent-xpath)
         extent-info-map (parse-key-val-str (value-of extent-el "gmd:description/gco:CharacterString"))]
     (if (get extent-info-map "SpatialGranuleSpatialRepresentation")
       extent-info-map
-      (let [[extent-alt-el] (select doc extent-alt-xpath)]
+      (let [[extent-alt-el] (select doc (str spatial-extent-xpath partial-spatial-extent-alt-xpath))]
         (merge extent-info-map
                {"SpatialGranuleSpatialRepresentation"
                 (value-of extent-alt-el "gmd:code/gco:CharacterString")})))))

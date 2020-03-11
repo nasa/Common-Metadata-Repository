@@ -5,6 +5,7 @@
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.iso19115-2-util :as iso-util]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as iso-19115-2-spatial]))
 
 (def bounding-rectangles-xpath-str
@@ -29,10 +30,11 @@
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from SMAP ISO data identifier XML document."
-  [doc data-id-el sanitize?]
+  [doc data-id-el spatial-extent-xpath sanitize?]
   (if-let [bounding-rectangles (parse-bounding-rectangles data-id-el)]
     {:SpatialCoverageType "HORIZONTAL"
-     :GranuleSpatialRepresentation "GEODETIC"
+     :GranuleSpatialRepresentation (or (get (iso-util/get-extent-info-map doc spatial-extent-xpath) "SpatialGranuleSpatialRepresentation")
+                                       "GEODETIC")
      :HorizontalSpatialDomain {:Geometry {:CoordinateSystem "GEODETIC"
                                           :BoundingRectangles bounding-rectangles}}
      :VerticalSpatialDomains (spatial-conversion/drop-invalid-vertical-spatial-domains

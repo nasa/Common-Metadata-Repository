@@ -221,7 +221,6 @@
   (let [md-data-id-el (first (select doc md-data-id-base-xpath))
         citation-el (first (select doc citation-base-xpath))
         id-el (first (select doc identifier-base-xpath))
-        extent-info (iso-util/get-extent-info-map doc)
         alt-xpath-options {:plat-alt-xpath platform-alternative-xpath
                            :inst-alt-xpath instrument-alternative-xpath}
         [abstract version-description] (parse-abstract-version-description md-data-id-el sanitize?)]
@@ -248,7 +247,7 @@
       :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
       :DataLanguage (char-string-value md-data-id-el "gmd:language")
       :ISOTopicCategories (iso-topic-categories/parse-iso-topic-categories doc "")
-      :SpatialExtent (spatial/parse-spatial doc extent-info sanitize?)
+      :SpatialExtent (spatial/parse-spatial doc sanitize?)
       :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
       :TemporalExtents (or (seq (parse-temporal-extents doc md-data-id-el))
                            (when sanitize? su/not-provided-temporal-extents))
