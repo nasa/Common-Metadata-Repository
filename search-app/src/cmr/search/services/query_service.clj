@@ -273,7 +273,7 @@
                                                       :concept-id concept-id
                                                       :result-format result-format})
           results (qe/execute-query context query)]
-      (when (zero? (:hits results))
+      (when (zero? (get-in results [:hits :value]))
         (throw-id-not-found concept-id))
       {:results (common-search/single-result->response context query results)
        :result-format result-format})
