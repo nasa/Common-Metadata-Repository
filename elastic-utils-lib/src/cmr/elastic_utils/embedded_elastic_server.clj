@@ -20,6 +20,7 @@
           (put "path.data" data-dir)
           (put "logger.level" log-level)
           (put "http.port" (str http-port))
+          (put "indices.breaker.total.use_real_memory" "false")
           (put "transport.tcp.port" (str transport-port))))))
 
 (defn build-node

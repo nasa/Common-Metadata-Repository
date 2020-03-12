@@ -9,26 +9,27 @@
 */
 
 def totalOverlap = 0;
-def sortedCollectionRanges = [];
-if (doc['temporal-ranges'].size() > 0)
+List sortedCollectionRanges = new ArrayList();
+for (date in doc['temporal-ranges'])
 {
-  sortedCollectionRanges = doc['temporal-ranges'].value.toSorted();
+  sortedCollectionRanges.add(date);
 }
+sortedCollectionRanges.sort((a, b) -> a.isAfter(b) ? 1 : a.isEqual(b) ? 0 : -1);
 
 for (range in params.temporalRanges)
 {
   for (int i = 0; i < sortedCollectionRanges.size(); i+= 2)
   {
      def overlapStartDate = range.start_date;
-     if (sortedCollectionRanges[i] > overlapStartDate)
+     if (sortedCollectionRanges.get(i) > overlapStartDate)
      {
-       overlapStartDate = sortedCollectionRanges[i];
+       overlapStartDate = sortedCollectionRanges.get(i);
      }
 
      def overlapEndDate = range.end_date;
-     if ((i + 1) < sortedCollectionRanges.size() && sortedCollectionRanges[i+1] < overlapEndDate)
+     if ((i + 1) < sortedCollectionRanges.size() && sortedCollectionRanges.get(i+1) < overlapEndDate)
      {
-       overlapEndDate = sortedCollectionRanges[i+1];
+       overlapEndDate = sortedCollectionRanges.get(i+1);
      }
      if (overlapEndDate > overlapStartDate)
      {
