@@ -205,7 +205,7 @@
                                          context concept-type query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms from client %s in format %s with params %s."
-                  (:hits results) (name concept-type) total-took (:client-id context)
+                  (get-in results [:hits :value]) (name concept-type) total-took (:client-id context)
                   (rfh/printable-result-format (:result-format query)) (pr-str params)))
     (assoc results :took total-took)))
 
@@ -224,7 +224,7 @@
                                                                     query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms from client %s in format %s with JSON Query %s and query params %s."
-                  (:hits results) (name concept-type) total-took (:client-id context)
+                  (get-in results [:hits :value]) (name concept-type) total-took (:client-id context)
                   (rfh/printable-result-format (:result-format query)) json-query (pr-str params)))
     (assoc results :took total-took)))
 
@@ -243,7 +243,7 @@
                                                                     query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms from client %s in format %s with aql: %s."
-                  (:hits results) (name concept-type) total-took (:client-id context)
+                  (get-in results [:hits :value]) (name concept-type) total-took (:client-id context)
                   (rfh/printable-result-format (:result-format query)) aql))
     (assoc results :took total-took)))
 
@@ -449,7 +449,8 @@
                                    (set visible-concept-ids)))
         results (get-highest-visible-revisions context deleted-concept-ids result-format)
         ;; when results is nil, hits is 0
-        results (or results {:hits 0 :items []})
+        hits (get-in results [:hits :value] 0)
+        results (or results {:hits hits :items []})
         total-took (- (System/currentTimeMillis) start-time)
         ;; construct the response results string
         results-str (common-search/search-results->response
@@ -459,10 +460,10 @@
                                 :result-format result-format})
                      (assoc results :took total-took))]
     (info (format "Found %d deleted collections in %d ms from client %s in format %s with params %s."
-                  (:hits results) total-took (:client-id context)
+                  hits total-took (:client-id context)
                   (rfh/printable-result-format result-format) (pr-str params)))
     {:results results-str
-     :hits (:hits results)
+     :hits hits
      :result-format result-format}))
 
 (defn- make-deleted-granules-query
@@ -505,7 +506,7 @@
                   (:hits results) total-took (:client-id context)
                   (rfh/printable-result-format result-format) (pr-str params)))
     {:results results-str
-     :hits (:hits results)
+     :hits hits
      :result-format result-format}))
 
 (defn- shape-param->tile-set
