@@ -34,6 +34,12 @@
     (acl/verify-ingest-management-permission
      context :update :provider-object provider-id)))
 
+(defn- association-results->status-code
+  "Returns 400 if the association results contains any errors. Otherwise returns 200"
+  [results]
+  (let [errors-during-association (filter #(some? (:errors %)) results)]
+    (if (seq errors-during-association) 400 200)))
+
 (defn associate-concept-to-collections
   "Associate the given concept by concept type and concept id to a list of
   collections in the request body."
@@ -48,8 +54,9 @@
     (api-response
       400
       {:error "Only one collection allowed in the list because a variable can only be associated with one collection."})
-    (api-response
-     (assoc-service/associate-to-collections context concept-type concept-id body))))
+    (let [results (assoc-service/associate-to-collections context concept-type concept-id body)
+          status-code (association-results->status-code results)]
+        (api-response status-code results))))
 
 (defn dissociate-concept-from-collections
   "Dissociate the given concept by concept type and concept id from a list of
@@ -60,5 +67,6 @@
   (validate-association-content-type headers)
   (info (format "Dissociating %s [%s] from collections: %s by client: %s."
                 (name concept-type) concept-id body (:client-id context)))
-  (api-response
-   (assoc-service/dissociate-from-collections context concept-type concept-id body)))
+  (let [results (assoc-service/dissociate-from-collections context concept-type concept-id body)
+        status-code (association-results->status-code results)]
+    (api-response status-code results)))
