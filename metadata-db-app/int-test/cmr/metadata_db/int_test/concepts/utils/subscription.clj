@@ -5,24 +5,33 @@
    [cheshire.core :as json]
    [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]))
 
-(def subscription-metadata
-  "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78")
+(def subscription-json
+  (json/generate-string
+   {"Name" "someSubscription"
+    "SubscriberId" "someSubscriberId"
+    "EmailAddress" "someaddress@gmail.com"
+    "CollectionConceptId" "C1234-PROV1"
+    "Query" "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78"}))
 
 (defmethod concepts/get-sample-metadata :subscription
   [_]
-  subscription-metadata)
+  subscription-json)
 
 (defn- create-subscription-concept
   "Creates a subscription concept"
-  [_ uniq-num attributes]
-  (let [attributes (merge {:user-id (str "user" uniq-num)
+  [provider-id uniq-num attributes]
+  (let [native-id (str "sub-native" uniq-num)
+        extra-fields (merge {:subscription-name (str "subname" uniq-num)
+                             :subscriber-id (str "subid" uniq-num)
+                             :email-address (str uniq-num "@gmail.com")
+                             :collection-concept-id "C1234-PROV1"}
+                            (:extra-fields attributes))
+        attributes (merge {:user-id (str "user" uniq-num)
                            :format "application/json"
-                           :email-address "user1@yahoo.com"
-                           :collection-concept-id "C123-PROV1"
-                           :description "subscription description"}
-                          attributes)]
-    ;; no provider-id should be specified for subscription 
-    (dissoc (concepts/create-any-concept nil :subscription uniq-num attributes) :provider-id)))
+                           :native-id native-id
+                           :extra-fields extra-fields}
+                          (dissoc attributes :extra-fields))]
+    (concepts/create-any-concept provider-id :subscription uniq-num attributes)))
 
 (defmethod concepts/create-concept :subscription
   [concept-type & args]

@@ -1,6 +1,7 @@
 (ns cmr.ingest.services.jobs
   "This contains the scheduled jobs for the ingest application."
   (:require
+    [cheshire.core :as json]
     [clj-time.core :as t]
     [clojure.string :as string]
     [cmr.acl.acl-fetcher :as acl-fetcher]
@@ -196,9 +197,12 @@
   "Process each subscription in subscriptions."
   [context subscriptions time-constraint]
   (for [subscription subscriptions
-       :let [email-address (:email-address subscription)
-             coll-id (:collection-concept-id subscription)
-             query-params (create-query-params (:metadata subscription))
+       :let [email-address (get-in subscription [:extra-fields :email-address])
+             coll-id (get-in subscription [:extra-fields :collection-concept-id])
+             query-string (-> (:metadata subscription)
+                              (json/decode)
+                              (get "Query"))
+             query-params (create-query-params query-string)
              params1 (merge {"created-at" time-constraint}
                             {"collection-concept-id" coll-id}
                             query-params)
@@ -224,7 +228,7 @@
         subscriptions
          (->> (mdb/find-concepts context {:latest true} :subscription)
               (filter #(not (:deleted %)))
-              (map #(select-keys % [:email-address :metadata :collection-concept-id])))]
+              (map #(select-keys % [:extra-fields :metadata])))]
     ;; for some reason, the info or println doesn't show inside the for loop in my local
     ;; proto repl.
     (println (process-subscriptions context subscriptions time-constraint))))

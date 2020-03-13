@@ -60,6 +60,9 @@
     (j/db-do-commands db (str "DELETE FROM cmr_service_associations where associated_concept_id like 'C%-" provider-id "'"))
     ;; Delete services of the provider
     (j/delete! db (ct/get-table-name provider :service) ["provider_id = ?" provider-id])
+
+    ;; Delete subscriptions of the provider
+    (j/delete! db (ct/get-table-name provider :subscription) ["provider_id = ?" provider-id])
     (j/delete! db :providers ["provider_id = ?" provider-id])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

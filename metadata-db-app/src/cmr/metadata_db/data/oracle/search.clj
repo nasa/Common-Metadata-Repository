@@ -33,7 +33,8 @@
    :acl (into common-columns [:provider_id :user_id :acl_identity])
    :humanizer (into common-columns [:user_id])
    :subscription (into common-columns
-                       [:user_id :description :email_address :collection_concept_id])
+                       [:provider_id :subscription_name :subscriber_id
+                        :email_address :collection_concept_id :user_id])
    :variable (into common-columns [:provider_id :variable_name :measurement :user_id :fingerprint])
    :variable-association (into common-columns
                                [:associated_concept_id :associated_revision_id
