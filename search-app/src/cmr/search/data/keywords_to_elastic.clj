@@ -96,13 +96,17 @@
   [field keywords boost]
   {:weight boost
    ;; Should the 'and' below actually be an 'or'? Investigate this as part of CMR-1329
-   :filter {:or (concat
-                 (when-let [keywords (:keywords keywords)]
-                  [{:and (map (partial keyword-regexp-filter field) keywords)}])
-                 (when-let [field-keywords (:field-keywords keywords)]
-                  [{:or (concat
-                         (map (partial keyword-regexp-filter field) field-keywords)
-                         (map (partial keyword-regexp-filter field) field-keywords))}]))}})
+   :filter {:bool
+            {:should
+             (concat
+              (when-let [keywords (:keywords keywords)]
+               [{:bool {:must (map (partial keyword-regexp-filter field) keywords)}}])
+              (when-let [field-keywords (:field-keywords keywords)]
+               [{:bool
+                 {:should
+                  (concat
+                   (map (partial keyword-regexp-filter field) field-keywords)
+                   (map (partial keyword-regexp-filter field) field-keywords))}}]))}}})
 
 (defn- keywords->name-filter
   "Create a filter for keyword searches that checks for a loose match on one field or an
@@ -110,14 +114,18 @@
   [regex-field exact-field keywords boost]
   {:weight boost
    ;; Should the 'and' below actually be an 'or'? Investigate this as part of CMR-1329
-   :filter {:or (concat
-                 (when-let [keywords (:keywords keywords)]
-                  [{:and (map (partial keyword-regexp-filter regex-field) keywords)}
-                   {:or (map (partial keyword-exact-match-filter exact-field) keywords)}])
-                 (when-let [field-keywords (:field-keywords keywords)]
-                  [{:or (concat
-                         (map (partial keyword-regexp-filter regex-field) field-keywords)
-                         (map (partial keyword-regexp-filter exact-field) field-keywords))}]))}})
+   :filter {:bool
+            {:should
+             (concat
+              (when-let [keywords (:keywords keywords)]
+               [{:bool {:must (map (partial keyword-regexp-filter regex-field) keywords)}}
+                {:bool {:should (map (partial keyword-exact-match-filter exact-field) keywords)}}])
+              (when-let [field-keywords (:field-keywords keywords)]
+               [{:bool
+                 {:should
+                  (concat
+                   (map (partial keyword-regexp-filter regex-field) field-keywords)
+                   (map (partial keyword-regexp-filter exact-field) field-keywords))}}]))}}})
 
 (defn- science-keywords-or-filter
   "Create an or filter containing the science keyword fields related to keyword searches"
@@ -131,22 +139,30 @@
   "Create a filter for keyword searches that checks science keywords"
   [keywords boost]
   {:weight boost
-   :filter {:nested {:path :science-keywords
-                     :filter {:or (concat
-                                   (when-let [keywords (:keywords keywords)]
-                                    (science-keywords-or-filter (str/join " " keywords)))
-                                   (when-let [field-keywords (:field-keywords keywords)]
-                                    (mapcat science-keywords-or-filter field-keywords)))}}}})
+   :filter {:nested
+            {:path :science-keywords
+             :query
+             {:bool
+              {:filter
+               {:bool
+                {:should
+                 (concat
+                  (when-let [keywords (:keywords keywords)]
+                   (science-keywords-or-filter (str/join " " keywords)))
+                  (when-let [field-keywords (:field-keywords keywords)]
+                   (mapcat science-keywords-or-filter field-keywords)))}}}}}}})
 
 (defn- keywords->boosted-exact-match-filter
   "Create a boosted filter for keyword searches that requires an exact match on the given field"
   [field keywords boost]
   {:weight boost
-   :filter {:or (concat
-                 (when-let [keywords (:keywords keywords)]
-                  [(keyword-exact-match-filter field (str/join " " keywords))])
-                 (when-let [field-keywords (:field-keywords keywords)]
-                  [{:or (map (partial keyword-regexp-filter field) field-keywords)}]))}})
+   :filter {:bool
+            {:should
+             (concat
+              (when-let [keywords (:keywords keywords)]
+               [(keyword-exact-match-filter field (str/join " " keywords))])
+              (when-let [field-keywords (:field-keywords keywords)]
+               [{:bool {:should (map (partial keyword-regexp-filter field) field-keywords)}}]))}}})
 
 (defn get-boost
   "Get the boost value for the given field."
