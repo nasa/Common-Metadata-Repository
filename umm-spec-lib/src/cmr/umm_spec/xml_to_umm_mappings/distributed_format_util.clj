@@ -4,7 +4,7 @@
   (:require
    [clojure.string :as string]))
 
-(defn remove-emtpy-strings
+(defn- remove-emtpy-strings
   "Remove empty strings from the passed in vector"
   [vector]
   (into []
