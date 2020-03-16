@@ -35,10 +35,15 @@
      context :update :provider-object provider-id)))
 
 (defn- association-results->status-code
-  "Returns 400 if the association results contains any errors. Otherwise returns 200"
-  [results]
-  (let [errors-during-association (filter #(some? (:errors %)) results)]
-    (if (seq errors-during-association) 400 200)))
+  "If the concept-type is :variable the function will check for any errors in the results, and will return 400 if
+  any are present. Otherwise it will return 200"
+  ([results]
+   (let [errors-during-association (filter #(some? (:errors %)) results)]
+     (if (seq errors-during-association) 400 200)))
+  ([results concept-type]
+   (if (= :variable concept-type)
+     (association-results->status-code results)
+     200)))
 
 (defn associate-concept-to-collections
   "Associate the given concept by concept type and concept id to a list of
@@ -55,7 +60,7 @@
       400
       {:error "Only one collection allowed in the list because a variable can only be associated with one collection."})
     (let [results (assoc-service/associate-to-collections context concept-type concept-id body)
-          status-code (association-results->status-code results)]
+          status-code (association-results->status-code results concept-type)]
         (api-response status-code results))))
 
 (defn dissociate-concept-from-collections
@@ -68,5 +73,5 @@
   (info (format "Dissociating %s [%s] from collections: %s by client: %s."
                 (name concept-type) concept-id body (:client-id context)))
   (let [results (assoc-service/dissociate-from-collections context concept-type concept-id body)
-        status-code (association-results->status-code results)]
+        status-code (association-results->status-code results concept-type)]
     (api-response status-code results)))
