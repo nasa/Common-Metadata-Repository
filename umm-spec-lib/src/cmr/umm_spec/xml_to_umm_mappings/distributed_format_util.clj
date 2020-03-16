@@ -93,7 +93,9 @@
    string if ', ' exists or the input string if ', ' does not exist."
   [formats]
   (if (string/includes? formats ",")
-    (remove-emtpy-strings (string/split formats #", *"))
+    (-> formats
+      (string/split #", *")
+      remove-emtpy-strings)
     formats))
 
 (defn parse-distribution-formats-split-by-comma
