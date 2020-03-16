@@ -53,6 +53,13 @@
   {:action :provider-delete
    :provider-id provider-id})
 
+(defn concept-expire-event
+  "Creates an event representing a concept being expired"
+  [{:keys [concept-id revision-id]}]
+  {:action :expire-concept
+   :concept-id concept-id
+   :revision-id revision-id})
+
 (defn ingest-bulk-update-event
   [provider-id task-id bulk-update-params user-id]
   {:action :bulk-update
