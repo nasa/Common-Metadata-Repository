@@ -33,6 +33,7 @@
                               name
                               (string/replace #"\..*$" "")
                               (string/replace #"-h$" "")
+                              (string/replace #"-humanized$" "")
                               keyword)]
     (condp = base-parent-field
       :variables variable-subfields

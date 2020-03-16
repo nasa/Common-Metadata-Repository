@@ -152,13 +152,14 @@
   * version - the version of the document to use. This is usually revision-id of a concept. If the
   version of the document in elastic is newer than this then an exception will be raised. This can
   be overriden by passing :ignore-conflict? true in the options
-  * options - Optional map of options. :ignore-conflict?, :refresh?, and :ttl (time to live) are options."
+  * options - Optional map of options. :ignore-conflict? and :refresh? are options."
   ([elastic-store index-name type-name elastic-id doc version]
    (save-elastic-doc elastic-store index-name type-name elastic-id doc version nil))
   ([elastic-store index-name type-name elastic-id doc version options]
    (let [conn (:conn elastic-store)
          {:keys [ttl ignore-conflict? refresh?]} options
-         elastic-options (merge {:version version :version_type "external_gte"}
+         elastic-options (merge {:version version
+                                 :version_type "external_gte"}
                                 ;; Force refresh of the index when specified.
                                 ;; NOTE: This has performance implications and should be used sparingly.
                                 (when refresh?

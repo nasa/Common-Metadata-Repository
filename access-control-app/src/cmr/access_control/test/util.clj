@@ -40,12 +40,12 @@
 (defn unindex-all-groups
   "Manually unindexes all groups from Elasticsearch"
   []
-  (let [response (client/delete (format "http://localhost:%s/%s/%s/_query"
-                                 (es-config/elastic-port)
-                                 access-control-index/group-index-name
-                                 access-control-index/group-type-name)
-                                {:throw-exceptions false
-                                 :body "{\"query\": {\"match_all\": {}}}"})]
+  (let [response (client/post (format "http://localhost:%s/%s/_delete_by_query"
+                               (es-config/elastic-port)
+                               access-control-index/group-index-name)
+                              {:throw-exceptions false
+                               :content-type :json
+                               :body "{\"query\": {\"match_all\": {}}}"})]
     (when-not (= 200 (:status response))
       (throw (Exception. (str "Failed to unindex all groups:" (pr-str response)))))
     (refresh-elastic-index)))
