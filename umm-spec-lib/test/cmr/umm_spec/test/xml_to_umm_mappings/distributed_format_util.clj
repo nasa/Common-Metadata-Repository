@@ -154,7 +154,19 @@
 
     "do not split the string by ', '."
     "hello good goodby"
-    "hello good goodby")
+    "hello good goodby"
+
+    "Testing if comma in the front."
+    ["hello"]
+    ",hello"
+
+    "Testing if comma in the end."
+    ["hello"]
+    "hello,"
+
+    "Testing if I just have a comma."
+    []
+    ",")
 
   (are3 [expected-result test-string]
     (is (= expected-result

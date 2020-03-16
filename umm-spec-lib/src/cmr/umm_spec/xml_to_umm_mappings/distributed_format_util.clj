@@ -4,6 +4,12 @@
   (:require
    [clojure.string :as string]))
 
+(defn- remove-emtpy-strings
+  "Remove empty strings from the passed in vector"
+  [vector]
+  (into []
+    (remove #(string/blank? %) vector)))
+
 (defn parse-distribution-formats-replace-comma-and-with-comma
   "Replace ', and' (comma space and) with just ', ' (comma space). The input
   is a string and the output is either the replaced string or the input string
@@ -51,7 +57,7 @@
   [formats]
   (if (string/includes? formats " and ")
     (if-not (boolean (re-find #"\.r.?.? and \.q" formats))
-      (string/split formats #" *and *")
+      (string/split formats #" * and  *")
       formats)
     formats))
 
@@ -71,7 +77,7 @@
    exists or the input string if ' or ' does not exist."
   [formats]
   (if (string/includes? formats " or ")
-    (string/split formats #" *or *")
+    (string/split formats #" * or  *")
     formats))
 
 (defn parse-distribution-formats-split-by-or
@@ -87,7 +93,9 @@
    string if ', ' exists or the input string if ', ' does not exist."
   [formats]
   (if (string/includes? formats ",")
-    (string/split formats #", *")
+    (-> formats
+      (string/split #", *")
+      remove-emtpy-strings)
     formats))
 
 (defn parse-distribution-formats-split-by-comma
@@ -148,5 +156,5 @@
                    (parse-distribution-formats-split-by-semicolon))]
       (if (instance? String result)
         (vector result)
-        result))
+        (remove-emtpy-strings result)))
     []))
