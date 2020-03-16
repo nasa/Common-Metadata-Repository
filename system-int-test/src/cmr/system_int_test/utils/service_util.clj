@@ -198,10 +198,28 @@
              (set (comparable-service-associations expected-sas))]
             [status (set (comparable-service-associations body))])))))
 
+(defn assert-service-association-bad-request
+  "Assert the service association response when status code is 200 is correct."
+  ([coll-service-associations response]
+   (assert-service-association-bad-request coll-service-associations response true))
+  ([coll-service-associations response error?]
+   (let [{:keys [status body errors]} response
+         expected-sas (map #(coll-service-association->expected-service-association % error?)
+                           coll-service-associations)]
+     (is (= [400
+             (set (comparable-service-associations expected-sas))]
+            [status (set (comparable-service-associations body))])))))
+
+
 (defn assert-service-dissociation-response-ok?
   "Assert the service association response when status code is 200 is correct."
   [coll-service-associations response]
   (assert-service-association-response-ok? coll-service-associations response false))
+
+(defn assert-service-dissociation-bad-request
+  "Assert the service association response when status code is 400 is correct."
+  [coll-service-associations response]
+  (assert-service-association-bad-request coll-service-associations response true))
 
 (defn- search-for-service-associations
   "Searches for service associations in metadata db using the given parameters."
