@@ -82,6 +82,14 @@
                   concept-id revision-id)))
       (indexer/force-delete-all-concept-revision context concept-id revision-id))))
 
+(defmethod handle-ingest-event :expire-concept
+  [context all-revisions-index? {:keys [concept-id revision-id]}]
+  (when (or (= :collection (cc/concept-id->type concept-id))
+            (= :granule (cc/concept-id->type concept-id)))
+    (indexer/delete-concept
+      context concept-id revision-id {:ignore-conflict? true
+                                      :all-revisions-index? all-revisions-index?})))
+
 (defn subscribe-to-events
   "Subscribe to event messages on various queues"
   [context]
