@@ -382,9 +382,7 @@
                             (assoc :service-associations service-associations))
                         parsed-concept)
                 elastic-options (-> options
-                                    (select-keys [:all-revisions-index? :ignore-conflict?])
-                                    (assoc :ttl (when delete-time
-                                                  (t/in-millis (t/interval (tk/now) delete-time)))))]
+                                    (select-keys [:all-revisions-index? :ignore-conflict?]))]
             (es/save-document-in-elastic
              context
              concept-indexes
