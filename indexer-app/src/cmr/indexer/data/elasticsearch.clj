@@ -183,7 +183,7 @@
   es-doc is the elasticsearch document to be passed on to elasticsearch
   elastic-id is the _id of the document in the index
   revision-id is the version of the document in elasticsearch"
-  [f conn es-index es-type es-doc elastic-id revision-id ttl]
+  [f conn es-index es-type es-doc elastic-id revision-id]
   (let [options {:version revision-id :version_type "external_gte"}]
     (try
       (f conn es-index es-type elastic-id es-doc options)
@@ -209,30 +209,13 @@
 
 (defn- non-tombstone-concept->bulk-elastic-doc
   "Takes a non-tombstoned concept map (a normal revision) and returns an elastic document suitable
-   with ttl fields for bulk indexing."
+   for bulk indexing."
   [context concept]
   (let [parsed-concept (cp/parse-concept context concept)
         delete-time (get-in parsed-concept
                             [:data-provider-timestamps :delete-time])
-        now (tk/now)
-        ttl (when delete-time
-              (if (t/after? delete-time now)
-                (t/in-millis (t/interval now delete-time))
-                0))
-        elastic-doc (parsed-concept->elastic-doc context concept parsed-concept)
-        elastic-doc (if ttl
-                      (assoc elastic-doc :_ttl ttl)
-                      elastic-doc)]
-    (if (or (nil? ttl)
-            (> ttl 0))
-      elastic-doc
-      (info
-       (str
-        "Skipping expired concept ["
-        (:concept-id concept)
-        "] with delete-time ["
-        (f/unparse (f/formatters :date-time) delete-time)
-        "]")))))
+        elastic-doc (parsed-concept->elastic-doc context concept parsed-concept)]
+    elastic-doc))
 
 (defn- concept->bulk-elastic-docs
   "Converts a concept map into an elastic document suitable for bulk indexing."
@@ -322,10 +305,10 @@
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
   (doseq [es-index es-indexes]
     (let [conn (context->conn context)
-          {:keys [ttl ignore-conflict? all-revisions-index?]} options
+          {:keys [ignore-conflict? all-revisions-index?]} options
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           result (try-elastic-operation
-                  es-helper/put conn es-index es-type es-doc elastic-id elastic-version ttl)]
+                  es-helper/put conn es-index es-type es-doc elastic-id elastic-version)]
       (when (:error result)
         (if (= 409 (:status result))
           (if ignore-conflict?
