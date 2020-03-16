@@ -111,7 +111,9 @@
     (when-let [concept-ids (mdb/get-expired-collection-concept-ids context provider-id)]
       (info "Removing expired collections:" (pr-str concept-ids))
       (doseq [concept-id concept-ids]
-        (mdb/save-concept context {:concept-id concept-id :deleted true})))))
+        (let [resp (mdb/save-concept context {:concept-id concept-id :deleted true})]
+          (ingest-events/publish-ingest-event
+           context (ingest-events/concept-expire-event resp)))))))
 
 (defn- create-query-params
   "Create query parameters using the query string like

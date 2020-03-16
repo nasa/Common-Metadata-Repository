@@ -45,6 +45,13 @@
    :concept-id concept-id
    :revision-id revision-id})
 
+(defn concept-expire-event
+  "Creates an event representing a concept being expired"
+  [{:keys [concept-id revision-id]}]
+  {:action :expire-concept
+   :concept-id concept-id
+   :revision-id revision-id})
+
 (defn publish-concept-revision-delete-msg
   "Publishes a message indicating a concept revision was removed."
   [context concept-id revision-id]

@@ -814,6 +814,8 @@
                               (assoc :deleted true :metadata ""))]
             (try
               (try-to-save db provider tombstone)
+              (ingest-events/publish-event
+               context (ingest-events/concept-expire-event c))
               (catch clojure.lang.ExceptionInfo e
                 ;; Re-throw anything other than a simple conflict.
                 (when-not (-> e ex-data :type (= :conflict))
