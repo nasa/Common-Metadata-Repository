@@ -287,11 +287,11 @@
          :query {:function_score {:score_mode :multiply
                                   :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
                                   :query {:bool {:must (eq/match-all)
-                                                     :filter core-query}}}}})
+                                                 :filter core-query}}}}})
        (if boosts
          (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
          {:query {:bool {:must (eq/match-all)
-                             :filter core-query}}})))))
+                         :filter core-query}}})))))
 
 (defmethod q2e/concept-type->sort-key-map :collection
   [_]

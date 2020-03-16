@@ -150,9 +150,9 @@
         query-map (-> elastic-query
                       (merge execution-params)
                       util/remove-nil-keys)]
-    (info "Executing against indexes [" (:index-name index-info) "] the elastic query:"
-           (pr-str elastic-query)
-           "with sort" (pr-str sort-params)
+    (info "Executing against indexes [" (:index-name index-info) "] the elastic query:\n"
+           (cheshire.core/generate-string elastic-query {:pretty true}) ; TODO: Remove this - for enhanced debugging purposes
+           "\nwith sort" (pr-str sort-params)
            "with aggregations" (pr-str aggregations)
            "and highlights" (pr-str highlights))
     (when-let [scroll-id (:scroll-id query-map)]

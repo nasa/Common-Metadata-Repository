@@ -88,7 +88,7 @@
   (let [{:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (condition->elastic condition concept-type)]
     {:query {:bool {:must (q/match-all)
-                        :filter core-query}}}))
+                    :filter core-query}}}))
 
 (defmethod query->elastic :autocomplete
   [query]
@@ -195,16 +195,16 @@
   (condition->elastic
    [{:keys [path condition]} concept-type]
    {:nested {:path path
-             :filter (condition->elastic condition concept-type)}})
+             :query {:bool {:filter (condition->elastic condition concept-type)}}}})
 
   cmr.common_app.services.search.query_model.TextCondition
   (condition->elastic
    [{:keys [field query-str]} concept-type]
    (let [field (query-field->elastic-field field concept-type)]
-     {:query {:query_string {:query (escape-query-string query-str)
-                             :analyzer :whitespace
-                             :default_field field
-                             :default_operator :and}}}))
+     {:query_string {:query (escape-query-string query-str)
+                     :analyzer :whitespace
+                     :default_field field
+                     :default_operator :and}}))
 
   cmr.common_app.services.search.query_model.StringCondition
   (condition->elastic
@@ -214,7 +214,7 @@
                  (field->lowercase-field concept-type field))
          value (if case-sensitive? value (str/lower-case value))]
      (if pattern?
-       {:query {:wildcard {field value}}}
+       {:wildcard {field value}}
        {:term {field value}})))
 
   cmr.common_app.services.search.query_model.StringsCondition
@@ -252,7 +252,7 @@
   cmr.common_app.services.search.query_model.MissingCondition
   (condition->elastic
    [{:keys [field]} concept-type]
-   {:missing {:field (query-field->elastic-field field concept-type)}})
+   {:bool {:must_not {:exists {:field (query-field->elastic-field field concept-type)}}}})
 
   cmr.common_app.services.search.query_model.NumericValueCondition
   (condition->elastic

@@ -154,6 +154,9 @@
   ;; Change system integration tests to the new level
   (sit-sys/set-logging-level level)
 
+  ;; Change embedd elastic logging level to the new level
+  (reset! system/in-memory-elastic-log-level-atom level)
+
   ;; Set timbre.logging to the level
   (taoensso.timbre/set-level! level)
   (println "Logging level set to" level)
@@ -221,6 +224,7 @@
       (dev-config/set-dev-system-queue-type! (:messaging run-modes))))
 
   (sit-sys/set-logging-level @settings/logging-level)
+  (reset! system/in-memory-elastic-log-level-atom @settings/logging-level)
 
   ;; If you would like to run CMR with legacy support, then be sure to call
   ;; `(set-legacy true)` in the REPL. There is currently no lein profile or
