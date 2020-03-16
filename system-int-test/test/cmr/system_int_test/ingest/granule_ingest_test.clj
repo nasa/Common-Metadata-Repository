@@ -9,6 +9,8 @@
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common.util :as u :refer [are3]]
+   [clj-time.core :as t]
+   [cmr.common.time-keeper :as tk]
    [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.system :as indexer-system]
    [cmr.system-int-test.data2.core :as data-core]
@@ -21,7 +23,8 @@
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.umm.umm-granule :as umm-g]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"})
+                                    (dev-sys-util/freeze-resume-time-fixture)]))
 
 (defn- get-granule-parent-collection-id
   "Returns the concept id of the parent collection of the given granule revision."
@@ -556,9 +559,16 @@
                      collection
                      (:concept-id collection)
                      {:granule-ur "gran2"
-                      :data-provider-timestamps {:delete-time "2100-01-01T00:00:00Z"}})
+                      :data-provider-timestamps {:delete-time
+                                                 (t/plus (tk/now) (t/minutes 2))}})
             response (data-core/ingest "PROV1" granule {:format :umm-json})]
-        (is (= 201 (:status response)))))))
+        (is (= 201 (:status response)))
+        (index/wait-until-indexed)
+        (data-core/assert-refs-match [response] (search/find-refs :granule {}))
+        (dev-sys-util/advance-time! 121)
+        (mdb/cleanup-expired-concepts)
+        (index/wait-until-indexed)
+        (data-core/assert-refs-match [] (search/find-refs :granule {}))))))
 
 (deftest ingest-umm-g-granule-test
   (let [collection (data-core/ingest-umm-spec-collection
