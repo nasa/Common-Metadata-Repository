@@ -340,6 +340,11 @@
   (-> record
       (sanitize-umm-record-urls :service)))
 
+(defn sanitized-umm-sub-record
+  "Place holder for the sanitizers needed for a given umm-sub record."
+  [record]
+  record)
+
 (defn sanitized-umm-var-record
   "Include only the sanitizers needed for a given umm-var record."
   [record]
