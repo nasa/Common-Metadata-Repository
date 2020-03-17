@@ -697,6 +697,7 @@
   {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
    :type {:type "string" :index "analyzed" :store "yes"}
+   :field {:type "string" :index "analyzed" :store "yes"}
    :value {:type "string" :analyzer "autocomplete_analyzer" :index "analyzed" :store "yes"}})
 
 (defmapping variable-mapping :variable

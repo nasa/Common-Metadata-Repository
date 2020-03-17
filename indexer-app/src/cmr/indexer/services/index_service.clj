@@ -243,20 +243,17 @@
 (defn- get-science-keyword-elastic-docs
   "Fetch science keywords and marshall them into indexable format"
   [context]
-  (let [science-keywords (map #(dissoc % :uuid)
-                              (kms/get-keywords-for-keyword-scheme
-                               context :science-keywords))
+  (let [kms-keywords (kms/get-keywords-for-keyword-scheme context :science-keywords)
+        science-keywords (map #(dissoc % :uuid) kms-keywords)
         keyword-hierarchy [:topic :category :variable-level-1 :variable-level-2
                            :variable-level-3 :detailed-variable]]
     (science-keywords->elastic-docs science-keywords keyword-hierarchy)))
-
 
 (defn- reindex-science-keyword-suggestions
   "Reindex all science keywords for the suggestion index"
   [context]
   (let [science-keyword-docs (get-science-keyword-elastic-docs context)]
-    (bulk-index context science-keyword-docs {:all-revisions-index? false
-                                              :force-version? false})))
+    (es/bulk-index-autocomplete-suggestions context science-keyword-docs)))
 
 (defn- collection->suggestion-doc
   "Convert collection concept metadata to UMM-C and pull facet fields
@@ -278,12 +275,11 @@
                                     :collection
                                     REINDEX_BATCH_SIZE
                                     {:provider-id provider-id :latest true})
-        latest-suggestion-batches (flatten
-                                   (map #(collection->suggestion-doc
-                                          context %)
-                                       (first latest-collection-batches)))]
-    (bulk-index context latest-suggestion-batches {:all-revisions-index? false
-                                                   :force-version? false})))
+        latest-suggestion-batches (->> latest-collection-batches
+                                       (map #(collection->suggestion-doc context %))
+                                       flatten)]
+    (es/bulk-index-autocomplete-suggestions context latest-suggestion-batches)))
+
 
 (defn reindex-autocomplete-suggestions
   "Reindexes all autocomplete suggestions in the providers given."
@@ -321,7 +317,6 @@
      ;; Redis to indicate to indexers that they should fetch the latest ACLs. Without expiring
      ;; these here we'll think we have the latest.
      (acl-fetcher/expire-consistent-cache-hashes context))
-   (reindex-science-keyword-suggestions context)
 
    (doseq [provider-id provider-ids]
      (when (or (nil? all-revisions-index?) (not all-revisions-index?))

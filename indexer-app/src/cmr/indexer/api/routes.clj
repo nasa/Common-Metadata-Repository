@@ -144,7 +144,7 @@
 
       (POST "/reindex-autocomplete-suggestions" {:keys [request-context params headers body]}
         (acl/verify-ingest-management-permission request-context :update)
-        (index-svc/reindex-autocomplete-suggestions request-context body)
+        (index-svc/reindex-autocomplete-suggestions request-context)
         {:status 200})
 
       (POST "/reindex-tags" {:keys [request-context params headers]}
