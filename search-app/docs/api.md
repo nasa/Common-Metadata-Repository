@@ -3121,7 +3121,7 @@ Content-Length: 168
 ]
 ```
 
-On occassions when tag association cannot be processed at all due to invalid input, tag association request will return a failure status code with the appropriate error message.
+On occasions when tag association cannot be processed at all due to invalid input, tag association request will return a failure status code with the appropriate error message.
 
 #### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
 
@@ -3687,7 +3687,7 @@ curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
 
-HTTP/1.1 200 OK
+HTTP/1.1 400 OK
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -4005,7 +4005,7 @@ curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-E
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
-HTTP/1.1 200 OK
+HTTP/1.1 400 OK
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -4042,7 +4042,7 @@ curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
 
-HTTP/1.1 200 OK
+HTTP/1.1 400 OK
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
