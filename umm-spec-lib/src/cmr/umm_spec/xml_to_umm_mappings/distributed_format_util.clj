@@ -15,7 +15,7 @@
   is a string and the output is either the replaced string or the input string
   if no changes occured."
   [formats]
-  (if (string/includes? formats ",")
+  (if (string/includes? formats ", and ")
     (string/replace formats #", and " ", ")
     formats))
 
@@ -24,26 +24,32 @@
    string and the output is either the replaced string or the input string if no
    changes occured."
   [formats]
-  (if (string/includes? formats ",")
+  (if (string/includes? formats ", or ")
     (string/replace formats #", or " ", ")
     formats))
 
+(defn remove-text-various
+  "Remove the text 'Various: ' from the passed in string. The input is a
+   string and the output is either the replaced string or the input string if no
+   changes occured."
+  [formats]
+  (if (string/includes? formats "Various: ")
+    (string/replace formats #"Various: " "")
+    formats))
+
 (defn parse-distribution-formats-split-by-slash-input-string
-  "Split the incomming string by '/' except for 'ar/info' and 'arc/info' with
-   insensitive case. The result is a vector of split string if '/' exists or
-   the input string if '/' doesn't exsit."
+  "Split the incomming string by '/' except for '/info', '/arc', '/CF', '/2000',
+   '/98', and '/95' with insensitive case. The result is a vector of split string
+   if '/' exists or the input string if '/' doesn't exsit."
   [formats]
   (if (string/includes? formats "/")
-    (if-not (or (string/includes? (string/lower-case formats) "ar/info")
-                (string/includes? (string/lower-case formats) "arc/info"))
-      (string/split formats #"/ *")
-      formats)
+    (string/split formats #"(?i) *\/ *(?!CF)(?!95)(?!info)(?!arc)(?!98)(?!2000)")
     formats))
 
 (defn parse-distribution-formats-split-by-slash
-  "Split the incomming string or vector of strings by '/' except for 'ar/info'
-   and 'arc/info' with insensitive case. The result is a vector of split string
-   if '/' exists or the input string if '/' doesn't exsit."
+  "Split the incomming string or vector of strings by '/' except for '/info',
+   '/arc', '/CF', '/2000', '/98', and '/95' with insensitive case. The result
+   is a vector of split string if '/' exists or the input string if '/' doesn't exist."
   [formats]
   (if (instance? String formats)
     (parse-distribution-formats-split-by-slash-input-string formats)
@@ -88,6 +94,22 @@
     (flatten
       (map parse-distribution-formats-split-by-or-input-string formats))))
 
+(defn parse-distribution-formats-split-by-underscore-or-underscore-input-string
+  "Split the incomming string by '_or_' The result is a vector of split string if '_or_'
+   exists or the input string if '_or_' does not exist."
+  [formats]
+  (if (string/includes? formats "_or_")
+    (string/split formats #"_or_")
+    formats))
+
+(defn parse-distribution-formats-split-by-underscore-or-underscore
+  "Split the incomming string or vector of strings by '_or_'."
+  [formats]
+  (if (instance? String formats)
+    (parse-distribution-formats-split-by-underscore-or-underscore-input-string formats)
+    (flatten
+      (map parse-distribution-formats-split-by-underscore-or-underscore-input-string formats))))
+
 (defn parse-distribution-formats-split-by-comma-input-string
   "Split the incomming string by ', ' The result is a vector of split
    string if ', ' exists or the input string if ', ' does not exist."
@@ -107,11 +129,12 @@
       (map parse-distribution-formats-split-by-comma-input-string formats))))
 
 (defn parse-distribution-formats-split-by-dash-input-string
-  "Split the incomming string by ' - ' The result is a vector of split
-   string if ' - ' exists or the input string if ' - ' does not exist."
+  "Split the incomming string by ' - ' except for '- EOS'. The result is a
+   vector of split string if ' - ' exists or the input string if ' - '
+   does not exist."
   [formats]
   (if (string/includes? formats " - ")
-    (string/split formats #" - ")
+    (string/split formats #"  *-  *(?!EOS)")
     formats))
 
 (defn parse-distribution-formats-split-by-dash
@@ -148,9 +171,11 @@
     (let [result (->> formats
                    (parse-distribution-formats-replace-comma-and-with-comma)
                    (parse-distribution-formats-replace-comma-or-with-comma)
+                   (remove-text-various)
                    (parse-distribution-formats-split-by-slash)
                    (parse-distribution-formats-split-by-and)
                    (parse-distribution-formats-split-by-or)
+                   (parse-distribution-formats-split-by-underscore-or-underscore)
                    (parse-distribution-formats-split-by-comma)
                    (parse-distribution-formats-split-by-dash)
                    (parse-distribution-formats-split-by-semicolon))]

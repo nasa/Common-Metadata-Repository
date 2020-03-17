@@ -45,6 +45,22 @@
     "hello, good,or goodby"
     "hello, good,or goodby"))
 
+(deftest remove-text-various-test
+  "Test the removal of the txt 'Various: ' both with data that includes 'Various: '
+   and data that doesn't."
+
+  (are3 [expected-result test-string]
+    (is (= expected-result
+           (util/remove-text-various test-string)))
+
+    "Remove the word 'Various: '."
+    "XML, HTML, DOC"
+    "Various: XML, HTML, DOC"
+
+    "Various doesn't exist so don not replace anything."
+    "hello, good, orgoodby"
+    "hello, good, orgoodby"))
+
 (deftest split-slash-test
   "Test spliting a string or vector of strings by '/' with the excpetion of ar/info
    or arc/info case insensitive."
@@ -57,13 +73,21 @@
     ["hello" "good" "goodby"]
     "hello/good/goodby"
 
-    "Do not split the string by slash '/' if the data includes 'Ar/Info'."
-    "hello Ar/Info goodby"
+    "Do not split by slash '/' if the data includes 'Ar/Info'."
+    ["hello Ar/Info goodby"]
     "hello Ar/Info goodby"
 
-    "Do not split the string by slash '/' if the data includes 'ArC/Info'."
+    "Do not split by slash '/' if the data includes 'ArC/Info'."
+    ["hello ArC/Info goodby"]
     "hello ArC/Info goodby"
-    "hello ArC/Info goodby")
+
+    "Do not split by slash '/' if the data includes /2000, /98, /95, case insensitive for the rest /ARC, /INFO, /CF"
+    ["This" "is" "windows 98/2000 95/98 97/98 5.0/95 PC/ARC netCDF-3/CF netCDF-4/CF HTML" "XML arc/info Arc/Info test."]
+    "This/is/windows 98/2000 95/98 97/98 5.0/95 PC/ARC netCDF-3/CF netCDF-4/CF HTML/XML arc/info Arc/Info test."
+
+    "Check that I get back an empty vector when the input is just a slash"
+    []
+    "/")
 
   (are3 [expected-result test-string]
     (is (= expected-result
@@ -80,7 +104,16 @@
 
     "Split the string by slash '/'. The input data is a vector."
     ["hello" "XML" "HTML" "goodby"]
-    ["hello" "XML/HTML" "goodby"]))
+    ["hello" "XML/HTML" "goodby"]
+
+    "Do not split by slash '/' if the data includes /2000, /98, /95, case insensitive for the rest /ARC, /INFO, /CF"
+    ["This" "is" "windows 98/2000 95/98 97/98 5.0/95 PC/ARC netCDF-3/CF netCDF-4/CF HTML" "XML arc/info Arc/Info test."]
+    ["This/is/windows 98/2000 95/98 97/98 5.0/95 PC/ARC netCDF-3/CF netCDF-4/CF HTML/XML arc/info Arc/Info test."]
+
+    "Check that I get back an empty vector when the input is just a slash"
+    []
+    ["/"]))
+
 
 (deftest split-and-test
   "Test spliting a string or vector of strings by ' and ' with the excpetion of .r
@@ -141,6 +174,33 @@
     ["hello" "xml" "html" "goodby"]
     ["hello" "xml or html" "goodby"]))
 
+(deftest split-underscore-or-underscore-test
+  "Test spliting a string or vector of strings by '_or_'."
+
+  (are3 [expected-result test-string]
+    (is (= expected-result
+           (util/parse-distribution-formats-split-by-underscore-or-underscore-input-string test-string)))
+
+    "Split the string by '_or_'."
+    ["hello" "good" "goodby"]
+    "hello_or_good_or_goodby"
+
+    "do not split the string by '_or_'."
+    "hello, goodor_goodby"
+    "hello, goodor_goodby"
+
+    "do not split the string by '_or_'."
+    "hello, good-orgoodby"
+    "hello, good-orgoodby")
+
+  (are3 [expected-result test-string]
+    (is (= expected-result
+           (util/parse-distribution-formats-split-by-underscore-or-underscore test-string)))
+
+    "Split the string by '_or_'. The input is a vector"
+    ["hello" "xml" "html" "goodby"]
+    ["hello" "xml_or_html" "goodby"]))
+
 (deftest split-comma-test
   "Test spliting a string or vector of strings by ','."
 
@@ -189,7 +249,16 @@
 
     "do not split the string by '-'."
     "hello-good- goodby -ok"
-    "hello-good- goodby -ok")
+    "hello-good- goodby -ok"
+
+    "do not split the string by '-'."
+    ["HDF - EOS"]
+    "HDF - EOS"
+
+    "Don't split the string by '-'."
+    ["HDF-4, HDF - EOS, HDF-5"]
+    "HDF-4, HDF - EOS, HDF-5")
+
 
   (are3 [expected-result test-string]
     (is (= expected-result
@@ -197,7 +266,11 @@
 
     "Split the string by ' - '. The input is a vector"
     ["hello" "xml" "html" "goodby"]
-    ["hello" "xml - html" "goodby"]))
+    ["hello" "xml - html" "goodby"]
+
+    "Don't split the string by '-'."
+    ["HDF-4, HDF - EOS, HDF-5"]
+    ["HDF-4, HDF - EOS, HDF-5"]))
 
 (deftest split-semicolon-test
   "Test spliting a string or vector of strings by ';'."
@@ -235,9 +308,17 @@
     ["hello" "good" "goodby XML" "HTML" "XML1" "HTML2" "XSLX" "OK" "one" "two"]
     "hello, and good, or goodby XML/HTML, XML1 and HTML2 or XSLX, OK - one;two"
 
+    "Split the string by all types."
+    ["hello" "good" "goodby XML" "HTML" "XML1" "HTML2" "XSLX" "OK" "one" "two" "PDF" "RDF"]
+    "Various: hello, and good, or goodby XML/HTML, XML1 and HTML2 or XSLX, OK - one;two, PDF_or_RDF"
+
     "Testing a non parsed string."
     ["XML"]
     "XML"
+
+    "Testing a parsed string with a / prefix."
+    ["OK"]
+    "/OK"
 
     "Testing empty string."
     [""]
