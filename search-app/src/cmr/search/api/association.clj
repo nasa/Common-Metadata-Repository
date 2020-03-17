@@ -44,21 +44,7 @@
   concept-type)
 
 (defmethod association-results->status-code :default
-  "If the concept-type is :variable the function will check for any errors in the results, and will return 400 if
-  any are present. Otherwise it will return 200"
-  ([results]
-   (let [errors-during-association (filter #(some? (:errors %)) results)]
-     (if (seq errors-during-association) 400 200)))
-  ([results concept-type]
-   (if (some #{concept-type} '(:variable :service))
-     (association-results->status-code results)
-     200)))
-
-(defmulti association-results->status-code
-  [concept-type results]
-  concept-type)
-
-(defmethod association-results->status-code :default
+  "Return 200 status code"
   [_ _]
   200)
 
