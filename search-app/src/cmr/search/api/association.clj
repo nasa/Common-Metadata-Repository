@@ -35,30 +35,27 @@
      context :update :provider-object provider-id)))
 
 (defn- results-contain-errors?
-  "Returns true if the results contain a :error key"
+  "Returns true if the results contain :errors"
   [results]
-  (some? (filter #(some? (:errors %)) results)))
+  (seq (filter #(some? (:errors %)) results)))
 
 (defmulti association-results->status-code
-  [concept-type results]
-  concept-type)
+  "Check for concept-types requiring error status to be returned. This is currently :service and :variable
+  If the concept-type is error-sensitive the function will check for any errors in the results, and will return 400 if
+  any are errors are present. Otherwise it will return 200"
+  (fn [concept-type results]
+    (when (some #{concept-type} '(:variable :service))
+      :error-sensitive)))
 
 (defmethod association-results->status-code :default
-  "Return 200 status code"
   [_ _]
   200)
 
-(defmethod association-results->status-code :service
-  "If the concept-type is :service the function will check for any errors in the results, and will return 400 if
-  any are present. Otherwise it will return 200"
+(defmethod association-results->status-code :error-sensitive
   [_ results]
-  (if (results-contain-errors? results) 400 200))
-
-(defmethod association-results->status-code :variable
-  "If the concept-type is :variable the function will check for any errors in the reuslts, and will return 400 if
-  any are present. Otherwise it will return 200"
-  [_ results]
-  (if (results-contain-error? results) 400 200))
+  (if (results-contain-errors? results)
+    400
+    200))
 
 (defn associate-concept-to-collections
   "Associate the given concept by concept type and concept id to a list of
@@ -88,5 +85,5 @@
   (info (format "Dissociating %s [%s] from collections: %s by client: %s."
                 (name concept-type) concept-id body (:client-id context)))
   (let [results (assoc-service/dissociate-from-collections context concept-type concept-id body)
-        status-code (association-results->status-code results concept-type)]
+        status-code (association-results->status-code concept-type results)]
     (api-response status-code results)))
