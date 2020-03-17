@@ -167,6 +167,10 @@
   [db provider concept]
   (set-created-at-for-concept db provider concept))
 
+(defmethod set-created-at :subscription
+  [db provider concept]
+  (set-created-at-for-concept db provider concept))
+
 (defmethod set-created-at :variable
   [db provider concept]
   (set-created-at-for-concept db provider concept))

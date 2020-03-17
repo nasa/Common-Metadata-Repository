@@ -5,6 +5,7 @@
     [cmr.ingest.services.ingest-service.service]
     [cmr.ingest.services.ingest-service.util]
     [cmr.ingest.services.ingest-service.variable]
+    [cmr.ingest.services.ingest-service.subscription]
     [potemkin :refer [import-vars]]))
 
 ;; Preserve the original API in this namespace:
@@ -28,6 +29,9 @@
   [cmr.ingest.services.ingest-service.service
    ;; Public service functions
    save-service]
+  [cmr.ingest.services.ingest-service.subscription
+   ;; Public subscription functions
+   save-subscription]
   [cmr.ingest.services.ingest-service.variable
    ;; Public variable functions
    save-variable])

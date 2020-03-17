@@ -43,7 +43,7 @@
              variable request-context (not (ingest-config/validate-umm-var-keywords)))
           concept-with-user-id (api-core/set-user-id concept request-context headers)
           ;; Log the ingest attempt
-          _ (info (format "Ingesting service %s from client %s"
+          _ (info (format "Ingesting variable %s from client %s"
                           (api-core/concept->loggable-string concept-with-user-id)
                           (:client-id request-context)))
           save-variable-result (ingest/save-variable request-context concept-with-user-id)]
