@@ -3687,7 +3687,7 @@ curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
 
-HTTP/1.1 400 OK
+HTTP/1.1 400 BAD REQUEST
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -4005,7 +4005,7 @@ curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-E
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
-HTTP/1.1 400 OK
+HTTP/1.1 400 BAD REQUEST
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -4042,7 +4042,7 @@ curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
 
-HTTP/1.1 400 OK
+HTTP/1.1 400 BAD REQUEST
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
