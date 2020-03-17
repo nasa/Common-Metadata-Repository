@@ -34,16 +34,45 @@
     (acl/verify-ingest-management-permission
      context :update :provider-object provider-id)))
 
-(defn- association-results->status-code
+(defn- results-contain-errors?
+  "Returns true if the results contain a :error key"
+  [results]
+  (some? (filter #(some? (:errors %)) results)))
+
+(defmulti association-results->status-code
+  [concept-type results]
+  concept-type)
+
+(defmethod association-results->status-code :default
   "If the concept-type is :variable the function will check for any errors in the results, and will return 400 if
   any are present. Otherwise it will return 200"
   ([results]
    (let [errors-during-association (filter #(some? (:errors %)) results)]
      (if (seq errors-during-association) 400 200)))
   ([results concept-type]
-   (if (= :variable concept-type)
+   (if (some #{concept-type} '(:variable :service))
      (association-results->status-code results)
      200)))
+
+(defmulti association-results->status-code
+  [concept-type results]
+  concept-type)
+
+(defmethod association-results->status-code :default
+  [_ _]
+  200)
+
+(defmethod association-results->status-code :service
+  "If the concept-type is :service the function will check for any errors in the results, and will return 400 if
+  any are present. Otherwise it will return 200"
+  [_ results]
+  (if (results-contain-errors? results) 400 200))
+
+(defmethod association-results->status-code :variable
+  "If the concept-type is :variable the function will check for any errors in the reuslts, and will return 400 if
+  any are present. Otherwise it will return 200"
+  [_ results]
+  (if (results-contain-error? results) 400 200))
 
 (defn associate-concept-to-collections
   "Associate the given concept by concept type and concept id to a list of
@@ -60,7 +89,7 @@
       400
       {:error "Only one collection allowed in the list because a variable can only be associated with one collection."})
     (let [results (assoc-service/associate-to-collections context concept-type concept-id body)
-          status-code (association-results->status-code results concept-type)]
+          status-code (association-results->status-code concept-type results)]
         (api-response status-code results))))
 
 (defn dissociate-concept-from-collections
