@@ -34,6 +34,29 @@
     (acl/verify-ingest-management-permission
      context :update :provider-object provider-id)))
 
+(defn- results-contain-errors?
+  "Returns true if the results contain :errors"
+  [results]
+  (seq (filter #(some? (:errors %)) results)))
+
+(defmulti association-results->status-code
+  "Check for concept-types requiring error status to be returned. This is currently :service and :variable
+  If the concept-type is error-sensitive the function will check for any errors in the results, and will return 400 if
+  any are errors are present. Otherwise it will return 200"
+  (fn [concept-type results]
+    (when (some #{concept-type} '(:variable :service))
+      :error-sensitive)))
+
+(defmethod association-results->status-code :default
+  [_ _]
+  200)
+
+(defmethod association-results->status-code :error-sensitive
+  [_ results]
+  (if (results-contain-errors? results)
+    400
+    200))
+
 (defn associate-concept-to-collections
   "Associate the given concept by concept type and concept id to a list of
   collections in the request body."
@@ -48,8 +71,9 @@
     (api-response
       400
       {:error "Only one collection allowed in the list because a variable can only be associated with one collection."})
-    (api-response
-     (assoc-service/associate-to-collections context concept-type concept-id body))))
+    (let [results (assoc-service/associate-to-collections context concept-type concept-id body)
+          status-code (association-results->status-code concept-type results)]
+        (api-response status-code results))))
 
 (defn dissociate-concept-from-collections
   "Dissociate the given concept by concept type and concept id from a list of
@@ -60,5 +84,6 @@
   (validate-association-content-type headers)
   (info (format "Dissociating %s [%s] from collections: %s by client: %s."
                 (name concept-type) concept-id body (:client-id context)))
-  (api-response
-   (assoc-service/dissociate-from-collections context concept-type concept-id body)))
+  (let [results (assoc-service/dissociate-from-collections context concept-type concept-id body)
+        status-code (association-results->status-code concept-type results)]
+    (api-response status-code results)))

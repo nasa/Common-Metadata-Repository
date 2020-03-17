@@ -75,7 +75,7 @@
     (testing "Associate to non-existent collections"
       (let [response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id "C100-P5"}])]
-        (vu/assert-variable-association-response-ok?
+        (vu/assert-variable-association-bad-request
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
          response)))
 
@@ -85,7 +85,7 @@
             _ (index/wait-until-indexed)
             response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id c1-p1}])]
-        (vu/assert-variable-association-response-ok?
+        (vu/assert-variable-association-bad-request
          {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
          response)))
 
@@ -94,7 +94,7 @@
       (let [response (association-util/associate-by-concept-ids token
                                                                 concept-id
                                                                 [{:concept-id c4-p3}])]
-        (vu/assert-variable-association-response-ok?
+        (vu/assert-variable-association-bad-request
          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
          response)))))
 
@@ -192,7 +192,7 @@
                       concept-id
                       (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
        (is (= 200 (:status response1)))
-       (is (= 200 (:status response2)))
+       (is (= 400 (:status response2)))
        (is (string/includes? (:errors (first (:body response2))) 
                              "can not be associated because the variable is already associated with another collection")) 
        (is (= 400 (:status response3)))
@@ -205,7 +205,7 @@
                      prov3-token
                      concept-id
                      (map #(hash-map :concept-id (:concept-id %)) [c1-p2]))]
-       (is (= 200 (:status response)))
+       (is (= 400 (:status response)))
        (is (string/includes? (:errors (first (:body response)))
                              "can not be associated because they do not belong to the same provider")))
 
@@ -223,7 +223,7 @@
     (testing "Dissociate non-existent collections"
       (let [response (association-util/dissociate-by-concept-ids
                       token concept-id [{:concept-id "C100-P5"}])]
-        (vu/assert-variable-dissociation-response-ok?
+        (vu/assert-variable-association-bad-request
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
          response)))
 
@@ -234,7 +234,7 @@
             _ (index/wait-until-indexed)
             response (association-util/dissociate-by-concept-ids
                       token concept-id [{:concept-id c1-p2-concept-id}])]
-        (vu/assert-variable-dissociation-response-ok?
+        (vu/assert-variable-association-bad-request
          {[c1-p2-concept-id] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                c1-p2-concept-id)]}}
          response)))
@@ -244,7 +244,7 @@
       (let [coll-concept-id (:concept-id c4-p3)
             response (association-util/dissociate-by-concept-ids
                       token concept-id [{:concept-id coll-concept-id}])]
-        (vu/assert-variable-dissociation-response-ok?
+        (vu/assert-variable-association-bad-request
          {[coll-concept-id] {:errors [(format "Collection [%s] does not exist or is not visible."
                                               coll-concept-id)]}}
          response)))))
@@ -324,7 +324,7 @@
                         [{:concept-id (:concept-id coll2)
                           :revision-id (:revision-id coll2)}])]
         (is (= 200 (:status response1)))
-        (is (= 200 (:status response2)))
+        (is (= 400 (:status response2)))
         (is (string/includes? (some #(when (not= nil %) %) (map :errors (:body response2)))
                               "can not be associated because the variable is already associated with another collection")))
 
@@ -336,7 +336,7 @@
                        {:concept-id (:concept-id coll1) :revision-id 1} ;; success
                        {:concept-id (:concept-id coll3)}])] ;; no variable association
 
-        (vu/assert-variable-dissociation-response-ok?
+        (vu/assert-variable-dissociation-bad-request
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
           ["C1200000012-PROV1" 1] {:concept-id "VA1200000016-CMR" :revision-id 2}
           ["C1200000014-PROV1"]

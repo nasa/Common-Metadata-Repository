@@ -234,16 +234,26 @@
             [status (set (comparable-variable-associations body))])))))
 
 (defn assert-variable-association-bad-request
-  "Assert the variable association response when status code is 200 is correct."
-  [err-msg response]
-  (let [{:keys [status body errors]} response]
-     (is (= 400 status))
-     (is (= errors err-msg))))
+  "Assert the variable association response when status code is 400 is correct."
+  ([coll-variable-associations response]
+   (assert-variable-association-bad-request coll-variable-associations response true))
+  ([coll-variable-associations response error?]
+   (let [{:keys [status body errors]} response
+         expected-tas (map #(coll-variable-association->expected-variable-association % error?)
+                           coll-variable-associations)]
+     (is (= [400
+             (set (comparable-variable-associations expected-tas))]
+            [status (set (comparable-variable-associations body))])))))
 
 (defn assert-variable-dissociation-response-ok?
   "Assert the variable association response when status code is 200 is correct."
   [coll-variable-associations response]
   (assert-variable-association-response-ok? coll-variable-associations response false))
+
+(defn assert-variable-dissociation-bad-request
+  "Assert the variable association error when status code is 400 is correct."
+  [err-msg response]
+  (assert-variable-association-bad-request err-msg response))
 
 (defn assert-variable-associated-with-query
   "Assert the collections found by the variable query matches the given collection revisions"

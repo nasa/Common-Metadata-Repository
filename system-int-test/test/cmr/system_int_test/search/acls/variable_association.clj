@@ -71,10 +71,10 @@
                       create-token
                       var-concept-id
                       [{:concept-id coll-concept-id}])]
-        (is (= 200 (:status response)))))
+        (is (= 400 (:status response)))))
     (testing "allowed variable dissociation responses"
       (let [response (au/dissociate-by-concept-ids
                       delete-token
                       var-concept-id
                       [{:concept-id coll-concept-id}])]
-        (is (= 200 (:status response)))))))
+        (is (= 400 (:status response)))))))
