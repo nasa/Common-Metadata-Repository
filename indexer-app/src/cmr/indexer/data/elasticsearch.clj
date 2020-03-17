@@ -299,7 +299,8 @@
                                (let [status (if (:index item)
                                                 (get-in item [:index :status])
                                                 (get-in item [:delete :status]))]
-                                 (and (> status 399)
+                                 (and (not (nil? status))
+                                      (> status 399)
                                       (not= 409 status)
                                       (not= 404 status))))
                            (:items response))]
@@ -309,6 +310,15 @@
                                 (:delete resp))
                   {:keys [_id status error]} resp-data]]
          (log/error (format "[%s] failed bulk indexing with status [%d] and error [%s]" _id status error)))))
+
+(defn bulk-index-autocomplete-suggestions
+  "Save a batch of suggestion documents in Elasticsearch."
+  [context docs]
+  (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
+    (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
+          conn (context->conn context)
+          response (bulk/bulk conn bulk-operations)]
+      (handle-bulk-index-response response))))
 
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
