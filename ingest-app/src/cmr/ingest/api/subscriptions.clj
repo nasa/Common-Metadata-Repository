@@ -23,22 +23,22 @@
   [provider-id native-id request]
   (let [{:keys [body content-type headers request-context]} request
         concept (api-core/body->concept!
-                 :subscription provider-id native-id body content-type headers)]
-    (lt-validation/validate-launchpad-token request-context)
-    (api-core/verify-provider-exists request-context provider-id)
-    (acl/verify-ingest-management-permission
-      request-context :update :provider-object provider-id)
-    (common-enabled/validate-write-enabled request-context "ingest")
-    (let [concept (validate-and-prepare-subscription-concept concept)
-          concept-with-user-id (api-core/set-user-id concept request-context headers)
-          ;; Log the ingest attempt
-          _ (info (format "Ingesting subscription %s from client %s"
-                          (api-core/concept->loggable-string concept-with-user-id) 
-                          (:client-id request-context)))
-          save-subscription-result (ingest/save-subscription request-context concept-with-user-id)]
-      ;; Log the successful ingest, with the metadata size in bytes. 
-      (api-core/log-concept-with-metadata-size concept-with-user-id request-context)
-      (api-core/generate-ingest-response headers save-subscription-result))))
+                 :subscription provider-id native-id body content-type headers)
+        _ (lt-validation/validate-launchpad-token request-context)
+        _ (api-core/verify-provider-exists request-context provider-id)
+        _ (acl/verify-ingest-management-permission
+            request-context :update :provider-object provider-id)
+        _ (common-enabled/validate-write-enabled request-context "ingest")
+        concept (validate-and-prepare-subscription-concept concept)
+        concept-with-user-id (api-core/set-user-id concept request-context headers)
+        ;; Log the ingest attempt
+        _ (info (format "Ingesting subscription %s from client %s"
+                        (api-core/concept->loggable-string concept-with-user-id)
+                        (:client-id request-context)))
+        save-subscription-result (ingest/save-subscription request-context concept-with-user-id)]
+    ;; Log the successful ingest, with the metadata size in bytes.
+    (api-core/log-concept-with-metadata-size concept-with-user-id request-context)
+    (api-core/generate-ingest-response headers save-subscription-result)))
 
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."
