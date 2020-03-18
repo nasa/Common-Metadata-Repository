@@ -59,10 +59,26 @@
     (dissoc params :concept-type :exclude-metadata)
     (dissoc params :concept-type :exclude-metadata :provider-id)))
 
-(defn- gen-find-concepts-in-table-sql
+(defmulti gen-find-concepts-in-table-sql
   "Create the SQL for the given params and table.
   If :include-all is true, all revisions of the concepts will be returned. This is needed for the
   find-latest-concepts function to later filter out the latest concepts that satisfy the search in memory."
+  (fn [concept-type table fields params]
+    (when (and (= :granule concept-type)
+               (= [:native-id] (-> params (dissoc :include-all) keys)))
+      :granule-native-id-search)))
+
+;; special case added to address OB_DAAC granule search by native-id problem
+;; where the native id index is not being used by Oracle optimizer
+(defmethod gen-find-concepts-in-table-sql :granule-native-id-search
+  [concept-type table fields params]
+  (let [selected-fields (->> fields
+                             (map name)
+                             (string/join ", "))]
+    [(format (str "SELECT /*+INDEX(%s,%s_UCR_I)*/ %s FROM %s WHERE native_id = '%s'")
+             table table selected-fields table (:native-id params))]))
+
+(defmethod gen-find-concepts-in-table-sql :default
   [concept-type table fields params]
   (if (:include-all params)
     (let [params (dissoc params :include-all)]
