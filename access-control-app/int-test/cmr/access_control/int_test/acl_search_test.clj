@@ -823,7 +823,7 @@
      (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:identity_type "SYSTEM" :target "GROUP"})))))
 
      ;; Unindex acl1 directly through elastic to simulate an inconsistent state
-     (client/delete (format "http://%s:%s/acls/acl/%s"
+     (client/delete (format "http://%s:%s/acls/_doc/%s"
                             (elastic-config/elastic-host)
                             (elastic-config/elastic-port)
                             (:concept-id acl1))
