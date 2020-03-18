@@ -80,12 +80,6 @@
                                   count)]
         (is (= 5 num-of-subscriptions))))))
 
-(deftest find-subscriptions-with-invalid-parameters
-  (testing "extra parameters"
-    (is (= {:status 400
-            :errors ["Finding concept type [subscription] with parameters [provider-id] is not supported."]}
-           (util/find-concepts :subscription {:provider-id "PROV1"})))))
-
 (deftest find-subscriptions-with-latest-true
   (let [subscription (concepts/create-and-save-concept :subscription "PROV1" 1 5)
         latest-subscription (util/find-concepts :subscription {:latest true})]

@@ -71,3 +71,7 @@
   (fn [conn]
     (format "%s/services" (conn/root-url conn))))
 
+(h/defsearcher search-for-subscriptions :search
+  (fn [conn]
+    (format "%s/subscriptions" (conn/root-url conn))))
+

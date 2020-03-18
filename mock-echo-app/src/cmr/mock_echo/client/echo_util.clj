@@ -368,7 +368,12 @@
 
 (def grant-all-service
   "Creates an ACL in mock echo granting registered users ability to do all
-  variable related operations"
+  service related operations"
+  grant-all-variable)
+
+(def grant-all-subscription
+  "Creates an ACL in mock echo granting registered users ability to do all
+  subscription related operations"
   grant-all-variable)
 
 (defn grant-create-read-groups
