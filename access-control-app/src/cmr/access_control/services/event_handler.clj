@@ -56,7 +56,7 @@
 
 ;;; Deletes
 (defmethod handle-indexing-event [:concept-delete :access-group]
-  [context {:keys [concept-id]}]
+  [context {:keys [concept-id revision-id]}]
   (doseq [acl-concept (acl-service/get-all-acl-concepts context)
           :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
                 group-permissions (:group-permissions parsed-acl)]]
@@ -71,11 +71,11 @@
                                 (:concept-id acl-concept)
                                 (assoc parsed-acl :group-permissions
                                        (remove #(= (:group-id %) concept-id) group-permissions))))))
-  (index/unindex-group context concept-id))
+  (index/unindex-group context concept-id revision-id))
 
 (defmethod handle-indexing-event [:concept-delete :acl]
-  [context {:keys [concept-id]}]
-  (index/unindex-acl context concept-id))
+  [context {:keys [concept-id revision-id]}]
+  (index/unindex-acl context concept-id revision-id))
 
 (defmethod handle-indexing-event [:concept-delete :collection]
   [context {:keys [concept-id revision-id]}]

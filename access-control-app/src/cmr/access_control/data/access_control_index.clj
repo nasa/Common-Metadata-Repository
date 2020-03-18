@@ -87,12 +87,13 @@
 
 (defn unindex-group
   "Removes group from index by concept ID."
-  [context concept-id]
-  (info "Unindexing group concept:" concept-id)
+  [context concept-id revision-id]
+  (info "Unindexing group concept:" concept-id " revision:" revision-id)
   (m/delete-by-id (esi/context->search-index context)
                   group-index-name
                   group-type-name
                   concept-id
+                  revision-id
                   {:refresh? true}))
 
 (defn-timed reindex-groups
@@ -102,7 +103,7 @@
   (doseq [group-batch (mdb-legacy/find-in-batches context :access-group 100 {:latest true})
           group group-batch]
     (if (:deleted group)
-      (unindex-group context (:concept-id group))
+      (unindex-group context (:concept-id group) (:revision-id group))
       (index-group context group)))
   (info "Reindexing all groups complete"))
 
@@ -378,11 +379,13 @@
 
 (defn unindex-acl
   "Removes ACL from index by concept ID."
-  [context concept-id]
+  [context concept-id revision-id]
+  (info "Unindexing acl concept:" concept-id " revision:" revision-id)
   (m/delete-by-id (esi/context->search-index context)
                   acl-index-name
                   acl-type-name
                   concept-id
+                  revision-id
                   ;; refresh by default because unindexing is rare, and this keeps things simpler
                   {:refresh? true}))
 
@@ -393,7 +396,7 @@
   (doseq [acl-batch (mdb-legacy/find-in-batches context :acl 100 {:latest true})
           acl acl-batch]
     (if (:deleted acl)
-      (unindex-acl context (:concept-id acl))
+      (unindex-acl context (:concept-id acl) (:revision-id acl))
       (index-acl context acl)))
   (info "Reindexing all acls complete"))
 
