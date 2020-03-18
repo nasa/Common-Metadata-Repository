@@ -551,7 +551,7 @@ curl -i -X DELETE \
 
 ### <a name="create-update-subscription"></a> Create / Update a Subscription
 
-Subscription concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+Subscription concept can be created or updated by sending an HTTP PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
 ```
 curl -i -XPUT \
