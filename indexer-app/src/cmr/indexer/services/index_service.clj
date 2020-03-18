@@ -14,14 +14,15 @@
    [cmr.common.date-time-parser :as date]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.common.services.messages :as cmsg]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
+   [cmr.common.services.messages :as cmsg]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es-util]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.concept-parser :as cp]
+   [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
    [cmr.indexer.data.concepts.deleted-granule :as dg]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
@@ -36,8 +37,7 @@
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.transmit.metadata-db2 :as meta-db2]
    [cmr.transmit.search :as search]
-   [cmr.umm.umm-core :as umm]
-   [cmr.indexer.data.concepts.collection.humanizer :as humanizer]))
+   [cmr.umm.umm-core :as umm]))
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
@@ -177,8 +177,9 @@
 (def REINDEX_BATCH_SIZE 2000)
 
 (defn- suggestion-doc
-  [collection-id key-name value-map]
-  ; We want to pull Science Keywords from KMS because they are controlled
+  "Creates elasticsearch docs from a given humanized map"
+  [key-name value-map]
+  ;; We want to pull Science Keywords from KMS because they are controlled
   (when-not (= key-name "science-keywords")
    (map (fn [value]
          {:type key-name
@@ -191,7 +192,7 @@
 (defn- get-suggestion-docs
   "Given the humanized fields from a collection, assemble elastic doc for each
   value available for indexing into elasticsearch"
-  [humanized-fields concept-id]
+  [humanized-fields]
   (for [humanized-field humanized-fields
         :let [key (key humanized-field)
               key-name (-> key
@@ -202,7 +203,7 @@
                               (map util/remove-nil-keys h)
                               (map #(dissoc % :priority) h))
               suggestion-docs (->> value-map
-                                   (map #(suggestion-doc concept-id key-name %))
+                                   (map #(suggestion-doc key-name %))
                                    (remove nil?))]]
     suggestion-docs))
 
@@ -221,13 +222,13 @@
          :let [values (->> keyword-hierarchy
                            (map #(get sk-map %))
                            (remove nil?))
-               ; take the leaf keyword and store it as the field name
+               ;; take the leaf keyword and store it as the field name
                terminal-key (->> keyword-hierarchy
                                  (map #(get sk-map %))
                                  (positions nil?))
-               ; no nil items in `terminal-key` simply means that there were no
-               ; keys in `keyword-hierarchy` that were not present in the
-               ; science-keywords object
+               ;; no nil items in `terminal-key` simply means that there were no
+               ;; keys in `keyword-hierarchy` that were not present in the
+               ;; science-keywords object
                keyword-field (if (empty? terminal-key)
                                (last keyword-hierarchy)
                                (->> terminal-key
@@ -259,10 +260,9 @@
   "Convert collection concept metadata to UMM-C and pull facet fields
   to be indexed as autocomplete suggestion doc"
   [context collection]
-  (let [concept-id (:concept-id collection)
-        parsed-concept (cp/parse-concept context collection)
+  (let [parsed-concept (cp/parse-concept context collection)
         humanized-fields (humanizer/collection-humanizers-elastic context parsed-concept)
-        suggestion-docs (get-suggestion-docs humanized-fields concept-id)]
+        suggestion-docs (get-suggestion-docs humanized-fields)]
     (flatten suggestion-docs)))
 
 

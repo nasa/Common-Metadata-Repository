@@ -2,14 +2,14 @@
   "This tests re-index tags."
   (:require
    [clojure.test :refer :all]
-   [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.index-util :as index]
-   [cmr.system-int-test.search.facets.facets-util :as fu]
-   [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]
-   [cmr.system-int-test.data2.umm-spec-common :as umm-spec-common]))
+   [cmr.system-int-test.data2.umm-spec-common :as umm-spec-common]
+   [cmr.system-int-test.search.facets.facets-util :as fu]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.humanizer-util :as hu]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
