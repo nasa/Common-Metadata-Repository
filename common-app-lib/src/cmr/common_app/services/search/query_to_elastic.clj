@@ -180,8 +180,9 @@
    [{:keys [operation conditions]} concept-type]
    ;; Performance enhancement: We should order the conditions within and/ors.
    (if (= :and operation)
-     (map #(condition->elastic % concept-type) conditions)
-     {:bool {:should (map #(condition->elastic % concept-type) conditions)}}))
+     {:bool {:must (map #(condition->elastic % concept-type) conditions)}}
+     {:bool {:should (map #(condition->elastic % concept-type) conditions)
+             :minimum_should_match 1}}))
 
   cmr.common_app.services.search.query_model.NestedCondition
   (condition->elastic
@@ -262,26 +263,29 @@
   cmr.common_app.services.search.query_model.NumericRangeIntersectionCondition
   (condition->elastic
    [{:keys [min-field max-field min-value max-value]} concept-type]
-   {:or [(range-condition->elastic (query-field->elastic-field min-field concept-type)
-                                   min-value
-                                   max-value
-                                   (numeric-range-execution-mode)
-                                   (numeric-range-use-cache))
-         (range-condition->elastic (query-field->elastic-field max-field concept-type)
-                                   min-value
-                                   max-value
-                                   (numeric-range-execution-mode)
-                                   (numeric-range-use-cache))
-         {:and [(range-condition->elastic (query-field->elastic-field min-field concept-type)
-                                          nil
-                                          min-value
-                                          (numeric-range-execution-mode)
-                                          (numeric-range-use-cache))
-                (range-condition->elastic (query-field->elastic-field max-field concept-type)
-                                          max-value
-                                          nil
-                                          (numeric-range-execution-mode)
-                                          (numeric-range-use-cache))]}]})
+   {:bool
+    {:should [(range-condition->elastic (query-field->elastic-field min-field concept-type)
+                                        min-value
+                                        max-value
+                                        (numeric-range-execution-mode)
+                                        (numeric-range-use-cache))
+              (range-condition->elastic (query-field->elastic-field max-field concept-type)
+                                        min-value
+                                        max-value
+                                        (numeric-range-execution-mode)
+                                        (numeric-range-use-cache))
+              {:bool
+               {:must [(range-condition->elastic (query-field->elastic-field min-field concept-type)
+                                                 nil
+                                                 min-value
+                                                 (numeric-range-execution-mode)
+                                                 (numeric-range-use-cache))
+                       (range-condition->elastic (query-field->elastic-field max-field concept-type)
+                                                 max-value
+                                                 nil
+                                                 (numeric-range-execution-mode)
+                                                 (numeric-range-use-cache))]}}]
+     :minimum_should_match 1}})
 
   cmr.common_app.services.search.query_model.StringRangeCondition
   (condition->elastic
