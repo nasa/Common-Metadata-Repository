@@ -211,11 +211,8 @@
   "Takes a non-tombstoned concept map (a normal revision) and returns an elastic document suitable
    for bulk indexing."
   [context concept]
-  (let [parsed-concept (cp/parse-concept context concept)
-        delete-time (get-in parsed-concept
-                            [:data-provider-timestamps :delete-time])
-        elastic-doc (parsed-concept->elastic-doc context concept parsed-concept)]
-    elastic-doc))
+  (let [parsed-concept (cp/parse-concept context concept)]
+    (parsed-concept->elastic-doc context concept parsed-concept)))
 
 (defn- concept->bulk-elastic-docs
   "Converts a concept map into an elastic document suitable for bulk indexing."
