@@ -184,12 +184,13 @@
      :refresh? - to synchronously force the index to make the change searchable. Use with care.
 
     Returns a hashmap of the HTTP response"
-  ([elastic-store index-name type-name id]
+  ([elastic-store index-name type-name id version]
    (delete-by-id elastic-store index-name type-name id nil))
-  ([elastic-store index-name type-name id options]
-   (let [elastic-options (if (:refresh? options)
-                           {:refresh "true"}
-                           {})]
+  ([elastic-store index-name type-name id version options]
+   (let [elastic-options (merge {:version version
+                                 :version_type "external_gte"}
+                                 (when (:refresh? options)
+                                   {:refresh "true"}))]
      (es-helper/delete (:conn elastic-store) index-name type-name id elastic-options))))
 
 (defn delete-by-query

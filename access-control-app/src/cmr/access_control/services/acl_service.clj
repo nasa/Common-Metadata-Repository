@@ -131,7 +131,7 @@
                        :deleted true}
            resp (mdb/save-concept context tombstone)]
        ;; unindexing is synchronous
-       (index/unindex-acl context concept-id)
+       (index/unindex-acl context concept-id (:revision-id tombstone))
        (info (acl-util/acl-log-message context tombstone acl-concept :delete))
        resp))))
 

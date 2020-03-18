@@ -108,7 +108,7 @@
                                    :user-id (context->user-id context))
                             (update :revision-id inc))
         result (mdb/save-concept context deleted-concept)]
-    (index/unindex-group context (:concept-id existing-concept))
+    (index/unindex-group context (:concept-id existing-concept) (:revision-id deleted-concept))
     result))
 
 
@@ -247,9 +247,7 @@
   (let [group-concept (fetch-group-concept context concept-id)
         group (edn/read-string (:metadata group-concept))]
     (auth/verify-can-delete-group context (assoc group :concept-id concept-id))
-    (let [delete-result (save-deleted-group-concept context group-concept)]
-      (index/unindex-group context concept-id)
-      delete-result)))
+    (save-deleted-group-concept context group-concept)))
 
 (defn update-group
   "Updates an existing group with the given concept id"

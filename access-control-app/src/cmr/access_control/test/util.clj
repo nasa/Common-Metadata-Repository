@@ -7,17 +7,17 @@
    [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
-   [cmr.umm.umm-granule :as umm-g]
-   [cmr.umm.umm-core :as umm-core]
    [cmr.elastic-utils.config :as es-config]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db2 :as mdb]
+   [cmr.umm.umm-core :as umm-core]
+   [cmr.umm.umm-granule :as umm-g]
    [cmr.umm-spec.legacy :as legacy]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.versioning :as versioning]))
 
 (def conn-context-atom
@@ -38,16 +38,35 @@
   (client/post (format "http://localhost:%s/_refresh" (es-config/elastic-port))))
 
 (defn unindex-all-groups
-  "Manually unindexes all groups from Elasticsearch"
+  "Manually unindexes all groups from Elasticsearch. Use bulk delete instead of delete by query
+  to avoid version conflicts. No way to specify version with delete by query which causes
+  the version to be incremented. Bulk delete allows us to specify a version equal to the version
+  already indexed."
   []
-  (let [response (client/post (format "http://localhost:%s/%s/_delete_by_query"
+  (let [search-response (client/post
+                         (format "http://localhost:%s/%s/_search"
+                                 (es-config/elastic-port)
+                                 access-control-index/group-index-name)
+                         {:throw-exceptions true
+                          :content-type :json
+                          :body "{\"version\": true, \"size\": 10000, \"query\": {\"match_all\": {}}}"
+                          :as :json})
+        bulk-body (str/join
+                   "\n"
+                   (mapv (fn [hit]
+                           (format "{\"delete\": {\"_id\": \"%s\", \"version\": %d, \"version_type\": \"external_gte\"}}"
+                                   (:_id hit)
+                                   (:_version hit)))
+                         (get-in search-response [:body :hits :hits])))
+        bulk-response (client/post
+                       (format "http://localhost:%s/%s/_bulk"
                                (es-config/elastic-port)
                                access-control-index/group-index-name)
-                              {:throw-exceptions false
-                               :content-type :json
-                               :body "{\"query\": {\"match_all\": {}}}"})]
-    (when-not (= 200 (:status response))
-      (throw (Exception. (str "Failed to unindex all groups:" (pr-str response)))))
+                       {:throw-exceptions false
+                        :content-type :json
+                        :body (str bulk-body "\n")})]
+    (when-not (= 200 (:status bulk-response))
+      (throw (Exception. (str "Failed to unindex all groups:" (pr-str bulk-response)))))
     (refresh-elastic-index)))
 
 (defn wait-until-indexed
