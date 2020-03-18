@@ -3,9 +3,9 @@
     [cmr.ingest.services.ingest-service.collection]
     [cmr.ingest.services.ingest-service.granule]
     [cmr.ingest.services.ingest-service.service]
+    [cmr.ingest.services.ingest-service.subscription]
     [cmr.ingest.services.ingest-service.util]
     [cmr.ingest.services.ingest-service.variable]
-    [cmr.ingest.services.ingest-service.subscription]
     [potemkin :refer [import-vars]]))
 
 ;; Preserve the original API in this namespace:
