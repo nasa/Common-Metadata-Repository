@@ -74,7 +74,7 @@
 
 (def system-level-concept-types
   "A set of concept types that only exist on system level provider CMR."
-  #{:tag :tag-association :humanizer :subscription :variable-association :service-association})
+  #{:tag :tag-association :humanizer :variable-association :service-association})
 
 ;;; utility methods
 
@@ -90,7 +90,6 @@
                       :tag (msg/tags-only-system-level provider-id)
                       :tag-association (msg/tag-associations-only-system-level provider-id)
                       :humanizer (msg/humanizers-only-system-level provider-id)
-                      :subscription (msg/subscriptions-only-system-level provider-id)
                       :variable-association (msg/variable-associations-only-system-level
                                              provider-id)
                       :service-association (msg/service-associations-only-system-level
@@ -165,6 +164,10 @@
   (set-created-at-for-concept db provider concept))
 
 (defmethod set-created-at :service
+  [db provider concept]
+  (set-created-at-for-concept db provider concept))
+
+(defmethod set-created-at :subscription
   [db provider concept]
   (set-created-at-for-concept db provider concept))
 

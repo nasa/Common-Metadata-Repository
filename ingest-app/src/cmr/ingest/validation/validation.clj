@@ -26,6 +26,7 @@
   {:collection #{mt/echo10 mt/iso-smap mt/iso19115 mt/dif mt/dif10 mt/umm-json}
    :granule #{mt/echo10 mt/iso-smap mt/umm-json}
    :variable #{mt/umm-json}
+   :subscription #{mt/umm-json}
    :service #{mt/umm-json}})
 
 

@@ -73,6 +73,24 @@
       }
     }
 
+#### Subscription
+
+    {
+      "concept-type": "subscription",
+      "native-id": "subscription1",
+      "user-id": "user101",
+      "metadata": "{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"EmailAddress\": \"someaddress@gmail.com\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}",
+      "format": "application/vnd.nasa.cmr.umm+json;version=1.0",
+      "revision-id": 1, //(optional field)
+      "revision-date": "2012-01-01T00:00:00", //(optional field)
+      "extra-fields": {
+        "subscription-name": "someSubscription",
+        "collection-concept-id": "C1234-PROV1",
+        "subscriber-id": "someSubscriberId",
+        "email-address": "someaddress@gmail.com"
+      }
+    }
+
 #### Group
 
     {

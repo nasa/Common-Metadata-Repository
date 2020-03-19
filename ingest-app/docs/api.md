@@ -22,6 +22,9 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /providers/\<provider-id>/services/\<native-id>
     * [PUT - Create or update a service.](#create-update-service)
     * [DELETE - Delete a service.](#delete-service)
+  * /providers/\<provider-id>/subscriptions/\<native-id>
+    * [PUT - Create or update a subscription.](#create-update-subscription)
+    * [DELETE - Delete a subscription.](#delete-subscription)
   * /translate/collection
     * [POST - Translate collection metadata.](#translate-collection)
   * /translate/granule
@@ -544,6 +547,62 @@ curl -i -X DELETE \
 
 ```
 {"concept-id":"S1200000015-PROV1","revision-id":2}
+```
+
+### <a name="create-update-subscription"></a> Create / Update a Subscription
+
+Subscription concept can be created or updated by sending an HTTP PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+
+```
+curl -i -XPUT \
+-H "Content-type: application/vnd.nasa.cmr.umm+json" \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/subscriptions/subscription123 -d \
+"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"EmailAddress\": \"someaddress@gmail.com\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>SUB1200000015-PROV1</concept-id>
+  <revision-id>1</revision-id>
+</result>
+```
+#### Successful Response in JSON
+
+By passing the option `-H "Accept: application/json"` to `curl`, one may
+get a JSON response:
+
+```
+{"concept-id":"SUB1200000015-PROV1","revision-id":1}
+```
+
+### <a name="delete-service"></a> Delete a Subscription
+
+Subscription metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+
+```
+curl -i -X DELETE \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/subscriptions/subscription123
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>SUB1200000015-PROV1</concept-id>
+  <revision-id>2</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+```
+{"concept-id":"SUB1200000015-PROV1","revision-id":2}
 ```
 
 ## <a name="translate-collection"></a> Translate Collection Metadata

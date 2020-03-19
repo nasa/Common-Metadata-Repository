@@ -158,6 +158,7 @@
    :granule (when (enforce-granule-ur-constraint) [granule-ur-unique-constraint])
    :acl [(unique-field-constraint :acl-identity)]
    :service [(partial pfn-constraint :service-name)]
+   :subscription [(partial pfn-constraint :subscription-name)]
    :variable [(unique-field-constraint :fingerprint)]})
 
 (defn perform-post-commit-constraint-checks

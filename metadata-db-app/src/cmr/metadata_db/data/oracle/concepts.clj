@@ -70,6 +70,10 @@
   [_ {:keys [provider-id]} base-clause]
   (add-provider-clause provider-id base-clause))
 
+(defmethod by-provider :subscription
+  [_ {:keys [provider-id]} base-clause]
+  (add-provider-clause provider-id base-clause))
+
 (defmethod by-provider :default
   [_ {:keys [provider-id small]} base-clause]
   (if small

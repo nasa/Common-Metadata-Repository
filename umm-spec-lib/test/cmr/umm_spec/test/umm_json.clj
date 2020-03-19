@@ -125,6 +125,14 @@
           parsed (remove-get-service-and-get-data-nils parsed)]
       (is (= umm-s-record parsed)))))
 
+(deftest all-umm-sub-records
+  (checking "all umm-sub records" 100
+    [umm-sub-record (gen/no-shrink umm-gen/umm-sub-generator)]
+    (let [json (umm-json/umm->json umm-sub-record)
+          _ (is (empty? (json-schema/validate-umm-json json :subscription)))
+          parsed (umm-json/json->umm {} :subscription json)]
+      (is (= umm-sub-record parsed)))))
+
 (deftest all-umm-var-records
   (checking "all umm-var records" 100
     [umm-var-record (gen/no-shrink umm-gen/umm-var-generator)]
