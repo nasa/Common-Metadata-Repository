@@ -1,7 +1,6 @@
 (ns cmr.metadata-db.migrations.070-modify-subscriptions-table
-  (:require [clojure.java.jdbc :as j]
-            [config.mdb-migrate-config :as config]
-            [config.mdb-migrate-helper :as h]))
+  (:require 
+   [config.mdb-migrate-helper :as h]))
 
 (def ^:private subscriptions-column-sql-069
   "id NUMBER,

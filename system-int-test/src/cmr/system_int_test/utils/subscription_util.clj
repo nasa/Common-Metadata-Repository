@@ -2,20 +2,14 @@
   "This contains utilities for testing subscriptions."
   (:require
    [cheshire.core :as json]
-   [clj-http.client :as client]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mime-types]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
-   [cmr.system-int-test.data2.atom :as atom]
    [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.data2.umm-spec-subscription :as data-umm-sub]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as config]
    [cmr.transmit.search :as transmit-search]
    [cmr.umm-spec.versioning :as versioning]))
