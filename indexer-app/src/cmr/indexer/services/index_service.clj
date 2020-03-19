@@ -259,10 +259,10 @@
 (defn- collection->suggestion-doc
   "Convert collection concept metadata to UMM-C and pull facet fields
   to be indexed as autocomplete suggestion doc"
-  [context collection]
-  (let [parsed-concept (cp/parse-concept context collection)
-        humanized-fields (humanizer/collection-humanizers-elastic context parsed-concept)
-        suggestion-docs (get-suggestion-docs humanized-fields)]
+  [context collections]
+  (let [parsed-concepts (map #(cp/parse-concept context %) collections)
+        humanized-fields (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
+        suggestion-docs (map get-suggestion-docs humanized-fields)]
     (flatten suggestion-docs)))
 
 
@@ -284,7 +284,7 @@
 (defn reindex-autocomplete-suggestions
   "Reindexes all autocomplete suggestions in the providers given."
   [context]
-  (let [provider-ids (meta-db/get-providers context)]
+  (let [provider-ids (map :provider-id (meta-db/get-providers context))]
     (reindex-science-keyword-suggestions context)
 
     (doseq [provider-id provider-ids]
