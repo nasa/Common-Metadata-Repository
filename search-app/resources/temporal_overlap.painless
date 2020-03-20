@@ -12,9 +12,10 @@ def totalOverlap = 0;
 List sortedCollectionRanges = new ArrayList();
 for (date in doc['temporal-ranges'])
 {
-  sortedCollectionRanges.add(date);
+  def milli = date.toInstant().toEpochMilli();
+  sortedCollectionRanges.add(milli);
 }
-sortedCollectionRanges.sort((a, b) -> a.isAfter(b) ? 1 : a.isEqual(b) ? 0 : -1);
+sortedCollectionRanges.sort((a, b) -> a > b ? 1 : a == b ? 0 : -1);
 
 for (range in params.temporalRanges)
 {
