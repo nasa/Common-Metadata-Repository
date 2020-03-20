@@ -77,17 +77,17 @@ The concept id header allows specifying the [concept id](#concept-id) to use whe
 
 #### <a name="validate-keywords-header"></a> Cmr-Validate-Keywords Header
 
-If this header is set to true then ingest will validate that collection keywords match [known keywords from GCMD KMS](http://gcmd.nasa.gov/learn/keyword_list.html). The following fields are validated.
+If this header is set to true, ingest will validate that the collection keywords match known keywords from the GCMD KMS. The following fields are validated.
 
-* Platforms - short name, long name, and type
-* Instruments - short name and long name
-* Projects - short name and long name
-* Science Keywords - category, topic, term, variable level 1, variable level 2, variable level 3.
-* Location Keywords - category, type, subregion 1, subregion 2, subregion 3.
-* Data Centers - short name
-* Directory Names - short name
-* ISO Topic Categories - iso topic category
-* Granule Data Format - granule data format
+* [Platforms](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/platforms?format=csv) - short name, long name, and type
+* [Instruments](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/instruments?format=csv) - short name and long name
+* [Projects](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/projects?format=csv) - short name and long name
+* [Science Keywords](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords?format=csv) - category, topic, term, variable level 1, variable level 2, variable level 3.
+* [Location Keywords](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/locations?format=csv) - category, type, subregion 1, subregion 2, subregion 3.
+* [Data Centers](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/providers?format=csv) - short name
+* [Directory Names](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/idnnode?format=csv) - short name
+* [ISO Topic Categories](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/isotopiccategory?format=csv) - iso topic category
+* [Data Format](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/granuledataformat?format=csv) - data format
 
 Note that when multiple fields are present the combination of keywords are validated to match a known combination.
 
