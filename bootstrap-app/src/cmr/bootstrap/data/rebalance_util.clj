@@ -2,28 +2,28 @@
   "Utilities for helping with rebalancing a collection."
   (:require
    [clojurewerkz.elastisch.query :as q]
-   [clojurewerkz.elastisch.rest.document :as esd]
    [cmr.bootstrap.embedded-system-helper :as helper]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.data.elasticsearch :as indexer-es]
    [cmr.indexer.data.index-set :as index-set]
    [cmr.metadata-db.services.concept-service :as cs]))
 
 (def granule-mapping-type-name
   "The mapping type for granules in Elasticsearch"
-  (-> index-set/granule-mapping keys first name))
+  "_doc")
 
 (defn es-query-for-collection-concept-id
   "Returns an elasticsearch query to find granules in the collection."
   [concept-id]
   {:bool {:must (q/match-all)
-              :filter (q/term :collection-concept-id concept-id)}})
+          :filter (q/term :collection-concept-id concept-id)}})
 
 (defn- granule-count-for-collection
   "Gets the granule count for the collection in the elastic index."
   [indexer-context index-name concept-id]
   (let [conn (indexer-es/context->conn indexer-context)
         query (es-query-for-collection-concept-id concept-id)]
-    (:count (esd/count conn index-name granule-mapping-type-name query))))
+    (:count (es-helper/count-query conn index-name granule-mapping-type-name query))))
 
 (defn rebalancing-collection-counts
   "Returns the counts of a rebalancing collection from metadata db, the small collections index,

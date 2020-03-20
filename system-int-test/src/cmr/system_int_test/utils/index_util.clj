@@ -147,13 +147,13 @@
    {:query
     {:bool
      {:must
-      {:match_all {}
-       :filter {:term {:collection-concept-id-doc-values (:concept-id coll)}}}}}}))
+      {:match_all {}}
+      :filter {:term {:collection-concept-id-doc-values (:concept-id coll)}}}}}))
 
 (defn delete-granules-from-small-collections
   "Helper to delete granules from the small collections index for the given collection."
   [coll]
-  (client/delete (format "%s/1_small_collections/granule/_query" (url/elastic-root))
+  (client/post (format "%s/1_small_collections/_delete_by_query" (url/elastic-root))
                  {:connection-manager (s/conn-mgr)
                   :body (query-for-granules-by-collection coll)
                   :content-type "application/json"}))

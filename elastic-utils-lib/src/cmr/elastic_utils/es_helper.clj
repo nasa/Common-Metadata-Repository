@@ -90,7 +90,7 @@
                        (string/join))]
      (rest/post-string conn url
                        {:body bulk-json
-                        :content-type "application/json"
+                        :content-type "application/x-ndjson"
                         :query-params opts}))))
 
 (defn bulk
