@@ -260,7 +260,9 @@
   "Convert collection concept metadata to UMM-C and pull facet fields
   to be indexed as autocomplete suggestion doc"
   [context collections]
-  (let [parsed-concepts (map #(cp/parse-concept context %) collections)
+  (let [parsed-concepts (->> collections
+                             (remove #(= (:deleted %) true))
+                             (map #(cp/parse-concept context %)))
         humanized-fields (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
         suggestion-docs (map get-suggestion-docs humanized-fields)]
     (flatten suggestion-docs)))
