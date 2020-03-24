@@ -88,6 +88,7 @@ If this header is set to true, ingest will validate that the collection keywords
 * [Directory Names](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/idnnode?format=csv) - short name
 * [ISO Topic Categories](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/isotopiccategory?format=csv) - iso topic category
 * [Data Format](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/granuledataformat?format=csv) - data format
+* [Measurement Name](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/MeasurementName?format=csv)
 
 Note that when multiple fields are present the combination of keywords are validated to match a known combination.
 
