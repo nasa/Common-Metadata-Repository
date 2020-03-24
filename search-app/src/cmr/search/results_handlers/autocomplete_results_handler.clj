@@ -6,11 +6,13 @@
 (defmethod elastic-results/elastic-result->query-result-item [:autocomplete :json]
   [context query elastic-result]
   (let [{[type] :type
-         [value] :value} (:fields elastic-result)
+         [value] :value
+         [field] :value} (:fields elastic-result)
         score (:_score elastic-result)]
     {:score score
      :type  type
-     :value value}))
+     :value value
+     :field field}))
 
 (defmethod elastic-results/elastic-results->query-results [:autocomplete :json]
   [context query elastic-results]
