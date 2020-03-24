@@ -91,11 +91,11 @@
   "If doc is present return true, otherwise return false"
   [index-name type-name doc-id]
   (let [response (client/get
-                  (format "%s/%s/%s/_search?q=_id:%s" (url/elastic-root) index-name type-name doc-id)
+                  (format "%s/%s/_doc/_search?q=_id:%s" (url/elastic-root) index-name doc-id)
                   {:throw-exceptions false
                    :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
-    (and (= 1 (get-in body [:hits :total]))
+    (and (= 1 (get-in body [:hits :total :value]))
          (= doc-id (get-in body [:hits :hits 0 :_id])))))
 
 (defn- messages+id->message

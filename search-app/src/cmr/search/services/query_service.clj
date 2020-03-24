@@ -17,7 +17,7 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [clojurewerkz.elastisch.query :as esq]
-   [clojurewerkz.elastisch.rest.document :as esd]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.common-app.services.search :as common-search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -478,7 +478,7 @@
                   (conj filters {:term {:parent-collection-id parent-collection-id}})
                   filters)]
     {:query {:bool {:must (esq/match-all)
-                        :filter {:and {:filters filters}}}}
+                        :filter {:bool {:filter filters}}}}
      :fields [:concept-id :revision-date :provider-id
               :granule-ur :parent-collection-id]}))
 
@@ -491,12 +491,12 @@
         params (dissoc (common-params/sanitize-params params) :sort-key)
         _ (pv/validate-deleted-granules-params params)
         query (make-deleted-granules-query params)
-        results (esd/search (common-idx/context->conn context)
+        results (es-helper/search (common-idx/context->conn context)
                             deleted-granule-index-name
                             deleted-granule-type-name
                             query)
         result-format (:result-format params)
-        hits (or (get-in results [:hits :total]) 0)
+        hits (or (get-in results [:hits :total :value]) 0)
         items (map :fields (get-in results [:hits :hits]))
         total-took (- (System/currentTimeMillis) start-time)
         results {:hits hits :items items :took total-took}

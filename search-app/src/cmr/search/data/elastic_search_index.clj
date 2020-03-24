@@ -190,7 +190,7 @@
                             :query (q/match-all)
                             :size 10000
                             :fields ["permitted-group-ids"])
-        hits (get-in results [:hits :total])]
+        hits (get-in results [:hits :total :value])]
     (when (> hits (count (get-in results [:hits :hits])))
       (e/internal-error! "Failed to retrieve all hits."))
     (into {} (for [hit (get-in results [:hits :hits])]

@@ -262,7 +262,7 @@
 
 (defn- elastic-results->query-results
   [context query elastic-results]
-  (let [hits (get-in elastic-results [:hits :total])
+  (let [hits (get-in elastic-results [:hits :total :value])
         scroll-id (:_scroll_id elastic-results)
         elastic-matches (get-in elastic-results [:hits :hits])
         items (if (= :granule (:concept-type query))
