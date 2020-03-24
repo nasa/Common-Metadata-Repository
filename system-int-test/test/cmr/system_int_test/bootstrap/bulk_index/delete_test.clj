@@ -174,6 +174,7 @@
                                   :metadata xmlg3
                                   :extra-fields {:parent-collection-id (:concept-id umm1)
                                                  :parent-entry-title "coll1"
+                                                 :delete-time "2000-01-01T12:00:00Z"
                                                  :granule-ur "gran3"}})]
 
      ;; Verify that all of the ingest requests completed successfully

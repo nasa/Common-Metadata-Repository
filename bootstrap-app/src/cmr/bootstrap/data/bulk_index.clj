@@ -285,18 +285,19 @@
 
 (defmethod delete-concepts-by-id :default
   [system provider-id concept-type concept-ids]
-  (let [concepts (for [concept-id concept-ids]
-                   {:concept-id concept-id
-                    :provider-id provider-id
-                    :deleted true
-                    :concept-type concept-type
-                    ;; Add fake transaction-id and revision-id to generate valid _version for ES doc.
-                    ;; No ES document is actually saved (we are deleting), but DELETE operations still
-                    ;; need a valid _version field, which is obtained from these.
-                    :transaction-id 1
-                    :revision-id 1})
-        concept-batches (partition-all (:db-batch-size system) concepts)
-        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches {:force-version? true})]
+  (let [db (helper/get-metadata-db-db system)
+        provider (helper/get-provider system provider-id)
+        ;; Oracle only allows 1000 values in an 'in' clause, so we partition here
+        ;; to prevent exceeding that. This should probably be done in the db namespace,
+        ;; but I want to avoid making changes beyond bootstrap-app for this functionality.
+        concept-id-batches (partition-all 1000 concept-ids)
+        concept-batches (for [batch concept-id-batches
+                              concept-batch (db/find-concepts-in-batches db
+                                                                         provider
+                                                                         {:concept-type concept-type :concept-id batch}
+                                                                         (:db-batch-size system))]
+                          (map #(assoc % :deleted true) concept-batch))
+        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
     (info "Deleted " total " concepts")
     total))
 
