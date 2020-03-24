@@ -1,6 +1,7 @@
 (ns cmr.indexer.services.index-service
   "Provide functions to index concept"
   (:require
+   [camel-snake-kebab.core :as csk]
    [cheshire.core :as cheshire]
    [clj-time.core :as t]
    [clj-time.core :as t]
@@ -182,9 +183,9 @@
   ;; We want to pull Science Keywords from KMS because they are controlled
   (when-not (= key-name "science-keywords")
    (map (fn [value]
-         {:type key-name
+         {:type (csk/->snake_case_keyword key-name)
           :value (val value)
-          :field-name (name (key value))
+          :field (csk/->snake_case_keyword (name (key value)))
           :_index "1_autocomplete"
           :_type "suggestion"})
        (seq value-map))))
@@ -221,7 +222,8 @@
   (for [sk-map science-keywords
          :let [values (->> keyword-hierarchy
                            (map #(get sk-map %))
-                           (remove nil?))
+                           (remove nil?)
+                           (s/join ":"))
                ;; take the leaf keyword and store it as the field name
                terminal-key (->> keyword-hierarchy
                                  (map #(get sk-map %))
@@ -235,9 +237,9 @@
                                     first
                                     (nth keyword-hierarchy)
                                     name))]]
-     {:type "science-keywords"
-       :value (s/join ":" values)
-       :field keyword-field
+     {:type "science_keywords"
+       :value values
+       :field (csk/->snake_case keyword-field)
        :_index "1_autocomplete"
        :_type "suggestion"}))
 
@@ -246,7 +248,7 @@
   [context]
   (let [kms-keywords (kms/get-keywords-for-keyword-scheme context :science-keywords)
         science-keywords (map #(dissoc % :uuid) kms-keywords)
-        keyword-hierarchy [:topic :category :variable-level-1 :variable-level-2
+        keyword-hierarchy [:topic :term :variable-level-1 :variable-level-2
                            :variable-level-3 :detailed-variable]]
     (science-keywords->elastic-docs science-keywords keyword-hierarchy)))
 

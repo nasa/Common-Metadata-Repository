@@ -15,6 +15,9 @@
 (def ^:private test-values [{:value "foo" :type "instrument"}
                             {:value "bar" :type "platform"}
                             {:value "baaz" :type "instrument"}
+                            {:value "ATMOSPHERE:EARTH SCIENCE:LIQUID PRECIPITATION:RAIN:FREEZING RAIN"
+                             :type "science_keyword"
+                             :field "variable-level-3"}
                             {:value "africa" :type "spatial_keyword"}
                             {:value "antarctica" :type "spatial_keyword"}
                             {:value "arctic" :type "spatial_keyword"}
@@ -136,16 +139,16 @@
         (is (= expected (count entry)))))
 
     "page size 0"
-    "q=an&page_size=0" 0 9
+    "q=an&page_size=0" 0 10
 
     "page size 1"
-    "q=an&page_size=1" 1 9
+    "q=an&page_size=1" 1 10
 
     "page size 2"
-    "q=an&page_size=2" 2 9
+    "q=an&page_size=2" 2 10
 
     "page size 100"
-    "q=an*&page_size=100" 9 9))
+    "q=an*&page_size=100" 10 10))
 
   (testing "page_num should default to 1"
    (let [a (as-> (query->json-response-body "q=b") response
