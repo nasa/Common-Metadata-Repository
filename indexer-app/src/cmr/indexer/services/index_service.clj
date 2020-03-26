@@ -182,11 +182,47 @@
 
 (def REINDEX_BATCH_SIZE 2000)
 
+(defn- positions
+  "Return a map of the index of each item that matches the predicate"
+  [pred coll]
+  (keep-indexed (fn [idx x]
+                  (when (pred x)
+                    idx))
+                coll))
+
+(defn- science-keywords->elastic-docs
+  "Convert hierarchical science-keywords to colon-separated elastic docs for indexing"
+  [science-keywords]
+  (let [keyword-hierarchy [:topic :term :variable-level-1
+                           :variable-level-2 :variable-level-3 :detailed-variable]
+        terminal-key (->> keyword-hierarchy
+                          (map #(get science-keywords %))
+                          (positions nil?))
+        keyword-field (if (empty? terminal-key)
+                        (-> keyword-hierarchy
+                            last
+                            name
+                            csk/->snake_case)
+                        (->> terminal-key
+                             first
+                             (nth keyword-hierarchy)
+                             name
+                             csk/->snake_case))
+        keyword-string (->> keyword-hierarchy
+                            (map #(get science-keywords %))
+                            (remove nil?)
+                            (s/join ":"))]
+     {:type "science_keywords"
+       :value keyword-string
+       :field keyword-field
+       :_index "1_autocomplete"
+       :_type "suggestion"}))
+
 (defn- suggestion-doc
   "Creates elasticsearch docs from a given humanized map"
   [key-name value-map]
-  ;; We want to pull Science Keywords from KMS because they are controlled
-  (when-not (= key-name "science-keywords")
+  (if (= key-name "science-keywords")
+   (science-keywords->elastic-docs value-map)
    (map (fn [value]
          {:type (csk/->snake_case_keyword key-name)
           :value (val value)
@@ -212,56 +248,6 @@
                                    (map #(suggestion-doc key-name %))
                                    (remove nil?))]]
     suggestion-docs))
-
-(defn- positions
-  "Return a map of the index of each item that matches the predicate"
-  [pred coll]
-  (keep-indexed (fn [idx x]
-                  (when (pred x)
-                    idx))
-                coll))
-
-(defn- science-keywords->elastic-docs
-  "Convert hierarchical science-keywords to colon-separated elastic docs for indexing"
-  [science-keywords keyword-hierarchy]
-  (for [sk-map science-keywords
-         :let [values (->> keyword-hierarchy
-                           (map #(get sk-map %))
-                           (remove nil?)
-                           (s/join ":"))
-               ;; take the leaf keyword and store it as the field name
-               terminal-key (->> keyword-hierarchy
-                                 (map #(get sk-map %))
-                                 (positions nil?))
-               ;; no nil items in `terminal-key` simply means that there were no
-               ;; keys in `keyword-hierarchy` that were not present in the
-               ;; science-keywords object
-               keyword-field (if (empty? terminal-key)
-                               (last keyword-hierarchy)
-                               (->> terminal-key
-                                    first
-                                    (nth keyword-hierarchy)
-                                    name))]]
-     {:type "science_keywords"
-       :value values
-       :field (csk/->snake_case keyword-field)
-       :_index "1_autocomplete"
-       :_type "suggestion"}))
-
-(defn- get-science-keyword-elastic-docs
-  "Fetch science keywords and marshall them into indexable format"
-  [context]
-  (let [kms-keywords (kms/get-keywords-for-keyword-scheme context :science-keywords)
-        science-keywords (map #(dissoc % :uuid) kms-keywords)
-        keyword-hierarchy [:topic :term :variable-level-1 :variable-level-2
-                           :variable-level-3 :detailed-variable]]
-    (science-keywords->elastic-docs science-keywords keyword-hierarchy)))
-
-(defn- reindex-science-keyword-suggestions
-  "Reindex all science keywords for the suggestion index"
-  [context]
-  (let [science-keyword-docs (get-science-keyword-elastic-docs context)]
-    (es/bulk-index-autocomplete-suggestions context science-keyword-docs)))
 
 (defn- collection->suggestion-doc
   "Convert collection concept metadata to UMM-C and pull facet fields
@@ -294,11 +280,8 @@
   "Reindexes all autocomplete suggestions in the providers given."
   [context]
   (let [provider-ids (map :provider-id (meta-db/get-providers context))]
-    (reindex-science-keyword-suggestions context)
-
     (doseq [provider-id provider-ids]
-     (reindex-suggestions-for-provider context provider-id))))
-
+      (reindex-suggestions-for-provider context provider-id))))
 
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
