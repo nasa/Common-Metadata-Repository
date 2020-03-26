@@ -273,7 +273,7 @@
                                                       :concept-id concept-id
                                                       :result-format result-format})
           results (qe/execute-query context query)]
-      (when (zero? (get-in results [:hits :value]))
+      (when (zero? (get-in results [:hits]))
         (throw-id-not-found concept-id))
       {:results (common-search/single-result->response context query results)
        :result-format result-format})
@@ -479,7 +479,7 @@
                   filters)]
     {:query {:bool {:must (esq/match-all)
                         :filter {:bool {:filter filters}}}}
-     :fields [:concept-id :revision-date :provider-id
+     :stored_fields [:concept-id :revision-date :provider-id
               :granule-ur :parent-collection-id]}))
 
 (defn get-deleted-granules

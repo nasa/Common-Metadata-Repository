@@ -249,7 +249,7 @@
                                 first)]]
         (is (= 3 (:revision-id (:meta concept))))
         (ingest/assert-user-id concept-id 3 "user2")
-        (is (= "2017-01-01T00:00:00Z"
+        (is (= "2017-01-01T00:00:00.000Z"
                (:revision-date (:meta concept))))
         (some #(= {:Date "2017-01-01T00:00:00Z" :Type "UPDATE"} %) (:MetadataDates (:umm concept)))
         (is (= "application/vnd.nasa.cmr.umm+json"

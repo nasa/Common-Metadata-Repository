@@ -70,8 +70,7 @@
    (rest/post conn
               (rest/delete-by-query-url
                conn
-               (join-names index)
-               (join-names mapping-type))
+               (join-names index))
               {:query-params (select-keys opts
                                           (conj doc/optional-delete-query-parameters
                                                 :ignore_unavailable))
