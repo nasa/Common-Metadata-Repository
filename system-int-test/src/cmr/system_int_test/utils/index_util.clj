@@ -52,22 +52,27 @@
                     :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
-(defn delete-all-tags-from-elastic
+(defn delete-tags-from-elastic
   "Delete all tags from elasticsearch index"
-  []
-  (let [response (client/delete (url/elastic-delete-tags-url)
-                   {:connection-manager (s/conn-mgr)
-                    :body "{\"query\": {\"match_all\": {}}}"
-                    :throw-exceptions false})]
-    (is (= 200 (:status response)) (:body response))))
+  [tags]
+  (doseq [tag tags]
+    (let [{:keys [concept-id revision-id]} tag
+          response (client/delete
+                    (url/elastic-delete-tag-url concept-id)
+                    {:connection-manager (s/conn-mgr)
+                     :query-params {:version revision-id
+                                    :version_type "external_gte"}
+                     :throw-exceptions false})]
+      (is (= 200 (:status response)) (:body response)))))
 
 (defn reindex-tags
   "Re-index all tags"
   []
-  (let [response (client/post (url/indexer-reindex-tags-url)
-                   {:connection-manager (s/conn-mgr)
-                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                    :throw-exceptions false})]
+  (let [response (client/post
+                  (url/indexer-reindex-tags-url)
+                  {:connection-manager (s/conn-mgr)
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
 (defn reindex-concept-with-ignore-conflict-param

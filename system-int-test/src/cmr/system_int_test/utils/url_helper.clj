@@ -63,9 +63,9 @@
   []
   (str (elastic-root) "/_refresh"))
 
-(defn elastic-delete-tags-url
-  []
-  (str (elastic-root) "/1_tags/_query"))
+(defn elastic-delete-tag-url
+  [id]
+  (format "%s/1_tags/_doc/%s" (elastic-root) id))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB URLs

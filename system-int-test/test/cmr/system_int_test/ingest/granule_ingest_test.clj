@@ -4,18 +4,19 @@
   For granule permissions tests, see `provider-ingest-permissions-test`."
   (:require
    [cheshire.core :as json]
+   [clj-time.core :as t]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.test :refer :all]
-   [cmr.common.util :as u :refer [are3]]
-   [clj-time.core :as t]
    [cmr.common.time-keeper :as tk]
+   [cmr.common.util :as u :refer [are3]]
    [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.system :as indexer-system]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -537,38 +538,42 @@
          (is (= nil errors))))))
 
 (deftest delete-time-granule-ingest-test
-  (let [collection (data-core/ingest-umm-spec-collection
-                    "PROV1"
-                    (data-umm-c/collection 1 {}))]
-    (testing "DeleteTime in past results in validation error"
-      (let [granule (granule/granule-with-umm-spec-collection
-                     collection
-                     (:concept-id collection)
-                     {:granule-ur "gran1"
-                      :data-provider-timestamps {:delete-time "2000-01-01T00:00:00Z"}})
-            {:keys [status errors]} (data-core/ingest
-                                     "PROV1"
-                                     granule
-                                     {:format :umm-json
-                                      :allow-failure? true})]
-        (is (= 422 status))
-        (is (= ["DeleteTime 2000-01-01T00:00:00.000Z is before the current time."]
-               errors))))
-    (testing "DeleteTime in future is successful"
-      (let [granule (granule/granule-with-umm-spec-collection
-                     collection
-                     (:concept-id collection)
-                     {:granule-ur "gran2"
-                      :data-provider-timestamps {:delete-time
-                                                 (t/plus (tk/now) (t/minutes 2))}})
-            response (data-core/ingest "PROV1" granule {:format :umm-json})]
-        (is (= 201 (:status response)))
-        (index/wait-until-indexed)
-        (data-core/assert-refs-match [response] (search/find-refs :granule {}))
-        (dev-sys-util/advance-time! 121)
-        (mdb/cleanup-expired-concepts)
-        (index/wait-until-indexed)
-        (data-core/assert-refs-match [] (search/find-refs :granule {}))))))
+  (s/only-with-real-database
+   (let [collection (data-core/ingest-umm-spec-collection
+                     "PROV1"
+                     (data-umm-c/collection 1 {}))]
+     (testing "DeleteTime in past results in validation error"
+       (let [granule (granule/granule-with-umm-spec-collection
+                      collection
+                      (:concept-id collection)
+                      {:granule-ur "gran1"
+                       :data-provider-timestamps {:delete-time "2000-01-01T00:00:00Z"}})
+             {:keys [status errors]} (data-core/ingest
+                                      "PROV1"
+                                      granule
+                                      {:format :umm-json
+                                       :allow-failure? true})]
+         (is (= 422 status))
+         (is (= ["DeleteTime 2000-01-01T00:00:00.000Z is before the current time."]
+                errors))))
+     (testing "DeleteTime in future is successful"
+       (let [granule (granule/granule-with-umm-spec-collection
+                      collection
+                      (:concept-id collection)
+                      {:granule-ur "gran2"
+                       :data-provider-timestamps {:delete-time
+                                                  (t/plus (tk/now) (t/seconds 90))}})
+             response (data-core/ingest "PROV1" granule {:format :umm-json})]
+         (is (= 201 (:status response)))
+         (index/wait-until-indexed)
+         (data-core/assert-refs-match [response] (search/find-refs :granule {}))
+
+         ;; wait until the granule expires in database
+         (Thread/sleep 91000)
+
+         (mdb/cleanup-expired-concepts)
+         (index/wait-until-indexed)
+         (data-core/assert-refs-match [] (search/find-refs :granule {})))))))
 
 (deftest ingest-umm-g-granule-test
   (let [collection (data-core/ingest-umm-spec-collection
