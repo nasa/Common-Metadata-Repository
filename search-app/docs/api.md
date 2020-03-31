@@ -1132,19 +1132,19 @@ Note: ISO 8601 does not allow open-ended time intervals but the CMR API does all
 ### <a name="autocomplete-facets"></a> Facet Autocompletion
 
 Auto-completion assistance for building queries. This functionality may be used to help build queries. The facet autocomplete functionality does not search for collections directly. Instead it will return suggestions of facets to help narrow a search by providing a list of available facets to construct a CMR collections search.
-    
+
     curl "%CMR-ENDPOINT%/autocomplete?q=<term>[&type\[\]=<type1>[&type\[\]=<type2>]"
-        
+
 Collection facet autocompletion results are paged. See [Paging Details](#paging-details) for more information on how to page through autocomplete search results.
 
 #### Autocomplete Parameters
   * `q` The string on which to search. The term is case insensitive.
   * `type[]` Optional list of types to include in the search. This may be any number of valid facet types.
- 
+
 __Example Query__
 
      curl "%CMR-ENDPOINT%/autocomplete?q=ice"
- 
+
 __Example Result__
 ```
 HTTP/1.1 200 OK
@@ -1187,7 +1187,7 @@ CMR-Hits: 15
 __Example Query__
 
      curl "%CMR-ENDPOINT%/autocomplete?q=ice&type[]=platform&type[]=project"
-     
+
 __Example Result with Type Filter__
 ```
 HTTP/1.1 200 OK
@@ -1482,7 +1482,7 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 #### <a name="c-granule-data-format"></a> Find collections by format of data in granules
 
    curl "%CMR-ENDPOINT%/collections?granule_data_format=NetCDF"
-   
+
 #### <a name="c-online-only"></a> Find collections by online_only
 
     curl "%CMR-ENDPOINT%/collections?online_only=true"
@@ -3387,7 +3387,7 @@ Content-Length: 292
 
 ### <a name="variable"></a> Variable
 
-Variable is some of the measurement variables that belongs to collections/granules that can be processed by a service. Variable metadata is in JSON format and conforms to [UMM-Var Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/variable).
+Variables are measurement variables belonging to collections/granules that are processable by services. Variable metadata is stored in the JSON format and conforms to [UMM-Var Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/variable) schema.
 
 #### <a name="searching-for-variables"></a> Searching for Variables
 
@@ -3417,6 +3417,8 @@ These parameters will match fields within a variable. They are case insensitive 
 * alias
   * options: pattern, ignore_case
 * instrument
+  * options: pattern, ignore_case
+* measurement
   * options: pattern, ignore_case
 * concept_id
 * measurement_identifiers
@@ -3651,7 +3653,7 @@ Note: The following new features are added to support UVG:
 3. variable and collection can only be associated if they are from the same provider.
 
 Future work:
-1. Currently we are not addressing any existing data that don't satisfy the above new requirements. 
+1. Currently we are not addressing any existing data that doesn't satisfy the above requirements.
 2. We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list. A ticket is filed to address these issues in the future if necessary.
 
 ```
@@ -3675,7 +3677,7 @@ Content-Length: 168
 ]
 ```
 
-On occassions when variable association cannot be processed at all due to invalid input, variable association request will return a failure status code with the appropriate error message.
+On occasions when variable association cannot be processed at all due to invalid input, the variable association request will return a failure status code with the appropriate error message.
 
 #### <a name="variable-dissociation"></a> Variable Dissociation
 
@@ -3720,7 +3722,7 @@ Content-Length: 168
 ]
 ```
 
-On occasions when variable dissociation cannot be processed at all due to invalid input, variable dissociation request will return a failure status code with the appropriate error message.
+On occasions when variable dissociation cannot be processed at all due to invalid input, the variable dissociation request will return a failure status code with the appropriate error message.
 
 ### <a name="service"></a> Service
 
