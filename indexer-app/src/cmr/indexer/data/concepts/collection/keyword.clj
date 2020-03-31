@@ -34,7 +34,8 @@
                      :TemporalKeywords
                      :TilingIdentificationSystems
                      :Version
-                     :VersionDescription]
+                     :VersionDescription
+                     :ArchiveAndDistributionInformation]
         keywords (concat
                   instrument-long-names
                   platform-long-names

@@ -188,6 +188,20 @@
             (mapcat contact-person->keywords service-contact-persons)
             roles)))
 
+(defn- archive-distribution-data-formats
+  "Converts ArchiveFileInformation and DistributionFileInformation Formats into a vector
+   of terms for keyword searches."
+  [archive-distribution-info]
+  (concat
+    (->> archive-distribution-info
+         (:ArchiveAndDistributionInformation)
+         (:FileDistributionInformation)
+         (map :Format))
+    (->> archive-distribution-info
+         (:ArchiveAndDistributionInformation)
+         (:FileArchiveInformation)
+         (map :Format))))
+
 (def ^:private variable-fields->fn-mapper
   "A data structure that maps UMM variable field names to functions that
   extract keyword data for those fields. Intended only to be used as part
@@ -231,7 +245,9 @@
    :LocationKeywords #(lk/location-keywords->spatial-keywords-for-indexing (:LocationKeywords %))
    :Projects #(mapcat names->keywords (:Projects %))
    :RelatedUrls #(mapcat related-url->keywords (:RelatedUrls %))
-   :TilingIdentificationSystems #(map :TilingIdentificationSystemName (:TilingIdentificationSystems %))})
+   :TilingIdentificationSystems #(map :TilingIdentificationSystemName (:TilingIdentificationSystems %))
+   :ArchiveAndDistributionInformation #(archive-distribution-data-formats %)})
+
 
 (def ^:private shared-fields->fn-mapper
   "A data structure that maps UMM field names used by multiple types to
