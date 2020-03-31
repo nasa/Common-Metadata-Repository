@@ -286,8 +286,8 @@
         {:keys [concept_id revision_id]} (test-util/create-group token group1)
         group2-concept-id (:concept_id (test-util/create-group token group2))]
     (testing "Delete without token"
-      (is (= {:status 401
-              :errors ["Valid user token required."]}
+      (is (= :status 401
+             :errors ["Valid user token required."]
              (test-util/delete-group nil concept_id))))
 
     (testing "Delete success"
@@ -383,19 +383,33 @@
       (is (empty? (set (:items (test-util/search-for-acls token {:permitted_group group-1-concept-id}))))))))
 
 (deftest update-group-test
-  (let [group (test-util/make-group {:members ["user1" "user2"]})
-        token (echo-util/login (test-util/conn-context) "user1")
-        {:keys [concept_id]} (test-util/create-group token group)]
+  (testing "successful update"
+    (let [group (test-util/make-group {:members ["user1" "user2"]})
+          token (echo-util/login (test-util/conn-context) "user1")
+          {:keys [concept_id]} (test-util/create-group token group)]
 
-    ;; Do not specify members in the update
-    (let [updated-group {:name "Updated Group Name"
-                         :description "Updated group description"}
-          token2 (echo-util/login (test-util/conn-context) "user2")
-          response (test-util/update-group token2 concept_id updated-group)]
-      (is (= {:status 200 :concept_id concept_id :revision_id 2}
-             response))
-      ;; Members should be intact
-      (test-util/assert-group-saved (assoc updated-group :members ["user1" "user2"]) "user2" concept_id 2))))
+      ;; Do not specify members in the update
+      (let [updated-group {:name "Updated Group Name"
+                           :description "Updated group description"}
+            token2 (echo-util/login (test-util/conn-context) "user2")
+            response (test-util/update-group token2 concept_id updated-group)]
+        (is (= {:status 200 :concept_id concept_id :revision_id 2}
+               response))
+        ;; Members should be intact
+        (test-util/assert-group-saved (assoc updated-group :members ["user1" "user2"]) "user2" concept_id 2))))
+  
+  (testing "name collision updates should fail"
+    (let [group1 (test-util/make-group {:name "Group1" :members ["user1"]})
+          group2 (test-util/make-group {:name "Group2" :members ["user1"]})
+          updated-group2 {:name "Group1"
+                          :description "name collision expected"
+                          :members ["user1"]}
+          token (echo-util/login (test-util/conn-context) "user1")
+          {id1 :concept_id} (test-util/create-group token group1)
+          {id2 :concept_id} (test-util/create-group token group2)
+          _ (println token " " id1 " " id2)
+          response (test-util/update-group token id2 updated-group2)]
+      (is (= 400 (:status response))))))
 
 (deftest update-group-with-members-test
   (let [group (test-util/make-group {:members ["user1" "user2"]})

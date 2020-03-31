@@ -197,7 +197,7 @@
      (auth/verify-can-create-group context group))
 
    (validate-managing-group-id (transmit-config/with-echo-system-token context) managing-group-id)
-
+   ;; Verify there will not be a name collision
    (if-let [concept-id (->> (search-for-groups
                               context {:name (:name group)
                                        :provider (get group :provider-id SYSTEM_PROVIDER_ID)})
@@ -259,11 +259,22 @@
         existing-group (edn/read-string (:metadata existing-concept))]
     (validate-update-group context existing-group updated-group)
     (auth/verify-can-update-group context (assoc existing-group :concept-id concept-id))
+    ;; Verify the name does not conflict with an existing group
+    (when (not= (:name updated-group) (:name existing-group))
+      (when-let [conflicting-concept-id (->> (search-for-groups context {:name (:name updated-group)
+                                                                         :provider (get existing-group :provider-id SYSTEM_PROVIDER_ID)})
+                                              :results
+                                              :items
+                                              (some :concept_id))]
+        (let [concept (mdb/get-latest-concept context conflicting-concept-id)]
+          ;; A name collision was found, reject the update.
+          (errors/throw-service-error :conflict (g-msg/group-already-exists existing-group concept))))
       ;; Avoid clobbering :members by merging the updated-group into existing-group. If updated-group
       ;; specifies :members then it will overwrite the existing value.
+)
     (let [updated-group (merge existing-group updated-group)
           update-result (save-updated-group-concept context existing-concept updated-group)]
-     update-result)))
+      update-result)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions
