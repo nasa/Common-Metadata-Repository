@@ -68,6 +68,7 @@
      :always-case-sensitive #{}
      :disallow-pattern #{}}))
 
+;; CMR-4408 measurement is listed as a parameter here, but is currently only a placeholder.
 (defmethod cpv/params-config :variable
   [_]
   (cpv/merge-params-config
@@ -731,8 +732,8 @@
 
 (def ^:private valid-shapefile-formats
   "Valid shapefile formats"
-  #{mt/shapefile mt/geojson mt/kml})   
-          
+  #{mt/shapefile mt/geojson mt/kml})
+
 (defn shapefile-format-validation
   "Validates that the shapefile format value is one of the accepted formats"
   [concept-type params]

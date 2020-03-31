@@ -3418,8 +3418,6 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: pattern, ignore_case
 * instrument
   * options: pattern, ignore_case
-* measurement
-  * options: pattern, ignore_case
 * concept_id
 * measurement_identifiers
   * options: ignore_case, or
