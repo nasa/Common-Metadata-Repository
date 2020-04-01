@@ -412,10 +412,14 @@
 
 (deftest update-group-failure-test
   (let [group (test-util/make-group)
-        group2 (test-util/make-group {:name "Group2" :members ["user1"]})        
+        group2 (test-util/make-group {:name "Group2" :members ["user1"]})
+        group2-copy (test-util/make-group {:name "Group2a" :members ["user1"]})
+
         token (echo-util/login (test-util/conn-context) "user1")
+
         {:keys [concept_id revision_id]} (test-util/create-group token group)
-        {concept_id2 :concept_id} (test-util/create-group token group2)]
+        {concept_id2 :concept_id} (test-util/create-group token group2)
+        {concept_id3 :concept_id} (test-util/create-group token group2-copy)]
 
     (testing "Update group with invalid content type"
       (is (= {:status 400,
@@ -456,12 +460,11 @@
              (test-util/update-group token concept_id group))))
 
     (testing "Update a group with conflicting name"
-      (test-util/wait-until-indexed)
       (is (= {:status 409
               :errors [(format "A system group with name [%s] already exists with concept id [%s]."
-                               (:name group)
-                               concept_id)]}
-             (test-util/update-group token concept_id2 (assoc group2 :name (:name group))))))))
+                               (:name group2)
+                               concept_id2)]}
+             (test-util/update-group token concept_id3 (assoc group2-copy :name (:name group2))))))))
 
 (deftest update-group-legacy-guid-test
   (let [group1 (test-util/make-group {:legacy_guid "legacy_guid_1" :name "group1"})
