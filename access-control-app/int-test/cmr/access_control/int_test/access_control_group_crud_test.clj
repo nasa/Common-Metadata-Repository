@@ -466,6 +466,17 @@
                                concept_id2)]}
              (test-util/update-group token concept_id3 (assoc group3 :name (:name group2))))))))
 
+(deftest update-groups-with-identical-names-but-different-providers
+  (let [group1 (test-util/make-group {:name "group1" :provider_id "PROV1"})
+        group2 (test-util/make-group {:name "group2" :provider_id "PROV2"})
+        token (echo-util/login (test-util/conn-context) "user1")
+        {concept_id1 :concept_id} (test-util/create-group token group1)
+        {concept_id2 :concept_id} (test-util/create-group token group2)]
+    (is (= {:status 200
+            :revision_id 2
+            :concept_id (format "%s" concept_id2)}
+           (test-util/update-group token concept_id2 (assoc group2 :name (:name group1)))))))
+
 (deftest update-group-legacy-guid-test
   (let [group1 (test-util/make-group {:legacy_guid "legacy_guid_1" :name "group1"})
 
