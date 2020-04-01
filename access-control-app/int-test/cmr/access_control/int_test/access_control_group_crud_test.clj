@@ -473,7 +473,7 @@
                                concept_id2)]}
              (test-util/update-group token concept_id3 (assoc group3 :name (:name group2))))))))
 
-(deftest update-groups-with-identical-names-but-different-providers
+(deftest update-provider-groups
   (let [group1 (test-util/make-group {:name "group1" :provider_id "PROV1"})
         group1a (test-util/make-group {:name "group2" :provider_id "PROV1"})
         group2 (test-util/make-group {:name "group2" :provider_id "PROV2"})
