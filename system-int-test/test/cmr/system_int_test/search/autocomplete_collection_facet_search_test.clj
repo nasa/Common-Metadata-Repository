@@ -15,6 +15,7 @@
 (def ^:private test-values [{:value "foo" :type "instrument"}
                             {:value "bar" :type "platform"}
                             {:value "baaz" :type "instrument"}
+                            {:value "BAAZ" :type "platform"}
                             {:value "ATMOSPHERE:EARTH SCIENCE:LIQUID PRECIPITATION:RAIN:FREEZING RAIN"
                              :type "science_keyword"
                              :field "variable-level-3"}
@@ -38,7 +39,6 @@
     (doseq [doc documents] (debug "ingested " doc))
     (index/wait-until-indexed)
     (f)
-    (doseq [doc documents] (esd/delete conn "1_autocomplete" "suggestion" (:_id doc)))
     (index/wait-until-indexed)))
 
 (use-fixtures :each (join-fixtures
@@ -104,7 +104,7 @@
     "q=foo&type[]=instrument" 1
 
     "search with multiple types filter"
-    "q=b&type[]=instrument&type[]=platform&type[]=project&type[]=provider" 2
+    "q=b&type[]=instrument&type[]=platform&type[]=project&type[]=provider" 3
 
     "search with type filter with no results"
     "q=foo&type[]=platform" 0)))
