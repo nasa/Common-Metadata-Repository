@@ -194,12 +194,12 @@
   [archive-distribution-info]
   (concat
     (->> archive-distribution-info
-         (:ArchiveAndDistributionInformation)
-         (:FileDistributionInformation)
+         :ArchiveAndDistributionInformation
+         :FileDistributionInformation
          (map :Format))
     (->> archive-distribution-info
-         (:ArchiveAndDistributionInformation)
-         (:FileArchiveInformation)
+         :ArchiveAndDistributionInformation
+         :FileArchiveInformation
          (map :Format))))
 
 (def ^:private variable-fields->fn-mapper
