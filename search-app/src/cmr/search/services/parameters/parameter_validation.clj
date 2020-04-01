@@ -86,6 +86,15 @@
      :always-case-sensitive #{}
      :disallow-pattern #{}}))
 
+(defmethod cpv/params-config :subscription
+  [_]
+  (cpv/merge-params-config
+    cpv/basic-params-config
+    {:single-value #{:keyword :all-revisions}
+     :multiple-value #{:name :subscription-name :subscriber-id :collection-concept-id :provider :native-id :concept-id}
+     :always-case-sensitive #{}
+     :disallow-pattern #{}}))
+
 (defmethod cpv/params-config :autocomplete
   [_]
   (cpv/merge-params-config
@@ -210,6 +219,15 @@
    :native-id cpv/string-param-options
    :provider cpv/string-param-options})
 
+(defmethod cpv/valid-parameter-options :subscription
+  [_]
+  {:name cpv/string-param-options
+   :subscription-name cpv/string-param-options
+   :subscriber-id cpv/string-param-options
+   :collection-concept-id cpv/string-param-options
+   :native-id cpv/string-param-options
+   :provider cpv/string-param-options})
+
 (defmethod cpv/valid-parameter-options :autocomplete
   [_]
   {:q cpv/string-param-options
@@ -233,6 +251,10 @@
   #{:all-revisions})
 
 (defmethod cpv/valid-query-level-params :service
+  [_]
+  #{:all-revisions})
+
+(defmethod cpv/valid-query-level-params :subscription
   [_]
   #{:all-revisions})
 
@@ -291,6 +313,13 @@
   #{:name
     :long-name
     :revision-date
+    :provider})
+
+(defmethod cpv/valid-sort-keys :subscription
+  [_]
+  #{:name
+    :subscription-name
+    :collection-concept-id
     :provider})
 
 (defn- day-valid?
@@ -806,7 +835,9 @@
                       measurement-identifiers-validation])
    :service (concat cpv/common-validations
                     [boolean-value-validation])
-   :autocomplete cpv/common-validations})
+   :autocomplete cpv/common-validations
+   :subscription (concat cpv/common-validations
+                    [boolean-value-validation])})
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.

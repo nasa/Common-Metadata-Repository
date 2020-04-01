@@ -28,6 +28,11 @@
   [context acls concept]
   true)
 
+;; subscriptions currently have no ACLs, so return `true` for all ACL checks
+(defmethod acls-match-concept? :subscription
+  [context acls concept]
+  true)
+
 (defmethod acls-match-concept? :default
   [context acls concept]
   false)
@@ -59,7 +64,8 @@
   {:granule :granule-applicable
    :collection :collection-applicable
    :service :service-applicable
-   :variable :variable-applicable})
+   :variable :variable-applicable
+   :subscription :subscription-applicable})
 
 (defn filter-concepts
   "Filters out the concepts that the current user does not have access to. Concepts are the maps

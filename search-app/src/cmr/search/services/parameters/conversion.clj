@@ -157,6 +157,18 @@
    :concept-id :string
    :keyword :keyword})
 
+(defmethod common-params/param-mappings :subscription
+  [_]
+  {
+   :subscription-name :string
+   :name :string
+   :subscriber-id :string
+   :collection-concept-id :string
+   :provider :string
+   :native-id :string
+   :concept-id :string
+   :keyword :keyword})
+
 (defmethod common-params/always-case-sensitive-fields :collection
   [_]
   #{:concept-id :variable-concept-id :service-concept-id})
@@ -450,6 +462,13 @@
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
                                  :service params)]
+    [(dissoc params :all-revisions)
+     (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
+ 
+(defmethod common-params/parse-query-level-params :subscription
+  [concept-type params]
+  (let [[params query-attribs] (common-params/default-parse-query-level-params
+                                 :subscription params)]
     [(dissoc params :all-revisions)
      (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
 

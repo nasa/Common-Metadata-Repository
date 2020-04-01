@@ -180,6 +180,13 @@
                  "1_services")
    :type-name "service"})
 
+(defmethod common-esi/concept-type->index-info :subscription
+  [context _ query]
+  {:index-name (if (:all-revisions? query)
+                 "1_all_subscription_revisions"
+                 "1_subscriptions")
+   :type-name "subscription"})
+
 (defn context->conn
   [context]
   (get-in context [:system :search-index :conn]))

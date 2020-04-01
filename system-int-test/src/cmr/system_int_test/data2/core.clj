@@ -240,7 +240,7 @@
   "Returns the name of the reference for the given item"
   [item]
   (let [concept-type (concepts/concept-id->type (:concept-id item))]
-    (if (some #{concept-type} [:service :variable])
+    (if (some #{concept-type} [:subscription :service :variable])
       (-> item
           :metadata
           (json/decode true)

@@ -59,6 +59,10 @@
         (:transaction-id concept)
         (map :transaction-id (:service-associations concept))))
 
+(defmethod get-elastic-version :subscription
+  [concept]
+  (:transaction-id concept))
+
 (defmethod get-elastic-version :default
   [concept]
   (:revision-id concept))
@@ -69,7 +73,8 @@
   (if (and
        (or (= :collection (cs/concept-id->type concept-id))
            (= :variable (cs/concept-id->type concept-id))
-           (= :service (cs/concept-id->type concept-id)))
+           (= :service (cs/concept-id->type concept-id))
+           (= :subscription (cs/concept-id->type concept-id)))
        all-revisions-index?)
     (str concept-id "," revision-id)
     concept-id))

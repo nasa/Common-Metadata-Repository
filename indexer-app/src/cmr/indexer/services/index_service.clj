@@ -111,6 +111,10 @@
   [context batch options]
   (es/prepare-batch context (filter-expired-concepts batch) options))
 
+(defmethod prepare-batch :subscription
+  [context batch options]
+  (es/prepare-batch context (filter-expired-concepts batch) options))
+
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
   directly to this function - it does not retrieve them from metadata db (tag associations for
@@ -171,7 +175,8 @@
       (and all-revisions-index? (contains?
                                  #{:collection :tag-association
                                    :variable :variable-association
-                                   :service :service-association}
+                                   :service :service-association
+                                   :subscription}
                                  concept-type))))
 
 (def REINDEX_BATCH_SIZE 2000)
@@ -411,6 +416,10 @@
   [context concept]
   (let [service-associations (meta-db/get-associations-for-service context concept)]
     (get-elastic-version-with-associations context concept {:service-associations service-associations})))
+
+(defmethod get-elastic-version :subscription
+  [context concept]
+  (:transaction-id concept))
 
 (defmulti get-tag-associations
   "Returns the tag associations of the concept"

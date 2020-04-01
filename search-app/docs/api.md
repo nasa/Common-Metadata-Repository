@@ -175,6 +175,13 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Service Access Control](#service-access-control)
     * [Service association](#service-association)
     * [Service dissociation](#service-dissociation)
+  * [Subscription](#subscription)
+    * [Searching for Subscriptions](#searching-for-subscriptions)
+        * [Subscription Search Parameters](#subscription-search-params)
+        * [Subscription Search Response](#subscription-search-response)
+    * [Retrieving All Revisions of a Subscription](#retrieving-all-revisions-of-a-subscription)
+    * [Sorting Subscription Results](#sorting-subscription-results)
+    * [Subscription Access Control](#subscription-access-control)
   * [Community Usage Metrics](#community-usage-metrics)
     * [Updating Community Usage Metrics](#updating-community-usage-metrics)
     * [Retrieving Community Usage Metrics](#retrieving-community-usage-metrics)
@@ -2258,7 +2265,7 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
 
 ### <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
 
-This allows retrieving the metadata for a single concept. This is only supported for collections, granules, variables, and services. If no format is specified the native format of the metadata (and the native version, if it exists) will be returned.
+This allows retrieving the metadata for a single concept. This is only supported for collections, granules, variables, services and subscriptions. If no format is specified the native format of the metadata (and the native version, if it exists) will be returned.
 
 By concept id
 
@@ -2310,7 +2317,7 @@ The following extensions and MIME types are supported by the `/concepts/` resour
   * `atom`      "application/atom+xml"
   * `umm_json`  "application/vnd.nasa.cmr.umm+json"
 
-The following extensions and MIME types are supported by the `/concepts/` resource for the variable and service concept types:
+The following extensions and MIME types are supported by the `/concepts/` resource for the variable, service and subscription concept types:
 
   * `umm_json`  "application/vnd.nasa.cmr.umm+json"
 

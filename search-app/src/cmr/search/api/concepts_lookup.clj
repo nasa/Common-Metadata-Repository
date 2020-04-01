@@ -14,7 +14,7 @@
 ;;; Constants
 
 (def find-by-concept-id-concept-types
-  #{:collection :granule :service :variable})
+  #{:collection :granule :service :variable :subscription})
 
 (def supported-concept-id-retrieval-mime-types
   {:collection #{mt/any
@@ -40,6 +40,9 @@
               mt/iso-smap
               mt/umm-json}
    :service #{mt/any
+              mt/xml
+              mt/umm-json}
+   :subscription #{mt/any
               mt/xml
               mt/umm-json}
    :variable #{mt/any
@@ -110,7 +113,7 @@
   ;; e.g., http://localhost:3003/concepts/C120000000-PROV1,
   ;;       http://localhost:3003/concepts/C120000000-PROV1/2
   ;;       http://localohst:3003/concepts/C120000000-PROV1/2.xml
-  (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][A-Z]?[0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
+  (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][A-Z]?[A-Z]?[0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
     ;; OPTIONS method is needed to support CORS when custom headers are used in requests to
     ;; the endpoint. In this case, the Echo-Token header is used in the GET request.
     (OPTIONS "/" req common-routes/options-response)

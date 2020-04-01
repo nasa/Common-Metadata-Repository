@@ -65,7 +65,8 @@
    :acl access-control-exchange-name
    :humanizer ingest-exchange-name
    :variable ingest-exchange-name
-   :variable-association ingest-exchange-name})
+   :variable-association ingest-exchange-name
+   :subscription ingest-exchange-name})
 
 (defconfig deleted-concept-revision-exchange-name
   "An exchange that will have messages passed to it whenever a concept revision is removed from

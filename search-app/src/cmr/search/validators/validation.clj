@@ -48,6 +48,13 @@
           :umm-json :umm-json-results}
         (umm-versioned-result-formats :service)))
 
+(defmethod cqv/supported-result-formats :subscription
+  [_]
+  (into #{:xml :json
+          ;; umm-json supported with and without versions
+          :umm-json :umm-json-results}
+        (umm-versioned-result-formats :subscription)))
+
 (def all-revisions-supported-result-formats
   "Supported search result format when all-revisions? is true."
   (into #{:legacy-umm-json :xml :umm-json :umm-json-results}

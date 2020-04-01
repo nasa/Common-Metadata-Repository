@@ -116,6 +116,11 @@
   {:provider :provider-id
    :name :service-name})
 
+(defmethod q2e/concept-type->field-mappings :subscription
+  [_]
+  {:provider :provider-id
+   :name :subscription-name})
+
 (defmethod q2e/elastic-field->query-field-mappings :autocomplete
   [_]
   {:value :value
@@ -185,6 +190,11 @@
   [_]
   {:provider "provider-id.lowercase"
    :name "service-name.lowercase"})
+
+(defmethod q2e/field->lowercase-field-mappings :subscription
+  [_]
+  {:provider "provider-id.lowercase"
+   :name "subscription-name.lowercase"})
 
 (defn- doc-values-lowercase-field-name
   "Returns the doc-values field-name for the given field."
@@ -325,6 +335,13 @@
    :long-name :long-name.lowercase
    :provider :provider-id.lowercase})
 
+(defmethod q2e/concept-type->sort-key-map :subscription
+  [_]
+  {:subscription-name :subscription-name.lowercase
+   :name :subscription-name.lowercase
+   :collection-concept-id :collection-concept-id.lowercase
+   :provider :provider-id.lowercase})
+
 (defmethod q2e/concept-type->sort-key-map :granule
   [_]
   (let [default-mappings {:provider :provider-id.lowercase
@@ -389,6 +406,16 @@
   [{(q2e/query-field->elastic-field :name :service) {:order "asc"}}
    {(q2e/query-field->elastic-field :provider :service) {:order "asc"}}])
 
+(def subscription-all-revision-sub-sort-fields
+  "Defines the sub sort fields for an all revisions subscription search."
+  [{(q2e/query-field->elastic-field :concept-id :subscription) {:order "asc"}}
+   {(q2e/query-field->elastic-field :revision-id :subscription) {:order "desc"}}])
+
+(def subscription-latest-sub-sort-fields
+  "This defines the sub sort fields for a latest revision subscription search."
+  [{(q2e/query-field->elastic-field :name :subscription) {:order "asc"}}
+   {(q2e/query-field->elastic-field :provider :subscription) {:order "asc"}}])
+
 (defmethod q2e/concept-type->sub-sort-fields :granule
   [_]
   [{(q2e/query-field->elastic-field :concept-seq-id :granule) {:order "asc"}}])
@@ -427,6 +454,16 @@
         sub-sort-fields (if (:all-revisions? query)
                           service-all-revision-sub-sort-fields
                           service-latest-sub-sort-fields)]
+    (concat (or specified-sort default-sort) sub-sort-fields)))
+
+(defmethod q2e/query->sort-params :subscription
+  [query]
+  (let [{:keys [concept-type sort-keys]} query
+        specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
+        default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
+        sub-sort-fields (if (:all-revisions? query)
+                          subscription-all-revision-sub-sort-fields
+                          subscription-latest-sub-sort-fields)]
     (concat (or specified-sort default-sort) sub-sort-fields)))
 
 (extend-protocol c2s/ComplexQueryToSimple

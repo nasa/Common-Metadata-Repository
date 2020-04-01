@@ -206,6 +206,11 @@
   [service]
   (concept->umm-json-meta :service service))
 
+(defn- subscription->umm-json-meta
+  "Returns the meta section of umm-json format."
+  [subscription]
+  (concept->umm-json-meta :subscription subscription))
+
 (defn- service->umm-json
   "Returns the UMM JSON result of the given service."
   [version service]
@@ -214,6 +219,16 @@
     (let [;; use the original metadata for now, add version migration when service versioning is added
            {:keys [metadata]} service]
       {:meta (service->umm-json-meta service)
+       :umm (json/decode metadata true)})))
+
+(defn- subscription->umm-json
+  "Returns the UMM JSON result of the given subscription."
+  [version subscription]
+  (if (:deleted subscription)
+    {:meta (subscription->umm-json-meta subscription)}
+    (let [;; use the original metadata for now, add version migration when subscription versioning is added
+           {:keys [metadata]} subscription]
+      {:meta (subscription->umm-json-meta subscription)
        :umm (json/decode metadata true)})))
 
 (defn assert-service-umm-jsons-match
@@ -228,6 +243,21 @@
                             (:body search-result) version)))
           "UMM search result JSON was invalid")
       (is (= (set (map #(service->umm-json version %) services))
+             (set (map #(util/dissoc-in % [:meta :revision-date])
+                       (get-in search-result [:results :items]))))))))
+
+(defn assert-subscription-umm-jsons-match
+  "Returns true if the UMM subscription umm-jsons match the umm-jsons returned from the search."
+  [version subscriptions search-result]
+  (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
+    (is (= 200 (:status search-result)) (pr-str search-result))
+    (do
+      (is (= mt/umm-json-results (mt/base-mime-type-of (:content-type search-result))))
+      (is (= version (mt/version-of (:content-type search-result))))
+      (is (nil? (util/seqv (umm-json-schema/validate-subscription-umm-json-search-result
+                            (:body search-result) version)))
+          "UMM search result JSON was invalid")
+      (is (= (set (map #(subscription->umm-json version %) subscriptions))
              (set (map #(util/dissoc-in % [:meta :revision-date])
                        (get-in search-result [:results :items]))))))))
 

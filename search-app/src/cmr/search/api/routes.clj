@@ -37,6 +37,8 @@
    [cmr.search.results-handlers.reference-results-handler]
    [cmr.search.results-handlers.services-json-results-handler]
    [cmr.search.results-handlers.services-umm-json-results-handler]
+   [cmr.search.results-handlers.subscriptions-json-results-handler]
+   [cmr.search.results-handlers.subscriptions-umm-json-results-handler]
    [cmr.search.results-handlers.tags-json-results-handler]
    [cmr.search.results-handlers.timeline-results-handler]
    [cmr.search.results-handlers.umm-json-results-handler]
