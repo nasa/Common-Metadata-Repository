@@ -3,6 +3,8 @@
   (:require
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]
    [cmr.system-int-test.data2.umm-spec-common :as umm-spec-common]
    [cmr.system-int-test.search.facets.facets-util :as fu]
@@ -56,19 +58,23 @@
 
 (deftest reindex-suggestions-test
   (let [token (e/login (s/context) "user1")
-        coll1 (fu/make-coll 1 "PROV1"
-                            (fu/science-keywords sk1 sk2)
-                            (fu/projects "proj1" "PROJ2")
-                            (fu/platforms fu/FROM_KMS 2 2 1)
-                            (fu/processing-level-id "PL1")
+        coll1 (d/ingest "PROV1"
+                        (dc/collection
                             {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
-                             :ArchiveAndDistributionInformation gdf1})
+                             :ArchiveAndDistributionInformation gdf1
+                             :SpatialKeywords ["DC" "Miami"]
+                             :ProcessingLevelId (:ProcessingLevelId (fu/processing-level-id "PL1"))
+                             :Projects [(:Projects (fu/projects "proj1" "PROJ2"))]
+                             :Platforms [(:Platforms (fu/platforms fu/FROM_KMS 2 2 1))]
+                             :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]}))
+
         coll2 (fu/make-coll 2 "PROV1"
                             (fu/science-keywords sk1 sk3)
                             (fu/projects "proj1" "PROJ2")
                             (fu/platforms fu/FROM_KMS 2 2 1)
                             (fu/processing-level-id "PL1")
-                            {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]})
+                            {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
+                             :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]})
         _ (index/wait-until-indexed)]
 
     (index/reindex-suggestions)

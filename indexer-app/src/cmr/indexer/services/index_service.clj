@@ -208,6 +208,7 @@
                             (remove nil?)
                             (s/join ":"))]
      {:type "science_keywords"
+      :_id (str keyword-string "_science_keywords")
        :value keyword-string
        :field keyword-field
        :_index "1_autocomplete"
@@ -219,11 +220,14 @@
   (if (= key-name "science-keywords")
    (science-keywords->elastic-docs value-map)
    (map (fn [value]
-         {:type (csk/->snake_case_keyword key-name)
-          :value (val value)
-          :field (csk/->snake_case_keyword (name (key value)))
-          :_index "1_autocomplete"
-          :_type "suggestion"})
+          (let [v (val value)
+                type (csk/->snake_case_keyword key-name)]
+           {:type type
+            :_id (str v "_" type)
+            :value v
+            :field (csk/->snake_case_keyword (name (key value)))
+            :_index "1_autocomplete"
+            :_type "suggestion"}))
        (seq value-map))))
 
 (defn- get-suggestion-docs
