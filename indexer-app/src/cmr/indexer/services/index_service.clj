@@ -198,24 +198,15 @@
         terminal-key (->> keyword-hierarchy
                           (map #(get science-keywords %))
                           (positions nil?))
-        keyword-field (if (empty? terminal-key)
-                        (-> keyword-hierarchy
-                            last
-                            name
-                            csk/->snake_case)
-                        (->> terminal-key
-                             first
-                             (nth keyword-hierarchy)
-                             name
-                             csk/->snake_case))
         keyword-string (->> keyword-hierarchy
                             (map #(get science-keywords %))
                             (remove nil?)
-                            (s/join ":"))]
+                            (s/join ":"))
+        keyword-value (get science-keywords terminal-key)]
      {:type "science_keywords"
       :_id (str keyword-string "_science_keywords")
-       :value keyword-string
-       :field keyword-field
+       :value keyword-value
+       :field keyword-string
        :_index "1_autocomplete"
        :_type "suggestion"}))
 
