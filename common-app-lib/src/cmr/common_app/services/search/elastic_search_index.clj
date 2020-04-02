@@ -99,7 +99,7 @@
   "Performs a scroll search, handling errors where possible."
   [context scroll-id]
   (try
-    (es-helper/scroll (context->conn context) scroll-id :scroll (es-config/elastic-scroll-timeout))
+    (es-helper/scroll (context->conn context) scroll-id {:scroll (es-config/elastic-scroll-timeout)})
     (catch ExceptionInfo e
            (handle-es-exception e scroll-id))))
 
