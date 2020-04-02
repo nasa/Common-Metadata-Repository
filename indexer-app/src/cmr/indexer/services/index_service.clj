@@ -204,7 +204,7 @@
                             (s/join ":"))
         keyword-value (get science-keywords terminal-key)]
      {:type "science_keywords"
-      :_id (str keyword-string "_science_keywords")
+      :_id (str (s/lower-case keyword-string) "_science_keywords")
        :value keyword-value
        :field keyword-string
        :_index "1_autocomplete"
@@ -213,18 +213,21 @@
 (defn- suggestion-doc
   "Creates elasticsearch docs from a given humanized map"
   [key-name value-map]
-  (if (= key-name "science-keywords")
-   (science-keywords->elastic-docs value-map)
-   (map (fn [value]
-          (let [v (val value)
-                type (csk/->snake_case_keyword key-name)]
-           {:type type
-            :_id (str v "_" type)
-            :value v
-            :field (csk/->snake_case_keyword (name (key value)))
-            :_index "1_autocomplete"
-            :_type "suggestion"}))
-       (seq value-map))))
+  (let [values (->> value-map
+                    seq
+                    (remove #(s/includes? (name (key %)) ".lowercase")))]
+    (if (= key-name "science-keywords")
+     (science-keywords->elastic-docs value-map)
+     (map (fn [value]
+            (let [v (val value)
+                  type (csk/->snake_case_keyword key-name)]
+             {:type type
+              :_id (str (s/lower-case v) "_" type)
+              :value v
+              :field (csk/->snake_case_keyword (name (key value)))
+              :_index "1_autocomplete"
+              :_type "suggestion"}))
+         values))))
 
 (defn- get-suggestion-docs
   "Given the humanized fields from a collection, assemble elastic doc for each
