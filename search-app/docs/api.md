@@ -3482,7 +3482,7 @@ Content-Length: 393
         <reference>
             <name>Variable1</name>
             <id>V1200000007-PROV1</id>
-            <location>http://localhost:3003/concepts/V1200000007-PROV1/1</location>
+            <location>%CMR-ENDPOINT%/concepts/V1200000007-PROV1/1</location>
             <revision-id>1</revision-id>
         </reference>
     </references>
@@ -3813,7 +3813,7 @@ Content-Length: 393
         <reference>
             <name>Service1</name>
             <id>S1200000007-PROV1</id>
-            <location>http://localhost:3003/concepts/S1200000007-PROV1/1</location>
+            <location>%CMR-ENDPOINT%/concepts/S1200000007-PROV1/1</location>
             <revision-id>1</revision-id>
         </reference>
     </references>
@@ -3963,7 +3963,7 @@ __Sample response__
             <reference>
                 <name>Service1</name>
                 <id>S1200000010-PROV1</id>
-                <location>http://localhost:3003/concepts/S1200000010-PROV1/3</location>
+                <location>%CMR-ENDPOINT%/concepts/S1200000010-PROV1/3</location>
                 <revision-id>3</revision-id>
             </reference>
             <reference>
@@ -3975,7 +3975,7 @@ __Sample response__
             <reference>
                 <name>Service1</name>
                 <id>S1200000010-PROV1</id>
-                <location>http://localhost:3003/concepts/S1200000010-PROV1/1</location>
+                <location>%CMR-ENDPOINT%/concepts/S1200000010-PROV1/1</location>
                 <revision-id>1</revision-id>
             </reference>
         </references>
@@ -4086,7 +4086,7 @@ On occasions when service dissociation cannot be processed at all due to invalid
 
 ### <a name="subscription"></a> Subscription
 
-A subscription enables data to be accessed via a universal resource locator, Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription).
+Email subscription is used to inform the users through emails when the granules that match the query in the subscription are created/updated. These granules can only belong to one collection, which is defined by the collection-concept-id in the subscription. There is a background job that processes the subscriptions periodically(configurable), to see if there are any granules that are created/updated between the time it's processed and the time it was last processed.  A subscription enables data to be accessed via a universal resource locator, Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription).
 
 #### <a name="searching-for-subscriptions"></a> Searching for Subscriptions
 
@@ -4153,7 +4153,7 @@ Content-Length: 393
         <reference>
             <name>someSub1</name>
             <id>SUB1200000005-PROV1</id>
-            <location>http://localhost:3003/concepts/SUB1200000005-PROV1/1</location>
+            <location>%CMR-ENDPOINT%/concepts/SUB1200000005-PROV1/1</location>
             <revision-id>1</revision-id>
         </reference>
     </references>
@@ -4261,13 +4261,13 @@ __Sample response__
             <reference>
                 <name>someSub1</name>
                 <id>SUB1200000005-PROV1</id>
-                <location>http://localhost:3003/concepts/SUB1200000005-PROV1/2</location>
+                <location>%CMR-ENDPOINT%/concepts/SUB1200000005-PROV1/2</location>
                 <revision-id>2</revision-id>
             </reference>
             <reference>
                 <name>someSub1</name>
                 <id>SUB1200000005-PROV1</id>
-                <location>http://localhost:3003/concepts/SUB1200000005-PROV1/1</location>
+                <location>%CMR-ENDPOINT%/concepts/SUB1200000005-PROV1/1</location>
                 <revision-id>1</revision-id>
             </reference>
         </references>
@@ -4300,13 +4300,13 @@ __Sample response__
             <reference>
                 <name>someSub2</name>
                 <id>SUB1200000006-PROV1</id>
-                <location>http://localhost:3003/concepts/SUB1200000006-PROV1/1</location>
+                <location>%CMR-ENDPOINT%/concepts/SUB1200000006-PROV1/1</location>
                 <revision-id>1</revision-id>
         </reference>
         <reference>
             <name>someSub1</name>
             <id>SUB1200000005-PROV1</id>
-            <location>http://localhost:3003/concepts/SUB1200000005-PROV1/1</location>
+            <location>%CMR-ENDPOINT%/concepts/SUB1200000005-PROV1/1</location>
             <revision-id>1</revision-id>
         </reference>
     </references>
@@ -4325,13 +4325,13 @@ __Sample response__
             <reference>
                 <name>someSub1</name>
                 <id>SUB1200000005-PROV1</id>
-                <location>http://localhost:3003/concepts/SUB1200000005-PROV1/1</location>
+                <location>%CMR-ENDPOINT%/concepts/SUB1200000005-PROV1/1</location>
                 <revision-id>1</revision-id>
         </reference>
         <reference>
             <name>someSub2</name>
             <id>SUB1200000006-PROV1</id>
-            <location>http://localhost:3003/concepts/SUB1200000006-PROV1/1</location>
+            <location>%CMR-ENDPOINT%/concepts/SUB1200000006-PROV1/1</location>
             <revision-id>1</revision-id>
         </reference>
     </references>
