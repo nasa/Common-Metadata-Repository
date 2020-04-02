@@ -412,8 +412,14 @@
 
 (deftest update-group-failure-test
   (let [group (test-util/make-group)
+        group2 (test-util/make-group {:name "Group2" :members ["user1"]})
+        group3 (test-util/make-group {:name "Group3" :members ["user1"]})
+
         token (echo-util/login (test-util/conn-context) "user1")
-        {:keys [concept_id revision_id]} (test-util/create-group token group)]
+
+        {:keys [concept_id revision_id]} (test-util/create-group token group)
+        {concept_id2 :concept_id} (test-util/create-group token group2)
+        {concept_id3 :concept_id} (test-util/create-group token group3)]
 
     (testing "Update group with invalid content type"
       (is (= {:status 400,
@@ -451,7 +457,45 @@
       (test-util/delete-group token concept_id)
       (is (= {:status 404
               :errors [(format "Group with concept id [%s] was deleted." concept_id)]}
-             (test-util/update-group token concept_id group))))))
+             (test-util/update-group token concept_id group))))
+
+    (testing "Update a group with conflicting name"
+      (is (= {:status 409
+              :errors [(format "A system group with name [%s] already exists with concept id [%s]."
+                               (:name group2)
+                               concept_id2)]}
+             (test-util/update-group token concept_id3 (assoc group3 :name (:name group2))))))
+
+    (testing "Update a group with conflicting name"
+      (is (= {:status 409
+              :errors [(format "A system group with name [%s] already exists with concept id [%s]."
+                               (:name group2)
+                               concept_id2)]}
+             (test-util/update-group token concept_id3 (assoc group3 :name (:name group2))))))))
+
+(deftest update-provider-groups-test
+  (let [group1 (test-util/make-group {:name "group1" :provider_id "PROV1"})
+        group1a (test-util/make-group {:name "group2" :provider_id "PROV1"})
+        group2 (test-util/make-group {:name "group2" :provider_id "PROV2"})
+        token (echo-util/login (test-util/conn-context) "user1")
+        {concept_id1 :concept_id} (test-util/create-group token group1)
+        {concept_id1a :concept_id} (test-util/create-group token group1a)
+        {concept_id2 :concept_id} (test-util/create-group token group2)]
+
+    (testing "prevent the same provider from re-using group names"
+      (is (= {:status 409
+              :errors [(format (str "A provider group with name [%s] already exists "
+                                    "with concept id [%s] for provider [%s].")
+                               (:name group1)
+                               concept_id1
+                               (:provider_id group1))]}
+             (test-util/update-group token concept_id1a (assoc group1a :name (:name group1))))))
+
+    (testing "allow different providers to re-use group names"
+      (is (= {:status 200
+              :revision_id 2
+              :concept_id (format "%s" concept_id2)}
+             (test-util/update-group token concept_id2 (assoc group2 :name (:name group1))))))))
 
 (deftest update-group-legacy-guid-test
   (let [group1 (test-util/make-group {:legacy_guid "legacy_guid_1" :name "group1"})
