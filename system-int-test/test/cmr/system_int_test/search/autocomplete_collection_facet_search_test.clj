@@ -18,7 +18,7 @@
                             {:value "BAAZ" :type "platform"}
                             {:value "ATMOSPHERE:EARTH SCIENCE:LIQUID PRECIPITATION:RAIN:FREEZING RAIN"
                              :type "science_keyword"
-                             :field "variable-level-3"}
+                             :fields "variable-level-3"}
                             {:value "africa" :type "spatial_keyword"}
                             {:value "antarctica" :type "spatial_keyword"}
                             {:value "arctic" :type "spatial_keyword"}
