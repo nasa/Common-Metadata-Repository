@@ -27,10 +27,12 @@
     :aggregations {:start-date-intervals
                    {:date_histogram
                     {:field (q2e/query-field->elastic-field :start-date :granule)
+                     :min_doc_count 1
                      :interval interval-granularity}}
                    :end-date-intervals
                     {:date_histogram
                      {:field (q2e/query-field->elastic-field :end-date :granule)
+                      :min_doc_count 1
                       :interval interval-granularity}}}}})
 
 (defmethod query-execution/pre-process-query-result-feature :timeline
@@ -136,7 +138,7 @@
   (let [dist-fn (interval-granularity->dist-fn interval-granularity)]
     (= 1 (dist-fn (t/interval (:end i1) (:start i2))))))
 
-(defn merge-intervals
+(defn- merge-intervals
   "Merges two intervals together. The start date of the first is taken along with the end date of
   the second. The hits are added together."
   [i1 i2]
@@ -144,7 +146,7 @@
       (update-in [:num-grans] #(+ % (:num-grans i2)))
       (assoc :end (:end i2))))
 
-(defn merge-adjacent-intervals
+(defn- merge-adjacent-intervals
   "Takes an interval-granularity and a list of intervals. Merges the intervals together that are
   within one interval granularity from each other. ASsumes intervals are already sorted by start
   date."
@@ -168,7 +170,7 @@
                                    [(conj new-intervals prev) current])]
         (recur (rest intervals) new-intervals prev)))))
 
-(def interval-granularity->period-fn
+(def ^:private interval-granularity->period-fn
   "Maps interval granularity types to the clj-time period functions"
   {:year t/years
    :month t/months
@@ -178,7 +180,7 @@
    :second t/seconds})
 
 
-(defn advance-interval-end-date
+(defn- advance-interval-end-date
   "Advances the interval end date by one unit of interval granularity. The end dates coming back from
   elasticsearch are at the beginning of the interval. The granules end date falls somewhere between
   the start of the interval and the end of it. By advancing the end date to the end we indicate to
@@ -187,7 +189,7 @@
   (let [one-unit ((interval-granularity->period-fn interval-granularity) 1)]
     (update-in interval [:end] #(when % (t/plus % one-unit)))))
 
-(defn constrain-interval-to-user-range
+(defn- constrain-interval-to-user-range
   "Constrains the start and end date of the interval to within the range given by the user"
   [start-date end-date interval]
   ;; This flag indicates in the ordered-events->intervals function that the interval had extra
@@ -198,7 +200,7 @@
         (update-in [:start] #(if (t/before? % start-date) start-date %))
         (update-in [:end] #(if (or no-end (nil? %) (t/after? % end-date)) end-date %)))))
 
-(defn collection-bucket->intervals
+(defn- collection-bucket->intervals
   "Takes a single collection bucket from the aggregation response and returns the intervals
   for that collection."
   [interval-granularity start-date end-date collection-bucket]
