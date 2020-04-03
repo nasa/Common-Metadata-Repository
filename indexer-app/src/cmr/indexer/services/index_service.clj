@@ -1,7 +1,7 @@
 (ns cmr.indexer.services.index-service
   "Provide functions to index concept"
   (:require
-   [camel-snake-kebab.core :as csk]
+   [camel-snake-kebab.core :as camel-snake-kebab]
    [cheshire.core :as cheshire]
    [clj-time.core :as t]
    [clj-time.core :as t]
@@ -197,11 +197,14 @@
                             (map #(get science-keywords %))
                             (remove nil?)
                             (s/join ":"))
-        keyword-value (get science-keywords terminal-key)]
+        keyword-value (get science-keywords terminal-key)
+        id (-> (s/lower-case keyword-string)
+               (str "_science_keywords")
+               hash)]
      {:type "science_keywords"
-      :_id (str (s/lower-case keyword-string) "_science_keywords")
+      :_id id
        :value keyword-value
-       :field keyword-string
+       :fields keyword-string
        :_index "1_autocomplete"
        :_type "suggestion"}))
 
@@ -215,11 +218,14 @@
      (science-keywords->elastic-docs value-map)
      (map (fn [value]
             (let [v (val value)
-                  type (csk/->snake_case_keyword key-name)]
+                  type (camel-snake-kebab/->snake_case_keyword key-name)
+                  id (-> (s/lower-case v)
+                         (str "_" type)
+                         hash)]
              {:type type
-              :_id (str (s/lower-case v) "_" type)
+              :_id id
               :value v
-              :field (csk/->snake_case_keyword (name (key value)))
+              :fields (camel-snake-kebab/->snake_case_keyword (name (key value)))
               :_index "1_autocomplete"
               :_type "suggestion"}))
          values))))
