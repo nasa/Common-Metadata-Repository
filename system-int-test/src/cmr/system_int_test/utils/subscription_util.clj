@@ -111,21 +111,33 @@
 
 (def ^:private json-field-names
   "List of fields expected in a subscription JSON response."
-  [:concept-id :revision-id :provider-id :native-id :deleted :name])
+  [:concept-id :revision-id :provider-id :native-id :deleted :name :subscriber-id :collection-concept-id])
 
 (defn extract-name-from-metadata
   "Pulls the name out of the metadata field in the provided subscription concept."
   [subscription]
   (:Name (json/parse-string (:metadata subscription) true)))
 
+(defn extract-subscriber-id-from-metadata
+  "Pulls the subscriber-id out of the metadata field in the provided subscription concept."
+  [subscription]
+  (:SubscriberId (json/parse-string (:metadata subscription) true)))
+
+(defn extract-collection-concept-id-from-metadata
+  "Pulls the collection-concept-id out of the metadata field in the provided subscription concept."
+  [subscription]
+  (:CollectionConceptId (json/parse-string (:metadata subscription) true)))
+
 (defn get-expected-subscription-json
   "For the given subscription return the expected subscription JSON."
   [subscription]
-  (let [subscription-json-fields (select-keys
-                                   (assoc subscription
-                                          :name (extract-name-from-metadata subscription))
-                                   json-field-names)]
-    subscription-json-fields))
+  (let [sub-json-fields (select-keys
+                          (assoc subscription
+                                 :name (extract-name-from-metadata subscription)
+                                 :subscriber-id (extract-subscriber-id-from-metadata subscription)
+                                 :collection-concept-id (extract-collection-concept-id-from-metadata subscription))
+                          json-field-names)]
+    sub-json-fields))
 
 (defn assert-subscription-search
   "Verifies the subscription search results. The response must be provided in JSON format."
