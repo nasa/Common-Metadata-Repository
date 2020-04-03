@@ -43,8 +43,8 @@
               mt/xml
               mt/umm-json}
    :subscription #{mt/any
-              mt/xml
-              mt/umm-json}
+                   mt/xml
+                   mt/umm-json}
    :variable #{mt/any
                mt/xml
                mt/umm-json}})
