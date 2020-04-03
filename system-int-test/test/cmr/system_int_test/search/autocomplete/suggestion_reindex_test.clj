@@ -11,7 +11,8 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
-   [cmr.system-int-test.utils.ingest-util :as ingest]))
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
@@ -78,4 +79,5 @@
         _ (index/wait-until-indexed)]
 
     (index/reindex-suggestions)
-    (index/wait-until-indexed)))
+    (index/wait-until-indexed)
+    (search/get-autocomplete-suggestions "q=level2")))
