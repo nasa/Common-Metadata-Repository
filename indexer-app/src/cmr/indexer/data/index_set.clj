@@ -56,34 +56,44 @@
   "The index to use for the latest collection revisions."
   {:default "1_collections_v2" :type String})
 
+(defconfig max-result-window
+  "Number of max results can be returned in an Elasticsearch query."
+  {:default 1000000 :type Long})
+
 (def collection-setting-v1 {:index
                             {:number_of_shards (elastic-collection-index-num-shards)
                              :number_of_replicas 1,
+                             :max_result_window (max-result-window),
                              :refresh_interval "1s"}})
 
 (def collection-setting-v2 {:index
                             {:number_of_shards (elastic-collection-v2-index-num-shards),
                              :number_of_replicas 1,
+                             :max_result_window (max-result-window),
                              :refresh_interval "1s"}})
 
 (def tag-setting {:index
                   {:number_of_shards (elastic-tag-index-num-shards)
                    :number_of_replicas 1,
+                   :max_result_window (max-result-window),
                    :refresh_interval "1s"}})
 
 (def deleted-granule-setting {:index
                               {:number_of_shards (elastic-deleted-granule-index-num-shards)
                                :number_of_replicas 1,
+                               :max_result_window (max-result-window),
                                :refresh_interval "1s"}})
 
 (def variable-setting {:index
                        {:number_of_shards (elastic-variable-index-num-shards)
                         :number_of_replicas 1,
+                        :max_result_window (max-result-window),
                         :refresh_interval "1s"}})
 
 (def service-setting {:index
                        {:number_of_shards (elastic-service-index-num-shards)
                         :number_of_replicas 1,
+                        :max_result_window (max-result-window),
                         :refresh_interval "1s"}})
 
 (defnestedmapping attributes-field-mapping
@@ -718,11 +728,13 @@
 (def granule-settings-for-individual-indexes
   {:index {:number_of_shards (elastic-granule-index-num-shards),
            :number_of_replicas 1,
+           :max_result_window (max-result-window),
            :refresh_interval "1s"}})
 
 (def granule-settings-for-small-collections-index
   {:index {:number_of_shards (elastic-small-collections-index-num-shards),
            :number_of_replicas 1,
+           :max_result_window (max-result-window),
            :refresh_interval "1s"}})
 
 (def index-set-id
