@@ -390,31 +390,7 @@
       (index/wait-until-indexed)
 
       ;; Search after reindexing
-      (d/assert-refs-match [coll1 coll2-2 coll4] (search/find-refs :collection {})))
-
-    ;; Tests reindexing using the force current version option
-    (testing "Force version reindex all collections"
-      ;; Verify we can find coll2 with the lastest data
-      (d/assert-refs-match [coll2-2] (search/find-refs :collection {:short-name "short2"}))
-
-      ;; Delete the latest version of coll2
-      (is (= 200 (:status (mdb/force-delete-concept (:concept-id coll2-2) 2 true))))
-      (index/wait-until-indexed)
-
-      ;; After deleting the latest version of coll2 we will still find that.
-      (d/assert-refs-match [coll2-2] (search/find-refs :collection {:short-name "short2"}))
-
-      ;; Reindexing all the collections doesn't solve the problem
-      (ingest/reindex-all-collections)
-      (index/wait-until-indexed)
-      (d/assert-refs-match [coll2-2] (search/find-refs :collection {:short-name "short2"}))
-
-      ;; A force reindex all collections will make elastic take the earlier version of the
-      ;; collections.
-      (ingest/reindex-all-collections {:force-version false})
-      (index/wait-until-indexed)
-      (d/assert-refs-match [] (search/find-refs :collection {:short-name "short2"}))
-      (d/assert-refs-match [coll2-1] (search/find-refs :collection {:short-name "short1"})))))
+      (d/assert-refs-match [coll1 coll2-2 coll4] (search/find-refs :collection {})))))
 
 ;; Verifies that tokens are cached by checking that a logged out token still works after it was
 ;; used. This isn't the desired behavior. It's just a side effect that shows it's working.
