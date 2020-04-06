@@ -9,19 +9,19 @@
 
 (defmethod parse-date :year
   [datetime interval]
-  (second (re-find #"^(\d{4})-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d+$" datetime)))
+  (second (re-find #"^(\d{4})-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*Z$" datetime)))
 
 (defmethod parse-date :month
   [datetime interval]
-  (second (re-find #"^\d{4}-(\d{2})-\d{2}T\d{2}:\d{2}:\d{2}\+\d+$" datetime)))
+  (second (re-find #"^\d{4}-(\d{2})-\d{2}T\d{2}:\d{2}:\d{2}.*Z$" datetime)))
 
 (defmethod parse-date :day
   [datetime interval]
-  (second (re-find #"^\d{4}-\d{2}-(\d{2})T\d{2}:\d{2}:\d{2}\+\d+$" datetime)))
+  (second (re-find #"^\d{4}-\d{2}-(\d{2})T\d{2}:\d{2}:\d{2}.*Z$" datetime)))
 
 (defmethod parse-date :hour
   [datetime interval]
-  (second (re-find #"^\d{4}-\d{2}-\d{2}T(\d{2}):\d{2}:\d{2}\+\d+$" datetime)))
+  (second (re-find #"^\d{4}-\d{2}-\d{2}T(\d{2}):\d{2}:\d{2}.*Z$" datetime)))
 
 (defn- time-intervals->next-interval
   "Returns the next interval based on the values in the map."
@@ -53,4 +53,5 @@
   (let [interval-granularity (query-params->time-interval query-params)]
     {:date_histogram
      {:field :start-date-doc-values
+      :min_doc_count 1
       :interval interval-granularity}}))
