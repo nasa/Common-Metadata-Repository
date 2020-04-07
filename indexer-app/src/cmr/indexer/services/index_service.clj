@@ -230,7 +230,7 @@
              {:type type
               :_id id
               :value v
-              :fields (camel-snake-kebab/->snake_case_keyword (name (key value)))
+              :fields v
               :_index "1_autocomplete"
               :_type "suggestion"}))
          values))))

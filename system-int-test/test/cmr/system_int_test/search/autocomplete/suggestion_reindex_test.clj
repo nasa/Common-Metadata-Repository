@@ -85,16 +85,16 @@
     (index/wait-until-indexed)
     (testing "Ensure that response is in proper format and results are correct"
       (is (= (get-in (search/get-autocomplete-json "q=level2") [:feed :entry])
-             [{:score 0.25604635, :type "organization", :value "Langley DAAC User Services", :fields "Langley DAAC User Services"}
-              {:score 0.041718055, :type "instrument", :value "lVIs", :fields "lVIs"}])))
+            [{:score 0.25604635 :type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}
+             {:score 0.041718055 :type "instrument" :value "lVIs" :fields "lVIs"}])))
     (testing "Ensure science keywords are being indexed properly"
         (is (= (get-in (search/get-autocomplete-json "q=solar") [:feed :entry])
-               [{:score 3.4995544, :type "science_keywords", :value "Solar Irradiance", :fields "Solar Irradiance"}
-                {:score 1.9641972, :type "science_keywords", :value "Solar Irradiance", :fields "Solar Irradiance"}
+               [{:score 3.4995544, :type "science_keywords", :value "Solar Irradiance", :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
+                {:score 1.9641972, :type "science_keywords", :value "Solar Irradiance", :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
                 {:score 0.20964509, :type "organization", :value "ACRIM SCF", :fields "ACRIM SCF"}
                 {:score 0.16771607, :type "organization", :value "Langley DAAC User Services", :fields "Langley DAAC User Services"}]))
         (is (= (get-in (search/get-autocomplete-json "q=solar irradiation") [:feed :entry])
-               [{:score 5.0869484, :type "science_keywords", :value "Solar Irradiance", :fields "Solar Irradiance"}
-                {:score 2.7943783, :type "science_keywords", :value "Solar Irradiance", :fields "Solar Irradiance"}
+               [{:score 5.0869484, :type "science_keywords", :value "Solar Irradiance", :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
+                {:score 2.7943783, :type "science_keywords", :value "Solar Irradiance", :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
                 {:score 0.061936468, :type "organization", :value "ACRIM SCF", :fields "ACRIM SCF"}
                 {:score 0.049549174, :type "organization", :value "Langley DAAC User Services", :fields "Langley DAAC User Services"}])))))
