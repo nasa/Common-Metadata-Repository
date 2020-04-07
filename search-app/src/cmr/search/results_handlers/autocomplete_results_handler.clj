@@ -7,7 +7,7 @@
   [context query elastic-result]
   (let [{[type] :type
          [value] :value
-         [field] :value} (:fields elastic-result)
+         [field] :fields} (:fields elastic-result)
         score (:_score elastic-result)]
     {:score score
      :type  type
