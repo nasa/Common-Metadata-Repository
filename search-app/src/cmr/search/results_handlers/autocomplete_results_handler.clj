@@ -12,7 +12,7 @@
     {:score score
      :type  type
      :value value
-     :field field}))
+     :fields field}))
 
 (defmethod elastic-results/elastic-results->query-results [:autocomplete :json]
   [context query elastic-results]

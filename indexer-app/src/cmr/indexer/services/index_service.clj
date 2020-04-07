@@ -198,20 +198,20 @@
         terminal-key (->> keyword-hierarchy
                           (map #(get science-keywords %))
                           (positions nil?))
-        keyword-string (->> keyword-hierarchy
-                            (map #(get science-keywords %))
-                            (remove nil?)
-                            (s/join ":"))
-        keyword-value (get science-keywords terminal-key)
+        sk-strings (->> keyword-hierarchy
+                        (map #(get science-keywords %))
+                        (remove nil?))
+        keyword-string (s/join ":" sk-strings)
+        keyword-value (last sk-strings)
         id (-> (s/lower-case keyword-string)
                (str "_science_keywords")
                hash)]
-     {:type "science_keywords"
-      :_id id
-       :value keyword-value
-       :fields keyword-string
-       :_index "1_autocomplete"
-       :_type "suggestion"}))
+   {:type "science_keywords"
+    :_id id
+     :value keyword-value
+     :fields keyword-string
+     :_index "1_autocomplete"
+     :_type "suggestion"}))
 
 (defn- suggestion-doc
   "Creates elasticsearch docs from a given humanized map"

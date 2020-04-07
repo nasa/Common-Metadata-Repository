@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.search.autocomplete.suggestion-reindex-test
-  "This tests re-index tags."
+  "This tests re-indexes autocomplete suggestions."
   (:require
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
@@ -58,8 +58,7 @@
              :Format "NetCDF-3"}]})
 
 (deftest reindex-suggestions-test
-  (let [token (e/login (s/context) "user1")
-        coll1 (d/ingest "PROV1"
+  (let [coll1 (d/ingest "PROV1"
                         (dc/collection
                             {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
                              :ArchiveAndDistributionInformation gdf1
@@ -76,8 +75,26 @@
                             (fu/processing-level-id "PL1")
                             {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
                              :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]})
+        coll3 (d/ingest-concept-with-metadata-file "CMR-6287/C1000000029-EDF_OPS.xml"
+                                                         {:provider-id "PROV1"
+                                                          :concept-type :collection
+                                                          :format-key :echo10})
         _ (index/wait-until-indexed)]
 
     (index/reindex-suggestions)
     (index/wait-until-indexed)
-    (search/get-autocomplete-suggestions "q=level2")))
+    (testing "Ensure that response is in proper format and results are correct"
+      (is (= (get-in (search/get-autocomplete-json "q=level2") [:feed :entry])
+             [{:score 0.25604635, :type "organization", :value "Langley DAAC User Services", :fields "Langley DAAC User Services"}
+              {:score 0.041718055, :type "instrument", :value "lVIs", :fields "lVIs"}])))
+    (testing "Ensure science keywords are being indexed properly"
+        (is (= (get-in (search/get-autocomplete-json "q=solar") [:feed :entry])
+               [{:score 3.4995544, :type "science_keywords", :value "Solar Irradiance", :fields "Solar Irradiance"}
+                {:score 1.9641972, :type "science_keywords", :value "Solar Irradiance", :fields "Solar Irradiance"}
+                {:score 0.20964509, :type "organization", :value "ACRIM SCF", :fields "ACRIM SCF"}
+                {:score 0.16771607, :type "organization", :value "Langley DAAC User Services", :fields "Langley DAAC User Services"}]))
+        (is (= (get-in (search/get-autocomplete-json "q=solar irradiation") [:feed :entry])
+               [{:score 5.0869484, :type "science_keywords", :value "Solar Irradiance", :fields "Solar Irradiance"}
+                {:score 2.7943783, :type "science_keywords", :value "Solar Irradiance", :fields "Solar Irradiance"}
+                {:score 0.061936468, :type "organization", :value "ACRIM SCF", :fields "ACRIM SCF"}
+                {:score 0.049549174, :type "organization", :value "Langley DAAC User Services", :fields "Langley DAAC User Services"}])))))
