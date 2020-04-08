@@ -53,7 +53,7 @@
     [expected-results search-params options]
     (= (set expected-results)
        (get-search-results-summaries
-         (search/find-concepts-json :collection (merge {:include-highlights true} search-params options))))
+        (search/find-concepts-json :collection (merge {:include-highlights true} search-params options))))
 
     "No matching highlight in the summary field"
     [nil]
@@ -61,9 +61,10 @@
     {}
 
     "Long summary with multiple snippets and case insensitive"
-    [["This summary has a lot of characters in it. **<em>Findme</em>** So many that elasticsearch will break this"
-      " seems (<em>findme</em>) doable. The quick brown fox jumped --<em>findme</em>-- over the lazy dog. Now is the time for"
-      " all good men >><em>FINDME</em><< to come to the aid of the party."]]
+    [["**<em>Findme</em>** So many that elasticsearch will break this summary into multiple snippets."
+      "out what keyword to search for in order to make two different snippets have a match, but that seems (<em>findme</em>"
+      "The quick brown fox jumped --<em>findme</em>-- over the lazy dog."
+      "Now is the time for all good men >><em>FINDME</em><< to come to the aid of the party."]]
     {:keyword "FiNdmE"}
     {}
 
@@ -101,8 +102,8 @@
     ;; https://github.com/elastic/elasticsearch/issues/9442
     ;; This test should be updated to expect the correct length when the bug is fixed
     "Search with keyword and snippet_length = 50 and num_snippets = 2"
-    [[". **<em>Findme</em>** So many that elasticsearch will break this"
-      " seems (<em>findme</em>) doable. The quick brown fox jumped"]]
+    [["**<em>Findme</em>** So many that elasticsearch will break this"
+      "The quick brown fox jumped --<em>findme</em>-- over the lazy"]]
     {:keyword "findme"}
     {"options[highlights][snippet_length]" 50
      "options[highlights][num_snippets]" 2}))
@@ -143,25 +144,27 @@
           {:not {:keyword "foo"}}]}
     {}
 
-    "Search with keyword and begin_tag"
+    "Search with keyword and different begin_tag"
     [["Match on either '<br>ocean</em>' or '<br>collection</em>'."]
      ["Match on '<br>ocean</em> <br>collection</em>'"]]
     {:keyword "ocean collection"}
-    {"options[highlights][begin_tag]" "<br>"}
+    {"options[highlights][begin_tag]" "<br>"
+     "options[highlights][end_tag]" "</em>"}
 
-    "Search with keyword and end_tag"
+    "Search with keyword and different end_tag"
     [["Match on either '<em>ocean</br>' or '<em>collection</br>'."]
      ["Match on '<em>ocean</br> <em>collection</br>'"]]
     {:keyword "ocean collection"}
-    {"options[highlights][end_tag]" "</br>"}
+    {"options[highlights][begin_tag]" "<em>"
+     "options[highlights][end_tag]" "</br>"}
 
     ;; CMR-1986 - There is a known bug in Elasticsearch highlighting with regard to snippet_length:
     ;; https://github.com/elastic/elasticsearch/issues/9442
     ;; This test should be updated to expect the correct length when the bug is fixed.
     "Search with keyword and snippet_length and num_snippets"
-    [[" it. **<em>Findme</em>** So"
-      " seems (<em>findme</em>) doable"
-      " jumped --<em>findme</em>"]]
+    [["**<em>Findme</em>** So many that"
+      "brown fox jumped --<em>findme</em>"
+      "for all good men >><em>FINDME</em>"]]
     {:keyword "findme"}
     {"options[highlights][snippet_length]" 20
      "options[highlights][num_snippets]" 3}))

@@ -423,7 +423,7 @@
           ;; mappings added for atom
           :browsable (m/stored m/bool-field-mapping)
           :atom-links (m/not-indexed (m/stored m/string-field-mapping))
-          :summary (m/not-indexed (m/stored m/string-field-mapping))
+          :summary (m/stored m/english-string-field-mapping)
           :metadata-format (m/not-indexed (m/stored m/string-field-mapping))
           :update-time (m/not-indexed (m/stored m/string-field-mapping))
           :index-time (m/not-indexed (m/stored m/string-field-mapping))

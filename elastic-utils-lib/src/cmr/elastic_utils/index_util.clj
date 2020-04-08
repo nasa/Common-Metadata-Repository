@@ -18,6 +18,12 @@
 (def string-field-mapping
   {:type "keyword"})
 
+(def english-string-field-mapping
+  "Used for analyzed text fields"
+  {:type "text"
+   :analyzer "english"
+   :index true})
+
 (def text-field-mapping
   "Used for analyzed text fields"
   {:type "text"
