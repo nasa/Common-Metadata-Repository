@@ -14,7 +14,8 @@ const buildResponse = image => {
   return {
     statusCode: 200,
     headers: {
-      'Content-Type': 'image/png'
+      'Content-Type': 'image/png',
+      "Access-Control-Allow-Origin": "*"
     },
     body: image.toString('base64'),
     isBase64Encoded: true
