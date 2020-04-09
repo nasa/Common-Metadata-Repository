@@ -193,8 +193,8 @@
 
 (defmethod q2e/field->lowercase-field-mappings :subscription
   [_]
-  {:provider "provider-id.lowercase"
-   :name "subscription-name.lowercase"})
+  {:provider "provider-id-lowercase"
+   :name "subscription-name-lowercase"})
 
 (defn- doc-values-lowercase-field-name
   "Returns the doc-values field-name for the given field."
@@ -337,10 +337,10 @@
 
 (defmethod q2e/concept-type->sort-key-map :subscription
   [_]
-  {:subscription-name :subscription-name.lowercase
-   :name :subscription-name.lowercase
-   :collection-concept-id :collection-concept-id.lowercase
-   :provider :provider-id.lowercase})
+  {:subscription-name :subscription-name-lowercase
+   :name :subscription-name-lowercase
+   :collection-concept-id :collection-concept-id-lowercase
+   :provider :provider-id-lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :granule
   [_]

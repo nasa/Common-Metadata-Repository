@@ -235,5 +235,5 @@
                                            (get-boost-fn :data-center))
 
      ;; granule-data-format
-     (keywords->boosted-exact-match-filter :granule-data-format.lowercase keywords
+     (keywords->boosted-exact-match-filter :granule-data-format-lowercase keywords
                                            (get-boost-fn :granule-data-format))]))

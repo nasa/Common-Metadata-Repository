@@ -709,11 +709,10 @@
 (defmapping autocomplete-mapping :suggestion
   "Defines the elasticsearch mapping for storing autocomplete suggestions.
    These are the fields that will be stored in an Elasticsearch document."
-  {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
-   :type {:type "string" :index "analyzed" :store "yes"}
-   :fields {:type "string" :index "analyzed" :store "yes"}
-   :value {:type "string" :analyzer "autocomplete_analyzer" :index "analyzed" :store "yes"}})
+   :type {:type "text" :store true}
+   :fields {:type "text" :store true}
+   :value {:type "text" :analyzer "autocomplete_analyzer" :store true}})
 
 (defmapping variable-mapping :variable
   "Defines the elasticsearch mapping for storing variables. These are the
@@ -766,19 +765,18 @@
 (defmapping subscription-mapping :subscription
   "Defines the elasticsearch mapping for storing subscriptions. These are the
   fields that will be stored in an Elasticsearch document."
-  {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-id (-> m/int-field-mapping m/stored m/doc-values)
    :native-id (-> m/string-field-mapping m/stored m/doc-values)
-   :native-id.lowercase (m/doc-values m/string-field-mapping)
+   :native-id-lowercase (m/doc-values m/string-field-mapping)
    :provider-id (-> m/string-field-mapping m/stored m/doc-values)
-   :provider-id.lowercase (m/doc-values m/string-field-mapping)
+   :provider-id-lowercase (m/doc-values m/string-field-mapping)
    :subscription-name (-> m/string-field-mapping m/stored m/doc-values)
-   :subscription-name.lowercase (m/doc-values m/string-field-mapping)
+   :subscription-name-lowercase (m/doc-values m/string-field-mapping)
    :collection-concept-id (-> m/string-field-mapping m/stored m/doc-values)
-   :collection-concept-id.lowercase (m/doc-values m/string-field-mapping)
+   :collection-concept-id-lowercase (m/doc-values m/string-field-mapping)
    :subscriber-id (-> m/string-field-mapping m/stored m/doc-values)
-   :subscriber-id.lowercase (m/doc-values m/string-field-mapping)
+   :subscriber-id-lowercase (m/doc-values m/string-field-mapping)
    :deleted (-> m/bool-field-mapping m/stored m/doc-values)
    :user-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-date (-> m/date-field-mapping m/stored m/doc-values)

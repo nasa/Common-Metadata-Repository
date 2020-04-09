@@ -290,7 +290,7 @@
   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
           conn (context->conn context)
-          response (bulk/bulk conn bulk-operations)]
+          response (es-helper/bulk conn bulk-operations)]
       (handle-bulk-index-response response))))
 
 (defn bulk-index-documents

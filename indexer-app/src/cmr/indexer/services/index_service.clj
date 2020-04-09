@@ -218,7 +218,7 @@
   [key-name value-map]
   (let [values (->> value-map
                     seq
-                    (remove #(s/includes? (name (key %)) ".lowercase")))]
+                    (remove #(s/includes? (name (key %)) "-lowercase")))]
     (if (= key-name "science-keywords")
      (science-keywords->elastic-docs value-map)
      (map (fn [value]
