@@ -213,7 +213,29 @@
                       :DetailedVariable "RADAR"}
                      {:Category "SCIENCE CAT 3"
                       :Topic "SCIENCE TOPIC 3"
-                      :Term "SCIENCE TERM 3"}]})
+                      :Term "SCIENCE TERM 3"}]
+   :ArchiveAndDistributionInformation 
+     {:FileDistributionInformation 
+       [{:FormatType "Native",
+         :AverageFileSize nil,
+         :Fees nil,
+         :Format "netCDF4",
+         :TotalCollectionFileSize nil,
+         :TotalCollectionFileSizeBeginDate nil,
+         :TotalCollectionFileSizeUnit nil,
+         :Description nil,
+         :AverageFileSizeUnit nil,
+         :Media nil}
+        {:FormatType "Native",
+         :AverageFileSize nil,
+         :Fees nil,
+         :Format "PDF",
+         :TotalCollectionFileSize nil,
+         :TotalCollectionFileSizeBeginDate nil,
+         :TotalCollectionFileSizeUnit nil,
+         :Description nil,
+         :AverageFileSizeUnit nil,
+         :Media nil}]}})
 
 (def sample-umm-service-concept
   "This sample UMM Service data is a mish-mash of several examples, done this
@@ -434,7 +456,12 @@
 
     "TemporalKeywords field"
     :TemporalKeywords
-    ["Composit" "Annual" "Day"]))
+    ["Composit" "Annual" "Day"]
+
+    "Test getting the formats out of Archive and Distribution Information. The
+     ArchiveFileInformation is nil, so it is testing that too."
+    :ArchiveAndDistributionInformation
+    ["netCDF4", "PDF"]))
 
 (deftest extract-service-field-values
   (are3 [field-key values]

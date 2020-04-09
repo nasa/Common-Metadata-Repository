@@ -77,7 +77,7 @@
     (testing "Associate to non-existent collections"
       (let [response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id "C100-P5"}])]
-        (service-util/assert-service-association-response-ok?
+        (service-util/assert-service-association-bad-request
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
          response)))
 
@@ -87,7 +87,7 @@
             _ (index/wait-until-indexed)
             response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id c1-p1}])]
-        (service-util/assert-service-association-response-ok?
+        (service-util/assert-service-association-bad-request
          {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
          response)))
 
@@ -96,7 +96,7 @@
       (let [response (association-util/associate-by-concept-ids token
                                                                 concept-id
                                                                 [{:concept-id c4-p3}])]
-        (service-util/assert-service-association-response-ok?
+        (service-util/assert-service-association-bad-request
          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
          response)))
 
@@ -104,7 +104,7 @@
       (let [response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id c2-p1}
                                         {:concept-id "C100-P5"}])]
-        (service-util/assert-service-association-response-ok?
+        (service-util/assert-service-association-bad-request
          {[c2-p1] {:concept-id "SA1200000028-CMR"
                    :revision-id 1}
           ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
@@ -203,7 +203,7 @@
     (testing "Dissociate non-existent collections"
       (let [response (association-util/dissociate-by-concept-ids
                       token concept-id [{:concept-id "C100-P5"}])]
-        (service-util/assert-service-dissociation-response-ok?
+        (service-util/assert-service-dissociation-bad-request
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
          response)))
 
@@ -214,7 +214,7 @@
             _ (index/wait-until-indexed)
             response (association-util/dissociate-by-concept-ids
                       token concept-id [{:concept-id c1-p2-concept-id}])]
-        (service-util/assert-service-dissociation-response-ok?
+        (service-util/assert-service-dissociation-bad-request
          {["C1200000019-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                   c1-p2-concept-id)]}}
          response)))
@@ -224,7 +224,7 @@
       (let [coll-concept-id (:concept-id c4-p3)
             response (association-util/dissociate-by-concept-ids
                       token concept-id [{:concept-id coll-concept-id}])]
-        (service-util/assert-service-dissociation-response-ok?
+        (service-util/assert-service-dissociation-bad-request
          {["C1200000026-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                   coll-concept-id)]}}
          response)))))
@@ -302,7 +302,7 @@
                        {:concept-id (:concept-id coll2) :revision-id 1} ;; success
                        {:concept-id (:concept-id coll3)}])] ;; no service association
 
-        (service-util/assert-service-dissociation-response-ok?
+        (service-util/assert-service-dissociation-bad-request
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
           ["C1200000012-PROV1"] {:concept-id "SA1200000016-CMR" :revision-id 2}
           ["C1200000013-PROV1" 1] {:concept-id "SA1200000017-CMR" :revision-id 2}

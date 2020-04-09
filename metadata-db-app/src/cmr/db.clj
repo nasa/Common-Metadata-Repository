@@ -8,7 +8,7 @@
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.sql-utils :as su]
    [cmr.oracle.user :as o]
-   [config.migrate-config :as mc]
+   [config.mdb-migrate-config :as mc]
    [drift.execute :as drift])
   (:gen-class))
 
@@ -52,7 +52,7 @@
   (let [db (oracle-config/sys-dba-db-spec)
         catalog-rest-user (mdb-config/catalog-rest-db-username)
         metadata-db-user (mdb-config/metadata-db-username)
-        metadata-db-password (mdb-config/metadata-db-password)]        
+        metadata-db-password (mdb-config/metadata-db-password)]
     (su/ignore-already-exists-errors "METADATA_DB user"
                                      (o/create-user db metadata-db-user
                                                     metadata-db-password))
@@ -91,7 +91,11 @@
         (drop-user)
 
         (= "migrate" op)
-        (drift/run args)
+        (drift/run
+         (conj
+          args
+          "-c"
+          "config.mdb-migrate-config/app-migrate-config"))
 
         :else
         (info "Unsupported operation: " op))

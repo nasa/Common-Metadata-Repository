@@ -339,7 +339,7 @@
 (defn- expected-file-dist-info
   "Created expected FileDistributionInformation for ArchiveAndDistributionInformation map."
   [file-dist-infos]
-  (when file-dist-infos
+  (when-let [file-dist-infos (mapcat conversion-util/expand-file-dist-infos file-dist-infos)]
     (for [file-dist-info file-dist-infos]
       (-> file-dist-info
           (select-keys [:Fees :Format :FormatType

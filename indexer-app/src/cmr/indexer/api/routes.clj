@@ -142,6 +142,11 @@
         (index-svc/reindex-provider-collections request-context body)
         {:status 200})
 
+      (POST "/reindex-autocomplete-suggestions" {:keys [request-context params headers body]}
+        (acl/verify-ingest-management-permission request-context :update)
+        (index-svc/reindex-autocomplete-suggestions request-context)
+        {:status 200})
+
       (POST "/reindex-tags" {:keys [request-context params headers]}
         (acl/verify-ingest-management-permission request-context :update)
         (index-svc/reindex-tags request-context)

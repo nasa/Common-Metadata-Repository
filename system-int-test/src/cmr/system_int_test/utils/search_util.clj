@@ -247,6 +247,13 @@
                  :throw-exceptions true
                  :connection-manager (s/conn-mgr)})))
 
+(defn get-autocomplete-suggestions
+  "Executes a query to the autocomplete endpoint with the given value and returns the results."
+  ([query]
+   (get-autocomplete-suggestions query nil))
+  ([query opts]
+   (client/get (url/autocomplete-url query) opts)))
+
 (defn- parse-timeline-interval
   "Parses the timeline response interval component into a more readable and comparable format."
   [[start end num-grans]]
@@ -571,6 +578,18 @@
                                  :throw-exceptions false
                                  :connection-manager (s/conn-mgr)})]
       (parse-reference-response (:echo-compatible params) response))))
+
+(defn find-refs-with-multi-part-form-post
+  "Returns the references that are found by searching through POST request with the input form.
+  The form parameter should be a vector of maps (one for each field in the form)"
+  [concept-type form]
+  (get-search-failure-xml-data
+    (let [response (client/post (url/search-url concept-type)
+                                {:accept mime-types/xml
+                                 :multipart form
+                                 :throw-exceptions true
+                                 :connection-manager (s/conn-mgr)})]
+      (parse-reference-response false response))))
 
 (defn find-refs-with-json-query
   "Returns the references that are found by searching using a JSON request."

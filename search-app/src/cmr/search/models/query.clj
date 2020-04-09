@@ -1,8 +1,14 @@
 (ns cmr.search.models.query
-  "Defines various query models and conditions specific for searching for collections and granules."
+  "Defines various query models and conditions specific for searching for various concepts."
   (:require
    [cmr.common-app.services.search.query-model :as common-qm]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
+
+(defrecord AutocompleteSuggestion
+  [
+    ;; platform, instrument, project...
+    type
+    value])
 
 (defrecord SpatialCondition
   [
@@ -165,10 +171,20 @@
   [{:field :service-name :order :asc}
    {:field :provider-id :order :asc}])
 
+(defmethod common-qm/default-sort-keys :subscription
+  [_]
+  [{:field :subscription-name :order :asc}
+   {:field :provider-id :order :asc}])
+
 (defmethod common-qm/default-sort-keys :collection
   [_]
   [{:field :entry-title :order :asc}
    {:field :provider-id :order :asc}])
+
+(defmethod common-qm/default-sort-keys :autocomplete
+  [_]
+  [{:field :_score :order :desc}
+   {:field :value :order :asc}])
 
 (defmethod common-qm/concept-type->default-query-attribs :granule
   [_]
@@ -206,12 +222,31 @@
    :echo-compatible? false
    :all-revisions? false})
 
+(defmethod common-qm/concept-type->default-query-attribs :subscription
+  [_]
+  {:condition (common-qm/->MatchAllCondition)
+   :page-size common-qm/default-page-size
+   :offset common-qm/default-offset
+   :result-format :json
+   :echo-compatible? false
+   :all-revisions? false})
+
 (defmethod common-qm/concept-type->default-query-attribs :collection
   [_]
   {:condition (common-qm/->MatchAllCondition)
    :page-size common-qm/default-page-size
    :offset common-qm/default-offset
    :result-format :xml
+   :echo-compatible? false
+   :all-revisions? false})
+
+(defmethod common-qm/concept-type->default-query-attribs :autocomplete
+  [_]
+  {:condition (common-qm/->MatchAllCondition)
+   :page-size common-qm/default-page-size
+   :offset common-qm/default-offset
+   :sort-keys (common-qm/default-sort-keys :autocomplete)
+   :result-format :json
    :echo-compatible? false
    :all-revisions? false})
 

@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.migrations.023-remove-small-provider-services-user-id-not-null-constraint
   (:require [clojure.java.jdbc :as j]
             [config.mdb-migrate-helper :as h]
-            [config.migrate-config :as config]))
+            [config.mdb-migrate-config :as config]))
 
 (defn up
   "Migrates the database up to version 23."

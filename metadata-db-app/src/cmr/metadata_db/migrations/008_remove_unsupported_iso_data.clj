@@ -5,7 +5,7 @@
   strings because Catalog REST changed it at one point. We could never index this data so unindexing
   it is unnecessary."
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]))
 
 (defn up

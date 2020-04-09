@@ -2,7 +2,7 @@
   (:require [clojure.java.jdbc :as j]
             [clojure.edn :as edn]
             [clojure.string :as str]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [cmr.common.util :as util]
             [config.mdb-migrate-helper :as h]))
 

@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.migrations.017-add-short-name-to-provider-table
   "Adds short name to providers table"
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]))
 
 (defn up

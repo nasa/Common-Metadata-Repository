@@ -156,6 +156,11 @@
                  (collections-index-alias))
    :type-name "collection"})
 
+(defmethod common-esi/concept-type->index-info :autocomplete
+  [context _ query]
+  {:index-name "1_autocomplete"
+   :type-name "suggestion"})
+
 (defmethod common-esi/concept-type->index-info :tag
   [context _ query]
   {:index-name "1_tags"
@@ -174,6 +179,13 @@
                  "1_all_service_revisions"
                  "1_services")
    :type-name "service"})
+
+(defmethod common-esi/concept-type->index-info :subscription
+  [context _ query]
+  {:index-name (if (:all-revisions? query)
+                 "1_all_subscription_revisions"
+                 "1_subscriptions")
+   :type-name "subscription"})
 
 (defn context->conn
   [context]

@@ -40,6 +40,10 @@
   [_ _]
   "cmr_humanizers")
 
+(defmethod get-table-name :subscription
+  [_ _]
+  "cmr_subscriptions")
+
 (defmethod get-table-name :service
   [_ _]
   "cmr_services")

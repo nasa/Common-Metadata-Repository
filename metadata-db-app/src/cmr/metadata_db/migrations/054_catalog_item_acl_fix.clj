@@ -3,7 +3,7 @@
    [clojure.java.jdbc :as j]
    [clojure.edn :as edn]
    [cmr.common.util :as util]
-   [config.migrate-config :as config]
+   [config.mdb-migrate-config :as config]
    [config.mdb-migrate-helper :as h]
    [cmr.metadata-db.data.oracle.providers :as providers]
    [clojure.string :as string]))

@@ -18,7 +18,8 @@
   "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."
   {"COMPLETE" "COMPLETE"
    "ACTIVE" "IN WORK"
-   "PLANNED" "PLANNED"})
+   "PLANNED" "PLANNED"
+   "DEPRECATED" "COMPLETE"})
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"

@@ -26,8 +26,10 @@
 (def coll-progress-mapping
   "Mapping from values supported for ISO-SMAP ProgressCode to UMM CollectionProgress."
   {"COMPLETED" "COMPLETE"
-   "HISTORICALARCHIVE" "COMPLETE"
-   "OBSOLETE" "COMPLETE"
+   "HISTORICALARCHIVE" "DEPRECATED"
+   "OBSOLETE" "DEPRECATED"
+   "RETIRED" "DEPRECATED"
+   "DEPRECATED" "DEPRECATED"
    "ONGOING" "ACTIVE"
    "PLANNED" "PLANNED"
    "UNDERDEVELOPMENT" "PLANNED"
@@ -106,6 +108,9 @@
   (str base-xpath
        "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution"))
 
+(def spatial-extent-xpath
+  (str md-identification-base-xpath "/gmd:extent/gmd:EX_Extent"))
+
 (defn- parse-science-keywords
   "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
   Category of each theme descriptive keyword to determine if it is a science keyword."
@@ -159,7 +164,7 @@
                             (when sanitize? u/not-provided-temporal-extents))
        :ScienceKeywords (parse-science-keywords data-id-el sanitize?)
        :LocationKeywords (kws/parse-location-keywords data-id-el)
-       :SpatialExtent (spatial/parse-spatial doc data-id-el sanitize?)
+       :SpatialExtent (spatial/parse-spatial doc data-id-el spatial-extent-xpath sanitize?)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
        :CollectionDataType (value-of (select doc collection-data-type-xpath) ".")
        ;; Required by UMM-C

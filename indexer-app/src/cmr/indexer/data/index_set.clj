@@ -48,6 +48,14 @@
   "Number of shards to use for the services index."
   {:default 5 :type Long})
 
+(defconfig elastic-autocomplete-index-num-shards
+  "Number of shards to use for the autocomplete index"
+  {:default 5 :type Long})
+
+(defconfig elastic-subscription-index-num-shards
+  "Number of shards to use for the subscriptions index"
+  {:default 5 :type Long})
+
 (defconfig collections-index-alias
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
@@ -90,11 +98,32 @@
                         :max_result_window MAX_RESULT_WINDOW,
                         :refresh_interval "1s"}})
 
+(def autocomplete-settings {:index
+                            {:number_of_shards (elastic-autocomplete-index-num-shards)
+                             :number_of_replicas 1
+                             :refresh_interval "1s"}
+                           :analysis
+                            {:filter
+                             {:autocomplete_filter
+                              {:type "edge_ngram"
+                               :min_gram 1
+                               :max_gram 8}}
+                             :analyzer
+                             {:autocomplete_analyzer
+                              {:type "custom"
+                               :tokenizer "standard"
+                               :filter ["lowercase" "autocomplete_filter"]}}}})
+
 (def service-setting {:index
                        {:number_of_shards (elastic-service-index-num-shards)
                         :number_of_replicas 1,
                         :max_result_window MAX_RESULT_WINDOW,
                         :refresh_interval "1s"}})
+
+(def subscription-setting {:index
+                            {:number_of_shards (elastic-subscription-index-num-shards)
+                             :number_of_replicas 1,
+                             :refresh_interval "1s"}})
 
 (defnestedmapping attributes-field-mapping
   "Defines mappings for attributes."
@@ -677,6 +706,15 @@
    :description (m/not-indexed (m/stored m/string-field-mapping))
    :originator-id-lowercase (m/stored m/string-field-mapping)})
 
+(defmapping autocomplete-mapping :suggestion
+  "Defines the elasticsearch mapping for storing autocomplete suggestions.
+   These are the fields that will be stored in an Elasticsearch document."
+  {:_id  {:path "concept-id"}}
+  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :type {:type "string" :index "analyzed" :store "yes"}
+   :fields {:type "string" :index "analyzed" :store "yes"}
+   :value {:type "string" :analyzer "autocomplete_analyzer" :index "analyzed" :store "yes"}})
+
 (defmapping variable-mapping :variable
   "Defines the elasticsearch mapping for storing variables. These are the
   fields that will be stored in an Elasticsearch document."
@@ -720,6 +758,27 @@
    :long-name (-> m/string-field-mapping m/stored m/doc-values)
    :long-name-lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
+   :deleted (-> m/bool-field-mapping m/stored m/doc-values)
+   :user-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
+   :metadata-format (-> m/string-field-mapping m/stored m/doc-values)})
+
+(defmapping subscription-mapping :subscription
+  "Defines the elasticsearch mapping for storing subscriptions. These are the
+  fields that will be stored in an Elasticsearch document."
+  {:_id  {:path "concept-id"}}
+  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-id (-> m/int-field-mapping m/stored m/doc-values)
+   :native-id (-> m/string-field-mapping m/stored m/doc-values)
+   :native-id.lowercase (m/doc-values m/string-field-mapping)
+   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
+   :provider-id.lowercase (m/doc-values m/string-field-mapping)
+   :subscription-name (-> m/string-field-mapping m/stored m/doc-values)
+   :subscription-name.lowercase (m/doc-values m/string-field-mapping)
+   :collection-concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :collection-concept-id.lowercase (m/doc-values m/string-field-mapping)
+   :subscriber-id (-> m/string-field-mapping m/stored m/doc-values)
+   :subscriber-id.lowercase (m/doc-values m/string-field-mapping)
    :deleted (-> m/bool-field-mapping m/stored m/doc-values)
    :user-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-date (-> m/date-field-mapping m/stored m/doc-values)
@@ -785,6 +844,10 @@
                            {:name "all-variable-revisions"
                             :settings variable-setting}]
                           :mapping variable-mapping}
+               :autocomplete {:indexes
+                              [{:name "autocomplete"
+                                :settings autocomplete-settings}]
+                              :mapping autocomplete-mapping}
                :service {:indexes
                          [{:name "services"
                            :settings service-setting}
@@ -792,7 +855,15 @@
                           ;; is used for all-revisions searches.
                           {:name "all-service-revisions"
                            :settings service-setting}]
-                         :mapping service-mapping}}})
+                         :mapping service-mapping}
+                :subscription {:indexes
+                               [{:name "subscriptions"
+                                 :settings subscription-setting}
+                                ;; This index contains all the revisions (including tombstones) and
+                                ;; is used for all-revisions searches.
+                                {:name "all-subscription-revisions"
+                                 :settings subscription-setting}]
+                               :mapping subscription-mapping}}})
 
 (defn index-set->extra-granule-indexes
   "Takes an index set and returns the extra granule indexes that are configured"
@@ -829,7 +900,8 @@
       :granule (get-concept-mapping-fn :granule)
       :tag (get-concept-mapping-fn :tag)
       :variable (get-concept-mapping-fn :variable)
-      :service (get-concept-mapping-fn :service)})))
+      :service (get-concept-mapping-fn :service)
+      :subscription (get-concept-mapping-fn :subscription)})))
 
 (defn fetch-rebalancing-collection-info
   "Fetch rebalancing collections, their targets, and status."
@@ -916,6 +988,11 @@
        (if all-revisions-index?
          [(get indexes :all-service-revisions)]
          [(get indexes (or target-index-key :services))])
+
+       :subscription
+       (if all-revisions-index?
+         [(get indexes :all-subscription-revisions)]
+         [(get indexes (or target-index-key :subscriptions))])
 
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]

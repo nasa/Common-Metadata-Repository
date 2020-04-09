@@ -3,6 +3,7 @@
     [cmr.ingest.services.ingest-service.collection]
     [cmr.ingest.services.ingest-service.granule]
     [cmr.ingest.services.ingest-service.service]
+    [cmr.ingest.services.ingest-service.subscription]
     [cmr.ingest.services.ingest-service.util]
     [cmr.ingest.services.ingest-service.variable]
     [potemkin :refer [import-vars]]))
@@ -28,6 +29,9 @@
   [cmr.ingest.services.ingest-service.service
    ;; Public service functions
    save-service]
+  [cmr.ingest.services.ingest-service.subscription
+   ;; Public subscription functions
+   save-subscription]
   [cmr.ingest.services.ingest-service.variable
    ;; Public variable functions
    save-variable])

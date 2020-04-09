@@ -1,6 +1,6 @@
 (ns cmr.ingest.migrations.003-update-provider-acl-hash-table
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]))
+            [config.ingest-migrate-config :as config]))
 
 (defn- drop-provider-acl-hash-table
   "Drop the provider_acl_hash table."

@@ -12,6 +12,7 @@
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
+   [cmr.umm-spec.xml-to-umm-mappings.distributed-format-util :as format-util]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
@@ -26,6 +27,7 @@
    "IN WORK" "ACTIVE"
    "ACTIVE" "ACTIVE"
    "PLANNED" "PLANNED"
+   "DEPRECATED" "DEPRECATED"
    "NOT APPLICABLE" "NOT APPLICABLE"})
 
 (defn parse-temporal
@@ -177,17 +179,41 @@
           :Explanation (when explanation
                          explanation)})))))
 
-(defn- parse-archive-dist-info
-  "Parses ArchiveAndDistributionInformation out of Echo 10 XML into UMM-C"
+(defn add-data-format
+  "This function fills in the FileDistributionInformation
+   elements from an echo 10 record."
+  [price format]
+  (util/remove-nil-keys
+    {:Fees price
+     :Format format
+     :FormatType "Native"}))
+
+(defn add-data-formats
+  "This function parses out the multiple formats that can exist in the
+   ECHO 10 DataFormat element and puts them in their own UMM-C
+   FileDistributionInformation elements."
+  [price formats]
+  (map #(add-data-format price %) (format-util/parse-distribution-formats (value-of formats "."))))
+
+(defn parse-and-set-archive-dist-info
+  "Parses price and data formats out of Echo 10 XML into UMM-C. The price
+   is the same for all formats.  There is no way to distinguish them in
+   ECHO 10."
   [doc]
   (let [price (value-of doc "Collection/Price")
-        format (value-of doc "Collection/DataFormat")]
-    (when (or price
-              format)
-      {:FileDistributionInformation [{:Fees price
-                                      :Format (or format
-                                                  u/not-provided)
-                                      :FormatType "Native"}]})))
+        formats (select doc "Collection/DataFormat")]
+    (if (and price (not formats))
+      [{:Fees price
+        :Format u/not-provided
+        :FormatType "Native"}]
+      (mapcat #(add-data-formats price %) (select doc "Collection/DataFormat")))))
+
+(defn parse-archive-dist-info
+  "Parses ArchiveAndDistributionInformation out of Echo 10 XML into UMM-C"
+  [doc]
+  (let [distribution (parse-and-set-archive-dist-info doc)]
+    (when-not (empty? distribution)
+      {:FileDistributionInformation distribution})))
 
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."

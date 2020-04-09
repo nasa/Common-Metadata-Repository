@@ -1,6 +1,6 @@
 (ns cmr.metadata-db.migrations.024-update-quartz-to-2-2-2
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]))
+            [config.mdb-migrate-config :as config]))
 
 (defn up
   "Migrates the database up to version 24. Adds a column needed for Quartz 2.2.0 and higher."

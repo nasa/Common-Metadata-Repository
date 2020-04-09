@@ -13,13 +13,6 @@
    [cmr.umm-spec.util :refer [with-default]]
    [cmr.umm-spec.util :as spec-util]))
 
-(def coll-progress-mapping
-  "Mapping from known collection progress values to values supported for ECHO10 Collection_State."
-  {"COMPLETE" "COMPLETE"
-   "ACTIVE" "ACTIVE"
-   "PLANNED" "PLANNED"
-   "NOT APPLICABLE" "NOT APPLICABLE"})
-
 (defn characteristic-mapping
   [data]
   [:Characteristic
@@ -137,6 +130,11 @@
     (when-let [citation (first (map :OtherCitationDetails collection-citations))]
       [:CitationForExternalPublication citation])))
 
+(defn find-first-available-distribution-price
+  "Find the first FileDistributionInformation object that contains the sub element of Fees."
+  [c]
+  (some :Fees (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])))
+
 (defn umm-c-to-echo10-xml
   "Returns ECHO10 XML structure from UMM collection record c."
   [c]
@@ -172,25 +170,19 @@
      (dc/generate-archive-centers c)
      [:VersionDescription (:VersionDescription c)]
      (generate-collection-citations c)
-     (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
-                             (get coll-progress-mapping (string/upper-case coll-progress)))]
-       [:CollectionState c-progress])
+     [:CollectionState (:CollectionProgress c)]
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
-     [:Price (when-let [price-str (-> c
-                                      :ArchiveAndDistributionInformation
-                                      :FileDistributionInformation
-                                      first
-                                      :Fees)]
+     [:Price (when-let [price-str (find-first-available-distribution-price c)]
                (try (format "%9.2f" (Double. price-str))
                  ;; If price is not a number string just ignore it. ECHO10
                  ;; expectes a string in %9.2f format, so we have to
                  ;;ignore 'Free', 'Gratis', etc.
                  (catch NumberFormatException e)))]
-     [:DataFormat (-> c
-                      :ArchiveAndDistributionInformation
-                      :FileDistributionInformation
-                      first :Format)]
+     ;; Go through all of the FileDistributionInformation elements and set the
+     ;; ECHO 10 DataFormats.
+     (for [data-format (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])]
+       [:DataFormat (:Format data-format)])
      [:SpatialKeywords
       (for [kw (lk/location-keywords->spatial-keywords (:LocationKeywords c))]
         [:Keyword kw])]

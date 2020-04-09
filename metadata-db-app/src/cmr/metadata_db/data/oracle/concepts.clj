@@ -70,6 +70,10 @@
   [_ {:keys [provider-id]} base-clause]
   (add-provider-clause provider-id base-clause))
 
+(defmethod by-provider :subscription
+  [_ {:keys [provider-id]} base-clause]
+  (add-provider-clause provider-id base-clause))
+
 (defmethod by-provider :default
   [_ {:keys [provider-id small]} base-clause]
   (if small
@@ -235,13 +239,13 @@
       ;; Get all the other variables sharing the same name; not deleted
       ;; and are associated with the same collection.
       (let [stmt [(format "select va.variable_concept_id
-                           from   cmr_variable_associations va, 
+                           from   cmr_variable_associations va,
                                   (select concept_id, max(revision_id) maxrev
                                    from cmr_variable_associations group by concept_id) latestva,
                                   cmr_variables v
                            where  va.revision_id = latestva.maxrev
                            and    va.concept_id = latestva.concept_id
-                           and    va.deleted = 0 
+                           and    va.deleted = 0
                            and    va.variable_concept_id = v.concept_id
                            and    va.variable_concept_id != '%s'
                            and    va.associated_concept_id = '%s'
@@ -336,11 +340,12 @@
                [(format "select /*+ LEADING(b a) USE_NL(b a) INDEX(a %s_GRANULES_CID_REV) */
                          a.concept_id, a.parent_collection_id, a.deleted
                          from %s a,
-                         (select concept_id, max(revision_id) revision_id
+                         (select /*+INDEX(%s,%s_UCR_I)*/
+                         concept_id, max(revision_id) revision_id
                          from %s where native_id = '%s' group by concept_id) b
                          where a.concept_id = b.concept_id
                          and a.revision_id = b.revision_id"
-                        provider-id table table native-id)])
+                        provider-id table table table table native-id)])
         result (first (su/query db stmt))
         {:keys [concept_id parent_collection_id deleted]} result
         deleted (when deleted (= 1 (int deleted)))]
@@ -523,6 +528,7 @@
   (j/db-do-commands this "DELETE FROM cmr_groups")
   (j/db-do-commands this "DELETE FROM cmr_acls")
   (j/db-do-commands this "DELETE FROM cmr_humanizers")
+  (j/db-do-commands this "DELETE FROM cmr_subscriptions")
   (j/db-do-commands this "DELETE FROM cmr_services")
   (j/db-do-commands this "DELETE FROM cmr_variables")
   (j/db-do-commands this "DELETE FROM cmr_variable_associations"))

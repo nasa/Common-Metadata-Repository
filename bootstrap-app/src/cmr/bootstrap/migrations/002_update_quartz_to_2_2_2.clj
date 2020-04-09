@@ -1,6 +1,6 @@
 (ns cmr.bootstrap.migrations.002-update-quartz-to-2-2-2
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]))
+            [config.bootstrap-migrate-config :as config]))
 
 (defn up
   "Migrates the database up to version 2. Adds a column needed for Quartz 2.2.0 and higher."

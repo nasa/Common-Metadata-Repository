@@ -7,11 +7,6 @@
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.search.results-handlers.umm-json-results-helper :as results-helper]))
 
-(defn- service-elastic-result->meta
-  "Returns a map of the meta fields for the given service elastic result."
-  [elastic-result]
-  (results-helper/elastic-result->meta :service elastic-result))
-
 (defmethod elastic-search-index/concept-type+result-format->fields [:service :umm-json-results]
   [concept-type query]
   results-helper/meta-fields)

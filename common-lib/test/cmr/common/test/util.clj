@@ -784,3 +784,15 @@
     (is (= (util/safe-uppercase true) (str/upper-case true)))
     (is (= (util/safe-uppercase "StRing") (str/upper-case "StRing")))
     (is (= (util/safe-uppercase nil) nil))))
+
+(deftest human-join
+  (testing "one element"
+    (is (= (util/human-join ["one"] "," "and") "one")))
+  (testing "two elements"
+    (is (= (util/human-join ["one" "two"] "," "and") "one and two")))
+  (testing "three elements"
+    (is (= (util/human-join["one" "two" "three"] "," "and") "one, two, and three")))
+  (testing "four elements"
+    (is (= (util/human-join ["one" "two" "three" "four"] "," "and") "one, two, three, and four"))))
+            
+

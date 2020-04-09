@@ -92,6 +92,7 @@ This element must be one of the following enum values:
 * `SYSTEM_CALENDAR_EVENT`
 * `DASHBOARD_ADMIN`
 * `DASHBOARD_ARC_CURATOR`
+* `DASHBOARD_MDQ_CURATOR`
 
 ### `TemporalIdentifierType` (object)
 

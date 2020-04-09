@@ -62,7 +62,8 @@
    :provider 1.0
    :two-d-coord-name 1.0
    :processing-level-id 1.0
-   :data-center 1.0})
+   :data-center 1.0
+   :granule-data-format 1.1})
 
 (def elastic-regex-wildcard-chars-re
   "Regex to match wildcard characters that need to be processed for elastic regexp query"
@@ -231,4 +232,8 @@
 
      ;; data-center
      (keywords->boosted-exact-match-filter :data-center-lowercase keywords
-                                           (get-boost-fn :data-center))]))
+                                           (get-boost-fn :data-center))
+
+     ;; granule-data-format
+     (keywords->boosted-exact-match-filter :granule-data-format.lowercase keywords
+                                           (get-boost-fn :granule-data-format))]))

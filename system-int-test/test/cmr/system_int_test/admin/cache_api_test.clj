@@ -262,8 +262,9 @@
         (url/indexer-read-caches-url)
         "indexer-index-set-cache"
         "concept-mapping-types"
-        {:collection "properties"
-         :granule "properties"
-         :tag "properties"
-         :variable "properties"
-         :service "properties"}))))
+        {:collection "collection"
+         :granule "granule"
+         :tag "tag"
+         :variable "variable"
+         :service "service"
+         :subscription "subscription"}))))

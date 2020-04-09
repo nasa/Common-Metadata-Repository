@@ -636,7 +636,9 @@
   (side/eval-form `(ingest-config/set-variable-umm-version!
                      umm-versioning/current-variable-version))
   (side/eval-form `(ingest-config/set-service-umm-version!
-                     umm-versioning/current-service-version)))
+                     umm-versioning/current-service-version))
+  (side/eval-form `(ingest-config/set-subscription-umm-version!
+                     umm-versioning/current-subscription-version)))
 
 (defn create-provider
   "Creates a provider along with ACLs to create and access the providers data.

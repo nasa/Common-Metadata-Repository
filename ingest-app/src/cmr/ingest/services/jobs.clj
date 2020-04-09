@@ -1,6 +1,9 @@
 (ns cmr.ingest.services.jobs
   "This contains the scheduled jobs for the ingest application."
   (:require
+    [cheshire.core :as json]
+    [clj-time.core :as t]
+    [clojure.string :as string]
     [cmr.acl.acl-fetcher :as acl-fetcher]
     [cmr.common.config :as cfg :refer [defconfig]]
     [cmr.common.jobs :as jobs :refer [def-stateful-job defjob]]
@@ -10,7 +13,8 @@
     [cmr.ingest.data.provider-acl-hash :as pah]
     [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
     [cmr.transmit.echo.acls :as echo-acls]
-    [cmr.transmit.metadata-db :as mdb]))
+    [cmr.transmit.metadata-db :as mdb]
+    [cmr.transmit.search :as search]))
 
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
   "The number of seconds between jobs to check for ACL changes and reindex collections."
@@ -110,6 +114,16 @@
       (doseq [concept-id concept-ids]
        (mdb/save-concept context {:concept-id concept-id :deleted true})))))
 
+(defn- create-query-params
+  "Create query parameters using the query string like
+  \"polygon=1,2,3&concept-id=G1-PROV1\""
+  [query-string]
+  (let [query-string-list (string/split query-string #"&")
+        query-map-list (map #(let [a (string/split % #"=")]
+                               {(first a) (second a)})
+                             query-string-list)]
+     (apply merge query-map-list)))
+
 (def-stateful-job CleanupExpiredCollections
   [ctx system]
   (let [context {:system system}]
@@ -119,6 +133,7 @@
   [_ system]
   (let [context {:system system}]
     (humanizer-alias-cache/refresh-cache context)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Jobs for refreshing the collection granule aggregation cache in the indexer. This is a singleton job
 ;; and the indexer does not have a database so it's triggered from Ingest and sent via message.
@@ -138,6 +153,11 @@
 (defconfig bulk-update-status-table-cleanup-interval
   "Number of seconds between cleanup of the old status rows."
   {:default 86400 ;;24 hours
+   :type Long})
+
+(defconfig email-subscription-processing-interval
+  "Number of seconds between jobs processing email subscriptions."
+  {:default 3600
    :type Long})
 
 (defn trigger-full-refresh-collection-granule-aggregation-cache
@@ -173,9 +193,53 @@
   [context]
   (bulk-update/cleanup-old-bulk-update-status context))
 
+(defn- process-subscriptions
+  "Process each subscription in subscriptions."
+  [context subscriptions time-constraint]
+  (for [subscription subscriptions
+       :let [email-address (get-in subscription [:extra-fields :email-address])
+             coll-id (get-in subscription [:extra-fields :collection-concept-id])
+             query-string (-> (:metadata subscription)
+                              (json/decode)
+                              (get "Query"))
+             query-params (create-query-params query-string)
+             params1 (merge {"created-at" time-constraint}
+                            {"collection-concept-id" coll-id}
+                            query-params)
+             params2 (merge {"revision-date" time-constraint}
+                            {"collection-concept-id" coll-id}
+                            query-params)
+             gran-ref1 (search/find-granule-references context params1)
+             gran-ref2 (search/find-granule-references context params2)
+             gran-ref (distinct (concat gran-ref1 gran-ref2))]]
+      (if (seq gran-ref)
+        ;; These strings are just for debugging purpose. In another ticket
+        ;; I will figure out how to send email.
+        (str "Granules found for: " email-address)
+        (str "No granules found for: " email-address))))
+
+(defn- email-subscription-processing
+  "Process email subscriptions and send email when found granules matching the collection and queries
+  in the subscription and were created/updated during the last processing interval."
+  [context]
+  (let [end-time (t/now)
+        start-time (t/minus end-time (t/seconds (email-subscription-processing-interval)))
+        time-constraint (str (str start-time) "," (str end-time))
+        subscriptions
+         (->> (mdb/find-concepts context {:latest true} :subscription)
+              (filter #(not (:deleted %)))
+              (map #(select-keys % [:extra-fields :metadata])))]
+    ;; for some reason, the info or println doesn't show inside the for loop in my local
+    ;; proto repl.
+    (println (process-subscriptions context subscriptions time-constraint))))
+
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
   (bulk-update-status-table-cleanup {:system system}))
+
+(def-stateful-job EmailSubscriptionProcessing
+  [_ system]
+  (email-subscription-processing {:system system}))
 
 (defn jobs
   "A list of jobs for ingest"
@@ -191,6 +255,9 @@
 
    {:job-type BulkUpdateStatusTableCleanup
     :interval (bulk-update-status-table-cleanup-interval)}
+
+   {:job-type EmailSubscriptionProcessing
+    :interval (email-subscription-processing-interval)}
 
    {:job-type TriggerPartialRefreshCollectionGranuleAggregationCacheJob
     :interval (partial-refresh-collection-granule-aggregation-cache-interval)}

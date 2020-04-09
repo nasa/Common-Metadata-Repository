@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="am_thin2" id="am_thin2">
+	<SimpleField name="id" type="float"></SimpleField>
+</Schema>
+<Folder><name>am_thin2</name>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>175.571947691135,48.6047913942862 175.060020567107,1.2237413370935 -174.189509828306,0.708440084973947 -177.261072572474,47.9211772865619 175.571947691135,48.6047913942862</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
+  </Placemark>
+</Folder>
+</Document></kml>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="antartica" id="antartica">
+	<SimpleField name="id" type="float"></SimpleField>
+</Schema>
+<Folder><name>antartica</name>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-52.2205738840949,-61.4535103633369 -58.2916958215331,-59.9201760816744 -106.760143108269,-70.4115670237197 -146.62337880287,-74.7067955204194 167.682045500509,-69.4721208347639 135.131740908185,-65.2827121141999 106.974014519223,-64.7829232361197 89.9749083478983,-65.69723055752 54.6880123648768,-64.4669528318265 16.3279539515182,-68.7605424153183 -10.0447179932519,-70.1224971139362 -56.8921288600247,-75.1086126496424 -52.2205738840949,-61.4535103633369 </coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
+  </Placemark>
+</Folder>
+</Document></kml>

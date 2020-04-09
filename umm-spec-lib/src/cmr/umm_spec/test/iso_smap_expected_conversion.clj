@@ -82,7 +82,8 @@
   [spatial-extent]
   (if (get-in spatial-extent [:HorizontalSpatialDomain :Geometry :BoundingRectangles])
     (-> spatial-extent
-        (assoc :SpatialCoverageType "HORIZONTAL" :GranuleSpatialRepresentation "GEODETIC")
+        ;; In round trip testing the GranuleSpatialReporesentation will always be GEODETIC
+        (assoc :SpatialCoverageType "HORIZONTAL"  :GranuleSpatialRepresentation "GEODETIC")
         (assoc :VerticalSpatialDomains nil :OrbitParameters nil)
         (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
         (update-in [:HorizontalSpatialDomain :Geometry]

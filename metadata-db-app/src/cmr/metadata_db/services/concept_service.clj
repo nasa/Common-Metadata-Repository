@@ -11,7 +11,6 @@
    [cmr.common.services.messages :as cmsg]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as cutil]
-   [cmr.metadata-db.config :as config]
    [cmr.metadata-db.data.concepts :as c]
    [cmr.metadata-db.data.ingest-events :as ingest-events]
    [cmr.metadata-db.data.providers :as provider-db]
@@ -37,6 +36,7 @@
    [cmr.metadata-db.data.oracle.concepts.granule]
    [cmr.metadata-db.data.oracle.concepts.group]
    [cmr.metadata-db.data.oracle.concepts.humanizer]
+   [cmr.metadata-db.data.oracle.concepts.subscription]
    [cmr.metadata-db.data.oracle.concepts.service-association]
    [cmr.metadata-db.data.oracle.concepts.service]
    [cmr.metadata-db.data.oracle.concepts.tag-association]
@@ -57,6 +57,7 @@
    :tag-association 10
    :access-group 10
    :humanizer 10
+   :subscription 1
    :variable 10
    :variable-association 10
    :service 10
@@ -163,6 +164,10 @@
   (set-created-at-for-concept db provider concept))
 
 (defmethod set-created-at :service
+  [db provider concept]
+  (set-created-at-for-concept db provider concept))
+
+(defmethod set-created-at :subscription
   [db provider concept]
   (set-created-at-for-concept db provider concept))
 

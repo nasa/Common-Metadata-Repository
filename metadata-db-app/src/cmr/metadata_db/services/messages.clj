@@ -209,16 +209,6 @@
   (format "Humanizer could not be associated with provider [%s]. Humanizer is system level entity."
           provider-id))
 
-(defn services-only-system-level
-  [provider-id]
-  (format "Service could not be associated with provider [%s]. Services are system level entities."
-          provider-id))
-
-(defn variables-only-system-level
-  [provider-id]
-  (format "Variable could not be associated with provider [%s]. Variables are system level entities."
-          provider-id))
-
 (defn variable-associations-only-system-level
   [provider-id]
   (format (str "Variable association could not be associated with provider [%s]. "

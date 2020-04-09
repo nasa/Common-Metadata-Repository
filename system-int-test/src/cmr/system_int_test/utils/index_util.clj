@@ -75,6 +75,15 @@
                    :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
+(defn reindex-suggestions
+  "Re-index all suggestions"
+  []
+  (let [response (client/post (url/indexer-reindex-suggestions-url)
+                   {:connection-manager (s/conn-mgr)
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                    :throw-exceptions false})]
+    (is (= 200 (:status response)) (:body response))))
+
 (defn reindex-concept-with-ignore-conflict-param
   "Re-index concept with ignore_conflict param."
   ([concept-id revision-id]

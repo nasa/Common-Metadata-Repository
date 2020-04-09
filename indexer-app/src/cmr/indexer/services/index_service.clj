@@ -1,6 +1,7 @@
 (ns cmr.indexer.services.index-service
   "Provide functions to index concept"
   (:require
+   [camel-snake-kebab.core :as camel-snake-kebab]
    [cheshire.core :as cheshire]
    [clj-time.core :as t]
    [clj-time.core :as t]
@@ -14,14 +15,15 @@
    [cmr.common.date-time-parser :as date]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.common.services.messages :as cmsg]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
+   [cmr.common.services.messages :as cmsg]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es-util]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.concept-parser :as cp]
+   [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
    [cmr.indexer.data.concepts.deleted-granule :as dg]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
@@ -32,6 +34,7 @@
    [cmr.message-queue.services.queue :as queue]
    [cmr.redis-utils.redis :as redis]
    [cmr.transmit.echo.rest :as rest]
+   [cmr.transmit.kms :as kms]
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.transmit.metadata-db2 :as meta-db2]
    [cmr.transmit.search :as search]
@@ -109,6 +112,10 @@
   [context batch options]
   (es/prepare-batch context (filter-expired-concepts batch) options))
 
+(defmethod prepare-batch :subscription
+  [context batch options]
+  (es/prepare-batch context (filter-expired-concepts batch) options))
+
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
   directly to this function - it does not retrieve them from metadata db (tag associations for
@@ -169,10 +176,116 @@
       (and all-revisions-index? (contains?
                                  #{:collection :tag-association
                                    :variable :variable-association
-                                   :service :service-association}
+                                   :service :service-association
+                                   :subscription}
                                  concept-type))))
 
 (def REINDEX_BATCH_SIZE 2000)
+
+(defn- positions
+  "Return a map of the index of each item that matches the predicate"
+  [pred coll]
+  (keep-indexed (fn [idx x]
+                  (when (pred x)
+                    idx))
+                coll))
+
+(defn- science-keywords->elastic-docs
+  "Convert hierarchical science-keywords to colon-separated elastic docs for indexing"
+  [science-keywords]
+  (let [keyword-hierarchy [:topic :term :variable-level-1
+                           :variable-level-2 :variable-level-3 :detailed-variable]
+        terminal-key (->> keyword-hierarchy
+                          (map #(get science-keywords %))
+                          (positions nil?))
+        keyword-string (->> keyword-hierarchy
+                            (map #(get science-keywords %))
+                            (remove nil?)
+                            (s/join ":"))
+        keyword-value (get science-keywords terminal-key)
+        id (-> (s/lower-case keyword-string)
+               (str "_science_keywords")
+               hash)]
+     {:type "science_keywords"
+      :_id id
+       :value keyword-value
+       :fields keyword-string
+       :_index "1_autocomplete"
+       :_type "suggestion"}))
+
+(defn- suggestion-doc
+  "Creates elasticsearch docs from a given humanized map"
+  [key-name value-map]
+  (let [values (->> value-map
+                    seq
+                    (remove #(s/includes? (name (key %)) ".lowercase")))]
+    (if (= key-name "science-keywords")
+     (science-keywords->elastic-docs value-map)
+     (map (fn [value]
+            (let [v (val value)
+                  type (camel-snake-kebab/->snake_case_keyword key-name)
+                  id (-> (s/lower-case v)
+                         (str "_" type)
+                         hash)]
+             {:type type
+              :_id id
+              :value v
+              :fields (camel-snake-kebab/->snake_case_keyword (name (key value)))
+              :_index "1_autocomplete"
+              :_type "suggestion"}))
+         values))))
+
+(defn- get-suggestion-docs
+  "Given the humanized fields from a collection, assemble elastic doc for each
+  value available for indexing into elasticsearch"
+  [humanized-fields]
+  (for [humanized-field humanized-fields
+        :let [key (key humanized-field)
+              key-name (-> key
+                           name
+                           (s/replace #"(\.humanized2|\.humanized|-sn|-id)" ""))
+              value-map (as-> humanized-field h
+                              (val h)
+                              (map util/remove-nil-keys h)
+                              (map #(dissoc % :priority) h))
+              suggestion-docs (->> value-map
+                                   (map #(suggestion-doc key-name %))
+                                   (remove nil?))]]
+    suggestion-docs))
+
+(defn- collection->suggestion-doc
+  "Convert collection concept metadata to UMM-C and pull facet fields
+  to be indexed as autocomplete suggestion doc"
+  [context collections]
+  (let [parsed-concepts (->> collections
+                             (remove #(= (:deleted %) true))
+                             (map #(cp/parse-concept context %)))
+        humanized-fields (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
+        suggestion-docs (map get-suggestion-docs humanized-fields)]
+    (flatten suggestion-docs)))
+
+
+(defn- reindex-suggestions-for-provider
+  "Reindex autocomplete suggestion for a given provider"
+  [context provider-id]
+  (info "Reindexing latest autocomplete suggestions for provider" provider-id)
+  (let [latest-collection-batches (meta-db/find-in-batches
+                                    context
+                                    :collection
+                                    REINDEX_BATCH_SIZE
+                                    {:provider-id provider-id :latest true})
+        latest-suggestion-batches (->> latest-collection-batches
+                                       (map #(collection->suggestion-doc context %))
+                                       flatten)]
+    (es/bulk-index-autocomplete-suggestions context latest-suggestion-batches)))
+
+
+(defn reindex-autocomplete-suggestions
+  "Reindexes all autocomplete suggestions in the providers given."
+  [context]
+  (let [provider-ids (map :provider-id (meta-db/get-providers context))]
+    (doseq [provider-id provider-ids]
+      (reindex-suggestions-for-provider context provider-id))))
 
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
@@ -292,6 +405,10 @@
   [context concept]
   (let [service-associations (meta-db/get-associations-for-service context concept)]
     (get-elastic-version-with-associations context concept {:service-associations service-associations})))
+
+(defmethod get-elastic-version :subscription
+  [context concept]
+  (:transaction-id concept))
 
 (defmulti get-tag-associations
   "Returns the tag associations of the concept"

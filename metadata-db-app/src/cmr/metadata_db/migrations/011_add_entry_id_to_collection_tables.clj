@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.migrations.011-add-entry-id-to-collection-tables
   "Adds entry id to collection tables"
   (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
+            [config.mdb-migrate-config :as config]
             [config.mdb-migrate-helper :as h]))
 
 (defn up

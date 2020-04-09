@@ -457,7 +457,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           collection.</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" name="DataFormat">
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="DataFormat">
         <xs:simpleType>
           <xs:restriction base="xs:string">
             <xs:minLength value="1" />

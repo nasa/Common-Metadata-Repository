@@ -32,18 +32,21 @@
    :service (into common-columns [:provider_id :service_name :user_id])
    :acl (into common-columns [:provider_id :user_id :acl_identity])
    :humanizer (into common-columns [:user_id])
+   :subscription (into common-columns
+                       [:provider_id :subscription_name :subscriber_id
+                        :email_address :collection_concept_id :user_id])
    :variable (into common-columns [:provider_id :variable_name :measurement :user_id :fingerprint])
    :variable-association (into common-columns
                                [:associated_concept_id :associated_revision_id
                                 :variable_concept_id :user_id])
    :service-association (into common-columns
-                               [:associated_concept_id :associated_revision_id
-                                :service_concept_id :user_id])})
+                              [:associated_concept_id :associated_revision_id
+                               :service_concept_id :user_id])})
 
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept
    types must include the provider id as part of the sql params"
-  #{:access-group :variable :service})
+  #{:access-group :variable :service :subscription})
 
 (defn columns-for-find-concept
   "Returns the table columns that should be included in a find-concept sql query"
@@ -59,10 +62,23 @@
     (dissoc params :concept-type :exclude-metadata)
     (dissoc params :concept-type :exclude-metadata :provider-id)))
 
-(defn- gen-find-concepts-in-table-sql
+(defmulti gen-find-concepts-in-table-sql
   "Create the SQL for the given params and table.
   If :include-all is true, all revisions of the concepts will be returned. This is needed for the
   find-latest-concepts function to later filter out the latest concepts that satisfy the search in memory."
+  (fn [concept-type table fields params]
+    (when (= :granule concept-type)
+      :granule-search)))
+
+;; special case added to address OB_DAAC granule search not using existing index problem
+;; where the native id or granule ur index is not being used by Oracle optimizer
+(defmethod gen-find-concepts-in-table-sql :granule-search
+  [concept-type table fields params]
+  (let [stmt (gen-find-concepts-in-table-sql :dummy table fields params)]
+    ;; add index hint to the generated sql statement
+    (update-in stmt [0] #(string/replace % #"SELECT" (format "SELECT /*+ INDEX(%s) */" table)))))
+
+(defmethod gen-find-concepts-in-table-sql :default
   [concept-type table fields params]
   (if (:include-all params)
     (let [params (dissoc params :include-all)]
@@ -124,7 +140,8 @@
   (fn [db table concept-type providers params]
     (or (:small (first providers))
         (= :variable concept-type)
-        (= :service concept-type))))
+        (= :service concept-type)
+        (= :subscription concept-type))))
 
 ;; Execute a query against a single table where provider_id is a column
 (defmethod find-concepts-in-table true

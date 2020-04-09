@@ -22,6 +22,9 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /providers/\<provider-id>/services/\<native-id>
     * [PUT - Create or update a service.](#create-update-service)
     * [DELETE - Delete a service.](#delete-service)
+  * /providers/\<provider-id>/subscriptions/\<native-id>
+    * [PUT - Create or update a subscription.](#create-update-subscription)
+    * [DELETE - Delete a subscription.](#delete-subscription)
   * /translate/collection
     * [POST - Translate collection metadata.](#translate-collection)
   * /translate/granule
@@ -74,16 +77,18 @@ The concept id header allows specifying the [concept id](#concept-id) to use whe
 
 #### <a name="validate-keywords-header"></a> Cmr-Validate-Keywords Header
 
-If this header is set to true then ingest will validate that collection keywords match [known keywords from GCMD KMS](http://gcmd.nasa.gov/learn/keyword_list.html). The following fields are validated.
+If this header is set to true, ingest will validate that the collection keywords match known keywords from the GCMD KMS. The following fields are validated.
 
-* Platforms - short name, long name, and type
-* Instruments - short name and long name
-* Projects - short name and long name
-* Science Keywords - category, topic, term, variable level 1, variable level 2, variable level 3.
-* Location Keywords - category, type, subregion 1, subregion 2, subregion 3.
-* Data Centers - short name
-* Directory Names - short name
-* ISO Topic Categories - iso topic category
+* [Platforms](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/platforms?format=csv) - short name, long name, and type
+* [Instruments](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/instruments?format=csv) - short name and long name
+* [Projects](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/projects?format=csv) - short name and long name
+* [Science Keywords](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords?format=csv) - category, topic, term, variable level 1, variable level 2, variable level 3.
+* [Location Keywords](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/locations?format=csv) - category, type, subregion 1, subregion 2, subregion 3.
+* [Data Centers](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/providers?format=csv) - short name
+* [Directory Names](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/idnnode?format=csv) - short name
+* [ISO Topic Categories](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/isotopiccategory?format=csv) - iso topic category
+* [Data Format](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/granuledataformat?format=csv) - data format
+* [Measurement Name](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/MeasurementName?format=csv)
 
 Note that when multiple fields are present the combination of keywords are validated to match a known combination.
 
@@ -105,7 +110,7 @@ This provides standard X-Request-Id support to allow user to pass in some random
 
 #### <a name="cmr-request-id"></a> CMR-Request-Id Header
 
-This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems. 
+This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems.
 
 ***
 
@@ -545,6 +550,62 @@ curl -i -X DELETE \
 {"concept-id":"S1200000015-PROV1","revision-id":2}
 ```
 
+### <a name="create-update-subscription"></a> Create / Update a Subscription
+
+Subscription concept can be created or updated by sending an HTTP PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+
+```
+curl -i -XPUT \
+-H "Content-type: application/vnd.nasa.cmr.umm+json" \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/subscriptions/subscription123 -d \
+"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"EmailAddress\": \"someaddress@gmail.com\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>SUB1200000015-PROV1</concept-id>
+  <revision-id>1</revision-id>
+</result>
+```
+#### Successful Response in JSON
+
+By passing the option `-H "Accept: application/json"` to `curl`, one may
+get a JSON response:
+
+```
+{"concept-id":"SUB1200000015-PROV1","revision-id":1}
+```
+
+### <a name="delete-service"></a> Delete a Subscription
+
+Subscription metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+
+```
+curl -i -X DELETE \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/subscriptions/subscription123
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>SUB1200000015-PROV1</concept-id>
+  <revision-id>2</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+```
+{"concept-id":"SUB1200000015-PROV1","revision-id":2}
+```
+
 ## <a name="translate-collection"></a> Translate Collection Metadata
 
 Collection metadata can be translated between metadata standards using the translate API in Ingest. This API also supports the UMM JSON format which represents UMM as JSON. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header.
@@ -638,7 +699,7 @@ Example output:
 ```
 ## <a name="translate-granule"></a> Translate Granule Metadata
 
-Granule metadata can be translated between metadata standards using the translate API in Ingest. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header. The supported input formats are ECHO10, ISO SMAP and UMM-G. The supported output formats are ECHO10, ISO SMAP, UMM-G and ISO19115. 
+Granule metadata can be translated between metadata standards using the translate API in Ingest. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header. The supported input formats are ECHO10, ISO SMAP and UMM-G. The supported output formats are ECHO10, ISO SMAP, UMM-G and ISO19115.
 
 Example: Translate ECHO10 metadata to UMM-G
 

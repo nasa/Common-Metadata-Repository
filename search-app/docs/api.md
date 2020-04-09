@@ -29,6 +29,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Open Data](#open-data)
     * [XML Reference](#xml-reference)
   * [Temporal Range Searches](#temporal-range-searches)
+  * [Facet Autocompletion](#autocomplete-facets)
   * [Collection Search By Parameters](#collection-search-by-parameters)
     * [Find all collections](#find-all-collections)
     * [Concept id](#c-concept-id)
@@ -73,6 +74,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Bounding Box](#c-bounding-box)
         * [Point](#c-point)
         * [Line](#c-line)
+    * [Shapefile](#c-shapefile)
     * [Additional Attribute](#c-additional-attribute)
     * [Author](#c-author)
     * [With/without granules](#c-has-granules)
@@ -93,6 +95,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Bounding Box](#g-bounding-box)
         * [Point](#g-point)
         * [Line](#g-line)
+    * [Shapefile](#g-shapefile)
     * [Orbit number](#g-orbit-number)
     * [Orbit equator crossing longitude](#g-orbit-equator-crossing-longitude)
     * [Orbit equator crossing date](#g-orbit-equator-crossing-date)
@@ -172,6 +175,13 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Service Access Control](#service-access-control)
     * [Service association](#service-association)
     * [Service dissociation](#service-dissociation)
+  * [Subscription](#subscription)
+    * [Searching for Subscriptions](#searching-for-subscriptions)
+        * [Subscription Search Parameters](#subscription-search-params)
+        * [Subscription Search Response](#subscription-search-response)
+    * [Retrieving All Revisions of a Subscription](#retrieving-all-revisions-of-a-subscription)
+    * [Sorting Subscription Results](#sorting-subscription-results)
+    * [Subscription Access Control](#subscription-access-control)
   * [Community Usage Metrics](#community-usage-metrics)
     * [Updating Community Usage Metrics](#updating-community-usage-metrics)
     * [Retrieving Community Usage Metrics](#retrieving-community-usage-metrics)
@@ -1126,6 +1136,94 @@ A couple of parameters used in search expect a date range as input. For example,
 
 Note: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of intervals which are open ended on one side. For example, `2000-01-01T10:00:00Z/` and `/2000-01-01T10:00:00Z` are valid ranges.
 
+### <a name="autocomplete-facets"></a> Facet Autocompletion
+
+Auto-completion assistance for building queries. This functionality may be used to help build queries. The facet autocomplete functionality does not search for collections directly. Instead it will return suggestions of facets to help narrow a search by providing a list of available facets to construct a CMR collections search.
+
+    curl "%CMR-ENDPOINT%/autocomplete?q=<term>[&type\[\]=<type1>[&type\[\]=<type2>]"
+
+Collection facet autocompletion results are paged. See [Paging Details](#paging-details) for more information on how to page through autocomplete search results.
+
+#### Autocomplete Parameters
+  * `q` The string on which to search. The term is case insensitive.
+  * `type[]` Optional list of types to include in the search. This may be any number of valid facet types.
+
+__Example Query__
+
+     curl "%CMR-ENDPOINT%/autocomplete?q=ice"
+
+__Example Result__
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+CMR-Hits: 15
+
+{
+  "feed": {
+    "entry": [
+      {
+        "score": 9.115073,
+        "type": "instrument",
+        "value": "ICE AUGERS"
+      },
+      {
+        "score": 9.115073,
+        "type": "instrument",
+        "value": "ICECUBE"
+      },
+      {
+        "score": 9.013778,
+        "type": "platform",
+        "value": "ICESat-2"
+      },
+      {
+        "score": 8.921176,
+        "type": "platform",
+        "value": "Sea Ice Mass Balance Station"
+      },
+      {
+        "score": 8.921176,
+        "type": "platform",
+        "value": "ICEYE"
+      }
+    ]
+  }
+}
+```
+
+__Example Query__
+
+     curl "%CMR-ENDPOINT%/autocomplete?q=ice&type[]=platform&type[]=project"
+
+__Example Result with Type Filter__
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+CMR-Hits: 3
+
+{
+  "feed": {
+    "entry": [
+      {
+        "score": 9.013778,
+        "type": "platform",
+        "value": "ICESat-2"
+      },
+      {
+        "score": 8.921176,
+        "type": "platform",
+        "value": "Sea Ice Mass Balance Station"
+      },
+      {
+        "score": 8.921176,
+        "type": "project",
+        "value": "ICEYE"
+      }
+    ]
+  }
+}
+```
+
 ### <a name="collection-search-by-parameters"></a> Collection Search Examples
 
 #### <a name="find-all-collections"></a> Find all collections
@@ -1391,7 +1489,7 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 #### <a name="c-granule-data-format"></a> Find collections by format of data in granules
 
    curl "%CMR-ENDPOINT%/collections?granule_data_format=NetCDF"
-   
+
 #### <a name="c-online-only"></a> Find collections by online_only
 
     curl "%CMR-ENDPOINT%/collections?online_only=true"
@@ -1598,6 +1696,34 @@ Lines are provided as a list of comma separated values representing coordinates 
     curl "%CMR-ENDPOINT%/collections?line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
 
 Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are AND'd in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon.
+
+#### <a name="c-shapefile"></a> Find collections by shapefile
+
+A shapefile can be uploaded with a query to restrict results to those that overlap the geometry in the shapefile. Note that unlike the spatial parameters, geometry in the shapefile is OR'd together, not AND'd. So if a collection overlaps _any_ of the geometry in the shapefile it will match. Note also that the `shapefile` parameter supports shapefiles containing polygons with holes.
+
+Currently the only supported shapefile formats are ESRI, KML, and GeoJSON. For ESRI all the sub-files (*.shp, *.shx, etc.) must be uploaded in a single zip file.
+
+Regarding polygon ring winding, ESRI shapefiles **must** follow the ESRI standard, i.e., exterior (boundary) rings are clockwise, and holes are counter-clockwise. GeoJSON **must** follow the RFC7946 specification, i.e., exterior rings are counterclockwise, and holes are clockwise. KML **must** follow the KML 2.2 specification, i.e., _all_ polygon rings are counter-clockwise.
+
+Shapefile upload is only supported using POST with `multipart/form-data` and the mime type for the shapefile must be given as `application/shapefile+zip`, `application/geo+json`, or `application/vnd.google-earth.kml+xml`.
+
+Examples:
+
+  **ESRI Shapfile**
+
+  curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
+
+  **GeoJSON**
+
+  curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.geojson;type=application/geo+json" -F "provider=PROV1"
+
+  **KML**
+
+  curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.kml;type=application/vnd.google-earth.kml+xml" -F "provider=PROV1"
+
+Internally a WGS 84 Coordinate Reference System (CRS) is used. The system will attempt to tranform shapefile geometry that uses a differnt CRS, but this is not guaranteed to work and the request will be rejected if a suitable tranformation is not found.
+
+**NOTE:** This is an experimental feature and may not be enabled in all environments.
 
 #### <a name="c-additional-attribute"></a> Find collections by additional attribute
 
@@ -1823,6 +1949,14 @@ The parameters used for searching granules by spatial are the same as the spatia
 ##### <a name="g-line"></a> Line
 
     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
+
+#### <a name="g-shapefile"></a> Find granules by shapefile
+
+As with collections, a shapefile can be uploaded to find granules that overlap the shapefile's geometry. (See [Find collections by shapefile](#c-shapefile) for more details.)
+
+  curl -XPOST "%CMR-ENDPOINT%/granules" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
+
+**NOTE**: This is an experimental feature and may not be enabled in all environments.
 
 #### <a name="g-orbit-number"></a> Find granules by orbit number
 
@@ -2131,7 +2265,7 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
 
 ### <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
 
-This allows retrieving the metadata for a single concept. This is only supported for collections, granules, variables, and services. If no format is specified the native format of the metadata (and the native version, if it exists) will be returned.
+This allows retrieving the metadata for a single concept. This is only supported for collections, granules, variables, services and subscriptions. If no format is specified the native format of the metadata (and the native version, if it exists) will be returned.
 
 By concept id
 
@@ -2183,7 +2317,7 @@ The following extensions and MIME types are supported by the `/concepts/` resour
   * `atom`      "application/atom+xml"
   * `umm_json`  "application/vnd.nasa.cmr.umm+json"
 
-The following extensions and MIME types are supported by the `/concepts/` resource for the variable and service concept types:
+The following extensions and MIME types are supported by the `/concepts/` resource for the variable, service and subscription concept types:
 
   * `umm_json`  "application/vnd.nasa.cmr.umm+json"
 
@@ -2994,7 +3128,7 @@ Content-Length: 168
 ]
 ```
 
-On occassions when tag association cannot be processed at all due to invalid input, tag association request will return a failure status code with the appropriate error message.
+On occasions when tag association cannot be processed at all due to invalid input, tag association request will return a failure status code with the appropriate error message.
 
 #### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
 
@@ -3260,7 +3394,7 @@ Content-Length: 292
 
 ### <a name="variable"></a> Variable
 
-Variable is some of the measurement variables that belongs to collections/granules that can be processed by a service. Variable metadata is in JSON format and conforms to [UMM-Var Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/variable).
+Variables are measurement variables belonging to collections/granules that are processable by services. Variable metadata is stored in the JSON format and conforms to [UMM-Var Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/variable) schema.
 
 #### <a name="searching-for-variables"></a> Searching for Variables
 
@@ -3348,7 +3482,7 @@ Content-Length: 393
         <reference>
             <name>Variable1</name>
             <id>V1200000007-PROV1</id>
-            <location>http://localhost:3003/concepts/V1200000007-PROV1/1</location>
+            <location>%CMR-ENDPOINT%/concepts/V1200000007-PROV1/1</location>
             <revision-id>1</revision-id>
         </reference>
     </references>
@@ -3524,7 +3658,7 @@ Note: The following new features are added to support UVG:
 3. variable and collection can only be associated if they are from the same provider.
 
 Future work:
-1. Currently we are not addressing any existing data that don't satisfy the above new requirements. 
+1. Currently we are not addressing any existing data that doesn't satisfy the above requirements.
 2. We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list. A ticket is filed to address these issues in the future if necessary.
 
 ```
@@ -3548,7 +3682,7 @@ Content-Length: 168
 ]
 ```
 
-On occassions when variable association cannot be processed at all due to invalid input, variable association request will return a failure status code with the appropriate error message.
+On occasions when variable association cannot be processed at all due to invalid input, the variable association request will return a failure status code with the appropriate error message.
 
 #### <a name="variable-dissociation"></a> Variable Dissociation
 
@@ -3560,7 +3694,7 @@ curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
 
-HTTP/1.1 200 OK
+HTTP/1.1 400 BAD REQUEST
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -3593,7 +3727,7 @@ Content-Length: 168
 ]
 ```
 
-On occasions when variable dissociation cannot be processed at all due to invalid input, variable dissociation request will return a failure status code with the appropriate error message.
+On occasions when variable dissociation cannot be processed at all due to invalid input, the variable dissociation request will return a failure status code with the appropriate error message.
 
 ### <a name="service"></a> Service
 
@@ -3679,7 +3813,7 @@ Content-Length: 393
         <reference>
             <name>Service1</name>
             <id>S1200000007-PROV1</id>
-            <location>http://localhost:3003/concepts/S1200000007-PROV1/1</location>
+            <location>%CMR-ENDPOINT%/concepts/S1200000007-PROV1/1</location>
             <revision-id>1</revision-id>
         </reference>
     </references>
@@ -3829,7 +3963,7 @@ __Sample response__
             <reference>
                 <name>Service1</name>
                 <id>S1200000010-PROV1</id>
-                <location>http://localhost:3003/concepts/S1200000010-PROV1/3</location>
+                <location>%CMR-ENDPOINT%/concepts/S1200000010-PROV1/3</location>
                 <revision-id>3</revision-id>
             </reference>
             <reference>
@@ -3841,7 +3975,7 @@ __Sample response__
             <reference>
                 <name>Service1</name>
                 <id>S1200000010-PROV1</id>
-                <location>http://localhost:3003/concepts/S1200000010-PROV1/1</location>
+                <location>%CMR-ENDPOINT%/concepts/S1200000010-PROV1/1</location>
                 <revision-id>1</revision-id>
             </reference>
         </references>
@@ -3878,7 +4012,7 @@ curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-E
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
-HTTP/1.1 200 OK
+HTTP/1.1 400 BAD REQUEST
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -3915,7 +4049,7 @@ curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
 
-HTTP/1.1 200 OK
+HTTP/1.1 400 BAD REQUEST
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -3949,6 +4083,263 @@ Content-Length: 168
 ```
 
 On occasions when service dissociation cannot be processed at all due to invalid input, service dissociation request will return a failure status code with the appropriate error message.
+
+### <a name="subscription"></a> Subscription
+
+Email subscription is used to inform the users through emails when the granules that match the query in the subscription are created/updated. These granules can only belong to one collection, which is defined by the collection-concept-id in the subscription. There is a background job that processes the subscriptions periodically(configurable), to see if there are any granules that are created/updated between the time it's processed and the time it was last processed.  A subscription enables data to be accessed via a universal resource locator, Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription).
+
+#### <a name="searching-for-subscriptions"></a> Searching for Subscriptions
+
+Subscriptions can be searched for by sending a request to `%CMR-ENDPOINT%/subscriptions`. XML reference, JSON, and UMM JSON response formats are supported for subscriptions search.
+
+Subscription search results are paged. See [Paging Details](#paging-details) for more information on how to page through subscription search results.
+
+##### <a name="subscription-search-params"></a> Subscription Search Parameters
+
+The following parameters are supported when searching for subscriptions.
+
+##### Standard Parameters
+* page_size
+* page_num
+* pretty
+
+##### Subscription Matching Parameters
+
+These parameters will match fields within a subscription. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
+
+* name
+  * options: pattern, ignore_case
+* provider
+  * options: pattern, ignore_case
+* native_id
+  * options: pattern, ignore_case
+* concept_id
+* subscriber_id
+* collection_concept_id
+
+##### <a name="subscription-search-response"></a> Subscription Search Response
+
+##### XML Reference
+The XML reference response format is used for returning references to search results. It consists of the following fields:
+
+|   Field    |                    Description                     |
+| ---------- | -------------------------------------------------- |
+| hits       | the number of results matching the search query    |
+| took       | time in milliseconds it took to perform the search |
+| references | identifying information about each search result   |
+
+The `references` field may contain multiple `reference` entries, each consisting of the following fields:
+
+|    Field    |                                                   Description                                                   |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
+| name        | the value of the Name field in subscription metadata.                                                                |
+| id          | the CMR identifier for the result                                                                               |
+| location    | the URL at which the full metadata for the result can be retrieved                                              |
+| revision-id | the internal CMR version number for the result                                                                  |
+
+__Example__
+```
+curl -i "%CMR-ENDPOINT%/subscriptions?name=someSub1&pretty=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/xml; charset=UTF-8
+Content-Length: 393
+
+<?xml version="1.0" encoding="UTF-8"?>
+<results>
+    <hits>1</hits>
+    <took>5</took>
+    <references>
+        <reference>
+            <name>someSub1</name>
+            <id>SUB1200000005-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/SUB1200000005-PROV1/1</location>
+            <revision-id>1</revision-id>
+        </reference>
+    </references>
+</results>
+```
+##### JSON
+The JSON response includes the following fields.
+
+* hits - How many total variables were found.
+* took - How long the search took in milliseconds
+* items - a list of the current page of subscriptions with the following fields
+  * concept_id
+  * revision_id
+  * provider_id
+  * native_id
+  * name
+  * subscriber_id
+  * collection_concept_id
+
+__Example__
+```
+curl -g -i "%CMR-ENDPOINT%/subscriptions.json?pretty=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 944
+
+{
+  "hits" : 4,
+  "took" : 2,
+  "items" : [ {
+    "concept_id" : "SUB1200000005-PROV1",
+    "revision_id" : 1,
+    "provider_id" : "PROV1",
+    "native_id" : "subscription-1",
+    "name" : "someSub1",
+    "subscriber-id" : "someSubId1",
+    "collection-concept-id" : "C1200000001-PROV1"
+  }, {
+    "concept_id" : "SUB1200000006-PROV1",
+    "revision_id" : 1,
+    "provider_id" : "PROV1",
+    "native_id" : "subscription-2",
+    "name" : "someSub2",
+    "subscriber-id" : "someSubId2",
+    "collection-concept-id" : "C1200000001-PROV1"
+  } ]
+}
+```
+##### UMM JSON
+The UMM JSON response contains meta-metadata of the subscription and the UMM fields.
+
+__Example__
+```
+curl -g -i "%CMR-ENDPOINT%/subscriptions.umm_json?name=NSIDC_AtlasNorth&pretty=true"
+HTTP/1.1 200 OK
+Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.0; charset=utf-8
+
+{
+  "hits" : 1,
+  "took" : 21,
+  "items" : [ {
+    "meta" : {
+      "native-id" : "subscription-1",
+      "provider-id" : "PROV1",
+      "concept-type" : "subscription",
+      "concept-id" : "SUB1200000005-PROV1",
+      "revision-date" : "2020-04-01T19:52:44Z",
+      "user-id" : "ECHO_SYS",
+      "deleted" : false,
+      "revision-id" : 1,
+      "format" : "application/vnd.nasa.cmr.umm+json"
+    },
+    "umm" : {
+      "Name" : "someSub1",
+      "SubscriberId" : "someSubId1",
+      "EmailAddress" : "sxu@gmail.com",
+      "CollectionConceptId" : "C1200000001-PROV1",
+      "Query" : "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78"
+    }
+  } ]
+}
+```
+
+##### <a name="retrieving-all-revisions-of-a-subscription"></a> Retrieving All Revisions of a Subscription
+
+In addition to retrieving the latest revision for a subscription parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+
+    curl "%CMR-ENDPOINT%/subscriptions?concept_id=S1200000010-PROV1&all_revisions=true&pretty=true"
+
+__Sample response__
+
+```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <results>
+        <hits>3</hits>
+        <took>9</took>
+        <references>
+            <reference>
+                <name>someSub1</name>
+                <id>SUB1200000005-PROV1</id>
+                <deleted>true</deleted>
+                <revision-id>3</revision-id>
+            </reference>
+            <reference>
+                <name>someSub1</name>
+                <id>SUB1200000005-PROV1</id>
+                <location>%CMR-ENDPOINT%/concepts/SUB1200000005-PROV1/2</location>
+                <revision-id>2</revision-id>
+            </reference>
+            <reference>
+                <name>someSub1</name>
+                <id>SUB1200000005-PROV1</id>
+                <location>%CMR-ENDPOINT%/concepts/SUB1200000005-PROV1/1</location>
+                <revision-id>1</revision-id>
+            </reference>
+        </references>
+    </results>
+```
+
+##### <a name="sorting-subscription-results"></a> Sorting Subscription Results
+
+By default, subscription results are sorted by name, then provider-id.
+
+One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
+
+###### Valid Subscription Sort Keys
+  * `name`
+  * `provider`
+  * `collection_concept_id`
+
+Examples of sorting by name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+
+    curl "%CMR-ENDPOINT%/subscriptions?sort_key\[\]=-name"
+
+__Sample response__
+
+```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <results>
+        <hits>2</hits>
+        <took>6</took>
+        <references>
+            <reference>
+                <name>someSub2</name>
+                <id>SUB1200000006-PROV1</id>
+                <location>%CMR-ENDPOINT%/concepts/SUB1200000006-PROV1/1</location>
+                <revision-id>1</revision-id>
+        </reference>
+        <reference>
+            <name>someSub1</name>
+            <id>SUB1200000005-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/SUB1200000005-PROV1/1</location>
+            <revision-id>1</revision-id>
+        </reference>
+    </references>
+</results>
+```
+    curl "%CMR-ENDPOINT%/subscriptions?sort_key\[\]=%2Bname"
+
+__Sample response__
+
+```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <results>
+        <hits>2</hits>
+        <took>6</took>
+        <references>
+            <reference>
+                <name>someSub1</name>
+                <id>SUB1200000005-PROV1</id>
+                <location>%CMR-ENDPOINT%/concepts/SUB1200000005-PROV1/1</location>
+                <revision-id>1</revision-id>
+        </reference>
+        <reference>
+            <name>someSub2</name>
+            <id>SUB1200000006-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/SUB1200000006-PROV1/1</location>
+            <revision-id>1</revision-id>
+        </reference>
+    </references>
+</results>
+```
+#### <a name="subscription-access-control"></a> Subscription Access Control
+
+Access to subscription is granted through the provider via the INGEST_MANAGEMENT_ACL.
 
 ### <a name="community-usage-metrics"></a> Community Usage Metrics
 
