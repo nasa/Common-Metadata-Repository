@@ -95,7 +95,6 @@
         _ (index/wait-until-indexed)
         _ (index/reindex-suggestions)
         _ (index/wait-until-indexed)]
-    (search/get-autocomplete-json "q=boo")
     (f)))
 
 (use-fixtures :each (join-fixtures
