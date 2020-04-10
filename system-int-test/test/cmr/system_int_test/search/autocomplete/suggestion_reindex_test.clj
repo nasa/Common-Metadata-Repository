@@ -88,6 +88,7 @@
                             (fu/processing-level-id "PL1")
                             {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
                              :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]})
+
         coll3 (d/ingest-concept-with-metadata-file "CMR-6287/C1000000029-EDF_OPS.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
@@ -105,11 +106,10 @@
 
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
-    (let [results  (get-in (search/get-autocomplete-json "q=level2") [:feed :entry])]
-      (compare-autocomplete-results
-       results
-       [{:score 0.25604635 :type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}
-        {:score 0.041718055 :type "instrument" :value "lVIs" :fields "lVIs"}])))
+    (compare-autocomplete-results
+     (get-in (search/get-autocomplete-json "q=level2") [:feed :entry])
+     [{:score 0.25604635 :type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}
+      {:score 0.041718055 :type "instrument" :value "lVIs" :fields "lVIs"}]))
 
   (testing "Ensure science keywords are being indexed properly"
     (are3
