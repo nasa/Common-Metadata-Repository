@@ -198,20 +198,20 @@
         terminal-key (->> keyword-hierarchy
                           (map #(get science-keywords %))
                           (positions nil?))
-        keyword-string (->> keyword-hierarchy
-                            (map #(get science-keywords %))
-                            (remove nil?)
-                            (s/join ":"))
-        keyword-value (get science-keywords terminal-key)
+        sk-strings (->> keyword-hierarchy
+                        (map #(get science-keywords %))
+                        (remove nil?))
+        keyword-string (s/join ":" sk-strings)
+        keyword-value (last sk-strings)
         id (-> (s/lower-case keyword-string)
                (str "_science_keywords")
                hash)]
-     {:type "science_keywords"
-      :_id id
-       :value keyword-value
-       :fields keyword-string
-       :_index "1_autocomplete"
-       :_type "suggestion"}))
+   {:type "science_keywords"
+    :_id id
+     :value keyword-value
+     :fields keyword-string
+     :_index "1_autocomplete"
+     :_type "suggestion"}))
 
 (defn- suggestion-doc
   "Creates elasticsearch docs from a given humanized map"
@@ -230,7 +230,7 @@
              {:type type
               :_id id
               :value v
-              :fields (camel-snake-kebab/->snake_case_keyword (name (key value)))
+              :fields v
               :_index "1_autocomplete"
               :_type "suggestion"}))
          values))))
@@ -259,11 +259,17 @@
   [context collections]
   (let [parsed-concepts (->> collections
                              (remove #(= (:deleted %) true))
-                             (map #(cp/parse-concept context %)))
+                             (map #(try
+                                     (cp/parse-concept context %)
+                                     (catch Exception e
+                                       (error (format "An error occurred while parsing collection for autocomplete suggestions: %s"
+                                                      (.getMessage e)))
+                                       (debug %)
+                                       nil)))
+                             (remove nil?))
         humanized-fields (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
         suggestion-docs (map get-suggestion-docs humanized-fields)]
     (flatten suggestion-docs)))
-
 
 (defn- reindex-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
@@ -285,7 +291,11 @@
   [context]
   (let [provider-ids (map :provider-id (meta-db/get-providers context))]
     (doseq [provider-id provider-ids]
-      (reindex-suggestions-for-provider context provider-id))))
+      (try
+        (reindex-suggestions-for-provider context provider-id)
+        (catch Exception e (error (format "An error occurred while reindexing autocomplete suggestions in provider [%s] : %s"
+                                          provider-id
+                                          (.getMessage e))))))))
 
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
