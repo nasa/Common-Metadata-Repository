@@ -25,7 +25,7 @@
         actual-scores-descending? (->> actual
                                        (map :score)
                                        (apply >=))
-                                        ; we don't need to actually compare scores
+        ;; we don't need to actually compare scores
         expected (map #(dissoc % :score) expected)
         actual (map #(dissoc % :score) actual)]
     (is (true? actual-scores-descending?))
