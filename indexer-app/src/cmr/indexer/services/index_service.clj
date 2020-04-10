@@ -259,11 +259,17 @@
   [context collections]
   (let [parsed-concepts (->> collections
                              (remove #(= (:deleted %) true))
-                             (map #(cp/parse-concept context %)))
+                             (map #(try
+                                     (cp/parse-concept context %)
+                                     (catch Exception e
+                                       (error (format "An error occurred while parsing collection for autocomplete suggestions: %s"
+                                                      (.getMessage e)))
+                                       (debug %)
+                                       nil)))
+                             (remove nil?))
         humanized-fields (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
         suggestion-docs (map get-suggestion-docs humanized-fields)]
     (flatten suggestion-docs)))
-
 
 (defn- reindex-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
@@ -285,7 +291,11 @@
   [context]
   (let [provider-ids (map :provider-id (meta-db/get-providers context))]
     (doseq [provider-id provider-ids]
-      (reindex-suggestions-for-provider context provider-id))))
+      (try
+        (reindex-suggestions-for-provider context provider-id)
+        (catch Exception e (error (format "An error occurred while reindexing autocomplete suggestions in provider [%s] : %s"
+                                          provider-id
+                                          (.getMessage e))))))))
 
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
