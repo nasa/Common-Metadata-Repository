@@ -15,7 +15,7 @@
     [cmr.transmit.echo.acls :as echo-acls]
     [cmr.transmit.metadata-db :as mdb]
     [cmr.transmit.search :as search]
-    [postal.core :refer [send-message]]))
+    [postal.core :as postal-core]))
 
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
   "The number of seconds between jobs to check for ACL changes and reindex collections."
@@ -141,6 +141,21 @@
 ;; Only one node needs to refresh the cache because we're using the  fallback cache with Redis cache.
 ;; The value stored in Redis will be available to all the nodes.
 
+(defconfig email-server-host
+  "The host name for email server."
+  {:default "gsfc-relay.ndc.nasa.gov"
+   :type String})
+
+(defconfig email-server-port
+  "The port number for email server."
+  {:default 25
+   :type Long})
+
+(defconfig cmr-mail-sender
+  "The cmr email sender's email address."
+  {:default "cmr-support@earthdata.nasa.gov"
+   :type String})
+
 (defconfig partial-refresh-collection-granule-aggregation-cache-interval
   "Number of seconds between partial refreshes of the collection granule aggregation cache."
   {:default 3600
@@ -201,14 +216,14 @@
          :let [email-address (get-in subscription [:extra-fields :email-address])
                coll-id (get-in subscription [:extra-fields :collection-concept-id])
                query-string (-> (:metadata subscription)
-                                (json/decode)
-                                (get "Query"))
+                                (json/decode true)
+                                :Query)
                query-params (create-query-params query-string)
-               params1 (merge {"created-at" time-constraint}
-                              {"collection-concept-id" coll-id}
+               params1 (merge {:created-at time-constraint}
+                              {:collection-concept-id coll-id}
                               query-params)
-               params2 (merge {"revision-date" time-constraint}
-                              {"collection-concept-id" coll-id}
+               params2 (merge {:revision-date time-constraint}
+                              {:collection-concept-id coll-id}
                               query-params)]]
       (try
         (let [gran-ref1 (search/find-granule-references context params1)
@@ -216,16 +231,16 @@
               gran-ref (distinct (concat gran-ref1 gran-ref2))
               gran-ref-location (map :location gran-ref)]
           (when (seq gran-ref)
-            (info "Before sending email for subscription: " (:metadata subscription))
-            (send-message {:host "gsfc-relay.ndc.nasa.gov" :port 25}
-                          {:from email-address
-                           :to email-address
-                           :subject "Email Subscription Notification"
-                           :body (str "The following are the granule locations: \n"
-                                      gran-ref-location
-                                      "\nThe subscription content is: \n"
-                                      (:metadata subscription))})
-            (info "After sending email for granule location: " gran-ref-location)))
+            (info "Sending email for subscription: " (:metadata subscription))
+            (postal-core/send-message {:host (email-server-host) :port (email-server-port)}
+                                      {:from (cmr-mail-sender) 
+                                       :to email-address
+                                       :subject "Email Subscription Notification"
+                                       :body (str "The following are the granule locations: \n"
+                                                  gran-ref-location
+                                                  "\nThe subscription content is: \n"
+                                                  (:metadata subscription))})
+            (info "Finished sending email for granule location: " gran-ref-location)))
        (catch Exception e
          (info  "Exception caught in email subscription: \n" (.getMessage e)
                "\nThe subscription content is: \n" (:metadata subscription))))))
