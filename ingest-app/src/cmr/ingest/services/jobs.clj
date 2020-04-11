@@ -143,7 +143,7 @@
 
 (defconfig email-server-host
   "The host name for email server."
-  {:default "gsfc-relay.ndc.nasa.gov"
+  {:default ""
    :type String})
 
 (defconfig email-server-port
@@ -151,9 +151,9 @@
   {:default 25
    :type Long})
 
-(defconfig cmr-mail-sender
-  "The cmr email sender's email address."
-  {:default "cmr-support@earthdata.nasa.gov"
+(defconfig mail-sender
+  "The email sender's email address."
+  {:default ""
    :type String})
 
 (defconfig partial-refresh-collection-granule-aggregation-cache-interval
@@ -214,36 +214,37 @@
   [context subscriptions time-constraint]
   (doseq [subscription subscriptions
          :let [email-address (get-in subscription [:extra-fields :email-address])
+               sub-name (get-in subscription [:extra-fields :subscription-name])
                coll-id (get-in subscription [:extra-fields :collection-concept-id])
                query-string (-> (:metadata subscription)
                                 (json/decode true)
                                 :Query)
                query-params (create-query-params query-string)
-               params1 (merge {:created-at time-constraint}
-                              {:collection-concept-id coll-id}
+               params1 (merge {:created-at time-constraint
+                               :collection-concept-id coll-id}
                               query-params)
-               params2 (merge {:revision-date time-constraint}
-                              {:collection-concept-id coll-id}
+               params2 (merge {:revision-date time-constraint
+                               :collection-concept-id coll-id}
                               query-params)]]
+      (info "Processing subscription: " sub-name)
       (try
         (let [gran-ref1 (search/find-granule-references context params1)
               gran-ref2 (search/find-granule-references context params2)
               gran-ref (distinct (concat gran-ref1 gran-ref2))
               gran-ref-location (map :location gran-ref)]
           (when (seq gran-ref)
-            (info "Sending email for subscription: " (:metadata subscription))
+            (info "Start sending email for subscription: " sub-name)
             (postal-core/send-message {:host (email-server-host) :port (email-server-port)}
-                                      {:from (cmr-mail-sender) 
+                                      {:from (mail-sender)
                                        :to email-address
                                        :subject "Email Subscription Notification"
-                                       :body (str "The following are the granule locations: \n"
-                                                  gran-ref-location
-                                                  "\nThe subscription content is: \n"
+                                       :body (str "The following are the granule locations: \n\n"
+                                                  (pr-str gran-ref-location)
+                                                  "\n\nThe subscription content is: \n"
                                                   (:metadata subscription))})
-            (info "Finished sending email for granule location: " gran-ref-location)))
+            (info "Finished sending email for subscription: " sub-name)))
        (catch Exception e
-         (info  "Exception caught in email subscription: \n" (.getMessage e)
-               "\nThe subscription content is: \n" (:metadata subscription))))))
+         (info "Exception caught in email subscription: " sub-name "\n\n"  (.getMessage e))))))
 
 (defn- email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
