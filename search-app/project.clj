@@ -44,7 +44,8 @@
                  [metosin/ring-swagger "0.22.14"]
                  [prismatic/schema "1.1.9"]]
   :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]
-                 ["boundless" "https://repo.boundlessgeo.com/main"]]
+                 ["boundless" "https://repo.boundlessgeo.com/main"]
+                 ["geo" "https://repo.osgeo.org/repository/release"]]
   :plugins [[lein-exec "0.3.7"]
             [test2junit "1.3.3"]]
   :repl-options {:init-ns user
