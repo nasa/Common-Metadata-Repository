@@ -244,7 +244,7 @@
                                                   (:metadata subscription))})
             (info "Finished sending email for subscription: " sub-name)))
        (catch Exception e
-         (info "Exception caught in email subscription: " sub-name "\n\n"  (.getMessage e))))))
+         (error "Exception caught in email subscription: " sub-name "\n\n"  (.getMessage e))))))
 
 (defn- email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
