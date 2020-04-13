@@ -14,7 +14,8 @@
     [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
     [cmr.transmit.echo.acls :as echo-acls]
     [cmr.transmit.metadata-db :as mdb]
-    [cmr.transmit.search :as search]))
+    [cmr.transmit.search :as search]
+    [postal.core :as postal-core]))
 
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
   "The number of seconds between jobs to check for ACL changes and reindex collections."
@@ -140,6 +141,21 @@
 ;; Only one node needs to refresh the cache because we're using the  fallback cache with Redis cache.
 ;; The value stored in Redis will be available to all the nodes.
 
+(defconfig email-server-host
+  "The host name for email server."
+  {:default ""
+   :type String})
+
+(defconfig email-server-port
+  "The port number for email server."
+  {:default 25
+   :type Long})
+
+(defconfig mail-sender
+  "The email sender's email address."
+  {:default ""
+   :type String})
+
 (defconfig partial-refresh-collection-granule-aggregation-cache-interval
   "Number of seconds between partial refreshes of the collection granule aggregation cache."
   {:default 3600
@@ -196,27 +212,39 @@
 (defn- process-subscriptions
   "Process each subscription in subscriptions."
   [context subscriptions time-constraint]
-  (for [subscription subscriptions
-       :let [email-address (get-in subscription [:extra-fields :email-address])
-             coll-id (get-in subscription [:extra-fields :collection-concept-id])
-             query-string (-> (:metadata subscription)
-                              (json/decode)
-                              (get "Query"))
-             query-params (create-query-params query-string)
-             params1 (merge {"created-at" time-constraint}
-                            {"collection-concept-id" coll-id}
-                            query-params)
-             params2 (merge {"revision-date" time-constraint}
-                            {"collection-concept-id" coll-id}
-                            query-params)
-             gran-ref1 (search/find-granule-references context params1)
-             gran-ref2 (search/find-granule-references context params2)
-             gran-ref (distinct (concat gran-ref1 gran-ref2))]]
-      (if (seq gran-ref)
-        ;; These strings are just for debugging purpose. In another ticket
-        ;; I will figure out how to send email.
-        (str "Granules found for: " email-address)
-        (str "No granules found for: " email-address))))
+  (doseq [subscription subscriptions
+         :let [email-address (get-in subscription [:extra-fields :email-address])
+               sub-name (get-in subscription [:extra-fields :subscription-name])
+               coll-id (get-in subscription [:extra-fields :collection-concept-id])
+               query-string (-> (:metadata subscription)
+                                (json/decode true)
+                                :Query)
+               query-params (create-query-params query-string)
+               params1 (merge {:created-at time-constraint
+                               :collection-concept-id coll-id}
+                              query-params)
+               params2 (merge {:revision-date time-constraint
+                               :collection-concept-id coll-id}
+                              query-params)]]
+      (info "Processing subscription: " sub-name)
+      (try
+        (let [gran-ref1 (search/find-granule-references context params1)
+              gran-ref2 (search/find-granule-references context params2)
+              gran-ref (distinct (concat gran-ref1 gran-ref2))
+              gran-ref-location (map :location gran-ref)]
+          (when (seq gran-ref)
+            (info "Start sending email for subscription: " sub-name)
+            (postal-core/send-message {:host (email-server-host) :port (email-server-port)}
+                                      {:from (mail-sender)
+                                       :to email-address
+                                       :subject "Email Subscription Notification"
+                                       :body (str "The following are the granule locations: \n\n"
+                                                  (pr-str gran-ref-location)
+                                                  "\n\nThe subscription content is: \n"
+                                                  (:metadata subscription))})
+            (info "Finished sending email for subscription: " sub-name)))
+       (catch Exception e
+         (error "Exception caught in email subscription: " sub-name "\n\n"  (.getMessage e))))))
 
 (defn- email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
@@ -229,9 +257,7 @@
          (->> (mdb/find-concepts context {:latest true} :subscription)
               (filter #(not (:deleted %)))
               (map #(select-keys % [:extra-fields :metadata])))]
-    ;; for some reason, the info or println doesn't show inside the for loop in my local
-    ;; proto repl.
-    (println (process-subscriptions context subscriptions time-constraint))))
+    (process-subscriptions context subscriptions time-constraint)))
 
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
