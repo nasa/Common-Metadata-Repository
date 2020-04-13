@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Collection>
+    <ShortName>ACR3L2DM</ShortName>
+    <VersionId>001</VersionId>
+    <InsertTime>2001-10-09T15:11:23.756Z</InsertTime>
+    <LastUpdate>2015-05-26T14:55:22.387Z</LastUpdate>
+    <LongName>ACRIM III Level 2 Daily Mean Data</LongName>
+    <DataSetId>ACRIM III Level 2 Daily Mean Data V001</DataSetId>
+    <Description>This file contains Level 2 total solar irradiance in the form of daily means gathered by the ACRIM instrument on the ACRIMSAT satellite.</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2002-04-02T00:00:00Z</RevisionDate>
+    <SuggestedUsage>This collection is comprised of processed daily mean data collected by the ACRIMSAT spacecraft. This collection is ACRIM III results of total solar irradiance.</SuggestedUsage>
+    <ProcessingCenter>ACRIM SCF</ProcessingCenter>
+    <ProcessingLevelId>2</ProcessingLevelId>
+    <ProcessingLevelDescription>GEOQUANT</ProcessingLevelDescription>
+    <ArchiveCenter>EDF_OPS</ArchiveCenter>
+    <VersionDescription>Initial Version</VersionDescription>
+    <CitationForExternalPublication>The research producing this EOS/ACRIM III experiment collection was supervised by Dr. Richard C. Willson, Principal Investigator, sponsored by Columbia University and funded by the National Aeronautics and Space Administration under contract NAS5-97164.</CitationForExternalPublication>
+    <CollectionState>In Work</CollectionState>
+    <MaintenanceAndUpdateFrequency>As Needed</MaintenanceAndUpdateFrequency>
+    <RestrictionComment>There are no restrictions on access for this collection.</RestrictionComment>
+    <SpatialKeywords>
+        <Keyword>Global</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <TimeType>UTC</TimeType>
+        <DateType>Gregorian</DateType>
+        <TemporalRangeType>Continuous Range</TemporalRangeType>
+        <PrecisionOfSeconds>2</PrecisionOfSeconds>
+        <EndsAtPresentFlag>true</EndsAtPresentFlag>
+        <RangeDateTime>
+            <BeginningDateTime>1999-10-01T12:00:00.000000Z</BeginningDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Investigator</Role>
+            <HoursOfService>Monday-Friday 09:00-16:00 PT</HoursOfService>
+            <Instructions>E-mail Dr. Richard C. Willson</Instructions>
+            <OrganizationAddresses>
+                <Address>
+                    <StreetAddress>1001 B Ave #200</StreetAddress>
+                    <City>Coronado</City>
+                    <StateProvince>California</StateProvince>
+                    <PostalCode>92118</PostalCode>
+                    <Country>USA</Country>
+                </Address>
+            </OrganizationAddresses>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>619-522-2945</Number>
+                    <Type>phone</Type>
+                </Phone>
+                <Phone>
+                    <Number>619-522-2967</Number>
+                    <Type>fax</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>acrim@acrim.com</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Dr. Richard</FirstName>
+                    <MiddleName>C.</MiddleName>
+                    <LastName>Willson</LastName>
+                    <JobPosition>Principal Investigator</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+        <Contact>
+            <Role>Archive</Role>
+            <HoursOfService>9 AM to 5 PM ET</HoursOfService>
+            <Instructions>None</Instructions>
+            <OrganizationName>Langley DAAC User Services</OrganizationName>
+            <OrganizationAddresses>
+                <Address>
+                    <StreetAddress>NASA Langley Research Center, Mail Stop 157D</StreetAddress>
+                    <City>Hampton</City>
+                    <StateProvince>Virginia</StateProvince>
+                    <PostalCode>23681-2199</PostalCode>
+                    <Country>USA</Country>
+                </Address>
+            </OrganizationAddresses>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>757-864-8656</Number>
+                    <Type>phone</Type>
+                </Phone>
+                <Phone>
+                    <Number>757-864-8807</Number>
+                    <Type>fax</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>larc@eos.nasa.gov</Email>
+            </OrganizationEmails>
+        </Contact>
+        <Contact>
+            <Role>Producer</Role>
+            <HoursOfService>Monday-Friday 09:00-16:00 PT</HoursOfService>
+            <Instructions>E-mail Dr. Richard C. Willson</Instructions>
+            <OrganizationName>ACRIM SCF</OrganizationName>
+            <OrganizationAddresses>
+                <Address>
+                    <StreetAddress>1001 B Ave #200</StreetAddress>
+                    <City>Coronado</City>
+                    <StateProvince>California</StateProvince>
+                    <PostalCode>92118</PostalCode>
+                    <Country>USA</Country>
+                </Address>
+            </OrganizationAddresses>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>619-522-2945</Number>
+                    <Type>phone</Type>
+                </Phone>
+                <Phone>
+                    <Number>619-522-2967</Number>
+                    <Type>fax</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>acrim@acrim.com</Email>
+            </OrganizationEmails>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>ATMOSPHERE</TopicKeyword>
+            <TermKeyword>ATMOSPHERIC RADIATION</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SOLAR IRRADIANCE</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SUN-EARTH INTERACTIONS</TopicKeyword>
+            <TermKeyword>SOLAR ACTIVITY</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SOLAR IRRADIANCE</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>ACRIMSAT</ShortName>
+            <LongName>Active Cavity Radiometer Irradiance Monitor Satellite</LongName>
+            <Type>Spacecraft</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>ACRIM</ShortName>
+                    <LongName>Active Cavity Radiometer Irradiance Monitor</LongName>
+                    <Technique>Pyrheliometry</Technique>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>ACR</ShortName>
+                            <LongName>Active Cavity Radiometer</LongName>
+                            <Technique>Active Cavity Radiometry</Technique>
+                        </Sensor>
+                    </Sensors>
+                    <OperationModes>
+                        <OperationMode>Normal</OperationMode>
+                    </OperationModes>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <CSDTDescriptions>
+        <CSDTDescription>
+            <PrimaryCSDT>n-Dim Array of Records</PrimaryCSDT>
+            <Implementation>HDF</Implementation>
+            <CSDTComments>N/A</CSDTComments>
+            <IndirectReference>N/A</IndirectReference>
+        </CSDTDescription>
+    </CSDTDescriptions>
+    <Campaigns>
+        <Campaign>
+            <ShortName>ACRIM</ShortName>
+            <LongName>Active Cavity Radiometer Irradiance Monitor</LongName>
+            <StartDate>1980-02-14T00:00:00Z</StartDate>
+        </Campaign>
+    </Campaigns>
+    <AssociatedDIFs>
+        <DIF>
+            <EntryId>ACR3L2DM1</EntryId>
+        </DIF>
+    </AssociatedDIFs>
+    <Spatial>
+        <GranuleSpatialRepresentation>NO_SPATIAL</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

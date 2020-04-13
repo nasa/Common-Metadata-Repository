@@ -15,5 +15,5 @@
                          :page-size (:page-size opts)
                          :offset (:offset opts)
                          :condition condition
-                         :result-fields [:type :value]})]
+                         :result-fields [:type :value :fields]})]
     (qe/execute-query context query)))

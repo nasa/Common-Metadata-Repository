@@ -254,6 +254,13 @@
   ([query opts]
    (client/get (url/autocomplete-url query) opts)))
 
+(defn get-autocomplete-json
+  "Execute autocomplete query and parse json response"
+  ([query]
+   (json/decode (:body (get-autocomplete-suggestions query)) true))
+  ([query opts]
+   (json/decode (:body (get-autocomplete-suggestions query opts)) true)))
+
 (defn- parse-timeline-interval
   "Parses the timeline response interval component into a more readable and comparable format."
   [[start end num-grans]]
