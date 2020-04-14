@@ -1,30 +1,26 @@
 (ns cmr.elasticsearch.plugins.spatial.factory.core
+  (:require
+   [clojure.string :as str]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.point :as point]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.relations :as relations]
+   [cmr.spatial.serialize :as srl])
   (:import
-   (org.elasticsearch.common.logging Loggers)
-   (org.elasticsearch.common.settings Settings))
+   (cmr.elasticsearch.plugins SpatialScriptLeafFactory)
+   (java.util Map)
+   (org.apache.lucene.index LeafReaderContext)
+   (org.elasticsearch.common.settings Settings)
+   (org.elasticsearch.common.xcontent.support XContentMapValues)
+   (org.elasticsearch.search.lookup SearchLookup))
   (:gen-class
    :name cmr.elasticsearch.plugins.SpatialScriptFactory
-   :extends org.elasticsearch.common.component.AbstractComponent
-   :implements [org.elasticsearch.script.NativeScriptFactory]
-   :constructors {^{org.elasticsearch.common.inject.Inject true}
-                  [org.elasticsearch.common.settings.Settings]
-                  [org.elasticsearch.common.settings.Settings]}
-   :init init
+   :implements [org.elasticsearch.script.FilterScript$Factory
+                org.elasticsearch.script.FilterScript$LeafFactory]
    :state data))
-
-(defn get-new-script-fn
-  []
-  (-> 'cmr.elasticsearch.plugins.spatial.factory.helper/new-script
-      find-var
-      var-get))
 
 (import 'cmr.elasticsearch.plugins.SpatialScriptFactory)
 
-(defn- -init [^Settings settings]
-  (let [logger (Loggers/getLogger SpatialScriptFactory settings nil)]
-    [[settings] {:logger logger}]))
-
-(defn -newScript [^SpatialScriptFactory this script-params]
-  ;; XXX I suspect there's a better way of doing this ...
-  (let [new-script (get-new-script-fn)]
-    (new-script (:logger (.data this)) script-params)))
+(defn -newFactory
+  [^SpatialScriptFactory this ^Map params ^SearchLookup lookup]
+  (new SpatialScriptLeafFactory params lookup))

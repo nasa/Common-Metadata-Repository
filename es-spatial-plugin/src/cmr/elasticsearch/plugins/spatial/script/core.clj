@@ -1,30 +1,87 @@
 (ns cmr.elasticsearch.plugins.spatial.script.core
+  (:require
+   [clojure.string :as s]
+   [cmr.common.util :as u]
+   [cmr.spatial.serialize :as srl])
+  (:import
+   (java.util Map)
+   (org.apache.lucene.index LeafReaderContext)
+   (org.elasticsearch.search.lookup FieldLookup
+                                    LeafDocLookup
+                                    LeafFieldsLookup
+                                    LeafSearchLookup
+                                    SearchLookup))
   (:gen-class
    :name cmr.elasticsearch.plugins.SpatialScript
-   :extends org.elasticsearch.script.AbstractSearchScript
-   :constructors {[Object org.elasticsearch.common.logging.ESLogger] []}
+   :extends org.elasticsearch.script.FilterScript
+   :constructors {[java.lang.Object
+                   java.util.Map
+                   org.elasticsearch.search.lookup.SearchLookup
+                   org.apache.lucene.index.LeafReaderContext]
+                  [java.util.Map
+                   org.elasticsearch.search.lookup.SearchLookup
+                   org.apache.lucene.index.LeafReaderContext]}
+   :methods [[getFields [] org.elasticsearch.search.lookup.LeafFieldsLookup]]
    :init init
-   :exposes-methods {doc getDoc fields getFields}
    :state data))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                         Begin script helper functions                     ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn- get-from-fields
+  [^LeafFieldsLookup lookup key]
+  (when (and lookup key (.containsKey lookup key))
+    (when-let [^FieldLookup field-lookup (.get lookup key)]
+      (seq (.getValues field-lookup)))))
+
+(defn doc-intersects?
+  "Returns true if the doc contains a ring that intersects the ring passed in."
+  [^LeafFieldsLookup lookup intersects-fn]
+  ; Must explicitly return true or false or elastic search will complain
+  (if-let [ords-info (get-from-fields lookup "ords-info")]
+    (let [ords (get-from-fields lookup "ords")
+          shapes (srl/ords-info->shapes ords-info ords)]
+      (try
+        (if (u/any-true? intersects-fn shapes)
+          true
+          false)
+        (catch Throwable t
+          (.printStackTrace t)
+          (throw t))))
+    false))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                         End script helper functions                       ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                         Begin script functions                            ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (import 'cmr.elasticsearch.plugins.SpatialScript)
 
-(defn get-intersects?-fn
-  []
-  (-> 'cmr.elasticsearch.plugins.spatial.script.helper/doc-intersects?
-      find-var
-      var-get))
+(defn ^LeafFieldsLookup -getFields
+  [^SpatialScript this]
+  (-> this .data :search-lookup .fields))
 
-(defn- -init [intersects-fn logger]
-  [[] {:intersects-fn intersects-fn
-       :logger logger}])
+(defn ^Map -getDoc
+  [^SpatialScript this]
+  (-> this .data :search-lookup .doc))
 
-(defn- intersects-fn [^SpatialScript this]
-  (:intersects-fn (.data this)))
+;; Need to override setDocument for more control over lookup
+(defn -setDocument
+  [^SpatialScript this doc-id]
+  (-> this .data :search-lookup (.setDocument doc-id)))
 
-(defn- logger [^SpatialScript this]
-  (:logger (.data this)))
+(defn- -init [^Object intersects-fn ^Map params ^SearchLookup lookup ^LeafReaderContext context]
+  [[params lookup context] {:intersects-fn intersects-fn
+                            :search-lookup (.getLeafSearchLookup lookup context)}])
 
-(defn -run [^SpatialScript this]
-  (let [intersects? (get-intersects?-fn)]
-    (intersects? (logger this) (.getFields this) (intersects-fn this))))
+(defn -execute [^SpatialScript this]
+  (doc-intersects? (.getFields this)
+                   (-> this .data :intersects-fn)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                         End script functions                              ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -1,25 +1,22 @@
 (ns cmr.elasticsearch.plugins.spatial.plugin
   (:import
-   org.elasticsearch.script.ScriptModule)
+   (org.elasticsearch.script ScriptModule)
+   (org.elasticsearch.plugins ScriptPlugin)
+   (org.elasticsearch.common.settings Settings)
+   (org.elasticsearch.plugins Plugin)
+   (cmr.elasticsearch.plugins SpatialScriptEngine)
+   (java.util Collection Collections))
   (:gen-class
    :name cmr.elasticsearch.plugins.SpatialSearchPlugin
-   :extends org.elasticsearch.plugins.AbstractPlugin))
+   :extends org.elasticsearch.plugins.Plugin
+   :implements [org.elasticsearch.plugins.ScriptPlugin]))
 
-(import 'cmr.elasticsearch.plugins.SpatialScriptFactory)
+(defn -getScriptEngine
+  "Spatial script engine."
+  [this ^Settings settings ^Collection contexts]
+  (new SpatialScriptEngine))
 
-(defn -name [this]
-  "spatialsearch-plugin")
-
-(defn -description [this]
-  "Adds spatial searching in spherical coordinate system to elastic search.")
-
-(defn -processModule [this module]
-  (when (instance? ScriptModule module)
-    (let [^ScriptModule module module]
-      ;; XXX The following is done to avoid AOT problems during development
-      ;;     ... would love to hear what the problems were so we could come
-      ;;     up with a better solution.
-      (require 'cmr.elasticsearch.plugins.spatial.script.helper)
-      (require 'cmr.elasticsearch.plugins.spatial.factory.helper)
-      (.registerScript module "spatial" SpatialScriptFactory))))
-
+(defn -getContexts
+  "Return script contexts."
+  [this]
+  (Collections/emptyList))
