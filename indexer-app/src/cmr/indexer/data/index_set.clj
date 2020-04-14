@@ -712,7 +712,7 @@
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
    :type {:type "text" :store true}
    :fields {:type "text" :store true}
-   :value {:type "text" :analyzer "autocomplete_analyzer" :store true}})
+   :value {:type "search_as_you_type" :store true}})
 
 (defmapping variable-mapping :variable
   "Defines the elasticsearch mapping for storing variables. These are the
