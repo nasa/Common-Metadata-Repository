@@ -125,8 +125,11 @@
 ;; Allows execution of a custom native search script
 (defrecord ScriptCondition
   [
-   ;; name of the script
-   script
+   ;; name of the script source
+   source
+
+   ;; lang of the script
+   lang
 
    ;; Parameter map of names to values
    params])

@@ -240,10 +240,10 @@
 
   cmr.common_app.services.search.query_model.ScriptCondition
   (condition->elastic
-   [{:keys [name params]} concept-type]
-   {:script {:script name
-             :params params
-             :lang "native"}})
+   [{:keys [source lang params]} concept-type]
+   {:script {:script {:source source
+                      :params params
+                      :lang lang}}})
 
   cmr.common_app.services.search.query_model.ExistCondition
   (condition->elastic
