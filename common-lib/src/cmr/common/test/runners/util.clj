@@ -22,7 +22,6 @@
   []
   (->> (all-ns)
        (map str)
-       (filter #(re-find #"cmr\..*test" %))
        set
        (#(set/difference % (set (integration-test-namespaces))))
        vec
