@@ -381,8 +381,8 @@
   (->MatchCondition field value))
 
 (defn multi-match
-  ([fields values]
-   (multi-match fields values {}))
+  ([fields value]
+   (multi-match fields value {}))
   ([fields value opts]
    (->MultiMatchCondition fields value opts)))
 

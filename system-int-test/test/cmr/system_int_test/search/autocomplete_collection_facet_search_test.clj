@@ -25,6 +25,11 @@
                             {:value "asia" :type "spatial_keyword"}
                             {:value "australia" :type "spatial_keyword"}
                             {:value "europe" :type "spatial_keyword"}
+                            {:value "gulf of mexico" :type "spatial_keyword"}
+                            {:value "gulf of lion" :type "spatial_keyword"}
+                            {:value "gulf of sidra" :type "spatial_keyword"}
+                            {:value "gulf of thailand" :type "spatial_keyword"}
+                            {:value "persian gulf" :type "spatial_keyword"}
                             {:value "north america" :type "spatial_keyword"}
                             {:value "south america" :type "spatial_keyword"}
                             {:value "arctic ocean" :type "spatial_keyword"}
@@ -35,7 +40,7 @@
 (defn autocomplete-fixture
   [f]
   (let [conn (esr/connect (url/elastic-root))
-        documents (map #(esd/create conn "1_autocomplete" "suggestion" %) test-values)]
+        documents (map #(esd/create conn "1_autocomplete" "_doc" %) test-values)]
     (doseq [doc documents] (debug "ingested " doc))
     (index/wait-until-indexed)
     (f)
@@ -73,7 +78,7 @@
      (is (:CMR-Took headers))))
 
   (testing "entries return in descending score order"
-   (let [response (query->json-response-body "q=bar")
+   (let [response (query->json-response-body "q=at")
          entries (response-body->entries response)
          a (first entries)
          b (second entries)]
@@ -91,8 +96,8 @@
     "full value match"
     "q=foo" 1
 
-    "full value with extra value match"
-    "q=foos" 1
+    "full value with extra value should not match"
+    "q=foos" 0
 
     "case sensitivity test"
     "q=FOO" 1
@@ -139,16 +144,16 @@
         (is (= expected (count entry)))))
 
     "page size 0"
-    "q=an&page_size=0" 0 10
+    "q=gulf&page_size=0" 0 5
 
     "page size 1"
-    "q=an&page_size=1" 1 10
+    "q=gulf&page_size=1" 1 5
 
     "page size 2"
-    "q=an&page_size=2" 2 10
+    "q=gulf&page_size=2" 2 5
 
     "page size 100"
-    "q=an*&page_size=100" 10 10))
+    "q=gulf*&page_size=100" 5 5))
 
   (testing "page_num should default to 1"
    (let [a (as-> (query->json-response-body "q=b") response

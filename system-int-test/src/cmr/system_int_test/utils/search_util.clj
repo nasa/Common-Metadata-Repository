@@ -252,7 +252,7 @@
   ([query]
    (get-autocomplete-suggestions query nil))
   ([query opts]
-   (client/get (url/autocomplete-url query) opts)))
+   (client/get (url/autocomplete-url query) (merge opts {:throw-exceptions false}))))
 
 (defn get-autocomplete-json
   "Execute autocomplete query and parse json response"
