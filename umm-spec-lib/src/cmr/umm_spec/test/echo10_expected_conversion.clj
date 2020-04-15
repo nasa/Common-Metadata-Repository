@@ -42,7 +42,7 @@
    In ECHO 10 there is only 1 price (fees) but there can be many data formats. The first fee
    applies to all data formats."
   [file-dist-infos]
-  (when-let [file-dist-infos (mapcat conversion-util/expand-file-dist-infos file-dist-infos)]
+  (when-let [file-dist-infos (seq (mapcat conversion-util/expand-file-dist-infos file-dist-infos))]
    (let [price (find-first-available-distribution-price file-dist-infos)]
     (for [file-dist-info file-dist-infos]
       (-> file-dist-info
@@ -55,10 +55,13 @@
   "Creates expected ArchiveAndDistributionInformation for echo10."
   [archive-dist-info]
   (when (seq (get archive-dist-info :FileDistributionInformation))
-    (-> archive-dist-info
-        (assoc :FileArchiveInformation nil)
-        (update :FileDistributionInformation expected-file-dist-info)
-        umm-c/map->ArchiveAndDistributionInformationType)))
+    (let [archive-dist-info
+          (-> archive-dist-info
+              (assoc :FileArchiveInformation nil)
+              (update :FileDistributionInformation expected-file-dist-info)
+              util/remove-nil-keys)]
+     (when (seq (util/remove-nil-keys archive-dist-info))
+       (umm-c/map->ArchiveAndDistributionInformationType archive-dist-info)))))
 
 (defn- get-url-type-by-type
  "Get the url-type based on type. Return default there is no applicable
