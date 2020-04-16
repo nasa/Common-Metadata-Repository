@@ -466,8 +466,16 @@
                           subscription-latest-sub-sort-fields)]
     (concat (or specified-sort default-sort) sub-sort-fields)))
 
+(defmethod q2e/query->sort-params :autocomplete
+  [query]
+  (let [{:keys [concept-type sort-keys]} query
+        specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
+        default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))]
+    (or specified-sort default-sort)))
+
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition
   (reduce-query-condition
     [condition context]
     (update-in condition [:condition] c2s/reduce-query-condition context)))
+

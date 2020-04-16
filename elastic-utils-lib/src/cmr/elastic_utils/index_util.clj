@@ -18,6 +18,9 @@
 (def string-field-mapping
   {:type "keyword"})
 
+(def search-as-you-type-field-mapping
+  {:type "search_as_you_type"})
+
 (def english-string-field-mapping
   "Used for analyzed text fields"
   {:type "text"

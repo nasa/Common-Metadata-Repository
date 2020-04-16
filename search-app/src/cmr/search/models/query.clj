@@ -183,8 +183,7 @@
 
 (defmethod common-qm/default-sort-keys :autocomplete
   [_]
-  [{:field :_score :order :desc}
-   {:field :value :order :asc}])
+  [{:field :_score :order :desc}])
 
 (defmethod common-qm/concept-type->default-query-attribs :granule
   [_]

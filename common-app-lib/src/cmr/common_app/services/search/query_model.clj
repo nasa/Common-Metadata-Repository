@@ -236,6 +236,17 @@
     ;; The value of the field
     value])
 
+(defrecord MultiMatchCondition
+    [
+     ;; The fields being searched
+     fields
+     
+     ;; The value to search for
+     value
+
+     ;; Multi-match options
+     opts])
+
 (defrecord MatchFilterCondition
   [
     ;; The field being searched
@@ -369,6 +380,12 @@
   [field value]
   (->MatchCondition field value))
 
+(defn multi-match
+  ([fields value]
+   (multi-match fields value {}))
+  ([fields value opts]
+   (->MultiMatchCondition fields value opts)))
+
 (defn match-filter
   ([field value filter]
   (->MatchFilterCondition field value filter)))
@@ -458,4 +475,5 @@
   MatchNoneCondition
   MatchCondition
   MatchFilterCondition
+  MultiMatchCondition
   RelatedItemQueryCondition)
