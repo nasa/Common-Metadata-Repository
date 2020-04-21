@@ -307,12 +307,11 @@
   [context]
   (let [provider-ids (map :provider-id (meta-db/get-providers context))]
     (doseq [provider-id provider-ids]
-      (reindex-suggestions-for-provider context provider-id)
-      #_(try
-          (reindex-suggestions-for-provider context provider-id)
-          (catch Exception e (error (format "An error occurred while reindexing autocomplete suggestions in provider [%s] : %s"
-                                            provider-id
-                                            (.getMessage e))))))))
+      (try
+        (reindex-suggestions-for-provider context provider-id)
+        (catch Exception e (error (format "An error occurred while reindexing autocomplete suggestions in provider [%s] : %s"
+                                          provider-id
+                                          (.getMessage e))))))))
 
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
