@@ -69,38 +69,10 @@
              :Fees "None currently"
              :Format "NetCDF-3"}]})
 
-(defn autocomplete-reindex-fixture
-  [f]
-  (let [coll1 (d/ingest "PROV1"
-                        (dc/collection
-                         {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
-                          :ArchiveAndDistributionInformation gdf1
-                          :SpatialKeywords ["DC" "Miami"]
-                          :ProcessingLevelId (:ProcessingLevelId (fu/processing-level-id "PL1"))
-                          :Projects [(:Projects (fu/projects "proj1" "PROJ2"))]
-                          :Platforms [(:Platforms (fu/platforms fu/FROM_KMS 2 2 1))]
-                          :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]}))
-
-        coll2 (fu/make-coll 2 "PROV1"
-                            (fu/science-keywords sk1 sk3)
-                            (fu/projects "proj1" "PROJ2")
-                            (fu/platforms fu/FROM_KMS 2 2 1)
-                            (fu/processing-level-id "PL1")
-                            {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
-                             :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]})
-
-        coll3 (d/ingest-concept-with-metadata-file "CMR-6287/C1000000029-EDF_OPS.xml"
-                                                   {:provider-id "PROV1"
-                                                    :concept-type :collection
-                                                    :format-key :echo10})
-        _ (index/wait-until-indexed)]
-    (f)))
-
 (use-fixtures :each (join-fixtures
-                     [(ingest/reset-fixture {"provguid1" "PROV1"})
-                      hu/grant-all-humanizers-fixture
-                      hu/save-sample-humanizers-fixture
-                      autocomplete-reindex-fixture]))
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                       hu/grant-all-humanizers-fixture
+                       hu/save-sample-humanizers-fixture]))
 
 (deftest reindex-suggestions-test
   (testing "verify no results come back before reindexing has occurred"
@@ -109,19 +81,44 @@
       (is (= 0 (count before)))))
   
   (testing "after running a reindex values should exist"
-    (let [_ (index/reindex-suggestions)
+    (let [coll1 (d/ingest "PROV1"
+                          (dc/collection
+                            {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
+                             :ArchiveAndDistributionInformation gdf1
+                             :SpatialKeywords ["DC" "Miami"]
+                             :ProcessingLevelId (:ProcessingLevelId (fu/processing-level-id "PL1"))
+                             :Projects [(:Projects (fu/projects "proj1" "PROJ2"))]
+                             :Platforms [(:Platforms (fu/platforms fu/FROM_KMS 2 2 1))]
+                             :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]}))
+
+          coll2 (fu/make-coll
+                  2
+                  "PROV1"
+                  (fu/science-keywords sk1 sk3)
+                  (fu/projects "proj1" "PROJ2")
+                  (fu/platforms fu/FROM_KMS 2 2 1)
+                  (fu/processing-level-id "PL1")
+                  {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
+                   :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]})
+
+          coll3 (d/ingest-concept-with-metadata-file "CMR-6287/C1000000029-EDF_OPS.xml"
+                                                     {:provider-id "PROV1"
+                                                      :concept-type :collection
+                                                      :format-key :echo10})
+          _ (index/wait-until-indexed)
+          _ (index/reindex-suggestions)
           _ (index/wait-until-indexed)
           data (search/get-autocomplete-json "q=sol")
           results (get-in data [:feed :entry])]
       ;; Verify results are returned after re-indexing, ignore scores because they may be subject to change
       (compare-autocomplete-results
-       results
-       [{:score 1.4852101
-         :type "science_keywords"
-         :value "Solar Irradiance"
-         :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
-        {:score 1.4239408
-         :type "science_keywords"
-         :value "Solar Irradiance"
-         :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}]))))
+        results
+        [{:score 1.4852101
+          :type "science_keywords"
+          :value "Solar Irradiance"
+          :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
+         {:score 1.4239408
+          :type "science_keywords"
+          :value "Solar Irradiance"
+          :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}]))))
 
