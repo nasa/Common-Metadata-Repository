@@ -112,8 +112,7 @@
     (let [_ (index/reindex-suggestions)
           _ (index/wait-until-indexed)
           data (search/get-autocomplete-json "q=sol")
-          results (get-in data [:feed :entry])
-]
+          results (get-in data [:feed :entry])]
       ;; Verify results are returned after re-indexing, ignore scores because they may be subject to change
       (compare-autocomplete-results
        results
