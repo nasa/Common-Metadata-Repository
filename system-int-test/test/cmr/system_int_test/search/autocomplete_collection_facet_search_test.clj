@@ -78,7 +78,7 @@
      (is (:CMR-Took headers))))
 
   (testing "entries return in descending score order"
-   (let [response (query->json-response-body "q=gulf")
+   (let [response (query->json-response-body "q=at")
          entries (response-body->entries response)
          a (first entries)
          b (second entries)]
