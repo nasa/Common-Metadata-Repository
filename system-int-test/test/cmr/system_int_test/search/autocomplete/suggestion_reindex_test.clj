@@ -107,18 +107,34 @@
                                                       :format-key :echo10})
           _ (index/wait-until-indexed)
           _ (index/reindex-suggestions)
-          _ (index/wait-until-indexed)
-          data (search/get-autocomplete-json "q=sol")
-          results (get-in data [:feed :entry])]
-      ;; Verify results are returned after re-indexing, ignore scores because they may be subject to change
-      (compare-autocomplete-results
-        results
-        [{:score 1.4852101
-          :type "science_keywords"
-          :value "Solar Irradiance"
-          :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
-         {:score 1.4239408
-          :type "science_keywords"
-          :value "Solar Irradiance"
-          :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}]))))
+          _ (index/wait-until-indexed)]
+      (testing "Check various types of facets for correct indexing"
+        (are3
+          [query expected]
+          (let [results (search/get-autocomplete-json query)
+                actual (get-in results [:feed :entry])]
+            (compare-autocomplete-results actual expected))
+          
+          "science keywords"
+          "q=sol"
+          [{:score 1.4852101
+            :type "science_keywords"
+            :value "Solar Irradiance"
+            :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
+           {:score 1.4239408
+            :type "science_keywords"
+            :value "Solar Irradiance"
+            :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}]
+          
+          "platforms"
+          "q=dia"
+          [{:type "platform" :value "diadem-1D" :fields "diadem-1D"}]
+
+          "instruments"
+          "q=lVI"
+          [{:type "instrument" :value "lVIs" :fields "lVIs"}]
+          
+          "organizations"
+          "q=ACRI&type[]=organization"
+          [{:type "organization" :value "ACRIM SCF" :fields "ACRIM SCF"}])))))
 
