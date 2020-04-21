@@ -90,7 +90,7 @@
                            variable-associations (meta-db/get-associations-for-collection
                                                   context concept :variable-association)
                            service-associations (meta-db/get-associations-for-collection
-                                                  context concept :service-association)]
+                                                 context concept :service-association)]
                        (-> concept
                            (assoc :tag-associations tag-associations)
                            (assoc :variable-associations variable-associations)
@@ -206,34 +206,33 @@
         id (-> (s/lower-case keyword-string)
                (str "_science_keywords")
                hash)]
-   {:type "science_keywords"
-    :_id id
+    {:_id id
+     :type "science_keywords"
      :value keyword-value
      :fields keyword-string
-     :_index "1_autocomplete"
-     :_type "suggestion"}))
+     :_index "1_autocomplete"}))
 
 (defn- suggestion-doc
   "Creates elasticsearch docs from a given humanized map"
   [key-name value-map]
   (let [values (->> value-map
                     seq
-                    (remove #(s/includes? (name (key %)) "-lowercase")))]
-    (if (= key-name "science-keywords")
-     (science-keywords->elastic-docs value-map)
-     (map (fn [value]
-            (let [v (val value)
-                  type (camel-snake-kebab/->snake_case_keyword key-name)
-                  id (-> (s/lower-case v)
-                         (str "_" type)
-                         hash)]
-             {:type type
-              :_id id
-              :value v
-              :fields v
-              :_index "1_autocomplete"
-              :_type "suggestion"}))
-         values))))
+                    (remove #(s/includes? (name (key %)) "-lowercase")))
+        sk-matcher (re-matcher #"science-keywords" key-name)]
+    (if (seq (re-find sk-matcher))
+      (science-keywords->elastic-docs value-map)
+      (map (fn [value]
+             (let [v (val value)
+                   type (camel-snake-kebab/->snake_case_keyword key-name)
+                   id (-> (s/lower-case v)
+                          (str "_" type)
+                          hash)]
+               {:type type
+                :_id id
+                :value v
+                :fields v
+                :_index "1_autocomplete"}))
+           values))))
 
 (defn- get-suggestion-docs
   "Given the humanized fields from a collection, assemble elastic doc for each
@@ -243,22 +242,36 @@
         :let [key (key humanized-field)
               key-name (-> key
                            name
-                           (s/replace #"(\.humanized2|\.humanized|-sn|-id)" ""))
+                           (s/replace #"(humanized(2|_2)?|-sn|-id)" ""))
               value-map (as-> humanized-field h
-                              (val h)
-                              (map util/remove-nil-keys h)
-                              (map #(dissoc % :priority) h))
-              suggestion-docs (->> value-map
-                                   (map #(suggestion-doc key-name %))
-                                   (remove nil?))]]
+                          (val h)
+                          (map util/remove-nil-keys h)
+                          (map #(dissoc % :priority) h))
+              suggestion-docs (map #(suggestion-doc key-name %)
+                                   value-map)]]
     suggestion-docs))
+
+(defn- anti-value?
+  "Returns whether if the term is an anti-value. e.g. \"not applicable\" or \"not provided\".
+  This is case-insensitive "
+  [term]
+  (let [anti-value-matcher (re-matcher #"not (provided|applicable)"
+                                       (s/lower-case term))]
+    (some? (re-find anti-value-matcher))))
+
+(defn- anti-value-suggestion?
+  "Returns whether an autocomplete suggestion has an anti-value as the :value
+  See also [[anti-value?]]"
+  [suggestion]
+  (let [{:keys [value]} suggestion]
+    (anti-value? value)))
 
 (defn- collection->suggestion-doc
   "Convert collection concept metadata to UMM-C and pull facet fields
   to be indexed as autocomplete suggestion doc"
   [context collections]
   (let [parsed-concepts (->> collections
-                             (remove #(= (:deleted %) true))
+                             (remove #(= true (:deleted %)))
                              (map #(try
                                      (cp/parse-concept context %)
                                      (catch Exception e
@@ -267,35 +280,39 @@
                                        (debug %)
                                        nil)))
                              (remove nil?))
-        humanized-fields (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
-        suggestion-docs (map get-suggestion-docs humanized-fields)]
-    (flatten suggestion-docs)))
+        humanized-fields (map #(humanizer/collection-humanizers-elastic context %)
+                              parsed-concepts)
+        suggestion-docs (->> (map get-suggestion-docs humanized-fields)
+                             flatten
+                             (remove anti-value-suggestion?))]
+    suggestion-docs))
+
 
 (defn- reindex-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
   [context provider-id]
-  (info "Reindexing latest autocomplete suggestions for provider" provider-id)
+  (info "Reindexing autocomplete suggestions for provider " provider-id)
   (let [latest-collection-batches (meta-db/find-in-batches
-                                    context
-                                    :collection
-                                    REINDEX_BATCH_SIZE
-                                    {:provider-id provider-id :latest true})
+                                   context
+                                   :collection
+                                   REINDEX_BATCH_SIZE
+                                   {:provider-id provider-id :latest true})
         latest-suggestion-batches (->> latest-collection-batches
                                        (map #(collection->suggestion-doc context %))
                                        flatten)]
     (es/bulk-index-autocomplete-suggestions context latest-suggestion-batches)))
-
 
 (defn reindex-autocomplete-suggestions
   "Reindexes all autocomplete suggestions in the providers given."
   [context]
   (let [provider-ids (map :provider-id (meta-db/get-providers context))]
     (doseq [provider-id provider-ids]
-      (try
-        (reindex-suggestions-for-provider context provider-id)
-        (catch Exception e (error (format "An error occurred while reindexing autocomplete suggestions in provider [%s] : %s"
-                                          provider-id
-                                          (.getMessage e))))))))
+      (reindex-suggestions-for-provider context provider-id)
+      #_(try
+          (reindex-suggestions-for-provider context provider-id)
+          (catch Exception e (error (format "An error occurred while reindexing autocomplete suggestions in provider [%s] : %s"
+                                            provider-id
+                                            (.getMessage e))))))))
 
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
@@ -306,7 +323,7 @@
   * false - only the latest revisions will be indexed"
   ([context provider-ids]
    (reindex-provider-collections
-     context provider-ids {:all-revisions-index? nil :refresh-acls? true :force-version? false}))
+    context provider-ids {:all-revisions-index? nil :refresh-acls? true :force-version? false}))
   ([context provider-ids {:keys [all-revisions-index? refresh-acls? force-version?]}]
 
    ;; We refresh this cache because it is fairly lightweight to do once for each provider and because
@@ -328,10 +345,10 @@
      (when (or (nil? all-revisions-index?) (not all-revisions-index?))
        (info "Reindexing latest collections for provider" provider-id)
        (let [latest-collection-batches (meta-db/find-in-batches
-                                         context
-                                         :collection
-                                         REINDEX_BATCH_SIZE
-                                         {:provider-id provider-id :latest true})]
+                                        context
+                                        :collection
+                                        REINDEX_BATCH_SIZE
+                                        {:provider-id provider-id :latest true})]
          (bulk-index context latest-collection-batches {:all-revisions-index? false
                                                         :force-version? force-version?})))
 
@@ -340,10 +357,10 @@
        ;; We will handle that with the index management epic.
        (info "Reindexing all collection revisions for provider" provider-id)
        (let [all-revisions-batches (meta-db/find-in-batches
-                                     context
-                                     :collection
-                                     REINDEX_BATCH_SIZE
-                                     {:provider-id provider-id})]
+                                    context
+                                    :collection
+                                    REINDEX_BATCH_SIZE
+                                    {:provider-id provider-id})]
          (bulk-index context all-revisions-batches {:all-revisions-index? true
                                                     :force-version? force-version?}))))))
 
@@ -352,10 +369,10 @@
   [context]
   (info "Reindexing tags")
   (let [latest-tag-batches (meta-db/find-in-batches
-                             context
-                             :tag
-                             REINDEX_BATCH_SIZE
-                             {:latest true})]
+                            context
+                            :tag
+                            REINDEX_BATCH_SIZE
+                            {:latest true})]
     (bulk-index context latest-tag-batches)))
 
 (defn- log-ingest-to-index-time
@@ -371,9 +388,9 @@
                     concept-id
                     (t/in-millis (t/interval rev-datetime now))))
       (warn (format
-              "Cannot compute time from ingest to search visibility for [%s] with revision date [%s]."
-              concept-id
-              revision-date)))))
+             "Cannot compute time from ingest to search visibility for [%s] with revision date [%s]."
+             concept-id
+             revision-date)))))
 
 (defn- get-elastic-version-with-associations
   "Returns the elastic version of the concept and its associations"
@@ -648,8 +665,8 @@
           ;; delete concept from primary concept index
           (do
             (es/delete-document
-              context index-names (concept-mapping-types concept-type)
-              concept-id revision-id elastic-version elastic-options)
+             context index-names (concept-mapping-types concept-type)
+             concept-id revision-id elastic-version elastic-options)
             ;; Index a deleted-granule document when granule is deleted
             (when (= :granule concept-type)
               (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))
@@ -687,19 +704,19 @@
   [context concept-id revision-id]
   (let [concept-type (cs/concept-id->type concept-id)
         index-names (idx-set/get-concept-index-names
-                      context concept-id revision-id {:all-revisions-index? true})
+                     context concept-id revision-id {:all-revisions-index? true})
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         elastic-options {:ignore-conflict? false
                          :all-revisions-index? true}]
     (es/delete-document
-      context
-      index-names
-      (concept-mapping-types concept-type)
-      concept-id
-      revision-id
-      nil ;; Null is sent in as the elastic version because we don't want to set a version for this
-      ;; delete. The concept is going to be gone now and should never be indexed again.
-      elastic-options)))
+     context
+     index-names
+     (concept-mapping-types concept-type)
+     concept-id
+     revision-id
+     nil ;; Null is sent in as the elastic version because we don't want to set a version for this
+     ;; delete. The concept is going to be gone now and should never be indexed again.
+     elastic-options)))
 
 (defn delete-provider
   "Delete all the concepts within the given provider"
@@ -758,10 +775,10 @@
     (info "Sending events to reindex collections in all providers:" (pr-str providers))
     (doseq [provider-id providers]
       (publish-provider-event
-        context
-        {:action :provider-collection-reindexing
-         :provider-id provider-id
-         :all-revisions-index? false}))
+       context
+       {:action :provider-collection-reindexing
+        :provider-id provider-id
+        :all-revisions-index? false}))
     (info "Reindexing all collection events submitted.")))
 
 (defn update-humanizers

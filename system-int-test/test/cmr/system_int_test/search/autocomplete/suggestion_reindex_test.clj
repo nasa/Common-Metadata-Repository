@@ -93,8 +93,6 @@
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
                                                     :format-key :echo10})
-        _ (index/wait-until-indexed)
-        _ (index/reindex-suggestions)
         _ (index/wait-until-indexed)]
     (f)))
 
@@ -105,29 +103,26 @@
                       autocomplete-reindex-fixture]))
 
 (deftest reindex-suggestions-test
-  (testing "Ensure that response is in proper format and results are correct"
-    (compare-autocomplete-results
-     (get-in (search/get-autocomplete-json "q=level2") [:feed :entry])
-     [{:score 0.25604635 :type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}
-      {:score 0.041718055 :type "instrument" :value "lVIs" :fields "lVIs"}]))
-
-  (testing "Ensure science keywords are being indexed properly"
-    (are3
-     [query expected]
-     (let [actual (get-in (search/get-autocomplete-json query) [:feed :entry])]
-       (compare-autocomplete-results expected actual))          
-
-     "shorter match"
-     "q=solar"
-     [{:score 3.4995544, :type "science_keywords", :value "Solar Irradiance", :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
-      {:score 1.9641972, :type "science_keywords", :value "Solar Irradiance", :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
-      {:score 0.20964509, :type "organization", :value "ACRIM SCF", :fields "ACRIM SCF"}
-      {:score 0.16771607, :type "organization", :value "Langley DAAC User Services", :fields "Langley DAAC User Services"}]
-
-     "more complete match"
-     "q=solar irradiation"
-     [{:score 5.0869484, :type "science_keywords", :value "Solar Irradiance", :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
-      {:score 2.7943783, :type "science_keywords", :value "Solar Irradiance", :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
-      {:score 0.061936468, :type "organization", :value "ACRIM SCF", :fields "ACRIM SCF"}
-      {:score 0.049549174, :type "organization", :value "Langley DAAC User Services", :fields "Langley DAAC User Services"}])))
+  (testing "verify no results come back before reindexing has occurred"
+    (let [before (get-in [:feed :entry] (search/get-autocomplete-json "q=sol"))]
+      ;; Verify index does not return results before re-indexing
+      (is (= 0 (count before)))))
+  
+  (testing "after running a reindex values should exist"
+    (let [_ (index/reindex-suggestions)
+          _ (index/wait-until-indexed)
+          data (search/get-autocomplete-json "q=sol")
+          results (get-in data [:feed :entry])
+]
+      ;; Verify results are returned after re-indexing, ignore scores because they may be subject to change
+      (compare-autocomplete-results
+       results
+       [{:score 1.4852101
+         :type "science_keywords"
+         :value "Solar Irradiance"
+         :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
+        {:score 1.4239408
+         :type "science_keywords"
+         :value "Solar Irradiance"
+         :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}]))))
 
