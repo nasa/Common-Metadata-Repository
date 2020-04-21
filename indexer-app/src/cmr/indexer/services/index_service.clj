@@ -293,7 +293,7 @@
   [context provider-id]
   (info "Reindexing autocomplete suggestions for provider" provider-id)
   (let [latest-collection-batches (meta-db/find-in-batches
-                                    :context
+                                    context
                                     :collection
                                     REINDEX_BATCH_SIZE
                                     {:provider-id provider-id :latest true})
