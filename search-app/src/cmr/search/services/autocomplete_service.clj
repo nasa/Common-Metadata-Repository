@@ -7,7 +7,7 @@
 
 (defn- build-autocomplete-condition
   [term types]
-  (let [root (qm/multi-match ["value" "value._2gram" "value._3gram"]
+  (let [root (qm/multi-match ["value" "value.*gram"]
                              term
                              {:type "phrase_prefix"})]
     (if (empty? types)

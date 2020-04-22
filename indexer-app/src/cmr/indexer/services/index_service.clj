@@ -86,9 +86,9 @@
   ;; Get the tag associations and variable associations as well.
   (let [batch (map (fn [concept]
                      (let [tag-associations (meta-db/get-associations-for-collection
-                                             context concept :tag-association)
+                                              context concept :tag-association)
                            variable-associations (meta-db/get-associations-for-collection
-                                                  context concept :variable-association)
+                                                   context concept :variable-association)
                            service-associations (meta-db/get-associations-for-collection
                                                   context concept :service-association)]
                        (-> concept
@@ -103,7 +103,7 @@
   ;; Get the variable associations as well.
   (let [batch (map (fn [concept]
                      (let [variable-associations (meta-db/get-associations-for-variable
-                                                  context concept)]
+                                                   context concept)]
                        (assoc concept :variable-associations variable-associations)))
                    batch)]
     (es/prepare-batch context (filter-expired-concepts batch) options)))
@@ -174,11 +174,11 @@
   [concept-type all-revisions-index?]
   (or (not all-revisions-index?)
       (and all-revisions-index? (contains?
-                                 #{:collection :tag-association
-                                   :variable :variable-association
-                                   :service :service-association
-                                   :subscription}
-                                 concept-type))))
+                                  #{:collection :tag-association
+                                    :variable :variable-association
+                                    :service :service-association
+                                    :subscription}
+                                  concept-type))))
 
 (def REINDEX_BATCH_SIZE 2000)
 
@@ -206,34 +206,33 @@
         id (-> (s/lower-case keyword-string)
                (str "_science_keywords")
                hash)]
-   {:type "science_keywords"
-    :_id id
+    {:_id id
+     :type "science_keywords"
      :value keyword-value
      :fields keyword-string
-     :_index "1_autocomplete"
-     :_type "suggestion"}))
+     :_index "1_autocomplete"}))
 
 (defn- suggestion-doc
   "Creates elasticsearch docs from a given humanized map"
   [key-name value-map]
   (let [values (->> value-map
                     seq
-                    (remove #(s/includes? (name (key %)) "-lowercase")))]
-    (if (= key-name "science-keywords")
-     (science-keywords->elastic-docs value-map)
-     (map (fn [value]
-            (let [v (val value)
-                  type (camel-snake-kebab/->snake_case_keyword key-name)
-                  id (-> (s/lower-case v)
-                         (str "_" type)
-                         hash)]
-             {:type type
-              :_id id
-              :value v
-              :fields v
-              :_index "1_autocomplete"
-              :_type "suggestion"}))
-         values))))
+                    (remove #(s/includes? (name (key %)) "-lowercase")))
+        sk-matcher (re-matcher #"science-keywords" key-name)]
+    (if (seq (re-find sk-matcher))
+      (science-keywords->elastic-docs value-map)
+      (map (fn [value]
+             (let [v (val value)
+                   type (camel-snake-kebab/->snake_case_keyword key-name)
+                   id (-> (s/lower-case v)
+                          (str "_" type)
+                          hash)]
+               {:type type
+                :_id id
+                :value v
+                :fields v
+                :_index "1_autocomplete"}))
+           values))))
 
 (defn- get-suggestion-docs
   "Given the humanized fields from a collection, assemble elastic doc for each
@@ -243,22 +242,36 @@
         :let [key (key humanized-field)
               key-name (-> key
                            name
-                           (s/replace #"(\.humanized2|\.humanized|-sn|-id)" ""))
+                           (s/replace #"(humanized(2|_2)?|-sn|-id)" ""))
               value-map (as-> humanized-field h
-                              (val h)
-                              (map util/remove-nil-keys h)
-                              (map #(dissoc % :priority) h))
-              suggestion-docs (->> value-map
-                                   (map #(suggestion-doc key-name %))
-                                   (remove nil?))]]
+                          (val h)
+                          (map util/remove-nil-keys h)
+                          (map #(dissoc % :priority) h))
+              suggestion-docs (map #(suggestion-doc key-name %)
+                                   value-map)]]
     suggestion-docs))
+
+(defn- anti-value?
+  "Returns whether if the term is an anti-value. e.g. \"not applicable\" or \"not provided\".
+  This is case-insensitive "
+  [term]
+  (let [anti-value-matcher (re-matcher #"not (provided|applicable)"
+                                       (s/lower-case term))]
+    (some? (re-find anti-value-matcher))))
+
+(defn- anti-value-suggestion?
+  "Returns whether an autocomplete suggestion has an anti-value as the :value
+  See also [[anti-value?]]"
+  [suggestion]
+  (let [{:keys [value]} suggestion]
+    (anti-value? value)))
 
 (defn- collection->suggestion-doc
   "Convert collection concept metadata to UMM-C and pull facet fields
   to be indexed as autocomplete suggestion doc"
   [context collections]
   (let [parsed-concepts (->> collections
-                             (remove #(= (:deleted %) true))
+                             (remove #(= true (:deleted %)))
                              (map #(try
                                      (cp/parse-concept context %)
                                      (catch Exception e
@@ -267,14 +280,18 @@
                                        (debug %)
                                        nil)))
                              (remove nil?))
-        humanized-fields (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
-        suggestion-docs (map get-suggestion-docs humanized-fields)]
-    (flatten suggestion-docs)))
+        humanized-fields (map #(humanizer/collection-humanizers-elastic context %)
+                              parsed-concepts)
+        suggestion-docs (->> (map get-suggestion-docs humanized-fields)
+                             flatten
+                             (remove anti-value-suggestion?))]
+    suggestion-docs))
+
 
 (defn- reindex-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
   [context provider-id]
-  (info "Reindexing latest autocomplete suggestions for provider" provider-id)
+  (info "Reindexing autocomplete suggestions for provider" provider-id)
   (let [latest-collection-batches (meta-db/find-in-batches
                                     context
                                     :collection
@@ -284,7 +301,6 @@
                                        (map #(collection->suggestion-doc context %))
                                        flatten)]
     (es/bulk-index-autocomplete-suggestions context latest-suggestion-batches)))
-
 
 (defn reindex-autocomplete-suggestions
   "Reindexes all autocomplete suggestions in the providers given."
@@ -379,10 +395,10 @@
   "Returns the elastic version of the concept and its associations"
   [context concept associations]
   (es/get-elastic-version
-   (-> concept
-       (assoc :tag-associations (:tag-associations associations))
-       (assoc :variable-associations (:variable-associations associations))
-       (assoc :service-associations (:service-associations associations)))))
+    (-> concept
+        (assoc :tag-associations (:tag-associations associations))
+        (assoc :variable-associations (:variable-associations associations))
+        (assoc :service-associations (:service-associations associations)))))
 
 (defmulti get-elastic-version
   "Returns the elastic version of the concept"
@@ -397,14 +413,14 @@
   [context concept]
   (let [tag-associations (meta-db/get-associations-for-collection context concept :tag-association)
         variable-associations (meta-db/get-associations-for-collection
-                               context concept :variable-association)
+                                context concept :variable-association)
         service-associations (meta-db/get-associations-for-collection
-                              context concept :service-association)
+                               context concept :service-association)
         associations {:tag-associations tag-associations
                       :variable-associations variable-associations
                       :service-associations service-associations}]
     (get-elastic-version-with-associations
-     context concept associations)))
+      context concept associations)))
 
 (defmethod get-elastic-version :variable
   [context concept]
@@ -492,33 +508,33 @@
                               :variable-associations variable-associations
                               :service-associations service-associations}
                 elastic-version (get-elastic-version-with-associations
-                                 context concept associations)
+                                  context concept associations)
                 tag-associations (es/parse-non-tombstone-associations
-                                  context tag-associations)
+                                   context tag-associations)
                 variable-associations (es/parse-non-tombstone-associations
-                                       context variable-associations)
+                                        context variable-associations)
                 service-associations (es/parse-non-tombstone-associations
-                                      context service-associations)
+                                       context service-associations)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
                 es-doc (es/parsed-concept->elastic-doc
-                        context
-                        (-> concept
-                            (assoc :tag-associations tag-associations)
-                            (assoc :variable-associations variable-associations)
-                            (assoc :service-associations service-associations))
-                        parsed-concept)
+                         context
+                         (-> concept
+                             (assoc :tag-associations tag-associations)
+                             (assoc :variable-associations variable-associations)
+                             (assoc :service-associations service-associations))
+                         parsed-concept)
                 elastic-options (-> options
                                     (select-keys [:all-revisions-index? :ignore-conflict?]))]
             (es/save-document-in-elastic
-             context
-             concept-indexes
-             (concept-mapping-types concept-type)
-             es-doc
-             concept-id
-             revision-id
-             elastic-version
-             elastic-options)
+              context
+              concept-indexes
+              (concept-mapping-types concept-type)
+              es-doc
+              concept-id
+              revision-id
+              elastic-version
+              elastic-options)
             (info (format "Finished indexing concept %s, revision-id %s, all-revisions-index? %s"
                           concept-id revision-id all-revisions-index?))))))))
 
@@ -552,16 +568,16 @@
   "Index the associated variable concept of the given variable association concept."
   [context concept options]
   (index-associated-concept
-   context (get-in concept [:extra-fields :variable-concept-id]) options))
+    context (get-in concept [:extra-fields :variable-concept-id]) options))
 
 (defn- reindex-associated-variables
   "Reindex variables associated with the collection"
   [context coll-concept-id coll-revision-id]
   (let [var-associations (meta-db/get-associations-by-collection-concept-id
-                          context coll-concept-id coll-revision-id :variable-association)]
+                           context coll-concept-id coll-revision-id :variable-association)]
     (doseq [association var-associations]
       (index-associated-concept
-       context (get-in association [:extra-fields :variable-concept-id]) {}))))
+        context (get-in association [:extra-fields :variable-concept-id]) {}))))
 
 (defmethod index-concept :tag-association
   [context concept _parsed-concept options]
@@ -582,8 +598,8 @@
   [context concept-id revision-id options]
   (when-not (and concept-id revision-id)
     (errors/throw-service-error
-     :bad-request
-     (format "Concept-id %s and revision-id %s cannot be null" concept-id revision-id)))
+      :bad-request
+      (format "Concept-id %s and revision-id %s cannot be null" concept-id revision-id)))
 
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)]
@@ -599,11 +615,11 @@
   [context concept-mapping-types concept-id revision-id]
   (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
     (es/delete-by-query
-     context
-     index
-     (concept-mapping-types :granule)
-     {:term {(query-field->elastic-field :collection-concept-id :granule)
-             concept-id}}))
+      context
+      index
+      (concept-mapping-types :granule)
+      {:term {(query-field->elastic-field :collection-concept-id :granule)
+              concept-id}}))
   ;; reindex variables associated with the collection
   (reindex-associated-variables context concept-id revision-id))
 
@@ -636,15 +652,15 @@
     (when (indexing-applicable? concept-type all-revisions-index?)
       (info (get-concept-delete-log-string concept-type context concept-id revision-id all-revisions-index?))
       (let [index-names (idx-set/get-concept-index-names
-                         context concept-id revision-id options)
+                          context concept-id revision-id options)
             concept-mapping-types (idx-set/get-concept-mapping-types context)
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
           ;; save tombstone in all revisions collection index
           (let [es-doc (es/parsed-concept->elastic-doc context concept (:extra-fields concept))]
             (es/save-document-in-elastic
-             context index-names (concept-mapping-types concept-type)
-             es-doc concept-id revision-id elastic-version elastic-options))
+              context index-names (concept-mapping-types concept-type)
+              es-doc concept-id revision-id elastic-version elastic-options))
           ;; delete concept from primary concept index
           (do
             (es/delete-document
@@ -656,7 +672,7 @@
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (cascade-collection-delete
-               context concept-mapping-types concept-id revision-id))))))))
+                context concept-mapping-types concept-id revision-id))))))))
 
 (defn- index-association-concept
   "Index the association concept identified by the given concept-id and revision-id."
@@ -714,34 +730,34 @@
     ;; delete collections
     (doseq [index (vals (:collection index-names))]
       (es/delete-by-query
-       context
-       index
-       ccmt
-       {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
+        context
+        index
+        ccmt
+        {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
 
     ;; delete the granules
     (doseq [index-name (idx-set/get-granule-index-names-for-provider context provider-id)]
       (es/delete-by-query
-       context
-       index-name
-       (concept-mapping-types :granule)
-       {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
+        context
+        index-name
+        (concept-mapping-types :granule)
+        {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
 
     ;; delete the variables
     (doseq [index (vals (:variable index-names))]
       (es/delete-by-query
-       context
-       index
-       (concept-mapping-types :variable)
-       {:term {(query-field->elastic-field :provider-id :variable) provider-id}}))
+        context
+        index
+        (concept-mapping-types :variable)
+        {:term {(query-field->elastic-field :provider-id :variable) provider-id}}))
 
     ;; delete the services
     (doseq [index (vals (:service index-names))]
       (es/delete-by-query
-       context
-       index
-       (concept-mapping-types :service)
-       {:term {(query-field->elastic-field :provider-id :service) provider-id}}))))
+        context
+        index
+        (concept-mapping-types :service)
+        {:term {(query-field->elastic-field :provider-id :service) provider-id}}))))
 
 (defn publish-provider-event
   "Put a provider event on the message queue."
