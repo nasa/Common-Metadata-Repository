@@ -3657,11 +3657,11 @@ Note: The following new features are added to support UVG:
 2. Each collection can only be associated with multiple variables that don't share the same name.
 3. variable and collection can only be associated if they are from the same provider.
 
-As a consequence, we now allow one collection, as well as a list of collections, to be passed in to all association endpoints.
+As a consequence, we now allow a single collection to be passed in to the association. We continue to support the existing legacy api which allows a list of single collection to be passed in.
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
-'[{"concept_id": "C1200000005-PROV1"}]'
+'{"concept_id": "C1200000005-PROV1"}'
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
@@ -3678,8 +3678,6 @@ Content-Length: 168
     }
   }
 ]
-
-We could replace '[{"concept_id": "C1200000005-PROV1"}]' with '{"concept_id": "C1200000005-PROV1"}' in the above example.
 
 ```
 
