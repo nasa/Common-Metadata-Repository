@@ -3654,12 +3654,10 @@ A variable identified by its concept id can be associated with collections throu
 
 Note: The following new features are added to support UVG:
 1. Each variable can only be associated with one collection.
-2. Each collection can only be associated with variables that don't share the same name.
+2. Each collection can only be associated with multiple variables that don't share the same name.
 3. variable and collection can only be associated if they are from the same provider.
 
-Future work:
-1. Currently we are not addressing any existing data that doesn't satisfy the above requirements.
-2. We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list. A ticket is filed to address these issues in the future if necessary.
+As a consequence, we now allow one collection, as well as a list of collections, to be passed in to all association endpoints.
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
@@ -3680,6 +3678,9 @@ Content-Length: 168
     }
   }
 ]
+
+We could replace '[{"concept_id": "C1200000005-PROV1"}]' with '{"concept_id": "C1200000005-PROV1"}' in the above example.
+
 ```
 
 On occasions when variable association cannot be processed at all due to invalid input, the variable association request will return a failure status code with the appropriate error message.

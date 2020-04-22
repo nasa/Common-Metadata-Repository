@@ -131,11 +131,12 @@
     (testing "Associate applies JSON Query validations"
       (are [associate-service-fn request-json message]
         (= {:status 400
-            :errors [message]}
+            :errors message}
            (associate-service-fn token concept-id {:foo "bar"}))
 
         association-util/associate-by-concept-ids {:concept-id coll-concept-id}
-        "#: expected type: JSONArray, found: JSONObject"))
+        ["#/0: required key [concept_id] not found"
+         "#/0: extraneous key [foo] is not permitted"]))
 
     (testing "Associate service that doesn't exist"
       (are [associate-service-fn request-json]

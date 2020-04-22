@@ -2,6 +2,7 @@
   "Defines common functions used by associations with collections in the CMR."
   (:require
    [cheshire.core :as json]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.concepts :as concepts]
@@ -66,14 +67,18 @@
   (validate-association-content-type headers)
   (info (format "Associate %s [%s] on collections: %s by client: %s."
                 (name concept-type) concept-id body (:client-id context)))
-  (if (and (> (count (assoc-validation/associations-json->associations body)) 1)
-           (= :variable concept-type))
-    (api-response
-      400
-      {:error "Only one collection allowed in the list because a variable can only be associated with one collection."})
-    (let [results (assoc-service/associate-to-collections context concept-type concept-id body)
-          status-code (association-results->status-code concept-type results)]
-        (api-response status-code results))))
+  ;; Allow a collection, as well as a list of collections, to be passed in the body
+  (let [body (if (string/starts-with? body "[")
+               body
+               (str "[" body "]"))]
+    (if (and (> (count (assoc-validation/associations-json->associations body)) 1)
+             (= :variable concept-type))
+      (api-response
+        400
+        {:error "Only one collection allowed in the list because a variable can only be associated with one collection."})
+      (let [results (assoc-service/associate-to-collections context concept-type concept-id body)
+            status-code (association-results->status-code concept-type results)]
+        (api-response status-code results)))))
 
 (defn dissociate-concept-from-collections
   "Dissociate the given concept by concept type and concept id from a list of

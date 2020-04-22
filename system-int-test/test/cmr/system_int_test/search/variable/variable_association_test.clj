@@ -50,12 +50,20 @@
         {:keys [concept-id]} (vu/ingest-variable-with-attrs {:Name "variable1"})]
     (index/wait-until-indexed)
 
-    (testing "Associate variable with collections by concept-ids"
+    (testing "Associate variable with collections by a list of one concept-id"
       (let [response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id c1-p1}])]
         (vu/assert-variable-association-response-ok?
           {["C1200000013-PROV1"] {:concept-id "VA1200000026-CMR"
                                   :revision-id 1}}
+          response)))
+
+    (testing "Associate variable with collections by one concept-id"
+      (let [response (association-util/associate-by-concept-ids
+                      token concept-id {:concept-id c1-p1})]
+        (vu/assert-variable-association-response-ok?
+          {["C1200000013-PROV1"] {:concept-id "VA1200000026-CMR"
+                                  :revision-id 2}}
           response)))
 
     (testing "Associate to no collections"
@@ -120,11 +128,12 @@
     (testing "Associate applies JSON Query validations"
       (are [associate-variable-fn request-json message]
         (= {:status 400
-            :errors [message]}
-           (associate-variable-fn token concept-id {:foo "bar"}))
+            :errors message}
+           (associate-variable-fn token concept-id {:revision-id 1}))
 
         association-util/associate-by-concept-ids {:concept-id coll-concept-id}
-        "#: expected type: JSONArray, found: JSONObject"))
+        ["#/0: required key [concept_id] not found"
+         "#/0: extraneous key [foo] is not permitted"]))
 
     (testing "Associate variable that doesn't exist"
       (are [associate-variable-fn request-json]
