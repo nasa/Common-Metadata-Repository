@@ -129,7 +129,7 @@
       (are [associate-variable-fn request-json message]
         (= {:status 400
             :errors message}
-           (associate-variable-fn token concept-id {:revision-id 1}))
+           (associate-variable-fn token concept-id {:foo "bar"}))
 
         association-util/associate-by-concept-ids {:concept-id coll-concept-id}
         ["#/0: required key [concept_id] not found"
