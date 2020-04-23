@@ -13,6 +13,7 @@
    [cmr.common.concepts :as cs]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.date-time-parser :as date]
+   [cmr.common.jobs :refer [defjob]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
@@ -296,6 +297,15 @@
         (catch Exception e (error (format "An error occurred while reindexing autocomplete suggestions in provider [%s] : %s"
                                           provider-id
                                           (.getMessage e))))))))
+
+(defjob ReindexAutcompleteSuggestionsJob
+  [context _]
+  (reindex-autocomplete-suggestions context))
+
+(def reindex-autocomplete-suggestions-job
+  {:job-type ReindexAutcompleteSuggestionsJob
+   ;; daily
+   :interval 86400})
 
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.

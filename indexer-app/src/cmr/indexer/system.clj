@@ -29,6 +29,7 @@
    [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
    [cmr.indexer.services.event-handler :as event-handler]
+   [cmr.indexer.services.index-service :as index-service]
    [cmr.message-queue.config :as queue-config]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.transmit.config :as transmit-config]))
@@ -78,6 +79,7 @@
                          `system-holder
                          [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
                           (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")
+                          index-service/reindex-autocomplete-suggestions-job
                           jvm-info/log-jvm-statistics-job])
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
 
