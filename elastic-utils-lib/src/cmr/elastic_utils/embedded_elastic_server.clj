@@ -1,38 +1,72 @@
 (ns cmr.elastic-utils.embedded-elastic-server
   "Used to run an in memory Elasticsearch server."
   (:require
+   [clj-http.client :as client]
+   [clojure.java.io :as io]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.util :as util])
   (:import
-   (org.codelibs.elasticsearch.runner ElasticsearchClusterRunner
-                                      ElasticsearchClusterRunner$Builder)
-   (org.elasticsearch.common.settings Settings
-                                      Settings$Builder)))
+   (com.github.dockerjava.api.model ExposedPort Ports PortBinding Ports$Binding)
+   (org.testcontainers.containers FixedHostPortGenericContainer)
+   (org.testcontainers.containers.output ToStringConsumer)
+   (org.testcontainers.containers.wait Wait)
+   (org.testcontainers.utility MountableFile)))
 
-(defn- create-settings
-  "Implements the Builder interface in order to configure the elasticsearch settings."
-  [http-port transport-port data-dir log-level]
-  (proxy [ElasticsearchClusterRunner$Builder] []
-    (build [index ^Settings$Builder settingsBuilder]
-      (.. settingsBuilder
-          (put "node.name" "embedded-elastic")
-          (put "path.data" data-dir)
-          (put "logger.level" log-level)
-          (put "http.port" (str http-port))
-          (put "indices.breaker.total.use_real_memory" "false")
-          (put "transport.tcp.port" (str transport-port))))))
+(def ^:private elasticsearch-official-docker-image
+  "Official docker image."
+  "docker.elastic.co/elasticsearch/elasticsearch")
 
-(defn build-node
-  "Build cluster node to run on http-port and transport-port with data-dir."
-  [http-port transport-port data-dir log-level]
-  (let [^ElasticsearchClusterRunner node (ElasticsearchClusterRunner.)]
-    (.build
-     (.onBuild node (create-settings http-port transport-port data-dir log-level))
-     (-> (ElasticsearchClusterRunner/newConfigs)
-         (.numOfNode 1)
-         (.useLogger)
-         (.clusterName "cmr-embedded-elastic")))
+(def ^:private elasticsearch-version
+  "Elasticsearch version to use."
+  "7.5.2")
+
+(def ^:private embedded-security-policy
+  "Embedded security policy file."
+  (io/file (io/resource "embedded-security.policy")))
+
+(def ^:private embedded-jvm-opts
+  "Embedded jvm options."
+  (io/file (io/resource "embedded-jvm-opts.options")))
+
+(defn- build-node
+  "Build cluster node with given settings. The elasticsearch server is actually
+  started on the default port 9200/9300. Only changing host port mapping."
+  [http-port transport-port data-dir log-level plugin-dir es-libs-dir]
+  (let [^FixedHostPortGenericContainer node
+        (new FixedHostPortGenericContainer
+             (format "%s:%s"
+                     elasticsearch-official-docker-image
+                     elasticsearch-version))]
+    (doto node
+          (.withEnv "discovery.type" "single-node")
+          (.withEnv "indices.breaker.total.use_real_memory" "false")
+          (.withEnv "logger.level" log-level)
+          (.withEnv "node.name" "embedded-elastic")
+          (.withFileSystemBind plugin-dir "/usr/share/elasticsearch/plugins")
+          (.withFileSystemBind data-dir "/usr/share/elasticsearch/data")
+          (.withFixedExposedPort (int http-port) 9200)
+          (.waitingFor
+           (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200)))
+    ;; Copy security policy
+    (.withCopyFileToContainer
+     node
+     (MountableFile/forHostPath (.getPath embedded-security-policy))
+     (str "/usr/share/elasticsearch/" (.getName embedded-security-policy)))
+    ;; Copy jvm opts
+    (.withCopyFileToContainer
+     node
+     (MountableFile/forHostPath (.getPath embedded-jvm-opts))
+     "/usr/share/elasticsearch/config/jvm.options")
+    ;; Copy additional libs
+    (doseq [f (-> es-libs-dir io/file file-seq)
+            :when (.isFile f)
+            :let [file-name (.getName f)]]
+      (debug "Adding lib" file-name)
+      (.withCopyFileToContainer
+       node
+       (MountableFile/forHostPath (.getPath f))
+       (str "/usr/share/elasticsearch/lib/" file-name)))
     node))
 
 (defrecord ElasticServer
@@ -41,25 +75,33 @@
    transport-port
    data-dir
    log-level
+   plugin-dir
+   es-libs-dir
    node]
-
 
   lifecycle/Lifecycle
 
   (start
     [this system]
     (debug "Starting elastic server on port" http-port)
-    (let [^ElasticsearchClusterRunner node (build-node http-port transport-port data-dir log-level)]
-      ;; ensureYellow takes variable arguments. Will not recognize 0-arity call. Must pass array coerced to java.lang.String.
-      (.ensureYellow node (into-array java.lang.String []))
-      (assoc this :node node)))
-
+    (let [^FixedHostPortGenericContainer node (build-node http-port
+                                                          transport-port
+                                                          data-dir
+                                                          log-level
+                                                          plugin-dir
+                                                          es-libs-dir)]
+      (try
+        (.start node)
+        (assoc this :node node)
+        (catch Exception e
+          (error "Container failed to start.")
+          (debug "Dumping failed elasticsearch logs:\n" (.getLogs node))
+          (throw e)))))
   (stop
     [this system]
-    (when-let [^ElasticsearchClusterRunner node (:node this)]
+    (when-let [^FixedHostPortGenericContainer node (:node this)]
       (do
-        (.close node)
-        (.clean node)
+        (.stop node)
         (util/delete-recursively (:data-dir this))))
     (assoc this :node nil)))
 
@@ -69,7 +111,11 @@
   ([http-port transport-port data-dir]
    (create-server http-port transport-port data-dir "info"))
   ([http-port transport-port data-dir log-level]
-   (->ElasticServer http-port transport-port data-dir log-level nil)))
+   (create-server http-port transport-port data-dir log-level "plugins"))
+  ([http-port transport-port data-dir log-level plugin-dir]
+   (create-server http-port transport-port data-dir log-level plugin-dir "es_libs"))
+  ([http-port transport-port data-dir log-level plugin-dir es-libs-dir]
+   (->ElasticServer http-port transport-port data-dir log-level plugin-dir es-libs-dir nil)))
 
 (comment
 

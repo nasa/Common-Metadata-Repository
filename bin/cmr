@@ -194,6 +194,9 @@ case "$COMMAND" in
                     marvel)
                         install_local_marvel
                         ;;
+                    spatial_plugin)
+                        install_local_spatial_plugin
+                        ;;
                     *)
                         subcmd_not_found $COMMAND $SUBCOMMAND
                         exit 127
