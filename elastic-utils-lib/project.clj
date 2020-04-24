@@ -14,13 +14,14 @@
                  [log4j/log4j "1.2.17"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
-                 [org.codelibs/elasticsearch-cluster-runner "7.5.2.0"]
                  [org.elasticsearch/elasticsearch "7.5.2"]
+                 [org.testcontainers/testcontainers "1.14.1"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
+  :resource-paths ["resources"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}

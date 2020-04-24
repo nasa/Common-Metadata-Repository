@@ -32,9 +32,9 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :provided {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
+             :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+                                       [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                                        [org.elasticsearch/elasticsearch "7.5.2"]]}
-             :static {}
              :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
                                        :exclusions [[com.dadrox/quiet-slf4j]
@@ -62,14 +62,30 @@
                                cmr.elasticsearch.plugins.spatial.plugin]}
              :dev {:exclusions [[org.clojure/tools.nrepl]]
                    :dependencies [[criterium "0.4.4"]
-                                  [nasa-cmr/cmr-es-spatial-plugin-deps "0.1.0-SNAPSHOT"]
+                                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+                                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                                   [org.elasticsearch/elasticsearch "7.5.2"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]]
+                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [org.clojure/tools.namespace "0.2.11"]]
+                   :aot [cmr.elasticsearch.plugins.spatial.script.core
+                         cmr.elasticsearch.plugins.spatial.factory.lfactory
+                         cmr.elasticsearch.plugins.spatial.factory.core
+                         cmr.elasticsearch.plugins.spatial.engine.core
+                         cmr.elasticsearch.plugins.spatial.plugin]
                    :global-vars {*warn-on-reflection* true
-                                 *assert* false}
-                   :source-paths ["src" "dev"]}}
+                                 *assert* false}}
+             :static {}
+             :lint {:source-paths ^:replace ["src"]
+                    :test-paths ^:replace []
+                    :plugins [[jonase/eastwood "0.2.5"]
+                              [lein-ancient "0.6.15"]
+                              [lein-bikeshed "0.5.0"]
+                              [lein-kibit "0.1.6"]
+                              [venantius/yagni "0.1.4"]]}
+             ;; The following profile is overriden on the build server or in the user's
+             ;; ~/.lein/profiles.clj file.
+             :internal-repos {}}
   :aliases {"install-es-deps" ["do"
                                "with-profile" "es-deps,provided" "clean,"
                                "with-profile" "es-deps,provided" "uberjar,"
@@ -85,8 +101,7 @@
                                  "-j"
                                  ~plugin-zip-name
                                  ~uberjar-name
-                                 "resources/plugin/plugin-descriptor.properties"
-                                 "resources/plugin/plugin-security.policy,"]
+                                 "resources/plugin/plugin-descriptor.properties"]
             "build-all" ["do"
                          "install-es-deps,"
                          "install-es-plugin,"]

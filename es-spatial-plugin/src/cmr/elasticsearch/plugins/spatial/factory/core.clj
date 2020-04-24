@@ -1,11 +1,4 @@
 (ns cmr.elasticsearch.plugins.spatial.factory.core
-  (:require
-   [clojure.string :as str]
-   [cmr.spatial.derived :as d]
-   [cmr.spatial.point :as point]
-   [cmr.spatial.polygon :as poly]
-   [cmr.spatial.relations :as relations]
-   [cmr.spatial.serialize :as srl])
   (:import
    (cmr.elasticsearch.plugins SpatialScriptLeafFactory)
    (java.util Map)

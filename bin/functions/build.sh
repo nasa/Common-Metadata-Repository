@@ -85,6 +85,7 @@ function build_all {
     cmr install jars,docs && \
     cmr install coll-renderer-gems && \
     cmr install orbits-gems && \
+    cmr install local spatial_plugin && \
     if [ "$CMR_DEV_SYSTEM_DB_TYPE" = "external" ] ; then
         (cd $CMR_DIR && cmr setup db )
         if [ $? -ne 0 ] ; then

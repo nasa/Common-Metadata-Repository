@@ -7,7 +7,6 @@
    :cmr-common-app-lib "0.1.0-SNAPSHOT"
    :cmr-common-lib "0.1.1-SNAPSHOT"
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
-   ;:cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
    :cmr-indexer-app "0.1.0-SNAPSHOT"
    :cmr-ingest-app "0.1.0-SNAPSHOT"
    :cmr-message-queue-lib "0.1.0-SNAPSHOT"
@@ -59,8 +58,9 @@
   :plugins [[lein-environ "1.1.0"]
             [lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
+  :resource-paths ["resources" "plugins"]
   :repl-options {:init-ns user
-                 :timeout 300000
+                 :timeout 600000
                  :welcome (do
                            (println (slurp "resources/text/banner.txt"))
                            (println (slurp "resources/text/loading.txt")))}
@@ -139,6 +139,9 @@
             ;; Visit http://localhost:9210/_plugin/marvel/sense/index.html
             "install-marvel"
             ["shell" "cmr" "install" "local" "marvel"]
+            ;; Install spatial plugin locally
+            "install-spatial-plugin"
+            ["shell" "cmr" "install" "local" "spatial_plugin"]
             ;; Linting aliases
             "kibit"
             ["do"

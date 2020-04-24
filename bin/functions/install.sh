@@ -97,6 +97,26 @@ function install_local_marvel () {
     #     see: https://github.com/docker-library/elasticsearch/issues/32
 }
 
+function install_local_spatial_plugin () {
+  # Install deps
+  mkdir -p $CMR_DIR/dev-system/es_libs/
+
+  (cd $CMR_DIR/es-spatial-plugin && \
+  lein install-es-deps && \
+  cp es-deps/cmr-es-spatial-plugin-deps-0.1.0-SNAPSHOT-standalone.jar $CMR_DIR/dev-system/es_libs/)
+
+  # Install plugin
+  rm -rf $CMR_DIR/dev-system/plugins/cmr_spatial
+  mkdir -p $CMR_DIR/dev-system/plugins/cmr_spatial
+
+  (cd $CMR_DIR/es-spatial-plugin && \
+  lein package-es-plugin && \
+  cp target/cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip $CMR_DIR/dev-system/plugins/cmr_spatial/ && \
+  cd $CMR_DIR/dev-system/plugins/cmr_spatial/ &&
+  unzip cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip && \
+  rm cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip)
+}
+
 function mvn_oralib_install () {
     JAR=$1
     ARTIFACT_ID=$2
