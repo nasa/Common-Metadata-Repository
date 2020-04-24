@@ -299,8 +299,8 @@
                                           (.getMessage e))))))))
 
 (defjob ReindexAutcompleteSuggestionsJob
-  [context _]
-  (reindex-autocomplete-suggestions context))
+  [ctx system]
+  (reindex-autocomplete-suggestions {:system system}))
 
 (def reindex-autocomplete-suggestions-job
   {:job-type ReindexAutcompleteSuggestionsJob
