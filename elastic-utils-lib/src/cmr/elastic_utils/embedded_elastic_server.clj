@@ -7,11 +7,9 @@
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.util :as util])
   (:import
-   (com.github.dockerjava.api.model ExposedPort Ports PortBinding Ports$Binding)
    (org.testcontainers.containers FixedHostPortGenericContainer)
-   (org.testcontainers.containers.output ToStringConsumer)
    (org.testcontainers.containers.wait Wait)
-   (org.testcontainers.utility MountableFile)))
+   (org.testcontainers.images.builder ImageFromDockerfile)))
 
 (def ^:private elasticsearch-official-docker-image
   "Official docker image."
@@ -21,62 +19,45 @@
   "Elasticsearch version to use."
   "7.5.2")
 
-(def ^:private embedded-security-policy
-  "Embedded security policy file."
-  (io/file (io/resource "embedded-security.policy")))
-
-(def ^:private embedded-jvm-opts
-  "Embedded jvm options."
-  (io/file (io/resource "embedded-jvm-opts.options")))
-
 (defn- build-node
-  "Build cluster node with given settings. The elasticsearch server is actually
-  started on the default port 9200/9300. Only changing host port mapping."
-  [http-port transport-port data-dir log-level plugin-dir es-libs-dir]
-  (let [^FixedHostPortGenericContainer node
-        (new FixedHostPortGenericContainer
-             (format "%s:%s"
-                     elasticsearch-official-docker-image
-                     elasticsearch-version))]
-    (doto node
+  "Build cluster node with settings. The elasticsearch server is actually
+  started on the default port 9200/9300. Only changing host port mapping. Args:
+
+  http-port -> http port host will reach elasticsearch container on.
+  data-dir -> Data directory.
+  dockerfile -> Dockerfile on classpath to use. nil to use default elastic image.
+  log-level -> log level to use.
+  classpath-files -> Map of files on the classpath needed to build the docker
+       image specified in dockerfile. Template:
+       {\"dockerfile-resource-name\" \"name-of-file-on-classpath\"}. See:
+       https://www.testcontainers.org/features/creating_images/"
+  [http-port data-dir dockerfile log-level classpath-files]
+  (let [image (if dockerfile
+                (let [docker-image (ImageFromDockerfile.)]
+                  (.withFileFromClasspath docker-image "Dockerfile" dockerfile)
+                  (doseq [[k v] classpath-files]
+                    (.withFileFromClasspath docker-image k v))
+                  (.get docker-image))
+                (format "%s:%s"
+                       elasticsearch-official-docker-image
+                       elasticsearch-version))]
+    (doto (FixedHostPortGenericContainer. image)
           (.withEnv "discovery.type" "single-node")
           (.withEnv "indices.breaker.total.use_real_memory" "false")
-          (.withEnv "logger.level" log-level)
+          (.withEnv "logger.level" (name log-level))
           (.withEnv "node.name" "embedded-elastic")
-          (.withFileSystemBind plugin-dir "/usr/share/elasticsearch/plugins")
           (.withFileSystemBind data-dir "/usr/share/elasticsearch/data")
           (.withFixedExposedPort (int http-port) 9200)
           (.waitingFor
-           (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200)))
-    ;; Copy security policy
-    (.withCopyFileToContainer
-     node
-     (MountableFile/forHostPath (.getPath embedded-security-policy))
-     (str "/usr/share/elasticsearch/" (.getName embedded-security-policy)))
-    ;; Copy jvm opts
-    (.withCopyFileToContainer
-     node
-     (MountableFile/forHostPath (.getPath embedded-jvm-opts))
-     "/usr/share/elasticsearch/config/jvm.options")
-    ;; Copy additional libs
-    (doseq [f (-> es-libs-dir io/file file-seq)
-            :when (.isFile f)
-            :let [file-name (.getName f)]]
-      (debug "Adding lib" file-name)
-      (.withCopyFileToContainer
-       node
-       (MountableFile/forHostPath (.getPath f))
-       (str "/usr/share/elasticsearch/lib/" file-name)))
-    node))
+           (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200)))))
 
 (defrecord ElasticServer
   [
    http-port
-   transport-port
    data-dir
+   dockerfile
    log-level
-   plugin-dir
-   es-libs-dir
+   classpath-files
    node]
 
   lifecycle/Lifecycle
@@ -85,11 +66,10 @@
     [this system]
     (debug "Starting elastic server on port" http-port)
     (let [^FixedHostPortGenericContainer node (build-node http-port
-                                                          transport-port
                                                           data-dir
+                                                          dockerfile
                                                           log-level
-                                                          plugin-dir
-                                                          es-libs-dir)]
+                                                          classpath-files)]
       (try
         (.start node)
         (assoc this :node node)
@@ -107,15 +87,15 @@
 
 (defn create-server
   ([]
-   (create-server 9200 9300 "data"))
-  ([http-port transport-port data-dir]
-   (create-server http-port transport-port data-dir "info"))
-  ([http-port transport-port data-dir log-level]
-   (create-server http-port transport-port data-dir log-level "plugins"))
-  ([http-port transport-port data-dir log-level plugin-dir]
-   (create-server http-port transport-port data-dir log-level plugin-dir "es_libs"))
-  ([http-port transport-port data-dir log-level plugin-dir es-libs-dir]
-   (->ElasticServer http-port transport-port data-dir log-level plugin-dir es-libs-dir nil)))
+   (create-server 9200 "data"))
+  ([http-port data-dir]
+   (create-server http-port data-dir nil))
+  ([http-port data-dir dockerfile]
+   (create-server http-port data-dir dockerfile "info"))
+  ([http-port data-dir dockerfile log-level]
+   (create-server http-port data-dir dockerfile log-level {}))
+  ([http-port data-dir dockerfile log-level classpath-files]
+   (->ElasticServer http-port data-dir dockerfile log-level classpath-files nil)))
 
 (comment
 
