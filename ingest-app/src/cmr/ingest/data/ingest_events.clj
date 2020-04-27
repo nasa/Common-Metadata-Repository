@@ -35,10 +35,11 @@
    :provider-id provider-id
    :force-version? force-version?})
 
-(defn autocomplete-reindexing-event
+(defn provider-autocomplete-suggestion-reindexing-event
   "Trigger an autocomplete suggestion reindexing event"
-  []
-  {:action :autocomplete-reindexing})
+  [provider-id]
+  {:action :provider-autocomplete-suggestion-reindexing
+   :provider-id provider-id})
 
 (defn provider-create-event
   "Creates an event representing a provider being created."

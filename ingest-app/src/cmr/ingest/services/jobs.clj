@@ -259,11 +259,12 @@
               (map #(select-keys % [:extra-fields :metadata])))]
     (process-subscriptions context subscriptions time-constraint)))
 
-(defn reindex-autocomplete-suggestions
-  [context]
-  (ingest-events/publish-provider-event
-    context
-    (ingest-events/autocomplete-reindexing-event)))
+(defn trigger-autocomplete-suggestions-reindex
+  [context provider-id]
+  (let [providers (map :provider-id (mdb/get-providers context))]
+    (map #(ingest-events/publish-provider-event
+            context
+            (ingest-events/provider-autocomplete-suggestion-reindexing-event %)))))
 
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
@@ -275,7 +276,7 @@
 
 (def-stateful-job ReindexAutocompleteSuggestions
   [_ system]
-  (reindex-autocomplete-suggestions {:system system}))
+  (trigger-autocomplete-suggestions-reindex {:system system}))
 
 (defn jobs
   "A list of jobs for ingest"
