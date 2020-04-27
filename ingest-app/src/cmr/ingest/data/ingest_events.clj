@@ -36,7 +36,7 @@
    :force-version? force-version?})
 
 (defn provider-autocomplete-suggestion-reindexing-event
-  "Trigger an autocomplete suggestion reindexing event"
+  "Create an event representing an autocomplete suggestion reindex command."
   [provider-id]
   {:action :provider-autocomplete-suggestion-reindexing
    :provider-id provider-id})
