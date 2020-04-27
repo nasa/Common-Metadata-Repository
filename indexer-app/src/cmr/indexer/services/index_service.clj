@@ -298,15 +298,6 @@
                                           provider-id
                                           (.getMessage e))))))))
 
-(defjob ReindexAutcompleteSuggestionsJob
-  [ctx system]
-  (reindex-autocomplete-suggestions {:system system}))
-
-(def reindex-autocomplete-suggestions-job
-  {:job-type ReindexAutcompleteSuggestionsJob
-   ;; daily
-   :interval 86400})
-
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
 

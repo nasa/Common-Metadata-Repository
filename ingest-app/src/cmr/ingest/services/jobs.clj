@@ -259,6 +259,12 @@
               (map #(select-keys % [:extra-fields :metadata])))]
     (process-subscriptions context subscriptions time-constraint)))
 
+(defn reindex-autocomplete-suggestions
+  [context]
+  (ingest-events/publish-provider-event
+    context
+    (ingest-events/autocomplete-reindexing-event)))
+
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
   (bulk-update-status-table-cleanup {:system system}))
@@ -266,6 +272,10 @@
 (def-stateful-job EmailSubscriptionProcessing
   [_ system]
   (email-subscription-processing {:system system}))
+
+(def-stateful-job ReindexAutocompleteSuggestions
+  [_ system]
+  (reindex-autocomplete-suggestions {:system system}))
 
 (defn jobs
   "A list of jobs for ingest"
@@ -296,4 +306,8 @@
     ;; Run everyday at 12:20 pm. Chosen because it's least busy time for indexer historically and also
     ;; during business hours when people can debug issues. It's offset from the top of the hour so as
     ;; not to be at the same time as EDSC fetches all the collection metadata.
-    :daily-at-hour-and-minute [12 20]}])
+    :daily-at-hour-and-minute [12 20]}
+
+   {:job-type ReindexAutocompleteSuggestions
+    ;; Run everyday at 01:20. Chosen to be offset from the last job
+    :daily-at-hour-and-minute [01 20]}])

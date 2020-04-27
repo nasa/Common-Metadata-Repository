@@ -1,4 +1,4 @@
-a(ns cmr.ingest.system
+(ns cmr.ingest.system
   "Defines functions for creating, starting, and stopping the application. Applications are
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
