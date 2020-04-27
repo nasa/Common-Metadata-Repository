@@ -2161,3 +2161,201 @@
   (let [result (vm/migrate-umm {} :collection "1.15.1" "1.15" {:CollectionProgress "DEPRECATED"})]
     (is (= {:CollectionProgress "COMPLETE"}
            result))))
+
+(deftest migrate-1-15-1-to-1-15-2
+  "Test the migration of collections from 1.15.1 to 1.15.2."
+
+  (testing "Testing what happens if both the Varies and Point Resolutions exist"
+    (let [result (vm/migrate-umm {} :collection "1.15.1" "1.15.2" sample-collection-1-15)]
+      (is (= (-> sample-collection-1-15
+                 (update-in [:SpatialExtent
+                             :HorizontalSpatialDomain
+                             :ResolutionAndCoordinateSystem
+                             :HorizontalDataResolution]
+                            dissoc :VariesResolution)
+                 (update-in [:SpatialExtent
+                             :HorizontalSpatialDomain
+                             :ResolutionAndCoordinateSystem
+                             :HorizontalDataResolution]
+                            dissoc :PointResolution)
+                 (assoc-in [:SpatialExtent
+                            :HorizontalSpatialDomain
+                            :ResolutionAndCoordinateSystem
+                            :HorizontalDataResolution
+                            :VariesResolution]
+                           "Varies")
+                 (assoc-in [:SpatialExtent
+                            :HorizontalSpatialDomain
+                            :ResolutionAndCoordinateSystem
+                            :HorizontalDataResolution
+                            :PointResolution]
+                           "Point"))
+             result))))
+
+  (testing "What happens when VariesResolution doesn't exist"
+    (let [sample-collection-1-15 (update-in sample-collection-1-15
+                                            [:SpatialExtent
+                                             :HorizontalSpatialDomain
+                                             :ResolutionAndCoordinateSystem
+                                             :HorizontalDataResolution]
+                                            dissoc :VariesResolution)
+          result (vm/migrate-umm {} :collection "1.15.1" "1.15.2" sample-collection-1-15)]
+      (is (= (-> sample-collection-1-15
+                 (update-in [:SpatialExtent
+                             :HorizontalSpatialDomain
+                             :ResolutionAndCoordinateSystem
+                             :HorizontalDataResolution]
+                            dissoc :PointResolution)
+                 (assoc-in [:SpatialExtent
+                            :HorizontalSpatialDomain
+                            :ResolutionAndCoordinateSystem
+                            :HorizontalDataResolution
+                            :PointResolution]
+                           "Point"))
+             result)))))
+
+(def sample-collection-1-15-2
+  {:SpatialExtent
+   {:HorizontalSpatialDomain
+    {:ResolutionAndCoordinateSystem
+     {:Description "This is a description."
+      :GeodeticModel {:HorizontalDatumName "World Geodetic System of 1984 (WGS84)"
+                      :EllipsoidName "WGS 84"
+                      :SemiMajorAxis 6378140.0
+                      :DenominatorOfFlatteningRatio 298.257}
+      :HorizontalDataResolution
+        {:VariesResolution "Varies"
+         :PointResolution "Point"
+         :NonGriddedResolutions [{:XDimension 10
+                                  :YDimension 10
+                                  :Unit "Kilometers"}
+                                 {:XDimension 20
+                                  :YDimension 20
+                                  :Unit "Not provided"}]
+         :NonGriddedRangeResolutions [{:MinimumXDimension 1
+                                       :MaximumXDimension 2
+                                       :Unit "Kilometers"}
+                                      {:MinimumXDimension 1
+                                       :MaximumXDimension 2
+                                       :Unit "Not provided"}
+                                      {:MinimumYDimension 1
+                                       :MaximumYDimension 2
+                                       :Unit "Statute Miles"}]
+         :GriddedResolutions [{:XDimension 1
+                               :Unit "Kilometers"}
+                              {:YDimension 1
+                               :Unit "Kilometers"}]
+         :GenericResolutions [{:XDimension 1
+                               :Unit "Nautical Miles"}
+                              {:YDimension 1
+                               :Unit "Kilometers"}]
+         :GriddedRangeResolutions [{:MinimumXDimension 1
+                                    :MaximumXDimension 2
+                                    :Unit "Statute Miles"}
+                                   {:MinimumYDimension 1
+                                    :MaximumYDimension 2
+                                    :Unit "Nautical Miles"}]}}}}})
+
+(deftest migrate-1-15-2-to-1-15-1
+  "Test the migration of collections from 1.15.2 to 1.15.1."
+
+  (testing "Testing what happens if both the Varies and Point Resolutions exist"
+    (let [result (vm/migrate-umm {} :collection "1.15.2" "1.15.1" sample-collection-1-15-2)]
+      (is (= (-> sample-collection-1-15-2
+                 (update-in [:SpatialExtent
+                             :HorizontalSpatialDomain
+                             :ResolutionAndCoordinateSystem
+                             :HorizontalDataResolution]
+                            dissoc :VariesResolution)
+                 (update-in [:SpatialExtent
+                             :HorizontalSpatialDomain
+                             :ResolutionAndCoordinateSystem
+                             :HorizontalDataResolution]
+                            dissoc :PointResolution)
+                 (assoc-in [:SpatialExtent
+                            :HorizontalSpatialDomain
+                            :ResolutionAndCoordinateSystem
+                            :HorizontalDataResolution
+                            :VariesResolution
+                            :HorizontalResolutionProcessingLevelEnum]
+                           "Varies")
+                 (assoc-in [:SpatialExtent
+                            :HorizontalSpatialDomain
+                            :ResolutionAndCoordinateSystem
+                            :HorizontalDataResolution
+                            :PointResolution
+                            :HorizontalResolutionProcessingLevelEnum]
+                           "Point")
+                 (assoc-in [:SpatialExtent
+                            :HorizontalSpatialDomain
+                            :ResolutionAndCoordinateSystem
+                            :HorizontalDataResolution
+                            :NonGriddedResolutions]
+                           [{:XDimension 10
+                             :YDimension 10
+                             :Unit "Kilometers"}])
+                 (assoc-in [:SpatialExtent
+                            :HorizontalSpatialDomain
+                            :ResolutionAndCoordinateSystem
+                            :HorizontalDataResolution
+                            :NonGriddedRangeResolutions]
+                           [{:MinimumXDimension 1
+                             :MaximumXDimension 2
+                             :Unit "Kilometers"}
+                            {:MinimumYDimension 1.6
+                             :MaximumYDimension 3.2
+                             :Unit "Kilometers"}])
+                 (assoc-in [:SpatialExtent
+                            :HorizontalSpatialDomain
+                            :ResolutionAndCoordinateSystem
+                            :HorizontalDataResolution
+                            :GriddedRangeResolutions]
+                           [{:MinimumXDimension 1.6
+                             :MaximumXDimension 3.2
+                             :Unit "Kilometers"}
+                            {:MinimumYDimension 1.9
+                             :MaximumYDimension 3.8
+                             :Unit "Kilometers"}])
+                 (assoc-in [:SpatialExtent
+                            :HorizontalSpatialDomain
+                            :ResolutionAndCoordinateSystem
+                            :HorizontalDataResolution
+                            :GenericResolutions]
+                           [{:XDimension 1.9
+                             :Unit "Kilometers"}
+                            {:YDimension 1
+                             :Unit "Kilometers"}]))
+             result))))
+
+  (testing "What happens when VariesResolution doesn't exist"
+    (let [sample-collection-1-15-2 (update-in sample-collection-1-15-2
+                                              [:SpatialExtent
+                                               :HorizontalSpatialDomain
+                                               :ResolutionAndCoordinateSystem
+                                               :HorizontalDataResolution]
+                                              dissoc :VariesResolution
+                                                     :NonGriddedResolutions
+                                                     :NonGriddedRangeResolutions
+                                                     :GriddedResolutions
+                                                     :GriddedRangeResolutions
+                                                     :GenericResolutions)
+          result (vm/migrate-umm {} :collection "1.15.2" "1.15.1" sample-collection-1-15-2)]
+      (is (= (-> sample-collection-1-15-2
+                 (update-in [:SpatialExtent
+                             :HorizontalSpatialDomain
+                             :ResolutionAndCoordinateSystem
+                             :HorizontalDataResolution]
+                            dissoc :PointResolution
+                                   :NonGriddedResolutions
+                                   :NonGriddedRangeResolutions
+                                   :GriddedResolutions
+                                   :GriddedRangeResolutions
+                                   :GenericResolutions)
+                 (assoc-in [:SpatialExtent
+                            :HorizontalSpatialDomain
+                            :ResolutionAndCoordinateSystem
+                            :HorizontalDataResolution
+                            :PointResolution
+                            :HorizontalResolutionProcessingLevelEnum]
+                           "Point"))
+             result)))))
