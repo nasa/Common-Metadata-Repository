@@ -260,7 +260,7 @@
     (process-subscriptions context subscriptions time-constraint)))
 
 (defn trigger-autocomplete-suggestions-reindex
-  [context provider-id]
+  [context]
   (let [providers (map :provider-id (mdb/get-providers context))]
     (map #(ingest-events/publish-provider-event
             context
