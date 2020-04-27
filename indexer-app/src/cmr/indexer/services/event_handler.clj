@@ -28,7 +28,7 @@
                            :refresh-acls? false
                            :force-version? force-version?}))
 
-(defmethod handle-autocomplete-reindex-event :provider-autocomplete-suggestion-reindexing
+(defmethod handle-provider-event :provider-autocomplete-suggestion-reindexing
   [context {:keys [provider-id]}]
   (indexer/reindex-autocomplete-suggestions-for-provider context provider-id))
 
