@@ -119,7 +119,8 @@ Here are the steps to do so:
    {:dev-config {:env {:cmr-metadata-db-password "<YOUR PASSWORD HERE>"
                        :cmr-sys-dba-password "<YOUR PASSWORD HERE>"
                        :cmr-bootstrap-password "<YOUR PASSWORD HERE>"
-                       :cmr-ingest-password "<YOUR PASSWORD HERE>"}}}
+                       :cmr-ingest-password "<YOUR PASSWORD HERE>"
+                       :cmr-urs-pasword "<YOUR PASSWORD HERE>"}}}
 
 2. `cmr setup dev`
 3. `cmr start repl`
