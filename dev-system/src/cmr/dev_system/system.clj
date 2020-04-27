@@ -111,7 +111,7 @@
   (let [http-port (elastic-config/elastic-port)]
     (elastic-server/create-server http-port
                                   "es_data/dev_system"
-                                  "elasticsearch/dockerfile.elasticsearch"
+                                  "elasticsearch/Dockerfile.elasticsearch"
                                   (name @in-memory-elastic-log-level-atom)
                                   {"plugins" "elasticsearch/plugins"
                                    "es_libs" "elasticsearch/es_libs"
