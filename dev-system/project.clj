@@ -58,7 +58,7 @@
   :plugins [[lein-environ "1.1.0"]
             [lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
-  :resource-paths ["resources" "plugins"]
+  :resource-paths ["resources"]
   :repl-options {:init-ns user
                  :timeout 600000
                  :welcome (do
@@ -142,6 +142,13 @@
             ;; Install spatial plugin locally
             "install-spatial-plugin"
             ["shell" "cmr" "install" "local" "spatial_plugin"]
+            ;; Install with local elasticsearch
+            "install"
+            ["do"
+             "install-spatial-plugin,"
+             "install"]
+            "install!"
+            ["install"]
             ;; Linting aliases
             "kibit"
             ["do"
