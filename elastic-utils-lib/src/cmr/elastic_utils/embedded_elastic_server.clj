@@ -7,6 +7,7 @@
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.util :as util])
   (:import
+   (java.time Duration)
    (org.testcontainers.containers FixedHostPortGenericContainer)
    (org.testcontainers.containers.wait Wait)
    (org.testcontainers.images.builder ImageFromDockerfile)))
@@ -48,6 +49,7 @@
           (.withEnv "node.name" "embedded-elastic")
           (.withFileSystemBind data-dir "/usr/share/elasticsearch/data")
           (.withFixedExposedPort (int http-port) 9200)
+          (.withStartupTimeout (Duration/ofSeconds 120))
           (.waitingFor
            (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200)))))
 
