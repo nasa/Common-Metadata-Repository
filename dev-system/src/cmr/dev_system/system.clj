@@ -110,12 +110,11 @@
   [_]
   (let [http-port (elastic-config/elastic-port)]
     (elastic-server/create-server http-port
-                                  "es_data/dev_system"
-                                  "elasticsearch/Dockerfile.elasticsearch"
-                                  (name @in-memory-elastic-log-level-atom)
-                                  {"plugins" "elasticsearch/plugins"
-                                   "es_libs" "elasticsearch/es_libs"
-                                   "embedded-security.policy" "elasticsearch/embedded-security.policy"})))
+                                  {:log-level (name @in-memory-elastic-log-level-atom)
+                                   :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
+                                               "es_libs" "elasticsearch/es_libs"
+                                               "embedded-security.policy" "elasticsearch/embedded-security.policy"
+                                               "plugins" "elasticsearch/plugins"}})))
 
 (defmethod create-elastic :external
   [_]

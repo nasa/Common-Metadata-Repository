@@ -25,41 +25,46 @@
   started on the default port 9200/9300. Only changing host port mapping. Args:
 
   http-port -> http port host will reach elasticsearch container on.
-  data-dir -> Data directory.
-  dockerfile -> Dockerfile on classpath to use. nil to use default elastic image.
-  log-level -> log level to use.
-  classpath-files -> Map of files on the classpath needed to build the docker
-       image specified in dockerfile. Template:
-       {\"dockerfile-resource-name\" \"name-of-file-on-classpath\"}. See:
-       https://www.testcontainers.org/features/creating_images/"
-  [http-port data-dir dockerfile log-level classpath-files]
-  (let [image (if dockerfile
-                (let [docker-image (ImageFromDockerfile.)]
-                  (.withFileFromClasspath docker-image "Dockerfile" dockerfile)
-                  (doseq [[k v] classpath-files]
-                    (.withFileFromClasspath docker-image k v))
-                  (.get docker-image))
-                (format "%s:%s"
-                       elasticsearch-official-docker-image
-                       elasticsearch-version))]
-    (doto (FixedHostPortGenericContainer. image)
-          (.withEnv "discovery.type" "single-node")
-          (.withEnv "indices.breaker.total.use_real_memory" "false")
-          (.withEnv "logger.level" (name log-level))
-          (.withEnv "node.name" "embedded-elastic")
-          (.withFileSystemBind data-dir "/usr/share/elasticsearch/data")
-          (.withFixedExposedPort (int http-port) 9200)
-          (.withStartupTimeout (Duration/ofSeconds 120))
-          (.waitingFor
-           (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200)))))
+  opts ->
+       data-dir -> Data directory to mount. None is default.
+       dockerfile -> Dockerfile on classpath to use. Uses default image otherwise.
+       log-level -> log level to use. info is default.
+       image-cfg -> Map of files on the classpath needed to build the docker
+        image specified. Must specify dockerfile with key \"Dockerfile\" otherwise
+        uses default image. See:
+        https://www.testcontainers.org/features/creating_images/"
+  ([http-port]
+   (build-node http-port {}))
+  ([http-port opts]
+   (let [{:keys [data-dir image-cfg log-level]} opts
+         image (if (get image-cfg "Dockerfile")
+                 (let [docker-image (ImageFromDockerfile.)]
+                   (doseq [[k v] image-cfg]
+                     (.withFileFromClasspath docker-image k v))
+                   (.get docker-image))
+                 (format "%s:%s"
+                        elasticsearch-official-docker-image
+                        elasticsearch-version))
+         container (FixedHostPortGenericContainer. image)]
+     ;; This will cause a pretty big performance hit locally if you provide data-dir.
+     ;; You would probably be better off just connecting to the docker machine.
+     (when data-dir
+       (.withFileSystemBind container data-dir "/usr/share/elasticsearch/data"))
+     (when log-level
+       (.withEnv container "logger.level" (name log-level)))
+     (doto container
+           (.withEnv "discovery.type" "single-node")
+           (.withEnv "indices.breaker.total.use_real_memory" "false")
+           (.withEnv "node.name" "embedded-elastic")
+           (.withFixedExposedPort (int http-port) 9200)
+           (.withStartupTimeout (Duration/ofSeconds 120))
+           (.waitingFor
+            (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200))))))
 
 (defrecord ElasticServer
   [
    http-port
-   data-dir
-   dockerfile
-   log-level
-   classpath-files
+   opts
    node]
 
   lifecycle/Lifecycle
@@ -67,11 +72,7 @@
   (start
     [this system]
     (debug "Starting elastic server on port" http-port)
-    (let [^FixedHostPortGenericContainer node (build-node http-port
-                                                          data-dir
-                                                          dockerfile
-                                                          log-level
-                                                          classpath-files)]
+    (let [^FixedHostPortGenericContainer node (build-node http-port opts)]
       (try
         (.start node)
         (assoc this :node node)
@@ -84,20 +85,17 @@
     (when-let [^FixedHostPortGenericContainer node (:node this)]
       (do
         (.stop node)
-        (util/delete-recursively (:data-dir this))))
+        (when-let [data-dir (get-in this [:opts :data-dir])]
+          (util/delete-recursively (:data-dir this)))))
     (assoc this :node nil)))
 
 (defn create-server
   ([]
-   (create-server 9200 "data"))
-  ([http-port data-dir]
-   (create-server http-port data-dir nil))
-  ([http-port data-dir dockerfile]
-   (create-server http-port data-dir dockerfile "info"))
-  ([http-port data-dir dockerfile log-level]
-   (create-server http-port data-dir dockerfile log-level {}))
-  ([http-port data-dir dockerfile log-level classpath-files]
-   (->ElasticServer http-port data-dir dockerfile log-level classpath-files nil)))
+   (create-server 9200))
+  ([http-port]
+   (create-server http-port {}))
+  ([http-port opts]
+   (->ElasticServer http-port opts nil)))
 
 (comment
 
