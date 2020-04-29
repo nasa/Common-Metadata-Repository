@@ -57,5 +57,11 @@
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
+            ;; Get kibana and elasticsearch images
+            "pull-docker-images" ["do"
+                                  ["shell" "docker" "pull" "docker.elastic.co/elasticsearch/elasticsearch:7.5.2"]
+                                  ["shell" "docker" "pull" "docker.elastic.co/kibana/kibana:7.5.2"]]
+            "install" ["do" "pull-docker-images," "install"]
+            "install!" "install"
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]})

@@ -24,6 +24,11 @@
   {:default 10000
    :type Long})
 
+(defconfig embedded-kibana-port
+  "Specifies port to run an embedded kibana on."
+  {:default 5601
+   :type Long})
+
 (defconfig use-web-compression?
   "Indicates whether the servers will use gzip compression. Disable this to
   make tcpmon usable"
