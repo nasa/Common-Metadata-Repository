@@ -82,8 +82,15 @@
   (verify-association-permission context concept-id :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-association-content-type headers)
-  (info (format "Dissociating %s [%s] from collections: %s by client: %s."
-                (name concept-type) concept-id body (:client-id context)))
-  (let [results (assoc-service/dissociate-from-collections context concept-type concept-id body)
-        status-code (association-results->status-code concept-type results)]
-    (api-response status-code results)))
+  (if (and (> (count (map :concept-id (json/parse-string body true))) 1)
+           (= :variable concept-type))
+    (api-response
+      400
+      {:error "Only one variable at a time may be dissociated."})
+    (do 
+      (info (format "Dissociating %s [%s] from collections: %s by client: %s."
+                    (name concept-type) concept-id body (:client-id context)))
+      (let [results (assoc-service/dissociate-from-collections context concept-type concept-id body)
+            status-code (association-results->status-code concept-type results)]
+        (api-response status-code results)))))
+
