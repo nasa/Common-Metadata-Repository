@@ -1,24 +1,30 @@
 (ns cmr.elastic-utils.embedded-elastic-server
-  "Used to run an in memory Elasticsearch server."
+  "Used to run an Elasticsearch server inside an embedded docker container."
   (:require
-   [clj-http.client :as client]
    [clojure.java.io :as io]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.util :as util])
   (:import
    (java.time Duration)
-   (org.testcontainers.containers FixedHostPortGenericContainer)
+   (org.testcontainers.containers FixedHostPortGenericContainer Network)
    (org.testcontainers.containers.wait Wait)
    (org.testcontainers.images.builder ImageFromDockerfile)))
 
 (def ^:private elasticsearch-official-docker-image
   "Official docker image."
-  "docker.elastic.co/elasticsearch/elasticsearch")
+  "docker.elastic.co/elasticsearch/elasticsearch:7.5.2")
 
-(def ^:private elasticsearch-version
-  "Elasticsearch version to use."
-  "7.5.2")
+(def ^:private kibana-official-docker-image
+  "Official kibana docker image."
+  "docker.elastic.co/kibana/kibana:7.5.2")
+
+(defn build-kibana
+  "Build kibana in an embedded docker."
+  [http-port network]
+  (doto (FixedHostPortGenericContainer. kibana-official-docker-image)
+        (.withFixedExposedPort (int http-port) 5601)
+        (.withNetwork network)))
 
 (defn- build-node
   "Build cluster node with settings. The elasticsearch server is actually
@@ -32,20 +38,23 @@
        image-cfg -> Map of files on the classpath needed to build the docker
         image specified. Must specify dockerfile with key \"Dockerfile\" otherwise
         uses default image. See:
-        https://www.testcontainers.org/features/creating_images/"
+        https://www.testcontainers.org/features/creating_images/
+       kibana-port -> if provided will also bring up a kibana container to use with the
+        new elasticsearch node."
   ([http-port]
    (build-node http-port {}))
   ([http-port opts]
-   (let [{:keys [data-dir image-cfg log-level]} opts
+   (let [{:keys [data-dir image-cfg log-level kibana-port]} opts
          image (if (get image-cfg "Dockerfile")
                  (let [docker-image (ImageFromDockerfile.)]
                    (doseq [[k v] image-cfg]
                      (.withFileFromClasspath docker-image k v))
                    (.get docker-image))
-                 (format "%s:%s"
-                        elasticsearch-official-docker-image
-                        elasticsearch-version))
-         container (FixedHostPortGenericContainer. image)]
+                 elasticsearch-official-docker-image)
+         container (FixedHostPortGenericContainer. image)
+         network (Network/newNetwork)
+         kibana (when kibana-port
+                  (build-kibana kibana-port network))]
      ;; This will cause a pretty big performance hit locally if you provide data-dir.
      ;; You would probably be better off just connecting to the docker machine.
      (when data-dir
@@ -56,10 +65,14 @@
            (.withEnv "discovery.type" "single-node")
            (.withEnv "indices.breaker.total.use_real_memory" "false")
            (.withEnv "node.name" "embedded-elastic")
+           (.withNetwork network)
+           (.withNetworkAliases (into-array String ["elasticsearch"]))
            (.withFixedExposedPort (int http-port) 9200)
            (.withStartupTimeout (Duration/ofSeconds 120))
            (.waitingFor
-            (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200))))))
+            (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200)))
+     {:elasticsearch container
+      :kibana kibana})))
 
 (defrecord ElasticServer
   [
@@ -72,22 +85,32 @@
   (start
     [this system]
     (debug "Starting elastic server on port" http-port)
-    (let [^FixedHostPortGenericContainer node (build-node http-port opts)]
+    (let [containers (build-node http-port opts)
+          ^FixedHostPortGenericContainer node (:elasticsearch containers)
+          ^FixedHostPortGenericContainer kibana (:kibana containers)]
       (try
         (.start node)
-        (assoc this :node node)
+        (when kibana
+          (debug "Starting kibana server on port" (:kibana-port opts))
+          (.start kibana))
+        (assoc this :containers containers)
         (catch Exception e
-          (error "Container failed to start.")
-          (debug "Dumping failed elasticsearch logs:\n" (.getLogs node))
+          (error "Container(s) failed to start.")
+          (debug "Dumping elasticsearch logs:\n" (.getLogs node))
+          (when kibana
+            (debug "Dumping kibana logs:\n" (.getLogs kibana)))
           (throw e)))))
   (stop
     [this system]
-    (when-let [^FixedHostPortGenericContainer node (:node this)]
-      (do
-        (.stop node)
-        (when-let [data-dir (get-in this [:opts :data-dir])]
-          (util/delete-recursively (:data-dir this)))))
-    (assoc this :node nil)))
+    (let [containers (:containers this)
+          ^FixedHostPortGenericContainer node (:elasticsearch containers)
+          ^FixedHostPortGenericContainer kibana (:kibana containers)]
+      (.stop node)
+      (when-let [data-dir (get-in this [:opts :data-dir])]
+        (util/delete-recursively (:data-dir this)))
+      (when kibana
+        (.stop kibana)))
+    (assoc this :containers nil)))
 
 (defn create-server
   ([]
