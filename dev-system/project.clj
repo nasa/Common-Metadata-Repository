@@ -135,10 +135,6 @@
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out"
             ["test2junit"]
-            ;; Installs the Elasticsearch Marvel plugin locally.
-            ;; Visit http://localhost:9210/_plugin/marvel/sense/index.html
-            "install-marvel"
-            ["shell" "cmr" "install" "local" "marvel"]
             ;; Install spatial plugin locally
             "install-spatial-plugin"
             ["shell" "cmr" "install" "local" "spatial_plugin"]
