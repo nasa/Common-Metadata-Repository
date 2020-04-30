@@ -77,6 +77,7 @@ This could happen because queueing the message times out, RabbitMQ has surpassed
     * [GET /jobs/status - Gets pause/resume state of jobs](#jobs-status)
     * [POST /jobs/reindex-collection-permitted-groups - Runs the reindex collection permitted groups job.](#reindex-collection-permitted-groups)
     * [POST /jobs/reindex-all-collections - Runs to job to reindex all collections.](#reindex-all-collections)
+    * [POST /jobs/reindex-autocomplete-suggestions - Runs to job to reindex all autocomplete suggestions.](#reindex-all-suggestions)
     * [POST /jobs/cleanup-expired-collections - Runs the job to remove expired collections.](#cleanup-expired-collections)
   * /caches
     * [GET /caches - Gets a list of the caches in ingest.](#get-caches)
@@ -294,6 +295,13 @@ curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/reindex-all-collections
 ```
 
 It accepts an optional parameter `force_version=true`. If this option is specified then Elasticsearch will be reindexed with `force` version instead of the normal `external_gte`. See https://www.elastic.co/guide/en/elasticsearch/reference/2.2/docs-index_.html#_version_types This will cause all data in the database to overwrite the elasticsearch index even if there's a newer version in Elasticsearch. This can be used to fix issues where a newer revision was force deleted or as in the case CMR-2673 the collections were indexed with a larger version and then that was changed at the database level. There's a race condition when this is run. If a collection comes in during indexing the reindexing could overwrite that data in Elasticsearch with an older revision of the collection. The race condition can be corrected by running reindex all collections _without_ the `force_version=true` which will index any revisions with larger transaction ids over top of older data.
+
+### <a name="reindex-all-suggestions"></a> Run Reindex All Autocomplete Suggestions Job
+
+Reindexes every collection in every provider.
+```bash
+curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/reindex-all-autocomplete-suggestions
+```
 
 ### <a name="cleanup-expired-collections"></a> Run Cleanup Expired Collections Job
 

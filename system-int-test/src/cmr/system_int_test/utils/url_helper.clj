@@ -145,6 +145,12 @@
   []
   (format "http://localhost:%s/disable-writes" (transmit-config/ingest-port)))
 
+(defn indexer-reindex-suggestions-url
+  "URL to reindex autocomplete suggestions"
+  []
+  (format "http://localhost:%s/jobs/reindex-autocomplete-suggestions"
+          (transmit-config/ingest-port)))
+
 (defn reindex-collection-permitted-groups-url
   []
   (format "http://localhost:%s/jobs/reindex-collection-permitted-groups"
@@ -486,11 +492,6 @@
   "URL to reindex tags."
   []
   (format "http://localhost:%s/reindex-tags" (transmit-config/indexer-port)))
-
-(defn indexer-reindex-suggestions-url
-  "URL to reindex autocomplete suggestions"
-  []
-  (format "http://localhost:%s/reindex-autocomplete-suggestions" (transmit-config/indexer-port)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Virtual Product URLs
 
