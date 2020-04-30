@@ -3686,15 +3686,16 @@ On occasions when variable association cannot be processed at all due to invalid
 
 #### <a name="variable-dissociation"></a> Variable Dissociation
 
-A variable identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to variable association requests.
+A variable identified by its concept id can be dissociated from collections similar to variable association requests.
+Future work:
+1. We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list.
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
-'[{"concept_id": "C1200000005-PROV1"},
-  {"concept_id": "C1200000006-PROV1"},
-  {"concept_id": "C1200000007-PROV1"}]'
+'[{"concept_id": "C1200000005-PROV1"}]'
 
-HTTP/1.1 400 BAD REQUEST
+
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -3706,22 +3707,6 @@ Content-Length: 168
     },
     "associated_item":{
       "concept_id":"C1200000005-PROV1"
-    }
-  },
-  {
-    "warnings":[
-      "Variable [V1200000008-PROV1] is not associated with collection [C1200000006-PROV1]."
-    ],
-    "associated_item":{
-      "concept_id":"C1200000006-PROV1"
-    }
-  },
-  {
-    "errors":[
-      "Collection [C1200000007-PROV1] does not exist or is not visible."
-    ],
-    "associated_item":{
-      "concept_id":"C1200000007-PROV1"
     }
   }
 ]
