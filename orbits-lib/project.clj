@@ -1,5 +1,5 @@
 (def jruby-version
-  "The version of JRuby to use. This is the same as used in the collection renderer 
+  "The version of JRuby to use. This is the same as used in the collection renderer
    java package to prevent classpath issues"
   "9.2.6.0")
 
@@ -51,6 +51,8 @@
                             ~jruby-version
                             ~dev-gem-install-path]
             "clean-gems" ["shell" "rm" "-rf" ~dev-gem-install-path]
+            "install" ["do" "clean-gems," "install-gems," "install," "clean"]
+            "install!" "install"
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
             ;; Linting aliases
