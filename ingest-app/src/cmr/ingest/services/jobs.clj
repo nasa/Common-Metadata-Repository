@@ -310,5 +310,5 @@
     :daily-at-hour-and-minute [12 20]}
 
    {:job-type ReindexAutocompleteSuggestions
-    ;; Run everyday at 01:20. Chosen to be offset from the last job
-    :daily-at-hour-and-minute [01 20]}])
+    ;; Run everyday at 13:20. Chosen to be offset from the last job
+    :daily-at-hour-and-minute [13 20]}])
