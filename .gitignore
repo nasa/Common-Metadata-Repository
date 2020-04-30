@@ -8,6 +8,7 @@ browse-scaler/src/node_modules
 .classpath
 .project
 *.prefs
+*.eastwood
 
 ###############################
 ### Test Files
@@ -15,6 +16,8 @@ browse-scaler/src/node_modules
 */testreports.xml
 browse-scaler/src/__test__/junit.xml
 browse-scaler/src/coverage
+test2junit
+schema-validation-lib/build.xml
 
 ###############################
 ### Build Files

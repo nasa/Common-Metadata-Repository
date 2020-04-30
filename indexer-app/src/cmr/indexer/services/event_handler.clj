@@ -28,6 +28,10 @@
                            :refresh-acls? false
                            :force-version? force-version?}))
 
+(defmethod handle-provider-event :provider-autocomplete-suggestion-reindexing
+  [context {:keys [provider-id]}]
+  (indexer/reindex-autocomplete-suggestions-for-provider context provider-id))
+
 (defmethod handle-provider-event :refresh-collection-granule-aggregation-cache
   [context {:keys [granules-updated-in-last-n]}]
   (cgac/refresh-cache context granules-updated-in-last-n))
