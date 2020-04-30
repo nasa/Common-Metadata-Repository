@@ -51,7 +51,7 @@
                             ~jruby-version
                             ~dev-gem-install-path]
             "clean-gems" ["shell" "rm" "-rf" ~dev-gem-install-path]
-            "install" ["do" "clean-gems," "install-gems," "install," "clean"]
+            "install" ["do" "clean," "deps," "clean-gems," "install-gems," "install"]
             "install!" "install"
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
