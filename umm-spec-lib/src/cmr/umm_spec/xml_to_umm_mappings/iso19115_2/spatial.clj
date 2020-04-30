@@ -7,11 +7,12 @@
    [cmr.common.xml.simple-xpath :refer [select text]]
    [cmr.spatial.encoding.gmd :as gmd]
    [cmr.umm-spec.iso19115-2-util :as iso-util]
-   [cmr.umm-spec.migration.spatial-extent-migration :as sp-ext-mg]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :refer [generate-horizontal-resolution-code-name-map]]
    [cmr.umm-spec.util :as umm-spec-util]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as iso-shared-distrib]))
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as iso-shared-distrib]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as iso-xml-parsing-util]))
 
 (def coordinate-system-xpath
   (str "/gmi:MI_Metadata/gmd:referenceSystemInfo/gmd:MD_ReferenceSystem"
@@ -135,10 +136,9 @@
          "/" id-xpath "/gmd:code/gco:CharacterString")))
 
 (def horizontal-data-resolutions-xpath
-  (let [id-xpath "gmd:EX_GeographicDescription/gmd:geographicIdentifier/gmd:MD_Identifier"]
-    (str geographic-element-xpath
-         "[" id-xpath "/gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.horizontalresolutionandcoordinatesystem_GeographicCoordinateSystems']"
-         "/" id-xpath "/gmd:code/gco:CharacterString")))
+  (str geographic-element-xpath
+       "/gmd:EX_GeographicDescription[contains(@id, 'horizontalresolutionandcoordinatesystem_horizontaldataresolutions')]"
+       "/gmd:geographicIdentifier/gmd:MD_Identifier"))
 
 (def res-and-coord-desc-xpath
   (let [id-xpath "gmd:EX_GeographicDescription/gmd:geographicIdentifier/gmd:MD_Identifier"]
@@ -146,190 +146,190 @@
          "[" id-xpath "/gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.horizontalresolutionandcoordinatesystem']"
          "/" id-xpath "/gmd:code/gco:CharacterString")))
 
+(def geodetic-model-string-field-re-pattern
+  "Returns the pattern that matches all the related fields in description-string"
+  (re-pattern "HorizontalDatumName:|EllipsoidName:|SemiMajorAxis:|DenominatorOfFlatteningRatio:"))
+
 (defn- parse-geodetic-model
   "Parses GeodeticModel from the ISO XML document"
   [doc]
   (when-let [geodetic-model (value-of doc geodetic-model-xpath)]
-    (let [horizontal-datum-name-index (util/get-index-or-nil geodetic-model "HorizontalDatumName:")
-          ellipsoid-name-index (util/get-index-or-nil geodetic-model "EllipsoidName:")
-          semi-major-axis-index (util/get-index-or-nil geodetic-model "SemiMajorAxis:")
-          denominator-of-flattening-ratio-index (util/get-index-or-nil geodetic-model "DenominatorOfFlatteningRatio:")
-          end-index (count geodetic-model)
-          horizontal-datum-name (when horizontal-datum-name-index
-                                  (iso-shared-distrib/get-substring-with-sort geodetic-model horizontal-datum-name-index
-                                                                              ellipsoid-name-index semi-major-axis-index
-                                                                              denominator-of-flattening-ratio-index end-index))
-          ellipsoid-name (when ellipsoid-name-index
-                           (iso-shared-distrib/get-substring-with-sort geodetic-model ellipsoid-name-index
-                                                                       horizontal-datum-name-index semi-major-axis-index
-                                                                       denominator-of-flattening-ratio-index end-index))
-          semi-major-axis (when semi-major-axis-index
-                            (iso-shared-distrib/get-substring-with-sort geodetic-model semi-major-axis-index
-                                                                        ellipsoid-name-index horizontal-datum-name-index
-                                                                        denominator-of-flattening-ratio-index end-index))
-          denominator-of-flattening-ratio-index (when denominator-of-flattening-ratio-index
-                                                  (iso-shared-distrib/get-substring-with-sort geodetic-model denominator-of-flattening-ratio-index
-                                                                                              ellipsoid-name-index horizontal-datum-name-index
-                                                                                              semi-major-axis-index end-index))]
-      (when (or horizontal-datum-name ellipsoid-name semi-major-axis denominator-of-flattening-ratio-index)
+    (let [m (iso-xml-parsing-util/convert-iso-description-string-to-map
+              geodetic-model
+              geodetic-model-string-field-re-pattern)
+          horizontal-datum-name (:HorizontalDatumName m)
+          ellipsoid-name (:EllipsoidName m)
+          semi-major-axis (:SemiMajorAxis m)
+          denominator-of-flattening-ratio (:DenominatorOfFlatteningRatio m)]
+      (when (or horizontal-datum-name ellipsoid-name semi-major-axis denominator-of-flattening-ratio)
         (umm-c/map->GeodeticModelType
-          (util/remove-nil-keys
-            {:HorizontalDatumName (when-not (empty? horizontal-datum-name)
-                                    horizontal-datum-name)
-             :EllipsoidName (when-not (empty? ellipsoid-name)
-                              ellipsoid-name)
-             :SemiMajorAxis (when-not (empty? semi-major-axis)
-                              (read-string semi-major-axis))
-             :DenominatorOfFlatteningRatio (when-not (empty? denominator-of-flattening-ratio-index)
-                                             (read-string denominator-of-flattening-ratio-index))}))))))
+          {:HorizontalDatumName (when-not (empty? horizontal-datum-name)
+                                  horizontal-datum-name)
+           :EllipsoidName (when-not (empty? ellipsoid-name)
+                            ellipsoid-name)
+           :SemiMajorAxis (when-not (empty? semi-major-axis)
+                            (read-string semi-major-axis))
+           :DenominatorOfFlatteningRatio (when-not (empty? denominator-of-flattening-ratio)
+                                           (read-string denominator-of-flattening-ratio))})))))
+
+(def local-coord-sys-string-field-re-pattern
+  "Returns the pattern that matches all the related fields in description-string"
+  (re-pattern "GeoReferenceInformation:|Description:"))
 
 (defn- parse-local-coord-sys
   "Parses LocalCoordinateSystem from the ISO XML document"
   [doc]
   (when-let [local-coords (value-of doc local-coords-xpath)]
-    (let [geo-reference-information-index (util/get-index-or-nil
-                                           local-coords
-                                           "GeoReferenceInformation:")
-          description-index (util/get-index-or-nil local-coords "Description:")
-          end-index (count local-coords)
-          geo-reference-information (when geo-reference-information-index
-                                      (iso-shared-distrib/get-substring-with-sort
-                                       local-coords geo-reference-information-index
-                                       description-index end-index))
-          description (when description-index
-                           (iso-shared-distrib/get-substring-with-sort
-                            local-coords description-index
-                            geo-reference-information-index end-index))]
+    (let [m (iso-xml-parsing-util/convert-iso-description-string-to-map
+              local-coords
+              local-coord-sys-string-field-re-pattern)
+          geo-reference-information (:GeoReferenceInformation m)
+          description (:Description m)]
       (when (or geo-reference-information description)
         (umm-c/map->LocalCoordinateSystemType
-         (util/remove-nil-keys
           {:GeoReferenceInformation (when-not (empty? geo-reference-information)
                                       geo-reference-information)
            :Description (when-not (empty? description)
-                          description)}))))))
+                          description)})))))
 
-(defn- get-substring-with-index
-  "With given index and indexes, run get-substring-with-sort with proper args."
-  [resolution-string indexes ele-index]
-  (apply
-    iso-shared-distrib/get-substring-with-sort
-    resolution-string
-    ele-index
-    (remove #(= % ele-index) indexes)))
+(defmacro horizontal-resolution-code-name-to-key-map
+  "This macro takes the map used in cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial/
+   generate-horizontal-resolution-code-name-map and converts the values into the keys and the
+   original key as a value. The resulting map looks like:
+   {\"variesresolution\" :VariesResolution
+    \"VariesResolution\" :VariesResolution
+    etc.}
+   This map is used by the parsing code to construct a UMM-C resolutions structure based on what
+   is contained in the ISO record."
+  []
+  (into {}
+    (for [x (clojure.set/map-invert generate-horizontal-resolution-code-name-map)]
+      {(first (first x)) (second x)
+       (second (first x)) (second x)})))
 
-(defn- group-resolutions
-  "Returns horizontal-data-resolutions in groups."
-  [horizontal-data-resolutions]
-  (when (seq horizontal-data-resolutions)
-    (let [varies (first (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/varies))
-          point (first (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/point))
-          non-gridded (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/non-gridded)
-          non-gridded-range (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/non-gridded-range)
-          gridded (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/gridded)
-          generic (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/not-provided)
-          gridded-range (sp-ext-mg/get-enum-group horizontal-data-resolutions umm-spec-util/gridded-range)]
-     (umm-c/map->HorizontalDataResolutionType
-       {:VariesResolution (when (seq varies)
-                            (umm-c/map->HorizontalDataResolutionVariesType
-                              varies))
-        :PointResolution (when (seq point)
-                           (umm-c/map->HorizontalDataResolutionPointType
-                             point))
-        :NonGriddedResolutions (when (seq non-gridded)
-                                 (map umm-c/map->HorizontalDataResolutionNonGriddedType
-                                      (sp-ext-mg/remove-enum-from-group non-gridded)))
-        :NonGriddedRangeResolutions (when (seq non-gridded-range)
-                                      (map umm-c/map->HorizontalDataResolutionNonGriddedRangeType
-                                           (sp-ext-mg/remove-enum-from-group non-gridded-range)))
-        :GriddedResolutions (when (seq gridded)
-                              (map umm-c/map->HorizontalDataResolutionGriddedType
-                                   (sp-ext-mg/remove-enum-from-group gridded)))
-        :GenericResolutions (when (seq generic)
-                              (map umm-c/map->HorizontalDataGenericResolutionType
-                                   (sp-ext-mg/remove-enum-from-group generic)))
-       :GriddedRangeResolutions (when (seq gridded-range)
-                                  (map umm-c/map->HorizontalDataResolutionGriddedRangeType
-                                       (sp-ext-mg/remove-enum-from-group gridded-range)))}))))
+(defn- parse-xpath-result-horizontal-resolution-key-name-map
+  "This function takes an XPath parsed element resolution as input - example: #clojure.data.xml.Element{
+     :tag :description, :attrs {}, :content (#clojure.data.xml.Element{
+     :tag :CharacterString, :attrs {},
+     :content (HorizontalResolutionAndCoordinateSystem_GenericResolutions)})})
+   and builds on the passed in map like:
+  {:description \"HorizontalResolutionAndCoordinateSystem_GenericResolutions\"}.
+  This map is used later to programatically pull out the UMM-C class name. in this example it
+  would be GenericResolutions"
+  [xpath-parsed-resolution-element map]
+  (def res1 xpath-parsed-resolution-element)
+  (let [x (get-in xpath-parsed-resolution-element [:tag])]
+    (assoc map x (-> xpath-parsed-resolution-element
+                     (get-in [:content])
+                     first
+                     (get-in [:content])
+                     first))))
 
-(defn- parse-horizontal-data-resolutions
+(defn- get-horizontal-resolution-key-name
+  "Find the key (the UMM-C type) for each different type of resolution that can be
+   used. The passed in map is the map that was generated by
+   parse-xpath-result-horizontal-resolution-key-name-map. Example:
+   {:codeSpace \"HorizontalResolutionAndCoordinateSystem_genericresolutions\"
+    :description \"HorizontalResolutionAndCoordinateSystem_GenericResolutions\"}
+   First look at :codeSpace to see if it
+   exists to parse out the UMM-C type, otherwise look at :description."
+  [m]
+  (if (:codeSpace m)
+       (-> (:codeSpace m)
+           name
+           (string/split #"_")
+           second
+           ;; The threads macro will insert the string so it will look like
+           ;; the following ((horizontal-resolution-code-name-to-key-map) "genericresolutions")
+           ;; and the correct value :GenericResolutions is passed back.
+           ((horizontal-resolution-code-name-to-key-map))))
+       (when (:description m)
+         (-> (:description m)
+             name
+             (string/split #"_")
+             second
+             ;; The threads macro will insert the string so it will look like
+             ;; the following ((horizontal-resolution-code-name-to-key-map) "genericresolutions")
+             ;; and the correct value :GenericResolutions is passed back.
+             ((horizontal-resolution-code-name-to-key-map)))))
+
+(def horizontal-resolution-description-string-field-re-pattern
+  "Returns the pattern that matches all the related fields in description-string"
+  (re-pattern "XDimension:|MinimumXDimension:|MaximumXDimension:|YDimension:|MinimumYDimension:|MaximumYDimension:|Unit:|ViewingAngleType:|ScanDirection:"))
+
+(def horizontal-resolution-keys-represent-numbers
+  "Returns the list of keys where the values are numbers."
+  '(:XDimension :MinimumXDimension :MaximumXDimension :YDimension :MinimumYDimension :MaximumYDimension))
+
+(defn- ummify-horizontal-resolution
+  "Converts the passed in map (m) into a UMM-C defrecord for one of the horizontal data resolution
+   sub elements that is defined by the passed in key (k)."
+  [k m]
+  (case k
+    :NonGriddedResolutions (umm-c/map->HorizontalDataResolutionNonGriddedType m)
+    :NonGriddedRangeResolutions (umm-c/map->HorizontalDataResolutionNonGriddedRangeType m)
+    :GriddedResolutions (umm-c/map->HorizontalDataResolutionGriddedType m)
+    :GriddedRangeResolutions (umm-c/map->HorizontalDataResolutionGriddedRangeType m)
+    :GenericResolutions (umm-c/map->HorizontalDataGenericResolutionType m)
+    nil))
+
+(defn get-single-resolution-umm-structure
+  "Parses the passed in XPath XML structure into a horizontal data resolution UMM-C typed map."
+  [parsed-xml-structure]
+  (let [parsed-xml (into {}
+                     (map #(parse-xpath-result-horizontal-resolution-key-name-map % {})
+                          (:content parsed-xml-structure)))
+        horizontal-res-key-name (get-horizontal-resolution-key-name parsed-xml)]
+    (if (or (= horizontal-res-key-name :VariesResolution)
+            (= horizontal-res-key-name :PointResolution))
+      {horizontal-res-key-name (:code parsed-xml)};)))
+      {horizontal-res-key-name
+       (->> (iso-xml-parsing-util/convert-iso-description-string-to-map
+              (:code parsed-xml)
+              horizontal-resolution-description-string-field-re-pattern
+              horizontal-resolution-keys-represent-numbers)
+            (ummify-horizontal-resolution horizontal-res-key-name)
+            util/remove-nil-keys)})))
+
+(defn- group-same-structures
+  "This function groups a list of maps together based on a passed in key."
+  [k list-of-maps ]
+  (->> list-of-maps
+       (map k)
+       (remove nil?)))
+
+(defn parse-horizontal-data-resolutions
   "Parses HorizontalDataResolution from the ISO XML document"
   [doc]
-  (when-let [horizontal-data-resolutions (select doc horizontal-data-resolutions-xpath)]
-    (for [horizontal-data-resolution horizontal-data-resolutions
-          :let [resolution-string (first (:content horizontal-data-resolution))
-                unit-index (util/get-index-or-nil resolution-string "Unit:")
-                horizontal-resolution-processing-level-enum-index (util/get-index-or-nil
-                                                                   resolution-string
-                                                                   "HorizontalResolutionProcessingLevelEnum:")
-                minimum-xdimension-index (util/get-index-or-nil resolution-string "MinimumXDimension:")
-                maximum-xdimension-index (util/get-index-or-nil resolution-string "MaximumXDimension:")
-                minimum-ydimension-index (util/get-index-or-nil resolution-string "MinimumYDimension:")
-                maximum-ydimension-index (util/get-index-or-nil resolution-string "MaximumYDimension:")
-                scan-direction-index (util/get-index-or-nil resolution-string "ScanDirection:")
-                viewing-angle-type-index (util/get-index-or-nil resolution-string "ViewingAngleType:")
-                end-index (count resolution-string)
-                ;;x/ydimension won't appear together with min/max x/ydimensions and
-                xdimension-index (when (and (nil? minimum-xdimension-index)
-                                            (nil? maximum-xdimension-index))
-                                   (util/get-index-or-nil resolution-string "XDimension:"))
-                ydimension-index (when (and (nil? minimum-ydimension-index)
-                                            (nil? maximum-ydimension-index))
-                                   (util/get-index-or-nil resolution-string "YDimension:"))
-                indexes [viewing-angle-type-index scan-direction-index maximum-xdimension-index
-                         minimum-xdimension-index maximum-ydimension-index minimum-ydimension-index
-                         xdimension-index ydimension-index horizontal-resolution-processing-level-enum-index
-                         unit-index end-index]
-                xdimension (when xdimension-index
-                             (get-substring-with-index resolution-string indexes xdimension-index))
-                ydimension (when ydimension-index
-                             (get-substring-with-index resolution-string indexes ydimension-index))
-                unit (when unit-index
-                       (get-substring-with-index resolution-string indexes unit-index))
-                minimum-ydimension (when minimum-ydimension-index
-                                     (get-substring-with-index resolution-string indexes minimum-ydimension-index))
-                maximum-ydimension (when maximum-ydimension-index
-                                     (get-substring-with-index resolution-string indexes maximum-ydimension-index))
-                minimum-xdimension (when minimum-xdimension-index
-                                     (get-substring-with-index resolution-string indexes minimum-xdimension-index))
-                maximum-xdimension (when maximum-xdimension-index
-                                     (get-substring-with-index resolution-string indexes maximum-xdimension-index))
-                scan-direction (when scan-direction-index
-                                 (get-substring-with-index resolution-string indexes scan-direction-index))
-                viewing-angle-type (when viewing-angle-type-index
-                                     (get-substring-with-index resolution-string indexes viewing-angle-type-index))
-                horizontal-resolution-processing-level-enum (when horizontal-resolution-processing-level-enum-index
-                                                              (get-substring-with-index resolution-string indexes horizontal-resolution-processing-level-enum-index))]]
-      (util/remove-nil-keys
-        {:XDimension (when (seq xdimension)
-                       (read-string xdimension))
-         :YDimension (when (seq ydimension)
-                       (read-string ydimension))
-         :Unit (when (seq unit)
-                 unit)
-         :MinimumYDimension (when (seq minimum-ydimension)
-                              (read-string minimum-ydimension))
-         :MaximumYDimension (when (seq maximum-ydimension)
-                              (read-string maximum-ydimension))
-         :MinimumXDimension (when (seq minimum-xdimension)
-                              (read-string minimum-xdimension))
-         :MaximumXDimension (when (seq maximum-xdimension)
-                              (read-string maximum-xdimension))
-         :ScanDirection (when (seq scan-direction)
-                          scan-direction)
-         :ViewingAngleType (when (seq viewing-angle-type)
-                             viewing-angle-type)
-         :HorizontalResolutionProcessingLevelEnum (when (seq horizontal-resolution-processing-level-enum)
-                                                    horizontal-resolution-processing-level-enum)}))))
+  (let [horizontal-data-resolutions (select doc horizontal-data-resolutions-xpath)
+        list-of-maps (for [horizontal-data-resolution horizontal-data-resolutions]
+                       (get-single-resolution-umm-structure horizontal-data-resolution))
+        json-horizontal-data-resolutions
+          (util/remove-nil-keys
+            (umm-c/map->HorizontalDataResolutionType
+              {:VariesResolution (first
+                                   (group-same-structures :VariesResolution list-of-maps))
+               :PointResolution (first
+                                  (group-same-structures :PointResolution list-of-maps))
+               :NonGriddedResolutions (seq
+                                        (group-same-structures :NonGriddedResolutions list-of-maps))
+               :NonGriddedRangeResolutions (seq
+                                             (group-same-structures :NonGriddedRangeResolutions list-of-maps))
+               :GriddedResolutions (seq
+                                     (group-same-structures :GriddedResolutions list-of-maps))
+               :GriddedRangeResolutions (seq
+                                          (group-same-structures :GriddedRangeResolutions list-of-maps))
+               :GenericResolutions (seq (group-same-structures :GenericResolutions list-of-maps))}))]
+    (when-not (empty? json-horizontal-data-resolutions)
+      json-horizontal-data-resolutions)))
 
 (defn- parse-horizontal-spatial-domain
   "Parse the horizontal domain from the ISO XML document. Horizontal domains are encoded in an ISO XML"
   [doc extent-info sanitize?]
-  (let [description (when-let [description-string
-                               (value-of doc res-and-coord-desc-xpath)]
-                      (let [description-index
-                            (util/get-index-or-nil description-string "Description:")]
-                        (iso-shared-distrib/get-substring-with-sort
-                         description-string description-index (count description-string))))]
+  (let [description-string (value-of doc res-and-coord-desc-xpath)
+        m (when description-string
+            (iso-xml-parsing-util/convert-iso-description-string-to-map description-string (re-pattern "Description:")))
+        description (:Description m)]
     (util/remove-nil-keys
      {:Geometry (parse-geometry doc extent-info sanitize?)
       :ZoneIdentifier (value-of doc zone-identifier-xpath)
@@ -337,7 +337,7 @@
                                       {:Description (iso-util/safe-trim description)
                                        :GeodeticModel (parse-geodetic-model doc)
                                        :LocalCoordinateSystem (parse-local-coord-sys doc)
-                                       :HorizontalDataResolution (group-resolutions (parse-horizontal-data-resolutions doc))})})))
+                                       :HorizontalDataResolution (parse-horizontal-data-resolutions doc)})})))
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from ISO XML document."
