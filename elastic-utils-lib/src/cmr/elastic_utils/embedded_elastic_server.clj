@@ -19,7 +19,7 @@
   "Official kibana docker image."
   "docker.elastic.co/kibana/kibana:7.5.2")
 
-(defn build-kibana
+(defn- build-kibana
   "Build kibana in an embedded docker."
   [http-port network]
   (doto (FixedHostPortGenericContainer. kibana-official-docker-image)

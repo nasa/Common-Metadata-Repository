@@ -1,6 +1,5 @@
 (ns cmr.elasticsearch.plugins.spatial.script.core
   (:require
-   [clojure.string :as s]
    [cmr.common.util :as u]
    [cmr.spatial.serialize :as srl])
   (:import
