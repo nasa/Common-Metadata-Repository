@@ -271,7 +271,7 @@
         suggestion-docs (map get-suggestion-docs humanized-fields)]
     (flatten suggestion-docs)))
 
-(defn- reindex-suggestions-for-provider
+(defn reindex-autocomplete-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
   [context provider-id]
   (info "Reindexing latest autocomplete suggestions for provider" provider-id)
@@ -292,7 +292,7 @@
   (let [provider-ids (map :provider-id (meta-db/get-providers context))]
     (doseq [provider-id provider-ids]
       (try
-        (reindex-suggestions-for-provider context provider-id)
+        (reindex-autocomplete-suggestions-for-provider context provider-id)
         (catch Exception e (error (format "An error occurred while reindexing autocomplete suggestions in provider [%s] : %s"
                                           provider-id
                                           (.getMessage e))))))))
