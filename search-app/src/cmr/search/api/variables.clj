@@ -14,12 +14,26 @@
     (context "/:variable-concept-id" [variable-concept-id]
       (context "/associations" []
 
+        ;; Associate a variable with a collection
+        (POST "/collections/:collection-concept-id" [collection-concept-id
+                                                     req :as {:keys [request-context headers]}]
+              (association/associate-concept-to-collections
+                request-context headers [{:concept-id collection-concept-id}] :variable variable-concept-id))
+
         ;; Associate a variable with a list of collections
+        ;; DEPRECATED
         (POST "/" {:keys [request-context headers body]}
           (association/associate-concept-to-collections
-           request-context headers (slurp body) :variable variable-concept-id))
+            request-context headers (slurp body) :variable variable-concept-id))
+
+        ;; Dissociate a variable from a collection
+        (DELETE "/collections/:collection-concept-id" [collection-concept-id
+                                                       req :as {:keys [request-context headers]}]
+          (association/dissociate-concept-from-collections
+            request-context headers [{:concept-id collection-concept-id}] :variable variable-concept-id))
 
         ;; Dissociate a variable from a list of collections
+        ;; DEPRECATED - prefer the route of /variable/associations/:variable-id/collections/:collection-id
         (DELETE "/" {:keys [request-context headers body]}
           (association/dissociate-concept-from-collections
-           request-context headers (slurp body) :variable variable-concept-id))))))
+            request-context headers (slurp body) :variable variable-concept-id))))))

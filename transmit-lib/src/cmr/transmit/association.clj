@@ -28,6 +28,18 @@
   [context concept-id]
   (associations-by-concept-ids-url context :variable concept-id))
 
+(defmulti single-association-url
+  (fn [context concept-id associated-concept-id]
+    (-> [concept-id associated-concept-id]
+        concepts/parse-concept-id
+        :concept-type)))
+
+(defmethod single-association-url [:variable :collection]
+  [context concept-id associated-concept-id]
+  (format "%s/collections/%s"
+          (associations-by-concept-ids-url context :variable concept-id)
+          associated-concept-id))
+
 (defn associate-concept
   "Sends a request to associate the concept with collections based on the concept type.
   Valid options are
@@ -70,6 +82,50 @@
                  :raw? raw?
                  :http-options (merge {:body (json/generate-string content)
                                        :content-type :json
+                                       :headers headers
+                                       :accept :json}
+                                      http-options)}))))
+
+(defn associate-single-concept
+  "Sends a request to associate the concept with a collection based on the concept type.
+  Valid options are
+  * :raw? - set to true to indicate the raw response should be returned. See
+  cmr.transmit.http-helper for more info. Default false.
+  * token - the user token to use when creating the token. If not set the token in the context will
+  be used.
+  * http-options - Other http-options to be sent to clj-http."
+  ([context concept-id assoc-concept-id]
+   (associate-single-concept context concept-id assoc-concept-id nil))
+  ([context concept-id assoc-concept-id {:keys [raw? token http-options]}]
+   (let [token (or token (:token context))
+         headers (when token {config/token-header token})]
+     (h/request context :search
+                {:url-fn #(single-association-url % concept-id assoc-concept-id)
+                 :method :post
+                 :raw? raw?
+                 :http-options (merge {:content-type :json
+                                       :headers headers
+                                       :accept :json}
+                                      http-options)}))))
+
+(defn dissociate-single-concept
+  "Sends a request to dissociate the concept with a collection based on the concept type.
+  Valid options are
+  * :raw? - set to true to indicate the raw response should be returned. See
+  cmr.transmit.http-helper for more info. Default false.
+  * token - the user token to use when creating the token. If not set the token in the context will
+  be used.
+  * http-options - Other http-options to be sent to clj-http."
+  ([context concept-id assoc-concept-id]
+   (dissociate-single-concept context concept-id assoc-concept-id nil))
+  ([context concept-id assoc-concept-id {:keys [raw? token http-options]}]
+   (let [token (or token (:token context))
+         headers (when token {config/token-header token})]
+     (h/request context :search
+                {:url-fn #(single-association-url % concept-id assoc-concept-id)
+                 :method :delete
+                 :raw? raw?
+                 :http-options (merge {:content-type :json
                                        :headers headers
                                        :accept :json}
                                       http-options)}))))
