@@ -3662,6 +3662,29 @@ Future work:
 2. We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list. A ticket is filed to address these issues in the future if necessary.
 
 ```
+curl -XPOST -i -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations/collections/C1200000005-PROV1
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 168
+
+[
+  {
+    "variable_association":{
+      "concept_id":"VA1200000009-CMR",
+      "revision_id":1
+    },
+    "associated_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  }
+]
+```
+
+##### DEPRECATED
+Passing the target concept-id in the body of the POST has been deprecated.
+
+```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"}]'
 
@@ -3687,9 +3710,30 @@ On occasions when variable association cannot be processed at all due to invalid
 #### <a name="variable-dissociation"></a> Variable Dissociation
 
 A variable identified by its concept id can be dissociated from collections similar to variable association requests.
-Future work:
-1. We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list.
 
+```
+curl -XDELETE -i -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations/collections/C1200000005-PROV1
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 168
+
+[
+  {
+    "variable_association":{
+      "concept_id":"VA1200000009-CMR",
+      "revision_id":2
+    },
+    "associated_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  }
+```
+
+##### DEPRECATED
+Sending the list of targets to dissociate from has been deprecated.
+
+We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list.
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"}]'
