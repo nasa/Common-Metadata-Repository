@@ -241,21 +241,16 @@
                                                coll-concept-id)]}}
           response)))))
 
-(deftest dissociate-fail
-  (let [group1-concept-id (echo-util/get-or-create-group (system/context) "group1")
-        ;; Grant all collections in PROV1 and 2
-        _ (echo-util/grant-registered-users (system/context)
-                                            (echo-util/coll-catalog-item-id "PROV1"))
-        _ (echo-util/grant-registered-users (system/context)
-                                            (echo-util/coll-catalog-item-id "PROV2"))
-        _ (echo-util/grant-group (system/context)
-                                 group1-concept-id
-                                 (echo-util/coll-catalog-item-id "PROV3"))
-
-        variable-name "variable1"
+(deftest dissociate-variable-failure-test
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
+  (let [variable-name "variable1"
         token (echo-util/login (system/context) "user1")
-        {:keys [concept-id]} (vu/ingest-variable-with-attrs {:Name variable-name})
-
+        var-concept (vu/make-variable-concept {:Name variable-name})
+        {:keys [concept-id revision-id]} (vu/ingest-variable var-concept)
+        coll-concept-id (:concept-id (data-core/ingest
+                                       "PROV1"
+                                       (collection/collection)))
         [c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2
          c1-p3 c2-p3 c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
@@ -267,24 +262,6 @@
                                                 :version-id (str "V" n)
                                                 :entry-title (str "ET" n)}))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]]
-       (testing "Dissociate multiple variables"
-         (let [{:keys [status error]} (association-util/dissociate-by-concept-ids
-                                        token
-                                        concept-id
-                                        (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
-           (is (= 400 status))
-           (is (= "Only one variable at a time may be dissociated." error))))))
-
-(deftest dissociate-variable-failure-test
-  (echo-util/grant-registered-users (system/context)
-                                    (echo-util/coll-catalog-item-id "PROV1"))
-  (let [variable-name "variable1"
-        token (echo-util/login (system/context) "user1")
-        var-concept (vu/make-variable-concept {:Name variable-name})
-        {:keys [concept-id revision-id]} (vu/ingest-variable var-concept)
-        coll-concept-id (:concept-id (data-core/ingest
-                                       "PROV1"
-                                       (collection/collection)))]
 
     (testing "Dissociate variable using query sent with invalid content type"
       (are [dissociate-variable-fn request-json]
@@ -319,7 +296,15 @@
               :errors [(format "Variable with concept id [%s] was deleted." concept-id)]}
              (dissociate-variable-fn token concept-id request-json))
 
-        association-util/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))))
+        association-util/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
+    
+    (testing "Dissociate multiple variables"
+      (let [{:keys [status error]} (association-util/dissociate-by-concept-ids
+                                     token
+                                     concept-id
+                                     (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
+        (is (= 400 status))
+        (is (= "Only one variable at a time may be dissociated." error))))))
 
 ;; This tests association retention when collections and variables are updated or deleted.
 (deftest association-retention-test
