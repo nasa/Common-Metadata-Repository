@@ -105,6 +105,8 @@
             "build-all" ["do"
                          "install-es-deps,"
                          "install-es-plugin,"]
+            ;; Alias to test2junit for consistency with lein-test-out
+            "test-out" ["test2junit"]
             "package-all" ["do"
                            "install-es-deps,"
                            "package-es-plugin,"
