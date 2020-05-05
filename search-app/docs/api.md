@@ -3662,7 +3662,7 @@ Future work:
 2. We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list. A ticket is filed to address these issues in the future if necessary.
 
 ```
-curl -XPOST -i -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations/collections/C1200000005-PROV1
+curl -XPOST -i -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/associations/variables/V1200000008-PROV1/collections/C1200000005-PROV1
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
@@ -3682,7 +3682,7 @@ Content-Length: 168
 ```
 
 ##### DEPRECATED
-Passing the target concept-id in the body of the POST has been deprecated.
+Passing the association target concept-id in the body of the POST has been deprecated.
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
@@ -3712,7 +3712,7 @@ On occasions when variable association cannot be processed at all due to invalid
 A variable identified by its concept id can be dissociated from collections similar to variable association requests.
 
 ```
-curl -XDELETE -i -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations/collections/C1200000005-PROV1
+curl -XDELETE -i -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/associations/variables/V1200000008-PROV1/collections/C1200000005-PROV1
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8

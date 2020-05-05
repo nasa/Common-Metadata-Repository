@@ -30,14 +30,15 @@
 
 (defmulti single-association-url
   (fn [context concept-id associated-concept-id]
-    (-> [concept-id associated-concept-id]
-        concepts/parse-concept-id
-        :concept-type)))
+    (->> [concept-id associated-concept-id]
+         (map #(concepts/parse-concept-id %))
+         (map :concept-type))))
 
 (defmethod single-association-url [:variable :collection]
   [context concept-id associated-concept-id]
-  (format "%s/collections/%s"
-          (associations-by-concept-ids-url context :variable concept-id)
+  (format "%s/associations/variables/%s/collections/%s"
+          (conn/root-url context)
+          concept-id
           associated-concept-id))
 
 (defn associate-concept

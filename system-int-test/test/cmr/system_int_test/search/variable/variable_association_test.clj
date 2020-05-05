@@ -452,3 +452,44 @@
     ;; verify association
     (assert-variable-association token [] "variable1")
     (assert-variable-association token [] "variable2")))
+
+(deftest single-association-route-test
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV2"))
+
+  (let [[c1-p1 c2-p1 c3-p1 c4-p1
+         c1-p2 c2-p2 c3-p2 c4-p2
+         c1-p3 c2-p3 c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
+                                               n (range 1 5)]
+                                           (:concept-id (data-core/ingest
+                                                          p
+                                                          (collection/collection
+                                                            {:short-name (str "S" n)
+                                                             :version-id (str "V" n)
+                                                             :entry-title (str "ET" n)})))))
+        all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
+        all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
+        token (echo-util/login (system/context) "user1")
+        {:keys [concept-id]} (vu/ingest-variable-with-attrs {:Name "variable1"})]
+    (index/wait-until-indexed)
+
+    (testing "variable to collection"
+      (testing "association should succeed"
+        (let [response (association-util/associate-by-single-concept-id
+                         token concept-id c1-p1)]
+        (vu/assert-variable-association-response-ok?
+          {["C1200000013-PROV1"] {:concept-id "VA1200000026-CMR"
+                                  :revision-id 1}}
+          response)))
+
+      (testing "dissociation shoud success"
+        (let [response (association-util/dissociate-by-single-concept-id
+                       token concept-id c1-p1)
+              {:keys [status body]} response]
+          (is (= 200 status))
+          (is (= '({:variable-association {:concept-id "VA1200000026-CMR"
+                                            :revision-id 2}
+                    :associated-item {:concept-id "C1200000013-PROV1"}})
+                 body)))))))
