@@ -483,6 +483,16 @@
             {["C1200000013-PROV1"] {:concept-id "VA1200000026-CMR"
                                     :revision-id 1}}
             response)))
+      
+      (testing "association should fail if already associated"
+        (let [response (association-util/associate-by-single-concept-id
+                         token concept-id c2-p1)]
+          (vu/assert-variable-association-bad-request
+            {["C1200000014-PROV1"] {:errors [(format "Variable [%s] and collection [%s] can not be associated because the variable is already associated with another collection [%s]."
+                                                     concept-id
+                                                     c2-p1
+                                                     c1-p1)]}}
+            response)))
 
       (testing "dissociation shoud success"
         (let [response (association-util/dissociate-by-single-concept-id

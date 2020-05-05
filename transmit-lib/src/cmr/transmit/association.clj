@@ -36,7 +36,7 @@
 
 (defmethod single-association-url [:variable :collection]
   [context concept-id associated-concept-id]
-  (format "%s/associate/variables/%s/collections/%s"
+  (format "%s/associations/variables/%s/collections/%s"
           (conn/root-url context)
           concept-id
           associated-concept-id))
