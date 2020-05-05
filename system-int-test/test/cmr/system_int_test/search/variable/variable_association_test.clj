@@ -479,17 +479,17 @@
       (testing "association should succeed"
         (let [response (association-util/associate-by-single-concept-id
                          token concept-id c1-p1)]
-        (vu/assert-variable-association-response-ok?
-          {["C1200000013-PROV1"] {:concept-id "VA1200000026-CMR"
-                                  :revision-id 1}}
-          response)))
+          (vu/assert-variable-association-response-ok?
+            {["C1200000013-PROV1"] {:concept-id "VA1200000026-CMR"
+                                    :revision-id 1}}
+            response)))
 
       (testing "dissociation shoud success"
         (let [response (association-util/dissociate-by-single-concept-id
-                       token concept-id c1-p1)
+                         token concept-id c1-p1)
               {:keys [status body]} response]
           (is (= 200 status))
           (is (= '({:variable-association {:concept-id "VA1200000026-CMR"
-                                            :revision-id 2}
+                                           :revision-id 2}
                     :associated-item {:concept-id "C1200000013-PROV1"}})
                  body)))))))

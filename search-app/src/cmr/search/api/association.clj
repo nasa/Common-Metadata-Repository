@@ -107,7 +107,7 @@
       (api-response status-code results))))
 
 (def association-api-routes
-  (context "/associations" []
+  (context "/associate" []
     (context "/variables" []             
       (context "/:variable-concept-id" [variable-concept-id]
         (context "/collections" []
