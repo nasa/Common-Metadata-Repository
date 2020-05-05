@@ -3671,7 +3671,7 @@ Content-Length: 168
 [
   {
     "variable_association":{
-      "concept_id":"VA1200000009-CMR",
+      "concept_id":"VA1200000008-CMR",
       "revision_id":1
     },
     "associated_item":{
@@ -3695,11 +3695,11 @@ Content-Length: 168
 [
   {
     "variable_association":{
-      "concept_id":"VA1200000009-CMR",
+      "concept_id":"V1200000008-PROV1
       "revision_id":1
     },
     "associated_item":{
-      "concept_id":"C1200000005-PROV1"
+      "concept_id":"C1200000005-PROV1
     }
   }
 ]
@@ -3746,7 +3746,7 @@ Content-Length: 168
 [
   {
     "variable_association":{
-      "concept_id":"VA1200000009-CMR",
+      "concept_id":"VA1200000008-PROV1",
       "revision_id":2
     },
     "associated_item":{
