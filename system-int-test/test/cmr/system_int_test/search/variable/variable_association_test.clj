@@ -322,7 +322,7 @@
                                             nil {:variable-name "variable1"})
         assert-variable-not-associated (fn []
                                          (let [refs (search/find-refs
-                                                      :collection {:variable-name "variable1"})]
+                                                     :collection {:variable-name "variable1"})]
                                            (is (nil? (:errors refs)))
                                            (is (data-core/refs-match? [] refs))))]
     (index/wait-until-indexed)
@@ -346,8 +346,8 @@
     ;; create the association again
     (let [latest-coll (assoc coll :revision-id 4)]
       (association-util/associate-by-concept-ids token
-                                                 concept-id
-                                                 [{:concept-id (:concept-id latest-coll)}])
+                                                concept-id
+                                                [{:concept-id (:concept-id latest-coll)}])
       (assert-variable-associated [latest-coll])
 
       (testing "Variable still associated with collection after updating variable"
@@ -386,7 +386,7 @@
   (echo-util/grant-registered-users (system/context)
                                     (echo-util/coll-catalog-item-id "PROV1"))
   (let [[coll1 coll2 coll3] (doall (for [n (range 1 4)]
-                                     (data-core/ingest "PROV1" (collection/collection))))
+                                    (data-core/ingest "PROV1" (collection/collection))))
         [coll1-id coll2-id coll3-id] (map :concept-id [coll1 coll2 coll3])
         token (echo-util/login (system/context) "user1")
         {variable1-concept-id :concept-id} (vu/ingest-variable-with-attrs {:Name "variable1"})
@@ -494,7 +494,7 @@
                                                      c1-p1)]}}
             response)))
 
-      (testing "dissociation shoud success"
+      (testing "dissociation should succeed"
         (let [response (association-util/dissociate-by-single-concept-id
                          token concept-id c1-p1)
               {:keys [status body]} response]
