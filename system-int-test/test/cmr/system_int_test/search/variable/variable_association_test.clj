@@ -15,13 +15,13 @@
    [cmr.system-int-test.utils.variable-util :as vu]))
 
 (use-fixtures
-  :each
-  (join-fixtures
-    [(ingest/reset-fixture {"provguid1" "PROV1"
-                            "provguid2" "PROV2"
-                            "provguid3" "PROV3"}
-                           {:grant-all-search? false})
-     vu/grant-all-variable-fixture]))
+:each
+(join-fixtures
+  [(ingest/reset-fixture {"provguid1" "PROV1"
+                          "provguid2" "PROV2"
+                          "provguid3" "PROV3"}
+                         {:grant-all-search? false})
+   vu/grant-all-variable-fixture]))
 
 (deftest associate-variables-by-concept-ids-with-collections-test
 
@@ -39,11 +39,11 @@
          c1-p3 c2-p3 c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
                                                n (range 1 5)]
                                            (:concept-id (data-core/ingest
-                                                          p
-                                                          (collection/collection
-                                                            {:short-name (str "S" n)
-                                                             :version-id (str "V" n)
-                                                             :entry-title (str "ET" n)})))))
+                                                         p
+                                                         (collection/collection
+                                                           {:short-name (str "S" n)
+                                                            :version-id (str "V" n)
+                                                            :entry-title (str "ET" n)})))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         token (echo-util/login (system/context) "user1")
@@ -52,7 +52,7 @@
 
     (testing "Associate variable with collections by concept-ids"
       (let [response (association-util/associate-by-concept-ids
-                       token concept-id [{:concept-id c1-p1}])]
+                      token concept-id [{:concept-id c1-p1}])]
         (vu/assert-variable-association-response-ok?
           {["C1200000013-PROV1"] {:concept-id "VA1200000026-CMR"
                                   :revision-id 1}}
@@ -61,33 +61,33 @@
     (testing "Associate to no collections"
       (let [response (association-util/associate-by-concept-ids token concept-id [])]
         (association-util/assert-invalid-data-error
-          ["At least one collection must be provided for variable association."]
-          response)))
+         ["At least one collection must be provided for variable association."]
+         response)))
 
     (testing "Associate to collection revision and whole collection at the same time"
       (let [response (association-util/associate-by-concept-ids
-                       token concept-id [{:concept-id c1-p1}
-                                         {:concept-id c1-p1 :revision-id 1}])]
+                      token concept-id [{:concept-id c1-p1}
+                                        {:concept-id c1-p1 :revision-id 1}])]
         (is (= 400 (:status response)))
         (is (= "Only one collection allowed in the list because a variable can only be associated with one collection."
                (:error response)))))
 
     (testing "Associate to non-existent collections"
       (let [response (association-util/associate-by-concept-ids
-                       token concept-id [{:concept-id "C100-P5"}])]
+                      token concept-id [{:concept-id "C100-P5"}])]
         (vu/assert-variable-association-bad-request
-          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
-          response)))
+         {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
+         response)))
 
     (testing "Associate to deleted collections"
       (let [c1-p1-concept (mdb/get-concept c1-p1)
             _ (ingest/delete-concept c1-p1-concept)
             _ (index/wait-until-indexed)
             response (association-util/associate-by-concept-ids
-                       token concept-id [{:concept-id c1-p1}])]
+                      token concept-id [{:concept-id c1-p1}])]
         (vu/assert-variable-association-bad-request
-          {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
-          response)))
+         {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
+         response)))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
@@ -95,8 +95,8 @@
                                                                 concept-id
                                                                 [{:concept-id c4-p3}])]
         (vu/assert-variable-association-bad-request
-          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
-          response)))))
+         {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
+         response)))))
 
 (deftest associate-variable-failure-test
   (echo-util/grant-registered-users (system/context)
@@ -110,18 +110,18 @@
         coll-concept-id (:concept-id (data-core/ingest "PROV1" (collection/collection)))]
     (testing "Associate variable using query sent with invalid content type"
       (are [associate-variable-fn request-json]
-          (= {:status 400,
-              :errors
-              ["The mime types specified in the content-type header [application/xml] are not supported."]}
-             (associate-variable-fn token concept-id request-json {:http-options {:content-type :xml}}))
+        (= {:status 400,
+            :errors
+            ["The mime types specified in the content-type header [application/xml] are not supported."]}
+           (associate-variable-fn token concept-id request-json {:http-options {:content-type :xml}}))
 
         association-util/associate-by-concept-ids [{:concept-id coll-concept-id}]))
 
     (testing "Associate applies JSON Query validations"
       (are [associate-variable-fn request-json message]
-          (= {:status 400
-              :errors [message]}
-             (associate-variable-fn token concept-id {:foo "bar"}))
+        (= {:status 400
+            :errors [message]}
+           (associate-variable-fn token concept-id {:foo "bar"}))
 
         association-util/associate-by-concept-ids {:concept-id coll-concept-id}
         "#: expected type: JSONArray, found: JSONObject"))
@@ -137,9 +137,9 @@
     (testing "Associate deleted variable"
       (ingest/delete-concept var-concept {:token token})
       (are [associate-variable-fn request-json]
-          (= {:status 404
-              :errors [(format "Variable with concept id [%s] was deleted." concept-id)]}
-             (associate-variable-fn token concept-id request-json))
+        (= {:status 404
+            :errors [(format "Variable with concept id [%s] was deleted." concept-id)]}
+           (associate-variable-fn token concept-id request-json))
 
         association-util/associate-by-concept-ids [{:concept-id coll-concept-id}]))))
 
@@ -161,11 +161,11 @@
          c1-p3 c2-p3 c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
                                                n (range 1 5)]
                                            (data-core/ingest
-                                             p
-                                             (collection/collection
-                                               {:short-name (str "S" n)
-                                                :version-id (str "V" n)
-                                                :entry-title (str "ET" n)}))))
+                                            p
+                                            (collection/collection
+                                              {:short-name (str "S" n)
+                                               :version-id (str "V" n)
+                                               :entry-title (str "ET" n)}))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
@@ -191,10 +191,10 @@
                       prov3-token
                       concept-id
                       (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
-      (is (= 200 (:status response1)))
-      (is (= 400 (:status response2)))
-      (is (string/includes? (:errors (first (:body response2))) 
-                            "can not be associated because the variable is already associated with another collection")) 
+       (is (= 200 (:status response1)))
+       (is (= 400 (:status response2)))
+       (is (string/includes? (:errors (first (:body response2))) 
+                             "can not be associated because the variable is already associated with another collection")) 
       (is (= 400 (:status response3)))
       (is (= "Only one collection allowed in the list because a variable can only be associated with one collection."
              (:error response3))))
@@ -205,9 +205,9 @@
                      prov3-token
                      concept-id
                      (map #(hash-map :concept-id (:concept-id %)) [c1-p2]))]
-      (is (= 400 (:status response)))
-      (is (string/includes? (:errors (first (:body response)))
-                            "can not be associated because they do not belong to the same provider")))
+       (is (= 400 (:status response)))
+       (is (string/includes? (:errors (first (:body response)))
+                             "can not be associated because they do not belong to the same provider")))
 
     ;; only one prov1 collection can be associated with the variable.
     (assert-variable-associated [c1-p1])
