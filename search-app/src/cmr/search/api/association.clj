@@ -69,7 +69,6 @@
   [_ args-list]
   (= 1 (count args-list)))
 
-
 (defn associate-concept-to-collections
   "Associate the given concept by concept type and concept id to a list of
   collections in the request body."
