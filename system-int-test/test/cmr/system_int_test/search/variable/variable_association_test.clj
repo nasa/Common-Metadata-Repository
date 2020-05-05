@@ -15,8 +15,8 @@
    [cmr.system-int-test.utils.variable-util :as vu]))
 
 (use-fixtures
-:each
-(join-fixtures
+ :each
+ (join-fixtures
   [(ingest/reset-fixture {"provguid1" "PROV1"
                           "provguid2" "PROV2"
                           "provguid3" "PROV3"}
@@ -41,9 +41,9 @@
                                            (:concept-id (data-core/ingest
                                                          p
                                                          (collection/collection
-                                                           {:short-name (str "S" n)
-                                                            :version-id (str "V" n)
-                                                            :entry-title (str "ET" n)})))))
+                                                          {:short-name (str "S" n)
+                                                           :version-id (str "V" n)
+                                                           :entry-title (str "ET" n)})))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         token (echo-util/login (system/context) "user1")
@@ -128,9 +128,9 @@
 
     (testing "Associate variable that doesn't exist"
       (are [associate-variable-fn request-json]
-          (= {:status 404
-              :errors ["Variable could not be found with concept id [V12345-PROV1]"]}
-             (associate-variable-fn token "V12345-PROV1" request-json))
+        (= {:status 404
+            :errors ["Variable could not be found with concept id [V12345-PROV1]"]}
+           (associate-variable-fn token "V12345-PROV1" request-json))
 
         association-util/associate-by-concept-ids [{:concept-id coll-concept-id}]))
 
@@ -163,9 +163,9 @@
                                            (data-core/ingest
                                             p
                                             (collection/collection
-                                              {:short-name (str "S" n)
-                                               :version-id (str "V" n)
-                                               :entry-title (str "ET" n)}))))
+                                             {:short-name (str "S" n)
+                                              :version-id (str "V" n)
+                                              :entry-title (str "ET" n)}))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
@@ -195,9 +195,9 @@
        (is (= 400 (:status response2)))
        (is (string/includes? (:errors (first (:body response2))) 
                              "can not be associated because the variable is already associated with another collection")) 
-      (is (= 400 (:status response3)))
-      (is (= "Only one collection allowed in the list because a variable can only be associated with one collection."
-             (:error response3))))
+       (is (= 400 (:status response3)))
+       (is (= "Only one collection allowed in the list because a variable can only be associated with one collection."
+              (:error response3))))
 
     ;; Associate the variable with every prov2 collection is not allowed.
     ;; it can not be associated with any because they are from different provider.
@@ -214,10 +214,10 @@
 
     (testing "Dissociate non-existent collections"
       (let [response (association-util/dissociate-by-concept-ids
-                       token concept-id [{:concept-id "C100-P5"}])]
+                      token concept-id [{:concept-id "C100-P5"}])]
         (vu/assert-variable-association-bad-request
-          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
-          response)))
+         {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
+         response)))
 
     (testing "Dissociate to deleted collections"
       (let [c1-p2-concept-id (:concept-id c1-p2)
@@ -225,21 +225,21 @@
             _ (ingest/delete-concept c1-p2-concept)
             _ (index/wait-until-indexed)
             response (association-util/dissociate-by-concept-ids
-                       token concept-id [{:concept-id c1-p2-concept-id}])]
+                      token concept-id [{:concept-id c1-p2-concept-id}])]
         (vu/assert-variable-association-bad-request
-          {[c1-p2-concept-id] {:errors [(format "Collection [%s] does not exist or is not visible."
-                                                c1-p2-concept-id)]}}
-          response)))
+         {[c1-p2-concept-id] {:errors [(format "Collection [%s] does not exist or is not visible."
+                                               c1-p2-concept-id)]}}
+         response)))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [coll-concept-id (:concept-id c4-p3)
             response (association-util/dissociate-by-concept-ids
-                       token concept-id [{:concept-id coll-concept-id}])]
+                      token concept-id [{:concept-id coll-concept-id}])]
         (vu/assert-variable-association-bad-request
-          {[coll-concept-id] {:errors [(format "Collection [%s] does not exist or is not visible."
-                                               coll-concept-id)]}}
-          response)))))
+         {[coll-concept-id] {:errors [(format "Collection [%s] does not exist or is not visible."
+                                              coll-concept-id)]}}
+         response)))))
 
 (deftest dissociate-variable-failure-test
   (echo-util/grant-registered-users (system/context)
@@ -265,36 +265,36 @@
 
     (testing "Dissociate variable using query sent with invalid content type"
       (are [dissociate-variable-fn request-json]
-          (= {:status 400,
-              :errors
-              ["The mime types specified in the content-type header [application/xml] are not supported."]}
-             (dissociate-variable-fn token concept-id request-json {:http-options {:content-type :xml}}))
+        (= {:status 400,
+            :errors
+            ["The mime types specified in the content-type header [application/xml] are not supported."]}
+           (dissociate-variable-fn token concept-id request-json {:http-options {:content-type :xml}}))
 
         association-util/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
 
     (testing "Dissociate applies JSON Query validations"
       (are [dissociate-variable-fn request-json message]
-          (= {:status 400
-              :errors [message]}
-             (dissociate-variable-fn token concept-id request-json))
+        (= {:status 400
+            :errors [message]}
+           (dissociate-variable-fn token concept-id request-json))
 
         association-util/dissociate-by-concept-ids {:concept-id coll-concept-id}
         "#: expected type: JSONArray, found: JSONObject"))
 
     (testing "Dissociate variable that doesn't exist"
       (are [dissociate-variable-fn request-json]
-          (= {:status 404
-              :errors ["Variable could not be found with concept id [V12345-PROV1]"]}
-             (dissociate-variable-fn token "V12345-PROV1" request-json))
+        (= {:status 404
+            :errors ["Variable could not be found with concept id [V12345-PROV1]"]}
+           (dissociate-variable-fn token "V12345-PROV1" request-json))
 
         association-util/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
-    
+
     (testing "Dissociate deleted variable"
       (ingest/delete-concept var-concept {:token token})
       (are [dissociate-variable-fn request-json]
-          (= {:status 404
-              :errors [(format "Variable with concept id [%s] was deleted." concept-id)]}
-             (dissociate-variable-fn token concept-id request-json))
+        (= {:status 404
+            :errors [(format "Variable with concept id [%s] was deleted." concept-id)]}
+           (dissociate-variable-fn token concept-id request-json))
 
         association-util/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
     
