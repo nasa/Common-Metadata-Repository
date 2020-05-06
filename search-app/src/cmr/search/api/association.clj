@@ -57,18 +57,6 @@
     400
     200))
 
-(defmulti valid-association-args-count?
-  (fn [concept-type args-list]
-    concept-type))
-
-(defmethod valid-association-args-count? :default
-  [_ _]
-  true)
-
-(defmethod valid-association-args-count? :variable
-  [_ args-list]
-  (= 1 (count args-list)))
-
 (defn associate-concept-to-collections
   "Associate the given concept by concept type and concept id to a list of
   collections in the request body."
@@ -96,8 +84,8 @@
   (validate-association-content-type headers)
   (info (format "Dissociating %s [%s] from collections: %s by client: %s."
                 (name concept-type) concept-id body (:client-id context)))
-  (if-not (valid-association-args-count? concept-type
-                                         (map :concept-id (json/parse-string body true))) 
+  (if (and (> (count (map :concept-id (json/parse-string body true))) 1)
+           (= :variable concept-type)) 
     (api-response
       400
       {:error "Only one variable at a time may be dissociated."})
