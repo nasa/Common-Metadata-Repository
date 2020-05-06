@@ -625,9 +625,8 @@
      ;; No longer indexing to :temporals due to performance issues, but cannot
      ;; delete from elastic index
      :temporals temporal-mapping
-     :size (m/stored m/float-field-mapping)
-     :size-doc-values (-> m/float-field-mapping m/stored m/doc-values)
-     :size-double-doc-values (-> m/double-field-mapping m/stored m/doc-values)
+     :size (m/stored m/double-field-mapping)
+     :size-doc-values (-> m/double-field-mapping m/stored m/doc-values)
 
      :cloud-cover (m/stored m/float-field-mapping)
      :cloud-cover-doc-values (-> m/float-field-mapping m/stored m/doc-values)

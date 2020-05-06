@@ -37,7 +37,7 @@
 (defn doc-intersects?
   "Returns true if the doc contains a ring that intersects the ring passed in."
   [^LeafFieldsLookup lookup intersects-fn]
-  ; Must explicitly return true or false or elastic search will complain
+  ;; Must explicitly return true or false or elastic search will complain
   (if-let [ords-info (get-from-fields lookup "ords-info")]
     (let [ords (get-from-fields lookup "ords")
           shapes (srl/ords-info->shapes ords-info ords)]
