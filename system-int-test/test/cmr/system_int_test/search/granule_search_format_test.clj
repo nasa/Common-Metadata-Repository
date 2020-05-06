@@ -393,19 +393,19 @@
     (let [response (search/find-concepts-csv :granule {:granule-ur "Granule1"})]
       (is (= 200 (:status response)))
       (is (= (str "Granule UR,Producer Granule ID,Start Time,End Time,Online Access URLs,Browse URLs,Cloud Cover,Day/Night,Size\n"
-                  "Granule1,Granule #1,2010-01-01T12:00:00Z,2010-01-11T12:00:00Z,\"http://example.com,http://example2.com\",http://example.com/browse,50.0,DAY,100.0\n")
+                  "Granule1,Granule #1,2010-01-01T12:00:00.000Z,2010-01-11T12:00:00.000Z,\"http://example.com,http://example2.com\",http://example.com/browse,50.0,DAY,100.0\n")
              (:body response))))
     (let [response (search/find-concepts-csv :granule {:granule-ur "Granule2"})]
       (is (= 200 (:status response)))
       (is (= (str "Granule UR,Producer Granule ID,Start Time,End Time,Online Access URLs,Browse URLs,Cloud Cover,Day/Night,Size\n"
-                  "Granule2,Granule #2,2011-01-01T12:00:00Z,2011-01-11T12:00:00Z,http://example.com,,30.0,NIGHT,80.0\n")
+                  "Granule2,Granule #2,2011-01-01T12:00:00.000Z,2011-01-11T12:00:00.000Z,http://example.com,,30.0,NIGHT,80.0\n")
              (:body response))))
     (let [response (search/find-concepts-csv :granule {})]
       (is (= 200 (:status response)))
       (is (= (str "Granule UR,Producer Granule ID,Start Time,End Time,Online Access URLs,Browse URLs,Cloud Cover,Day/Night,Size\n"
-                  "Granule1,Granule #1,2010-01-01T12:00:00Z,2010-01-11T12:00:00Z,\"http://example.com,http://example2.com\",http://example.com/browse,50.0,DAY,100.0\n"
-                  "Granule2,Granule #2,2011-01-01T12:00:00Z,2011-01-11T12:00:00Z,http://example.com,,30.0,NIGHT,80.0\n"
-                  "Granule3,Granule #3,2012-01-01T12:00:00Z,2012-01-11T12:00:00Z,,,30.0,NIGHT,80.0\n")
+                  "Granule1,Granule #1,2010-01-01T12:00:00.000Z,2010-01-11T12:00:00.000Z,\"http://example.com,http://example2.com\",http://example.com/browse,50.0,DAY,100.0\n"
+                  "Granule2,Granule #2,2011-01-01T12:00:00.000Z,2011-01-11T12:00:00.000Z,http://example.com,,30.0,NIGHT,80.0\n"
+                  "Granule3,Granule #3,2012-01-01T12:00:00.000Z,2012-01-11T12:00:00.000Z,,,30.0,NIGHT,80.0\n")
              (:body response))))
 
     (testing "as extension"
