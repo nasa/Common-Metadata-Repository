@@ -52,6 +52,11 @@
            (jobs/reindex-all-collections
             ctx (= "true" (:force_version params)))
            {:status 200})
+     (POST "/reindex-autocomplete-suggestions"
+           {ctx :request-context params :params}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jobs/trigger-autocomplete-suggestions-reindex ctx)
+           {:status 200})
      (POST "/cleanup-expired-collections"
            {ctx :request-context}
            (acl/verify-ingest-management-permission ctx :update)
