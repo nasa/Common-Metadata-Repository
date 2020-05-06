@@ -262,9 +262,11 @@
 (defn trigger-autocomplete-suggestions-reindex
   [context]
   (let [providers (map :provider-id (mdb/get-providers context))]
-    (map #(ingest-events/publish-provider-event
-            context
-            (ingest-events/provider-autocomplete-suggestion-reindexing-event %)))))
+    (info "Sending events to reindex autocomplete suggestions in all providers:" (pr-str providers))
+    (doseq [provider providers]
+      (ingest-events/publish-provider-event
+        context
+        (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
 
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
