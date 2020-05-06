@@ -3685,7 +3685,7 @@ Content-Length: 168
 Passing the association target concept-id in the body of the POST has been deprecated.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/VA1200000008-CMR/associations -d \
 '[{"concept_id": "C1200000005-PROV1"}]'
 
 HTTP/1.1 200 OK
@@ -3695,11 +3695,11 @@ Content-Length: 168
 [
   {
     "variable_association":{
-      "concept_id":"V1200000008-PROV1
+      "concept_id":"VA1200000008-CMR"
       "revision_id":1
     },
     "associated_item":{
-      "concept_id":"C1200000005-PROV1
+      "concept_id":"C1200000005-PROV1"
     }
   }
 ]
