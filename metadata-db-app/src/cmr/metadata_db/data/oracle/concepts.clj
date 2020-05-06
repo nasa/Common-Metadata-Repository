@@ -70,6 +70,10 @@
   [_ {:keys [provider-id]} base-clause]
   (add-provider-clause provider-id base-clause))
 
+(defmethod by-provider :tool
+  [_ {:keys [provider-id]} base-clause]
+  (add-provider-clause provider-id base-clause))
+
 (defmethod by-provider :subscription
   [_ {:keys [provider-id]} base-clause]
   (add-provider-clause provider-id base-clause))
@@ -530,6 +534,7 @@
   (j/db-do-commands this "DELETE FROM cmr_humanizers")
   (j/db-do-commands this "DELETE FROM cmr_subscriptions")
   (j/db-do-commands this "DELETE FROM cmr_services")
+  (j/db-do-commands this "DELETE FROM cmr_tools")
   (j/db-do-commands this "DELETE FROM cmr_variables")
   (j/db-do-commands this "DELETE FROM cmr_variable_associations"))
 

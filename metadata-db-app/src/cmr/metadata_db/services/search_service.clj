@@ -22,6 +22,7 @@
    :tag #{:concept-id :native-id}
    :tag-association #{:concept-id :native-id :associated-concept-id :associated-revision-id :tag-key}
    :service #{:provider-id :concept-id :native-id}
+   :tool #{:provider-id :concept-id :native-id}
    :access-group default-supported-find-parameters
    :acl default-supported-find-parameters
    :humanizer #{:concept-id :native-id}

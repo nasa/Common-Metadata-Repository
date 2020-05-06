@@ -48,6 +48,10 @@
   [_ _]
   "cmr_services")
 
+(defmethod get-table-name :tool
+  [_ _]
+  "cmr_tools")
+
 (defmethod get-table-name :variable
   [_ _]
   "cmr_variables")
