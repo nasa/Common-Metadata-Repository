@@ -3662,7 +3662,30 @@ Future work:
 2. We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list. A ticket is filed to address these issues in the future if necessary.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
+curl -XPOST -i -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/associations/variables/V1200000008-PROV1/collections/C1200000005-PROV1
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 168
+
+[
+  {
+    "variable_association":{
+      "concept_id":"VA1200000008-CMR",
+      "revision_id":1
+    },
+    "associated_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  }
+]
+```
+
+##### DEPRECATED
+Passing the association target concept-id in the body of the POST has been deprecated.
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/VA1200000008-CMR/associations -d \
 '[{"concept_id": "C1200000005-PROV1"}]'
 
 HTTP/1.1 200 OK
@@ -3672,7 +3695,7 @@ Content-Length: 168
 [
   {
     "variable_association":{
-      "concept_id":"VA1200000009-CMR",
+      "concept_id":"VA1200000008-CMR"
       "revision_id":1
     },
     "associated_item":{
@@ -3686,15 +3709,12 @@ On occasions when variable association cannot be processed at all due to invalid
 
 #### <a name="variable-dissociation"></a> Variable Dissociation
 
-A variable identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to variable association requests.
+A variable identified by its concept id can be dissociated from collections similar to variable association requests.
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
-'[{"concept_id": "C1200000005-PROV1"},
-  {"concept_id": "C1200000006-PROV1"},
-  {"concept_id": "C1200000007-PROV1"}]'
+curl -XDELETE -i -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/associations/variables/V1200000008-PROV1/collections/C1200000005-PROV1
 
-HTTP/1.1 400 BAD REQUEST
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -3707,21 +3727,30 @@ Content-Length: 168
     "associated_item":{
       "concept_id":"C1200000005-PROV1"
     }
-  },
+  }
+```
+
+##### DEPRECATED
+Sending the list of targets to dissociate from has been deprecated.
+
+We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list.
+```
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
+'[{"concept_id": "C1200000005-PROV1"}]'
+
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 168
+
+[
   {
-    "warnings":[
-      "Variable [V1200000008-PROV1] is not associated with collection [C1200000006-PROV1]."
-    ],
+    "variable_association":{
+      "concept_id":"VA1200000008-PROV1",
+      "revision_id":2
+    },
     "associated_item":{
-      "concept_id":"C1200000006-PROV1"
-    }
-  },
-  {
-    "errors":[
-      "Collection [C1200000007-PROV1] does not exist or is not visible."
-    ],
-    "associated_item":{
-      "concept_id":"C1200000007-PROV1"
+      "concept_id":"C1200000005-PROV1"
     }
   }
 ]
