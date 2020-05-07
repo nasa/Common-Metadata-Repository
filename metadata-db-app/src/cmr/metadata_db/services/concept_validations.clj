@@ -44,6 +44,8 @@
              false #{:parent-collection-id :parent-entry-title :granule-ur}}
    :service {true #{}
              false #{:service-name}}
+   :tool {true #{}
+          false #{:tool-name}}
    :subscription {true #{}
                   false #{:subscription-name :subscriber-id :email-address :collection-concept-id}}
    :tag-association {true #{}

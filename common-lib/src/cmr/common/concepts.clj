@@ -13,6 +13,7 @@
     :granule
     :humanizer
     :service
+    :tool
     :service-association
     :tag
     :tag-association
@@ -28,6 +29,7 @@
    "G" :granule
    "H" :humanizer
    "S" :service
+   "TL" :tool
    "SA" :service-association
    "T" :tag
    "TA" :tag-association
