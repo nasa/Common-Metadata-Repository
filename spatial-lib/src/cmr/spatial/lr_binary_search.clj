@@ -267,3 +267,8 @@
            (warn "Use mbr from one of the points in the polygon because lr is not found "
                  (pr-str polygon))
            (m/point->mbr (-> polygon :rings first :points first))))))))
+
+(defn circle->lr
+  "Returns the LR of the given circle"
+  [cir]
+  (lr-search [:north :south :east :west] cir (m/point->mbr (:center cir))))

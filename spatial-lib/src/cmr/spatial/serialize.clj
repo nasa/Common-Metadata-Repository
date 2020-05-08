@@ -15,6 +15,7 @@
    [clojure.set :as set]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
+   [cmr.spatial.circle :as spatial-circle]
    [cmr.spatial.geodetic-ring :as gr]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.lr-binary-search :as lr]
@@ -156,7 +157,18 @@
     [line]
     ;; Performance enhancement: If a line has a vertical or horizontal arc we could use that to define
     ;; an LR that would be larger than just a point
-    (m/point->mbr (first (:points line)))))
+    (m/point->mbr (first (:points line))))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  cmr.spatial.circle.Circle
+
+  (shape->mbr
+    [cir]
+    (:mbr cir))
+
+  (shape->lr
+    [cir]
+    (lr/circle->lr cir)))
 
 
 (defn stored-ords->shape
@@ -272,6 +284,3 @@
       (let [{:keys [ords-info ords]} scratch/ords-info-map
             shapes (ords-info->shapes ords-info ords)]
         (cmr.common.util/any-true? intersects-fn shapes)))))
-
-
-

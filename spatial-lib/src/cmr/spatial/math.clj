@@ -52,6 +52,7 @@
 
 (def ^:const ^double TAU (* 2.0 PI))
 
+; (def ^:const ^double EARTH_RADIUS_METERS 6371008.0)
 (def ^:const ^double EARTH_RADIUS_METERS 6367435.0)
 
 (def ^:const ^double SOLAR_DAY_S (* 24.0 3600.0))
