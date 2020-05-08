@@ -1,8 +1,9 @@
 (ns cmr.spatial.relations
   "This namespace describes functions for determining the relations between various spatial types."
-  (:require 
+  (:require
     [cmr.spatial.arc :as a]
     [cmr.spatial.cartesian-ring :as cr]
+    [cmr.spatial.circle :as spatial-circle]
     [cmr.spatial.derived :as d]
     [cmr.spatial.geodetic-ring :as gr]
     [cmr.spatial.line-string :as ls]
@@ -11,8 +12,9 @@
     [cmr.spatial.point :as p]
     [cmr.spatial.polygon :as poly]
     [cmr.spatial.ring-relations :as rr])
-  (:import 
-    cmr.spatial.cartesian_ring.CartesianRing 
+  (:import
+    cmr.spatial.cartesian_ring.CartesianRing
+    cmr.spatial.circle.Circle
     cmr.spatial.geodetic_ring.GeodeticRing
     cmr.spatial.line_string.LineString
     cmr.spatial.mbr.Mbr
@@ -28,7 +30,7 @@
     a set coordinate system.")
 
   (mbr [shape] "Returns the minimum bounding rectangle of the shape")
-  
+
   (contains-north-pole? [shape] "Returns true if the shape contains the north pole")
   (contains-south-pole? [shape] "Returns true if the shape contains the south pole")
 
@@ -299,7 +301,18 @@
 
   (intersects-line-string?
     [polygon line]
-    (poly/intersects-line-string? polygon line)))
+    (poly/intersects-line-string? polygon line))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  cmr.spatial.circle.Circle
+
+  (mbr
+    [circle]
+    (:mbr circle))
+
+  (covers-br?
+    [circle br]
+    (spatial-circle/covers-br? circle br)))
 
 (def shape-type->intersects-fn
   "A map of spatial types to the intersect functions to use."
@@ -317,6 +330,3 @@
       ;; Shape is the second argument so that the polymorphic protocol dispatch can be used
       ;; on the first argument.
       (f (d/calculate-derived other-shape) shape))))
-
-
-

@@ -335,6 +335,10 @@
         part2 (* (cos lat1) (cos lat2) (sin-sq lon1 lon2))]
     (* 2.0 (asin (sqrt (+ part1 part2))))))
 
+(defn distance
+  ^double [^Point p1 ^Point p2]
+  (* (angular-distance p1 p2) EARTH_RADIUS_METERS))
+
 (defn course
   "Returns the initial bearing between two points. The bearing starts at 0 pointing towards the north
   pole and increases clockwise. 180 points to the south pole. 360 points the same direction as 0.
@@ -419,9 +423,3 @@
     [point]
     (concat (validate-point-longitude point)
             (validate-point-latitude point))))
-
-
-
-
-
-
