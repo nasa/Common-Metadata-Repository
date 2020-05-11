@@ -3,21 +3,21 @@
   expression functions work by joining strings together. Call compile-regex to create the final
   regular expression"
   (:require
-   [clojure.string :as str]))
+   [clojure.string :as string]))
 
 (defn group
   "Groups together items in a sequence."
   [& parts]
   (if (= (count parts) 1)
       (first parts)
-      (str "(?:" (str/join "" parts) ")")))
+      (str "(?:" (string/join "" parts) ")")))
 
 (defn capture
   "Groups together items in a sequence that will be captured"
   [& parts]
   (if (= (count parts) 1)
       (str "(" (first parts) ")")
-      (str "(" (str/join "" parts) ")")))
+      (str "(" (string/join "" parts) ")")))
 
 (defn- build-postfix-op
   "Helper for building a postfix operation that can also group items"
@@ -55,7 +55,7 @@
 (defn choice
   "Creates a choice between the individual "
   [& parts]
-  (str "(?:" (str/join "|" parts) ")"))
+  (str "(?:" (string/join "|" parts) ")"))
 
 (defn compile-regex
   [pattern]

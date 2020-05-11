@@ -44,6 +44,10 @@
   "Maximum radius in meters"
   1000000)
 
+(def ^:const ^double EARTH_RADIUS_APPROX
+  "Radius of the earth in meters for polygon approximation of the circle"
+  6378137.0)
+
 (defn validate-radius
   "Validate the radius. Returns a list of errors when radius is invalid; otherwise returns nil"
   [^double radius]
@@ -58,22 +62,31 @@
 
 (defn circle->polygon
   "Returns the polygon approximation of the circle with the given number of points.
-   This result will be less accurate for large circle or smaller n."
+   Reference: https://github.com/gabzim/circle-to-polygon."
   [^Circle cir ^long n]
   (let [{:keys [^Point center ^double radius]} cir
         lon1 (.lon_rad center)
         lat1 (.lat_rad center)
-        r-lat (/ radius EARTH_RADIUS_METERS)
-        r-lon (/ r-lat (cos lat1))
+        r-rad (/ radius EARTH_RADIUS_APPROX)
         points (persistent!
                 (reduce (fn [pts ^long index]
-                          (let [theta (* 2.0 PI (/ (double index) (double n)))
-                                plon (degrees (+ lon1 (* r-lon (cos theta))))
-                                plat (degrees (+ lat1 (* r-lat (sin theta))))]
+                          (let [theta (* -2.0 PI (/ (double index) (double n)))
+                                plat-rad (asin
+                                          (+ (* (sin lat1) (cos r-rad))
+                                             (* (cos lat1) (sin r-rad) (cos theta))))
+                                plon-delta (atan2
+                                            (* (sin theta) (sin r-rad) (cos lat1))
+                                            (- (cos r-rad) (* (sin lat1) (sin plat-rad))))
+                                plon (degrees (+ lon1 plon-delta))
+                                plat (degrees plat-rad)]
                             (conj! pts (p/point plon plat))))
                         (transient [])
-                        (range 0 (inc n))))]
-    (poly/polygon :geodetic [(gr/ring points)])))
+                        (range 0 (inc n))))
+        ;; sometimes there are precision issues, causing last point not exactly matching first,
+        ;; replace the last one with the first one to guarantee the polygon is complete and valid
+        poly-points (conj (pop points) (first points))]
+
+    (poly/polygon :geodetic [(gr/ring poly-points)])))
 
 (defn mbr
   "Returns the MBR of the circle. The algorithm used is documented at:
