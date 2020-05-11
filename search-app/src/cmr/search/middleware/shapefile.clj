@@ -38,14 +38,6 @@
   "The maximum size in bytes a shapefile can be"
   {:default 1000000 :type Long})
 
-(defconfig max-shapefile-features
-  "The maximum number of feature a shapefile can have"
-  {:default 100000 :type Long})
-  
-(defconfig max-shapefile-points
-  "The maximum number of points a shapefile can have"
-  {:default 5000000 :type Long})
-
 (defn- progress
   "Progress function for `wrap-multipart-params`. This function simply throws an error if
   the uploaded file exceeds a given limit."
