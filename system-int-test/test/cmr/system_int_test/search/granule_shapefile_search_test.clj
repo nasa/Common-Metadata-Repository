@@ -7,6 +7,7 @@
    [cmr.common.util :as util :refer [are3]]
    [cmr.common-app.test.side-api :as side]
    [cmr.search.services.parameters.converters.shapefile :as shapefile]
+   [cmr.search.middleware.shapefile :as shapefile-middleware]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
@@ -29,13 +30,15 @@
 
 (def formats
   "Shapfile formats to be tested"
-  {"ESRI" {:extension "zip" :mime-type mt/shapefile}
-   "GeoJSON" {:extension "geojson" :mime-type mt/geojson}
-   "KML" {:extension "kml" :mime-type mt/kml}})
+  {"ESRI" {:extension "zip" :mime-type mt/shapefile}})
+  ;  "GeoJSON" {:extension "geojson" :mime-type mt/geojson}
+  ;  "KML" {:extension "kml" :mime-type mt/kml}})
   
 (deftest granule-shapefile-search-test
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
-  (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+  (let [saved-shapefile-max-value (shapefile-middleware/max-shapefile-size)
+        _ (side/eval-form `(shapefile-middleware/set-max-shapefile-size! 2500))
+        geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                                                                                     :EntryTitle "E1"
                                                                                     :ShortName "S1"
                                                                                     :Version "V1"}))
@@ -119,7 +122,11 @@
         "corrupt_file.zip" {:name "provider" :content "PROV1"} #"Error while uncompressing zip file: invalid END header \(bad central directory offset\)"
         
         "Missing .shp file"
-        "missing_shapefile_shp.zip" {:name "provider" :content "PROV1"} #"Incomplete shapefile: missing .shp file"))
+        "missing_shapefile_shp.zip" {:name "provider" :content "PROV1"} #"Incomplete shapefile: missing .shp file"
+
+        "Shapefile is too big"
+         "too_big.zip" {:name "provider" :content "PROV1"} #"Shapefile size exceeds the 2500 byte limit"))
+
 
     (testing "GeoJSON Failure cases"
       (are3 [shapefile additional-params regex]
@@ -201,4 +208,8 @@
           "dc_richmond_line" [whole-world very-wide-cart washington-dc richmond]
 
           "Single Point Washington DC"
-          "single_point_dc" [whole-world very-wide-cart washington-dc])))))
+          "single_point_dc" [whole-world very-wide-cart washington-dc])))
+
+   (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-value))))
+
+  
