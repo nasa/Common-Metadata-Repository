@@ -1,27 +1,27 @@
 (ns cmr.system-int-test.search.collection-spatial-search-test
-  (:require [clojure.test :refer :all]
-            [clojure.string :as s]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.derived :as derived]
-            [cmr.spatial.codec :as codec]
-            [clojure.string :as str]
-            [cmr.spatial.serialize :as srl]
-            [cmr.common.dev.util :as dev-util]
-            [cmr.spatial.lr-binary-search :as lbs]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.echo10.echo10-collection :as ec]
-            [cmr.common.util :as u]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.dev.util :as dev-util]
+   [cmr.common.util :as u]
+   [cmr.spatial.circle :as spatial-circle]
+   [cmr.spatial.codec :as codec]
+   [cmr.spatial.derived :as derived]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.lr-binary-search :as lbs]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.serialize :as srl]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.umm.echo10.echo10-collection :as ec]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -409,6 +409,33 @@
            [[58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]
             [-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]]
            [whole-world very-tall-cart]))
+
+    (testing "circle searches"
+        (are [lon-lat-radius items]
+          (let [found (search/find-refs
+                       :collection
+                       {:circle
+                        (map #(codec/url-encode (apply spatial-circle/circle %)) lon-lat-radius)
+                        :page-size 50})
+                matches? (d/refs-match? items found)]
+            (when-not matches?
+              (println "Expected:" (->> items (map :entry-title) sort pr-str))
+              (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+            matches?)
+
+          [[0 0 1000]] [whole-world polygon-with-holes]
+
+          ;; same center, different radius
+          [[0 89 10]] [whole-world on-np]
+          [[0 89 100]] [whole-world on-np]
+          [[0 89 1000]] [whole-world on-np]
+          [[0 89 10000]] [whole-world on-np]
+          [[0 89 100000]] [whole-world on-np touches-np]
+          [[0 89 1000000]] [whole-world north-pole on-np touches-np very-tall-cart along-am-line]
+
+          ;; multiple circles are ANDed together
+          [[0 89 100] [0 89 1000000]] [whole-world on-np]
+          [[0 0 1000] [0 89 100] [0 89 1000000]] [whole-world]))
 
     (testing "AQL spatial search"
       (are [type ords items]

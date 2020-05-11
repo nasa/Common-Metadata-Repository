@@ -1,23 +1,37 @@
 (ns cmr.search.data.complex-to-simple-converters.spatial
   "Contains converters for spatial condition into the simpler executable conditions"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.search.complex-to-simple :as c2s]
    [cmr.common-app.services.search.elastic-search-index :as idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.orbits.orbits-runtime :as orbits]
    [cmr.search.services.query-helper-service :as query-helper]
+   [cmr.spatial.circle :as spatial-circle]
    [cmr.spatial.derived :as d]
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.relations :as sr]
    [cmr.spatial.serialize :as srl]))
 
+(defconfig points-on-circle
+  "The number of vertices of the polygon used to approximate a circle"
+  {:default 32 :type Long})
+
+(defn- shape->search-shape
+  "Returns the search shape of the given shape. For cirle, we convert it into a poygon to search."
+  [shape]
+  (if (= cmr.spatial.circle.Circle (type shape))
+    (spatial-circle/circle->polygon shape (points-on-circle))
+    shape))
+
 (defn- shape->script-cond
   [shape]
-  (let [ords-info-map (-> (srl/shapes->ords-info-map [shape])
-                          (update-in [:ords-info] #(str/join "," %))
-                          (update-in [:ords] #(str/join "," %)))]
+  (let [search-shape (shape->search-shape shape)
+        ords-info-map (-> (srl/shapes->ords-info-map [search-shape])
+                          (update-in [:ords-info] #(string/join "," %))
+                          (update-in [:ords] #(string/join "," %)))]
     (qm/map->ScriptCondition {:name "spatial"
                               :params ords-info-map})))
 

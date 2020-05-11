@@ -54,6 +54,7 @@
    :platform-h :humanizer
    :point :point
    :polygon :polygon
+   :circle :circle
    :processing-level-id :string
    :processing-level-id-h :humanizer
    :project :string
@@ -112,6 +113,7 @@
    :platform :inheritance
    :point :point
    :polygon :polygon
+   :circle :circle
    :producer-granule-id :string
    :production-date :multi-date-range
    :project :string
@@ -464,7 +466,7 @@
                                  :service params)]
     [(dissoc params :all-revisions)
      (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
- 
+
 (defmethod common-params/parse-query-level-params :subscription
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
