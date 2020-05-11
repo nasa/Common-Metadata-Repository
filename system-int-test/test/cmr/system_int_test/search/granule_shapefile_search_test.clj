@@ -30,15 +30,80 @@
 
 (def formats
   "Shapfile formats to be tested"
-  {"ESRI" {:extension "zip" :mime-type mt/shapefile}})
-  ;  "GeoJSON" {:extension "geojson" :mime-type mt/geojson}
-  ;  "KML" {:extension "kml" :mime-type mt/kml}})
+  {"ESRI" {:extension "zip" :mime-type mt/shapefile}
+   "GeoJSON" {:extension "geojson" :mime-type mt/geojson}
+   "KML" {:extension "kml" :mime-type mt/kml}})
+
+(deftest granule-shapefile-failure-cases
+  (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
+  (let [saved-shapefile-max-value (shapefile-middleware/max-shapefile-size)
+        _ (side/eval-form `(shapefile-middleware/set-max-shapefile-size! 2500))]
+
+    (testing "ESRI Shapefile Failure cases"
+      (are3 [shapefile additional-params regex]
+        (is (re-find regex
+                      (first (:errors (search/find-refs-with-multi-part-form-post
+                                        :granule
+                                        (let [params [{:name "shapefile"
+                                                       :content (io/file (io/resource (str "shapefiles/" shapefile)))
+                                                       :mime-type "application/shapefile+zip"}]]
+                                          (if (seq additional-params)
+                                            (conj params additional-params)
+                                            params)))))))
+                                  
+        "All granules query"
+        "box.zip" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
+
+        "Corrupt zip file"
+        "corrupt_file.zip" {:name "provider" :content "PROV1"} #"Error while uncompressing zip file: invalid END header \(bad central directory offset\)"
+        
+        "Missing .shp file"
+        "missing_shapefile_shp.zip" {:name "provider" :content "PROV1"} #"Incomplete shapefile: missing .shp file"
+
+        "Shapefile is too big"
+          "too_big.zip" {:name "provider" :content "PROV1"} #"Shapefile size exceeds the 2500 byte limit"))
+
+    (testing "GeoJSON Failure cases"
+      (are3 [shapefile additional-params regex]
+        (is (re-find regex
+                      (first (:errors (search/find-refs-with-multi-part-form-post
+                                        :granule
+                                        (let [params [{:name "shapefile"
+                                                       :content (io/file (io/resource (str "shapefiles/" shapefile)))
+                                                       :mime-type "application/geo+json"}]]
+                                          (if (seq additional-params)
+                                            (conj params additional-params)
+                                            params)))))))
+                                  
+        "All granules query"
+        "polygon_with_hole.geojson" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
+
+        "Failed to parse GeoJSON file"
+        "invalid_json.geojson" {:name "provider" :content "PROV1"} #"Failed to parse GeoJSON file"))
+      
+    (testing "KML Failure cases"
+      (are3 [shapefile additional-params regex]
+        (is (re-find regex
+                      (first (:errors (search/find-refs-with-multi-part-form-post
+                                        :granule
+                                        (let [params [{:name "shapefile"
+                                                       :content (io/file (io/resource (str "shapefiles/" shapefile)))
+                                                       :mime-type "application/vnd.google-earth.kml+xml"}]]
+                                          (if (seq additional-params)
+                                            (conj params additional-params)
+                                            params)))))))
+                                  
+        "All granules query"
+        "polygon_with_hole.kml" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
+
+        "Failed to parse kml file"
+        "invalid.kml" {:name "provider" :content "PROV1"} #"Failed to parse KML file"))
+        
+    (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-value))))
   
 (deftest granule-shapefile-search-test
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
-  (let [saved-shapefile-max-value (shapefile-middleware/max-shapefile-size)
-        _ (side/eval-form `(shapefile-middleware/set-max-shapefile-size! 2500))
-        geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+  (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                                                                                     :EntryTitle "E1"
                                                                                     :ShortName "S1"
                                                                                     :Version "V1"}))
@@ -103,67 +168,6 @@
         am-point (make-gran "am-point" (p/point 180 22))]
     (index/wait-until-indexed)
 
-    (testing "ESRI Shapefile Failure cases"
-      (are3 [shapefile additional-params regex]
-        (is (re-find regex
-                     (first (:errors (search/find-refs-with-multi-part-form-post
-                                       :granule
-                                       (let [params [{:name "shapefile"
-                                                      :content (io/file (io/resource (str "shapefiles/" shapefile)))
-                                                      :mime-type "application/shapefile+zip"}]]
-                                          (if (seq additional-params)
-                                            (conj params additional-params)
-                                            params)))))))
-                                  
-        "All granules query"
-        "box.zip" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
-
-        "Corrupt zip file"
-        "corrupt_file.zip" {:name "provider" :content "PROV1"} #"Error while uncompressing zip file: invalid END header \(bad central directory offset\)"
-        
-        "Missing .shp file"
-        "missing_shapefile_shp.zip" {:name "provider" :content "PROV1"} #"Incomplete shapefile: missing .shp file"
-
-        "Shapefile is too big"
-         "too_big.zip" {:name "provider" :content "PROV1"} #"Shapefile size exceeds the 2500 byte limit"))
-
-
-    (testing "GeoJSON Failure cases"
-      (are3 [shapefile additional-params regex]
-        (is (re-find regex
-                      (first (:errors (search/find-refs-with-multi-part-form-post
-                                        :granule
-                                        (let [params [{:name "shapefile"
-                                                       :content (io/file (io/resource (str "shapefiles/" shapefile)))
-                                                       :mime-type "application/geo+json"}]]
-                                          (if (seq additional-params)
-                                            (conj params additional-params)
-                                            params)))))))
-                                  
-        "All granules query"
-        "polygon_with_hole.geojson" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
-
-        "Failed to parse GeoJSON file"
-        "invalid_json.geojson" {:name "provider" :content "PROV1"} #"Failed to parse GeoJSON file"))
-
-    (testing "KML Failure cases"
-      (are3 [shapefile additional-params regex]
-        (is (re-find regex
-                     (first (:errors (search/find-refs-with-multi-part-form-post
-                                       :granule
-                                       (let [params [{:name "shapefile"
-                                                      :content (io/file (io/resource (str "shapefiles/" shapefile)))
-                                                      :mime-type "application/vnd.google-earth.kml+xml"}]]
-                                          (if (seq additional-params)
-                                            (conj params additional-params)
-                                            params)))))))
-                                  
-        "All granules query"
-        "polygon_with_hole.kml" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
-
-        "Failed to parse kml file"
-        "invalid.kml" {:name "provider" :content "PROV1"} #"Failed to parse KML file"))
-
     (doseq [fmt (keys formats)
             :let [{extension :extension mime-type :mime-type} (get formats fmt)]]
       (testing (format "Search by %s shapefile" fmt)
@@ -208,8 +212,4 @@
           "dc_richmond_line" [whole-world very-wide-cart washington-dc richmond]
 
           "Single Point Washington DC"
-          "single_point_dc" [whole-world very-wide-cart washington-dc])))
-
-   (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-value))))
-
-  
+          "single_point_dc" [whole-world very-wide-cart washington-dc])))))
