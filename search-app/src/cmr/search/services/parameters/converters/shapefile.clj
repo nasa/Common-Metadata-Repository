@@ -40,6 +40,15 @@
   "Flag that indicates if we allow spatial searching by shapefile."
   {:default false :type Boolean})
 
+
+(defconfig max-shapefile-features
+  "The maximum number of feature a shapefile can have"
+  {:default 100000 :type Long})
+  
+(defconfig max-shapefile-points
+  "The maximum number of points a shapefile can have"
+  {:default 5000000 :type Long})
+
 (defn- unzip-file
   "Unzip a file (of type File) into a temporary directory and return the directory path as a File"
   [source]
@@ -118,7 +127,7 @@
   [item f message ^File temp-file]
   (if (f item)
     (do
-      (.delete temp-file)
+      (when temp-file (.delete temp-file))
       (errors/throw-service-error :bad-request message))
     item))
 
@@ -135,11 +144,18 @@
                     temp-dir)
           data-store (FileDataStoreFinder/getDataStore shp-file)
           feature-source (.getFeatureSource data-store)
-          features (error-if (.getFeatures feature-source)
-                             #(< (.size %) 1)
-                             "Shapefile has no features"
-                             temp-dir)
-          _ (debug (format "Found [%d] features" (.size features)))
+          features (.getFeatures feature-source)
+          feature-count (error-if (.size features)
+                          #(< % 1)
+                          "Shapefile has no features"
+                          temp-dir)
+          _ (error-if feature-count
+                      #(> % (max-shapefile-features))
+                      (format "Shapefile feature count [%d] exceeds the %d feature limit"
+                              feature-count 
+                              (max-shapefile-features))
+                      nil)
+          _ (debug (format "Found [%d] features" feature-count))
           iterator (.features features)]
       (try
         (loop [conditions []]

@@ -37,7 +37,9 @@
 (deftest granule-shapefile-failure-cases
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
   (let [saved-shapefile-max-value (shapefile-middleware/max-shapefile-size)
-        _ (side/eval-form `(shapefile-middleware/set-max-shapefile-size! 2500))]
+        _ (side/eval-form `(shapefile-middleware/set-max-shapefile-size! 50000))
+        saved-shapefile-max-features (shapefile/max-shapefile-features)
+        _ (side/eval-form `(shapefile/set-max-shapefile-features! 5))]
 
     (testing "ESRI Shapefile Failure cases"
       (are3 [shapefile additional-params regex]
@@ -61,7 +63,10 @@
         "missing_shapefile_shp.zip" {:name "provider" :content "PROV1"} #"Incomplete shapefile: missing .shp file"
 
         "Shapefile is too big"
-          "too_big.zip" {:name "provider" :content "PROV1"} #"Shapefile size exceeds the 2500 byte limit"))
+        "too_big.zip" {:name "provider" :content "PROV1"} #"Shapefile size exceeds the 50000 byte limit"
+
+        "Shapefile has too many features"
+        "ne_110m_admin_1_states_provinces.zip" {:name "provider" :content "PROV1"} #"Shapefile feature count \[51\] exceeds the 5 feature limit"))
 
     (testing "GeoJSON Failure cases"
       (are3 [shapefile additional-params regex]
@@ -99,7 +104,8 @@
         "Failed to parse kml file"
         "invalid.kml" {:name "provider" :content "PROV1"} #"Failed to parse KML file"))
         
-    (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-value))))
+    (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-value))
+    (side/eval-form `(shapefile/set-max-shapefile-features! ~saved-shapefile-max-features))))
   
 (deftest granule-shapefile-search-test
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
