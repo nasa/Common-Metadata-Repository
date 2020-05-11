@@ -16,6 +16,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
    [cmr.search.api.routes :as api-routes]
+   [cmr.search.middleware.shapefile :as shapefile]
    [cmr.search.services.messages.common-messages :as msg]
    [cmr.search.site.routes :as site-routes]
    [compojure.core :refer [GET context routes]]
@@ -123,4 +124,4 @@
       common-routes/pretty-print-response-handler
       params/wrap-params
       copy-of-body-handler
-      wrap-multipart-params))
+      (shapefile/shapefile-upload default-error-format)))
