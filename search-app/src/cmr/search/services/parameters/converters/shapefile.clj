@@ -185,10 +185,18 @@
           url (URLs/fileToUrl file)
           data-store (GeoJSONDataStore. url)
           feature-source (.getFeatureSource data-store)
-          features (error-if (.getFeatures feature-source)
-                             #(or (nil? %) (< (.size %) 1))
-                             "GeoJSON file has no features"
-                             file)
+          features (.getFeatures feature-source)
+          feature-count (error-if (.size features)
+                          #(< % 1)
+                          "GeoJSON has no features"
+                          nil)
+          _ (error-if feature-count
+                      #(> % (max-shapefile-features))
+                      (format "GeoJSON feature count [%d] exceeds the %d feature limit"
+                              feature-count 
+                              (max-shapefile-features))
+                      nil)
+          _ (debug (format "Found [%d] features" feature-count))
           iterator (.features features)]
         (try
           (loop [conditions []]
@@ -217,15 +225,22 @@
           input-stream (FileInputStream. file)
           parser (PullParser. (KMLConfiguration.) input-stream SimpleFeature)]
       (try
-        (loop [conditions []]
+        (loop [conditions [] feature-count 0]
           (if-let [feature (.parse parser)]
             (let [feature-conditions (feature->conditions feature {})]
               (if (> (count feature-conditions) 0)
-                (recur (conj conditions (gc/or-conds feature-conditions)))
-                (recur conditions)))
-            conditions))
-        (finally (do
-                  (.delete file)))))
+                (recur (conj conditions (gc/or-conds feature-conditions)) (+ feature-count 1))
+                (recur conditions feature-count)))
+            (do 
+              (error-if feature-count
+                #(> % (max-shapefile-features))
+                (format "KML feature count [%d] exceeds the %d feature limit"
+                  feature-count
+                  (max-shapefile-features))
+                nil)
+              conditions)))
+        (finally 
+          (.delete file))))
     (catch Exception e
       (let [{:keys [type errors]} (ex-data e)]
         (if (and type errors)
