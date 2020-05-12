@@ -4,7 +4,7 @@
     [clojure.java.io :as io]
     [clojure.string :as str]
     [cmr.common.config :as cfg :refer [defconfig]]
-    [cmr.common.log :refer [debug error]]
+    [cmr.common.log :refer [debug]]
     [cmr.common.mime-types :as mt]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.params :as p]
@@ -115,8 +115,8 @@
     geometry))
 
 (defn feature->conditions
-  "Process the contents of a Feature to return query conditions.
-  The `context` map can be used to pass along additional info."
+  "Process the contents of a Feature to return query conditions along with number of points in
+  the processed Feature. The `context` map can be used to pass along additional info."
   [feature context]
   (let [crs (when (.getDefaultGeometryProperty feature)
               (-> feature .getDefaultGeometryProperty .getDescriptor .getCoordinateReferenceSystem))
