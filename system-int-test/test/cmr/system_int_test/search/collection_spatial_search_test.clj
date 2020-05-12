@@ -433,6 +433,10 @@
         ["0,89,100000"] [whole-world on-np touches-np]
         ["0,89,1000000"] [whole-world north-pole on-np touches-np very-tall-cart along-am-line]
 
+        ;; cross antimeridian
+        ["179.8,41,100000"] [whole-world across-am-poly]
+        ["-179.9,22,100000"] [whole-world am-point]
+        
         ;; multiple circles are ANDed together
         ["0,89,100" "0,89,1000000"] [whole-world on-np]
         ["0,0,1000" "0,89,1000" "0,89,1000000"] [whole-world]))

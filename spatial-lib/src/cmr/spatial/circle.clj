@@ -25,7 +25,7 @@
 (record-pretty-printer/enable-record-pretty-printing Circle)
 
 (defn circle
-  "Creates a new minimum bounding rectangle"
+  "Creates a circle"
   ([^Point center ^double radius]
    (->Circle center radius))
   ([^double lon ^double lat ^double radius]
@@ -62,6 +62,15 @@
   (let [{:keys [^Point center ^double radius]} cir]
     (>= radius (p/distance center point))))
 
+(defn- sanitized-longitude
+  "Returns the sanitized longitude value"
+  [^double lon]
+  (if (> lon 180.0)
+    (- lon 360.0)
+    (if (< lon -180.0)
+      (+ lon 360.0)
+      lon)))
+
 (defn circle->polygon
   "Returns the polygon approximation of the circle with the given number of points.
    Reference: https://github.com/gabzim/circle-to-polygon."
@@ -79,7 +88,9 @@
                                 plon-delta (atan2
                                             (* (sin theta) (sin r-rad) (cos lat1))
                                             (- (cos r-rad) (* (sin lat1) (sin plat-rad))))
-                                plon (degrees (+ lon1 plon-delta))
+                                plon (-> (+ lon1 plon-delta)
+                                         degrees
+                                         sanitized-longitude)
                                 plat (degrees plat-rad)]
                             (conj! pts (p/point plon plat))))
                         (transient [])
