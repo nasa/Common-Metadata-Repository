@@ -405,6 +405,32 @@
         [-5.95,-23.41,12.75,-23.69,11.11,-10.38,-6.62,-10.89,-5.95,-23.41]
         [whole-world polygon-with-holes-cart wide-south-cart normal-poly-cart]))
 
+    (testing "valid circle searches"
+      (are [lon-lat-radius items]
+        (let [found (search/find-refs :granule {:circle lon-lat-radius
+                                                :provider "PROV1"})
+              matches? (d/refs-match? items found)]
+          (when-not matches?
+            (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+            (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+          matches?)
+
+        ;; single circle
+        "0,0,1000" [whole-world polygon-with-holes]
+        ["0,0,1000"] [whole-world polygon-with-holes]
+
+        ;; same center, different radius
+        ["0,89,10"] [whole-world on-np]
+        ["0,89,100"] [whole-world on-np]
+        ["0,89,1000"] [whole-world on-np]
+        ["0,89,10000"] [whole-world on-np]
+        ["0,89,100000"] [whole-world on-np touches-np]
+        ["0,89,1000000"] [whole-world north-pole on-np touches-np very-tall-cart]
+
+        ;; multiple circles are ANDed together
+        ["0,89,100" "0,89,1000000"] [whole-world on-np]
+        ["0,0,1000" "0,89,1000" "0,89,1000000"] [whole-world]))
+
     (testing "AQL spatial search"
       (are [type ords items]
         (let [refs (search/find-refs-with-aql :granule [{type ords}] {:dataCenterId "PROV1"})
@@ -465,3 +491,68 @@
        "search against the box that does not intersect with the polygon but intersect with the mbr of the polygon unmatching case"
        [-179 0, -179 -1, -178 -1, -178 0, -179 0]
        [no-lr])))
+
+(deftest circle-parameter-validation
+  (testing "invalid circle parameters"
+    (are3 [params error-msgs]
+      (let [{:keys [status errors]} (search/find-refs :granule {:circle params
+                                                                :provider "PROV1"})]
+        (is (= [400 error-msgs]
+               [status errors])))
+
+      "circle invalid format -- not enough values"
+      ["0,100"]
+      ["[0,100] is not a valid URL encoded circle"]
+
+      "circle invalid format -- not enough values (not list)"
+      "0,100"
+      ["[0,100] is not a valid URL encoded circle"]
+
+      "circle invalid format -- too many values (not list)"
+      "0,0,100,"
+      ["[0,0,100,] is not a valid URL encoded circle"]
+      
+      "circle invalid format -- too many values"
+      ["0,0,100,200"]
+      ["[0,0,100,200] is not a valid URL encoded circle"]
+
+      "circle center longitude wrong format"
+      ["x,0,100"]
+      ["[x,0,100] is not a valid URL encoded circle"]
+
+      "circle center latitude wrong format"
+      ["0,y,100"]
+      ["[0,y,100] is not a valid URL encoded circle"]
+
+      "circle radius wrong format"
+      ["0,1,r"]
+      ["[0,1,r] is not a valid URL encoded circle"]
+
+      "circle center longitude out of range"
+      ["181,0,100"]
+      ["Point longitude [181] must be within -180.0 and 180.0"]
+
+      "circle center latitude out of range"
+      ["0,-91,100"]
+      ["Point latitude [-91] must be within -90 and 90.0"]
+
+      "center is on north pole"
+      ["0,90,100"]
+      ["Circle center cannot be the north or south pole, but was [0.0, 90.0]"]
+
+      "center is on south pole"
+      ["120,-90,100"]
+      ["Circle center cannot be the north or south pole, but was [120.0, -90.0]"]
+
+      "circle radius too small"
+      ["0,0,1.0"]
+      ["Circle radius must be between 10 and 1000000, but was 1.0."]
+
+      "circle radius too large"
+      ["0,0,1000001"]
+      ["Circle radius must be between 10 and 1000000, but was 1000001.0."]
+
+      "multiple circles errors"
+      ["0,1,r" "0,0,100" "10,20,-100"]
+      ["[0,1,r] is not a valid URL encoded circle"
+       "Circle radius must be between 10 and 1000000, but was -100.0."])))
