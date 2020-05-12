@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="many_points" id="many_points">
+	<SimpleField name="id" type="float"></SimpleField>
+</Schema>
+<Folder><name>many_points</name>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+	<ExtendedData><SchemaData schemaUrl="#many_points">
+		<SimpleData name="id">1</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-18.675248230998,18.0 -13.500248230998,28.125 -7.42524823099799,36.0 3.37475176900199,37.575 20.024751769002,35.775 35.549751769002,29.025 43.874751769002,15.975 31.949751769002,-38.7 17.549751769002,-36.9 -3.825248230998,-7.65 -18.675248230998,18.0</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+	<ExtendedData><SchemaData schemaUrl="#many_points">
+		<SimpleData name="id">2</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>66.149751769002,-21.6 90.224751769002,1.8 134.099751769002,-10.35 118.349751769002,-46.35 82.124751769002,-40.275 66.149751769002,-21.6</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+	<ExtendedData><SchemaData schemaUrl="#many_points">
+		<SimpleData name="id">2</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-150.975248230998,-39.375 -148.725248230998,-16.425 -139.050248230998,6.75 -113.625248230998,7.425 -91.350248230998,4.95 -81.000248230998,-14.625 -82.350248230998,-37.35 -83.700248230998,-55.125 -118.350248230998,-65.7 -138.150248230998,-64.575 -152.100248230998,-60.975 -157.275248230998,-53.325 -150.975248230998,-39.375</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
+  </Placemark>
+</Folder>
+</Document></kml>

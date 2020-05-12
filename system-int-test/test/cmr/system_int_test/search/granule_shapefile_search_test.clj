@@ -36,10 +36,12 @@
 
 (deftest granule-shapefile-failure-cases
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
-  (let [saved-shapefile-max-value (shapefile-middleware/max-shapefile-size)
+  (let [saved-shapefile-max-size (shapefile-middleware/max-shapefile-size)
         _ (side/eval-form `(shapefile-middleware/set-max-shapefile-size! 50000))
         saved-shapefile-max-features (shapefile/max-shapefile-features)
-        _ (side/eval-form `(shapefile/set-max-shapefile-features! 1))]
+        _ (side/eval-form `(shapefile/set-max-shapefile-features! 2))
+        saved-shapefile-max-points (shapefile/max-shapefile-points)
+        _ (side/eval-form `(shapefile/set-max-shapefile-points! 50))]
 
     (testing "ESRI Shapefile Failure cases"
       (are3 [shapefile additional-params regex]
@@ -66,7 +68,10 @@
         "too_big.zip" {:name "provider" :content "PROV1"} #"Shapefile size exceeds the 50000 byte limit"
 
         "Shapefile has too many features"
-        "multi_feature.zip" {:name "provider" :content "PROV1"} #"Shapefile feature count \[2\] exceeds the 1 feature limit"))
+        "too_many_features.zip" {:name "provider" :content "PROV1"} #"Shapefile feature count \[3\] exceeds the 2 feature limit"
+
+        "Shapefile has too many points"
+        "too_many_points.zip" {:name "provider" :content "PROV1"} #"Number of points in shapefile exceeds the limit of 50"))
 
     (testing "GeoJSON Failure cases"
       (are3 [shapefile additional-params regex]
@@ -87,7 +92,10 @@
         "invalid_json.geojson" {:name "provider" :content "PROV1"} #"Failed to parse GeoJSON file"
 
         "Shapefile has too many features"
-        "multi_feature.geojson" {:name "provider" :content "PROV1"} #"GeoJSON feature count \[2\] exceeds the 1 feature limit"))
+        "too_many_features.geojson" {:name "provider" :content "PROV1"} #"GeoJSON feature count \[3\] exceeds the 2 feature limit"
+
+        "Shapefile has too many points"
+        "too_many_points.geojson" {:name "provider" :content "PROV1"} #"Number of points in GeoJSON file exceeds the limit of 50"))
 
       
     (testing "KML Failure cases"
@@ -109,11 +117,15 @@
         "invalid.kml" {:name "provider" :content "PROV1"} #"Failed to parse KML file"
 
         "Shapefile has too many features"
-        "multi_feature.kml" {:name "provider" :content "PROV1"} #"KML feature count \[2\] exceeds the 1 feature limit"))
+        "too_many_features.kml" {:name "provider" :content "PROV1"} #"KML feature count \[3\] exceeds the 2 feature limit"
+
+        "Shapefile has too many points"
+        "too_many_points.kml" {:name "provider" :content "PROV1"} #"Number of points in KML file exceeds the limit of 50"))
 
         
-    (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-value))
-    (side/eval-form `(shapefile/set-max-shapefile-features! ~saved-shapefile-max-features))))
+    (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-size))
+    (side/eval-form `(shapefile/set-max-shapefile-features! ~saved-shapefile-max-features))
+    (side/eval-form `(shapefile/set-max-shapefile-points! ~saved-shapefile-max-points))))
   
 (deftest granule-shapefile-search-test
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
