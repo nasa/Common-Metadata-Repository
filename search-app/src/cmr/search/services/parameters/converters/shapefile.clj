@@ -29,6 +29,7 @@
    (org.geotools.referencing CRS)
    (org.geotools.util URLs)
    (org.geotools.xsd Parser StreamingParser PullParser)
+   (org.locationtech.jts.geom Geometry)
    (org.opengis.feature.simple SimpleFeature)
    (org.opengis.feature.type Name)))
 
@@ -40,14 +41,13 @@
   "Flag that indicates if we allow spatial searching by shapefile."
   {:default false :type Boolean})
 
-
 (defconfig max-shapefile-features
   "The maximum number of feature a shapefile can have"
-  {:default 100000 :type Long})
+  {:default 5000 :type Long})
   
 (defconfig max-shapefile-points
   "The maximum number of points a shapefile can have"
-  {:default 5000000 :type Long})
+  {:default 100000 :type Long})
 
 (defn- unzip-file
   "Unzip a file (of type File) into a temporary directory and return the directory path as a File"
@@ -76,7 +76,7 @@
   "Get one or more conditions for the given Geometry. This will only
   return more than one condition if the Geometry is a GeometryCollection.
   The `options` map can be used to provided additional information."
-  [geometry options]
+  [^Geometry geometry options]
   (let [num-geometries (.getNumGeometries geometry)]
     (debug (format "NUM SUB GEOMETRIES: [%d]" num-geometries))
     (for [index (range 0 num-geometries)
@@ -85,7 +85,7 @@
 
 (defn geometry-point-count
   "Get the number of points in the given Geometry"
-  [geometry]
+  [^Geometry geometry]
   (let [num-geometries (.getNumGeometries geometry)
         all-geometries  (for [index (range 0 num-geometries)
                               :let [sub-geometry (.getGeometryN geometry index)]]

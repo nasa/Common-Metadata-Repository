@@ -6,7 +6,7 @@
     [ring.middleware.multipart-params :refer [wrap-multipart-params]]
     [cmr.common.config :as cfg :refer [defconfig]]
     [cmr.common.api.errors :as api-errors]
-    [cmr.common.log :refer [debug]]
+    [cmr.common.log :refer [debug error]]
     [cmr.common.mime-types :as mt]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.params :as p]
@@ -41,8 +41,9 @@
 (defn- progress
   "Progress function for `wrap-multipart-params`. This function simply throws an error if
   the uploaded file exceeds a given limit."
-  [_reqest _bytes-read content-length _item-count]
+  [_request _bytes-read content-length _item-count]
   (when (> content-length (max-shapefile-size))
+    (error (format "Failed shapefile upload of size [%d] bytes" content-length))
     (errors/throw-service-error :bad-request 
       (format "Shapefile size exceeds the %d byte limit" (max-shapefile-size)))))
 
