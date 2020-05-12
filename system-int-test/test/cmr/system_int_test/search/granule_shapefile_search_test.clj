@@ -39,7 +39,7 @@
   (let [saved-shapefile-max-value (shapefile-middleware/max-shapefile-size)
         _ (side/eval-form `(shapefile-middleware/set-max-shapefile-size! 50000))
         saved-shapefile-max-features (shapefile/max-shapefile-features)
-        _ (side/eval-form `(shapefile/set-max-shapefile-features! 5))]
+        _ (side/eval-form `(shapefile/set-max-shapefile-features! 1))]
 
     (testing "ESRI Shapefile Failure cases"
       (are3 [shapefile additional-params regex]
@@ -66,7 +66,7 @@
         "too_big.zip" {:name "provider" :content "PROV1"} #"Shapefile size exceeds the 50000 byte limit"
 
         "Shapefile has too many features"
-        "ne_110m_admin_1_states_provinces.zip" {:name "provider" :content "PROV1"} #"Shapefile feature count \[51\] exceeds the 5 feature limit"))
+        "multi_feature.zip" {:name "provider" :content "PROV1"} #"Shapefile feature count \[2\] exceeds the 1 feature limit"))
 
     (testing "GeoJSON Failure cases"
       (are3 [shapefile additional-params regex]
@@ -84,7 +84,11 @@
         "polygon_with_hole.geojson" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
 
         "Failed to parse GeoJSON file"
-        "invalid_json.geojson" {:name "provider" :content "PROV1"} #"Failed to parse GeoJSON file"))
+        "invalid_json.geojson" {:name "provider" :content "PROV1"} #"Failed to parse GeoJSON file"
+
+        "Shapefile has too many features"
+        "multi_feature.geojson" {:name "provider" :content "PROV1"} #"GeoJSON feature count \[2\] exceeds the 1 feature limit"))
+
       
     (testing "KML Failure cases"
       (are3 [shapefile additional-params regex]
@@ -102,7 +106,11 @@
         "polygon_with_hole.kml" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
 
         "Failed to parse kml file"
-        "invalid.kml" {:name "provider" :content "PROV1"} #"Failed to parse KML file"))
+        "invalid.kml" {:name "provider" :content "PROV1"} #"Failed to parse KML file"
+
+        "Shapefile has too many features"
+        "multi_feature.kml" {:name "provider" :content "PROV1"} #"KML feature count \[2\] exceeds the 1 feature limit"))
+
         
     (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-value))
     (side/eval-form `(shapefile/set-max-shapefile-features! ~saved-shapefile-max-features))))
