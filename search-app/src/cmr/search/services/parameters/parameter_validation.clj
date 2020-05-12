@@ -27,7 +27,9 @@
    [cmr.search.services.parameters.legacy-parameters :as lp]
    [cmr.search.services.parameters.validation.track :as track]
    [cmr.search.services.parameters.validation.util :as validation-util]
-   [cmr.spatial.codec :as spatial-codec])
+   [cmr.spatial.circle :as spatial-circle]
+   [cmr.spatial.codec :as spatial-codec]
+   [cmr.spatial.validation :as sv])
   (:import
    (clojure.lang ExceptionInfo)
    (java.lang Integer Long)))
@@ -772,6 +774,23 @@
                shapefile-format
                (util/human-join (vec valid-shapefile-formats) "," "or"))])))
 
+(defn- validate-circle-value
+  "Validates the given circle value"
+  [value]
+  (let [circle (spatial-codec/url-decode :circle value)]
+    (if-let [err-msgs (:errors circle)]
+      err-msgs
+      (sv/validate circle))))
+
+(defn- circle-values-validation
+  "Validates that the circle values are valid"
+  [concept-type params]
+  (when-let [circle-value (:circle params)]
+    (let [circle-values (if (sequential? circle-value)
+                          circle-value
+                          [circle-value])]
+      (mapcat validate-circle-value circle-values))))
+
 (def parameter-validations
   "Lists of parameter validation functions by concept type"
   {:collection (concat
@@ -802,6 +821,7 @@
                  collection-include-facets-validation
                  no-facets-size-without-include-facets-v2
                  collection-facets-size-validation
+                 circle-values-validation
                  shapefile-format-validation])
    :granule (concat
              cpv/common-validations
@@ -829,6 +849,7 @@
               temporal-facet-year-validation
               temporal-facet-month-validation
               temporal-facet-day-validation
+              circle-values-validation
               shapefile-format-validation])
    :tag cpv/common-validations
    :variable (concat cpv/common-validations

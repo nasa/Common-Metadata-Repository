@@ -3,7 +3,6 @@
   (:require
     [cmr.spatial.arc :as a]
     [cmr.spatial.cartesian-ring :as cr]
-    [cmr.spatial.circle :as spatial-circle]
     [cmr.spatial.derived :as d]
     [cmr.spatial.geodetic-ring :as gr]
     [cmr.spatial.line-string :as ls]
@@ -14,7 +13,6 @@
     [cmr.spatial.ring-relations :as rr])
   (:import
     cmr.spatial.cartesian_ring.CartesianRing
-    cmr.spatial.circle.Circle
     cmr.spatial.geodetic_ring.GeodeticRing
     cmr.spatial.line_string.LineString
     cmr.spatial.mbr.Mbr
@@ -301,18 +299,7 @@
 
   (intersects-line-string?
     [polygon line]
-    (poly/intersects-line-string? polygon line))
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.spatial.circle.Circle
-
-  (mbr
-    [circle]
-    (:mbr circle))
-
-  (covers-br?
-    [circle br]
-    (spatial-circle/covers-br? circle br)))
+    (poly/intersects-line-string? polygon line)))
 
 (def shape-type->intersects-fn
   "A map of spatial types to the intersect functions to use."

@@ -268,22 +268,14 @@
                  (pr-str polygon))
            (m/point->mbr (-> polygon :rings first :points first))))))))
 
-(defn circle->lr
-  "Returns the LR of the given circle"
-  [cir]
-  (lr-search [:north :south :east :west] cir (m/point->mbr (:center cir))))
-
 (comment
-
  (require '[cmr.spatial.kml :as kml])
  (require '[cmr.spatial.circle :as cr])
-
- (let [center-point (p/point 0 89)
+ (let [center-point (p/point -87.629717 41.878112)
        circle1 (d/calculate-derived (cr/circle center-point 10000))
        polygon1 (cr/circle->polygon circle1 32)
        pm (.mbr (d/calculate-derived polygon1))
-       pl (find-lr polygon1)
-       m (:mbr circle1)
-       l (circle->lr circle1)]
-   (kml/display-shapes [pm pl m l (poly/boundary polygon1)]))
+       pl (find-lr polygon1)]
+   ; (println (kml/shapes->kml [(poly/boundary polygon1)]))
+   (kml/display-shapes [pm pl (poly/boundary polygon1)]))
 )

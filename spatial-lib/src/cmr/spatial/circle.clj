@@ -7,11 +7,9 @@
    [cmr.spatial.geodetic-ring :as gr]
    [cmr.spatial.validation :as sv]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.mbr :as spatial-mbr]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import
    cmr.spatial.geodetic_ring.GeodeticRing
-   cmr.spatial.mbr.Mbr
    cmr.spatial.polygon.Polygon
    cmr.spatial.point.Point))
 
@@ -22,9 +20,6 @@
   [
    ^Point center
    ^double radius
-
-   ;;derived
-   ^Mbr mbr
    ])
 
 (record-pretty-printer/enable-record-pretty-printing Circle)
@@ -32,9 +27,9 @@
 (defn circle
   "Creates a new minimum bounding rectangle"
   ([^Point center ^double radius]
-   (->Circle center radius nil))
+   (->Circle center radius))
   ([^double lon ^double lat ^double radius]
-   (->Circle (p/point lon lat) radius nil)))
+   (->Circle (p/point lon lat) radius)))
 
 (def MIN_RADIUS
   "Minimum radius in meters"
@@ -47,6 +42,13 @@
 (def ^:const ^double EARTH_RADIUS_APPROX
   "Radius of the earth in meters for polygon approximation of the circle"
   6378137.0)
+
+(defn- validate-center
+  "Validate the center of the circle, returns error if it is on the poles; otherwise returns nil"
+  [^Point center]
+  (let [{:keys [lon lat]} center]
+    (when (or (= 90.0 lat) (= -90.0 lat))
+      [(format "Circle center cannot be the north or south pole, but was [%s, %s]" lon lat)])))
 
 (defn validate-radius
   "Validate the radius. Returns a list of errors when radius is invalid; otherwise returns nil"
@@ -88,38 +90,17 @@
 
     (poly/polygon :geodetic [(gr/ring poly-points)])))
 
-(defn mbr
-  "Returns the MBR of the circle. The algorithm used is documented at:
-  http://janmatuschek.de/LatitudeLongitudeBoundingCoordinates#RefBronstein"
-  [^Circle cir]
-  (let [{:keys [^Point center ^double radius]} cir
-        lon1 (.lon_rad center)
-        lat1 (.lat_rad center)
-        r-rad (/ radius EARTH_RADIUS_METERS)
-        delta (asin (/ (sin r-rad) (cos lat1)))
-        lon-min (degrees (- lon1 delta))
-        lon-max (degrees (+ lon1 delta))
-        lat-min (degrees (- lat1 r-rad))
-        lat-max (degrees (+ lat1 r-rad))]
-    (spatial-mbr/mbr lon-min lat-max lon-max lat-min)))
-
-(defn covers-br?
-  "Returns true if the circle covers the given bounding rectangle"
-  [^Circle cir ^Mbr br]
-  (let [{:keys [corner-points]} br]
-    (every? (partial covers-point? cir) corner-points)))
-
 (extend-protocol d/DerivedCalculator
   cmr.spatial.circle.Circle
   (calculate-derived
     ^Circle [^Circle cir]
-    (if (.mbr cir)
-      cir
-      (assoc cir :mbr (mbr cir)))))
+    cir))
 
 (extend-protocol sv/SpatialValidation
   cmr.spatial.circle.Circle
   (validate
    [record]
-   (concat (sv/validate (:center record))
-           (validate-radius (:radius record)))))
+   (let [{:keys [center radius]} record]
+     (concat (sv/validate center)
+             (validate-center center)
+             (validate-radius radius)))))

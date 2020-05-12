@@ -15,7 +15,7 @@
   {:default 32 :type Long})
 
 (defn- shape->search-shape
-  "Returns the search shape of the given shape. For cirle, we convert it into a poygon to search."
+  "Returns the search shape of the given shape. For cirle, we convert it into a polygon to search."
   [shape]
   (if (= cmr.spatial.circle.Circle (type shape))
     (spatial-circle/circle->polygon shape (points-on-circle))

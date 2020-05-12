@@ -74,6 +74,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Bounding Box](#c-bounding-box)
         * [Point](#c-point)
         * [Line](#c-line)
+        * [Circle](#c-circle)
     * [Shapefile](#c-shapefile)
     * [Additional Attribute](#c-additional-attribute)
     * [Author](#c-author)
@@ -95,6 +96,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Bounding Box](#g-bounding-box)
         * [Point](#g-point)
         * [Line](#g-line)
+        * [Circle](#g-circle)
     * [Shapefile](#g-shapefile)
     * [Orbit number](#g-orbit-number)
     * [Orbit equator crossing longitude](#g-orbit-equator-crossing-longitude)
@@ -1695,6 +1697,12 @@ Lines are provided as a list of comma separated values representing coordinates 
 
     curl "%CMR-ENDPOINT%/collections?line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
 
+##### <a name="c-circle"></a> Circle
+
+Circle defines a circle area on the earth with a center point and a radius. The center parameters must be 3 comma-separated numbers: longitude of the center point, latitude of the center point, radius of the circle in meters. The circle center cannot be on North or South pole. The radius of the circle must be between 10 and 1,000,000.
+
+    curl "%CMR-ENDPOINT%/collections?circle=-87.629717,41.878112,1000"
+
 Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are AND'd in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon.
 
 #### <a name="c-shapefile"></a> Find collections by shapefile
@@ -1949,6 +1957,10 @@ The parameters used for searching granules by spatial are the same as the spatia
 ##### <a name="g-line"></a> Line
 
     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
+
+##### <a name="g-circle"></a> Circle
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&circle=-87.629717,41.878112,1000"
 
 #### <a name="g-shapefile"></a> Find granules by shapefile
 
