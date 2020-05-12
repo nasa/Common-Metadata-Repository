@@ -6,7 +6,7 @@
     [ring.middleware.multipart-params :refer [wrap-multipart-params]]
     [cmr.common.config :as cfg :refer [defconfig]]
     [cmr.common.api.errors :as api-errors]
-    [cmr.common.log :refer [debug error]]
+    [cmr.common.log :refer [debug]]
     [cmr.common.mime-types :as mt]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.params :as p]
