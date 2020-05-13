@@ -1699,7 +1699,7 @@ Lines are provided as a list of comma separated values representing coordinates 
 
 ##### <a name="c-circle"></a> Circle
 
-Circle defines a circle area on the earth with a center point and a radius. The center parameters must be 3 comma-separated numbers: longitude of the center point, latitude of the center point, radius of the circle in meters. The circle center cannot be on North or South pole. The radius of the circle must be between 10 and 1,000,000.
+Circle defines a circle area on the earth with a center point and a radius. The center parameters must be 3 comma-separated numbers: longitude of the center point, latitude of the center point, radius of the circle in meters. The circle center cannot be on North or South pole. The radius of the circle must be between 10 and 6,000,000.
 
     curl "%CMR-ENDPOINT%/collections?circle=-87.629717,41.878112,1000"
 

@@ -550,13 +550,13 @@
 
       "circle radius too small"
       ["0,0,1.0"]
-      ["Circle radius must be between 10 and 1000000, but was 1.0."]
+      ["Circle radius must be between 10 and 6000000, but was 1.0."]
 
       "circle radius too large"
-      ["0,0,1000001"]
-      ["Circle radius must be between 10 and 1000000, but was 1000001.0."]
+      ["0,0,6000001"]
+      ["Circle radius must be between 10 and 6000000, but was 6000001.0."]
 
       "multiple circles errors"
       ["0,1,r" "0,0,100" "10,20,-100"]
       ["[0,1,r] is not a valid URL encoded circle"
-       "Circle radius must be between 10 and 1000000, but was -100.0."])))
+       "Circle radius must be between 10 and 6000000, but was -100.0."])))

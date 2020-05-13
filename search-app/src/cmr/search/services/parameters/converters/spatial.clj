@@ -10,15 +10,31 @@
    [cmr.spatial.circle :as spatial-circle]
    [cmr.spatial.codec :as spatial-codec]))
 
-(defconfig points-on-circle
-  "The number of vertices of the polygon used to approximate a circle"
+(defconfig min-points-on-circle
+  "The minimum number of vertices of the polygon used to approximate a circle"
   {:default 32 :type Long})
+
+(defconfig max-points-on-circle
+  "The maximum number of vertices of the polygon used to approximate a circle"
+  {:default 100 :type Long})
+
+(defconfig min-radius-for-max-points
+  "The minimum radius in meters to trigger the use of maximum number of vertices of the polygon
+  to approximate the circle"
+  {:default 5000 :type Long})
+
+(defn- points-on-circle
+  "Returns the number of vertices of the polygon to approximate the circle"
+  [circle]
+  (if (< (:radius circle) (min-radius-for-max-points))
+    (min-points-on-circle)
+    (max-points-on-circle)))
 
 (defn- shape->search-shape
   "Returns the search shape of the given shape. For cirle, we convert it into a polygon to search."
   [shape]
   (if (= cmr.spatial.circle.Circle (type shape))
-    (spatial-circle/circle->polygon shape (points-on-circle))
+    (spatial-circle/circle->polygon shape (points-on-circle shape))
     shape))
 
 (defn url-value->spatial-condition
