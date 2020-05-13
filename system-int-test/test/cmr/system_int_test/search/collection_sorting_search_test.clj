@@ -466,22 +466,20 @@
          ["-ongoing" "entry-title"] [coll2 coll4 coll5 coll6 coll7 coll3 coll1]
          ["ongoing" "entry-title"] [coll1 coll3 coll2 coll4 coll5 coll6 coll7])))
 
-
 (deftest collection-usage-score-sorting-test
-  (let [make-named-collection (fn [cname & sensors]
+  (let [make-named-collection (fn [cname]
                                 (d/ingest
                                   "PROV1"
                                   (dc/collection
                                     {:entry-title cname
                                      :short-name cname
                                      :long-name (str cname "-long")
-                                     :version-id "1"})
-                                  {:allow-failure? false}))
-        c1 (make-named-collection "a" "c10" "c41")
-        c2 (make-named-collection "b" "c20" "c51")
-        c3 (make-named-collection "c" "c30")
-        c4 (make-named-collection "d" "c40")
-        c5 (make-named-collection "e" "c50")]
+                                     :version-id "1"})))
+        c1 (make-named-collection "a")
+        c2 (make-named-collection "b")
+        c3 (make-named-collection "c")
+        c4 (make-named-collection "d")
+        c5 (make-named-collection "e")]
 
     (index/wait-until-indexed)
 
@@ -490,8 +488,7 @@
           (sort-order-correct? items sort-key)
            
            ["usage_score"] [c1 c2 c3 c5 c4]
-           ["-usage_score"] [c4 c5 c3 c2 c1]
-        ))
+           ["-usage_score"] [c4 c5 c3 c2 c1]))
 
     (testing "using multiple sort keys"
         (are [sort-key items]
