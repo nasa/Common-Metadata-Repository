@@ -12,13 +12,34 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
+   [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.umm.collection.entry-id :as eid]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+(def usage-csv
+  (str "Product,Version,Hosts\n"
+       "a,1,10\n"
+       "b,1,20\n"
+       "c,1,30\n"
+       "d,1,99\n"
+       "e,1,50\n"))
+
+(defn init-usage-fixture
+  "Setup usage config"
+  []
+  (fn [f]
+    (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-sort-use-relevancy-score! true))
+    (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-community-usage-bin-size! 1))
+    (hu/ingest-community-usage-metrics usage-csv)
+    (index/wait-until-indexed)
+    (f)))
+
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
+                       (init-usage-fixture)]))
 
 (defn make-coll
   "Helper for creating and ingesting a collection"
@@ -444,3 +465,40 @@
 
          ["-ongoing" "entry-title"] [coll2 coll4 coll5 coll6 coll7 coll3 coll1]
          ["ongoing" "entry-title"] [coll1 coll3 coll2 coll4 coll5 coll6 coll7])))
+
+
+(deftest collection-usage-score-sorting-test
+  (let [make-named-collection (fn [cname & sensors]
+                                (d/ingest
+                                  "PROV1"
+                                  (dc/collection
+                                    {:entry-title cname
+                                     :short-name cname
+                                     :long-name (str cname "-long")
+                                     :version-id "1"})
+                                  {:allow-failure? false}))
+        c1 (make-named-collection "a" "c10" "c41")
+        c2 (make-named-collection "b" "c20" "c51")
+        c3 (make-named-collection "c" "c30")
+        c4 (make-named-collection "d" "c40")
+        c5 (make-named-collection "e" "c50")]
+
+    (index/wait-until-indexed)
+
+    (testing "usage_score as the sole sort key"
+      (are [sort-key items]
+          (sort-order-correct? items sort-key)
+           
+           ["usage_score"] [c1 c2 c3 c5 c4]
+           ["-usage_score"] [c4 c5 c3 c2 c1]
+        ))
+
+    (testing "using multiple sort keys"
+        (are [sort-key items]
+            (sort-order-correct? items sort-key)
+
+            ["entry_title" "usage_score"] [c1 c2 c3 c4 c5]
+            ["entry_title" "-usage_score"] [c1 c2 c3 c4 c5]
+
+            ["usage_score" "entry_title"] [c1 c2 c3 c5 c4]
+            ["-usage_score" "-entry_title"] [c4 c5 c3 c2 c1]))))

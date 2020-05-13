@@ -101,8 +101,14 @@
 
 (defn get-community-usage-metrics
   "Retrieves the set of community usage metrics from metadata-db."
-  [context]
-  (:community-usage-metrics (json/decode (:metadata (humanizer-service/fetch-humanizer-concept context)) true)))
+  ([context]
+   (get-community-usage-metrics context nil))
+  ([context sort-order]
+   (let [metrics (:community-usage-metrics (json/decode (:metadata (humanizer-service/fetch-humanizer-concept context)) true))]
+    (case sort-order
+      :desc (sort-by :access-count #(> %1 %2) metrics)
+      :asc (sort-by :access-count #(< %1 %2) metrics)
+      metrics))))
 
 (defn update-community-usage
   "Create/update the community usage metrics saving them with the humanizers in metadata db. Do not
