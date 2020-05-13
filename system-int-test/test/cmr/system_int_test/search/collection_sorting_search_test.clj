@@ -485,17 +485,17 @@
 
     (testing "usage_score as the sole sort key"
       (are [sort-key items]
-          (sort-order-correct? items sort-key)
+           (sort-order-correct? items sort-key)
            
            ["usage_score"] [c1 c2 c3 c5 c4]
            ["-usage_score"] [c4 c5 c3 c2 c1]))
 
     (testing "using multiple sort keys"
         (are [sort-key items]
-            (sort-order-correct? items sort-key)
+             (sort-order-correct? items sort-key)
 
-            ["entry_title" "usage_score"] [c1 c2 c3 c4 c5]
-            ["entry_title" "-usage_score"] [c1 c2 c3 c4 c5]
+             ["entry_title" "usage_score"] [c1 c2 c3 c4 c5]
+             ["entry_title" "-usage_score"] [c1 c2 c3 c4 c5]
 
-            ["usage_score" "entry_title"] [c1 c2 c3 c5 c4]
-            ["-usage_score" "-entry_title"] [c4 c5 c3 c2 c1]))))
+             ["usage_score" "entry_title"] [c1 c2 c3 c5 c4]
+             ["-usage_score" "-entry_title"] [c4 c5 c3 c2 c1]))))
