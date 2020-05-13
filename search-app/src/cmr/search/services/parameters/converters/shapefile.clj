@@ -43,11 +43,11 @@
 
 (defconfig max-shapefile-features
   "The maximum number of feature a shapefile can have"
-  {:default 5000 :type Long})
+  {:default 500 :type Long})
   
 (defconfig max-shapefile-points
   "The maximum number of points a shapefile can have"
-  {:default 100000 :type Long})
+  {:default 5000 :type Long})
 
 (defn- unzip-file
   "Unzip a file (of type File) into a temporary directory and return the directory path as a File"
