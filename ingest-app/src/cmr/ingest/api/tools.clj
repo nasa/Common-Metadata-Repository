@@ -11,7 +11,7 @@
 
 (defn- validate-and-prepare-tool-concept
   "Validate tool concept, set the concept format and returns the concept;
-  throws error if the metadata is not a valid against the UMM tool JSON schema."
+  throws error if the metadata is not valid against the UMM tool JSON schema."
   [concept]
   (let [concept (update-in concept [:format] (partial ingest/fix-ingest-concept-format :tool))]
     (v/validate-concept-request concept)

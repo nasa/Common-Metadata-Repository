@@ -22,6 +22,9 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /providers/\<provider-id>/services/\<native-id>
     * [PUT - Create or update a service.](#create-update-service)
     * [DELETE - Delete a service.](#delete-service)
+  * /providers/\<provider-id>/tools/\<native-id>
+    * [PUT - Create or update a tool.](#create-update-tool)
+    * [DELETE - Delete a tool.](#delete-tool)
   * /providers/\<provider-id>/subscriptions/\<native-id>
     * [PUT - Create or update a subscription.](#create-update-subscription)
     * [DELETE - Delete a subscription.](#delete-subscription)
@@ -548,6 +551,63 @@ curl -i -X DELETE \
 
 ```
 {"concept-id":"S1200000015-PROV1","revision-id":2}
+```
+
+### <a name="create-update-tool"></a> Create / Update a Tool
+
+Tool concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/tools/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+
+```
+curl -i -XPUT \
+-H "Content-type: application/vnd.nasa.cmr.umm+json" \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/tools/tool123 -d \
+"{\"Name\": \"USGS_TOOLS_LATLONG\", \"LongName\": \"WRS-2 Path/Row to Latitude/Longitude Converter\", \"Type\": \"Downloadable Tool\", \"Version\": \"1.0\", \"Description\": \"The USGS WRS-2 Path/Row to Latitude/Longitude Converter allows users to enter any Landsat path and row to get the nearest scene center latitude and longitude coordinates.\", \"URL\": { \"URLContentType\": \"DistributionURL\", \"Type\": \"DOWNLOAD SOFTWARE\", \"Description\": \"Access the WRS-2 Path/Row to Latitude/Longitude Converter.\", \"URLValue\": \"http://www.scp.byu.edu/software/slice_response/Xshape_temp.html\" }, \"ToolKeywords\" : [{ \"ToolCategory\": \"EARTH SCIENCE SERVICES\", \"ToolTopic\": \"DATA MANAGEMENT/DATA HANDLING\", \"ToolTerm\": \"DATA INTEROPERABILITY\", \"ToolSpecificTerm\": \"DATA REFORMATTING\" }], \"Organizations\" : [ { \"Roles\": [\"SERVICE PROVIDER\"], \"ShortName\": \"USGS/EROS\",    \"LongName\": \"US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES\", \"URLValue\": \"http://www.usgs.gov\" } ], \"MetadataSpecification\": { \"URL\": \"https://cdn.earthdata.nasa.gov/umm/tool/v1.0\", \"Name\": \"UMM-T\", \"Version\": \"1.0\" }"
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>TL1200000015-PROV1</concept-id>
+  <revision-id>1</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+By passing the option `-H "Accept: application/json"` to `curl`, one may
+get a JSON response:
+
+```
+{"concept-id":"TL1200000015-PROV1","revision-id":1}
+```
+
+### <a name="delete-tool"></a> Delete a Tool
+
+Tool metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/providers/<provider-id>/tools/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+
+```
+curl -i -X DELETE \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/tools/tool123
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>TL1200000015-PROV1</concept-id>
+  <revision-id>2</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+```
+{"concept-id":"TL1200000015-PROV1","revision-id":2}
 ```
 
 ### <a name="create-update-subscription"></a> Create / Update a Subscription
