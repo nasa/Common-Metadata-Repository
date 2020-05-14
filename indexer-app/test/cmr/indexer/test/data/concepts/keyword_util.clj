@@ -214,8 +214,8 @@
                      {:Category "SCIENCE CAT 3"
                       :Topic "SCIENCE TOPIC 3"
                       :Term "SCIENCE TERM 3"}]
-   :ArchiveAndDistributionInformation 
-     {:FileDistributionInformation 
+   :ArchiveAndDistributionInformation
+     {:FileDistributionInformation
        [{:FormatType "Native",
          :AverageFileSize nil,
          :Fees nil,
@@ -247,11 +247,11 @@
    :Type "OPeNDAP"
    :Version "1.9"
    :Description "AIRS Level-3 retrieval product created using AIRS IR, AMSU without HSB."
-   :RelatedURLs [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
-                  :Description "OPeNDAP Service"
-                  :Type "GET SERVICE"
-                  :Subtype "ACCESS WEB SERVICE"
-                  :URLContentType "CollectionURL"}]
+   :URL {:URLValue "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+         :Description "OPeNDAP Service"
+         :Type "GET SERVICE"
+         :Subtype "ACCESS WEB SERVICE"
+         :URLContentType "CollectionURL"}
    :ContactPersons [
                     {:Roles ["AUTHOR"]
                      :ContactInformation {
@@ -269,27 +269,7 @@
                      :FirstName "Alice"
                      :MiddleName ""
                      :LastName "Bob"}]
-   :Platforms [
-               {:ShortName "A340-600"
-                :LongName "Airbus A340-600"
-                :Instruments [
-                              {:ShortName "SMWE4B"
-                               :LongName "Senso-matic Wonder Eye 4B"}]}]
    :AncillaryKeywords ["Data Visualization" "Data Discovery"]
-   :ScienceKeywords [
-                     {:Category "EARTH SCIENCE SERVICES"
-                      :Topic "DATA ANALYSIS AND VISUALIZATION"
-                      :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
-                     {:Category "ATMOSPHERE"
-                      :Topic "ATMOSPHERIC WINDS"
-                      :Term "SURFACE WINDS"
-                      :VariableLevel1 "SPECTRAL/ENGINEERING"
-                      :VariableLevel2 "MICROWAVE"
-                      :VariableLevel3 "MICROWAVE IMAGERY"
-                      :DetailedVariable "RADAR"}
-                     {:Category "SCIENCE CAT 3"
-                      :Topic "SCIENCE TOPIC 3"
-                      :Term "SCIENCE TERM 3"}]
    :ServiceKeywords [
                      {:ServiceCategory "DATA ANALYSIS AND VISUALIZATION"
                       :ServiceTopic "VISUALIZATION/IMAGE PROCESSING"}
@@ -320,27 +300,7 @@
                            :ShortName "LDPAAC"}
                           {:Roles ["SERVICE PROVIDER"]
                            :ShortName "USGS/EROS"
-                           :LongName "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES"
-                           :Uuid "005c89f8-39ca-4645-b31a-d06a0118d7a1"
-                           :ContactPersons [{
-                                             :Roles [ "PUBLISHER"]
-                                             :ContactInformation
-                                             {:ContactMechanisms
-                                              [{:Type "Email"
-                                                :Value "custserv at usgs.gov"}
-                                               {:Type "Fax"
-                                                :Value "605-594-6589"}
-                                               {:Type "Telephone"
-                                                :Value "605-594-6151"}]
-                                              :Addresses
-                                              [{:StreetAddresses ["47914 252nd Street"]
-                                                :City "Sioux Falls"
-                                                :StateProvince "SD"
-                                                :Country "USA"
-                                                :PostalCode "57198-0001"}]}
-                                             :FirstName "Carol"
-                                             :MiddleName "D."
-                                             :LastName "Eve"}]}]})
+                           :LongName "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES"}]})
 
 (deftest extract-collection-field-values
   (are3 [field-key values]
@@ -492,19 +452,9 @@
     :ContactPersons
     ["Alice" "Bob" "AUTHOR"]
 
-    "Platforms field"
-    :Platforms
-    ["Airbus A340-600" "A340-600" "Senso-matic Wonder Eye 4B" "SMWE4B"]
-
-    "RelatedURLs field"
-    :RelatedURLs
+    "URL field"
+    :URL
     ["OPeNDAP Service" "ACCESS WEB SERVICE" "GET SERVICE" "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" "CollectionURL"]
-
-    "ScienceKeywords field"
-    :ScienceKeywords
-    ["EARTH SCIENCE SERVICES" nil "GEOGRAPHIC INFORMATION SYSTEMS" "DATA ANALYSIS AND VISUALIZATION"
-     nil nil nil "ATMOSPHERE" "RADAR" "SURFACE WINDS" "ATMOSPHERIC WINDS" "SPECTRAL/ENGINEERING"
-     "MICROWAVE" "MICROWAVE IMAGERY" "SCIENCE CAT 3" nil "SCIENCE TERM 3" "SCIENCE TOPIC 3" nil nil nil]
 
     "ServiceKeywords field"
     :ServiceKeywords
@@ -514,21 +464,26 @@
     "ServiceOrganizations field"
     :ServiceOrganizations
     [nil "LDPAAC" "SERVICE PROVIDER" "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES"
-     "USGS/EROS" "Carol" "Eve" "PUBLISHER" "SERVICE PROVIDER"]))
+     "USGS/EROS" "SERVICE PROVIDER"]))
 
 (deftest concept-key->keywords
   (is (= ["OPeNDAP Service for AIRS Level-3 retrieval products"]
          (sort
           (keyword-util/concept-key->keywords
            sample-umm-service-concept :LongName))))
+  (is (= ["A test related url." "DataCenterURL" "EDG" "GENERAL DOCUMENTATION" "GET SERVICE" "HOME PAGE"
+           "PublicationURL" "Related-url description." "related-url-example-two.com" "related-url-example.com"]
+         (sort
+          (keyword-util/concept-key->keywords
+           sample-umm-collection-concept :RelatedUrls))))
   (is (= ["ACCESS WEB SERVICE" "CollectionURL" "GET SERVICE" "OPeNDAP Service" "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"]
          (sort
           (keyword-util/concept-key->keywords
-           sample-umm-service-concept :RelatedURLs))))
+           sample-umm-service-concept :URL))))
   (is (= ["ATMOSPHERE" "ATMOSPHERIC WINDS" "DATA ANALYSIS AND VISUALIZATION" "EARTH SCIENCE SERVICES" "GEOGRAPHIC INFORMATION SYSTEMS" "MICROWAVE" "MICROWAVE IMAGERY" "RADAR" "SCIENCE CAT 3" "SCIENCE TERM 3" "SCIENCE TOPIC 3" "SPECTRAL/ENGINEERING" "SURFACE WINDS"]
          (sort
           (keyword-util/concept-key->keywords
-           sample-umm-service-concept :ScienceKeywords)))))
+           sample-umm-collection-concept :ScienceKeywords)))))
 
 (deftest concept-key->keyword-text
   (is (= (str "006 access access web service acdisc airs airx3std aqua "
@@ -536,7 +491,13 @@
               "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/aqua_airs_level3/airx3std.006/ "
               "level3 nasa opendap opendap service service web")
         (keyword-util/concept-key->keyword-text
-         sample-umm-service-concept :RelatedURLs)))
+         sample-umm-service-concept :URL)))
+  (is (= (str "a a test related url. com datacenterurl description documentation edg example "
+              "general general documentation get get service home home page page publicationurl "
+              "related related-url description. related-url-example-two.com related-url-example.com "
+              "service test two url")
+        (keyword-util/concept-key->keyword-text
+         sample-umm-collection-concept :RelatedUrls)))
   (is (= (str "3 analysis and atmosphere atmospheric atmospheric winds cat "
               "data data analysis and visualization earth earth science "
               "services engineering geographic geographic information systems "
@@ -545,7 +506,7 @@
               "spectral/engineering surface surface winds systems term topic "
               "visualization winds")
         (keyword-util/concept-key->keyword-text
-         sample-umm-service-concept :ScienceKeywords))))
+         sample-umm-collection-concept :ScienceKeywords))))
 
 (deftest concept-keys->keywords
   (let [schema-keys [:LongName
@@ -561,12 +522,10 @@
                      :AncillaryKeywords
                      :ContactGroups
                      :ContactPersons
-                     :Platforms
-                     :RelatedURLs
-                     :ScienceKeywords
+                     :URL
                      :ServiceKeywords
                      :ServiceOrganizations]]
-    (is (= ["1.9" "A340-600" "ACCESS WEB SERVICE" "AIRX3STD" "ATMOSPHERE" "ATMOSPHERIC WINDS" "AUTHOR" "Airbus A340-600" "Alice" "Bob" "Carol" "CollectionURL" "DATA ANALYSIS AND VISUALIZATION" "DATA ANALYSIS AND VISUALIZATION" "DATA ANALYSIS AND VISUALIZATION" "Data Discovery" "Data Visualization" "EARTH SCIENCE SERVICES" "Eve" "GEOGRAPHIC INFORMATION SYSTEMS" "GET SERVICE" "LDPAAC" "MICROWAVE" "MICROWAVE IMAGERY" "OPeNDAP Service" "OPeNDAP Service for AIRS Level-3 retrieval products" "PUBLISHER" "RADAR" "SCIENCE CAT 3" "SCIENCE CONTACT" "SCIENCE TERM 3" "SCIENCE TOPIC 3" "SERVICE PROVIDER" "SERVICE PROVIDER" "SMWE4B" "SPECTRAL/ENGINEERING" "STATISTICAL APPLICATIONS" "SURFACE WINDS" "Senso-matic Wonder Eye 4B" "TEAM SPOCK" "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES" "USGS/EROS" "VISUALIZATION/IMAGE PROCESSING" "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"]
+    (is (= ["1.9" "ACCESS WEB SERVICE" "AIRX3STD" "AUTHOR" "Alice" "Bob" "CollectionURL" "DATA ANALYSIS AND VISUALIZATION" "DATA ANALYSIS AND VISUALIZATION" "Data Discovery" "Data Visualization" "GET SERVICE" "LDPAAC" "OPeNDAP Service" "OPeNDAP Service for AIRS Level-3 retrieval products" "SCIENCE CONTACT" "SERVICE PROVIDER" "SERVICE PROVIDER" "STATISTICAL APPLICATIONS" "TEAM SPOCK" "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES" "USGS/EROS" "VISUALIZATION/IMAGE PROCESSING" "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"]
            (sort
             (keyword-util/concept-keys->keywords
              sample-umm-service-concept schema-keys))))))
@@ -587,12 +546,8 @@
     (is (= "alice author bob"
            (keyword-util/concept-keys->keyword-text
             sample-umm-service-concept schema-keys))))
-  (let [schema-keys [:Platforms]]
-    (is (= "4b 600 a340 a340-600 airbus airbus a340-600 eye matic senso senso-matic wonder eye 4b smwe4b wonder"
-           (keyword-util/concept-keys->keyword-text
-            sample-umm-service-concept schema-keys))))
   (let [schema-keys [:ServiceOrganizations]]
-    (is (= "and carol customer earth eros eve geological landsat ldpaac observation provider publisher resource science service service provider services survey us us geological survey earth resource observation and science (eros) landsat customer services usgs usgs/eros"
+    (is (= "and customer earth eros geological landsat ldpaac observation provider resource science service service provider services survey us us geological survey earth resource observation and science (eros) landsat customer services usgs usgs/eros"
            (keyword-util/concept-keys->keyword-text
             sample-umm-service-concept schema-keys))))
   (let [schema-keys [:LongName
@@ -601,11 +556,9 @@
                      :AncillaryKeywords
                      :ContactGroups
                      :ContactPersons
-                     :Platforms
-                     :RelatedURLs
-                     :ScienceKeywords
+                     :URL
                      :ServiceKeywords
                      :ServiceOrganizations]]
-    (is (= "006 1 1.9 3 4b 600 9 a340 a340-600 access access web service acdisc airbus airbus a340-600 airs airx3std alice analysis and applications aqua atmosphere atmospheric atmospheric winds author bob carol cat collectionurl contact customer data data analysis and visualization data discovery data visualization discovery earth earth science services engineering eosdis eros eve eye for geographic geographic information systems geological gesdisc get get service gov https https://acdisc.gesdisc.eosdis.nasa.gov/opendap/aqua_airs_level3/airx3std.006/ image imagery information landsat ldpaac level level3 matic microwave microwave imagery nasa observation opendap opendap service opendap service for airs level-3 retrieval products processing products provider publisher radar resource retrieval science science cat 3 science contact science term 3 science topic 3 senso senso-matic wonder eye 4b service service provider services smwe4b spectral spectral/engineering spock statistical statistical applications surface surface winds survey systems team team spock term topic us us geological survey earth resource observation and science (eros) landsat customer services usgs usgs/eros visualization visualization/image processing web winds wonder"
+    (is (= "006 1 1.9 3 9 access access web service acdisc airs airx3std alice analysis and applications aqua author bob collectionurl contact customer data data analysis and visualization data discovery data visualization discovery earth eosdis eros for geological gesdisc get get service gov https https://acdisc.gesdisc.eosdis.nasa.gov/opendap/aqua_airs_level3/airx3std.006/ image landsat ldpaac level level3 nasa observation opendap opendap service opendap service for airs level-3 retrieval products processing products provider resource retrieval science science contact service service provider services spock statistical statistical applications survey team team spock us us geological survey earth resource observation and science (eros) landsat customer services usgs usgs/eros visualization visualization/image processing web"
            (keyword-util/concept-keys->keyword-text
             sample-umm-service-concept schema-keys)))))

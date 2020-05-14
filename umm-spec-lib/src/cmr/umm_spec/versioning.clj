@@ -13,7 +13,7 @@
                 "1.13" "1.14" "1.15" "1.15.1"]
    :granule ["1.4" "1.5" "1.6"]
    :variable ["1.0" "1.1" "1.2" "1.3" "1.4" "1.5" "1.6"]
-   :service ["1.0" "1.1" "1.2"]
+   :service ["1.0" "1.1" "1.2" "1.3"]
    :subscription ["1.0"]})
 
 (def current-collection-version

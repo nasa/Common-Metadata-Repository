@@ -128,12 +128,19 @@
     nrt-aliases
     data-type))
 
-(defn- platform->keywords
+(defn- url->keywords
   "Converts a compound field into a vector of terms for keyword searches."
-  [platform]
-  (let [{instruments :Instruments} platform]
-    (concat (names->keywords platform)
-            (mapcat names->keywords instruments))))
+  [data]
+  (let [{description :Description
+         subtype :Subtype
+         type :Type
+         url :URLValue
+         url-content-type :URLContentType} data]
+    [description
+     subtype
+     type
+     url
+     url-content-type]))
 
 (defn- related-url->keywords
   "Converts a compound field into a vector of terms for keyword searches."
@@ -182,10 +189,8 @@
 (defn- service-organization->keywords
   "Converts a service keyword into a vector of terms for keyword searches."
   [service-organization]
-  (let [{roles :Roles
-         service-contact-persons :ContactPersons} service-organization]
+  (let [{roles :Roles} service-organization]
     (concat (names->keywords service-organization)
-            (mapcat contact-person->keywords service-contact-persons)
             roles)))
 
 (defn- archive-distribution-data-formats
@@ -211,7 +216,7 @@
 
 
   See `fields->fn-mapper`, below."
-  {})
+  {:ScienceKeywords #(mapcat science-keyword->keywords (:ScienceKeywords %))})
 
 (def ^:private service-fields->fn-mapper
   "A data structure that maps UMM service field names to functions that
@@ -221,8 +226,7 @@
   See `fields->fn-mapper`, below."
   {:ContactGroups #(mapcat contact-group->keywords (:ContactGroups %))
    :ContactPersons #(mapcat contact-person->keywords (:ContactPersons %))
-   :Platforms #(mapcat platform->keywords (:Platforms %))
-   :RelatedURLs #(mapcat related-url->keywords (:RelatedURLs %))
+   :URL #(url->keywords (:URL %))
    :ServiceKeywords #(mapcat service-keyword->keywords (:ServiceKeywords %))
    :ServiceOrganizations #(mapcat service-organization->keywords (:ServiceOrganizations %))})
 
@@ -246,16 +250,7 @@
    :Projects #(mapcat names->keywords (:Projects %))
    :RelatedUrls #(mapcat related-url->keywords (:RelatedUrls %))
    :TilingIdentificationSystems #(map :TilingIdentificationSystemName (:TilingIdentificationSystems %))
-   :ArchiveAndDistributionInformation #(archive-distribution-data-formats %)})
-
-
-(def ^:private shared-fields->fn-mapper
-  "A data structure that maps UMM field names used by multiple types to
-  functions that extract keyword data for those fields. Intended only to be
-  used as part of a larger map for multiple field types.
-
-  See `fields->fn-mapper`, below."
-  {;; Simple multi-valued data
+   :ArchiveAndDistributionInformation #(archive-distribution-data-formats %)
    :ScienceKeywords #(mapcat science-keyword->keywords (:ScienceKeywords %))})
 
 (def ^:private fields->fn-mapper
@@ -267,8 +262,7 @@
   that has an extract keyword different from the field name needs to be listed."
   (merge variable-fields->fn-mapper
          service-fields->fn-mapper
-         collection-fields->fn-mapper
-         shared-fields->fn-mapper))
+         collection-fields->fn-mapper))
 
 (defn- field-extract-fn
   "Returns the function that will extract the value of the given field from the augmented
