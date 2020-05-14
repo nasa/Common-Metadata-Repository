@@ -637,6 +637,8 @@
                      umm-versioning/current-variable-version))
   (side/eval-form `(ingest-config/set-service-umm-version!
                      umm-versioning/current-service-version))
+  (side/eval-form `(ingest-config/set-tool-umm-version!
+                     umm-versioning/current-tool-version))
   (side/eval-form `(ingest-config/set-subscription-umm-version!
                      umm-versioning/current-subscription-version)))
 

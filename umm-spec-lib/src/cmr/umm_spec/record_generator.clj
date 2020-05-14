@@ -9,6 +9,7 @@
    [cmr.umm-spec.models.umm-granule-models]
    [cmr.umm-spec.models.umm-service-models]
    [cmr.umm-spec.models.umm-subscription-models]
+   [cmr.umm-spec.models.umm-tool-models]
    [cmr.umm-spec.models.umm-variable-models]))
 
 ;; Improvements
@@ -22,6 +23,7 @@
    "umm-g-json-schema.json" 'cmr.umm-spec.models.umm-granule-models
    "umm-s-json-schema.json" 'cmr.umm-spec.models.umm-service-models
    "umm-sub-json-schema.json" 'cmr.umm-spec.models.umm-subscription-models
+   "umm-t-json-schema.json" 'cmr.umm-spec.models.umm-tool-models
    "umm-var-json-schema.json" 'cmr.umm-spec.models.umm-variable-models})
 
 (defn schema-type-constructor
@@ -214,6 +216,12 @@
     :description "Defines UMM-Sub clojure records."
     :schema-resource (js/concept-schema-resource :subscription)
     :loaded-schema (js/concept-schema :subscription)})
+
+  (generate-clojure-records-file
+   {:the-ns 'cmr.umm-spec.models.umm-tool-models
+    :description "Defines UMM-T clojure records."
+    :schema-resource (js/concept-schema-resource :tool)
+    :loaded-schema (js/concept-schema :tool)})
 
   (generate-clojure-records-file
    {:the-ns 'cmr.umm-spec.models.umm-variable-models

@@ -7,6 +7,7 @@
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as test]
    [cmr.common.util :as util :refer [update-in-each]]
+   [cmr.umm-spec.models.umm-tool-models :as umm-t]
    [cmr.umm-spec.util :as spec-util]))
 
 (defn- set-if-exist
@@ -339,6 +340,15 @@
   [record]
   (-> record
       (sanitize-umm-record-urls :service)))
+
+(defn sanitized-umm-t-record
+  "Place holder for the sanitizers needed for a given umm-t record."
+  [record]
+  ;; Out of 9 required fields, only ToolKeywords can get nil generated value for some reason,
+  ;; which causes schema validation to fail. Need to add TooKeywords to the record when not present.
+  (if (:ToolKeywords record) 
+    record
+    (assoc record :ToolKeywords [(umm-t/map->ToolKeywordType {:ToolCategory "TC" :ToolTopic "TT"})])))
 
 (defn sanitized-umm-sub-record
   "Place holder for the sanitizers needed for a given umm-sub record."

@@ -19,6 +19,7 @@
   {:collection "umm-c-json-schema.json"
    :granule "umm-g-json-schema.json"
    :service "umm-s-json-schema.json"
+   :tool "umm-t-json-schema.json"
    :variable "umm-var-json-schema.json"
    :subscription "umm-sub-json-schema.json"})
 
@@ -37,6 +38,10 @@
 (def service-search-result-schema-name
   "Defines the name of the service search result schema."
   "umm-s-search-results-json-schema.json")
+
+(def tool-search-result-schema-name
+  "Defines the name of the tool search result schema."
+  "umm-t-search-results-json-schema.json")
 
 (def subscription-search-result-schema-name
   "Defines the name of the subscription search result schema."
@@ -298,6 +303,12 @@
   (validate-umm-json-search-result
    json-str :service service-search-result-schema-name umm-version))
 
+(defn validate-tool-umm-json-search-result
+  "Validates the tool UMM JSON search result and returns a list of errors if invalid."
+  [json-str umm-version]
+  (validate-umm-json-search-result
+   json-str :tool tool-search-result-schema-name umm-version))
+
 (defn validate-subscription-umm-json-search-result
   "Validates the subscription UMM JSON search result and returns a list of errors if invalid."
   [json-str umm-version]
@@ -312,6 +323,8 @@
 (def umm-g-schema (concept-schema :granule))
 
 (def umm-s-schema (concept-schema :service))
+
+(def umm-t-schema (concept-schema :tool))
 
 (def umm-sub-schema (concept-schema :subscription))
 
@@ -332,6 +345,7 @@
    "umm-c-json-schema.json" 'cmr.umm-spec.models.umm-collection-models
    "umm-g-json-schema.json" 'cmr.umm-spec.models.umm-granule-models
    "umm-s-json-schema.json" 'cmr.umm-spec.models.umm-service-models
+   "umm-t-json-schema.json" 'cmr.umm-spec.models.umm-tool-models
    "umm-sub-json-schema.json" 'cmr.umm-spec.models.umm-subscription-models
    "umm-var-json-schema.json" 'cmr.umm-spec.models.umm-variable-models})
 
