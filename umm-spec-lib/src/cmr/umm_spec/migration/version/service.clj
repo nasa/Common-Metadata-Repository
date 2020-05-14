@@ -274,7 +274,7 @@
 
 (def CRSIdentifierTypeEnum-service-1_2
   "These are the valid enum values in UMM-S 1.2. These are used to migrate ServiceOptions
-   SupportedInputFormats/SupportedOutputFormats ProjectionAuthority string in version 1.3 to 1.2."
+   SupportedInputProjections/SupportedOutputProjections ProjectionAuthority string in version 1.3 to 1.2."
   ["4326", "3395", "3785", "9807", "2000.63", "2163", "3408", "3410", "6931",
    "6933", "3411", "9822", "54003", "54004", "54008", "54009", "26917", "900913"])
 
