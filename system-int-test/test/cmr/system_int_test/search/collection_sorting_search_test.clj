@@ -479,7 +479,9 @@
         c2 (make-named-collection "b")
         c3 (make-named-collection "c")
         c4 (make-named-collection "d")
-        c5 (make-named-collection "e")]
+        c5 (make-named-collection "e")
+        c6 (make-named-collection "no-usage-data a")
+        c7 (make-named-collection "no-usage-data b")]
 
     (index/wait-until-indexed)
 
@@ -487,15 +489,19 @@
       (are [sort-key items]
            (sort-order-correct? items sort-key)
            
-           ["usage_score"] [c1 c2 c3 c5 c4]
-           ["-usage_score"] [c4 c5 c3 c2 c1]))
+           ["usage_score"] [c1 c2 c3 c5 c4 c6 c7]
+           ["-usage_score"] [c4 c5 c3 c2 c1 c6 c7]))
 
     (testing "using multiple sort keys"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
 
-           ["entry_title" "usage_score"] [c1 c2 c3 c4 c5]
-           ["entry_title" "-usage_score"] [c1 c2 c3 c4 c5]
+           ["entry_title" "usage_score"] [c1 c2 c3 c4 c5 c6 c7]
+           ["entry_title" "-usage_score"] [c1 c2 c3 c4 c5 c6 c7]
+           ["-entry_title" "usage_score"] [c7 c6 c5 c4 c3 c2 c1]
+           ["-entry_title" "-usage_score"] [c7 c6 c5 c4 c3 c2 c1]
 
-           ["usage_score" "entry_title"] [c1 c2 c3 c5 c4]
-           ["-usage_score" "-entry_title"] [c4 c5 c3 c2 c1]))))
+           ["usage_score" "entry_title"] [c1 c2 c3 c5 c4 c6 c7]
+           ["usage_score" "-entry_title"] [c1 c2 c3 c5 c4 c7 c6]
+           ["-usage_score" "entry_title"] [c4 c5 c3 c2 c1 c6 c7]
+           ["-usage_score" "-entry_title"] [c4 c5 c3 c2 c1 c7 c6]))))
