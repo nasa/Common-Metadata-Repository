@@ -489,7 +489,7 @@
       (are [sort-key items]
            (sort-order-correct? items sort-key)
            
-           ["usage_score"] [c1 c2 c3 c5 c4 c6 c7]
+           ["usage_score"] [c6 c7 c1 c2 c3 c5 c4]
            ["-usage_score"] [c4 c5 c3 c2 c1 c6 c7]))
 
     (testing "using multiple sort keys"
@@ -501,7 +501,7 @@
            ["-entry_title" "usage_score"] [c7 c6 c5 c4 c3 c2 c1]
            ["-entry_title" "-usage_score"] [c7 c6 c5 c4 c3 c2 c1]
 
-           ["usage_score" "entry_title"] [c1 c2 c3 c5 c4 c6 c7]
-           ["usage_score" "-entry_title"] [c1 c2 c3 c5 c4 c7 c6]
+           ["usage_score" "entry_title"] [c6 c7 c1 c2 c3 c5 c4]
+           ["usage_score" "-entry_title"] [c7 c6 c1 c2 c3 c5 c4]
            ["-usage_score" "entry_title"] [c4 c5 c3 c2 c1 c6 c7]
            ["-usage_score" "-entry_title"] [c4 c5 c3 c2 c1 c7 c6]))))
