@@ -21,8 +21,7 @@
   - Items are ordered by score in descending order
   - Ensure that the other fields match"
   [actual expected]
-  (let [scores (map :score actual)
-        actual-scores-descending? (->> actual
+  (let [actual-scores-descending? (->> actual
                                        (map :score)
                                        (apply >=))
         ;; we don't need to actually compare scores
@@ -115,7 +114,7 @@
     (are3
      [query expected]
      (let [actual (get-in (search/get-autocomplete-json query) [:feed :entry])]
-       (compare-autocomplete-results expected actual))          
+       (compare-autocomplete-results expected actual))
 
      "shorter match"
      "q=solar"
@@ -130,4 +129,3 @@
       {:score 2.7943783, :type "science_keywords", :value "Solar Irradiance", :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
       {:score 0.061936468, :type "organization", :value "ACRIM SCF", :fields "ACRIM SCF"}
       {:score 0.049549174, :type "organization", :value "Langley DAAC User Services", :fields "Langley DAAC User Services"}])))
-

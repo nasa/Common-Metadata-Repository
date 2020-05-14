@@ -1,7 +1,7 @@
 (ns cmr.search.data.complex-to-simple-converters.spatial
   "Contains converters for spatial condition into the simpler executable conditions"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.search.complex-to-simple :as c2s]
    [cmr.common-app.services.search.elastic-search-index :as idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -16,8 +16,8 @@
 (defn- shape->script-cond
   [shape]
   (let [ords-info-map (-> (srl/shapes->ords-info-map [shape])
-                          (update-in [:ords-info] #(str/join "," %))
-                          (update-in [:ords] #(str/join "," %)))]
+                          (update-in [:ords-info] #(string/join "," %))
+                          (update-in [:ords] #(string/join "," %)))]
     (qm/map->ScriptCondition {:name "spatial"
                               :params ords-info-map})))
 

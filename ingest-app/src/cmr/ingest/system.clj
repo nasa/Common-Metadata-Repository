@@ -95,10 +95,10 @@
               :nrepl (nrepl/create-nrepl-if-configured (config/ingest-nrepl-port))
               :db (oracle/create-db (config/db-spec connection-pool-name))
               :scheduler (jobs/create-clustered-scheduler
-                          `system-holder :db
-                          (conj (ingest-jobs/jobs)
-                                (af/refresh-acl-cache-job "ingest-acl-cache-refresh")
-                                jvm-info/log-jvm-statistics-job))
+                           `system-holder :db
+                           (conj (ingest-jobs/jobs)
+                                 (af/refresh-acl-cache-job "ingest-acl-cache-refresh")
+                                 jvm-info/log-jvm-statistics-job))
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        ;; Caches a map of tokens to the security identifiers
                        context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
@@ -106,7 +106,7 @@
 
                        pc/providers-cache-key (pc/create-providers-cache)
                        af/acl-cache-key (af/create-consistent-acl-cache
-                                         [:catalog-item :system-object :provider-object])
+                                          [:catalog-item :system-object :provider-object])
                        ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
                        ingest-translation/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                        kf/kms-cache-key (kf/create-kms-cache)
@@ -116,7 +116,7 @@
               :public-conf (public-conf)
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
      (transmit-config/system-with-connections
-      sys [:metadata-db :indexer :access-control :echo-rest :search :kms]))))
+       sys [:metadata-db :indexer :access-control :echo-rest :search :kms]))))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

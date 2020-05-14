@@ -29,6 +29,7 @@
    (org.geotools.referencing CRS)
    (org.geotools.util URLs)
    (org.geotools.xsd Parser StreamingParser PullParser)
+   (org.locationtech.jts.geom Geometry)
    (org.opengis.feature.simple SimpleFeature)
    (org.opengis.feature.type Name)))
 
@@ -39,6 +40,14 @@
 (defconfig enable-shapefile-parameter-flag
   "Flag that indicates if we allow spatial searching by shapefile."
   {:default false :type Boolean})
+
+(defconfig max-shapefile-features
+  "The maximum number of feature a shapefile can have"
+  {:default 500 :type Long})
+  
+(defconfig max-shapefile-points
+  "The maximum number of points a shapefile can have"
+  {:default 5000 :type Long})
 
 (defn- unzip-file
   "Unzip a file (of type File) into a temporary directory and return the directory path as a File"
@@ -67,13 +76,22 @@
   "Get one or more conditions for the given Geometry. This will only
   return more than one condition if the Geometry is a GeometryCollection.
   The `options` map can be used to provided additional information."
-  [geometry options]
+  [^Geometry geometry options]
   (let [num-geometries (.getNumGeometries geometry)]
     (debug (format "NUM SUB GEOMETRIES: [%d]" num-geometries))
     (for [index (range 0 num-geometries)
           :let [sub-geometry (.getGeometryN geometry index)]]
       (geo/geometry->condition sub-geometry options))))
 
+(defn geometry-point-count
+  "Get the number of points in the given Geometry"
+  [^Geometry geometry]
+  (let [num-geometries (.getNumGeometries geometry)
+        all-geometries  (for [index (range 0 num-geometries)
+                              :let [sub-geometry (.getGeometryN geometry index)]]
+                          sub-geometry)]
+    (reduce (fn [count geometry] (+ count (.getNumPoints geometry))) 0 all-geometries)))
+  
 (defn transform-to-epsg-4326
   "Transform the geometry to WGS84 CRS if is not already"
   [geometry src-crs]
@@ -85,7 +103,7 @@
       (debug (format "Source axis order: [%s]" (CRS/getAxisOrder src-crs)))
       (debug (format "Destination CRS: [%s]" (.getName EPSG-4326-CRS)))
       (debug (format "Destination axis order: [%s]" (CRS/getAxisOrder EPSG-4326-CRS)))
-      ; If we find a tranform use it to tranform the geometry, 
+      ; If we find a transform use it to transform the geometry, 
       ; otherwise send an error message
       (if-let [transform (try 
                           (CRS/findMathTransform src-crs EPSG-4326-CRS false)
@@ -97,8 +115,8 @@
     geometry))
 
 (defn feature->conditions
-  "Process the contents of a Feature to return query conditions.
-  The `context` map can be used to pass along additional info."
+  "Process the contents of a Feature to return query conditions along with number of points in
+  the processed Feature. The `context` map can be used to pass along additional info."
   [feature context]
   (let [crs (when (.getDefaultGeometryProperty feature)
               (-> feature .getDefaultGeometryProperty .getDescriptor .getCoordinateReferenceSystem))
@@ -108,9 +126,10 @@
         _ (debug (format "Found [%d] geometries" (count geometry-props)))
         geometries (map #(-> % .getValue (transform-to-epsg-4326 crs)) geometry-props)
         _ (debug (format "Transformed [%d] geometries" (count geometries)))
+        point-count (apply + (map geometry-point-count geometries))
         conditions (mapcat (fn [g] (geometry->conditions g context)) geometries)]
     (debug (format "CONDITIONS: %s" conditions))
-    conditions))
+    [conditions point-count]))
 
 (defn- error-if
   "Throw a service error with the given message if `f` applied to `item` is true. 
@@ -118,7 +137,7 @@
   [item f message ^File temp-file]
   (if (f item)
     (do
-      (.delete temp-file)
+      (when temp-file (.delete temp-file))
       (errors/throw-service-error :bad-request message))
     item))
 
@@ -135,20 +154,32 @@
                     temp-dir)
           data-store (FileDataStoreFinder/getDataStore shp-file)
           feature-source (.getFeatureSource data-store)
-          features (error-if (.getFeatures feature-source)
-                             #(< (.size %) 1)
-                             "Shapefile has no features"
-                             temp-dir)
-          _ (debug (format "Found [%d] features" (.size features)))
+          features (.getFeatures feature-source)
+          feature-count (error-if (.size features)
+                          #(< % 1)
+                          "Shapefile has no features"
+                          temp-dir)
+          _ (error-if feature-count
+                      #(> % (max-shapefile-features))
+                      (format "Shapefile feature count [%d] exceeds the %d feature limit"
+                              feature-count 
+                              (max-shapefile-features))
+                      nil)
+          _ (debug (format "Found [%d] features" feature-count))
           iterator (.features features)]
       (try
-        (loop [conditions []]
+        (loop [conditions [] total-point-count 0]
           (if (.hasNext iterator)
             (let [feature (.next iterator)
-                  feature-conditions (feature->conditions feature {:boundary-winding :cw})]
+                  [feature-conditions num-points] (feature->conditions feature {:boundary-winding :cw})
+                   new-point-count (+ total-point-count num-points)]
+              (when (> new-point-count (max-shapefile-points))
+                (errors/throw-service-error :bad-request 
+                  (format "Number of points in shapefile exceeds the limit of %d"
+                    (max-shapefile-points))))
               (if (> (count feature-conditions) 0)
-                (recur (conj conditions (gc/or-conds feature-conditions)))
-                (recur conditions)))
+                (recur (conj conditions (gc/or-conds feature-conditions)) new-point-count)
+                (recur conditions total-point-count)))
             conditions))
         (finally (do
                   (.close iterator)
@@ -169,19 +200,32 @@
           url (URLs/fileToUrl file)
           data-store (GeoJSONDataStore. url)
           feature-source (.getFeatureSource data-store)
-          features (error-if (.getFeatures feature-source)
-                             #(or (nil? %) (< (.size %) 1))
-                             "GeoJSON file has no features"
-                             file)
+          features (.getFeatures feature-source)
+          feature-count (error-if (.size features)
+                          #(< % 1)
+                          "GeoJSON has no features"
+                          nil)
+          _ (error-if feature-count
+                      #(> % (max-shapefile-features))
+                      (format "GeoJSON feature count [%d] exceeds the %d feature limit"
+                              feature-count 
+                              (max-shapefile-features))
+                      nil)
+          _ (debug (format "Found [%d] features" feature-count))
           iterator (.features features)]
         (try
-          (loop [conditions []]
+          (loop [conditions [] total-point-count 0]
             (if (.hasNext iterator)
               (let [feature (.next iterator)
-                    feature-conditions (feature->conditions feature {:hole-winding :cw})]
+                    [feature-conditions num-points] (feature->conditions feature {:hole-winding :cw})
+                    new-point-count (+ total-point-count num-points)]
+                (when (> new-point-count (max-shapefile-points))
+                  (errors/throw-service-error :bad-request 
+                    (format "Number of points in GeoJSON file exceeds the limit of %d"
+                      (max-shapefile-points))))
                 (if (> (count feature-conditions) 0)
-                  (recur (conj conditions (gc/or-conds feature-conditions)))
-                  (recur conditions)))
+                  (recur (conj conditions (gc/or-conds feature-conditions)) new-point-count)
+                  (recur conditions total-point-count)))
               conditions))
           (finally (do
                     (.close iterator)
@@ -201,15 +245,29 @@
           input-stream (FileInputStream. file)
           parser (PullParser. (KMLConfiguration.) input-stream SimpleFeature)]
       (try
-        (loop [conditions []]
+        (loop [conditions [] feature-count 0 total-point-count 0]
           (if-let [feature (.parse parser)]
-            (let [feature-conditions (feature->conditions feature {})]
+            (let [[feature-conditions num-points] (feature->conditions feature {})
+                   new-point-count (+ total-point-count num-points)]
+              (when (> new-point-count (max-shapefile-points))
+                  (errors/throw-service-error :bad-request 
+                    (format "Number of points in KML file exceeds the limit of %d"
+                      (max-shapefile-points))))
               (if (> (count feature-conditions) 0)
-                (recur (conj conditions (gc/or-conds feature-conditions)))
-                (recur conditions)))
-            conditions))
-        (finally (do
-                  (.delete file)))))
+                (recur (conj conditions (gc/or-conds feature-conditions)) 
+                  (+ feature-count 1)
+                  new-point-count)
+                (recur conditions feature-count total-point-count)))
+            (do 
+              (error-if feature-count
+                #(> % (max-shapefile-features))
+                (format "KML feature count [%d] exceeds the %d feature limit"
+                  feature-count
+                  (max-shapefile-features))
+                nil)
+              conditions)))
+        (finally 
+          (.delete file))))
     (catch Exception e
       (let [{:keys [type errors]} (ex-data e)]
         (if (and type errors)

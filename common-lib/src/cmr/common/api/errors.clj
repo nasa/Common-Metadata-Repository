@@ -112,7 +112,7 @@
        (mt/content-type-mime-type headers valid-mime-types)
        default-mime-type)))
 
-(defn- handle-service-error
+(defn handle-service-error
   "Handles service errors thrown during a request and returns the appropriate
   ring response."
   [default-format-fn request type errors e]

@@ -212,14 +212,6 @@
     ;; only one prov1 collection can be associated with the variable.
     (assert-variable-associated [c1-p1])
 
-    (testing "Successfully dissociate variable with collections"
-      (let [{:keys [status]} (association-util/dissociate-by-concept-ids
-                              token
-                              concept-id
-                              (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
-        (is (= 200 status))
-        (assert-variable-associated [])))
-
     (testing "Dissociate non-existent collections"
       (let [response (association-util/dissociate-by-concept-ids
                       token concept-id [{:concept-id "C100-P5"}])]
@@ -257,8 +249,19 @@
         var-concept (vu/make-variable-concept {:Name variable-name})
         {:keys [concept-id revision-id]} (vu/ingest-variable var-concept)
         coll-concept-id (:concept-id (data-core/ingest
-                                      "PROV1"
-                                      (collection/collection)))]
+                                       "PROV1"
+                                       (collection/collection)))
+        [c1-p1 c2-p1 c3-p1 c4-p1
+         c1-p2 c2-p2 c3-p2 c4-p2
+         c1-p3 c2-p3 c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
+                                               n (range 1 5)]
+                                           (data-core/ingest
+                                             p
+                                             (collection/collection
+                                               {:short-name (str "S" n)
+                                                :version-id (str "V" n)
+                                                :entry-title (str "ET" n)}))))
+        all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]]
 
     (testing "Dissociate variable using query sent with invalid content type"
       (are [dissociate-variable-fn request-json]
@@ -293,57 +296,15 @@
             :errors [(format "Variable with concept id [%s] was deleted." concept-id)]}
            (dissociate-variable-fn token concept-id request-json))
 
-        association-util/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))))
-
-(deftest dissociate-variables-with-mixed-response-test
-  (echo-util/grant-registered-users (system/context)
-                                    (echo-util/coll-catalog-item-id "PROV1"))
-  (testing "dissociate variable with mixed success and failure response"
-    (let [coll1 (data-core/ingest "PROV1"
-                                  (collection/collection {:entry-title "ET1"}))
-          coll2 (data-core/ingest "PROV1"
-                                  (collection/collection {:entry-title "ET2"}))
-          coll3 (data-core/ingest "PROV1"
-                                  (collection/collection {:entry-title "ET3"}))
-          token (echo-util/login (system/context) "user1")
-          variable-name "variable1"
-          assert-variable-associated (partial vu/assert-variable-associated-with-query
-                                              token {:variable-name variable-name})
-          {:keys [concept-id]} (vu/ingest-variable-with-attrs {:Name variable-name})]
-
-      (index/wait-until-indexed)
-      ;; only one collection can be associated with a variable.
-      (let [response1 (association-util/associate-by-concept-ids
-                        token
-                        concept-id
-                        [{:concept-id (:concept-id coll1)
-                          :revision-id (:revision-id coll1)}])
-            response2 (association-util/associate-by-concept-ids
-                        token
-                        concept-id
-                        [{:concept-id (:concept-id coll2)
-                          :revision-id (:revision-id coll2)}])]
-        (is (= 200 (:status response1)))
-        (is (= 400 (:status response2)))
-        (is (string/includes? (some #(when (not= nil %) %) (map :errors (:body response2)))
-                              "can not be associated because the variable is already associated with another collection")))
-
-      (assert-variable-associated [coll1])
-
-      (let [response (association-util/dissociate-by-concept-ids
-                      token concept-id
-                      [{:concept-id "C100-P5"} ;; non-existent collection
-                       {:concept-id (:concept-id coll1) :revision-id 1} ;; success
-                       {:concept-id (:concept-id coll3)}])] ;; no variable association
-
-        (vu/assert-variable-dissociation-bad-request
-         {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
-          ["C1200000012-PROV1" 1] {:concept-id "VA1200000016-CMR" :revision-id 2}
-          ["C1200000014-PROV1"]
-          {:warnings [(format "Variable [%s] is not associated with collection [C1200000014-PROV1]."
-                              concept-id)]}}
-         response)
-        (assert-variable-associated [])))))
+        association-util/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
+    
+    (testing "Dissociate multiple variables"
+      (let [{:keys [status error]} (association-util/dissociate-by-concept-ids
+                                     token
+                                     concept-id
+                                     (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
+        (is (= 400 status))
+        (is (= "Only one variable at a time may be dissociated." error))))))
 
 ;; This tests association retention when collections and variables are updated or deleted.
 (deftest association-retention-test
@@ -491,3 +452,54 @@
     ;; verify association
     (assert-variable-association token [] "variable1")
     (assert-variable-association token [] "variable2")))
+
+(deftest single-association-route-test
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV1"))
+  (echo-util/grant-registered-users (system/context)
+                                    (echo-util/coll-catalog-item-id "PROV2"))
+
+  (let [[c1-p1 c2-p1 c3-p1 c4-p1
+         c1-p2 c2-p2 c3-p2 c4-p2
+         c1-p3 c2-p3 c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
+                                               n (range 1 5)]
+                                           (:concept-id (data-core/ingest
+                                                          p
+                                                          (collection/collection
+                                                            {:short-name (str "S" n)
+                                                             :version-id (str "V" n)
+                                                             :entry-title (str "ET" n)})))))
+        all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
+        all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
+        token (echo-util/login (system/context) "user1")
+        {:keys [concept-id]} (vu/ingest-variable-with-attrs {:Name "variable1"})]
+    (index/wait-until-indexed)
+
+    (testing "variable to collection"
+      (testing "association should succeed"
+        (let [response (association-util/associate-by-single-concept-id
+                         token concept-id c1-p1)]
+          (vu/assert-variable-association-response-ok?
+            {["C1200000013-PROV1"] {:concept-id "VA1200000026-CMR"
+                                    :revision-id 1}}
+            response)))
+      
+      (testing "association should fail if already associated"
+        (let [response (association-util/associate-by-single-concept-id
+                         token concept-id c2-p1)]
+          (vu/assert-variable-association-bad-request
+            {["C1200000014-PROV1"] {:errors [(format "Variable [%s] and collection [%s] can not be associated because the variable is already associated with another collection [%s]."
+                                                     concept-id
+                                                     c2-p1
+                                                     c1-p1)]}}
+            response)))
+
+      (testing "dissociation should succeed"
+        (let [response (association-util/dissociate-by-single-concept-id
+                         token concept-id c1-p1)
+              {:keys [status body]} response]
+          (is (= 200 status))
+          (is (= '({:variable-association {:concept-id "VA1200000026-CMR"
+                                           :revision-id 2}
+                    :associated-item {:concept-id "C1200000013-PROV1"}})
+                 body)))))))

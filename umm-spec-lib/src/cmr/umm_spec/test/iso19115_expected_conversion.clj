@@ -382,7 +382,7 @@
           [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :NonGriddedRangeResolutions]
           util/remove-nil-keys)
         (util/update-in-each
-          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :GeneticResolutions]
+          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :GenericResolutions]
           util/remove-nil-keys)
         (util/update-in-each
           [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :GriddedResolutions]
@@ -390,12 +390,14 @@
         (util/update-in-each
           [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :GriddedRangeResolutions]
           util/remove-nil-keys)
+        ;; The order here is important because calling umm-c/map->HorizontalDataResolutionType will put back the nil values if
+        ;; remove-nil-keys is called first.
         (update-in
           [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
-          util/remove-nil-keys)
+          umm-c/map->HorizontalDataResolutionType)
         (update-in
           [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
-          umm-c/map->HorizontalDataResolutionType))
+          util/remove-nil-keys))
     c))
 
 (defn umm-expected-conversion-iso19115

@@ -74,6 +74,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Bounding Box](#c-bounding-box)
         * [Point](#c-point)
         * [Line](#c-line)
+        * [Circle](#c-circle)
     * [Shapefile](#c-shapefile)
     * [Additional Attribute](#c-additional-attribute)
     * [Author](#c-author)
@@ -95,6 +96,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Bounding Box](#g-bounding-box)
         * [Point](#g-point)
         * [Line](#g-line)
+        * [Circle](#g-circle)
     * [Shapefile](#g-shapefile)
     * [Orbit number](#g-orbit-number)
     * [Orbit equator crossing longitude](#g-orbit-equator-crossing-longitude)
@@ -1695,6 +1697,12 @@ Lines are provided as a list of comma separated values representing coordinates 
 
     curl "%CMR-ENDPOINT%/collections?line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
 
+##### <a name="c-circle"></a> Circle
+
+Circle defines a circle area on the earth with a center point and a radius. The center parameters must be 3 comma-separated numbers: longitude of the center point, latitude of the center point, radius of the circle in meters. The circle center cannot be on North or South pole. The radius of the circle must be between 10 and 1,000,000.
+
+    curl "%CMR-ENDPOINT%/collections?circle=-87.629717,41.878112,1000"
+
 Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are AND'd in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon.
 
 #### <a name="c-shapefile"></a> Find collections by shapefile
@@ -1949,6 +1957,10 @@ The parameters used for searching granules by spatial are the same as the spatia
 ##### <a name="g-line"></a> Line
 
     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
+
+##### <a name="g-circle"></a> Circle
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&circle=-87.629717,41.878112,1000"
 
 #### <a name="g-shapefile"></a> Find granules by shapefile
 
@@ -3662,7 +3674,30 @@ Future work:
 2. We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list. A ticket is filed to address these issues in the future if necessary.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
+curl -XPOST -i -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/associations/variables/V1200000008-PROV1/collections/C1200000005-PROV1
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 168
+
+[
+  {
+    "variable_association":{
+      "concept_id":"VA1200000008-CMR",
+      "revision_id":1
+    },
+    "associated_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  }
+]
+```
+
+##### DEPRECATED
+Passing the association target concept-id in the body of the POST has been deprecated.
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/VA1200000008-CMR/associations -d \
 '[{"concept_id": "C1200000005-PROV1"}]'
 
 HTTP/1.1 200 OK
@@ -3672,7 +3707,7 @@ Content-Length: 168
 [
   {
     "variable_association":{
-      "concept_id":"VA1200000009-CMR",
+      "concept_id":"VA1200000008-CMR"
       "revision_id":1
     },
     "associated_item":{
@@ -3686,15 +3721,12 @@ On occasions when variable association cannot be processed at all due to invalid
 
 #### <a name="variable-dissociation"></a> Variable Dissociation
 
-A variable identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to variable association requests.
+A variable identified by its concept id can be dissociated from collections similar to variable association requests.
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
-'[{"concept_id": "C1200000005-PROV1"},
-  {"concept_id": "C1200000006-PROV1"},
-  {"concept_id": "C1200000007-PROV1"}]'
+curl -XDELETE -i -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/associations/variables/V1200000008-PROV1/collections/C1200000005-PROV1
 
-HTTP/1.1 400 BAD REQUEST
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -3707,21 +3739,30 @@ Content-Length: 168
     "associated_item":{
       "concept_id":"C1200000005-PROV1"
     }
-  },
+  }
+```
+
+##### DEPRECATED
+Sending the list of targets to dissociate from has been deprecated.
+
+We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list.
+```
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
+'[{"concept_id": "C1200000005-PROV1"}]'
+
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 168
+
+[
   {
-    "warnings":[
-      "Variable [V1200000008-PROV1] is not associated with collection [C1200000006-PROV1]."
-    ],
+    "variable_association":{
+      "concept_id":"VA1200000008-PROV1",
+      "revision_id":2
+    },
     "associated_item":{
-      "concept_id":"C1200000006-PROV1"
-    }
-  },
-  {
-    "errors":[
-      "Collection [C1200000007-PROV1] does not exist or is not visible."
-    ],
-    "associated_item":{
-      "concept_id":"C1200000007-PROV1"
+      "concept_id":"C1200000005-PROV1"
     }
   }
 ]

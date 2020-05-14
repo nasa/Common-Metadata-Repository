@@ -33,6 +33,28 @@
      (index/wait-until-indexed)
      (ingest-util/parse-map-response response))))
 
+(defn associate-by-single-concept-id
+  "Associates a variable with a collection. This uses the single variable/collection assocation route."
+  ([token concept-id coll-concept-id]
+   (associate-by-single-concept-id token concept-id coll-concept-id nil))
+  ([token concept-id coll-concept-id options]
+   (let [options (merge {:raw? true :token token} options)
+         response (transmit-assoc/associate-single-concept
+                    (s/context) concept-id coll-concept-id options)]
+     (index/wait-until-indexed)
+     (ingest-util/parse-map-response response))))
+
+(defn dissociate-by-single-concept-id
+  "Dissociates a variable from a collection. This uses the single variable/collection dissocation route."
+  ([token concept-id coll-concept-id]
+   (dissociate-by-single-concept-id token concept-id coll-concept-id nil))
+  ([token concept-id coll-concept-id options]
+   (let [options (merge {:raw? true :token token} options)
+         response (transmit-assoc/dissociate-single-concept
+                    (s/context) concept-id coll-concept-id options)]
+     (index/wait-until-indexed)
+     (ingest-util/parse-map-response response))))
+
 (defn assert-invalid-data-error
   "Assert association response when status code is 422 is correct"
   [expected-errors response]

@@ -1,11 +1,12 @@
 (ns cmr.spatial.test.generators
   (:require
    [clojure.math.combinatorics :as combo]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
    [cmr.spatial.arc :as a]
    [cmr.spatial.arc-line-segment-intersections :as asi]
+   [cmr.spatial.circle :as spatial-circle]
    [cmr.spatial.derived :as d]
    [cmr.spatial.geodetic-ring :as gr]
    [cmr.spatial.line-segment :as s]
@@ -37,6 +38,9 @@
 
 (def lats
   (ext-gen/choose-double -90 90))
+
+(def radius
+  (ext-gen/choose-double spatial-circle/MIN_RADIUS spatial-circle/MAX_RADIUS))
 
 (def points
   (ext-gen/model-gen p/point lons lats))
@@ -71,6 +75,8 @@
                         (every? #(not (point-set (p/antipodal %))) points))))
                   (gen/vector points-gen num))))
 
+(def circles
+  (ext-gen/model-gen spatial-circle/circle lons lats radius))
 
 (def lat-ranges
   "Tuples containing a latitude range from low to high"
@@ -250,7 +256,7 @@
     (when (= coord-sys :geodetic)
       (println (str "http://testbed.echo.nasa.gov/spatial-viz/ring_self_intersection?test_point_ordinates=2,2"
                     "&ring_ordinates="
-                    (str/join "," (rr/ring->ords ring)))))))
+                    (string/join "," (rr/ring->ords ring)))))))
 
 (defn print-failed-polygon
   "A printer function that can be used with the defspec defined in cmr.common to print out a failed
