@@ -54,7 +54,7 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 | application/echo10+xml   | ECHO 10           | collection, granule |
 | application/iso19115+xml | ISO 19115 (MENDS) | collection          |
 | application/iso:smap+xml | ISO 19115 SMAP    | collection, granule |
-| application/vnd.nasa.cmr.umm+json| UMM JSON  | collection, granule |
+| application/vnd.nasa.cmr.umm+json| UMM JSON  | collection, granule, variable, service, subscription, tool |
 
 Note: UMM JSON accepts an additional version parameter for both Content-Type: and Accept: headers. Like charset, it is appended with a semicolon (;). If no version is appended, the latest version is assumed.
 
