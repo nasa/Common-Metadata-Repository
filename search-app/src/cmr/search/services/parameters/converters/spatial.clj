@@ -12,16 +12,16 @@
 
 (defconfig min-points-on-circle
   "The minimum number of vertices of the polygon used to approximate a circle"
-  {:default 32 :type Long})
+  {:default 16 :type Long})
 
 (defconfig max-points-on-circle
   "The maximum number of vertices of the polygon used to approximate a circle"
-  {:default 100 :type Long})
+  {:default 32 :type Long})
 
 (defconfig min-radius-for-max-points
   "The minimum radius in meters to trigger the use of maximum number of vertices of the polygon
   to approximate the circle"
-  {:default 5000 :type Long})
+  {:default 50000 :type Long})
 
 (defn- points-on-circle
   "Returns the number of vertices of the polygon to approximate the circle"
