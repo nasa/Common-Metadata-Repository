@@ -344,11 +344,7 @@
 (defn sanitized-umm-t-record
   "Place holder for the sanitizers needed for a given umm-t record."
   [record]
-  ;; Out of 9 required fields, only ToolKeywords can get nil generated value for some reason,
-  ;; which causes schema validation to fail. Need to add TooKeywords to the record when not present.
-  (if (:ToolKeywords record) 
-    record
-    (assoc record :ToolKeywords [(umm-t/map->ToolKeywordType {:ToolCategory "TC" :ToolTopic "TT"})])))
+  record)
 
 (defn sanitized-umm-sub-record
   "Place holder for the sanitizers needed for a given umm-sub record."

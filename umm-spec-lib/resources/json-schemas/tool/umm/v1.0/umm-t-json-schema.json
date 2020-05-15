@@ -53,6 +53,14 @@
         "minLength": 1,
         "maxLength": 1024
       },
+      "RelatedUrls": {
+        "description": "A URL associated with the web user interface or downloadable tool, e.g., the home page for the tool provider which is responsible for the tool.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/RelatedUrlType"
+        },
+        "minItems": 0
+      },
       "SupportedOutputFormats": {
         "description": "The project element describes the list of output format names supported by the web user interface or downloadable tool.",
         "type": "array",
@@ -99,7 +107,7 @@
         "items": {
             "$ref": "#/definitions/ToolKeywordType"
         },
-        "minItems": 0
+        "minItems": 1
       },
       "Organizations": {
         "description": "The tool provider, or organization, or institution responsible for developing, archiving, and/or distributing the web user interface, software, or tool.",
@@ -184,16 +192,16 @@
           "maxLength": 4000
         },
         "URLContentType": {
-            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
-            "$ref": "#/definitions/URLContentTypeEnum"
+          "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
+          "$ref": "#/definitions/URLContentTypeEnum"
         },
         "Type": {
-            "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
-            "$ref": "#/definitions/URLTypeEnum"
+          "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
+          "$ref": "#/definitions/URLTypeEnum"
         },
         "Subtype": {
-            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').",
-            "$ref": "#/definitions/URLSubTypeEnum"
+          "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').",
+          "$ref": "#/definitions/URLSubTypeEnum"
         },
         "URLValue": {
           "description": "The URL for the relevant online resource where you can directly access the downloadable tool or web user interface.",
@@ -201,7 +209,8 @@
           "minLength": 1,
           "maxLength": 1024
         }
-      }
+      },
+      "required": ["URLContentType", "Type", "URLValue"]
     },
     "URLContentTypeEnum": {
       "type": "string",
@@ -226,6 +235,61 @@
                "RECIPE", "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION",
                "SCIENCE DATA PRODUCT VALIDATION", "USER FEEDBACK", "USER'S GUIDE"]
     },
+    "RelatedURLContentTypeEnum": {
+      "type": "string",
+      "enum": ["CollectionURL", "PublicationURL", "VisualizationURL"]
+    },
+    "RelatedUrlTypeEnum": {
+      "type": "string",
+      "enum": ["DATA SET LANDING PAGE", "DOWNLOAD SOFTWARE", "EXTENDED METADATA", "GET DATA", "GET RELATED VISUALIZATION",
+               "GOTO WEB TOOL", "PROFESSIONAL HOME PAGE", "PROJECT HOME PAGE", "USE SERVICE API", "VIEW RELATED INFORMATION", "HOME PAGE" ]
+    },
+    "RelatedURLSubTypeEnum": {
+      "type": "string",
+      "enum": ["MOBILE APP", "APPEEARS", "DATA COLLECTION BUNDLE", "DATA TREE", "DATACAST URL", "DIRECT DOWNLOAD", "EOSDIS DATA POOL",
+               "Earthdata Search", "GIOVANNI", "GoLIVE Portal", "IceBridge Portal", "LAADS", "LANCE", "MIRADOR", "MODAPS", "NOAA CLASS", "NOMADS",
+               "Order", "PORTAL", "Subscribe", "USGS EARTH EXPLORER", "VERTEX", "VIRTUAL COLLECTION", "MAP", "WORLDVIEW", "LIVE ACCESS SERVER (LAS)",
+               "MAP VIEWER", "SIMPLE SUBSET WIZARD (SSW)", "SUBSETTER", "GRADS DATA SERVER (GDS)", "MAP SERVICE", "OPENDAP DATA", "OpenSearch",
+               "SERVICE CHAINING", "TABULAR DATA STREAM (TDS)", "THREDDS DATA", "WEB COVERAGE SERVICE (WCS)", "WEB FEATURE SERVICE (WFS)",
+               "WEB MAP SERVICE (WMS)", "WEB MAP TILE SERVICE (WMTS)", "ALGORITHM DOCUMENTATION", "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)",
+               "ANOMALIES", "CASE STUDY", "DATA CITATION POLICY", "DATA QUALITY", "DATA RECIPE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION",
+               "HOW-TO", "IMPORTANT NOTICE", "INSTRUMENT/SENSOR CALIBRATION DOCUMENTATION", "MICRO ARTICLE", "PI DOCUMENTATION",
+               "PROCESSING HISTORY", "PRODUCT HISTORY", "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE", "PRODUCTION HISTORY", "PUBLICATIONS",
+               "READ-ME", "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION", "SCIENCE DATA PRODUCT VALIDATION",
+               "USER FEEDBACK PAGE", "USER'S GUIDE"]
+    },
+    "RelatedUrlType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Represents Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
+      "properties": {
+        "Description": {
+          "description": "Description of the web page at this URL.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "URLContentType": {
+          "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
+          "$ref": "#/definitions/RelatedURLContentTypeEnum"
+        },
+        "Type": {
+          "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
+          "$ref": "#/definitions/RelatedUrlTypeEnum"
+        },
+        "Subtype": {
+          "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').",
+          "$ref": "#/definitions/RelatedURLSubTypeEnum"
+        },
+        "URL": {
+          "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": ["URL", "URLContentType", "Type"]
+    },
     "SupportedOperatingSystemType": {
       "type": "object",
       "additionalProperties": false,
@@ -235,13 +299,13 @@
           "description": "The short name of the operating system associated with the downloadable tool.",
           "type": "string",
           "minLength": 1,
-          "maxLength": 80
+          "maxLength": 1024
         },
         "OperatingSystemVersion": {
           "description": "The version of the operating system associated with the downloadable tool.",
           "type": "string",
           "minLength": 0,
-          "maxLength": 1024
+          "maxLength": 80
         }
       }
     },
@@ -272,7 +336,7 @@
         "SoftwareLanguageName": {
           "description": "The short name of the programming language associated with the downloadable tool.",
           "type": "string",
-          "minLength": 1,
+          "minLength": 0,
           "maxLength": 1024
         },
         "SoftwareLanguageVersion": {

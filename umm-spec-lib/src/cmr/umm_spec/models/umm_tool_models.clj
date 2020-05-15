@@ -19,6 +19,10 @@
    ;; interface or downloadable tool.
    SupportedInputFormats
 
+   ;; A URL associated with the web user interface or downloadable tool, e.g., the home page for the
+   ;; tool provider which is responsible for the tool.
+   RelatedUrls
+
    ;; This is the contact persons of the downloadable tool or web user interface.
    ContactPersons
 
@@ -267,6 +271,34 @@
    LastName
   ])
 (record-pretty-printer/enable-record-pretty-printing ContactPersonType)
+
+;; Represents Internet sites that contain information related to the data, as well as related
+;; Internet sites such as project home pages, related data archives/servers, metadata extensions,
+;; online software packages, web mapping services, and calibration/validation data.
+(defrecord RelatedUrlType
+  [
+   ;; Description of the web page at this URL.
+   Description
+
+   ;; A keyword describing the distinct content type of the online resource to this resource. (e.g.,
+   ;; 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').
+   URLContentType
+
+   ;; A keyword describing the type of the online resource to this resource. This helps the GUI to
+   ;; know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').
+   Type
+
+   ;; A keyword describing the subtype of the online resource to this resource. This further helps
+   ;; the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP',
+   ;; 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW',
+   ;; 'ESI').
+   Subtype
+
+   ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
+   ;; the URL of the collection landing page, the URL of the download site for the collection).
+   URL
+  ])
+(record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
 
 ;; This entity contains the physical address details for the contact.
 (defrecord AddressType
