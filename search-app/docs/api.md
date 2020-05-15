@@ -3435,6 +3435,9 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: pattern, ignore_case
 * alias
   * options: pattern, ignore_case
+* full_path - This is a computed field. It is contructed by joining the  `Characteristics/GroupPath` field with
+  the `Name` field using a forward slash (/). For example: `GroupPath`: '/foo/bar', `Name`: 'temp' => '/foo/bar/temp'
+  * options: pattern, ignore_case
 * instrument
   * options: pattern, ignore_case
 * concept_id
