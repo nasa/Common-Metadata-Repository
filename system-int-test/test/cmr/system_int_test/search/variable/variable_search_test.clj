@@ -81,6 +81,7 @@
                                                                  :Size 2
                                                                  :Index 2}]
                                                          :AcquisitionSourceName "InstrumentX"
+                                                         :Characteristics {:GroupPath "     "}
                                                          :provider-id "PROV1"})
         variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
                                                          :Alias "Alias2"
@@ -391,6 +392,10 @@
       "By full-path - no match"
       []
       {:full-path "Variable2"}
+
+      "By full-path - ignore all white space group path"
+      [variable1]
+      {:full-path "Variable1"}
 
       "By multiple full-paths"
       [variable1 variable2]

@@ -34,9 +34,9 @@
 (defn- get-full-path
   "Returns the full path to the variable in a granule"
   [group-path name]
-  (if (seq group-path)
-    (str group-path "/" name)
-    name))
+  (if (string/blank? group-path)
+    name
+    (str group-path "/" name)))
   
 
 (defmethod es/parsed-concept->elastic-doc :variable
