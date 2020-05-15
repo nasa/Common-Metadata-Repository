@@ -87,6 +87,7 @@
                                                          :Name "Variable2"
                                                          :LongName "Measurement2"
                                                          :AcquisitionSourceName "Instrument2"
+                                                         :Characteristics {:GroupPath "/foo/bar"}
                                                          :provider-id "PROV1"})
         variable3 (variables/ingest-variable-with-attrs {:native-id "var3"
                                                          :Alias "Alias3"
@@ -103,6 +104,7 @@
                                                          :Name "v.other"
                                                          :LongName "m.other"
                                                          :AcquisitionSourceName "Instrument.other"
+                                                         :Characteristics {:GroupPath "/foo/bar"}
                                                          :provider-id "PROV2"})
 
         [coll1 coll2 coll3] (doall (for [n (range 1 4)]
@@ -355,6 +357,48 @@
       "By multiple native-ids with options"
       [variable1 variable4]
       {:native-id ["VAR1" "special*"] "options[native-id][pattern]" true}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; full-path Param
+      "By full-path - name and group path exact match" 
+      [variable2]
+      {:full-path "/foo/bar/Variable2"}
+
+      "By full-path case insensitive, default ignore-case true"
+      [variable2]
+      {:full-path "/foo/bar/variable2"}
+
+      "By full-path ignore case false"
+      []
+      {:full-path "/foo/bar/variable2" "options[full-path][ignore-case]" false}
+
+      "By full-path ignore case true"
+      [variable2]
+      {:full-path "/foo/bar/variable2" "options[native-id][ignore-case]" true}
+
+      "By full-path Pattern, default false"
+      []
+      {:full-path "/foo/bar/*"}
+
+      "By full-path - Pattern true" 
+      [variable2 variable4]
+      {:full-path "/foo/bar/*" "options[full-path][pattern]" true}
+
+      "By full-path - just name"
+      [variable1]
+      {:full-path "Variable1"}
+      
+      "By full-path - no match"
+      []
+      {:full-path "Variable2"}
+
+      "By multiple full-paths"
+      [variable1 variable2]
+      {:full-path ["Variable1" "/foo/bar/Variable2"]}
+
+      "By multiple full-paths with options"
+      [variable2 variable3 variable4]
+      {:full-path ["a subsitute for variable2" "/foo/bar/*"] "options[full-path][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; concept-id Param

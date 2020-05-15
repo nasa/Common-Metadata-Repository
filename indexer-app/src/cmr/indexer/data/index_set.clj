@@ -726,6 +726,8 @@
    :variable-name.lowercase (m/doc-values m/string-field-mapping)
    :alias (-> m/string-field-mapping m/stored m/doc-values)
    :alias.lowercase (m/doc-values m/string-field-mapping)
+   :full-path (-> m/string-field-mapping m/stored m/doc-values)
+   :full-path.lowercase (m/doc-values m/string-field-mapping)
    :measurement (-> m/string-field-mapping m/stored m/doc-values)
    :measurement.lowercase (m/doc-values m/string-field-mapping)
    :instrument (-> m/string-field-mapping m/stored m/doc-values)

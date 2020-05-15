@@ -326,6 +326,7 @@
   {:variable-name :variable-name.lowercase
    :name :variable-name.lowercase
    :long-name :measurement.lowercase
+   :full-path :full-path.lowercase
    :provider :provider-id.lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :service
