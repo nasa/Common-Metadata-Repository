@@ -2,6 +2,7 @@
   "Contains functions for migrating between versions of the UMM Service schema."
   (:require
    [clojure.set :as set]
+   [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common.log :as log]
    [cmr.umm-spec.migration.version.interface :as interface]))
@@ -173,6 +174,198 @@
     "WEB SERVICES"
     service-type))
 
+(defn create-main-url-for-1_3
+  "When migrating from UMM-S v1.2 to UMM-S v1.3 verison 1.2 RelatedURLs needs to be
+   converted to the new URL element.  Take the first DistributionURL element from
+   RelatedURLs and convert it to the new URL type."
+  [s]
+  (let [url (->> (:RelatedURLs s)
+                 (filter #(= (:URLContentType %) "DistributionURL"))
+                 first)]
+    (when url
+      (-> url
+          (assoc :URLValue (:URL url))
+          (dissoc :URL)))))
+
+(defn create-main-related-urls-for-1_2
+  "Migrating from UMM-S v1.3 to UMM-S v1.2 RelatedURLs."
+  [s]
+  (let [url (:URL s)]
+    (when url
+      [(-> url
+           (assoc :URL (:URLValue url))
+           (dissoc :URLValue))])))
+
+(defn create-online-resource
+  "Create an online resource structure for service organization staring in version 1.3.
+   Since Description is required in 1.3, if it doesn't exist then add the words Not provided
+   as the description."
+  [service-org]
+  (let [url (->> (:ContactInformation service-org)
+                 (:RelatedUrls)
+                 (filter #(= (:URLContentType %) "DataCenterURL"))
+                 (first))]
+    (when url
+      (util/remove-nil-keys
+        {:Linkage (:URL url)
+         :Description (if (:Description url)
+                        (:Description url)
+                        "Not provided")
+         :Name "HOME PAGE"}))))
+
+(defn add-online-resource
+  "This function takes in a service organization and calls create-online-resource to generate
+   an online resource from the old RelatedURLs element. If RelatedURLs doesn't exist or a
+   DataCenterURL doesn't exist then "
+  [service-org]
+  (let [online-resource (create-online-resource service-org)]
+    (if online-resource
+      (assoc service-org :OnlineResource online-resource)
+      service-org)))
+
+(defn update-service-organization-1_2->1_3
+  "Take the passed in edn service record and Update the service organization by moving the
+   ServiceOrganizations ContactPersons and ContactGroups to the main level ContactPersons and
+   ContactGroups. Return the altered map record."
+  [s]
+  (let [service-orgs (:ServiceOrganizations s)
+        service-org-contact-groups (map :ContactGroups service-orgs)
+        service-org-contact-persons (map :ContactPersons service-orgs)
+        service-orgs (->> service-orgs
+                          (map #(add-online-resource %))
+                          (map #(dissoc % :ContactGroups
+                                          :ContactPersons
+                                          :ContactInformation)))]
+    (-> s
+        (update :ContactGroups #(seq (apply concat % service-org-contact-groups)))
+        (update :ContactPersons #(seq (apply concat % service-org-contact-persons)))
+        (assoc :ServiceOrganizations (seq service-orgs)))))
+
+(defn add-related-url
+  "If OnlineResource exists in the passed in service organization then convert it to service 1.2
+   RelatedUrls and then remove the OnlineResource element. Otherwise just pass back the passed
+   in service organization."
+  [service-org]
+  (let [online-resource (:OnlineResource service-org)]
+    (if online-resource
+      (-> service-org
+          (assoc :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
+                                                     :Type "HOME PAGE"
+                                                     :Description (:Description online-resource)
+                                                     :URL (:Linkage online-resource)}]})
+          (dissoc :OnlineResource))
+      service-org)))
+
+(defn update-service-organization-1_3->1_2
+  "Loop through the service orgainizations and call add-related-url to convert the OnlineResource
+   to RelatedUrls and remove OnlineResource if it exists."
+  [s]
+  (map #(add-related-url %) (:ServiceOrganizations s)))
+
+(defn update-service-type-1_3->1_2
+  "Update the UMM-S 1.2 service type to WEB SERVICES if the UMM-S version 1.3
+   service type = EGI - No Processing."
+  [s]
+  (case (:Type s)
+    "EGI - No Processing" (assoc s :Type "WEB SERVICES")
+    "WMTS" (assoc s :Type "WMS")
+    s))
+
+(def CRSIdentifierTypeEnum-service-1_2
+  "These are the valid enum values in UMM-S 1.2. These are used to migrate ServiceOptions
+   SupportedInputProjections/SupportedOutputProjections ProjectionAuthority string in version 1.3 to 1.2."
+  ["4326", "3395", "3785", "9807", "2000.63", "2163", "3408", "3410", "6931",
+   "6933", "3411", "9822", "54003", "54004", "54008", "54009", "26917", "900913"])
+
+(defn check-projection-valid-values
+  "For a projection check to see if the ProjectionAuthority is a valid value for UMM-S 1.2.
+   If it is then use as is, if not them remove the invalid value. Return a Valid UMM-S version
+   1.2 SupportedProjectionType object."
+  [projection]
+  (if (some #(= (:ProjectionAuthority projection) %) CRSIdentifierTypeEnum-service-1_2)
+    projection
+    (dissoc projection :ProjectionAuthority)))
+
+(defn remove-non-valid-formats
+  "Remove the formats that are not valid for UMM-S version 1.2."
+  [formats]
+  (remove #(= "ZARR" %) formats))
+
+(defn update-projections
+  "Iterate through each projection calling the check-projection-valid-values function
+   checking to see if the ProjectionAuthority is valid. Return a list of Valid UMM-S version 1.2
+   SupportedProjectionType objects."
+  [projections]
+  (map #(check-projection-valid-values %) projections))
+
+(defn update-service-options-1_3->1_2
+  "Update the service options from the passed in 1.3 UMM-S record to a valid UMM-S version 1.2 record."
+  [s]
+  (-> s
+      (update-in [:ServiceOptions :SupportedInputProjections] update-projections)
+      (update-in [:ServiceOptions :SupportedOutputProjections] update-projections)
+      (update :ServiceOptions dissoc :SupportedReformattings)
+      (update-in [:ServiceOptions :SupportedInputFormats] remove-non-valid-formats)
+      (update-in [:ServiceOptions :SupportedOutputFormats] remove-non-valid-formats)))
+
+(defn remove-non-valid-operation-name
+  "Remove the operation metadata if the OperationName is GetTile. This is not a valid option
+   in version 1.2."
+  [operation-metadata]
+  (if (= "GetTile" (:OperationName operation-metadata))
+    nil
+    operation-metadata))
+
+(defn update-crs-identifier-1_3->1_2
+  "Update the CRSIdentifier by removing EPSC: from the 1.3 enumeration to match the 1.2 enumeration.
+   return nil for anything else since it isn't valid."
+  [identifier]
+  (when-let [id (:CRSIdentifier identifier)]
+    (if (string/includes? id "EPSG:")
+      (update identifier :CRSIdentifier #(string/replace % "EPSG:" ""))
+      nil)))
+
+(defn update-operation-metadata-1_3->1_2
+  "Migrate the operation metadata from version 1.3 to version 1.2."
+  [operation-metadata]
+  (-> operation-metadata
+      (remove-non-valid-operation-name)
+      (update-in [:CoupledResource
+                  :DataResource
+                  :DataResourceSpatialExtent
+                  :SpatialBoundingBox]
+                 update-crs-identifier-1_3->1_2)
+      (update-in [:CoupledResource
+                  :DataResource
+                  :DataResourceSpatialExtent
+                  :GeneralGridType]
+                 update-crs-identifier-1_3->1_2)
+      (util/remove-nil-keys)
+      (util/remove-empty-maps)))
+
+(defn update-crs-identifier-1_2->1_3
+  "Updates the CRSIdentifier from version 1.2 enumerations to the 1.3 version."
+  [identifier]
+  (when (:CRSIdentifier identifier)
+    (update identifier :CRSIdentifier #(str "EPSG:" %))))
+
+(defn update-operation-metadata-1_2->1_3
+  "Migrate the operation metadata from version 1.2 to version 1.3."
+  [operation-metadata]
+  (-> operation-metadata
+      (update-in [:CoupledResource
+                  :DataResource
+                  :DataResourceSpatialExtent
+                  :SpatialBoundingBox]
+                 update-crs-identifier-1_2->1_3)
+      (update-in [:CoupledResource
+                  :DataResource
+                  :DataResourceSpatialExtent
+                  :GeneralGridType]
+                 update-crs-identifier-1_2->1_3)
+      (util/remove-nil-keys)
+      (util/remove-empty-maps)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Service Migration Implementations
 
@@ -218,3 +411,33 @@
       (update :LongName #(util/trunc % 120))
       (dissoc :OperationMetadata)
       util/remove-empty-maps))
+
+(defmethod interface/migrate-umm-version [:service "1.2" "1.3"]
+  [context s & _]
+  (let [url (create-main-url-for-1_3 s)
+        op-metadata (map #(update-operation-metadata-1_2->1_3 %) (:OperationMetadata s))]
+    (-> s
+        (update :UseConstraints #(assoc {} :LicenseText %))
+        (update-service-organization-1_2->1_3)
+        (assoc :OperationMetadata op-metadata)
+        (assoc :URL url)
+        (dissoc :RelatedURLs
+                :ScienceKeywords
+                :Platforms))))
+
+(defmethod interface/migrate-umm-version [:service "1.3" "1.2"]
+  [context s & _]
+  (let [url (create-main-related-urls-for-1_2 s)
+        service-orgs (update-service-organization-1_3->1_2 s)
+        op-metadata (remove nil?
+                      (map #(update-operation-metadata-1_3->1_2 %) (:OperationMetadata s)))]
+    (-> s
+        (update-service-type-1_3->1_2)
+        (update :UseConstraints #(get % :LicenseText))
+        (assoc :RelatedURLs url)
+        (assoc :ServiceOrganizations service-orgs)
+        (update-service-options-1_3->1_2)
+        (assoc :OperationMetadata op-metadata)
+        (dissoc :URL
+                :LastUpdatedDate
+                :VersionDescription))))
