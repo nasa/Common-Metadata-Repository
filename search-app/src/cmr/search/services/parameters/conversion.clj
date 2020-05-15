@@ -143,6 +143,7 @@
   {:variable-name :string
    :alias :string
    :name :string
+   :full-path :string
    :measurement :string
    :instrument :string
    :provider :string
