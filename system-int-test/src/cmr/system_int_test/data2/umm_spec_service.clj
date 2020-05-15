@@ -16,10 +16,10 @@
    :Type "OPeNDAP"
    :Version "1.9"
    :Description "AIRS Level-3 retrieval product created using AIRS IR, AMSU without HSB."
-   :RelatedURLs [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
-                  :Description "OPeNDAP Service"
-                  :Type "GET SERVICE"
-                  :URLContentType "CollectionURL"}]
+   :URL {:URLValue "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+         :Description "OPeNDAP Service"
+         :Type "GET SERVICE"
+         :URLContentType "DistributionURL"}
    :ServiceKeywords [
       {:ServiceCategory "DATA ANALYSIS AND VISUALIZATION"
        :ServiceTopic "VISUALIZATION/IMAGE PROCESSING"}]
@@ -128,30 +128,7 @@
     (merge {:Roles ["SERVICE PROVIDER CONTACT" "TECHNICAL CONTACT"]
             :ContactInformation (contact-info)
             :GroupName "Contact Group Name"}
-            attribs))))
-
-(defn instrument
-  "Returns a InstrumentType suitable as an element in an Instruments
-  collection."
-  ([]
-    (instrument {}))
-  ([attribs]
-   (umm-s/map->PlatformType
-     (merge {:ShortName "instr1"
-             :LongName "Instrument Name"}
-            attribs))))
-
-(defn platform
-  "Returns a PlatformType suitable as an element in a Platforms
-  collection."
-  ([]
-    (platform {}))
-  ([attribs]
-   (umm-s/map->PlatformType
-     (merge {:ShortName "pltfrm1"
-             :LongName "Platform Name"
-             :Instruments [(instrument)]}
-            attribs))))
+           attribs))))
 
 (defn service-keywords
   "Returns a ServiceKeywordType suitable as an element in a
@@ -166,6 +143,17 @@
              :ServiceSpecificTerm "A specific service term"}
             attribs))))
 
+(defn online-resource
+  "Returns an online-resource suitable as an element."
+  ([]
+    (online-resource {}))
+  ([attribs]
+   (umm-s/map->OnlineResourceType
+     (merge {:Linkage "http://example.com/file"
+             :Description "description"
+             :Name "HOME PAGE"}
+            attribs))))
+
 (defn service-organization
   "Returns a ServiceOrganizationType suitable as an element in a
   ServiceOrganizations collection."
@@ -176,5 +164,29 @@
      (merge {:Roles ["SERVICE PROVIDER" "PUBLISHER"]
              :ShortName "svcorg1"
              :LongName "Service Org 1"
-             :ContactPersons [(contact-person)]}
+             :OnlineResource (online-resource)}
             attribs))))
+
+(defn url
+  "Returns a url suitable as an element."
+  ([]
+    (url {}))
+  ([attribs]
+   (umm-s/map->URLType
+     (merge {:URLValue "http://example.com/file"
+             :Description "description"
+             :Type "GET SERVICE"
+             :Subtype "SUBSETTER"
+             :URLContentType "CollectionURL"}
+            attribs))))
+
+(defn related-url
+  "Creates related url for online_only test"
+  ([]
+   (related-url {}))
+  ([attribs]
+   (umm-s/map->RelatedUrlType (merge {:URL "http://example.com/file"
+                                      :Description "description"
+                                      :Type "GET SERVICE"
+                                      :URLContentType "CollectionURL"}
+                                     attribs))))
