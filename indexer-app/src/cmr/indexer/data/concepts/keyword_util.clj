@@ -131,60 +131,26 @@
 (defn- url->keywords
   "Converts a compound field into a vector of terms for keyword searches."
   [data]
-  (let [{description :Description
-         subtype :Subtype
-         type :Type
-         url :URLValue
-         url-content-type :URLContentType} data]
-    [description
-     subtype
-     type
-     url
-     url-content-type]))
+  (let [{:keys [Description Subtype Type URLValue URLContentType]} data]
+    [Description Subtype Type URLValue URLContentType]))
 
 (defn- related-url->keywords
   "Converts a compound field into a vector of terms for keyword searches."
   [data]
-  (let [{description :Description
-         subtype :Subtype
-         type :Type
-         url :URL
-         url-content-type :URLContentType} data]
-    [description
-     subtype
-     type
-     url
-     url-content-type]))
+  (let [{:keys [Description Subtype Type URL URLContentType]} data]
+    [Description Subtype Type URL URLContentType]))
 
 (defn science-keyword->keywords
   "Converts a science keyword into a vector of terms for keyword searches."
   [science-keyword]
-  (let [{category :Category
-         detailed-variable :DetailedVariable
-         term :Term
-         topic :Topic
-         variable-level-1 :VariableLevel1
-         variable-level-2 :VariableLevel2
-         variable-level-3 :VariableLevel3} science-keyword]
-    [category
-     detailed-variable
-     term
-     topic
-     variable-level-1
-     variable-level-2
-     variable-level-3]))
+  (let [{:keys [Category DetailedVariable Term Topic VariableLevel1 VariableLevel2 VariableLevel3]} science-keyword]
+    [Category DetailedVariable Term Topic VariableLevel1 VariableLevel2 VariableLevel3]))
 
 (defn- service-keyword->keywords
   "Converts a service keyword into a vector of terms for keyword searches."
   [service-keyword]
-  (let [{service-category :ServiceCategory
-         service-specific-term :ServiceSpecificTerm
-         service-term :ServiceTerm
-         service-topic :ServiceTopic} service-keyword]
-    [service-category
-     service-specific-term
-     service-term
-     service-topic]))
+  (let [{:keys [ServiceCategory ServiceSpecificTerm ServiceTerm ServiceTopic]} service-keyword]
+    [ServiceCategory ServiceSpecificTerm ServiceTerm ServiceTopic]))
 
 (defn- service-organization->keywords
   "Converts a service keyword into a vector of terms for keyword searches."

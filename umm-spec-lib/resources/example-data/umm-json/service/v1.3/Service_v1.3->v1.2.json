@@ -201,8 +201,8 @@
 	  }],
     "SupportedOutputFormats": ["HDF4","NETCDF-3","NETCDF-4","BINARY","ASCII", "ZARR"],
     "SupportedReformattings": [{
-      "SupportedInputFormat": "HDF4",
-      "SupportedOutputFormat": "NETCDF-3"
+      "SupportedInputFormat": "HDF5",
+      "SupportedOutputFormat": "GEOTIFFFLOAT32"
     }]
   },
   "OperationMetadata": [{
