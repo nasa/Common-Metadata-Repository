@@ -72,6 +72,10 @@
   (fn [conn]
     (format "%s/services" (conn/root-url conn))))
 
+(h/defsearcher search-for-tools :search
+  (fn [conn]
+    (format "%s/tools" (conn/root-url conn))))
+
 (h/defsearcher search-for-subscriptions :search
   (fn [conn]
     (format "%s/subscriptions" (conn/root-url conn))))

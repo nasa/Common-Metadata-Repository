@@ -425,7 +425,8 @@
                                                          first
                                                          :value.lowercase)
             :associations-gzip-b64 (associations->gzip-base64-str
-                                    variable-associations service-associations)}
+                                    variable-associations service-associations)
+            :usage-relevancy-score 0}
 
            (variable-service-associations->elastic-docs
             context variable-associations service-associations)

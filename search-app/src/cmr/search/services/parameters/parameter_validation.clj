@@ -277,7 +277,7 @@
     :score
     :has-granules
     :has-granules-or-cwic
-    :usage-score
+    :usage-relevancy-score
     :ongoing})
 
 (defmethod cpv/valid-sort-keys :granule

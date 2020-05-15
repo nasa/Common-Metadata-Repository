@@ -37,7 +37,7 @@
 
 (def MAX_RADIUS
   "Maximum radius in meters"
-  1000000)
+  6000000)
 
 (def ^:const ^double EARTH_RADIUS_APPROX
   "Radius of the earth in meters for polygon approximation of the circle"
