@@ -19,6 +19,7 @@
    :provider-id :provider
    :day-night-flag :day-night
    :browse-only :browsable
+   :usage-score :usage-relevancy-score
    :processing-level :processing-level-id
    :grid :two-d-coordinate-system})
 

@@ -61,6 +61,7 @@
                           :service-name :service-names
                           :two-d-coordinate-system-name :two-d-coord-name
                           :updated-since :revision-date2
+                          :usage-score :usage-relevancy-score
                           :variable-concept-id :variable-concept-ids
                           :variable-name :variable-names
                           :variable-native-id :variable-native-ids
