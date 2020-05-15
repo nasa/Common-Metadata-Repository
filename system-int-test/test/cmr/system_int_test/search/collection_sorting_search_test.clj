@@ -12,7 +12,7 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
-   [cmr.system-int-test.utils.humanizer-util :as hu]
+   [cmr.system-int-test.utils.humanizer-util :as humanizer-util]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -33,7 +33,7 @@
   (fn [f]
     (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-sort-use-relevancy-score! true))
     (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-community-usage-bin-size! 1))
-    (hu/ingest-community-usage-metrics usage-csv)
+    (humanizer-util/ingest-community-usage-metrics usage-csv)
     (index/wait-until-indexed)
     (f)))
 
