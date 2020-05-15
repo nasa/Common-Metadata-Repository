@@ -273,6 +273,10 @@
   (gen/fmap san/sanitized-umm-s-record
             (schema->generator js/umm-s-schema)))
 
+(def umm-t-generator
+  (gen/fmap san/sanitized-umm-t-record
+            (schema->generator js/umm-t-schema)))
+
 (def umm-sub-generator
   (gen/fmap san/sanitized-umm-sub-record
             (schema->generator js/umm-sub-schema)))

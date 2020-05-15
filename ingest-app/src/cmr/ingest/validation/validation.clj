@@ -27,7 +27,8 @@
    :granule #{mt/echo10 mt/iso-smap mt/umm-json}
    :variable #{mt/umm-json}
    :subscription #{mt/umm-json}
-   :service #{mt/umm-json}})
+   :service #{mt/umm-json}
+   :tool #{mt/umm-json}})
 
 
 (defn- validate-format
