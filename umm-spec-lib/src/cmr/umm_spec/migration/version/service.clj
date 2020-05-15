@@ -183,22 +183,18 @@
                  (filter #(= (:URLContentType %) "DistributionURL"))
                  first)]
     (when url
-      {:Description (:Description url)
-       :URLContentType (:URLContentType url)
-       :Type (:Type url)
-       :Subtype (:Subtype url)
-       :URLValue (:URL url)})))
+      (-> url
+          (assoc :URLValue (:URL url))
+          (dissoc :URL)))))
 
 (defn create-main-related-urls-for-1_2
   "Migrating from UMM-S v1.3 to UMM-S v1.2 RelatedURLs."
   [s]
   (let [url (:URL s)]
     (when url
-      [{:Description (:Description url)
-        :URLContentType (:URLContentType url)
-        :Type (:Type url)
-        :Subtype (:Subtype url)
-        :URL (:URLValue url)}])))
+      [(-> url
+           (assoc :URL (:URLValue url))
+           (dissoc :URLValue))])))
 
 (defn create-online-resource
   "Create an online resource structure for service organization staring in version 1.3.
@@ -235,8 +231,11 @@
   (let [service-orgs (:ServiceOrganizations s)
         service-org-contact-groups (map :ContactGroups service-orgs)
         service-org-contact-persons (map :ContactPersons service-orgs)
-        service-orgs (map #(add-online-resource %) service-orgs)
-        service-orgs (map #(dissoc % :ContactGroups :ContactPersons :ContactInformation) service-orgs)]
+        service-orgs (->> service-orgs
+                          (map #(add-online-resource %))
+                          (map #(dissoc % :ContactGroups
+                                          :ContactPersons
+                                          :ContactInformation)))]
     (-> s
         (update :ContactGroups #(seq (apply concat % service-org-contact-groups)))
         (update :ContactPersons #(seq (apply concat % service-org-contact-persons)))
@@ -331,10 +330,16 @@
   [operation-metadata]
   (-> operation-metadata
       (remove-non-valid-operation-name)
-      (update-in [:CoupledResource :DataResource :DataResourceSpatialExtent
-                  :SpatialBoundingBox] update-crs-identifier-1_3->1_2)
-      (update-in [:CoupledResource :DataResource :DataResourceSpatialExtent
-                  :GeneralGridType] update-crs-identifier-1_3->1_2)
+      (update-in [:CoupledResource
+                  :DataResource
+                  :DataResourceSpatialExtent
+                  :SpatialBoundingBox]
+                 update-crs-identifier-1_3->1_2)
+      (update-in [:CoupledResource
+                  :DataResource
+                  :DataResourceSpatialExtent
+                  :GeneralGridType]
+                 update-crs-identifier-1_3->1_2)
       (util/remove-nil-keys)
       (util/remove-empty-maps)))
 
@@ -348,10 +353,16 @@
   "Migrate the operation metadata from version 1.2 to version 1.3."
   [operation-metadata]
   (-> operation-metadata
-      (update-in [:CoupledResource :DataResource :DataResourceSpatialExtent
-                  :SpatialBoundingBox] update-crs-identifier-1_2->1_3)
-      (update-in [:CoupledResource :DataResource :DataResourceSpatialExtent
-                  :GeneralGridType] update-crs-identifier-1_2->1_3)
+      (update-in [:CoupledResource
+                  :DataResource
+                  :DataResourceSpatialExtent
+                  :SpatialBoundingBox]
+                 update-crs-identifier-1_2->1_3)
+      (update-in [:CoupledResource
+                  :DataResource
+                  :DataResourceSpatialExtent
+                  :GeneralGridType]
+                 update-crs-identifier-1_2->1_3)
       (util/remove-nil-keys)
       (util/remove-empty-maps)))
 
