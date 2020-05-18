@@ -81,6 +81,22 @@
         "CMR-4722: Search crossing the equator should not erroneously find the granule"
         [] [-128.32 53.602 -46.758 -1.241]))))
 
+(deftest orbit-bug-CMR-6431
+  (let [coll (d/ingest-concept-with-metadata-file "CMR-6431/sample-orbit-collection.xml"
+                                                  {:provider-id "PROV1"
+                                                   :concept-type :collection
+                                                   :native-id "orbit-collection"
+                                                   :format-key :dif10})]
+    (index/wait-until-indexed)
+
+    (testing "Orbit search will not throw exception."
+      (let [coords [0.0 0.08983152841195585 -0.07779640160194513 -0.044915750404640076
+                    0.07779640160194509 -0.04491575040464015 0.0 0.08983152841195585]
+            found (search/find-refs :granule
+                                    {:polygon (apply st/search-poly coords)
+                                     :provider "PROV1"})]
+        (d/refs-match? [] found)))))
+
 (deftest orbit-bug-CMR-5007
   (let [coll (d/ingest-concept-with-metadata-file "CMR-5007/dif10_Collection_C1239966837-GES_DISC.xml"
                                                   {:provider-id "PROV1"

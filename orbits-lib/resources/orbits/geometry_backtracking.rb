@@ -153,7 +153,7 @@ module Orbits
     def fast_poly_crossing_range(lat_range, points, ascending, debug=false)
       # Easy case first
       return [[lat_range, LongitudeCoverage.full]] if points.any? {|p| p.phi.abs > full_coverage_phi}
-      
+
       # Create an array of segments, one for each pair of adjacent points in the array.
       segments = points.slice(0..-2).zip(points.slice(1..-1))
       #debug_log "Original:    #{segments.map {|s| s.join(', ')}}"
@@ -483,7 +483,6 @@ module Orbits
       if west_edge && east_edge
         LongitudeCoverage.new(west_edge, east_edge)
       else
-        raise "ERROR: Boundary range has unexpected size {#{west_range}, #{east_range}}"
         LongitudeCoverage.none
       end
     end
