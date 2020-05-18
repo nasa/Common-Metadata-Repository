@@ -89,7 +89,7 @@
                                                    :format-key :dif10})]
     (index/wait-until-indexed)
 
-    (testing "Orbit search will not throw exception."
+    (testing "Orbit search will not throw exception when crossing range is nil"
       (let [coords [0.0 0.08983152841195585 -0.07779640160194513 -0.044915750404640076
                     0.07779640160194509 -0.04491575040464015 0.0 0.08983152841195585]
             found (search/find-refs :granule
