@@ -192,15 +192,15 @@
           "maxLength": 4000
         },
         "URLContentType": {
-          "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
+          "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DistributionURL').",
           "$ref": "#/definitions/URLContentTypeEnum"
         },
         "Type": {
-          "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
+          "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'DOWNLOAD SOFTWARE').",
           "$ref": "#/definitions/URLTypeEnum"
         },
         "Subtype": {
-          "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').",
+          "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'WEB COVERAGE SERVICES (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAP SERVICE (WMS)', 'SIMPLE SUBSET WIZARD (SSW)').",
           "$ref": "#/definitions/URLSubTypeEnum"
         },
         "URLValue": {
@@ -241,8 +241,8 @@
     },
     "RelatedUrlTypeEnum": {
       "type": "string",
-      "enum": ["DATA SET LANDING PAGE", "DOWNLOAD SOFTWARE", "EXTENDED METADATA", "GET DATA", "GET RELATED VISUALIZATION",
-               "GOTO WEB TOOL", "PROFESSIONAL HOME PAGE", "PROJECT HOME PAGE", "USE SERVICE API", "VIEW RELATED INFORMATION", "HOME PAGE" ]
+      "enum": ["DATA SET LANDING PAGE", "DOWNLOAD SOFTWARE", "EXTENDED METADATA", "GET RELATED VISUALIZATION",
+               "GOTO WEB TOOL", "PROFESSIONAL HOME PAGE", "PROJECT HOME PAGE", "VIEW RELATED INFORMATION", "HOME PAGE" ]
     },
     "RelatedURLSubTypeEnum": {
       "type": "string",
@@ -270,15 +270,15 @@
           "maxLength": 4000
         },
         "URLContentType": {
-          "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
+          "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'VisualizationURL').",
           "$ref": "#/definitions/RelatedURLContentTypeEnum"
         },
         "Type": {
-          "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
+          "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET RELATED VISUALIZATION').",
           "$ref": "#/definitions/RelatedUrlTypeEnum"
         },
         "Subtype": {
-          "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').",
+          "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'WEB COVERAGE SERVICES (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAP SERVICE (WMS)', 'SIMPLE SUBSET WIZARD (SSW)').",
           "$ref": "#/definitions/RelatedURLSubTypeEnum"
         },
         "URL": {
