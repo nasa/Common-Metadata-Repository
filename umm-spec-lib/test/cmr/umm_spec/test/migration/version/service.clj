@@ -259,6 +259,132 @@
     nil
     nil))
 
+(def remove-get-data-service-1-2->1-3-test-input
+  {:Roles ["SCIENCE CONTACT"]
+   :ContactInformation {:RelatedUrls [{:Description "OPeNDAP Service for AIRX3STD.006"
+                                       :URLContentType "DistributionURL"
+                                       :Type "GET SERVICE"
+                                       :Subtype "OPENDAP DATA"
+                                       :URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                                       :GetData {:Format "ascii"
+                                                 :MimeType "application/xml"
+                                                 :Size 10
+                                                 :Unit "MB"
+                                                 :Fees "$0.01"}}]
+                        :ContactMechanisms [{:Type "Email"
+                                             :Value "gsfc-help-disc at lists.nasa.gov"}
+                                            {:Type "Telephone" :Value "301-614-9999"}]
+                        :Addresses [{:StreetAddresses ["Goddard Earth Sciences Data and Information Systems" "Attn: User" "NASA Goddard Space Flight Center" "Code 610.2"]
+                                     :City "Greenbelt"
+                                     :StateProvince "MD"
+                                     :Country "USA"
+                                     :PostalCode "20771"}]}
+   :GroupName "Main Level Group Name 1"})
+
+(def remove-get-data-service-1-2->1-3-test-expected
+  {:Roles ["SCIENCE CONTACT"]
+   :ContactInformation {:RelatedUrls [{:Description "OPeNDAP Service for AIRX3STD.006"
+                                       :URLContentType "DistributionURL"
+                                       :Type "GET SERVICE"
+                                       :Subtype "OPENDAP DATA"
+                                       :URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"}]
+                        :ContactMechanisms [{:Type "Email"
+                                             :Value "gsfc-help-disc at lists.nasa.gov"}
+                                            {:Type "Telephone" :Value "301-614-9999"}]
+                        :Addresses [{:StreetAddresses ["Goddard Earth Sciences Data and Information Systems" "Attn: User" "NASA Goddard Space Flight Center" "Code 610.2"]
+                                     :City "Greenbelt"
+                                     :StateProvince "MD"
+                                     :Country "USA"
+                                     :PostalCode "20771"}]}
+   :GroupName "Main Level Group Name 1"})
+
+(deftest remove-get-data-service-1-2->1-3-test
+  "Test the remove-get-data-service-1-2->1-3 function"
+
+  (are3 [expected-result contact]
+    (is (= expected-result
+           (service/remove-get-data-service-1-2->1-3 contact)))
+
+    "Remove the GetService from the ContactGroups RelatedUrls element."
+    remove-get-data-service-1-2->1-3-test-expected
+    remove-get-data-service-1-2->1-3-test-input))
+
+(def service-org-contact-groups-v2
+ '({:Roles ["SCIENCE CONTACT"],
+    :ContactInformation
+    {:RelatedUrls
+     ({:Description "OPeNDAP Service for AIRX3STD.006",
+       :URLContentType "DistributionURL",
+       :Type "GET SERVICE",
+       :Subtype "OPENDAP DATA",
+       :URL
+       "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"}),
+     :ContactMechanisms
+     [{:Type "Email",
+       :Value "gsfc-help-disc at lists.nasa.gov"}
+      {:Type "Telephone", :Value "301-614-9999"}],
+     :Addresses
+     [{:StreetAddresses
+       ["Goddard Earth Sciences Data and Information Systems, Attn: User , NASA Goddard Space Flight Center, Code 610.2"],
+       :City "Greenbelt",
+       :StateProvince "MD",
+       :Country "USA",
+       :PostalCode "20771"}]},
+    :GroupName "Service Org Group Name"}
+   {:Roles ["TECHNICAL CONTACT"],
+    :ContactInformation
+    {:ContactMechanisms
+     [{:Type "Email",
+       :Value "gsfc-help-disc at lists.nasa.gov"}
+      {:Type "Telephone", :Value "301-614-9999"}],
+     :Addresses
+     [{:StreetAddresses
+       ["Goddard Earth Sciences Data and Information Systems, Attn: User , NASA Goddard Space Flight Center, Code 610.2"],
+       :City "Greenbelt",
+       :StateProvince "MD",
+       :Country "USA",
+       :PostalCode "20771"}]},
+    :GroupName "Service Org Group Name"}
+   {:Roles ["SCIENCE CONTACT"],
+    :ContactInformation
+    {:ContactMechanisms
+     [{:Type "Email",
+       :Value "gsfc-help-disc at lists.nasa.gov"}
+      {:Type "Telephone", :Value "301-614-9999"}],
+     :Addresses
+     [{:StreetAddresses
+       ["Goddard Earth Sciences Data and Information Systems, Attn: User , NASA Goddard Space Flight Center, Code 610.2"],
+       :City "Greenbelt",
+       :StateProvince "MD",
+       :Country "USA",
+       :PostalCode "20771"}]},
+    :GroupName "Service Org 2 Group Name 1"}))
+
+(def service-org-contact-persons-v2
+ '({:Roles ["SERVICE PROVIDER"],
+    :ContactInformation
+    {:RelatedUrls
+     ({:Description "OPeNDAP Service for AIRX3STD.006",
+       :URLContentType "DistributionURL",
+       :Type "GET SERVICE",
+       :Subtype "OPENDAP DATA",
+       :URL
+       "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"}),
+     :ContactMechanisms
+     [{:Type "Email",
+       :Value "gsfc-help-disc at lists.nasa.gov"}
+      {:Type "Telephone", :Value "301-614-9999"}],
+     :Addresses
+     [{:StreetAddresses
+       ["Goddard Earth Sciences Data and Information Systems, Attn: User , NASA Goddard Space Flight Center, Code 610.2"],
+       :City "Greenbelt",
+       :StateProvince "MD",
+       :Country "USA",
+       :PostalCode "20771"}]},
+    :FirstName "FirstName Service Org",
+    :MiddleName "Service Org MiddleName",
+    :LastName "LastName Service Org"}))
+
 (deftest update-service-organization-1-2->1-3-test
   "Test the update-service-organization-1_2->1_3 function"
 
@@ -273,10 +399,7 @@
                     :LongName "GES DISC SERVICE HELP DESK SUPPORT GROUP"}
                    {:Roles ["SERVICE PROVIDER"],
                     :ShortName "NASA/GESDISC-2",
-                    :LongName "GES DISC SERVICE HELP DESK SUPPORT GROUP 2"}]
-        service-org-contact-groups-v2 (remove nil? (flatten (map :ContactGroups (:ServiceOrganizations s1-2))))
-        service-org-contact-persons-v2 (remove nil? (flatten (map :ContactPersons (:ServiceOrganizations s1-2))))]
-
+                    :LongName "GES DISC SERVICE HELP DESK SUPPORT GROUP 2"}]]
     (are3 [expected-result test-record]
       (let [actual-result (service/update-service-organization-1_2->1_3 test-record)]
         (is (= (:ServiceOrganizations expected-result)
