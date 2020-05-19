@@ -178,6 +178,8 @@ module Orbits
       segments = split_at_start_lat(segments)
       #debug_log "Split:       #{segments.map {|s| s.join(', ')}}"
 
+      return [[lat_range, LongitudeCoverage.none]] if segments.empty?
+
       # Join the ranges from segments that form a contiguous run on one side of the orbit start
       # lat or the other (needed to fix CMR-1168). The approach used here simply starts at the
       # first segment and moves forward until it reaches a segment on the other side of the
