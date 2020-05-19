@@ -223,10 +223,31 @@
       (assoc service-org :OnlineResource online-resource)
       service-org)))
 
+(defn remove-get-data-service
+  "Remove GetData and GetService from all of the passed in RelatedUrls."
+  [related-urls]
+  (when related-urls
+    (map #(dissoc % :GetData :GetService) related-urls)))
+
+(defn remove-get-data-service-1-2->1-3
+  "For the passed in single ContactGroup or ContactPerson, remove GetData and GetService from the
+   ContactPersons/ContactGroups ContactInformation RelatedUrls."
+  [contact]
+  (if (:RelatedUrls (:ContactInformation contact))
+    (update-in contact [:ContactInformation :RelatedUrls] #(remove-get-data-service %))
+    contact))
+
+(defn remove-related-url-get-data-service-1-2->1-3
+  "Iterate over the passed in vector of ContactGroups or ContactPersons to ultimately remove the
+   ContactInformations RelatedUrls GetData and GetService sub elements."
+  [vector-of-contacts]
+  (map #(remove-get-data-service-1-2->1-3 %) vector-of-contacts))
+
 (defn update-service-organization-1_2->1_3
   "Take the passed in edn service record and Update the service organization by moving the
    ServiceOrganizations ContactPersons and ContactGroups to the main level ContactPersons and
-   ContactGroups. Return the altered map record."
+   ContactGroups. Then once the contact groups and contact persons are moved, then remove the
+   ContactInformation RelatedUrls GetData and GetService sub elements. Return the altered map record."
   [s]
   (let [service-orgs (:ServiceOrganizations s)
         service-org-contact-groups (map :ContactGroups service-orgs)
@@ -238,7 +259,9 @@
                                           :ContactInformation)))]
     (-> s
         (update :ContactGroups #(seq (apply concat % service-org-contact-groups)))
+        (update :ContactGroups #(seq (remove-related-url-get-data-service-1-2->1-3 %)))
         (update :ContactPersons #(seq (apply concat % service-org-contact-persons)))
+        (update :ContactPersons #(seq (remove-related-url-get-data-service-1-2->1-3 %)))
         (assoc :ServiceOrganizations (seq service-orgs)))))
 
 (defn add-related-url
