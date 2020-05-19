@@ -281,17 +281,16 @@
    Description
 
    ;; A keyword describing the distinct content type of the online resource to this resource. (e.g.,
-   ;; 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').
+   ;; 'VisualizationURL').
    URLContentType
 
    ;; A keyword describing the type of the online resource to this resource. This helps the GUI to
-   ;; know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').
+   ;; know what to do with this resource. (e.g., 'GET RELATED VISUALIZATION').
    Type
 
    ;; A keyword describing the subtype of the online resource to this resource. This further helps
-   ;; the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP',
-   ;; 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW',
-   ;; 'ESI').
+   ;; the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'WEB COVERAGE SERVICES
+   ;; (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAP SERVICE (WMS)', 'SIMPLE SUBSET WIZARD (SSW)').
    Subtype
 
    ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
@@ -328,17 +327,16 @@
    Description
 
    ;; A keyword describing the distinct content type of the online resource to this resource. (e.g.,
-   ;; 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').
+   ;; 'DistributionURL').
    URLContentType
 
    ;; A keyword describing the type of the online resource to this resource. This helps the GUI to
-   ;; know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').
+   ;; know what to do with this resource. (e.g., 'DOWNLOAD SOFTWARE').
    Type
 
    ;; A keyword describing the subtype of the online resource to this resource. This further helps
-   ;; the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP',
-   ;; 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW',
-   ;; 'ESI').
+   ;; the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'WEB COVERAGE SERVICES
+   ;; (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAP SERVICE (WMS)', 'SIMPLE SUBSET WIZARD (SSW)').
    Subtype
 
    ;; The URL for the relevant online resource where you can directly access the downloadable tool
