@@ -254,7 +254,7 @@
     suggestion-docs))
 
 (defn- anti-value?
-  "Returns whether if the term is an anti-value. e.g. \"not applicable\" or \"not provided\".
+  "Returns whether or not the term is an anti-value. e.g. \"not applicable\" or \"not provided\".
   This is case-insensitive"
   [term]
   {:pre [(some? term)]}
