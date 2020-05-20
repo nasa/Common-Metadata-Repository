@@ -84,8 +84,8 @@
                                             :Term "na"}))
 
 (def sk11 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
-                                           :Topic "BIOSPHERE"
-                                           :Term "Nothofagus"}))
+                                            :Topic "BIOSPHERE"
+                                            :Term "Nothofagus"}))
 
 (def gdf1 {:FileDistributionInformation
            [{:FormatType "Binary"
@@ -185,4 +185,4 @@
                       {:type "processing_level" :value "PL1" :fields "PL1"}]
 
       "does not filter 'not' prefixed values"
-      "q=not" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}])))
+      "not" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}])))
