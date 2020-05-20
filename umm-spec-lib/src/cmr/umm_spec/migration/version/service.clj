@@ -185,7 +185,7 @@
     (when url
       (-> url
           (assoc :URLValue (:URL url))
-          (dissoc :URL)))))
+          (dissoc :URL :GetData :GetService)))))
 
 (defn create-main-related-urls-for-1_2
   "Migrating from UMM-S v1.3 to UMM-S v1.2 RelatedURLs."

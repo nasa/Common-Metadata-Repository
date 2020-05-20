@@ -17,7 +17,15 @@
     "URLContentType": "DistributionURL",
     "Type": "GET SERVICE",
     "Subtype": "OPENDAP DATA",
-    "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+    "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/",
+    "GetService": {
+      "MimeType": "application/json",
+      "Protocol": "HTTP",
+      "FullName": "Test Service",
+      "DataID": "Test Data",
+      "DataType": "Test Data Type",
+      "URI": ["Test URI 1", "Test URI 2"]
+    }
   }, {
     "Description": "User Guide",
     "URLContentType": "PublicationURL",
