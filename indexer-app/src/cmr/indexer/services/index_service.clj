@@ -243,7 +243,7 @@
         :let [key (key humanized-field)
               key-name (-> key
                            name
-                           (s/replace #"(\.humanized2|\.humanized|-sn|-id)" ""))
+                           (s/replace #"(\.humanized(_?2)?|-sn|-id)" ""))
               value-map (as-> humanized-field h
                               (val h)
                               (map util/remove-nil-keys h)
@@ -252,6 +252,22 @@
                                    (map #(suggestion-doc key-name %))
                                    (remove nil?))]]
     suggestion-docs))
+
+(defn- anti-value?
+  "Returns whether if the term is an anti-value. e.g. \"not applicable\" or \"not provided\".
+  This is case-insensitive"
+  [term]
+  {:pre [(some? term)]}
+  (let [anti-value-matcher (re-matcher #"(na|none|not (provided|applicable))"
+                                       (s/lower-case term))]
+    (some? (re-find anti-value-matcher))))
+
+(defn anti-value-suggestion?
+  "Returns whether an autocomplete suggestion has an anti-value as the :value
+  See also [[anti-value?]]"
+  [suggestion]
+  (let [{:keys [value]} suggestion]
+    (anti-value? value)))
 
 (defn- collection->suggestion-doc
   "Convert collection concept metadata to UMM-C and pull facet fields
@@ -268,8 +284,10 @@
                                        nil)))
                              (remove nil?))
         humanized-fields (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
-        suggestion-docs (map get-suggestion-docs humanized-fields)]
-    (flatten suggestion-docs)))
+        suggestion-docs (->> (map get-suggestion-docs humanized-fields)
+                             flatten
+                             (remove anti-value-suggestion?))]
+    suggestion-docs))
 
 (defn reindex-autocomplete-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
