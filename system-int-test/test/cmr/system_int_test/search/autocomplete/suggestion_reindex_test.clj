@@ -27,7 +27,7 @@
   - Ensure that the other fields match"
   [actual expected]
   ;; check score returns
-  (when (>= 1 (count actual))
+  (when (seq actual)
     (is (scores-descending? actual) actual))
 
   ;; compare values
@@ -141,7 +141,7 @@
     (are3
       [query expected]
       (let [actual (get-in (search/get-autocomplete-json query) [:feed :entry])]
-        (compare-autocomplete-results expected actual))
+        (compare-autocomplete-results actual expected))
 
       "shorter match"
       "q=solar"

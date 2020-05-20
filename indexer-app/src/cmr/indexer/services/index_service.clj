@@ -284,7 +284,8 @@
                                        nil)))
                              (remove nil?))
         humanized-fields (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
-        suggestion-docs (->> (map get-suggestion-docs humanized-fields)
+        suggestion-docs (->> humanized-fields
+                             (map get-suggestion-docs)
                              flatten
                              (remove anti-value-suggestion?))]
     suggestion-docs))
