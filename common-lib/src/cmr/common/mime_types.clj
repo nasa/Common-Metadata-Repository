@@ -199,11 +199,13 @@
 
 (defn- parse-versioned-umm-json-path-extension
   "Tries to parse the extension as if it is for version UMM JSON. If the extension is of the format
-   umm_json_vX_Y where X and Y are some major and minor version number then it will return a UMM
-   JSON mime type with the specified version."
+   umm_json_vN_N_N (_N can be repeated as many times as needed) where N is a version number separated
+   by underscores then it will return a UMM JSON mime type with the specified version."
   [extension]
-  (when-let [[_ major minor] (re-matches #"umm_json_v(\d+)_(\d+)" extension)]
-    (format "%s;version=%s.%s" umm-json major minor)))
+  (when (re-find #"^umm_json_v" extension)
+    (let [x (re-seq #"(\d+)" extension)
+          s (map #(% 1) x)]
+      (format "%s;version=%s" "application/vnd.nasa.cmr.umm+json" (clojure.string/join "." s)))))
 
 (defn path->mime-type
   "Parses the search path with extension and returns the requested mime-type or nil if no extension

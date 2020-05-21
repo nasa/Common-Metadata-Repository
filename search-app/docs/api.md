@@ -305,8 +305,7 @@ Here is a list of supported extensions and their corresponding MimeTypes:
     * The UMM JSON format was originally used for an alpha version of UMM JSON search results. Currently it still returns data in that style to avoid breaking clients dependent on it. This will be changed in a future version to return the latest version of the UMM.
   * `umm_json`   "application/vnd.nasa.cmr.umm_results+json" (supported for collections, granules, variables and services)
     * The UMM JSON extension returns concepts in the latest version of the UMM.
-  * `umm_json_vX_Y` "application/vnd.nasa.cmr.umm_results+json; version=X.Y"
-    * X and Y should be replaced with a major and minor number of the UMM version requested.
+  * `umm_json_vN_N_N` "application/vnd.nasa.cmr.umm_results+json; version=N.N.N (where `_N` can be repeat as many times as is necessary)."
 
 #### <a name="request-timeouts"></a> Request Timeouts
 
