@@ -24,6 +24,7 @@
                      :ContactGroups
                      :ContactPersons
                      :URL
+                     :RelatedURLs
                      :ToolKeywords
                      :Organizations]
         keyword-values (keyword-util/concept-keys->keyword-text
