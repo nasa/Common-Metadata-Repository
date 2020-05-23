@@ -171,6 +171,11 @@
   [{:field :service-name :order :asc}
    {:field :provider-id :order :asc}])
 
+(defmethod common-qm/default-sort-keys :tool
+  [_]
+  [{:field :tool-name :order :asc}
+   {:field :provider-id :order :asc}])
+
 (defmethod common-qm/default-sort-keys :subscription
   [_]
   [{:field :subscription-name :order :asc}
@@ -214,6 +219,15 @@
    :all-revisions? false})
 
 (defmethod common-qm/concept-type->default-query-attribs :service
+  [_]
+  {:condition (common-qm/->MatchAllCondition)
+   :page-size common-qm/default-page-size
+   :offset common-qm/default-offset
+   :result-format :json
+   :echo-compatible? false
+   :all-revisions? false})
+
+(defmethod common-qm/concept-type->default-query-attribs :tool
   [_]
   {:condition (common-qm/->MatchAllCondition)
    :page-size common-qm/default-page-size

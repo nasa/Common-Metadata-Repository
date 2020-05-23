@@ -18,6 +18,11 @@
   [context acls concept]
   true)
 
+;; tools currently have no ACLs, so return `true` for all ACL checks
+(defmethod acls-match-concept? :tool
+  [context acls concept]
+  true)
+
 ;; tags have no acls so we always assume it matches
 (defmethod acls-match-concept? :tag
   [context acls concept]
@@ -64,6 +69,7 @@
   {:granule :granule-applicable
    :collection :collection-applicable
    :service :service-applicable
+   :tool :tool-applicable
    :variable :variable-applicable
    :subscription :subscription-applicable})
 

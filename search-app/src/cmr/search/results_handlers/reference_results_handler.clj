@@ -47,6 +47,15 @@
    "revision-id"
    "_score"])
 
+(defmethod elastic-search-index/concept-type+result-format->fields [:tool :xml]
+  [concept-type query]
+  ["tool-name"
+   "provider-id"
+   "concept-id"
+   "deleted"
+   "revision-id"
+   "_score"])
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:subscription :xml]
   [concept-type query]
   ["subscription-name"
@@ -62,6 +71,7 @@
    :granule :granule-ur
    :variable :variable-name
    :service :service-name
+   :tool :tool-name
    :subscription :subscription-name})
 
 (defn- elastic-result->query-result-item
@@ -78,7 +88,7 @@
      :name name-value
      :score (q/normalize-score score)}))
 
-(doseq [concept-type [:collection :granule :variable :service :subscription]]
+(doseq [concept-type [:collection :granule :variable :service :tool :subscription]]
   (defmethod elastic-results/elastic-result->query-result-item [concept-type :xml]
     [context query elastic-result]
     (elastic-result->query-result-item context query elastic-result)))
@@ -157,7 +167,7 @@
         include-facets? (boolean (some #{:facets} result-features))]
     (x/emit-str (results->xml-element echo-compatible? include-facets? results))))
 
-(doseq [concept-type [:collection :granule :variable :service :subscription]]
+(doseq [concept-type [:collection :granule :variable :service :tool :subscription]]
   (defmethod qs/search-results->response [concept-type :xml]
     [context query results]
     (search-results->response context query results)))

@@ -41,6 +41,11 @@
                         {:name "all-service-revisions",
                           :settings i/service-setting}],
               :mapping i/service-mapping},
+    :tool {:indexes [{:name "tools",
+                      :settings i/tool-setting}
+                     {:name "all-tool-revisions",
+                      :settings i/tool-setting}],
+           :mapping i/tool-mapping},
     :subscription {:indexes [{:name "subscriptions",
                               :settings i/subscription-setting}
                              {:name "all-subscription-revisions",
