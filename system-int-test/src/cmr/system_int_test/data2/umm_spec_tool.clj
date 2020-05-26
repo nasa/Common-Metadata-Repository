@@ -77,6 +77,18 @@
          (assoc :provider-id provider-id :native-id native-id)
          umm-t->concept))))
 
+(defn contact-person
+  "Returns a ContactPersonType suitable as an element in a
+  Persons collection."
+  ([]
+   (contact-person {}))
+  ([attribs]
+   (umm-t/map->ContactPersonType
+     (merge {:FirstName "Alice"
+             :LastName "Bob"
+             :Roles ["AUTHOR"]}
+            attribs))))
+
 (defn contact-mechanism
   "Returns a ContactMechanismType suitable as an element in a
   ContactMechanisms collection."
@@ -117,7 +129,7 @@
     (contact-group {}))
   ([attribs]
    (umm-t/map->ContactGroupType
-    (merge {:Roles ["SERVICE PROVIDER CONTACT" "TECHNICAL CONTACT"]
+    (merge {:Roles ["SERVICE PROVIDER" "AUTHOR"]
             :ContactInformation (contact-info)
             :GroupName "Contact Group Name"}
             attribs))))
@@ -147,3 +159,27 @@
              :LongName "Tool Org 1"
              :URLValue "https://lpdaac.usgs.gov/"}
             attribs))))
+
+(defn url
+  "Returns a url suitable as an element."
+  ([]
+    (url {}))
+  ([attribs]
+   (umm-t/map->URLType
+     (merge {:URLValue "http://example.com/file"
+             :Description "description"
+             :Type "GET SERVICE"
+             :Subtype "SUBSETTER"
+             :URLContentType "CollectionURL"}
+            attribs))))
+
+(defn related-url
+  "Creates related url for online_only test"
+  ([]
+   (related-url {}))
+  ([attribs]
+   (umm-t/map->RelatedURLType (merge {:URL "http://example.com/file"
+                                      :Description "description"
+                                      :Type "GET SERVICE"
+                                      :URLContentType "CollectionURL"}
+                                     attribs))))

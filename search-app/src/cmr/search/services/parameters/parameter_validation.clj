@@ -89,6 +89,15 @@
      :always-case-sensitive #{}
      :disallow-pattern #{}}))
 
+(defmethod cpv/params-config :tool
+  [_]
+  (cpv/merge-params-config
+    cpv/basic-params-config
+    {:single-value #{:keyword :all-revisions}
+     :multiple-value #{:name :provider :native-id :concept-id}
+     :always-case-sensitive #{}
+     :disallow-pattern #{}}))
+
 (defmethod cpv/params-config :subscription
   [_]
   (cpv/merge-params-config
@@ -223,6 +232,12 @@
    :native-id cpv/string-param-options
    :provider cpv/string-param-options})
 
+(defmethod cpv/valid-parameter-options :tool
+  [_]
+  {:name cpv/string-param-options
+   :native-id cpv/string-param-options
+   :provider cpv/string-param-options})
+
 (defmethod cpv/valid-parameter-options :subscription
   [_]
   {:name cpv/string-param-options
@@ -255,6 +270,10 @@
   #{:all-revisions})
 
 (defmethod cpv/valid-query-level-params :service
+  [_]
+  #{:all-revisions})
+
+(defmethod cpv/valid-query-level-params :tool
   [_]
   #{:all-revisions})
 
@@ -313,6 +332,13 @@
     :provider})
 
 (defmethod cpv/valid-sort-keys :service
+  [_]
+  #{:name
+    :long-name
+    :revision-date
+    :provider})
+
+(defmethod cpv/valid-sort-keys :tool
   [_]
   #{:name
     :long-name
@@ -858,6 +884,8 @@
                       measurement-identifiers-validation])
    :service (concat cpv/common-validations
                     [boolean-value-validation])
+   :tool (concat cpv/common-validations
+                 [boolean-value-validation])
    :autocomplete cpv/common-validations
    :subscription (concat cpv/common-validations
                     [boolean-value-validation])})

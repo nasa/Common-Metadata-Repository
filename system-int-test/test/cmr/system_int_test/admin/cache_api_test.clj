@@ -267,4 +267,5 @@
          :tag "tag"
          :variable "variable"
          :service "service"
+         :tool "tool"
          :subscription "subscription"}))))

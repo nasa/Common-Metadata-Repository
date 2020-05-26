@@ -152,11 +152,24 @@
   (let [{:keys [ServiceCategory ServiceSpecificTerm ServiceTerm ServiceTopic]} service-keyword]
     [ServiceCategory ServiceSpecificTerm ServiceTerm ServiceTopic]))
 
+(defn- tool-keyword->keywords
+  "Converts a tool keyword into a vector of terms for keyword searches."
+  [tool-keyword]
+  (let [{:keys [ToolCategory ToolSpecificTerm ToolTerm ToolTopic]} tool-keyword]
+    [ToolCategory ToolSpecificTerm ToolTerm ToolTopic]))
+
 (defn- service-organization->keywords
-  "Converts a service keyword into a vector of terms for keyword searches."
+  "Converts a service organization into a vector of terms for keyword searches."
   [service-organization]
   (let [{roles :Roles} service-organization]
     (concat (names->keywords service-organization)
+            roles)))
+
+(defn- organization->keywords
+  "Converts an organization into a vector of terms for keyword searches."
+  [organization]
+  (let [{roles :Roles} organization]
+    (concat (names->keywords organization)
             roles)))
 
 (defn- archive-distribution-data-formats
@@ -196,6 +209,19 @@
    :ServiceKeywords #(mapcat service-keyword->keywords (:ServiceKeywords %))
    :ServiceOrganizations #(mapcat service-organization->keywords (:ServiceOrganizations %))})
 
+(def ^:private tool-fields->fn-mapper
+  "A data structure that maps UMM tool field names to functions that
+  extract keyword data for those fields. Intended only to be used as part
+  of a larger map for multiple field types.
+
+  See `fields->fn-mapper`, below."
+  {:ContactGroups #(mapcat contact-group->keywords (:ContactGroups %))
+   :ContactPersons #(mapcat contact-person->keywords (:ContactPersons %))
+   :URL #(url->keywords (:URL %))
+   :RelatedURLs #(mapcat related-url->keywords (:RelatedURLs %))
+   :ToolKeywords #(mapcat tool-keyword->keywords (:ToolKeywords %))
+   :Organizations #(mapcat organization->keywords (:Organizations %))})
+
 (def ^:private collection-fields->fn-mapper
   "A data structure that maps UMM collection field names to functions that
   extract keyword data for those fields. Intended only to be used as part
@@ -228,6 +254,7 @@
   that has an extract keyword different from the field name needs to be listed."
   (merge variable-fields->fn-mapper
          service-fields->fn-mapper
+         tool-fields->fn-mapper
          collection-fields->fn-mapper))
 
 (defn- field-extract-fn

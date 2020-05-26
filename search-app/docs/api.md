@@ -177,6 +177,13 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Service Access Control](#service-access-control)
     * [Service association](#service-association)
     * [Service dissociation](#service-dissociation)
+  * [Tool](#tool)
+    * [Searching for Tools](#searching-for-tools)
+        * [Tool Search Parameters](#tool-search-params)
+        * [Tool Search Response](#tool-search-response)
+    * [Retrieving All Revisions of a Tool](#retrieving-all-revisions-of-a-tool)
+    * [Sorting Tool Results](#sorting-tool-results)
+    * [Tool Access Control](#tool-access-control)
   * [Subscription](#subscription)
     * [Searching for Subscriptions](#searching-for-subscriptions)
         * [Subscription Search Parameters](#subscription-search-params)
@@ -2276,7 +2283,7 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
 
 ### <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
 
-This allows retrieving the metadata for a single concept. This is only supported for collections, granules, variables, services and subscriptions. If no format is specified the native format of the metadata (and the native version, if it exists) will be returned.
+This allows retrieving the metadata for a single concept. This is only supported for collections, granules, variables, services, tools and subscriptions. If no format is specified the native format of the metadata (and the native version, if it exists) will be returned.
 
 By concept id
 
@@ -2328,7 +2335,7 @@ The following extensions and MIME types are supported by the `/concepts/` resour
   * `atom`      "application/atom+xml"
   * `umm_json`  "application/vnd.nasa.cmr.umm+json"
 
-The following extensions and MIME types are supported by the `/concepts/` resource for the variable, service and subscription concept types:
+The following extensions and MIME types are supported by the `/concepts/` resource for the variable, service, tool  and subscription concept types:
 
   * `umm_json`  "application/vnd.nasa.cmr.umm+json"
 
@@ -4127,6 +4134,290 @@ Content-Length: 168
 
 On occasions when service dissociation cannot be processed at all due to invalid input, service dissociation request will return a failure status code with the appropriate error message.
 
+### <a name="tool"></a> Tool
+
+UMM-T provides metadata to support the User Interface/User Experience (UI/UX)-driven approach to Tools. Specifically, when a user wants to know the tools available for a specific collection and makes selections via the Earthdata Search UI, options are presented showing what operating systems or languages are supported.
+The UMM-T model in MMT enables the population of the tool options, either web user interface or downloadable tool options are surfaced in the UI to support these selections. Each UMM-T record contains metadata for tools and other information such as contact groups or contact persons, tool keywords, and supported inouts and outputs.
+
+#### <a name="searching-for-tools"></a> Searching for Tools
+
+Tools can be searched for by sending a request to `%CMR-ENDPOINT%/tools`. XML reference, JSON, and UMM JSON response formats are supported for tools search.
+
+Tool search results are paged. See [Paging Details](#paging-details) for more information on how to page through tool search results.
+
+##### <a name="tool-search-params"></a> Tool Search Parameters
+
+The following parameters are supported when searching for tools.
+
+##### Standard Parameters
+* page_size
+* page_num
+* pretty
+
+##### Tool Matching Parameters
+
+These parameters will match fields within a tool. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
+
+* name
+  * options: pattern, ignore_case
+* provider
+  * options: pattern, ignore_case
+* native_id
+  * options: pattern, ignore_case
+* concept_id
+* keyword (free text)
+  * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
+
+The following fields are indexed for keyword (free text) search:
+
+* Tool name
+* Tool long name
+* Tool version
+* Tool keywords (category, term, spcific term, topic)
+* Tool organizations (short and long names, roles, urlvalue)
+* Contact persons (first names, contacts last names, roles)
+* Contact groups (group name, roles)
+* RelatedURL (description, subtype, type, URL, URL content type)
+* URL
+* Ancillary keywords
+
+##### <a name="tool-search-response"></a> Tool Search Response
+
+##### XML Reference
+The XML reference response format is used for returning references to search results. It consists of the following fields:
+
+|   Field    |                    Description                     |
+| ---------- | -------------------------------------------------- |
+| hits       | the number of results matching the search query    |
+| took       | time in milliseconds it took to perform the search |
+| references | identifying information about each search result   |
+
+The `references` field may contain multiple `reference` entries, each consisting of the following fields:
+
+|    Field    |                                                   Description                                                   |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
+| name        | the value of the Name field in tool metadata.                                                                |
+| id          | the CMR identifier for the result                                                                               |
+| location    | the URL at which the full metadata for the result can be retrieved                                              |
+| revision-id | the internal CMR version number for the result                                                                  |
+
+__Example__
+```
+curl -i "%CMR-ENDPOINT%/tools?name=someTool1&pretty=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/xml; charset=UTF-8
+Content-Length: 393
+
+<?xml version="1.0" encoding="UTF-8"?>
+<results>
+    <hits>1</hits>
+    <took>5</took>
+    <references>
+        <reference>
+            <name>someTool1</name>
+            <id>TL1200000005-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/TL1200000005-PROV1/1</location>
+            <revision-id>1</revision-id>
+        </reference>
+    </references>
+</results>
+```
+##### JSON
+The JSON response includes the following fields.
+
+* hits - How many total variables were found.
+* took - How long the search took in milliseconds
+* items - a list of the current page of tools with the following fields
+  * concept_id
+  * revision_id
+  * provider_id
+  * native_id
+  * name
+  * long_name
+
+__Example__
+```
+curl -g -i "%CMR-ENDPOINT%/tools.json?pretty=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 944
+
+{
+  "hits" : 4,
+  "took" : 2,
+  "items" : [ {
+    "concept_id" : "TL1200000005-PROV1",
+    "revision_id" : 1,
+    "provider_id" : "PROV1",
+    "native_id" : "tool-1",
+    "name" : "someToolName1",
+    "long_name" : "someToolLongName1",
+  }, {
+    "concept_id" : "TL1200000006-PROV1",
+    "revision_id" : 1,
+    "provider_id" : "PROV1",
+    "native_id" : "tool-2",
+    "name" : "someToolName2",
+    "long_name" : "someToolLongName2",
+  } ]
+}
+```
+##### UMM JSON
+The UMM JSON response contains meta-metadata of the tool and the UMM fields.
+
+__Example__
+```
+curl -g -i "%CMR-ENDPOINT%/tools.umm_json?name=NSIDC_AtlasNorth&pretty=true"
+HTTP/1.1 200 OK
+Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.0; charset=utf-8
+
+{
+  "hits" : 1,
+  "took" : 21,
+  "items" : [ {
+    "meta" : {
+      "native-id" : "tool-1",
+      "provider-id" : "PROV1",
+      "concept-type" : "tool",
+      "concept-id" : "TL1200000005-PROV1",
+      "revision-date" : "2020-04-01T19:52:44Z",
+      "user-id" : "ECHO_SYS",
+      "deleted" : false,
+      "revision-id" : 1,
+      "format" : "application/vnd.nasa.cmr.umm+json"
+    },
+    "umm" : {
+      "Name": "USGS_TOOLS_LATLONG",
+      "LongName": "WRS-2 Path/Row to Latitude/Longitude Converter",
+      "Type":  "Downloadable Tool",
+      "Version": "1.0"<
+      "Description": "The USGS WRS-2 Path/Row to Latitude/Longitude Converter allows users to enter any Landsat path and row to get the nearest scene center latitude and longitude coordinates.",
+      "URL": {"URLContentType": "DistributionURL"
+              "Type": "DOWNLOAD SOFTWARE",
+              "Description": "Access the WRS-2 Path/Row to Latitude/Longitude Converter.",
+              "URLValue": "http://www.scp.byu.edu/software/slice_response/Xshape_temp.html"},
+      "ToolKeywords": [{"ToolCategory": "EARTH SCIENCE SERVICES"<
+                        "ToolTopic": "DATA MANAGEMENT/DATA HANDLING",
+                        "ToolTerm": "DATA INTEROPERABILITY",
+                        "ToolSpecificTerm": "DATA REFORMATTING"}],
+      "Organizations": [{"Roles": ["SERVICE PROVIDER"],
+                         "ShortName": "USGS/EROS",
+                         "LongName": "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES",
+                         "URLValue": "http://www.usgs.gov"}],
+      "MetadataSpecification": {"URL": "https://cdn.earthdata.nasa.gov/umm/tool/v1.0",
+                                "Name": "UMM-T",
+                                "Version": "1.0"}
+    }
+  } ]
+}
+```
+
+##### <a name="retrieving-all-revisions-of-a-tool"></a> Retrieving All Revisions of a Tool
+
+In addition to retrieving the latest revision for a tool parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+
+    curl "%CMR-ENDPOINT%/tools?concept_id=TL1200000005-PROV1&all_revisions=true&pretty=true"
+
+__Sample response__
+
+```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <results>
+        <hits>3</hits>
+        <took>9</took>
+        <references>
+            <reference>
+                <name>someTool1</name>
+                <id>TL1200000005-PROV1</id>
+                <deleted>true</deleted>
+                <revision-id>3</revision-id>
+            </reference>
+            <reference>
+                <name>someTool1</name>
+                <id>TL1200000005-PROV1</id>
+                <location>%CMR-ENDPOINT%/concepts/TL1200000005-PROV1/2</location>
+                <revision-id>2</revision-id>
+            </reference>
+            <reference>
+                <name>someTool1</name>
+                <id>TL1200000005-PROV1</id>
+                <location>%CMR-ENDPOINT%/concepts/TL1200000005-PROV1/1</location>
+                <revision-id>1</revision-id>
+            </reference>
+        </references>
+    </results>
+```
+
+##### <a name="sorting-tool-results"></a> Sorting Tool Results
+
+By default, tool results are sorted by name, then provider-id.
+
+One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
+
+###### Valid Tool Sort Keys
+  * `name`
+  * `long_name`
+  * `provider`
+  * `revision_date`
+
+Examples of sorting by name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+
+    curl "%CMR-ENDPOINT%/tools?sort_key\[\]=-name"
+
+__Sample response__
+
+```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <results>
+        <hits>2</hits>
+        <took>6</took>
+        <references>
+            <reference>
+                <name>someTool2</name>
+                <id>TL1200000006-PROV1</id>
+                <location>%CMR-ENDPOINT%/concepts/TL1200000006-PROV1/1</location>
+                <revision-id>1</revision-id>
+        </reference>
+        <reference>
+            <name>someTool1</name>
+            <id>TL1200000005-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/TL1200000005-PROV1/1</location>
+            <revision-id>1</revision-id>
+        </reference>
+    </references>
+</results>
+```
+    curl "%CMR-ENDPOINT%/tools?sort_key\[\]=%2Bname"
+
+__Sample response__
+
+```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <results>
+        <hits>2</hits>
+        <took>6</took>
+        <references>
+            <reference>
+                <name>someTool1</name>
+                <id>TL1200000005-PROV1</id>
+                <location>%CMR-ENDPOINT%/concepts/TL1200000005-PROV1/1</location>
+                <revision-id>1</revision-id>
+        </reference>
+        <reference>
+            <name>someTool2</name>
+            <id>TL1200000006-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/TL1200000006-PROV1/1</location>
+            <revision-id>1</revision-id>
+        </reference>
+    </references>
+</results>
+```
+#### <a name="tool-access-control"></a> Tool Access Control
+
+Access to tool is granted through the provider via the INGEST_MANAGEMENT_ACL.
+
 ### <a name="subscription"></a> Subscription
 
 Email subscription is used to inform the users through emails when the granules that match the query in the subscription are created/updated. These granules can only belong to one collection, which is defined by the collection-concept-id in the subscription. There is a background job that processes the subscriptions periodically(configurable), to see if there are any granules that are created/updated between the time it's processed and the time it was last processed.  A subscription enables data to be accessed via a universal resource locator, Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription).
@@ -4271,7 +4562,7 @@ Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.0; charset=utf
       "format" : "application/vnd.nasa.cmr.umm+json"
     },
     "umm" : {
-      "Name" : "someSub1",
+      "Name" : "NSIDC_AtlasNorth",
       "SubscriberId" : "someSubId1",
       "EmailAddress" : "sxu@gmail.com",
       "CollectionConceptId" : "C1200000001-PROV1",
@@ -4285,7 +4576,7 @@ Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.0; charset=utf
 
 In addition to retrieving the latest revision for a subscription parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
-    curl "%CMR-ENDPOINT%/subscriptions?concept_id=S1200000010-PROV1&all_revisions=true&pretty=true"
+    curl "%CMR-ENDPOINT%/subscriptions?concept_id=SUB1200000005-PROV1&all_revisions=true&pretty=true"
 
 __Sample response__
 

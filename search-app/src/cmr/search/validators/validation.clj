@@ -48,6 +48,13 @@
           :umm-json :umm-json-results}
         (umm-versioned-result-formats :service)))
 
+(defmethod cqv/supported-result-formats :tool
+  [_]
+  (into #{:xml :json
+          ;; umm-json supported with and without versions
+          :umm-json :umm-json-results}
+        (umm-versioned-result-formats :tool)))
+
 (defmethod cqv/supported-result-formats :subscription
   [_]
   (into #{:xml :json

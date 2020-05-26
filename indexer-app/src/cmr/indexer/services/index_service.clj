@@ -112,6 +112,10 @@
   [context batch options]
   (es/prepare-batch context (filter-expired-concepts batch) options))
 
+(defmethod prepare-batch :tool
+  [context batch options]
+  (es/prepare-batch context (filter-expired-concepts batch) options))
+
 (defmethod prepare-batch :subscription
   [context batch options]
   (es/prepare-batch context (filter-expired-concepts batch) options))
@@ -177,6 +181,7 @@
                                  #{:collection :tag-association
                                    :variable :variable-association
                                    :service :service-association
+                                   :tool
                                    :subscription}
                                  concept-type))))
 
@@ -436,6 +441,10 @@
     (get-elastic-version-with-associations context concept {:service-associations service-associations})))
 
 (defmethod get-elastic-version :subscription
+  [context concept]
+  (:transaction-id concept))
+
+(defmethod get-elastic-version :tool
   [context concept]
   (:transaction-id concept))
 

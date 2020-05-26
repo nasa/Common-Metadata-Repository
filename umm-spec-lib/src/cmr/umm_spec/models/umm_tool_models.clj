@@ -19,10 +19,6 @@
    ;; interface or downloadable tool.
    SupportedInputFormats
 
-   ;; A URL associated with the web user interface or downloadable tool, e.g., the home page for the
-   ;; tool provider which is responsible for the tool.
-   RelatedUrls
-
    ;; This is the contact persons of the downloadable tool or web user interface.
    ContactPersons
 
@@ -67,6 +63,10 @@
 
    ;; The name of the downloadable tool or web user interface.
    Name
+
+   ;; A URL associated with the web user interface or downloadable tool, e.g., the home page for the
+   ;; tool provider which is responsible for the tool.
+   RelatedURLs
 
    ;; A brief description of the web user interface or downloadable tool. Note: This field allows
    ;; lightweight markup language with plain text formatting syntax. Line breaks within the text are
@@ -275,7 +275,7 @@
 ;; Represents Internet sites that contain information related to the data, as well as related
 ;; Internet sites such as project home pages, related data archives/servers, metadata extensions,
 ;; online software packages, web mapping services, and calibration/validation data.
-(defrecord RelatedUrlType
+(defrecord RelatedURLType
   [
    ;; Description of the web page at this URL.
    Description
@@ -289,15 +289,15 @@
    Type
 
    ;; A keyword describing the subtype of the online resource to this resource. This further helps
-   ;; the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'WEB COVERAGE SERVICES
-   ;; (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAP SERVICE (WMS)', 'SIMPLE SUBSET WIZARD (SSW)').
+   ;; the GUI to know what to do with this resource. (e.g., 'DATA RECIPE', 'SCIENCE DATA PRODUCT
+   ;; VALIDATION', 'GIOVANNI').
    Subtype
 
    ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
    ;; the URL of the collection landing page, the URL of the download site for the collection).
    URL
   ])
-(record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
+(record-pretty-printer/enable-record-pretty-printing RelatedURLType)
 
 ;; This entity contains the physical address details for the contact.
 (defrecord AddressType
@@ -335,8 +335,8 @@
    Type
 
    ;; A keyword describing the subtype of the online resource to this resource. This further helps
-   ;; the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'WEB COVERAGE SERVICES
-   ;; (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAP SERVICE (WMS)', 'SIMPLE SUBSET WIZARD (SSW)').
+   ;; the GUI to know what to do with this resource. (e.g., 'MAP VIEWER', 'SIMPLE SUBSET WIZARD
+   ;; (SSW)').
    Subtype
 
    ;; The URL for the relevant online resource where you can directly access the downloadable tool
@@ -352,7 +352,7 @@
 (defrecord UseConstraintsType
   [
    ;; The web address of the license associated with the tool.
-   LicenseUrl
+   LicenseURL
 
    ;; The text of the license associated with the tool.
    LicenseText

@@ -117,6 +117,11 @@
   {:provider :provider-id
    :name :service-name})
 
+(defmethod q2e/concept-type->field-mappings :tool
+  [_]
+  {:provider :provider-id
+   :name :tool-name})
+
 (defmethod q2e/concept-type->field-mappings :subscription
   [_]
   {:provider :provider-id
@@ -191,6 +196,11 @@
   [_]
   {:provider "provider-id.lowercase"
    :name "service-name.lowercase"})
+
+(defmethod q2e/field->lowercase-field-mappings :tool
+  [_]
+  {:provider "provider-id.lowercase"
+   :name "tool-name.lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :subscription
   [_]
@@ -337,6 +347,13 @@
    :long-name :long-name.lowercase
    :provider :provider-id.lowercase})
 
+(defmethod q2e/concept-type->sort-key-map :tool
+  [_]
+  {:tool-name :tool-name.lowercase
+   :name :tool-name.lowercase
+   :long-name :long-name.lowercase
+   :provider :provider-id.lowercase})
+
 (defmethod q2e/concept-type->sort-key-map :subscription
   [_]
   {:subscription-name :subscription-name.lowercase
@@ -408,6 +425,16 @@
   [{(q2e/query-field->elastic-field :name :service) {:order "asc"}}
    {(q2e/query-field->elastic-field :provider :service) {:order "asc"}}])
 
+(def tool-all-revision-sub-sort-fields
+  "Defines the sub sort fields for an all revisions tool search."
+  [{(q2e/query-field->elastic-field :concept-id :tool) {:order "asc"}}
+   {(q2e/query-field->elastic-field :revision-id :tool) {:order "desc"}}])
+
+(def tool-latest-sub-sort-fields
+  "This defines the sub sort fields for a latest revision tool search."
+  [{(q2e/query-field->elastic-field :name :tool) {:order "asc"}}
+   {(q2e/query-field->elastic-field :provider :tool) {:order "asc"}}])
+
 (def subscription-all-revision-sub-sort-fields
   "Defines the sub sort fields for an all revisions subscription search."
   [{(q2e/query-field->elastic-field :concept-id :subscription) {:order "asc"}}
@@ -456,6 +483,16 @@
         sub-sort-fields (if (:all-revisions? query)
                           service-all-revision-sub-sort-fields
                           service-latest-sub-sort-fields)]
+    (concat (or specified-sort default-sort) sub-sort-fields)))
+
+(defmethod q2e/query->sort-params :tool
+  [query]
+  (let [{:keys [concept-type sort-keys]} query
+        specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
+        default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
+        sub-sort-fields (if (:all-revisions? query)
+                          tool-all-revision-sub-sort-fields
+                          tool-latest-sub-sort-fields)]
     (concat (or specified-sort default-sort) sub-sort-fields)))
 
 (defmethod q2e/query->sort-params :subscription
