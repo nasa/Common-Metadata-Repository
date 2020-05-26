@@ -93,7 +93,10 @@
         "Retrieve specified version 1.3 with URL extension"
         "1.3" nil "umm_json_v1_3"
         "Retrieve specified version 1.0 with URL extension"
-        "1.0" nil "umm_json_v1_0"))
+        "1.0" nil "umm_json_v1_0"
+
+        "Retrieve specified version 1.15.2 with URL extension"
+        "1.15.2" nil "umm_json_v1_15_2"))
 
     (testing "find collections in umm-json format"
       (are3 [collections params]
@@ -177,7 +180,16 @@
     (is (= {:status 400
             ;; XML is returned here because we don't specify an accept header and the URL extension is unknown.
             :errors "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>The URL extension [umm_json_v1_A] is not supported.</error></errors>"}
-           (select-keys (search/find-concepts-umm-json :collection {} {:url-extension "umm_json_v1_A"}) [:status :errors]))))
+           (select-keys (search/find-concepts-umm-json :collection {} {:url-extension "umm_json_v1_A"}) [:status :errors])))
+    (is (= {:status 400
+            ;; XML is returned here because we don't specify an accept header and the URL extension is unknown.
+            :errors "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>The URL extension [umm_json_v1_4_A] is not supported.</error></errors>"}
+           (select-keys (search/find-concepts-umm-json :collection {} {:url-extension "umm_json_v1_4_A"}) [:status :errors])))
+    (is (= {:status 400
+            ;; XML is returned here because we don't specify an accept header and the URL extension is unknown.
+            :errors "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>The URL extension [umm_json_v1.4.5] is not supported.</error></errors>"}
+           (select-keys (search/find-concepts-umm-json :collection {} {:url-extension "umm_json_v1.4.5"}) [:status :errors]))))
+
   (testing "Searching with older non-existent UMM JSON version"
     (is (= {:status 400
             :errors ["The mime type [application/vnd.nasa.cmr.umm_results+json] with version [0.1] is not supported for collections."]}
@@ -191,4 +203,9 @@
   (testing "Searching with future UMM JSON version"
     (is (= {:status 400
             :errors ["The mime type [application/vnd.nasa.cmr.umm_results+json] with version [9.1] is not supported for collections."]}
-           (dissoc (search/find-concepts-umm-json :collection {} {:url-extension "umm_json_v9_1"}) :body)))))
+           (dissoc (search/find-concepts-umm-json :collection {} {:url-extension "umm_json_v9_1"}) :body))))
+
+  (testing "Searching with non existing UMM JSON version using major, minor, macro version"
+    (is (= {:status 400
+            :errors ["The mime type [application/vnd.nasa.cmr.umm_results+json] with version [1.14.3] is not supported for collections."]}
+           (dissoc (search/find-concepts-umm-json :collection {} {:url-extension "umm_json_v1_14_3"}) :body)))))
