@@ -65,16 +65,20 @@
            (mt/path->mime-type "granules.umm_json_v1_3_4_5_66")))
     (is (= nil
            (mt/path->mime-type "granules.umm_j1son_v1_3_4_5_66")))
+    (is (= nil
+           (mt/path->mime-type "granules.umm_json_v1_3F_4_5_66")))
     (testing "Should be considered valid as a mime type"
       ;; No exception should be thrown.
       (mt/path->mime-type "granules.umm_json_v99_88"
                           #{mt/umm-json})))
+
   (testing "No extension"
     (are [uri]
       (= nil (mt/path->mime-type uri))
       "granulesjson"
       "  "
       ""))
+
   (testing "invalid extensions"
     (are [extension uri]
       (= nil (mt/path->mime-type uri))
