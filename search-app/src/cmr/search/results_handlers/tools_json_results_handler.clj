@@ -2,7 +2,6 @@
   "Handles extracting elasticsearch tool results and converting them into a JSON search response."
   (:require
    [cheshire.core :as json]
-   [clojure.edn :as edn]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
