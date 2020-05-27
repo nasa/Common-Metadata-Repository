@@ -68,7 +68,7 @@
           "items": {
             "$ref": "#/definitions/SupportedReformattingsPairType"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "MaxGranules": {
           "description": "This field indicates the maximum number of granules which this service can process with one request.",
@@ -79,18 +79,22 @@
     "SupportedReformattingsPairType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This object describes the supported reformatting pairs, e.g. NetCDF4 -> COG.",
+      "description": "This object describes the supported reformatting pairs, e.g. NetCDF4 -> [COG]. For every input there is 1 or more outputs.",
       "properties": {
         "SupportedInputFormat": {
           "description": "This element is used to identify the name of the supported input format in the pair.",
           "$ref": "#/definitions/SupportedFormatTypeEnum"
         },
-        "SupportedOutputFormat": {
-          "description": "This element is used to identify the name of the supported output format in the pair.",
-          "$ref": "#/definitions/SupportedFormatTypeEnum"
+        "SupportedOutputFormats": {
+          "description": "This element is used to identify the name of all supported output formats for the provided input format.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SupportedFormatTypeEnum"
+          },
+          "minItems": 1
         }
       },
-      "required": ["SupportedInputFormat", "SupportedOutputFormat"]
+      "required": ["SupportedInputFormat", "SupportedOutputFormats"]
     },
     "SupportedProjectionType": {
       "type": "object",
@@ -166,7 +170,7 @@
           "maxLength": 4000
         },
         "URLContentType": {
-            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
+            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DISTRIBUTION URL').",
             "$ref": "#/definitions/URLContentTypeEnum"
         },
         "Type": {
@@ -174,7 +178,7 @@
             "$ref": "#/definitions/RelatedUrlTypeEnum"
         },
         "Subtype": {
-            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').",
+            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'OPENSEARCH', 'WEB COVERAGE SERVICES (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAPPING SERVICES (WMS)', 'SIMPLE SUBSET WIZARD (SSW)').",
             "$ref": "#/definitions/RelatedURLSubTypeEnum"
         },
         "URLValue": {
@@ -183,7 +187,8 @@
           "minLength": 1,
           "maxLength": 1024
         }
-      }
+      },
+      "required": ["URLContentType", "Type", "URLValue"]
     },
     "URLContentTypeEnum": {
       "type": "string",
@@ -226,7 +231,7 @@
           "maxLength": 4000
         },
         "URLContentType": {
-            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
+            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'COLLECTION URL', 'PUBLICATION URL', 'VISUALIZATION URL').",
             "$ref": "#/definitions/RelatedURLContentTypeEnum"
         },
         "Type": {
@@ -234,7 +239,7 @@
             "$ref": "#/definitions/RelatedUrlTypeEnum"
         },
         "Subtype": {
-            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').",
+            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'OPENSEARCH', 'WEB COVERAGE SERVICES (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAPPING SERVICES (WMS)', 'SIMPLE SUBSET WIZARD (SSW)').",
             "$ref": "#/definitions/RelatedURLSubTypeEnum"
         },
         "URL": {
