@@ -1,4 +1,4 @@
-(ns cmr.indexer.services.index-set-service
+(ns cmr.indexer.services.index-set-service 
   "Provide functions to store, retrieve, delete index-sets"
   (:require
    [camel-snake-kebab.core :as csk]
@@ -18,7 +18,15 @@
 
 (def searchable-concept-types
   "Defines the concept types that are indexed in elasticsearch and thus searchable."
-  [:collection :granule :deleted-granule :tag :variable :service :autocomplete :subscription])
+  [:autocomplete
+   :collection
+   :deleted-granule
+   :granule
+   :service
+   :subscription
+   :tag
+   :tool
+   :variable])
 
 (defn context->es-store
   [context]

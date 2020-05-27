@@ -1,4 +1,4 @@
-(ns cmr.search.api.routes
+(ns cmr.search.api.routes  
   (:require
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
@@ -41,6 +41,8 @@
    [cmr.search.results-handlers.subscriptions-json-results-handler]
    [cmr.search.results-handlers.subscriptions-umm-json-results-handler]
    [cmr.search.results-handlers.tags-json-results-handler]
+   [cmr.search.results-handlers.tools-json-results-handler]
+   [cmr.search.results-handlers.tools-umm-json-results-handler]
    [cmr.search.results-handlers.timeline-results-handler]
    [cmr.search.results-handlers.umm-json-results-handler]
    [cmr.search.results-handlers.variables-json-results-handler]

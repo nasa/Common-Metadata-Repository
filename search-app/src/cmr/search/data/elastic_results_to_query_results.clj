@@ -15,6 +15,10 @@
   [concept-type elastic-result]
   (first (get-in elastic-result [:fields :revision-id])))
 
+(defmethod elastic-results/get-revision-id-from-elastic-result :tool
+  [concept-type elastic-result]
+  (first (get-in elastic-result [:fields :revision-id])))
+
 (defmethod elastic-results/get-revision-id-from-elastic-result :subscription
   [concept-type elastic-result]
   (first (get-in elastic-result [:fields :revision-id])))

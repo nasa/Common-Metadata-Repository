@@ -14,7 +14,7 @@
 ;;; Constants
 
 (def find-by-concept-id-concept-types
-  #{:collection :granule :service :variable :subscription})
+  #{:collection :granule :service :tool :variable :subscription})
 
 (def supported-concept-id-retrieval-mime-types
   {:collection #{mt/any
@@ -42,6 +42,9 @@
    :service #{mt/any
               mt/xml
               mt/umm-json}
+   :tool #{mt/any
+           mt/xml
+           mt/umm-json}
    :subscription #{mt/any
                    mt/xml
                    mt/umm-json}

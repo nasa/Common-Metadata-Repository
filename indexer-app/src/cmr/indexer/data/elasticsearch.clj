@@ -63,6 +63,10 @@
   [concept]
   (:transaction-id concept))
 
+(defmethod get-elastic-version :tool
+  [concept]
+  (:transaction-id concept))
+
 (defmethod get-elastic-version :default
   [concept]
   (:revision-id concept))
@@ -74,6 +78,7 @@
        (or (= :collection (cs/concept-id->type concept-id))
            (= :variable (cs/concept-id->type concept-id))
            (= :service (cs/concept-id->type concept-id))
+           (= :tool (cs/concept-id->type concept-id))
            (= :subscription (cs/concept-id->type concept-id)))
        all-revisions-index?)
     (str concept-id "," revision-id)

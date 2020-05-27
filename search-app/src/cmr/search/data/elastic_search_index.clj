@@ -180,6 +180,13 @@
                  "1_services")
    :type-name "service"})
 
+(defmethod common-esi/concept-type->index-info :tool
+  [context _ query]
+  {:index-name (if (:all-revisions? query)
+                 "1_all_tool_revisions"
+                 "1_tools")
+   :type-name "tool"})
+
 (defmethod common-esi/concept-type->index-info :subscription
   [context _ query]
   {:index-name (if (:all-revisions? query)

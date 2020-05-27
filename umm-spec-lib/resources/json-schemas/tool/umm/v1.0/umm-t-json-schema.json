@@ -53,11 +53,11 @@
         "minLength": 1,
         "maxLength": 1024
       },
-      "RelatedUrls": {
+      "RelatedURLs": {
         "description": "A URL associated with the web user interface or downloadable tool, e.g., the home page for the tool provider which is responsible for the tool.",
         "type": "array",
         "items": {
-          "$ref": "#/definitions/RelatedUrlType"
+          "$ref": "#/definitions/RelatedURLType"
         },
         "minItems": 0
       },
@@ -172,14 +172,6 @@
       "MetadataSpecification"
     ],
   "definitions": {
-    "URLMimeTypeEnum": {
-      "type": "string",
-      "enum": ["application/json", "application/xml", "application/x-netcdf", "application/gml+xml",
-               "application/vnd.google-earth.kml+xml", "image/gif", "image/tiff", "image/bmp", "text/csv",
-               "text/xml", "application/pdf", "application/x-hdf", "application/xhdf5",
-               "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",
-               "image/vnd.collada+xml", "text/html", "text/plain", "Not provided"]
-    },
     "URLType": {
       "type": "object",
       "additionalProperties": false,
@@ -200,7 +192,7 @@
           "$ref": "#/definitions/URLTypeEnum"
         },
         "Subtype": {
-          "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'WEB COVERAGE SERVICES (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAP SERVICE (WMS)', 'SIMPLE SUBSET WIZARD (SSW)').",
+          "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MAP VIEWER', 'SIMPLE SUBSET WIZARD (SSW)').",
           "$ref": "#/definitions/URLSubTypeEnum"
         },
         "URLValue": {
@@ -222,43 +214,28 @@
     },
     "URLSubTypeEnum": {
       "type": "string",
-      "enum": ["DATACAST URL", "EARTHDATA SEARCH", "ECHO", "EDG", "EOSDIS DATA POOL", "GDS", "GIOVANNI", "KML",
-               "LAADS", "LANCE", "LAS", "MIRADOR", "MODAPS", "NOAA CLASS", "ON-LINE ARCHIVE", "REVERB",
-               "ACCESS MAP VIEWER", "ACCESS MOBILE APP", "ACCESS WEB SERVICE", "DIF", "MAP SERVICE", "NOMADS",
-               "OPENDAP DATA", "OPENDAP DATA (DODS)", "OPENDAP DIRECTORY (DODS)", "OpenSearch", "SERF", "SOFTWARE PACKAGE",
-               "SSW", "SUBSETTER", "THREDDS CATALOG", "THREDDS DATA", "THREDDS DIRECTORY", "TOOL", "WEB COVERAGE SERVICE (WCS)",
-               "WEB FEATURE SERVICE (WFS)", "WEB MAP FOR TIME SERIES", "WEB MAP SERVICE (WMS)", "WORKFLOW (SERVICE CHAIN)",
-               "GIBS", "MAP", "ALGORITHM THEORETICAL BASIS DOCUMENT", "CALIBRATION DATA DOCUMENTATION", "DATA QUALITY",
-               "CASE STUDY", "DATA USAGE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION", "HOW-TO", "PI DOCUMENTATION",
-               "PROCESSING HISTORY", "PRODUCTION VERSION HISTORY", "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE",
-               "PRODUCT HISTORY", "PUBLICATIONS", "RADIOMETRIC AND GEOMETRIC CALIBRATION METHODS", "READ-ME",
-               "RECIPE", "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION",
-               "SCIENCE DATA PRODUCT VALIDATION", "USER FEEDBACK", "USER'S GUIDE"]
+      "enum": ["MOBILE APP", "LIVE ACCESS SERVER (LAS)", "MAP VIEWER", "SIMPLE SUBSET WIZARD (SSW)", "SUBSETTER"]
     },
     "RelatedURLContentTypeEnum": {
       "type": "string",
       "enum": ["CollectionURL", "PublicationURL", "VisualizationURL"]
     },
-    "RelatedUrlTypeEnum": {
+    "RelatedURLTypeEnum": {
       "type": "string",
-      "enum": ["DATA SET LANDING PAGE", "DOWNLOAD SOFTWARE", "EXTENDED METADATA", "GET RELATED VISUALIZATION",
-               "GOTO WEB TOOL", "PROFESSIONAL HOME PAGE", "PROJECT HOME PAGE", "VIEW RELATED INFORMATION", "HOME PAGE" ]
+      "enum": ["DATA SET LANDING PAGE", "EXTENDED METADATA", "PROFESSIONAL HOME PAGE", "PROJECT HOME PAGE", "VIEW RELATED INFORMATION", "BROWSE", "GET RELATED VISUALIZATION"]
     },
     "RelatedURLSubTypeEnum": {
       "type": "string",
-      "enum": ["MOBILE APP", "APPEEARS", "DATA COLLECTION BUNDLE", "DATA TREE", "DATACAST URL", "DIRECT DOWNLOAD", "EOSDIS DATA POOL",
-               "Earthdata Search", "GIOVANNI", "GoLIVE Portal", "IceBridge Portal", "LAADS", "LANCE", "MIRADOR", "MODAPS", "NOAA CLASS", "NOMADS",
-               "Order", "PORTAL", "Subscribe", "USGS EARTH EXPLORER", "VERTEX", "VIRTUAL COLLECTION", "MAP", "WORLDVIEW", "LIVE ACCESS SERVER (LAS)",
-               "MAP VIEWER", "SIMPLE SUBSET WIZARD (SSW)", "SUBSETTER", "GRADS DATA SERVER (GDS)", "MAP SERVICE", "OPENDAP DATA", "OpenSearch",
-               "SERVICE CHAINING", "TABULAR DATA STREAM (TDS)", "THREDDS DATA", "WEB COVERAGE SERVICE (WCS)", "WEB FEATURE SERVICE (WFS)",
-               "WEB MAP SERVICE (WMS)", "WEB MAP TILE SERVICE (WMTS)", "ALGORITHM DOCUMENTATION", "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)",
-               "ANOMALIES", "CASE STUDY", "DATA CITATION POLICY", "DATA QUALITY", "DATA RECIPE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION",
-               "HOW-TO", "IMPORTANT NOTICE", "INSTRUMENT/SENSOR CALIBRATION DOCUMENTATION", "MICRO ARTICLE", "PI DOCUMENTATION",
-               "PROCESSING HISTORY", "PRODUCT HISTORY", "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE", "PRODUCTION HISTORY", "PUBLICATIONS",
-               "READ-ME", "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION", "SCIENCE DATA PRODUCT VALIDATION",
-               "USER FEEDBACK PAGE", "USER'S GUIDE"]
+      "enum": ["ALGORITHM DOCUMENTATION", "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)", "ANOMALIES",
+               "CASE STUDY", "DATA CITATION POLICY", "DATA QUALITY", "DATA RECIPE", "DELIVERABLES CHECKLIST",
+               "GENERAL DOCUMENTATION", "HOW-TO", "IMPORTANT NOTICE", "INSTRUMENT/SENSOR CALIBRATION DOCUMENTATION",
+               "MICRO ARTICLE", "PI DOCUMENTATION", "PROCESSING HISTORY", "PRODUCT HISTORY",
+               "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE", "PRODUCTION HISTORY", "PUBLICATIONS",
+               "READ-ME", "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION",
+               "SCIENCE DATA PRODUCT VALIDATION", "USER FEEDBACK PAGE", "USER'S GUIDE", "GIOVANNI",
+               "MAP", "WORLDVIEW"]
     },
-    "RelatedUrlType": {
+    "RelatedURLType": {
       "type": "object",
       "additionalProperties": false,
       "description": "Represents Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
@@ -275,10 +252,10 @@
         },
         "Type": {
           "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET RELATED VISUALIZATION').",
-          "$ref": "#/definitions/RelatedUrlTypeEnum"
+          "$ref": "#/definitions/RelatedURLTypeEnum"
         },
         "Subtype": {
-          "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'WEB COVERAGE SERVICES (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAP SERVICE (WMS)', 'SIMPLE SUBSET WIZARD (SSW)').",
+          "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'DATA RECIPE', 'SCIENCE DATA PRODUCT VALIDATION', 'GIOVANNI').",
           "$ref": "#/definitions/RelatedURLSubTypeEnum"
         },
         "URL": {
@@ -583,7 +560,7 @@
       "additionalProperties": false,
       "description": "Information on how the downloadable tool or web user interface may or may not be used after access is granted. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the item. Providers may request acknowledgement of the item from users and claim no responsibility for quality and completeness.",
       "properties": {
-        "LicenseUrl": {
+        "LicenseURL": {
           "description": "The web address of the license associated with the tool.",
           "type": "string",
           "minLength": 0,

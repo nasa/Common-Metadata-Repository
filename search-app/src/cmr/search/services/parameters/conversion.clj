@@ -160,6 +160,14 @@
    :concept-id :string
    :keyword :keyword})
 
+(defmethod common-params/param-mappings :tool
+  [_]
+  {:name :string
+   :provider :string
+   :native-id :string
+   :concept-id :string
+   :keyword :keyword})
+
 (defmethod common-params/param-mappings :subscription
   [_]
   {
@@ -465,6 +473,13 @@
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
                                  :service params)]
+    [(dissoc params :all-revisions)
+     (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
+
+(defmethod common-params/parse-query-level-params :tool
+  [concept-type params]
+  (let [[params query-attribs] (common-params/default-parse-query-level-params
+                                 :tool params)]
     [(dissoc params :all-revisions)
      (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
 
