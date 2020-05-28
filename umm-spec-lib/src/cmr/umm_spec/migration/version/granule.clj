@@ -96,6 +96,30 @@
              util/remove-nil-keys))
        g))
 
+(defn downgrade-format-and-mimetype-to-1-6
+  "This function takes a map and downgrades the DMRPP format and
+   mime-type to version 1.6. If the metadata contains :Files then it is a nested map and so call
+   this function again to iterate over its maps.
+   An updated map is returned."
+  [archive-and-dist-info-file]
+  (-> archive-and-dist-info-file
+      (update :Format #(if (= "DMRPP" %)
+                          "Not provided"
+                          %))
+      (update :MimeType #(if (= "application/vnd.opendap.dap4.dmrpp+xml" %)
+                           "Not provided"
+                           %))
+      (update :Files (fn [files]
+                       (seq (map #(downgrade-format-and-mimetype-to-1-6 %) files))))
+      (util/remove-nil-keys)))
+
+(defn downgrade-formats-and-mimetypes-to-1-6
+  "This function takes a list of maps that contain the fields called Formats and MimeTypes and it
+   iterates through them to downgrade DMRPP formats and mime-types to version 1.6. A list of updated
+   maps is returned."
+  [list-of-maps]
+  (seq (map #(downgrade-format-and-mimetype-to-1-6 %) list-of-maps)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Granule Migration Implementations
 
@@ -141,3 +165,19 @@
       (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6"
                                      :Name "UMM-G"
                                      :Version "1.6"})))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.1" "1.6"]
+  [context g & _]
+  (-> g
+      (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6"
+                                     :Name "UMM-G"
+                                     :Version "1.6"})
+      (update-in [:DataGranule :ArchiveAndDistributionInformation] downgrade-formats-and-mimetypes-to-1-6)
+      (update :RelatedUrls downgrade-formats-and-mimetypes-to-1-6)))
+
+(defmethod interface/migrate-umm-version [:granule "1.6" "1.6.1"]
+  [context g & _]
+  (-> g
+      (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.1"
+                                     :Name "UMM-G"
+                                     :Version "1.6.1"})))

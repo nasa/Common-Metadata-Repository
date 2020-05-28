@@ -1273,11 +1273,11 @@
                "text/xml", "application/pdf", "application/x-hdf", "application/x-hdf5",
                "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",
                "image/vnd.collada+xml", "text/html", "text/plain", "application/zip", "application/gzip", "application/tar",
-               "application/tar+gzip", "application/tar+zip", "Not provided"]
+               "application/tar+gzip", "application/tar+zip", "application/vnd.opendap.dap4.dmrpp+xml", "Not provided"]
     },
     "DataFormatEnum": {
       "type": "string",
-      "enum": ["ASCII", "BINARY", "BMP", "BUFR", "CSV", "GEOTIFF", "GIF", "GEOTIFFINT16", "GEOTIFFFLOAT32", "GRIB", "GZIP", "HDF4", "HDF5", "HDF-EOS2", "HDF-EOS5", "HTML", "ICARTT", "JPEG", "JSON", "KML", "NETCDF-3", "NETCDF-4", "NETCDF-CF", "PNG", "PNG24", "TAR", "TIFF", "XLSX", "XML", "ZIP", "Not provided"]
+      "enum": ["ASCII", "BINARY", "BMP", "BUFR", "CSV", "GEOTIFF", "GIF", "GEOTIFFINT16", "GEOTIFFFLOAT32", "GRIB", "GZIP", "HDF4", "HDF5", "HDF-EOS2", "HDF-EOS5", "HTML", "ICARTT", "JPEG", "JSON", "KML", "NETCDF-3", "NETCDF-4", "NETCDF-CF", "PNG", "PNG24", "TAR", "TIFF", "XLSX", "XML", "ZIP", "DMRPP", "Not provided"]
     },
     "MetadataSpecificationType":
     {
@@ -1288,7 +1288,7 @@
         "URL": {
           "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
           "type": "string",
-          "enum": ["https://cdn.earthdata.nasa.gov/umm/granule/v1.6"]
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/granule/v1.6.1"]
         },
         "Name": {
           "description": "This element represents the name of the schema.",
@@ -1298,7 +1298,7 @@
         "Version": {
           "description": "This element represents the version of the schema.",
           "type": "string",
-          "enum": ["1.6"]
+          "enum": ["1.6.1"]
         }
       },
       "required": ["URL", "Name", "Version"]
