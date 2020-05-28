@@ -3817,14 +3817,11 @@ The following fields are indexed for keyword (free text) search:
 * Service name
 * Service long name
 * Service version
-* Service keywords (category, term spcific term, topic)
-* Service organizations (short and long names, roles, contact persons)
+* Service keywords (category, term specific term, topic)
+* Service organizations (short and long names, roles)
 * Contact persons (first names, contacts last names, roles)
 * Contact groups (group name, roles)
-* Science keywords (category, detailed variable, term, topic, variables 1-3)
-* Platforms (short and long names)
-* Platforms instruments (short and long names)
-* RelatedURL (description, subtype, type, URL, URL content type)
+* URL (description, subtype, type, URL value, URL content type)
 * Ancillary keywords
 
 ##### <a name="service-search-response"></a> Service Search Response

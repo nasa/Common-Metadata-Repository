@@ -551,7 +551,7 @@
    Description
 
    ;; A keyword describing the distinct content type of the online resource to this resource. (e.g.,
-   ;; 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').
+   ;; 'COLLECTION URL', 'PUBLICATION URL', 'VISUALIZATION URL').
    URLContentType
 
    ;; A keyword describing the type of the online resource to this resource. This helps the GUI to
@@ -559,9 +559,9 @@
    Type
 
    ;; A keyword describing the subtype of the online resource to this resource. This further helps
-   ;; the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP',
-   ;; 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW',
-   ;; 'ESI').
+   ;; the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'OPENSEARCH', 'WEB
+   ;; COVERAGE SERVICES (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAPPING SERVICES (WMS)', 'SIMPLE
+   ;; SUBSET WIZARD (SSW)').
    Subtype
 
    ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
@@ -570,14 +570,16 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
 
-;; This object describes the supported reformatting pairs, e.g. NetCDF4 -> COG.
+;; This object describes the supported reformatting pairs, e.g. NetCDF4 -> [COG]. For every input
+;; there is 1 or more outputs.
 (defrecord SupportedReformattingsPairType
   [
    ;; This element is used to identify the name of the supported input format in the pair.
    SupportedInputFormat
 
-   ;; This element is used to identify the name of the supported output format in the pair.
-   SupportedOutputFormat
+   ;; This element is used to identify the name of all supported output formats for the provided
+   ;; input format.
+   SupportedOutputFormats
   ])
 (record-pretty-printer/enable-record-pretty-printing SupportedReformattingsPairType)
 
@@ -620,7 +622,7 @@
    Description
 
    ;; A keyword describing the distinct content type of the online resource to this resource. (e.g.,
-   ;; 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').
+   ;; 'DISTRIBUTION URL').
    URLContentType
 
    ;; A keyword describing the type of the online resource to this resource. This helps the GUI to
@@ -628,9 +630,9 @@
    Type
 
    ;; A keyword describing the subtype of the online resource to this resource. This further helps
-   ;; the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP',
-   ;; 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW',
-   ;; 'ESI').
+   ;; the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'OPENSEARCH', 'WEB
+   ;; COVERAGE SERVICES (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAPPING SERVICES (WMS)', 'SIMPLE
+   ;; SUBSET WIZARD (SSW)').
    Subtype
 
    ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,

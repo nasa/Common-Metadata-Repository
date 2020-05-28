@@ -389,6 +389,83 @@
       (util/remove-nil-keys)
       (util/remove-empty-maps)))
 
+(defn create-supported-reformatting-for-1-3
+  "This function takes the format input and output and creates a single SupportedReformattingsPairType."
+  [input-format output-format]
+  {:SupportedInputFormat input-format
+   :SupportedOutputFormat output-format})
+
+(defn update-supported-reformatting-for-1-3
+  "This function takes a 1.3.1 SupportedReformattingsPairType and iterates through the SupportedOutputFormats
+   list creating single input and output format pairs for UMM-S version 1.3 SupportedReformattingsPairType."
+  [supported-reformatting]
+  (let [input-format (:SupportedInputFormat supported-reformatting)]
+    (map #(create-supported-reformatting-for-1-3 input-format %) (:SupportedOutputFormats supported-reformatting))))
+
+(defn update-supported-reformattings-for-1-3
+  "Iterate through the passed in supported reformattings and update each one."
+  [supported-reformattings]
+  (mapcat #(update-supported-reformatting-for-1-3 %) supported-reformattings))
+
+(defn update-service-options-1_3_1->1_3
+  "Update the service options from the passed in 1.3.1 UMM-S record to a valid UMM-S version 1.3 record."
+  [s]
+  (update-in s [:ServiceOptions :SupportedReformattings] update-supported-reformattings-for-1-3))
+
+(defn get-supported-output-formats
+  "The input is a vector of maps. Example: [{:SupportedInputFormat HDF5
+                                             :SupportedOutputFormat H1}
+                                            {:SupportedInputFormat HDF5
+                                             :SupportedOutputFormat H2}
+   Return a vector of values from the SupportedOutputFormat key. Example: [H1 H2]"
+  [vector-of-maps]
+  (into [] (map :SupportedOutputFormat vector-of-maps)))
+
+(defn build-supported-reformattings-pair-for-1-3-1
+  "Build a list of version 1.3.1 SupportedReformattingsPairType. The input is a vector that contains
+   2 items. The first is the input format and the second is a vector of version 1.3
+   SupportedReformattingsPairTypes.  (Ex. {HDF5 [{:SupportedInputFormat HDF5,
+                                                  :SupportedOutputFormat H1}
+                                                 {:SupportedInputFormat HDF5,
+                                                  :SupportedOutputFormat H2})."
+  [vector-of-a-group]
+  {:SupportedInputFormat (first vector-of-a-group)
+   :SupportedOutputFormats (get-supported-output-formats (second vector-of-a-group))})
+
+(defn update-supported-reformattings-for-1-3-1
+  "Iterate through each supported-reformatting pairs to migrate the SupportedOutputFormat to
+   SupportedOutputFormats."
+  [supported-reformattings]
+  (let [group (group-by :SupportedInputFormat supported-reformattings)]
+    (map #(build-supported-reformattings-pair-for-1-3-1 %) group)))
+
+(defn update-service-options-1_3->1_3_1
+  "Update the service options from the passed in 1.3.1 UMM-S record to a valid UMM-S version 1.3 record."
+  [s]
+  (def s s)
+  (update-in s [:ServiceOptions :SupportedReformattings] #(update-supported-reformattings-for-1-3-1 %)))
+
+(defn update-url-with-default-values
+  "If a value exists then pass it back.  If not, given the passed in key (k) pass back the default
+   value."
+  [k value]
+  (if value
+    value
+    (case k
+      :URLContentType "DistributionURL"
+      :Type "GET SERVICE"
+      :URLValue "Not provided")))
+
+(defn update-url-1_3->1_3_1
+  "UMM-S version 1.3 these values are not required, but they are in UMM-S version 1.3.1.
+   Make sure the URL has the required keys. If not then provide the default values."
+  [url]
+  (-> url
+      (update :URLContentType #(update-url-with-default-values :URLContentType %))
+      (update :Type #(update-url-with-default-values :Type %))
+      (update :URLValue #(update-url-with-default-values :URLValue %))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Service Migration Implementations
 
@@ -464,3 +541,13 @@
         (dissoc :URL
                 :LastUpdatedDate
                 :VersionDescription))))
+
+(defmethod interface/migrate-umm-version [:service "1.3" "1.3.1"]
+  [context s & _]
+  (-> s
+      (update :URL update-url-1_3->1_3_1)
+      (update-service-options-1_3->1_3_1)))
+
+(defmethod interface/migrate-umm-version [:service "1.3.1" "1.3"]
+  [context s & _]
+  (update-service-options-1_3_1->1_3 s))
