@@ -72,7 +72,7 @@
         input-formats (distinct (concat (get-in service [:ServiceOptions :SupportedInputFormats])
                                         (map :SupportedInputFormat format-pairs)))
         output-formats (distinct (concat (get-in service [:ServiceOptions :SupportedOutputFormats])
-                                         (map :SupportedOutputFormat format-pairs)))]
+                                         (mapcat :SupportedOutputFormats format-pairs)))]
     (not (or (= (count output-formats) 0)
              (and (= (count output-formats) 1)
                   (= input-formats output-formats))))))
