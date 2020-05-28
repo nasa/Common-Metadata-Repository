@@ -14,11 +14,12 @@
    [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
 (deftest test-version-steps
-  (with-bindings {#'cmr.umm-spec.versioning/versions {:granule ["1.4" "1.5" "1.6"]}}
+  (with-bindings {#'cmr.umm-spec.versioning/versions {:granule ["1.4" "1.5" "1.6" "1.6.1"]}}
     (is (= [] (#'vm/version-steps :granule "1.5" "1.5")))
     (is (= [["1.4" "1.5"]] (#'vm/version-steps :granule "1.4" "1.5")))
     (is (= [["1.5" "1.4"]] (#'vm/version-steps :granule "1.5" "1.4")))
-    (is (= [["1.4" "1.5"] ["1.5" "1.6"]] (#'vm/version-steps :granule "1.4" "1.6")))))
+    (is (= [["1.4" "1.5"] ["1.5" "1.6"]] (#'vm/version-steps :granule "1.4" "1.6")))
+    (is (= [["1.4" "1.5"] ["1.5" "1.6"] ["1.6" "1.6.1"]] (#'vm/version-steps :granule "1.4" "1.6.1")))))
 
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-g-generator)
@@ -393,3 +394,187 @@
                                           :Type "GET DATA"
                                           :Subtype "OPENDAP DATA"
                                           :MimeType "application/x-hdf5"}]}))))
+
+(deftest migrate-1_6_1-down-to-1_6
+ (is (= {:MetadataSpecification
+          {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6"
+           :Name "UMM-G"
+           :Version "1.6"}
+          :DataGranule {:ArchiveAndDistributionInformation
+                         [{:Name "GranuleZipFile"
+                           :Size 23
+                           :SizeUnit "KB"
+                           :Format "ZIP"
+                           :MimeType "application/x-hdf5"
+                           :Files [{:Name "GranuleFileName1"
+                                    :Size 10
+                                    :SizeUnit "KB"
+                                    :Format "NETCDF-4"
+                                    :MimeType "application/x-netcdf"
+                                    :FormatType "Native"
+                                    :SizeInBytes 1024}
+                                   {:Name "GranuleFileName2"
+                                    :Size 1
+                                    :SizeUnit "KB"
+                                    :Format "Not provided"
+                                    :MimeType "Not provided"
+                                    :FormatType "NA"
+                                    :SizeInBytes 10248592}]}
+                          {:Name "SupportedGranuleFileNotInPackage"
+                           :Size 11
+                           :SizeUnit "KB"
+                           :SizeInBytes 849324895784093
+                           :Format "Not provided"
+                           :FormatType "Supported"
+                           :MimeType "Not provided"}]}
+          :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                         :Type "GET SERVICE"
+                         :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+                         :MimeType "APPEARS"}
+                        {:URL "https://example-1"
+                         :Type "GET DATA"
+                         :Subtype "USER FEEDBACK PAGE"}
+                        {:URL "https://example-2.hdf"
+                         :Type "GET DATA"
+                         :Subtype "OPENDAP DATA"
+                         :MimeType "application/x-hdf5"}
+                        {:URL "https://example-3.hdf"
+                         :Type "GET DATA"
+                         :Subtype "OPENDAP DATA"
+                         :Format "Not provided"
+                         :MimeType "Not provided"}]}
+        (vm/migrate-umm {} :granule "1.6.1" "1.6"
+                        {:MetadataSpecification
+                           {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.1"
+                            :Name "UMM-G"
+                            :Version "1.6.1"}
+                         :DataGranule {:ArchiveAndDistributionInformation
+                                         [{:Name "GranuleZipFile"
+                                           :Size 23
+                                           :SizeUnit "KB"
+                                           :Format "ZIP"
+                                           :MimeType "application/x-hdf5"
+                                           :Files [{:Name "GranuleFileName1"
+                                                    :Size 10
+                                                    :SizeUnit "KB"
+                                                    :Format "NETCDF-4"
+                                                    :MimeType "application/x-netcdf"
+                                                    :FormatType "Native"
+                                                    :SizeInBytes 1024}
+                                                   {:Name "GranuleFileName2"
+                                                    :Size 1
+                                                    :SizeUnit "KB"
+                                                    :Format "DMRPP"
+                                                    :MimeType "application/vnd.opendap.dap4.dmrpp+xml"
+                                                    :FormatType "NA"
+                                                    :SizeInBytes 10248592}]}
+                                          {:Name "SupportedGranuleFileNotInPackage"
+                                           :Size 11
+                                           :SizeUnit "KB"
+                                           :SizeInBytes 849324895784093
+                                           :Format "DMRPP"
+                                           :FormatType "Supported"
+                                           :MimeType "application/vnd.opendap.dap4.dmrpp+xml"}]}
+                           :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                                          :Type "GET SERVICE"
+                                          :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+                                          :MimeType "APPEARS"}
+                                         {:URL "https://example-1"
+                                          :Type "GET DATA"
+                                          :Subtype "USER FEEDBACK PAGE"}
+                                         {:URL "https://example-2.hdf"
+                                          :Type "GET DATA"
+                                          :Subtype "OPENDAP DATA"
+                                          :MimeType "application/x-hdf5"}
+                                         {:URL "https://example-3.hdf"
+                                          :Type "GET DATA"
+                                          :Subtype "OPENDAP DATA"
+                                          :Format "DMRPP"
+                                          :MimeType "application/vnd.opendap.dap4.dmrpp+xml"}]}))))
+
+(deftest migrate-1_6-up-to-1_6_1
+  (is (= {:MetadataSpecification
+             {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.1"
+              :Name "UMM-G"
+              :Version "1.6.1"}
+           :DataGranule {:ArchiveAndDistributionInformation
+                           [{:Name "GranuleZipFile"
+                             :Size 23
+                             :SizeUnit "KB"
+                             :Format "ZIP"
+                             :MimeType "application/x-hdf5"
+                             :Files [{:Name "GranuleFileName1"
+                                      :Size 10
+                                      :SizeUnit "KB"
+                                      :Format "NETCDF-4"
+                                      :MimeType "application/x-netcdf"
+                                      :FormatType "Native"
+                                      :SizeInBytes 1024}
+                                     {:Name "GranuleFileName2"
+                                      :Size 1
+                                      :SizeUnit "KB"
+                                      :Format "ASCII"
+                                      :MimeType "application/x-hdf5"
+                                      :FormatType "NA"
+                                      :SizeInBytes 10248592}]}
+                            {:Name "SupportedGranuleFileNotInPackage"
+                             :Size 11
+                             :SizeUnit "KB"
+                             :SizeInBytes 849324895784093
+                             :Format "NETCDF-CF"
+                             :FormatType "Supported"
+                             :MimeType "application/x-netcdf"}]}
+             :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                            :Type "GET SERVICE"
+                            :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+                            :MimeType "APPEARS"}
+                           {:URL "https://example-1"
+                            :Type "GET DATA"
+                            :Subtype "USER FEEDBACK PAGE"}
+                           {:URL "https://example-2.hdf"
+                            :Type "GET DATA"
+                            :Subtype "OPENDAP DATA"
+                            :MimeType "application/x-hdf5"}]}
+         (vm/migrate-umm {} :granule "1.6" "1.6.1"
+                         {:MetadataSpecification
+                            {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6"
+                             :Name "UMM-G"
+                             :Version "1.6"}
+                          :DataGranule {:ArchiveAndDistributionInformation
+                                          [{:Name "GranuleZipFile"
+                                            :Size 23
+                                            :SizeUnit "KB"
+                                            :Format "ZIP"
+                                            :MimeType "application/x-hdf5"
+                                            :Files [{:Name "GranuleFileName1"
+                                                     :Size 10
+                                                     :SizeUnit "KB"
+                                                     :Format "NETCDF-4"
+                                                     :MimeType "application/x-netcdf"
+                                                     :FormatType "Native"
+                                                     :SizeInBytes 1024}
+                                                    {:Name "GranuleFileName2"
+                                                     :Size 1
+                                                     :SizeUnit "KB"
+                                                     :Format "ASCII"
+                                                     :MimeType "application/x-hdf5"
+                                                     :FormatType "NA"
+                                                     :SizeInBytes 10248592}]}
+                                           {:Name "SupportedGranuleFileNotInPackage"
+                                            :Size 11
+                                            :SizeUnit "KB"
+                                            :SizeInBytes 849324895784093
+                                            :Format "NETCDF-CF"
+                                            :FormatType "Supported"
+                                            :MimeType "application/x-netcdf"}]}
+                            :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                                           :Type "GET SERVICE"
+                                           :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+                                           :MimeType "APPEARS"}
+                                          {:URL "https://example-1"
+                                           :Type "GET DATA"
+                                           :Subtype "USER FEEDBACK PAGE"}
+                                          {:URL "https://example-2.hdf"
+                                           :Type "GET DATA"
+                                           :Subtype "OPENDAP DATA"
+                                           :MimeType "application/x-hdf5"}]}))))
