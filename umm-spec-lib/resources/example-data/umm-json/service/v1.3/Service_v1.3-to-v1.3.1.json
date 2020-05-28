@@ -82,9 +82,8 @@
     "ContactInformation": {
       "RelatedUrls":[{
         "Description": "OPeNDAP Service for AIRX3STD.006",
-        "URLContentType": "DistributionURL",
-        "Type": "GET SERVICE",
-        "Subtype": "OPENDAP DATA",
+        "URLContentType": "CollectionURL",
+        "Type": "PROJECT HOME PAGE",
         "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
       }],
       "ContactMechanisms": [{
@@ -176,9 +175,8 @@
     "ContactInformation": {
       "RelatedUrls":[{
         "Description": "OPeNDAP Service for AIRX3STD.006",
-        "URLContentType": "DistributionURL",
-        "Type": "GET SERVICE",
-        "Subtype": "OPENDAP DATA",
+        "URLContentType": "CollectionURL",
+        "Type": "PROJECT HOME PAGE",
         "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
       }],
       "ContactMechanisms": [{
