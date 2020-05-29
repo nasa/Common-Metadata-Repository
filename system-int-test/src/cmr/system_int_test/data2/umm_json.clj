@@ -206,6 +206,11 @@
   [service]
   (concept->umm-json-meta :service service))
 
+(defn- tool->umm-json-meta
+  "Returns the meta section of umm-json format."
+  [tool]
+  (concept->umm-json-meta :tool tool))
+
 (defn- subscription->umm-json-meta
   "Returns the meta section of umm-json format."
   [subscription]
@@ -219,6 +224,16 @@
     (let [;; use the original metadata for now, add version migration when service versioning is added
            {:keys [metadata]} service]
       {:meta (service->umm-json-meta service)
+       :umm (json/decode metadata true)})))
+
+(defn- tool->umm-json
+  "Returns the UMM JSON result of the given tool."
+  [version tool]
+  (if (:deleted tool)
+    {:meta (tool->umm-json-meta tool)}
+    (let [;; use the original metadata for now, add version migration when tool versioning is added
+           {:keys [metadata]} tool]
+      {:meta (tool->umm-json-meta tool)
        :umm (json/decode metadata true)})))
 
 (defn- subscription->umm-json
@@ -243,6 +258,21 @@
                             (:body search-result) version)))
           "UMM search result JSON was invalid")
       (is (= (set (map #(service->umm-json version %) services))
+             (set (map #(util/dissoc-in % [:meta :revision-date])
+                       (get-in search-result [:results :items]))))))))
+
+(defn assert-tool-umm-jsons-match
+  "Returns true if the UMM tool umm-jsons match the umm-jsons returned from the search."
+  [version tools search-result]
+  (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
+    (is (= 200 (:status search-result)) (pr-str search-result))
+    (do
+      (is (= mt/umm-json-results (mt/base-mime-type-of (:content-type search-result))))
+      (is (= version (mt/version-of (:content-type search-result))))
+      (is (nil? (util/seqv (umm-json-schema/validate-tool-umm-json-search-result
+                            (:body search-result) version)))
+          "UMM search result JSON was invalid")
+      (is (= (set (map #(tool->umm-json version %) tools))
              (set (map #(util/dissoc-in % [:meta :revision-date])
                        (get-in search-result [:results :items]))))))))
 

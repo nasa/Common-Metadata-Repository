@@ -48,6 +48,10 @@
   "Number of shards to use for the services index."
   {:default 5 :type Long})
 
+(defconfig elastic-tool-index-num-shards
+  "Number of shards to use for the tools index."
+  {:default 5 :type Long})
+
 (defconfig elastic-autocomplete-index-num-shards
   "Number of shards to use for the autocomplete index"
   {:default 5 :type Long})
@@ -108,6 +112,11 @@
                         :number_of_replicas 1,
                         :max_result_window MAX_RESULT_WINDOW,
                         :refresh_interval "1s"}})
+
+(def tool-setting {:index
+                    {:number_of_shards (elastic-tool-index-num-shards)
+                     :number_of_replicas 1,
+                     :refresh_interval "1s"}})
 
 (def subscription-setting {:index
                             {:number_of_shards (elastic-subscription-index-num-shards)
@@ -716,7 +725,9 @@
    :variable-name (-> m/string-field-mapping m/stored m/doc-values)
    :variable-name-lowercase (m/doc-values m/string-field-mapping)
    :alias (-> m/string-field-mapping m/stored m/doc-values)
-   :alias-lowercase (m/doc-values m/string-field-mapping)
+   :alias.lowercase (m/doc-values m/string-field-mapping)
+   :full-path (-> m/string-field-mapping m/stored m/doc-values)
+   :full-path.lowercase (m/doc-values m/string-field-mapping)
    :measurement (-> m/string-field-mapping m/stored m/doc-values)
    :measurement-lowercase (m/doc-values m/string-field-mapping)
    :instrument (-> m/string-field-mapping m/stored m/doc-values)
@@ -743,6 +754,26 @@
    :service-name-lowercase (m/doc-values m/string-field-mapping)
    :long-name (-> m/string-field-mapping m/stored m/doc-values)
    :long-name-lowercase (m/doc-values m/string-field-mapping)
+   :keyword m/text-field-mapping
+   :deleted (-> m/bool-field-mapping m/stored m/doc-values)
+   :user-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
+   :metadata-format (-> m/string-field-mapping m/stored m/doc-values)})
+
+(defmapping tool-mapping :tool
+  "Defines the elasticsearch mapping for storing tools. These are the
+  fields that will be stored in an Elasticsearch document."
+  {:_id  {:path "concept-id"}}
+  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-id (-> m/int-field-mapping m/stored m/doc-values)
+   :native-id (-> m/string-field-mapping m/stored m/doc-values)
+   :native-id.lowercase (m/doc-values m/string-field-mapping)
+   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
+   :provider-id.lowercase (m/doc-values m/string-field-mapping)
+   :tool-name (-> m/string-field-mapping m/stored m/doc-values)
+   :tool-name.lowercase (m/doc-values m/string-field-mapping)
+   :long-name (-> m/string-field-mapping m/stored m/doc-values)
+   :long-name.lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
    :deleted (-> m/bool-field-mapping m/stored m/doc-values)
    :user-id (-> m/string-field-mapping m/stored m/doc-values)
@@ -841,6 +872,14 @@
                           {:name "all-service-revisions"
                            :settings service-setting}]
                          :mapping service-mapping}
+               :tool {:indexes
+                      [{:name "tools"
+                        :settings tool-setting}
+                       ;; This index contains all the revisions (including tombstones) and
+                       ;; is used for all-revisions searches.
+                       {:name "all-tool-revisions"
+                        :settings tool-setting}]
+                      :mapping tool-mapping}
                 :subscription {:indexes
                                [{:name "subscriptions"
                                  :settings subscription-setting}
@@ -886,6 +925,7 @@
       :tag (get-concept-mapping-fn :tag)
       :variable (get-concept-mapping-fn :variable)
       :service (get-concept-mapping-fn :service)
+      :tool (get-concept-mapping-fn :tool)
       :subscription (get-concept-mapping-fn :subscription)})))
 
 (defn fetch-rebalancing-collection-info
@@ -973,6 +1013,11 @@
        (if all-revisions-index?
          [(get indexes :all-service-revisions)]
          [(get indexes (or target-index-key :services))])
+
+       :tool
+       (if all-revisions-index?
+         [(get indexes :all-tool-revisions)]
+         [(get indexes (or target-index-key :tools))])
 
        :subscription
        (if all-revisions-index?

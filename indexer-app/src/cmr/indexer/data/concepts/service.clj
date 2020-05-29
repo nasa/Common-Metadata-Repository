@@ -23,9 +23,7 @@
                      :AncillaryKeywords
                      :ContactGroups
                      :ContactPersons
-                     :Platforms
-                     :RelatedURLs
-                     :ScienceKeywords
+                     :URL
                      :ServiceKeywords
                      :ServiceOrganizations]
         keyword-values (keyword-util/concept-keys->keyword-text
@@ -70,8 +68,11 @@
   "Returns true if the given service has more than one supported formats value."
   [context service-concept]
   (let [service (concept-parser/parse-concept context service-concept)
-        input-formats (distinct (get-in service [:ServiceOptions :SupportedInputFormats]))
-        output-formats (distinct (get-in service [:ServiceOptions :SupportedOutputFormats]))]
+        format-pairs (get-in service [:ServiceOptions :SupportedReformattings])
+        input-formats (distinct (concat (get-in service [:ServiceOptions :SupportedInputFormats])
+                                        (map :SupportedInputFormat format-pairs)))
+        output-formats (distinct (concat (get-in service [:ServiceOptions :SupportedOutputFormats])
+                                         (mapcat :SupportedOutputFormats format-pairs)))]
     (not (or (= (count output-formats) 0)
              (and (= (count output-formats) 1)
                   (= input-formats output-formats))))))

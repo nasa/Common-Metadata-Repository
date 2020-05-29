@@ -59,16 +59,26 @@
            (mt/path->mime-type "granules.umm_json_v1_3")))
     (is (= (str mt/umm-json ";version=99.88")
            (mt/path->mime-type "granules.umm_json_v99_88")))
+    (is (= (str mt/umm-json ";version=1")
+           (mt/path->mime-type "granules.umm_json_v1")))
+    (is (= (str mt/umm-json ";version=1.3.4.5.66")
+           (mt/path->mime-type "granules.umm_json_v1_3_4_5_66")))
+    (is (= nil
+           (mt/path->mime-type "granules.umm_j1son_v1_3_4_5_66")))
+    (is (= nil
+           (mt/path->mime-type "granules.umm_json_v1_3F_4_5_66")))
     (testing "Should be considered valid as a mime type"
       ;; No exception should be thrown.
       (mt/path->mime-type "granules.umm_json_v99_88"
                           #{mt/umm-json})))
+
   (testing "No extension"
     (are [uri]
       (= nil (mt/path->mime-type uri))
       "granulesjson"
       "  "
       ""))
+
   (testing "invalid extensions"
     (are [extension uri]
       (= nil (mt/path->mime-type uri))
@@ -97,4 +107,3 @@
 (deftest test-format->mime-type
   (is (= "application/json" (mt/format->mime-type :json)))
   (is (= "application/vnd.nasa.cmr.umm+json" (mt/format->mime-type :umm-json))))
-

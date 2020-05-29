@@ -9,6 +9,7 @@
                [org.slf4j/slf4j-api]
                [ring/ring-codec]]
   :dependencies [[clj-http "2.3.0"]
+                 [com.draines/postal "2.0.3"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [compojure "1.6.1"]

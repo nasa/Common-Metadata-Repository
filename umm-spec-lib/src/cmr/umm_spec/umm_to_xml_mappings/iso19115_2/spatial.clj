@@ -12,7 +12,6 @@
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.relations :as r]
    [cmr.spatial.ring-relations :as rr]
-   [cmr.umm-spec.migration.spatial-extent-migration :as sp-ext-migration]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm.umm-spatial :as umm-s]))
 
@@ -55,35 +54,41 @@
   "Returns the spatialRepresentationInfo ISO XML element for a given UMM-C collection record."
   [indexed-resolution]
   (let [[id resolution] indexed-resolution
-        dimensions (as-> (select-keys resolution [:XDimension :YDimension]) values
-                         (vals values)
+        dimensions (as-> (select-keys resolution [:XDimension :MaximumXDimension :MinimumXDimension :YDimension :MaximumYDimension :MinimumYDimension]) values
                          (remove nil? values))
         unit (get resolution :Unit)]
     (for [dimension dimensions
           :when dimension]
-      [:gmd:axisDimensionProperties {:xlink:href (str "horizontalresolutionandcoordinatesystem_geographiccoordinatesystems" id)}
+      [:gmd:axisDimensionProperties {:xlink:href (str "horizontalresolutionandcoordinatesystem_horizontaldataresolutions" id)}
        [:gmd:MD_Dimension
         [:gmd:dimensionName
-         [:gmd:MD_DimensionNameTypeCode {:codeList "https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_DimensionNameTypeCode"
-                                         :codeListValue "column"}
-          "column"]]
+         (if (string/includes? (first dimension) "X")
+           [:gmd:MD_DimensionNameTypeCode {:codeList "https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_DimensionNameTypeCode"
+                                           :codeListValue "column"}
+             "column"]
+           [:gmd:MD_DimensionNameTypeCode {:codeList "https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_DimensionNameTypeCode"
+                                           :codeListValue "row"}
+             "row"])]
         ;; This is needed to pass validation.
         [:gmd:dimensionSize {:gco:nilReason "inapplicable"}]
         [:gmd:resolution
          [:gco:Measure {:uom (remove-whitespace unit)}
-          dimension]]]])))
+          (second dimension)]]]])))
 
 (defn generate-spatial-representation-infos
   "Returns spatialRepresentationInfo from HorizontalDataResolution values."
   [c]
   (when-let [group-horizontal-data-resolutions (get-in c [:SpatialExtent :HorizontalSpatialDomain
                                                           :ResolutionAndCoordinateSystem :HorizontalDataResolution])]
-    (let [horizontal-data-resolutions (sp-ext-migration/degroup-resolutions group-horizontal-data-resolutions)]
+    (let [group-horizontal-data-resolutions (dissoc group-horizontal-data-resolutions :VariesResolution :PointResolution)
+          horizontal-data-resolutions (map util/remove-nil-keys (flatten (vals group-horizontal-data-resolutions)))]
       [:gmd:spatialRepresentationInfo
        [:gmd:MD_GridSpatialRepresentation
         [:gmd:numberOfDimensions
          [:gco:Integer
-          (count (mapcat #(vals (select-keys % [:XDimension :YDimension])) horizontal-data-resolutions))]]
+          (count (mapcat #(vals (select-keys % [:MinimumXDimension :MaximumXDimension :XDimension
+                                                :MinimumYDimension :MaximumYDimension :YDimension]))
+                         horizontal-data-resolutions))]]
         (mapcat spatial-representation-info
                 (map-indexed vector horizontal-data-resolutions))
         [:gmd:cellGeometry {:gco:nilReason "inapplicable"}]
@@ -113,20 +118,29 @@
       (str main-string " StartCircularLatitude: " (util/double->string StartCircularLatitude))
       main-string)))
 
+(defn- generate-iso-geographic-description
+  "This is a generic function that creates an iso geographic desciption
+   from the passed in data."
+  [id code code-space description]
+  [:gmd:geographicElement
+   [:gmd:EX_GeographicDescription {:id id}
+    [:gmd:geographicIdentifier
+     [:gmd:MD_Identifier
+      [:gmd:code
+       [:gco:CharacterString code]]
+      [:gmd:codeSpace
+       [:gco:CharacterString code-space]]
+      [:gmd:description
+       [:gco:CharacterString description]]]]]])
+
 (defn generate-orbit-parameters
   "Returns a geographic element for the orbit parameters"
   [c]
   (when-let [orbit-parameters (-> c :SpatialExtent :OrbitParameters)]
-    [:gmd:geographicElement
-     [:gmd:EX_GeographicDescription {:id "OrbitParameters"}
-      [:gmd:geographicIdentifier
-       [:gmd:MD_Identifier
-        [:gmd:code
-         [:gco:CharacterString (orbit-parameters->encoded-str orbit-parameters)]]
-        [:gmd:codeSpace
-         [:gco:CharacterString "gov.nasa.esdis.umm.orbitparameters"]]
-        [:gmd:description
-         [:gco:CharacterString "OrbitParameters"]]]]]]))
+    (generate-iso-geographic-description "OrbitParameters"
+                                         (orbit-parameters->encoded-str orbit-parameters)
+                                         "gov.nasa.esdis.umm.orbitparameters"
+                                         "OrbitParameters")))
 
 (defn spatial-extent-elements
   "Returns a sequence of ISO MENDS elements from the given UMM-C collection record."
@@ -138,6 +152,39 @@
          (map (partial umm-s/set-coordinate-system coordinate-system))
          (map gmd/encode))))
 
+(defn- package-horizontal-data-resolutions
+  "This method creates a map that encodes the horizontal data resolution type with its value.
+   this map is used in the calling function to also add in a count id that is needed in the
+   ISO record."
+  [[element value]]
+  (if (or (= element :VariesResolution)
+          (= element :PointResolution))
+    {:Element element :Value value}
+    (for [res value]
+      {:Element element :Value res})))
+
+(defn- prepare-horizontal-data-resolutions
+  "This method creates a map that encodes the horizontal data resolution type with its value
+   and count that is needed as an identifier in the ISO record."
+  [c]
+  (let [resolutions (util/remove-nil-keys
+                      (get-in c [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem
+                                 :HorizontalDataResolution]))
+        resolutions (flatten (map #(package-horizontal-data-resolutions %) resolutions))]
+    (def resolutions resolutions)
+    (for [[id res] (map-indexed vector resolutions)]
+      (assoc res :Count id))))
+
+(def generate-horizontal-resolution-code-name-map
+  "This map allows the software to programatically encode the ISO horizontal data resolution types."
+  {:VariesResolution ["variesresolution" "VariesResolution"]
+   :PointResolution ["pointresolution" "PointResolution"]
+   :NonGriddedResolutions ["nongriddedresolutions" "NonGriddedResolutions"]
+   :NonGriddedRangeResolutions ["nongriddedrangeresolutions" "NonGriddedRangeResolutions"]
+   :GriddedResolutions ["griddedresolutions" "GriddedResolutions"]
+   :GriddedRangeResolutions ["griddedrangeresolutions" "GriddedRangeResolutions"]
+   :GenericResolutions ["genericresolutions" "GenericResolutions"]})
+
 (defn- resolution-and-coordinates-map->string
   "Converts map to parsable string for ISO format."
   [rcmap]
@@ -148,80 +195,63 @@
 (defn generate-resolution-and-coordinate-system-horizontal-data-resolutions
   "Returns a sequence of ISO MENDS elements from the given UMM-C collection record."
   [c]
-  (when-let [group-horizontal-data-resolutions (get-in c [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem
-                                                          :HorizontalDataResolution])]
-    (let [horizontal-data-resolutions (sp-ext-migration/degroup-resolutions group-horizontal-data-resolutions)]
-      (for [[id indexed-horizontal-data-resolution] (map-indexed vector horizontal-data-resolutions)]
-        [:gmd:geographicElement
-         [:gmd:EX_GeographicDescription {:id (str "horizontalresolutionandcoordinatesystem_horizontaldataresolutions" id)}
-          [:gmd:geographicIdentifier
-           [:gmd:MD_Identifier
-            [:gmd:code
-             [:gco:CharacterString (resolution-and-coordinates-map->string indexed-horizontal-data-resolution)]]
-            [:gmd:codeSpace
-              [:gco:CharacterString "gov.nasa.esdis.umm.horizontalresolutionandcoordinatesystem_GeographicCoordinateSystems"]]
-            [:gmd:description
-             [:gco:CharacterString "HorizontalResolutionAndCoordinateSystem_GeographicCoordinateSystems"]]]]]]))))
+  (when-let [resolutions (prepare-horizontal-data-resolutions c)]
+    (for [resolution resolutions
+          :let [code (if (or (= (:Element resolution) :VariesResolution)
+                            (= (:Element resolution) :PointResolution))
+                       (:Value resolution)
+                       (-> (:Value resolution)
+                           util/remove-nil-keys
+                           resolution-and-coordinates-map->string))
+                code-name-map (generate-horizontal-resolution-code-name-map (:Element resolution))]]
+      (generate-iso-geographic-description
+        (str "horizontalresolutionandcoordinatesystem_horizontaldataresolutions" (:Count resolution))
+        code
+        (str "gov.nasa.esdis.umm.horizontalresolutionandcoordinatesystem_" (first code-name-map))
+        (str "HorizontalResolutionAndCoordinateSystem_" (second code-name-map))))))
 
 (defn generate-resolution-and-coordinate-system-local-coords
   "Returns a sequence of ISO MENDS elements from the given UMM-C collection record."
   [c]
-  (when-let [local-coords (get-in c [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :LocalCoordinateSystem])]
-    [:gmd:geographicElement
-     [:gmd:EX_GeographicDescription {:id "horizontalresolutionandcoordinatesystem_localcoordinatesystem"}
-      [:gmd:geographicIdentifier
-       [:gmd:MD_Identifier
-        [:gmd:code
-         [:gco:CharacterString (resolution-and-coordinates-map->string local-coords)]]
-        [:gmd:codeSpace
-          [:gco:CharacterString "gov.nasa.esdis.umm.horizontalresolutionandcoordinatesystem_localcoordinatesystem"]]
-        [:gmd:description
-         [:gco:CharacterString "HorizontalResolutionAndCoordinateSystem_LocalCoordinateSystem"]]]]]]))
+  (when-let [local-coords (get-in c [:SpatialExtent :HorizontalSpatialDomain
+                                     :ResolutionAndCoordinateSystem :LocalCoordinateSystem])]
+    (generate-iso-geographic-description
+      "horizontalresolutionandcoordinatesystem_localcoordinatesystem"
+      (resolution-and-coordinates-map->string local-coords)
+      "gov.nasa.esdis.umm.horizontalresolutionandcoordinatesystem_localcoordinatesystem"
+      "HorizontalResolutionAndCoordinateSystem_LocalCoordinateSystem")))
 
 (defn generate-resolution-and-coordinate-system-geodetic-model
   "Returns a sequence of ISO MENDS elements from the given UMM-C collection record."
   [c]
-  (when-let [geodetic-model (get-in c [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel])]
-    [:gmd:geographicElement
-     [:gmd:EX_GeographicDescription {:id "horizontalresolutionandcoordinatesystem_geodeticmodel"}
-      [:gmd:geographicIdentifier
-       [:gmd:MD_Identifier
-        [:gmd:code
-         [:gco:CharacterString (resolution-and-coordinates-map->string geodetic-model)]]
-        [:gmd:codeSpace
-          [:gco:CharacterString "gov.nasa.esdis.umm.horizontalresolutionandcoordinatesystem_geodeticmodel"]]
-        [:gmd:description
-         [:gco:CharacterString "HorizontalResolutionAndCoordinateSystem_GeodeticModel"]]]]]]))
+  (when-let [geodetic-model (get-in c [:SpatialExtent :HorizontalSpatialDomain
+                                       :ResolutionAndCoordinateSystem :GeodeticModel])]
+    (generate-iso-geographic-description
+      "horizontalresolutionandcoordinatesystem_geodeticmodel"
+      (resolution-and-coordinates-map->string geodetic-model)
+      "gov.nasa.esdis.umm.horizontalresolutionandcoordinatesystem_geodeticmodel"
+      "HorizontalResolutionAndCoordinateSystem_GeodeticModel")))
 
 (defn generate-resolution-and-coordinate-system-description
   "Returns a sequence of ISO MENDS elements from the given UMM-C collection record."
   [c]
-  (when-let [description (get-in c [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :Description])]
-    [:gmd:geographicElement
-     [:gmd:EX_GeographicDescription {:id "horizontalresolutionandcoordinatesystem"}
-      [:gmd:geographicIdentifier
-       [:gmd:MD_Identifier
-        [:gmd:code
-         [:gco:CharacterString (str "Description: " description)]]
-        [:gmd:codeSpace
-          [:gco:CharacterString "gov.nasa.esdis.umm.horizontalresolutionandcoordinatesystem"]]
-        [:gmd:description
-         [:gco:CharacterString "HorizontalResolutionAndCoordinateSystem"]]]]]]))
+  (when-let [description (get-in c [:SpatialExtent :HorizontalSpatialDomain
+                                    :ResolutionAndCoordinateSystem :Description])]
+    (generate-iso-geographic-description
+      "horizontalresolutionandcoordinatesystem"
+      (str "Description: " description)
+      "gov.nasa.esdis.umm.horizontalresolutionandcoordinatesystem"
+      "HorizontalResolutionAndCoordinateSystem")))
 
 (defn generate-zone-identifier
   "Returns a geographic element for the zone identifier"
   [c]
   (when-let [zone-identifier (get-in c [:SpatialExtent :HorizontalSpatialDomain :ZoneIdentifier])]
-    [:gmd:geographicElement
-     [:gmd:EX_GeographicDescription {:id "ZoneIdentifier"}
-      [:gmd:geographicIdentifier
-       [:gmd:MD_Identifier
-        [:gmd:code
-         [:gco:CharacterString zone-identifier]]
-        [:gmd:codeSpace
-          [:gco:CharacterString "gov.nasa.esdis.umm.zoneidentifier"]]
-        [:gmd:description
-         [:gco:CharacterString "ZoneIdentifier"]]]]]]))
+    (generate-iso-geographic-description
+      "ZoneIdentifier"
+      zone-identifier
+      "gov.nasa.esdis.umm.zoneidentifier"
+      "ZoneIdentifier")))
 
 (defn- vertical-domain->encoded-str
   "Encodes the vertical domain values as a string."
@@ -235,13 +265,8 @@
                                (get-in c [:SpatialExtent :VerticalSpatialDomains]))]
     (for [x (range (count vertical-domains))
            :let [vertical-domain (nth vertical-domains x)]]
-      [:gmd:geographicElement
-       [:gmd:EX_GeographicDescription {:id (str "VerticalSpatialDomain" x)}
-        [:gmd:geographicIdentifier
-         [:gmd:MD_Identifier
-          [:gmd:code
-           [:gco:CharacterString (vertical-domain->encoded-str vertical-domain)]]
-          [:gmd:codeSpace
-           [:gco:CharacterString "gov.nasa.esdis.umm.verticalspatialdomain"]]
-          [:gmd:description
-           [:gco:CharacterString "VerticalSpatialDomain"]]]]]])))
+      (generate-iso-geographic-description
+        (str "VerticalSpatialDomain" x)
+        (vertical-domain->encoded-str vertical-domain)
+        "gov.nasa.esdis.umm.verticalspatialdomain"
+        "VerticalSpatialDomain"))))

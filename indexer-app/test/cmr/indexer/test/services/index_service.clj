@@ -15,3 +15,15 @@
          "C123-PROV1" nil
          nil 1
          nil nil)))
+
+(deftest anti-value-test
+  (are [doc result]
+       (is (= result (index-svc/anti-value-suggestion? doc)))
+
+       {:value "not"} false
+       {:value "Nothofagus"} false
+       {:value "Notothenioids"} false
+
+       {:value "none"} true
+       {:value "not applicable"} true
+       {:value "not provided"} true))

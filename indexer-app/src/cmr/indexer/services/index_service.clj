@@ -112,6 +112,10 @@
   [context batch options]
   (es/prepare-batch context (filter-expired-concepts batch) options))
 
+(defmethod prepare-batch :tool
+  [context batch options]
+  (es/prepare-batch context (filter-expired-concepts batch) options))
+
 (defmethod prepare-batch :subscription
   [context batch options]
   (es/prepare-batch context (filter-expired-concepts batch) options))
@@ -174,11 +178,12 @@
   [concept-type all-revisions-index?]
   (or (not all-revisions-index?)
       (and all-revisions-index? (contains?
-                                  #{:collection :tag-association
-                                    :variable :variable-association
-                                    :service :service-association
-                                    :subscription}
-                                  concept-type))))
+                                 #{:collection :tag-association
+                                   :variable :variable-association
+                                   :service :service-association
+                                   :tool
+                                   :subscription}
+                                 concept-type))))
 
 (def REINDEX_BATCH_SIZE 2000)
 
@@ -242,7 +247,7 @@
         :let [key (key humanized-field)
               key-name (-> key
                            name
-                           (s/replace #"(humanized(2|_2)?|-sn|-id)" ""))
+                           (s/replace #"(\.humanized(_?2)?|-sn|-id)" ""))
               value-map (as-> humanized-field h
                           (val h)
                           (map util/remove-nil-keys h)
@@ -252,14 +257,15 @@
     suggestion-docs))
 
 (defn- anti-value?
-  "Returns whether if the term is an anti-value. e.g. \"not applicable\" or \"not provided\".
-  This is case-insensitive "
+  "Returns whether or not the term is an anti-value. e.g. \"not applicable\" or \"not provided\".
+  This is case-insensitive"
   [term]
-  (let [anti-value-matcher (re-matcher #"not (provided|applicable)"
+  {:pre [(some? term)]}
+  (let [anti-value-matcher (re-matcher #"(na|none|not (provided|applicable))"
                                        (s/lower-case term))]
     (some? (re-find anti-value-matcher))))
 
-(defn- anti-value-suggestion?
+(defn anti-value-suggestion?
   "Returns whether an autocomplete suggestion has an anti-value as the :value
   See also [[anti-value?]]"
   [suggestion]
@@ -280,15 +286,14 @@
                                        (debug %)
                                        nil)))
                              (remove nil?))
-        humanized-fields (map #(humanizer/collection-humanizers-elastic context %)
-                              parsed-concepts)
-        suggestion-docs (->> (map get-suggestion-docs humanized-fields)
+        humanized-fields (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
+        suggestion-docs (->> humanized-fields
+                             (map get-suggestion-docs)
                              flatten
                              (remove anti-value-suggestion?))]
     suggestion-docs))
 
-
-(defn- reindex-suggestions-for-provider
+(defn reindex-autocomplete-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
   [context provider-id]
   (info "Reindexing autocomplete suggestions for provider" provider-id)
@@ -308,7 +313,7 @@
   (let [provider-ids (map :provider-id (meta-db/get-providers context))]
     (doseq [provider-id provider-ids]
       (try
-        (reindex-suggestions-for-provider context provider-id)
+        (reindex-autocomplete-suggestions-for-provider context provider-id)
         (catch Exception e (error (format "An error occurred while reindexing autocomplete suggestions in provider [%s] : %s"
                                           provider-id
                                           (.getMessage e))))))))
@@ -433,6 +438,10 @@
     (get-elastic-version-with-associations context concept {:service-associations service-associations})))
 
 (defmethod get-elastic-version :subscription
+  [context concept]
+  (:transaction-id concept))
+
+(defmethod get-elastic-version :tool
   [context concept]
   (:transaction-id concept))
 

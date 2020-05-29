@@ -19,7 +19,7 @@
 (defconfig granule-umm-version
   "Defines the latest granule umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.6"})
+  {:default "1.6.1"})
 
 (defconfig variable-umm-version
   "Defines the latest variable umm version accepted by ingest - it's the latest official version.
@@ -29,7 +29,12 @@
 (defconfig service-umm-version
   "Defines the latest service umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.2"})
+  {:default "1.3.1"})
+
+(defconfig tool-umm-version
+  "Defines the latest tool umm version accepted by ingest - it's the latest official version.
+   This environment variable needs to be manually set when newer UMM version becomes official"
+  {:default "1.0"})
 
 (defconfig subscription-umm-version
   "Defines the latest subscription umm version accepted by ingest - it's the latest official version.
@@ -44,6 +49,7 @@
     :granule (granule-umm-version)
     :variable (variable-umm-version)
     :service (service-umm-version)
+    :tool (tool-umm-version)
     :subscription (subscription-umm-version)}
    concept-type))
 

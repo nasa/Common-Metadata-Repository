@@ -43,6 +43,10 @@
   [context concept]
   (umm/parse-metadata context concept))
 
+(defmethod parse-concept :tool
+  [context concept]
+  (umm/parse-metadata context concept))
+
 (defmethod parse-concept :default
  [context concept]
  (umm-legacy/parse-concept context concept))

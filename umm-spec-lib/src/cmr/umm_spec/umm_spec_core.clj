@@ -34,6 +34,7 @@
    (cmr.umm_spec.models.umm_granule_models UMM-G)
    (cmr.umm_spec.models.umm_service_models UMM-S)
    (cmr.umm_spec.models.umm_subscription_models UMM-Sub)
+   (cmr.umm_spec.models.umm_tool_models UMM-T)
    (cmr.umm_spec.models.umm_variable_models UMM-Var)))
 
 (defn- concept-type
@@ -46,6 +47,7 @@
     UmmGranule :granule
     UMM-S :service
     UMM-Sub :subscription
+    UMM-T :tool
     UMM-Var :variable))
 
 (defn- umm-json-version
@@ -116,6 +118,8 @@
                               context :variable metadata (umm-json-version :variable fmt))
      [:service :umm-json]   (umm-json/json->umm
                              context :service metadata (umm-json-version :service fmt))
+     [:tool :umm-json]   (umm-json/json->umm
+                          context :tool metadata (umm-json-version :tool fmt))
      [:subscription :umm-json]   (umm-json/json->umm
                                   context :subscription metadata (umm-json-version :subscription fmt)))))
 
@@ -164,6 +168,11 @@
                                                                   source-version
                                                                   (umm-json-version :service fmt)
                                                                   umm))
+       [:tool :umm-json]   (umm-json/umm->json (vm/migrate-umm context
+                                                               concept-type
+                                                               source-version
+                                                               (umm-json-version :tool fmt)
+                                                               umm))
        [:subscription :umm-json]   (umm-json/umm->json (vm/migrate-umm context
                                                                        concept-type
                                                                        source-version

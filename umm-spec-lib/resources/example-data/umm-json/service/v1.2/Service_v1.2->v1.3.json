@@ -1,0 +1,325 @@
+{
+  "Name": "AIRX3STD.006",
+  "LongName": "AIRS/Aqua L3 Daily Standard Physical Retrieval (AIRS+AMSU) 1 degree x 1 degree V006.",
+  "Description": "Access the AIRS/Aqua Level 3 daily standard physical retrieval product (Without HSB) through OPeNDAP",
+  "Type": "OPeNDAP",
+  "Version": "1.9",
+  "AccessConstraints": "None",
+  "UseConstraints": "None",
+  "RelatedURLs": [{
+    "Description": "User Guide",
+    "URLContentType": "PublicationURL",
+    "Type": "VIEW RELATED INFORMATION",
+    "Subtype": "USER'S GUIDE",
+    "URL": "http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_L3_User_Guide.pdf"
+  }, {
+    "Description": "OPeNDAP Service for AIRX3STD.006",
+    "URLContentType": "DistributionURL",
+    "Type": "GET SERVICE",
+    "Subtype": "OPENDAP DATA",
+    "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/",
+    "GetService": {
+      "MimeType": "application/json",
+      "Protocol": "HTTP",
+      "FullName": "Test Service",
+      "DataID": "Test Data",
+      "DataType": "Test Data Type",
+      "URI": ["Test URI 1", "Test URI 2"]
+    }
+  }, {
+    "Description": "User Guide",
+    "URLContentType": "PublicationURL",
+    "Type": "VIEW RELATED INFORMATION",
+    "Subtype": "USER'S GUIDE",
+    "URL": "http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_L3_User_Guide.pdf"
+  }],
+  "ServiceKeywords": [{
+    "ServiceCategory": "DATA MANAGEMENT/DATA HANDLING",
+    "ServiceTopic": "TRANSFORMATION/REPROJECTION"
+  }],
+  "ScienceKeywords": [{
+    "Category":"EARTH SCIENCE",
+    "Topic":"ATMOSPHERE",
+    "Term":"ATMOSPHERIC CHEMISTRY",
+    "VariableLevel1":"CARBON and HYDROCARBON COMPOUNDS",
+    "VariableLevel2":"Methane"
+  }],
+  "Platforms": [{
+    "ShortName":"Aqua",
+    "LongName":"Earth Observing System, Aqua",
+    "Instruments": [{
+      "ShortName":"HSB",
+      "LongName":"Humidity Sounder for Brazil "
+    }]
+  }, {
+    "ShortName":"Aqua",
+    "LongName":"Earth Observing System, Aqua",
+    "Instruments": [{
+      "ShortName":"AMSU-A",
+      "LongName":"Advanced Microwave Sounding Unit"
+    }]
+  }],
+  "ServiceOrganizations": [{
+    "Roles": ["SERVICE PROVIDER"],
+    "ShortName": "NASA/GESDISC",
+    "LongName": "GES DISC SERVICE HELP DESK SUPPORT GROUP",
+    "ContactGroups": [{
+      "Roles": ["SCIENCE CONTACT"],
+      "ContactInformation": {
+        "RelatedUrls":[{
+          "Description": "OPeNDAP Service for AIRX3STD.006",
+          "URLContentType": "DistributionURL",
+          "Type": "GET SERVICE",
+          "Subtype": "OPENDAP DATA",
+          "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/",
+          "GetService": {
+            "MimeType": "Not provided",
+            "Protocol": "HTTPS",
+            "FullName": "Service Name",
+            "DataID": "data_id",
+            "DataType": "data type",
+            "URI": ["uri1 ", "uri2"]
+          }
+        }],
+        "ContactMechanisms": [{
+          "Type": "Email",
+          "Value": "gsfc-help-disc at lists.nasa.gov"
+        }, {
+          "Type": "Telephone",
+          "Value": "301-614-9999"
+        }],
+        "Addresses": [{
+          "StreetAddresses": [
+            "Goddard Earth Sciences Data and Information Systems, Attn: User , NASA Goddard Space Flight Center, Code 610.2"
+          ],
+          "City": "Greenbelt",
+          "StateProvince": "MD",
+          "Country": "USA",
+          "PostalCode": "20771"
+        }]
+      },
+      "GroupName": "Service Org Group Name"
+    }, {
+      "Roles": ["TECHNICAL CONTACT"],
+      "ContactInformation": {
+        "ContactMechanisms": [{
+          "Type": "Email",
+          "Value": "gsfc-help-disc at lists.nasa.gov"
+        }, {
+          "Type": "Telephone",
+          "Value": "301-614-9999"
+        }],
+        "Addresses": [{
+          "StreetAddresses": [
+            "Goddard Earth Sciences Data and Information Systems, Attn: User , NASA Goddard Space Flight Center, Code 610.2"
+          ],
+          "City": "Greenbelt",
+          "StateProvince": "MD",
+          "Country": "USA",
+          "PostalCode": "20771"
+        }]
+      },
+      "GroupName": "Service Org Group Name"
+    }],
+    "ContactPersons": [{
+      "Roles": ["SERVICE PROVIDER"],
+      "ContactInformation": {
+        "RelatedUrls":[{
+          "Description": "OPeNDAP Service for AIRX3STD.006",
+          "URLContentType": "DistributionURL",
+          "Type": "GET SERVICE",
+          "Subtype": "OPENDAP DATA",
+          "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/",
+          "GetData": {
+            "Format": "ascii",
+            "MimeType": "application/xml",
+            "Size": 10,
+            "Unit": "MB",
+            "Fees": "$0.01"
+          }
+        }],
+        "ContactMechanisms": [{
+          "Type": "Email",
+          "Value": "gsfc-help-disc at lists.nasa.gov"
+        }, {
+          "Type": "Telephone",
+          "Value": "301-614-9999"
+        }],
+        "Addresses": [{
+          "StreetAddresses": [
+            "Goddard Earth Sciences Data and Information Systems, Attn: User , NASA Goddard Space Flight Center, Code 610.2"
+          ],
+          "City": "Greenbelt",
+          "StateProvince": "MD",
+          "Country": "USA",
+          "PostalCode": "20771"
+        }]
+      },
+      "FirstName": "FirstName Service Org",
+      "MiddleName": "Service Org MiddleName",
+      "LastName": "LastName Service Org"
+    }]
+  }, {
+    "Roles": ["SERVICE PROVIDER"],
+    "ShortName": "NASA/GESDISC-2",
+    "LongName": "GES DISC SERVICE HELP DESK SUPPORT GROUP 2",
+    "ContactGroups": [{
+      "Roles": ["SCIENCE CONTACT"],
+      "ContactInformation": {
+        "ContactMechanisms": [{
+          "Type": "Email",
+          "Value": "gsfc-help-disc at lists.nasa.gov"
+        }, {
+          "Type": "Telephone",
+          "Value": "301-614-9999"
+        }],
+        "Addresses": [{
+          "StreetAddresses": [
+            "Goddard Earth Sciences Data and Information Systems, Attn: User , NASA Goddard Space Flight Center, Code 610.2"
+          ],
+          "City": "Greenbelt",
+          "StateProvince": "MD",
+          "Country": "USA",
+          "PostalCode": "20771"
+        }]
+      },
+      "GroupName": "Service Org 2 Group Name 1"
+    }],
+    "ContactInformation": {
+      "RelatedUrls": [{
+        "URLContentType": "CollectionURL",
+        "Type": "PROJECT HOME PAGE",
+        "URL": "https://daacscenter.org"
+      }, {
+        "URLContentType": "DataCenterURL",
+        "Type": "HOME PAGE",
+        "URL": "https://daacscenter.org",
+        "Description": "Add a Description"
+      }],
+      "ServiceHours": "1-4",
+      "ContactInstruction": "instructions"
+    }
+  }],
+  "ContactGroups": [{
+    "Roles": ["SCIENCE CONTACT"],
+    "ContactInformation": {
+      "ContactMechanisms": [{
+        "Type": "Email",
+        "Value": "gsfc-help-disc at lists.nasa.gov"
+      }, {
+        "Type": "Telephone",
+        "Value": "301-614-9999"
+      }],
+      "Addresses": [{
+        "StreetAddresses": [
+          "Goddard Earth Sciences Data and Information Systems, Attn: User , NASA Goddard Space Flight Center, Code 610.2"
+        ],
+        "City": "Greenbelt",
+        "StateProvince": "MD",
+        "Country": "USA",
+        "PostalCode": "20771"
+      }]
+    },
+    "GroupName": "Main Level Group Name 1"
+  }, {
+    "Roles": ["TECHNICAL CONTACT"],
+    "ContactInformation": {
+      "ContactMechanisms": [{
+        "Type": "Email",
+        "Value": "gsfc-help-disc at lists.nasa.gov"
+      }, {
+        "Type": "Telephone",
+        "Value": "301-614-9999"
+      }],
+      "Addresses": [{
+        "StreetAddresses": [
+          "Goddard Earth Sciences Data and Information Systems, Attn: User , NASA Goddard Space Flight Center, Code 610.2"
+        ],
+        "City": "Greenbelt",
+        "StateProvince": "MD",
+        "Country": "USA",
+        "PostalCode": "20771"
+      }]
+    },
+    "GroupName": "Main Level Group Name 2"
+  }],
+  "ContactPersons": [{
+    "Roles": ["SERVICE PROVIDER"],
+    "ContactInformation": {
+      "ContactMechanisms": [{
+        "Type": "Email",
+        "Value": "gsfc-help-disc at lists.nasa.gov"
+      }, {
+        "Type": "Telephone",
+        "Value": "301-614-9999"
+      }],
+      "Addresses": [{
+        "StreetAddresses": [
+          "Goddard Earth Sciences Data and Information Systems, Attn: User , NASA Goddard Space Flight Center, Code 610.2"
+        ],
+        "City": "Greenbelt",
+        "StateProvince": "MD",
+        "Country": "USA",
+        "PostalCode": "20771"
+      }]
+    },
+    "FirstName": "FirstName Main Level",
+    "MiddleName": " ",
+    "LastName": "LastName Main Level"
+  }],
+  "ServiceOptions": {
+    "SubsetTypes": ["Spatial","Variable"],
+    "SupportedInputProjections": [{
+      "ProjectionName":"Geographic",
+      "ProjectionAuthority":"4326"
+    }],
+    "SupportedInputFormats": ["HDF4"],
+    "SupportedOutputProjections": [{
+      "ProjectionName":"Geographic",
+      "ProjectionAuthority":"4326"
+    }],
+    "SupportedOutputFormats": ["HDF4","NETCDF-3","NETCDF-4","BINARY","ASCII"]
+  },
+  "OperationMetadata": [{
+    "OperationName":"SPATIAL_SUBSETTING",
+    "DistributedComputingPlatform": ["XML","HTTPS"],
+    "OperationDescription":"Access the AIRS/Aqua Level 3 daily standard physical retrieval product (Without HSB) through OPeNDAP",
+    "InvocationName":"GES DISC OPeNDAP Service for AIRX3STD.006",
+    "ConnectPoint": {
+      "ResourceName":"AIRX3STD.006",
+      "ResourceLinkage": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/",
+      "ResourceDescription":"AIRS/Aqua L3 Daily Standard Physical Retrieval (AIRS+AMSU) 1 degree x 1 degree V006."
+    },
+    "CoupledResource": {
+      "ScopedName":"AIRX3STD.006",
+      "DataResourceDOI":"https://doi.org/10.5067/Aqua/AIRS/DATA303",
+      "CouplingType":"TIGHT",
+      "DataResource": {
+        "DataResourceIdentifier":"Aqua_AIRS_Level3/AIRX3STD.006",
+        "DataResourceSourceType":"Collection",
+        "DataResourceSpatialType":"BOUNDING_BOX",
+        "DataResourceSpatialExtent": {
+          "SpatialBoundingBox": {
+            "CRSIdentifier":"4326",
+            "WestBoundingCoordinate":-180.00,
+            "SouthBoundingCoordinate":-90.0,
+            "EastBoundingCoordinate":180.0,
+            "NorthBoundingCoordinate":90.0
+          }
+        },
+        "SpatialResolution":1,
+        "SpatialResolutionUnit":"KM",
+        "DataResourceTemporalType":"TIME_STAMP",
+        "DataResourceTemporalExtent": {
+          "DataResourceTimePoints": [{
+            "TimeFormat":"%Y%M%D",
+            "TimeValue":"2009-01-08",
+            "Description":"Time stamp of the granule within the collection"
+          }]
+        },
+        "TemporalResolution":1,
+        "TemporalResolutionUnit":"DAY"
+      }
+    }
+  }]
+}

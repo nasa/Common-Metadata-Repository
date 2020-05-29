@@ -27,7 +27,9 @@
    [cmr.search.services.parameters.legacy-parameters :as lp]
    [cmr.search.services.parameters.validation.track :as track]
    [cmr.search.services.parameters.validation.util :as validation-util]
-   [cmr.spatial.codec :as spatial-codec])
+   [cmr.spatial.circle :as spatial-circle]
+   [cmr.spatial.codec :as spatial-codec]
+   [cmr.spatial.validation :as sv])
   (:import
    (clojure.lang ExceptionInfo)
    (java.lang Integer Long)))
@@ -74,11 +76,20 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{:keyword :all-revisions}
-     :multiple-value #{:name :variable-name :alias :measurement :instrument :provider :native-id :concept-id}
+     :multiple-value #{:name :variable-name :alias :full-path :measurement :instrument :provider :native-id :concept-id}
      :always-case-sensitive #{}
      :disallow-pattern #{}}))
 
 (defmethod cpv/params-config :service
+  [_]
+  (cpv/merge-params-config
+    cpv/basic-params-config
+    {:single-value #{:keyword :all-revisions}
+     :multiple-value #{:name :provider :native-id :concept-id}
+     :always-case-sensitive #{}
+     :disallow-pattern #{}}))
+
+(defmethod cpv/params-config :tool
   [_]
   (cpv/merge-params-config
     cpv/basic-params-config
@@ -209,12 +220,19 @@
   [_]
   {:name cpv/string-param-options ;; name is the alias to variable-name
    :variable-name cpv/string-param-options
+   :full-path cpv/string-param-options
    :measurement cpv/string-param-options
    :native-id cpv/string-param-options
    :provider cpv/string-param-options
    :measurement-identifiers cpv/string-plus-or-options})
 
 (defmethod cpv/valid-parameter-options :service
+  [_]
+  {:name cpv/string-param-options
+   :native-id cpv/string-param-options
+   :provider cpv/string-param-options})
+
+(defmethod cpv/valid-parameter-options :tool
   [_]
   {:name cpv/string-param-options
    :native-id cpv/string-param-options
@@ -255,6 +273,10 @@
   [_]
   #{:all-revisions})
 
+(defmethod cpv/valid-query-level-params :tool
+  [_]
+  #{:all-revisions})
+
 (defmethod cpv/valid-query-level-params :subscription
   [_]
   #{:all-revisions})
@@ -275,7 +297,7 @@
     :score
     :has-granules
     :has-granules-or-cwic
-    :usage-score
+    :usage-relevancy-score
     :ongoing})
 
 (defmethod cpv/valid-sort-keys :granule
@@ -310,6 +332,13 @@
     :provider})
 
 (defmethod cpv/valid-sort-keys :service
+  [_]
+  #{:name
+    :long-name
+    :revision-date
+    :provider})
+
+(defmethod cpv/valid-sort-keys :tool
   [_]
   #{:name
     :long-name
@@ -772,6 +801,23 @@
                shapefile-format
                (util/human-join (vec valid-shapefile-formats) "," "or"))])))
 
+(defn- validate-circle-value
+  "Validates the given circle value"
+  [value]
+  (let [circle (spatial-codec/url-decode :circle value)]
+    (if-let [err-msgs (:errors circle)]
+      err-msgs
+      (sv/validate circle))))
+
+(defn- circle-values-validation
+  "Validates that the circle values are valid"
+  [concept-type params]
+  (when-let [circle-value (:circle params)]
+    (let [circle-values (if (sequential? circle-value)
+                          circle-value
+                          [circle-value])]
+      (mapcat validate-circle-value circle-values))))
+
 (def parameter-validations
   "Lists of parameter validation functions by concept type"
   {:collection (concat
@@ -802,6 +848,7 @@
                  collection-include-facets-validation
                  no-facets-size-without-include-facets-v2
                  collection-facets-size-validation
+                 circle-values-validation
                  shapefile-format-validation])
    :granule (concat
              cpv/common-validations
@@ -829,6 +876,7 @@
               temporal-facet-year-validation
               temporal-facet-month-validation
               temporal-facet-day-validation
+              circle-values-validation
               shapefile-format-validation])
    :tag cpv/common-validations
    :variable (concat cpv/common-validations
@@ -836,6 +884,8 @@
                       measurement-identifiers-validation])
    :service (concat cpv/common-validations
                     [boolean-value-validation])
+   :tool (concat cpv/common-validations
+                 [boolean-value-validation])
    :autocomplete cpv/common-validations
    :subscription (concat cpv/common-validations
                     [boolean-value-validation])})

@@ -15,11 +15,13 @@
       (context "/associations" []
 
         ;; Associate a variable with a list of collections
+        ;; DEPRECATED - prefer the route of /associations/variables/:variable-id/collections/:collection-id
         (POST "/" {:keys [request-context headers body]}
           (association/associate-concept-to-collections
-           request-context headers (slurp body) :variable variable-concept-id))
+            request-context headers (slurp body) :variable variable-concept-id))
 
         ;; Dissociate a variable from a list of collections
+        ;; DEPRECATED - prefer the route of /associations/variables/:variable-id/collections/:collection-id
         (DELETE "/" {:keys [request-context headers body]}
           (association/dissociate-concept-from-collections
-           request-context headers (slurp body) :variable variable-concept-id))))))
+            request-context headers (slurp body) :variable variable-concept-id))))))

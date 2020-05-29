@@ -41,6 +41,7 @@
    [cmr.metadata-db.data.oracle.concepts.service]
    [cmr.metadata-db.data.oracle.concepts.tag-association]
    [cmr.metadata-db.data.oracle.concepts.tag]
+   [cmr.metadata-db.data.oracle.concepts.tool]
    [cmr.metadata-db.data.oracle.concepts.variable-association]
    [cmr.metadata-db.data.oracle.concepts.variable]
    [cmr.metadata-db.data.oracle.concepts]
@@ -61,6 +62,7 @@
    :variable 10
    :variable-association 10
    :service 10
+   :tool 10
    :service-association 10})
 
 (defconfig days-to-keep-tombstone
@@ -164,6 +166,10 @@
   (set-created-at-for-concept db provider concept))
 
 (defmethod set-created-at :service
+  [db provider concept]
+  (set-created-at-for-concept db provider concept))
+
+(defmethod set-created-at :tool
   [db provider concept]
   (set-created-at-for-concept db provider concept))
 

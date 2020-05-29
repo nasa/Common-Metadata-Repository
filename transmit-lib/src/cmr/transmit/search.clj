@@ -42,7 +42,8 @@
         ref-elems (cx/elements-at-path parsed [:references :reference])]
     (map #(util/remove-nil-keys
             {:concept-id (cx/string-at-path % [:id])
-             :granule-ur (cx/string-at-path % [:name])}) ref-elems)))
+             :granule-ur (cx/string-at-path % [:name])
+             :location (cx/string-at-path % [:location])}) ref-elems)))
 
 (defn-timed find-granule-references
   "Find granules by parameters in a post request. The function returns an array of granule
@@ -70,6 +71,10 @@
 (h/defsearcher search-for-services :search
   (fn [conn]
     (format "%s/services" (conn/root-url conn))))
+
+(h/defsearcher search-for-tools :search
+  (fn [conn]
+    (format "%s/tools" (conn/root-url conn))))
 
 (h/defsearcher search-for-subscriptions :search
   (fn [conn]

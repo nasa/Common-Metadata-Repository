@@ -33,6 +33,7 @@
    [cmr.indexer.data.concepts.spatial :as spatial]
    [cmr.indexer.data.concepts.subscription :as subscription]
    [cmr.indexer.data.concepts.tag :as tag]
+   [cmr.indexer.data.concepts.tool :as tool]
    [cmr.indexer.data.concepts.variable :as variable]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.umm-spec.acl-matchers :as umm-matchers]
@@ -425,7 +426,8 @@
                                                          first
                                                          :value-lowercase)
             :associations-gzip-b64 (associations->gzip-base64-str
-                                    variable-associations service-associations)}
+                                    variable-associations service-associations)
+            :usage-relevancy-score 0}
 
            (variable-service-associations->elastic-docs
             context variable-associations service-associations)

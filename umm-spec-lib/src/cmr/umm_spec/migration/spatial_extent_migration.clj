@@ -264,3 +264,168 @@
   "Migrates horizontal data resolutions from 1.15 to 1.14"
   [c]
   (migrate-horizontal-data-resolutions-down-to-1_14 c))
+
+(defn migrate-horizontal-data-resolution-single-resolution-down-to-1_15_1
+  "Migrates horizontal data point or varies resolution 1.15.2 to 1.15.1"
+  [c element]
+  (let [element-value (get-in c [:SpatialExtent
+                                 :HorizontalSpatialDomain
+                                 :ResolutionAndCoordinateSystem
+                                 :HorizontalDataResolution
+                                 element])]
+    (if element-value
+      (-> c
+        (update-in [:SpatialExtent
+                    :HorizontalSpatialDomain
+                    :ResolutionAndCoordinateSystem
+                    :HorizontalDataResolution] dissoc element)
+        (assoc-in [:SpatialExtent
+                   :HorizontalSpatialDomain
+                   :ResolutionAndCoordinateSystem
+                   :HorizontalDataResolution
+                   element
+                   :HorizontalResolutionProcessingLevelEnum]
+                  element-value))
+      c)))
+
+;; These are conversion numbers to use when converting nautical miles
+;; or statue miles to kilometers. The default significant digits is used in the
+;; get-significant-digit-count function.
+(def nautical-miles-to-kilometers 1.852001)
+(def statute-miles-to-kilometers 1.609344)
+(def default-significant-digit 2)
+
+(defn get-significant-digit-count
+  "This function counts the significant digits to use when converting statue miles or
+   nautical miles to kilometers."
+  [number]
+  (if (number? number)
+    (let [x (clojure.string/split (str number) #"\.")]
+      (+ (count (first x)) (count (second x))))
+    default-significant-digit))
+
+(defn round2
+  "Round a double to the given precision (number of significant digits)"
+  [precision d]
+  (let [factor (Math/pow 10 precision)]
+    (/ (Math/round (* d factor)) factor)))
+
+(defn convert-to-kilometers
+  "Convert the value to kilometers using the passed in convertion number."
+  [value conversion]
+  (when value
+    (let [conversion (round2 (get-significant-digit-count value) conversion)]
+      (* value conversion))))
+
+(defn convert-all-elements-to-kilometers
+  "Convert each element in the resolution to kilometers."
+  [resolution conversion]
+  (assoc resolution :XDimension (convert-to-kilometers (:XDimension resolution) conversion)
+                    :MinimumXDimension (convert-to-kilometers (:MinimumXDimension resolution) conversion)
+                    :MaximumXDimension (convert-to-kilometers (:MaximumXDimension resolution) conversion)
+                    :YDimension (convert-to-kilometers (:YDimension resolution) conversion)
+                    :MinimumYDimension (convert-to-kilometers (:MinimumYDimension resolution) conversion)
+                    :MaximumYDimension (convert-to-kilometers (:MaximumYDimension resolution) conversion)
+                    :Unit "Kilometers"))
+
+(defn convert-to-kilometers-if-needed
+  "This function checks to see if a conversion to kilometers is needed. If it is
+   then call a funtion to do the actual conversion."
+  [resolution]
+  (let [unit (:Unit resolution)
+        conversion (case unit
+                      "Statute Miles" statute-miles-to-kilometers
+                      "Nautical Miles" nautical-miles-to-kilometers
+                      nil)]
+    (if conversion
+      (convert-all-elements-to-kilometers resolution conversion)
+      resolution)))
+
+(defn- remove-not-provided-resolutions
+  "This function returns nil if the resolution unit has a value of Not provided.
+   This essentially removes these resolutions from the end result."
+  [resolution]
+  (when-not (clojure.string/includes? (:Unit resolution) "Not provided")
+    resolution))
+
+(defn migrate-resolution-units-down-to_1_15_1
+  "Migrate the resolution down to 1.15.1 by converting any statute miles or
+   nautical miles to kilometers and removing any resolutions where the unit is
+   Not provided."
+  [resolution]
+  (-> resolution
+      convert-to-kilometers-if-needed
+      remove-not-provided-resolutions
+      remove-nil-keys))
+
+(defn migrate-resolutions-down-to_1_15_1
+  "Migrates a horizontal data resolution group down from 1.15.2 to 1.15.1."
+  [c element]
+  (let [resolutions (get-in c [:SpatialExtent
+                               :HorizontalSpatialDomain
+                               :ResolutionAndCoordinateSystem
+                               :HorizontalDataResolution
+                               element])]
+    (if resolutions
+      (assoc-in c
+                [:SpatialExtent
+                 :HorizontalSpatialDomain
+                 :ResolutionAndCoordinateSystem
+                 :HorizontalDataResolution
+                 element]
+                (remove-empty-maps
+                  (map #(migrate-resolution-units-down-to_1_15_1 %) resolutions)))
+      c)))
+
+(defn migrate-horizontal-data-resolution-units-down-to-1_15_1
+  "Migrates horizontal data resolution units from 1.15.2 to 1.15.1"
+  [c]
+  (-> c
+      (migrate-resolutions-down-to_1_15_1 :NonGriddedResolutions)
+      (migrate-resolutions-down-to_1_15_1 :NonGriddedRangeResolutions)
+      (migrate-resolutions-down-to_1_15_1 :GriddedResolutions)
+      (migrate-resolutions-down-to_1_15_1 :GriddedRangeResolutions)
+      (migrate-resolutions-down-to_1_15_1 :GenericResolutions)))
+
+(defn migrate-down-to-1_15_1
+  "Migrates horizontal data point and veries resolution and the resolution units from 1.15.2
+   to 1.15.1"
+  [c]
+  (-> c
+      (migrate-horizontal-data-resolution-single-resolution-down-to-1_15_1 :VariesResolution)
+      (migrate-horizontal-data-resolution-single-resolution-down-to-1_15_1 :PointResolution)
+      migrate-horizontal-data-resolution-units-down-to-1_15_1))
+
+(defn migrate-horizontal-data-resolution-single-resolution-up-to-1_15_2
+  "Migrates horizontal data point or varies resolution from 1.15.1 to 1.15.2. The edn version of a
+   collection is passed in and the 1.15.2 collection is passed back out."
+  [c element]
+  (let [element-value (get-in c [:SpatialExtent
+                                 :HorizontalSpatialDomain
+                                 :ResolutionAndCoordinateSystem
+                                 :HorizontalDataResolution
+                                 element
+                                 :HorizontalResolutionProcessingLevelEnum])]
+    (if element-value
+      (-> c
+          (update-in [:SpatialExtent
+                      :HorizontalSpatialDomain
+                      :ResolutionAndCoordinateSystem
+                      :HorizontalDataResolution
+                      element]
+                     dissoc :HorizontalResolutionProcessingLevelEnum)
+          (assoc-in [:SpatialExtent
+                     :HorizontalSpatialDomain
+                     :ResolutionAndCoordinateSystem
+                     :HorizontalDataResolution
+                     element]
+                    element-value))
+      c)))
+
+(defn migrate-up-to-1_15_2
+  "Migrates horizontal data resolution point and varies from 1.15.1 to 1.15.2. The edn version of a
+   collection is passed in and the 1.15.2 collection is passed back out."
+  [c]
+  (-> c
+      (migrate-horizontal-data-resolution-single-resolution-up-to-1_15_2 :VariesResolution)
+      (migrate-horizontal-data-resolution-single-resolution-up-to-1_15_2 :PointResolution)))

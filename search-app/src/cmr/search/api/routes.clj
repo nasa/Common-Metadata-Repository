@@ -1,10 +1,11 @@
-(ns cmr.search.api.routes
+(ns cmr.search.api.routes  
   (:require
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.cache :as cache]
+   [cmr.search.api.association :as association-api]
    [cmr.search.api.autocomplete :as autocomplete-api]
    [cmr.search.api.community-usage-metrics :as metrics-api]
    [cmr.search.api.concepts-lookup :as concepts-lookup-api]
@@ -40,6 +41,8 @@
    [cmr.search.results-handlers.subscriptions-json-results-handler]
    [cmr.search.results-handlers.subscriptions-umm-json-results-handler]
    [cmr.search.results-handlers.tags-json-results-handler]
+   [cmr.search.results-handlers.tools-json-results-handler]
+   [cmr.search.results-handlers.tools-umm-json-results-handler]
    [cmr.search.results-handlers.timeline-results-handler]
    [cmr.search.results-handlers.umm-json-results-handler]
    [cmr.search.results-handlers.variables-json-results-handler]
@@ -55,6 +58,9 @@
       (context relative-root-url []
         ;; Add routes for tagging
         tags-api/tag-api-routes
+
+        ;; Add routes for assoication
+        association-api/association-api-routes
 
         ;; Add routes for variable association
         variables-api/variable-api-routes

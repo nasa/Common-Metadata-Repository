@@ -33,13 +33,14 @@
   (concept-service/delete-old-revisions context pv/cmr-provider :tag)
   (concept-service/delete-old-revisions context pv/cmr-provider :variable-association)
   (concept-service/delete-old-revisions context pv/cmr-provider :service-association)
-  (concept-service/delete-old-revisions context pv/cmr-provider :subscription)
   ;; cleanup provider specific tables
   (doseq [provider (provider-service/get-providers context)]
     (concept-service/delete-old-revisions context provider :collection)
     (concept-service/delete-old-revisions context provider :granule)
     (concept-service/delete-old-revisions context provider :variable)
     (concept-service/delete-old-revisions context provider :service)
+    (concept-service/delete-old-revisions context provider :tool)
+    (concept-service/delete-old-revisions context pv/cmr-provider :subscription)
     (concept-service/delete-old-revisions context provider :access-group)))
 
 (def-stateful-job OldRevisionConceptCleanupJob

@@ -128,64 +128,48 @@
     nrt-aliases
     data-type))
 
-(defn- platform->keywords
+(defn- url->keywords
   "Converts a compound field into a vector of terms for keyword searches."
-  [platform]
-  (let [{instruments :Instruments} platform]
-    (concat (names->keywords platform)
-            (mapcat names->keywords instruments))))
+  [data]
+  (let [{:keys [Description Subtype Type URLValue URLContentType]} data]
+    [Description Subtype Type URLValue URLContentType]))
 
 (defn- related-url->keywords
   "Converts a compound field into a vector of terms for keyword searches."
   [data]
-  (let [{description :Description
-         subtype :Subtype
-         type :Type
-         url :URL
-         url-content-type :URLContentType} data]
-    [description
-     subtype
-     type
-     url
-     url-content-type]))
+  (let [{:keys [Description Subtype Type URL URLContentType]} data]
+    [Description Subtype Type URL URLContentType]))
 
 (defn science-keyword->keywords
   "Converts a science keyword into a vector of terms for keyword searches."
   [science-keyword]
-  (let [{category :Category
-         detailed-variable :DetailedVariable
-         term :Term
-         topic :Topic
-         variable-level-1 :VariableLevel1
-         variable-level-2 :VariableLevel2
-         variable-level-3 :VariableLevel3} science-keyword]
-    [category
-     detailed-variable
-     term
-     topic
-     variable-level-1
-     variable-level-2
-     variable-level-3]))
+  (let [{:keys [Category DetailedVariable Term Topic VariableLevel1 VariableLevel2 VariableLevel3]} science-keyword]
+    [Category DetailedVariable Term Topic VariableLevel1 VariableLevel2 VariableLevel3]))
 
 (defn- service-keyword->keywords
   "Converts a service keyword into a vector of terms for keyword searches."
   [service-keyword]
-  (let [{service-category :ServiceCategory
-         service-specific-term :ServiceSpecificTerm
-         service-term :ServiceTerm
-         service-topic :ServiceTopic} service-keyword]
-    [service-category
-     service-specific-term
-     service-term
-     service-topic]))
+  (let [{:keys [ServiceCategory ServiceSpecificTerm ServiceTerm ServiceTopic]} service-keyword]
+    [ServiceCategory ServiceSpecificTerm ServiceTerm ServiceTopic]))
+
+(defn- tool-keyword->keywords
+  "Converts a tool keyword into a vector of terms for keyword searches."
+  [tool-keyword]
+  (let [{:keys [ToolCategory ToolSpecificTerm ToolTerm ToolTopic]} tool-keyword]
+    [ToolCategory ToolSpecificTerm ToolTerm ToolTopic]))
 
 (defn- service-organization->keywords
-  "Converts a service keyword into a vector of terms for keyword searches."
+  "Converts a service organization into a vector of terms for keyword searches."
   [service-organization]
-  (let [{roles :Roles
-         service-contact-persons :ContactPersons} service-organization]
+  (let [{roles :Roles} service-organization]
     (concat (names->keywords service-organization)
-            (mapcat contact-person->keywords service-contact-persons)
+            roles)))
+
+(defn- organization->keywords
+  "Converts an organization into a vector of terms for keyword searches."
+  [organization]
+  (let [{roles :Roles} organization]
+    (concat (names->keywords organization)
             roles)))
 
 (defn- archive-distribution-data-formats
@@ -211,7 +195,7 @@
 
 
   See `fields->fn-mapper`, below."
-  {})
+  {:ScienceKeywords #(mapcat science-keyword->keywords (:ScienceKeywords %))})
 
 (def ^:private service-fields->fn-mapper
   "A data structure that maps UMM service field names to functions that
@@ -221,10 +205,22 @@
   See `fields->fn-mapper`, below."
   {:ContactGroups #(mapcat contact-group->keywords (:ContactGroups %))
    :ContactPersons #(mapcat contact-person->keywords (:ContactPersons %))
-   :Platforms #(mapcat platform->keywords (:Platforms %))
-   :RelatedURLs #(mapcat related-url->keywords (:RelatedURLs %))
+   :URL #(url->keywords (:URL %))
    :ServiceKeywords #(mapcat service-keyword->keywords (:ServiceKeywords %))
    :ServiceOrganizations #(mapcat service-organization->keywords (:ServiceOrganizations %))})
+
+(def ^:private tool-fields->fn-mapper
+  "A data structure that maps UMM tool field names to functions that
+  extract keyword data for those fields. Intended only to be used as part
+  of a larger map for multiple field types.
+
+  See `fields->fn-mapper`, below."
+  {:ContactGroups #(mapcat contact-group->keywords (:ContactGroups %))
+   :ContactPersons #(mapcat contact-person->keywords (:ContactPersons %))
+   :URL #(url->keywords (:URL %))
+   :RelatedURLs #(mapcat related-url->keywords (:RelatedURLs %))
+   :ToolKeywords #(mapcat tool-keyword->keywords (:ToolKeywords %))
+   :Organizations #(mapcat organization->keywords (:Organizations %))})
 
 (def ^:private collection-fields->fn-mapper
   "A data structure that maps UMM collection field names to functions that
@@ -246,16 +242,7 @@
    :Projects #(mapcat names->keywords (:Projects %))
    :RelatedUrls #(mapcat related-url->keywords (:RelatedUrls %))
    :TilingIdentificationSystems #(map :TilingIdentificationSystemName (:TilingIdentificationSystems %))
-   :ArchiveAndDistributionInformation #(archive-distribution-data-formats %)})
-
-
-(def ^:private shared-fields->fn-mapper
-  "A data structure that maps UMM field names used by multiple types to
-  functions that extract keyword data for those fields. Intended only to be
-  used as part of a larger map for multiple field types.
-
-  See `fields->fn-mapper`, below."
-  {;; Simple multi-valued data
+   :ArchiveAndDistributionInformation #(archive-distribution-data-formats %)
    :ScienceKeywords #(mapcat science-keyword->keywords (:ScienceKeywords %))})
 
 (def ^:private fields->fn-mapper
@@ -267,8 +254,8 @@
   that has an extract keyword different from the field name needs to be listed."
   (merge variable-fields->fn-mapper
          service-fields->fn-mapper
-         collection-fields->fn-mapper
-         shared-fields->fn-mapper))
+         tool-fields->fn-mapper
+         collection-fields->fn-mapper))
 
 (defn- field-extract-fn
   "Returns the function that will extract the value of the given field from the augmented

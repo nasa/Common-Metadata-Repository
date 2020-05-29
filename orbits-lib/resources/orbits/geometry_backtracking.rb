@@ -153,7 +153,7 @@ module Orbits
     def fast_poly_crossing_range(lat_range, points, ascending, debug=false)
       # Easy case first
       return [[lat_range, LongitudeCoverage.full]] if points.any? {|p| p.phi.abs > full_coverage_phi}
-      
+
       # Create an array of segments, one for each pair of adjacent points in the array.
       segments = points.slice(0..-2).zip(points.slice(1..-1))
       #debug_log "Original:    #{segments.map {|s| s.join(', ')}}"
@@ -177,6 +177,8 @@ module Orbits
 
       segments = split_at_start_lat(segments)
       #debug_log "Split:       #{segments.map {|s| s.join(', ')}}"
+
+      return [[lat_range, LongitudeCoverage.none]] if segments.empty?
 
       # Join the ranges from segments that form a contiguous run on one side of the orbit start
       # lat or the other (needed to fix CMR-1168). The approach used here simply starts at the
@@ -483,7 +485,6 @@ module Orbits
       if west_edge && east_edge
         LongitudeCoverage.new(west_edge, east_edge)
       else
-        raise "ERROR: Boundary range has unexpected size {#{west_range}, #{east_range}}"
         LongitudeCoverage.none
       end
     end

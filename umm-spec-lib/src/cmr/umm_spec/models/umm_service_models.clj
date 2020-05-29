@@ -5,6 +5,10 @@
 
 (defrecord UMM-S
   [
+   ;; This field provides users with information on what changes were included in the most recent
+   ;; version.
+   VersionDescription
+
    ;; The service provider, or organization, or institution responsible for developing, archiving,
    ;; and/or distributing the service, software, or tool.
    ServiceOrganizations
@@ -26,10 +30,9 @@
    ;; maintained in the Keyword Management System (KMS).
    ServiceKeywords
 
-   ;; Allows for the specification of Earth Science keywords that are representative of the service,
-   ;; software, or tool being described. The controlled vocabulary for Science Keywords is
-   ;; maintained in the Keyword Management System (KMS).
-   ScienceKeywords
+   ;; This element describes the latest date when the service was most recently pushed to production
+   ;; for support and maintenance.
+   LastUpdatedDate
 
    ;; Information on how the item (service, software, or tool) may or may not be used after access
    ;; is granted. This includes any special restrictions, legal prerequisites, terms and conditions,
@@ -39,10 +42,6 @@
 
    ;; The name of the service, software, or tool.
    Name
-
-   ;; This element contains important information about the universal resource locator (URL) for the
-   ;; service.
-   RelatedURLs
 
    ;; A brief description of the service.
    Description
@@ -56,10 +55,11 @@
    ;; Words or phrases to further describe the service, software, or tool.
    AncillaryKeywords
 
-   ;; Associates the satellite/platform that is supported by the service, software, or tool.
-   Platforms
+   ;; This element contains important information about the universal resource locator (URL) for the
+   ;; service.
+   URL
 
-   ;; The edition or version of the service, software, or tool.
+   ;; The edition or version of the service.
    Version
 
    ;; Information about the quality of the service, software, or tool, or any quality assurance
@@ -70,31 +70,6 @@
    LongName
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-S)
-
-;; This element describes the platform information.
-(defrecord PlatformType
-  [
-   ;; The short name of the platform associated with the service.
-   ShortName
-
-   ;; The long name of the platform associated with the service.
-   LongName
-
-   ;; Associates the instrument/sensor that is supported by the service, software, or tool.
-   Instruments
-  ])
-(record-pretty-printer/enable-record-pretty-printing PlatformType)
-
-;; This element describes instrument information.
-(defrecord InstrumentType
-  [
-   ;; The short name of the instrument associated with the service.
-   ShortName
-
-   ;; The long name of the instrument associated with the service.
-   LongName
-  ])
-(record-pretty-printer/enable-record-pretty-printing InstrumentType)
 
 (defrecord TimePointsType
   [
@@ -156,14 +131,8 @@
    ;; This is the long name of the service organization.
    LongName
 
-   ;; This is the contact groups of the service organization.
-   ContactGroups
-
-   ;; This is the contact persons of the service organization.
-   ContactPersons
-
-   ;; This is the contact information of the service organization.
-   ContactInformation
+   ;; This is the URL of the service organization.
+   OnlineResource
   ])
 (record-pretty-printer/enable-record-pretty-printing ServiceOrganizationType)
 
@@ -224,7 +193,7 @@
 (record-pretty-printer/enable-record-pretty-printing DataResourceSpatialExtentType)
 
 ;; The bounding box consists of west bounding, south bounding, east bounding and north bounding
-;; cordinates amd the CRS identifier.
+;; coordinates and the CRS identifier.
 (defrecord SpatialBoundingBoxType
   [
    ;; The CRS identifier of the bounding box.
@@ -332,8 +301,8 @@
    ;; are positive.
    ProjectionFalseNorthing
 
-   ;; This element is used to identify the authority, expressed as the EPSG code, for the list of
-   ;; supported input projection types
+   ;; This element is used to identify the authority, expressed as the authority code, for the list
+   ;; of supported projection types.
    ProjectionAuthority
 
    ;; This element is used to identify the projection unit of measurement.
@@ -438,7 +407,7 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing OperationMetadataType)
 
-;; The axis consisists of an extent and grid information.
+;; The axis consists of an extent and grid information.
 (defrecord AxisType
   [
    ;; The axis label of the general grid.
@@ -470,6 +439,31 @@
    LastName
   ])
 (record-pretty-printer/enable-record-pretty-printing ContactPersonType)
+
+;; Describes the online resource pertaining to the data.
+(defrecord OnlineResourceType
+  [
+   ;; The URL of the website related to the online resource.
+   Linkage
+
+   ;; The protocol of the linkage for the online resource, such as https, svn, ftp, etc.
+   Protocol
+
+   ;; The application profile holds the name of the application that can service the data. For
+   ;; example if the URL points to a word document, then the applicationProfile is MS-Word.
+   ApplicationProfile
+
+   ;; The name of the online resource.
+   Name
+
+   ;; The description of the online resource.
+   Description
+
+   ;; The function of the online resource. In ISO where this class originated the valid values are:
+   ;; download, information, offlineAccess, order, and search.
+   Function
+  ])
+(record-pretty-printer/enable-record-pretty-printing OnlineResourceType)
 
 ;; This element contains important information about the parameter associated with the resource(s)
 ;; coupled to this service.
@@ -515,32 +509,79 @@
 ;; This object describes service options, data transformations and output formats.
 (defrecord ServiceOptionsType
   [
-   ;; This element is used to identify the list of supported subsetting requests.
-   SubsetTypes
-
    ;; This element is used to identify the list of supported methods of variable aggregation.
    VariableAggregationSupportedMethods
 
-   ;; This element is used to identify the list of supported input projections types.
-   SupportedInputProjections
-
-   ;; This element is used to identify the list of supported output projections types.
-   SupportedOutputProjections
-
-   ;; This element is used to identify the list of supported interpolation types.
-   InterpolationTypes
+   ;; This element is used to identify the list of supported subsetting requests.
+   SubsetTypes
 
    ;; The project element describes the list of input format names supported by the service.
    SupportedInputFormats
 
-   ;; The project element describes the list of output format names supported by the service.
-   SupportedOutputFormats
+   ;; The project element describes the list of format name combinations which explicitly state
+   ;; which re-formatting options are available. These are entered as pairs of values, e.g. if
+   ;; NetCDF-3 -> NetCDF-4 is a valid supported reformatting, these two values would be entered as a
+   ;; pair.
+   SupportedReformattings
 
-   ;; This field indicates the maximum number of granules which this service can download with one
+   ;; This element is used to identify the list of supported input projections types.
+   SupportedInputProjections
+
+   ;; This element is used to identify the list of supported interpolation types.
+   InterpolationTypes
+
+   ;; This field indicates the maximum number of granules which this service can process with one
    ;; request.
    MaxGranules
+
+   ;; This element is used to identify the list of supported output projections types.
+   SupportedOutputProjections
+
+   ;; The project element describes the list of output format names supported by the service.
+   SupportedOutputFormats
   ])
 (record-pretty-printer/enable-record-pretty-printing ServiceOptionsType)
+
+;; Represents Internet sites that contain information related to the data, as well as related
+;; Internet sites such as project home pages, related data archives/servers, metadata extensions,
+;; online software packages, web mapping services, and calibration/validation data.
+(defrecord RelatedUrlType
+  [
+   ;; Description of the web page at this URL.
+   Description
+
+   ;; A keyword describing the distinct content type of the online resource to this resource. (e.g.,
+   ;; 'COLLECTION URL', 'PUBLICATION URL', 'VISUALIZATION URL').
+   URLContentType
+
+   ;; A keyword describing the type of the online resource to this resource. This helps the GUI to
+   ;; know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').
+   Type
+
+   ;; A keyword describing the subtype of the online resource to this resource. This further helps
+   ;; the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'OPENSEARCH', 'WEB
+   ;; COVERAGE SERVICES (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAPPING SERVICES (WMS)', 'SIMPLE
+   ;; SUBSET WIZARD (SSW)').
+   Subtype
+
+   ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
+   ;; the URL of the collection landing page, the URL of the download site for the collection).
+   URL
+  ])
+(record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
+
+;; This object describes the supported reformatting pairs, e.g. NetCDF4 -> [COG]. For every input
+;; there is 1 or more outputs.
+(defrecord SupportedReformattingsPairType
+  [
+   ;; This element is used to identify the name of the supported input format in the pair.
+   SupportedInputFormat
+
+   ;; This element is used to identify the name of all supported output formats for the provided
+   ;; input format.
+   SupportedOutputFormats
+  ])
+(record-pretty-printer/enable-record-pretty-printing SupportedReformattingsPairType)
 
 ;; This entity contains the physical address details for the contact.
 (defrecord AddressType
@@ -573,3 +614,43 @@
    Longitude
   ])
 (record-pretty-printer/enable-record-pretty-printing CoordinatesType)
+
+;; Represents the Internet site where you can directly access the back-end service.
+(defrecord URLType
+  [
+   ;; Description of the web page at this URL.
+   Description
+
+   ;; A keyword describing the distinct content type of the online resource to this resource. (e.g.,
+   ;; 'DISTRIBUTION URL').
+   URLContentType
+
+   ;; A keyword describing the type of the online resource to this resource. This helps the GUI to
+   ;; know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').
+   Type
+
+   ;; A keyword describing the subtype of the online resource to this resource. This further helps
+   ;; the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'OPENSEARCH', 'WEB
+   ;; COVERAGE SERVICES (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAPPING SERVICES (WMS)', 'SIMPLE
+   ;; SUBSET WIZARD (SSW)').
+   Subtype
+
+   ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
+   ;; the URL of the collection landing page, the URL of the download site for the collection).
+   URLValue
+  ])
+(record-pretty-printer/enable-record-pretty-printing URLType)
+
+;; Information on how the item (service, software, or tool) may or may not be used after access is
+;; granted. This includes any special restrictions, legal prerequisites, terms and conditions,
+;; and/or limitations on using the item. Providers may request acknowledgement of the item from
+;; users and claim no responsibility for quality and completeness.
+(defrecord UseConstraintsType
+  [
+   ;; The web address of the license associated with the service.
+   LicenseUrl
+
+   ;; The text of the license associated with the service.
+   LicenseText
+  ])
+(record-pretty-printer/enable-record-pretty-printing UseConstraintsType)

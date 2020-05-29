@@ -125,18 +125,19 @@
    ;; The title of the collection or service described by the metadata.
    EntryTitle
 
-   ;; This element describes the production status of the data set. There are four choices for Data
+   ;; This element describes the production status of the data set. There are five choices for Data
    ;; Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable
    ;; at the present time. For Example: The Hydro spacecraft has not been launched, but information
    ;; on planned data sets may be available. ACTIVE refers to data sets currently in production or
    ;; data that is continuously being collected or updated. For Example: data from the AIRS
    ;; instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no
    ;; updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection
-   ;; has been completed. NOT APPLICABLE refers to data sets in which a collection progress is not
-   ;; applicable such as a calibration collection. There is a fifth value of NOT PROVIDED that
-   ;; should not be used by a data provider. It is currently being used as a value when a correct
-   ;; translation cannot be done with the current valid values, or when the value is not provided by
-   ;; the data provider.
+   ;; has been completed. DEPRECATED refers to data sets that have been retired, but still can be
+   ;; retrieved. Usually newer products exist that replace the retired data set. NOT APPLICABLE
+   ;; refers to data sets in which a collection progress is not applicable such as a calibration
+   ;; collection. There is a sixth value of NOT PROVIDED that should not be used by a data provider.
+   ;; It is currently being used as a value when a correct translation cannot be done with the
+   ;; current valid values, or when the value is not provided by the data provider.
    CollectionProgress
 
    ;; For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by
@@ -235,15 +236,6 @@
    EndDate
   ])
 (record-pretty-printer/enable-record-pretty-printing PaleoTemporalCoverageType)
-
-;; Varies Resolution object describes a data product that has a number of resolution values.
-(defrecord HorizontalDataResolutionVariesType
-  [
-   ;; Horizontal Resolution Level describes if the data product has a number of undefined resolution
-   ;; values.
-   HorizontalResolutionProcessingLevelEnum
-  ])
-(record-pretty-printer/enable-record-pretty-printing HorizontalDataResolutionVariesType)
 
 ;; This sub-element either contains a license summary or free-text description that details the
 ;; permitted use or limitation of this collection.
@@ -345,14 +337,6 @@
    Description
   ])
 (record-pretty-printer/enable-record-pretty-printing LocalCoordinateSystemType)
-
-;; Point Resolution object describes a data product that is from a point source.
-(defrecord HorizontalDataResolutionPointType
-  [
-   ;; Horizontal Resolution Level describes if the data product is from a point source.
-   HorizontalResolutionProcessingLevelEnum
-  ])
-(record-pretty-printer/enable-record-pretty-printing HorizontalDataResolutionPointType)
 
 ;; This element defines a single artifact that is distributed by the data provider. This element
 ;; only includes the distributable artifacts that can be obtained by the user without the user

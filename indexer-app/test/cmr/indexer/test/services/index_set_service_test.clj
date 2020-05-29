@@ -31,6 +31,7 @@
                                      :tag {}
                                      :variable {}
                                      :service {}
+                                     :tool {}
                                      :deleted-granule {}
                                      :autocomplete {}
                                      :subscription {}}}]

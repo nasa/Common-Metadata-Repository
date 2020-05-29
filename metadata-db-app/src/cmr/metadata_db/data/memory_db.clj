@@ -419,7 +419,7 @@
                             #(or % (f/unparse (f/formatters :date-time) (tk/now))))
          ;; Set the created-at time to the current timekeeper time for concepts which have
          ;; the created-at field and do not already have a :created-at time set.
-         concept (if (some #{concept-type} [:collection :granule :service :variable :subscription])
+         concept (if (some #{concept-type} [:collection :granule :service :tool :variable :subscription])
                    (update-in concept
                               [:created-at]
                               #(or % (f/unparse (f/formatters :date-time) (tk/now))))

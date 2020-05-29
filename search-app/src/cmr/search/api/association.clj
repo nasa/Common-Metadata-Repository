@@ -32,7 +32,7 @@
   [context concept-id permission-type]
   (let [provider-id (concepts/concept-id->provider-id concept-id)]
     (acl/verify-ingest-management-permission
-     context :update :provider-object provider-id)))
+      context :update :provider-object provider-id)))
 
 (defn- results-contain-errors?
   "Returns true if the results contain :errors"
@@ -73,7 +73,7 @@
       {:error "Only one collection allowed in the list because a variable can only be associated with one collection."})
     (let [results (assoc-service/associate-to-collections context concept-type concept-id body)
           status-code (association-results->status-code concept-type results)]
-        (api-response status-code results))))
+      (api-response status-code results))))
 
 (defn dissociate-concept-from-collections
   "Dissociate the given concept by concept type and concept id from a list of
@@ -84,6 +84,30 @@
   (validate-association-content-type headers)
   (info (format "Dissociating %s [%s] from collections: %s by client: %s."
                 (name concept-type) concept-id body (:client-id context)))
-  (let [results (assoc-service/dissociate-from-collections context concept-type concept-id body)
-        status-code (association-results->status-code concept-type results)]
-    (api-response status-code results)))
+  (if (and (> (count (map :concept-id (json/parse-string body true))) 1)
+           (= :variable concept-type)) 
+    (api-response
+      400
+      {:error "Only one variable at a time may be dissociated."})
+    (let [results (assoc-service/dissociate-from-collections context concept-type concept-id body)
+          status-code (association-results->status-code concept-type results)]
+      (api-response status-code results))))
+
+(def association-api-routes
+  (context "/associations" []
+    (context "/variables" []             
+      (context "/:variable-concept-id" [variable-concept-id]
+        (context "/collections" []
+          ;; Associate variable with a collection
+          (POST "/:collection-concept-id" [collection-concept-id
+                                           req :as {:keys [request-context headers]}]
+                ;; TODO get rid of redundant json->string conversion
+                (associate-concept-to-collections
+                  request-context headers (json/generate-string [{:concept-id collection-concept-id}]) :variable variable-concept-id))
+          
+          ;; Dissociate a variable from a collection
+          (DELETE "/:collection-concept-id" [collection-concept-id
+                                             req :as {:keys [request-context headers]}]
+                  ;; TODO get rid of redundant json->string conversion
+                  (dissociate-concept-from-collections
+                    request-context headers (json/generate-string [{:concept-id collection-concept-id}]) :variable variable-concept-id)))))))

@@ -116,6 +116,22 @@
      :selectors (:selectors parsed-xpath)
      :value value}))
 
+(defn- create-attrib-val-substring-selector
+  "Creates a selector that selects elements with an attribute with a given
+  value that matches by substring."
+  [selector-str]
+  (let [[_ xpath value] (re-matches #"contains\((.+), *'(.+)'\)" selector-str)
+        parsed-xpath (parse-xpath xpath)]
+    (when (not= (:source parsed-xpath) :from-context)
+      (throw
+        (Exception.
+          (str "Nested XPath selectors can not be from the root. XPath: "
+               xpath))))
+    {:type :attrib-value-selector
+     :selectors (:selectors parsed-xpath)
+     :value value
+     :sub-str? true}))
+
 (defn- create-elem-val-equality-selector
   "Creates a selector that selects elements which have a child element with a
   given value.
@@ -206,6 +222,9 @@
 
     (re-matches #".+='.+'" selector-str)
     (create-elem-val-equality-selector selector-str)
+
+    (re-matches #".*contains\(.*" selector-str)
+    (create-attrib-val-substring-selector selector-str)
 
     :else
     (throw
@@ -335,14 +354,16 @@
 ;; Select the elements which have attributes with a attribute name and value
 ;; given
 (defmethod process-xml-selector :attrib-value-selector
-  [elements {:keys [selectors value]}]
+  [elements {:keys [selectors value sub-str?]}]
   (filterv (fn [element]
              (when-let [selected-value (first
                                          (process-selectors
                                            [element]
                                            selectors
                                            process-xml-selector))]
-               (= selected-value value)))
+               (if sub-str?
+                 (str/includes? selected-value value)
+                 (= selected-value value))))
            elements))
 
 (defmethod process-xml-selector :element-value-selector

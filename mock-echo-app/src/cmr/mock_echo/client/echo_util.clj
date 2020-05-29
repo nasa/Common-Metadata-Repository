@@ -371,6 +371,11 @@
   service related operations"
   grant-all-variable)
 
+(def grant-all-tool
+  "Creates an ACL in mock echo granting registered users ability to do all
+  tool related operations"
+  grant-all-variable)
+
 (def grant-all-subscription
   "Creates an ACL in mock echo granting registered users ability to do all
   subscription related operations"

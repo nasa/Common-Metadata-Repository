@@ -30,6 +30,7 @@
                           [:associated_concept_id :associated_revision_id :tag_key :user_id])
    :access-group (into common-columns [:provider_id :user_id])
    :service (into common-columns [:provider_id :service_name :user_id])
+   :tool (into common-columns [:provider_id :tool_name :user_id])
    :acl (into common-columns [:provider_id :user_id :acl_identity])
    :humanizer (into common-columns [:user_id])
    :subscription (into common-columns
@@ -46,7 +47,7 @@
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept
    types must include the provider id as part of the sql params"
-  #{:access-group :variable :service :subscription})
+  #{:access-group :variable :service :tool :subscription})
 
 (defn columns-for-find-concept
   "Returns the table columns that should be included in a find-concept sql query"
@@ -141,6 +142,7 @@
     (or (:small (first providers))
         (= :variable concept-type)
         (= :service concept-type)
+        (= :tool concept-type)
         (= :subscription concept-type))))
 
 ;; Execute a query against a single table where provider_id is a column

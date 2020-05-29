@@ -16,6 +16,7 @@
    [cmr.ingest.api.provider :as provider-api]
    [cmr.ingest.api.services :as services]
    [cmr.ingest.api.subscriptions :as subscriptions]
+   [cmr.ingest.api.tools :as tools]
    [cmr.ingest.api.translation :as translation-api]
    [cmr.ingest.api.variables :as variables]
    [cmr.ingest.services.ingest-service :as ingest]
@@ -51,6 +52,11 @@
            (acl/verify-ingest-management-permission ctx :update)
            (jobs/reindex-all-collections
             ctx (= "true" (:force_version params)))
+           {:status 200})
+     (POST "/reindex-autocomplete-suggestions"
+           {ctx :request-context params :params}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jobs/trigger-autocomplete-suggestions-reindex ctx)
            {:status 200})
      (POST "/cleanup-expired-collections"
            {ctx :request-context}
@@ -123,6 +129,16 @@
          (DELETE "/"
            request
            (services/delete-service
+            provider-id native-id request)))
+       ;; Tools
+       (context ["/tools/:native-id" :native-id #".*$"] [native-id]
+         (PUT "/"
+           request
+           (tools/ingest-tool
+            provider-id native-id request))
+         (DELETE "/"
+           request
+           (tools/delete-tool
             provider-id native-id request)))
        ;; Subscriptions
        (context ["/subscriptions/:native-id" :native-id #".*$"] [native-id]

@@ -8,7 +8,6 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-json :as data-umm-json]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.association-util :as au]
@@ -266,25 +265,26 @@
       [svc1 svc2]
       "Ser?ice Name*")))
 
-(deftest search-service-related-url-keywords-test
-  (let [url1 (data-umm-cmn/related-url {:URL "http://data.space/downloads"
-                                        :Description "Pertinent Data Source Page 1"
-                                        :URLContentType "DistributionURL"
-                                        :Type "GET DATA"
-                                        :Subtype "ON-LINE ARCHIVE"})
-        url2 (data-umm-cmn/related-url {:URL "http://data.space/home"
-                                        :Description "Pertinent Data Source Page 2"
-                                        :URLContentType "PublicationURL"
-                                        :Type "HOME PAGE"
-                                        :Subtype "USER'S GUIDE"})
+(deftest search-service-url-keywords-test
+  (let [url1 (data-umm-s/url {:URLValue "http://data.space/downloads"
+                              :Description "Pertinent Data Source Page 1"
+                              :URLContentType "DistributionURL"
+                              :Type "GET DATA"
+                              :Subtype "ON-LINE ARCHIVE"})
+        url2 (data-umm-s/url {:URLValue "http://data.space/home"
+                              :Description "Pertinent Data Source Page 2"
+                              :URLContentType "DistributionURL"
+                              :Type "HOME PAGE"
+                              :Subtype "USER'S GUIDE"})
         svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
                                                   :Name "Service 1"
-                                                  :RelatedURLs [url1]})
+                                                  :URL url1})
         svc2 (services/ingest-service-with-attrs {:native-id "svc-2"
                                                   :Name "Service 2"
-                                                  :RelatedURLs [url2]})
+                                                  :URL url2})
         svc3 (services/ingest-service-with-attrs {:native-id "svc-3"
-                                                  :Name "Service 3"})]
+                                                  :Name "Service 3"
+                                                  :URL nil})]
     (index/wait-until-indexed)
 
     (are3 [expected-services keyword-query]
@@ -300,8 +300,8 @@
       "Data Source"
 
       "URLContentType"
-      [svc2]
-      "PublicationURL"
+      [svc1 svc2]
+      "DistributionURL"
 
       "Type"
       [svc2]
@@ -309,87 +309,7 @@
 
       "Subtype"
       [svc1]
-      "on-line archive")))
-
-(deftest search-service-science-keywords-test
-  (let [skw1 (data-umm-cmn/science-keyword {:Category "science kw cat-1"
-                                            :Topic "science kw topic-1"
-                                            :Term "science kw term-1"
-                                            :VariableLevel1 "science kw var-1 level-1"
-                                            :VariableLevel2 "science kw var-1 level-2"
-                                            :VariableLevel3 "science kw var-1 level-3"
-                                            :DetailedVariable "science kw deet var-1"})
-        skw2 (data-umm-cmn/science-keyword {:Category "science kw cat-2"
-                                            :Topic "science kw topic-2"
-                                            :Term "science kw term-2"
-                                            :VariableLevel1 "science kw var-2 level-1"
-                                            :VariableLevel2 "science kw var-2 level-2"
-                                            :VariableLevel3 "science kw var-2 level-3"})
-        skw3 (data-umm-cmn/science-keyword {:Category "science kw cat-3"
-                                            :Topic "science kw topic-3"
-                                            :Term "science kw term-3"
-                                            :VariableLevel1 "science kw var-3 level-1"
-                                            :VariableLevel2 "science kw var-3 level-2"
-                                            :VariableLevel3 "science kw var-3 level-3"
-                                            :DetailedVariable "science kw deet var-3"})
-        svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
-                                                  :provider-id "PROV1"
-                                                  :Name "Service 1"
-                                                  :LongName "Long Service Name 1"
-                                                  :ScienceKeywords [skw1 skw2]})
-        svc2 (services/ingest-service-with-attrs {:native-id "svc-2"
-                                                  :Name "Service 2"
-                                                  :LongName "Long Service Name 2"
-                                                  :ScienceKeywords [skw3]})
-        svc3 (services/ingest-service-with-attrs {:native-id "svc-3"
-                                                  :Name "Service 3"
-                                                  :LongName "Long Service Name 3"})]
-    (index/wait-until-indexed)
-
-    (are3 [expected-services keyword-query]
-      (d/assert-refs-match
-       expected-services (services/search-refs {:keyword keyword-query}))
-
-      ;; Science keywords
-      "Category"
-      [svc1]
-      "science kw cat-1"
-
-      "Topic"
-      [svc1 svc2]
-      "science kw topic"
-
-      "Term"
-      [svc1 svc2]
-      "science kw term"
-
-      "Variable level 1"
-      [svc1]
-      "var-1 level-1"
-
-      "Variable level 2"
-      [svc1]
-      "var-1 level-2"
-
-      "Variable level 3"
-      [svc1]
-      "var-1 level-3"
-
-      "Detailed Variable"
-      [svc1]
-      "deet var-1"
-
-      "Combination of keywords"
-      [svc1]
-      "cat-1 topic-1"
-
-      "Combination of keywords - different order, case insensitive"
-      [svc1]
-      "ToPiC-1 CaT-1"
-
-      "Wildcards"
-      [svc1 svc2]
-      "s?ien* k? var*")))
+      "ON-LINE ARCHIVE")))
 
 (deftest search-service-contact-group-keywords-test
   (let [svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
@@ -435,33 +355,6 @@
       [svc1]
       "Bob")))
 
-(deftest search-service-platforms-keywords-test
-  (let [svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
-                                                  :Name "Service 1"
-                                                  :Platforms [(data-umm-s/platform)]})
-        svc2 (services/ingest-service-with-attrs {:native-id "svc-2"
-                                                  :Name "Service 2"})]
-    (index/wait-until-indexed)
-
-    (are3 [expected-services keyword-query]
-      (d/assert-refs-match
-       expected-services (services/search-refs {:keyword keyword-query}))
-
-      "Platform Short Name"
-      [svc1]
-      "pltfrm1"
-
-      "Platform Long Name"
-      [svc1]
-      "Platform Name"
-
-      "Instrument Short Name"
-      [svc1]
-      "instr1"
-
-      "Instrument Long Name"
-      [svc1]
-      "Instrument Name")))
 
 (deftest search-service-keywords-test
   (let [svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
@@ -513,11 +406,7 @@
 
       "Roles"
       [svc1 svc2]
-      "SERVICE PROVIDER"
-
-      "Contact Persons"
-      [svc1]
-      "Alice")))
+      "SERVICE PROVIDER")))
 
 (deftest deleted-services-not-found-test
   (let [token (e/login (s/context) "user1")
@@ -663,8 +552,8 @@
         {:accept (mime-types/with-version mime-types/umm-json umm-version/current-service-version)}
 
         "explicit UMM JSON version through suffix"
-        "1.1"
-        {:url-extension "umm_json_v1_1"})))
+        "1.3.1"
+        {:url-extension "umm_json_v1_3_1"})))
 
   (testing "Searching with non-existent UMM JSON version"
     (are3 [options]
