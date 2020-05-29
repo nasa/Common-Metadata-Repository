@@ -130,7 +130,8 @@
                        hu/save-sample-humanizers-fixture
                        autocomplete-reindex-fixture]))
 
-(deftest reindex-suggestions-test
+
+#_(deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
     (compare-autocomplete-results
       (get-in (search/get-autocomplete-json "q=level2") [:feed :entry])
@@ -162,13 +163,13 @@
       [query expected]
       (let [results (get-in (search/get-autocomplete-json (str "q=" query)) [:feed :entry])]
         (compare-autocomplete-results results expected))
-      
+
       "excludes 'NA'"
       "na" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}]
-      
+
       "excludes 'None'"
       "none" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}]
-      
+
       "excludes 'Not Applicable'"
       "not applicable" [{:type "science_keywords" :value "Nothofagus" :fields "Biosphere:Nothofagus"}
                         {:type "instrument" :value "ATM" :fields "ATM"}
@@ -177,7 +178,7 @@
                         {:type "science_keywords" :value "Alpha" :fields "Popular:Alpha"}
                         {:type "project" :value "ACRIM" :fields "ACRIM"}
                         {:type "organization" :value "ACRIM SCF" :fields "ACRIM SCF"}]
-      
+
       "excludes 'Not Provided'"
       "not provided" [{:type "science_keywords" :value "Nothofagus" :fields "Biosphere:Nothofagus"}
                       {:type "project" :value "proj1" :fields "proj1"}
