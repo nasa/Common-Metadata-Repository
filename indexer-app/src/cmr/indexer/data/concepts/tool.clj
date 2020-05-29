@@ -29,21 +29,21 @@
                      :Organizations]
         keyword-values (keyword-util/concept-keys->keyword-text
                         parsed-concept schema-keys)
-        doc-for-deleted 
+        doc-for-deleted
          {:concept-id concept-id
           :revision-id revision-id
           :deleted deleted
           :tool-name tool-name
-          :tool-name.lowercase (string/lower-case tool-name)
+          :tool-name-lowercase (string/lower-case tool-name)
           :provider-id provider-id
-          :provider-id.lowercase (string/lower-case provider-id)
+          :provider-id-lowercase (string/lower-case provider-id)
           :native-id native-id
-          :native-id.lowercase (string/lower-case native-id)
+          :native-id-lowercase (string/lower-case native-id)
           :keyword keyword-values
           :user-id user-id
           :revision-date revision-date}]
     (if deleted
       doc-for-deleted
-      (assoc doc-for-deleted :metadata-format (name (mt/format-key format)) 
+      (assoc doc-for-deleted :metadata-format (name (mt/format-key format))
                              :long-name long-name
-                             :long-name.lowercase (string/lower-case long-name)))))
+                             :long-name-lowercase (string/lower-case long-name)))))

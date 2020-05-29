@@ -37,7 +37,7 @@
   (if (string/blank? group-path)
     name
     (str group-path "/" name)))
-  
+
 
 (defmethod es/parsed-concept->elastic-doc :variable
   [context concept parsed-concept]
@@ -78,9 +78,9 @@
        :concept-seq-id concept-seq-id
        :deleted deleted
        :variable-name variable-name
-       :variable-name.lowercase (string/lower-case variable-name)
+       :variable-name-lowercase (string/lower-case variable-name)
        :full-path (get-full-path group-path variable-name)
-       :full-path.lowercase (string/lower-case (get-full-path group-path variable-name))
+       :full-path-lowercase (string/lower-case (get-full-path group-path variable-name))
        :alias alias
        :alias-lowercase (util/safe-lowercase alias)
        :measurement measurement

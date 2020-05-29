@@ -199,8 +199,8 @@
 
 (defmethod q2e/field->lowercase-field-mappings :tool
   [_]
-  {:provider "provider-id.lowercase"
-   :name "tool-name.lowercase"})
+  {:provider "provider-id-lowercase"
+   :name "tool-name-lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :subscription
   [_]
@@ -334,11 +334,11 @@
 
 (defmethod q2e/concept-type->sort-key-map :variable
   [_]
-  {:variable-name :variable-name.lowercase
-   :name :variable-name.lowercase
-   :long-name :measurement.lowercase
-   :full-path :full-path.lowercase
-   :provider :provider-id.lowercase})
+  {:variable-name :variable-name-lowercase
+   :name :variable-name-lowercase
+   :long-name :measurement-lowercase
+   :full-path :full-path-lowercase
+   :provider :provider-id-lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :service
   [_]
@@ -349,10 +349,10 @@
 
 (defmethod q2e/concept-type->sort-key-map :tool
   [_]
-  {:tool-name :tool-name.lowercase
-   :name :tool-name.lowercase
-   :long-name :long-name.lowercase
-   :provider :provider-id.lowercase})
+  {:tool-name :tool-name-lowercase
+   :name :tool-name-lowercase
+   :long-name :long-name-lowercase
+   :provider :provider-id-lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :subscription
   [_]
@@ -517,4 +517,3 @@
   (reduce-query-condition
     [condition context]
     (update-in condition [:condition] c2s/reduce-query-condition context)))
-
