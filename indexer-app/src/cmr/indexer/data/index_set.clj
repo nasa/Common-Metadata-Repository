@@ -763,7 +763,6 @@
 (defmapping tool-mapping :tool
   "Defines the elasticsearch mapping for storing tools. These are the
   fields that will be stored in an Elasticsearch document."
-  {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-id (-> m/int-field-mapping m/stored m/doc-values)
    :native-id (-> m/string-field-mapping m/stored m/doc-values)
