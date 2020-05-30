@@ -40,27 +40,25 @@
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
   (let [default-mappings {:author :authors
-                          :data-center-h :organization-humanized2
+                          :data-center-h :organization-humanized
                           :doi :doi-stored
                           :granule-end-date :granule-end-date-stored
                           :granule-start-date :granule-start-date-stored
                           :granule-data-format-h :granule-data-format-humanized
                           :instrument :instrument-sn
-                          :instrument-h :instrument-sn-humanized2
+                          :instrument-h :instrument-sn-humanized
                           :measurement :measurements
                           :platform :platform-sn
-                          :platform-h :platform-sn-humanized2
-                          :processing-level-id-h :processing-level-id-humanized2
-                          :project :project-sn2
-                          :project-h :project-sn-humanized2
-                          :project-sn :project-sn2
+                          :platform-h :platform-sn-humanized
+                          :processing-level-id-h :processing-level-id-humanized
+                          :project :project-sn
+                          :project-h :project-sn-humanized
                           :provider :provider-id
-                          :revision-date :revision-date2
                           :sensor :sensor-sn
                           :service-concept-id :service-concept-ids
                           :service-name :service-names
                           :two-d-coordinate-system-name :two-d-coord-name
-                          :updated-since :revision-date2
+                          :updated-since :revision-date
                           :usage-score :usage-relevancy-score
                           :variable-concept-id :variable-concept-ids
                           :variable-name :variable-names
@@ -83,9 +81,7 @@
 
 (defmethod q2e/concept-type->field-mappings :granule
   [_]
-  (let [default-mappings {:granule-ur-lowercase :granule-ur-lowercase2
-                          :producer-gran-id-lowercase :producer-gran-id-lowercase2
-                          :provider :provider-id
+  (let [default-mappings {:provider :provider-id
                           :native-id :native-id-stored
                           :revision-date :revision-date-stored-doc-values
                           :updated-since :revision-date-stored-doc-values
@@ -140,15 +136,13 @@
    :granule-start-date-stored :granule-start-date
    :granule-data-format-humanized :granule-data-format-h
    :instrument-sn :instrument
-   :instrument-sn-humanized2 :instrument-h
+   :instrument-sn-humanized :instrument-h
    :measurements :measurement
-   :organization-humanized2 :data-center-h
+   :organization-humanized :data-center-h
    :platform-sn :platform
-   :platform-sn-humanized2 :platform-h
-   :processing-level-id-humanized2 :processing-level-id-h
-   :project-sn-humanized2 :project-h
-   :project-sn2 :project-sn
-   :revision-date2 :revision-date
+   :platform-sn-humanized :platform-h
+   :processing-level-id-humanized :processing-level-id-h
+   :project-sn-humanized :project-h
    :sensor-sn :sensor
    :service-concept-ids :service-concept-id
    :service-names :service-name
@@ -176,7 +170,7 @@
   [_]
   {:provider "provider-id-lowercase"
    :version "version-id-lowercase"
-   :project "project-sn2-lowercase"
+   :project "project-sn-lowercase"
    :two-d-coordinate-system-name "two-d-coord-name-lowercase"
    :platform "platform-sn-lowercase"
    :instrument "instrument-sn-lowercase"
@@ -226,9 +220,9 @@
 (defmethod q2e/field->lowercase-field-mappings :granule
   [_]
   (let [default-mappings
-        {:granule-ur "granule-ur-lowercase2"
-         :producer-gran-id "producer-gran-id-lowercase2"
-         :producer-granule-id "producer-gran-id-lowercase2"
+        {:granule-ur "granule-ur-lowercase"
+         :producer-gran-id "producer-gran-id-lowercase"
+         :producer-granule-id "producer-gran-id-lowercase"
          :project "project-refs-lowercase"
          :version "version-id-lowercase"
          :provider "provider-id-lowercase"
@@ -325,7 +319,6 @@
    :instrument :instrument-sn-lowercase
    :sensor :sensor-sn-lowercase
    :score :_score
-   :revision-date :revision-date2
    :usage-score :usage-relevancy-score})
 
 (defmethod q2e/concept-type->sort-key-map :tag
@@ -369,9 +362,9 @@
                           :entry-title :entry-title-lowercase
                           :short-name :short-name-lowercase
                           :version :version-id-lowercase
-                          :granule-ur :granule-ur-lowercase2
-                          :producer-granule-id :producer-gran-id-lowercase2
-                          :readable-granule-name :readable-granule-name-sort2
+                          :granule-ur :granule-ur-lowercase
+                          :producer-granule-id :producer-gran-id-lowercase
+                          :readable-granule-name :readable-granule-name-sort
                           :platform :platform-sn-lowercase
                           :instrument :instrument-sn-lowercase
                           :sensor :sensor-sn-lowercase

@@ -326,7 +326,7 @@
             :version-id-lowercase (util/safe-lowercase version-id)
             :parsed-version-id-lowercase (util/safe-lowercase parsed-version-id)
             :deleted (boolean deleted)
-            :revision-date2 revision-date
+            :revision-date revision-date
             :access-value access-value
             :processing-level-id processing-level-id
             :processing-level-id-lowercase (util/safe-lowercase processing-level-id)
@@ -366,8 +366,8 @@
             :sensor-sn-lowercase  (map str/lower-case sensor-short-names)
             :authors authors
             :authors-lowercase (map str/lower-case authors)
-            :project-sn2 project-short-names
-            :project-sn2-lowercase  (map str/lower-case project-short-names)
+            :project-sn project-short-names
+            :project-sn-lowercase  (map str/lower-case project-short-names)
             :two-d-coord-name two-d-coord-names
             :two-d-coord-name-lowercase  (map str/lower-case two-d-coord-names)
             :spatial-keyword spatial-keywords
@@ -422,7 +422,7 @@
                                                           {:data (:data ta)})])))))
 
             :processing-level-id-lowercase-humanized (-> humanized-values
-                                                         :processing-level-id-humanized2
+                                                         :processing-level-id-humanized
                                                          first
                                                          :value-lowercase)
             :associations-gzip-b64 (associations->gzip-base64-str
@@ -466,7 +466,7 @@
      :deleted (boolean deleted)
      :provider-id provider-id
      :provider-id-lowercase (util/safe-lowercase provider-id)
-     :revision-date2 revision-date
+     :revision-date revision-date
      :metadata-format (when format (name (mt/format-key format)))
      :permitted-group-ids tombstone-permitted-group-ids}))
 

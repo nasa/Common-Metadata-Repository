@@ -22,8 +22,8 @@
      :short-name-lowercase (string/lower-case short-name)
      :version-id version-id
      :version-id-lowercase (string/lower-case version-id)
-     :project-sn2 project-short-names
-     :project-sn2-lowercase (map string/lower-case project-short-names)}))
+     :project-sn project-short-names
+     :project-sn-lowercase (map string/lower-case project-short-names)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
