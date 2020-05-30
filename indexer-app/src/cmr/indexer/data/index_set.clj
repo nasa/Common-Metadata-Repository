@@ -316,13 +316,7 @@
           ;; This comes from the metadata db column of the same name
           ;; and is by default equal to the Oracle system time at the
           ;; time the revision record is written
-
-          ;; revision-date needs to be stored but you can't update an
-          ;; existing mapping to be stored. We'll switch to revision-date2
-          ;; and deprecate and then remove revision-date in sprint 32 or
-          ;; later.
-          :revision-date m/date-field-mapping
-          :revision-date2 (m/stored m/date-field-mapping)
+          :revision-date (m/stored m/date-field-mapping)
           :created-at (m/stored m/date-field-mapping)
 
           :permitted-group-ids (m/stored m/string-field-mapping)
@@ -350,9 +344,8 @@
           :access-value                   (m/stored m/float-field-mapping)
           :processing-level-id            (m/stored m/string-field-mapping)
           :processing-level-id-lowercase  m/string-field-mapping
-          :processing-level-id-humanized  m/string-field-mapping
           :processing-level-id-lowercase-humanized m/string-field-mapping
-          :processing-level-id-humanized2 prioritized-humanizer-mapping
+          :processing-level-id-humanized prioritized-humanizer-mapping
           :collection-data-type           (m/stored m/string-field-mapping)
           :collection-data-type-lowercase m/string-field-mapping
 
@@ -380,21 +373,18 @@
 
           :platform-sn                    m/string-field-mapping
           :platform-sn-lowercase          m/string-field-mapping
-          :platform-sn-humanized          m/string-field-mapping
           :platform-sn-lowercase-humanized m/string-field-mapping
-          :platform-sn-humanized2         prioritized-humanizer-mapping
+          :platform-sn-humanized          prioritized-humanizer-mapping
           :instrument-sn                  m/string-field-mapping
           :instrument-sn-lowercase        m/string-field-mapping
-          :instrument-sn-humanized        m/string-field-mapping
           :instrument-sn-lowercase-humanized m/string-field-mapping
-          :instrument-sn-humanized2       prioritized-humanizer-mapping
+          :instrument-sn-humanized        prioritized-humanizer-mapping
           :sensor-sn                      m/string-field-mapping
           :sensor-sn-lowercase            m/string-field-mapping
-          :project-sn2                    (m/stored m/string-field-mapping)
-          :project-sn2-lowercase          m/string-field-mapping
-          :project-sn-humanized           m/string-field-mapping
+          :project-sn                     (m/stored m/string-field-mapping)
+          :project-sn-lowercase           m/string-field-mapping
           :project-sn-lowercase-humanized m/string-field-mapping
-          :project-sn-humanized2          prioritized-humanizer-mapping
+          :project-sn-humanized           prioritized-humanizer-mapping
           :archive-center                 (m/stored m/string-field-mapping)
           :archive-center-lowercase       m/string-field-mapping
           :data-center                    (m/stored m/string-field-mapping)
@@ -488,9 +478,8 @@
           :start-circular-latitude (m/stored m/double-field-mapping)
 
           ;; additional humanized facet fields
-          :organization-humanized m/string-field-mapping
           :organization-lowercase-humanized m/string-field-mapping
-          :organization-humanized2 prioritized-humanizer-mapping
+          :organization-humanized prioritized-humanizer-mapping
 
           ;; associated tags
           :tags tag-associations-mapping
@@ -574,21 +563,10 @@
      :provider-id-lowercase-doc-values (m/doc-values m/string-field-mapping)
 
      :granule-ur            (m/stored m/string-field-mapping)
-
-
-     ;; Modified mappings for the lowercase fields for granule-ur, producer-gran-id,
-     ;; and readable-granule-name-sort in order to prevent these values from being
-     ;; stored in the elasticsearch field data cache (by specifying to use doc-values
-     ;; for these fields). These 3 fields were taking more than 40% of the cache and
-     ;; are rarely used to sort on.
-     ;;
-     ;; The convention used is to append a 2 to the name of the fields. Note that
-     ;; for the search application to use the special lowercase2 fields, the fields
-     ;; need to be mapped in cmr.search.data.query-to-elastic/field->lowercase-field.
-     :granule-ur-lowercase2 (m/doc-values m/string-field-mapping)
+     :granule-ur-lowercase  (m/doc-values m/string-field-mapping)
 
      :producer-gran-id (m/stored m/string-field-mapping)
-     :producer-gran-id-lowercase2 (m/doc-values m/string-field-mapping)
+     :producer-gran-id-lowercase (m/doc-values m/string-field-mapping)
 
      :day-night (m/stored m/string-field-mapping)
      :day-night-doc-values (-> m/string-field-mapping m/stored m/doc-values)
@@ -605,7 +583,7 @@
      ;; The producer granule id will be put in this field if present otherwise it
      ;; will default to granule-ur. This avoids the solution Catalog REST uses which is
      ;; to use a sort script which is (most likely) much slower.
-     :readable-granule-name-sort2 (m/doc-values m/string-field-mapping)
+     :readable-granule-name-sort (m/doc-values m/string-field-mapping)
 
      :platform-sn           m/string-field-mapping
      :platform-sn-lowercase m/string-field-mapping

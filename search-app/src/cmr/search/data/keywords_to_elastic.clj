@@ -191,7 +191,7 @@
      (keywords->boosted-exact-match-filter :entry-id-lowercase keywords (get-boost-fn :entry-id))
 
      ;; project (ECHO campaign)
-     (keywords->name-filter :project-ln-lowercase :project-sn2-lowercase keywords
+     (keywords->name-filter :project-ln-lowercase :project-sn-lowercase keywords
                             (get-boost-fn :project))
      ;; platform
      (keywords->name-filter :platform-ln-lowercase :platform-sn-lowercase keywords
