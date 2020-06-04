@@ -504,4 +504,16 @@
            ["usage_score" "entry_title"] [c6 c7 c1 c2 c3 c5 c4]
            ["usage_score" "-entry_title"] [c7 c6 c1 c2 c3 c5 c4]
            ["-usage_score" "entry_title"] [c4 c5 c3 c2 c1 c6 c7]
-           ["-usage_score" "-entry_title"] [c4 c5 c3 c2 c1 c7 c6]))))
+           ["-usage_score" "-entry_title"] [c4 c5 c3 c2 c1 c7 c6]))
+
+    (testing "sorting params"
+      (are [query-map items]
+           (d/refs-match-order? items
+                                (search/find-refs :collection
+                                                  query-map
+                                                  {:method :post}))
+
+           {:keyword "a*"} [c1 c6]
+           {:keyword "a*" :sort-key ["-usage_score"]} [c1 c6]
+           {:keyword "a*" :sort-key ["usage_score"]} [c6 c1]))))
+
