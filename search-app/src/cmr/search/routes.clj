@@ -17,6 +17,7 @@
    [cmr.common.services.errors :as svc-errors]
    [cmr.search.api.routes :as api-routes]
    [cmr.search.middleware.shapefile :as shapefile]
+   [cmr.search.middleware.shapefile-simplification :as shapefile-simplifier]
    [cmr.search.services.messages.common-messages :as msg]
    [cmr.search.site.routes :as site-routes]
    [compojure.core :refer [GET context routes]]
@@ -25,8 +26,6 @@
    [ring.middleware.nested-params :as nested-params]
    [ring.middleware.params :as params]
    [ring.middleware.multipart-params :refer [wrap-multipart-params]]))
-
-(def SHAPEFILE_SIMPLIFICATION_HEADER "CMR-Shapfile-Simplification")
 
 (defn find-query-str-mixed-arity-param
   "Return the first parameter that has mixed arity, i.e., appears with both single and multivalued in
@@ -97,22 +96,6 @@
     robots-txt-test-environment-response
     robots-txt-non-test-environment-response))
 
-(defn- context->shapefile-simpification-info
-  "Extracts shapefile simiplification info from a request context."
-  [context]
-  true)
-
-(defn- add-shapefile-simplification-header-response-handler
-  "Adds shapefile simplification header to response when shapefile simplication was
-  requested."
-  [handler]
-  (fn [{context :request-context :as request}]
-    (if-let [shapefile-simplification-info (context->shapefile-simpification-info context)]
-      (-> request
-          (handler)
-          (assoc-in [:headers SHAPEFILE_SIMPLIFICATION_HEADER] "true"))
-      ((ring-json/wrap-json-response handler) request))))
-
 (defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
@@ -139,9 +122,9 @@
       mixed-arity-param-handler
       (errors/exception-handler default-error-format)
       common-routes/add-request-id-response-handler
-      add-shapefile-simplification-header-response-handler
       (cmr-context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
+      (shapefile-simplifier/shapefile-simplifier default-error-format)
       params/wrap-params
       copy-of-body-handler
       (shapefile/shapefile-upload default-error-format)))
