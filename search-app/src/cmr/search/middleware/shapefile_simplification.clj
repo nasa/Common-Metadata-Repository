@@ -44,10 +44,12 @@
   (println "REQUEST++++++++++++++++++++++++++++++++++++++")
   (println request)
   (when (= "true" (get-in request [:params "simplify-shapefile"]))
-    (do
-      (println "SIMPLIFYING SHAPEFILE-------------------------------")
-      {:original-vertex-count 100
-       :reduced-vertex-count 50})))
+    (if-let [tmp-file (get-in request [:params :shapefile :tempfile])]
+      (do
+        (println "SIMPLIFYING SHAPEFILE-------------------------------")
+        (json/generate-string {:original-vertex-count 100
+                               :reduced-vertex-count 50}))
+      (errors/throw-service-error :bad-request "Missing shapefile"))))
 
 (defn shapefile-simplifier
   "Adds shapefile simplification header to response when shapefile simplication was
@@ -57,8 +59,8 @@
     (try
       (if-let [shapefile-simplification-info (simplify-shapefile request)]
         (-> request
-            (handler))
-            ; (assoc-in [:headers SHAPEFILE_SIMPLIFICATION_HEADER] shapefile-simplification-info))
+            (handler)
+            (assoc-in [:headers SHAPEFILE_SIMPLIFICATION_HEADER] shapefile-simplification-info))
         (do
           (println "UNHANDLED++++++++++++++++++++++")
           (handler request)))
