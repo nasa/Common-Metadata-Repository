@@ -74,7 +74,7 @@
     (seq
      (concat
        (when use-usage-sort?
-         [{:_script {:params {:binSize  (community-usage-bin-size)}
+         [{:_script {:params {:binSize (community-usage-bin-size)}
                      :type :number
                      :script community-usage-bin-script
                      :order :desc
@@ -91,7 +91,7 @@
        ;; We only include this if one of the others is present
        (when (and (or use-temporal-sort? use-keyword-sort?)
                   (sort-use-relevancy-score))
-         [{:_script {:params {:binSize  (community-usage-bin-size)}
+         [{:_script {:params {:binSize (community-usage-bin-size)}
                      :type :number
                      :script community-usage-bin-script
                      :order :desc
