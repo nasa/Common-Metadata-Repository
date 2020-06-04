@@ -37,75 +37,75 @@
 (defmethod cpv/params-config :collection
   [_]
   (cpv/merge-params-config
-    cpv/basic-params-config
-    {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
-                     :include-facets :hierarchical-facets :include-highlights :include-tags
-                     :all-revisions :shapefile}
-     :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
-                       :collection-data-type :project :project-h :entry-id :version :provider
-                       :entry-title :doi :native-id :platform :platform-h :processing-level-id
-                       :processing-level-id-h :sensor :data-center-h :measurement :variable-name
-                       :variable-concept-id :variable-native-id :author :service-name
-                       :service-concept-id :granule-data-format :granule-data-format-h}
-     :always-case-sensitive #{:echo-collection-id}
-     :disallow-pattern #{:echo-collection-id}}))
+   cpv/basic-params-config
+   {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
+                    :include-facets :hierarchical-facets :include-highlights :include-tags
+                    :all-revisions :shapefile :simplify-shapefile}
+    :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
+                      :collection-data-type :project :project-h :entry-id :version :provider
+                      :entry-title :doi :native-id :platform :platform-h :processing-level-id
+                      :processing-level-id-h :sensor :data-center-h :measurement :variable-name
+                      :variable-concept-id :variable-native-id :author :service-name
+                      :service-concept-id :granule-data-format :granule-data-format-h}
+    :always-case-sensitive #{:echo-collection-id}
+    :disallow-pattern #{:echo-collection-id}}))
 
 (defmethod cpv/params-config :granule
   [_]
   (cpv/merge-params-config
-    cpv/basic-params-config
-    {:single-value #{:echo-compatible :include-facets :shapefile}
-     :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
-                       :producer-granule-id :project :version :native-id :provider :entry-title
-                       :platform :sensor :feature-id :crid-id :cycle}
-     :always-case-sensitive #{:echo-granule-id}
-     :disallow-pattern #{:echo-granule-id}}))
+   cpv/basic-params-config
+   {:single-value #{:echo-compatible :include-facets :shapefile :simplify-shapefile}
+    :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
+                      :producer-granule-id :project :version :native-id :provider :entry-title
+                      :platform :sensor :feature-id :crid-id :cycle}
+    :always-case-sensitive #{:echo-granule-id}
+    :disallow-pattern #{:echo-granule-id}}))
 
 (defmethod cpv/params-config :tag
   [_]
   (cpv/merge-params-config
-    cpv/basic-params-config
-    {:single-value #{}
-     :multiple-value #{:tag-key :originator-id}
-     :always-case-sensitive #{}
-     :disallow-pattern #{}}))
+   cpv/basic-params-config
+   {:single-value #{}
+    :multiple-value #{:tag-key :originator-id}
+    :always-case-sensitive #{}
+    :disallow-pattern #{}}))
 
 ;; CMR-4408 measurement is listed as a parameter here, but is currently only a placeholder.
 (defmethod cpv/params-config :variable
   [_]
   (cpv/merge-params-config
-    cpv/basic-params-config
-    {:single-value #{:keyword :all-revisions}
-     :multiple-value #{:name :variable-name :alias :full-path :measurement :instrument :provider :native-id :concept-id}
-     :always-case-sensitive #{}
-     :disallow-pattern #{}}))
+   cpv/basic-params-config
+   {:single-value #{:keyword :all-revisions}
+    :multiple-value #{:name :variable-name :alias :full-path :measurement :instrument :provider :native-id :concept-id}
+    :always-case-sensitive #{}
+    :disallow-pattern #{}}))
 
 (defmethod cpv/params-config :service
   [_]
   (cpv/merge-params-config
-    cpv/basic-params-config
-    {:single-value #{:keyword :all-revisions}
-     :multiple-value #{:name :provider :native-id :concept-id}
-     :always-case-sensitive #{}
-     :disallow-pattern #{}}))
+   cpv/basic-params-config
+   {:single-value #{:keyword :all-revisions}
+    :multiple-value #{:name :provider :native-id :concept-id}
+    :always-case-sensitive #{}
+    :disallow-pattern #{}}))
 
 (defmethod cpv/params-config :tool
   [_]
   (cpv/merge-params-config
-    cpv/basic-params-config
-    {:single-value #{:keyword :all-revisions}
-     :multiple-value #{:name :provider :native-id :concept-id}
-     :always-case-sensitive #{}
-     :disallow-pattern #{}}))
+   cpv/basic-params-config
+   {:single-value #{:keyword :all-revisions}
+    :multiple-value #{:name :provider :native-id :concept-id}
+    :always-case-sensitive #{}
+    :disallow-pattern #{}}))
 
 (defmethod cpv/params-config :subscription
   [_]
   (cpv/merge-params-config
-    cpv/basic-params-config
-    {:single-value #{:keyword :all-revisions}
-     :multiple-value #{:name :subscription-name :subscriber-id :collection-concept-id :provider :native-id :concept-id}
-     :always-case-sensitive #{}
-     :disallow-pattern #{}}))
+   cpv/basic-params-config
+   {:single-value #{:keyword :all-revisions}
+    :multiple-value #{:name :subscription-name :subscriber-id :collection-concept-id :provider :native-id :concept-id}
+    :always-case-sensitive #{}
+    :disallow-pattern #{}}))
 
 (defmethod cpv/params-config :autocomplete
   [_]
@@ -161,6 +161,7 @@
    :created-at cpv/and-option
    :highlights highlights-option
    :author cpv/string-plus-and-options
+   :simplify-shapefile cpv/string-param-options
 
    ;; Tag related parameters
    :tag-key cpv/pattern-option
@@ -209,7 +210,8 @@
    :created-at cpv/and-option
    :passes cpv/and-option
    :production-date cpv/and-option
-   :revision-date cpv/and-option})
+   :revision-date cpv/and-option
+   :simplify-shapefile cpv/string-param-options})
 
 (defmethod cpv/valid-parameter-options :tag
   [_]
@@ -418,15 +420,15 @@
   "Validates a given date range that may contain several date ranges."
   [date-range param-name]
   (mapcat
-    (fn [value]
-      (let [parts (map s/trim (s/split value #"," -1))
-            [start-date end-date] parts]
-        (if (> (count parts) 2)
-          [(format "Too many commas in %s %s" param-name value)]
-          (concat
-            (cpv/validate-date-time (str param-name " start") start-date)
-            (cpv/validate-date-time (str param-name" end") end-date)))))
-    date-range))
+   (fn [value]
+     (let [parts (map s/trim (s/split value #"," -1))
+           [start-date end-date] parts]
+       (if (> (count parts) 2)
+         [(format "Too many commas in %s %s" param-name value)]
+         (concat
+          (cpv/validate-date-time (str param-name " start") start-date)
+          (cpv/validate-date-time (str param-name " end") end-date)))))
+   date-range))
 
 (defn- sequential-multi-date-validation
   "Validates the given date parameter contains valid date time strings."
@@ -509,18 +511,18 @@
       (let [temporal-facet-maps (vals param-values)
             values (keep date-field temporal-facet-maps)]
         (reduce
-          (fn [errors value]
-            (if-not (valid-value-for-date-field? value date-field)
-              (conj errors (format (str "%s [%s] within [temporal_facet] is not a valid %s. "
-                                        "%ss must be between 1 and %d.")
-                                   (s/capitalize (name date-field))
-                                   value
-                                   (name date-field)
-                                   (s/capitalize (name date-field))
-                                   (max-value-for-date-field date-field)))
-              errors))
-          []
-          values)))))
+         (fn [errors value]
+           (if-not (valid-value-for-date-field? value date-field)
+             (conj errors (format (str "%s [%s] within [temporal_facet] is not a valid %s. "
+                                       "%ss must be between 1 and %d.")
+                                  (s/capitalize (name date-field))
+                                  value
+                                  (name date-field)
+                                  (s/capitalize (name date-field))
+                                  (max-value-for-date-field date-field)))
+             errors))
+         []
+         values)))))
 
 (defn- temporal-facet-year-validation
   "Validates that the years provided in all temporal-facet parameters are valid."
@@ -613,7 +615,8 @@
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
                                          :include-has-granules :has-granules :hierarchical-facets
-                                         :include-highlights :all-revisions :has-opendap-url])]
+                                         :include-highlights :all-revisions :has-opendap-url
+                                         :simplify-shapefile])]
     (mapcat
       (fn [[param value]]
         (when-not (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))
@@ -738,27 +741,27 @@
   "Validates that the highlights option (if present) is an integer greater than zero."
   [concept-type params]
   (keep
-    (fn [param]
-      (when-let [value (get-in params [:options :highlights param])]
-        (try
-          (let [int-value (Integer/parseInt value)]
-            (when (< int-value 1)
-              (format "%s option [%d] for highlights must be an integer greater than 0."
-                      (csk/->snake_case_string param) int-value)))
-          (catch NumberFormatException e
-            (format
-              "%s option [%s] for highlights is not a valid integer."
-              (csk/->snake_case_string param) value)))))
-    [:snippet-length :num-snippets]))
+   (fn [param]
+     (when-let [value (get-in params [:options :highlights param])]
+       (try
+         (let [int-value (Integer/parseInt value)]
+           (when (< int-value 1)
+             (format "%s option [%d] for highlights must be an integer greater than 0."
+                     (csk/->snake_case_string param) int-value)))
+         (catch NumberFormatException e
+           (format
+            "%s option [%s] for highlights is not a valid integer."
+            (csk/->snake_case_string param) value)))))
+   [:snippet-length :num-snippets]))
 
 (defn- include-tags-parameter-validation
   "Validates parameters against result format."
   [concept-type params]
   (concat
-    (when (and (not (#{:json :atom :echo10 :dif :dif10 :iso19115 :native} (:result-format params)))
-               (not (s/blank? (:include-tags params))))
-      [(format "Parameter [include_tags] is not supported for %s format search."
-               (name (cqm/base-result-format (:result-format params))))])))
+   (when (and (not (#{:json :atom :echo10 :dif :dif10 :iso19115 :native} (:result-format params)))
+              (not (s/blank? (:include-tags params))))
+     [(format "Parameter [include_tags] is not supported for %s format search."
+              (name (cqm/base-result-format (:result-format params))))])))
 
 (def valid-timeline-intervals
   "A list of the valid values for timeline intervals."
@@ -888,7 +891,7 @@
                  [boolean-value-validation])
    :autocomplete cpv/common-validations
    :subscription (concat cpv/common-validations
-                    [boolean-value-validation])})
+                         [boolean-value-validation])})
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.
@@ -941,7 +944,7 @@
   [concept-type params]
   (let [[safe-params type-errors] (validate-parameter-data-types params)]
     (cpv/validate-parameters
-      concept-type safe-params (parameter-validations concept-type) type-errors))
+     concept-type safe-params (parameter-validations concept-type) type-errors))
   params)
 
 (defn validate-standard-query-parameters

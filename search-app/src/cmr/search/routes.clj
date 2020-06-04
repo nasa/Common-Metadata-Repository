@@ -20,10 +20,13 @@
    [cmr.search.services.messages.common-messages :as msg]
    [cmr.search.site.routes :as site-routes]
    [compojure.core :refer [GET context routes]]
+   [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
    [ring.middleware.params :as params]
    [ring.middleware.multipart-params :refer [wrap-multipart-params]]))
+
+(def SHAPEFILE_SIMPLIFICATION_HEADER "CMR-Shapfile-Simplification")
 
 (defn find-query-str-mixed-arity-param
   "Return the first parameter that has mixed arity, i.e., appears with both single and multivalued in
@@ -94,18 +97,34 @@
     robots-txt-test-environment-response
     robots-txt-non-test-environment-response))
 
+(defn- context->shapefile-simpification-info
+  "Extracts shapefile simiplification info from a request context."
+  [context]
+  true)
+
+(defn- add-shapefile-simplification-header-response-handler
+  "Adds shapefile simplification header to response when shapefile simplication was
+  requested."
+  [handler]
+  (fn [{context :request-context :as request}]
+    (if-let [shapefile-simplification-info (context->shapefile-simpification-info context)]
+      (-> request
+          (handler)
+          (assoc-in [:headers SHAPEFILE_SIMPLIFICATION_HEADER] "true"))
+      ((ring-json/wrap-json-response handler) request))))
+
 (defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
       ;; Return robots.txt from the root /robots.txt and at the context (e.g.
       ;; /search/robots.txt)
-      (GET "/robots.txt" req (get-robots-txt-response test-environment))
-      (context
-        relative-root-url []
-        (GET "/robots.txt" req (get-robots-txt-response test-environment)))
-      (api-routes/build-routes system)
-      (site-routes/build-routes system)
-      (common-pages/not-found))))
+     (GET "/robots.txt" req (get-robots-txt-response test-environment))
+     (context
+       relative-root-url []
+       (GET "/robots.txt" req (get-robots-txt-response test-environment)))
+     (api-routes/build-routes system)
+     (site-routes/build-routes system)
+     (common-pages/not-found))))
 
 (defn handlers [system]
   (-> (build-routes system)
@@ -120,6 +139,7 @@
       mixed-arity-param-handler
       (errors/exception-handler default-error-format)
       common-routes/add-request-id-response-handler
+      add-shapefile-simplification-header-response-handler
       (cmr-context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
       params/wrap-params
