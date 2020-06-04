@@ -58,17 +58,27 @@
 
    The algorithm is to currently compare scores in the following order (we only go to the next level
    in the scoring system in the case of a tie at the higher level):
-   1. keyword boost
-   2. temporal overlap
-   3. community usage
-   4. temporal end date of the collection
-   5. processing level."
+   1. community usage
+   2. keyword boost
+   3. temporal overlap
+   4. relevancy with community usage secondary
+   5. temporal end date of the collection
+   6. processing level."
   [query]
   (let [use-keyword-sort? (keywords-extractor/contains-keyword-condition? query)
+        use-usage-sort? (seq (->> query
+                                  :sort-keys
+                                  (filter #(= :usage-relevancy-score (:field %)))))
         use-temporal-sort? (and (temporal-conditions/contains-temporal-conditions? query)
                                 (sort-use-temporal-relevancy))]
     (seq
      (concat
+       (when use-usage-sort?
+         [{:_script {:params {:binSize  (community-usage-bin-size)}
+                     :type :number
+                     :script community-usage-bin-script
+                     :order :desc
+                     :missing 0}}])
        (when use-keyword-sort?
          (if (sort-bin-keyword-scores)
            [{:_script {:params {:binSize (keyword-score-bin-size)}
