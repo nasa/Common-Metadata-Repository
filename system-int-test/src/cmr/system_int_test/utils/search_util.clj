@@ -41,13 +41,13 @@
   "Enables writes for tags / tag associations."
   [options]
   (let [response (client/post (url/enable-search-writes-url) options)]
-     (is (= 200 (:status response)))))
+    (is (= 200 (:status response)))))
 
 (defn disable-writes
   "Disables writes for tags / tag associations."
   [options]
   (let [response (client/post (url/disable-search-writes-url) options)]
-     (is (= 200 (:status response)))))
+    (is (= 200 (:status response)))))
 
 (defn refresh-collection-metadata-cache
   "Triggers a full refresh of the collection metadata cache in the search application."
@@ -101,12 +101,12 @@
   [params]
   (->> params
        (util/map-keys
-         (fn [k]
-           (let [k (if (keyword? k) (name k) k)]
-             (-> k
-                 csk/->snake_case
-                 (str/replace "_[" "[")
-                 (str/replace "_]" "]")))))
+        (fn [k]
+          (let [k (if (keyword? k) (name k) k)]
+            (-> k
+                csk/->snake_case
+                (str/replace "_[" "[")
+                (str/replace "_]" "]")))))
        clojure.walk/keywordize-keys))
 
 (deftest params->snake_case-test
@@ -114,9 +114,9 @@
           (keyword "options[archive_center][and]") "false"
           :foo_bar "chew"}
          (params->snake_case
-           {"archive-center[]" ["SEDAC AC" "Larc" "Sedac AC"],
-            "options[archive-center][and]" "false"
-            :foo-bar "chew"}))))
+          {"archive-center[]" ["SEDAC AC" "Larc" "Sedac AC"],
+           "options[archive-center][and]" "false"
+           :foo-bar "chew"}))))
 
 (defmacro get-search-failure-data
   "Executes a search and returns error data that was caught.
@@ -156,7 +156,7 @@
   [concept-type query]
   (let [url (url/search-url concept-type)]
     (get-search-failure-data
-      (client/get (str url query) {:connection-manager (s/conn-mgr)}))))
+     (client/get (str url query) {:connection-manager (s/conn-mgr)}))))
 
 (defn process-response
   "Returns the response body with response status added."
@@ -295,22 +295,22 @@
                         [(url/timeline-url) mime-types/json])
          get-request? (= :get (:method options))
          response (get-search-failure-data
-                    (if get-request?
-                      (client/get url {:accept accept
-                                       :headers headers
-                                       :query-params params
-                                       :connection-manager (s/conn-mgr)})
-                      (client/post url
-                                   {:accept accept
-                                    :headers headers
-                                    :content-type mime-types/form-url-encoded
-                                    :body (codec/form-encode params)
-                                    :connection-manager (s/conn-mgr)})))]
+                   (if get-request?
+                     (client/get url {:accept accept
+                                      :headers headers
+                                      :query-params params
+                                      :connection-manager (s/conn-mgr)})
+                     (client/post url
+                                  {:accept accept
+                                   :headers headers
+                                   :content-type mime-types/form-url-encoded
+                                   :body (codec/form-encode params)
+                                   :connection-manager (s/conn-mgr)})))]
      (if (= 200 (:status response))
        (if include-headers?
-        (assoc response :results (parse-timeline-response (:body response)))
-        {:status (:status response)
-         :results (parse-timeline-response (:body response))})
+         (assoc response :results (parse-timeline-response (:body response)))
+         {:status (:status response)
+          :results (parse-timeline-response (:body response))})
        response))))
 
 (defn get-granule-timeline-with-post
@@ -324,7 +324,7 @@
    (find-concepts-csv concept-type params {}))
   ([concept-type params options]
    (get-search-failure-data
-     (find-concepts-in-format "text/csv" concept-type params options))))
+    (find-concepts-in-format "text/csv" concept-type params options))))
 
 (defn find-concepts-atom
   "Returns the response of a search in atom format"
@@ -332,7 +332,7 @@
    (find-concepts-atom concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-xml-data
-                    (find-concepts-in-format mime-types/atom concept-type params options))
+                   (find-concepts-in-format mime-types/atom concept-type params options))
          {:keys [status body]} response]
      (if (= status 200)
        {:status status
@@ -343,7 +343,7 @@
   "Returns the response of a search using JSON query in ATOM format"
   [concept-type query-params json-as-map]
   (let [response (get-search-failure-data
-                   (find-with-json-query concept-type query-params json-as-map mime-types/atom))
+                  (find-with-json-query concept-type query-params json-as-map mime-types/atom))
         {:keys [status body]} response]
     (if (= status 200)
       {:status status
@@ -356,7 +356,7 @@
    (find-concepts-json concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-data
-                    (find-concepts-in-format mime-types/json concept-type params options))
+                   (find-concepts-in-format mime-types/json concept-type params options))
          {:keys [status body]} response
          {:keys [echo-compatible include-facets]} params]
      (if (and echo-compatible include-facets)
@@ -370,7 +370,7 @@
   "Returns the response of a search using JSON query in JSON format"
   [concept-type query-params json-as-map]
   (let [response (get-search-failure-data
-                   (find-with-json-query concept-type query-params json-as-map mime-types/json))
+                  (find-with-json-query concept-type query-params json-as-map mime-types/json))
         {:keys [status body]} response
         {:keys [echo-compatible include-facets]} query-params]
     (if (and echo-compatible include-facets)
@@ -386,8 +386,8 @@
    (find-concepts-kml concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-xml-data
-                    (find-concepts-in-format mime-types/kml
-                                             concept-type params options))
+                   (find-concepts-in-format mime-types/kml
+                                            concept-type params options))
          {:keys [status body]} response]
      (if (= status 200)
        {:status status
@@ -400,8 +400,8 @@
    (find-concepts-opendata concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-data
-                    (find-concepts-in-format mime-types/opendata
-                                             concept-type params options))
+                   (find-concepts-in-format mime-types/opendata
+                                            concept-type params options))
          {:keys [status body]} response]
      (if (= status 200)
        {:status status
@@ -442,39 +442,39 @@
    (find-metadata concept-type format-key params {}))
   ([concept-type format-key params options]
    (get-search-failure-xml-data
-     (let [format-mime-type (mime-types/format->mime-type format-key)
-           response (find-concepts-in-format format-mime-type concept-type params options)
-           scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
-           body (:body response)
-           parsed (fx/parse-str body)
-           hits (cx/long-at-path parsed [:hits])
-           metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
-                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
-           items (map (fn [result metadata]
-                        (let [{{:keys [concept-id collection-concept-id revision-id granule-count format
-                                       has-granules echo_dataset_id echo_granule_id]} :attrs} result
+    (let [format-mime-type (mime-types/format->mime-type format-key)
+          response (find-concepts-in-format format-mime-type concept-type params options)
+          scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
+          body (:body response)
+          parsed (fx/parse-str body)
+          hits (cx/long-at-path parsed [:hits])
+          metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
+                      (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
+          items (map (fn [result metadata]
+                       (let [{{:keys [concept-id collection-concept-id revision-id granule-count format
+                                      has-granules echo_dataset_id echo_granule_id]} :attrs} result
                               ;; For echo compatible result, there is no format attribute on the result.
                               ;; So we simply set the format to the input format-key.
-                              metadata-format (if (:echo-compatible params)
-                                                format-key
-                                                (mime-types/mime-type->format format))]
-                          (util/remove-nil-keys
-                            {:concept-id concept-id
-                             :revision-id (when revision-id (Long. ^String revision-id))
-                             :format metadata-format
-                             :collection-concept-id collection-concept-id
-                             :echo_dataset_id echo_dataset_id
-                             :echo_granule_id echo_granule_id
-                             :granule-count (when granule-count (Long. ^String granule-count))
-                             :has-granules (when has-granules (= has-granules "true"))
-                             :metadata metadata})))
-                      (cx/elements-at-path parsed [:result])
-                      metadatas)
-           facets (f/parse-facets-xml (cx/element-at-path parsed [:facets]))]
-       (util/remove-nil-keys {:items items
-                              :facets facets
-                              :hits hits
-                              :scroll-id scroll-id})))))
+                             metadata-format (if (:echo-compatible params)
+                                               format-key
+                                               (mime-types/mime-type->format format))]
+                         (util/remove-nil-keys
+                          {:concept-id concept-id
+                           :revision-id (when revision-id (Long. ^String revision-id))
+                           :format metadata-format
+                           :collection-concept-id collection-concept-id
+                           :echo_dataset_id echo_dataset_id
+                           :echo_granule_id echo_granule_id
+                           :granule-count (when granule-count (Long. ^String granule-count))
+                           :has-granules (when has-granules (= has-granules "true"))
+                           :metadata metadata})))
+                     (cx/elements-at-path parsed [:result])
+                     metadatas)
+          facets (f/parse-facets-xml (cx/element-at-path parsed [:facets]))]
+      (util/remove-nil-keys {:items items
+                             :facets facets
+                             :hits hits
+                             :scroll-id scroll-id})))))
 
 (defn find-metadata-tags
   "Search metadata, parse out the collection concept id to tags mapping from the search response
@@ -483,25 +483,25 @@
    (find-metadata-tags concept-type format-key params {}))
   ([concept-type format-key params options]
    (get-search-failure-xml-data
-     (let [format-mime-type (mime-types/format->mime-type format-key)
-           response (find-concepts-in-format format-mime-type concept-type params options)
-           body (:body response)
-           parsed (fx/parse-str body)
+    (let [format-mime-type (mime-types/format->mime-type format-key)
+          response (find-concepts-in-format format-mime-type concept-type params options)
+          body (:body response)
+          parsed (fx/parse-str body)
            ;; First we parse out the metadata and tags from each result, then we parse tags out.
-           metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
-                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
-           items (map (fn [result metadata]
-                        (let [{{:keys [concept-id]} :attrs} result
-                              tags (when-let [tags-metadata (second (str/split metadata #"<tags>"))]
-                                     (->> (cx/elements-at-path
-                                            (fx/parse-str (str "<tags>" tags-metadata)) [:tag])
-                                          (map da/xml-elem->tag)
-                                          (into {})))]
-                          [concept-id tags]))
-                      (cx/elements-at-path parsed [:result])
-                      metadatas)]
-       (when (seq items)
-         (into {} items))))))
+          metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
+                      (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
+          items (map (fn [result metadata]
+                       (let [{{:keys [concept-id]} :attrs} result
+                             tags (when-let [tags-metadata (second (str/split metadata #"<tags>"))]
+                                    (->> (cx/elements-at-path
+                                          (fx/parse-str (str "<tags>" tags-metadata)) [:tag])
+                                         (map da/xml-elem->tag)
+                                         (into {})))]
+                         [concept-id tags]))
+                     (cx/elements-at-path parsed [:result])
+                     metadatas)]
+      (when (seq items)
+        (into {} items))))))
 
 (defmulti parse-reference-response
   (fn [echo-compatible? response]
@@ -512,26 +512,28 @@
   (let [parsed (-> response :body fx/parse-str)
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
+        headers (:headers response)
         scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
         refs (map (fn [ref-elem]
                     (util/remove-nil-keys
-                      {:id (cx/string-at-path ref-elem [:id])
-                       :name (cx/string-at-path ref-elem [:name])
-                       :revision-id (cx/long-at-path ref-elem [:revision-id])
-                       :location (cx/string-at-path ref-elem [:location])
-                       :deleted (cx/bool-at-path ref-elem [:deleted])
-                       :granule-count (cx/long-at-path ref-elem [:granule-count])
-                       :has-granules (cx/bool-at-path ref-elem [:has-granules])
-                       :score (cx/double-at-path ref-elem [:score])}))
+                     {:id (cx/string-at-path ref-elem [:id])
+                      :name (cx/string-at-path ref-elem [:name])
+                      :revision-id (cx/long-at-path ref-elem [:revision-id])
+                      :location (cx/string-at-path ref-elem [:location])
+                      :deleted (cx/bool-at-path ref-elem [:deleted])
+                      :granule-count (cx/long-at-path ref-elem [:granule-count])
+                      :has-granules (cx/bool-at-path ref-elem [:has-granules])
+                      :score (cx/double-at-path ref-elem [:score])}))
                   (cx/elements-at-path parsed [:references :reference]))
         facets (f/parse-facets-xml
-                 (cx/element-at-path parsed [:facets]))]
+                (cx/element-at-path parsed [:facets]))]
     (util/remove-nil-keys
-      {:refs refs
-       :hits hits
-       :scroll-id scroll-id
-       :took took
-       :facets facets})))
+     {:refs refs
+      :hits hits
+      :headers headers
+      :scroll-id scroll-id
+      :took took
+      :facets facets})))
 
 (defmethod parse-reference-response true
   [_ response]
@@ -539,14 +541,14 @@
         references-type (get-in parsed [:attrs :type])
         refs (map (fn [ref-elem]
                     (util/remove-nil-keys
-                      {:id (cx/string-at-path ref-elem [:id])
-                       :name (cx/string-at-path ref-elem [:name])
-                       :location (cx/string-at-path ref-elem [:location])
-                       :score (cx/double-at-path ref-elem [:score])}))
+                     {:id (cx/string-at-path ref-elem [:id])
+                      :name (cx/string-at-path ref-elem [:name])
+                      :location (cx/string-at-path ref-elem [:location])
+                      :score (cx/double-at-path ref-elem [:score])}))
                   (cx/elements-at-path parsed [:reference]))]
     (util/remove-nil-keys
-      {:refs refs
-       :type references-type})))
+     {:refs refs
+      :type references-type})))
 
 (defn- parse-echo-facets-response
   "Returns the parsed facets by parsing the given facets according to catalog-rest facets format"
@@ -572,38 +574,38 @@
    (find-refs concept-type params {}))
   ([concept-type params options]
    (get-search-failure-xml-data
-     (parse-refs-response concept-type params options))))
+    (parse-refs-response concept-type params options))))
 
 (defn find-refs-with-post
   "Returns the references that are found by searching through POST request with the input params"
   [concept-type params]
   (get-search-failure-xml-data
-    (let [response (client/post (url/search-url concept-type)
-                                {:accept mime-types/xml
-                                 :content-type mime-types/form-url-encoded
-                                 :body (codec/form-encode params)
-                                 :throw-exceptions false
-                                 :connection-manager (s/conn-mgr)})]
-      (parse-reference-response (:echo-compatible params) response))))
+   (let [response (client/post (url/search-url concept-type)
+                               {:accept mime-types/xml
+                                :content-type mime-types/form-url-encoded
+                                :body (codec/form-encode params)
+                                :throw-exceptions false
+                                :connection-manager (s/conn-mgr)})]
+     (parse-reference-response (:echo-compatible params) response))))
 
 (defn find-refs-with-multi-part-form-post
   "Returns the references that are found by searching through POST request with the input form.
   The form parameter should be a vector of maps (one for each field in the form)"
   [concept-type form]
   (get-search-failure-xml-data
-    (let [response (client/post (url/search-url concept-type)
-                                {:accept mime-types/xml
-                                 :multipart form
-                                 :throw-exceptions true
-                                 :connection-manager (s/conn-mgr)})]
-      (parse-reference-response false response))))
+   (let [response (client/post (url/search-url concept-type)
+                               {:accept mime-types/xml
+                                :multipart form
+                                :throw-exceptions true
+                                :connection-manager (s/conn-mgr)})]
+     (parse-reference-response false response))))
 
 (defn find-refs-with-json-query
   "Returns the references that are found by searching using a JSON request."
   [concept-type query-params json-as-map]
   (get-search-failure-xml-data
-    (let [response (find-with-json-query concept-type query-params json-as-map)]
-      (parse-reference-response (:echo-compatible query-params) response))))
+   (let [response (find-with-json-query concept-type query-params json-as-map)]
+     (parse-reference-response (:echo-compatible query-params) response))))
 
 (defn find-refs-with-aql-string
   ([aql]
@@ -612,14 +614,14 @@
    (find-refs-with-aql-string aql options mime-types/xml))
   ([aql options content-type]
    (get-search-failure-xml-data
-     (let [response (client/post (url/aql-url)
-                                 (merge {:accept mime-types/xml
-                                         :content-type content-type
-                                         :body aql
-                                         :query-params {:page-size 100}
-                                         :connection-manager (s/conn-mgr)}
-                                        options))]
-       (parse-reference-response (get-in options [:query-params :echo_compatible]) response)))))
+    (let [response (client/post (url/aql-url)
+                                (merge {:accept mime-types/xml
+                                        :content-type content-type
+                                        :body aql
+                                        :query-params {:page-size 100}
+                                        :connection-manager (s/conn-mgr)}
+                                       options))]
+      (parse-reference-response (get-in options [:query-params :echo_compatible]) response)))))
 
 (defn find-refs-with-aql
   "Returns the references that are found by searching through POST request with aql for the given conditions"
@@ -643,8 +645,8 @@
   [concept-type param-str]
   (let [url (str (url/search-url concept-type) "?" param-str)]
     (get-search-failure-xml-data
-      (parse-reference-response false
-                                (client/get url {:connection-manager (s/conn-mgr)})))))
+     (parse-reference-response false
+                               (client/get url {:connection-manager (s/conn-mgr)})))))
 
 (defn mime-type-matches-response?
   "Checks that the response's content type mime type is the given mime type."
@@ -723,13 +725,13 @@
   "Calls the CMR search endpoint to retrieve the controlled keywords for the given keyword scheme."
   [keyword-scheme]
   (get-search-failure-data
-    (let [response (client/get (url/search-keywords-url keyword-scheme)
-                               {:connection-manager (s/conn-mgr)})
-          {:keys [status body]} response]
-      (if (= 200 status)
-        {:status status
-         :results (json/decode body)}
-        response))))
+   (let [response (client/get (url/search-keywords-url keyword-scheme)
+                              {:connection-manager (s/conn-mgr)})
+         {:keys [status body]} response]
+     (if (= 200 status)
+       {:status status
+        :results (json/decode body)}
+       response))))
 
 (defn get-humanizers-report-raw
   "Returns the humanizers report."
@@ -763,7 +765,7 @@
       (tk/set-time-override! (tu/n->date-time now-n))
       ;; Freeze time on CMR side
       (side/eval-form
-        `(do (require 'cmr.common.test.time-util) (tk/set-time-override! (tu/n->date-time ~now-n))))
+       `(do (require 'cmr.common.test.time-util) (tk/set-time-override! (tu/n->date-time ~now-n))))
       (f)
       (finally
         ;; Resume time in test

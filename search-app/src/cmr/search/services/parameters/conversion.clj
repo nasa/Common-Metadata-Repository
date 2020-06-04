@@ -73,6 +73,7 @@
    :version :string
    :facets-size :string
    :shapefile :shapefile
+   :simplify-shapefile :boolean
 
    ;; Tag parameters
    :tag-data :tag-query
@@ -131,7 +132,8 @@
    :version :collection-query
    :cycle :int
    :passes :passes
-   :shapefile :shapefile})
+   :shapefile :shapefile
+   :simplify-shapefile :boolean})
 
 (defmethod common-params/param-mappings :tag
   [_]
@@ -170,8 +172,7 @@
 
 (defmethod common-params/param-mappings :subscription
   [_]
-  {
-   :subscription-name :string
+  {:subscription-name :string
    :name :string
    :subscriber-id :string
    :collection-concept-id :string
@@ -251,9 +252,9 @@
       ;;  -> variables-h[0][measurement]=foo&variables-h[1][measurement]=bar
       ;; then this recurses back into this same function to handle each separately
       (gc/group-conds
-        group-operation
-        (map #(common-params/parameter->condition _context concept-type param % options)
-             (vals value)))
+       group-operation
+       (map #(common-params/parameter->condition _context concept-type param % options)
+            (vals value)))
       ;; Creates the  variable condition for a group of variable fields and values.
       (nf/parse-nested-condition target-field value case-sensitive? pattern?))))
 
@@ -266,10 +267,10 @@
          collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
         collection-cond (when (seq collection-concept-ids)
                           (common-params/string-parameter->condition
-                            concept-type :collection-concept-id collection-concept-ids {}))
+                           concept-type :collection-concept-id collection-concept-ids {}))
         granule-cond (when (seq granule-concept-ids)
                        (common-params/string-parameter->condition
-                         concept-type :concept-id granule-concept-ids options))]
+                        concept-type :concept-id granule-concept-ids options))]
     (if (and collection-cond granule-cond)
       (gc/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
@@ -282,49 +283,49 @@
   (let [field-condition (common-params/parameter->condition context :collection param value options)
         exclude-collection (= "true" (get-in options [param :exclude-collection]))
         collection-cond (gc/and-conds
-                          [(qm/->CollectionQueryCondition field-condition)
-                           (cqm/map->MissingCondition {:field param})])]
+                         [(qm/->CollectionQueryCondition field-condition)
+                          (cqm/map->MissingCondition {:field param})])]
     (if exclude-collection
       field-condition
       (gc/or-conds
-        [field-condition
-         collection-cond]))))
+       [field-condition
+        collection-cond]))))
 
 (defmethod common-params/parameter->condition :updated-since
   [_context concept-type param value options]
   (cqm/map->DateRangeCondition
-    {:field param
-     :start-date (parser/parse-datetime
-                  (if (sequential? value) (first value) value))
-     :end-date nil}))
+   {:field param
+    :start-date (parser/parse-datetime
+                 (if (sequential? value) (first value) value))
+    :end-date nil}))
 
 (defmethod common-params/parameter->condition :multi-date-range
   [context concept-type param value options]
   (if (sequential? value)
     (if (= "true" (get-in options [param :and]))
       (gc/and-conds
-        (map #(common-params/parameter->condition context concept-type param % options) value))
+       (map #(common-params/parameter->condition context concept-type param % options) value))
       (gc/or-conds
-        (map #(common-params/parameter->condition context concept-type param % options) value)))
+       (map #(common-params/parameter->condition context concept-type param % options) value)))
     (let [[start-date end-date] (map str/trim (str/split value #","))]
       (cqm/map->DateRangeCondition
-        {:field param
-         :start-date (when-not (str/blank? start-date) (parser/parse-datetime start-date))
-         :end-date (when-not (str/blank? end-date) (parser/parse-datetime end-date))}))))
+       {:field param
+        :start-date (when-not (str/blank? start-date) (parser/parse-datetime start-date))
+        :end-date (when-not (str/blank? end-date) (parser/parse-datetime end-date))}))))
 
 (defmethod common-params/parameter->condition :readable-granule-name
   [context concept-type param value options]
   (if (sequential? value)
     (if (= "true" (get-in options [param :and]))
       (gc/and-conds
-        (map #(common-params/parameter->condition context concept-type param % options) value))
+       (map #(common-params/parameter->condition context concept-type param % options) value))
       (gc/or-conds
-        (map #(common-params/parameter->condition context concept-type param % options) value)))
+       (map #(common-params/parameter->condition context concept-type param % options) value)))
     (let [case-sensitive (common-params/case-sensitive-field? concept-type :readable-granule-name options)
           pattern (common-params/pattern-field? concept-type :readable-granule-name options)]
       (gc/or-conds
-        [(cqm/string-condition :granule-ur value case-sensitive pattern)
-         (cqm/string-condition :producer-granule-id value case-sensitive pattern)]))))
+       [(cqm/string-condition :granule-ur value case-sensitive pattern)
+        (cqm/string-condition :producer-granule-id value case-sensitive pattern)]))))
 
 (defmethod common-params/parameter->condition :has-granules
   [_ _ _ value _]
@@ -355,9 +356,9 @@
   (if (sequential? value)
     (if (= "true" (get-in options [param :and]))
       (gc/and-conds
-        (map #(common-params/parameter->condition context concept-type param % options) value))
+       (map #(common-params/parameter->condition context concept-type param % options) value))
       (gc/or-conds
-        (map #(common-params/parameter->condition context concept-type param % options) value)))
+       (map #(common-params/parameter->condition context concept-type param % options) value)))
     (let [case-sensitive (common-params/case-sensitive-field? concept-type :collection-data-type options)
           pattern (common-params/pattern-field? concept-type :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
@@ -368,8 +369,8 @@
         ; SCIENCE_QUALITY collection-data-type should match concepts with SCIENCE_QUALITY
         ; or the ones missing collection-data-type field
         (gc/or-conds
-          [(cqm/string-condition :collection-data-type value case-sensitive pattern)
-           (cqm/map->MissingCondition {:field :collection-data-type})])
+         [(cqm/string-condition :collection-data-type value case-sensitive pattern)
+          (cqm/map->MissingCondition {:field :collection-data-type})])
         (cqm/string-condition :collection-data-type value case-sensitive pattern)))))
 
 ;; Converts variable measurement identifiers parameter and values into conditions
@@ -383,9 +384,9 @@
       ;; -> measurement-identifiers[0][contextmedium]=foo&measurement-identifiers[1][contextmedium]=bar
       ;; then this recurses back into this same function to handle each separately
       (gc/group-conds
-        group-operation
-        (map #(common-params/parameter->condition context concept-type param % options)
-             (vals value)))
+       group-operation
+       (map #(common-params/parameter->condition context concept-type param % options)
+            (vals value)))
       ;; Creates the nested condition for a group of measurement-identifiers fields and values.
       (nf/parse-nested-condition param value case-sensitive? pattern?))))
 
@@ -434,12 +435,14 @@
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)]
     [(dissoc params
              :boosts :include-granule-counts :include-has-granules :include-facets :echo-compatible
-             :hierarchical-facets :include-highlights :include-tags :all-revisions :facets-size)
+             :hierarchical-facets :include-highlights :include-tags :all-revisions :facets-size
+             :simplify-shapefile)
      (-> query-attribs
          (merge {:boosts (:boosts params)
                  :result-features (seq result-features)
                  :echo-compatible? (= "true" (:echo-compatible params))
                  :all-revisions? (= "true" (:all-revisions params))
+                 :simplify-shapefile? (= "true" (:simplify-shapefile params))
                  :facets-size (:facets-size params)
                  :result-options (merge (when-not (str/blank? (:include-tags params))
                                           {:tags (map str/trim (str/split (:include-tags params) #","))})
@@ -457,9 +460,10 @@
                                  :granule params lp/param-aliases)
         result-features (when (= "v2" (util/safe-lowercase (:include-facets params)))
                           [:facets-v2])]
-    [(dissoc params :echo-compatible :include-facets)
+    [(dissoc params :echo-compatible :include-facets :simplify-shapefile)
      (merge query-attribs
             {:echo-compatible? (= "true" (:echo-compatible params))
+             :simplify-shapefile? (= "true" (:simplify-shapefile params))
              :result-features result-features})]))
 
 (defmethod common-params/parse-query-level-params :variable
@@ -495,9 +499,9 @@
   [context params]
   (let [{:keys [interval start-date end-date]} params
         query (common-params/parse-parameter-query
-                context
-                :granule
-                (dissoc params :interval :start-date :end-date))]
+               context
+               :granule
+               (dissoc params :interval :start-date :end-date))]
     ;; Add timeline request fields to the query so that they can be used later
     ;; for processing the timeline results.
     (assoc query
