@@ -68,7 +68,7 @@
   (let [use-keyword-sort? (keywords-extractor/contains-keyword-condition? query)
         use-usage-sort? (seq (->> query
                                   :sort-keys
-                                  (filter #(= :usage-relevancy-score (:field %)))))
+                                  (filter #(= :usage-relevancy-score (:field %)))))        
         use-temporal-sort? (and (temporal-conditions/contains-temporal-conditions? query)
                                 (sort-use-temporal-relevancy))]
     (seq
@@ -90,6 +90,7 @@
          [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])
        ;; We only include this if one of the others is present
        (when (and (or use-temporal-sort? use-keyword-sort?)
+                  (not use-usage-sort?)
                   (sort-use-relevancy-score))
          [{:_script {:params {:binSize (community-usage-bin-size)}
                      :type :number
