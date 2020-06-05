@@ -502,7 +502,7 @@
       (are [sort-key items]
            (sort-order-correct? items sort-key)
 
-           ["entry_title" "usage_score"] [aardvark_10 abermarle_20 academic_nil accented_30 accentuate_99 acceptable_50  bravo_nil]
+           ["entry_title" "usage_score"] [aardvark_10 abermarle_20 academic_nil accented_30 accentuate_99 acceptable_50 bravo_nil]
            ["entry_title" "-usage_score"] [aardvark_10 abermarle_20 academic_nil accented_30 accentuate_99 acceptable_50 bravo_nil]
            ["-entry_title" "usage_score"] [bravo_nil acceptable_50 accentuate_99 accented_30 academic_nil abermarle_20 aardvark_10]
            ["-entry_title" "-usage_score"] [bravo_nil acceptable_50 accentuate_99 accented_30 academic_nil abermarle_20 aardvark_10]
