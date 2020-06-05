@@ -58,7 +58,7 @@
 
    The algorithm is to currently compare scores in the following order (we only go to the next level
    in the scoring system in the case of a tie at the higher level):
-   1. community usage
+   1. community usage, if usage_score sort key present
    2. keyword boost
    3. temporal overlap
    4. relevancy with community usage secondary
