@@ -16,6 +16,12 @@
                [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
                 (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV1"})]))
 
+(deftest subscription-ingest-on-prov2-test
+  (testing "ingest on PROV2, which is not granted ingest permission for EMAIL_SUBSCRIPTION_MANAGEMENT ACL"
+    (let [concept (subscription-util/make-subscription-concept-prov2)
+          response (ingest/ingest-concept concept)]
+      (is (= ["You do not have permission to perform that action."] (:errors response))))))
+
 (deftest subscription-ingest-test
   (testing "ingest of a new subscription concept"
     (let [concept (subscription-util/make-subscription-concept)

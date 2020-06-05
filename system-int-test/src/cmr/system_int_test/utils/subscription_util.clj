@@ -60,6 +60,13 @@
        (assoc :format versioned-content-type)
        (merge attrs))))
 
+(defn make-subscription-concept-prov2
+  "Convenience function for creating a subscription concept for PROV2"
+  []
+  (-> {:provider-id "PROV2"}
+      (data-umm-sub/subscription-concept 0)
+      (assoc :format versioned-content-type)))
+
 (defn ingest-subscription
   "A convenience function for ingesting a subscription during tests."
   ([]
