@@ -219,7 +219,7 @@
   ([context]
    (verify-subscription-management-permission context :update :system-object nil))
   ([context permission-type]
-   (verify-subscription-management-permission context permission-type :system-object nil))
+   (verify-subscription-management-permission context permission-type :provider-object nil))
   ([context permission-type object-identity-type provider-id]
    (verify-management-permission
      context
