@@ -11,8 +11,10 @@
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
-                                           "provguid2" "PROV2"}))
+(use-fixtures :each
+              (join-fixtures
+               [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
+                (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV1"})]))
 
 (deftest subscription-ingest-test
   (testing "ingest of a new subscription concept"

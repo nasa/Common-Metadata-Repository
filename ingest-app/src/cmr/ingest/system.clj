@@ -100,6 +100,7 @@
                                  (af/refresh-acl-cache-job "ingest-acl-cache-refresh")
                                  jvm-info/log-jvm-statistics-job))
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
+                       acl/token-smp-cache-key (acl/create-token-smp-cache)
                        ;; Caches a map of tokens to the security identifiers
                        context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
                        context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
