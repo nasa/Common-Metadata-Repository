@@ -216,18 +216,14 @@
 (defn verify-subscription-management-permission
   "Verifies the current user has been granted EMAIL_SUBSCRIPTION_MANAGEMENT
   permission in ECHO ACLs"
-  ([context]
-   (verify-subscription-management-permission context :update :system-object nil))
-  ([context permission-type]
-   (verify-subscription-management-permission context permission-type :provider-object nil))
-  ([context permission-type object-identity-type provider-id]
-   (verify-management-permission
-     context
-     permission-type
-     object-identity-type
-     provider-id
-     token-smp-cache-key
-     has-subscription-management-permission?)))
+  [context permission-type object-identity-type provider-id]
+  (verify-management-permission
+    context
+    permission-type
+    object-identity-type
+    provider-id
+    token-smp-cache-key
+    has-subscription-management-permission?))
 
 (defn verify-ingest-management-permission
   "Verifies the current user has been granted INGEST_MANAGEMENT_ACLS
