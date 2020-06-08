@@ -16,7 +16,7 @@
 (use-fixtures :each
               (join-fixtures
                [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
-                subscription/grant-all-subscription-fixture]))
+                (subscription/grant-all-subscription-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})]))
 
 (deftest search-subscription-all-revisions
   (let [token (e/login (s/context) "user1")
