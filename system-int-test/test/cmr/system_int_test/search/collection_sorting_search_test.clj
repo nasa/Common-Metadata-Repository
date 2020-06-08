@@ -469,25 +469,26 @@
          ["ongoing" "entry-title"] [coll1 coll3 coll2 coll4 coll5 coll6 coll7])))
 
 (deftest collection-usage-score-sorting-test
-  (let [make-named-collection (fn [cname]
+  (let [make-named-collection (fn [cname attribs]
                                 (d/ingest
                                   "PROV1"
                                   (dc/collection
-                                    {:entry-title cname
-                                     :short-name cname
-                                     :long-name (str cname "-long")
-                                     :version-id "1"})))
+                                    (merge {:entry-title cname
+                                            :short-name cname
+                                            :long-name (str cname "-long")
+                                            :version-id "1"}
+                                           attribs))))
 
         ;; community usage values assigned to the following collections
-        aardvark_10 (make-named-collection "aardvark")
-        abermarle_20 (make-named-collection "abermarle")
-        accented_30 (make-named-collection "accented")
-        accentuate_99 (make-named-collection "accentuate")
-        acceptable_50 (make-named-collection "acceptable")
+        aardvark_10 (make-named-collection "aardvark" {})
+        abermarle_20 (make-named-collection "abermarle" {})
+        yyy_30 (make-named-collection "yyy" {:short-name "accented"})
+        aaa_99 (make-named-collection "aaa" {:short-name "accentuate"})
+        zzz_50 (make-named-collection "zzz" {:short-name "acceptable"})
 
         ;; no community usage entries on the following
-        academic_nil (make-named-collection "academic")
-        bravo_nil (make-named-collection "bravo")]
+        academic_nil (make-named-collection "academic" {})
+        bravo_nil (make-named-collection "bravo" {})]
 
     (index/wait-until-indexed)
 
@@ -495,42 +496,45 @@
       (are [sort-key items]
            (sort-order-correct? items sort-key)
            
-           ["usage_score"] [academic_nil bravo_nil aardvark_10 abermarle_20 accented_30 acceptable_50 accentuate_99]
-           ["-usage_score"] [accentuate_99 acceptable_50 accented_30 abermarle_20 aardvark_10 academic_nil bravo_nil]))
+           ["usage_score"] [academic_nil bravo_nil aardvark_10 abermarle_20 yyy_30 zzz_50 aaa_99]
+           ["-usage_score"] [aaa_99 zzz_50 yyy_30 abermarle_20 aardvark_10 academic_nil bravo_nil]))
 
     (testing "using multiple sort keys"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
 
-           ["entry_title" "usage_score"] [aardvark_10 abermarle_20 academic_nil accented_30 accentuate_99 acceptable_50 bravo_nil]
-           ["entry_title" "-usage_score"] [aardvark_10 abermarle_20 academic_nil accented_30 accentuate_99 acceptable_50 bravo_nil]
-           ["-entry_title" "usage_score"] [bravo_nil acceptable_50 accentuate_99 accented_30 academic_nil abermarle_20 aardvark_10]
-           ["-entry_title" "-usage_score"] [bravo_nil acceptable_50 accentuate_99 accented_30 academic_nil abermarle_20 aardvark_10]
+           ["entry_title" "usage_score"] [aaa_99 aardvark_10 abermarle_20 academic_nil bravo_nil yyy_30 zzz_50]
+           ["entry_title" "-usage_score"] [aaa_99 aardvark_10 abermarle_20 academic_nil bravo_nil yyy_30 zzz_50]
+           ["-entry_title" "usage_score"] [zzz_50 yyy_30 bravo_nil academic_nil abermarle_20 aardvark_10 aaa_99]
+           ["-entry_title" "-usage_score"] [zzz_50 yyy_30 bravo_nil academic_nil abermarle_20 aardvark_10 aaa_99]
 
-           ["usage_score" "entry_title"] [academic_nil bravo_nil aardvark_10 abermarle_20 accented_30 acceptable_50 accentuate_99]  
-           ["usage_score" "-entry_title"] [bravo_nil academic_nil aardvark_10 abermarle_20 accented_30 acceptable_50 accentuate_99]
-           ["-usage_score" "entry_title"] [accentuate_99 acceptable_50 accented_30 abermarle_20 aardvark_10 academic_nil bravo_nil]
-           ["-usage_score" "-entry_title"] [accentuate_99 acceptable_50 accented_30 abermarle_20 aardvark_10 bravo_nil academic_nil]))
+           ["usage_score" "entry_title"] [academic_nil bravo_nil aardvark_10 abermarle_20 yyy_30 zzz_50 aaa_99]  
+           ["usage_score" "-entry_title"] [bravo_nil academic_nil aardvark_10 abermarle_20 yyy_30 zzz_50 aaa_99]
+           ["-usage_score" "entry_title"] [aaa_99 zzz_50 yyy_30 abermarle_20 aardvark_10 academic_nil bravo_nil]
+           ["-usage_score" "-entry_title"] [aaa_99 zzz_50 yyy_30 abermarle_20 aardvark_10 bravo_nil academic_nil]))
 
     (testing "sorting params"
       (are [query-map items]
-           (d/refs-match-order? items
-                                (search/find-refs :collection
-                                                  query-map
-                                                  {:method :post}))
+           (let [refs (search/find-refs :collection
+                                        query-map
+                                        {:method :post})
+                 _ (println (map :name (get-in refs [:refs])))]
+             (d/refs-match-order? items refs))
 
-           {:keyword "ac*"} [accentuate_99 acceptable_50 accented_30  academic_nil]
+           ;; keyword relevancy sorting
+           {:keyword "ac*"} [academic_nil aaa_99 zzz_50 yyy_30]
            
-           {:keyword "ac*" :sort-key ["-usage_score"]} [accentuate_99 acceptable_50 accented_30 academic_nil]
-           {:keyword "ac*" :sort-key ["usage_score"]} [academic_nil accented_30 acceptable_50 accentuate_99]
+           ;; usage overrides relevancy
+           {:keyword "ac*" :sort-key ["-usage_score"]} [aaa_99 zzz_50 yyy_30 academic_nil]
+           {:keyword "ac*" :sort-key ["usage_score"]} [academic_nil yyy_30 zzz_50 aaa_99]
            
-           {:keyword "ac*" :sort-key ["entry_title" "usage_score"]} [academic_nil accented_30 accentuate_99 acceptable_50]
-           {:keyword "ac*" :sort-key ["entry_title" "-usage_score"]} [academic_nil accented_30 accentuate_99 acceptable_50]
-           {:keyword "ac*" :sort-key ["-entry_title" "usage_score"]} [acceptable_50 accentuate_99 accented_30 academic_nil]
-           {:keyword "ac*" :sort-key ["-entry_title" "-usage_score"]} [acceptable_50 accentuate_99 accented_30 academic_nil]
+           {:keyword "ac*" :sort-key ["entry_title" "usage_score"]} [aaa_99 academic_nil yyy_30 zzz_50]
+           {:keyword "ac*" :sort-key ["entry_title" "-usage_score"]} [aaa_99 academic_nil yyy_30 zzz_50] 
+           {:keyword "ac*" :sort-key ["-entry_title" "usage_score"]} [zzz_50 yyy_30 academic_nil aaa_99] 
+           {:keyword "ac*" :sort-key ["-entry_title" "-usage_score"]} [zzz_50 yyy_30 academic_nil aaa_99]
 
-           {:keyword "ac*" :sort-key ["usage_score" "entry_title" ]} [academic_nil accented_30 acceptable_50 accentuate_99]
-           {:keyword "ac*" :sort-key ["usage_score" "-entry_title" ]} [academic_nil accented_30 acceptable_50 accentuate_99]
-           {:keyword "ac*" :sort-key ["-usage_score" "entry_title" ]} [accentuate_99 acceptable_50 accented_30 academic_nil]
-           {:keyword "ac*" :sort-key ["-usage_score" "-entry_title" ]} [accentuate_99 acceptable_50 accented_30 academic_nil]))))
+           {:keyword "ac*" :sort-key ["usage_score" "entry_title"]} [academic_nil yyy_30 zzz_50 aaa_99]
+           {:keyword "ac*" :sort-key ["usage_score" "-entry_title"]} [academic_nil yyy_30 zzz_50 aaa_99]
+           {:keyword "ac*" :sort-key ["-usage_score" "entry_title"]} [aaa_99 zzz_50 yyy_30 academic_nil]
+           {:keyword "ac*" :sort-key ["-usage_score" "-entry_title"]} [aaa_99 zzz_50 yyy_30 academic_nil]))))
 
