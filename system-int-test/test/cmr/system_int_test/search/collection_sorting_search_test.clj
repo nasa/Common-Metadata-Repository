@@ -534,6 +534,5 @@
            {:keyword "alph*" :sort-key ["usage_score" "entry_title"]} [alphonse_nil alpha_1_10 alpha_2_10 other_alpha_30]
            {:keyword "alph*" :sort-key ["usage_score" "-entry_title"]} [alphonse_nil alpha_2_10 alpha_1_10 other_alpha_30]
            {:keyword "alph*" :sort-key ["-usage_score" "entry_title"]} [other_alpha_30 alpha_1_10 alpha_2_10 alphonse_nil]
-           {:keyword "alph*" :sort-key ["-usage_score" "-short_name"]} [other_alpha_30 alpha_2q_10 alpha_1_10 alphonse_nil]
-           ))))
+           {:keyword "alph*" :sort-key ["-usage_score" "-short_name"]} [other_alpha_30 alpha_2_10 alpha_1_10 alphonse_nil]))))
 
