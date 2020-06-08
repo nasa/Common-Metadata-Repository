@@ -515,11 +515,9 @@
 
     (testing "sorting params"
       (are [query-map items]
-           (let [refs (search/find-refs :collection
-                                        query-map
-                                        {:method :post})
-                 _ (println (map :name (get-in refs [:refs])))]
-             (d/refs-match-order? items refs))
+           (d/refs-match-order? items (search/find-refs :collection
+                                                        query-map
+                                                        {:method :post}))
 
            ;; keyword relevancy sorting
            {:keyword "ac*"} [academic_nil aaa_99 zzz_50 yyy_30]
