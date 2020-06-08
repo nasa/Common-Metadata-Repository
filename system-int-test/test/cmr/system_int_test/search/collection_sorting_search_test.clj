@@ -21,11 +21,11 @@
 
 (def usage-csv
   (str "Product,Version,Hosts\n"
-       "aardvark,1,10\n"
-       "abermarle,1,20\n"
-       "accented,1,30\n"
-       "accentuate,1,99\n"
-       "acceptable,1,50\n"
+       "alpha,1,10\n"
+       "alpha,2,10\n"
+       "alpha,3,30\n"
+       "bravo,1,20\n"
+       "bravo,2,25\n"
        "unfound_1,1,40\n"
        "unfound_2,1,40\n"))
 
@@ -143,7 +143,6 @@
 
               ;; Revision descending
               (compare (:revision-id c2) (:revision-id c1)))))))))
-
 
 (defn- sort-revisions-by-field
   "Sort revisions using the given field with sub-sorting by concept-id ascending, revision-id
@@ -480,15 +479,16 @@
                                            attribs))))
 
         ;; community usage values assigned to the following collections
-        aardvark_10 (make-named-collection "aardvark" {})
-        abermarle_20 (make-named-collection "abermarle" {})
-        yyy_30 (make-named-collection "yyy" {:short-name "accented"})
-        aaa_99 (make-named-collection "aaa" {:short-name "accentuate"})
-        zzz_50 (make-named-collection "zzz" {:short-name "acceptable"})
+        alpha_1_10 (make-named-collection "alpha_a" {:short-name "alpha"})
+        alpha_2_10 (make-named-collection "alpha_b" {:short-name "alpha" :version-id "2"})
+        other_alpha_30 (make-named-collection "other" {:short-name "alpha" :version-id "3"})
+        bravo_1_20 (make-named-collection "bravo" {})
+        bravo_2_25 (make-named-collection "bravo_2" {:short-name "bravo" :version-id "2"})
 
         ;; no community usage entries on the following
-        academic_nil (make-named-collection "academic" {})
-        bravo_nil (make-named-collection "bravo" {})]
+        alphonse_nil (make-named-collection "alphonse" {})
+        charlie_nil (make-named-collection "charlie" {})
+        delta_nil (make-named-collection "delta" {})]
 
     (index/wait-until-indexed)
 
@@ -496,22 +496,22 @@
       (are [sort-key items]
            (sort-order-correct? items sort-key)
            
-           ["usage_score"] [academic_nil bravo_nil aardvark_10 abermarle_20 yyy_30 zzz_50 aaa_99]
-           ["-usage_score"] [aaa_99 zzz_50 yyy_30 abermarle_20 aardvark_10 academic_nil bravo_nil]))
+           ["usage_score"] [alphonse_nil charlie_nil delta_nil alpha_2_10 alpha_1_10 bravo_1_20 bravo_2_25 other_alpha_30]
+           ["-usage_score"] [other_alpha_30 bravo_2_25 bravo_1_20 alpha_2_10 alpha_1_10 alphonse_nil charlie_nil delta_nil]))
 
     (testing "using multiple sort keys"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
 
-           ["entry_title" "usage_score"] [aaa_99 aardvark_10 abermarle_20 academic_nil bravo_nil yyy_30 zzz_50]
-           ["entry_title" "-usage_score"] [aaa_99 aardvark_10 abermarle_20 academic_nil bravo_nil yyy_30 zzz_50]
-           ["-entry_title" "usage_score"] [zzz_50 yyy_30 bravo_nil academic_nil abermarle_20 aardvark_10 aaa_99]
-           ["-entry_title" "-usage_score"] [zzz_50 yyy_30 bravo_nil academic_nil abermarle_20 aardvark_10 aaa_99]
+           ["short_name" "usage_score"] [alpha_2_10 alpha_1_10 other_alpha_30 alphonse_nil bravo_1_20 bravo_2_25 charlie_nil delta_nil]
+           ["short_name" "-usage_score"] [other_alpha_30 alpha_2_10 alpha_1_10 alphonse_nil bravo_2_25 bravo_1_20 charlie_nil delta_nil]
+           ["-short_name" "usage_score"] [delta_nil charlie_nil bravo_1_20 bravo_2_25 alphonse_nil alpha_2_10 alpha_1_10 other_alpha_30]
+           ["-short_name" "-usage_score"] [delta_nil charlie_nil bravo_2_25 bravo_1_20 alphonse_nil other_alpha_30 alpha_2_10 alpha_1_10]
 
-           ["usage_score" "entry_title"] [academic_nil bravo_nil aardvark_10 abermarle_20 yyy_30 zzz_50 aaa_99]  
-           ["usage_score" "-entry_title"] [bravo_nil academic_nil aardvark_10 abermarle_20 yyy_30 zzz_50 aaa_99]
-           ["-usage_score" "entry_title"] [aaa_99 zzz_50 yyy_30 abermarle_20 aardvark_10 academic_nil bravo_nil]
-           ["-usage_score" "-entry_title"] [aaa_99 zzz_50 yyy_30 abermarle_20 aardvark_10 bravo_nil academic_nil]))
+           ["usage_score" "short_name"] [alphonse_nil charlie_nil delta_nil alpha_2_10 alpha_1_10 bravo_1_20 bravo_2_25 other_alpha_30] 
+           ["usage_score" "-short_name"] [delta_nil charlie_nil alphonse_nil alpha_2_10 alpha_1_10 bravo_1_20 bravo_2_25 other_alpha_30]
+           ["-usage_score" "short_name"] [other_alpha_30 bravo_2_25 bravo_1_20 alpha_2_10 alpha_1_10 alphonse_nil charlie_nil delta_nil]
+           ["-usage_score" "-short_name"] [other_alpha_30 bravo_2_25 bravo_1_20 alpha_2_10 alpha_1_10 delta_nil charlie_nil alphonse_nil]))
 
     (testing "sorting params"
       (are [query-map items]
@@ -520,19 +520,20 @@
                                                         {:method :post}))
 
            ;; keyword relevancy sorting
-           {:keyword "ac*"} [academic_nil aaa_99 zzz_50 yyy_30]
+           {:keyword "alph*"} [alpha_2_10 alpha_1_10 alphonse_nil other_alpha_30]
            
-           ;; usage overrides relevancy
-           {:keyword "ac*" :sort-key ["-usage_score"]} [aaa_99 zzz_50 yyy_30 academic_nil]
-           {:keyword "ac*" :sort-key ["usage_score"]} [academic_nil yyy_30 zzz_50 aaa_99]
+           ;; when usage is provided it will override relevancy
+           {:keyword "alph*" :sort-key ["-usage_score"]} [other_alpha_30 alpha_2_10 alpha_1_10 alphonse_nil]
+           {:keyword "alph*" :sort-key ["usage_score"]} [alphonse_nil alpha_2_10 alpha_1_10 other_alpha_30]
            
-           {:keyword "ac*" :sort-key ["entry_title" "usage_score"]} [aaa_99 academic_nil yyy_30 zzz_50]
-           {:keyword "ac*" :sort-key ["entry_title" "-usage_score"]} [aaa_99 academic_nil yyy_30 zzz_50] 
-           {:keyword "ac*" :sort-key ["-entry_title" "usage_score"]} [zzz_50 yyy_30 academic_nil aaa_99] 
-           {:keyword "ac*" :sort-key ["-entry_title" "-usage_score"]} [zzz_50 yyy_30 academic_nil aaa_99]
+           {:keyword "alph*" :sort-key ["entry_title" "usage_score"]} [alpha_1_10 alpha_2_10 alphonse_nil other_alpha_30]
+           {:keyword "alph*" :sort-key ["entry_title" "-usage_score"]} [alpha_1_10 alpha_2_10 alphonse_nil other_alpha_30] 
+           {:keyword "alph*" :sort-key ["-entry_title" "usage_score"]} [other_alpha_30 alphonse_nil alpha_2_10 alpha_1_10] 
+           {:keyword "alph*" :sort-key ["-entry_title" "-usage_score"]} [other_alpha_30 alphonse_nil alpha_2_10 alpha_1_10]
 
-           {:keyword "ac*" :sort-key ["usage_score" "entry_title"]} [academic_nil yyy_30 zzz_50 aaa_99]
-           {:keyword "ac*" :sort-key ["usage_score" "-entry_title"]} [academic_nil yyy_30 zzz_50 aaa_99]
-           {:keyword "ac*" :sort-key ["-usage_score" "entry_title"]} [aaa_99 zzz_50 yyy_30 academic_nil]
-           {:keyword "ac*" :sort-key ["-usage_score" "-entry_title"]} [aaa_99 zzz_50 yyy_30 academic_nil]))))
+           {:keyword "alph*" :sort-key ["usage_score" "entry_title"]} [alphonse_nil alpha_1_10 alpha_2_10 other_alpha_30]
+           {:keyword "alph*" :sort-key ["usage_score" "-entry_title"]} [alphonse_nil alpha_2_10 alpha_1_10 other_alpha_30]
+           {:keyword "alph*" :sort-key ["-usage_score" "entry_title"]} [other_alpha_30 alpha_1_10 alpha_2_10 alphonse_nil]
+           {:keyword "alph*" :sort-key ["-usage_score" "-short_name"]} [other_alpha_30 alpha_2q_10 alpha_1_10 alphonse_nil]
+           ))))
 
