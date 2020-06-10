@@ -75,6 +75,10 @@
      (dissoc :ComposedOf)
      (dissoc :NumberOfInstruments)))
 
+(defn- remove-format-descriptions
+  [file-informations]
+  (map #(dissoc % :FormatDescription) file-informations))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collection Migration Implementations
 
@@ -304,3 +308,15 @@
 (defmethod interface/migrate-umm-version [:collection "1.15.2" "1.15.1"]
   [context c & _]
   (spatial-extent/migrate-down-to-1_15_1 c))
+
+(defmethod interface/migrate-umm-version [:collection "1.15.2" "1.15.3"]
+  [context c & _]
+  ;; Don't need to migrate anyting - FormatDescription was added to FileArchiveInformation
+  ;; and FileDistributionInformation.]
+  c)
+
+(defmethod interface/migrate-umm-version [:collection "1.15.3" "1.15.2"]
+  [context c & _]
+  (-> c
+      (update-in [:ArchiveAndDistributionInformation :FileArchiveInformation] remove-format-descriptions)
+      (update-in [:ArchiveAndDistributionInformation :FileDistributionInformation] remove-format-descriptions)))

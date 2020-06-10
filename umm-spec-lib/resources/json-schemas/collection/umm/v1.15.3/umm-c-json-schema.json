@@ -1148,6 +1148,12 @@
       "type": "string",
       "enum": ["Native", "Supported"]
     },
+    "ArchiveDistributionFormatDescriptionType": {
+      "description": "Allows a data provider to provide supporting information about the stated format.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
     "ArchiveDistributionUnitEnum": {
       "description": "Defines the possible values for the archive and distribution size units.",
       "type": "string",
@@ -1174,6 +1180,10 @@
           "FormatType": {
             "description": "Allows the provider to state whether the archivable item's format is its native format or another supported format.",
             "$ref": "#/definitions/ArchiveDistributionFormatTypeEnum"
+          },
+          "FormatDescription": {
+            "description": "Allows the record provider to provide supporting documentation about the Format.",
+            "$ref": "#/definitions/ArchiveDistributionFormatDescriptionType"
           },
           "AverageFileSize": {
             "description": "An approximate average size of the archivable item. This gives an end user an idea of the magnitude for each archivable file if more than 1 exists.",
@@ -1217,6 +1227,10 @@
             "description": "Allows the provider to state whether the archivable item's format is its native format or another supported format.",
             "$ref": "#/definitions/ArchiveDistributionFormatTypeEnum"
           },
+          "FormatDescription": {
+            "description": "Allows the record provider to provide supporting documentation about the Format.",
+            "$ref": "#/definitions/ArchiveDistributionFormatDescriptionType"
+          },
           "AverageFileSize": {
             "description": "An approximate average size of the archivable item. This gives an end user an idea of the magnitude for each archivable file if more than 1 exists.",
             "type": "number"
@@ -1259,6 +1273,10 @@
           "FormatType": {
             "description": "Allows the provider to state whether the distributable item's format is its native format or another supported format.",
             "$ref": "#/definitions/ArchiveDistributionFormatTypeEnum"
+          },
+          "FormatDescription": {
+            "description": "Allows the record provider to provide supporting documentation about the Format.",
+            "$ref": "#/definitions/ArchiveDistributionFormatDescriptionType"
           },
           "Media": {
             "description": "This element defines the media by which the end user can obtain the distributable item. Each media type is listed separately. Examples of media include: CD-ROM, 9 track tape, diskettes, hard drives, online, transparencies, hardcopy, etc.",
@@ -1315,6 +1333,10 @@
           "FormatType": {
             "description": "Allows the provider to state whether the distributable item's format is its native format or another supported format.",
             "$ref": "#/definitions/ArchiveDistributionFormatTypeEnum"
+          },
+          "FormatDescription": {
+            "description": "Allows the record provider to provide supporting documentation about the Format.",
+            "$ref": "#/definitions/ArchiveDistributionFormatDescriptionType"
           },
           "Media": {
             "description": "This element defines the media by which the end user can obtain the distributable item. Each media type is listed separately. Examples of media include: CD-ROM, 9 track tape, diskettes, hard drives, online, transparencies, hardcopy, etc.",
