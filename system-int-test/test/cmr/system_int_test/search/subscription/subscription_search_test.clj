@@ -21,7 +21,7 @@
 (use-fixtures :each
               (join-fixtures
                [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
-                subscriptions/grant-all-subscription-fixture]))
+                (subscriptions/grant-all-subscription-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})]))
 
 (deftest search-for-subscriptions-validation-test
   (testing "Unrecognized parameters"
