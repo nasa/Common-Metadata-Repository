@@ -18,7 +18,7 @@
 
 (deftest subscription-ingest-on-prov2-test
   (testing "ingest on PROV2, which is not granted ingest permission for EMAIL_SUBSCRIPTION_MANAGEMENT ACL"
-    (let [concept (subscription-util/make-subscription-concept-prov2)
+    (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV2"})
           response (ingest/ingest-concept concept)]
       (is (= ["You do not have permission to perform that action."] (:errors response))))))
 

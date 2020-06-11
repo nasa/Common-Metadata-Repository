@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.search.subscription.concept-retrieval-test
-  "Integration test for service retrieval via the following endpoints:
+  "Integration test for subscription retrieval via the following endpoints:
 
   * /concepts/:concept-id
   * /concepts/:concept-id/:revision-id"
@@ -18,8 +18,9 @@
 (use-fixtures
  :each
  (join-fixtures
-  [(ingest/reset-fixture {"provguid1" "PROV1"})
-   (subscription/grant-all-subscription-fixture {"provguid1" "PROV1"} [:read :update])]))
+  [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
+   (subscription/grant-all-subscription-fixture {"provguid1" "PROV1"} [:read :update])
+   (subscription/grant-all-subscription-fixture {"provguid2" "PROV2"} [:update])]))
 
 (defn- assert-retrieved-concept
   "Verify the retrieved concept by checking against the expected subscription name,
@@ -58,6 +59,41 @@
     (is (= err-code status))
     (is (= [err-message] errors))))
 
+(deftest retrieve-subscription-by-concept-id-failure
+  ;; We support UMM JSON format; No format and any format are also accepted.
+  (doseq [accept-format [mt/umm-json]];; nil mt/any]]
+    (let [suffix (if accept-format
+                   (mt/mime-type->format accept-format)
+                   "nil")
+          ;; append result format to subscription name to make it unique
+          ;; for different formats so that the test can be run for multiple formats
+          sub1-r1-name (str "s1-r1" suffix)
+          sub1-r2-name (str "s1-r2" suffix)
+          native-id (str "subscription1" suffix)
+          sub1-r1 (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
+                                                                :Name  sub1-r1-name
+                                                                :native-id native-id})
+          sub1-r2 (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
+                                                                :Name sub1-r2-name
+                                                                :native-id native-id})
+          concept-id (:concept-id sub1-r1)]
+      (index/wait-until-indexed)
+      (testing "Sanity check that the test subscription got updated and its revision id was incremented"
+        (is (= concept-id (:concept-id sub1-r2)))
+        (is (= 1 (:revision-id sub1-r1)))
+        (is (= 2 (:revision-id sub1-r2))))
+
+      ;; no read permission granted for provider "PROV2" so, no subscription could be found.
+      (testing "retrieval by subscription concept-id and revision id returns error"
+        (assert-retrieved-concept-error concept-id 1 accept-format 404
+          (format "Concept with concept-id [%s] and revision-id [1] could not be found." concept-id))
+        (assert-retrieved-concept-error concept-id 2 accept-format 404
+          (format "Concept with concept-id [%s] and revision-id [2] could not be found." concept-id)))
+
+      (testing "retrieval by only subscription concept-id returns error"
+        (assert-retrieved-concept-error concept-id nil accept-format 404
+          (format "Concept with concept-id [%s] could not be found." concept-id))))))
+
 (deftest retrieve-subscription-by-concept-id
   ;; We support UMM JSON format; No format and any format are also accepted.
   (doseq [accept-format [mt/umm-json]];; nil mt/any]]
@@ -86,7 +122,7 @@
         (assert-retrieved-concept concept-id 1 accept-format sub1-r1-name)
         (assert-retrieved-concept concept-id 2 accept-format sub1-r2-name))
 
-      (testing "retrieval by only service concept-id returns the latest revision"
+      (testing "retrieval by only subscription concept-id returns the latest revision"
         (assert-retrieved-concept concept-id nil accept-format sub1-r2-name))
 
       (testing "retrieval by non-existent revision returns error"
@@ -102,7 +138,7 @@
           "Concept with concept-id [SUB404404404-PROV1] and revision-id [1] does not exist."))
 
       (testing "retrieval of deleted concept"
-        ;; delete the service concept
+        ;; delete the subscription concept
         (ingest/delete-concept sub1-concept (subscription/token-opts (e/login (s/context) "user1")))
         (index/wait-until-indexed)
 
@@ -116,7 +152,7 @@
                          "a deleted concept and does not contain metadata.")
                     concept-id)))))))
 
-(deftest retrieve-service-with-invalid-format
+(deftest retrieve-subscription-with-invalid-format
   (testing "unsupported accept header results in error"
     (let [unsupported-mt "unsupported/mime-type"]
       (assert-retrieved-concept-error "SUB1111-PROV1" nil unsupported-mt 400

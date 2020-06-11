@@ -5,7 +5,7 @@
     [cmr.transmit.config :as tc]))
 
 (defmulti acls-match-concept?
-  "Returns true if any of the acls match the concept.
+  "Returns true if any of the catalog item acls match the concept.
 
   Implementations for this multimethod should be placed in the namespaces for the
   respective concept types under `cmr.search.services.acl-service.TYPE-acls`. If
@@ -13,27 +13,27 @@
   (fn [context acls concept]
     (:concept-type concept)))
 
-;; services currently have no ACLs, so return `true` for all ACL checks
+;; services currently have no catalog item ACLs, so return `true` for all ACL checks
 (defmethod acls-match-concept? :service
   [context acls concept]
   true)
 
-;; tools currently have no ACLs, so return `true` for all ACL checks
+;; tools currently have no catalog item ACLs, so return `true` for all ACL checks
 (defmethod acls-match-concept? :tool
   [context acls concept]
   true)
 
-;; tags have no acls so we always assume it matches
+;; tags have no catalog item acls so we always assume it matches
 (defmethod acls-match-concept? :tag
   [context acls concept]
   true)
 
-;; variables currently have no ACLs, so return `true` for all ACL checks
+;; variables currently have no catalog item ACLs, so return `true` for all ACL checks
 (defmethod acls-match-concept? :variable
   [context acls concept]
   true)
 
-;; subscriptions currently have no ACLs, so return `true` for all ACL checks
+;; subscriptions currently have no catalog item ACLs, so return `true` for all ACL checks
 (defmethod acls-match-concept? :subscription
   [context acls concept]
   true)
@@ -41,6 +41,20 @@
 (defmethod acls-match-concept? :default
   [context acls concept]
   false)
+
+(defmulti esm-acls-match-concept-provider?
+  "Returns true if any of the EMAIL_SUBSCRIPTION_MANAGEMENT acls match the provider of the concept.
+  EMAIL_SUBSCRIPTION_MANAGEMENT ACL only applies to subscription concept.
+  Implementations for this multimethod should be placed in the namespaces for the
+  respective concept types under `cmr.search.services.acls.TYPE-acls`."
+  (fn [acls concept]
+    (:concept-type concept)))
+
+;; Since EMAIL_SUBSCRIPTION_MANAGEMENT ACL only applies to subscription, for all other concepts,
+;; return `true` for this ACL checks.
+(defmethod esm-acls-match-concept-provider? :default
+  [acls concept]
+  true)
 
 ;; XXX To be fixed with CMR-4394
 ;;
@@ -101,8 +115,12 @@
       concepts
       (let [acls (acl-helper/get-acls-applicable-to-token context)
             applicable-field (-> concepts first :concept-type concept-type->applicable-field)
-            applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)]
+            applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)
+            esm-acls (acl-helper/get-esm-acls-applicable-to-token context)]
         (doall (remove nil? (pmap (fn [concept]
-                                    (when (acls-match-concept? context applicable-acls concept)
+                                    ;; when there are both catalog item acl match and the esm
+                                    ;; acl match, return the concept.
+                                    (when (and (acls-match-concept? context applicable-acls concept)
+                                               (esm-acls-match-concept-provider? esm-acls concept))
                                       concept))
                                   concepts)))))))

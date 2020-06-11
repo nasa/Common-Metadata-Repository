@@ -4,19 +4,11 @@
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :refer [are3]]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.umm-json :as data-umm-json]
-   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
-   [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
-   [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.association-util :as au]
+   [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.subscription-util :as subscriptions]
-   [cmr.umm-spec.versioning :as umm-version]))
+   [cmr.system-int-test.utils.subscription-util :as subscriptions]))
 
 (use-fixtures :each
               (join-fixtures
@@ -39,7 +31,7 @@
     (are3 [expected-subscriptions query]
       (do
         (testing "XML references format"
-          (d/assert-refs-match expected-subscriptions (subscriptions/search-refs query)))
+          (data2-core/assert-refs-match expected-subscriptions (subscriptions/search-refs query)))
         (testing "JSON format"
           (subscriptions/assert-subscription-search expected-subscriptions (subscriptions/search-json query))))
 
@@ -122,7 +114,7 @@
     (are3 [expected-subscriptions query]
       (do
         (testing "XML references format"
-          (d/assert-refs-match expected-subscriptions (subscriptions/search-refs query)))
+          (data2-core/assert-refs-match expected-subscriptions (subscriptions/search-refs query)))
         (testing "JSON format"
           (subscriptions/assert-subscription-search expected-subscriptions (subscriptions/search-json query))))
 
@@ -351,7 +343,7 @@
     (index/wait-until-indexed)
 
     (are3 [sort-key expected-subscriptions]
-      (is (d/refs-match-order?
+      (is (data2-core/refs-match-order?
            expected-subscriptions
            (subscriptions/search-refs {:sort-key sort-key})))
 
