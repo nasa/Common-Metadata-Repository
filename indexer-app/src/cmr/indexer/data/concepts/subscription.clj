@@ -2,7 +2,6 @@
   "Contains functions to parse and convert subscription concepts."
   (:require
    [clojure.string :as string]
-   [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.mime-types :as mt]
    [cmr.indexer.data.elasticsearch :as es]))
 
