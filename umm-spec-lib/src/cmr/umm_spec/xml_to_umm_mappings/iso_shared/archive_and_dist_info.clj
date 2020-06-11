@@ -5,7 +5,7 @@
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as dist-rel-url]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as parsing-util]
    [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value gmx-anchor-value]]))
 
 (defn parse-formats
@@ -14,12 +14,17 @@
   [formats]
   (for [format formats
         :let [format-name (char-string-value format "gmd:MD_Format/gmd:name")
-              format-type (char-string-value format "gmd:MD_Format/gmd:specification")
+              specification (char-string-value format "gmd:MD_Format/gmd:specification")
+              specification-map (when specification
+                                  (parsing-util/convert-iso-description-string-to-map
+                                    specification
+                                    (re-pattern "FormatType:|FormatDescription:")))
               [href href-type block-id] (re-matches #"(.*)_(\d+)$" (or (get-in format [:attrs :xlink/href]) ""))]
         :when block-id]
     {:block-id (read-string block-id)
      :Format format-name
-     :FormatType format-type}))
+     :FormatType (:FormatType specification-map)
+     :FormatDescription (:FormatDescription specification-map)}))
 
 (defn parse-transfer-options
   "Parses Media, AverageFileSize, AverageFileSizeUnit, TotalCollectionFileSize and
@@ -92,7 +97,7 @@
     (blocks->maps blocks)))
 
 (def specification-pattern
-  (re-pattern "FormatType:|AverageFileSize:|AverageFileSizeUnit:|TotalCollectionFileSize:|TotalCollectionFileSizeUnit:|Description:"))
+  (re-pattern "FormatType:|FormatDescription:|AverageFileSize:|AverageFileSizeUnit:|TotalCollectionFileSize:|TotalCollectionFileSizeUnit:|Description:"))
 
 (defn parse-archive-info-specification
   "Parse all the FormatType, AverageFileSize, AverageFileSizeUnit, TotalCollectionFileSize,
@@ -100,20 +105,15 @@
    string."
   [archive]
   (when-let [spec-string (char-string-value archive "gmd:MD_Format/gmd:specification")]
-   (let [format-type-index (util/get-index-or-nil spec-string "FormatType:")
-         average-file-size-index (util/get-index-or-nil spec-string "AverageFileSize:")
-         average-file-size-unit-index (util/get-index-or-nil spec-string "AverageFileSizeUnit:")
-         total-collection-file-size-index (util/get-index-or-nil spec-string "TotalCollectionFileSize:")
-         total-collection-file-size-unit-index (util/get-index-or-nil spec-string "TotalCollectionFileSizeUnit:")
-         description-index (util/get-index-or-nil spec-string "Description:")]
-    (when (or format-type-index
-              average-file-size-index
-              average-file-size-unit-index
-              total-collection-file-size-index
-              total-collection-file-size-unit-index
-              description-index)
-     (dist-rel-url/convert-key-strings-to-keywords
-      (dist-rel-url/convert-iso-description-string-to-map spec-string specification-pattern))))))
+    (let [archive-map (parsing-util/convert-iso-description-string-to-map spec-string specification-pattern)]
+      (when (or (:FormatType archive-map)
+                (:FormatDescription archive-map)
+                (:AverageFileSize archive-map)
+                (:AverageFileSizeUnit archive-map)
+                (:TotalCollectionFileSize archive-map)
+                (:TotalCollectionFileSizeUnit archive-map)
+                (:Description archive-map))
+        archive-map))))
 
 (defn parse-archive-info
   "Parses FileArchiveInformation from ISO MENDS and SMAP XML.
@@ -121,11 +121,12 @@
    the relevant path."
   [doc archive-info-xpath]
   (for [archive (select doc archive-info-xpath)
-        :let [{:keys [FormatType AverageFileSize
+        :let [{:keys [FormatType FormatDescription AverageFileSize
                       AverageFileSizeUnit TotalCollectionFileSize
                       TotalCollectionFileSizeUnit Description]} (parse-archive-info-specification archive)]]
     {:Format (char-string-value archive "gmd:MD_Format/gmd:name")
      :FormatType FormatType
+     :FormatDescription FormatDescription
      :AverageFileSize (when AverageFileSize
                         (read-string AverageFileSize))
      :AverageFileSizeUnit AverageFileSizeUnit

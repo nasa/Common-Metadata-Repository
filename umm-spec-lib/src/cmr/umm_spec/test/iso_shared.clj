@@ -130,6 +130,7 @@
       (-> file-dist-info
           (dissoc :TotalCollectionFileSizeBeginDate)
           (update :Media expected-dist-media)
+          (update :FormatDescription expected-file-archive-description)
           umm-c/map->FileDistributionInformationType))))
 
 (defn- expected-file-archive-info
@@ -140,6 +141,7 @@
       (-> file-archive-info
           (dissoc :TotalCollectionFileSizeBeginDate)
           (update :Description expected-file-archive-description)
+          (update :FormatDescription expected-file-archive-description)
           umm-c/map->FileArchiveInformationType))))
 
 (defn expected-archive-dist-info
