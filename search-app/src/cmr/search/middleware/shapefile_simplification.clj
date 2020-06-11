@@ -39,7 +39,7 @@
    (org.geotools.xsd Encoder Parser StreamingParser PullParser)
    (org.locationtech.jts.geom Geometry)
    (org.opengis.feature.simple SimpleFeature)
-   (org.opengis.feature.type Name)
+   (org.opengis.feature.type FeatureType Name)
    (org.locationtech.jts.simplify TopologyPreservingSimplifier)))
 
 (def SHAPEFILE_SIMPLIFICATION_HEADER "CMR-Shapfile-Simplification")
@@ -191,7 +191,7 @@
           (reduce (fn [old-val feature]
                     (let [[old-total-point-count new-total-point-count] old-val
                           old-point-count (feature-point-count feature)
-                          new-feature (simlify-feature feature tolerance)
+                          new-feature (simplify-feature feature tolerance)
                           new-point-count (feature-point-count new-feature)]
                       (.add feature-list new-feature)
                       [(+ old-total-point-count old-point-count)
@@ -202,22 +202,37 @@
       (println (format "New point count: %d" new-total-point-count))
       [feature-list [old-total-point-count new-total-point-count]])))
 
+(defn- simplify-data
+  "Given an ArrayList of Features simplify them, write out a simplified shapefie, then
+  return information about the shapefile and stats about the simplification"
+  [filename ^ArrayList features feature-type ^Float tolerance]
+  (let [target-dir (Files/createTempDirectory "Shapes" (into-array FileAttribute []))]
+    (try
+      (let [new-file (java.io.File/createTempFile "reduced" ".zip")
+            dumper (ShapefileDumper. (.toFile target-dir))
+            [simplified-features stats] (simplify-features features tolerance)
+            [original-point-count new-point-count] stats
+            collection (ListFeatureCollection. feature-type simplified-features)]
+        (.dump dumper collection)
+        (zip-dir (.toString target-dir) (.toString new-file))
+        ;; TODO Remove next line after debugging
+        (io/copy new-file (File. "/tmp/shapefile.zip"))
+        [{:original-point-count original-point-count
+          :new-point-count new-point-count}
+         {:tempfile new-file
+          :filename filename
+          :content-type mt/shapefile
+          :size (.length new-file)}])
+      (finally (delete-recursively (.toString target-dir))))))
+
 (defn simplify-geojson
   "Simplfies a geojson file. Returns statistics about the simplification and information
   about the new file."
   [shapefile-info tolerance]
   (try
     (let [file (:tempfile shapefile-info)
-          ; writer (FeatureJSON.)
-          new-file (java.io.File/createTempFile "reduced" ".zip")
-          ; new-file (File. "/tmp/simple")
-          target-dir (Files/createTempDirectory "Shapes" (into-array FileAttribute []))
-          dumper (ShapefileDumper. (.toFile target-dir))
-          _ (.setMaxDbfSize dumper 100000000)
-          ; output-stream (FileOutputStream. new-file)
-          _ (println "OPENED OUTPUT STREAM+++++++++++++++++++++++++++")
-          ; kml-encoder (Encoder. (KMLConfiguration.))
-          ; out-store (GeoJSONDataStore. new-file)
+          filename (:filename shapefile-info)
+          ; _ (.setMaxDbfSize dumper 100000000)
           _ (geojson/sanitize-geojson file)
           url (URLs/fileToUrl file)
           data-store (GeoJSONDataStore. url)
@@ -231,32 +246,18 @@
           _ (println (format "Found [%d] features" feature-count))
           iterator (.features features)]
       (try
-        (loop [features (ArrayList.) original-point-count 0 new-point-count 0]
+        (loop [features (ArrayList.)]
           (if (.hasNext iterator)
-            (let [feature (.next iterator)
-                  old-point-count (+ original-point-count (feature-point-count feature))
-                  new-feature (simplify-feature feature tolerance)
-                  _ (println "FEATURE SIMPLIFIED+++++++++++++++++++++++++++")
-                  new-point-count (+ new-point-count (feature-point-count new-feature))]
-              (.add features new-feature)
-              (recur features old-point-count new-point-count))
-            (let [collection (ListFeatureCollection. feature-type features)]
-              ; (.encode kml-encoder collection KML/kml output-stream)
-              (.dump dumper collection)
-              [{:original-point-count original-point-count
-                :new-point-count new-point-count}
-               {:tempfile new-file
-                :filename (:filename shapefile-info)
-                :content-type mt/shapefile
-                :size (.length new-file)}])))
+            (let [feature (.next iterator)]
+              (.add features feature)
+              (recur features))
+            (simplify-data filename features feature-type tolerance)))
         (finally (do
                    ;  (.close output-stream)
-                   (zip-dir (.toString target-dir) (.toString new-file))
-                   (io/copy new-file (File. "/tmp/shapefile.zip"))
+
                    (.close iterator)
                    (-> data-store .getFeatureReader .close)
                    (.delete file)
-                   (delete-recursively (.toString target-dir))
                    (println "COMPLETED SIMPLIFICATION++++++++++++++++++")))))
     (catch Exception e
       (let [{:keys [type errors]} (ex-data e)]
