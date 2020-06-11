@@ -20,8 +20,37 @@
 
 (use-fixtures :each
               (join-fixtures
-               [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
-                (subscriptions/grant-all-subscription-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})]))
+               [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"})
+                (subscriptions/grant-all-subscription-fixture
+                  {"provguid1" "PROV1" "provguid2" "PROV2"} [:read :update])
+                (subscriptions/grant-all-subscription-fixture
+                  {"provguid3" "PROV3"} [:update])]))
+
+(deftest search-for-subscriptions-without-read-permission-test
+  ;; EMAIL_SUBSCRIPTION_MANAGEMENT ACL grants only update permission for PROV3,
+  ;; so subscription for PROV3 can be ingested but can't be searched.
+  (let [subscription3 (subscriptions/ingest-subscription-with-attrs {:native-id "Sub3"
+                                                                     :Name "Subscription3"
+                                                                     :SubscriberId "SubId3"
+                                                                     :CollectionConceptId "C1-PROV3"
+                                                                     :provider-id "PROV3"})]
+    (index/wait-until-indexed)
+    (is (= 201 (:status subscription3)))
+    (are3 [expected-subscriptions query]
+      (do
+        (testing "XML references format"
+          (d/assert-refs-match expected-subscriptions (subscriptions/search-refs query)))
+        (testing "JSON format"
+          (subscriptions/assert-subscription-search expected-subscriptions (subscriptions/search-json query))))
+
+      "Find all returns nothing"
+      [] {}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; name Param
+      "By name case sensitive - exact match returns nothing"
+      []
+      {:name "Subscription3"})))
 
 (deftest search-for-subscriptions-validation-test
   (testing "Unrecognized parameters"

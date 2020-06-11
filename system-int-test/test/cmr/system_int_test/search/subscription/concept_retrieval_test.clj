@@ -19,7 +19,7 @@
  :each
  (join-fixtures
   [(ingest/reset-fixture {"provguid1" "PROV1"})
-   (subscription/grant-all-subscription-fixture {"provguid1" "PROV1"})]))
+   (subscription/grant-all-subscription-fixture {"provguid1" "PROV1"} [:read :update])]))
 
 (defn- assert-retrieved-concept
   "Verify the retrieved concept by checking against the expected subscription name,

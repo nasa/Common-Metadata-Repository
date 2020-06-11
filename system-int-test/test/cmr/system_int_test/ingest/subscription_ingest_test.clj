@@ -14,7 +14,7 @@
 (use-fixtures :each
               (join-fixtures
                [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
-                (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV1"})]))
+                (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV1"} [:read :update])]))
 
 (deftest subscription-ingest-on-prov2-test
   (testing "ingest on PROV2, which is not granted ingest permission for EMAIL_SUBSCRIPTION_MANAGEMENT ACL"

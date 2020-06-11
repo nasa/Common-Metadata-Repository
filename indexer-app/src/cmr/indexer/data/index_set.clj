@@ -809,6 +809,7 @@
    :deleted (-> m/bool-field-mapping m/stored m/doc-values)
    :user-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-date (-> m/date-field-mapping m/stored m/doc-values)
+   :permitted-group-ids (m/stored m/string-field-mapping)
    :metadata-format (-> m/string-field-mapping m/stored m/doc-values)})
 
 (def granule-settings-for-individual-indexes

@@ -387,13 +387,13 @@
   grant-all-variable)
 
 (defn grant-all-subscription-esm
-  "Creates an email-subscription-management acl in mock echo granting guest and  registered users ability to do all
+  "Creates an email-subscription-management acl in mock echo granting guest and registered users ability to do all
   subscription related operations" 
-  [context provider-guid]
+  [context provider-guid permissions]
   (grant context
-         [{:permissions [:update :read]
+         [{:permissions permissions
            :user_type :guest}
-          {:permissions [:update :read]
+          {:permissions permissions
            :user_type :registered}]
          :provider_identity
          {:target email-subscription-management

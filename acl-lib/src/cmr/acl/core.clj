@@ -179,7 +179,7 @@
                                   permission-type)
              ;; Find acls for this provider
              (filter #(or (nil? provider-id)
-                           (= provider-id (get-in % [acl-oit-key :provider-id]))))
+                          (= provider-id (get-in % [acl-oit-key :provider-id]))))
              seq))))
 
 (defn has-subscription-management-permission?
