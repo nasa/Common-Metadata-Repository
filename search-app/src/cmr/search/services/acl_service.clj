@@ -42,19 +42,16 @@
   [context acls concept]
   false)
 
-(defmulti esm-acls-match-concept-provider?
-  "Returns true if any of the EMAIL_SUBSCRIPTION_MANAGEMENT acls match the provider of the concept.
-  EMAIL_SUBSCRIPTION_MANAGEMENT ACL only applies to subscription concept.
-  Implementations for this multimethod should be placed in the namespaces for the
-  respective concept types under `cmr.search.services.acls.TYPE-acls`."
-  (fn [acls concept]
-    (:concept-type concept)))
-
-;; Since EMAIL_SUBSCRIPTION_MANAGEMENT ACL only applies to subscription, for all other concepts,
-;; return `true` for this ACL checks.
-(defmethod esm-acls-match-concept-provider? :default
-  [acls concept]
-  true)
+(defn- esm-acls-match-concept-provider?
+  "Returns true if any of the EMAIL_SUBSCRIPTION_MANAGEMENT acls matches the concept provider.
+  This ACL applies to subscription concept only. For all other concept types. it returns true"
+  [esm-acls concept]
+  ;; the esm-acls are all the EMAIL_SUBSCRIPTION_MANAGEMENT ACLs that
+  ;; grant the current user read permissions. All we need to check is
+  ;; if any of these read permissions are granted on the provider-id of the concept.
+  (if (= :subscription (:concept-type concept))
+    (some #(= (:provider-id concept) (get-in % [:provider-identity :provider-id])) esm-acls)
+    true))
 
 ;; XXX To be fixed with CMR-4394
 ;;
