@@ -30,9 +30,9 @@
 
 (def formats
   "Shapfile formats to be tested"
-  {"ESRI" {:extension "zip" :mime-type mt/shapefile}
-   "GeoJSON" {:extension "geojson" :mime-type mt/geojson}
-   "KML" {:extension "kml" :mime-type mt/kml}})
+  {; "ESRI" {:extension "zip" :mime-type mt/shapefile}
+   "GeoJSON" {:extension "geojson" :mime-type mt/geojson}})
+  ;  "KML" {:extension "kml" :mime-type mt/kml}})
 
 (deftest granule-shapefile-search-simplification-test
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
@@ -150,4 +150,7 @@
               "dc_richmond_line" [whole-world very-wide-cart washington-dc richmond]
 
               "Single Point Washington DC"
-              "single_point_dc" [whole-world very-wide-cart washington-dc])))))
+              "single_point_dc" [whole-world very-wide-cart washington-dc]
+
+              "Polygons Madagascar"
+              "MAD" [whole-world very-wide-cart washington-dc])))))
