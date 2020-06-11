@@ -104,7 +104,6 @@
    TotalCollectionFileSizeUnit and Description for FileArchiveInformation out of then specification.
    string."
   [archive]
-  (def archive archive)
   (when-let [spec-string (char-string-value archive "gmd:MD_Format/gmd:specification")]
     (let [archive-map (parsing-util/convert-iso-description-string-to-map spec-string specification-pattern)]
       (when (or (:FormatType archive-map)

@@ -76,6 +76,9 @@
      (dissoc :NumberOfInstruments)))
 
 (defn- remove-format-descriptions
+  "Remove FormatDescription from the passed in file information maps.
+   This is for 1.15.3 -> 1.15.2 in :ArchiveAndDistributionInformation :FileArchiveInformation and
+   :FileDistributionInformation."
   [file-informations]
   (map #(dissoc % :FormatDescription) file-informations))
 
