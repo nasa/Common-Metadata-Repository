@@ -39,7 +39,7 @@
 
 (defconfig enable-shapefile-parameter-flag
   "Flag that indicates if we allow spatial searching by shapefile."
-  {:default false :type Boolean})
+  {:default true :type Boolean})
 
 (defconfig max-shapefile-features
   "The maximum number of feature a shapefile can have"
@@ -277,6 +277,8 @@
 (defmulti shapefile->conditions
   "Converts a shapefile to query conditions based on shapefile format"
   (fn [shapefile-info]
+    (println "SHAPEFILE INFO++++++++++++++++++++++++++")
+    (println shapefile-info)
     (:content-type shapefile-info)))
 
 ;; ESRI shapefiles
