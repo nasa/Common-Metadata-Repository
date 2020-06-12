@@ -19,8 +19,8 @@
  :each
  (join-fixtures
   [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
-   (subscription/grant-all-subscription-fixture {"provguid1" "PROV1"} [:read :update])
-   (subscription/grant-all-subscription-fixture {"provguid2" "PROV2"} [:update])]))
+   (subscription/grant-all-subscription-fixture {"provguid1" "PROV1"} [:read :update] [:read :update])
+   (subscription/grant-all-subscription-fixture {"provguid2" "PROV2"} [:update] [:read :update])]))
 
 (defn- assert-retrieved-concept
   "Verify the retrieved concept by checking against the expected subscription name,
@@ -28,6 +28,18 @@
   [concept-id revision-id accept-format expected-subscription-name]
   (let [{:keys [status body]} (search/retrieve-concept
                                concept-id revision-id {:accept accept-format})]
+    (is (= 200 status))
+    (is (= expected-subscription-name
+           (:Name (json/parse-string body true))))))
+
+(defn- assert-retrieved-concept-with-registered-user
+  "Verify the retrieved concept by checking against the expected subscription name,
+  which we have deliberately set to be different for each concept revision."
+  [concept-id revision-id accept-format expected-subscription-name]
+  (let [user1-token (e/login (s/context) "user1")
+        {:keys [status body]} (search/retrieve-concept
+                               concept-id revision-id {:accept accept-format
+                                                       :query-params {:token user1-token}})]
     (is (= 200 status))
     (is (= expected-subscription-name
            (:Name (json/parse-string body true))))))
@@ -59,7 +71,7 @@
     (is (= err-code status))
     (is (= [err-message] errors))))
 
-(deftest retrieve-subscription-by-concept-id-failure
+(deftest retrieve-subscription-by-concept-id-various-read-permission
   ;; We support UMM JSON format; No format and any format are also accepted.
   (doseq [accept-format [mt/umm-json]];; nil mt/any]]
     (let [suffix (if accept-format
@@ -83,7 +95,7 @@
         (is (= 1 (:revision-id sub1-r1)))
         (is (= 2 (:revision-id sub1-r2))))
 
-      ;; no read permission granted for provider "PROV2" so, no subscription could be found.
+      ;; no read permission granted for guest on provider "PROV2" so, no subscription could be found.
       (testing "retrieval by subscription concept-id and revision id returns error"
         (assert-retrieved-concept-error concept-id 1 accept-format 404
           (format "Concept with concept-id [%s] and revision-id [1] could not be found." concept-id))
@@ -92,7 +104,15 @@
 
       (testing "retrieval by only subscription concept-id returns error"
         (assert-retrieved-concept-error concept-id nil accept-format 404
-          (format "Concept with concept-id [%s] could not be found." concept-id))))))
+          (format "Concept with concept-id [%s] could not be found." concept-id)))
+
+      ;; read permission is granted for registered user, subscriptions will be found
+      (testing "retrieval by subscription concept-id and revision id returns the specified revision"
+        (assert-retrieved-concept-with-registered-user concept-id 1 accept-format sub1-r1-name)
+        (assert-retrieved-concept-with-registered-user concept-id 2 accept-format sub1-r2-name))
+
+      (testing "retrieval by only subscription concept-id returns the latest revision"
+        (assert-retrieved-concept-with-registered-user concept-id nil accept-format sub1-r2-name)))))
 
 (deftest retrieve-subscription-by-concept-id
   ;; We support UMM JSON format; No format and any format are also accepted.

@@ -32,7 +32,7 @@
 
 (defn grant-all-subscription-fixture
   "A test fixture that grants all users the ability to create and modify subscriptions."
-  [providers permissions]
+  [providers guest-permissions registered-permissions]
   (fn [f]
     ;; grant INGEST_MANAGEMENT_ACL permission.
     (echo-util/grant-all-subscription-ima (s/context))
@@ -41,7 +41,10 @@
                        :provider-id provider-id})]
       (doseq [provider-map providers]
         ;; grant EMAIL_SUBSCRIPTION_MANAGEMENT permission for each provider.
-        (echo-util/grant-all-subscription-esm (s/context) (:provider-id provider-map) permissions)))
+        (echo-util/grant-all-subscription-esm (s/context)
+                                              (:provider-id provider-map)
+                                              guest-permissions
+                                              registered-permissions)))
     (f)))
 
 (defn make-subscription-concept

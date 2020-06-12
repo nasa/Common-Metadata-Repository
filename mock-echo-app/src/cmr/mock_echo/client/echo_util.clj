@@ -389,11 +389,11 @@
 (defn grant-all-subscription-esm
   "Creates an email-subscription-management acl in mock echo granting guest and registered users ability to do all
   subscription related operations" 
-  [context provider-guid permissions]
+  [context provider-guid guest-permissions registered-permissions]
   (grant context
-         [{:permissions permissions
+         [{:permissions guest-permissions
            :user_type :guest}
-          {:permissions permissions
+          {:permissions registered-permissions
            :user_type :registered}]
          :provider_identity
          {:target email-subscription-management
