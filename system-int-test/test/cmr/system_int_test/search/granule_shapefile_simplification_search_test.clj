@@ -2,6 +2,7 @@
   (:require
    [clojure.test :refer :all]
    [clojure.java.io :as io]
+   [cheshire.core :as json]
    [cmr.common.log :refer [debug info]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util :refer [are3]]
@@ -103,8 +104,8 @@
 
     (doseq [fmt (keys formats)
             :let [{extension :extension mime-type :mime-type} (get formats fmt)]]
-      (testing (format "Search by %s shapefile" fmt)
-        (are3 [shapefile items]
+      (testing (format "Search by %s shapefile with simplification" fmt)
+        (are3 [shapefile point-counts items]
               (let [found (search/find-refs-with-multi-part-form-post
                            :granule
                            [{:name "shapefile"
@@ -114,43 +115,51 @@
                              :content "true"}
                             {:name "provider"
                              :content "PROV1"}])
-                    headers (:headers found)
-                    _ (println "HEADERS++++++++++++++++++")
-                    _ (println headers)]
-                (is (= "true" (get headers "CMR-Shapfile-Simplification"))))
+                    [original-point-count new-point-count] point-counts
+                    headers (:headers found)]
+                (is (= {"original-point-count" original-point-count "new-point-count" new-point-count}
+                       (json/parse-string (get headers "CMR-Shapfile-Simplification"))))
+                (d/assert-refs-match items found))
 
-              "Single Polygon box around VA and DC"
-              "box" [whole-world very-wide-cart washington-dc richmond]
+              "Polygons that are already simple enough are not reduced further"
+              "box"
+              [5 5]
+              [whole-world very-wide-cart washington-dc richmond]
 
-              "Single Polygon box over North pole"
-              "np_poly" [north-pole touches-np on-np whole-world very-tall-cart along-am-line]
+              "Many Points Polygons South America"
+              "south_america"
+              [49876 3479]
+              [wide-south-cart wide-south whole-world]
 
-              "Single Polygon over Antartica"
-              "antartica" [south-pole touches-sp on-sp whole-world very-tall-cart]
+              "Many Points Polygons South America with Hole"
+              "south_america_with_hole"
+              [49902 3509]
+              [wide-south-cart wide-south whole-world]
 
-              "Single Polygon over Southern Africa"
-              "southern_africa" [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
+              "Many Point Polygons Africa"
+              "africa"
+              [12957 2271]
+              [normal-line very-wide-cart wide-south-cart wide-south polygon-with-holes whole-world normal-brs normal-line-cart])))))
 
-              "Single Polygon around Virgina with hole around DC"
-              "polygon_with_hole" [whole-world very-wide-cart richmond]
-
-              "Single feature, multiple polygons around DC and Richnmond"
-              "multi_poly" [whole-world very-wide-cart washington-dc richmond]
-
-              "Multiple feature, single Polygons around DC and Richnmond"
-              "multi_feature" [whole-world very-wide-cart washington-dc richmond]
-
-              "Polygon across the antimeridian"
-              "antimeridian" [whole-world across-am-poly across-am-br am-point very-wide-cart along-am-line]
-
-              "Line near North pole"
-              "np_line" [on-np whole-world]
-
-              "Line from DC to Richmond"
-              "dc_richmond_line" [whole-world very-wide-cart washington-dc richmond]
-
-              "Single Point Washington DC"
-              "single_point_dc" [whole-world very-wide-cart washington-dc]
-
-              "Polygons Madagascar"
-              "MAD" [whole-world very-wide-cart washington-dc])))))
+(deftest granule-shapefile-simlpification-failure-cases
+  (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
+  (let [saved-shapefile-max-size (shapefile-middleware/max-shapefile-size)
+        _ (side/eval-form `(shapefile-middleware/set-max-shapefile-size! 2500000))]
+    (testing "Failure cases"
+      (are3 [shapefile regex]
+            (is (re-find regex
+                         (first (:errors (search/find-refs-with-multi-part-form-post
+                                          :granule
+                                          [{:name "shapefile"
+                                            :content (io/file (io/resource (str "shapefiles/" shapefile ".geojson")))
+                                            :mime-type mt/geojson}
+                                           {:name "simplify-shapefile"
+                                            :content "true"}
+                                           {:name "provider"
+                                            :content "PROV1"}])))))
+            ;; Shapefiles with many features may not be able to be simplified enough because we
+            ;; only remove points in a feature, not features themselves
+            "Shapefiles with many features with many points"
+            "cb_2018_us_county_20m"
+            #"Shapefile could not be simplified"))
+    (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-size))))
