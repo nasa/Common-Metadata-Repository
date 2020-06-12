@@ -44,17 +44,17 @@
 
 (def SHAPEFILE_SIMPLIFICATION_HEADER "CMR-Shapfile-Simplification")
 
+(defconfig shapefile-simplifier-start-tolerance
+  "The tolerance to use for the first pass at shapefile simplification"
+  {:default 0.1 :type Double})
+
+(defconfig shapefile-simplifier-max-attempts
+  "The maximum number of times to attempt to simplify a shapefile"
+  {:default 5 :type Long})
+
 (def EPSG-4326-CRS
   "The CRS object for WGS 84"
   (CRS/decode "EPSG:4326" true))
-
-(defconfig max-shapefile-features
-  "The maximum number of feature a shapefile can have"
-  {:default 500 :type Long})
-
-(defconfig max-shapefile-points
-  "The maximum number of points a shapefile can have"
-  {:default 5000 :type Long})
 
 (defn delete-recursively
   "Delete a (possibly non-empty) directory"
@@ -139,13 +139,13 @@
 (defn- simplify-geometry
   "Simplify a geometry. Returns simplfied geometry and information about the simplificiton"
   [geometry tolerance]
-  (when (> (.getNumGeometries geometry) 1)
-    (println "MULTIGEOMETRY=========================="))
-  (println (format "POINT COUNT %d" (geometry-point-count geometry)))
+  ; (when (> (.getNumGeometries geometry) 1)
+  ;   (println "MULTIGEOMETRY=========================="))
+  ; (println (format "POINT COUNT %d" (geometry-point-count geometry)))
   (let [new-geometry (TopologyPreservingSimplifier/simplify geometry tolerance)]
-    (println (format "NEW POINT COUNT %d" (geometry-point-count new-geometry)))
-    (println (format "NUMBER OF GEOMETRIES: %d" (.getNumGeometries new-geometry)))
-    (println new-geometry)
+    ; (println (format "NEW POINT COUNT %d" (geometry-point-count new-geometry)))
+    ; (println (format "NUMBER OF GEOMETRIES: %d" (.getNumGeometries new-geometry)))
+    ; (println new-geometry)
     new-geometry))
 
 (defn- simplify-feature
@@ -159,13 +159,13 @@
         feature-builder (SimpleFeatureBuilder. feature-type)
         ; _ (println "CREATED FEATURE BUILDER+++++++++++++++++++++++")
         properties (.getProperties feature)
-        _ (println (format "FOUND %d PROPERTIES" (count properties)))
+        ; _ (println (format "FOUND %d PROPERTIES" (count properties)))
         ; _ (doseq [p properties] (println (.getName p)) (println (.getValue p)))
         _ (doseq [p properties
                   :let [value  (.getValue p)]]
             (if (geo/geometry? value)
               (do
-                (println "FOUND GEOMETRY PROPERTY")
+                ; (println "FOUND GEOMETRY PROPERTY")
                 (.add feature-builder (simplify-geometry (transform-to-epsg-4326 value crs) tolerance)))
               (.add feature-builder value)))]
     (.buildFeature feature-builder nil)))
@@ -187,6 +187,7 @@
   (let [feature-count (error-if (.size features) #(< % 1) "Shapefile has no features" nil)
         feature-list (ArrayList.)]
     (println (format "Found [%d] features" feature-count))
+    (println (format "TOLERANCE: %f" tolerance))
     (let [[old-total-point-count new-total-point-count]
           (reduce (fn [old-val feature]
                     (let [[old-total-point-count new-total-point-count] old-val
@@ -198,19 +199,39 @@
                        (+ new-total-point-count new-point-count)]))
                   [0 0]
                   features)]
-      (println (format "Original point count: %d" old-total-point-count))
-      (println (format "New point count: %d" new-total-point-count))
+      ; (println (format "Original point count: %d" old-total-point-count))
+      ; (println (format "New point count: %d" new-total-point-count))
       [feature-list [old-total-point-count new-total-point-count]])))
+
+(defn- iterative-simplify
+  "Repeatedly simplify a list of Features until the number of points is below the
+  CMR shapefile point limit"
+  [features]
+  (let [limit (shapefile/max-shapefile-points)
+        start-tolerance (shapefile-simplifier-start-tolerance)
+        start-point-count (reduce (fn [total feature] (+ total (feature-point-count feature)))
+                                  0
+                                  features)]
+    (loop [tolerance start-tolerance
+           result [features [start-point-count start-point-count]]
+           count 1]
+      (let [[new-features [old-count new-count]] result]
+        (println (format "POINT COUNTS: [%d %d]" old-count new-count))
+        (if (<= new-count limit)
+          result
+          (if (> count (shapefile-simplifier-max-attempts))
+            (errors/throw-service-error :bad-request "Shapefile could not be simplified")
+            (recur (* tolerance 10.0) (simplify-features new-features tolerance) (inc count))))))))
 
 (defn- simplify-data
   "Given an ArrayList of Features simplify them, write out a simplified shapefie, then
   return information about the shapefile and stats about the simplification"
-  [filename ^ArrayList features feature-type ^Float tolerance]
+  [filename ^ArrayList features feature-type]
   (let [target-dir (Files/createTempDirectory "Shapes" (into-array FileAttribute []))]
     (try
       (let [new-file (java.io.File/createTempFile "reduced" ".zip")
             dumper (ShapefileDumper. (.toFile target-dir))
-            [simplified-features stats] (simplify-features features tolerance)
+            [simplified-features stats] (iterative-simplify features)
             [original-point-count new-point-count] stats
             collection (ListFeatureCollection. feature-type simplified-features)]
         (.dump dumper collection)
@@ -228,7 +249,7 @@
 (defn simplify-geojson
   "Simplfies a geojson file. Returns statistics about the simplification and information
   about the new file."
-  [shapefile-info tolerance]
+  [shapefile-info]
   (try
     (let [file (:tempfile shapefile-info)
           filename (:filename shapefile-info)
@@ -251,14 +272,11 @@
             (let [feature (.next iterator)]
               (.add features feature)
               (recur features))
-            (simplify-data filename features feature-type tolerance)))
+            (simplify-data filename features feature-type)))
         (finally (do
-                   ;  (.close output-stream)
-
                    (.close iterator)
                    (-> data-store .getFeatureReader .close)
-                   (.delete file)
-                   (println "COMPLETED SIMPLIFICATION++++++++++++++++++")))))
+                   (.delete file)))))
     (catch Exception e
       (let [{:keys [type errors]} (ex-data e)]
         (.printStackTrace e)
@@ -274,7 +292,7 @@
 ;; GeoJSON
 (defmethod simplify mt/geojson
   [shapefile-info]
-  (simplify-geojson shapefile-info 0.1))
+  (simplify-geojson shapefile-info))
 
 (defn- simplify-shapefile
   "Simplifies the shapefile indicated in the parameters and updates the parameters
