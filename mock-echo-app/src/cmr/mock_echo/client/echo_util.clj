@@ -399,6 +399,17 @@
          {:target email-subscription-management
           :provider_id provider-guid}))
 
+(defn grant-all-subscription-group-esm
+  "Creates an email-subscription-management acl in mock echo granting group ability to do all
+  subscription related operations"
+  [context provider-guid group-id group-permissions]
+  (grant context
+         [{:permissions group-permissions
+           :group_id group-id}]
+         :provider_identity
+         {:target email-subscription-management
+          :provider_id provider-guid}))
+
 (defn grant-create-read-groups
   "Creates an ACL in mock echo granting registered users and guests ability to create and read
   groups. If a provider id is provided this it permits it for the given provider. If not provided
