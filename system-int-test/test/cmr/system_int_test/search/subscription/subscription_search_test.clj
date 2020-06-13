@@ -46,7 +46,7 @@
           (subscriptions/assert-subscription-search expected-subscriptions (subscriptions/search-json query))))
 
       "Find all returns nothing for guest"
-      [] {:token guest-token}
+      [] {}
 
       "Find all returns all for registered user"
       [subscription3] {:token user1-token})))
