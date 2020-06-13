@@ -22,7 +22,7 @@
                   {"provguid1" "PROV1" "provguid2" "PROV2"} [:read :update] [:read :update])
                 ;; No read permission granted for guest for PROV3
                 (subscriptions/grant-all-subscription-fixture
-                  {"provguid3" "PROV3"} [:update] [:read :update])
+                  {"provguid3" "PROV3"} [:update] [:update])
                 ;; No read permission granted for any user_types for PROV4.
                 (subscriptions/grant-all-subscription-fixture
                   {"provguid4" "PROV4"} [:update] [:update])]))
