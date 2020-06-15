@@ -105,7 +105,18 @@
 (def autocomplete-settings {:index
                             {:number_of_shards (elastic-autocomplete-index-num-shards)
                              :number_of_replicas 1
-                             :refresh_interval "1s"}})
+                             :refresh_interval "1s"}
+                           :analysis
+                            {:filter
+                             {:autocomplete_filter
+                              {:type "edge_ngram"
+                               :min_gram 1
+                               :max_gram 8}}
+                             :analyzer
+                             {:autocomplete_analyzer
+                              {:type "custom"
+                               :tokenizer "standard"
+                               :filter ["lowercase" "autocomplete_filter"]}}}})
 
 (def service-setting {:index
                        {:number_of_shards (elastic-service-index-num-shards)
@@ -686,7 +697,8 @@
    These are the fields that will be stored in an Elasticsearch document."
   {:type (m/stored m/string-field-mapping)
    :fields (m/not-indexed (m/stored m/string-field-mapping))
-   :value (m/stored m/search-as-you-type-field-mapping)})
+   :value (m/stored {:type "text"          
+                     :analyzer "autocomplete_analyzer"})})
 
 (defmapping variable-mapping :variable
   "Defines the elasticsearch mapping for storing variables. These are the
