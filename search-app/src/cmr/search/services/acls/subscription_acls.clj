@@ -1,7 +1,6 @@
 (ns cmr.search.services.acls.subscription-acls
   "Contains functions for manipulating subscription acls"
   (:require
-   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
@@ -15,16 +14,12 @@
   ;; otherwise, get the provider-ids from the EMAIL_SUBSCRIPTION_MANAGEMENT ACLs
   ;; that grant the read permission to the current user, and add provider-id
   ;; constraint to the query.
-  (error (format "echo-system-token?: %s" (tc/echo-system-token? context)))
   (if (tc/echo-system-token? context)
     query
     (let [;; esm-acls that grant read permission to the current user
-          _ (error (format  "sids are: %s" (apply str (util/lazy-get context :sids))))
           esm-acls (acl-helper/get-esm-acls-applicable-to-token context)
-          _ (error (format "esm-acls with read permission to the current user: %s" (apply str esm-acls)))
           provider-ids (if (seq esm-acls)
                          (map #(get-in % [:provider-identity :provider-id]) esm-acls)
                          ["non-existing-provider-id"])
-          _ (error (format "provider-ids are: %s" provider-ids))
           acl-cond (qm/string-conditions :provider-id provider-ids true)]
       (update-in query [:condition] #(gc/and-conds [acl-cond %])))))
