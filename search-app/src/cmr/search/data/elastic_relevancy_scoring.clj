@@ -68,7 +68,7 @@
   (let [use-keyword-sort? (keywords-extractor/contains-keyword-condition? query)
         use-usage-sort? (seq (->> query
                                   :sort-keys
-                                  (filter #(= :usage-relevancy-score (:field %)))))        
+                                  (filter #(= :usage-relevancy-score (:field %)))))
         use-temporal-sort? (and (temporal-conditions/contains-temporal-conditions? query)
                                 (sort-use-temporal-relevancy))]
     (seq
