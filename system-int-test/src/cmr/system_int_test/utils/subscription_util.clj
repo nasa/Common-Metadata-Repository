@@ -32,19 +32,20 @@
 
 (defn grant-all-subscription-fixture
   "A test fixture that grants all users the ability to create and modify subscriptions."
-  ([]
-   (grant-all-subscription-fixture {}))
-  ([providers]
-   (fn [f]
-     ;; grant INGEST_MANAGEMENT_ACL permission.
-     (echo-util/grant-all-subscription-ima (s/context))
-     (let [providers (for [[provider-guid provider-id] providers]
-                       {:provider-guid provider-guid
-                        :provider-id provider-id})]
-       (doseq [provider-map providers]
-         ;; grant EMAIL_SUBSCRIPTION_MANAGEMENT permission for each provider.
-         (echo-util/grant-all-subscription-esm (s/context) (:provider-id provider-map))))
-     (f))))
+  [providers guest-permissions registered-permissions]
+  (fn [f]
+    ;; grant INGEST_MANAGEMENT_ACL permission.
+    (echo-util/grant-all-subscription-ima (s/context))
+    (let [providers (for [[provider-guid provider-id] providers]
+                      {:provider-guid provider-guid
+                       :provider-id provider-id})]
+      (doseq [provider-map providers]
+        ;; grant EMAIL_SUBSCRIPTION_MANAGEMENT permission for each provider.
+        (echo-util/grant-all-subscription-esm (s/context)
+                                              (:provider-id provider-map)
+                                              guest-permissions
+                                              registered-permissions)))
+    (f)))
 
 (defn make-subscription-concept
   "Convenience function for creating a subscription concept"
@@ -59,13 +60,6 @@
        (data-umm-sub/subscription-concept idx)
        (assoc :format versioned-content-type)
        (merge attrs))))
-
-(defn make-subscription-concept-prov2
-  "Convenience function for creating a subscription concept for PROV2"
-  []
-  (-> {:provider-id "PROV2"}
-      (data-umm-sub/subscription-concept 0)
-      (assoc :format versioned-content-type)))
 
 (defn ingest-subscription
   "A convenience function for ingesting a subscription during tests."
