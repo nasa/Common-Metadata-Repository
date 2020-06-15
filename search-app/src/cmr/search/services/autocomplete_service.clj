@@ -5,16 +5,13 @@
     [cmr.common-app.services.search.query-model :as qm]
     [cmr.common-app.services.search.group-query-conditions :as gc]))
 
-(defn- build-autocomplete-condition
+(defn build-autocomplete-condition
   [term types]
-  (let [root (qm/multi-match ["value" "value.*gram"]
-                             term
-                             {:type "phrase_prefix"})]
+  (let [root (qm/match :value term)]
     (if (empty? types)
       root
       (gc/and-conds [root
-                     (gc/or-conds (map #(qm/text-condition :type %)
-                                       types))]))))
+                     (gc/or-conds (map #(qm/text-condition :type %) types))]))))
 
 (defn autocomplete
   "Execute elasticsearch query to get autocomplete suggestions"

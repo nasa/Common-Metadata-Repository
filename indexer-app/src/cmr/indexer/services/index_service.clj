@@ -247,7 +247,7 @@
         :let [key (key humanized-field)
               key-name (-> key
                            name
-                           (s/replace #"(\.humanized(_?2)?|-sn|-id)" ""))
+                           (s/replace #"((_\.)?humanized(_?2)?|-sn|-id)" ""))
               value-map (as-> humanized-field h
                           (val h)
                           (map util/remove-nil-keys h)
@@ -261,7 +261,7 @@
   This is case-insensitive"
   [term]
   {:pre [(some? term)]}
-  (let [anti-value-matcher (re-matcher #"(na|none|not (provided|applicable))"
+  (let [anti-value-matcher (re-matcher #"(none|not (provided|applicable))"
                                        (s/lower-case term))]
     (some? (re-find anti-value-matcher))))
 
