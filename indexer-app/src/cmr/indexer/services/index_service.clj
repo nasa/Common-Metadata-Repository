@@ -247,7 +247,7 @@
         :let [key (key humanized-field)
               key-name (-> key
                            name
-                           (s/replace #"((_\.)?humanized(_?2)?|-sn|-id)" ""))
+                           (s/replace #"([_\.]?humanized(_?2)?|-sn|-id)" ""))
               value-map (as-> humanized-field h
                           (val h)
                           (map util/remove-nil-keys h)
