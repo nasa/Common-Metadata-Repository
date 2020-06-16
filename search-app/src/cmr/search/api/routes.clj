@@ -50,7 +50,8 @@
    ;;
    ;; ACL support - required here to avoid circular dependencies
    [cmr.search.services.acls.collection-acls]
-   [cmr.search.services.acls.granule-acls]))
+   [cmr.search.services.acls.granule-acls]
+   [cmr.search.services.acls.subscription-acls]))
 
 (defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]

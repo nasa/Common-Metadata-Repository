@@ -26,23 +26,22 @@
   create the map. The function that creates it should pass back the following:
   (re-pattern \"key:|key:|key<etc.>\")"
   [description-string description-regex]
-  (let [description-string (-> description-string
-                               (string/replace description-regex
-                                            #(str key-split-string
-                                                  %1
-                                                  value-split-string))
-                               string/trim
-                               (string/replace #"\s+HSTRING" key-split-string)
-                               (string/replace #":TSTRING\s+" (str ":" value-split-string)))
-        description-string-list (string/split description-string (re-pattern key-split-string))]
-    (->> description-string-list
-         ;; split each string in the description-str-list
-         (map #(string/split % #":TSTRING"))
-         ;; keep the ones with values.
-         (filter #(= 2 (count %)))
-         (into {})
-         ;; remove "nil" valued keys
-         (util/remove-map-keys #(= "nil" %)))))
+  (when-let [description-string (-> description-string
+                                    (string/replace description-regex
+                                                    #(str key-split-string
+                                                          %1
+                                                          value-split-string))
+                                    string/trim
+                                    (string/replace #"\s+HSTRING" key-split-string)
+                                    (string/replace #":TSTRING\s+" (str ":" value-split-string)))]
+      (->> (string/split description-string (re-pattern key-split-string))
+           ;; split each string in the description-str-list
+           (map #(string/split % #":TSTRING"))
+           ;; keep the ones with values.
+           (filter #(= 2 (count %)))
+           (into {})
+           ;; remove "nil" valued keys
+           (util/remove-map-keys #(= "nil" %)))))
 
 (defn convert-key-strings-to-keywords
   "This function converts strings that are keys to keywords.

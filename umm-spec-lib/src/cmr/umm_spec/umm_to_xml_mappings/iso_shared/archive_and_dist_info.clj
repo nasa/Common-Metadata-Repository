@@ -10,10 +10,12 @@
    Specification string takes the format of:
    FormatType: Native AverageFileSize: 3 AverageFileSizeUnit: MB TotalCollectionFileSize: 1095 TotalCollectionFileSizeUnit: MB Description: Description text."
   [archive]
-  (let [{:keys [FormatType AverageFileSize AverageFileSizeUnit TotalCollectionFileSize
+  (let [{:keys [FormatType FormatDescription AverageFileSize AverageFileSizeUnit TotalCollectionFileSize
                 TotalCollectionFileSizeUnit Description]} archive
         format-str (when FormatType
                      (str "FormatType: " FormatType " "))
+        format-desc-str (when FormatDescription
+                          (str "FormatDescription: " FormatDescription " "))
         avg-file-size-str (when AverageFileSize
                             (str "AverageFileSize: " AverageFileSize " "))
         avg-file-size-unit-str (when AverageFileSizeUnit
@@ -24,9 +26,9 @@
                                  (str "TotalCollectionFileSizeUnit: " TotalCollectionFileSizeUnit " "))
         description-str (when Description
                           (str "Description: " Description " "))]
-    (when (or format-str avg-file-size-str avg-file-size-unit-str col-file-size-str
+    (when (or format-str format-desc-str avg-file-size-str avg-file-size-unit-str col-file-size-str
               col-file-size-unit-str description-str)
-     (string/trim (str format-str avg-file-size-str avg-file-size-unit-str
+     (string/trim (str format-str format-desc-str avg-file-size-str avg-file-size-unit-str
                        col-file-size-str col-file-size-unit-str description-str)))))
 
 (defn generate-file-archive-info
@@ -41,20 +43,33 @@
       [:gmd:version {:gco:nilReason "unknown"}]
       [:gmd:specification (char-string specification)]]]))
 
+(defn generate-format-specification-string
+  "Parse FileDistributionInformation values out of the specification string.
+   Specification string takes the format of:
+   FormatType: Native FormatDescription: Some description"
+  [dist]
+  (let [{:keys [FormatType FormatDescription]} dist
+        format-type-str (when FormatType
+                          (str "FormatType: " FormatType " "))
+        format-description-str (when FormatDescription
+                                 (str "FormatDescription: " FormatDescription " "))]
+    (when (or format-type-str format-description-str)
+     (string/trim (str format-type-str format-description-str)))))
+
 (defn- generate-format
   "Generate Format and FormatType xml for FileDistributionInformation.
    The xlink:href is used to associate FileDistributionInformation using the block-id."
   [indexed-dist]
   (let [[id dist] indexed-dist
-        {:keys [Format FormatType]} dist]
-    (when (or Format FormatType)
+        {:keys [Format FormatType FormatDescription]} dist]
+    (when (or Format FormatType FormatDescription)
       [:gmd:distributionFormat {:xlink:href (str "FileDistributionInformation_" id)}
        [:gmd:MD_Format
         [:gmd:name
          (char-string (or Format ""))]
         [:gmd:version {:gco:nilReason "unknown"}]
         [:gmd:specification
-         (char-string (or FormatType ""))]]])))
+         (char-string (or (generate-format-specification-string dist) ""))]]])))
 
 (defn- generate-distributor
   "Generate Fees and Description xml for FileDistributionInformation.

@@ -21,11 +21,13 @@
 
 (def usage-csv
   (str "Product,Version,Hosts\n"
-       "a,1,10\n"
-       "b,1,20\n"
-       "c,1,30\n"
-       "d,1,99\n"
-       "e,1,50\n"))
+       "alpha,1,10\n"
+       "alpha,2,10\n"
+       "alpha,3,30\n"
+       "bravo,1,20\n"
+       "bravo,2,25\n"
+       "unfound_1,1,40\n"
+       "unfound_2,1,40\n"))
 
 (defn init-usage-fixture
   "Setup usage config"
@@ -141,7 +143,6 @@
 
               ;; Revision descending
               (compare (:revision-id c2) (:revision-id c1)))))))))
-
 
 (defn- sort-revisions-by-field
   "Sort revisions using the given field with sub-sorting by concept-id ascending, revision-id
@@ -467,21 +468,27 @@
          ["ongoing" "entry-title"] [coll1 coll3 coll2 coll4 coll5 coll6 coll7])))
 
 (deftest collection-usage-score-sorting-test
-  (let [make-named-collection (fn [cname]
+  (let [make-named-collection (fn [cname attribs]
                                 (d/ingest
                                   "PROV1"
                                   (dc/collection
-                                    {:entry-title cname
-                                     :short-name cname
-                                     :long-name (str cname "-long")
-                                     :version-id "1"})))
-        c1 (make-named-collection "a")
-        c2 (make-named-collection "b")
-        c3 (make-named-collection "c")
-        c4 (make-named-collection "d")
-        c5 (make-named-collection "e")
-        c6 (make-named-collection "no-usage-data a")
-        c7 (make-named-collection "no-usage-data b")]
+                                    (merge {:entry-title cname
+                                            :short-name cname
+                                            :long-name (str cname "-long")
+                                            :version-id "1"}
+                                           attribs))))
+
+        ;; community usage values assigned to the following collections
+        alpha_1_10 (make-named-collection "alpha_a" {:short-name "alpha"})
+        alpha_2_10 (make-named-collection "alpha_b" {:short-name "alpha" :version-id "2"})
+        other_alpha_30 (make-named-collection "other" {:short-name "alpha" :version-id "3"})
+        bravo_1_20 (make-named-collection "bravo" {})
+        bravo_2_25 (make-named-collection "bravo_2" {:short-name "bravo" :version-id "2"})
+
+        ;; no community usage entries on the following
+        alphonse_nil (make-named-collection "alphonse" {})
+        charlie_nil (make-named-collection "charlie" {})
+        delta_nil (make-named-collection "delta" {})]
 
     (index/wait-until-indexed)
 
@@ -489,19 +496,44 @@
       (are [sort-key items]
            (sort-order-correct? items sort-key)
            
-           ["usage_score"] [c6 c7 c1 c2 c3 c5 c4]
-           ["-usage_score"] [c4 c5 c3 c2 c1 c6 c7]))
+           ["usage_score"] [alphonse_nil charlie_nil delta_nil alpha_2_10 alpha_1_10 bravo_1_20 bravo_2_25 other_alpha_30]
+           ["-usage_score"] [other_alpha_30 bravo_2_25 bravo_1_20 alpha_2_10 alpha_1_10 alphonse_nil charlie_nil delta_nil]))
 
     (testing "using multiple sort keys"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
 
-           ["entry_title" "usage_score"] [c1 c2 c3 c4 c5 c6 c7]
-           ["entry_title" "-usage_score"] [c1 c2 c3 c4 c5 c6 c7]
-           ["-entry_title" "usage_score"] [c7 c6 c5 c4 c3 c2 c1]
-           ["-entry_title" "-usage_score"] [c7 c6 c5 c4 c3 c2 c1]
+           ["short_name" "usage_score"] [alpha_2_10 alpha_1_10 other_alpha_30 alphonse_nil bravo_1_20 bravo_2_25 charlie_nil delta_nil]
+           ["short_name" "-usage_score"] [other_alpha_30 alpha_2_10 alpha_1_10 alphonse_nil bravo_2_25 bravo_1_20 charlie_nil delta_nil]
+           ["-short_name" "usage_score"] [delta_nil charlie_nil bravo_1_20 bravo_2_25 alphonse_nil alpha_2_10 alpha_1_10 other_alpha_30]
+           ["-short_name" "-usage_score"] [delta_nil charlie_nil bravo_2_25 bravo_1_20 alphonse_nil other_alpha_30 alpha_2_10 alpha_1_10]
 
-           ["usage_score" "entry_title"] [c6 c7 c1 c2 c3 c5 c4]
-           ["usage_score" "-entry_title"] [c7 c6 c1 c2 c3 c5 c4]
-           ["-usage_score" "entry_title"] [c4 c5 c3 c2 c1 c6 c7]
-           ["-usage_score" "-entry_title"] [c4 c5 c3 c2 c1 c7 c6]))))
+           ["usage_score" "short_name"] [alphonse_nil charlie_nil delta_nil alpha_2_10 alpha_1_10 bravo_1_20 bravo_2_25 other_alpha_30] 
+           ["usage_score" "-short_name"] [delta_nil charlie_nil alphonse_nil alpha_2_10 alpha_1_10 bravo_1_20 bravo_2_25 other_alpha_30]
+           ["-usage_score" "short_name"] [other_alpha_30 bravo_2_25 bravo_1_20 alpha_2_10 alpha_1_10 alphonse_nil charlie_nil delta_nil]
+           ["-usage_score" "-short_name"] [other_alpha_30 bravo_2_25 bravo_1_20 alpha_2_10 alpha_1_10 delta_nil charlie_nil alphonse_nil]))
+
+    (testing "sorting params"
+      (are [query-map items]
+           (d/refs-match-order? items (search/find-refs :collection
+                                                        query-map
+                                                        {:method :post}))
+
+           ;; keyword relevancy sorting
+           {:keyword "alph*"} [alpha_2_10 alpha_1_10 alphonse_nil other_alpha_30]
+           
+           ;; when usage is provided it will override relevancy
+           {:keyword "alph*" :sort-key ["-usage_score"]} [other_alpha_30 alpha_2_10 alpha_1_10 alphonse_nil]
+           {:keyword "alph*" :sort-key ["usage_score"]} [alphonse_nil alpha_2_10 alpha_1_10 other_alpha_30]
+           
+           ;; verify order is enforced when providing multiple keys
+           {:keyword "alph*" :sort-key ["entry_title" "usage_score"]} [alpha_1_10 alpha_2_10 alphonse_nil other_alpha_30]
+           {:keyword "alph*" :sort-key ["entry_title" "-usage_score"]} [alpha_1_10 alpha_2_10 alphonse_nil other_alpha_30] 
+           {:keyword "alph*" :sort-key ["-entry_title" "usage_score"]} [other_alpha_30 alphonse_nil alpha_2_10 alpha_1_10] 
+           {:keyword "alph*" :sort-key ["-entry_title" "-usage_score"]} [other_alpha_30 alphonse_nil alpha_2_10 alpha_1_10]
+
+           {:keyword "alph*" :sort-key ["usage_score" "entry_title"]} [alphonse_nil alpha_1_10 alpha_2_10 other_alpha_30]
+           {:keyword "alph*" :sort-key ["usage_score" "-entry_title"]} [alphonse_nil alpha_2_10 alpha_1_10 other_alpha_30]
+           {:keyword "alph*" :sort-key ["-usage_score" "entry_title"]} [other_alpha_30 alpha_1_10 alpha_2_10 alphonse_nil]
+           {:keyword "alph*" :sort-key ["-usage_score" "-short_name"]} [other_alpha_30 alpha_2_10 alpha_1_10 alphonse_nil]))))
+

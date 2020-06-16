@@ -95,8 +95,8 @@
         "Retrieve specified version 1.0 with URL extension"
         "1.0" nil "umm_json_v1_0"
 
-        "Retrieve specified version 1.15.2 with URL extension"
-        "1.15.2" nil "umm_json_v1_15_2"))
+        "Retrieve specified version 1.15.3 with URL extension"
+        "1.15.3" nil "umm_json_v1_15_3"))
 
     (testing "find collections in umm-json format"
       (are3 [collections params]

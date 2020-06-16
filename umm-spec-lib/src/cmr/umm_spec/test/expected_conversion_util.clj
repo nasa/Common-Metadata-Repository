@@ -12,8 +12,7 @@
   [cmr.umm-spec.models.umm-common-models :as cmn]
   [cmr.umm-spec.test.location-keywords-helper :as lkt]
   [cmr.umm-spec.url :as url]
-  [cmr.umm-spec.util :as su]
-  [cmr.umm-spec.xml-to-umm-mappings.distributed-format-util :as format-util]))
+  [cmr.umm-spec.util :as su]))
 
 (def coll-progress-enum-list
   "The enum list for CollectionProgress in v1.10. that could be converted from
@@ -223,12 +222,3 @@
                  (update pr :OnlineResource dif-online-resource)
                  pr))
       check-nil-pub-ref))
-
-(defn expand-file-dist-infos
-  "Parse each format to see if the format contains multiple values. If it does
-   then replace the distribution info that exists and add new ones for each
-   multple format that exists."
-  [file-dist-info]
-  (let [formats (:Format file-dist-info)
-        parsed-format (format-util/parse-distribution-formats formats)]
-    (map #(assoc file-dist-info :Format %) parsed-format)))

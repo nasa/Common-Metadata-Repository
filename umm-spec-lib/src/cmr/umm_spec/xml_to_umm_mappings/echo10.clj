@@ -12,7 +12,6 @@
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
-   [cmr.umm-spec.xml-to-umm-mappings.distributed-format-util :as format-util]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
@@ -185,15 +184,8 @@
   [price format]
   (util/remove-nil-keys
     {:Fees price
-     :Format format
+     :Format (value-of format ".")
      :FormatType "Native"}))
-
-(defn add-data-formats
-  "This function parses out the multiple formats that can exist in the
-   ECHO 10 DataFormat element and puts them in their own UMM-C
-   FileDistributionInformation elements."
-  [price formats]
-  (map #(add-data-format price %) (format-util/parse-distribution-formats (value-of formats "."))))
 
 (defn parse-and-set-archive-dist-info
   "Parses price and data formats out of Echo 10 XML into UMM-C. The price
@@ -206,7 +198,7 @@
       [{:Fees price
         :Format u/not-provided
         :FormatType "Native"}]
-      (mapcat #(add-data-formats price %) (select doc "Collection/DataFormat")))))
+      (map #(add-data-format price %) formats))))
 
 (defn parse-archive-dist-info
   "Parses ArchiveAndDistributionInformation out of Echo 10 XML into UMM-C"

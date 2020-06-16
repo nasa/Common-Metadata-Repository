@@ -11,8 +11,27 @@
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
-                                           "provguid2" "PROV2"}))
+(use-fixtures :each
+              (join-fixtures
+               [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
+                (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV1"} 
+                                                                  [:read :update]
+                                                                  [:read :update])
+                (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV2"}
+                                                                  [:read]
+                                                                  [:read :update])]))
+
+(deftest subscription-ingest-on-prov2-test
+  (testing "ingest on PROV2, guest is not granted ingest permission for EMAIL_SUBSCRIPTION_MANAGEMENT ACL"
+    (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV2"})
+          guest-token (echo-util/login-guest (system/context))
+          response (ingest/ingest-concept concept {:token guest-token})]
+      (is (= ["You do not have permission to perform that action."] (:errors response)))))
+  (testing "ingest on PROV2, registered user is granted ingest permission for EMAIL_SUBSCRIPTION_MANAGEMENT ACL"
+    (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV2"})
+          user1-token (echo-util/login (system/context) "user1")
+          response (ingest/ingest-concept concept {:token user1-token})]
+      (is (= 201 (:status response))))))
 
 (deftest subscription-ingest-test
   (testing "ingest of a new subscription concept"

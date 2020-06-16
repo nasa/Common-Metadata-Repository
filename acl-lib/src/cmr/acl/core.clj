@@ -121,12 +121,21 @@
   "The cache key for the token to ingest management permission cache."
   :token-imp)
 
+(def token-smp-cache-key
+  "The cache key for the token to subscription management permission cache."
+  :token-smp)
+
 (def TOKEN_IMP_CACHE_TIME
   "The number of milliseconds token information will be cached."
   (* 5 60 1000))
 
 (defn create-token-imp-cache
   "Creates a cache for which tokens have ingest management permission."
+  []
+  (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
+
+(defn create-token-smp-cache
+  "Creates a cache for which tokens have subscription management permission."
   []
   (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
 
@@ -141,7 +150,7 @@
   (try
     (let [acl-oit-key (access-control/acl-type->acl-key object-identity-type)]
       (->> (acl-fetcher/get-acls context [object-identity-type])
-           ;; Find acls on INGEST_MANAGEMENT
+           ;; Find acls on target
            (filter #(= target (get-in % [acl-oit-key :target])))
            ;; Find acls for this user and permission type
            (filter (partial acl-matches-sids-and-permission?
@@ -157,38 +166,77 @@
            error-message))
         nil))))
 
-(defn has-ingest-management-permission?
+(defn- has-management-permission?
   "Returns true if the user identified by the token in the cache has been granted
-  INGEST_MANAGEMENT_PERMISSION in ECHO ACLS for the given permission type."
-  [context permission-type object-identity-type provider-id]
+  target permission in ECHO ACLS for the given permission type."
+  [context permission-type object-identity-type provider-id target]
   ;; Performance optimization here of returning true if it's the system user.
   (or (transmit-config/echo-system-token? context)
       (let [acl-oit-key (access-control/acl-type->acl-key object-identity-type)]
         (->> (get-permitting-acls context
                                   object-identity-type
-                                  "INGEST_MANAGEMENT_ACL"
+                                  target
                                   permission-type)
              ;; Find acls for this provider
              (filter #(or (nil? provider-id)
                           (= provider-id (get-in % [acl-oit-key :provider-id]))))
              seq))))
 
+(defn has-subscription-management-permission?
+  "Returns true if the user identified by the token in the cache has been granted
+  EMAIL_SUBSCRIPTION_MANAGEMENT permission in ECHO ACLS for the given permission type."
+  [context permission-type object-identity-type provider-id]
+  (has-management-permission?
+    context permission-type object-identity-type provider-id "EMAIL_SUBSCRIPTION_MANAGEMENT"))
+
+(defn has-ingest-management-permission?
+  "Returns true if the user identified by the token in the cache has been granted
+  INGEST_MANAGEMENT permission in ECHO ACLS for the given permission type."
+  [context permission-type object-identity-type provider-id]
+  (has-management-permission?
+    context permission-type object-identity-type provider-id "INGEST_MANAGEMENT_ACL"))
+
+(defn- verify-management-permission
+  "Verifies the current user has been granted the permission in permission-fn in ECHO ACLs"
+  [context permission-type object-identity-type provider-id cache-key permission-fn]
+  (let [has-permission-fn (fn []
+                            (permission-fn
+                              context permission-type object-identity-type provider-id))
+        has-permission? (if-let [cache (cache/context->cache context cache-key)]
+                          ;; Read using cache. Cache key is combo of token and permission type
+                          (cache/get-value
+                            cache [(:token context) permission-type] has-permission-fn)
+                          ;; No token cache so directly check permission.
+                          (has-permission-fn))]
+    (when-not has-permission?
+      (errors/throw-service-error
+        :unauthorized
+        "You do not have permission to perform that action."))))
+
+(defn verify-subscription-management-permission
+  "Verifies the current user has been granted EMAIL_SUBSCRIPTION_MANAGEMENT
+  permission in ECHO ACLs"
+  [context permission-type object-identity-type provider-id]
+  (verify-management-permission
+    context
+    permission-type
+    object-identity-type
+    provider-id
+    token-smp-cache-key
+    has-subscription-management-permission?))
+
 (defn verify-ingest-management-permission
-  "Verifies the current user has been granted INGEST_MANAGEMENT_PERMISSION in ECHO ACLs"
+  "Verifies the current user has been granted INGEST_MANAGEMENT_ACLS
+  permission in ECHO ACLs"
   ([context]
    (verify-ingest-management-permission context :update :system-object nil))
   ([context permission-type]
    (verify-ingest-management-permission context permission-type :system-object nil))
   ([context permission-type object-identity-type provider-id]
-   (let [has-permission-fn #(has-ingest-management-permission?
-                              context permission-type object-identity-type provider-id)
-         has-permission? (if-let [cache (cache/context->cache context token-imp-cache-key)]
-                           ;; Read using cache. Cache key is combo of token and permission type
-                           (cache/get-value
-                             cache [(:token context) permission-type] has-permission-fn)
-                           ;; No token cache so directly check permission.
-                           (has-permission-fn))]
-     (when-not has-permission?
-       (errors/throw-service-error
-         :unauthorized
-         "You do not have permission to perform that action.")))))
+   (verify-management-permission
+     context
+     permission-type
+     object-identity-type
+     provider-id
+     token-imp-cache-key
+     has-ingest-management-permission?)))
