@@ -96,6 +96,7 @@
          "kms"
          "providers"
          "token-imp"
+         "token-smp"
          "token-sid"
          "token-user-id"
          "token-user-ids"

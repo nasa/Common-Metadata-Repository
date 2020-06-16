@@ -21,6 +21,7 @@
    [cmr.indexer.data.concepts.collection.collection-util :as collection-util]
    [cmr.indexer.data.concepts.collection.community-usage-metrics :as metrics]
    [cmr.indexer.data.concepts.collection.data-center :as data-center]
+   [cmr.indexer.data.concepts.collection.distributed-format-util :as dist-util]
    [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
    [cmr.indexer.data.concepts.collection.instrument :as instrument]
    [cmr.indexer.data.concepts.collection.keyword :as k]
@@ -172,10 +173,12 @@
 
 (defn- get-granule-data-format
   "Returns the Format field from
-  ArchiveAndDistributionInformation -> FileDistributionInformation"
+   ArchiveAndDistributionInformation -> FileDistributionInformation. This also parses the format
+   string for multiple values and filters out encoded information."
   [file-distribution-information]
   (->> file-distribution-information
        (map :Format)
+       (mapcat dist-util/parse-distribution-formats)
        distinct
        (remove nil?)))
 

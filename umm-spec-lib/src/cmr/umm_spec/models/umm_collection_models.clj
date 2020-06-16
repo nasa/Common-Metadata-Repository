@@ -367,6 +367,9 @@
    ;; yyyy-MM-ddTHH:mm:ssZ format; for example: 2018-01-01T10:00:00Z.
    TotalCollectionFileSizeBeginDate
 
+   ;; Allows the record provider to provide supporting documentation about the Format.
+   FormatDescription
+
    ;; Unit of measure for the total collection file size.
    TotalCollectionFileSizeUnit
 
@@ -676,10 +679,6 @@
 ;; user that it exists.
 (defrecord FileArchiveInformationType
   [
-   ;; This element defines a single format for an archival artifact. Examples of format include:
-   ;; ascii, binary, GRIB, BUFR, HDF4, HDF5, HDF-EOS4, HDF-EOS5, jpeg, png, tiff, geotiff, kml.
-   Format
-
    ;; Allows the provider to state whether the archivable item's format is its native format or
    ;; another supported format.
    FormatType
@@ -688,12 +687,21 @@
    ;; magnitude for each archivable file if more than 1 exists.
    AverageFileSize
 
-   ;; Unit of measure for the average file size.
-   AverageFileSizeUnit
+   ;; This element defines a single format for an archival artifact. Examples of format include:
+   ;; ascii, binary, GRIB, BUFR, HDF4, HDF5, HDF-EOS4, HDF-EOS5, jpeg, png, tiff, geotiff, kml.
+   Format
 
    ;; An approximate total size of all of the archivable items within a collection. This gives an
    ;; end user an idea of the magnitude for all of archivable files combined.
    TotalCollectionFileSize
+
+   ;; The date of which this collection started to collect data. This date is used by users to be
+   ;; able to calculate the current total collection file size. The date needs to be in the
+   ;; yyyy-MM-ddTHH:mm:ssZ format; for example: 2018-01-01T10:00:00Z.
+   TotalCollectionFileSizeBeginDate
+
+   ;; Allows the record provider to provide supporting documentation about the Format.
+   FormatDescription
 
    ;; Unit of measure for the total collection file size.
    TotalCollectionFileSizeUnit
@@ -701,10 +709,8 @@
    ;; Provides the data provider a way to convey more information about the archivable item.
    Description
 
-   ;; The date of which this collection started to collect data. This date is used by users to be
-   ;; able to calculate the current total collection file size. The date needs to be in the
-   ;; yyyy-MM-ddTHH:mm:ssZ format; for example: 2018-01-01T10:00:00Z.
-   TotalCollectionFileSizeBeginDate
+   ;; Unit of measure for the average file size.
+   AverageFileSizeUnit
   ])
 (record-pretty-printer/enable-record-pretty-printing FileArchiveInformationType)
 

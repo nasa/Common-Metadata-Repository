@@ -53,44 +53,24 @@
 
   (let [base-record (slurp (io/resource "example-data/echo10/artificial_test_data.xml"))
         expected-single-dataformat-without-price {:FileDistributionInformation [{:FormatType "Native",
-                                                                                 :Format "XLS"}
-                                                                                {:FormatType "Native",
-                                                                                 :Format "PDF"}
-                                                                                {:FormatType "Native",
-                                                                                 :Format "PNG"}]}
+                                                                                 :Format "XLS, PDF, PNG"}]}
         actual-single-dataformat-without-price (-> base-record
                                                    (string/replace #"<Price>0</Price>" "")
                                                    (string/replace #"<DataFormat>HTML</DataFormat>" ""))
         expected-multi-dataformat-without-price {:FileDistributionInformation [{:FormatType "Native",
-                                                                                :Format "XLS"}
-                                                                               {:FormatType "Native",
-                                                                                :Format "PDF"}
-                                                                               {:FormatType "Native",
-                                                                                :Format "PNG"}
+                                                                                :Format "XLS, PDF, PNG"}
                                                                                {:FormatType "Native",
                                                                                 :Format "HTML"}]}
         actual-multi-dataformat-without-price (-> base-record
                                                   (string/replace #"<Price>0</Price>" ""))
         expected-single-dataformat-with-price {:FileDistributionInformation [{:FormatType "Native",
                                                                               :Fees "0",
-                                                                              :Format "XLS"}
-                                                                             {:FormatType "Native",
-                                                                              :Fees "0",
-                                                                              :Format "PDF"}
-                                                                             {:FormatType "Native",
-                                                                              :Fees "0",
-                                                                              :Format "PNG"}]}
+                                                                              :Format "XLS, PDF, PNG"}]}
         actual-single-dataformat-with-price (-> base-record
                                                 (string/replace #"<DataFormat>HTML</DataFormat>" ""))
         expected-multi-dataformat-with-price {:FileDistributionInformation [{:FormatType "Native",
                                                                              :Fees "0",
-                                                                             :Format "XLS"}
-                                                                            {:FormatType "Native",
-                                                                             :Fees "0",
-                                                                             :Format "PDF"}
-                                                                            {:FormatType "Native",
-                                                                             :Fees "0",
-                                                                             :Format "PNG"}
+                                                                             :Format "XLS, PDF, PNG"}
                                                                             {:FormatType "Native",
                                                                              :Fees "0",
                                                                              :Format "HTML"}]}

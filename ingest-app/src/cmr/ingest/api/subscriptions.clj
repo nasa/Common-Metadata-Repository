@@ -28,6 +28,8 @@
         _ (api-core/verify-provider-exists request-context provider-id)
         _ (acl/verify-ingest-management-permission
             request-context :update :provider-object provider-id)
+        _ (acl/verify-subscription-management-permission
+            request-context :update :provider-object provider-id)
         _ (common-enabled/validate-write-enabled request-context "ingest")
         concept (validate-and-prepare-subscription-concept concept)
         concept-with-user-id (api-core/set-user-id concept request-context headers)
@@ -43,4 +45,6 @@
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."
   [provider-id native-id request]
+  (acl/verify-subscription-management-permission
+    (:request-context request) :update :provider-object provider-id)
   (api-core/delete-concept :subscription provider-id native-id request))

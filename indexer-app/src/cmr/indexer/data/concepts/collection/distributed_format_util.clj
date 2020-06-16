@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.xml-to-umm-mappings.distributed-format-util
+(ns cmr.indexer.data.concepts.collection.distributed-format-util
   "Defines a utility to parse out multiple distribution format values as a
    string into vector components."
   (:require

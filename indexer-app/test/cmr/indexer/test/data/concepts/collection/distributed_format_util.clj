@@ -1,9 +1,9 @@
-(ns cmr.umm-spec.test.xml-to-umm-mappings.distributed-format-util
+(ns cmr.indexer.test.data.concepts.collection.distributed-format-util
   "This namespace conducts unit tests on the distribution-format-util namespace."
   (:require
     [clojure.test :refer :all]
     [cmr.common.util :as common-util :refer [are3]]
-    [cmr.umm-spec.xml-to-umm-mappings.distributed-format-util :as util]))
+    [cmr.indexer.data.concepts.collection.distributed-format-util :as util]))
 
 (deftest replace-comma-space-and-with-comma-space-test
   "Test the replacement of ', and' with ', ' both with correct and not correct data."

@@ -2359,3 +2359,38 @@
                             :HorizontalResolutionProcessingLevelEnum]
                            "Point"))
              result)))))
+
+(def sample-collection-1-15-3
+  {:ArchiveAndDistributionInformation
+    {:FileArchiveInformation
+      [{:Format "Binary"
+        :FormatType "Native"
+        :FormatDescription "Use the something app to open the binary file."}
+       {:Format "netCDF-4"
+        :FormatType "Supported"
+        :FormatDescription "An acsii file also exists."}]
+     :FileDistributionInformation
+       [{:Format "netCDF-4"
+         :FormatType "Supported"
+         :FormatDescription "An acsii file also exists."}
+        {:Format "netCDF-5"
+         :FormatType "Supported"
+         :FormatDescription "An acsii file also exists."}]}})
+
+(deftest migrate-1-15-3-to-1-15-2
+  "Test the migration of collections from 1.15.3 to 1.15.2."
+
+  (testing "Remove FormatDescription"
+    (let [result (vm/migrate-umm {} :collection "1.15.3" "1.15.2" sample-collection-1-15-3)]
+      (is (= {:ArchiveAndDistributionInformation
+               {:FileArchiveInformation
+                 [{:Format "Binary"
+                   :FormatType "Native"}
+                  {:Format "netCDF-4"
+                   :FormatType "Supported"}]
+                :FileDistributionInformation
+                 [{:Format "netCDF-4"
+                   :FormatType "Supported"}
+                  {:Format "netCDF-5"
+                   :FormatType "Supported"}]}}
+             result)))))

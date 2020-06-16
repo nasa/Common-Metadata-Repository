@@ -1336,7 +1336,7 @@ For temporal range search, the default is inclusive on the range boundaries. Thi
 
 The collection's temporal range or the temporal range of the granules in the collection can be searched. `options[temporal][limit_to_granules]=true` will indicate that the temporal search should find collections based on the minimum and maximum values of each collection's granules' temporal range. If a collection does not have any granules it will search the collection's temporal range.
 
-If a temporal range search is performed, the search results will be sorted by the temporal overlap across all ranges provided, with usage score being the tie-breaker. If a keyword search is performed in conjunction with the temporal range search, search results are first sorted by relevancy score, then by temporal overlap, then usage score.
+If a temporal range search is performed, the search results will be sorted by the temporal overlap across all ranges provided, with usage score being the tie-breaker. If a keyword search is performed in conjunction with the temporal range search, search results are first sorted by relevancy score, then by temporal overlap, then usage score. If a keyword search is used in conjuction with usage-score sort key, the usage-score will be used instead of relevancy score.
 
 #### <a name="c-project"></a> Find collections by project
 
@@ -4670,7 +4670,7 @@ __Sample response__
 ```
 #### <a name="subscription-access-control"></a> Subscription Access Control
 
-Access to subscription is granted through the provider via the INGEST_MANAGEMENT_ACL.
+Access to subscription is granted through the provider via the INGEST_MANAGEMENT_ACL and EMAIL_SUBSCRIPTION_MANAGEMENT
 
 ### <a name="community-usage-metrics"></a> Community Usage Metrics
 
