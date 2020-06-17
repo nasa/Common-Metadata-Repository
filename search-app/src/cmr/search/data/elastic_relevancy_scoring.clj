@@ -76,8 +76,7 @@
         (when use-usage-sort?
           [{:_script {:type :number
                       :script {:params {:binSize (community-usage-bin-size)}
-                               :source community-usage-bin-script
-                               :missing 0}
+                               :source community-usage-bin-script}
                       :order :desc}}])
         (when use-keyword-sort?
           (if (sort-bin-keyword-scores)
