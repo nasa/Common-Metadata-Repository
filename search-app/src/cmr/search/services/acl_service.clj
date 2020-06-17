@@ -42,15 +42,15 @@
   [context acls concept]
   false)
 
-(defn- esm-acls-match-concept-provider?
-  "Returns true if any of the EMAIL_SUBSCRIPTION_MANAGEMENT acls matches the concept provider.
+(defn- sm-acls-match-concept-provider?
+  "Returns true if any of the SUBSCRIPTION_MANAGEMENT acls matches the concept provider.
   This ACL applies to subscription concept only. For all other concept types. it returns true"
-  [esm-acls concept]
-  ;; the esm-acls are all the EMAIL_SUBSCRIPTION_MANAGEMENT ACLs that
+  [sm-acls concept]
+  ;; the sm-acls are all the SUBSCRIPTION_MANAGEMENT ACLs that
   ;; grant the current user read permissions. All we need to check is
   ;; if any of these read permissions are granted on the provider-id of the concept.
   (if (= :subscription (:concept-type concept))
-    (some #(= (:provider-id concept) (get-in % [:provider-identity :provider-id])) esm-acls)
+    (some #(= (:provider-id concept) (get-in % [:provider-identity :provider-id])) sm-acls)
     true))
 
 ;; XXX To be fixed with CMR-4394
@@ -113,11 +113,11 @@
       (let [acls (acl-helper/get-acls-applicable-to-token context)
             applicable-field (-> concepts first :concept-type concept-type->applicable-field)
             applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)
-            esm-acls (acl-helper/get-esm-acls-applicable-to-token context)]
+            sm-acls (acl-helper/get-sm-acls-applicable-to-token context)]
         (doall (remove nil? (pmap (fn [concept]
-                                    ;; when there are both catalog item acl match and the esm
+                                    ;; when there are both catalog item acl match and the sm
                                     ;; acl match, return the concept.
                                     (when (and (acls-match-concept? context applicable-acls concept)
-                                               (esm-acls-match-concept-provider? esm-acls concept))
+                                               (sm-acls-match-concept-provider? sm-acls concept))
                                       concept))
                                   concepts)))))))

@@ -22,12 +22,12 @@
                                                                   [:read :update])]))
 
 (deftest subscription-ingest-on-prov2-test
-  (testing "ingest on PROV2, guest is not granted ingest permission for EMAIL_SUBSCRIPTION_MANAGEMENT ACL"
+  (testing "ingest on PROV2, guest is not granted ingest permission for SUBSCRIPTION_MANAGEMENT ACL"
     (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV2"})
           guest-token (echo-util/login-guest (system/context))
           response (ingest/ingest-concept concept {:token guest-token})]
       (is (= ["You do not have permission to perform that action."] (:errors response)))))
-  (testing "ingest on PROV2, registered user is granted ingest permission for EMAIL_SUBSCRIPTION_MANAGEMENT ACL"
+  (testing "ingest on PROV2, registered user is granted ingest permission for SUBSCRIPTION_MANAGEMENT ACL"
     (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV2"})
           user1-token (echo-util/login (system/context) "user1")
           response (ingest/ingest-concept concept {:token user1-token})]

@@ -4670,7 +4670,7 @@ __Sample response__
 ```
 #### <a name="subscription-access-control"></a> Subscription Access Control
 
-Access to subscription is granted through the provider via the INGEST_MANAGEMENT_ACL and EMAIL_SUBSCRIPTION_MANAGEMENT
+Access to subscription is granted through the provider via the INGEST_MANAGEMENT_ACL and SUBSCRIPTION_MANAGEMENT
 
 ### <a name="community-usage-metrics"></a> Community Usage Metrics
 
