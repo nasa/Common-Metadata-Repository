@@ -126,11 +126,10 @@
                        hu/save-sample-humanizers-fixture
                        autocomplete-reindex-fixture]))
 
-
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
     (compare-autocomplete-results
-      (get-in (search/get-autocomplete-json "q=level2") [:feed :entry])
+      (get-in (search/get-autocomplete-json "q=l") [:feed :entry])
       [{:type "instrument" :value "lVIs" :fields "lVIs"}
        {:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}]))
 
@@ -143,16 +142,12 @@
       "shorter match"
       "q=solar"
       [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
-       {:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}
-       {:type "organization" :value "ACRIM SCF" :fields "ACRIM SCF"}]
+       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]
 
       "more complete match"
       "q=solar irradiation"
       [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
-       {:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}
-       {:type "organization" :value "ACRIM SCF" :fields "ACRIM SCF"}]))
+       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]))
 
   (testing "Anti-value filtering"
     (are3
@@ -161,22 +156,13 @@
         (compare-autocomplete-results results expected))
 
       "excludes 'None'"
-      "none" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}]
+      "none" []
 
       "excludes 'Not Applicable'"
-      "not applicable" [{:type "project" :value "ACRIM" :fields "ACRIM"}
-                        {:type "science_keywords" :value "Nothofagus" :fields "Biosphere:Nothofagus"}
-                        {:type "platform" :value "ACRIMSAT" :fields "ACRIMSAT"}
-                        {:type "instrument" :value "ATM" :fields "ATM"}
-                        {:type "organization" :value "ACRIM SCF" :fields "ACRIM SCF"}                        
-                        {:type "science_keywords" :value "Alpha" :fields "Popular:Alpha"}
-                        {:type "instrument" :value "ACRIM" :fields "ACRIM"}]
+      "not applicable" []
 
       "excludes 'Not Provided'"
-      "not provided" [{:type "project" :value "PROJ2" :fields "PROJ2"}
-                      {:type "science_keywords" :value "Nothofagus" :fields "Biosphere:Nothofagus"}
-                      {:type "project" :value "proj1" :fields "proj1"}
-                      {:type "processing_level" :value "PL1" :fields "PL1"}]
+      "not provided" []
 
       "does not filter 'not' prefixed values"
       "not" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}])))

@@ -239,27 +239,25 @@
     ;; The value of the field
     value])
 
-(defrecord MultiMatchCondition
-    [
-     ;; The fields being searched
-     fields
-     
-     ;; The value to search for
-     value
-
-     ;; Multi-match options
-     opts])
-
-(defrecord MatchFilterCondition
+(defrecord MatchBoolPrefixCondition
   [
-    ;; The field being searched
+    ;; The field
     field
-
+  
     ;; The value of the field
-    value
+    value])
 
-    ;; A filter condition for the match.
-    filter])
+(defrecord MultiMatchCondition
+  [
+    ;; The query type, match, match_bool_prefix...
+    query-type
+    ;; The fields to query over
+    fields
+    ;; Value to query for
+    value
+    ;; Options relating to query-type, see ES documentation
+    options
+  ])
 
 (defrecord RelatedItemQueryCondition
   [
@@ -383,15 +381,15 @@
   [field value]
   (->MatchCondition field value))
 
-(defn multi-match
-  ([fields value]
-   (multi-match fields value {}))
-  ([fields value opts]
-   (->MultiMatchCondition fields value opts)))
+(defn match-bool-prefix
+  [field value]
+  (->MatchBoolPrefixCondition field value))
 
-(defn match-filter
-  ([field value filter]
-  (->MatchFilterCondition field value filter)))
+(defn multi-match
+  ([query-type fields value]
+   (multi-match query-type fields value {}))
+  ([query-type fields value opts]
+   (->MultiMatchCondition query-type fields value opts)))
 
 (defn text-condition
   [field query-str]
@@ -477,6 +475,6 @@
   MatchAllCondition
   MatchNoneCondition
   MatchCondition
-  MatchFilterCondition
+  MatchBoolPrefixCondition
   MultiMatchCondition
   RelatedItemQueryCondition)

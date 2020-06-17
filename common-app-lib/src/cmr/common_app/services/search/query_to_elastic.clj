@@ -330,16 +330,16 @@
   (condition->elastic
    [{:keys [field value]} _]
    {:match {field value}})
+
+  cmr.common_app.services.search.query_model.MatchBoolPrefixCondition
+  (condition->elastic
+    [{:keys [field value]} _]
+    {:match_bool_prefix {field {:query value}}})
   
   cmr.common_app.services.search.query_model.MultiMatchCondition
   (condition->elastic
-    [{:keys [fields value opts]} _]
-    {:multi_match (merge {:fields fields :query value}
-                         opts)})
-
-  cmr.common_app.services.search.query_model.MatchFilterCondition
-  (condition->elastic
-   [{:keys [field value filter]} concept-type]
-   (let [filter (condition->elastic filter concept-type)]
-     {:query {:match {field value}}
-      :filter filter})))
+    [{:keys [query-type fields value opts]} _]
+    {:multi_match (merge {:query value
+                          :type query-type
+                          :fields fields}
+                         opts)}))
