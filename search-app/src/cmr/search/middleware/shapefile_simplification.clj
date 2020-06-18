@@ -37,7 +37,7 @@
    (org.geotools.referencing CRS)
    (org.geotools.util URLs)
    (org.geotools.xsd Encoder Parser StreamingParser PullParser)
-   (org.locationtech.jts.geom Geometry)
+   (org.locationtech.jts.geom GeometryFactory Geometry Polygon LinearRing LineString MultiPolygon)
    (org.opengis.feature.simple SimpleFeature)
    (org.opengis.feature.type FeatureType Name)
    (org.locationtech.jts.simplify TopologyPreservingSimplifier)))
@@ -52,11 +52,7 @@
   "The maximum number of times to attempt to simplify a shapefile"
   {:default 5 :type Long})
 
-(def EPSG-4326-CRS
-  "The CRS object for WGS 84"
-  (CRS/decode "EPSG:4326" true))
-
-(defn delete-recursively
+(defn- delete-recursively
   "Delete a (possibly non-empty) directory"
   [fname]
   (let [func (fn [func f]
@@ -74,29 +70,6 @@
       (.putNextEntry zip (ZipEntry. (.getName f)))
       (io/copy f zip)
       (.closeEntry zip))))
-
-(defn- unzip-file
-  "Unzip a file (of type File) into a temporary directory and return the directory path as a File"
-  [source]
-  (let [target-dir (Files/createTempDirectory "Shapes" (into-array FileAttribute []))]
-    (try
-      (with-open [zip (ZipFile. source)]
-        (let [entries (enumeration-seq (.entries zip))
-              target-file #(File. (.toString target-dir) (str %))]
-          (doseq [entry entries :when (not (.isDirectory ^java.util.zip.ZipEntry entry))
-                  :let [f (target-file entry)]]
-            (debug (format "Zip file entry: [%s]" (.getName entry)))
-            (io/copy (.getInputStream zip entry) f))))
-      (.toFile target-dir)
-      (catch Exception e
-        (.delete (.toFile target-dir))
-        (errors/throw-service-error :bad-request (str "Error while uncompressing zip file: " (.getMessage e)))))))
-
-(defn find-shp-file
-  "Find the .shp file in the given directory (File) and return it as a File"
-  [dir]
-  (let [files (file-seq dir)]
-    (first (filter #(= "shp" (FilenameUtils/getExtension (.getAbsolutePath %))) files))))
 
 (defn geometry-point-count
   "Get the number of points in the given Geometry"
@@ -119,16 +92,16 @@
   [geometry src-crs]
   ;; if the source CRS is defined and not already WGS84 then transform the geometry to WGS84
   (if (and src-crs
-           (not (= (.getName src-crs) (.getName EPSG-4326-CRS))))
+           (not (= (.getName src-crs) (.getName shapefile/EPSG-4326-CRS))))
     (let [src-crs-name (.getName src-crs)]
       (debug (format "Source CRS: [%s]" src-crs-name))
       (debug (format "Source axis order: [%s]" (CRS/getAxisOrder src-crs)))
-      (debug (format "Destination CRS: [%s]" (.getName EPSG-4326-CRS)))
-      (debug (format "Destination axis order: [%s]" (CRS/getAxisOrder EPSG-4326-CRS)))
+      (debug (format "Destination CRS: [%s]" (.getName shapefile/EPSG-4326-CRS)))
+      (debug (format "Destination axis order: [%s]" (CRS/getAxisOrder shapefile/EPSG-4326-CRS)))
       ; If we find a transform use it to transform the geometry, 
       ; otherwise send an error message
       (if-let [transform (try
-                           (CRS/findMathTransform src-crs EPSG-4326-CRS false)
+                           (CRS/findMathTransform src-crs shapefile/EPSG-4326-CRS false)
                            (catch Exception e))]
         (let [new-geometry (JTS/transform geometry transform)]
           (debug (format "New geometry: [%s" new-geometry))
@@ -136,13 +109,58 @@
         (errors/throw-service-error :bad-request (format "Cannot transform source CRS [%s] to WGS 84" src-crs-name))))
     geometry))
 
+(defn- winding-opts
+  "Get the opts for a call to `normalize-polygon-winding` based on file type"
+  [mime-type]
+  (case mime-type
+    "application/shapefile+zip" {:boundary-winding :cw}
+    "application/vnd.google-earth.kml+xml" {}
+    "application/geo+json" {:hole-winding :cw}))
+
+(defn- normalize-polygon-winding
+  "Force CCW winding for outer rings and CW winding for inner rings (holes)"
+  [^Polygon polygon options]
+  (let [geometry-factory (.getFactory polygon)
+        ^LinearRing boundary-ring (.getExteriorRing polygon)
+        _ (debug (format "BOUNDARY RING BEFORE FORCE-CCW: %s" boundary-ring))
+        boundary-ring (geo/force-ccw-orientation boundary-ring (:boundary-winding options))
+        _ (debug (format "BOUNDARY RING AFTER FORCE-CCW: %s" boundary-ring))
+        num-interior-rings (.getNumInteriorRing polygon)
+        interior-rings (if (> num-interior-rings 0)
+                         (for [i (range num-interior-rings)]
+                           (geo/force-ccw-orientation (.getInteriorRingN polygon i)
+                                                      (:hole-winding options)))
+                         [])
+        all-rings (concat [boundary-ring] interior-rings)]
+    (debug (format "NUM INTERIOR RINGS: [%d]" num-interior-rings))
+    (debug (format "RINGS: [%s]" (vec all-rings)))
+    (let [holes (into-array LinearRing interior-rings)]
+      (Polygon. boundary-ring holes geometry-factory))))
+
+(defn- normalize-geometry
+  "Normalize the windings on polygons - other geometries are untouched"
+  [^Geometry geometry  mime-type]
+  (let [geometry-type (.getGeometryType geometry)
+        geometry-factory (.getFactory geometry)
+        options (winding-opts mime-type)]
+    (if (= geometry-type "MultiPolygon")
+      (let [num-polys (.getNumGeometries geometry)
+            normalized-polys  (for [index (range 0 num-polys)
+                                    :let [sub-geometry (.getGeometryN geometry index)]]
+                                (normalize-polygon-winding sub-geometry options))]
+        (MultiPolygon. (into-array Polygon normalized-polys) geometry-factory))
+      (if (= geometry-type "Polygon")
+        (normalize-polygon-winding geometry options)
+        geometry))))
+
 (defn- simplify-geometry
-  "Simplify a geometry. Returns simplfied geometry and information about the simplificiton"
-  [geometry tolerance]
+  "Simplify a geometry"
+  [geometry tolerance mime-type]
   ; (when (> (.getNumGeometries geometry) 1)
   ;   (println "MULTIGEOMETRY=========================="))
   ; (println (format "POINT COUNT %d" (geometry-point-count geometry)))
-  (let [new-geometry (TopologyPreservingSimplifier/simplify geometry tolerance)]
+  (let [normalized-geometry (normalize-geometry geometry mime-type)
+        new-geometry (TopologyPreservingSimplifier/simplify normalized-geometry tolerance)]
     ; (println (format "NEW POINT COUNT %d" (geometry-point-count new-geometry)))
     ; (println (format "NUMBER OF GEOMETRIES: %d" (.getNumGeometries new-geometry)))
     ; (println new-geometry)
@@ -150,7 +168,7 @@
 
 (defn- simplify-feature
   "Simplify a feature. Returns simplfied feature and information about the simplificiton"
-  [feature tolerance]
+  [feature tolerance mime-type]
   (let [crs (when (.getDefaultGeometryProperty feature)
               (-> feature .getDefaultGeometryProperty .getDescriptor .getCoordinateReferenceSystem))
         feature-type (.getFeatureType feature)
@@ -166,7 +184,9 @@
             (if (geo/geometry? value)
               (do
                 ; (println "FOUND GEOMETRY PROPERTY")
-                (.add feature-builder (simplify-geometry (transform-to-epsg-4326 value crs) tolerance)))
+                (.add feature-builder (simplify-geometry (transform-to-epsg-4326 value crs) 
+                                                         tolerance 
+                                                         mime-type)))
               (.add feature-builder value)))]
     (.buildFeature feature-builder nil)))
 
@@ -183,7 +203,7 @@
 (defn- simplify-features
   "Simplify a collection of features and return a collection of the simplified features
   as well as the original and new point counts"
-  [features tolerance]
+  [features tolerance mime-type]
   (let [feature-count (error-if (.size features) #(< % 1) "Shapefile has no features" nil)
         feature-list (ArrayList.)]
     (println (format "Found [%d] features" feature-count))
@@ -192,7 +212,7 @@
           (reduce (fn [old-val feature]
                     (let [[old-total-point-count new-total-point-count] old-val
                           old-point-count (feature-point-count feature)
-                          new-feature (simplify-feature feature tolerance)
+                          new-feature (simplify-feature feature tolerance mime-type)
                           new-point-count (feature-point-count new-feature)]
                       (.add feature-list new-feature)
                       [(+ old-total-point-count old-point-count)
@@ -206,7 +226,7 @@
 (defn- iterative-simplify
   "Repeatedly simplify a list of Features until the number of points is below the
   CMR shapefile point limit"
-  [features]
+  [features mime-type]
   (let [limit (shapefile/max-shapefile-points)
         start-tolerance (shapefile-simplifier-start-tolerance)
         start-point-count (reduce (fn [total feature] (+ total (feature-point-count feature)))
@@ -221,39 +241,68 @@
           result
           (if (> count (shapefile-simplifier-max-attempts))
             (errors/throw-service-error :bad-request "Shapefile could not be simplified")
-            (recur (* tolerance 10.0) (simplify-features new-features tolerance) (inc count))))))))
+            (recur (* tolerance 10.0)
+                   (simplify-features new-features tolerance mime-type) (inc count))))))))
 
 (defn- simplify-data
-  "Given an ArrayList of Features simplify them, write out a simplified shapefie, then
-  return information about the shapefile and stats about the simplification"
-  [filename ^ArrayList features feature-type]
-  (let [target-dir (Files/createTempDirectory "Shapes" (into-array FileAttribute []))]
-    (try
-      (let [new-file (java.io.File/createTempFile "reduced" ".zip")
-            dumper (ShapefileDumper. (.toFile target-dir))
-            [simplified-features stats] (iterative-simplify features)
-            [original-point-count new-point-count] stats
-            collection (ListFeatureCollection. feature-type simplified-features)]
-        (.dump dumper collection)
-        (zip-dir (.toString target-dir) (.toString new-file))
-        ;; TODO Remove next line after debugging
-        (io/copy new-file (File. "/tmp/shapefile.zip"))
-        [{:original-point-count original-point-count
-          :new-point-count new-point-count}
-         {:tempfile new-file
-          :filename filename
-          :content-type mt/shapefile
-          :size (.length new-file)}])
-      (finally (delete-recursively (.toString target-dir))))))
+  "Given an ArrayList of Features simplify the Features and return stats about the process
+  along with a new shapfile info map to replace the one in the search reqeust"
+  [filename ^ArrayList features feature-type mime-type]
+  (let [; new-file (java.io.File/createTempFile "reduced" ".zip")
+        ; dumper (ShapefileDumper. (.toFile target-dir))
+        ; _ (println features)
+        [simplified-features stats] (iterative-simplify features mime-type)
+        ; _ (println simplified-features)
+        [original-point-count new-point-count] stats]
+        ; collection (ListFeatureCollection. feature-type simplified-features)]
+    ; (.dump dumper collection)
+    ; (zip-dir (.toString target-dir) (.toString new-file))
+    [{:original-point-count original-point-count
+      :new-point-count new-point-count}
+     {:tempfile simplified-features
+      :filename filename
+      :content-type mime-type
+      :in-memory true
+      :was-simplified (not (= original-point-count new-point-count))
+      :size -1}]))
 
-(defn simplify-geojson
+(defn- simplify-kml
+  "Simplfies a KML file. Returns statistics about the simplification and information
+  about the new file."
+  [shapefile-info]
+  (try
+    (let [file (:tempfile shapefile-info)
+          filename (:filename shapefile-info)
+          input-stream (FileInputStream. file)
+          parser (PullParser. (KMLConfiguration.) input-stream SimpleFeature)]
+      (try
+        (loop [features (ArrayList.)]
+          (if-let [feature (.parse parser)]
+            (do
+              ; (println "FEATURE++++++++++++++++")
+              ; (println feature)
+              (.add features feature)
+              (recur features))
+            (if-let [first-feature (when (not (.isEmpty features)) (.get features 0))]
+              (simplify-data filename features (.getFeatureType first-feature) mt/kml)
+              (errors/throw-service-error :bad-request "KML file has no features"))))
+        (finally
+          (.delete file))))
+    (catch Exception e
+      (let [{:keys [type errors]} (ex-data e)]
+        (if (and type errors)
+          (throw e) ;; This was a more specific service error so just re-throw it
+          (do
+            (.printStackTrace e)
+            (errors/throw-service-error :bad-request "Failed to parse KML file")))))))
+
+(defn- simplify-geojson
   "Simplfies a geojson file. Returns statistics about the simplification and information
   about the new file."
   [shapefile-info]
   (try
     (let [file (:tempfile shapefile-info)
           filename (:filename shapefile-info)
-          ; _ (.setMaxDbfSize dumper 100000000)
           _ (geojson/sanitize-geojson file)
           url (URLs/fileToUrl file)
           data-store (GeoJSONDataStore. url)
@@ -264,7 +313,6 @@
                                   #(< % 1)
                                   "GeoJSON has no features"
                                   nil)
-          _ (println (format "Found [%d] features" feature-count))
           iterator (.features features)]
       (try
         (loop [features (ArrayList.)]
@@ -272,7 +320,7 @@
             (let [feature (.next iterator)]
               (.add features feature)
               (recur features))
-            (simplify-data filename features feature-type)))
+            (simplify-data filename features feature-type mt/geojson)))
         (finally (do
                    (.close iterator)
                    (-> data-store .getFeatureReader .close)
@@ -293,6 +341,10 @@
 (defmethod simplify mt/geojson
   [shapefile-info]
   (simplify-geojson shapefile-info))
+
+(defmethod simplify mt/kml
+  [shapefile-info]
+  (simplify-kml shapefile-info))
 
 (defn- simplify-shapefile
   "Simplifies the shapefile indicated in the parameters and updates the parameters
