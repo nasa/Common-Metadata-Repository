@@ -7,7 +7,10 @@
 
 (defn build-autocomplete-condition
   [term types]
-  (let [root (qm/match :value term)]
+  (let [root (gc/or-conds [(qm/match :value term)
+                           (qm/multi-match :phrase_prefix
+                                           ["value" "value._2gram" "value._3gram"]
+                                           term)])]
     (if (empty? types)
       root
       (gc/and-conds [root

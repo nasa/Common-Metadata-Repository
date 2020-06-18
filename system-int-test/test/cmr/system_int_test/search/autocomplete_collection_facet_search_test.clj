@@ -96,9 +96,6 @@
     "full value match"
     "q=foo" 1
 
-    "extra values can match"
-    "q=foos" 1
-
     "case sensitivity test"
     "q=FOO" 1
 

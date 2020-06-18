@@ -68,41 +68,41 @@
   (let [use-keyword-sort? (keywords-extractor/contains-keyword-condition? query)
         use-usage-sort? (seq (->> query
                                   :sort-keys
-                                  (filter #(= :usage-relevancy-score (:field %)))))        
+                                  (filter #(= :usage-relevancy-score (:field %)))))
         use-temporal-sort? (and (temporal-conditions/contains-temporal-conditions? query)
                                 (sort-use-temporal-relevancy))]
     (seq
-     (concat
-       (when use-usage-sort?
-         [{:_script {:params {:binSize (community-usage-bin-size)}
-                     :type :number
-                     :script community-usage-bin-script
-                     :order :desc
-                     :missing 0}}])
-       (when use-keyword-sort?
-         (if (sort-bin-keyword-scores)
-           [{:_script {:params {:binSize (keyword-score-bin-size)}
-                       :script keyword-score-bin-script
-                       :type :number
-                       :order :desc}}]
-           [{:_score {:order :desc}}]))
-       (when use-temporal-sort?
-         [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])
-       ;; We only include this if one of the others is present
-       (when (and (or use-temporal-sort? use-keyword-sort?)
-                  (not use-usage-sort?)
-                  (sort-use-relevancy-score))
-         [{:_script {:params {:binSize (community-usage-bin-size)}
-                     :type :number
-                     :script community-usage-bin-script
-                     :order :desc
-                     :missing 0}}])
-       ;; If end-date is nil, collection is ongoing so use today so ongoing
-       ;; collections will be at the top
-       (when use-keyword-sort?
-         [{:end-date {:order :desc
-                      :missing (time-coerce/to-long (time/now))}}
-          {:processing-level-id-lowercase.humanized {:order :desc}}])))))
+      (concat
+        (when use-usage-sort?
+          [{:_script {:type :number
+                      :script {:params {:binSize (community-usage-bin-size)}
+                               :source community-usage-bin-script}
+                      :order :desc}}])
+        (when use-keyword-sort?
+          (if (sort-bin-keyword-scores)
+            [{:_script {:type :number
+                        :script {:params {:binSize (keyword-score-bin-size)}
+                                 :source keyword-score-bin-script}
+                        :order :desc}}]
+            [{:_score {:order :desc}}]))
+        (when use-temporal-sort?
+          [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])
+        ;; We only include this if one of the others is present
+        (when (and (or use-temporal-sort? use-keyword-sort?)
+                   (not use-usage-sort?)
+                   (sort-use-relevancy-score))
+          [{:_script {:type :number
+                      :script {:params {:binSize (community-usage-bin-size)}
+                               :source community-usage-bin-script
+                                        ; :missing 0
+                               }
+                      :order :desc}}])
+        ;; If end-date is nil, collection is ongoing so use today so ongoing
+        ;; collections will be at the top
+        (when use-keyword-sort?
+          [{:end-date {:order :desc
+                       :missing (time-coerce/to-long (time/now))}}
+           {:processing-level-id-lowercase-humanized {:order :desc}}])))))
 
 (defn- temporal-sort-order
   "If there are temporal ranges in the query and temporal relevancy sorting is turned on,
