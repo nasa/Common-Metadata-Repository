@@ -7,7 +7,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.indexer.data.concept-parser :as concept-parser]
-   [cmr.indexer.data.concepts.keyword-util :as keyword-util]
+   [cmr.indexer.data.concepts.service-keyword-util :as service-keyword-util]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.transmit.metadata-db :as mdb]))
 
@@ -26,7 +26,7 @@
                      :URL
                      :ServiceKeywords
                      :ServiceOrganizations]
-        keyword-values (keyword-util/concept-keys->keyword-text
+        keyword-values (service-keyword-util/concept-keys->keyword-text
                         parsed-concept schema-keys)]
     (if deleted
       {:concept-id concept-id

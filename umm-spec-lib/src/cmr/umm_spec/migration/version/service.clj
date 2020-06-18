@@ -465,6 +465,48 @@
       (update :Type #(update-url-with-default-values :Type %))
       (update :URLValue #(update-url-with-default-values :URLValue %))))
 
+(defn update-related-url-to-online-resource
+  "Takes a related-url and returns an Online Resource map with a couple of fields copied over."
+  [related-url]
+  {:Description (:Description related-url)
+   :Name (:Type related-url)
+   :Linkage (:URL related-url)})
+
+(defn update-contact-info-1_3_1->1_3_2
+  "For each contact info change the RelatedUrl map to an OnlineResource map."
+  [contact-info]
+  (-> contact-info
+      (assoc :OnlineResources (seq (map #(update-related-url-to-online-resource %)
+                                        (:RelatedUrls contact-info))))
+      (dissoc :RelatedUrls)
+      (util/remove-nil-keys)))
+
+(defn update-contacts-1_3_1->1_3_2
+  "In ContactGroups and in ContactPersons change the ContactInformation/RelatedURL to OnlineResource."
+  [contacts]
+  (map #(update % :ContactInformation update-contact-info-1_3_1->1_3_2) contacts))
+
+(defn update-online-resource-to-related-url
+  "Takes an OnlineResource and returns a RelatedUrl map with a couple of fields copied over."
+  [online-resource]
+  {:Description (:Description online-resource)
+   :Type "PROJECT HOME PAGE"
+   :URLContentType "CollectionURL"
+   :URL (:Linkage online-resource)})
+
+(defn update-contact-info-1_3_2->1_3_1
+  "For each contact info change the OnlineResources map to a RelatedUrl map."
+  [contact-info]
+  (-> contact-info
+      (assoc :RelatedUrls (seq (map #(update-online-resource-to-related-url %)
+                                    (:OnlineResources contact-info))))
+      (dissoc :OnlineResources)
+      (util/remove-nil-keys)))
+
+(defn update-contacts-1_3_2->1_3_1
+  "In ContactGroups and in ContactPersons change the ContactInformation/OnlineResource to RelatedUrl."
+  [contacts]
+  (map #(update % :ContactInformation update-contact-info-1_3_2->1_3_1) contacts))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Service Migration Implementations
@@ -551,3 +593,20 @@
 (defmethod interface/migrate-umm-version [:service "1.3.1" "1.3"]
   [context s & _]
   (update-service-options-1_3_1->1_3 s))
+
+(defmethod interface/migrate-umm-version [:service "1.3.1" "1.3.2"]
+  [context s & _]
+  (-> s
+      (update :URL #(dissoc % :URLContentType :Type :Subtype))
+      (update :UseConstraints #(set/rename-keys % {:LicenseUrl :LicenseURL}))
+      (update :ContactGroups update-contacts-1_3_1->1_3_2)
+      (update :ContactPersons update-contacts-1_3_1->1_3_2)))
+
+(defmethod interface/migrate-umm-version [:service "1.3.2" "1.3.1"]
+  [context s & _]
+  (-> s
+      (update :URL #(assoc % :URLContentType "DistributionURL"
+                             :Type "GET SERVICE"))
+      (update :UseConstraints #(set/rename-keys % {:LicenseURL :LicenseUrl}))
+      (update :ContactGroups update-contacts-1_3_2->1_3_1)
+      (update :ContactPersons update-contacts-1_3_2->1_3_1)))

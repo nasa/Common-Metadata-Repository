@@ -1,5 +1,126 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "UMM-S",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "Name": {
+      "description": "The name of the service, software, or tool.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 85
+    },
+    "LongName": {
+      "description": "The long name of the service, software, or tool.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "Type": {
+      "description": "The type of the service, software, or tool.",
+      "$ref": "#/definitions/ServiceTypeEnum"
+    },
+    "Version": {
+      "description": "The edition or version of the service.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20
+    },
+    "VersionDescription": {
+      "description": "This field provides users with information on what changes were included in the most recent version.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "LastUpdatedDate": {
+      "description": "This element describes the latest date when the service was most recently pushed to production for support and maintenance. ",
+      "format": "date-time",
+      "type": "string"
+    },
+    "URL": {
+      "description": "This element contains important information about the universal resource locator (URL) for the service.",
+      "$ref": "#/definitions/URLType"
+    },
+    "Description": {
+      "description": "A brief description of the service.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "ServiceKeywords": {
+      "description": "Allows for the specification of Earth Science Service keywords that are representative of the service, software, or tool being described. The controlled vocabulary for Service Keywords is maintained in the Keyword Management System (KMS).",
+      "type": "array",
+      "items": {
+          "$ref": "#/definitions/ServiceKeywordType"
+      },
+    "minItems": 1
+    },
+    "ServiceOrganizations": {
+      "description": "The service provider, or organization, or institution responsible for developing, archiving, and/or distributing the service, software, or tool.",
+      "type": "array",
+      "items": {
+          "$ref": "#/definitions/ServiceOrganizationType"
+      },
+    "minItems": 1
+    },
+    "ContactGroups": {
+      "description": "This is the contact groups of the service.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ContactGroupType"
+      }
+    },
+    "ContactPersons": {
+      "description": "This is the contact persons of the service.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ContactPersonType"
+      }
+    },
+    "ServiceQuality": {
+      "description": "Information about the quality of the service, software, or tool, or any quality assurance procedures followed in development.",
+      "$ref": "#/definitions/ServiceQualityType"
+    },
+    "AccessConstraints": {
+      "description": "Information about any constraints for accessing the service, software, or tool.",
+       "$ref": "#/definitions/AccessConstraintsType"
+    },
+    "UseConstraints": {
+      "description": "Information on how the item (service, software, or tool) may or may not be used after access is granted. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the item. Providers may request acknowledgement of the item from users and claim no responsibility for quality and completeness.",
+      "$ref": "#/definitions/UseConstraintsType"
+    },
+    "AncillaryKeywords": {
+      "description": "Words or phrases to further describe the service, software, or tool.",
+      "type": "array",
+      "items": {
+          "$ref": "#/definitions/AncillaryKeywordsType"
+      },
+      "minItems": 0
+    },
+    "ServiceOptions": {
+      "description": "This element contains important information about the Unique Resource Locator for the service.",
+      "$ref": "#/definitions/ServiceOptionsType"
+    },
+    "OperationMetadata": {
+      "description": "This class describes the signature of the operational metadata provided by the service.",
+      "type": "array",
+      "items": {
+          "$ref": "#/definitions/OperationMetadataType"
+              },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "Name",
+    "LongName",
+    "Type",
+    "Version",
+    "URL",
+    "Description",
+    "ServiceKeywords",
+    "ServiceOrganizations"
+  ],
+  
   "definitions": {
     "ServiceOptionsType": {
       "type": "object",
@@ -169,18 +290,6 @@
           "minLength": 1,
           "maxLength": 4000
         },
-        "URLContentType": {
-            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DISTRIBUTION URL').",
-            "$ref": "#/definitions/URLContentTypeEnum"
-        },
-        "Type": {
-            "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
-            "$ref": "#/definitions/RelatedUrlTypeEnum"
-        },
-        "Subtype": {
-            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'OPENSEARCH', 'WEB COVERAGE SERVICES (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAPPING SERVICES (WMS)', 'SIMPLE SUBSET WIZARD (SSW)').",
-            "$ref": "#/definitions/RelatedURLSubTypeEnum"
-        },
         "URLValue": {
           "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
           "type": "string",
@@ -188,68 +297,7 @@
           "maxLength": 1024
         }
       },
-      "required": ["URLContentType", "Type", "URLValue"]
-    },
-    "URLContentTypeEnum": {
-      "type": "string",
-      "enum": ["DistributionURL"]
-    },
-    "RelatedURLContentTypeEnum": {
-      "type": "string",
-      "enum": ["CollectionURL", "PublicationURL", "VisualizationURL"]
-    },
-    "RelatedUrlTypeEnum": {
-      "type": "string",
-      "enum": ["GET DATA", "GET SERVICE", "GET RELATED VISUALIZATION", "DATA SET LANDING PAGE", "DOI",
-               "EXTENDED METADATA", "PROFESSIONAL HOME PAGE", "PROJECT HOME PAGE", "VIEW RELATED INFORMATION",
-               "HOME PAGE"]
-    },
-    "RelatedURLSubTypeEnum": {
-      "type": "string",
-      "enum": ["DATACAST URL", "EARTHDATA SEARCH", "ECHO", "EDG", "EOSDIS DATA POOL", "GDS", "GIOVANNI", "KML",
-               "LAADS", "LANCE", "LAS", "MIRADOR", "MODAPS", "NOAA CLASS", "ON-LINE ARCHIVE", "REVERB",
-               "ACCESS MAP VIEWER", "ACCESS MOBILE APP", "ACCESS WEB SERVICE", "DIF", "MAP SERVICE", "NOMADS",
-               "OPENDAP DATA", "OPENDAP DATA (DODS)", "OPENDAP DIRECTORY (DODS)", "OpenSearch", "SERF", "SOFTWARE PACKAGE",
-               "SSW", "SUBSETTER", "THREDDS CATALOG", "THREDDS DATA", "THREDDS DIRECTORY", "TOOL", "WEB COVERAGE SERVICE (WCS)",
-               "WEB FEATURE SERVICE (WFS)", "WEB MAP FOR TIME SERIES", "WEB MAP SERVICE (WMS)", "WORKFLOW (SERVICE CHAIN)",
-               "GIBS", "MAP", "ALGORITHM THEORETICAL BASIS DOCUMENT", "CALIBRATION DATA DOCUMENTATION", "DATA QUALITY",
-               "CASE STUDY", "DATA USAGE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION", "HOW-TO", "PI DOCUMENTATION",
-               "PROCESSING HISTORY", "PRODUCTION VERSION HISTORY", "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE",
-               "PRODUCT HISTORY", "PUBLICATIONS", "RADIOMETRIC AND GEOMETRIC CALIBRATION METHODS", "READ-ME",
-               "RECIPE", "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION",
-               "SCIENCE DATA PRODUCT VALIDATION", "USER FEEDBACK", "USER'S GUIDE"]
-    },
-    "RelatedUrlType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Represents Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
-      "properties": {
-        "Description": {
-          "description": "Description of the web page at this URL.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 4000
-        },
-        "URLContentType": {
-            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'COLLECTION URL', 'PUBLICATION URL', 'VISUALIZATION URL').",
-            "$ref": "#/definitions/RelatedURLContentTypeEnum"
-        },
-        "Type": {
-            "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
-            "$ref": "#/definitions/RelatedUrlTypeEnum"
-        },
-        "Subtype": {
-            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'OPENDAP DATA', 'OPENSEARCH', 'WEB COVERAGE SERVICES (WCS)', 'WEB FEATURE SERVICES (WFS)', 'WEB MAPPING SERVICES (WMS)', 'SIMPLE SUBSET WIZARD (SSW)').",
-            "$ref": "#/definitions/RelatedURLSubTypeEnum"
-        },
-        "URL": {
-          "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
-        }
-      },
-      "required": ["URL", "URLContentType", "Type"]
+      "required": ["URLValue"]
     },
     "OnlineResourceType": {
       "type": "object",
@@ -415,13 +463,13 @@
       "additionalProperties": false,
       "description": "Defines the contact information of a service organization or service contact.",
       "properties": {
-        "RelatedUrls": {
+        "OnlineResources": {
           "description": "A URL associated with the contact, e.g., the home page for the service provider which is responsible for the service.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/RelatedUrlType"
+            "$ref": "#/definitions/OnlineResourceType"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "ServiceHours": {
           "description": "Time period when the contact answers questions or provides services.",
@@ -532,7 +580,7 @@
       "additionalProperties": false,
       "description": "Information on how the item (service, software, or tool) may or may not be used after access is granted. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the item. Providers may request acknowledgement of the item from users and claim no responsibility for quality and completeness.",
       "properties": {
-        "LicenseUrl": {
+        "LicenseURL": {
           "description": "The web address of the license associated with the service.",
           "type": "string",
           "minLength": 0,
@@ -1052,125 +1100,5 @@
       "type": "string",
       "enum": ["XML", "CORBA", "JAVA", "COM", "SQL", "SOAP", "Z3950", "HTTP", "HTTPS", "FTP", "WEBSERVICES"]
     }
-  },
-    "title": "UMM-S",
-    "type": "object",
-    "additionalProperties": false,
-    "properties": {
-      "Name": {
-        "description": "The name of the service, software, or tool.",
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 85
-      },
-      "LongName": {
-        "description": "The long name of the service, software, or tool.",
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 1024
-      },
-      "Type": {
-        "description": "The type of the service, software, or tool.",
-        "$ref": "#/definitions/ServiceTypeEnum"
-      },
-      "Version": {
-        "description": "The edition or version of the service.",
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 20
-      },
-      "VersionDescription": {
-        "description": "This field provides users with information on what changes were included in the most recent version.",
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 1024
-      },
-      "LastUpdatedDate": {
-        "description": "This element describes the latest date when the service was most recently pushed to production for support and maintenance. ",
-        "format": "date-time",
-        "type": "string"
-      },
-      "URL": {
-        "description": "This element contains important information about the universal resource locator (URL) for the service.",
-        "$ref": "#/definitions/URLType"
-      },
-      "Description": {
-        "description": "A brief description of the service.",
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 1024
-      },
-      "ServiceKeywords": {
-        "description": "Allows for the specification of Earth Science Service keywords that are representative of the service, software, or tool being described. The controlled vocabulary for Service Keywords is maintained in the Keyword Management System (KMS).",
-        "type": "array",
-        "items": {
-            "$ref": "#/definitions/ServiceKeywordType"
-        },
-      "minItems": 1
-      },
-      "ServiceOrganizations": {
-        "description": "The service provider, or organization, or institution responsible for developing, archiving, and/or distributing the service, software, or tool.",
-        "type": "array",
-        "items": {
-            "$ref": "#/definitions/ServiceOrganizationType"
-        },
-      "minItems": 1
-      },
-      "ContactGroups": {
-        "description": "This is the contact groups of the service.",
-        "type": "array",
-        "items": {
-          "$ref": "#/definitions/ContactGroupType"
-        }
-      },
-      "ContactPersons": {
-        "description": "This is the contact persons of the service.",
-        "type": "array",
-        "items": {
-          "$ref": "#/definitions/ContactPersonType"
-        }
-      },
-      "ServiceQuality": {
-        "description": "Information about the quality of the service, software, or tool, or any quality assurance procedures followed in development.",
-        "$ref": "#/definitions/ServiceQualityType"
-      },
-      "AccessConstraints": {
-        "description": "Information about any constraints for accessing the service, software, or tool.",
-         "$ref": "#/definitions/AccessConstraintsType"
-      },
-      "UseConstraints": {
-        "description": "Information on how the item (service, software, or tool) may or may not be used after access is granted. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the item. Providers may request acknowledgement of the item from users and claim no responsibility for quality and completeness.",
-        "$ref": "#/definitions/UseConstraintsType"
-      },
-      "AncillaryKeywords": {
-        "description": "Words or phrases to further describe the service, software, or tool.",
-        "type": "array",
-        "items": {
-            "$ref": "#/definitions/AncillaryKeywordsType"
-        },
-        "minItems": 0
-      },
-      "ServiceOptions": {
-        "description": "This element contains important information about the Unique Resource Locator for the service.",
-        "$ref": "#/definitions/ServiceOptionsType"
-      },
-      "OperationMetadata": {
-        "description": "This class describes the signature of the operational metadata provided by the service.",
-        "type": "array",
-        "items": {
-            "$ref": "#/definitions/OperationMetadataType"
-                },
-        "minItems": 0
-      }
-    },
-    "required": [
-      "Name",
-      "LongName",
-      "Type",
-      "Version",
-      "URL",
-      "Description",
-      "ServiceKeywords",
-      "ServiceOrganizations"
-    ]
   }
+}

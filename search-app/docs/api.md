@@ -3821,7 +3821,7 @@ The following fields are indexed for keyword (free text) search:
 * Service organizations (short and long names, roles)
 * Contact persons (first names, contacts last names, roles)
 * Contact groups (group name, roles)
-* URL (description, subtype, type, URL value, URL content type)
+* URL (description, URL value)
 * Ancillary keywords
 
 ##### <a name="service-search-response"></a> Service Search Response

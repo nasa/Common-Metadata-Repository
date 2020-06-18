@@ -267,15 +267,9 @@
 
 (deftest search-service-url-keywords-test
   (let [url1 (data-umm-s/url {:URLValue "http://data.space/downloads"
-                              :Description "Pertinent Data Source Page 1"
-                              :URLContentType "DistributionURL"
-                              :Type "GET DATA"
-                              :Subtype "ON-LINE ARCHIVE"})
+                              :Description "Pertinent Data Source Page 1"})
         url2 (data-umm-s/url {:URLValue "http://data.space/home"
-                              :Description "Pertinent Data Source Page 2"
-                              :URLContentType "DistributionURL"
-                              :Type "HOME PAGE"
-                              :Subtype "USER'S GUIDE"})
+                              :Description "Pertinent Data Source Page 2"})
         svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
                                                   :Name "Service 1"
                                                   :URL url1})
@@ -297,19 +291,7 @@
 
       "Description"
       [svc1 svc2]
-      "Data Source"
-
-      "URLContentType"
-      [svc1 svc2]
-      "DistributionURL"
-
-      "Type"
-      [svc2]
-      "home page"
-
-      "Subtype"
-      [svc1]
-      "ON-LINE ARCHIVE")))
+      "Data Source")))
 
 (deftest search-service-contact-group-keywords-test
   (let [svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
@@ -552,8 +534,8 @@
         {:accept (mime-types/with-version mime-types/umm-json umm-version/current-service-version)}
 
         "explicit UMM JSON version through suffix"
-        "1.3.1"
-        {:url-extension "umm_json_v1_3_1"})))
+        "1.3.2"
+        {:url-extension "umm_json_v1_3_2"})))
 
   (testing "Searching with non-existent UMM JSON version"
     (are3 [options]

@@ -237,71 +237,6 @@
          :AverageFileSizeUnit nil,
          :Media nil}]}})
 
-(def sample-umm-service-concept
-  "This sample UMM Service data is a mish-mash of several examples, done this
-  way simply to provide full testing coverage in a single record. It is not
-  intended to represent an actual service and should not be used for anything
-  other than testing."
-  {:Name "AIRX3STD"
-   :LongName "OPeNDAP Service for AIRS Level-3 retrieval products"
-   :Type "OPeNDAP"
-   :Version "1.9"
-   :Description "AIRS Level-3 retrieval product created using AIRS IR, AMSU without HSB."
-   :URL {:URLValue "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
-         :Description "OPeNDAP Service"
-         :Type "GET SERVICE"
-         :Subtype "ACCESS WEB SERVICE"
-         :URLContentType "CollectionURL"}
-   :ContactPersons [
-                    {:Roles ["AUTHOR"]
-                     :ContactInformation {
-                                          :ContactMechanisms [
-                                                              {:Type "Email"
-                                                               :Value "ncdc.orders at noaa.gov"}
-                                                              {:Type "Telephone"
-                                                               :Value "+1 828-271-4800"}]
-                                          :Addresses [
-                                                      {:StreetAddresses ["151 Patton Avenue, Federal Building, Room 468"]
-                                                       :City "Asheville"
-                                                       :StateProvince "NC"
-                                                       :Country "USA"
-                                                       :PostalCode "28801-5001"}]}
-                     :FirstName "Alice"
-                     :MiddleName ""
-                     :LastName "Bob"}]
-   :AncillaryKeywords ["Data Visualization" "Data Discovery"]
-   :ServiceKeywords [
-                     {:ServiceCategory "DATA ANALYSIS AND VISUALIZATION"
-                      :ServiceTopic "VISUALIZATION/IMAGE PROCESSING"}
-                     {:ServiceCategory "DATA ANALYSIS AND VISUALIZATION"}
-                     {:ServiceTopic "STATISTICAL APPLICATIONS"}]
-   :ContactGroups [
-                   {:Roles ["SCIENCE CONTACT"]
-                    :GroupName "TEAM SPOCK"
-                    :LongName "VULCAN YET LIVES"
-                    :Uuid "007c89f8-39ca-4645-b31a-d06a0118e8b2"
-                    :NonServiceOrganizationAffiliation "TEAM KIRK"
-                    :ContactInformation {
-                                         :ContactMechanisms
-                                         [{:Type "Email"
-                                           :Value "custserv at usgs.gov"}
-                                          {:Type "Fax"
-                                           :Value "605-594-6589"}
-                                          {:Type "Telephone"
-                                           :Value "605-594-6151"}]
-                                         :Addresses [
-                                                     {:StreetAddresses ["47914 252nd Street"]
-                                                      :City "Sioux Falls"
-                                                      :StateProvince "SD"
-                                                      :Country "USA"
-                                                      :PostalCode "57198-0001"}]}}]
-   :ServiceOrganizations [
-                          {:Roles ["SERVICE PROVIDER"]
-                           :ShortName "LDPAAC"}
-                          {:Roles ["SERVICE PROVIDER"]
-                           :ShortName "USGS/EROS"
-                           :LongName "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES"}]})
-
 (deftest extract-collection-field-values
   (are3 [field-key values]
     (is (= values
@@ -423,75 +358,22 @@
     :ArchiveAndDistributionInformation
     ["netCDF4", "PDF"]))
 
-(deftest extract-service-field-values
-  (are3 [field-key values]
-    (is (= values
-           ((#'keyword-util/field-extract-fn field-key) sample-umm-service-concept)))
-
-    "LongName field"
-    :LongName
-    "OPeNDAP Service for AIRS Level-3 retrieval products"
-
-    "Name field"
-    :Name
-    "AIRX3STD"
-
-    "Version field"
-    :Version
-    "1.9"
-
-    "AncillaryKeywords field"
-    :AncillaryKeywords
-    ["Data Visualization" "Data Discovery"]
-
-    "ContactGroups field"
-    :ContactGroups
-    ["TEAM SPOCK" "SCIENCE CONTACT"]
-
-    "ContactPersons field"
-    :ContactPersons
-    ["Alice" "Bob" "AUTHOR"]
-
-    "URL field"
-    :URL
-    ["OPeNDAP Service" "ACCESS WEB SERVICE" "GET SERVICE" "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/" "CollectionURL"]
-
-    "ServiceKeywords field"
-    :ServiceKeywords
-    ["DATA ANALYSIS AND VISUALIZATION" nil nil "VISUALIZATION/IMAGE PROCESSING"
-     "DATA ANALYSIS AND VISUALIZATION" nil nil nil nil nil nil "STATISTICAL APPLICATIONS"]
-
-    "ServiceOrganizations field"
-    :ServiceOrganizations
-    [nil "LDPAAC" "SERVICE PROVIDER" "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES"
-     "USGS/EROS" "SERVICE PROVIDER"]))
-
 (deftest concept-key->keywords
-  (is (= ["OPeNDAP Service for AIRS Level-3 retrieval products"]
+  (is (= ["Visible Infrared Imaging Radiometer suite."]
          (sort
           (keyword-util/concept-key->keywords
-           sample-umm-service-concept :LongName))))
+           sample-umm-collection-concept :LongName))))
   (is (= ["A test related url." "DataCenterURL" "EDG" "GENERAL DOCUMENTATION" "GET SERVICE" "HOME PAGE"
            "PublicationURL" "Related-url description." "related-url-example-two.com" "related-url-example.com"]
          (sort
           (keyword-util/concept-key->keywords
            sample-umm-collection-concept :RelatedUrls))))
-  (is (= ["ACCESS WEB SERVICE" "CollectionURL" "GET SERVICE" "OPeNDAP Service" "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"]
-         (sort
-          (keyword-util/concept-key->keywords
-           sample-umm-service-concept :URL))))
   (is (= ["ATMOSPHERE" "ATMOSPHERIC WINDS" "DATA ANALYSIS AND VISUALIZATION" "EARTH SCIENCE SERVICES" "GEOGRAPHIC INFORMATION SYSTEMS" "MICROWAVE" "MICROWAVE IMAGERY" "RADAR" "SCIENCE CAT 3" "SCIENCE TERM 3" "SCIENCE TOPIC 3" "SPECTRAL/ENGINEERING" "SURFACE WINDS"]
          (sort
           (keyword-util/concept-key->keywords
            sample-umm-collection-concept :ScienceKeywords)))))
 
 (deftest concept-key->keyword-text
-  (is (= (str "006 access access web service acdisc airs airx3std aqua "
-              "collectionurl eosdis gesdisc get get service gov https "
-              "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/aqua_airs_level3/airx3std.006/ "
-              "level3 nasa opendap opendap service service web")
-        (keyword-util/concept-key->keyword-text
-         sample-umm-service-concept :URL)))
   (is (= (str "a a test related url. com datacenterurl description documentation edg example "
               "general general documentation get get service home home page page publicationurl "
               "related related-url description. related-url-example-two.com related-url-example.com "
@@ -510,55 +392,71 @@
 
 (deftest concept-keys->keywords
   (let [schema-keys [:LongName
-                     :Name
+                     :ShortName
                      :Version]]
-    (is (= ["1.9" "AIRX3STD" "OPeNDAP Service for AIRS Level-3 retrieval products"]
+    (is (= ["001" "VIIRS" "Visible Infrared Imaging Radiometer suite."]
            (sort
             (keyword-util/concept-keys->keywords
-             sample-umm-service-concept schema-keys)))))
+             sample-umm-collection-concept schema-keys)))))
   (let [schema-keys [:LongName
-                     :Name
+                     :ShortName
                      :Version
                      :AncillaryKeywords
                      :ContactGroups
                      :ContactPersons
-                     :URL
-                     :ServiceKeywords
-                     :ServiceOrganizations]]
-    (is (= ["1.9" "ACCESS WEB SERVICE" "AIRX3STD" "AUTHOR" "Alice" "Bob" "CollectionURL" "DATA ANALYSIS AND VISUALIZATION" "DATA ANALYSIS AND VISUALIZATION" "Data Discovery" "Data Visualization" "GET SERVICE" "LDPAAC" "OPeNDAP Service" "OPeNDAP Service for AIRS Level-3 retrieval products" "SCIENCE CONTACT" "SERVICE PROVIDER" "SERVICE PROVIDER" "STATISTICAL APPLICATIONS" "TEAM SPOCK" "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES" "USGS/EROS" "VISUALIZATION/IMAGE PROCESSING" "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"]
+                     :RelatedUrls
+                     :ScienceKeywords
+                     :DataCenters]]
+    (is (= ["001" "A test related url." "ATMOSPHERE" "ATMOSPHERIC WINDS" "AUTHOR" "Alice" "Bob"
+            "DATA ANALYSIS AND VISUALIZATION" "Data Center Contact" "DataCenterURL" "Doe"
+            "EARTH SCIENCE SERVICES" "EDG" "EOSDIS" "ESIP" "GENERAL DOCUMENTATION"
+            "GEOGRAPHIC INFORMATION SYSTEMS" "GET SERVICE" "HOME PAGE" "IRIS/PASSCAL" "John"
+            "LP DAAC" "LPDAAC" "MICROWAVE" "MICROWAVE IMAGERY" "PublicationURL" "RADAR"
+            "Related-url description." "SCIENCE CAT 3" "SCIENCE CONTACT" "SCIENCE TERM 3"
+            "SCIENCE TOPIC 3" "SPECTRAL/ENGINEERING" "SURFACE WINDS" "Science Contact" "TEAM SPOCK"
+            "Technical Contact" "Technical Contact" "USGS" "USGS/EROS" "VIIRS"
+            "Visible Infrared Imaging Radiometer suite." "White Marsh Institute of Health" "related-url-example-two.com" "related-url-example.com"]
            (sort
             (keyword-util/concept-keys->keywords
-             sample-umm-service-concept schema-keys))))))
+             sample-umm-collection-concept schema-keys))))))
 
 (deftest concept-keys->keyword-text
   (let [schema-keys [:LongName
-                     :Name
+                     :ShortName
                      :Version]]
-    (is (= "1 1.9 3 9 airs airx3std for level opendap opendap service for airs level-3 retrieval products products retrieval service"
+    (is (= "001 imaging infrared radiometer suite viirs visible visible infrared imaging radiometer suite."
            (keyword-util/concept-keys->keyword-text
-            sample-umm-service-concept schema-keys))))
-  (let [schema-keys [:Name
+            sample-umm-collection-concept schema-keys))))
+  (let [schema-keys [:ShortName
                      :ContactGroups]]
-    (is (= "airx3std contact science science contact spock team team spock"
+    (is (= "contact science science contact spock team team spock viirs"
            (keyword-util/concept-keys->keyword-text
-            sample-umm-service-concept schema-keys))))
+            sample-umm-collection-concept schema-keys))))
   (let [schema-keys [:ContactPersons]]
     (is (= "alice author bob"
            (keyword-util/concept-keys->keyword-text
-            sample-umm-service-concept schema-keys))))
-  (let [schema-keys [:ServiceOrganizations]]
-    (is (= "and customer earth eros geological landsat ldpaac observation provider resource science service service provider services survey us us geological survey earth resource observation and science (eros) landsat customer services usgs usgs/eros"
-           (keyword-util/concept-keys->keyword-text
-            sample-umm-service-concept schema-keys))))
+            sample-umm-collection-concept schema-keys))))
   (let [schema-keys [:LongName
-                     :Name
+                     :ShortName
                      :Version
                      :AncillaryKeywords
                      :ContactGroups
                      :ContactPersons
-                     :URL
-                     :ServiceKeywords
-                     :ServiceOrganizations]]
-    (is (= "006 1 1.9 3 9 access access web service acdisc airs airx3std alice analysis and applications aqua author bob collectionurl contact customer data data analysis and visualization data discovery data visualization discovery earth eosdis eros for geological gesdisc get get service gov https https://acdisc.gesdisc.eosdis.nasa.gov/opendap/aqua_airs_level3/airx3std.006/ image landsat ldpaac level level3 nasa observation opendap opendap service opendap service for airs level-3 retrieval products processing products provider resource retrieval science science contact service service provider services spock statistical statistical applications survey team team spock us us geological survey earth resource observation and science (eros) landsat customer services usgs usgs/eros visualization visualization/image processing web"
+                     :RelatedUrls
+                     :ScienceKeywords
+                     :DataCenters]]
+    (is (= (str "001 3 a a test related url. alice analysis and atmosphere atmospheric atmospheric "
+                "winds author bob cat center com contact daac data data analysis and visualization "
+                "data center contact datacenterurl description documentation doe earth earth science "
+                "services edg engineering eosdis eros esip example general general documentation "
+                "geographic geographic information systems get get service health home home page imagery "
+                "imaging information infrared institute iris iris/passcal john lp lp daac lpdaac marsh "
+                "microwave microwave imagery of page passcal publicationurl radar radiometer related "
+                "related-url description. related-url-example-two.com related-url-example.com science "
+                "science cat 3 science contact science term 3 science topic 3 service services spectral "
+                "spectral/engineering spock suite surface surface winds systems team team spock "
+                "technical technical contact term test topic two url usgs usgs/eros viirs visible "
+                "visible infrared imaging radiometer suite. visualization white white marsh institute "
+                "of health winds")
            (keyword-util/concept-keys->keyword-text
-            sample-umm-service-concept schema-keys)))))
+            sample-umm-collection-concept schema-keys)))))
