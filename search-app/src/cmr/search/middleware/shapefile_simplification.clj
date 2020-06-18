@@ -31,7 +31,6 @@
    (org.geotools.data.simple SimpleFeatureSource)
    (org.geotools.data.geojson GeoJSONDataStore)
    (org.geotools.feature.simple SimpleFeatureBuilder)
-  ;  (org.geotools.geojson.feature FeatureJSON)
    (org.geotools.geometry.jts JTS)
    (org.geotools.kml.v22 KMLConfiguration KML)
    (org.geotools.referencing CRS)
@@ -109,62 +108,10 @@
         (errors/throw-service-error :bad-request (format "Cannot transform source CRS [%s] to WGS 84" src-crs-name))))
     geometry))
 
-(defn- winding-opts
-  "Get the opts for a call to `normalize-polygon-winding` based on file type"
-  [mime-type]
-  (case mime-type
-    "application/shapefile+zip" {:boundary-winding :cw}
-    "application/vnd.google-earth.kml+xml" {}
-    "application/geo+json" {:hole-winding :cw}))
-
-(defn- normalize-polygon-winding
-  "Force CCW winding for outer rings and CW winding for inner rings (holes)"
-  [^Polygon polygon options]
-  (let [geometry-factory (.getFactory polygon)
-        ^LinearRing boundary-ring (.getExteriorRing polygon)
-        _ (debug (format "BOUNDARY RING BEFORE FORCE-CCW: %s" boundary-ring))
-        boundary-ring (geo/force-ccw-orientation boundary-ring (:boundary-winding options))
-        _ (debug (format "BOUNDARY RING AFTER FORCE-CCW: %s" boundary-ring))
-        num-interior-rings (.getNumInteriorRing polygon)
-        interior-rings (if (> num-interior-rings 0)
-                         (for [i (range num-interior-rings)]
-                           (geo/force-ccw-orientation (.getInteriorRingN polygon i)
-                                                      (:hole-winding options)))
-                         [])
-        all-rings (concat [boundary-ring] interior-rings)]
-    (debug (format "NUM INTERIOR RINGS: [%d]" num-interior-rings))
-    (debug (format "RINGS: [%s]" (vec all-rings)))
-    (let [holes (into-array LinearRing interior-rings)]
-      (Polygon. boundary-ring holes geometry-factory))))
-
-(defn- normalize-geometry
-  "Normalize the windings on polygons - other geometries are untouched"
-  [^Geometry geometry  mime-type]
-  (let [geometry-type (.getGeometryType geometry)
-        geometry-factory (.getFactory geometry)
-        options (winding-opts mime-type)]
-    (if (= geometry-type "MultiPolygon")
-      (let [num-polys (.getNumGeometries geometry)
-            normalized-polys  (for [index (range 0 num-polys)
-                                    :let [sub-geometry (.getGeometryN geometry index)]]
-                                (normalize-polygon-winding sub-geometry options))]
-        (MultiPolygon. (into-array Polygon normalized-polys) geometry-factory))
-      (if (= geometry-type "Polygon")
-        (normalize-polygon-winding geometry options)
-        geometry))))
-
 (defn- simplify-geometry
   "Simplify a geometry"
   [geometry tolerance mime-type]
-  ; (when (> (.getNumGeometries geometry) 1)
-  ;   (println "MULTIGEOMETRY=========================="))
-  ; (println (format "POINT COUNT %d" (geometry-point-count geometry)))
-  (let [normalized-geometry (normalize-geometry geometry mime-type)
-        new-geometry (TopologyPreservingSimplifier/simplify normalized-geometry tolerance)]
-    ; (println (format "NEW POINT COUNT %d" (geometry-point-count new-geometry)))
-    ; (println (format "NUMBER OF GEOMETRIES: %d" (.getNumGeometries new-geometry)))
-    ; (println new-geometry)
-    new-geometry))
+  (TopologyPreservingSimplifier/simplify geometry tolerance))
 
 (defn- simplify-feature
   "Simplify a feature. Returns simplfied feature and information about the simplificiton"
@@ -219,8 +166,6 @@
                        (+ new-total-point-count new-point-count)]))
                   [0 0]
                   features)]
-      ; (println (format "Original point count: %d" old-total-point-count))
-      ; (println (format "New point count: %d" new-total-point-count))
       [feature-list [old-total-point-count new-total-point-count]])))
 
 (defn- iterative-simplify
@@ -236,7 +181,6 @@
            result [features [start-point-count start-point-count]]
            count 1]
       (let [[new-features [old-count new-count]] result]
-        (println (format "POINT COUNTS: [%d %d]" old-count new-count))
         (if (<= new-count limit)
           result
           (if (> count (shapefile-simplifier-max-attempts))
@@ -248,15 +192,8 @@
   "Given an ArrayList of Features simplify the Features and return stats about the process
   along with a new shapfile info map to replace the one in the search reqeust"
   [filename ^ArrayList features feature-type mime-type]
-  (let [; new-file (java.io.File/createTempFile "reduced" ".zip")
-        ; dumper (ShapefileDumper. (.toFile target-dir))
-        ; _ (println features)
-        [simplified-features stats] (iterative-simplify features mime-type)
-        ; _ (println simplified-features)
+  (let [[simplified-features stats] (iterative-simplify features mime-type)
         [original-point-count new-point-count] stats]
-        ; collection (ListFeatureCollection. feature-type simplified-features)]
-    ; (.dump dumper collection)
-    ; (zip-dir (.toString target-dir) (.toString new-file))
     [{:original-point-count original-point-count
       :new-point-count new-point-count}
      {:tempfile simplified-features
@@ -265,6 +202,54 @@
       :in-memory true
       :was-simplified (not (= original-point-count new-point-count))
       :size -1}]))
+
+(defn simplify-esri
+  "Simplfies an ESRI shapefile. Returns statistics about the simplification and information
+  about the new file."
+  [shapefile-info]
+  (println "SIMPLIFYING ESRI---------------------------")
+  (try
+    (let [file (:tempfile shapefile-info)
+          filename (:filename shapefile-info)
+          ^File temp-dir (shapefile/unzip-file file)
+          shp-file (error-if
+                    (shapefile/find-shp-file temp-dir)
+                    nil?
+                    "Incomplete shapefile: missing .shp file"
+                    temp-dir)
+          data-store (FileDataStoreFinder/getDataStore shp-file)
+          feature-source (.getFeatureSource data-store)
+          feature-type (.getSchema feature-source)
+          features (.getFeatures feature-source)
+          feature-count (error-if (.size features)
+                                  #(< % 1)
+                                  "Shapefile has no features"
+                                  temp-dir)
+          _ (error-if feature-count
+                      #(> % (shapefile/max-shapefile-features))
+                      (format "Shapefile feature count [%d] exceeds the %d feature limit"
+                              feature-count
+                              (shapefile/max-shapefile-features))
+                      nil)
+          _ (debug (format "Found [%d] features" feature-count))
+          iterator (.features features)]
+      (try
+        (loop [features (ArrayList.)]
+          (if (.hasNext iterator)
+            (let [feature (.next iterator)]
+              (.add features feature)
+              (recur features))
+            (simplify-data filename features feature-type mt/shapefile)))
+        (finally (do
+                    (.close iterator)
+                    (-> data-store .getFeatureReader .close)
+                    (.delete temp-dir)
+                    (.delete file)))))
+    (catch Exception e
+      (let [{:keys [type errors]} (ex-data e)]
+        (if (and type errors)
+          (throw e) ;; This was a more specific service error so just re-throw it
+          (errors/throw-service-error :bad-request "Failed to parse shapefile"))))))
 
 (defn- simplify-kml
   "Simplfies a KML file. Returns statistics about the simplification and information
@@ -279,8 +264,6 @@
         (loop [features (ArrayList.)]
           (if-let [feature (.parse parser)]
             (do
-              ; (println "FEATURE++++++++++++++++")
-              ; (println feature)
               (.add features feature)
               (recur features))
             (if-let [first-feature (when (not (.isEmpty features)) (.get features 0))]
@@ -292,9 +275,7 @@
       (let [{:keys [type errors]} (ex-data e)]
         (if (and type errors)
           (throw e) ;; This was a more specific service error so just re-throw it
-          (do
-            (.printStackTrace e)
-            (errors/throw-service-error :bad-request "Failed to parse KML file")))))))
+          (errors/throw-service-error :bad-request "Failed to parse KML file"))))))
 
 (defn- simplify-geojson
   "Simplfies a geojson file. Returns statistics about the simplification and information
@@ -337,7 +318,10 @@
   (fn [shapefile-info]
     (:content-type shapefile-info)))
 
-;; GeoJSON
+(defmethod simplify mt/shapefile
+  [shapefile-info]
+  (simplify-esri shapefile-info))
+
 (defmethod simplify mt/geojson
   [shapefile-info]
   (simplify-geojson shapefile-info))

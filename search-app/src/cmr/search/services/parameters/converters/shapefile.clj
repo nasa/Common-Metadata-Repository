@@ -274,16 +274,25 @@
           (throw e) ;; This was a more specific service error so just re-throw it
           (errors/throw-service-error :bad-request "Failed to parse KML file"))))))
 
+(defn winding-opts
+  "Get the opts for a call to `normalize-polygon-winding` based on file type"
+  [mime-type]
+  (case mime-type
+    "application/shapefile+zip" {:boundary-winding :cw}
+    "application/vnd.google-earth.kml+xml" {}
+    "application/geo+json" {:hole-winding :cw}))
+
 (defn in-memory->conditions-vec
   "Converts a group of features produced by simplification to a vector of SpatialConditions"
   [shapefile-info]
   (try
     (let [^ArrayList features (:tempfile shapefile-info)
+          mime-type (:content-type shapefile-info)
           iterator (.iterator features)]
       (loop [conditions []]
         (if (.hasNext iterator)
           (let [feature (.next iterator)
-                [feature-conditions _] (feature->conditions feature {})]
+                [feature-conditions _] (feature->conditions feature (winding-opts mime-type))]
             (if (> (count feature-conditions) 0)
               (recur (conj conditions (gc/or-conds feature-conditions)))
               (recur conditions)))
