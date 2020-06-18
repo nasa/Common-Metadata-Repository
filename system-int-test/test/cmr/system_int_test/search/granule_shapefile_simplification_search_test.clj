@@ -31,32 +31,32 @@
 
 (def formats
   "Shapfile formats to be tested"
-  {; "ESRI" {:extension "zip" :mime-type mt/shapefile}
+  {"ESRI" {:extension "zip" :mime-type mt/shapefile}
    "GeoJSON" {:extension "geojson" :mime-type mt/geojson}
    "KML" {:extension "kml" :mime-type mt/kml}})
 
-; (deftest granule-shapefile-simlpification-failure-cases
-;   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
-;   (let [saved-shapefile-max-size (shapefile-middleware/max-shapefile-size)
-;         _ (side/eval-form `(shapefile-middleware/set-max-shapefile-size! 2500000))]
-;     (testing "Failure cases"
-;       (are3 [shapefile regex]
-;             (is (re-find regex
-;                          (first (:errors (search/find-refs-with-multi-part-form-post
-;                                           :granule
-;                                           [{:name "shapefile"
-;                                             :content (io/file (io/resource (str "shapefiles/" shapefile ".geojson")))
-;                                             :mime-type mt/geojson}
-;                                            {:name "simplify-shapefile"
-;                                             :content "true"}
-;                                            {:name "provider"
-;                                             :content "PROV1"}])))))
-;             ;; Shapefiles with many features may not be able to be simplified enough because we
-;             ;; only remove points in a feature, not features themselves
-;             "Shapefiles with many features with many points"
-;             "cb_2018_us_county_20m"
-;             #"Shapefile could not be simplified"))
-;     (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-size))))
+(deftest granule-shapefile-simlpification-failure-cases
+  (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
+  (let [saved-shapefile-max-size (shapefile-middleware/max-shapefile-size)
+        _ (side/eval-form `(shapefile-middleware/set-max-shapefile-size! 2500000))]
+    (testing "Failure cases"
+      (are3 [shapefile regex]
+            (is (re-find regex
+                         (first (:errors (search/find-refs-with-multi-part-form-post
+                                          :granule
+                                          [{:name "shapefile"
+                                            :content (io/file (io/resource (str "shapefiles/" shapefile ".geojson")))
+                                            :mime-type mt/geojson}
+                                           {:name "simplify-shapefile"
+                                            :content "true"}
+                                           {:name "provider"
+                                            :content "PROV1"}])))))
+            ;; Shapefiles with many features may not be able to be simplified enough because we
+            ;; only remove points in a feature, not features themselves
+            "Shapefiles with many features with many points"
+            "cb_2018_us_county_20m"
+            #"Shapefile could not be simplified"))
+    (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-size))))
 
 (deftest granule-shapefile-search-simplification-test
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
