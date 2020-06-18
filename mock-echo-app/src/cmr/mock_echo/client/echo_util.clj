@@ -100,7 +100,7 @@
 
 ;; subscription management acl
 (def subscription-management
-  "An ACL for managing access to email subscription functions."
+  "An ACL for managing access to subscription functions."
   "SUBSCRIPTION_MANAGEMENT")
 
 (def tag-acl
