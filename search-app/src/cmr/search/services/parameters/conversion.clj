@@ -432,7 +432,8 @@
                                 [:temporal-conditions])
         keywords (when (:keyword params)
                    (str/split (str/lower-case (:keyword params)) #" "))
-        params (if keywords (assoc params :keyword (str/join " " keywords)) params)]
+        params (if keywords (assoc params :keyword (str/join " " keywords)) params)
+        simplify-shapefile? (= "true" (:simplify-shapefile params))]
     [(dissoc params
              :boosts :include-granule-counts :include-has-granules :include-facets :echo-compatible
              :hierarchical-facets :include-highlights :include-tags :all-revisions :facets-size
@@ -442,7 +443,7 @@
                  :result-features (seq result-features)
                  :echo-compatible? (= "true" (:echo-compatible params))
                  :all-revisions? (= "true" (:all-revisions params))
-                 :simplify-shapefile? (= "true" (:simplify-shapefile params))
+                 :simplify-shapefile? (when simplify-shapefile? simplify-shapefile?)
                  :facets-size (:facets-size params)
                  :result-options (merge (when-not (str/blank? (:include-tags params))
                                           {:tags (map str/trim (str/split (:include-tags params) #","))})
