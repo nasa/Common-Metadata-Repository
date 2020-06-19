@@ -36,7 +36,7 @@
 
 (defconfig max-shapefile-size
   "The maximum size in bytes a shapefile can be"
-  {:default 10000000 :type Long})
+  {:default 1000000 :type Long})
 
 (defn- progress
   "Progress function for `wrap-multipart-params`. This function simply throws an error if

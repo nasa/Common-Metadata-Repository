@@ -31,6 +31,7 @@
    (org.geotools.data.simple SimpleFeatureSource)
    (org.geotools.data.geojson GeoJSONDataStore)
    (org.geotools.feature.simple SimpleFeatureBuilder)
+  ;  (org.geotools.geojson.feature FeatureJSON)
    (org.geotools.geometry.jts JTS)
    (org.geotools.kml.v22 KMLConfiguration KML)
    (org.geotools.referencing CRS)
@@ -111,7 +112,14 @@
 (defn- simplify-geometry
   "Simplify a geometry"
   [geometry tolerance mime-type]
-  (TopologyPreservingSimplifier/simplify geometry tolerance))
+  ; (when (> (.getNumGeometries geometry) 1)
+  ;   (println "MULTIGEOMETRY=========================="))
+  ; (println (format "POINT COUNT %d" (geometry-point-count geometry)))
+  (let [new-geometry (TopologyPreservingSimplifier/simplify geometry tolerance)]
+    ; (println (format "NEW POINT COUNT %d" (geometry-point-count new-geometry)))
+    ; (println (format "NUMBER OF GEOMETRIES: %d" (.getNumGeometries new-geometry)))
+    ; (println new-geometry)
+    new-geometry))
 
 (defn- simplify-feature
   "Simplify a feature. Returns simplfied feature and information about the simplificiton"
@@ -166,6 +174,8 @@
                        (+ new-total-point-count new-point-count)]))
                   [0 0]
                   features)]
+      ; (println (format "Original point count: %d" old-total-point-count))
+      ; (println (format "New point count: %d" new-total-point-count))
       [feature-list [old-total-point-count new-total-point-count]])))
 
 (defn- iterative-simplify
@@ -181,6 +191,7 @@
            result [features [start-point-count start-point-count]]
            count 1]
       (let [[new-features [old-count new-count]] result]
+        (println (format "POINT COUNTS: [%d %d]" old-count new-count))
         (if (<= new-count limit)
           result
           (if (> count (shapefile-simplifier-max-attempts))
@@ -192,8 +203,15 @@
   "Given an ArrayList of Features simplify the Features and return stats about the process
   along with a new shapfile info map to replace the one in the search reqeust"
   [filename ^ArrayList features feature-type mime-type]
-  (let [[simplified-features stats] (iterative-simplify features mime-type)
+  (let [; new-file (java.io.File/createTempFile "reduced" ".zip")
+        ; dumper (ShapefileDumper. (.toFile target-dir))
+        ; _ (println features)
+        [simplified-features stats] (iterative-simplify features mime-type)
+        ; _ (println simplified-features)
         [original-point-count new-point-count] stats]
+        ; collection (ListFeatureCollection. feature-type simplified-features)]
+    ; (.dump dumper collection)
+    ; (zip-dir (.toString target-dir) (.toString new-file))
     [{:original-point-count original-point-count
       :new-point-count new-point-count}
      {:tempfile simplified-features
