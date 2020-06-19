@@ -1748,7 +1748,7 @@ Internally a WGS 84 Coordinate Reference System (CRS) is used. The system will a
 **NOTE:** This is an experimental feature and may not be enabled in all environments.
 
 #### <a name="c-shapefile-simplification"></a> Simplifying shapefiles during collection search
-Shapefiles are limited to 5000 points by deafult. A user can request that the CMR try to simplify (reduce the number of points) a shapefile by setting the `simplify-shapefile` parameter to `true` in the POST used to pass in the shapefile.
+Shapefiles are limited to 5000 points by default. A user using a shapefile with more points than the CMR supported limit can use the `simplify-shapefile` parameter to request that the CMR try to simplify (reduce the number of points) the shapefile so that it is under the limit.
 
 Example:
 
@@ -1756,7 +1756,7 @@ Example:
 
 Note that the simplification process attempts to preserve topology, i.e., the relationship between polygon outer boundaries and holes. The process uses the [Douglas-Peucker algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm) and as such may result in geometries with less coverage than the original shapefile and potentially a loss of matching results.
 
-The simplification may fail if the process cannot reduce the number of points in the file to below the limit. Also the simplification only reduces the number of points in the file, so a shapefile will still fail if the file size  is too large or there are too many features.
+The simplification may fail if the process cannot reduce the number of points in the file to below the limit. Also the simplification only reduces the number of points in the file, so a shapefile will still fail if the file size is too large or there are too many features.
 
 #### <a name="c-additional-attribute"></a> Find collections by additional attribute
 
