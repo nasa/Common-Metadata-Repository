@@ -89,8 +89,9 @@
         (util/update-in-all [:DataCenters :ContactPersons :ContactInformation :RelatedUrls] remove-nils)
         (util/update-in-all [:RelatedUrls] remove-nils))))
 
-(defn- remove-nil-related-urls
-  "Removes nil RelatedUrls under ContactGroups and ContactPersons/ContactInformation."
+(defn- remove-related-urls
+  "Removes all of the RelatedUrls which are all nil under ContactGroups and
+   ContactPersons/ContactInformation."
   [umm]
   (-> umm
       (util/update-in-all [:ContactGroups :ContactInformation] #(dissoc % :RelatedUrls))
@@ -128,7 +129,7 @@
     [umm-s-record (gen/no-shrink umm-gen/umm-s-generator)]
     ;; For some reason :RelatedUrls nil is being generated eventhough it is not
     ;; part of the schema. Removing it.
-    (let [umm-s-record (remove-nil-related-urls umm-s-record)
+    (let [umm-s-record (remove-related-urls umm-s-record)
           json (umm-json/umm->json umm-s-record)
           _ (is (empty? (json-schema/validate-umm-json json :service)))
           parsed (umm-json/json->umm {} :service json)]

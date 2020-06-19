@@ -475,11 +475,12 @@
 (defn update-contact-info-1_3_1->1_3_2
   "For each contact info change the RelatedUrl map to an OnlineResource map."
   [contact-info]
-  (-> contact-info
-      (assoc :OnlineResources (seq (map #(update-related-url-to-online-resource %)
-                                        (:RelatedUrls contact-info))))
-      (dissoc :RelatedUrls)
-      (util/remove-nil-keys)))
+  (let [online-resources (seq (map #(update-related-url-to-online-resource %)
+                                   (:RelatedUrls contact-info)))]
+    (-> contact-info
+        (assoc :OnlineResources online-resources)
+        (dissoc :RelatedUrls)
+        (util/remove-nil-keys))))
 
 (defn update-contacts-1_3_1->1_3_2
   "In ContactGroups and in ContactPersons change the ContactInformation/RelatedURL to OnlineResource."
@@ -497,11 +498,12 @@
 (defn update-contact-info-1_3_2->1_3_1
   "For each contact info change the OnlineResources map to a RelatedUrl map."
   [contact-info]
-  (-> contact-info
-      (assoc :RelatedUrls (seq (map #(update-online-resource-to-related-url %)
-                                    (:OnlineResources contact-info))))
-      (dissoc :OnlineResources)
-      (util/remove-nil-keys)))
+  (let [related-urls (seq (map #(update-online-resource-to-related-url %)
+                               (:OnlineResources contact-info)))]
+    (-> contact-info
+        (assoc :RelatedUrls related-urls)
+        (dissoc :OnlineResources)
+        (util/remove-nil-keys))))
 
 (defn update-contacts-1_3_2->1_3_1
   "In ContactGroups and in ContactPersons change the ContactInformation/OnlineResource to RelatedUrl."
