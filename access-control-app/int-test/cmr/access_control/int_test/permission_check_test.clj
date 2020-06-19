@@ -53,17 +53,17 @@
        {:token (transmit-config/echo-system-token)})
       (ac/create-acl
        (u/conn-context)
-       {:group_permissions [{:permissions [:create]
+       {:group_permissions [{:permissions [:update]
                              :group_id (:concept_id group1)}]
         :provider_identity {:provider_id "PROV1"
-                            :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}}
+                            :target "SUBSCRIPTION_MANAGEMENT"}}
        {:token (transmit-config/echo-system-token)})
       (ac/create-acl
        (u/conn-context)
-       {:group_permissions [{:permissions [:delete]
+       {:group_permissions [{:permissions [:update]
                              :group_id (:concept_id group2)}]
         :provider_identity {:provider_id "PROV2"
-                            :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}}
+                            :target "SUBSCRIPTION_MANAGEMENT"}}
        {:token (transmit-config/echo-system-token)})
 
       (is (= {"NON_NASA_DRAFT_APPROVER" ["create"]}
@@ -80,18 +80,18 @@
                {:target "NON_NASA_DRAFT_APPROVER"
                 :provider "PROV2"
                 :user_id "user1"}))))
-      (is (= {"EMAIL_SUBSCRIPTION_MANAGEMENT" ["create"]}
+      (is (= {"SUBSCRIPTION_MANAGEMENT" ["update"]}
              (json/parse-string
               (ac/get-permissions
                (u/conn-context)
-               {:target "EMAIL_SUBSCRIPTION_MANAGEMENT"
+               {:target "SUBSCRIPTION_MANAGEMENT"
                 :provider "PROV1"
                 :user_id "user1"}))))
-      (is (= {"EMAIL_SUBSCRIPTION_MANAGEMENT" ["delete"]}
+      (is (= {"SUBSCRIPTION_MANAGEMENT" ["update"]}
              (json/parse-string
               (ac/get-permissions
                (u/conn-context)
-               {:target "EMAIL_SUBSCRIPTION_MANAGEMENT"
+               {:target "SUBSCRIPTION_MANAGEMENT"
                 :provider "PROV2"
                 :user_id "user1"})))))))
 
@@ -113,7 +113,7 @@
                              "\"PROVIDER_ORDER_CLOSURE\" \"PROVIDER_ORDER_TRACKING_ID\" \"PROVIDER_INFORMATION\" "
                              "\"PROVIDER_CONTEXT\" \"AUTHENTICATOR_DEFINITION\" \"PROVIDER_POLICIES\" \"USER\" "
                              "\"GROUP\" \"DASHBOARD_DAAC_CURATOR\" \"PROVIDER_OBJECT_ACL\" \"CATALOG_ITEM_ACL\" \"INGEST_MANAGEMENT_ACL\" "
-                             "\"DATA_QUALITY_SUMMARY_DEFINITION\" \"DATA_QUALITY_SUMMARY_ASSIGNMENT\" \"PROVIDER_CALENDAR_EVENT\" \"NON_NASA_DRAFT_USER\" \"NON_NASA_DRAFT_APPROVER\" \"EMAIL_SUBSCRIPTION_MANAGEMENT\"]")]
+                             "\"DATA_QUALITY_SUMMARY_DEFINITION\" \"DATA_QUALITY_SUMMARY_ASSIGNMENT\" \"PROVIDER_CALENDAR_EVENT\" \"NON_NASA_DRAFT_USER\" \"NON_NASA_DRAFT_APPROVER\" \"SUBSCRIPTION_MANAGEMENT\"]")]
     (are [params errors]
       (= {:status 400 :body {:errors errors} :content-type :json}
          (ac/get-permissions (u/conn-context) params {:raw? true}))

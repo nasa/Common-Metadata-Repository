@@ -28,7 +28,7 @@
                   {"provguid4" "PROV4"} [:update] [:update])]))
 
 (deftest search-for-subscriptions-user-read-permission-test
-  ;; EMAIL_SUBSCRIPTION_MANAGEMENT ACL grants only update permission for guest on PROV3,
+  ;; SUBSCRIPTION_MANAGEMENT ACL grants only update permission for guest on PROV3,
   ;; so subscription for PROV3 can be ingested but can't be searched by guest.
   ;; but it's searchable by registered users because read permission is granted.
   (let [subscription3 (subscriptions/ingest-subscription-with-attrs {:native-id "Sub3"
@@ -76,7 +76,7 @@
     (index/wait-until-indexed)
 
     ;; grant one group read permission
-    (echo-util/grant-all-subscription-group-esm (system/context) "PROV4" group1-concept-id [:read])
+    (echo-util/grant-all-subscription-group-sm (system/context) "PROV4" group1-concept-id [:read])
     
     (is (= 201 (:status subscription4)))
     (are3 [expected-subscriptions query]

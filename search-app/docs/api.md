@@ -4670,7 +4670,7 @@ __Sample response__
 ```
 #### <a name="subscription-access-control"></a> Subscription Access Control
 
-Access to subscription is granted through the provider via the INGEST_MANAGEMENT_ACL and EMAIL_SUBSCRIPTION_MANAGEMENT
+Search permission for subscription is granted through the provider via the SUBSCRIPTION_MANAGEMENT ACL. In order to be able to search for a subscription for a given provider, read permission has to be granted to the user through SUBSCRIPTION_MANAGEMENT ACL for the provider.
 
 ### <a name="community-usage-metrics"></a> Community Usage Metrics
 

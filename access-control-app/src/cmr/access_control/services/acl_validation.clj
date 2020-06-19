@@ -46,7 +46,7 @@
                               "PROVIDER_CALENDAR_EVENT"         [c u d]
                               "NON_NASA_DRAFT_USER"             [c r u d]
                               "NON_NASA_DRAFT_APPROVER"         [c r u d]
-                              "EMAIL_SUBSCRIPTION_MANAGEMENT"   [c r u d]}
+                              "SUBSCRIPTION_MANAGEMENT"         [r u]}
    :system-identity          {"SYSTEM_AUDIT_REPORT"             [r]
                               "METRIC_DATA_POINT_SAMPLE"        [r]
                               "SYSTEM_INITIALIZER"              [c]
