@@ -207,7 +207,7 @@
    :identity-type (m/stored m/string-field-mapping)
 
    ;; Store the full ACL metadata for quick retrieval.
-   :acl-gzip-b64 (m/stored (m/not-indexed m/string-field-mapping))})
+   :acl-gzip-b64 (m/stored m/binary-field-mapping)})
 
 (def ^:private acl-index-settings
   "Defines the elasticsearch index settings."

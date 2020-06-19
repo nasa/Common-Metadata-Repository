@@ -484,7 +484,7 @@
           ;; associated tags
           :tags tag-associations-mapping
           ;; associated tags stored as EDN gzipped and base64 encoded for retrieving purpose
-          :tags-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))
+          :tags-gzip-b64(m/stored m/binary-field-mapping)
 
           ;; associated variables
           :variable-names m/string-field-mapping
@@ -502,7 +502,7 @@
           :service-concept-ids (m/doc-values m/string-field-mapping)
 
           ;; associations with the collection stored as EDN gzipped and base64 encoded for retrieving purpose
-          :associations-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))
+          :associations-gzip-b64 (m/stored m/binary-field-mapping)
 
           ;; Relevancy score from community usage metrics
           :usage-relevancy-score m/int-field-mapping}
@@ -717,7 +717,7 @@
    :metadata-format (-> m/string-field-mapping m/stored m/doc-values)
    :measurement-identifiers measurement-identifiers-mapping
    ;; associated collections stored as EDN gzipped and base64 encoded for retrieving purpose
-   :collections-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))})
+   :collections-gzip-b64 (m/stored m/binary-field-mapping)})
 
 (defmapping service-mapping :service
   "Defines the elasticsearch mapping for storing services. These are the
