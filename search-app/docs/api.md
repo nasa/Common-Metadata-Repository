@@ -76,7 +76,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Line](#c-line)
         * [Circle](#c-circle)
     * [Shapefile](#c-shapefile)
-    * [Shapfile Simplificaitron](#c-shapefile-simplification)
+    * [Shapefile Simplification](#c-shapefile-simplification)
     * [Additional Attribute](#c-additional-attribute)
     * [Author](#c-author)
     * [With/without granules](#c-has-granules)
@@ -99,7 +99,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Line](#g-line)
         * [Circle](#g-circle)
     * [Shapefile](#g-shapefile)
-    * [Shapfile Simplificaitron](#g-shapefile-simplification)
+    * [Shapefile Simplification](#g-shapefile-simplification)
     * [Orbit number](#g-orbit-number)
     * [Orbit equator crossing longitude](#g-orbit-equator-crossing-longitude)
     * [Orbit equator crossing date](#g-orbit-equator-crossing-date)
@@ -1731,7 +1731,7 @@ Shapefile upload is only supported using POST with `multipart/form-data` and the
 
 Examples:
 
-  **ESRI Shapfile**
+  **ESRI Shapefile**
 
   curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
@@ -1743,12 +1743,12 @@ Examples:
 
   curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.kml;type=application/vnd.google-earth.kml+xml" -F "provider=PROV1"
 
-Internally a WGS 84 Coordinate Reference System (CRS) is used. The system will attempt to tranform shapefile geometry that uses a differnt CRS, but this is not guaranteed to work and the request will be rejected if a suitable tranformation is not found.
+Internally a WGS 84 Coordinate Reference System (CRS) is used. The system will attempt to transform shapefile geometry that uses a different CRS, but this is not guaranteed to work and the request will be rejected if a suitable transformation is not found.
 
 **NOTE:** This is an experimental feature and may not be enabled in all environments.
 
 #### <a name="c-shapefile-simplification"></a> Simplifying shapefiles during collection search
-Shapfiles are limited to 5000 points by deafult. A user can request that the CMR try to simplify (reduce the number of points) a shapefile by setting the `simplify-shapefile` parameter to `true` in the POST used to pass in the shapefile.
+Shapefiles are limited to 5000 points by deafult. A user can request that the CMR try to simplify (reduce the number of points) a shapefile by setting the `simplify-shapefile` parameter to `true` in the POST used to pass in the shapefile.
 
 Example:
 
@@ -1756,7 +1756,7 @@ Example:
 
 Note that the simplification process attempts to preserve topology, i.e., the relationship between polygon outer boundaries and holes. The process uses the [Douglas-Peucker algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm) and as such may result in geometries with less coverage than the original shapefile and potentially a loss of matching results.
 
-The simplification may fail if the process cannot reduce the number of points in the file to below the limit. Also the simplification only reduces the number of points in the file, so a shapfile will still fail if the file size  is too large or there are too many features.
+The simplification may fail if the process cannot reduce the number of points in the file to below the limit. Also the simplification only reduces the number of points in the file, so a shapefile will still fail if the file size  is too large or there are too many features.
 
 #### <a name="c-additional-attribute"></a> Find collections by additional attribute
 
