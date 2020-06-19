@@ -131,7 +131,7 @@
     (debug (format "CONDITIONS: %s" conditions))
     [conditions point-count]))
 
-(defn- error-if
+(defn error-if
   "Throw a service error with the given message if `f` applied to `item` is true. 
   Otherwise just return `item`. Removes the temporary file/directory `temp-file` first."
   [item f message ^File temp-file]

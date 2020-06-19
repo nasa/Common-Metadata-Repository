@@ -31,14 +31,22 @@
 
 (def formats
   "Shapfile formats to be tested"
-  {"ESRI" {:extension "zip" :mime-type mt/shapefile}
-   "GeoJSON" {:extension "geojson" :mime-type mt/geojson}
+  ;; ESRI is handled separately
+  {"GeoJSON" {:extension "geojson" :mime-type mt/geojson}
    "KML" {:extension "kml" :mime-type mt/kml}})
 
 (deftest granule-shapefile-simlpification-failure-cases
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
   (let [saved-shapefile-max-size (shapefile-middleware/max-shapefile-size)
         _ (side/eval-form `(shapefile-middleware/set-max-shapefile-size! 2500000))]
+    (testing "Missing shapefile"
+      (is (re-find #"Missing shapefile"
+                   (first (:errors (search/find-refs-with-multi-part-form-post
+                                    :granule
+                                    [{:name "simplify-shapefile"
+                                      :content "true"}
+                                     {:name "provider"
+                                      :content "PROV1"}]))))))
     (testing "Failure cases"
       (are3 [shapefile regex]
             (is (re-find regex
@@ -60,7 +68,9 @@
 
 (deftest granule-shapefile-search-simplification-test
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
-  (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+  (let [saved-shapefile-max-size (shapefile-middleware/max-shapefile-size)
+        _ (side/eval-form `(shapefile-middleware/set-max-shapefile-size! 2000000))
+        geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                                                                                     :EntryTitle "E1"
                                                                                     :ShortName "S1"
                                                                                     :Version "V1"}))
@@ -162,4 +172,45 @@
               "Many Point Polygons Africa"
               "africa"
               [12861 2257]
-              [normal-line very-wide-cart wide-south-cart wide-south polygon-with-holes whole-world normal-brs normal-line-cart])))))
+              [normal-line very-wide-cart wide-south-cart wide-south polygon-with-holes whole-world normal-brs normal-line-cart])))
+
+    ;; ESRI must be tested separately fromn other formats, because it is simplified down to slightly
+    ;; fewer points than the other formats. I'm fairly certain that this is due to the increased
+    ;; precision of the the way ESRI stores coordinates since it is a binry format.
+    (testing "Search by ESRI shapefile with simplification"
+      (are3 [shapefile point-counts items]
+            (let [found (search/find-refs-with-multi-part-form-post
+                         :granule
+                         [{:name "shapefile"
+                           :content (io/file (io/resource (str "shapefiles/" shapefile ".zip")))
+                           :mime-type mt/shapefile}
+                          {:name "simplify-shapefile"
+                           :content "true"}
+                          {:name "provider"
+                           :content "PROV1"}])
+                  [original-point-count new-point-count] point-counts
+                  headers (:headers found)]
+              (is (= {"original-point-count" original-point-count "new-point-count" new-point-count}
+                     (json/parse-string (get headers "CMR-Shapfile-Simplification"))))
+              (d/assert-refs-match items found))
+
+            "Polygons that are already simple enough are not reduced further"
+            "box"
+            [5 5]
+            [whole-world very-wide-cart washington-dc richmond]
+
+            "Many Points Polygons South America"
+            "south_america"
+            [49876 3480]
+            [wide-south-cart wide-south whole-world]
+
+            "Many Points Polygons South America with Hole"
+            "south_america_with_hole"
+            [49881 3485]
+            [wide-south-cart wide-south whole-world]
+
+            "Many Point Polygons Africa"
+            "africa"
+            [12861 2252]
+            [normal-line very-wide-cart wide-south-cart wide-south polygon-with-holes whole-world normal-brs normal-line-cart]))
+    (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-size))))
