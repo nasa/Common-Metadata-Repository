@@ -39,6 +39,9 @@
    ; Don't bother storing term positions or term frequencies in this field
    :index_options "docs"})
 
+(def binary-field-mapping
+  {:type "binary"})
+
 (def date-field-mapping
   {:type "date"})
 
