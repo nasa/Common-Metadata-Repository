@@ -3,7 +3,6 @@
   integration tests."
   (:require
    [cmr.common.mime-types :as mime-types]
-   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.umm-spec.models.umm-service-models :as umm-s]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]))
@@ -17,9 +16,7 @@
    :Version "1.9"
    :Description "AIRS Level-3 retrieval product created using AIRS IR, AMSU without HSB."
    :URL {:URLValue "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
-         :Description "OPeNDAP Service"
-         :Type "GET SERVICE"
-         :URLContentType "DistributionURL"}
+         :Description "OPeNDAP Service"}
    :ServiceKeywords [
       {:ServiceCategory "DATA ANALYSIS AND VISUALIZATION"
        :ServiceTopic "VISUALIZATION/IMAGE PROCESSING"}]
@@ -107,6 +104,17 @@
              :StateProvince "ST"}
             attribs))))
 
+(defn online-resource
+  "Returns an online-resource suitable as an element."
+  ([]
+    (online-resource {}))
+  ([attribs]
+   (umm-s/map->OnlineResourceType
+     (merge {:Linkage "http://example.com/file"
+             :Description "description"
+             :Name "PROJECT HOME PAGE"}
+            attribs))))
+
 (defn contact-info
   "Returns a ContactInformationType suitable as an element in a
   ContactInformation collection."
@@ -114,7 +122,7 @@
    (contact-info {}))
   ([attribs]
    (umm-s/map->ContactInformationType
-     (merge {:RelatedUrls [(data-umm-cmn/related-url)]
+     (merge {:OnlineResources [(online-resource)]
              :ContactMechanisms [(contact-mechanism)]
              :Addresses [(address)]}
             attribs))))
@@ -143,17 +151,6 @@
              :ServiceSpecificTerm "A specific service term"}
             attribs))))
 
-(defn online-resource
-  "Returns an online-resource suitable as an element."
-  ([]
-    (online-resource {}))
-  ([attribs]
-   (umm-s/map->OnlineResourceType
-     (merge {:Linkage "http://example.com/file"
-             :Description "description"
-             :Name "HOME PAGE"}
-            attribs))))
-
 (defn service-organization
   "Returns a ServiceOrganizationType suitable as an element in a
   ServiceOrganizations collection."
@@ -174,19 +171,5 @@
   ([attribs]
    (umm-s/map->URLType
      (merge {:URLValue "http://example.com/file"
-             :Description "description"
-             :Type "GET SERVICE"
-             :Subtype "SUBSETTER"
-             :URLContentType "CollectionURL"}
+             :Description "description"}
             attribs))))
-
-(defn related-url
-  "Creates related url for online_only test"
-  ([]
-   (related-url {}))
-  ([attribs]
-   (umm-s/map->RelatedUrlType (merge {:URL "http://example.com/file"
-                                      :Description "description"
-                                      :Type "GET SERVICE"
-                                      :URLContentType "CollectionURL"}
-                                     attribs))))

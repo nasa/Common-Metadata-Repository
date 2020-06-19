@@ -32,7 +32,7 @@
        (apply sorted-set)
        (string/join \space)))
 
-(defn- contact-group->keywords
+(defn contact-group->keywords
   "Converts a contact group into a vector of terms for keyword searches."
   [contact-group]
   (let [{group-name :GroupName
@@ -40,7 +40,7 @@
     (concat [group-name]
             roles)))
 
-(defn- contact-person->keywords
+(defn contact-person->keywords
   "Converts a compound field into a vector of terms for keyword searches."
   [contact-person]
   (let [{first-name :FirstName
@@ -108,7 +108,7 @@
             instrument-techniques
             platform-short-names)))
 
-(defn- names->keywords
+(defn names->keywords
   "Converts a compound field into a vector of terms for keyword searches."
   [data]
   (let [{long-name :LongName
@@ -146,26 +146,13 @@
   (let [{:keys [Category DetailedVariable Term Topic VariableLevel1 VariableLevel2 VariableLevel3]} science-keyword]
     [Category DetailedVariable Term Topic VariableLevel1 VariableLevel2 VariableLevel3]))
 
-(defn- service-keyword->keywords
-  "Converts a service keyword into a vector of terms for keyword searches."
-  [service-keyword]
-  (let [{:keys [ServiceCategory ServiceSpecificTerm ServiceTerm ServiceTopic]} service-keyword]
-    [ServiceCategory ServiceSpecificTerm ServiceTerm ServiceTopic]))
-
 (defn- tool-keyword->keywords
   "Converts a tool keyword into a vector of terms for keyword searches."
   [tool-keyword]
   (let [{:keys [ToolCategory ToolSpecificTerm ToolTerm ToolTopic]} tool-keyword]
     [ToolCategory ToolSpecificTerm ToolTerm ToolTopic]))
 
-(defn- service-organization->keywords
-  "Converts a service organization into a vector of terms for keyword searches."
-  [service-organization]
-  (let [{roles :Roles} service-organization]
-    (concat (names->keywords service-organization)
-            roles)))
-
-(defn- organization->keywords
+(defn organization->keywords
   "Converts an organization into a vector of terms for keyword searches."
   [organization]
   (let [{roles :Roles} organization]
@@ -193,21 +180,8 @@
   is the same as the field name. So only fields that has an extract keyword
   different from the field name needs to be listed.
 
-
   See `fields->fn-mapper`, below."
   {:ScienceKeywords #(mapcat science-keyword->keywords (:ScienceKeywords %))})
-
-(def ^:private service-fields->fn-mapper
-  "A data structure that maps UMM service field names to functions that
-  extract keyword data for those fields. Intended only to be used as part
-  of a larger map for multiple field types.
-
-  See `fields->fn-mapper`, below."
-  {:ContactGroups #(mapcat contact-group->keywords (:ContactGroups %))
-   :ContactPersons #(mapcat contact-person->keywords (:ContactPersons %))
-   :URL #(url->keywords (:URL %))
-   :ServiceKeywords #(mapcat service-keyword->keywords (:ServiceKeywords %))
-   :ServiceOrganizations #(mapcat service-organization->keywords (:ServiceOrganizations %))})
 
 (def ^:private tool-fields->fn-mapper
   "A data structure that maps UMM tool field names to functions that
@@ -253,7 +227,6 @@
   By default, the extract keyword is the same as the field name. So only fields
   that has an extract keyword different from the field name needs to be listed."
   (merge variable-fields->fn-mapper
-         service-fields->fn-mapper
          tool-fields->fn-mapper
          collection-fields->fn-mapper))
 
@@ -268,7 +241,7 @@
   [field]
   (get fields->fn-mapper field field))
 
-(defn- flatten-collections
+(defn flatten-collections
   "This function is used to conditionally prepare schema texutal field data,
   in the form of collections of strings or strings, to be used by higher
   order functions that operate on flat collections of textual field data. As
