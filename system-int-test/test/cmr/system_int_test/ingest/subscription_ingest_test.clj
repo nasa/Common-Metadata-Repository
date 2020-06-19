@@ -33,6 +33,20 @@
           response (ingest/ingest-concept concept {:token user1-token})]
       (is (= 201 (:status response))))))
 
+(deftest subscription-delete-on-prov2-test
+  (testing "delete on PROV2, guest is not granted update permission for SUBSCRIPTION_MANAGEMENT ACL"
+    (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV2"})
+          guest-token (echo-util/login-guest (system/context))
+          response (ingest/delete-concept concept {:token guest-token})]
+      (is (= ["You do not have permission to perform that action."] (:errors response)))))
+  (testing "delete on PROV2, registered user is granted update permission for SUBSCRIPTION_MANAGEMENT ACL"
+    (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV2"})
+          user1-token (echo-util/login (system/context) "user1")
+          response (ingest/delete-concept concept {:token user1-token})]
+      ;; it passes the permission validation, and gets to the point where the subscription doesn't exist
+      ;; since we didn't ingest it.
+      (is (= 404 (:status response))))))
+
 (deftest subscription-ingest-test
   (testing "ingest of a new subscription concept"
     (let [concept (subscription-util/make-subscription-concept)
