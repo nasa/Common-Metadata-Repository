@@ -24,8 +24,8 @@
                                                                   [:read :update]
                                                                   [:read :update])
                                     (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV2"}
-                                                                  [:read :update]
-                                                                  [:read :update])
+                                                                  [:read]
+                                                                  [:read])
                                     (dev-system/freeze-resume-time-fixture)]))
 
 (defn- assert-ingest-succeeded
@@ -288,7 +288,7 @@
      ;; it has the INGEST_MANAGEMENT_ACL permissions, it still fails the ingest and delete.
      (testing "ingest subscription with INGEST_MANAGEMENT_ACL permission, but without SUBSCRIPTION_MANAGEMENT permission."
       (are3 [token]
-            (assert-ingest-succeeded
+            (assert-ingest-no-permission
               (ingest/ingest-concept subscription-np {:token token
                                                       :allow-failure? true}))
             "provider-admin-update-token can not ingest"
@@ -299,7 +299,7 @@
             provider-admin-update-delete-token)
 
       (are3 [token]
-            (assert-ingest-succeeded
+            (assert-ingest-no-permission
               (ingest/delete-concept subscription-np {:token token
                                                       :allow-failure? true}))
             "provider-admin-update-token can not delete"
