@@ -46,21 +46,12 @@
         prov-admin-update-group-concept-id (echo-util/get-or-create-group
                                             (s/context)
                                             "prov-admin-update-group")
-        prov-admin-update-group-concept-id-np (echo-util/get-or-create-group
-                                                (s/context)
-                                                "prov-admin-update-group-np")
         prov-admin-read-update-group-concept-id (echo-util/get-or-create-group
                                                  (s/context)
                                                  "prov-admin-read-update-group")
-        prov-admin-read-update-group-concept-id-np (echo-util/get-or-create-group
-                                                     (s/context)
-                                                     "prov-admin-read-update-group-np")
         prov-admin-update-delete-group-concept-id (echo-util/get-or-create-group
                                                    (s/context)
                                                    "prov-admin-update-delete-group")
-        prov-admin-update-delete-group-concept-id-np (echo-util/get-or-create-group
-                                                       (s/context)
-                                                       "prov-admin-update-delete-groupi-np")
         prov-admin-read-update-delete-group-concept-id (echo-util/get-or-create-group
                                                         (s/context)
                                                         "prov-admin-read-update-delete-group")
@@ -85,27 +76,14 @@
                                      "prov-admin-update"
                                      [prov-admin-update-group-concept-id
                                       plain-group-concept-id3])
-        provider-admin-update-token-np (echo-util/login
-                                         (s/context)
-                                         "prov-admin-update"
-                                         [prov-admin-update-group-concept-id-np
-                                         plain-group-concept-id3])
         provider-admin-read-update-token (echo-util/login
                                           (s/context) "prov-admin-read-update"
                                           [prov-admin-read-update-group-concept-id
                                            plain-group-concept-id3])
-        provider-admin-read-update-token-np (echo-util/login
-                                              (s/context) "prov-admin-read-update"
-                                              [prov-admin-read-update-group-concept-id-np
-                                              plain-group-concept-id3])
         provider-admin-update-delete-token (echo-util/login
                                             (s/context) "prov-admin-update-delete"
                                             [prov-admin-update-delete-group-concept-id
                                              plain-group-concept-id3])
-        provider-admin-update-delete-token-np (echo-util/login
-                                                (s/context) "prov-admin-update-delete"
-                                                [prov-admin-update-delete-group-concept-id-np
-                                                plain-group-concept-id3])
         another-prov-admin-token (echo-util/login
                                   (s/context)
                                   "another-prov-admin"
@@ -123,7 +101,7 @@
         _ (echo-util/grant-group-provider-admin
            (s/context) prov-admin-update-group-concept-id "PROV1" :update)
         _ (echo-util/grant-group-provider-admin
-           (s/context) prov-admin-update-group-concept-id-np "PROV2" :update)
+           (s/context) prov-admin-update-group-concept-id "PROV2" :update)
         _ (echo-util/grant-group-provider-admin
            (s/context)
            prov-admin-read-update-group-concept-id
@@ -132,7 +110,7 @@
            :update)
         _ (echo-util/grant-group-provider-admin
            (s/context)
-           prov-admin-read-update-group-concept-id-np
+           prov-admin-read-update-group-concept-id
            "PROV2"
            :read
            :update)
@@ -144,7 +122,7 @@
            :update)
         _ (echo-util/grant-group-provider-admin
            (s/context)
-           prov-admin-update-delete-group-concept-id-np
+           prov-admin-update-delete-group-concept-id
            "PROV2"
            :delete
            :update)
@@ -308,31 +286,28 @@
      ;; Ingest and delete of subscriptions are controlled by both INGEST_MANAGEMENT_ACL and SUBSCRIPTION+MANAGEMENT ACLs.
      ;; subscriptoin-np is ingested on PROV2, which has no SUBSCRIPTION_MANAGEMENT permission to ingest. so, even though
      ;; it has the INGEST_MANAGEMENT_ACL permissions, it still fails the ingest and delete.
-     ;; Note: *-np tokens are specifically created to test SUBSCRIPTION_MANAGEMENT ACL permisions, It can not share the tokens
-     ;; with the later tests on PROV1, even though this test is on PROV2. This is  because there is a bug in the cache that
-     ;; only matches token with the permissions without considering provider-id values.
      (testing "ingest subscription with INGEST_MANAGEMENT_ACL permission, but without SUBSCRIPTION_MANAGEMENT permission."
       (are3 [token]
             (assert-ingest-no-permission
               (ingest/ingest-concept subscription-np {:token token
                                                       :allow-failure? true}))
             "provider-admin-update-token can not ingest"
-            provider-admin-update-token-np
+            provider-admin-update-token
             "provider-admin-read-update token can not ingest"
-            provider-admin-read-update-token-np
+            provider-admin-read-update-token
             "provider-admin-update-delete token can not ingest"
-            provider-admin-update-delete-token-np)
+            provider-admin-update-delete-token)
 
       (are3 [token]
             (assert-ingest-no-permission
               (ingest/delete-concept subscription-np {:token token
                                                       :allow-failure? true}))
             "provider-admin-update-token can not delete"
-            provider-admin-update-token-np
+            provider-admin-update-token
             "provider-admin-read-update token can not delete"
-            provider-admin-read-update-token-np
+            provider-admin-read-update-token
             "provider-admin-update-delete token can not delete"
-            provider-admin-update-delete-token-np))
+            provider-admin-update-delete-token))
 
     ;; The assert-ingest-succeeded tests below are identical to the tests above,
     ;; except that the subscription is on PROV1, which has both the INGEST and SUBSCRIPTION ACL permissions.
