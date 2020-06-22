@@ -68,14 +68,14 @@
               (-> feature .getDefaultGeometryProperty .getDescriptor .getCoordinateReferenceSystem))
         feature-type (.getFeatureType feature)
         feature-builder (SimpleFeatureBuilder. feature-type)
-        properties (.getProperties feature)
-        _ (doseq [p properties
-                  :let [value  (.getValue p)]]
-            (if (geo/geometry? value)
-              (.add feature-builder (simplify-geometry (shapefile/transform-to-epsg-4326 value crs)
-                                                       tolerance
-                                                       mime-type))
-              (.add feature-builder value)))]
+        properties (.getProperties feature)]
+    (doseq [p properties
+            :let [value  (.getValue p)]]
+      (if (geo/geometry? value)
+        (.add feature-builder (simplify-geometry (shapefile/transform-to-epsg-4326 value crs)
+                                                 tolerance
+                                                 mime-type))
+        (.add feature-builder value)))
     (.buildFeature feature-builder nil)))
 
 (defn- simplify-features

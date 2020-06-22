@@ -174,9 +174,9 @@
               [12861 2257]
               [normal-line very-wide-cart wide-south-cart wide-south polygon-with-holes whole-world normal-brs normal-line-cart])))
 
-    ;; ESRI must be tested separately fromn other formats, because it is simplified down to slightly
+    ;; ESRI must be tested separately from other formats, because it is simplified down to slightly
     ;; fewer points than the other formats. I'm fairly certain that this is due to the increased
-    ;; precision of the the way ESRI stores coordinates since it is a binry format.
+    ;; precision of the the way ESRI stores coordinates since it is a binary format.
     (testing "Search by ESRI shapefile with simplification"
       (are3 [shapefile point-counts items]
             (let [found (search/find-refs-with-multi-part-form-post

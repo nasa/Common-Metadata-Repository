@@ -39,7 +39,7 @@
 
 (defconfig enable-shapefile-parameter-flag
   "Flag that indicates if we allow spatial searching by shapefile."
-  {:default true :type Boolean})
+  {:default false :type Boolean})
 
 (defconfig max-shapefile-features
   "The maximum number of feature a shapefile can have"
