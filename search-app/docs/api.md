@@ -285,7 +285,8 @@ These are query parameters that control what extra data is included with collect
   * The response headers include the following:
     CMR-Hits and CMR-Took indicate the number of result hits and the time to build and execute the query, respectively.
     CMR-Request-Id and X-Request-Id return the same value - the value passed in through CMR-Request-Id request header or X-Request-Id request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors.
-    CMR-Shapefile-Simplification returns the original shapefile point count and the reduced point count when shapefile simplification is requested
+    CMR-Shapefile-Original-Point-Count returns the original shapefile point count when shapefile simplification is requested 
+    CMR-Shapefile-Simplified-Point-Count return the reduced point count when shapefile simplification is requested
 
 #### <a name="extensions"></a> Extensions
 

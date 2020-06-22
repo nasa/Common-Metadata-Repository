@@ -60,7 +60,7 @@
   dev-system/resources/cors_headers_test.html"
   [content-type results]
   (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
-          CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Timed-Out"
+          CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count, CMR-Shapefile-Simplified-Point-Count",
           CORS_ORIGIN_HEADER "*"}
          (when (:timed-out results) {TIMED_OUT_HEADER "true"})
          (when (:hits results) {HITS_HEADER (str (:hits results))})
@@ -72,10 +72,10 @@
   [{:keys [results result-format] :as response}]
   {:status  200
    :headers (search-response-headers
-              (if (string? result-format)
-                result-format
-                (mt/format->mime-type result-format))
-              response)
+             (if (string? result-format)
+               result-format
+               (mt/format->mime-type result-format))
+             response)
    :body    results})
 
 (def options-response
