@@ -512,7 +512,6 @@
   (let [parsed (-> response :body fx/parse-str)
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
-        headers (:headers response)
         scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
         refs (map (fn [ref-elem]
                     (util/remove-nil-keys
@@ -530,7 +529,6 @@
     (util/remove-nil-keys
      {:refs refs
       :hits hits
-      :headers headers
       :scroll-id scroll-id
       :took took
       :facets facets})))
@@ -549,6 +547,15 @@
     (util/remove-nil-keys
      {:refs refs
       :type references-type})))
+
+(defn- parse-reference-response-with-headers
+  "Parse the response and include headers"
+  [echo-compatible? response]
+  (let [headers (:headers response)
+        parsed (parse-reference-response echo-compatible? response)]
+    (if headers
+      (merge parsed {:headers headers})
+      parsed)))
 
 (defn- parse-echo-facets-response
   "Returns the parsed facets by parsing the given facets according to catalog-rest facets format"
@@ -598,7 +605,7 @@
                                 :multipart form
                                 :throw-exceptions true
                                 :connection-manager (s/conn-mgr)})]
-     (parse-reference-response false response))))
+     (parse-reference-response-with-headers false response))))
 
 (defn find-refs-with-json-query
   "Returns the references that are found by searching using a JSON request."
