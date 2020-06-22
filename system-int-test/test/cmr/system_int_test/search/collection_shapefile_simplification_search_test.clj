@@ -114,8 +114,8 @@
                              :content "PROV1"}])
                     [original-point-count new-point-count] point-counts
                     headers (:headers found)]
-                (is (= {"original-point-count" original-point-count "new-point-count" new-point-count}
-                       (json/parse-string (get headers "CMR-Shapfile-Simplification"))))
+                (is (= (str original-point-count) (get headers "CMR-Shapefile-Original-Point-Count")))
+                (is (= (str new-point-count) (get headers "CMR-Shapefile-Simplified-Point-Count")))
                 (d/assert-refs-match items found))
 
               "Polygons that are already simple enough are not reduced further"
@@ -141,8 +141,8 @@
     ;; ESRI must be tested separately from other formats, because it is simplified down to slightly
     ;; fewer points than the other formats. I'm fairly certain that this is due to the increased
     ;; precision of the the way ESRI stores coordinates since it is a binary format.
-    (testing "Search by ESRI shapefile with simplification")
-    (are3 [shapefile point-counts items]
+    (testing "Search by ESRI shapefile with simplification"
+      (are3 [shapefile point-counts items]
           (let [found (search/find-refs-with-multi-part-form-post
                        :collection
                        [{:name "shapefile"
@@ -154,8 +154,8 @@
                          :content "PROV1"}])
                 [original-point-count new-point-count] point-counts
                 headers (:headers found)]
-            (is (= {"original-point-count" original-point-count "new-point-count" new-point-count}
-                   (json/parse-string (get headers "CMR-Shapfile-Simplification"))))
+            (is (= (str original-point-count) (get headers "CMR-Shapefile-Original-Point-Count")))
+            (is (= (str new-point-count) (get headers "CMR-Shapefile-Simplified-Point-Count")))
             (d/assert-refs-match items found))
 
           "Polygons that are already simple enough are not reduced further"
@@ -177,4 +177,4 @@
           "africa"
           [12861 2252]
           [normal-line very-wide-cart wide-south-cart wide-south polygon-with-holes whole-world normal-brs normal-line-cart])
-    (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-size))))
+    (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-size)))))

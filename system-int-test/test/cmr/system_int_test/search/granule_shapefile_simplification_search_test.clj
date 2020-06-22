@@ -150,8 +150,8 @@
                              :content "PROV1"}])
                     [original-point-count new-point-count] point-counts
                     headers (:headers found)]
-                (is (= {"original-point-count" original-point-count "new-point-count" new-point-count}
-                       (json/parse-string (get headers "CMR-Shapfile-Simplification"))))
+                (is (= (str original-point-count) (get headers "CMR-Shapefile-Original-Point-Count")))
+                (is (= (str new-point-count) (get headers "CMR-Shapefile-Simplified-Point-Count")))
                 (d/assert-refs-match items found))
 
               "Polygons that are already simple enough are not reduced further"
@@ -190,8 +190,8 @@
                            :content "PROV1"}])
                   [original-point-count new-point-count] point-counts
                   headers (:headers found)]
-              (is (= {"original-point-count" original-point-count "new-point-count" new-point-count}
-                     (json/parse-string (get headers "CMR-Shapfile-Simplification"))))
+              (is (= (str original-point-count) (get headers "CMR-Shapefile-Original-Point-Count")))
+              (is (= (str new-point-count) (get headers "CMR-Shapefile-Simplified-Point-Count")))
               (d/assert-refs-match items found))
 
             "Polygons that are already simple enough are not reduced further"

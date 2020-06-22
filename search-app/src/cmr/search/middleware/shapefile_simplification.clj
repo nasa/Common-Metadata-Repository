@@ -30,7 +30,8 @@
    (org.opengis.feature.type FeatureType Name)
    (org.locationtech.jts.simplify TopologyPreservingSimplifier)))
 
-(def SHAPEFILE_SIMPLIFICATION_HEADER "CMR-Shapfile-Simplification")
+(def SHAPEFILE_SIMPLIFIED_COUNT_HEADER "CMR-Shapefile-Simplified-Point-Count")
+(def SHAPEFILE_ORIGINAL_COUNT_HEADER "CMR-Shapefile-Original-Point-Count")
 
 (defconfig shapefile-simplifier-start-tolerance
   "The tolerance to use for the first pass at shapefile simplification"
@@ -62,7 +63,7 @@
   (TopologyPreservingSimplifier/simplify geometry tolerance))
 
 (defn- simplify-feature
-  "Simplify a feature. Returns simplfied feature and information about the simplificiton"
+  "Simplify a feature. Returns simplified feature and information about the simplification"
   [feature tolerance mime-type]
   (let [crs (when (.getDefaultGeometryProperty feature)
               (-> feature .getDefaultGeometryProperty .getDescriptor .getCoordinateReferenceSystem))
@@ -119,12 +120,12 @@
 
 (defn- simplify-data
   "Given an ArrayList of Features simplify the Features and return stats about the process
-  along with a new shapfile info map to replace the one in the search reqeust"
+  along with a new shapefile info map to replace the one in the search reqeust"
   [filename ^ArrayList features feature-type mime-type]
   (let [[simplified-features stats] (iterative-simplify features mime-type)
         [original-point-count new-point-count] stats]
-    [{:original-point-count original-point-count
-      :new-point-count new-point-count}
+    [[original-point-count
+      new-point-count]
      {:tempfile simplified-features
       :filename filename
       :content-type mime-type
@@ -133,7 +134,7 @@
       :size -1}]))
 
 (defn- simplify-esri
-  "Simplfies an ESRI shapefile. Returns statistics about the simplification and information
+  "Simplifies an ESRI shapefile. Returns statistics about the simplification and information
   about the new file."
   [shapefile-info]
   (try
@@ -263,9 +264,7 @@
   [request]
   (when (= "true" (get-in request [:params "simplify-shapefile"]))
     (if-let [tmp-file (get-in request [:params "shapefile" :tempfile])]
-      (let [[stats result] (simplify (get-in request [:params "shapefile"]))
-            header (json/generate-string stats)]
-        [result header])
+      (simplify (get-in request [:params "shapefile"]))
       (errors/throw-service-error :bad-request "Missing shapefile"))))
 
 (defn shapefile-simplifier
@@ -274,10 +273,11 @@
   [handler default-format-fn]
   (fn [{context :request-context :as request}]
     (try
-      (if-let [[result header] (simplify-shapefile request)]
+      (if-let [[[original-point-count new-point-count] result] (simplify-shapefile request)]
         (-> (assoc-in request [:params "shapefile"] result)
             (handler)
-            (assoc-in [:headers SHAPEFILE_SIMPLIFICATION_HEADER] header))
+            (assoc-in [:headers SHAPEFILE_ORIGINAL_COUNT_HEADER] (str original-point-count))
+            (assoc-in [:headers SHAPEFILE_SIMPLIFIED_COUNT_HEADER] (str new-point-count)))
         (handler request))
       (catch Exception e
         (let [{:keys [type errors]} (ex-data e)]
