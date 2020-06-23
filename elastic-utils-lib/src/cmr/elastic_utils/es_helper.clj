@@ -13,7 +13,8 @@
   "Performs a search query across one or more indexes and one or more mapping types"
   [conn index mapping-type opts]
   (let [qk [:search_type :scroll :routing :preference :ignore_unavailable]
-        qp (select-keys opts qk)
+        qp (merge {:track_total_hits true}
+                  (select-keys opts qk))
         body (apply dissoc (concat [opts] qk))]
     (rest/post conn (rest/search-url conn (join-names index))
                {:content-type :json
