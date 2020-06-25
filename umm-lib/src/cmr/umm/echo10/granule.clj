@@ -227,4 +227,4 @@
 (defn validate-xml
   "Validates the XML against the Granule ECHO10 schema."
   [xml]
-  (v/validate-xml (io/resource "xml-schemas/echo10/Granule.xsd") xml))
+  (v/validate-xml (io/resource "schema/echo10/Granule.xsd") xml))
