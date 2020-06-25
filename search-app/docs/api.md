@@ -76,6 +76,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Line](#c-line)
         * [Circle](#c-circle)
     * [Shapefile](#c-shapefile)
+    * [Shapefile Simplification](#c-shapefile-simplification)
     * [Additional Attribute](#c-additional-attribute)
     * [Author](#c-author)
     * [With/without granules](#c-has-granules)
@@ -98,6 +99,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Line](#g-line)
         * [Circle](#g-circle)
     * [Shapefile](#g-shapefile)
+    * [Shapefile Simplification](#g-shapefile-simplification)
     * [Orbit number](#g-orbit-number)
     * [Orbit equator crossing longitude](#g-orbit-equator-crossing-longitude)
     * [Orbit equator crossing date](#g-orbit-equator-crossing-date)
@@ -283,6 +285,8 @@ These are query parameters that control what extra data is included with collect
   * The response headers include the following:
     CMR-Hits and CMR-Took indicate the number of result hits and the time to build and execute the query, respectively.
     CMR-Request-Id and X-Request-Id return the same value - the value passed in through CMR-Request-Id request header or X-Request-Id request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors.
+    CMR-Shapefile-Original-Point-Count returns the original shapefile point count when shapefile simplification is requested 
+    CMR-Shapefile-Simplified-Point-Count return the reduced point count when shapefile simplification is requested
 
 #### <a name="extensions"></a> Extensions
 
@@ -1717,13 +1721,18 @@ A shapefile can be uploaded with a query to restrict results to those that overl
 
 Currently the only supported shapefile formats are ESRI, KML, and GeoJSON. For ESRI all the sub-files (*.shp, *.shx, etc.) must be uploaded in a single zip file.
 
+The following limits apply to uploaded shapefiles:
+* Shapefiles are limited in size to 1,000,000 bytes.
+* Shapefiles are limited to 500 features
+* Shapefiles are limited to 5000 points.
+
 Regarding polygon ring winding, ESRI shapefiles **must** follow the ESRI standard, i.e., exterior (boundary) rings are clockwise, and holes are counter-clockwise. GeoJSON **must** follow the RFC7946 specification, i.e., exterior rings are counterclockwise, and holes are clockwise. KML **must** follow the KML 2.2 specification, i.e., _all_ polygon rings are counter-clockwise.
 
 Shapefile upload is only supported using POST with `multipart/form-data` and the mime type for the shapefile must be given as `application/shapefile+zip`, `application/geo+json`, or `application/vnd.google-earth.kml+xml`.
 
 Examples:
 
-  **ESRI Shapfile**
+  **ESRI Shapefile**
 
   curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
@@ -1735,9 +1744,20 @@ Examples:
 
   curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.kml;type=application/vnd.google-earth.kml+xml" -F "provider=PROV1"
 
-Internally a WGS 84 Coordinate Reference System (CRS) is used. The system will attempt to tranform shapefile geometry that uses a differnt CRS, but this is not guaranteed to work and the request will be rejected if a suitable tranformation is not found.
+Internally a WGS 84 Coordinate Reference System (CRS) is used. The system will attempt to transform shapefile geometry that uses a different CRS, but this is not guaranteed to work and the request will be rejected if a suitable transformation is not found.
 
 **NOTE:** This is an experimental feature and may not be enabled in all environments.
+
+#### <a name="c-shapefile-simplification"></a> Simplifying shapefiles during collection search
+Shapefiles are limited to 5000 points by default. A user using a shapefile with more points than the CMR supported limit can use the `simplify-shapefile` parameter to request that the CMR try to simplify (reduce the number of points) the shapefile so that it is under the limit.
+
+Example:
+
+  curl -XPOST "%CMR-ENDPOINT%/collections" -F "simplify-shapefile=true"  -F "shapefile=@africa.zip;type=application/shapefile+zip" -F "provider=PROV1"
+
+Note that the simplification process attempts to preserve topology, i.e., the relationship between polygon outer boundaries and holes. The process uses the [Douglas-Peucker algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm) and as such may result in geometries with less coverage than the original shapefile and potentially a loss of matching results.
+
+The simplification may fail if the process cannot reduce the number of points in the file to below the limit. Also the simplification only reduces the number of points in the file, so a shapefile will still fail if the file size is too large or there are too many features.
 
 #### <a name="c-additional-attribute"></a> Find collections by additional attribute
 
@@ -1970,11 +1990,17 @@ The parameters used for searching granules by spatial are the same as the spatia
 
 #### <a name="g-shapefile"></a> Find granules by shapefile
 
-As with collections, a shapefile can be uploaded to find granules that overlap the shapefile's geometry. (See [Find collections by shapefile](#c-shapefile) for more details.)
+As with collections, a shapefile can be uploaded to find granules that overlap the shapefile's geometry. See [Find collections by shapefile](#c-shapefile) for more details.
 
   curl -XPOST "%CMR-ENDPOINT%/granules" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
 **NOTE**: This is an experimental feature and may not be enabled in all environments.
+
+#### <a name="g-shapefile-simplification"></a> Simplifying shapefiles during granule search
+
+As with collections, an uplodaed shapefile can be simplified by setting the `simplfiy-shapefile` parameter to `true`. See [Simplifying shapefiles during collection search](#c-shapefile-simplification) for more details.
+
+  curl -XPOST "%CMR-ENDPOINT%/granules" -F "simplify-shapefile=true" -F "shapefile=@africa.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
 #### <a name="g-orbit-number"></a> Find granules by orbit number
 
@@ -4670,7 +4696,7 @@ __Sample response__
 ```
 #### <a name="subscription-access-control"></a> Subscription Access Control
 
-Access to subscription is granted through the provider via the INGEST_MANAGEMENT_ACL and EMAIL_SUBSCRIPTION_MANAGEMENT
+Search permission for subscription is granted through the provider via the SUBSCRIPTION_MANAGEMENT ACL. In order to be able to search for a subscription for a given provider, read permission has to be granted to the user through SUBSCRIPTION_MANAGEMENT ACL for the provider.
 
 ### <a name="community-usage-metrics"></a> Community Usage Metrics
 

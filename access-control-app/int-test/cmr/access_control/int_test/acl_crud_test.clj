@@ -1335,11 +1335,11 @@
         subscription-acl {:group_permissions [{:user_type "guest"
                                                :permissions ["read"]}
                                               {:user_type "registered"
-                                               :permissions ["read" "update"]}
+                                               :permissions ["update"]}
                                               {:group_id (:concept_id group1) 
-                                               :permissions ["read" "create" "delete" "update"]}]
+                                               :permissions ["read" "update"]}]
                           :provider_identity {:provider_id "PROV1"
-                                              :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}}
+                                              :target "SUBSCRIPTION_MANAGEMENT"}}
         acl (access-control/create-acl (test-util/conn-context)
                                        subscription-acl 
                                        {:token token})]
@@ -1350,30 +1350,30 @@
 
     (testing "EMAIL SUBSCRIPTION Acl permissions"
       (are3 [perms params]
-        (is (= {"EMAIL_SUBSCRIPTION_MANAGEMENT" perms}
+        (is (= {"SUBSCRIPTION_MANAGEMENT" perms}
                (json/parse-string
                  (access-control/get-permissions
                   (test-util/conn-context)
                   params
                   {:token token}))))
 
-        "user in group permissions EMAIL_SUBSCRIPTION_MANAGEMENT"
-        ["read" "create" "update" "delete"]
+        "user in group permissions SUBSCRIPTION_MANAGEMENT"
+        ["read" "update"]
         {:user_id "user1"
          :provider "PROV1"
-         :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}
+         :target "SUBSCRIPTION_MANAGEMENT"}
 
-        "guest permissions EMAIL_SUBSCRIPTION_MANAGEMENT"
+        "guest permissions SUBSCRIPTION_MANAGEMENT"
         ["read"]
         {:user_type "guest"
          :provider "PROV1"
-         :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}
+         :target "SUBSCRIPTION_MANAGEMENT"}
 
-        "user not in group permissions EMAIL_SUBSCRIPTION_MANAGEMENT"
-        ["read" "update"]
+        "user not in group permissions SUBSCRIPTION_MANAGEMENT"
+        ["update"]
         {:user_id "user2"
          :provider "PROV1"
-         :target "EMAIL_SUBSCRIPTION_MANAGEMENT"}))))
+         :target "SUBSCRIPTION_MANAGEMENT"}))))
 
 (deftest CMR-5797-draft-mmt-acl-test
   (let [token (echo-util/login (test-util/conn-context) "admin")

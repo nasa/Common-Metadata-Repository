@@ -184,10 +184,10 @@
 
 (defn has-subscription-management-permission?
   "Returns true if the user identified by the token in the cache has been granted
-  EMAIL_SUBSCRIPTION_MANAGEMENT permission in ECHO ACLS for the given permission type."
+  SUBSCRIPTION_MANAGEMENT permission in ECHO ACLS for the given permission type."
   [context permission-type object-identity-type provider-id]
   (has-management-permission?
-    context permission-type object-identity-type provider-id "EMAIL_SUBSCRIPTION_MANAGEMENT"))
+    context permission-type object-identity-type provider-id "SUBSCRIPTION_MANAGEMENT"))
 
 (defn has-ingest-management-permission?
   "Returns true if the user identified by the token in the cache has been granted
@@ -204,8 +204,12 @@
                               context permission-type object-identity-type provider-id))
         has-permission? (if-let [cache (cache/context->cache context cache-key)]
                           ;; Read using cache. Cache key is combo of token and permission type
-                          (cache/get-value
-                            cache [(:token context) permission-type] has-permission-fn)
+                          (if (= permission-fn has-subscription-management-permission?)
+                            ;; add provider-id to the lookup key for subscription acl cache.
+                            (cache/get-value
+                              cache [(:token context) permission-type provider-id] has-permission-fn)
+                            (cache/get-value
+                              cache [(:token context) permission-type] has-permission-fn))
                           ;; No token cache so directly check permission.
                           (has-permission-fn))]
     (when-not has-permission?
@@ -214,7 +218,7 @@
         "You do not have permission to perform that action."))))
 
 (defn verify-subscription-management-permission
-  "Verifies the current user has been granted EMAIL_SUBSCRIPTION_MANAGEMENT
+  "Verifies the current user has been granted SUBSCRIPTION_MANAGEMENT
   permission in ECHO ACLs"
   [context permission-type object-identity-type provider-id]
   (verify-management-permission

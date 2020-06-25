@@ -1,20 +1,20 @@
 (ns cmr.search.middleware.shapefile
   "Contains parameter converters for shapefile parameter"
-  (:require 
-    [clojure.java.io :as io]
-    [clojure.string :as str]
-    [ring.middleware.multipart-params :refer [wrap-multipart-params]]
-    [cmr.common.config :as cfg :refer [defconfig]]
-    [cmr.common.api.errors :as api-errors]
-    [cmr.common.log :refer [debug error]]
-    [cmr.common.mime-types :as mt]
-    [cmr.common-app.services.search.group-query-conditions :as gc]
-    [cmr.common-app.services.search.params :as p]
-    [cmr.common.services.errors :as errors]
-    [cmr.search.models.query :as qm]
-    [cmr.search.services.parameters.converters.geojson :as geojson]
-    [cmr.search.services.parameters.converters.geometry :as geo]
-    [cmr.common.util :as util])
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [ring.middleware.multipart-params :refer [wrap-multipart-params]]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.api.errors :as api-errors]
+   [cmr.common.log :refer [debug error]]
+   [cmr.common.mime-types :as mt]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.params :as p]
+   [cmr.common.services.errors :as errors]
+   [cmr.search.models.query :as qm]
+   [cmr.search.services.parameters.converters.geojson :as geojson]
+   [cmr.search.services.parameters.converters.geometry :as geo]
+   [cmr.common.util :as util])
   (:import
    (java.io BufferedInputStream File FileReader FileOutputStream FileInputStream)
    (java.nio.file Files)
@@ -36,7 +36,7 @@
 
 (defconfig max-shapefile-size
   "The maximum size in bytes a shapefile can be"
-  {:default 100000 :type Long})
+  {:default 1000000 :type Long})
 
 (defn- progress
   "Progress function for `wrap-multipart-params`. This function simply throws an error if
@@ -44,8 +44,8 @@
   [_request _bytes-read content-length _item-count]
   (when (> content-length (max-shapefile-size))
     (error (format "Failed shapefile upload of size [%d] bytes" content-length))
-    (errors/throw-service-error :bad-request 
-      (format "Shapefile size exceeds the %d byte limit" (max-shapefile-size)))))
+    (errors/throw-service-error :bad-request
+                                (format "Shapefile size exceeds the %d byte limit" (max-shapefile-size)))))
 
 (defn shapefile-upload
   "Middleware to handle shapefile uploads"
@@ -57,6 +57,6 @@
         (let [{:keys [type errors]} (ex-data e)]
           (if (= type :bad-request)
             (api-errors/handle-service-error
-              default-format-fn request type errors e)
+             default-format-fn request type errors e)
             ;; re-throw non-service errors
             (throw e)))))))

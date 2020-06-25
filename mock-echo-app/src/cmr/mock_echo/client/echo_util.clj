@@ -98,10 +98,10 @@
   "An ACL for managing access to ingest management functions."
   "INGEST_MANAGEMENT_ACL")
 
-;; Email subscription management acl
-(def email-subscription-management
-  "An ACL for managing access to email subscription functions."
-  "EMAIL_SUBSCRIPTION_MANAGEMENT")
+;; subscription management acl
+(def subscription-management
+  "An ACL for managing access to subscription functions."
+  "SUBSCRIPTION_MANAGEMENT")
 
 (def tag-acl
   "An ACL for managing access to tag modification functions."
@@ -386,8 +386,8 @@
   subscription related operations"
   grant-all-variable)
 
-(defn grant-all-subscription-esm
-  "Creates an email-subscription-management acl in mock echo granting guest and registered users ability to do all
+(defn grant-all-subscription-sm
+  "Creates a SUBSCRIPTION_MANAGEMENT acl in mock echo granting guest and registered users ability to do all
   subscription related operations" 
   [context provider-guid guest-permissions registered-permissions]
   (grant context
@@ -396,18 +396,18 @@
           {:permissions registered-permissions
            :user_type :registered}]
          :provider_identity
-         {:target email-subscription-management
+         {:target subscription-management
           :provider_id provider-guid}))
 
-(defn grant-all-subscription-group-esm
-  "Creates an email-subscription-management acl in mock echo granting group ability to do all
+(defn grant-all-subscription-group-sm
+  "Creates a SUBSCRIPTION_MANAGEMENT acl in mock echo granting group ability to do all
   subscription related operations"
   [context provider-guid group-id group-permissions]
   (grant context
          [{:permissions group-permissions
            :group_id group-id}]
          :provider_identity
-         {:target email-subscription-management
+         {:target subscription-management
           :provider_id provider-guid}))
 
 (defn grant-create-read-groups

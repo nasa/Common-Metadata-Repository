@@ -17,9 +17,11 @@
    [cmr.common.services.errors :as svc-errors]
    [cmr.search.api.routes :as api-routes]
    [cmr.search.middleware.shapefile :as shapefile]
+   [cmr.search.middleware.shapefile-simplification :as shapefile-simplifier]
    [cmr.search.services.messages.common-messages :as msg]
    [cmr.search.site.routes :as site-routes]
    [compojure.core :refer [GET context routes]]
+   [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
    [ring.middleware.params :as params]
@@ -99,13 +101,13 @@
     (routes
       ;; Return robots.txt from the root /robots.txt and at the context (e.g.
       ;; /search/robots.txt)
-      (GET "/robots.txt" req (get-robots-txt-response test-environment))
-      (context
-        relative-root-url []
-        (GET "/robots.txt" req (get-robots-txt-response test-environment)))
-      (api-routes/build-routes system)
-      (site-routes/build-routes system)
-      (common-pages/not-found))))
+     (GET "/robots.txt" req (get-robots-txt-response test-environment))
+     (context
+       relative-root-url []
+       (GET "/robots.txt" req (get-robots-txt-response test-environment)))
+     (api-routes/build-routes system)
+     (site-routes/build-routes system)
+     (common-pages/not-found))))
 
 (defn handlers [system]
   (-> (build-routes system)
@@ -122,6 +124,7 @@
       common-routes/add-request-id-response-handler
       (cmr-context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
+      (shapefile-simplifier/shapefile-simplifier default-error-format)
       params/wrap-params
       copy-of-body-handler
       (shapefile/shapefile-upload default-error-format)))
