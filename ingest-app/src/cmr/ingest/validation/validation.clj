@@ -18,8 +18,7 @@
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]
     [cmr.umm-spec.versioning :as umm-versioning]
-    [cmr.umm.umm-core :as umm]
-    [cmr.umm.validation.validation-core :as umm-validation]))
+    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]))
 
 (def ^:private
   valid-concept-mime-types
@@ -131,7 +130,7 @@
                            accept-version (config/ingest-accept-umm-version concept-type)]
                        ;; when the umm-version goes to 1.10 and accept-version is 1.9, we need
                        ;; to compare the versions with padded zeros.
-                       (if (umm-version-valid? umm-version concept-type) 
+                       (if (umm-version-valid? umm-version concept-type)
                          (if (>= 0 (compare-versions-with-padded-zeros umm-version accept-version))
                            (umm-spec/validate-metadata (:concept-type concept)
                                                        (:format concept)
@@ -140,7 +139,9 @@
                                  "Any version above that is considered in-development "
                                  "and cannot be ingested at this time.")])
                         [(str "Invalid UMM JSON schema version: " umm-version )]))
-                     (umm/validate-concept-xml concept))))
+                     (umm-spec/validate-metadata (:concept-type concept)
+                                                 (:format concept)
+                                                 (:metadata concept)))))
 
 (defn validate-collection-umm-spec-schema
   "Validate the collection against the JSON schema and throw errors if configured or return
@@ -199,7 +200,7 @@
   "Validates a UMM granule record using rules defined in UMM with a UMM collection record,
   updated with platform aliases whoes shortnames don't exist in the platforms."
   [context collection granule]
-  (if-errors-throw :invalid-data (umm-validation/validate-granule
+  (if-errors-throw :invalid-data (umm-spec-validation/validate-granule
                                   (humanizer-alias-cache/update-collection-with-aliases
                                    context collection false)
                                   granule)))

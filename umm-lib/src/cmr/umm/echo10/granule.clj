@@ -90,7 +90,7 @@
   [data-granule-element]
   (when-let [checksum-element (cx/element-at-path data-granule-element [:Checksum])]
     (g/map->Checksum
-      {:value (cx/string-at-path checksum-element [:Value]) 
+      {:value (cx/string-at-path checksum-element [:Value])
        :algorithm (cx/string-at-path checksum-element [:Algorithm])})))
 
 (defn- xml-elem->DataGranule
@@ -99,7 +99,7 @@
   (let [data-gran-node (cx/element-at-path granule-content-node [:DataGranule])
         size-in-bytes (cx/integer-at-path data-gran-node [:DataGranuleSizeInBytes])
         size (cx/double-at-path data-gran-node [:SizeMBDataGranule])
-        checksum (xml-elem->Checksum data-gran-node) 
+        checksum (xml-elem->Checksum data-gran-node)
         producer-gran-id (cx/string-at-path data-gran-node [:ProducerGranuleId])
         day-night (cx/string-at-path data-gran-node [:DayNightFlag])
         production-date-time (cx/datetime-at-path data-gran-node [:ProductionDateTime])]
@@ -227,4 +227,4 @@
 (defn validate-xml
   "Validates the XML against the Granule ECHO10 schema."
   [xml]
-  (v/validate-xml (io/resource "schema/echo10/Granule.xsd") xml))
+  (v/validate-xml (io/resource "xml-schemas/echo10/Granule.xsd") xml))
