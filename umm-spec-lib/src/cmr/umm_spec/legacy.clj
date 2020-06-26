@@ -69,6 +69,6 @@
             (= :collection concept-type))
       (umm-spec/validate-metadata concept-type fmt metadata)
       ;; calls umm-lib to validate granule xml formats
-      (umm/validate-concept-xml {:concept-type :granule
-                                 :format (mt/format->mime-type format-key)
-                                 :metadata metadata}))))
+      (umm/validate-granule-concept-xml {:concept-type :granule
+                                         :format (mt/format->mime-type format-key)
+                                         :metadata metadata}))))
