@@ -1,8 +1,11 @@
 (ns cmr.system-int-test.search.collection-sorting-search-test
   "Tests searching for collections using basic collection identifiers"
   (:require
+   [cheshire.core :as json]
+   [cmr.system-int-test.utils.url-helper :as url]
    [clj-time.core :as t]
    [clj-time.format :as f]
+   [clj-http.client :as client]
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common-app.services.search.messages :as msg]
@@ -535,5 +538,19 @@
            {:keyword "alph*" :sort-key ["usage_score" "entry_title"]} [alphonse_nil alpha_1_10 alpha_2_10 other_alpha_30]
            {:keyword "alph*" :sort-key ["usage_score" "-entry_title"]} [alphonse_nil alpha_2_10 alpha_1_10 other_alpha_30]
            {:keyword "alph*" :sort-key ["-usage_score" "entry_title"]} [other_alpha_30 alpha_1_10 alpha_2_10 alphonse_nil]
-           {:keyword "alph*" :sort-key ["-usage_score" "-short_name"]} [other_alpha_30 alpha_2_10 alpha_1_10 alphonse_nil]))))
+           {:keyword "alph*" :sort-key ["-usage_score" "-short_name"]} [other_alpha_30 alpha_2_10 alpha_1_10 alphonse_nil]))
+
+    (testing "reversing usage_score reverses sort-order"
+      (let [scores_asc (map #(select-keys % [:short-name :title :score])
+                            (get-in (client/get (str (url/search-url :collection) ".json")
+                                                {:query-params {"keyword" "alpha*"
+                                                                "sort_key" ["has_granules_or_cwic" "usage_score"]}})
+                                    [:feed :entry]))
+
+            scores_desc (map #(select-keys % [:short-name :title :score])
+                             (get-in (client/get (str (url/search-url :collection) ".json")
+                                                 {:query-params {"keyword" "alpha*"
+                                                                 "sort_key" ["has_granules_or_cwic" "-usage_score"]}})
+                                     [:feed :entry]))]
+        (is (= (reverse scores_asc) scores_desc))))))
 
