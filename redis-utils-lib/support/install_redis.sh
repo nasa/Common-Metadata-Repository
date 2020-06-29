@@ -14,7 +14,7 @@ cd redis
 redis_version="redis-$1"
 redis_hash=$2
 
-curl -s -o $redis_version.tar.gz "http://download.redis.io/releases/$redis_version.tar.gz"
+curl -s -o $redis_version.tar.gz "https://download.redis.io/releases/$redis_version.tar.gz"
 downloaded_hash=$(openssl dgst -sha256 $redis_version.tar.gz | awk '{print $2}')
 
 if [ "$downloaded_hash" != "$redis_hash" ]; then
