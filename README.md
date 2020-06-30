@@ -120,7 +120,7 @@ Here are the steps to do so:
                        :cmr-sys-dba-password "<YOUR PASSWORD HERE>"
                        :cmr-bootstrap-password "<YOUR PASSWORD HERE>"
                        :cmr-ingest-password "<YOUR PASSWORD HERE>"
-                       :cmr-urs-pasword "<YOUR PASSWORD HERE>"}}}
+                       :cmr-urs-password "<YOUR PASSWORD HERE>"}}}
 
 2. `cmr setup dev`
 3. `cmr start repl`
