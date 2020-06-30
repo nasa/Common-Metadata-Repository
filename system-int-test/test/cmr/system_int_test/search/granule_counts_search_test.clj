@@ -193,6 +193,15 @@
           ;; Smaller area around one granule in coll4
           [130 47 137 44] {coll1 0 coll3 0 coll4 1 orbit-coll 0}))
 
+      (testing "CMR-6515: no exception is thrown when no collections found before granule counts query"
+        (let [response (search/find-refs
+                         :collection
+                         {:include-granule-counts true
+                          :entry-title "coll6"
+                          :bounding-box (codec/url-encode (apply m/mbr [-180 90 180 -90]))})]
+          (is (empty? (:errors response)))
+          (is (gran-counts/granule-counts-match? :xml [] response))))
+
       (testing "granule counts for temporal queries"
         (are [start stop expected-counts]
           (let [refs (search/find-refs :collection {:include-granule-counts true
@@ -386,10 +395,10 @@
                                       " format is not supported with include_granule_counts "
                                       "option), :status 400}")]
             (= expected-results results))
-          
+
           "granule count in kml format"
           :kml (search/find-concepts-kml :collection {:include-has-granules true :include-granule-counts true})
-         
+
           "granule count in opendata format"
           :opendata (search/find-concepts-opendata :collection {:include-has-granules true :include-granule-counts true}))))))
 
@@ -456,7 +465,7 @@
                       coll11 coll12 coll13 coll14
                       coll15 coll16 coll17]
                      (search/find-refs :collection
-                                       {:has_granules_or_cwic true 
+                                       {:has_granules_or_cwic true
                                         :page-size 20}
                                        {:snake-kebab? false})))
 

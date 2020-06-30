@@ -72,7 +72,7 @@
   [condition]
   (if (instance? TemporalCondition condition)
     ;; Remove collection concept type and turn off limit to granules
-    ;; so that the correct fields will be searched. 
+    ;; so that the correct fields will be searched.
     ;; limit to granules is a collection applicable parameter.
     (-> condition
         (dissoc :concept-type)
@@ -114,8 +114,10 @@
 ;; This find granule counts per collection.
 (defmethod query-execution/post-process-query-result-feature :granule-counts
   [context query elastic-results query-results feature]
-  (->> query-results
-       (extract-granule-count-query query)
-       (query-execution/execute-query context)
-       search-results->granule-counts
-       (assoc query-results :granule-counts-map)))
+  (if (= 0 (:hits query-results))
+    query-results
+    (->> query-results
+         (extract-granule-count-query query)
+         (query-execution/execute-query context)
+         search-results->granule-counts
+         (assoc query-results :granule-counts-map))))
