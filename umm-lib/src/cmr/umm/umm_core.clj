@@ -34,18 +34,11 @@
   [item]
   :granule)
 
-(defn validate-concept-xml
-  "Validates the concept metadata against its xml schema."
+(defn validate-granule-concept-xml
+  "Validates the granule concept metadata against its xml schema."
   [concept]
   (let [{:keys [concept-type format metadata]} concept]
     (case concept-type
-      :collection (condp = format
-                    mt/echo10 (echo10-c/validate-xml metadata)
-                    mt/dif (dif-c/validate-xml metadata)
-                    mt/dif10 (dif10-c/validate-xml metadata)
-                    mt/iso19115 (iso-mends-c/validate-xml metadata)
-                    mt/iso-smap (iso-smap-c/validate-xml metadata))
-
       :granule (condp = format
                  mt/echo10 (echo10-g/validate-xml metadata)
                  mt/iso-smap (iso-smap-g/validate-xml metadata)))))

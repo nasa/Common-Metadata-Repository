@@ -13,25 +13,41 @@
 
 (use-fixtures :each
               (join-fixtures
-               [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
-                (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV1"} 
-                                                                  [:read :update]
-                                                                  [:read :update])
-                (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV2"}
+               [(ingest/reset-fixture
+                  {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"})
+                (subscription-util/grant-all-subscription-fixture
+                  {"provguid1" "PROV1" "provguid2" "PROV2"}
+                  [:read :update]
+                  [:read :update])
+                (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV3"}
                                                                   [:read]
                                                                   [:read :update])]))
 
-(deftest subscription-ingest-on-prov2-test
-  (testing "ingest on PROV2, guest is not granted ingest permission for EMAIL_SUBSCRIPTION_MANAGEMENT ACL"
-    (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV2"})
+(deftest subscription-ingest-on-prov3-test
+  (testing "ingest on PROV3, guest is not granted ingest permission for SUBSCRIPTION_MANAGEMENT ACL"
+    (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"})
           guest-token (echo-util/login-guest (system/context))
           response (ingest/ingest-concept concept {:token guest-token})]
       (is (= ["You do not have permission to perform that action."] (:errors response)))))
-  (testing "ingest on PROV2, registered user is granted ingest permission for EMAIL_SUBSCRIPTION_MANAGEMENT ACL"
-    (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV2"})
+  (testing "ingest on PROV3, registered user is granted ingest permission for SUBSCRIPTION_MANAGEMENT ACL"
+    (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"})
           user1-token (echo-util/login (system/context) "user1")
           response (ingest/ingest-concept concept {:token user1-token})]
       (is (= 201 (:status response))))))
+
+(deftest subscription-delete-on-prov3-test
+  (testing "delete on PROV3, guest is not granted update permission for SUBSCRIPTION_MANAGEMENT ACL"
+    (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"})
+          guest-token (echo-util/login-guest (system/context))
+          response (ingest/delete-concept concept {:token guest-token})]
+      (is (= ["You do not have permission to perform that action."] (:errors response)))))
+  (testing "delete on PROV3, registered user is granted update permission for SUBSCRIPTION_MANAGEMENT ACL"
+    (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"})
+          user1-token (echo-util/login (system/context) "user1")
+          response (ingest/delete-concept concept {:token user1-token})]
+      ;; it passes the permission validation, and gets to the point where the subscription doesn't exist
+      ;; since we didn't ingest it.
+      (is (= 404 (:status response))))))
 
 (deftest subscription-ingest-test
   (testing "ingest of a new subscription concept"

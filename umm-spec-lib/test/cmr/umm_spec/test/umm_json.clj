@@ -89,6 +89,14 @@
         (util/update-in-all [:DataCenters :ContactPersons :ContactInformation :RelatedUrls] remove-nils)
         (util/update-in-all [:RelatedUrls] remove-nils))))
 
+(defn- remove-related-urls
+  "Removes all of the RelatedUrls which are all nil under ContactGroups and
+   ContactPersons/ContactInformation."
+  [umm]
+  (-> umm
+      (util/update-in-all [:ContactGroups :ContactInformation] #(dissoc % :RelatedUrls))
+      (util/update-in-all [:ContactPersons :ContactInformation] #(dissoc % :RelatedUrls))))
+
 ;; This only tests a minimum example record for now. We need to test with larger more complicated
 ;; records. We will do this as part of CMR-1929
 
@@ -119,10 +127,12 @@
 (deftest all-umm-s-records
   (checking "all umm-s records" 100
     [umm-s-record (gen/no-shrink umm-gen/umm-s-generator)]
-    (let [json (umm-json/umm->json umm-s-record)
+    ;; For some reason :RelatedUrls nil is being generated eventhough it is not
+    ;; part of the schema. Removing it.
+    (let [umm-s-record (remove-related-urls umm-s-record)
+          json (umm-json/umm->json umm-s-record)
           _ (is (empty? (json-schema/validate-umm-json json :service)))
-          parsed (umm-json/json->umm {} :service json)
-          parsed (remove-get-service-and-get-data-nils parsed)]
+          parsed (umm-json/json->umm {} :service json)]
       (is (= umm-s-record parsed)))))
 
 (deftest all-umm-t-records

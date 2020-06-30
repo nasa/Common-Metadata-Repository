@@ -12,12 +12,12 @@
         sids (util/lazy-get context :sids)]
     (filter (partial acl/acl-matches-sids-and-permission? sids :read) acls)))
 
-(defn get-esm-acls-applicable-to-token
-  "Retrieves the EMAIL_SUBSCRIPTION_MANAGEMENT ACLs that are applicable to the current user.
+(defn get-sm-acls-applicable-to-token
+  "Retrieves the SUBSCRIPTION_MANAGEMENT ACLs that are applicable to the current user.
   i.e. grant read permission to the current user."
   [context]
   (let [acls (af/get-acls context [:provider-object])
-        ;; only get EMAIL_SUBSCRIPTION_MANAGEMENT ACLS
-        esm-acls (filter #(= "EMAIL_SUBSCRIPTION_MANAGEMENT" (get-in % [:provider-identity :target])) acls)
+        ;; only get SUBSCRIPTION_MANAGEMENT ACLS
+        esm-acls (filter #(= "SUBSCRIPTION_MANAGEMENT" (get-in % [:provider-identity :target])) acls)
         sids (util/lazy-get context :sids)]
     (filter (partial acl/acl-matches-sids-and-permission? sids :read) esm-acls)))

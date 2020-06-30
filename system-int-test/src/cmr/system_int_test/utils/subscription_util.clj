@@ -40,8 +40,8 @@
                       {:provider-guid provider-guid
                        :provider-id provider-id})]
       (doseq [provider-map providers]
-        ;; grant EMAIL_SUBSCRIPTION_MANAGEMENT permission for each provider.
-        (echo-util/grant-all-subscription-esm (s/context)
+        ;; grant SUBSCRIPTION_MANAGEMENT permission for each provider.
+        (echo-util/grant-all-subscription-sm (s/context)
                                               (:provider-id provider-map)
                                               guest-permissions
                                               registered-permissions)))

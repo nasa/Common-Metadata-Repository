@@ -28,6 +28,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /providers/\<provider-id>/subscriptions/\<native-id>
     * [PUT - Create or update a subscription.](#create-update-subscription)
     * [DELETE - Delete a subscription.](#delete-subscription)
+    * [Subscription Access Control](#subscription-access-control)
   * /translate/collection
     * [POST - Translate collection metadata.](#translate-collection)
   * /translate/granule
@@ -640,7 +641,7 @@ get a JSON response:
 {"concept-id":"SUB1200000015-PROV1","revision-id":1}
 ```
 
-### <a name="delete-service"></a> Delete a Subscription
+### <a name="delete-subscription"></a> Delete a Subscription
 
 Subscription metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
@@ -665,6 +666,9 @@ curl -i -X DELETE \
 ```
 {"concept-id":"SUB1200000015-PROV1","revision-id":2}
 ```
+### <a name="subscription-access-control"></a> Subscription Access Control
+
+Ingest permissions for subscriptions are granted through the provider via the INGEST_MANAGEMENT_ACL and SUBSCRIPTION_MANAGEMENT. In order to ingest/update/delete a subscription for a given provider, update permission has to be granted to the user through both INGEST_MANAGEMENT_ACL and SUBSCRIPTION_MANAGEMENT ACLs for the provider.
 
 ## <a name="translate-collection"></a> Translate Collection Metadata
 
