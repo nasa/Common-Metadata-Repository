@@ -18,7 +18,7 @@
 (defn- elastic-result->associated-collections
   "Returns the associated collections of the elastic result"
   [elastic-result]
-  (let [[collections-gzip-b64] (get-in elastic-result [:fields :collections-gzip-b64])]
+  (let [collections-gzip-b64 (get-in elastic-result [:_source :collections-gzip-b64])]
     (when collections-gzip-b64
       (edn/read-string
        (util/gzip-base64->string collections-gzip-b64)))))

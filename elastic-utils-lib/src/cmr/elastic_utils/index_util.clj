@@ -89,7 +89,7 @@
    `(def ~mapping-name
       ~docstring
       (merge {:dynamic "strict"
-               :_source {:enabled false}
+               :_source {:enabled true}
                :properties ~properties}
               ~mapping-settings))))
 

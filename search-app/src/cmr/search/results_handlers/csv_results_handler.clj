@@ -27,17 +27,17 @@
 
 (defmethod elastic-results/elastic-result->query-result-item [:granule :csv]
   [context query elastic-result]
-  (let [{[granule-ur] :granule-ur
-         [producer-gran-id] :producer-gran-id
-         [start-date] :start-date
-         [end-date] :end-date
+  (let [{granule-ur :granule-ur
+         producer-gran-id :producer-gran-id
+         start-date :start-date
+         end-date :end-date
          atom-links :atom-links
-         [cloud-cover] :cloud-cover
-         [day-night] :day-night
-         [size] :size
-         [provider-id] :provider-id
-         [access-value] :access-value
-         [collection-concept-id] :collection-concept-id} (:fields elastic-result)
+         cloud-cover :cloud-cover
+         day-night :day-night
+         size :size
+         provider-id :provider-id
+         access-value :access-value
+         collection-concept-id :collection-concept-id} (:_source elastic-result)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         atom-links (map #(json/decode % true) atom-links)

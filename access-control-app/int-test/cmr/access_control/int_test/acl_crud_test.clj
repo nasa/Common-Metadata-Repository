@@ -10,7 +10,6 @@
     [cmr.mock-echo.client.echo-util :as echo-util]
     [cmr.transmit.access-control :as access-control]
     [cmr.transmit.config :as transmit-config]
-    ; [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
     [cmr.transmit.metadata-db2 :as metadata-db2]))
 
 (use-fixtures :each
@@ -1336,12 +1335,12 @@
                                                :permissions ["read"]}
                                               {:user_type "registered"
                                                :permissions ["update"]}
-                                              {:group_id (:concept_id group1) 
+                                              {:group_id (:concept_id group1)
                                                :permissions ["read" "update"]}]
                           :provider_identity {:provider_id "PROV1"
                                               :target "SUBSCRIPTION_MANAGEMENT"}}
         acl (access-control/create-acl (test-util/conn-context)
-                                       subscription-acl 
+                                       subscription-acl
                                        {:token token})]
     (is (= subscription-acl
            (access-control/get-acl (test-util/conn-context)

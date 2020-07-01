@@ -40,8 +40,7 @@
   "Returns the stored tags from collection search elastic-result"
   [result]
   (some-> result
-          :fields
+          :_source
           :tags-gzip-b64
-          first
           util/gzip-base64->string
           edn/read-string))

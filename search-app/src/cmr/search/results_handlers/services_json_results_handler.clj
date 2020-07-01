@@ -14,12 +14,12 @@
 
 (defmethod elastic-results/elastic-result->query-result-item [:service :json]
   [context query elastic-result]
-  (let [{{[service-name] :service-name
-          [long-name] :long-name
-          [deleted] :deleted
-          [provider-id] :provider-id
-          [native-id] :native-id
-          [concept-id] :concept-id} :fields} elastic-result
+  (let [{{service-name :service-name
+          long-name :long-name
+          deleted :deleted
+          provider-id :provider-id
+          native-id :native-id
+          concept-id :concept-id} :_source} elastic-result
         revision-id (elastic-results/get-revision-id-from-elastic-result :service elastic-result)
         result-item (util/remove-nil-keys
                      {:concept_id concept-id

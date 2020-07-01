@@ -73,7 +73,7 @@
      :sort sort-params
      :size page-size
      :from offset
-     :stored_fields fields
+     :_source fields
      :aggs aggregations
      :scroll scroll-timeout
      :scroll-id scroll-id
@@ -162,7 +162,7 @@
       (update-in response [:hits :hits]
                  (fn [all-concepts]
                    (map (fn [single-concept-result]
-                          (update-in single-concept-result [:fields]
+                          (update-in single-concept-result [:_source]
                                      (fn [field]
                                        (set/rename-keys field
                                                         (q2e/elastic-field->query-field-mappings

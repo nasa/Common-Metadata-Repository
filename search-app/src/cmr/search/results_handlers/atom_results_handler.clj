@@ -108,38 +108,38 @@
   [elastic-result]
   (let [{concept-id :_id
          score :_score
-         {[short-name] :short-name
-          [version-id] :version-id
-          [summary] :summary
-          [update-time] :update-time
-          [entry-title] :entry-title
-          [collection-data-type] :collection-data-type
-          [processing-level-id] :processing-level-id
-          [metadata-format] :metadata-format
-          [provider-id] :provider-id
-          [archive-center] :archive-center
+         {short-name :short-name
+          version-id :version-id
+          summary :summary
+          update-time :update-time
+          entry-title :entry-title
+          collection-data-type :collection-data-type
+          processing-level-id :processing-level-id
+          metadata-format :metadata-format
+          provider-id :provider-id
+          archive-center :archive-center
           organizations :data-center
-          [start-date] :start-date
-          [end-date] :end-date
+          start-date :start-date
+          end-date :end-date
           atom-links :atom-links
           associated-difs :associated-difs
-          [downloadable] :downloadable
-          [browsable] :browsable
-          [coordinate-system] :coordinate-system
+          downloadable :downloadable
+          browsable :browsable
+          coordinate-system :coordinate-system
           ords-info :ords-info
           ords :ords
-          [access-value] :access-value
-          [swath-width] :swath-width
-          [period] :period
-          [inclination-angle] :inclination-angle
-          [number-of-orbits] :number-of-orbits
-          [start-circular-latitude] :start-circular-latitude
-          [has-variables] :has-variables
-          [has-formats] :has-formats
-          [has-transforms] :has-transforms
-          [has-spatial-subsetting] :has-spatial-subsetting
-          [has-temporal-subsetting] :has-temporal-subsetting
-          [associations-gzip-b64] :associations-gzip-b64} :fields} elastic-result
+          access-value :access-value
+          swath-width :swath-width
+          period :period
+          inclination-angle :inclination-angle
+          number-of-orbits :number-of-orbits
+          start-circular-latitude :start-circular-latitude
+          has-variables :has-variables
+          has-formats :has-formats
+          has-transforms :has-transforms
+          has-spatial-subsetting :has-spatial-subsetting
+          has-temporal-subsetting :has-temporal-subsetting
+          associations-gzip-b64 :associations-gzip-b64} :_source} elastic-result
         start-date (acl-rhh/parse-elastic-datetime start-date)
         end-date (acl-rhh/parse-elastic-datetime end-date)
         atom-links (map #(json/decode % true) atom-links)
@@ -148,7 +148,13 @@
         associated-difs (case metadata-format
                           "dif" [(spec-util/entry-id short-name version-id)]
                           "dif10" [(spec-util/entry-id short-name version-id)]
-                          associated-difs)]
+                          associated-difs)
+        archive-center (if (sequential? archive-center)
+                         (first archive-center)
+                         archive-center)
+        collection-data-type (if (sequential? collection-data-type)
+                               (first collection-data-type)
+                               collection-data-type)]
     (merge {:id concept-id
             :score (q/normalize-score score)
             :title entry-title
@@ -162,7 +168,7 @@
             :original-format (metadata-format->atom-original-format metadata-format)
             :data-center provider-id
             :archive-center archive-center
-            :organizations organizations
+            :organizations (when (seq organizations) organizations)
             :start-date start-date
             :end-date end-date
             :atom-links atom-links
@@ -190,31 +196,31 @@
 (defn- granule-elastic-result->query-result-item
   [orbits-by-collection elastic-result]
   (let [{concept-id :_id
-         {[granule-ur] :granule-ur
-          [collection-concept-id] :collection-concept-id
-          [update-time] :update-time
-          [entry-title] :entry-title
-          [producer-gran-id] :producer-gran-id
-          [size] :size
-          [metadata-format] :metadata-format
-          [provider-id] :provider-id
-          [start-date] :start-date
-          [end-date] :end-date
+         {granule-ur :granule-ur
+          collection-concept-id :collection-concept-id
+          update-time :update-time
+          entry-title :entry-title
+          producer-gran-id :producer-gran-id
+          size :size
+          metadata-format :metadata-format
+          provider-id :provider-id
+          start-date :start-date
+          end-date :end-date
           atom-links :atom-links
-          [ascending-crossing] :orbit-asc-crossing-lon
-          [start-lat] :start-lat
-          [start-direction] :start-direction
-          [end-lat] :end-lat
-          [end-direction] :end-direction
+          ascending-crossing :orbit-asc-crossing-lon
+          start-lat :start-lat
+          start-direction :start-direction
+          end-lat :end-lat
+          end-direction :end-direction
           orbit-calculated-spatial-domains-json :orbit-calculated-spatial-domains-json
-          [downloadable] :downloadable
-          [browsable] :browsable
-          [day-night] :day-night
-          [cloud-cover] :cloud-cover
-          [coordinate-system] :coordinate-system
+          downloadable :downloadable
+          browsable :browsable
+          day-night :day-night
+          cloud-cover :cloud-cover
+          coordinate-system :coordinate-system
           ords-info :ords-info
           ords :ords
-          [access-value] :access-value} :fields} elastic-result
+          access-value :access-value} :_source} elastic-result
         atom-links (map (fn [link-str]
                           (update-in (json/decode link-str true) [:size] #(when % (str %))))
                         atom-links)

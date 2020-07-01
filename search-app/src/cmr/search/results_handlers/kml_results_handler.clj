@@ -40,19 +40,19 @@
 
 (defn collection-elastic-result->query-result-item
   [elastic-result]
-  (let [{[granule-ur] :granule-ur
-         [entry-title] :entry-title
+  (let [{granule-ur :granule-ur
+         entry-title :entry-title
          ords-info :ords-info
-         ords :ords} (:fields elastic-result)]
+         ords :ords} (:_source elastic-result)]
     {:name (or granule-ur entry-title)
      :shapes (srl/ords-info->shapes ords-info ords)}))
 
 (defn granule-elastic-result->query-result-item
   [orbits-by-collection elastic-result]
-  (let [{[granule-ur] :granule-ur
-         [entry-title] :entry-title
+  (let [{granule-ur :granule-ur
+         entry-title :entry-title
          ords-info :ords-info
-         ords :ords} (:fields elastic-result)
+         ords :ords} (:_source elastic-result)
         shapes (concat (srl/ords-info->shapes ords-info ords)
                        (orbit-swath-helper/elastic-result->swath-shapes
                          orbits-by-collection elastic-result))]

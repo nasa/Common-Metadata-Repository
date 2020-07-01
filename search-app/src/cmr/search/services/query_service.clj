@@ -386,7 +386,7 @@
                                               (assoc :all-revisions? true)
                                               (assoc :condition condition)
                                               (assoc :page-size :unlimited)))
-        coll-concept-ids (map #(first (:concept-id (:fields %)))
+        coll-concept-ids (map #(:concept-id (:_source %))
                               (get-in results [:hits :hits]))]
     (distinct coll-concept-ids)))
 
@@ -481,7 +481,7 @@
                   filters)]
     {:query {:bool {:must (esq/match-all)
                         :filter {:bool {:filter filters}}}}
-     :stored_fields [:concept-id :revision-date :provider-id
+     :_source [:concept-id :revision-date :provider-id
               :granule-ur :parent-collection-id]}))
 
 (defn get-deleted-granules
@@ -499,7 +499,7 @@
                             query)
         result-format (:result-format params)
         hits (or (get-in results [:hits :total :value]) 0)
-        items (map :fields (get-in results [:hits :hits]))
+        items (map :_source (get-in results [:hits :hits]))
         total-took (- (System/currentTimeMillis) start-time)
         results {:hits hits :items items :took total-took}
         ;; construct the response results string

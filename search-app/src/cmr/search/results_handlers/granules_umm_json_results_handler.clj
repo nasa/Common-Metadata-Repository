@@ -23,12 +23,12 @@
 (defn granule-elastic-result->meta
   "Takes an elasticsearch result and returns a map of the meta fields in granule UMM JSON response."
   [elastic-result]
-  (let [{[concept-id] :concept-id
-         [revision-id] :revision-id
-         [native-id] :native-id
-         [provider-id] :provider-id
-         [metadata-format] :metadata-format
-         [revision-date] :revision-date} (:fields elastic-result)
+  (let [{concept-id :concept-id
+         revision-id :revision-id
+         native-id :native-id
+         provider-id :provider-id
+         metadata-format :metadata-format
+         revision-date :revision-date} (:_source elastic-result)
         revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))]
     (util/remove-nil-keys
      {:concept-type :granule

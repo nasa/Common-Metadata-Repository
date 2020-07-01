@@ -40,10 +40,10 @@
 
 (defmethod elastic-results/elastic-result->query-result-item [:collection :umm-json-results]
   [context query elastic-result]
-  (let [{[entry-title] :entry-title
-         [entry-id] :entry-id
-         [short-name] :short-name
-         [version-id] :version-id} (:fields elastic-result)]
+  (let [{entry-title :entry-title
+         entry-id :entry-id
+         short-name :short-name
+         version-id :version-id} (:_source elastic-result)]
     {:meta (collection-elastic-result->meta elastic-result)
      :umm {:entry-title entry-title
            :entry-id entry-id
@@ -87,10 +87,10 @@
 
 (defmethod elastic-results/elastic-result->query-result-item [:collection :legacy-umm-json]
   [context query elastic-result]
-  (let [{[entry-title] :entry-title
-         [entry-id] :entry-id
-         [short-name] :short-name
-         [version-id] :version-id} (:fields elastic-result)]
+  (let [{entry-title :entry-title
+         entry-id :entry-id
+         short-name :short-name
+         version-id :version-id} (:_source elastic-result)]
     {:meta (collection-elastic-result->meta elastic-result)
      :umm {:entry-title entry-title
            :entry-id entry-id
