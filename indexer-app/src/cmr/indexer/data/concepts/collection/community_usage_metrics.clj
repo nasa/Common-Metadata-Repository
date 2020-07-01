@@ -4,10 +4,6 @@
     [cmr.indexer.data.concepts.collection.collection-util :as util]
     [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]))
 
-(def not-provided-version
-  "In EMS community usage CSV, the version value when the version is unknown"
-  "N/A")
-
 (defn collection-community-usage-score
   "Given a umm-spec collection, returns the community usage relevancy score.
   The score comes from the ingested EMS metrics, if available. The metrics are cached with the
@@ -20,6 +16,6 @@
     (when (seq metrics)
       (when-let [usage-entries (seq (filter #(or (= (util/parse-version-id (:version %))
                                                     parsed-version-id)
-                                                 (= not-provided-version (:version %)))
+                                                 (nil? (:version %)))
                                             (get metrics (:ShortName collection))))]
         {:usage-relevancy-score (apply + (map :access-count usage-entries))}))))

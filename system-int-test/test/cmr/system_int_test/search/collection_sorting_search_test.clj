@@ -29,8 +29,8 @@
        "alpha,3,30\n"
        "bravo,1,20\n"
        "bravo,2,25\n"
-       "unfound_1,1,40\n"
-       "unfound_2,1,40\n"))
+       "unfound_1,,40\n"
+       "unfound_2,,40\n"))
 
 (defn init-usage-fixture
   "Setup usage config"
@@ -495,6 +495,24 @@
 
     (index/wait-until-indexed)
 
+    (testing "reversing usage_score reverses sort-order"
+      (let [scores_asc (-> (client/get (str (url/search-url :collection) ".json")
+                                       {:query-params {"keyword" "alph*"
+                                                       "sort_key" ["usage_score"]}})
+                           :body
+                           (json/parse-string true)
+                           (get-in [:feed :entry]))
+            scores_desc (-> (client/get (str (url/search-url :collection) ".json")
+                                        {:query-params {"keyword" "alph*"
+                                                        "sort_key" ["-usage_score"]}})
+                            :body
+                            (json/parse-string true)
+                            (get-in [:feed :entry]))]
+
+        ;; Highest scored by usage should be first on descending and last on ascending
+        (is (= (:concept-id other_alpha_30) (:id (first scores_desc))))
+        (is (= (:concept-id other_alpha_30) (:id (last scores_asc))))))
+
     (testing "usage_score as the sole sort key"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
@@ -538,19 +556,5 @@
            {:keyword "alph*" :sort-key ["usage_score" "entry_title"]} [alphonse_nil alpha_1_10 alpha_2_10 other_alpha_30]
            {:keyword "alph*" :sort-key ["usage_score" "-entry_title"]} [alphonse_nil alpha_2_10 alpha_1_10 other_alpha_30]
            {:keyword "alph*" :sort-key ["-usage_score" "entry_title"]} [other_alpha_30 alpha_1_10 alpha_2_10 alphonse_nil]
-           {:keyword "alph*" :sort-key ["-usage_score" "-short_name"]} [other_alpha_30 alpha_2_10 alpha_1_10 alphonse_nil]))
-
-    (testing "reversing usage_score reverses sort-order"
-      (let [scores_asc (map #(select-keys % [:short-name :title :score])
-                            (get-in (client/get (str (url/search-url :collection) ".json")
-                                                {:query-params {"keyword" "alpha*"
-                                                                "sort_key" ["has_granules_or_cwic" "usage_score"]}})
-                                    [:feed :entry]))
-
-            scores_desc (map #(select-keys % [:short-name :title :score])
-                             (get-in (client/get (str (url/search-url :collection) ".json")
-                                                 {:query-params {"keyword" "alpha*"
-                                                                 "sort_key" ["has_granules_or_cwic" "-usage_score"]}})
-                                     [:feed :entry]))]
-        (is (= (reverse scores_asc) scores_desc))))))
+           {:keyword "alph*" :sort-key ["-usage_score" "-short_name"]} [other_alpha_30 alpha_2_10 alpha_1_10 alphonse_nil]))))
 
