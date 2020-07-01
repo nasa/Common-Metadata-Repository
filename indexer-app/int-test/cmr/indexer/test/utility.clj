@@ -67,8 +67,8 @@
                                       :refresh_interval "20s"}}}]
                  :mapping {:dynamic "strict",
                                         :_source {:enabled true},
-                                        :properties {:concept-id  {:type "keyword" :norms false :index_options "docs" :store true},
-                                                     :entry-title {:type "keyword" :norms false :index_options "docs" :store true}}}}
+                                        :properties {:concept-id  {:type "keyword" :norms false :index_options "docs"},
+                                                     :entry-title {:type "keyword" :norms false :index_options "docs"}}}}
     :granule {:indexes
               [{:name "small_collections"
                 :settings {:index {:number_of_shards 1,
@@ -86,9 +86,9 @@
                                                   :number_of_replicas 0,
                                                   :refresh_interval "10s"}}
               :mapping {:dynamic "strict",
-                                  :_source { "enabled" false},
-                                  :properties {:concept-id {:type "keyword" :norms false :index_options "docs" :store true},
-                                               :collection-concept-id {:type "keyword" :norms false :index_options "docs" :store true}}}}}})
+                                  :_source {:enabled true},
+                                  :properties {:concept-id {:type "keyword" :norms false :index_options "docs"},
+                                               :collection-concept-id {:type "keyword" :norms false :index_options "docs"}}}}}})
 
 (def invalid-sample-index-set
   {:index-set
@@ -103,8 +103,8 @@
                                       :refresh_interval "20s"}}}]
                  :mapping {:collection {:dynamic "strict",
                                         :_source {:enabled true},
-                                        :properties {:concept-id  {:type "keyword" :norms false :index_options "docs" :store true},
-                                                     :entry-title {:type "keyword" :norms false :index_options "docs" :store true}}}}}
+                                        :properties {:concept-id  {:type "keyword" :norms false :index_options "docs"},
+                                                     :entry-title {:type "keyword" :norms false :index_options "docs"}}}}}
     :granule {:indexes
               [{:name "G2-PROV1"
                 :settings {:index {:number_of_shards 1,
@@ -119,9 +119,9 @@
                                    :number_of_replicas 0,
                                    :refresh_interval "10s"}}}]
               :mapping {:granule {:dynamic "strict",
-                                  :_source { "enabled" false},
-                                  :properties {:concept-id {:type "keyword" :norms false :index_options "docs" :store true},
-                                               :collection-concept-id {:type "keyword" :norms false :index_options "docs" :store true}}}}}}})
+                                  :_source {:enabled true},
+                                  :properties {:concept-id {:type "keyword" :norms false :index_options "docs"},
+                                               :collection-concept-id {:type "keyword" :norms false :index_options "docs"}}}}}}})
 
 
 (def index-set-w-invalid-idx-prop
@@ -140,8 +140,8 @@
                                       :refresh_interval "20s"}}}]
                  :mapping {:collection {:dynamic "strict",
                                         :_source {:enabled true},
-                                        :properties {:concept-id  {:type "XXX" :index "not_analyzed" :norms false :index_options "docs" :store true},
-                                                     :entry-title {:type "keyword" :norms false :index_options "docs" :store true}}}}}}})
+                                        :properties {:concept-id  {:type "XXX" :index "not_analyzed" :norms false :index_options "docs"},
+                                                     :entry-title {:type "keyword" :norms false :index_options "docs"}}}}}}})
 
 
 ;;; utility methods
