@@ -714,6 +714,7 @@
    These are the fields that will be stored in an Elasticsearch document."
   {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :contains-public-collections (m/doc-values m/bool-field-mapping)
    :type {:type "string" :index "analyzed" :store "yes"}
    :fields {:type "string" :index "analyzed" :store "yes"}
    :value {:type "string" :analyzer "autocomplete_analyzer" :index "analyzed" :store "yes"}})

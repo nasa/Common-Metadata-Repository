@@ -54,3 +54,16 @@
       (extract-fields [:Projects :cmr.humanized/ShortName] :project-sn)
       (extract-fields [:ProcessingLevel :cmr.humanized/Id] :processing-level-id)
       (extract-fields [:DataCenters :cmr.humanized/ShortName] :organization))))
+
+(defn collection-humanizers-for-suggestion-docs
+  "Associate AccessConstraints with humanized values, keeping original structure intact"
+  [context collection]
+  (let [humanizers (collection-humanizers-elastic context collection)
+        access-constraints (get collection :AccessConstraints)]
+    ; This right here is the business. Assoc the access-constraints values into
+    ; each humanizer value, which is a list of maps. We want to assoc the access
+    ; constraints into *every map* while preserving the original structure
+    (reduce-kv (fn [m k v]
+                (let [humanizer (map #(assoc % :AccessConstraints access-constraints) v)]
+                  (assoc m k humanizer)))
+            {} humanizers)))
