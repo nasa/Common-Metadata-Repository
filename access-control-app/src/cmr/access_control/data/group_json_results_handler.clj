@@ -1,10 +1,11 @@
 (ns cmr.access-control.data.group-json-results-handler
   "Handles extracting elasticsearch group results and converting them into a JSON search response."
-  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.common-app.services.search :as qs]
-            [cmr.common.util :as util]
-            [cheshire.core :as json]))
+  (:require
+   [cheshire.core :as json]
+   [cmr.common-app.services.search :as qs]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.common.util :as util]))
 
 (def base-fields
   "The base set of fields to select from Elasticsearch"
@@ -27,8 +28,8 @@
 
 (defmethod elastic-results/elastic-result->query-result-item [:access-group :json]
   [context query elastic-result]
-  (let [field-values (:fields elastic-result)
-        item (util/map-values first (dissoc field-values :members))]
+  (let [field-values (:_source elastic-result)
+        item (dissoc field-values :members)]
     (if (include-members? query)
       (assoc item :members (:members field-values))
       item)))

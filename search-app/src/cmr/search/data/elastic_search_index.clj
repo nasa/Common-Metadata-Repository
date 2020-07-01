@@ -208,12 +208,12 @@
                             [(:type-name index-info)]
                             :query (q/match-all)
                             :size 10000
-                            :fields ["permitted-group-ids"])
+                            :_source ["permitted-group-ids"])
         hits (get-in results [:hits :total :value])]
     (when (> hits (count (get-in results [:hits :hits])))
       (e/internal-error! "Failed to retrieve all hits."))
     (into {} (for [hit (get-in results [:hits :hits])]
-               [(:_id hit) (get-in hit [:fields :permitted-group-ids])]))))
+               [(:_id hit) (get-in hit [:_source :permitted-group-ids])]))))
 
 (defn get-collection-granule-counts
   "Returns the collection granule count by searching elasticsearch by aggregation"

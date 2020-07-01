@@ -29,20 +29,10 @@
 (defn elastic-result->meta
   "Takes an elasticsearch result and returns a map of the meta fields for the response."
   [concept-type elastic-result]
-  (let [{[concept-id] :concept-id
-         [revision-id] :revision-id
-         [native-id] :native-id
-         [user-id] :user-id
-         [provider-id] :provider-id
-         [metadata-format] :metadata-format
-         [revision-date] :revision-date
-         [deleted] :deleted
-         [has-variables] :has-variables
-         [has-formats] :has-formats
-         [has-transforms] :has-transforms
-         [has-spatial-subsetting] :has-spatial-subsetting
-         [has-temporal-subsetting] :has-temporal-subsetting
-         [associations-gzip-b64] :associations-gzip-b64} (:fields elastic-result)
+  (let [{:keys [concept-id revision-id native-id user-id provider-id metadata-format
+                revision-date deleted has-variables has-formats has-transforms
+                has-spatial-subsetting has-temporal-subsetting
+                associations-gzip-b64]} (:_source elastic-result)
         revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))]
     (util/remove-nil-keys
      {:concept-type concept-type
@@ -66,7 +56,7 @@
 (defn elastic-result->tuple
   "Returns a tuple of concept id and revision id from the elastic result of the given concept type."
   [concept-type elastic-result]
-  [(get-in elastic-result [:fields :concept-id 0])
+  [(get-in elastic-result [:_source :concept-id])
    (elastic-results/get-revision-id-from-elastic-result concept-type elastic-result)])
 
 (defmulti elastic-result+metadata->umm-json-item

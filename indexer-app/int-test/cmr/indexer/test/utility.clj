@@ -66,7 +66,7 @@
                                       :number_of_replicas 0,
                                       :refresh_interval "20s"}}}]
                  :mapping {:dynamic "strict",
-                                        :_source {:enabled false},
+                                        :_source {:enabled true},
                                         :properties {:concept-id  {:type "keyword" :norms false :index_options "docs" :store true},
                                                      :entry-title {:type "keyword" :norms false :index_options "docs" :store true}}}}
     :granule {:indexes
@@ -102,7 +102,7 @@
                                       :number_of_replicas 0,
                                       :refresh_interval "20s"}}}]
                  :mapping {:collection {:dynamic "strict",
-                                        :_source {:enabled false},
+                                        :_source {:enabled true},
                                         :properties {:concept-id  {:type "keyword" :norms false :index_options "docs" :store true},
                                                      :entry-title {:type "keyword" :norms false :index_options "docs" :store true}}}}}
     :granule {:indexes
@@ -139,7 +139,7 @@
                                       :number_of_replicas 0,
                                       :refresh_interval "20s"}}}]
                  :mapping {:collection {:dynamic "strict",
-                                        :_source {:enabled false},
+                                        :_source {:enabled true},
                                         :properties {:concept-id  {:type "XXX" :index "not_analyzed" :norms false :index_options "docs" :store true},
                                                      :entry-title {:type "keyword" :norms false :index_options "docs" :store true}}}}}}})
 

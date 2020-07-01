@@ -17,8 +17,8 @@
   "The default function that will be used to process an elastic result into a result for the caller."
   [context query elastic-result]
   (let [{concept-id :_id
-         field-values :fields} elastic-result]
-    (reduce #(assoc %1 %2 (-> field-values %2 first))
+         field-values :_source} elastic-result]
+    (reduce #(assoc %1 %2 (-> field-values %2))
             {:concept-id concept-id}
             (:result-fields query))))
 

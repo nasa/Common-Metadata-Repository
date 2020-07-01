@@ -38,11 +38,11 @@
 
 (defmethod parse-elastic-item :collection
   [concept-type elastic-result]
-  (let [{{[entry-title] :entry-title
-          [provider-id] :provider-id
-          [access-value] :access-value
-          [start-date] :start-date
-          [end-date] :end-date} :fields} elastic-result
+  (let [{{entry-title :entry-title
+          provider-id :provider-id
+          access-value :access-value
+          start-date :start-date
+          end-date :end-date} :_source} elastic-result
         start-date (parse-elastic-datetime start-date)
         end-date (parse-elastic-datetime end-date)]
 
@@ -58,11 +58,11 @@
 
 (defmethod parse-elastic-item :granule
   [concept-type elastic-result]
-  (let [{{[provider-id] :provider-id
-          [access-value] :access-value
-          [collection-concept-id] :collection-concept-id
-          [start-date] :start-date
-          [end-date] :end-date} :fields} elastic-result]
+  (let [{{provider-id :provider-id
+          access-value :access-value
+          collection-concept-id :collection-concept-id
+          start-date :start-date
+          end-date :end-date} :_source} elastic-result]
     (-> {:concept-type concept-type
          :provider-id provider-id
          :collection-concept-id collection-concept-id}

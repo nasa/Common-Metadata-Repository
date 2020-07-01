@@ -64,9 +64,7 @@
 
 (defmethod elastic-results/elastic-result->query-result-item [:acl :json]
   [context query elastic-result]
-  (let [item (->> elastic-result
-                  :fields
-                  (util/map-values first))
+  (let [item (:_source elastic-result)
         item (if-let [acl-gzip (:acl-gzip-b64 item)]
                (-> item
                    (assoc :acl (edn/read-string (util/gzip-base64->string acl-gzip)))
