@@ -13,10 +13,10 @@
                        "refresh_interval" "30s"}}
    :mapping {"dynamic"  "strict"
              "_source"  {"enabled" true}
-             :properties {:index-set-id  {:type "keyword" :norms false :index_options "docs" :store true}
-                          :index-set-name {:type "keyword" :norms false :index_options "docs" :store true}
+             :properties {:index-set-id  {:type "keyword" :norms false :index_options "docs"}
+                          :index-set-name {:type "keyword" :norms false :index_options "docs"}
                           :index-set-name-lowercase {:type "keyword" :norms false :index_options "docs"}
-                          :index-set-request {:type "keyword" :norms false :index_options "docs" :store true}}}})
+                          :index-set-request {:type "keyword" :norms false :index_options "docs"}}}})
 
 (defconfig index-queue-name
   "The queue containing ingest events for the indexer"

@@ -25,27 +25,27 @@
 
 (defmapping ^:private group-mappings group-type-name
   "Defines the field mappings and type options for indexing groups in elasticsearch."
-  {:concept-id (m/stored m/string-field-mapping)
-   :revision-id (m/stored m/int-field-mapping)
+  {:concept-id m/string-field-mapping
+   :revision-id m/int-field-mapping
 
-   :name (m/stored m/string-field-mapping)
+   :name m/string-field-mapping
    :name-lowercase m/string-field-mapping
 
-   :provider-id (m/stored m/string-field-mapping)
+   :provider-id m/string-field-mapping
    :provider-id-lowercase m/string-field-mapping
 
-   :description (m/not-indexed (m/stored m/string-field-mapping))
+   :description (m/not-indexed m/string-field-mapping)
 
-   :legacy-guid (m/stored m/string-field-mapping)
+   :legacy-guid m/string-field-mapping
    :legacy-guid-lowercase m/string-field-mapping
 
-   :members (m/stored m/string-field-mapping)
+   :members m/string-field-mapping
    :members-lowercase m/string-field-mapping
 
    ;; Member count is returned in the group response. The list of members is returned separately so
    ;; we don't store the members in the elastic index. If members end up being stored at some point
    ;; we can get rid of this field.
-   :member-count (m/stored (m/not-indexed m/int-field-mapping))})
+   :member-count (m/not-indexed m/int-field-mapping)})
 
 (def ^:private group-index-settings
   "Defines the elasticsearch index settings."
@@ -152,8 +152,8 @@
 
 (defmapping ^:private acl-mappings acl-type-name
   "Defines the field mappings and type options for indexing acls in elasticsearch."
-  {:concept-id (m/stored m/string-field-mapping)
-   :revision-id (m/stored m/int-field-mapping)
+  {:concept-id m/string-field-mapping
+   :revision-id m/int-field-mapping
 
    :collection-identifier m/bool-field-mapping
    :collection-applicable m/bool-field-mapping
@@ -180,34 +180,34 @@
    :granule-temporal-range-stop-date m/date-field-mapping
    :granule-temporal-mask m/string-field-mapping
 
-   :permitted-group (m/stored m/string-field-mapping)
+   :permitted-group m/string-field-mapping
    :permitted-group-lowercase m/string-field-mapping
 
    :group-permission group-permission-field-mapping
 
-   :legacy-guid (m/stored m/string-field-mapping)
+   :legacy-guid m/string-field-mapping
    :legacy-guid-lowercase m/string-field-mapping
 
    ;; Target will be the target of a system identity or a provider identity such as ANY_ACL.
-   :target (m/stored m/string-field-mapping)
+   :target m/string-field-mapping
    :target-lowercase m/string-field-mapping
 
    ;; target-provider-id indexes the provider id of the provider-identity or
    ;; catalog-item-identity field of an acl, if present
-   :target-provider-id (m/stored m/string-field-mapping)
+   :target-provider-id m/string-field-mapping
    :target-provider-id-lowercase m/string-field-mapping
 
-   :target-id (m/stored m/string-field-mapping)
+   :target-id m/string-field-mapping
 
    ;; The name of the ACL for returning in the references response.
    ;; This will be the catalog item identity name or a string containing
    ;; "<identity type> - <target>". For example "System - PROVIDER"
-   :display-name (m/stored m/string-field-mapping)
+   :display-name m/string-field-mapping
    :display-name-lowercase m/string-field-mapping
-   :identity-type (m/stored m/string-field-mapping)
+   :identity-type m/string-field-mapping
 
    ;; Store the full ACL metadata for quick retrieval.
-   :acl-gzip-b64 (m/stored m/binary-field-mapping)})
+   :acl-gzip-b64 m/binary-field-mapping})
 
 (def ^:private acl-index-settings
   "Defines the elasticsearch index settings."
