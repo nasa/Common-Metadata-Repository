@@ -30,7 +30,7 @@
 (defn- find-deleted-granules
   "Calls get-deleted-granules endpoint and returns parsed items from response"
   [params]
-  (map #(first (get % "concept-id"))
+  (map #(get % "concept-id")
        (json/parse-string
         (get (search/find-deleted-granules
               params)
