@@ -45,8 +45,8 @@
 
 (defn- process-autocomplete-query
   "Process and autocomplete and return value"
-  [ctx term types params]
-  (let [results (ac/autocomplete ctx term types params)
+  [ctx term types params token]
+  (let [results (ac/autocomplete ctx term types params token)
         headers (ac-results->response-header-map results)
         body (ac-results->response-body results)]
     {:status 200
@@ -61,10 +61,11 @@
                             (pv/validate-parameters :autocomplete params)
                             (common-params/default-parse-query-level-params :autocomplete params))
         query (lower-case-and-trim (:q params))
-        types (:type params)]
+        types (:type params)
+        token (get headers "echo-token")]
     (when (empty? query)
       (svc-errors/throw-service-errors :bad-request ["Missing param [q]"]))
-    (process-autocomplete-query ctx query types opts)))
+    (process-autocomplete-query ctx query types opts token)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions

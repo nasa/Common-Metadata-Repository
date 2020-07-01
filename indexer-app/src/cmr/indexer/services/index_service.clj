@@ -187,7 +187,7 @@
 
 (defn- science-keywords->elastic-docs
   "Convert hierarchical science-keywords to colon-separated elastic docs for indexing"
-  [science-keywords]
+  [science-keywords public-collection?]
   (let [keyword-hierarchy [:topic :term :variable-level-1
                            :variable-level-2 :variable-level-3 :detailed-variable]
         terminal-key (->> keyword-hierarchy
@@ -228,6 +228,33 @@
                 :fields v
                 :_index "1_autocomplete"}))
            values))))
+                    (remove #(s/includes? (name (key %)) ".lowercase"))
+                    (remove #(= (key %) :AccessConstraints)))
+        ; AccessConstraints values are Numbers, so if none are preset, we can
+        ; be sure that there are no access restrictions
+        access-constraints (->> value-map
+                               :AccessConstraints
+                               :Value
+                               number?)
+        public-collection? (if (nil? access-constraints)
+                               true
+                               false)]
+    (if (= key-name "science-keywords")
+     (science-keywords->elastic-docs value-map public-collection?)
+     (map (fn [value]
+            (let [v (val value)
+                  type (camel-snake-kebab/->snake_case_keyword key-name)
+                  id (-> (s/lower-case v)
+                         (str "_" type)
+                         hash)]
+             {:type type
+              :_id id
+              :value v
+              :fields v
+              :_index "1_autocomplete"
+              :_type "suggestion"
+              :contains-public-collections public-collection?}))
+         values))))
 
 (defn- get-suggestion-docs
   "Given the humanized fields from a collection, assemble elastic doc for each
@@ -276,7 +303,7 @@
                                        (debug %)
                                        nil)))
                              (remove nil?))
-        humanized-fields (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
+        humanized-fields  (map #(humanizer/collection-humanizers-for-suggestion-docs context %) parsed-concepts)
         suggestion-docs (->> humanized-fields
                              (map get-suggestion-docs)
                              flatten
