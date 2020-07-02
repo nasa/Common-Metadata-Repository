@@ -57,6 +57,11 @@
 (def bool-field-mapping
   {:type "boolean"})
 
+(defn stored
+  "modifies a mapping to indicate that it should be stored"
+  [field-mapping]
+  (assoc field-mapping :store true))
+
 (defn not-indexed
   "modifies a mapping to indicate that it should not be indexed and thus is not searchable."
   [field-mapping]
