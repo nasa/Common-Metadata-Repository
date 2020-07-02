@@ -4,10 +4,14 @@
     [cmr.indexer.data.concepts.collection.collection-util :as util]
     [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]))
 
+(def not-provided-version ^:deprecated
+  "In EMS community usage CSV, the version value when the version is unknown"
+  "N/A")
+
 (defn- valid-version?
   [parsed-version version]
   (or (= (util/parse-version-id version) parsed-version)
-      (= "N/A" version)
+      (= not-provided-version version)
       (nil? version)))
 
 (defn collection-community-usage-score
@@ -22,5 +26,5 @@
     (when (seq metrics)
       (when-let [usage-entries (->> (:ShortName collection)
                                     (get metrics)
-                                    (filter valid-version? parsed-version-id))]
+                                    (filter #(valid-version? parsed-version-id %)))]
         {:usage-relevancy-score (apply + (map :access-count usage-entries))}))))
