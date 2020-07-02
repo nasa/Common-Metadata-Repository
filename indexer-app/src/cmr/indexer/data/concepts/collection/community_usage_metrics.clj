@@ -4,8 +4,9 @@
     [cmr.indexer.data.concepts.collection.collection-util :as util]
     [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]))
 
-(def not-provided-version ^:deprecated
+(def not-provided-version
   "In EMS community usage CSV, the version value when the version is unknown"
+  {:deprecated true}
   "N/A")
 
 (defn- valid-version?
