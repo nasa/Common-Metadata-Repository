@@ -301,9 +301,9 @@
 
    ;; ords-info contains tuples of shapes stored in ords
    ;; Each tuple contains the shape type and the number of ordinates
-   :ords-info (m/not-indexed m/int-field-mapping)
+   :ords-info (m/not-indexed (m/stored m/int-field-mapping))
    ;; ords contains longitude latitude pairs (ordinates) of all the shapes
-   :ords (m/not-indexed m/int-field-mapping)})
+   :ords (m/not-indexed (m/stored m/int-field-mapping))})
 
 (defmapping collection-mapping :collection
   "Defines the elasticsearch mapping for storing collections. These are the
