@@ -496,22 +496,27 @@
     (index/wait-until-indexed)
 
     (testing "reversing usage_score reverses sort-order"
-      (let [scores_asc (-> (client/get (str (url/search-url :collection) ".json")
+      (let [usage_asc (-> (client/get (str (url/search-url :collection) ".json")
+                                      {:query-params {"keyword" "alph*"
+                                                      "sort_key" ["usage_score"]}})
+                          :body
+                          (json/parse-string true)
+                          (get-in [:feed :entry]))
+            usage_desc (-> (client/get (str (url/search-url :collection) ".json")
                                        {:query-params {"keyword" "alph*"
-                                                       "sort_key" ["usage_score"]}})
+                                                       "sort_key" ["-usage_score"]}})
                            :body
                            (json/parse-string true)
-                           (get-in [:feed :entry]))
-            scores_desc (-> (client/get (str (url/search-url :collection) ".json")
-                                        {:query-params {"keyword" "alph*"
-                                                        "sort_key" ["-usage_score"]}})
-                            :body
-                            (json/parse-string true)
-                            (get-in [:feed :entry]))]
+                           (get-in [:feed :entry]))]
+
+        ;; Check scores are sorted opposite each other
+        ;; NOTE: the :score is the from keyword match and not part of usage
+        (is (apply >= (map :score usage_asc)))
+        (is (apply <= (map :score usage_desc)))
 
         ;; Highest scored by usage should be first on descending and last on ascending
-        (is (= (:concept-id other_alpha_30) (:id (first scores_desc))))
-        (is (= (:concept-id other_alpha_30) (:id (last scores_asc))))))
+        (is (= (:concept-id other_alpha_30) (:id (first usage_desc))))
+        (is (= (:concept-id other_alpha_30) (:id (last usage_asc))))))
 
     (testing "usage_score as the sole sort key"
       (are [sort-key items]
