@@ -5,8 +5,8 @@
     [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]))
 
 (def not-provided-version
-  "In EMS community usage CSV, the version value when the version is unknown"
-  {:deprecated true}
+  "DEPRECATED
+   In EMS community usage CSV, the version value when the version is unknown"
   "N/A")
 
 (defn- valid-version?
