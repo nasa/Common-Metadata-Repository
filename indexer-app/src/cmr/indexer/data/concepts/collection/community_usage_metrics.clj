@@ -27,5 +27,5 @@
     (when (seq metrics)
       (when-let [usage-entries (->> (:ShortName collection)
                                     (get metrics)
-                                    (filter #(valid-version? parsed-version-id %)))]
+                                    (filter #(valid-version? parsed-version-id (:version %))))]
         {:usage-relevancy-score (apply + (map :access-count usage-entries))}))))
