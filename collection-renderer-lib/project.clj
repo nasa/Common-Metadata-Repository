@@ -10,9 +10,9 @@
    the hardcoded commit id during dev integration with cmr_metadata_preview project.
    The hardcoded commit id should be updated when MMT releases a new version of the gem."
   {:repo "https://git.earthdata.nasa.gov/scm/cmr/cmr_metadata_preview.git"
-   :version "cmr_metadata_preview-0.2.1"
+   :version "cmr_metadata_preview-0.2.2"
    :commit-id (or (System/getenv "CMR_METADATA_PREVIEW_COMMIT")
-                  "c6de9ab2a0e")})
+                  "1c8d68fb232")})
 
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
