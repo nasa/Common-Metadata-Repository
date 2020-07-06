@@ -64,13 +64,13 @@
 
 (defmethod elastic-results/elastic-result->query-result-item [:acl :json]
   [context query elastic-result]
-  (let [item (:_source elastic-result)
-        item (if-let [acl-gzip (:acl-gzip-b64 item)]
-               (-> item
+  (let [result-source (:_source elastic-result)
+        item (if-let [acl-gzip (:acl-gzip-b64 result-source)]
+               (-> result-source
                    (assoc :acl (edn/read-string (util/gzip-base64->string acl-gzip)))
                    (dissoc :acl-gzip-b64)
                    (apply-legacy-group-guid-feature context query))
-               item)]
+               result-source)]
     (-> item
         (set/rename-keys {:display-name :name})
         (assoc :location (str (reference-root context) (:concept-id item)))
