@@ -10,7 +10,8 @@
   "N/A")
 
 (defn- coll-version-matches-metrics-version?
-  "Returns whether the collection version matches the community usage metrics version"
+  "Returns whether the collection version matches the community usage metrics version.
+   This also returns true if the metrics version is nil or N/A"
   [parsed-version version]
   (or (= parsed-version (util/parse-version-id version))
       (= not-provided-version version)
