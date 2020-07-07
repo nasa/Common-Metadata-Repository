@@ -1,11 +1,8 @@
 (ns cmr.system-int-test.search.collection-sorting-search-test
   "Tests searching for collections using basic collection identifiers"
   (:require
-   [cheshire.core :as json]
-   [cmr.system-int-test.utils.url-helper :as url]
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clj-http.client :as client]
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common-app.services.search.messages :as msg]
