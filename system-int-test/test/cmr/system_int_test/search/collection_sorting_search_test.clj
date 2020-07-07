@@ -495,28 +495,13 @@
 
     (index/wait-until-indexed)
 
-    (testing "reversing usage_score reverses sort-order"
-      (let [usage_asc (-> (client/get (str (url/search-url :collection) ".json")
-                                      {:query-params {"keyword" "alph*"
-                                                      "sort_key" ["usage_score"]}})
-                          :body
-                          (json/parse-string true)
-                          (get-in [:feed :entry]))
-            usage_desc (-> (client/get (str (url/search-url :collection) ".json")
-                                       {:query-params {"keyword" "alph*"
-                                                       "sort_key" ["-usage_score"]}})
-                           :body
-                           (json/parse-string true)
-                           (get-in [:feed :entry]))]
+    (testing "sort order reverses"
+      (let [forward [alphonse_nil charlie_nil delta_nil alpha_2_10 alpha_1_10 bravo_1_20 bravo_2_25 other_alpha_30]]
+        (are [sort-key items]
+             (sort-order-correct? items sort-key)
 
-        ;; Check scores are sorted opposite each other
-        ;; NOTE: the :score is the from keyword match and not part of usage
-        (is (apply >= (map :score usage_asc)))
-        (is (apply <= (map :score usage_desc)))
-
-        ;; Highest scored by usage should be first on descending and last on ascending
-        (is (= (:concept-id other_alpha_30) (:id (first usage_desc))))
-        (is (= (:concept-id other_alpha_30) (:id (last usage_asc))))))
+             ["usage_score"] forward
+             ["-usage_score"](reverse forward))))
 
     (testing "usage_score as the sole sort key"
       (are [sort-key items]
