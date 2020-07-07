@@ -11,7 +11,7 @@
 
 (defn- valid-version?
   [parsed-version version]
-  (or (= (util/parse-version-id version) parsed-version)
+  (or (= parsed-version (util/parse-version-id version))
       (= not-provided-version version)
       (nil? version)))
 
