@@ -566,7 +566,7 @@
 
     (index/wait-until-indexed) 
 
-    (testing "verify unverioned metrics will be associated correctly"
+    (testing "unversioned metrics will be associated correctly"
       (are [query items]
            (sort-order-correct? items query)
 
