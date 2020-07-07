@@ -570,13 +570,13 @@
       (are [query items]
            (sort-order-correct? items query)
 
-         ["usage_score"] [charlie_nil
-                          delta_nil
-                          alpha_10
-                          bravo_20]
+           ["usage_score"] [charlie_nil
+                            delta_nil
+                            alpha_10
+                            bravo_20]
 
-         ["-usage_score"] [bravo_20
-                           alpha_10
-                           charlie_nil
-                           delta_nil]))))
+           ["-usage_score"] [bravo_20
+                             alpha_10
+                             charlie_nil
+                             delta_nil]))))
   
