@@ -9,7 +9,8 @@
    In EMS community usage CSV, the version value when the version is unknown"
   "N/A")
 
-(defn- valid-version?
+(defn- coll-version-matches-metrics-version?
+  "Returns whether the collection version matches the community usage metrics version"
   [parsed-version version]
   (or (= parsed-version (util/parse-version-id version))
       (= not-provided-version version)
@@ -27,6 +28,8 @@
     (when (seq metrics)
       (when-let [usage-entries (->> (:ShortName collection)
                                     (get metrics)
-                                    (filter #(valid-version? parsed-version-id (:version %)))
+                                    (filter #(coll-version-matches-metrics-version?
+                                               parsed-version-id
+                                               (:version %)))
                                     seq)]
         {:usage-relevancy-score (apply + (map :access-count usage-entries))}))))
