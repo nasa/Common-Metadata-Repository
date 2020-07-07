@@ -495,14 +495,6 @@
 
     (index/wait-until-indexed)
 
-    (testing "sort order reverses"
-      (let [forward [alphonse_nil charlie_nil delta_nil alpha_2_10 alpha_1_10 bravo_1_20 bravo_2_25 other_alpha_30]]
-        (are [sort-key items]
-             (sort-order-correct? items sort-key)
-
-             ["usage_score"] forward
-             ["-usage_score"](reverse forward))))
-
     (testing "usage_score as the sole sort key"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
