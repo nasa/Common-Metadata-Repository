@@ -5,8 +5,17 @@
     [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]))
 
 (def not-provided-version
-  "In EMS community usage CSV, the version value when the version is unknown"
+  "DEPRECATED
+   In EMS community usage CSV, the version value when the version is unknown"
   "N/A")
+
+(defn- coll-version-matches-metrics-version?
+  "Returns whether the collection version matches the community usage metrics version.
+   This also returns true if the metrics version is nil or N/A"
+  [parsed-version version]
+  (or (= parsed-version (util/parse-version-id version))
+      (= not-provided-version version)
+      (nil? version)))
 
 (defn collection-community-usage-score
   "Given a umm-spec collection, returns the community usage relevancy score.
@@ -18,8 +27,10 @@
   [context collection parsed-version-id]
   (let [metrics (metrics-fetcher/get-community-usage-metrics context)]
     (when (seq metrics)
-      (when-let [usage-entries (seq (filter #(or (= (util/parse-version-id (:version %))
-                                                    parsed-version-id)
-                                                 (= not-provided-version (:version %)))
-                                            (get metrics (:ShortName collection))))]
+      (when-let [usage-entries (->> (:ShortName collection)
+                                    (get metrics)
+                                    (filter #(coll-version-matches-metrics-version?
+                                               parsed-version-id
+                                               (:version %)))
+                                    seq)]
         {:usage-relevancy-score (apply + (map :access-count usage-entries))}))))
