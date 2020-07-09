@@ -39,10 +39,7 @@
        ;; no index, no hits. 
        (is (= 0 (:hits (search/find-refs :subscription {}))))       
  
-       ;; grant-all-subscription-fixture grants system level 
-       ;; Ingest Management permissions for both the registered user and guest
-       ;; so passing nil header, no token still works for bulk-index. 
-       (bootstrap/bulk-index-subscriptions "PROV1" nil)
+       (bootstrap/bulk-index-subscriptions "PROV1")
        (index/wait-until-indexed)
 
        (testing "Subscription concepts are indexed."
