@@ -57,6 +57,38 @@
     context
     (message-queue/bootstrap-services-event provider-id))))
 
+(defn- index-tools
+  "Bulk index all the tools. If a provider is passed, only index the tools
+  for that provider."
+  ([this context]
+   (info "Publishing events to index all tools.")
+   (doseq [provider (helper/get-providers (:system context))
+           :let [provider-id (:provider-id provider)]]
+     (message-queue/publish-bootstrap-concepts-event
+      context
+      (message-queue/bootstrap-tools-event provider-id)))
+   (info "Publishing events to index all tools completed."))
+  ([this context provider-id]
+   (message-queue/publish-bootstrap-concepts-event
+    context
+    (message-queue/bootstrap-tools-event provider-id))))
+
+(defn- index-subscriptions
+  "Bulk index all the subscriptions. If a provider is passed, only index the subscriptions
+  for that provider."
+  ([this context]
+   (info "Publishing events to index all subscriptions.")
+   (doseq [provider (helper/get-providers (:system context))
+           :let [provider-id (:provider-id provider)]]
+     (message-queue/publish-bootstrap-concepts-event
+      context
+      (message-queue/bootstrap-subscriptions-event provider-id)))
+   (info "Publishing events to index all subscriptions completed."))
+  ([this context provider-id]
+   (message-queue/publish-bootstrap-concepts-event
+    context
+    (message-queue/bootstrap-subscriptions-event provider-id))))
+
 (defn- fingerprint-variables
   "Update fingerprints of variables. If a provider is passed, only update fingerprints of the
   variables for that provider."
@@ -84,6 +116,8 @@
    :index-provider index-provider
    :index-variables index-variables
    :index-services index-services
+   :index-tools index-tools
+   :index-subscriptions index-subscriptions
    :index-data-later-than-date-time (partial not-implemented :index-data-later-than-date-time)
    :index-collection (partial not-implemented :index-collection)
    :index-system-concepts (partial not-implemented :index-system-concepts)
@@ -107,14 +141,26 @@
 (defmethod handle-bootstrap-event :index-variables
   [context msg]
   (if-let [provider-id (:provider-id msg)]
-    (bulk-index/index-variables (:system context) provider-id)
-    (bulk-index/index-all-variables (:system context))))
+    (bulk-index/index-provider-concepts (:system context) :variable provider-id)
+    (bulk-index/index-all-concepts (:system context) :variable)))
 
 (defmethod handle-bootstrap-event :index-services
   [context msg]
   (if-let [provider-id (:provider-id msg)]
-    (bulk-index/index-services (:system context) provider-id)
-    (bulk-index/index-all-services (:system context))))
+    (bulk-index/index-provider-concepts (:system context) :service provider-id)
+    (bulk-index/index-all-concepts (:system context) :service)))
+
+(defmethod handle-bootstrap-event :index-tools
+  [context msg]
+  (if-let [provider-id (:provider-id msg)]
+    (bulk-index/index-provider-concepts (:system context) :tool provider-id)
+    (bulk-index/index-all-concepts (:system context) :tool)))
+
+(defmethod handle-bootstrap-event :index-subscriptions
+  [context msg]
+  (if-let [provider-id (:provider-id msg)]
+    (bulk-index/index-provider-concepts (:system context) :subscription provider-id)
+    (bulk-index/index-all-concepts (:system context) :subscription)))
 
 (defmethod handle-bootstrap-event :fingerprint-variables
   [context msg]

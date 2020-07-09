@@ -42,6 +42,20 @@
   ([provider-id]
    (assoc (bootstrap-services-event) :provider-id provider-id)))
 
+(defn bootstrap-tools-event
+  "Creates an event indicating to bootstrap a tool."
+  ([]
+   {:action :index-tools})
+  ([provider-id]
+   (assoc (bootstrap-tools-event) :provider-id provider-id)))
+
+(defn bootstrap-subscriptions-event
+  "Creates an event indicating to bootstrap a subscription."
+  ([]
+   {:action :index-subscriptions})
+  ([provider-id]
+   (assoc (bootstrap-subscriptions-event) :provider-id provider-id)))
+
 (defn fingerprint-variables-event
   "Creates an event indicating to update fingerprints of variables."
   [provider-id]

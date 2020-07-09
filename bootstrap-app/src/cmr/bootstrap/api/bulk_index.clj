@@ -120,6 +120,44 @@
      {:status 202
       :body {:message (msg/index-services params provider-id result)}})))
 
+(defn index-tools
+  "(Re-)Index the tools stored in metadata-db. If a provider-id is passed,
+  only the tools for that provider will be indexed. With no provider-id,
+  all providers' tools are (re-)indexed.
+
+  Note that this function differs from the service function it calls, in that
+  this function extracts dispatcher implementation from the context, while the
+  service function takes the dispatcher as an argument."
+  ([context params]
+   (let [dispatcher (api-util/get-dispatcher context params :index-tools)
+         result (service/index-tools context dispatcher)]
+     {:status 202
+      :body {:message (msg/index-tools params nil result)}}))
+  ([context params provider-id]
+   (let [dispatcher (api-util/get-dispatcher context params :index-tools)
+         result (service/index-tools context dispatcher provider-id)]
+     {:status 202
+      :body {:message (msg/index-tools params provider-id result)}})))
+
+(defn index-subscriptions
+  "(Re-)Index the subscriptions stored in metadata-db. If a provider-id is passed,
+  only the subscriptions for that provider will be indexed. With no provider-id,
+  all providers' subscriptions are (re-)indexed.
+
+  Note that this function differs from the service function it calls, in that
+  this function extracts dispatcher implementation from the context, while the
+  service function takes the dispatcher as an argument."
+  ([context params]
+   (let [dispatcher (api-util/get-dispatcher context params :index-subscriptions)
+         result (service/index-subscriptions context dispatcher)]
+     {:status 202
+      :body {:message (msg/index-subscriptions params nil result)}}))
+  ([context params provider-id]
+   (let [dispatcher (api-util/get-dispatcher context params :index-subscriptions)
+         result (service/index-subscriptions context dispatcher provider-id)]
+     {:status 202
+      :body {:message (msg/index-subscriptions params provider-id result)}})))
+
 (defn delete-concepts-by-id
   "Delete concepts from the indexes by concept-id."
   [context request-details-map params]

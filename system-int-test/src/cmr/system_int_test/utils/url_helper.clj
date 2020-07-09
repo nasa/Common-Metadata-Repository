@@ -407,6 +407,18 @@
   ([provider-id]
    (format "%s/%s" (bulk-index-services-url) provider-id)))
 
+(defn bulk-index-tools-url
+  ([]
+   (format "http://localhost:%s/bulk_index/tools" (transmit-config/bootstrap-port)))
+  ([provider-id]
+   (format "%s/%s" (bulk-index-tools-url) provider-id)))
+
+(defn bulk-index-subscriptions-url
+  ([]
+   (format "http://localhost:%s/bulk_index/subscriptions" (transmit-config/bootstrap-port)))
+  ([provider-id]
+   (format "%s/%s" (bulk-index-subscriptions-url) provider-id)))
+
 (defn bulk-index-collection-url
   []
   (format "http://localhost:%s/bulk_index/collections" (transmit-config/bootstrap-port)))

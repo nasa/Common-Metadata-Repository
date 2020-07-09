@@ -44,6 +44,16 @@
    "Bulk index all the services in CMR. Optionally, pass a provider id, in
     which case only the services for that provider will be indexed.")
 
+  (index-tools
+   [this context] [this context provider-id]
+   "Bulk index all the tools in CMR. Optionally, pass a provider id, in
+    which case only the tools for that provider will be indexed.")
+
+  (index-subscriptions
+   [this context] [this context provider-id]
+   "Bulk index all the subscritions in CMR. Optionally, pass a provider id, in
+    which case only the subscriptions for that provider will be indexed.")
+
   (index-system-concepts
    [this context start-index]
    "Bulk index all the tags, acls, and access-groups.")

@@ -121,81 +121,46 @@
             gran-count
             provider-id)))
 
-(defn- bulk-index-variable-batches
-  "Bulk index the given variable batches in both regular index and all revisions index."
+(defn- bulk-index-concept-batches
+  "Bulk index the given concept batches in both regular index and all revisions index."
   [system concept-batches]
   (let [indexer-context {:system (helper/get-indexer system)}]
     (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
     (index/bulk-index indexer-context concept-batches {})))
 
-(defn- index-variables-by-provider
-  "Bulk index variables for the given provider."
-  [system provider]
-  (info "Indexing variables for provider" (:provider-id provider))
+(defn- index-concepts-by-provider
+  "Bulk index concepts for the given provider and concept-type."
+  [system concept-type provider]
+  (info (format "Indexing %ss for provider %s"
+                (name concept-type)
+                (:provider-id provider)))
   (let [db (helper/get-metadata-db-db system)
         concept-batches (db/find-concepts-in-batches
                          db provider
-                         {:concept-type :variable
+                         {:concept-type concept-type
                           :provider-id (:provider-id provider)}
                          (:db-batch-size system))
-        num-variables (bulk-index-variable-batches system concept-batches)
-        msg (format "Indexing of %s variable revisions for provider %s completed."
-                    num-variables
+        num-concepts (bulk-index-concept-batches system concept-batches)
+        msg (format "Indexing of %s %s revisions for provider %s completed."
+                    num-concepts
+                    (name concept-type)
                     (:provider-id provider))]
     (info msg)))
 
-(defn index-variables
-  "Bulk index variables for the given provider-id."
-  [system provider-id]
+(defn index-provider-concepts
+  "Bulk index concepts for the given provider-id and concept-type."
+  [system concept-type provider-id]
   (->> provider-id
        (helper/get-provider system)
-       (index-variables-by-provider system)))
+       (index-concepts-by-provider system concept-type)))
 
-(defn index-all-variables
-  "Bulk index all CMR variables."
-  [system]
-  (info "Indexing all variables")
+(defn index-all-concepts
+  "Bulk index all CMR concepts for the concept-type."
+  [system concept-type]
+  (info (format "Indexing all %ss" (name concept-type)))
   (doseq [provider (helper/get-providers system)]
-    (index-variables-by-provider system provider))
-  (info "Indexing of all variables completed."))
-
-(defn- bulk-index-service-batches
-  "Bulk index the given service batches in both regular index and all revisions index."
-  [system concept-batches]
-  (let [indexer-context {:system (helper/get-indexer system)}]
-    (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
-    (index/bulk-index indexer-context concept-batches {})))
-
-(defn- index-services-by-provider
-  "Bulk index services for the given provider."
-  [system provider]
-  (info "Indexing services for provider" (:provider-id provider))
-  (let [db (helper/get-metadata-db-db system)
-        concept-batches (db/find-concepts-in-batches
-                         db provider
-                         {:concept-type :service
-                          :provider-id (:provider-id provider)}
-                         (:db-batch-size system))
-        num-services (bulk-index-service-batches system concept-batches)
-        msg (format "Indexing of %s service revisions for provider %s completed."
-                    num-services
-                    (:provider-id provider))]
-    (info msg)))
-
-(defn index-services
-  "Bulk index services for the given provider-id."
-  [system provider-id]
-  (->> provider-id
-       (helper/get-provider system)
-       (index-services-by-provider system)))
-
-(defn index-all-services
-  "Bulk index all CMR services."
-  [system]
-  (info "Indexing all services")
-  (doseq [provider (helper/get-providers system)]
-    (index-services-by-provider system provider))
-  (info "Indexing of all services completed."))
+    (index-concepts-by-provider system concept-type provider))
+  (info (format "Indexing of all %ss completed." (name concept-type))))
 
 (defn- index-access-control-concepts
   "Bulk index ACLs or access groups"
