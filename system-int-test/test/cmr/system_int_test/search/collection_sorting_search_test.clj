@@ -26,8 +26,14 @@
        "alpha,3,30\n"
        "bravo,1,20\n"
        "bravo,2,25\n"
-       "unfound_1,1,40\n"
-       "unfound_2,1,40\n"))
+       "unfound_1,,40\n"
+       "unfound_2,,40\n"))
+
+(def non-version-usage-csv
+  (str "Product,Hosts\n"
+       "alpha,10\n"
+       "bravo,20\n"
+       "unfound_2,40\n"))
 
 (defn init-usage-fixture
   "Setup usage config"
@@ -537,3 +543,40 @@
            {:keyword "alph*" :sort-key ["-usage_score" "entry_title"]} [other_alpha_30 alpha_1_10 alpha_2_10 alphonse_nil]
            {:keyword "alph*" :sort-key ["-usage_score" "-short_name"]} [other_alpha_30 alpha_2_10 alpha_1_10 alphonse_nil]))))
 
+(deftest update-community-usage-propagates-to-sorting-test
+  (let [make-named-collection (fn [cname attribs]
+                                (d/ingest
+                                  "PROV1"
+                                  (dc/collection
+                                    (merge {:entry-title cname
+                                            :short-name cname
+                                            :long-name (str cname "-long")
+                                            :version-id "1"}
+                                           attribs))))
+
+        _ (humanizer-util/ingest-community-usage-metrics non-version-usage-csv)
+
+        ;; community usage values assigned to the following collections
+        alpha_10 (make-named-collection "alpha_a" {:short-name "alpha"})
+        bravo_20 (make-named-collection "bravo_2" {:short-name "bravo" :version-id "2"})
+
+        ;; no community usage entries on the following
+        charlie_nil (make-named-collection "charlie" {})
+        delta_nil (make-named-collection "delta" {})]
+
+    (index/wait-until-indexed) 
+
+    (testing "unversioned metrics will be associated correctly"
+      (are [query items]
+           (sort-order-correct? items query)
+
+           ["usage_score"] [charlie_nil
+                            delta_nil
+                            alpha_10
+                            bravo_20]
+
+           ["-usage_score"] [bravo_20
+                             alpha_10
+                             charlie_nil
+                             delta_nil]))))
+  
