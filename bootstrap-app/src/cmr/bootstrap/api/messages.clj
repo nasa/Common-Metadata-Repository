@@ -43,6 +43,24 @@
       (format "Processing services for provider %s for bulk indexing." provider-id)
       "Processing all services for bulk indexing.")))
 
+(defn index-tools
+  "Message to return when indexing tools."
+  [params provider-id result]
+  (if (api-util/synchronous? params)
+    result
+    (if provider-id
+      (format "Processing tools for provider %s for bulk indexing." provider-id)
+      "Processing all tools for bulk indexing.")))
+
+(defn index-subscriptions
+  "Message to return when indexing subscriptions."
+  [params provider-id result]
+  (if (api-util/synchronous? params)
+    result
+    (if provider-id
+      (format "Processing subscriptions for provider %s for bulk indexing." provider-id)
+      "Processing all subscriptions for bulk indexing.")))
+
 (defn data-later-than-date-time
   [params result date-time]
   (if (api-util/synchronous? params)

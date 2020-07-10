@@ -47,17 +47,33 @@
   "Bulk index the variables in CMR. If a provider-id is given, only index the
   variables for that provider."
   ([this context]
-   (bulk-index/index-all-variables (:system context)))
+   (bulk-index/index-all-concepts (:system context) :variable))
   ([this context provider-id]
-   (bulk-index/index-variables (:system context) provider-id)))
+   (bulk-index/index-provider-concepts (:system context) :variable provider-id)))
 
 (defn- index-services
   "Bulk index the services in CMR. If a provider-id is given, only index the
   services for that provider."
   ([this context]
-   (bulk-index/index-all-services (:system context)))
+   (bulk-index/index-all-concepts (:system context) :service))
   ([this context provider-id]
-   (bulk-index/index-services (:system context) provider-id)))
+   (bulk-index/index-provider-concepts (:system context) :service provider-id)))
+
+(defn- index-tools
+  "Bulk index the tools in CMR. If a provider-id is given, only index the
+  tools for that provider."
+  ([this context]
+   (bulk-index/index-all-concepts (:system context) :tool))
+  ([this context provider-id]
+   (bulk-index/index-provider-concepts (:system context) :tool provider-id)))
+
+(defn- index-subscriptions
+  "Bulk index the subscriptions in CMR. If a provider-id is given, only index the
+  subscriptions for that provider."
+  ([this context]
+   (bulk-index/index-all-concepts (:system context) :subscription))
+  ([this context provider-id]
+   (bulk-index/index-provider-concepts (:system context) :subscription provider-id)))
 
 (defn- delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
@@ -91,6 +107,8 @@
    :index-provider index-provider
    :index-variables index-variables
    :index-services index-services
+   :index-tools index-tools
+   :index-subscriptions index-subscriptions
    :index-data-later-than-date-time index-data-later-than-date-time
    :index-collection index-collection
    :index-system-concepts index-system-concepts

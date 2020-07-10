@@ -60,6 +60,18 @@
         (POST "/services/:provider-id" [provider-id :as {:keys [request-context params]}]
           (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/index-services request-context params provider-id))
+        (POST "/tools" {:keys [request-context params]}
+          (acl/verify-ingest-management-permission request-context :update)
+          (bulk-index/index-tools request-context params))
+        (POST "/tools/:provider-id" [provider-id :as {:keys [request-context params]}]
+          (acl/verify-ingest-management-permission request-context :update)
+          (bulk-index/index-tools request-context params provider-id))
+        (POST "/subscriptions" {:keys [request-context params]}
+          (acl/verify-ingest-management-permission request-context :update)
+          (bulk-index/index-subscriptions request-context params))
+        (POST "/subscriptions/:provider-id" [provider-id :as {:keys [request-context params]}]
+          (acl/verify-ingest-management-permission request-context :update)
+          (bulk-index/index-subscriptions request-context params provider-id))
         (POST "/concepts" {:keys [request-context body params]}
           (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/index-concepts-by-id request-context body params))
