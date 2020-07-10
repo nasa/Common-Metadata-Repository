@@ -150,6 +150,26 @@ For all providers:
 
     curl -i -XPOST http://localhost:3006/bulk_index/services
 
+### Bulk index tools:
+
+For a single provider:
+
+    curl -i -XPOST http://localhost:3006/bulk_index/tools/PROV1
+
+For all providers:
+
+    curl -i -XPOST http://localhost:3006/bulk_index/tools
+
+### Bulk index subscriptions:
+
+For a single provider:
+
+    curl -i -XPOST http://localhost:3006/bulk_index/subscriptions/PROV1
+
+For all providers:
+
+    curl -i -XPOST http://localhost:3006/bulk_index/subscriptions
+
 ### Update fingerprints of variables:
 
 For a single variable:
