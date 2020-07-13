@@ -114,7 +114,7 @@
 ;; This find granule counts per collection.
 (defmethod query-execution/post-process-query-result-feature :granule-counts
   [context query elastic-results query-results feature]
-  (if (= 0 (:hits query-results))
+  (if (= 0 (count (query-results->concept-ids query-results)))
     query-results
     (->> query-results
          (extract-granule-count-query query)
