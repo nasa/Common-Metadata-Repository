@@ -178,7 +178,7 @@
                                   {:refresh "true"}))
          result (try-elastic-operation
                  (doc/put conn index-name type-name elastic-id doc elastic-options))]
-     (if (:error result)
+     (when (:error result)
        (if (= 409 (:status result))
          (if ignore-conflict?
            (info (str "Ignore conflict: " (str result)))
