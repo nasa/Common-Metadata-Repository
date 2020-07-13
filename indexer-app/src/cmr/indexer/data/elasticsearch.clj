@@ -19,8 +19,7 @@
    [cmr.indexer.data.bulk :as cmr-bulk]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
-   [cmr.indexer.services.index-set-service :as index-set-svc]
-   [cmr.umm.umm-core :as umm]))
+   [cmr.indexer.services.index-set-service :as index-set-svc]))
 
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
@@ -324,11 +323,13 @@
 (defn bulk-index-autocomplete-suggestions
   "Save a batch of suggestion documents in Elasticsearch."
   [context docs]
-  (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
-    (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
-          conn (context->conn context)
-          response (bulk/bulk conn bulk-operations)]
-      (handle-bulk-index-response response))))
+  (if (esi/index-exists? (context->conn context) "1_autocomplete")
+    (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
+      (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
+            conn (context->conn context)
+            response (bulk/bulk conn bulk-operations)]
+        (handle-bulk-index-response response)))
+    (log/error (format "Autocomplete index [%s] does not exist in Elasticsearch. Skipping indexing"))))
 
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."

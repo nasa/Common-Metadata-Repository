@@ -20,8 +20,8 @@
 (deftest index-exists-test
   (are3
     [index-name expected]
-    (is (= expected (es-util/index-exists? (esr/connect (url/elastic-root))
-                                           index-name)))
+    (let [conn (esr/connect (url/elastic-root))]
+      (is (= expected (es-util/index-exists? conn index-name))))
 
     "returns true if the index exists"
     "i_exist" true
