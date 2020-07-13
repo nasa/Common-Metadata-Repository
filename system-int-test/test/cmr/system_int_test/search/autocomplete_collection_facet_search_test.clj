@@ -130,13 +130,12 @@
   (testing "page_size test"
    (are3
     [query expected cmr-hits]
-    (do
-      (let [response (search/get-autocomplete-suggestions query)
-            headers (:headers response)
-            body (json/parse-string (:body response) true)
-            entry (:entry (:feed body))]
-        (is (= (str cmr-hits) (:CMR-Hits headers)))
-        (is (= expected (count entry)))))
+    (let [response (search/get-autocomplete-suggestions query)
+          headers (:headers response)
+          body (json/parse-string (:body response) true)
+          entry (:entry (:feed body))]
+      (is (= (str cmr-hits) (:CMR-Hits headers)))
+      (is (= expected (count entry))))
 
     "page size 0"
     "q=an&page_size=0" 0 10
