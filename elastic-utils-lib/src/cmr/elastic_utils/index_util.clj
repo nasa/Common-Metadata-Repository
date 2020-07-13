@@ -213,3 +213,10 @@
   "Creates the alias for the index."
   [conn index alias]
   (esi/update-aliases conn [{:add {:index index :alias alias}}]))
+
+(defn index-exists?
+  "Returns whether an index with a given name exists in Elasticsearch."
+  [conn index-name]
+  (let [stats (esi/stats conn index-name)]
+    (not= 404 (:status stats))))
+
