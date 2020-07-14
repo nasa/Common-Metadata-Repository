@@ -2,6 +2,7 @@
   "Defines different types and functions for defining mappings"
   (:require
    [clj-time.format :as f]
+   [clojure.spec.alpha :as spec]
    [clojurewerkz.elastisch.rest.document :as doc]
    [clojurewerkz.elastisch.rest.index :as esi]
    [cmr.common.log :as log :refer (debug info warn error)]
@@ -214,10 +215,15 @@
   [conn index alias]
   (esi/update-aliases conn [{:add {:index index :alias alias}}]))
 
+(spec/def ::elasticsearch-index-stats
+  (spec/keys :req-un [::indices]
+             :opt-un [::_shards ::_all ::error ::status]))
+
 (defn index-exists?
   "Returns whether an index with a given name exists in Elasticsearch."
   [conn index-name]
   (let [stats (esi/stats conn index-name)]
-    (and (= 200 (:status stats))
-         (nil? (:error stats)))))
+    (and (spec/valid? ::elasticsearch-index-stats stats)
+         ;; status 404 is only given when not found, status does is not normally returned
+         (not= 404 (:status stats)))))
 

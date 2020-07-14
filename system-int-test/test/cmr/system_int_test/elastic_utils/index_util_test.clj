@@ -1,19 +1,22 @@
 (ns cmr.system-int-test.elastic-utils.index-util-test
   (:require [clojure.test :refer :all]
             [clojurewerkz.elastisch.rest :as esr]
-            [clojurewerkz.elastisch.rest.document :as esd]
+            [clojurewerkz.elastisch.rest.index :as idx]
             [cmr.common.util :refer [are3]]
             [cmr.elastic-utils.index-util :as es-util]
+            [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.url-helper :as url]))
 
 (defn es-fixture
   [f]
-  (esd/create (esr/connect (url/elastic-root))
-              "i_exist"
-              "doc"
-              {:title "mock doc"
-               :created_on "today"})
-  (f))
+  (try
+    (prn (idx/create (esr/connect (url/elastic-root)) "i_exist"))
+    (index/wait-until-indexed)
+    (catch Exception e (prn e)))
+  (f)
+  (try
+    (idx/delete (esr/connect (url/elastic-root)) "i_exist")
+    (catch Exception e (prn e))))
 
 (use-fixtures :each es-fixture)
 
