@@ -26,7 +26,7 @@
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
                  [org.quartz-scheduler/quartz "2.3.1"]
-                 [org.slf4j/slf4j-api "1.7.25"]
+                 [org.slf4j/slf4j-api "1.7.30"]
                  [ring/ring-core "1.7.1"]
                  [ring/ring-json "0.4.0"]]
   :plugins [[drift "1.5.3"]
