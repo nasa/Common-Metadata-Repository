@@ -6,7 +6,7 @@
             [cmr.elastic-utils.index-util :as es-util]
             [cmr.system-int-test.utils.url-helper :as url]))
 
-(defn fixture
+(defn es-fixture
   [f]
   (esd/create (esr/connect (url/elastic-root))
               "i_exist"
@@ -15,7 +15,7 @@
                :created_on "today"})
   (f))
 
-(use-fixtures :each fixture)
+(use-fixtures :each es-fixture)
 
 (deftest index-exists-test
   (are3
