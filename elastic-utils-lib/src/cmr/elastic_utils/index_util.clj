@@ -218,5 +218,6 @@
   "Returns whether an index with a given name exists in Elasticsearch."
   [conn index-name]
   (let [stats (esi/stats conn index-name)]
-    (not= 404 (:status stats))))
+    (and (= 200 (:status stats))
+         (nil? (:error stats)))))
 
