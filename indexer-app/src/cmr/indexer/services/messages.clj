@@ -2,7 +2,6 @@
   "Provides a map between crud ops and error message formats"
   (:require
    [cheshire.core :as cheshire]
-   [clojure.string :as string]
    [cmr.common.services.errors :as errors]))
 
 (def err-msg-fmts
@@ -72,3 +71,4 @@
 (defn index-set-doc-delete-msg
   [es-response]
   (format "index-set doc delete operation failed - elastic reponse; %s" es-response))
+
