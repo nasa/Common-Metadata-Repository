@@ -329,7 +329,7 @@
             conn (context->conn context)
             response (bulk/bulk conn bulk-operations)]
         (handle-bulk-index-response response)))
-    (log/error (format "Autocomplete index [%s] does not exist in Elasticsearch. Skipping indexing"))))
+    (log/error "Autocomplete index does not exist in Elasticsearch. Skipping indexing.")))
 
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
