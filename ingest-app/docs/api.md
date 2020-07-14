@@ -57,7 +57,9 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 | application/iso:smap+xml | ISO 19115 SMAP    | collection, granule |
 | application/vnd.nasa.cmr.umm+json| UMM JSON  | collection, granule, variable, service, subscription, tool |
 
-Note: UMM JSON accepts an additional version parameter for both Content-Type: and Accept: headers. Like charset, it is appended with a semicolon (;). If no version is appended, the latest version is assumed.
+Note: UMM JSON accepts an additional version parameter for both `Content-Type` and `Accept` headers. Like charset, it is appended with a semicolon (;). If no version is appended, the latest version is assumed.
+
+For an example, the following means version 1.14 of the UMM JSON format:
 
 ```
 application/vnd.nasa.cmr.umm+json;version=1.14
@@ -674,9 +676,9 @@ Ingest permissions for subscriptions are granted through the provider via the IN
 
 Collection metadata can be translated between metadata standards using the translate API in Ingest. This API also supports the UMM JSON format which represents UMM as JSON. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header.
 
-To disable validation of the parsed UMM metadata against the UMM spec, pass `skip_umm_validation=true` as a query parameter.
+To disable validation of the parsed UMM metadata against the current UMM spec, pass `skip_umm_validation=true` as a query parameter.
 
-Example: Translate ECHO10 metadata to UMM JSON
+Example: Translate an ECHO10 metadata to UMM JSON version 1.14
 
 ```
 curl -i -XPOST \
@@ -773,18 +775,7 @@ Example output:
 
 ```
 <gmi:MI_Metadata xmlns:eos="http://earthdata.nasa.gov/schema/eos"
-    xmlns:gco="http://www.isotc211.org/2005/gco"
-    xmlns:gmd="http://www.isotc211.org/2005/gmd"
-    xmlns:gmi="http://www.isotc211.org/2005/gmi"
-    xmlns:gml="http://www.opengis.net/gml/3.2"
-    xmlns:gmx="http://www.isotc211.org/2005/gmx"
-    xmlns:gsr="http://www.isotc211.org/2005/gsr"
-    xmlns:gss="http://www.isotc211.org/2005/gss"
-    xmlns:gts="http://www.isotc211.org/2005/gts"
-    xmlns:srv="http://www.isotc211.org/2005/srv"
-    xmlns:xlink="http://www.w3.org/1999/xlink"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://earthdata.nasa.gov/schema/eos https://cdn.earthdata.nasa.gov/iso/eos/1.0/eos.xsd http://www.isotc211.org/2005/gco https://cdn.earthdata.nasa.gov/iso/gco/1.0/gco.xsd http://www.isotc211.org/2005/gmd https://cdn.earthdata.nasa.gov/iso/gmd/1.0/gmd.xsd http://www.isotc211.org/2005/gmi https://cdn.earthdata.nasa.gov/iso/gmi/1.0/gmi.xsd http://www.opengis.net/gml/3.2 https://cdn.earthdata.nasa.gov/iso/gml/1.0/gml.xsd http://www.isotc211.org/2005/gmx https://cdn.earthdata.nasa.gov/iso/gmx/1.0/gmx.xsd http://www.isotc211.org/2005/gsr https://cdn.earthdata.nasa.gov/iso/gsr/1.0/gsr.xsd http://www.isotc211.org/2005/gss https://cdn.earthdata.nasa.gov/iso/gss/1.0/gss.xsd http://www.isotc211.org/2005/gts https://cdn.earthdata.nasa.gov/iso/gts/1.0/gts.xsd http://www.isotc211.org/2005/srv https://cdn.earthdata.nasa.gov/iso/srv/1.0/srv.xsd">
+    ...>
     <gmd:fileIdentifier>
         <gco:CharacterString>LarcDatasetId</gco:CharacterString>
     </gmd:fileIdentifier>
@@ -1028,7 +1019,7 @@ Example: Translate ECHO10 metadata to UMM-G
 ```
 curl -i -XPOST \
   -H "Content-Type: application/echo10+xml" \
-  -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.5" \
+  -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.6" \
   %CMR-ENDPOINT%/translate/granule \
   -d \
 "<Granule>
@@ -1056,14 +1047,12 @@ Example output:
   "CollectionReference" : {
     "EntryTitle" : "collection_test_2468"
   },
-  "DataGranule" : {
-    "Identifiers" : [ ]
-  },
+  "DataGranule" : { },
   "GranuleUR" : "SC:AE_5DSno.002:30500512",
   "MetadataSpecification" : {
-    "URL" : "https://cdn.earthdata.nasa.gov/umm/granule/v1.5",
+    "URL" : "https://cdn.earthdata.nasa.gov/umm/granule/v1.6",
     "Name" : "UMM-G",
-    "Version" : "1.5"
+    "Version" : "1.6"
   }
 }
 ```
