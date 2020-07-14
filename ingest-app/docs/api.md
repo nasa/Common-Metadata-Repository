@@ -60,7 +60,7 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 Note: UMM JSON accepts an additional version parameter for both Content-Type: and Accept: headers. Like charset, it is appended with a semicolon (;). If no version is appended, the latest version is assumed.
 
 ```
-application/vnd.nasa.cmr.umm+json;version=1.1
+application/vnd.nasa.cmr.umm+json;version=1.14
 ```
 
 #### <a name="echo-token-header"></a> Echo-Token Header
@@ -679,7 +679,11 @@ To disable validation of the parsed UMM metadata against the UMM spec, pass `ski
 Example: Translate ECHO10 metadata to UMM JSON
 
 ```
-curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept:  application/vnd.nasa.cmr.umm+json;version=1.2" %CMR-ENDPOINT%/translate/collection?skip_umm_validation=true -d \
+curl -i -XPOST \
+  -H "Content-Type: application/echo10+xml" \
+  -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.14" \
+  %CMR-ENDPOINT%/translate/collection\?skip_umm_validation\=true \
+  -d \
 "<Collection>
   <ShortName>ShortName_Larc</ShortName>
   <VersionId>Version01</VersionId>
@@ -698,18 +702,59 @@ Example output:
 
 ```
 {
-  "Abstract" : "A minimal valid collection",
-  "EntryId" : {
-    "Id" : "ShortName_Larc_Version01"
+  "SpatialExtent" : {
+    "GranuleSpatialRepresentation" : "NO_SPATIAL"
   },
-  "EntryTitle" : "LarcDatasetId"
+  "CollectionProgress" : "NOT PROVIDED",
+  "ScienceKeywords" : [ {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "Not provided",
+    "Term" : "Not provided"
+  } ],
+  "TemporalExtents" : [ {
+    "RangeDateTimes" : [ {
+      "BeginningDateTime" : "1970-01-01T00:00:00.000Z"
+    } ]
+  } ],
+  "ProcessingLevel" : {
+    "Id" : "Not provided"
+  },
+  "ShortName" : "ShortName_Larc",
+  "EntryTitle" : "LarcDatasetId",
+  "DataDates" : [ {
+    "Date" : "2000-01-01T00:00:00.000Z",
+    "Type" : "CREATE"
+  }, {
+    "Date" : "2000-01-01T00:00:00.000Z",
+    "Type" : "UPDATE"
+  }, {
+    "Date" : "2015-05-23T22:30:59.000Z",
+    "Type" : "DELETE"
+  } ],
+  "Abstract" : "A minimal valid collection",
+  "Version" : "Version01",
+  "DataCenters" : [ {
+    "Roles" : [ "ARCHIVER" ],
+    "ShortName" : "Not provided"
+  } ],
+  "Platforms" : [ {
+    "ShortName" : "Not provided"
+  } ],
+  "ArchiveAndDistributionInformation" : {
+    "FileArchiveInformation" : [ ],
+    "FileDistributionInformation" : [ ]
+  }
 }
 ```
 
 Example: Translate ECHO10 metadata to ISO19115-2
 
 ```
-curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept: application/iso19115+xml" %CMR-ENDPOINT%/translate/collection -d \
+curl -i -XPOST \
+  -H "Content-Type: application/echo10+xml" \
+  -H "Accept: application/iso19115+xml" \
+  %CMR-ENDPOINT%/translate/collection \
+  -d \
 "<Collection>
   <ShortName>ShortName_Larc</ShortName>
   <VersionId>Version01</VersionId>
@@ -727,7 +772,6 @@ curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept: application
 Example output:
 
 ```
-<?xml version="1.0" encoding="UTF-8"?>
 <gmi:MI_Metadata xmlns:eos="http://earthdata.nasa.gov/schema/eos"
     xmlns:gco="http://www.isotc211.org/2005/gco"
     xmlns:gmd="http://www.isotc211.org/2005/gmd"
@@ -738,9 +782,42 @@ Example output:
     xmlns:gss="http://www.isotc211.org/2005/gss"
     xmlns:gts="http://www.isotc211.org/2005/gts"
     xmlns:srv="http://www.isotc211.org/2005/srv"
-    xmlns:swe="http://schemas.opengis.net/sweCommon/2.0/"
     xmlns:xlink="http://www.w3.org/1999/xlink"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://earthdata.nasa.gov/schema/eos https://cdn.earthdata.nasa.gov/iso/eos/1.0/eos.xsd http://www.isotc211.org/2005/gco https://cdn.earthdata.nasa.gov/iso/gco/1.0/gco.xsd http://www.isotc211.org/2005/gmd https://cdn.earthdata.nasa.gov/iso/gmd/1.0/gmd.xsd http://www.isotc211.org/2005/gmi https://cdn.earthdata.nasa.gov/iso/gmi/1.0/gmi.xsd http://www.opengis.net/gml/3.2 https://cdn.earthdata.nasa.gov/iso/gml/1.0/gml.xsd http://www.isotc211.org/2005/gmx https://cdn.earthdata.nasa.gov/iso/gmx/1.0/gmx.xsd http://www.isotc211.org/2005/gsr https://cdn.earthdata.nasa.gov/iso/gsr/1.0/gsr.xsd http://www.isotc211.org/2005/gss https://cdn.earthdata.nasa.gov/iso/gss/1.0/gss.xsd http://www.isotc211.org/2005/gts https://cdn.earthdata.nasa.gov/iso/gts/1.0/gts.xsd http://www.isotc211.org/2005/srv https://cdn.earthdata.nasa.gov/iso/srv/1.0/srv.xsd">
+    <gmd:fileIdentifier>
+        <gco:CharacterString>LarcDatasetId</gco:CharacterString>
+    </gmd:fileIdentifier>
+    <gmd:language>
+        <gco:CharacterString>eng</gco:CharacterString>
+    </gmd:language>
+    <gmd:characterSet>
+        <gmd:MD_CharacterSetCode
+            codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+    </gmd:characterSet>
+    <gmd:hierarchyLevel>
+        <gmd:MD_ScopeCode
+            codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+    </gmd:hierarchyLevel>
+    <gmd:contact>
+        <gmd:CI_ResponsibleParty>
+            <gmd:organisationName>
+                <gco:CharacterString>Not provided</gco:CharacterString>
+            </gmd:organisationName>
+            <gmd:role>
+                <gmd:CI_RoleCode codeList="" codeListValue="custodian">custodian</gmd:CI_RoleCode>
+            </gmd:role>
+        </gmd:CI_ResponsibleParty>
+    </gmd:contact>
+    <gmd:dateStamp>
+        <gco:DateTime>1970-01-01T00:00:00.000Z</gco:DateTime>
+    </gmd:dateStamp>
+    <gmd:metadataStandardName>
+        <gco:CharacterString>ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data</gco:CharacterString>
+    </gmd:metadataStandardName>
+    <gmd:metadataStandardVersion>
+        <gco:CharacterString>ISO 19115-2:2009(E)</gco:CharacterString>
+    </gmd:metadataStandardVersion>
     <gmd:identificationInfo>
         <gmd:MD_DataIdentification>
             <gmd:citation>
@@ -748,18 +825,199 @@ Example output:
                     <gmd:title>
                         <gco:CharacterString>LarcDatasetId</gco:CharacterString>
                     </gmd:title>
+                    <gmd:date>
+                        <gmd:CI_Date>
+                            <gmd:date>
+                                <gco:DateTime>2000-01-01T00:00:00.000Z</gco:DateTime>
+                            </gmd:date>
+                            <gmd:dateType>
+                                <gmd:CI_DateTypeCode
+                                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                            </gmd:dateType>
+                        </gmd:CI_Date>
+                    </gmd:date>
+                    <gmd:date>
+                        <gmd:CI_Date>
+                            <gmd:date>
+                                <gco:DateTime>2000-01-01T00:00:00.000Z</gco:DateTime>
+                            </gmd:date>
+                            <gmd:dateType>
+                                <gmd:CI_DateTypeCode
+                                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                            </gmd:dateType>
+                        </gmd:CI_Date>
+                    </gmd:date>
+                    <gmd:date>
+                        <gmd:CI_Date>
+                            <gmd:date>
+                                <gco:DateTime>2015-05-23T22:30:59.000Z</gco:DateTime>
+                            </gmd:date>
+                            <gmd:dateType>
+                                <gmd:CI_DateTypeCode
+                                    codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="unavailable">unavailable</gmd:CI_DateTypeCode>
+                            </gmd:dateType>
+                        </gmd:CI_Date>
+                    </gmd:date>
+                    <gmd:edition>
+                        <gco:CharacterString>Version01</gco:CharacterString>
+                    </gmd:edition>
                     <gmd:identifier>
                         <gmd:MD_Identifier>
                             <gmd:code>
-                                <gco:CharacterString>ShortName_Larc_Version01</gco:CharacterString>
+                                <gco:CharacterString>ShortName_Larc</gco:CharacterString>
                             </gmd:code>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.shortname</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                                <gco:CharacterString>Short Name</gco:CharacterString>
+                            </gmd:description>
+                        </gmd:MD_Identifier>
+                    </gmd:identifier>
+                    <gmd:identifier>
+                        <gmd:MD_Identifier>
+                            <gmd:code gco:nilReason="inapplicable"/>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.doi</gco:CharacterString>
+                            </gmd:codeSpace>
                         </gmd:MD_Identifier>
                     </gmd:identifier>
                 </gmd:CI_Citation>
             </gmd:citation>
+            <gmd:abstract>
+                <gco:CharacterString>A minimal valid collection Version Description: </gco:CharacterString>
+            </gmd:abstract>
+            <gmd:purpose gco:nilReason="missing"/>
+            <gmd:pointOfContact>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:organisationName>
+                        <gco:CharacterString>Not provided</gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:role>
+                        <gmd:CI_RoleCode codeList="" codeListValue="custodian">custodian</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:pointOfContact>
+            <gmd:descriptiveKeywords>
+                <gmd:MD_Keywords>
+                    <gmd:keyword>
+                        <gco:CharacterString>EARTH SCIENCE &gt; Not provided &gt; Not provided &gt; NONE &gt; NONE &gt; NONE &gt; NONE</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:type>
+                        <gmd:MD_KeywordTypeCode
+                            codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+                    </gmd:type>
+                    <gmd:thesaurusName gco:nilReason="unknown"/>
+                </gmd:MD_Keywords>
+            </gmd:descriptiveKeywords>
+            <gmd:descriptiveKeywords>
+                <gmd:MD_Keywords>
+                    <gmd:keyword>
+                        <gco:CharacterString>Not provided</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:type>
+                        <gmd:MD_KeywordTypeCode
+                            codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="platform">platform</gmd:MD_KeywordTypeCode>
+                    </gmd:type>
+                    <gmd:thesaurusName gco:nilReason="unknown"/>
+                </gmd:MD_Keywords>
+            </gmd:descriptiveKeywords>
+            <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+            </gmd:language>
+            <gmd:extent>
+                <gmd:EX_Extent id="boundingExtent">
+                    <gmd:description>
+                        <gco:CharacterString>SpatialGranuleSpatialRepresentation=NO_SPATIAL</gco:CharacterString>
+                    </gmd:description>
+                    <gmd:temporalElement>
+                        <gmd:EX_TemporalExtent>
+                            <gmd:extent>
+                                <gml:TimePeriod gml:id="d0309c314-b99d-4966-9b8f-1867d1c8c2d0">
+                                    <gml:beginPosition>1970-01-01T00:00:00.000Z</gml:beginPosition>
+                                    <gml:endPosition/>
+                                </gml:TimePeriod>
+                            </gmd:extent>
+                        </gmd:EX_TemporalExtent>
+                    </gmd:temporalElement>
+                </gmd:EX_Extent>
+            </gmd:extent>
+            <gmd:processingLevel>
+                <gmd:MD_Identifier>
+                    <gmd:code>
+                        <gco:CharacterString>Not provided</gco:CharacterString>
+                    </gmd:code>
+                    <gmd:codeSpace>
+                        <gco:CharacterString>gov.nasa.esdis.umm.processinglevelid</gco:CharacterString>
+                    </gmd:codeSpace>
+                </gmd:MD_Identifier>
+            </gmd:processingLevel>
         </gmd:MD_DataIdentification>
     </gmd:identificationInfo>
+    <gmd:dataQualityInfo>
+        <gmd:DQ_DataQuality>
+            <gmd:scope>
+                <gmd:DQ_Scope>
+                    <gmd:level>
+                        <gmd:MD_ScopeCode
+                            codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+                    </gmd:level>
+                </gmd:DQ_Scope>
+            </gmd:scope>
+            <gmd:report>
+                <gmd:DQ_AccuracyOfATimeMeasurement>
+                    <gmd:measureIdentification>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>PrecisionOfSeconds</gco:CharacterString>
+                            </gmd:code>
+                        </gmd:MD_Identifier>
+                    </gmd:measureIdentification>
+                    <gmd:result>
+                        <gmd:DQ_QuantitativeResult>
+                            <gmd:valueUnit/>
+                            <gmd:value>
+                                <gco:Record xsi:type="gco:Real_PropertyType"/>
+                            </gmd:value>
+                        </gmd:DQ_QuantitativeResult>
+                    </gmd:result>
+                </gmd:DQ_AccuracyOfATimeMeasurement>
+            </gmd:report>
+            <gmd:lineage>
+                <gmd:LI_Lineage>
+                    <gmd:processStep>
+                        <gmi:LE_ProcessStep>
+                            <gmd:description gco:nilReason="unknown"/>
+                        </gmi:LE_ProcessStep>
+                    </gmd:processStep>
+                </gmd:LI_Lineage>
+            </gmd:lineage>
+        </gmd:DQ_DataQuality>
+    </gmd:dataQualityInfo>
+    <gmi:acquisitionInformation>
+        <gmi:MI_AcquisitionInformation>
+            <gmi:platform>
+                <eos:EOS_Platform id="d5803afcd-fe3f-497a-ad5c-23af9962ca49">
+                    <gmi:identifier>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>Not provided</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.platformshortname</gco:CharacterString>
+                            </gmd:codeSpace>
+                        </gmd:MD_Identifier>
+                    </gmi:identifier>
+                    <gmi:description>
+                        <gco:CharacterString>Not provided</gco:CharacterString>
+                    </gmi:description>
+                    <gmi:instrument gco:nilReason="inapplicable"/>
+                </eos:EOS_Platform>
+            </gmi:platform>
+        </gmi:MI_AcquisitionInformation>
+    </gmi:acquisitionInformation>
 </gmi:MI_Metadata>
+
 ```
 ## <a name="translate-granule"></a> Translate Granule Metadata
 
@@ -768,7 +1026,11 @@ Granule metadata can be translated between metadata standards using the translat
 Example: Translate ECHO10 metadata to UMM-G
 
 ```
-curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.4" %CMR-ENDPOINT%/translate/granule -d \
+curl -i -XPOST \
+  -H "Content-Type: application/echo10+xml" \
+  -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.5" \
+  %CMR-ENDPOINT%/translate/granule \
+  -d \
 "<Granule>
   <GranuleUR>SC:AE_5DSno.002:30500512</GranuleUR>
   <InsertTime>2009-05-11T20:09:16.340Z</InsertTime>
@@ -794,7 +1056,15 @@ Example output:
   "CollectionReference" : {
     "EntryTitle" : "collection_test_2468"
   },
-  "GranuleUR" : "SC:AE_5DSno.002:30500512"
+  "DataGranule" : {
+    "Identifiers" : [ ]
+  },
+  "GranuleUR" : "SC:AE_5DSno.002:30500512",
+  "MetadataSpecification" : {
+    "URL" : "https://cdn.earthdata.nasa.gov/umm/granule/v1.5",
+    "Name" : "UMM-G",
+    "Version" : "1.5"
+  }
 }
 ```
 ## <a name="bulk-update"></a> Collection Bulk Update
