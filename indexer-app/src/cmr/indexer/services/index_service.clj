@@ -761,7 +761,23 @@
        context
        index
        (concept-mapping-types :service)
-       {:term {(query-field->elastic-field :provider-id :service) provider-id}}))))
+       {:term {(query-field->elastic-field :provider-id :service) provider-id}}))
+
+    ;; delete the tools
+    (doseq [index (vals (:tool index-names))]
+      (es/delete-by-query
+       context
+       index
+       (concept-mapping-types :tool)
+       {:term {(query-field->elastic-field :provider-id :tool) provider-id}}))
+
+    ;; delete the subscriptions
+    (doseq [index (vals (:subscription index-names))]
+      (es/delete-by-query
+       context
+       index
+       (concept-mapping-types :subscription)
+       {:term {(query-field->elastic-field :provider-id :subscription) provider-id}}))))
 
 (defn publish-provider-event
   "Put a provider event on the message queue."
