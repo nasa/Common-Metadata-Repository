@@ -224,6 +224,6 @@
   [conn index-name]
   (let [stats (esi/stats conn index-name)]
     (and (spec/valid? ::elasticsearch-index-stats stats)
-         ;; status 404 is only given when not found, status does is not normally returned
+         ;; status 404 is only given when not found, status is not normally returned
          (not= 404 (:status stats)))))
 
