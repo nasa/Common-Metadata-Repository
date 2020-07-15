@@ -747,37 +747,14 @@
        (concept-mapping-types :granule)
        {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
 
-    ;; delete the variables
-    (doseq [index (vals (:variable index-names))]
-      (es/delete-by-query
-       context
-       index
-       (concept-mapping-types :variable)
-       {:term {(query-field->elastic-field :provider-id :variable) provider-id}}))
-
-    ;; delete the services
-    (doseq [index (vals (:service index-names))]
-      (es/delete-by-query
-       context
-       index
-       (concept-mapping-types :service)
-       {:term {(query-field->elastic-field :provider-id :service) provider-id}}))
-
-    ;; delete the tools
-    (doseq [index (vals (:tool index-names))]
-      (es/delete-by-query
-       context
-       index
-       (concept-mapping-types :tool)
-       {:term {(query-field->elastic-field :provider-id :tool) provider-id}}))
-
-    ;; delete the subscriptions
-    (doseq [index (vals (:subscription index-names))]
-      (es/delete-by-query
-       context
-       index
-       (concept-mapping-types :subscription)
-       {:term {(query-field->elastic-field :provider-id :subscription) provider-id}}))))
+    ;; delete the variable,service,tool and subscription
+    (doseq [concept-type [:service :subscription :tool :variable]]
+      (doseq [index (vals (concept-type index-names))]
+        (es/delete-by-query
+         context
+         index
+         (concept-mapping-types concept-type)
+         {:term {(query-field->elastic-field :provider-id concept-type) provider-id}})))))
 
 (defn publish-provider-event
   "Put a provider event on the message queue."
