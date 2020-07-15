@@ -207,7 +207,7 @@
                                          context concept-type query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms from client %s in format %s with params %s."
-                  (get-in results [:hits :value]) (name concept-type) total-took (:client-id context)
+                  (:hits results) (name concept-type) total-took (:client-id context)
                   (rfh/printable-result-format (:result-format query)) (pr-str params)))
     (assoc results :took total-took)))
 
@@ -226,7 +226,7 @@
                                                                     query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms from client %s in format %s with JSON Query %s and query params %s."
-                  (get-in results [:hits :value]) (name concept-type) total-took (:client-id context)
+                  (:hits results) (name concept-type) total-took (:client-id context)
                   (rfh/printable-result-format (:result-format query)) json-query (pr-str params)))
     (assoc results :took total-took)))
 
@@ -245,7 +245,7 @@
                                                                     query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms from client %s in format %s with aql: %s."
-                  (get-in results [:hits :value]) (name concept-type) total-took (:client-id context)
+                  (:hits results) (name concept-type) total-took (:client-id context)
                   (rfh/printable-result-format (:result-format query)) aql))
     (assoc results :took total-took)))
 
@@ -451,7 +451,7 @@
                                    (set visible-concept-ids)))
         results (get-highest-visible-revisions context deleted-concept-ids result-format)
         ;; when results is nil, hits is 0
-        hits (get-in results [:hits :value] 0)
+        hits (get results :hits 0)
         results (or results {:hits hits :items []})
         total-took (- (System/currentTimeMillis) start-time)
         ;; construct the response results string
