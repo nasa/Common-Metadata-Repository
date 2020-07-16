@@ -17,11 +17,21 @@
     [cmr.system-int-test.utils.metadata-db-util :as mdb]
     [cmr.system-int-test.utils.search-util :as search]
     [cmr.system-int-test.utils.service-util :as services]
+    [cmr.system-int-test.utils.subscription-util :as subscriptions]
+    [cmr.system-int-test.utils.tool-util :as tools]
     [cmr.system-int-test.utils.url-helper :as url]
     [cmr.system-int-test.utils.variable-util :as variables]
     [cmr.transmit.config :as transmit-config]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+(use-fixtures :each
+              (join-fixtures
+               [(ingest/reset-fixture
+                  {"provguid1" "PROV1" "provguid2" "PROV2"})
+                (subscriptions/grant-all-subscription-fixture
+                  {"provguid1" "PROV1" "provguid2" "PROV2"}
+                  [:read :update]
+                  [:read :update])]))
+
 
 (deftest provider-ingest-test
   (testing "create provider and get providers through ingest app"
@@ -152,6 +162,16 @@
           service2 (services/ingest-service-with-attrs {:native-id "svc2"
                                                         :Name "service2"
                                                         :provider-id "PROV2"})
+          tool1 (tools/ingest-tool-with-attrs {:native-id "tl1"
+                                               :Name "tool1"})
+          tool2 (tools/ingest-tool-with-attrs {:native-id "tl2"
+                                               :Name "tool2"
+                                               :provider-id "PROV2"})
+          sub1 (subscriptions/ingest-subscription-with-attrs {:native-id "sub1"
+                                                              :Name "sub1"})
+          sub2 (subscriptions/ingest-subscription-with-attrs {:native-id "sub2"
+                                                              :Name "sub2"
+                                                              :provider-id "PROV2"})
           _ (index/wait-until-indexed)
           svc-association1 (au/make-service-association
                             token (:concept-id service1) [{:concept-id (:concept-id coll1)}])
@@ -196,6 +216,10 @@
       (d/refs-match? [variable2] (search/find-refs :variable {:name "Variable2"}))
       (d/refs-match? [service1] (search/find-refs :service {:name "service1"}))
       (d/refs-match? [service2] (search/find-refs :service {:name "service2"}))
+      (d/refs-match? [tool1] (search/find-refs :tool {:name "tool1"}))
+      (d/refs-match? [tool2] (search/find-refs :tool {:name "tool2"}))
+      (d/refs-match? [sub1] (search/find-refs :subscription {:name "sub1"}))
+      (d/refs-match? [sub2] (search/find-refs :subscription {:name "sub2"}))
 
       ;; ensure PROV1 group is indexed
       (is (= [(:concept-id access-group)]
@@ -237,6 +261,8 @@
         gran3
         variable1
         service1
+        tool1
+        sub1
         svc-association1
         access-group
         acl1
@@ -257,6 +283,8 @@
         gran4
         variable2
         service2
+        tool2
+        sub2
         svc-association2)
 
       ;; search on PROV1 finds nothing
@@ -278,6 +306,14 @@
       (d/refs-match? [] (search/find-refs :variable {:name "Variable1"}))
       ;; Variable on PROV2 is still found in search
       (d/refs-match? [variable2] (search/find-refs :variable {:name "Variable2"}))
+      ;; Tool on PROV1 is not found in search
+      (d/refs-match? [] (search/find-refs :tool {:name "tool1"}))
+      ;; Tool on PROV2 is still found in search
+      (d/refs-match? [tool2] (search/find-refs :tool {:name "tool2"}))
+      ;; Subscription on PROV1 is not found in search
+      (d/refs-match? [] (search/find-refs :subscription {:name "sub1"}))
+      ;; Subscription on PROV2 is still found in search
+      (d/refs-match? [sub2] (search/find-refs :subscription {:name "sub2"}))
       ;; Service on PROV1 is not found in search
       (d/refs-match? [] (search/find-refs :service {:name "service1"}))
       ;; Service on PROV2 is still found in search
