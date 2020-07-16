@@ -1,10 +1,9 @@
 (ns cmr.bootstrap.data.fingerprint
   "Functions to support updating variable fingerprint."
   (:require
-    [clojure.core.async :as ca :refer [<!!]]
     [cmr.bootstrap.embedded-system-helper :as helper]
     [cmr.common.concepts :as concepts]
-    [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.log :refer (debug info)]
     [cmr.common.services.errors :as errors]
     [cmr.metadata-db.data.concepts :as db]
     [cmr.umm-spec.fingerprint-util :as fingerprint-util]))
@@ -13,7 +12,7 @@
   "Update the fingerprint of the given variable if necessary."
   [db provider variable]
   (let [{:keys [concept-id revision-id deleted metadata]} variable]
-    (when (not deleted)
+    (when-not deleted
       (let [old-fingerprint (get-in variable [:extra-fields :fingerprint])
             new-fingerprint (fingerprint-util/get-variable-fingerprint metadata)]
         (when (not= old-fingerprint new-fingerprint)
@@ -28,8 +27,7 @@
 (defn- fingerprint-variable-batch
   "Update the fingerprints of variables in the given variable batch if necessary."
   [db provider variable-batch]
-  (dorun
-   (map #(fingerprint-variable db provider %) variable-batch)))
+  (run! #(fingerprint-variable db provider %) variable-batch))
 
 (def ^:private find-variables-sql-part1
   "Defines the beginning part of the string to construct find variables sql statement."
