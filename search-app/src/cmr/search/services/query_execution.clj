@@ -113,6 +113,17 @@
                    :result-format result-format})]
     (common-qe/post-process-query-result-features context query nil results)))
 
+(defn- filter-query-results-with-acls
+  "Returns the query results after ACLs are applied to filter out items
+  that the current user does not have access to."
+  [context query-results]
+  (let [original-item-count (count (:items query-results))
+        items (acl-service/filter-concepts context (:items query-results))
+        item-count (count items)]
+    (-> query-results
+        (assoc :items items)
+        (update :hits - (- original-item-count item-count)))))
+
 (defmethod common-qe/execute-query :specific-elastic-items
   [context query]
   (let [processed-query (->> query
@@ -123,8 +134,7 @@
         query-results (rc/elastic-results->query-results context query elastic-results)
         query-results (if (or (tc/echo-system-token? context) (:skip-acls? query))
                         query-results
-                        (update-in query-results [:items]
-                                   (partial acl-service/filter-concepts context)))]
+                        (filter-query-results-with-acls context query-results))]
     (common-qe/post-process-query-result-features context query elastic-results query-results)))
 
 (defmethod common-qe/concept-type-specific-query-processing :granule
