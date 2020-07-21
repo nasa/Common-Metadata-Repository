@@ -40,7 +40,7 @@
     (concept-service/delete-old-revisions context provider :variable)
     (concept-service/delete-old-revisions context provider :service)
     (concept-service/delete-old-revisions context provider :tool)
-    (concept-service/delete-old-revisions context pv/cmr-provider :subscription)
+    (concept-service/delete-old-revisions context provider :subscription)
     (concept-service/delete-old-revisions context provider :access-group)))
 
 (def-stateful-job OldRevisionConceptCleanupJob

@@ -9,6 +9,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.service-util :as service]
    [cmr.umm-spec.versioning :as umm-version]))
@@ -17,6 +18,36 @@
               (join-fixtures
                [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
                 service/grant-all-service-fixture]))
+
+(deftest search-service-all-revisions-after-cleanup
+  (let [service1 {:native-id "SVC1"
+                  :Name "Service1"
+                  :provider-id "PROV1"}
+        service2 {:native-id "SVC2"
+                  :Name "Service2"
+                  :provider-id "PROV2"}
+        service1s (doall (for [n (range 12)]
+                           (service/ingest-service
+                             (service/make-service-concept service1))))
+        service2s (doall (for [n (range 10)]
+                        (service/ingest-service
+                          (service/make-service-concept service2))))
+        all-services-after-cleanup (concat (drop 2 service1s) service2s)]
+    (index/wait-until-indexed)
+
+    (is (= 204 (:status (mdb/cleanup-old-revisions))))
+    (index/wait-until-indexed)
+
+    (du/assert-service-umm-jsons-match
+      umm-version/current-service-version
+      all-services-after-cleanup
+      (search/find-concepts-umm-json :service {:all-revisions true
+                                               :page-size 20}))
+
+    (d/assert-refs-match
+      all-services-after-cleanup
+      (search/find-refs :service {:all-revisions true
+                                  :page-size 20}))))
 
 (deftest search-service-all-revisions
   (let [token (e/login (s/context) "user1")
