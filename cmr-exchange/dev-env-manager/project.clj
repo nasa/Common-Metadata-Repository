@@ -75,8 +75,7 @@
              :test {:plugins [[lein-ancient "0.6.14"]
                               [jonase/eastwood "0.2.5"]
                               [lein-bikeshed "0.5.0"]
-                              [lein-kibit "0.1.6"]
-                              [venantius/yagni "0.1.4"]]}
+                              [lein-kibit "0.1.6"]]}
              :lint {:source-paths ^:replace ["src"]}
              :docs {:dependencies [[clojang/codox-theme "0.2.0-SNAPSHOT"]]
                     :plugins [[lein-codox "0.10.3"]
