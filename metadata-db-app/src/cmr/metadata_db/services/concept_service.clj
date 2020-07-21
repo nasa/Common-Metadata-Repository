@@ -717,6 +717,18 @@
   [context concept-type concept-id revision-id]
   (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
 
+(defmethod force-delete-cascading-events :subscription
+  [context concept-type concept-id revision-id]
+  (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
+
+(defmethod force-delete-cascading-events :tool
+  [context concept-type concept-id revision-id]
+  (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
+
+(defmethod force-delete-cascading-events :service
+  [context concept-type concept-id revision-id]
+  (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
+
 (defmethod force-delete-cascading-events :default
   [context concept-type concept-id revision-id]
   ;; does nothing in default
