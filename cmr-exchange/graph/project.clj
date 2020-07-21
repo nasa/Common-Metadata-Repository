@@ -56,8 +56,7 @@
                     :plugins [[jonase/eastwood "0.2.5"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.1"]
-                              [lein-kibit "0.1.6"]
-                              [venantius/yagni "0.1.4"]]}
+                              [lein-kibit "0.1.6"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
                               [test2junit "1.4.0"]]
