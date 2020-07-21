@@ -17,7 +17,7 @@
       (cache/set-value rcache "test" "expire")
       (is (= "expire"
              (cache/get-value rcache "test")))
-      (is (> (wcar* (carmine/ttl (redis-cache/serialize "test")) 0))))))
+      (is (> (wcar* (carmine/ttl (redis-cache/serialize "test"))) 0)))))
 
 (deftest test-redis-cache-with-persistance
   (testing "Redis cache with default timeout..."
