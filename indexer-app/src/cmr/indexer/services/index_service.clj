@@ -2,22 +2,16 @@
   "Provide functions to index concept"
   (:require
    [camel-snake-kebab.core :as camel-snake-kebab]
-   [cheshire.core :as cheshire]
-   [clj-time.core :as t]
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojure.edn :as edn]
    [clojure.string :as s]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.date-time-parser :as date]
-   [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
-   [cmr.common.services.messages :as cmsg]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es-util]
@@ -29,16 +23,12 @@
    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
-   [cmr.message-queue.config :as qcfg]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.message-queue.services.queue :as queue]
-   [cmr.redis-utils.redis :as redis]
    [cmr.transmit.echo.rest :as rest]
-   [cmr.transmit.kms :as kms]
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.transmit.metadata-db2 :as meta-db2]
-   [cmr.transmit.search :as search]
-   [cmr.umm.umm-core :as umm]))
+   [cmr.transmit.search :as search]))
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
@@ -752,21 +742,14 @@
         (concept-mapping-types :granule)
         {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
 
-    ;; delete the variables
-    (doseq [index (vals (:variable index-names))]
-      (es/delete-by-query
-        context
-        index
-        (concept-mapping-types :variable)
-        {:term {(query-field->elastic-field :provider-id :variable) provider-id}}))
-
-    ;; delete the services
-    (doseq [index (vals (:service index-names))]
-      (es/delete-by-query
-        context
-        index
-        (concept-mapping-types :service)
-        {:term {(query-field->elastic-field :provider-id :service) provider-id}}))))
+    ;; delete the variable,service,tool and subscription
+    (doseq [concept-type [:service :subscription :tool :variable]]
+      (doseq [index (vals (concept-type index-names))]
+        (es/delete-by-query
+         context
+         index
+         (concept-mapping-types concept-type)
+         {:term {(query-field->elastic-field :provider-id concept-type) provider-id}})))))
 
 (defn publish-provider-event
   "Put a provider event on the message queue."
@@ -832,3 +815,4 @@
         ok? (every? :ok? (vals dep-health))]
     {:ok? ok?
      :dependencies dep-health}))
+

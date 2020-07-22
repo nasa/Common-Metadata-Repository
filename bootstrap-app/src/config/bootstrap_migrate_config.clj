@@ -4,7 +4,6 @@
    [clojure.java.jdbc :as j]
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
    [drift.builder :as drift-builder])
   (:import
@@ -42,8 +41,9 @@
   ; sleep a second to workaround timestamp precision issue
   (Thread/sleep 1000))
 
-(defn app-migrate-config []
+(defn app-migrate-config
   "Drift migrate configuration used by CMR app's db-migrate endpoint."
+  []
   {:directory "src/cmr/bootstrap/migrations/"
    :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.bootstrap-migrate-config :as config])"
    :namespace-prefix "cmr.bootstrap.migrations"
@@ -52,7 +52,8 @@
    :current-version current-db-version
    :update-version update-db-version})
 
-(defn migrate-config []
+(defn migrate-config 
   "Drift migrate configuration used by lein migrate.
    Calling shutdown-agents allows lein migrate command to terminate faster."
+  []
   (assoc (app-migrate-config) :finished shutdown-agents))

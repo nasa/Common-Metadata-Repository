@@ -357,12 +357,13 @@
   ([concept-type params options]
    (let [response (get-search-failure-data
                    (find-concepts-in-format mime-types/json concept-type params options))
-         {:keys [status body]} response
+         {:keys [status headers body]} response
          {:keys [echo-compatible include-facets]} params]
      (if (and echo-compatible include-facets)
        (dj/parse-echo-json-result body)
        (if (= status 200)
          {:status status
+          :hits (Integer/parseInt (get headers "CMR-Hits"))
           :results (dj/parse-json-result concept-type body)}
          response)))))
 

@@ -30,7 +30,7 @@
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.quartz-scheduler/quartz "2.3.1"]
-                 [org.slf4j/slf4j-api "1.7.25"]
+                 [org.slf4j/slf4j-api "1.7.30"]
                  [potemkin "0.4.5"]
                  [ring/ring-codec "1.1.1"]
                  [ring/ring-core "1.7.1"]
@@ -66,8 +66,7 @@
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]
-                              [lein-shell "0.5.0"]
-                              [venantius/yagni "0.1.4"]]}
+                              [lein-shell "0.5.0"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}}
@@ -95,7 +94,6 @@
                            "src/cmr/ingest/services"]]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
-            "yagni" ["with-profile" "lint" "yagni"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]})

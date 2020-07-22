@@ -22,6 +22,8 @@
    :index-provider :message-queue-dispatcher
    :index-variables :message-queue-dispatcher
    :index-services :message-queue-dispatcher
+   :index-tools :message-queue-dispatcher
+   :index-subscriptions :message-queue-dispatcher
    :index-data-later-than-date-time :core-async-dispatcher
    :index-collection :core-async-dispatcher
    :index-system-concepts :core-async-dispatcher
@@ -117,6 +119,24 @@
    (dispatch/index-services dispatcher context))
   ([context dispatcher provider-id]
    (dispatch/index-services dispatcher context provider-id)))
+
+(defn index-tools
+  "(Re-)Index the tools stored in metadata-db. If a provider-id is passed,
+  only the tools for that provider will be indexed. With no provider-id,
+  all providers' tools are (re-)indexed."
+  ([context dispatcher]
+   (dispatch/index-tools dispatcher context))
+  ([context dispatcher provider-id]
+   (dispatch/index-tools dispatcher context provider-id)))
+
+(defn index-subscriptions
+  "(Re-)Index the subscriptions stored in metadata-db. If a provider-id is passed,
+  only the subscriptions for that provider will be indexed. With no provider-id,
+  all providers' subscriptions are (re-)indexed."
+  ([context dispatcher]
+   (dispatch/index-subscriptions dispatcher context))
+  ([context dispatcher provider-id]
+   (dispatch/index-subscriptions dispatcher context provider-id)))
 
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"

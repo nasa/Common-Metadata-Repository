@@ -289,11 +289,13 @@
                          guest-permitted-collections
                          (str "collections.json?token=" guest-token
                               "&page_size=100&concept_id="
-                              (str/join "&concept_id=" concept-ids)))]
-          (is (= coll-json (:results (search/find-concepts-json
+                              (str/join "&concept_id=" concept-ids)))
+              {:keys [hits results]} (search/find-concepts-json
                                       :collection {:token guest-token
                                                    :page-size 100
-                                                   :concept-id concept-ids})))))))
+                                                   :concept-id concept-ids})]
+          (is (= hits (count (:entries results))))
+          (is (= coll-json results)))))
 
     (testing "opendata ACL enforcement"
       (let [;; coll8's revision-date is needed to populate "modified" field in opendata.
@@ -336,7 +338,20 @@
         ;; none of the revisions are readable by guest users
         "provider-id all-revisions=true no token"
         []
-        {:provider-id "PROV4" :all-revisions true}))))
+        {:provider-id "PROV4" :all-revisions true}))
+
+    (testing "CMR-6532: hits match result"
+      (let [coll-json (da/collections->expected-atom
+                       []
+                       (str "collections.json?token=" guest-token
+                            "&page_size=100&concept_id="
+                            (:concept-id coll5)))
+            {:keys [hits results]} (search/find-concepts-json
+                                    :collection {:token guest-token
+                                                 :page-size 100
+                                                 :concept-id (:concept-id coll5)})]
+        (is (= hits (count (:entries results))))
+        (is (= coll-json results))))))
 
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.

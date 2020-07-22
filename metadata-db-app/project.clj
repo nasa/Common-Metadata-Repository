@@ -26,7 +26,7 @@
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
                  [org.quartz-scheduler/quartz "2.3.1"]
-                 [org.slf4j/slf4j-api "1.7.25"]
+                 [org.slf4j/slf4j-api "1.7.30"]
                  [ring/ring-core "1.7.1"]
                  [ring/ring-json "0.4.0"]]
   :plugins [[drift "1.5.3"]
@@ -64,8 +64,7 @@
                     :plugins [[jonase/eastwood "0.2.5"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.0"]
-                              [lein-kibit "0.1.6"]
-                              [venantius/yagni "0.1.4"]]}
+                              [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}}
@@ -82,7 +81,6 @@
                           ["with-profile" "lint" "kibit"]]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
-            "yagni" ["with-profile" "lint" "yagni"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]

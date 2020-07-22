@@ -110,6 +110,30 @@
   ([provider-id headers]
    (bulk-index-by-url (url/bulk-index-services-url provider-id) headers)))
 
+(defn bulk-index-tools
+  "Call the bootstrap app to bulk index tools (either all of them, or just the
+  ones for the given provider)."
+  ([]
+   (bulk-index-tools {transmit-config/token-header (transmit-config/echo-system-token)} nil nil))
+  ([headers _ _]
+   (bulk-index-by-url (url/bulk-index-tools-url) headers))
+  ([provider-id]
+   (bulk-index-tools provider-id {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([provider-id headers]
+   (bulk-index-by-url (url/bulk-index-tools-url provider-id) headers)))
+
+(defn bulk-index-subscriptions
+  "Call the bootstrap app to bulk index subscriptions (either all of them, or just the
+  ones for the given provider)."
+  ([]
+   (bulk-index-subscriptions {transmit-config/token-header (transmit-config/echo-system-token)} nil nil))
+  ([headers _ _]
+   (bulk-index-by-url (url/bulk-index-subscriptions-url) headers))
+  ([provider-id]
+   (bulk-index-subscriptions provider-id {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([provider-id headers]
+   (bulk-index-by-url (url/bulk-index-subscriptions-url provider-id) headers)))
+
 (defn bulk-index-provider
   "Call the bootstrap app to bulk index a provider."
   ([provider-id]

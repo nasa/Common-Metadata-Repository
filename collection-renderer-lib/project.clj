@@ -10,9 +10,9 @@
    the hardcoded commit id during dev integration with cmr_metadata_preview project.
    The hardcoded commit id should be updated when MMT releases a new version of the gem."
   {:repo "https://git.earthdata.nasa.gov/scm/cmr/cmr_metadata_preview.git"
-   :version "cmr_metadata_preview-0.2.1"
+   :version "cmr_metadata_preview-0.2.2"
    :commit-id (or (System/getenv "CMR_METADATA_PREVIEW_COMMIT")
-                  "c6de9ab2a0e")})
+                  "1c8d68fb232")})
 
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
@@ -59,8 +59,7 @@
                     :plugins [[jonase/eastwood "0.2.5"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.0"]
-                              [lein-kibit "0.1.6"]
-                              [venantius/yagni "0.1.4"]]}
+                              [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}}
@@ -82,7 +81,6 @@
                           ["with-profile" "lint" "kibit"]]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
-            "yagni" ["with-profile" "lint" "yagni"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]

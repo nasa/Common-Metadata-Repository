@@ -9,14 +9,6 @@
    </suppress>
    <suppress>
       <notes><![CDATA[
-      file name: slf4j-api-1.7.25.jar
-      WARNING: This is temporary only! Needs to be addressed in a hot-fix upstream ...
-      ]]></notes>
-      <gav regex="true">^.*slf4j-api.*$</gav>
-      <cve>CVE-2018-8088</cve>
-   </suppress>
-   <suppress>
-      <notes><![CDATA[
       file name: cmr-site-templates-0.1.0.jar
       ]]></notes>
       <gav regex="true">^gov\.nasa\.earthdata:cmr-site-templates:.*$</gav>

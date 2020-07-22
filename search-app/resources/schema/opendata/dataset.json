@@ -1,6 +1,5 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "https://project-open-data.cio.gov/v1.1/schema/dataset.json#",
   "title": "Project Open Data Dataset",
   "description": "The metadata format for all federal open data. Validates a single JSON object entry (as opposed to entire Data.json catalog).",
   "type": "object",
@@ -165,7 +164,7 @@
           "items": {
             "$ref": "distribution.json",
             "minItems": 1,
-            "uniqueItems": true        
+            "uniqueItems": true
           }
         },
         {
@@ -210,7 +209,7 @@
             "type": "string",
             "minLength": 1
           },
-          "minItems": 1          
+          "minItems": 1
         },
         {
           "type": "string",
@@ -341,7 +340,7 @@
                 "type": "string",
                 "pattern": "^(\\[\\[REDACTED).*?(\\]\\])$"
               }
-            ]            
+            ]
           },
           "minItems": 1,
           "uniqueItems": true
@@ -444,8 +443,8 @@
     "title": {
       "title": "Title",
       "description": "Human-readable name of the asset. Should be in plain English and include sufficient detail to facilitate search and discovery.",
-      "type": "string", 
-      "minLength": 1    
+      "type": "string",
+      "minLength": 1
     }
   }
 }

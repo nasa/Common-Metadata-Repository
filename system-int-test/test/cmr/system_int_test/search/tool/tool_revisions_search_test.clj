@@ -9,6 +9,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.tool-util :as tool]
    [cmr.umm-spec.versioning :as umm-version]))
@@ -17,6 +18,34 @@
               (join-fixtures
                [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
                 tool/grant-all-tool-fixture]))
+
+(deftest search-tool-all-revisions-after-cleanup
+  (let [tool1 {:native-id "TL1"
+               :Name "Tool1"
+               :provider-id "PROV1"}
+        tool2 {:native-id "TL2"
+               :Name "Tool2"
+               :provider-id "PROV2"}
+        tool1s (doall (for [n (range 12)]
+                        (tool/ingest-tool (tool/make-tool-concept tool1))))
+        tool2s (doall (for [n (range 10)]
+                        (tool/ingest-tool (tool/make-tool-concept tool2))))
+        all-tools-after-cleanup (concat (drop 2 tool1s) tool2s)]
+    (index/wait-until-indexed)
+
+    (is (= 204 (:status (mdb/cleanup-old-revisions))))
+    (index/wait-until-indexed)
+
+    (du/assert-tool-umm-jsons-match
+      umm-version/current-tool-version
+      all-tools-after-cleanup
+      (search/find-concepts-umm-json :tool {:all-revisions true
+                                            :page-size 20}))
+
+    (d/assert-refs-match
+      all-tools-after-cleanup
+      (search/find-refs :tool {:all-revisions true
+                               :page-size 20}))))
 
 (deftest search-tool-all-revisions
   (let [token (e/login (s/context) "user1")

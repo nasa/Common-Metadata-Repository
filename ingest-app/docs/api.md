@@ -57,10 +57,12 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 | application/iso:smap+xml | ISO 19115 SMAP    | collection, granule |
 | application/vnd.nasa.cmr.umm+json| UMM JSON  | collection, granule, variable, service, subscription, tool |
 
-Note: UMM JSON accepts an additional version parameter for both Content-Type: and Accept: headers. Like charset, it is appended with a semicolon (;). If no version is appended, the latest version is assumed.
+Note: UMM JSON accepts an additional version parameter for both `Content-Type` and `Accept` headers. Like charset, it is appended with a semicolon (;). If no version is appended, the latest version is assumed.
+
+For an example, the following means version 1.14 of the UMM JSON format:
 
 ```
-application/vnd.nasa.cmr.umm+json;version=1.1
+application/vnd.nasa.cmr.umm+json;version=1.14
 ```
 
 #### <a name="echo-token-header"></a> Echo-Token Header
@@ -674,12 +676,16 @@ Ingest permissions for subscriptions are granted through the provider via the IN
 
 Collection metadata can be translated between metadata standards using the translate API in Ingest. This API also supports the UMM JSON format which represents UMM as JSON. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header.
 
-To disable validation of the parsed UMM metadata against the UMM spec, pass `skip_umm_validation=true` as a query parameter.
+To disable validation of the parsed UMM metadata against the current UMM spec, pass `skip_umm_validation=true` as a query parameter.
 
-Example: Translate ECHO10 metadata to UMM JSON
+Example: Translate an ECHO10 metadata to UMM JSON version 1.14
 
 ```
-curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept:  application/vnd.nasa.cmr.umm+json;version=1.2" %CMR-ENDPOINT%/translate/collection?skip_umm_validation=true -d \
+curl -i -XPOST \
+  -H "Content-Type: application/echo10+xml" \
+  -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.14" \
+  %CMR-ENDPOINT%/translate/collection\?skip_umm_validation\=true \
+  -d \
 "<Collection>
   <ShortName>ShortName_Larc</ShortName>
   <VersionId>Version01</VersionId>
@@ -698,69 +704,51 @@ Example output:
 
 ```
 {
-  "Abstract" : "A minimal valid collection",
-  "EntryId" : {
-    "Id" : "ShortName_Larc_Version01"
+  "SpatialExtent" : {
+    "GranuleSpatialRepresentation" : "NO_SPATIAL"
   },
-  "EntryTitle" : "LarcDatasetId"
+  "CollectionProgress" : "NOT PROVIDED",
+  "ScienceKeywords" : [ {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "Not provided",
+    "Term" : "Not provided"
+  } ],
+  "TemporalExtents" : [ {
+    "RangeDateTimes" : [ {
+      "BeginningDateTime" : "1970-01-01T00:00:00.000Z"
+    } ]
+  } ],
+  "ProcessingLevel" : {
+    "Id" : "Not provided"
+  },
+  "ShortName" : "ShortName_Larc",
+  "EntryTitle" : "LarcDatasetId",
+  "DataDates" : [ {
+    "Date" : "2000-01-01T00:00:00.000Z",
+    "Type" : "CREATE"
+  }, {
+    "Date" : "2000-01-01T00:00:00.000Z",
+    "Type" : "UPDATE"
+  }, {
+    "Date" : "2015-05-23T22:30:59.000Z",
+    "Type" : "DELETE"
+  } ],
+  "Abstract" : "A minimal valid collection",
+  "Version" : "Version01",
+  "DataCenters" : [ {
+    "Roles" : [ "ARCHIVER" ],
+    "ShortName" : "Not provided"
+  } ],
+  "Platforms" : [ {
+    "ShortName" : "Not provided"
+  } ],
+  "ArchiveAndDistributionInformation" : {
+    "FileArchiveInformation" : [ ],
+    "FileDistributionInformation" : [ ]
+  }
 }
 ```
 
-Example: Translate ECHO10 metadata to ISO19115-2
-
-```
-curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept: application/iso19115+xml" %CMR-ENDPOINT%/translate/collection -d \
-"<Collection>
-  <ShortName>ShortName_Larc</ShortName>
-  <VersionId>Version01</VersionId>
-  <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
-  <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
-  <DeleteTime>2015-05-23T22:30:59</DeleteTime>
-  <LongName>LarcLongName</LongName>
-  <DataSetId>LarcDatasetId</DataSetId>
-  <Description>A minimal valid collection</Description>
-  <Orderable>true</Orderable>
-  <Visible>true</Visible>
-</Collection>"
-```
-
-Example output:
-
-```
-<?xml version="1.0" encoding="UTF-8"?>
-<gmi:MI_Metadata xmlns:eos="http://earthdata.nasa.gov/schema/eos"
-    xmlns:gco="http://www.isotc211.org/2005/gco"
-    xmlns:gmd="http://www.isotc211.org/2005/gmd"
-    xmlns:gmi="http://www.isotc211.org/2005/gmi"
-    xmlns:gml="http://www.opengis.net/gml/3.2"
-    xmlns:gmx="http://www.isotc211.org/2005/gmx"
-    xmlns:gsr="http://www.isotc211.org/2005/gsr"
-    xmlns:gss="http://www.isotc211.org/2005/gss"
-    xmlns:gts="http://www.isotc211.org/2005/gts"
-    xmlns:srv="http://www.isotc211.org/2005/srv"
-    xmlns:swe="http://schemas.opengis.net/sweCommon/2.0/"
-    xmlns:xlink="http://www.w3.org/1999/xlink"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <gmd:identificationInfo>
-        <gmd:MD_DataIdentification>
-            <gmd:citation>
-                <gmd:CI_Citation>
-                    <gmd:title>
-                        <gco:CharacterString>LarcDatasetId</gco:CharacterString>
-                    </gmd:title>
-                    <gmd:identifier>
-                        <gmd:MD_Identifier>
-                            <gmd:code>
-                                <gco:CharacterString>ShortName_Larc_Version01</gco:CharacterString>
-                            </gmd:code>
-                        </gmd:MD_Identifier>
-                    </gmd:identifier>
-                </gmd:CI_Citation>
-            </gmd:citation>
-        </gmd:MD_DataIdentification>
-    </gmd:identificationInfo>
-</gmi:MI_Metadata>
-```
 ## <a name="translate-granule"></a> Translate Granule Metadata
 
 Granule metadata can be translated between metadata standards using the translate API in Ingest. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header. The supported input formats are ECHO10, ISO SMAP and UMM-G. The supported output formats are ECHO10, ISO SMAP, UMM-G and ISO19115.
@@ -768,7 +756,11 @@ Granule metadata can be translated between metadata standards using the translat
 Example: Translate ECHO10 metadata to UMM-G
 
 ```
-curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.4" %CMR-ENDPOINT%/translate/granule -d \
+curl -i -XPOST \
+  -H "Content-Type: application/echo10+xml" \
+  -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.6" \
+  %CMR-ENDPOINT%/translate/granule \
+  -d \
 "<Granule>
   <GranuleUR>SC:AE_5DSno.002:30500512</GranuleUR>
   <InsertTime>2009-05-11T20:09:16.340Z</InsertTime>
@@ -794,7 +786,13 @@ Example output:
   "CollectionReference" : {
     "EntryTitle" : "collection_test_2468"
   },
-  "GranuleUR" : "SC:AE_5DSno.002:30500512"
+  "DataGranule" : { },
+  "GranuleUR" : "SC:AE_5DSno.002:30500512",
+  "MetadataSpecification" : {
+    "URL" : "https://cdn.earthdata.nasa.gov/umm/granule/v1.6",
+    "Name" : "UMM-G",
+    "Version" : "1.6"
+  }
 }
 ```
 ## <a name="bulk-update"></a> Collection Bulk Update

@@ -2,8 +2,6 @@
   "Provides functions for subscribing to and handling events."
   (:require
    [cmr.common.concepts :as cc]
-   [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
@@ -113,3 +111,4 @@
       (queue-protocol/subscribe queue-broker
                                 (config/deleted-granule-index-queue-name)
                                 #(handle-ingest-event context true %)))))
+

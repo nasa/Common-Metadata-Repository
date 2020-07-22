@@ -9,6 +9,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.subscription-util :as subscription]
    [cmr.umm-spec.versioning :as umm-version]))
@@ -18,6 +19,36 @@
                [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
                 (subscription/grant-all-subscription-fixture
                   {"provguid1" "PROV1" "provguid2" "PROV2"} [:read :update] [:read :update])]))
+
+(deftest search-subscription-all-revisions-after-cleanup
+  (let [subscription1 {:native-id "SUB1"
+                       :Name "Sub1"
+                       :provider-id "PROV1"}
+        subscription2 {:native-id "SUB2"
+                       :Name "Sub2"
+                       :provider-id "PROV2"}
+        subscription1s (doall (for [n (range 2)]
+                        (subscription/ingest-subscription
+                          (subscription/make-subscription-concept subscription1))))
+        subscription2s (doall (for [n (range 1)]
+                        (subscription/ingest-subscription
+                          (subscription/make-subscription-concept subscription2))))
+        all-subscriptions-after-cleanup (concat (drop 1 subscription1s) subscription2s)]
+    (index/wait-until-indexed)
+
+    (is (= 204 (:status (mdb/cleanup-old-revisions))))
+    (index/wait-until-indexed)
+
+    (du/assert-subscription-umm-jsons-match
+      umm-version/current-subscription-version
+      all-subscriptions-after-cleanup
+      (search/find-concepts-umm-json :subscription {:all-revisions true
+                                                    :page-size 20}))
+
+    (d/assert-refs-match
+      all-subscriptions-after-cleanup
+      (search/find-refs :subscription {:all-revisions true
+                               :page-size 20}))))
 
 (deftest search-subscription-all-revisions
   (let [token (e/login (s/context) "user1")

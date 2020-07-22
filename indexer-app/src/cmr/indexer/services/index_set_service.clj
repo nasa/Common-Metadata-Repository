@@ -1,18 +1,15 @@
 (ns cmr.indexer.services.index-set-service 
   "Provide functions to store, retrieve, delete index-sets"
   (:require
-   [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.string :as string]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.log :as log :refer [info]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.elastic-utils.connect :as es-util]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.index-set-elasticsearch :as es]
-   [cmr.indexer.services.messages :as m]
-   [cmr.transmit.echo.rest :as echo-rest])
+   [cmr.indexer.services.messages :as m])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -365,3 +362,4 @@
     ;; delete indices assoc with index-set
     (doseq [id index-set-ids]
       (delete-index-set context (str id)))))
+

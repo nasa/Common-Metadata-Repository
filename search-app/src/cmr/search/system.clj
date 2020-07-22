@@ -112,7 +112,7 @@
              :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
              :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
-                      af/acl-cache-key (af/create-acl-cache [:catalog-item :system-object])
+                      af/acl-cache-key (af/create-acl-cache [:catalog-item :system-object :provider-object])
                       ;; Caches a map of tokens to the security identifiers
                       context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
                       context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
