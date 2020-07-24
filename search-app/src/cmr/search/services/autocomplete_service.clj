@@ -5,21 +5,6 @@
     [cmr.common-app.services.search.query-model :as qm]
     [cmr.common-app.services.search.group-query-conditions :as gc]))
 
-(defn build-autocomplete-condition
-  [term types]
-  (let [root (gc/or-conds [(qm/match :value term)
-                           (qm/multi-match :phrase_prefix
-                                           ["value" "value._2gram" "value._3gram"]
-                                           term)])]
-    (if (empty? types)
-      root
-      (gc/and-conds [root
-                     (gc/or-conds (map #(qm/text-condition :type %) types))]))))
-
-(defn autocomplete
-  "Execute elasticsearch query to get autocomplete suggestions"
-  [context term types opts]
-  (let [condition (build-autocomplete-condition term types)
 (def token-condition
   (qm/boolean-condition :contains-public-collections true))
 
@@ -46,9 +31,20 @@
   [term types token]
   (cond
     (and (empty? token)(empty? types)) (empty-token-without-type term)
-    (and (empty? token) (not (empty? types))) (empty-token-with-type term types)
-    (and (not (empty? token)) (not (empty? types))) (non-empty-token-with-type term types)
-    (and (not (empty? token)) (empty? types)) (non-empty-token-without-type term)))
+    (and (empty? token) (seq types)) (empty-token-with-type term types)
+    (and (seq token)) (seq types)) (non-empty-token-with-type term types)
+    (and (seq token)) (empty? types) (non-empty-token-without-type term))
+
+(defn build-autocomplete-condition
+  [term types]
+  (let [root (gc/or-conds [(qm/match :value term)
+                           (qm/multi-match :phrase_prefix
+                                           ["value" "value._2gram" "value._3gram"]
+                                           term)])]
+    (if (empty? types)
+      root
+      (gc/and-conds [root
+                     (gc/or-conds (map #(qm/text-condition :type %) types))]))))
 
 (defn autocomplete
   "Execute elasticsearch query to get autocomplete suggestions"

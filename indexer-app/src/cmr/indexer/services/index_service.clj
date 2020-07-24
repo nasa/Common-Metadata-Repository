@@ -17,6 +17,7 @@
    [cmr.elastic-utils.connect :as es-util]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.concept-parser :as cp]
+   [cmr.indexer.data.concepts.collection.collection-util :as collection-util]
    [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
    [cmr.indexer.data.concepts.deleted-granule :as dg]
    [cmr.indexer.data.elasticsearch :as es]
@@ -177,22 +178,11 @@
 
 (def REINDEX_BATCH_SIZE 2000)
 
-(defn- positions
-  "Return a map of the index of each item that matches the predicate"
-  [pred coll]
-  (keep-indexed (fn [idx x]
-                  (when (pred x)
-                    idx))
-                coll))
-
 (defn- science-keywords->elastic-docs
   "Convert hierarchical science-keywords to colon-separated elastic docs for indexing"
-  [science-keywords public-collection?]
+  [science-keywords public-collection? permitted-group-ids]
   (let [keyword-hierarchy [:topic :term :variable-level-1
                            :variable-level-2 :variable-level-3 :detailed-variable]
-        terminal-key (->> keyword-hierarchy
-                          (map #(get science-keywords %))
-                          (positions nil?))
         sk-strings (->> keyword-hierarchy
                         (map #(get science-keywords %))
                         (remove nil?))
@@ -205,42 +195,27 @@
      :type "science_keywords"
      :value keyword-value
      :fields keyword-string
-     :_index "1_autocomplete"}))
+     :_index "1_autocomplete"
+     :_type "suggestion"
+     :contains-public-collections public-collection?
+     :permitted-group-ids permitted-group-ids}))
 
 (defn- suggestion-doc
   "Creates elasticsearch docs from a given humanized map"
-  [key-name value-map]
+  [permissions key-name value-map]
   (let [values (->> value-map
                     seq
                     (remove #(s/includes? (name (key %)) "-lowercase")))
-        sk-matcher (re-matcher #"science-keywords" key-name)]
-    (if (seq (re-find sk-matcher))
-      (science-keywords->elastic-docs value-map)
-      (map (fn [value]
-             (let [v (val value)
-                   type (camel-snake-kebab/->snake_case_keyword key-name)
-                   id (-> (s/lower-case v)
-                          (str "_" type)
-                          hash)]
-               {:type type
-                :_id id
-                :value v
-                :fields v
-                :_index "1_autocomplete"}))
-           values))))
-                    (remove #(s/includes? (name (key %)) ".lowercase"))
-                    (remove #(= (key %) :AccessConstraints)))
-        ; AccessConstraints values are Numbers, so if none are preset, we can
-        ; be sure that there are no access restrictions
-        access-constraints (->> value-map
-                               :AccessConstraints
-                               :Value
-                               number?)
-        public-collection? (if (nil? access-constraints)
+        sk-matcher (re-matcher #"science-keywords" key-name)
+        public-collection? (if (some #(= % "guest") permissions)
                                true
-                               false)]
-    (if (= key-name "science-keywords")
-     (science-keywords->elastic-docs value-map public-collection?)
+                               false)
+        permitted-group-ids (->> permissions
+                                 (remove #(or (= "registered" %) (= "guest" %)))
+                                 (s/join ",")
+                                 not-empty)]
+    (if (seq (re-find sk-matcher))
+     (science-keywords->elastic-docs value-map public-collection? permitted-group-ids)
      (map (fn [value]
             (let [v (val value)
                   type (camel-snake-kebab/->snake_case_keyword key-name)
@@ -253,25 +228,30 @@
               :fields v
               :_index "1_autocomplete"
               :_type "suggestion"
-              :contains-public-collections public-collection?}))
+              :contains-public-collections public-collection?
+              :permitted-group-ids permitted-group-ids}))
          values))))
 
 (defn- get-suggestion-docs
   "Given the humanized fields from a collection, assemble elastic doc for each
   value available for indexing into elasticsearch"
   [humanized-fields]
-  (for [humanized-field humanized-fields
-        :let [key (key humanized-field)
-              key-name (-> key
-                           name
-                           (s/replace #"([_\.]?humanized(_?2)?|-sn|-id)" ""))
-              value-map (as-> humanized-field h
-                          (val h)
-                          (map util/remove-nil-keys h)
-                          (map #(dissoc % :priority) h))
-              suggestion-docs (map #(suggestion-doc key-name %)
-                                   value-map)]]
-    suggestion-docs))
+  (let [{:keys [permissions]} humanized-fields
+        fields-without-permissions (-> humanized-fields
+                                       (dissoc :id :permissions))]
+    (for [humanized-field fields-without-permissions
+          :let [key (key humanized-field)
+                key-name (-> key
+                             name
+                             (s/replace #"(\.humanized(_?2)?|-sn|-id)" ""))
+                value-map (as-> humanized-field h
+                                (val h)
+                                (map util/remove-nil-keys h)
+                                (map #(dissoc % :priority) h))
+                suggestion-docs (->> value-map
+                                     (map #(suggestion-doc permissions key-name %))
+                                     (remove nil?))]]
+      suggestion-docs)))
 
 (defn- anti-value?
   "Returns whether or not the term is an anti-value. e.g. \"not applicable\" or \"not provided\".
@@ -292,7 +272,7 @@
 (defn- collection->suggestion-doc
   "Convert collection concept metadata to UMM-C and pull facet fields
   to be indexed as autocomplete suggestion doc"
-  [context collections]
+  [context collections provider-id]
   (let [parsed-concepts (->> collections
                              (remove #(= true (:deleted %)))
                              (map #(try
@@ -303,8 +283,14 @@
                                        (debug %)
                                        nil)))
                              (remove nil?))
-        humanized-fields  (map #(humanizer/collection-humanizers-for-suggestion-docs context %) parsed-concepts)
-        suggestion-docs (->> humanized-fields
+        collection-permissions (map (fn [collection]
+                                      (let [permissions (collection-util/get-coll-permitted-group-ids context provider-id collection)]
+                                        {:id (:concept-id collection)
+                                         :permissions permissions}))
+                                    collections)
+        humanized-fields  (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
+        humanized-fields-with-permissions (map merge collection-permissions humanized-fields)
+        suggestion-docs (->> humanized-fields-with-permissions
                              (map get-suggestion-docs)
                              flatten
                              (remove anti-value-suggestion?))]
@@ -320,7 +306,7 @@
                                     REINDEX_BATCH_SIZE
                                     {:provider-id provider-id :latest true})
         latest-suggestion-batches (->> latest-collection-batches
-                                       (map #(collection->suggestion-doc context %))
+                                       (map #(collection->suggestion-doc context % provider-id))
                                        flatten)]
     (es/bulk-index-autocomplete-suggestions context latest-suggestion-batches)))
 
@@ -842,4 +828,3 @@
         ok? (every? :ok? (vals dep-health))]
     {:ok? ok?
      :dependencies dep-health}))
-

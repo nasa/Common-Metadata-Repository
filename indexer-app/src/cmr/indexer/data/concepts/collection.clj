@@ -9,7 +9,6 @@
    [cmr.common-app.config :as common-config]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
@@ -32,9 +31,7 @@
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.concepts.service :as service]
    [cmr.indexer.data.concepts.spatial :as spatial]
-   [cmr.indexer.data.concepts.subscription :as subscription]
    [cmr.indexer.data.concepts.tag :as tag]
-   [cmr.indexer.data.concepts.tool :as tool]
    [cmr.indexer.data.concepts.variable :as variable]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.umm-spec.acl-matchers :as umm-matchers]
@@ -44,10 +41,8 @@
    [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.related-url :as ru]
    [cmr.umm-spec.time :as spec-time]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.util :as su]
-   [cmr.umm.collection.entry-id :as eid]
-   [cmr.umm.umm-collection :as umm-c]))
+   [cmr.umm.collection.entry-id :as eid]))
 
 (defn spatial->elastic
   [collection]
@@ -137,21 +132,6 @@
       (assoc-nil-if :ScienceKeywords (= (:ScienceKeywords collection) su/not-provided-science-keywords))
       (assoc-nil-if :DataCenters (= (:DataCenters collection) [su/not-provided-data-center]))))
 
-(defn- get-coll-permitted-group-ids
-  "Returns the groups ids (group guids, 'guest', 'registered') that have permission to read
-  this collection"
-  [context provider-id coll]
-  (->> (acl-fetcher/get-acls context [:catalog-item])
-       ;; Find only acls that are applicable to this collection
-       (filter (partial umm-matchers/coll-applicable-acl? provider-id coll))
-       ;; Get the permissions they grant
-       (mapcat :group-permissions)
-       ;; Find permissions that grant read
-       (filter #(some (partial = "read") (:permissions %)))
-       ;; Get the group guids or user type of those permissions
-       (map #(or (:group-id %) (some-> % :user-type name)))
-       distinct))
-
 (defn- associations->gzip-base64-str
   "Returns the gziped base64 string for the given variable associations and service associations"
   [variable-associations service-associations]
@@ -186,7 +166,7 @@
   "Get all the fields for a normal collection index operation."
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id native-id
-                created-at revision-date deleted format extra-fields
+                created-at revision-date deleted format
                 tag-associations variable-associations service-associations]} concept
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
         {short-name :ShortName version-id :Version entry-title :EntryTitle
@@ -272,8 +252,8 @@
         data-center-names (keep meaningful-short-name-fn data-centers)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true/false value
-        downloadable (not (empty? (ru/downloadable-urls related-urls)))
-        browsable (not (empty? (ru/browse-urls related-urls)))
+        downloadable (seq (ru/downloadable-urls related-urls))
+        browsable (seq (ru/browse-urls related-urls))
         update-time (date-util/data-update-date collection)
         update-time (index-util/date->elastic update-time)
         index-time (index-util/date->elastic (tk/now))
@@ -281,7 +261,7 @@
         insert-time (index-util/date->elastic insert-time)
         coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
                                               :Geometry :CoordinateSystem])
-        permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)
+        permitted-group-ids (collection-util/get-coll-permitted-group-ids context provider-id collection)
         {:keys [granule-start-date granule-end-date]}
         (cgac/get-coll-gran-aggregates context concept-id)
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
@@ -388,7 +368,7 @@
             :summary summary
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
-            :has-opendap-url (not (empty? (filter opendap-util/opendap-url? related-urls)))
+            :has-opendap-url (seq(filter opendap-util/opendap-url? related-urls))
             :publication-references opendata-references
             :collection-citations (map json/generate-string opendata-citations)
             :update-time update-time
@@ -450,8 +430,8 @@
         ;; only used to get default ACLs for tombstones
         tombstone-umm (umm-collection/map->UMM-C {:EntryTitle entry-title})
         tombstone-umm (merge {:concept-id concept-id} tombstone-umm)
-        tombstone-permitted-group-ids (get-coll-permitted-group-ids context
-                                                                    provider-id tombstone-umm)]
+        tombstone-permitted-group-ids (collection-util/get-coll-permitted-group-ids
+                                       context provider-id tombstone-umm)]
     {:concept-id concept-id
      :revision-id revision-id
      :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
