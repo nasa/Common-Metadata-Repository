@@ -265,6 +265,10 @@
                                 feature-count
                                 (max-shapefile-features))
                         nil)
+              (error-if feature-count
+                        #(= % 0)
+                        "KML has no features"
+                        nil)
               conditions)))
         (finally
           (.delete file))))
