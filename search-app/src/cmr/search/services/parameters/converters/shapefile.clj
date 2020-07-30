@@ -49,6 +49,14 @@
   "The maximum number of points a shapefile can have"
   {:default 5000 :type Long})
 
+(defn winding-opts
+  "Get the opts for a call to `normalize-polygon-winding` based on file type"
+  [mime-type]
+  (case mime-type
+    "application/shapefile+zip" {:boundary-winding :cw}
+    "application/vnd.google-earth.kml+xml" {}
+    "application/geo+json" {:hole-winding :cw}))
+
 (defn unzip-file
   "Unzip a file (of type File) into a temporary directory and return the directory path as a File"
   [source]
@@ -114,6 +122,50 @@
         (errors/throw-service-error :bad-request (format "Cannot transform source CRS [%s] to WGS 84" src-crs-name))))
     geometry))
 
+(defn feature-point-count
+  "Get the number of points in the Feature"
+  [feature]
+  (let [crs (when (.getDefaultGeometryProperty feature)
+              (-> feature .getDefaultGeometryProperty .getDescriptor .getCoordinateReferenceSystem))
+        properties (.getProperties feature)
+        geometry-props (filter (fn [p] (geo/geometry? (.getValue p))) properties)
+        geometries (map #(-> % .getValue (transform-to-epsg-4326 crs)) geometry-props)]
+    (apply + (map geometry-point-count geometries))))
+
+(defn features-point-count
+  "Compute the number of points in a list of Features"
+  [features]
+  (reduce (fn [total feature] (+ total (feature-point-count feature)))
+          0
+          features))
+
+(defn validate-point-count
+  "Validate that the number of points in the features is greater than zero and less than the limit"
+  [features]
+  (let [point-count (features-point-count features)]
+    (if (= point-count 0)
+      "Shapefile has no points"
+      (when (> point-count (max-shapefile-points))
+        (format "Number of points in shapefile exceeds the limit of %d"
+          (max-shapefile-points))))))
+
+(defn- validate-feature-count
+  "Validates that the number of features is greater than zero and less than the limit"
+  [features]
+  (let [feature-count (count features)]
+    (if (= feature-count 0)
+      "Shapefile has no features"
+      (when (> feature-count (max-shapefile-features))
+        (format "Shapefile feature count [%d] exceeds the %d feature limit"
+          feature-count
+          (max-shapefile-features))))))
+
+(defn validate-features
+  "Validate this list of features in terms of shapefile limits"
+  [features]
+  (when-let [message (or (validate-feature-count features) (validate-point-count features))]
+    (errors/throw-service-error :bad-request message)))
+
 (defn feature->conditions
   "Process the contents of a Feature to return query conditions along with number of points in
   the processed Feature. The `context` map can be used to pass along additional info."
@@ -130,6 +182,20 @@
         conditions (mapcat (fn [g] (geometry->conditions g context)) geometries)]
     (debug (format "CONDITIONS: %s" conditions))
     [conditions point-count]))
+
+(defn features->conditions
+  "Converts a list of features into a vector of SpatialConditions"
+  [features mime-type]
+  (validate-features features)
+  (let [iterator (.iterator features)]
+    (loop [conditions []]
+      (if (.hasNext iterator)
+        (let [feature (.next iterator)
+              [feature-conditions _] (feature->conditions feature (winding-opts mime-type))]
+          (if (> (count feature-conditions) 0)
+            (recur (conj conditions (gc/or-conds feature-conditions)))
+            (recur conditions)))
+        conditions))))
 
 (defn error-if
   "Throw a service error with the given message if `f` applied to `item` is true. 
@@ -278,31 +344,12 @@
           (throw e) ;; This was a more specific service error so just re-throw it
           (errors/throw-service-error :bad-request "Failed to parse KML file"))))))
 
-(defn winding-opts
-  "Get the opts for a call to `normalize-polygon-winding` based on file type"
-  [mime-type]
-  (case mime-type
-    "application/shapefile+zip" {:boundary-winding :cw}
-    "application/vnd.google-earth.kml+xml" {}
-    "application/geo+json" {:hole-winding :cw}))
-
 (defn in-memory->conditions-vec
   "Converts a group of features produced by simplification to a vector of SpatialConditions"
   [shapefile-info]
-  (try
-    (let [^ArrayList features (:tempfile shapefile-info)
-          mime-type (:content-type shapefile-info)
-          iterator (.iterator features)]
-      (loop [conditions []]
-        (if (.hasNext iterator)
-          (let [feature (.next iterator)
-                [feature-conditions _] (feature->conditions feature (winding-opts mime-type))]
-            (if (> (count feature-conditions) 0)
-              (recur (conj conditions (gc/or-conds feature-conditions)))
-              (recur conditions)))
-          conditions)))
-    (catch Exception e
-      (.printstackTrace e))))
+  (let [^ArrayList features (:tempfile shapefile-info)
+        mime-type (:content-type shapefile-info)]
+    (features->conditions features mime-type)))
 
 (defmulti shapefile->conditions
   "Converts a shapefile to query conditions based on shapefile format"
@@ -337,7 +384,7 @@
     (gc/or-conds (flatten conditions-vec))))
 
 (defmethod p/parameter->condition :shapefile
-  [_context concept-type param value options]
+  [_context _concept-type _param value _options]
   (if (enable-shapefile-parameter-flag)
     (shapefile->conditions value)
     (errors/throw-service-error :bad-request "Searching by shapefile is not enabled")))
