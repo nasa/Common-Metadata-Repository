@@ -216,32 +216,13 @@
           data-store (FileDataStoreFinder/getDataStore shp-file)
           feature-source (.getFeatureSource data-store)
           features (.getFeatures feature-source)
-          feature-count (error-if (.size features)
-                                  #(< % 1)
-                                  "Shapefile has no features"
-                                  temp-dir)
-          _ (error-if feature-count
-                      #(> % (max-shapefile-features))
-                      (format "Shapefile feature count [%d] exceeds the %d feature limit"
-                              feature-count
-                              (max-shapefile-features))
-                      nil)
-          _ (debug (format "Found [%d] features" feature-count))
-          iterator (.features features)]
+          iterator (.features features)
+          feature-list (ArrayList.)]
       (try
-        (loop [conditions [] total-point-count 0]
-          (if (.hasNext iterator)
-            (let [feature (.next iterator)
-                  [feature-conditions num-points] (feature->conditions feature {:boundary-winding :cw})
-                  new-point-count (+ total-point-count num-points)]
-              (when (> new-point-count (max-shapefile-points))
-                (errors/throw-service-error :bad-request
-                                            (format "Number of points in shapefile exceeds the limit of %d"
-                                                    (max-shapefile-points))))
-              (if (> (count feature-conditions) 0)
-                (recur (conj conditions (gc/or-conds feature-conditions)) new-point-count)
-                (recur conditions total-point-count)))
-            conditions))
+        (while (.hasNext iterator)
+          (let [feature (.next iterator)]
+            (.add feature-list feature)))
+        (features->conditions feature-list mt/shapefile)
         (finally
           (.close iterator)
           (-> data-store .getFeatureReader .close)
