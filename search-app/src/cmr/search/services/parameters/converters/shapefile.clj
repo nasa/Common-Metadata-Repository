@@ -2,36 +2,30 @@
   "Contains parameter converters for shapefile parameter"
   (:require
    [clojure.java.io :as io]
-   [clojure.string :as str]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.log :refer [debug info]]
    [cmr.common.mime-types :as mt]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.params :as p]
    [cmr.common.services.errors :as errors]
-   [cmr.search.models.query :as qm]
    [cmr.search.services.parameters.converters.geojson :as geojson]
-   [cmr.search.services.parameters.converters.geometry :as geo]
-   [cmr.common.util :as util])
+   [cmr.search.services.parameters.converters.geometry :as geo])
   (:import
-   (java.io BufferedInputStream File FileReader FileOutputStream FileInputStream)
+   (java.io File FileInputStream)
    (java.nio.file Files)
    (java.nio.file.attribute FileAttribute)
-   (java.net URL)
-   (java.util ArrayList HashMap)
-   (java.util.zip ZipFile ZipInputStream)
+   (java.util ArrayList)
+   (java.util.zip ZipFile)
    (org.apache.commons.io FilenameUtils)
-   (org.geotools.data DataStoreFinder FileDataStoreFinder Query)
-   (org.geotools.data.simple SimpleFeatureSource)
+   (org.geotools.data FileDataStoreFinder)
    (org.geotools.data.geojson GeoJSONDataStore)
    (org.geotools.geometry.jts JTS)
-   (org.geotools.kml.v22 KMLConfiguration KML)
+   (org.geotools.kml.v22 KMLConfiguration)
    (org.geotools.referencing CRS)
    (org.geotools.util URLs)
-   (org.geotools.xsd Parser StreamingParser PullParser)
+   (org.geotools.xsd PullParser)
    (org.locationtech.jts.geom Geometry)
-   (org.opengis.feature.simple SimpleFeature)
-   (org.opengis.feature.type Name)))
+   (org.opengis.feature.simple SimpleFeature)))
 
 (def EPSG-4326-CRS
   "The CRS object for WGS 84"
@@ -247,10 +241,10 @@
                 (recur (conj conditions (gc/or-conds feature-conditions)) new-point-count)
                 (recur conditions total-point-count)))
             conditions))
-        (finally (do
-                   (.close iterator)
-                   (-> data-store .getFeatureReader .close)
-                   (.delete temp-dir)))))
+        (finally
+          (.close iterator)
+          (-> data-store .getFeatureReader .close)
+          (.delete temp-dir))))
     (catch Exception e
       (let [{:keys [type errors]} (ex-data e)]
         (if (and type errors)
@@ -267,41 +261,27 @@
           data-store (GeoJSONDataStore. url)
           feature-source (.getFeatureSource data-store)
           features (.getFeatures feature-source)
-          feature-count (error-if (.size features)
-                                  #(< % 1)
-                                  "GeoJSON has no features"
-                                  nil)
-          _ (error-if feature-count
-                      #(> % (max-shapefile-features))
-                      (format "GeoJSON feature count [%d] exceeds the %d feature limit"
-                              feature-count
-                              (max-shapefile-features))
-                      nil)
-          _ (debug (format "Found [%d] features" feature-count))
+          ;; Fail fast
+          _ (when (or (nil? features) 
+                      (nil? (.getSchema features))
+                      (.isEmpty features))
+              (errors/throw-service-error :bad-request "Shapefile has no features"))
           iterator (.features features)]
       (try
-        (loop [conditions [] total-point-count 0]
-          (if (.hasNext iterator)
-            (let [feature (.next iterator)
-                  [feature-conditions num-points] (feature->conditions feature {:hole-winding :cw})
-                  new-point-count (+ total-point-count num-points)]
-              (when (> new-point-count (max-shapefile-points))
-                (errors/throw-service-error :bad-request
-                                            (format "Number of points in GeoJSON file exceeds the limit of %d"
-                                                    (max-shapefile-points))))
-              (if (> (count feature-conditions) 0)
-                (recur (conj conditions (gc/or-conds feature-conditions)) new-point-count)
-                (recur conditions total-point-count)))
-            conditions))
-        (finally (do
-                   (.close iterator)
-                   (-> data-store .getFeatureReader .close)
-                   (.delete file)))))
+        (let [feature-array (ArrayList.)]
+          (while (.hasNext iterator)
+            (let [feature (.next iterator)]
+              (.add feature-array feature)))
+          (features->conditions feature-array mt/geojson))
+        (finally 
+          (.close iterator)
+          (-> data-store .getFeatureReader .close)
+          (.delete file))))
     (catch Exception e
       (let [{:keys [type errors]} (ex-data e)]
         (if (and type errors)
           (throw e) ;; This was a more specific service error so just re-throw it
-          (errors/throw-service-error :bad-request "Failed to parse GeoJSON file"))))))
+          (errors/throw-service-error :bad-request "Failed to parse shapefile"))))))
 
 (defn kml->conditions-vec
   "Converts a kml file to a vector of SpatialConditions"
@@ -342,7 +322,7 @@
       (let [{:keys [type errors]} (ex-data e)]
         (if (and type errors)
           (throw e) ;; This was a more specific service error so just re-throw it
-          (errors/throw-service-error :bad-request "Failed to parse KML file"))))))
+          (errors/throw-service-error :bad-request "Failed to parse shapefile"))))))
 
 (defn in-memory->conditions-vec
   "Converts a group of features produced by simplification to a vector of SpatialConditions"
