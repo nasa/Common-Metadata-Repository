@@ -124,13 +124,13 @@
         "invalid.kml" {:name "provider" :content "PROV1"} #"Failed to parse shapefile"
 
         "Shapefile has too many features"
-        "too_many_features.kml" {:name "provider" :content "PROV1"} #"KML feature count \[3\] exceeds the 2 feature limit"
+        "too_many_features.kml" {:name "provider" :content "PROV1"} #"Shapefile feature count \[3\] exceeds the 2 feature limit"
 
         "Shapefile has too many points"
-        "too_many_points.kml" {:name "provider" :content "PROV1"} #"Number of points in KML file exceeds the limit of 50"
+        "too_many_points.kml" {:name "provider" :content "PROV1"} #"Number of points in shapefile exceeds the limit of 50"
 
         "Shapefile has no features"
-        "no_features.kml" {:name "provider" :content "PROV1"} #"KML has no features"))
+        "no_features.kml" {:name "provider" :content "PROV1"} #"Shapefile has no features"))
 
         
     (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-size))
