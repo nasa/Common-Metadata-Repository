@@ -92,17 +92,17 @@
         "All granules query"
         "polygon_with_hole.geojson" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
 
-        "Failed to parse GeoJSON file"
-        "invalid_json.geojson" {:name "provider" :content "PROV1"} #"Failed to parse GeoJSON file"
+        "Failed to parse shapefile"
+        "invalid_json.geojson" {:name "provider" :content "PROV1"} #"Failed to parse shapefile"
 
         "Shapefile has too many features"
-        "too_many_features.geojson" {:name "provider" :content "PROV1"} #"GeoJSON feature count \[3\] exceeds the 2 feature limit"
+        "too_many_features.geojson" {:name "provider" :content "PROV1"} #"Shapefile feature count \[3\] exceeds the 2 feature limit"
 
         "Shapefile has too many points"
-        "too_many_points.geojson" {:name "provider" :content "PROV1"} #"Number of points in GeoJSON file exceeds the limit of 50"
+        "too_many_points.geojson" {:name "provider" :content "PROV1"} #"Number of points in shapefile exceeds the limit of 50"
         
         "Shapefile has no features"
-        "no_features.geojson" {:name "provider" :content "PROV1"} #"GeoJSON has no features"))
+        "no_features.geojson" {:name "provider" :content "PROV1"} #"Shapefile has no features"))
 
       
     (testing "KML Failure cases"
@@ -121,7 +121,7 @@
         "polygon_with_hole.kml" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
 
         "Failed to parse kml file"
-        "invalid.kml" {:name "provider" :content "PROV1"} #"Failed to parse KML file"
+        "invalid.kml" {:name "provider" :content "PROV1"} #"Failed to parse shapefile"
 
         "Shapefile has too many features"
         "too_many_features.kml" {:name "provider" :content "PROV1"} #"KML feature count \[3\] exceeds the 2 feature limit"
