@@ -121,7 +121,7 @@
 (defn- simplify-data
   "Given an ArrayList of Features simplify the Features and return stats about the process
   along with a new shapefile info map to replace the one in the search reqeust"
-  [filename ^ArrayList features feature-type mime-type]
+  [filename ^ArrayList features mime-type]
   (let [[simplified-features stats] (iterative-simplify features mime-type)
         [original-point-count new-point-count] stats]
     [[original-point-count
@@ -148,32 +148,19 @@
                     temp-dir)
           data-store (FileDataStoreFinder/getDataStore shp-file)
           feature-source (.getFeatureSource data-store)
-          feature-type (.getSchema feature-source)
           features (.getFeatures feature-source)
-          feature-count (shapefile/error-if (.size features)
-                                            #(< % 1)
-                                            "Shapefile has no features"
-                                            temp-dir)
-          _ (shapefile/error-if feature-count
-                                #(> % (shapefile/max-shapefile-features))
-                                (format "Shapefile feature count [%d] exceeds the %d feature limit"
-                                        feature-count
-                                        (shapefile/max-shapefile-features))
-                                nil)
-          _ (debug (format "Found [%d] features" feature-count))
-          iterator (.features features)]
+          iterator (.features features)
+          feature-list (ArrayList.)]
       (try
-        (loop [features (ArrayList.)]
-          (if (.hasNext iterator)
-            (let [feature (.next iterator)]
-              (.add features feature)
-              (recur features))
-            (simplify-data filename features feature-type mt/shapefile)))
-        (finally (do
-                   (.close iterator)
-                   (-> data-store .getFeatureReader .close)
-                   (.delete temp-dir)
-                   (.delete file)))))
+        (while (.hasNext iterator)
+          (let [feature (.next iterator)]
+            (.add feature-list feature)))
+            (simplify-data filename feature-list mt/shapefile)
+        (finally
+          (.close iterator)
+          (-> data-store .getFeatureReader .close)
+          (.delete temp-dir)
+          (.delete file))))
     (catch Exception e
       (let [{:keys [type errors]} (ex-data e)]
         (if (and type errors)
@@ -188,16 +175,13 @@
     (let [file (:tempfile shapefile-info)
           filename (:filename shapefile-info)
           input-stream (FileInputStream. file)
-          parser (PullParser. (KMLConfiguration.) input-stream SimpleFeature)]
+          parser (PullParser. (KMLConfiguration.) input-stream SimpleFeature)
+          feature-list (ArrayList.)]
       (try
-        (loop [features (ArrayList.)]
-          (if-let [feature (.parse parser)]
-            (do
-              (.add features feature)
-              (recur features))
-            (if-let [first-feature (when (not (.isEmpty features)) (.get features 0))]
-              (simplify-data filename features (.getFeatureType first-feature) mt/kml)
-              (errors/throw-service-error :bad-request "KML file has no features"))))
+        (util/while-let [feature (.parse parser)]
+          (when (> (feature-point-count feature) 0)
+            (.add feature-list feature)))
+        (simplify-data filename feature-list mt/kml)
         (finally
           (.delete file))))
     (catch Exception e
@@ -217,24 +201,18 @@
           url (URLs/fileToUrl file)
           data-store (GeoJSONDataStore. url)
           feature-source (.getFeatureSource data-store)
-          feature-type (.getSchema feature-source)
           features (.getFeatures feature-source)
-          feature-count (shapefile/error-if (.size features)
-                                            #(< % 1)
-                                            "GeoJSON has no features"
-                                            nil)
-          iterator (.features features)]
+          iterator (.features features)
+          feature-list (ArrayList.)]
       (try
-        (loop [features (ArrayList.)]
-          (if (.hasNext iterator)
-            (let [feature (.next iterator)]
-              (.add features feature)
-              (recur features))
-            (simplify-data filename features feature-type mt/geojson)))
-        (finally (do
-                   (.close iterator)
-                   (-> data-store .getFeatureReader .close)
-                   (.delete file)))))
+        (while (.hasNext iterator)
+          (let [feature (.next iterator)]
+            (.add feature-list feature)))
+        (simplify-data filename feature-list mt/geojson)
+        (finally
+          (.close iterator)
+          (-> data-store .getFeatureReader .close)
+          (.delete file))))
     (catch Exception e
       (let [{:keys [type errors]} (ex-data e)]
         (if (and type errors)
@@ -263,7 +241,7 @@
   to point to the new (reduced) shapefile"
   [request]
   (when (= "true" (get-in request [:params "simplify-shapefile"]))
-    (if-let [tmp-file (get-in request [:params "shapefile" :tempfile])]
+    (if (get-in request [:params "shapefile" :tempfile])
       (simplify (get-in request [:params "shapefile"]))
       (errors/throw-service-error :bad-request "Missing shapefile"))))
 
@@ -271,7 +249,7 @@
   "Adds shapefile simplification header to response when shapefile simplication was
   requested."
   [handler default-format-fn]
-  (fn [{context :request-context :as request}]
+  (fn [{_context :request-context :as request}]
     (try
       (if-let [[[original-point-count new-point-count] result] (simplify-shapefile request)]
         (-> (assoc-in request [:params "shapefile"] result)
