@@ -11,7 +11,7 @@
 
 (defn- user-groups-condition
   [user-acls]
-  (if (seq user-acls)
+  (if-not (empty? user-acls)
     (gc/or-conds [public-collections-condition
                   ; group-id filters need to be case-sensitive because there is
                   ; no permitted-group-ids.lowercase field being indexed

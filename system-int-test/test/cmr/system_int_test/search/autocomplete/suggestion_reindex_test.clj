@@ -137,13 +137,13 @@
         group1-concept-id (e/get-or-create-group (s/context) "group1")
         group-acl (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))]
 
-    ; (ac/clear-cache (s/context))
-    (ac/reindex-groups (s/context))
     (ingest/reindex-collection-permitted-groups "mock-echo-system-token")
     (index/wait-until-indexed)
 
     (index/reindex-suggestions)
     (index/wait-until-indexed)
+
+    (search/clear-caches)
 
     (f)))
 
@@ -156,11 +156,11 @@
                        autocomplete-reindex-fixture]))
 
 (deftest token-test
-  (let [group1 (e/get-or-create-group (s/context) "group1")
-        user1-token (e/login (s/context) "user1" [group1])]
+  (let [user1-token (e/login (s/context) "user1" [(e/get-or-create-group (s/context) "group1")])
+        _ (index/refresh-elastic-index)]
     (testing "Suggestions associated to collections with access constraints are returned"
       (compare-autocomplete-results
-       (get-in (search/get-autocomplete-json "q=From" {:echo-token user1-token}) [:feed :entry])
+       (get-in (search/get-autocomplete-json "q=From" {:headers {:echo-token user1-token}}) [:feed :entry])
        [{:type "project",
           :value "From whence you came!",
           :fields "From whence you came!"}
