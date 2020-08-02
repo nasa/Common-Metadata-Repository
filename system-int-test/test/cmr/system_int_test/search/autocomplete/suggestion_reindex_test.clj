@@ -14,7 +14,7 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.transmit.config :as transmit-config]))
+   [cmr.transmit.access-control :as ac]))
 
 (defn- scores-descending?
   [results]
@@ -120,7 +120,7 @@
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
                                                     :format-key :echo10})
-        coll4 (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7 sk8 sk9 sk10 sk11))
+        coll4 (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7 sk8 sk9 sk11))
         coll5 (d/ingest-umm-spec-collection
                 "PROV2"
                 (data-umm-spec/collection
@@ -135,16 +135,17 @@
                           (dc/collection {:entry-title "c1-echo" :access-value 1})
                           {:format :echo10})
         group1-concept-id (e/get-or-create-group (s/context) "group1")
-        group-acl (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))]))
+        group-acl (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))]
 
-    (index/wait-until-indexed)
+    ; (ac/clear-cache (s/context))
+    (ac/reindex-groups (s/context))
     (ingest/reindex-collection-permitted-groups "mock-echo-system-token")
     (index/wait-until-indexed)
 
     (index/reindex-suggestions)
     (index/wait-until-indexed)
 
-    (f)
+    (f)))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
@@ -154,34 +155,24 @@
                        hu/save-sample-humanizers-fixture
                        autocomplete-reindex-fixture]))
 
-(def request-token
-  {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
-
-(comment
-  (let [group1 (e/get-or-create-group (s/context) "group1")
-        user1-token (e/login (s/context) "user1" [group1])
-        group-acl (e/grant-group (s/context) group1 (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))]
-    (search/get-autocomplete-json "q=From whence you came" {:token user1-token})))
-
 (deftest token-test
   (let [group1 (e/get-or-create-group (s/context) "group1")
         user1-token (e/login (s/context) "user1" [group1])]
     (testing "Suggestions associated to collections with access constraints are returned"
       (compare-autocomplete-results
-       (get-in (search/get-autocomplete-json "q=From whence you came" {:token user1-token}) [:feed :entry])
+       (get-in (search/get-autocomplete-json "q=From" {:echo-token user1-token}) [:feed :entry])
        [{:type "project",
           :value "From whence you came!",
           :fields "From whence you came!"}
-        {:type "organization",
-         :value "DOI/USGS/CMG/WHSC",
-         :fields "DOI/USGS/CMG/WHSC"}
         {:type "platform",
          :value "DMSP 5B/F3",
          :fields "DMSP 5B/F3"}]))
     (testing "Suggestions associated to collections with access constraints not returned without a token"
       (compare-autocomplete-results
-       (get-in (search/get-autocomplete-json "q=From whence you came") [:feed :entry])
-       []))))
+       (get-in (search/get-autocomplete-json "q=From") [:feed :entry])
+       [{:type "platform"
+         :value "DMSP 5B/F3"
+         :fields "DMSP 5B/F3"}]))))
 
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
