@@ -138,22 +138,24 @@
   "Validate that the number of points in the features is greater than zero and less than the limit"
   [features]
   (let [point-count (features-point-count features)]
-    (if (= point-count 0)
-      "Shapefile has no points"
-      (when (> point-count (max-shapefile-points))
-        (format "Number of points in shapefile exceeds the limit of %d"
-          (max-shapefile-points))))))
+    (cond
+      (= point-count 0) "Shapefile has no points"
+      (> point-count (max-shapefile-points)) 
+          (format "Number of points in shapefile exceeds the limit of %d"
+            (max-shapefile-points))
+      :else nil)))
 
 (defn- validate-feature-count
   "Validates that the number of features is greater than zero and less than the limit"
   [features]
   (let [feature-count (count features)]
-    (if (= feature-count 0)
-      "Shapefile has no features"
-      (when (> feature-count (max-shapefile-features))
+    (cond
+      (= feature-count 0) "Shapefile has no features"
+      (> feature-count (max-shapefile-features))
         (format "Shapefile feature count [%d] exceeds the %d feature limit"
           feature-count
-          (max-shapefile-features))))))
+          (max-shapefile-features))
+      :else nil)))
 
 (defn validate-features
   "Validate this list of features in terms of shapefile limits"
@@ -183,13 +185,16 @@
   [features mime-type]
   (validate-features features)
   (let [iterator (.iterator features)]
+  ;; Loop overall all the Features in the list, building up a vector of conditions
     (loop [conditions []]
       (if (.hasNext iterator)
         (let [feature (.next iterator)
               [feature-conditions _] (feature->conditions feature (winding-opts mime-type))]
           (if (> (count feature-conditions) 0)
+            ;; if any conditions were created for the feature add them to the current conditions
             (recur (conj conditions (gc/or-conds feature-conditions)))
             (recur conditions)))
+        ;; no more Features in list - return conditions created
         conditions))))
 
 (defn error-if
