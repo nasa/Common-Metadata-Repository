@@ -275,7 +275,7 @@
                                                       :concept-id concept-id
                                                       :result-format result-format})
           results (qe/execute-query context query)]
-      (when (zero? (get-in results [:hits]))
+      (when (zero? (:hits results))
         (throw-id-not-found concept-id))
       {:results (common-search/single-result->response context query results)
        :result-format result-format})
@@ -386,7 +386,7 @@
                                               (assoc :all-revisions? true)
                                               (assoc :condition condition)
                                               (assoc :page-size :unlimited)))
-        coll-concept-ids (map #(:concept-id (:_source %))
+        coll-concept-ids (map #(get-in % [:_source :concept-id])
                               (get-in results [:hits :hits]))]
     (distinct coll-concept-ids)))
 
