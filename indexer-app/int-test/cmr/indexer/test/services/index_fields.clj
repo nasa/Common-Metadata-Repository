@@ -6,12 +6,11 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [clojurewerkz.elastisch.rest :as esr]
-   [clojurewerkz.elastisch.rest.document :as doc]
-   [clojurewerkz.elastisch.rest.index :as esi]
    [cmr.common.cache :as cache]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.test.test-util :as tu]
    [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
+   [cmr.elastic-utils.es-index-helper :as esi]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.index-set :as idx-set]))
 
@@ -102,7 +101,7 @@
   "Fixture that starts an instance of elastic in the JVM runs the tests and then shuts it down."
   [f]
   (let [http-port (:port test-config)
-        server (lifecycle/start (elastic-server/create-server http-port 9215 "es_data/indexer_test") nil)]
+        server (lifecycle/start (elastic-server/create-server http-port) nil)]
     (reset! context {:system {:db {:config test-config
                                    :conn (esr/connect (str "http://localhost:" http-port))}}})
     (try
@@ -114,7 +113,17 @@
   "Fixture that creates an index and drops it."
   [f]
   (let [conn (get-in @context [:system :db :conn])]
-    (esi/create conn "tests" :settings idx-set/collection-setting-v2 :mappings idx-set/collection-mapping)
+    (esi/create
+     conn
+     "tests"
+     {:settings idx-set/collection-setting-v2
+      :mappings
+      (-> idx-set/collection-mapping
+          (assoc :_source {:enabled true})
+          (update-in [:properties]
+                     merge
+                     (:properties idx-set/service-mapping)
+                     (:properties idx-set/variable-mapping)))})
     (try
       (f)
       (finally

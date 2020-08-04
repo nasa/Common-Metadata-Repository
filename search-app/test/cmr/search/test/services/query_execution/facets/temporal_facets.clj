@@ -10,16 +10,16 @@
     (is (= expected (temporal-facets/parse-date datetime-string time-interval)))
 
     "Year 2010"
-    "2010" :year "2010-12-30T10:15:35+000"
+    "2010" :year "2010-12-30T10:15:35.000Z"
 
     "Month 12"
-    "12" :month "2010-12-30T10:15:35+000"
+    "12" :month "2010-12-30T10:15:35.000Z"
 
     "Day 30"
-    "30" :day "2010-12-30T10:15:35+000"
+    "30" :day "2010-12-30T10:15:35.000Z"
 
     "Hour 10"
-    "10" :hour "2010-12-30T10:15:35+000"))
+    "10" :hour "2010-12-30T10:15:35.000Z"))
 
 (deftest query-params->time-interval-test
   (util/are3 [expected query-params]

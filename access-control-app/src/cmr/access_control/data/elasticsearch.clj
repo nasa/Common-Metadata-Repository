@@ -1,18 +1,15 @@
 (ns cmr.access-control.data.elasticsearch
   "Functions related to indexing access control data in Elasticsearch."
   (:require
-   [clojure.edn :as edn]
-   [clojure.string :as str]
-   [clojurewerkz.elastisch.rest.bulk :as bulk]
    [cmr.access-control.data.access-control-index :as access-control-index]
    [cmr.access-control.data.acls :as acls]
    [cmr.access-control.data.bulk :as cmr-bulk]
-   [cmr.common-app.services.search.elastic-search-index :as esi]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common.concepts :as cs]
    [cmr.common.log :refer [info debug error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]))
 
 (def MAX_BULK_OPERATIONS_PER_REQUEST
@@ -50,19 +47,13 @@
           elastic-version (:revision-id concept)
           index-name (access-control-index/concept-type->index-name type)
           elastic-doc (parsed-concept->elastic-doc context concept concept)
-          version-type (if (:force-version? options)
-                         ;; "the document will be indexed regardless of the version of the stored
-                         ;; document or if there is no existing document. The given version will be
-                         ;; used as the new version and will be stored with the new document."
-                         "force"
-                         ;; "only index the document if the given version is equal or higher than
-                         ;; the version of the stored document."
-                         "external_gte")
+          ;; "only index the document if the given version is equal or higher than
+          ;; the version of the stored document."
+          version-type "external_gte"
           elastic-doc (merge elastic-doc
                              {:_id concept-id
-                              :_type (name type)
-                              :_version elastic-version
-                              :_version_type version-type})]
+                              :version elastic-version
+                              :version_type version-type})]
       (assoc elastic-doc :_index index-name))
 
     (catch Throwable e
@@ -85,7 +76,7 @@
   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
           conn (get-in context [:system :db :conn]) ;; Why db?
-          response (bulk/bulk conn bulk-operations)
+          response (es-helper/bulk conn bulk-operations)
           ;; we don't care about version conflicts or deletes that aren't found
           bad-errors (some (fn [item]
                              (let [status (if (:index item)

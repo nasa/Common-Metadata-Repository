@@ -9,9 +9,9 @@
    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]))
 
 (defn- add-humanized-lowercase
-  "Adds a :value.lowercase field to a humanized object"
+  "Adds a :value-lowercase field to a humanized object"
   [obj]
-  (assoc obj :value.lowercase (str/lower-case (:value obj))))
+  (assoc obj :value-lowercase (str/lower-case (:value obj))))
 
 (defn- select-indexable-humanizer-fields
   "Selects the fields from humanizers that can be indexed."
@@ -24,7 +24,7 @@
   for that path"
   [humanized-collection path base-es-field]
   (let [prefix (subs (str base-es-field) 1)
-        field (keyword (str prefix ".humanized2"))
+        field (keyword (str prefix "-humanized"))
         value-with-priorities (util/get-in-all humanized-collection path)
         value-with-priorities (if (sequential? value-with-priorities)
                                 (map select-indexable-humanizer-fields value-with-priorities)
@@ -42,15 +42,14 @@
                     collection (humanizer-fetcher/get-humanizer-instructions context))
         extract-fields (partial extract-humanized-elastic-fields humanized)]
     (merge
-      {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
+      {:science-keywords-humanized (map sk/humanized-science-keyword->elastic-doc
                                         (:ScienceKeywords humanized))}
-      (set/rename-keys (extract-fields [:ArchiveAndDistributionInformation
+      (extract-fields [:ArchiveAndDistributionInformation
                                         :FileDistributionInformation
-                                        :cmr.humanized/Format]
+                                        :cmr-humanized/Format]
                                        :granule-data-format)
-                       {:granule-data-format.humanized2 :granule-data-format.humanized})
-      (extract-fields [:Platforms :cmr.humanized/ShortName] :platform-sn)
-      (extract-fields [:Platforms :Instruments :cmr.humanized/ShortName] :instrument-sn)
-      (extract-fields [:Projects :cmr.humanized/ShortName] :project-sn)
-      (extract-fields [:ProcessingLevel :cmr.humanized/Id] :processing-level-id)
-      (extract-fields [:DataCenters :cmr.humanized/ShortName] :organization))))
+      (extract-fields [:Platforms :cmr-humanized/ShortName] :platform-sn)
+      (extract-fields [:Platforms :Instruments :cmr-humanized/ShortName] :instrument-sn)
+      (extract-fields [:Projects :cmr-humanized/ShortName] :project-sn)
+      (extract-fields [:ProcessingLevel :cmr-humanized/Id] :processing-level-id)
+      (extract-fields [:DataCenters :cmr-humanized/ShortName] :organization))))

@@ -79,10 +79,6 @@
                                            :Topic "value"
                                            :Term "None"}))
 
-(def sk10 (umm-spec-common/science-keyword {:Category "missing"
-                                            :Topic "value"
-                                            :Term "na"}))
-
 (def sk11 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
                                             :Topic "BIOSPHERE"
                                             :Term "Nothofagus"}))
@@ -116,7 +112,7 @@
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
                                                     :format-key :echo10})
-        coll4 (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7 sk8 sk9 sk10 sk11))]
+        coll4 (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7 sk8 sk9 sk11))]
 
     (index/wait-until-indexed)
     (index/reindex-suggestions)
@@ -133,9 +129,9 @@
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
     (compare-autocomplete-results
-      (get-in (search/get-autocomplete-json "q=level2") [:feed :entry])
-      [{:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}
-       {:type "instrument" :value "lVIs" :fields "lVIs"}]))
+      (get-in (search/get-autocomplete-json "q=l") [:feed :entry])
+      [{:type "instrument" :value "lVIs" :fields "lVIs"}
+       {:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}]))
 
   (testing "Ensure science keywords are being indexed properly"
     (are3
@@ -145,44 +141,28 @@
 
       "shorter match"
       "q=solar"
-      [{:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
-       {:type "organization" :value "ACRIM SCF" :fields "ACRIM SCF"}
-       {:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}]
+      [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
+       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]
 
       "more complete match"
       "q=solar irradiation"
-      [{:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
-       {:type "organization" :value "ACRIM SCF" :fields "ACRIM SCF"}
-       {:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}]))
+      [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
+       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]))
 
   (testing "Anti-value filtering"
     (are3
       [query expected]
       (let [results (get-in (search/get-autocomplete-json (str "q=" query)) [:feed :entry])]
         (compare-autocomplete-results results expected))
-      
-      "excludes 'NA'"
-      "na" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}]
-      
+
       "excludes 'None'"
-      "none" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}]
-      
+      "none" []
+
       "excludes 'Not Applicable'"
-      "not applicable" [{:type "science_keywords" :value "Nothofagus" :fields "Biosphere:Nothofagus"}
-                        {:type "instrument" :value "ATM" :fields "ATM"}
-                        {:type "platform" :value "ACRIMSAT" :fields "ACRIMSAT"}
-                        {:type "instrument" :value "ACRIM" :fields "ACRIM"}
-                        {:type "science_keywords" :value "Alpha" :fields "Popular:Alpha"}
-                        {:type "project" :value "ACRIM" :fields "ACRIM"}
-                        {:type "organization" :value "ACRIM SCF" :fields "ACRIM SCF"}]
-      
+      "not applicable" []
+
       "excludes 'Not Provided'"
-      "not provided" [{:type "science_keywords" :value "Nothofagus" :fields "Biosphere:Nothofagus"}
-                      {:type "project" :value "proj1" :fields "proj1"}
-                      {:type "project" :value "PROJ2" :fields "PROJ2"}
-                      {:type "processing_level" :value "PL1" :fields "PL1"}]
+      "not provided" []
 
       "does not filter 'not' prefixed values"
       "not" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}])))

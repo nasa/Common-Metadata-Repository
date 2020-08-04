@@ -875,7 +875,7 @@
       (testing "issued modified are correct for DataDates being Not provided."
         ;; The DataDates in this file = "Not provided", use the collection's Temporal_Coverage which is provided.
         (is (= "2002-08-31T00:00:00.000Z" (:issued opendata-coll-5138-1)))
-        (is (= "2016-09-25T23:59:59.000Z" (:modified opendata-coll-5138-1))))
+        (is (= "2016-09-25T23:59:59.999Z" (:modified opendata-coll-5138-1))))
       (testing "issued modified are correct for DataDates that are provided."
         (is (= "2014-09-24T00:00:00.000Z" (:issued opendata-coll-5138-2)))
         (is (= "2014-09-24T00:00:00.000Z" (:modified opendata-coll-5138-2))))

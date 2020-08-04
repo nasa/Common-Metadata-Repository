@@ -16,9 +16,8 @@
   (if (elastic-running?)
     (f)
     (let [port (config/elastic-port)
-          server (l/start (ees/create-server port (+ port 10) "es_data/fixture") nil)]
+          server (l/start (ees/create-server port) nil)]
       (try
         (f)
         (finally
           (l/stop server nil))))))
-

@@ -17,8 +17,8 @@
   "The default function that will be used to process an elastic result into a result for the caller."
   [context query elastic-result]
   (let [{concept-id :_id
-         field-values :fields} elastic-result]
-    (reduce #(assoc %1 %2 (-> field-values %2 first))
+         field-values :_source} elastic-result]
+    (reduce #(assoc %1 %2 (-> field-values %2))
             {:concept-id concept-id}
             (:result-fields query))))
 
@@ -36,16 +36,16 @@
 (defn default-elastic-results->query-results
   "Default function for converting elastic-results to query-results"
   [context query elastic-results]
-  (let [hits (get-in elastic-results [:hits :total])
+  (let [hits (get-in elastic-results [:hits :total :value])
         timed-out (:timed_out elastic-results)
         scroll-id (:_scroll_id elastic-results)
         elastic-matches (get-in elastic-results [:hits :hits])
         items (mapv #(elastic-result->query-result-item context query %) elastic-matches)]
     (results/map->Results
       {:aggregations (:aggregations elastic-results)
-        :hits hits 
+        :hits hits
         :timed-out timed-out
-        :items items 
+        :items items
         :result-format (:result-format query)
         :scroll-id scroll-id})))
 

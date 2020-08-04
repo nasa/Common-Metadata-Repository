@@ -10,18 +10,18 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:subscription :json]
   [concept-type query]
-  ["concept-id" "revision-id" "deleted" "provider-id" "native-id" "subscription-name" 
+  ["concept-id" "revision-id" "deleted" "provider-id" "native-id" "subscription-name"
    "subscriber-id" "collection-concept-id"])
 
 (defmethod elastic-results/elastic-result->query-result-item [:subscription :json]
   [context query elastic-result]
-  (let [{{[subscription-name] :subscription-name
-          [subscriber-id] :subscriber-id
-          [collection-concept-id] :collection-concept-id
-          [deleted] :deleted
-          [provider-id] :provider-id
-          [native-id] :native-id
-          [concept-id] :concept-id} :fields} elastic-result
+  (let [{{subscription-name :subscription-name
+          subscriber-id :subscriber-id
+          collection-concept-id :collection-concept-id
+          deleted :deleted
+          provider-id :provider-id
+          native-id :native-id
+          concept-id :concept-id} :_source} elastic-result
         revision-id (elastic-results/get-revision-id-from-elastic-result :service elastic-result)
         result-item (util/remove-nil-keys
                      {:concept_id concept-id

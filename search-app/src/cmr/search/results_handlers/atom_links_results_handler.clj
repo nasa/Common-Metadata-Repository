@@ -21,7 +21,7 @@
 (defmethod elastic-results/elastic-result->query-result-item [:collection :atom-links]
   [context query elastic-result]
   (let [{concept-id :_id
-         {atom-links :atom-links} :fields} elastic-result
+         {atom-links :atom-links} :_source} elastic-result
         atom-links (map #(json/decode % true) atom-links)]
     [concept-id atom-links]))
 

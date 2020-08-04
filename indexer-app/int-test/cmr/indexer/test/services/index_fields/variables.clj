@@ -20,23 +20,23 @@
     {:concept-id concept-id
      :native-id native-id
      :entry-title entry-title
-     :entry-title.lowercase (string/lower-case entry-title)
+     :entry-title-lowercase (string/lower-case entry-title)
      :provider-id provider-id
-     :provider-id.lowercase (string/lower-case provider-id)
+     :provider-id-lowercase (string/lower-case provider-id)
      :short-name short-name
-     :short-name.lowercase (string/lower-case short-name)
+     :short-name-lowercase (string/lower-case short-name)
      :measurements measurements
-     :measurements.lowercase (string/lower-case measurements)
+     :measurements-lowercase (string/lower-case measurements)
      :variables [{:measurement measurement1
-                  :measurement.lowercase (string/lower-case measurement1)
+                  :measurement-lowercase (string/lower-case measurement1)
                   :variable variable1
-                  :variable.lowercase (string/lower-case variable1)
-                  :originator-id.lowercase "alice"}
+                  :variable-lowercase (string/lower-case variable1)
+                  :originator-id-lowercase "alice"}
                  {:measurement measurement2
-                  :measurement.lowercase (string/lower-case measurement2)
+                  :measurement-lowercase (string/lower-case measurement2)
                   :variable variable2
-                  :variable.lowercase (string/lower-case variable2)
-                  :originator-id.lowercase "bob"}]}))
+                  :variable-lowercase (string/lower-case variable2)
+                  :originator-id-lowercase "bob"}]}))
 
 (defn- es-doc-var-rev-2
   "Returns dummy elasticsearch doc for testing"
@@ -52,13 +52,13 @@
     {:concept-id concept-id
      :native-id native-id
      :entry-title entry-title
-     :entry-title.lowercase (string/lower-case entry-title)
+     :entry-title-lowercase (string/lower-case entry-title)
      :provider-id provider-id
-     :provider-id.lowercase (string/lower-case provider-id)
+     :provider-id-lowercase (string/lower-case provider-id)
      :short-name short-name
-     :short-name.lowercase (string/lower-case short-name)
+     :short-name-lowercase (string/lower-case short-name)
      :measurements measurements
-     :measurements.lowercase (string/lower-case measurements)}))
+     :measurements-lowercase (string/lower-case measurements)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constants/Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -103,10 +103,10 @@
   (save-variable (es-doc-var-rev-1) "V1234-PROV1" 1)
   (assert-match-in-var "V1234-PROV1" [:entry-title] "Dummy")
   (assert-match-in-var "V1234-PROV1" [:measurements] "Measure")
-  (assert-not-match-in-var "V1234-PROV1" [:measurements.lowercase] "Measure")
-  (assert-match-in-var "V1234-PROV1" [:measurements.lowercase] "measure")
+  (assert-not-match-in-var "V1234-PROV1" [:measurements-lowercase] "Measure")
+  (assert-match-in-var "V1234-PROV1" [:measurements-lowercase] "measure")
   (assert-match-in-var "V1234-PROV1" [:variables 0 :measurement] "Measure")
-  (assert-match-in-var "V1234-PROV1" [:variables 0 :variable.lowercase] "var")
+  (assert-match-in-var "V1234-PROV1" [:variables 0 :variable-lowercase] "var")
   (delete-variable "V1234-PROV1" 1)
   (assert-delete-var "V1234-PROV1")
   (assert-not-match-in-var "V1234-PROV1" :entry-title "Dummy"))
@@ -114,13 +114,13 @@
 (deftest save-variable-all-revisions-test
   (save-variable (es-doc-var-rev-1) "V1234-PROV1" 1 {:all-revisions-index? true})
   (save-variable (es-doc-var-rev-2) "V1234-PROV1" 2 {:all-revisions-index? true})
-  (assert-match-in-var "V1234-PROV1,1" [:measurements.lowercase] "measure")
-  (assert-not-match-in-var "V1234-PROV1,1" [:measurements.lowercase] "skadoooosh!")
-  (assert-match-in-var "V1234-PROV1,2" [:measurements.lowercase] "ska doooosh!")
-  (assert-not-match-in-var "V1234-PROV1,2" [:measurements.lowercase] "measure")
+  (assert-match-in-var "V1234-PROV1,1" [:measurements-lowercase] "measure")
+  (assert-not-match-in-var "V1234-PROV1,1" [:measurements-lowercase] "skadoooosh!")
+  (assert-match-in-var "V1234-PROV1,2" [:measurements-lowercase] "ska doooosh!")
+  (assert-not-match-in-var "V1234-PROV1,2" [:measurements-lowercase] "measure")
   (delete-variable "V1234-PROV1" 1 {:all-revisions-index? true})
   (assert-delete-var "V1234-PROV1")
   (assert-not-match-in-var "V1234-PROV1,1" [:measurements] "measure")
   (delete-variable "V1234-PROV1" 2 {:all-revisions-index? true})
   (assert-delete-var "V1234-PROV1")
-  (assert-not-match-in-var "V1234-PROV1,2" [:measurements.lowercase] "skadoooosh!"))
+  (assert-not-match-in-var "V1234-PROV1,2" [:measurements-lowercase] "skadoooosh!"))

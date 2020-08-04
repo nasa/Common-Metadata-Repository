@@ -65,12 +65,10 @@
                    :settings {:index {:number_of_shards 1,
                                       :number_of_replicas 0,
                                       :refresh_interval "20s"}}}]
-                 :mapping {:collection {:dynamic "strict",
-                                        :_source {:enabled false},
-                                        :_all {:enabled false},
-                                        :_id   {:path "concept-id"},
-                                        :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                                     :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}
+                 :mapping {:dynamic "strict",
+                                        :_source {:enabled true},
+                                        :properties {:concept-id  {:type "keyword" :norms false :index_options "docs"},
+                                                     :entry-title {:type "keyword" :norms false :index_options "docs"}}}}
     :granule {:indexes
               [{:name "small_collections"
                 :settings {:index {:number_of_shards 1,
@@ -87,12 +85,10 @@
               :individual-index-settings {:index {:number_of_shards 1,
                                                   :number_of_replicas 0,
                                                   :refresh_interval "10s"}}
-              :mapping {:granule {:dynamic "strict",
-                                  :_source { "enabled" false},
-                                  :_all {"enabled" false},
-                                  :_id  {:path "concept-id"},
-                                  :properties {:concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                               :collection-concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}}})
+              :mapping {:dynamic "strict",
+                                  :_source {:enabled true},
+                                  :properties {:concept-id {:type "keyword" :norms false :index_options "docs"},
+                                               :collection-concept-id {:type "keyword" :norms false :index_options "docs"}}}}}})
 
 (def invalid-sample-index-set
   {:index-set
@@ -106,11 +102,9 @@
                                       :number_of_replicas 0,
                                       :refresh_interval "20s"}}}]
                  :mapping {:collection {:dynamic "strict",
-                                        :_source {:enabled false},
-                                        :_all {:enabled false},
-                                        :_id   {:path "concept-id"},
-                                        :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                                     :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}
+                                        :_source {:enabled true},
+                                        :properties {:concept-id  {:type "keyword" :norms false :index_options "docs"},
+                                                     :entry-title {:type "keyword" :norms false :index_options "docs"}}}}}
     :granule {:indexes
               [{:name "G2-PROV1"
                 :settings {:index {:number_of_shards 1,
@@ -125,11 +119,10 @@
                                    :number_of_replicas 0,
                                    :refresh_interval "10s"}}}]
               :mapping {:granule {:dynamic "strict",
-                                  :_source { "enabled" false},
-                                  :_all {"enabled" false},
-                                  :_id  {:path "concept-id"},
-                                  :properties {:concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                               :collection-concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}}})
+                                  :_source {:enabled true},
+                                  :properties {:concept-id {:type "keyword" :norms false :index_options "docs"},
+                                               :collection-concept-id {:type "keyword" :norms false :index_options "docs"}}}}}}})
+
 
 (def index-set-w-invalid-idx-prop
   {:index-set
@@ -146,11 +139,9 @@
                                       :number_of_replicas 0,
                                       :refresh_interval "20s"}}}]
                  :mapping {:collection {:dynamic "strict",
-                                        :_source {:enabled false},
-                                        :_all {:enabled false},
-                                        :_id   {:path "concept-id"},
-                                        :properties {:concept-id  {:type "XXX" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                                     :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}}})
+                                        :_source {:enabled true},
+                                        :properties {:concept-id  {:type "XXX" :index "not_analyzed" :norms false :index_options "docs"},
+                                                     :entry-title {:type "keyword" :norms false :index_options "docs"}}}}}}})
 
 
 ;;; utility methods

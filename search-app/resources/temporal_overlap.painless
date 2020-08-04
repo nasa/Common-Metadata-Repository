@@ -1,0 +1,49 @@
+/* Elastic painless script to calculate the temporal overlap of a collection over the input ranges.
+
+   Collection temporal ranges are in doc['temporal-ranges'], which is a list of dates with no
+   overlaps. When sorted, they will be in the order: start-date, end-date, start-date, end-date...
+   If the list has an odd number of elements, the collection is ongoing and has no end date.
+
+   For each temporal range, calculate the amount of overlap for the collection. Add them up
+   and divide by the sum of the span of the ranges (rangeSpan) to get the overall overlap.
+*/
+
+double totalOverlap = 0.0;
+List sortedCollectionRanges = new ArrayList();
+for (date in doc['temporal-ranges'])
+{
+  def milli = date.toInstant().toEpochMilli();
+  sortedCollectionRanges.add(milli);
+}
+sortedCollectionRanges.sort((a, b) -> a > b ? 1 : a == b ? 0 : -1);
+
+for (range in params.temporalRanges)
+{
+  for (int i = 0; i < sortedCollectionRanges.size(); i+= 2)
+  {
+     def overlapStartDate = range.start_date;
+     if (sortedCollectionRanges.get(i) > overlapStartDate)
+     {
+       overlapStartDate = sortedCollectionRanges.get(i);
+     }
+
+     def overlapEndDate = range.end_date;
+     if ((i + 1) < sortedCollectionRanges.size() && sortedCollectionRanges.get(i+1) < overlapEndDate)
+     {
+       overlapEndDate = sortedCollectionRanges.get(i+1);
+     }
+     if (overlapEndDate > overlapStartDate)
+     {
+       totalOverlap += overlapEndDate - overlapStartDate;
+     }
+  }
+}
+
+if (params.rangeSpan > 0)
+{
+  totalOverlap / params.rangeSpan;
+}
+else
+{
+  0; /* Temporal overlap is 0 */
+}

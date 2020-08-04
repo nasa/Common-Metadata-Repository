@@ -285,7 +285,7 @@ These are query parameters that control what extra data is included with collect
   * The response headers include the following:
     CMR-Hits and CMR-Took indicate the number of result hits and the time to build and execute the query, respectively.
     CMR-Request-Id and X-Request-Id return the same value - the value passed in through CMR-Request-Id request header or X-Request-Id request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors.
-    CMR-Shapefile-Original-Point-Count returns the original shapefile point count when shapefile simplification is requested 
+    CMR-Shapefile-Original-Point-Count returns the original shapefile point count when shapefile simplification is requested
     CMR-Shapefile-Simplified-Point-Count return the reduced point count when shapefile simplification is requested
 
 #### <a name="extensions"></a> Extensions
@@ -3052,7 +3052,7 @@ CMR-Request-Id: 03da8f3d-57b3-4ce8-bbc0-29970a4a8b30
 Content-Length: 653
 Server: Jetty(9.2.10.v20150310)
 
-[{"granule-ur":["ur2"],"revision-date":["2017-09-07T18:51:39+0000"],"parent-collection-id":["C1200000009-PROV1"],"concept-id":["G2-PROV1"],"provider-id":["PROV1"]},{"granule-ur":["ur1"],"revision-date":["2017-09-07T18:51:39+0000"],"parent-collection-id":["C1200000009-PROV1"],"concept-id":["G1-PROV1"],"provider-id":["PROV1"]},{"granule-ur":["ur3"],"revision-date":["2017-09-07T18:51:39+0000"],"parent-collection-id":["C1200000010-PROV1"],"concept-id":["G3-PROV1"],"provider-id":["PROV1"]},{"granule-ur":["ur4"],"revision-date":["2017-09-07T18:51:39+0000"],"parent-collection-id":["C1200000011-PROV2"],"concept-id":["G4-PROV2"],"provider-id":["PROV2"]}]
+[{"granule-ur":"ur2","revision-date":"2017-09-07T18:51:39+0000","parent-collection-id":"C1200000009-PROV1","concept-id":"G2-PROV1","provider-id":"PROV1"},{"granule-ur":"ur1","revision-date":"2017-09-07T18:51:39.123Z","parent-collection-id":"C1200000009-PROV1","concept-id":"G1-PROV1","provider-id":"PROV1"},{"granule-ur":"ur3","revision-date":"2017-09-07T18:51:39.000Z","parent-collection-id":"C1200000010-PROV1","concept-id":"G3-PROV1","provider-id":"PROV1"},{"granule-ur":"ur4","revision-date":"2017-09-07T18:51:39.256Z","parent-collection-id":"C1200000011-PROV2","concept-id":"G4-PROV2","provider-id":"PROV2"}]
 ```
 
 ### <a name="tagging"></a> Tagging
@@ -3140,7 +3140,7 @@ Content-Length: 48
 
 #### <a name="tag-association"></a> Tag Association
 
-A tag can be associated with collections through either a JSON query or a list of collection concept revisions. Tag association by query only supports tagging the latest revision of collections. Tag association by collections supports tagging any specified collection revisions. The tag association request normally returns status code 200 with a response that consists of a list of individual tag association responses, one for each tag association attempted to create. Each individual tag association response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. The `tagged_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tag association. Here is a sample tag association request and its response:
+A tag can be associated with collections through either a JSON query or a list of collection concept revisions. Tag association by query only supports tagging the latest revision of collections. Tag association by collections supports tagging any specified collection revisions. The tag association request normally returns status code 200 with a response that consists of a list of individual tag association responses, one for each tag association attempted to create. Each individual tag association response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. The `tagged_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tag association. The tag and the collections must exist before they can be associated together. Here is a sample tag association request and its response:
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.native_id/associations -d \

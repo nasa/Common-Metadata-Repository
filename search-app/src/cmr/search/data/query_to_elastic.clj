@@ -40,27 +40,25 @@
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
   (let [default-mappings {:author :authors
-                          :data-center-h :organization.humanized2
+                          :data-center-h :organization-humanized
                           :doi :doi-stored
                           :granule-end-date :granule-end-date-stored
                           :granule-start-date :granule-start-date-stored
-                          :granule-data-format-h :granule-data-format.humanized
+                          :granule-data-format-h :granule-data-format-humanized
                           :instrument :instrument-sn
-                          :instrument-h :instrument-sn.humanized2
+                          :instrument-h :instrument-sn-humanized
                           :measurement :measurements
                           :platform :platform-sn
-                          :platform-h :platform-sn.humanized2
-                          :processing-level-id-h :processing-level-id.humanized2
-                          :project :project-sn2
-                          :project-h :project-sn.humanized2
-                          :project-sn :project-sn2
+                          :platform-h :platform-sn-humanized
+                          :processing-level-id-h :processing-level-id-humanized
+                          :project :project-sn
+                          :project-h :project-sn-humanized
                           :provider :provider-id
-                          :revision-date :revision-date2
                           :sensor :sensor-sn
                           :service-concept-id :service-concept-ids
                           :service-name :service-names
                           :two-d-coordinate-system-name :two-d-coord-name
-                          :updated-since :revision-date2
+                          :updated-since :revision-date
                           :usage-score :usage-relevancy-score
                           :variable-concept-id :variable-concept-ids
                           :variable-name :variable-names
@@ -83,9 +81,7 @@
 
 (defmethod q2e/concept-type->field-mappings :granule
   [_]
-  (let [default-mappings {:granule-ur.lowercase :granule-ur.lowercase2
-                          :producer-gran-id.lowercase :producer-gran-id.lowercase2
-                          :provider :provider-id
+  (let [default-mappings {:provider :provider-id
                           :native-id :native-id-stored
                           :revision-date :revision-date-stored-doc-values
                           :updated-since :revision-date-stored-doc-values
@@ -104,8 +100,8 @@
 
 (defmethod q2e/concept-type->field-mappings :tag
   [_]
-  {:tag-key :tag-key.lowercase
-   :originator-id :originator-id.lowercase})
+  {:tag-key :tag-key-lowercase
+   :originator-id :originator-id-lowercase})
 
 (defmethod q2e/concept-type->field-mappings :variable
   [_]
@@ -138,17 +134,15 @@
    :doi-stored :doi
    :granule-end-date-stored :granule-end-date
    :granule-start-date-stored :granule-start-date
-   :granule-data-format.humanized :granule-data-format-h
+   :granule-data-format-humanized :granule-data-format-h
    :instrument-sn :instrument
-   :instrument-sn.humanized2 :instrument-h
+   :instrument-sn-humanized :instrument-h
    :measurements :measurement
-   :organization.humanized2 :data-center-h
+   :organization-humanized :data-center-h
    :platform-sn :platform
-   :platform-sn.humanized2 :platform-h
-   :processing-level-id.humanized2 :processing-level-id-h
-   :project-sn.humanized2 :project-h
-   :project-sn2 :project-sn
-   :revision-date2 :revision-date
+   :platform-sn-humanized :platform-h
+   :processing-level-id-humanized :processing-level-id-h
+   :project-sn-humanized :project-h
    :sensor-sn :sensor
    :service-concept-ids :service-concept-id
    :service-names :service-name
@@ -169,43 +163,43 @@
 
 (defmethod q2e/elastic-field->query-field-mappings :tag
   [_]
-  {:tag-key.lowercase :tag-key
-   :originator-id.lowercase :originator-id})
+  {:tag-key-lowercase :tag-key
+   :originator-id-lowercase :originator-id})
 
 (defmethod q2e/field->lowercase-field-mappings :collection
   [_]
-  {:provider "provider-id.lowercase"
-   :version "version-id.lowercase"
-   :project "project-sn2.lowercase"
-   :two-d-coordinate-system-name "two-d-coord-name.lowercase"
-   :platform "platform-sn.lowercase"
-   :instrument "instrument-sn.lowercase"
-   :sensor "sensor-sn.lowercase"
-   :variable-name "variable-names.lowercase"
-   :variable-native-id "variable-native-ids.lowercase"
-   :measurement "measurements.lowercase"
-   :author "authors.lowercase"
-   :service-name "service-names.lowercase"})
+  {:provider "provider-id-lowercase"
+   :version "version-id-lowercase"
+   :project "project-sn-lowercase"
+   :two-d-coordinate-system-name "two-d-coord-name-lowercase"
+   :platform "platform-sn-lowercase"
+   :instrument "instrument-sn-lowercase"
+   :sensor "sensor-sn-lowercase"
+   :variable-name "variable-names-lowercase"
+   :variable-native-id "variable-native-ids-lowercase"
+   :measurement "measurements-lowercase"
+   :author "authors-lowercase"
+   :service-name "service-names-lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :variable
   [_]
-  {:provider "provider-id.lowercase"
-   :name "variable-name.lowercase"})
+  {:provider "provider-id-lowercase"
+   :name "variable-name-lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :service
   [_]
-  {:provider "provider-id.lowercase"
-   :name "service-name.lowercase"})
+  {:provider "provider-id-lowercase"
+   :name "service-name-lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :tool
   [_]
-  {:provider "provider-id.lowercase"
-   :name "tool-name.lowercase"})
+  {:provider "provider-id-lowercase"
+   :name "tool-name-lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :subscription
   [_]
-  {:provider "provider-id.lowercase"
-   :name "subscription-name.lowercase"})
+  {:provider "provider-id-lowercase"
+   :name "subscription-name-lowercase"})
 
 (defn- doc-values-lowercase-field-name
   "Returns the doc-values field-name for the given field."
@@ -214,27 +208,27 @@
 
 (def query-field->lowercase-granule-doc-values-fields-map
   "Defines mappings from query-fields to Elasticsearch lowercase-doc-values fields."
-  (into {:provider "provider-id.lowercase-doc-values"
-         :platform "platform-sn.lowercase-doc-values"
-         :instrument "instrument-sn.lowercase-doc-values"
-         :sensor "sensor-sn.lowercase-doc-values"
-         :project "project-refs.lowercase-doc-values"
-         :version "version-id.lowercase-doc-values"}
+  (into {:provider "provider-id-lowercase-doc-values"
+         :platform "platform-sn-lowercase-doc-values"
+         :instrument "instrument-sn-lowercase-doc-values"
+         :sensor "sensor-sn-lowercase-doc-values"
+         :project "project-refs-lowercase-doc-values"
+         :version "version-id-lowercase-doc-values"}
         (for [field [:provider-id :entry-title :short-name :version-id]]
           [field (doc-values-lowercase-field-name field)])))
 
 (defmethod q2e/field->lowercase-field-mappings :granule
   [_]
   (let [default-mappings
-        {:granule-ur "granule-ur.lowercase2"
-         :producer-gran-id "producer-gran-id.lowercase2"
-         :producer-granule-id "producer-gran-id.lowercase2"
-         :project "project-refs.lowercase"
-         :version "version-id.lowercase"
-         :provider "provider-id.lowercase"
-         :platform "platform-sn.lowercase"
-         :instrument "instrument-sn.lowercase"
-         :sensor "sensor-sn.lowercase"}]
+        {:granule-ur "granule-ur-lowercase"
+         :producer-gran-id "producer-gran-id-lowercase"
+         :producer-granule-id "producer-gran-id-lowercase"
+         :project "project-refs-lowercase"
+         :version "version-id-lowercase"
+         :provider "provider-id-lowercase"
+         :platform "platform-sn-lowercase"
+         :instrument "instrument-sn-lowercase"
+         :sensor "sensor-sn-lowercase"}]
     (if (use-doc-values-fields)
       (merge default-mappings query-field->lowercase-granule-doc-values-fields-map)
       default-mappings)))
@@ -307,91 +301,90 @@
          ;; a boosting term for each matching filter in a set of filters.
          :query {:function_score {:score_mode :multiply
                                   :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
-                                  :query {:filtered {:query (eq/match-all)
-                                                     :filter core-query}}}}})
+                                  :query {:bool {:must (eq/match-all)
+                                                 :filter core-query}}}}})
        (if boosts
          (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
-         {:query {:filtered {:query (eq/match-all)
-                             :filter core-query}}})))))
+         {:query {:bool {:must (eq/match-all)
+                         :filter core-query}}})))))
 
 (defmethod q2e/concept-type->sort-key-map :collection
   [_]
-  {:short-name :short-name.lowercase
-   :version-id :parsed-version-id.lowercase ; Use parsed for sorting
-   :entry-title :entry-title.lowercase
-   :entry-id :entry-id.lowercase
-   :provider :provider-id.lowercase
-   :platform :platform-sn.lowercase
-   :instrument :instrument-sn.lowercase
-   :sensor :sensor-sn.lowercase
+  {:short-name :short-name-lowercase
+   :version-id :parsed-version-id-lowercase ; Use parsed for sorting
+   :entry-title :entry-title-lowercase
+   :entry-id :entry-id-lowercase
+   :provider :provider-id-lowercase
+   :platform :platform-sn-lowercase
+   :instrument :instrument-sn-lowercase
+   :sensor :sensor-sn-lowercase
    :score :_score
-   :revision-date :revision-date2
    :usage-score :usage-relevancy-score})
 
 (defmethod q2e/concept-type->sort-key-map :tag
   [_]
-  {:tag-key :tag-key.lowercase})
+  {:tag-key :tag-key-lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :variable
   [_]
-  {:variable-name :variable-name.lowercase
-   :name :variable-name.lowercase
-   :long-name :measurement.lowercase
-   :full-path :full-path.lowercase
-   :provider :provider-id.lowercase})
+  {:variable-name :variable-name-lowercase
+   :name :variable-name-lowercase
+   :long-name :measurement-lowercase
+   :full-path :full-path-lowercase
+   :provider :provider-id-lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :service
   [_]
-  {:service-name :service-name.lowercase
-   :name :service-name.lowercase
-   :long-name :long-name.lowercase
-   :provider :provider-id.lowercase})
+  {:service-name :service-name-lowercase
+   :name :service-name-lowercase
+   :long-name :long-name-lowercase
+   :provider :provider-id-lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :tool
   [_]
-  {:tool-name :tool-name.lowercase
-   :name :tool-name.lowercase
-   :long-name :long-name.lowercase
-   :provider :provider-id.lowercase})
+  {:tool-name :tool-name-lowercase
+   :name :tool-name-lowercase
+   :long-name :long-name-lowercase
+   :provider :provider-id-lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :subscription
   [_]
-  {:subscription-name :subscription-name.lowercase
-   :name :subscription-name.lowercase
-   :collection-concept-id :collection-concept-id.lowercase
-   :provider :provider-id.lowercase})
+  {:subscription-name :subscription-name-lowercase
+   :name :subscription-name-lowercase
+   :collection-concept-id :collection-concept-id-lowercase
+   :provider :provider-id-lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :granule
   [_]
-  (let [default-mappings {:provider :provider-id.lowercase
-                          :provider-id :provider-id.lowercase
+  (let [default-mappings {:provider :provider-id-lowercase
+                          :provider-id :provider-id-lowercase
                           :data-size :size
-                          :entry-title :entry-title.lowercase
-                          :short-name :short-name.lowercase
-                          :version :version-id.lowercase
-                          :granule-ur :granule-ur.lowercase2
-                          :producer-granule-id :producer-gran-id.lowercase2
-                          :readable-granule-name :readable-granule-name-sort2
-                          :platform :platform-sn.lowercase
-                          :instrument :instrument-sn.lowercase
-                          :sensor :sensor-sn.lowercase
-                          :project :project-refs.lowercase}]
+                          :entry-title :entry-title-lowercase
+                          :short-name :short-name-lowercase
+                          :version :version-id-lowercase
+                          :granule-ur :granule-ur-lowercase
+                          :producer-granule-id :producer-gran-id-lowercase
+                          :readable-granule-name :readable-granule-name-sort
+                          :platform :platform-sn-lowercase
+                          :instrument :instrument-sn-lowercase
+                          :sensor :sensor-sn-lowercase
+                          :project :project-refs-lowercase}]
     (if (use-doc-values-fields)
-      (merge default-mappings {:provider :provider-id.lowercase-doc-values
-                               :provider-id :provider-id.lowercase-doc-values
+      (merge default-mappings {:provider :provider-id-lowercase-doc-values
+                               :provider-id :provider-id-lowercase-doc-values
                                :size :size-doc-values
                                :data-size :size-doc-values
-                               :platform :platform-sn.lowercase-doc-values
-                               :instrument :instrument-sn.lowercase-doc-values
-                               :sensor :sensor-sn.lowercase-doc-values
-                               :project :project-refs.lowercase-doc-values
+                               :platform :platform-sn-lowercase-doc-values
+                               :instrument :instrument-sn-lowercase-doc-values
+                               :sensor :sensor-sn-lowercase-doc-values
+                               :project :project-refs-lowercase-doc-values
                                :start-date :start-date-doc-values
                                :end-date :end-date-doc-values
                                :revision-date :revision-date-stored-doc-values
-                               :entry-title :entry-title.lowercase-doc-values
-                               :short-name :short-name.lowercase-doc-values
-                               :version :version-id.lowercase-doc-values
-                               :version-id :version-id.lowercase-doc-values
+                               :entry-title :entry-title-lowercase-doc-values
+                               :short-name :short-name-lowercase-doc-values
+                               :version :version-id-lowercase-doc-values
+                               :version-id :version-id-lowercase-doc-values
                                :day-night :day-night-doc-values
                                :cloud-cover :cloud-cover-doc-values})
       default-mappings)))
@@ -406,7 +399,7 @@
   "This defines the sub sort fields for a latest revision collection search. Short name and version id
    are included for better relevancy with search results where all the other sort keys were identical."
   [{(q2e/query-field->elastic-field :short-name :collection) {:order "asc"}}
-   {(q2e/query-field->elastic-field :parsed-version-id.lowercase :collection) {:order "desc"}}
+   {(q2e/query-field->elastic-field :parsed-version-id-lowercase :collection) {:order "desc"}}
    {(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
    {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
 
@@ -504,6 +497,13 @@
                           subscription-all-revision-sub-sort-fields
                           subscription-latest-sub-sort-fields)]
     (concat (or specified-sort default-sort) sub-sort-fields)))
+
+(defmethod q2e/query->sort-params :autocomplete
+  [query]
+  (let [{:keys [concept-type sort-keys]} query
+        specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
+        default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))]
+    (or specified-sort default-sort)))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition

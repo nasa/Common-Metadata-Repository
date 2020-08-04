@@ -17,6 +17,7 @@
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.connect :as es]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.transmit.connection :as transmit-conn])
   (:import
    clojure.lang.ExceptionInfo
@@ -72,7 +73,7 @@
      :sort sort-params
      :size page-size
      :from offset
-     :fields fields
+     :_source fields
      :aggs aggregations
      :scroll scroll-timeout
      :scroll-id scroll-id
@@ -98,7 +99,7 @@
   "Performs a scroll search, handling errors where possible."
   [context scroll-id]
   (try
-    (esd/scroll (context->conn context) scroll-id :scroll (es-config/elastic-scroll-timeout))
+    (es-helper/scroll (context->conn context) scroll-id {:scroll (es-config/elastic-scroll-timeout)})
     (catch ExceptionInfo e
            (handle-es-exception e scroll-id))))
 
@@ -109,7 +110,7 @@
     (if (> max-retries 0)
       (if-let [scroll-id (:scroll-id query)]
         (scroll-search context scroll-id)
-        (esd/search
+        (es-helper/search
          (context->conn context) (:index-name index-info) [(:type-name index-info)] query))
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
     (catch UnknownHostException e
@@ -161,7 +162,7 @@
       (update-in response [:hits :hits]
                  (fn [all-concepts]
                    (map (fn [single-concept-result]
-                          (update-in single-concept-result [:fields]
+                          (update-in single-concept-result [:_source]
                                      (fn [field]
                                        (set/rename-keys field
                                                         (q2e/elastic-field->query-field-mappings
@@ -190,7 +191,7 @@
   (loop [offset 0 prev-items [] took-total 0 timed-out false]
     (let [results (send-query-to-elastic
                     context (assoc query :offset offset :page-size unlimited-page-size))
-          total-hits (get-in results [:hits :total])
+          total-hits (get-in results [:hits :total :value])
           current-items (get-in results [:hits :hits])]
 
       (when (> total-hits max-unlimited-hits)
@@ -217,7 +218,7 @@
   (let [start (System/currentTimeMillis)
         e-results (send-query-to-elastic context query)
         elapsed (- (System/currentTimeMillis) start)
-        hits (get-in e-results [:hits :total])]
+        hits (get-in e-results [:hits :total :value])]
     (info "Elastic query took" (:took e-results) "ms. Connection elapsed:" elapsed "ms")
     (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits])))
                (errors/internal-error! "Failed to retrieve all hits.")))

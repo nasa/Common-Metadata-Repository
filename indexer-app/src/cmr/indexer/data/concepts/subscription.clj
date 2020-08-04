@@ -15,15 +15,15 @@
           :revision-id revision-id
           :deleted deleted
           :subscription-name subscription-name
-          :subscription-name.lowercase (string/lower-case subscription-name)
+          :subscription-name-lowercase (string/lower-case subscription-name)
           :subscriber-id subscriber-id
-          :subscriber-id.lowercase (string/lower-case subscriber-id)
+          :subscriber-id-lowercase (string/lower-case subscriber-id)
           :collection-concept-id collection-concept-id
-          :collection-concept-id.lowercase (string/lower-case collection-concept-id)
+          :collection-concept-id-lowercase (string/lower-case collection-concept-id)
           :provider-id provider-id
-          :provider-id.lowercase (string/lower-case provider-id)
+          :provider-id-lowercase (string/lower-case provider-id)
           :native-id native-id
-          :native-id.lowercase (string/lower-case native-id)
+          :native-id-lowercase (string/lower-case native-id)
           :user-id user-id
           :revision-date revision-date}]
     (if deleted

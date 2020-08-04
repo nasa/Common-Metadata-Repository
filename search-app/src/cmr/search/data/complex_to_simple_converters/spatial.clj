@@ -18,7 +18,8 @@
   (let [ords-info-map (-> (srl/shapes->ords-info-map [shape])
                           (update-in [:ords-info] #(string/join "," %))
                           (update-in [:ords] #(string/join "," %)))]
-    (qm/map->ScriptCondition {:name "spatial"
+    (qm/map->ScriptCondition {:source "spatial"
+                              :lang "cmr_spatial"
                               :params ords-info-map})))
 
 (defn- br->cond

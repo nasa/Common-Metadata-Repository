@@ -27,12 +27,13 @@
   "Returns all of the subfields for the provided nested field. All nested field queries also support
   'any'."
   [parent-field]
-  ;; Remove any modifiers from parent field, e.g. :science-keyword.humanized -> :science-keyword
+  ;; Remove any modifiers from parent field, e.g. :science-keyword-humanized -> :science-keyword
   ;; and :science-keywords-h to :science-keywords
   (let [base-parent-field (-> parent-field
                               name
                               (string/replace #"\..*$" "")
                               (string/replace #"-h$" "")
+                              (string/replace #"-humanized$" "")
                               keyword)]
     (condp = base-parent-field
       :variables variable-subfields

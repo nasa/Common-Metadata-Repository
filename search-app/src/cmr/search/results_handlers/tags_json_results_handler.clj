@@ -12,10 +12,10 @@
 
 (defmethod elastic-results/elastic-result->query-result-item [:tag :json]
   [context query elastic-result]
-  (let [{{[tag-key] :tag-key
-          [description] :description
-          [concept-id] :concept-id
-          [originator-id] :originator-id} :fields} elastic-result
+  (let [{{tag-key :tag-key
+          description :description
+          concept-id :concept-id
+          originator-id :originator-id} :_source} elastic-result
         revision-id (elastic-results/get-revision-id-from-elastic-result :tag elastic-result)]
     {:concept-id concept-id
      :revision-id revision-id

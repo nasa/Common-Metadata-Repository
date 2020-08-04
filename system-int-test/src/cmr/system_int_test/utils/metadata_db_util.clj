@@ -92,3 +92,10 @@
                    :url (url/mdb-old-revision-cleanup-job-url)
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :connection-manager (s/conn-mgr)}))
+
+(defn cleanup-expired-concepts
+  []
+  (client/request {:method :post
+                   :url (url/mdb-expired-concept-cleanup-url)
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :connection-manager (s/conn-mgr)}))

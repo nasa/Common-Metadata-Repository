@@ -8,18 +8,20 @@
                [potemkin]]
   :dependencies [[cheshire "5.8.1"]
                  [clj-http "2.3.0"]
-                 [clojurewerkz/elastisch "2.2.2"]
+                 [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [log4j/log4j "1.2.17"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
-                 [org.elasticsearch/elasticsearch "1.6.2"]
+                 [org.elasticsearch/elasticsearch "7.5.2"]
+                 [org.testcontainers/testcontainers "1.14.1"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
+  :resource-paths ["resources"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
@@ -53,5 +55,11 @@
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
+            ;; Get kibana and elasticsearch images
+            "pull-docker-images" ["do"
+                                  ["shell" "docker" "pull" "docker.elastic.co/elasticsearch/elasticsearch:7.5.2"]
+                                  ["shell" "docker" "pull" "docker.elastic.co/kibana/kibana:7.5.2"]]
+            "install" ["do" "pull-docker-images," "install"]
+            "install!" "install"
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]})

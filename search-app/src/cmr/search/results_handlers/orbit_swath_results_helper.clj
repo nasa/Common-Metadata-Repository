@@ -17,11 +17,11 @@
 (defn- elastic-result-has-orbit-spatial?
   "Returns true if the elastic result has orbit spatial fields."
   [elastic-result]
-  (some? (get-in elastic-result [:fields :orbit-asc-crossing-lon])))
+  (some? (get-in elastic-result [:_source :orbit-asc-crossing-lon])))
 
 (defn- elastic-result->collection-concept-id
   [elastic-result]
-  (get-in elastic-result [:fields :collection-concept-id 0]))
+  (get-in elastic-result [:_source :collection-concept-id]))
 
 (defn get-orbits-by-collection
   "Gets a map of collection concept id to collection orbit parameters. It takes all of the
@@ -61,11 +61,11 @@
   "Returns the orbit shapes generated from the elastic results. Will return nil if this elastic result
   does not have orbit data."
   [orbits-by-collection elastic-result]
-  (let [{[collection-concept-id] :collection-concept-id
-         [start-date] :start-date
-         [end-date] :end-date
+  (let [{collection-concept-id :collection-concept-id
+         start-date :start-date
+         end-date :end-date
          orbit-calculated-spatial-domains-json :orbit-calculated-spatial-domains-json
-         [orbit-asc-crossing-lon] :orbit-asc-crossing-lon} (:fields elastic-result)
+         orbit-asc-crossing-lon :orbit-asc-crossing-lon} (:_source elastic-result)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         orbit-calculated-spatial-domains (map ocsd-json->map orbit-calculated-spatial-domains-json)]

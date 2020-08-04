@@ -62,9 +62,9 @@
   []
   (str (elastic-root) "/_refresh"))
 
-(defn elastic-delete-tags-url
-  []
-  (str (elastic-root) "/1_tags/_query"))
+(defn elastic-delete-tag-url
+  [id]
+  (format "%s/1_tags/_doc/%s" (elastic-root) id))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB URLs
@@ -126,6 +126,12 @@
   "URL to metadata db old revision cleanup job"
   []
   (format "http://localhost:%s/jobs/old-revision-concept-cleanup"
+          (transmit-config/metadata-db-port)))
+
+(defn mdb-expired-concept-cleanup-url
+  "URL to metadata db cleanup expired concepts job"
+  []
+  (format "http://localhost:%s/jobs/expired-concept-cleanup"
           (transmit-config/metadata-db-port)))
 
 (defn mdb-service-association-search-url

@@ -97,6 +97,9 @@
   [system]
   (update-in system [:apps] set-web-server-options))
 
+(def in-memory-elastic-log-level-atom
+  (atom :info))
+
 (defmulti create-elastic
   "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
   in memory if applicable."
@@ -107,8 +110,12 @@
   [_]
   (let [http-port (elastic-config/elastic-port)]
     (elastic-server/create-server http-port
-                                  (+ http-port 10)
-                                  "es_data/dev_system")))
+                                  {:log-level (name @in-memory-elastic-log-level-atom)
+                                   :kibana-port (dev-config/embedded-kibana-port)
+                                   :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
+                                               "es_libs" "elasticsearch/es_libs"
+                                               "embedded-security.policy" "elasticsearch/embedded-security.policy"
+                                               "plugins" "elasticsearch/plugins"}})))
 
 (defmethod create-elastic :external
   [_]

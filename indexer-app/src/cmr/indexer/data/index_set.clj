@@ -68,50 +68,49 @@
   "The index to use for the latest collection revisions."
   {:default "1_collections_v2" :type String})
 
+(def ^:private MAX_RESULT_WINDOW
+  "Number of max results can be returned in an Elasticsearch query."
+  1000000)
+
 (def collection-setting-v1 {:index
                             {:number_of_shards (elastic-collection-index-num-shards)
                              :number_of_replicas 1,
+                             :max_result_window MAX_RESULT_WINDOW,
                              :refresh_interval "1s"}})
 
 (def collection-setting-v2 {:index
                             {:number_of_shards (elastic-collection-v2-index-num-shards),
                              :number_of_replicas 1,
+                             :max_result_window MAX_RESULT_WINDOW,
                              :refresh_interval "1s"}})
 
 (def tag-setting {:index
                   {:number_of_shards (elastic-tag-index-num-shards)
                    :number_of_replicas 1,
+                   :max_result_window MAX_RESULT_WINDOW,
                    :refresh_interval "1s"}})
 
 (def deleted-granule-setting {:index
                               {:number_of_shards (elastic-deleted-granule-index-num-shards)
                                :number_of_replicas 1,
+                               :max_result_window MAX_RESULT_WINDOW,
                                :refresh_interval "1s"}})
 
 (def variable-setting {:index
                        {:number_of_shards (elastic-variable-index-num-shards)
                         :number_of_replicas 1,
+                        :max_result_window MAX_RESULT_WINDOW,
                         :refresh_interval "1s"}})
 
 (def autocomplete-settings {:index
                             {:number_of_shards (elastic-autocomplete-index-num-shards)
                              :number_of_replicas 1
-                             :refresh_interval "1s"}
-                           :analysis
-                            {:filter
-                             {:autocomplete_filter
-                              {:type "edge_ngram"
-                               :min_gram 1
-                               :max_gram 8}}
-                             :analyzer
-                             {:autocomplete_analyzer
-                              {:type "custom"
-                               :tokenizer "standard"
-                               :filter ["lowercase" "autocomplete_filter"]}}}})
+                             :refresh_interval "1s"}})
 
 (def service-setting {:index
                        {:number_of_shards (elastic-service-index-num-shards)
                         :number_of_replicas 1,
+                        :max_result_window MAX_RESULT_WINDOW,
                         :refresh_interval "1s"}})
 
 (def tool-setting {:index
@@ -128,9 +127,9 @@
   "Defines mappings for attributes."
   {:name m/string-field-mapping
    :group m/string-field-mapping
-   :group.lowercase m/string-field-mapping
+   :group-lowercase m/string-field-mapping
    :string-value m/string-field-mapping
-   :string-value.lowercase m/string-field-mapping
+   :string-value-lowercase m/string-field-mapping
    :float-value m/double-field-mapping
    :int-value m/int-field-mapping
    :datetime-value m/date-field-mapping
@@ -140,101 +139,101 @@
 (defnestedmapping science-keywords-field-mapping
   "Defines mappings for science keywords."
   {:category m/string-field-mapping
-   :category.lowercase m/string-field-mapping
+   :category-lowercase m/string-field-mapping
    :topic m/string-field-mapping
-   :topic.lowercase m/string-field-mapping
+   :topic-lowercase m/string-field-mapping
    :term m/string-field-mapping
-   :term.lowercase m/string-field-mapping
+   :term-lowercase m/string-field-mapping
    :variable-level-1 m/string-field-mapping
-   :variable-level-1.lowercase m/string-field-mapping
+   :variable-level-1-lowercase m/string-field-mapping
    :variable-level-2 m/string-field-mapping
-   :variable-level-2.lowercase m/string-field-mapping
+   :variable-level-2-lowercase m/string-field-mapping
    :variable-level-3 m/string-field-mapping
-   :variable-level-3.lowercase m/string-field-mapping
+   :variable-level-3-lowercase m/string-field-mapping
    :detailed-variable m/string-field-mapping
-   :detailed-variable.lowercase m/string-field-mapping
+   :detailed-variable-lowercase m/string-field-mapping
    :uuid m/string-field-mapping
-   :uuid.lowercase m/string-field-mapping})
+   :uuid-lowercase m/string-field-mapping})
 
 (defnestedmapping tag-associations-mapping
   "Defines mappings for tag associations."
-  {:tag-key.lowercase m/string-field-mapping
-   :originator-id.lowercase m/string-field-mapping
-   :tag-value.lowercase m/string-field-mapping})
+  {:tag-key-lowercase m/string-field-mapping
+   :originator-id-lowercase m/string-field-mapping
+   :tag-value-lowercase m/string-field-mapping})
 
 (defnestedmapping variables-mapping
   "Defines mappings for variables."
   {:measurement m/string-field-mapping
-   :measurement.lowercase m/string-field-mapping
+   :measurement-lowercase m/string-field-mapping
    :variable m/string-field-mapping
-   :variable.lowercase m/string-field-mapping
-   :originator-id.lowercase m/string-field-mapping})
+   :variable-lowercase m/string-field-mapping
+   :originator-id-lowercase m/string-field-mapping})
 
 (defnestedmapping platform-hierarchical-mapping
   "Defines hierarchical mappings for platforms."
   {:category m/string-field-mapping
-   :category.lowercase m/string-field-mapping
+   :category-lowercase m/string-field-mapping
    :series-entity m/string-field-mapping
-   :series-entity.lowercase m/string-field-mapping
+   :series-entity-lowercase m/string-field-mapping
    :short-name m/string-field-mapping
-   :short-name.lowercase m/string-field-mapping
+   :short-name-lowercase m/string-field-mapping
    :long-name m/string-field-mapping
-   :long-name.lowercase m/string-field-mapping
+   :long-name-lowercase m/string-field-mapping
    :uuid m/string-field-mapping
-   :uuid.lowercase m/string-field-mapping})
+   :uuid-lowercase m/string-field-mapping})
 
 (defnestedmapping instrument-hierarchical-mapping
   "Defines hierarchical mappings for instruments."
   {:category m/string-field-mapping
-   :category.lowercase m/string-field-mapping
+   :category-lowercase m/string-field-mapping
    :class m/string-field-mapping
-   :class.lowercase m/string-field-mapping
+   :class-lowercase m/string-field-mapping
    :type m/string-field-mapping
-   :type.lowercase m/string-field-mapping
+   :type-lowercase m/string-field-mapping
    :subtype m/string-field-mapping
-   :subtype.lowercase m/string-field-mapping
+   :subtype-lowercase m/string-field-mapping
    :short-name m/string-field-mapping
-   :short-name.lowercase m/string-field-mapping
+   :short-name-lowercase m/string-field-mapping
    :long-name m/string-field-mapping
-   :long-name.lowercase m/string-field-mapping
+   :long-name-lowercase m/string-field-mapping
    :uuid m/string-field-mapping
-   :uuid.lowercase m/string-field-mapping})
+   :uuid-lowercase m/string-field-mapping})
 
 (defnestedmapping data-center-hierarchical-mapping
   "Defines hierarchical mappings for any type of data center."
   {:level-0 m/string-field-mapping
-   :level-0.lowercase m/string-field-mapping
+   :level-0-lowercase m/string-field-mapping
    :level-1 m/string-field-mapping
-   :level-1.lowercase m/string-field-mapping
+   :level-1-lowercase m/string-field-mapping
    :level-2 m/string-field-mapping
-   :level-2.lowercase m/string-field-mapping
+   :level-2-lowercase m/string-field-mapping
    :level-3 m/string-field-mapping
-   :level-3.lowercase m/string-field-mapping
+   :level-3-lowercase m/string-field-mapping
    :short-name m/string-field-mapping
-   :short-name.lowercase m/string-field-mapping
+   :short-name-lowercase m/string-field-mapping
    :long-name m/string-field-mapping
-   :long-name.lowercase m/string-field-mapping
+   :long-name-lowercase m/string-field-mapping
    :url m/string-field-mapping
-   :url.lowercase m/string-field-mapping
+   :url-lowercase m/string-field-mapping
    :uuid m/string-field-mapping
-   :uuid.lowercase m/string-field-mapping})
+   :uuid-lowercase m/string-field-mapping})
 
 (defnestedmapping location-keywords-hierarchical-mapping
   "Defines hierarchical mappings for location keywords."
   {:category m/string-field-mapping
-   :category.lowercase m/string-field-mapping
+   :category-lowercase m/string-field-mapping
    :type m/string-field-mapping
-   :type.lowercase m/string-field-mapping
+   :type-lowercase m/string-field-mapping
    :subregion-1 m/string-field-mapping
-   :subregion-1.lowercase m/string-field-mapping
+   :subregion-1-lowercase m/string-field-mapping
    :subregion-2 m/string-field-mapping
-   :subregion-2.lowercase m/string-field-mapping
+   :subregion-2-lowercase m/string-field-mapping
    :subregion-3 m/string-field-mapping
-   :subregion-3.lowercase m/string-field-mapping
+   :subregion-3-lowercase m/string-field-mapping
    :detailed-location m/string-field-mapping
-   :detailed-location.lowercase m/string-field-mapping
+   :detailed-location-lowercase m/string-field-mapping
    :uuid m/string-field-mapping
-   :uuid.lowercase m/string-field-mapping})
+   :uuid-lowercase m/string-field-mapping})
 
 (defnestedmapping orbit-calculated-spatial-domain-mapping
   "Defines mappings for storing orbit calculated spatial domains."
@@ -253,7 +252,7 @@
 (defnestedmapping prioritized-humanizer-mapping
   "Defines a string value and priority for use in boosting facets."
   {:value m/string-field-mapping
-   :value.lowercase m/string-field-mapping
+   :value-lowercase m/string-field-mapping
    :priority m/int-field-mapping})
 
 (defnestedmapping temporal-mapping
@@ -264,11 +263,11 @@
 (defnestedmapping measurement-identifiers-mapping
   "Defines mappings for variable measurement identifiers."
   {:contextmedium m/string-field-mapping
-   :contextmedium.lowercase m/string-field-mapping
+   :contextmedium-lowercase m/string-field-mapping
    :object m/string-field-mapping
-   :object.lowercase m/string-field-mapping
+   :object-lowercase m/string-field-mapping
    :quantity m/string-field-mapping
-   :quantity.lowercase m/string-field-mapping})
+   :quantity-lowercase m/string-field-mapping})
 
 (def spatial-coverage-fields
   "Defines the sets of fields shared by collections and granules for indexing spatial data."
@@ -309,59 +308,50 @@
 (defmapping collection-mapping :collection
   "Defines the elasticsearch mapping for storing collections. These are the
   fields that will be stored in an Elasticsearch document."
-  {:_id {:index "not_analyzed"
-         :store true}}
-  (merge {:deleted (m/stored m/bool-field-mapping) ; deleted=true is a tombstone
-          :native-id (m/stored m/string-field-mapping)
-          :native-id.lowercase m/string-field-mapping
-          :user-id (m/stored m/string-field-mapping)
+  (merge {:deleted m/bool-field-mapping ; deleted=true is a tombstone
+          :native-id m/string-field-mapping
+          :native-id-lowercase m/string-field-mapping
+          :user-id m/string-field-mapping
 
           ;; This comes from the metadata db column of the same name
           ;; and is by default equal to the Oracle system time at the
           ;; time the revision record is written
-
-          ;; revision-date needs to be stored but you can't update an
-          ;; existing mapping to be stored. We'll switch to revision-date2
-          ;; and deprecate and then remove revision-date in sprint 32 or
-          ;; later.
           :revision-date m/date-field-mapping
-          :revision-date2 (m/stored m/date-field-mapping)
-          :created-at (m/stored m/date-field-mapping)
+          :created-at m/date-field-mapping
 
-          :permitted-group-ids (m/stored m/string-field-mapping)
-          :concept-id   (m/stored m/string-field-mapping)
-          :revision-id (m/stored m/int-field-mapping)
+          :permitted-group-ids m/string-field-mapping
+          :concept-id   m/string-field-mapping
+          :revision-id m/int-field-mapping
           ;; This is used explicitly for sorting. The values take up less space in the
           ;; fielddata cache.
           :concept-seq-id m/int-field-mapping
-          :entry-id           (m/stored m/string-field-mapping)
-          :entry-id.lowercase m/string-field-mapping
+          :entry-id           m/string-field-mapping
+          :entry-id-lowercase m/string-field-mapping
           :doi           m/string-field-mapping
-          :doi-stored    (m/stored m/string-field-mapping)
-          :doi.lowercase m/string-field-mapping
-          :entry-title           (m/stored m/string-field-mapping)
-          :entry-title.lowercase m/string-field-mapping
-          :provider-id           (m/stored m/string-field-mapping)
-          :provider-id.lowercase m/string-field-mapping
-          :short-name            (m/stored m/string-field-mapping)
-          :short-name.lowercase  m/string-field-mapping
-          :version-id            (m/stored m/string-field-mapping)
-          :version-id.lowercase  m/string-field-mapping
-          :parsed-version-id.lowercase m/string-field-mapping
+          :doi-stored    m/string-field-mapping
+          :doi-lowercase m/string-field-mapping
+          :entry-title           m/string-field-mapping
+          :entry-title-lowercase m/string-field-mapping
+          :provider-id           m/string-field-mapping
+          :provider-id-lowercase m/string-field-mapping
+          :short-name            m/string-field-mapping
+          :short-name-lowercase  m/string-field-mapping
+          :version-id            m/string-field-mapping
+          :version-id-lowercase  m/string-field-mapping
+          :parsed-version-id-lowercase m/string-field-mapping
 
           ;; Stored to allow retrieval for implementing granule acls
-          :access-value                   (m/stored m/float-field-mapping)
-          :processing-level-id            (m/stored m/string-field-mapping)
-          :processing-level-id.lowercase  m/string-field-mapping
-          :processing-level-id.humanized  m/string-field-mapping
-          :processing-level-id.lowercase.humanized m/string-field-mapping
-          :processing-level-id.humanized2 prioritized-humanizer-mapping
-          :collection-data-type           (m/stored m/string-field-mapping)
-          :collection-data-type.lowercase m/string-field-mapping
+          :access-value                   m/float-field-mapping
+          :processing-level-id            m/string-field-mapping
+          :processing-level-id-lowercase  m/string-field-mapping
+          :processing-level-id-lowercase-humanized m/string-field-mapping
+          :processing-level-id-humanized prioritized-humanizer-mapping
+          :collection-data-type           m/string-field-mapping
+          :collection-data-type-lowercase m/string-field-mapping
 
           ;; Temporal date range
-          :start-date                     (m/stored m/date-field-mapping)
-          :end-date                       (m/stored m/date-field-mapping)
+          :start-date                     m/date-field-mapping
+          :end-date                       m/date-field-mapping
           :ongoing                        m/date-field-mapping
           :temporal-ranges                m/date-field-mapping
 
@@ -369,56 +359,53 @@
           ;; if the collection has not granules.
           :granule-start-date             m/date-field-mapping
           :granule-end-date               m/date-field-mapping
-          :granule-start-date-stored      (m/stored m/date-field-mapping)
-          :granule-end-date-stored        (m/stored m/date-field-mapping)
+          :granule-start-date-stored      m/date-field-mapping
+          :granule-end-date-stored        m/date-field-mapping
 
-          :has-granules (m/stored m/bool-field-mapping)
-          :has-granules-or-cwic (m/stored m/bool-field-mapping)
-          :has-variables (m/stored m/bool-field-mapping)
-          :has-formats (m/stored m/bool-field-mapping)
-          :has-transforms (m/stored m/bool-field-mapping)
-          :has-spatial-subsetting (m/stored m/bool-field-mapping)
-          :has-temporal-subsetting (m/stored m/bool-field-mapping)
+          :has-granules m/bool-field-mapping
+          :has-granules-or-cwic m/bool-field-mapping
+          :has-variables m/bool-field-mapping
+          :has-formats m/bool-field-mapping
+          :has-transforms m/bool-field-mapping
+          :has-spatial-subsetting m/bool-field-mapping
+          :has-temporal-subsetting m/bool-field-mapping
           :has-opendap-url m/bool-field-mapping
 
           :platform-sn                    m/string-field-mapping
-          :platform-sn.lowercase          m/string-field-mapping
-          :platform-sn.humanized          m/string-field-mapping
-          :platform-sn.lowercase.humanized m/string-field-mapping
-          :platform-sn.humanized2         prioritized-humanizer-mapping
+          :platform-sn-lowercase          m/string-field-mapping
+          :platform-sn-lowercase-humanized m/string-field-mapping
+          :platform-sn-humanized          prioritized-humanizer-mapping
           :instrument-sn                  m/string-field-mapping
-          :instrument-sn.lowercase        m/string-field-mapping
-          :instrument-sn.humanized        m/string-field-mapping
-          :instrument-sn.lowercase.humanized m/string-field-mapping
-          :instrument-sn.humanized2       prioritized-humanizer-mapping
+          :instrument-sn-lowercase        m/string-field-mapping
+          :instrument-sn-lowercase-humanized m/string-field-mapping
+          :instrument-sn-humanized        prioritized-humanizer-mapping
           :sensor-sn                      m/string-field-mapping
-          :sensor-sn.lowercase            m/string-field-mapping
-          :project-sn2                    (m/stored m/string-field-mapping)
-          :project-sn2.lowercase          m/string-field-mapping
-          :project-sn.humanized           m/string-field-mapping
-          :project-sn.lowercase.humanized m/string-field-mapping
-          :project-sn.humanized2          prioritized-humanizer-mapping
-          :archive-center                 (m/stored m/string-field-mapping)
-          :archive-center.lowercase       m/string-field-mapping
-          :data-center                    (m/stored m/string-field-mapping)
-          :data-center.lowercase          m/string-field-mapping
+          :sensor-sn-lowercase            m/string-field-mapping
+          :project-sn                     m/string-field-mapping
+          :project-sn-lowercase           m/string-field-mapping
+          :project-sn-lowercase-humanized m/string-field-mapping
+          :project-sn-humanized           prioritized-humanizer-mapping
+          :archive-center                 m/string-field-mapping
+          :archive-center-lowercase       m/string-field-mapping
+          :data-center                    m/string-field-mapping
+          :data-center-lowercase          m/string-field-mapping
           :spatial-keyword                m/string-field-mapping
-          :spatial-keyword.lowercase      m/string-field-mapping
+          :spatial-keyword-lowercase      m/string-field-mapping
           :two-d-coord-name               m/string-field-mapping
-          :two-d-coord-name.lowercase     m/string-field-mapping
+          :two-d-coord-name-lowercase     m/string-field-mapping
           :attributes                     attributes-field-mapping
-          :downloadable                   (m/stored m/bool-field-mapping)
+          :downloadable                   m/bool-field-mapping
           :authors                        (m/doc-values m/string-field-mapping)
-          :authors.lowercase              (m/doc-values m/string-field-mapping)
+          :authors-lowercase              (m/doc-values m/string-field-mapping)
 
           ;; Mappings for nested fields used for searching and
           ;; hierarchical facets
           :science-keywords science-keywords-field-mapping
-          :science-keywords.humanized science-keywords-field-mapping
+          :science-keywords-humanized science-keywords-field-mapping
 
-          :granule-data-format                  (m/stored m/string-field-mapping)
-          :granule-data-format.lowercase        m/string-field-mapping
-          :granule-data-format.humanized        prioritized-humanizer-mapping
+          :granule-data-format                  m/string-field-mapping
+          :granule-data-format-lowercase        m/string-field-mapping
+          :granule-data-format-humanized        prioritized-humanizer-mapping
 
           :platforms platform-hierarchical-mapping
           :instruments instrument-hierarchical-mapping
@@ -451,72 +438,71 @@
           :detailed-variable m/string-field-mapping
 
           ;; mappings added for atom
-          :browsable (m/stored m/bool-field-mapping)
-          :atom-links (m/not-indexed (m/stored m/string-field-mapping))
-          :summary (m/not-indexed (m/stored m/string-field-mapping))
-          :metadata-format (m/not-indexed (m/stored m/string-field-mapping))
-          :update-time (m/not-indexed (m/stored m/string-field-mapping))
-          :index-time (m/not-indexed (m/stored m/string-field-mapping))
-          :associated-difs (m/stored m/string-field-mapping)
-          :associated-difs.lowercase m/string-field-mapping
-          :coordinate-system (m/not-indexed (m/stored m/string-field-mapping))
+          :browsable m/bool-field-mapping
+          :atom-links (m/not-indexed m/string-field-mapping)
+          :summary m/english-string-field-mapping
+          :metadata-format (m/not-indexed m/string-field-mapping)
+          :update-time (m/not-indexed m/string-field-mapping)
+          :index-time (m/not-indexed m/string-field-mapping)
+          :associated-difs m/string-field-mapping
+          :associated-difs-lowercase m/string-field-mapping
+          :coordinate-system (m/not-indexed m/string-field-mapping)
 
           ;; mappings added for opendata
-          :insert-time (m/not-indexed (m/stored m/string-field-mapping))
+          :insert-time (m/not-indexed m/string-field-mapping)
           ;; This field contains multiple values obtained by
           ;; concatenating the category, topic, and term from
           ;; each science keyword. It represents the 'keywords'
           ;; field in the opendata format.
-          :science-keywords-flat (m/stored m/string-field-mapping)
-          :related-urls (m/stored m/string-field-mapping)
-          :publication-references (m/stored m/string-field-mapping)
-          :collection-citations (m/stored m/string-field-mapping)
-          :contact-email (m/stored m/string-field-mapping)
-          :personnel (m/stored m/string-field-mapping)
+          :science-keywords-flat m/string-field-mapping
+          :related-urls m/string-field-mapping
+          :publication-references m/string-field-mapping
+          :collection-citations m/string-field-mapping
+          :contact-email m/string-field-mapping
+          :personnel m/string-field-mapping
 
           ;; analyzed field for keyword searches
           :keyword m/text-field-mapping
-          :long-name.lowercase m/string-field-mapping
-          :project-ln.lowercase m/string-field-mapping
-          :platform-ln.lowercase m/string-field-mapping
-          :instrument-ln.lowercase m/string-field-mapping
-          :sensor-ln.lowercase m/string-field-mapping
-          :temporal-keyword.lowercase m/string-field-mapping
+          :long-name-lowercase m/string-field-mapping
+          :project-ln-lowercase m/string-field-mapping
+          :platform-ln-lowercase m/string-field-mapping
+          :instrument-ln-lowercase m/string-field-mapping
+          :sensor-ln-lowercase m/string-field-mapping
+          :temporal-keyword-lowercase m/string-field-mapping
 
           ;; orbit parameters
-          :swath-width (m/stored m/double-field-mapping)
-          :period (m/stored m/double-field-mapping)
-          :inclination-angle (m/stored m/double-field-mapping)
-          :number-of-orbits (m/stored m/double-field-mapping)
-          :start-circular-latitude (m/stored m/double-field-mapping)
+          :swath-width m/double-field-mapping
+          :period m/double-field-mapping
+          :inclination-angle m/double-field-mapping
+          :number-of-orbits m/double-field-mapping
+          :start-circular-latitude m/double-field-mapping
 
           ;; additional humanized facet fields
-          :organization.humanized m/string-field-mapping
-          :organization.lowercase.humanized m/string-field-mapping
-          :organization.humanized2 prioritized-humanizer-mapping
+          :organization-lowercase-humanized m/string-field-mapping
+          :organization-humanized prioritized-humanizer-mapping
 
           ;; associated tags
           :tags tag-associations-mapping
           ;; associated tags stored as EDN gzipped and base64 encoded for retrieving purpose
-          :tags-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))
+          :tags-gzip-b64 m/binary-field-mapping
 
           ;; associated variables
           :variable-names m/string-field-mapping
-          :variable-names.lowercase m/string-field-mapping
+          :variable-names-lowercase m/string-field-mapping
           :variable-concept-ids (m/doc-values m/string-field-mapping)
           :variable-native-ids (m/doc-values m/string-field-mapping)
-          :variable-native-ids.lowercase (m/doc-values m/string-field-mapping)
+          :variable-native-ids-lowercase (m/doc-values m/string-field-mapping)
           :measurements m/string-field-mapping
-          :measurements.lowercase m/string-field-mapping
+          :measurements-lowercase m/string-field-mapping
           :variables variables-mapping
 
           ;; associated services
           :service-names (m/doc-values m/string-field-mapping)
-          :service-names.lowercase (m/doc-values m/string-field-mapping)
+          :service-names-lowercase (m/doc-values m/string-field-mapping)
           :service-concept-ids (m/doc-values m/string-field-mapping)
 
           ;; associations with the collection stored as EDN gzipped and base64 encoded for retrieving purpose
-          :associations-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))
+          :associations-gzip-b64 m/binary-field-mapping
 
           ;; Relevancy score from community usage metrics
           :usage-relevancy-score m/int-field-mapping}
@@ -525,300 +511,282 @@
 (defmapping deleted-granule-mapping :deleted-granule
   "Defines the elasticsearch mapping for storing granules. These are the
   fields that will be stored in an Elasticsearch document."
-  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
-   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
-   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
-   :granule-ur (-> m/string-field-mapping m/stored m/doc-values)
-   :parent-collection-id (-> m/string-field-mapping m/stored m/doc-values)})
+  {:concept-id (m/doc-values m/string-field-mapping)
+   :revision-date (m/doc-values m/date-field-mapping)
+   :provider-id (m/doc-values m/string-field-mapping)
+   :granule-ur (m/doc-values m/string-field-mapping)
+   :parent-collection-id (m/doc-values m/string-field-mapping)})
 
 (defmapping granule-mapping :granule
   "Defines the elasticsearch mapping for storing collections. These are the
   fields that will be stored in an Elasticsearch document."
-  {:_id  {:path "concept-id"}}
   (merge
-    {:concept-id (m/stored m/string-field-mapping)
-     :revision-id (m/stored m/int-field-mapping)
+   {:concept-id m/string-field-mapping
+    :revision-id m/int-field-mapping
 
-     :native-id (m/doc-values m/string-field-mapping)
-     :native-id.lowercase (m/doc-values m/string-field-mapping)
-     :native-id-stored (-> m/string-field-mapping m/stored m/doc-values)
+    :native-id (m/doc-values m/string-field-mapping)
+    :native-id-lowercase (m/doc-values m/string-field-mapping)
+    :native-id-stored (m/doc-values m/string-field-mapping)
 
-     ;; This is used explicitly for sorting. The values take up less space in the
-     ;; fielddata cache.
-     :concept-seq-id m/int-field-mapping
-     :concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
+    ;; This is used explicitly for sorting. The values take up less space in the
+    ;; fielddata cache.
+    :concept-seq-id m/int-field-mapping
+    :concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
 
-     :collection-concept-id (m/stored m/string-field-mapping)
-     :collection-concept-id-doc-values (-> m/string-field-mapping m/stored m/doc-values)
+    :collection-concept-id m/string-field-mapping
+    :collection-concept-id-doc-values (m/doc-values m/string-field-mapping)
 
-     ;; Used for aggregations. It takes up less space in the field data cache.
-     :collection-concept-seq-id m/int-field-mapping
-     :collection-concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
+    ;; Used for aggregations. It takes up less space in the field data cache.
+    :collection-concept-seq-id m/int-field-mapping
+    :collection-concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
 
-     ;; fields added for atom
-     :entry-title (m/not-indexed (m/stored m/string-field-mapping))
-     :metadata-format (m/not-indexed (m/stored m/string-field-mapping))
-     :update-time (m/not-indexed (m/stored m/string-field-mapping))
-     :coordinate-system (m/not-indexed (m/stored m/string-field-mapping))
+    ;; fields added for atom
+    :entry-title (m/not-indexed m/string-field-mapping)
+    :metadata-format (m/not-indexed m/string-field-mapping)
+    :update-time (m/not-indexed m/string-field-mapping)
+    :coordinate-system (m/not-indexed m/string-field-mapping)
 
-     ;; Collection fields added strictly for sorting granule results
-     :entry-title.lowercase m/string-field-mapping
-     :entry-title.lowercase-doc-values (m/doc-values m/string-field-mapping)
+    ;; Collection fields added strictly for sorting granule results
+    :entry-title-lowercase m/string-field-mapping
+    :entry-title-lowercase-doc-values (m/doc-values m/string-field-mapping)
 
-     :short-name.lowercase  m/string-field-mapping
-     :short-name.lowercase-doc-values  (m/doc-values m/string-field-mapping)
+    :short-name-lowercase m/string-field-mapping
+    :short-name-lowercase-doc-values (m/doc-values m/string-field-mapping)
 
-     :version-id.lowercase  m/string-field-mapping
-     :version-id.lowercase-doc-values  (m/doc-values m/string-field-mapping)
+    :version-id-lowercase m/string-field-mapping
+    :version-id-lowercase-doc-values (m/doc-values m/string-field-mapping)
 
-     :provider-id           (m/stored m/string-field-mapping)
-     :provider-id-doc-values           (-> m/string-field-mapping m/stored m/doc-values)
+    :provider-id m/string-field-mapping
+    :provider-id-doc-values (m/doc-values m/string-field-mapping)
 
-     :provider-id.lowercase m/string-field-mapping
-     :provider-id.lowercase-doc-values (m/doc-values m/string-field-mapping)
+    :provider-id-lowercase m/string-field-mapping
+    :provider-id-lowercase-doc-values (m/doc-values m/string-field-mapping)
 
-     :granule-ur            (m/stored m/string-field-mapping)
+    :granule-ur m/string-field-mapping
+    :granule-ur-lowercase (m/doc-values m/string-field-mapping)
 
+    :producer-gran-id m/string-field-mapping
+    :producer-gran-id-lowercase (m/doc-values m/string-field-mapping)
 
-     ;; Modified mappings for the lowercase fields for granule-ur, producer-gran-id,
-     ;; and readable-granule-name-sort in order to prevent these values from being
-     ;; stored in the elasticsearch field data cache (by specifying to use doc-values
-     ;; for these fields). These 3 fields were taking more than 40% of the cache and
-     ;; are rarely used to sort on.
-     ;;
-     ;; The convention used is to append a 2 to the name of the fields. Note that
-     ;; for the search application to use the special lowercase2 fields, the fields
-     ;; need to be mapped in cmr.search.data.query-to-elastic/field->lowercase-field.
-     :granule-ur.lowercase2 (m/doc-values m/string-field-mapping)
+    :day-night m/string-field-mapping
+    :day-night-doc-values (m/doc-values m/string-field-mapping)
 
-     :producer-gran-id (m/stored m/string-field-mapping)
-     :producer-gran-id.lowercase2 (m/doc-values m/string-field-mapping)
+    :day-night-lowercase m/string-field-mapping
 
-     :day-night (m/stored m/string-field-mapping)
-     :day-night-doc-values (-> m/string-field-mapping m/stored m/doc-values)
+    ;; Access value is stored to allow us to enforce acls after retrieving results
+    ;; for certain types of queries.
+    :access-value m/float-field-mapping
+    :access-value-doc-values (m/doc-values m/float-field-mapping)
 
-     :day-night.lowercase m/string-field-mapping
+    ;; We need to sort by a combination of producer granule and granule ur
+    ;; It should use producer granule id if present otherwise the granule ur is used
+    ;; The producer granule id will be put in this field if present otherwise it
+    ;; will default to granule-ur. This avoids the solution Catalog REST uses which is
+    ;; to use a sort script which is (most likely) much slower.
+    :readable-granule-name-sort (m/doc-values m/string-field-mapping)
 
-     ;; Access value is stored to allow us to enforce acls after retrieving results
-     ;; for certain types of queries.
-     :access-value (m/stored m/float-field-mapping)
-     :access-value-doc-values (-> m/float-field-mapping m/stored m/doc-values)
+    :platform-sn  m/string-field-mapping
+    :platform-sn-lowercase m/string-field-mapping
+    :platform-sn-lowercase-doc-values (m/doc-values m/string-field-mapping)
 
-     ;; We need to sort by a combination of producer granule and granule ur
-     ;; It should use producer granule id if present otherwise the granule ur is used
-     ;; The producer granule id will be put in this field if present otherwise it
-     ;; will default to granule-ur. This avoids the solution Catalog REST uses which is
-     ;; to use a sort script which is (most likely) much slower.
-     :readable-granule-name-sort2 (m/doc-values m/string-field-mapping)
+    :instrument-sn m/string-field-mapping
+    :instrument-sn-lowercase m/string-field-mapping
+    :instrument-sn-lowercase-doc-values (m/doc-values m/string-field-mapping)
 
-     :platform-sn           m/string-field-mapping
-     :platform-sn.lowercase m/string-field-mapping
-     :platform-sn.lowercase-doc-values   (m/doc-values m/string-field-mapping)
+    :sensor-sn  m/string-field-mapping
+    :sensor-sn-lowercase m/string-field-mapping
+    :sensor-sn-lowercase-doc-values (m/doc-values m/string-field-mapping)
 
-     :instrument-sn         m/string-field-mapping
-     :instrument-sn.lowercase m/string-field-mapping
-     :instrument-sn.lowercase-doc-values (m/doc-values m/string-field-mapping)
+    :feature-id m/string-field-mapping
+    :feature-id-lowercase m/string-field-mapping
 
-     :sensor-sn             m/string-field-mapping
-     :sensor-sn.lowercase   m/string-field-mapping
-     :sensor-sn.lowercase-doc-values     (m/doc-values m/string-field-mapping)
+    :crid-id  m/string-field-mapping
+    :crid-id-lowercase m/string-field-mapping
 
-     :feature-id             m/string-field-mapping
-     :feature-id.lowercase   m/string-field-mapping
+    :start-date m/date-field-mapping
+    :start-date-doc-values (m/doc-values m/date-field-mapping)
 
-     :crid-id             m/string-field-mapping
-     :crid-id.lowercase   m/string-field-mapping
+    :end-date m/date-field-mapping
+    :end-date-doc-values (m/doc-values m/date-field-mapping)
 
-     :start-date (m/stored m/date-field-mapping)
-     :start-date-doc-values              (-> m/date-field-mapping m/stored m/doc-values)
+    ;; No longer indexing to :temporals due to performance issues, but cannot
+    ;; delete from elastic index
+    :temporals temporal-mapping
+    :size m/double-field-mapping
+    :size-doc-values (m/doc-values m/double-field-mapping)
 
-     :end-date (m/stored m/date-field-mapping)
-     :end-date-doc-values                (-> m/date-field-mapping m/stored m/doc-values)
+    :cloud-cover m/float-field-mapping
+    :cloud-cover-doc-values (m/doc-values m/float-field-mapping)
 
-     ;; No longer indexing to :temporals due to performance issues, but cannot
-     ;; delete from elastic index
-     :temporals temporal-mapping
-     :size (m/stored m/float-field-mapping)
-     :size-doc-values (-> m/float-field-mapping m/stored m/doc-values)
-     :size-double-doc-values (-> m/double-field-mapping m/stored m/doc-values)
+    :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
 
-     :cloud-cover (m/stored m/float-field-mapping)
-     :cloud-cover-doc-values (-> m/float-field-mapping m/stored m/doc-values)
+    :project-refs m/string-field-mapping
+    :project-refs-lowercase m/string-field-mapping
+    :project-refs-lowercase-doc-values (m/doc-values m/string-field-mapping)
 
-     :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
+    :created-at (m/doc-values m/date-field-mapping)
+    :production-date (m/doc-values m/date-field-mapping)
+    :revision-date m/date-field-mapping
+    :revision-date-doc-values (m/doc-values m/date-field-mapping)
+    :revision-date-stored-doc-values (m/doc-values m/date-field-mapping)
 
-     :project-refs m/string-field-mapping
-     :project-refs.lowercase m/string-field-mapping
-     :project-refs.lowercase-doc-values (m/doc-values m/string-field-mapping)
+    :downloadable m/bool-field-mapping
+    :browsable m/bool-field-mapping
+    :attributes attributes-field-mapping
 
-     :created-at (m/doc-values m/date-field-mapping)
-     :production-date (m/doc-values m/date-field-mapping)
-     :revision-date m/date-field-mapping
-     :revision-date-doc-values (m/doc-values m/date-field-mapping)
-     :revision-date-stored-doc-values (-> m/date-field-mapping m/stored m/doc-values)
+    :two-d-coord-name m/string-field-mapping
+    :two-d-coord-name-lowercase m/string-field-mapping
+    :start-coordinate-1 m/double-field-mapping
+    :end-coordinate-1 m/double-field-mapping
+    :start-coordinate-2 m/double-field-mapping
+    :end-coordinate-2 m/double-field-mapping
 
-     :downloadable (m/stored m/bool-field-mapping)
-     :browsable (m/stored m/bool-field-mapping)
-     :attributes attributes-field-mapping
+    :start-coordinate-1-doc-values (m/doc-values m/double-field-mapping)
+    :end-coordinate-1-doc-values (m/doc-values m/double-field-mapping)
+    :start-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
+    :end-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
 
-     :two-d-coord-name m/string-field-mapping
-     :two-d-coord-name.lowercase m/string-field-mapping
-     :start-coordinate-1 m/double-field-mapping
-     :end-coordinate-1 m/double-field-mapping
-     :start-coordinate-2 m/double-field-mapping
-     :end-coordinate-2 m/double-field-mapping
+    :cycle (m/doc-values m/int-field-mapping)
+    :passes track-pass-mapping
 
-     :start-coordinate-1-doc-values (m/doc-values m/double-field-mapping)
-     :end-coordinate-1-doc-values (m/doc-values m/double-field-mapping)
-     :start-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
-     :end-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
+    ;; Used for orbit search
+    :orbit-asc-crossing-lon m/double-field-mapping
+    :orbit-asc-crossing-lon-doc-values (m/doc-values m/double-field-mapping)
+    :orbit-start-clat m/double-field-mapping
+    :orbit-start-clat-doc-values (m/doc-values m/double-field-mapping)
+    :orbit-end-clat m/double-field-mapping
+    :orbit-end-clat-doc-values (m/doc-values m/double-field-mapping)
+    :start-lat m/double-field-mapping
+    :start-direction m/string-field-mapping
+    :end-lat m/double-field-mapping
+    :end-direction m/string-field-mapping
 
-     :cycle (m/doc-values m/int-field-mapping)
-     :passes track-pass-mapping
+    ;; atom-links is a json string that contains the atom-links, which is a list of
+    ;; maps of atom link attributes. We tried to use nested document to save atom-links
+    ;; as a structure in elasticsearch, but can't find a way to retrieve it out.
+    ;; So we are saving the links in json string, then parse it out when we need it.
+    :atom-links (m/not-indexed m/string-field-mapping)
 
-     ;; Used for orbit search
-     :orbit-asc-crossing-lon (m/stored m/double-field-mapping)
-     :orbit-asc-crossing-lon-doc-values (-> m/double-field-mapping m/stored m/doc-values)
-     :orbit-start-clat m/double-field-mapping
-     :orbit-start-clat-doc-values (m/doc-values m/double-field-mapping)
-     :orbit-end-clat m/double-field-mapping
-     :orbit-end-clat-doc-values (m/doc-values m/double-field-mapping)
-     :start-lat (m/stored m/double-field-mapping)
-     :start-direction (m/stored m/string-field-mapping)
-     :end-lat (m/stored m/double-field-mapping)
-     :end-direction (m/stored m/string-field-mapping)
+    ;; :orbit-calculated-spatial-domains-json is json string
+    ;; stored for retrieval similar to :atom-links above
+    :orbit-calculated-spatial-domains-json (m/not-indexed m/string-field-mapping)}
 
-     ;; atom-links is a json string that contains the atom-links, which is a list of
-     ;; maps of atom link attributes. We tried to use nested document to save atom-links
-     ;; as a structure in elasticsearch, but can't find a way to retrieve it out.
-     ;; So we are saving the links in json string, then parse it out when we need it.
-     :atom-links (m/not-indexed (m/stored m/string-field-mapping))
-
-     ;; :orbit-calculated-spatial-domains-json is json string
-     ;; stored for retrieval similar to :atom-links above
-     :orbit-calculated-spatial-domains-json (m/not-indexed (m/stored m/string-field-mapping))}
-
-    spatial-coverage-fields))
+   spatial-coverage-fields))
 
 (defmapping tag-mapping :tag
   "Defines the elasticsearch mapping for storing tags. These are the fields
   that will be stored in an Elasticsearch document."
-  {:_id  {:path "concept-id"}}
-  {:concept-id (m/stored m/string-field-mapping)
-   :tag-key.lowercase (-> m/string-field-mapping m/stored m/doc-values)
-   :description (m/not-indexed (m/stored m/string-field-mapping))
-   :originator-id.lowercase (m/stored m/string-field-mapping)})
+  {:concept-id m/string-field-mapping
+   :tag-key-lowercase (m/doc-values m/string-field-mapping)
+   :description (m/not-indexed m/string-field-mapping)
+   :originator-id-lowercase m/string-field-mapping})
 
 (defmapping autocomplete-mapping :suggestion
   "Defines the elasticsearch mapping for storing autocomplete suggestions.
    These are the fields that will be stored in an Elasticsearch document."
-  {:_id  {:path "concept-id"}}
-  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
-   :type {:type "string" :index "analyzed" :store "yes"}
-   :fields {:type "string" :index "analyzed" :store "yes"}
-   :value {:type "string" :analyzer "autocomplete_analyzer" :index "analyzed" :store "yes"}})
+  {:type m/string-field-mapping
+   :fields (m/not-indexed m/string-field-mapping)
+   :value m/search-as-you-type-field-mapping})
 
 (defmapping variable-mapping :variable
   "Defines the elasticsearch mapping for storing variables. These are the
   fields that will be stored in an Elasticsearch document."
-  {:_id  {:path "concept-id"}}
-  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
-   :revision-id (-> m/int-field-mapping m/stored m/doc-values)
+  {:concept-id (m/doc-values m/string-field-mapping)
+   :revision-id (m/doc-values m/int-field-mapping)
    ;; This is used explicitly for sorting. The values take up less space in the
    ;; fielddata cache.
    :concept-seq-id (m/doc-values m/int-field-mapping)
-   :native-id (-> m/string-field-mapping m/stored m/doc-values)
-   :native-id.lowercase (m/doc-values m/string-field-mapping)
-   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
-   :provider-id.lowercase (m/doc-values m/string-field-mapping)
-   :variable-name (-> m/string-field-mapping m/stored m/doc-values)
-   :variable-name.lowercase (m/doc-values m/string-field-mapping)
-   :alias (-> m/string-field-mapping m/stored m/doc-values)
-   :alias.lowercase (m/doc-values m/string-field-mapping)
-   :full-path (-> m/string-field-mapping m/stored m/doc-values)
-   :full-path.lowercase (m/doc-values m/string-field-mapping)
-   :measurement (-> m/string-field-mapping m/stored m/doc-values)
-   :measurement.lowercase (m/doc-values m/string-field-mapping)
-   :instrument (-> m/string-field-mapping m/stored m/doc-values)
-   :instrument.lowercase (m/doc-values m/string-field-mapping)
+   :native-id (m/doc-values m/string-field-mapping)
+   :native-id-lowercase (m/doc-values m/string-field-mapping)
+   :provider-id (m/doc-values m/string-field-mapping)
+   :provider-id-lowercase (m/doc-values m/string-field-mapping)
+   :variable-name (m/doc-values m/string-field-mapping)
+   :variable-name-lowercase (m/doc-values m/string-field-mapping)
+   :alias (m/doc-values m/string-field-mapping)
+   :alias-lowercase (m/doc-values m/string-field-mapping)
+   :full-path (m/doc-values m/string-field-mapping)
+   :full-path-lowercase (m/doc-values m/string-field-mapping)
+   :measurement (m/doc-values m/string-field-mapping)
+   :measurement-lowercase (m/doc-values m/string-field-mapping)
+   :instrument (m/doc-values m/string-field-mapping)
+   :instrument-lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
-   :deleted (-> m/bool-field-mapping m/stored m/doc-values)
-   :user-id (-> m/string-field-mapping m/stored m/doc-values)
-   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
-   :metadata-format (-> m/string-field-mapping m/stored m/doc-values)
+   :deleted (m/doc-values m/bool-field-mapping)
+   :user-id (m/doc-values m/string-field-mapping)
+   :revision-date (m/doc-values m/date-field-mapping)
+   :metadata-format (m/doc-values m/string-field-mapping)
    :measurement-identifiers measurement-identifiers-mapping
    ;; associated collections stored as EDN gzipped and base64 encoded for retrieving purpose
-   :collections-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))})
+   :collections-gzip-b64 m/binary-field-mapping})
 
 (defmapping service-mapping :service
   "Defines the elasticsearch mapping for storing services. These are the
   fields that will be stored in an Elasticsearch document."
-  {:_id  {:path "concept-id"}}
-  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
-   :revision-id (-> m/int-field-mapping m/stored m/doc-values)
-   :native-id (-> m/string-field-mapping m/stored m/doc-values)
-   :native-id.lowercase (m/doc-values m/string-field-mapping)
-   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
-   :provider-id.lowercase (m/doc-values m/string-field-mapping)
-   :service-name (-> m/string-field-mapping m/stored m/doc-values)
-   :service-name.lowercase (m/doc-values m/string-field-mapping)
-   :long-name (-> m/string-field-mapping m/stored m/doc-values)
-   :long-name.lowercase (m/doc-values m/string-field-mapping)
+  {:concept-id (m/doc-values m/string-field-mapping)
+   :revision-id (m/doc-values m/int-field-mapping)
+   :native-id (m/doc-values m/string-field-mapping)
+   :native-id-lowercase (m/doc-values m/string-field-mapping)
+   :provider-id (m/doc-values m/string-field-mapping)
+   :provider-id-lowercase (m/doc-values m/string-field-mapping)
+   :service-name (m/doc-values m/string-field-mapping)
+   :service-name-lowercase (m/doc-values m/string-field-mapping)
+   :long-name (m/doc-values m/string-field-mapping)
+   :long-name-lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
-   :deleted (-> m/bool-field-mapping m/stored m/doc-values)
-   :user-id (-> m/string-field-mapping m/stored m/doc-values)
-   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
-   :metadata-format (-> m/string-field-mapping m/stored m/doc-values)})
+   :deleted (m/doc-values m/bool-field-mapping)
+   :user-id (m/doc-values m/string-field-mapping)
+   :revision-date (m/doc-values m/date-field-mapping)
+   :metadata-format (m/doc-values m/string-field-mapping)})
 
 (defmapping tool-mapping :tool
   "Defines the elasticsearch mapping for storing tools. These are the
   fields that will be stored in an Elasticsearch document."
-  {:_id  {:path "concept-id"}}
-  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
-   :revision-id (-> m/int-field-mapping m/stored m/doc-values)
-   :native-id (-> m/string-field-mapping m/stored m/doc-values)
-   :native-id.lowercase (m/doc-values m/string-field-mapping)
-   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
-   :provider-id.lowercase (m/doc-values m/string-field-mapping)
-   :tool-name (-> m/string-field-mapping m/stored m/doc-values)
-   :tool-name.lowercase (m/doc-values m/string-field-mapping)
-   :long-name (-> m/string-field-mapping m/stored m/doc-values)
-   :long-name.lowercase (m/doc-values m/string-field-mapping)
+  {:concept-id (m/doc-values m/string-field-mapping)
+   :revision-id (m/doc-values m/int-field-mapping)
+   :native-id (m/doc-values m/string-field-mapping)
+   :native-id-lowercase (m/doc-values m/string-field-mapping)
+   :provider-id (m/doc-values m/string-field-mapping)
+   :provider-id-lowercase (m/doc-values m/string-field-mapping)
+   :tool-name (m/doc-values m/string-field-mapping)
+   :tool-name-lowercase (m/doc-values m/string-field-mapping)
+   :long-name (m/doc-values m/string-field-mapping)
+   :long-name-lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
-   :deleted (-> m/bool-field-mapping m/stored m/doc-values)
-   :user-id (-> m/string-field-mapping m/stored m/doc-values)
-   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
-   :metadata-format (-> m/string-field-mapping m/stored m/doc-values)})
+   :deleted (m/doc-values m/bool-field-mapping)
+   :user-id (m/doc-values m/string-field-mapping)
+   :revision-date (m/doc-values m/date-field-mapping)
+   :metadata-format (m/doc-values m/string-field-mapping)})
 
 (defmapping subscription-mapping :subscription
   "Defines the elasticsearch mapping for storing subscriptions. These are the
   fields that will be stored in an Elasticsearch document."
-  {:_id  {:path "concept-id"}}
-  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
-   :revision-id (-> m/int-field-mapping m/stored m/doc-values)
-   :native-id (-> m/string-field-mapping m/stored m/doc-values)
-   :native-id.lowercase (m/doc-values m/string-field-mapping)
-   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
-   :provider-id.lowercase (m/doc-values m/string-field-mapping)
-   :subscription-name (-> m/string-field-mapping m/stored m/doc-values)
-   :subscription-name.lowercase (m/doc-values m/string-field-mapping)
-   :collection-concept-id (-> m/string-field-mapping m/stored m/doc-values)
-   :collection-concept-id.lowercase (m/doc-values m/string-field-mapping)
-   :subscriber-id (-> m/string-field-mapping m/stored m/doc-values)
-   :subscriber-id.lowercase (m/doc-values m/string-field-mapping)
-   :deleted (-> m/bool-field-mapping m/stored m/doc-values)
-   :user-id (-> m/string-field-mapping m/stored m/doc-values)
-   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
-   :metadata-format (-> m/string-field-mapping m/stored m/doc-values)})
+  {:concept-id (m/doc-values m/string-field-mapping)
+   :revision-id (m/doc-values m/int-field-mapping)
+   :native-id (m/doc-values m/string-field-mapping)
+   :native-id-lowercase (m/doc-values m/string-field-mapping)
+   :provider-id (m/doc-values m/string-field-mapping)
+   :provider-id-lowercase (m/doc-values m/string-field-mapping)
+   :subscription-name (m/doc-values m/string-field-mapping)
+   :subscription-name-lowercase (m/doc-values m/string-field-mapping)
+   :collection-concept-id (m/doc-values m/string-field-mapping)
+   :collection-concept-id-lowercase (m/doc-values m/string-field-mapping)
+   :subscriber-id (m/doc-values m/string-field-mapping)
+   :subscriber-id-lowercase (m/doc-values m/string-field-mapping)
+   :deleted (m/doc-values m/bool-field-mapping)
+   :user-id (m/doc-values m/string-field-mapping)
+   :revision-date (m/doc-values m/date-field-mapping)
+   :metadata-format (m/doc-values m/string-field-mapping)})
 
 (def granule-settings-for-individual-indexes
   {:index {:number_of_shards (elastic-granule-index-num-shards),
            :number_of_replicas 1,
+           :max_result_window MAX_RESULT_WINDOW,
            :refresh_interval "1s"}})
 
 (def granule-settings-for-small-collections-index
   {:index {:number_of_shards (elastic-small-collections-index-num-shards),
            :number_of_replicas 1,
+           :max_result_window MAX_RESULT_WINDOW,
            :refresh_interval "1s"}})
 
 (def index-set-id

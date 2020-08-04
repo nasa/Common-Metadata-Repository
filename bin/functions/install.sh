@@ -10,7 +10,7 @@ Defined subcommands:
     help               - Show this message.
     jars               - Install CMR JAR files to local ~/.m2 repository.
     jars,docs          - Install CMR JARs and generate documentation.
-    local SERVICE      - Install a local service (allowed: marvel).
+    local SERVICE      - Install a local service (allowed: spatial_plugin).
     oracle-libs        - Install Oracle JDBC, ONS, and UCP libs. Note that
                          this command expects the respective jar files have
                          already beeb downloaded from the Oracle site amd
@@ -81,20 +81,24 @@ function install_jars_docs () {
     fi
 }
 
-function install_local_marvel () {
-    # This function needs to be run only after a 'cd' command to the 'dev-system' folder
-    cd $CMR_DIR/dev-system &&
-    mkdir -p plugins/marvel
-    cd plugins/marvel
-    curl -O https://download.elasticsearch.org/elasticsearch/marvel/marvel-1.3.0.tar.gz
-    tar -zxvf marvel-1.3.0.tar.gz
+function install_local_spatial_plugin () {
+  # Install deps
+  mkdir -p $CMR_DIR/dev-system/resources/elasticsearch/es_libs/
 
-    # Rename the jar file so that marvel won't attempt to run. This prevents exceptions
-    # with "failed to load marvel_index_template.json"
-    mv marvel-1.3.0.jar marvel-1.3.0.jar_ignore
+  (cd $CMR_DIR/es-spatial-plugin && \
+  lein install-es-deps && \
+  cp es-deps/cmr-es-spatial-plugin-deps-0.1.0-SNAPSHOT-standalone.jar $CMR_DIR/dev-system/resources/elasticsearch/es_libs/)
 
-    # XXX Let's switch to doing this with Docker instead:
-    #     see: https://github.com/docker-library/elasticsearch/issues/32
+  # Install plugin
+  rm -rf $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial
+  mkdir -p $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial
+
+  (cd $CMR_DIR/es-spatial-plugin && \
+  lein package-es-plugin && \
+  cp target/cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial/ && \
+  cd $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial/ &&
+  unzip cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip && \
+  rm cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip)
 }
 
 function mvn_oralib_install () {

@@ -4,15 +4,14 @@
    [clj-http.client :as client]
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojurewerkz.elastisch.rest.bulk :as bulk]
-   [clojurewerkz.elastisch.rest.document :as doc]
    [cmr.common.concepts :as cs]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.concept-parser :as cp]
@@ -193,11 +192,9 @@
   es-type is the elasticsearch mapping
   es-doc is the elasticsearch document to be passed on to elasticsearch
   elastic-id is the _id of the document in the index
-  revision-id is the version of the document in elasticsearch
-  ttl time-to-live in milliseconds"
-  [f conn es-index es-type es-doc elastic-id revision-id ttl]
-  (let [options {:version revision-id :version_type "external_gte"}
-        options (if ttl (merge options {:ttl ttl}) options)]
+  revision-id is the version of the document in elasticsearch"
+  [f conn es-index es-type es-doc elastic-id revision-id]
+  (let [options {:version revision-id :version_type "external_gte"}]
     (try
       (f conn es-index es-type elastic-id es-doc options)
       (catch clojure.lang.ExceptionInfo e
@@ -222,30 +219,10 @@
 
 (defn- non-tombstone-concept->bulk-elastic-doc
   "Takes a non-tombstoned concept map (a normal revision) and returns an elastic document suitable
-   with ttl fields for bulk indexing. "
+   for bulk indexing."
   [context concept]
-  (let [parsed-concept (cp/parse-concept context concept)
-        delete-time (get-in parsed-concept
-                            [:data-provider-timestamps :delete-time])
-        now (tk/now)
-        ttl (when delete-time
-              (if (t/after? delete-time now)
-                (t/in-millis (t/interval now delete-time))
-                0))
-        elastic-doc (parsed-concept->elastic-doc context concept parsed-concept)
-        elastic-doc (if ttl
-                      (assoc elastic-doc :_ttl ttl)
-                      elastic-doc)]
-    (if (or (nil? ttl)
-            (> ttl 0))
-      elastic-doc
-      (info
-       (str
-        "Skipping expired concept ["
-        (:concept-id concept)
-        "] with delete-time ["
-        (f/unparse (f/formatters :date-time) delete-time)
-        "]")))))
+  (let [parsed-concept (cp/parse-concept context concept)]
+    (parsed-concept->elastic-doc context concept parsed-concept)))
 
 (defn- concept->bulk-elastic-docs
   "Converts a concept map into an elastic document suitable for bulk indexing."
@@ -266,23 +243,14 @@
                         ;; The concept is a tombstone
                         (parsed-concept->elastic-doc context concept concept)
                         ;; The concept is not a tombstone
-                        (non-tombstone-concept->bulk-elastic-doc context concept))
-          version-type (if (:force-version? options)
-                         ;; "the document will be indexed regardless of the version of the stored
-                         ;; document or if there is no existing document. The given version will be
-                         ;; used as the new version and will be stored with the new document."
-                         "force"
-                         ;; "only index the document if the given version is equal or higher than
-                         ;; the version of the stored document."
-                         "external_gte")]
+                        (non-tombstone-concept->bulk-elastic-doc context concept))]
 
       ;; elastic-doc may be nil if the concept has a delete time in the past
       (when elastic-doc
         (let [elastic-doc (merge elastic-doc
                                  {:_id elastic-id
-                                  :_type type
-                                  :_version elastic-version
-                                  :_version_type version-type})]
+                                  :version elastic-version
+                                  :version_type "external_gte"})]
           ;; Return one elastic document for each index we're writing to.
           (util/doall-recursive (mapv #(assoc elastic-doc :_index %) index-names)))))
 
@@ -327,7 +295,7 @@
   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
           conn (context->conn context)
-          response (bulk/bulk conn bulk-operations)]
+          response (es-helper/bulk conn bulk-operations)]
       (handle-bulk-index-response response))))
 
 (defn bulk-index-documents
@@ -338,7 +306,7 @@
    (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
      (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
            conn (context->conn context)
-           response (bulk/bulk conn bulk-operations)]
+           response (es-helper/bulk conn bulk-operations)]
       (handle-bulk-index-response response)))))
 
 (defn save-document-in-elastic
@@ -346,10 +314,10 @@
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
   (doseq [es-index es-indexes]
     (let [conn (context->conn context)
-          {:keys [ttl ignore-conflict? all-revisions-index?]} options
+          {:keys [ignore-conflict? all-revisions-index?]} options
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           result (try-elastic-operation
-                  doc/put conn es-index es-type es-doc elastic-id elastic-version ttl)]
+                  es-helper/put conn es-index es-type es-doc elastic-id elastic-version)]
       (when (:error result)
         (if (= 409 (:status result))
           (if ignore-conflict?
@@ -363,7 +331,7 @@
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."
   [context es-index es-type elastic-id]
-  (doc/get (context->conn context) es-index es-type elastic-id))
+  (es-helper/doc-get (context->conn context) es-index es-type elastic-id))
 
 (defn delete-document
   "Delete the document from Elasticsearch, raise error if failed."
@@ -377,9 +345,9 @@
            {:keys [ignore-conflict? all-revisions-index?]} options
            elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
            delete-url (if elastic-version
-                        (format "%s/%s/%s/%s?version=%s&version_type=external_gte" uri es-index es-type
-                                elastic-id elastic-version)
-                        (format "%s/%s/%s/%s" uri es-index es-type elastic-id))
+                        (format "%s/%s/_doc/%s?version=%s&version_type=external_gte"
+                                uri es-index elastic-id elastic-version)
+                        (format "%s/%s/_doc/%s" uri es-index elastic-id))
            response (client/delete delete-url
                                    (merge http-opts
                                           {:headers {"Authorization" admin-token
@@ -398,9 +366,10 @@
   [context es-index es-type query]
   (let [{:keys [admin-token]} (context->es-config context)
         {:keys [uri http-opts]} (context->conn context)
-        delete-url (format "%s/%s/%s/_query" uri es-index es-type)]
-    (client/delete delete-url
-                   (merge http-opts
-                          {:headers {"Authorization" admin-token
-                                     "Confirm-delete-action" "true"}
-                           :body (json/generate-string {:query query})}))))
+        delete-url (format "%s/%s/_delete_by_query" uri es-index)]
+    (client/post delete-url
+                 (merge http-opts
+                        {:headers {"Authorization" admin-token
+                                   "Confirm-delete-action" "true"}
+                         :content-type :json
+                         :body (json/generate-string {:query query})}))))

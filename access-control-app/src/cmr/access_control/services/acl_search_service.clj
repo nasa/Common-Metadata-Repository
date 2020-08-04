@@ -181,7 +181,7 @@
 
 (defmethod common-qm/default-sort-keys :acl
   [_]
-  [{:field :display-name.lowercase :order :asc}])
+  [{:field :display-name-lowercase :order :asc}])
 
 (defmethod cp/param-mappings :acl
   [_]

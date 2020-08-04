@@ -24,12 +24,12 @@
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-platform]
     {:category category
-     :category.lowercase (str/lower-case category)
+     :category-lowercase (str/lower-case category)
      :series-entity series-entity
-     :series-entity.lowercase (str/lower-case series-entity)
+     :series-entity-lowercase (str/lower-case series-entity)
      :short-name short-name
-     :short-name.lowercase (str/lower-case short-name)
+     :short-name-lowercase (str/lower-case short-name)
      :long-name long-name
-     :long-name.lowercase (str/lower-case long-name)
+     :long-name-lowercase (str/lower-case long-name)
      :uuid uuid
-     :uuid.lowercase (util/safe-lowercase uuid)}))
+     :uuid-lowercase (util/safe-lowercase uuid)}))

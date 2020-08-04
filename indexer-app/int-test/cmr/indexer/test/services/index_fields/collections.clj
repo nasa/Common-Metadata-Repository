@@ -15,15 +15,15 @@
         project-short-names ["ESI" "EPI" "EVI"]]
     {:concept-id concept-id
      :entry-title entry-title
-     :entry-title.lowercase (string/lower-case entry-title)
+     :entry-title-lowercase (string/lower-case entry-title)
      :provider-id provider-id
-     :provider-id.lowercase (string/lower-case provider-id)
+     :provider-id-lowercase (string/lower-case provider-id)
      :short-name short-name
-     :short-name.lowercase (string/lower-case short-name)
+     :short-name-lowercase (string/lower-case short-name)
      :version-id version-id
-     :version-id.lowercase (string/lower-case version-id)
-     :project-sn2 project-short-names
-     :project-sn2.lowercase (map string/lower-case project-short-names)}))
+     :version-id-lowercase (string/lower-case version-id)
+     :project-sn project-short-names
+     :project-sn-lowercase (map string/lower-case project-short-names)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -84,7 +84,7 @@
         (let [type (:type (ex-data e))
               err-msg (first (:errors (ex-data e)))]
           (is (= :conflict type))
-          (is (re-find #"version conflict, current \[3\], provided \[2\]" err-msg))))))
+          (is (re-find #"version conflict, current version \[3\] is higher than the one provided \[2\]" err-msg))))))
   (testing "Save with earlier versions with ignore-conflict true"
     (save-collection (es-doc-coll) "C1234-PROV1" 3
                               {:ignore-conflict? true})
@@ -113,7 +113,7 @@
     (try
       (delete-collection "C1234-PROV1" 1)
       (catch java.lang.Exception e
-        (is (re-find #"version conflict, current \[2\], provided \[1\]" (.getMessage e))))))
+        (is (re-find #"version conflict, current version \[2\] is higher than the one provided \[1\]" (.getMessage e))))))
   (testing "Delete with earlier versions ignore-conflict true"
     (save-collection (es-doc-coll) "C1234-PROV1" 2 {:ignore-conflict? true})
     (delete-collection "C1234-PROV1" 1 {:ignore-conflict? true})

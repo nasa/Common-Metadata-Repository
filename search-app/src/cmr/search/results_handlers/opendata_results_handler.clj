@@ -133,38 +133,33 @@
 (defmethod elastic-results/elastic-result->query-result-item [:collection :opendata]
   [_ _ elastic-result]
   (let [{concept-id :_id
-         {[short-name] :short-name
-          [summary] :summary
-          [update-time] :update-time
-          [insert-time] :insert-time
-          [provider-id] :provider-id
+         {short-name :short-name
+          summary :summary
+          update-time :update-time
+          insert-time :insert-time
+          provider-id :provider-id
           project-sn :project-sn
           science-keywords-flat :science-keywords-flat
-          [opendata-format] :opendata-format
+          opendata-format :opendata-format
           related-urls :related-urls
           publication-references :publication-references
           collection-citations :collection-citations
-          [entry-title] :entry-title
+          entry-title :entry-title
           ords-info :ords-info
           ords :ords
-          [doi] :doi
-          [personnel] :personnel
-          [start-date] :start-date
-          [end-date] :end-date
-          [revision-date] :revision-date
-          [granule-start-date] :granule-start-date
-          [granule-end-date] :granule-end-date
-          [archive-center] :archive-center} :fields} elastic-result
+          doi :doi
+          personnel :personnel
+          start-date :start-date
+          end-date :end-date
+          revision-date :revision-date
+          granule-start-date :granule-start-date
+          granule-end-date :granule-end-date
+          archive-center :archive-center} :_source} elastic-result
         personnel (json/decode personnel true)
         related-urls  (map #(json/decode % true) related-urls)
         collection-citations (map #(json/decode % true) collection-citations)
-        start-date (when start-date (string/replace (str start-date) #"\+0000" "Z"))
-        end-date (when end-date (string/replace (str end-date) #"\+0000" "Z"))
-        revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))
-        granule-start-date (when granule-start-date
-                             (string/replace (str granule-start-date) #"\+0000" ".000Z"))
-        granule-end-date (when granule-end-date
-                           (string/replace (str granule-end-date) #"\+0000" ".000Z"))]
+        start-date (when start-date (string/replace (str start-date) #"\.000Z" "Z"))
+        end-date (when end-date (string/replace (str end-date) #"\.000Z" "Z"))]
     (merge {:id concept-id
             :concept-id concept-id
             :title entry-title
@@ -188,7 +183,10 @@
             :provider-id provider-id
             :science-keywords-flat science-keywords-flat
             :entry-title entry-title
-            :archive-center archive-center}
+            ;; opendata treats archive center as if it is a single value,
+            ;; I don't have time to look into the exact business logic for doing this.
+            ;; here I just take the first value out to keep the code functioning the same way.
+            :archive-center (first archive-center)}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn generate-end-date

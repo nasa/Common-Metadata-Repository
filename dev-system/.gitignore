@@ -14,8 +14,10 @@ pom.xml.asc
 /scratch
 nohup.out
 *.kml
+/es_libs
 test2junit
 build.xml
-/plugins
+/resources/elasticsearch/plugins
+/resources/elasticsearch/es_libs
 dev/no_commit.clj
 profiles.clj

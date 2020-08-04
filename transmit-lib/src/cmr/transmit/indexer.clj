@@ -55,6 +55,7 @@
                {:url-fn #(url-fn % index-set-id concept-id)
                 :method :post
                 :http-options {:headers {config/token-header (config/echo-system-token)}
+                               :content-type :json
                                :query-params query-params}
                 :response-handler (fn [_request {:keys [status body]}]
                                     (cond

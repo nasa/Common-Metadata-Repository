@@ -26,7 +26,7 @@ GIT_LEVEL='branches help log-latest log-short log-graph tag'
 # Level 3
 SETUP_DB_LEVEL="create-users do-migrations help"
 STAR_DOCKER_LEVEL="all $APPS help"
-STAR_LOCAL_LEVEL='marvel sqs-sns help'
+STAR_LOCAL_LEVEL='spatial_plugin sqs-sns help'
 UBERJAR_LEVEL="$APPS"
 LOG_LEVEL="$APPS"
 UBERDOCKER_LEVEL="separate together"

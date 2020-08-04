@@ -79,7 +79,7 @@
   (let [concept-type (:concept-type query)
         name-key (concept-type->name-key concept-type)
         {score :_score
-         {[name-value] name-key [concept-id] :concept-id [deleted] :deleted} :fields} elastic-result
+         {name-value name-key concept-id :concept-id deleted :deleted} :_source} elastic-result
         revision-id (elastic-results/get-revision-id-from-elastic-result concept-type elastic-result)]
     {:concept-id concept-id
      :revision-id revision-id

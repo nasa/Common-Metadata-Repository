@@ -125,8 +125,11 @@
 ;; Allows execution of a custom native search script
 (defrecord ScriptCondition
   [
-   ;; name of the script
-   script
+   ;; name of the script source
+   source
+
+   ;; lang of the script
+   lang
 
    ;; Parameter map of names to values
    params])
@@ -236,16 +239,25 @@
     ;; The value of the field
     value])
 
-(defrecord MatchFilterCondition
+(defrecord MatchBoolPrefixCondition
   [
-    ;; The field being searched
+    ;; The field
     field
-
+  
     ;; The value of the field
-    value
+    value])
 
-    ;; A filter condition for the match.
-    filter])
+(defrecord MultiMatchCondition
+  [
+    ;; The query type, match, match_bool_prefix...
+    query-type
+    ;; The fields to query over
+    fields
+    ;; Value to query for
+    value
+    ;; Options relating to query-type, see ES documentation
+    options
+  ])
 
 (defrecord RelatedItemQueryCondition
   [
@@ -369,9 +381,15 @@
   [field value]
   (->MatchCondition field value))
 
-(defn match-filter
-  ([field value filter]
-  (->MatchFilterCondition field value filter)))
+(defn match-bool-prefix
+  [field value]
+  (->MatchBoolPrefixCondition field value))
+
+(defn multi-match
+  ([query-type fields value]
+   (multi-match query-type fields value {}))
+  ([query-type fields value opts]
+   (->MultiMatchCondition query-type fields value opts)))
 
 (defn text-condition
   [field query-str]
@@ -457,5 +475,6 @@
   MatchAllCondition
   MatchNoneCondition
   MatchCondition
-  MatchFilterCondition
+  MatchBoolPrefixCondition
+  MultiMatchCondition
   RelatedItemQueryCondition)

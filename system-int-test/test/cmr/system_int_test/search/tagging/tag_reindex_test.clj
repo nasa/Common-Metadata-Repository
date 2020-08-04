@@ -1,15 +1,15 @@
 (ns cmr.system-int-test.search.tagging.tag-reindex-test
   "This tests re-index tags."
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.tag-util :as tags]))
 
 (use-fixtures :each (join-fixtures [(ingest/reset-fixture {})
                                     tags/grant-all-tag-fixture]))
-
 
 (deftest reindex-tags-test
   (let [user1-token (e/login (s/context) "user1")
@@ -26,7 +26,8 @@
     (tags/assert-tag-search all-tags (tags/search {}))
 
     ;; Delete tags from elasticsearch index
-    (index/delete-all-tags-from-elastic)
+    (index/delete-tags-from-elastic all-tags)
+    (index/wait-until-indexed)
 
     ;; Now searching tags finds nothing
     (tags/assert-tag-search [] (tags/search {}))

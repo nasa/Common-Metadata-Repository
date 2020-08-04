@@ -52,22 +52,27 @@
                     :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
-(defn delete-all-tags-from-elastic
+(defn delete-tags-from-elastic
   "Delete all tags from elasticsearch index"
-  []
-  (let [response (client/delete (url/elastic-delete-tags-url)
-                   {:connection-manager (s/conn-mgr)
-                    :body "{\"query\": {\"match_all\": {}}}"
-                    :throw-exceptions false})]
-    (is (= 200 (:status response)) (:body response))))
+  [tags]
+  (doseq [tag tags]
+    (let [{:keys [concept-id revision-id]} tag
+          response (client/delete
+                    (url/elastic-delete-tag-url concept-id)
+                    {:connection-manager (s/conn-mgr)
+                     :query-params {:version revision-id
+                                    :version_type "external_gte"}
+                     :throw-exceptions false})]
+      (is (= 200 (:status response)) (:body response)))))
 
 (defn reindex-tags
   "Re-index all tags"
   []
-  (let [response (client/post (url/indexer-reindex-tags-url)
-                   {:connection-manager (s/conn-mgr)
-                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                    :throw-exceptions false})]
+  (let [response (client/post
+                  (url/indexer-reindex-tags-url)
+                  {:connection-manager (s/conn-mgr)
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
 (defn reindex-suggestions
@@ -100,11 +105,11 @@
   "If doc is present return true, otherwise return false"
   [index-name type-name doc-id]
   (let [response (client/get
-                  (format "%s/%s/%s/_search?q=_id:%s" (url/elastic-root) index-name type-name doc-id)
+                  (format "%s/%s/_doc/_search?q=_id:%s" (url/elastic-root) index-name doc-id)
                   {:throw-exceptions false
                    :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
-    (and (= 1 (get-in body [:hits :total]))
+    (and (= 1 (get-in body [:hits :total :value]))
          (= doc-id (get-in body [:hits :hits 0 :_id])))))
 
 (defn- messages+id->message
@@ -154,15 +159,15 @@
   [coll]
   (json/generate-string
    {:query
-    {:filtered
-     {:query
-      {:match_all {}
-       :filter {:term {:collection-concept-id-doc-values (:concept-id coll)}}}}}}))
+    {:bool
+     {:must
+      {:match_all {}}
+      :filter {:term {:collection-concept-id-doc-values (:concept-id coll)}}}}}))
 
 (defn delete-granules-from-small-collections
   "Helper to delete granules from the small collections index for the given collection."
   [coll]
-  (client/delete (format "%s/1_small_collections/granule/_query" (url/elastic-root))
+  (client/post (format "%s/1_small_collections/_delete_by_query" (url/elastic-root))
                  {:connection-manager (s/conn-mgr)
                   :body (query-for-granules-by-collection coll)
                   :content-type "application/json"}))

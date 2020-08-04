@@ -15,15 +15,15 @@
       {:concept-id concept-id
        :deleted deleted}
       {:concept-id concept-id
-       :tag-key.lowercase (str/lower-case tag-key)
+       :tag-key-lowercase (str/lower-case tag-key)
        :description description
-       :originator-id.lowercase  (util/safe-lowercase originator-id)})))
+       :originator-id-lowercase  (util/safe-lowercase originator-id)})))
 
 (defn tag-association->elastic-doc
   "Converts the tag association into the portion going in the collection elastic document."
   [tag-association]
   (let [{:keys [tag-key originator-id data]} tag-association]
-    {:tag-key.lowercase (str/lower-case tag-key)
-     :originator-id.lowercase  (util/safe-lowercase originator-id)
-     :tag-value.lowercase (when (string? data)
+    {:tag-key-lowercase (str/lower-case tag-key)
+     :originator-id-lowercase  (util/safe-lowercase originator-id)
+     :tag-value-lowercase (when (string? data)
                             (str/lower-case data))}))

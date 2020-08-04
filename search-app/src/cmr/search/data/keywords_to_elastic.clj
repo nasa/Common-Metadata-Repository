@@ -36,7 +36,7 @@
   :filter {...}
   }
   ]
-  :query {:filtered {:query {:match-all {}}
+  :query {:bool {:must {:match-all {}}
   :filter primary-query}}}}
 
   See http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html
@@ -97,13 +97,17 @@
   [field keywords boost]
   {:weight boost
    ;; Should the 'and' below actually be an 'or'? Investigate this as part of CMR-1329
-   :filter {:or (concat
-                 (when-let [keywords (:keywords keywords)]
-                  [{:and (map (partial keyword-regexp-filter field) keywords)}])
-                 (when-let [field-keywords (:field-keywords keywords)]
-                  [{:or (concat
-                         (map (partial keyword-regexp-filter field) field-keywords)
-                         (map (partial keyword-regexp-filter field) field-keywords))}]))}})
+   :filter {:bool
+            {:should
+             (concat
+              (when-let [keywords (:keywords keywords)]
+               [{:bool {:must (map (partial keyword-regexp-filter field) keywords)}}])
+              (when-let [field-keywords (:field-keywords keywords)]
+               [{:bool
+                 {:should
+                  (concat
+                   (map (partial keyword-regexp-filter field) field-keywords)
+                   (map (partial keyword-regexp-filter field) field-keywords))}}]))}}})
 
 (defn- keywords->name-filter
   "Create a filter for keyword searches that checks for a loose match on one field or an
@@ -111,20 +115,24 @@
   [regex-field exact-field keywords boost]
   {:weight boost
    ;; Should the 'and' below actually be an 'or'? Investigate this as part of CMR-1329
-   :filter {:or (concat
-                 (when-let [keywords (:keywords keywords)]
-                  [{:and (map (partial keyword-regexp-filter regex-field) keywords)}
-                   {:or (map (partial keyword-exact-match-filter exact-field) keywords)}])
-                 (when-let [field-keywords (:field-keywords keywords)]
-                  [{:or (concat
-                         (map (partial keyword-regexp-filter regex-field) field-keywords)
-                         (map (partial keyword-regexp-filter exact-field) field-keywords))}]))}})
+   :filter {:bool
+            {:should
+             (concat
+              (when-let [keywords (:keywords keywords)]
+               [{:bool {:must (map (partial keyword-regexp-filter regex-field) keywords)}}
+                {:bool {:should (map (partial keyword-exact-match-filter exact-field) keywords)}}])
+              (when-let [field-keywords (:field-keywords keywords)]
+               [{:bool
+                 {:should
+                  (concat
+                   (map (partial keyword-regexp-filter regex-field) field-keywords)
+                   (map (partial keyword-regexp-filter exact-field) field-keywords))}}]))}}})
 
 (defn- science-keywords-or-filter
   "Create an or filter containing the science keyword fields related to keyword searches"
   [keywd]
   (let [processed-keyword (process-keyword keywd)]
-    (map (fn [field] {:regexp {(keyword (str "science-keywords." (name field) ".lowercase"))
+    (map (fn [field] {:regexp {(keyword (str "science-keywords." (name field) "-lowercase"))
                                processed-keyword}})
          [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])))
 
@@ -132,22 +140,30 @@
   "Create a filter for keyword searches that checks science keywords"
   [keywords boost]
   {:weight boost
-   :filter {:nested {:path :science-keywords
-                     :filter {:or (concat
-                                   (when-let [keywords (:keywords keywords)]
-                                    (science-keywords-or-filter (str/join " " keywords)))
-                                   (when-let [field-keywords (:field-keywords keywords)]
-                                    (mapcat science-keywords-or-filter field-keywords)))}}}})
+   :filter {:nested
+            {:path :science-keywords
+             :query
+             {:bool
+              {:filter
+               {:bool
+                {:should
+                 (concat
+                  (when-let [keywords (:keywords keywords)]
+                   (science-keywords-or-filter (str/join " " keywords)))
+                  (when-let [field-keywords (:field-keywords keywords)]
+                   (mapcat science-keywords-or-filter field-keywords)))}}}}}}})
 
 (defn- keywords->boosted-exact-match-filter
   "Create a boosted filter for keyword searches that requires an exact match on the given field"
   [field keywords boost]
   {:weight boost
-   :filter {:or (concat
-                 (when-let [keywords (:keywords keywords)]
-                  [(keyword-exact-match-filter field (str/join " " keywords))])
-                 (when-let [field-keywords (:field-keywords keywords)]
-                  [{:or (map (partial keyword-regexp-filter field) field-keywords)}]))}})
+   :filter {:bool
+            {:should
+             (concat
+              (when-let [keywords (:keywords keywords)]
+               [(keyword-exact-match-filter field (str/join " " keywords))])
+              (when-let [field-keywords (:field-keywords keywords)]
+               [{:bool {:should (map (partial keyword-regexp-filter field) field-keywords)}}]))}}})
 
 (defn get-boost
   "Get the boost value for the given field."
@@ -168,56 +184,56 @@
   [keywords specified-boosts]
   (let [get-boost-fn #(get-boost specified-boosts %)]
     [;; long-name
-     (keywords->regex-filter :long-name.lowercase keywords (get-boost-fn :short-name))
+     (keywords->regex-filter :long-name-lowercase keywords (get-boost-fn :short-name))
      ;; short-name
-     (keywords->boosted-exact-match-filter :short-name.lowercase keywords (get-boost-fn :short-name))
+     (keywords->boosted-exact-match-filter :short-name-lowercase keywords (get-boost-fn :short-name))
      ;; entry-id
-     (keywords->boosted-exact-match-filter :entry-id.lowercase keywords (get-boost-fn :entry-id))
+     (keywords->boosted-exact-match-filter :entry-id-lowercase keywords (get-boost-fn :entry-id))
 
      ;; project (ECHO campaign)
-     (keywords->name-filter :project-ln.lowercase :project-sn2.lowercase keywords
+     (keywords->name-filter :project-ln-lowercase :project-sn-lowercase keywords
                             (get-boost-fn :project))
      ;; platform
-     (keywords->name-filter :platform-ln.lowercase :platform-sn.lowercase keywords
+     (keywords->name-filter :platform-ln-lowercase :platform-sn-lowercase keywords
                             (get-boost-fn :platform))
      ;; instrument
-     (keywords->name-filter :instrument-ln.lowercase :instrument-sn.lowercase keywords
+     (keywords->name-filter :instrument-ln-lowercase :instrument-sn-lowercase keywords
                             (get-boost-fn :instrument))
      ;; science keywords
      (keywords->sk-filter keywords (get-boost-fn :science-keywords))
      ;; spatial-keyword
-     (keywords->boosted-exact-match-filter :spatial-keyword.lowercase keywords
+     (keywords->boosted-exact-match-filter :spatial-keyword-lowercase keywords
                                            (get-boost-fn :spatial-keyword))
      ;; temporal-keyword
-     (keywords->boosted-exact-match-filter :temporal-keyword.lowercase keywords
+     (keywords->boosted-exact-match-filter :temporal-keyword-lowercase keywords
                                            (get-boost-fn :temporal-keyword))
      ;; version-id
-     (keywords->boosted-exact-match-filter :version-id.lowercase keywords
+     (keywords->boosted-exact-match-filter :version-id-lowercase keywords
                                            (get-boost-fn :version-id))
 
      ;; entry-title
-     (keywords->regex-filter :entry-title.lowercase keywords
+     (keywords->regex-filter :entry-title-lowercase keywords
                              (get-boost-fn :entry-title))
 
      ;; doi
-     (keywords->boosted-exact-match-filter :doi.lowercase keywords
+     (keywords->boosted-exact-match-filter :doi-lowercase keywords
                                            (get-boost-fn :doi))
      ;; provider-id
-     (keywords->boosted-exact-match-filter :provider-id.lowercase keywords
+     (keywords->boosted-exact-match-filter :provider-id-lowercase keywords
                                            (get-boost-fn :provider))
 
      ;; two-d-coord-name
-     (keywords->boosted-exact-match-filter :two-d-coord-name.lowercase keywords
+     (keywords->boosted-exact-match-filter :two-d-coord-name-lowercase keywords
                                            (get-boost-fn :two-d-coord-name))
 
      ;; processing-level-id
-     (keywords->boosted-exact-match-filter :processing-level-id.lowercase keywords
+     (keywords->boosted-exact-match-filter :processing-level-id-lowercase keywords
                                            (get-boost-fn :processing-level-id))
 
      ;; data-center
-     (keywords->boosted-exact-match-filter :data-center.lowercase keywords
+     (keywords->boosted-exact-match-filter :data-center-lowercase keywords
                                            (get-boost-fn :data-center))
 
      ;; granule-data-format
-     (keywords->boosted-exact-match-filter :granule-data-format.lowercase keywords
+     (keywords->boosted-exact-match-filter :granule-data-format-lowercase keywords
                                            (get-boost-fn :granule-data-format))]))

@@ -1,6 +1,6 @@
 (ns cmr.search.results-handlers.kml-results-handler
   "Handles the returning search results in KML format (keyhole markup language for Google Earth etc)"
-  (:require 
+  (:require
    [clojure.data.xml :as x]
    [clojure.string :as str]
    [cmr.common-app.services.search :as qs]
@@ -24,7 +24,7 @@
 (defmethod gcrf/query-results->concept-ids :kml
   [results]
   (svc-errors/throw-service-error
-    :bad-request 
+    :bad-request
     "Collections search in kml format is not supported with include_granule_counts option"))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :kml]
@@ -40,19 +40,19 @@
 
 (defn collection-elastic-result->query-result-item
   [elastic-result]
-  (let [{[granule-ur] :granule-ur
-         [entry-title] :entry-title
+  (let [{granule-ur :granule-ur
+         entry-title :entry-title
          ords-info :ords-info
-         ords :ords} (:fields elastic-result)]
+         ords :ords} (:_source elastic-result)]
     {:name (or granule-ur entry-title)
      :shapes (srl/ords-info->shapes ords-info ords)}))
 
 (defn granule-elastic-result->query-result-item
   [orbits-by-collection elastic-result]
-  (let [{[granule-ur] :granule-ur
-         [entry-title] :entry-title
+  (let [{granule-ur :granule-ur
+         entry-title :entry-title
          ords-info :ords-info
-         ords :ords} (:fields elastic-result)
+         ords :ords} (:_source elastic-result)
         shapes (concat (srl/ords-info->shapes ords-info ords)
                        (orbit-swath-helper/elastic-result->swath-shapes
                          orbits-by-collection elastic-result))]
@@ -66,7 +66,7 @@
 
 (defn- elastic-results->query-results
   [context query elastic-results]
-  (let [hits (get-in elastic-results [:hits :total])
+  (let [hits (get-in elastic-results [:hits :total :value])
         timed-out (:timed_out elastic-results)
         elastic-matches (get-in elastic-results [:hits :hits])
         items (if (= :granule (:concept-type query))
@@ -117,9 +117,3 @@
 (defmethod qs/search-results->response [:granule :kml]
   [context query results]
   (search-results->response context query results))
-
-
-
-
-
-

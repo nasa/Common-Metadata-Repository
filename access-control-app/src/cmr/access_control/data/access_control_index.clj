@@ -25,27 +25,27 @@
 
 (defmapping ^:private group-mappings group-type-name
   "Defines the field mappings and type options for indexing groups in elasticsearch."
-  {:concept-id (m/stored m/string-field-mapping)
-   :revision-id (m/stored m/int-field-mapping)
+  {:concept-id m/string-field-mapping
+   :revision-id m/int-field-mapping
 
-   :name (m/stored m/string-field-mapping)
-   :name.lowercase m/string-field-mapping
+   :name m/string-field-mapping
+   :name-lowercase m/string-field-mapping
 
-   :provider-id (m/stored m/string-field-mapping)
-   :provider-id.lowercase m/string-field-mapping
+   :provider-id m/string-field-mapping
+   :provider-id-lowercase m/string-field-mapping
 
-   :description (m/not-indexed (m/stored m/string-field-mapping))
+   :description (m/not-indexed m/string-field-mapping)
 
-   :legacy-guid (m/stored m/string-field-mapping)
-   :legacy-guid.lowercase m/string-field-mapping
+   :legacy-guid m/string-field-mapping
+   :legacy-guid-lowercase m/string-field-mapping
 
-   :members (m/stored m/string-field-mapping)
-   :members.lowercase m/string-field-mapping
+   :members m/string-field-mapping
+   :members-lowercase m/string-field-mapping
 
    ;; Member count is returned in the group response. The list of members is returned separately so
    ;; we don't store the members in the elastic index. If members end up being stored at some point
    ;; we can get rid of this field.
-   :member-count (m/stored (m/not-indexed m/int-field-mapping))})
+   :member-count (m/not-indexed m/int-field-mapping)})
 
 (def ^:private group-index-settings
   "Defines the elasticsearch index settings."
@@ -62,11 +62,11 @@
 
       (-> group
           (merge (select-keys concept-map [:concept-id :revision-id]))
-          (assoc :name.lowercase (util/safe-lowercase name)
-                 :provider-id.lowercase (util/safe-lowercase provider-id)
+          (assoc :name-lowercase (util/safe-lowercase name)
+                 :provider-id-lowercase (util/safe-lowercase provider-id)
                  :members (:members group)
-                 :members.lowercase (map str/lower-case members)
-                 :legacy-guid.lowercase (util/safe-lowercase legacy-guid)
+                 :members-lowercase (map str/lower-case members)
+                 :legacy-guid-lowercase (util/safe-lowercase legacy-guid)
                  :member-count (count members))))
     (catch Exception e
       (error e (str "Failure to create elastic-doc from " (pr-str concept-map)))
@@ -87,12 +87,13 @@
 
 (defn unindex-group
   "Removes group from index by concept ID."
-  [context concept-id]
-  (info "Unindexing group concept:" concept-id)
+  [context concept-id revision-id]
+  (info "Unindexing group concept:" concept-id " revision:" revision-id)
   (m/delete-by-id (esi/context->search-index context)
                   group-index-name
                   group-type-name
                   concept-id
+                  revision-id
                   {:refresh? true}))
 
 (defn-timed reindex-groups
@@ -102,7 +103,7 @@
   (doseq [group-batch (mdb-legacy/find-in-batches context :access-group 100 {:latest true})
           group group-batch]
     (if (:deleted group)
-      (unindex-group context (:concept-id group))
+      (unindex-group context (:concept-id group) (:revision-id group))
       (index-group context group)))
   (info "Reindexing all groups complete"))
 
@@ -113,9 +114,9 @@
   (m/delete-by-query (esi/context->search-index context)
                      group-index-name
                      group-type-name
-                     ;; only :provider-id.lowercase is indexed, so to find the access group by
+                     ;; only :provider-id-lowercase is indexed, so to find the access group by
                      ;; provider-id we need to compare the lowercased version
-                     {:term {:provider-id.lowercase (.toLowerCase provider-id)}}))
+                     {:term {:provider-id-lowercase (.toLowerCase provider-id)}}))
 
 (defmethod q2e/concept-type->field-mappings :access-group
   [_]
@@ -123,8 +124,8 @@
 
 (defmethod q2e/field->lowercase-field-mappings :access-group
   [_]
-  {:provider "provider-id.lowercase"
-   :member "members.lowercase"})
+  {:provider "provider-id-lowercase"
+   :member "members-lowercase"})
 
 (defmethod esi/concept-type->index-info :access-group
   [context _ _]
@@ -145,14 +146,14 @@
 (defnestedmapping group-permission-field-mapping
   "Defines mappings for group permission."
   {:permitted-group m/string-field-mapping
-   :permitted-group.lowercase m/string-field-mapping
+   :permitted-group-lowercase m/string-field-mapping
    :permission m/string-field-mapping
-   :permission.lowercase m/string-field-mapping})
+   :permission-lowercase m/string-field-mapping})
 
 (defmapping ^:private acl-mappings acl-type-name
   "Defines the field mappings and type options for indexing acls in elasticsearch."
-  {:concept-id (m/stored m/string-field-mapping)
-   :revision-id (m/stored m/int-field-mapping)
+  {:concept-id m/string-field-mapping
+   :revision-id m/int-field-mapping
 
    :collection-identifier m/bool-field-mapping
    :collection-applicable m/bool-field-mapping
@@ -179,34 +180,34 @@
    :granule-temporal-range-stop-date m/date-field-mapping
    :granule-temporal-mask m/string-field-mapping
 
-   :permitted-group (m/stored m/string-field-mapping)
-   :permitted-group.lowercase m/string-field-mapping
+   :permitted-group m/string-field-mapping
+   :permitted-group-lowercase m/string-field-mapping
 
    :group-permission group-permission-field-mapping
 
-   :legacy-guid (m/stored m/string-field-mapping)
-   :legacy-guid.lowercase m/string-field-mapping
+   :legacy-guid m/string-field-mapping
+   :legacy-guid-lowercase m/string-field-mapping
 
    ;; Target will be the target of a system identity or a provider identity such as ANY_ACL.
-   :target (m/stored m/string-field-mapping)
-   :target.lowercase m/string-field-mapping
+   :target m/string-field-mapping
+   :target-lowercase m/string-field-mapping
 
    ;; target-provider-id indexes the provider id of the provider-identity or
    ;; catalog-item-identity field of an acl, if present
-   :target-provider-id (m/stored m/string-field-mapping)
-   :target-provider-id.lowercase m/string-field-mapping
+   :target-provider-id m/string-field-mapping
+   :target-provider-id-lowercase m/string-field-mapping
 
-   :target-id (m/stored m/string-field-mapping)
+   :target-id m/string-field-mapping
 
    ;; The name of the ACL for returning in the references response.
    ;; This will be the catalog item identity name or a string containing
    ;; "<identity type> - <target>". For example "System - PROVIDER"
-   :display-name (m/stored m/string-field-mapping)
-   :display-name.lowercase m/string-field-mapping
-   :identity-type (m/stored m/string-field-mapping)
+   :display-name m/string-field-mapping
+   :display-name-lowercase m/string-field-mapping
+   :identity-type m/string-field-mapping
 
    ;; Store the full ACL metadata for quick retrieval.
-   :acl-gzip-b64 (m/stored (m/not-indexed m/string-field-mapping))})
+   :acl-gzip-b64 m/binary-field-mapping})
 
 (def ^:private acl-index-settings
   "Defines the elasticsearch index settings."
@@ -264,9 +265,9 @@
   (let [{:keys [group-id user-type permissions]} group-permission
         gid (or group-id user-type)]
     {:permitted-group gid
-     :permitted-group.lowercase (str/lower-case gid)
+     :permitted-group-lowercase (str/lower-case gid)
      :permission permissions
-     :permission.lowercase (map str/lower-case permissions)}))
+     :permission-lowercase (map str/lower-case permissions)}))
 
 (defn- identifier-applicable-elastic-doc-map
   "Returns map for identifier and applicable booleans"
@@ -345,19 +346,19 @@
      (identifier-applicable-elastic-doc-map acl)
      (assoc (select-keys concept-map [:concept-id :revision-id])
             :display-name display-name
-            :display-name.lowercase (str/lower-case display-name)
+            :display-name-lowercase (str/lower-case display-name)
             :identity-type (acl->identity-type acl)
             :permitted-group permitted-groups
-            :permitted-group.lowercase (map str/lower-case permitted-groups)
+            :permitted-group-lowercase (map str/lower-case permitted-groups)
             :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
             :target target
-            :target.lowercase (util/safe-lowercase target)
+            :target-lowercase (util/safe-lowercase target)
             :target-id target-id
             :target-provider-id provider-id
-            :target-provider-id.lowercase (util/safe-lowercase provider-id)
+            :target-provider-id-lowercase (util/safe-lowercase provider-id)
             :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))
             :legacy-guid (:legacy-guid acl)
-            :legacy-guid.lowercase (when-let [legacy-guid (:legacy-guid acl)]
+            :legacy-guid-lowercase (when-let [legacy-guid (:legacy-guid acl)]
                                      (str/lower-case legacy-guid))))))
 
 (defn index-acl
@@ -378,11 +379,13 @@
 
 (defn unindex-acl
   "Removes ACL from index by concept ID."
-  [context concept-id]
+  [context concept-id revision-id]
+  (info "Unindexing acl concept:" concept-id " revision:" revision-id)
   (m/delete-by-id (esi/context->search-index context)
                   acl-index-name
                   acl-type-name
                   concept-id
+                  revision-id
                   ;; refresh by default because unindexing is rare, and this keeps things simpler
                   {:refresh? true}))
 
@@ -393,7 +396,7 @@
   (doseq [acl-batch (mdb-legacy/find-in-batches context :acl 100 {:latest true})
           acl acl-batch]
     (if (:deleted acl)
-      (unindex-acl context (:concept-id acl))
+      (unindex-acl context (:concept-id acl) (:revision-id acl))
       (index-acl context acl)))
   (info "Reindexing all acls complete"))
 
@@ -408,7 +411,7 @@
 
 (defmethod q2e/field->lowercase-field-mappings :acl
   [_]
-  {:provider "target-provider-id.lowercase"})
+  {:provider "target-provider-id-lowercase"})
 
 (defn unindex-acls-by-provider
   "Removes all ACLs granting permissions to the specified provider ID from the index."
@@ -416,7 +419,7 @@
   (m/delete-by-query (esi/context->search-index context)
                      acl-index-name
                      acl-type-name
-                     {:term {:target-provider-id.lowercase (str/lower-case provider-id)}}))
+                     {:term {:target-provider-id-lowercase (str/lower-case provider-id)}}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common public functions
