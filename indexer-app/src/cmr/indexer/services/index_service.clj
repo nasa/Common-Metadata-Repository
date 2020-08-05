@@ -196,7 +196,6 @@
      :value keyword-value
      :fields keyword-string
      :_index "1_autocomplete"
-     :_type "suggestion"
      :contains-public-collections public-collection?
      :permitted-group-ids permitted-group-ids}))
 
@@ -218,7 +217,9 @@
      (science-keywords->elastic-docs value-map public-collection? permitted-group-ids)
      (map (fn [value]
             (let [v (val value)
-                  type (camel-snake-kebab/->snake_case_keyword key-name)
+                  type (-> key-name
+                           camel-snake-kebab/->snake_case_keyword
+                           (s/replace #"_humanized|:" ""))
                   id (-> (s/lower-case v)
                          (str "_" type)
                          hash)]
@@ -227,7 +228,6 @@
               :value v
               :fields v
               :_index "1_autocomplete"
-              :_type "suggestion"
               :contains-public-collections public-collection?
               :permitted-group-ids permitted-group-ids}))
          values))))

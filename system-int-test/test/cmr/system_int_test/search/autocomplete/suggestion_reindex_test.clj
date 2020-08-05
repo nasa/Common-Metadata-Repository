@@ -163,16 +163,11 @@
        (get-in (search/get-autocomplete-json "q=From" {:headers {:echo-token user1-token}}) [:feed :entry])
        [{:type "project",
           :value "From whence you came!",
-          :fields "From whence you came!"}
-        {:type "platform",
-         :value "DMSP 5B/F3",
-         :fields "DMSP 5B/F3"}]))
+          :fields "From whence you came!"}]))
     (testing "Suggestions associated to collections with access constraints not returned without a token"
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=From") [:feed :entry])
-       [{:type "platform"
-         :value "DMSP 5B/F3"
-         :fields "DMSP 5B/F3"}]))))
+       []))))
 
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
