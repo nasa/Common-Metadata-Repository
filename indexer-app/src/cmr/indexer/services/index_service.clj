@@ -237,8 +237,7 @@
   value available for indexing into elasticsearch"
   [humanized-fields]
   (let [{:keys [permissions]} humanized-fields
-        fields-without-permissions (-> humanized-fields
-                                       (dissoc :id :permissions))]
+        fields-without-permissions (dissoc humanized-fields :id :permissions)]
     (for [humanized-field fields-without-permissions
           :let [key (key humanized-field)
                 key-name (-> key

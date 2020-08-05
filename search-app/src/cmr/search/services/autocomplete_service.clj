@@ -10,6 +10,8 @@
   (qm/boolean-condition :contains-public-collections true))
 
 (defn- user-groups-condition
+  "Create condition to filter suggestions based on a user's permissions.
+  Only create the :permitted-group-id condition if a user belongs to groups."
   [user-acls]
   (if-not (empty? user-acls)
     (gc/or-conds [public-collections-condition
@@ -18,15 +20,19 @@
     public-collections-condition))
 
 (defn- empty-token-with-type
+  "AND together the root query, types condition,
+  and :contains-public-collections condition."
   [root types]
   (let [types-condition (gc/or-conds (map #(qm/text-condition :type %) types))]
     (gc/and-conds [root types-condition public-collections-condition])))
 
 (defn- empty-token-without-type
+  "Most basic condition. AND together root and public-collections-condition."
   [root]
   (gc/and-conds [root public-collections-condition]))
 
 (defn- non-empty-token-with-type
+  "AND together token and user-group conditions with root condition."
   [root types user-acls]
   (let [types-and-groups-map (conj (user-groups-condition user-acls)
                                    (map #(qm/text-condition :type %) types))
@@ -34,10 +40,13 @@
     (gc/and-conds [root types-and-groups-conditions])))
 
 (defn- non-empty-token-without-type
+  "AND together root condition with user-group conditions."
   [root user-acls]
   (gc/and-conds [root (user-groups-condition user-acls)]))
 
 (defn build-autocomplete-condition
+  "Construct root condition, then augment it with permissions and types filters
+  where applicable."
   [term types token user-acls]
   (let [root (gc/or-conds [(qm/match :value term)
                            (qm/multi-match :phrase_prefix
