@@ -128,6 +128,8 @@
   (let [started-system (start system)]
     (try
       (access-control-index/create-index-or-update-mappings (:search-index started-system))
+      ;; This is needed to bootstrap admin group for legacy services for integration tests
+      (bootstrap/bootstrap started-system)
       (catch Exception e
         (common-sys/stop started-system component-order)
         (throw e)))
