@@ -15,6 +15,7 @@
     [cmr.transmit.echo.acls :as echo-acls]
     [cmr.transmit.metadata-db :as mdb]
     [cmr.transmit.search :as search]
+    [markdown.core :as markdown]
     [postal.core :as postal-core]))
 
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
@@ -209,6 +210,28 @@
   [context]
   (bulk-update/cleanup-old-bulk-update-status context))
 
+(defn email-granule-url-list
+ "take a list of URLs and format them for an email"
+ [gran-ref-location]
+ (string/join "\n"(map #(str "* [" % "](" % ")\n") gran-ref-location)))
+
+(defn create-email-content
+ "Create an email body for subscriptions"
+ [from-email-address to-email-address gran-ref-location subscription]
+ {:from from-email-address
+  :to to-email-address
+  :subject "Email Subscription Notification"
+  :body [{:type "text/html"
+   :content (markdown/md-to-html-string (str
+    "\nYou have subscribed to receive notifications when the following query is updated:\n\n"
+    (get-in subscription [:metadata :Query])
+    "\n\nSince this query was last run at"
+    (get-in subscription [:metadata :updated_since])
+    ", the following granules have been added or updated:\n\n"
+    (email-granule-url-list gran-ref-location)
+    "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"
+    ))}]})
+
 (defn- process-subscriptions
   "Process each subscription in subscriptions."
   [context subscriptions time-constraint]
@@ -235,13 +258,7 @@
           (when (seq gran-ref)
             (info "Start sending email for subscription: " sub-name)
             (postal-core/send-message {:host (email-server-host) :port (email-server-port)}
-                                      {:from (mail-sender)
-                                       :to email-address
-                                       :subject "Email Subscription Notification"
-                                       :body (str "The following are the granule locations: \n\n"
-                                                  (pr-str gran-ref-location)
-                                                  "\n\nThe subscription content is: \n"
-                                                  (:metadata subscription))})
+                                      (create-email-content (mail-sender) email-address gran-ref-location subscription))
             (info "Finished sending email for subscription: " sub-name)))
        (catch Exception e
          (error "Exception caught in email subscription: " sub-name "\n\n"  (.getMessage e))))))
