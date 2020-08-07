@@ -27,12 +27,12 @@
    "someone@gmail.com"
    '("https://cmr.link/g1" "https://cmr.link/g2" "https://cmr.link/g3")
    {:metadata {:SubscriberId "tcherry"}})]
-  (are [exp act] (= exp act)
-   (:to actual) "someone@gmail.com"
-   (:subject actual) "Email Subscription Notification"
-   (:type (first (:body actual))) "text/html"
-   (:content (first (:body actual))) (str "<p>You have subscribed to receive "
-    "notifications when the following query is updated:</p>"
+  (is (= (:to actual) "someone@gmail.com"))
+  (is (= (:subject actual) "Email Subscription Notification"))
+  (is (= (:type (first (:body actual))) "text/html"))
+  (is (= (:content (first (:body actual)))
+   (str "<p>You have subscribed to receive notifications when the following "
+    "query is updated:</p>"
     "<p>Since this query was last run at, the following granules have been "
     "added or updated:</p>"
     "<ul><li><a href='https://cmr.link/g1'>https://cmr.link/g1</a></li><li>"
@@ -40,4 +40,4 @@
     "<a href='https://cmr.link/g3'>https://cmr.link/g3</a></li></ul>"
     "<p>To unsubscribe from these notifications, or if you have any questions, "
     "please contact us at <a href='mailto:cmr-support@earthdata.nasa.gov'>"
-    "cmr-support@earthdata.nasa.gov</a>.</p>"))))
+    "cmr-support@earthdata.nasa.gov</a>.</p>")))))
