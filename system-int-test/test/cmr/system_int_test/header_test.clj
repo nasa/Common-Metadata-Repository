@@ -19,6 +19,10 @@
                                     {:raw? true})
         ingest-request-id (ingest-headers "cmr-request-id")
         ingest-x-request-id (ingest-headers "x-request-id")
+        response-strict-transport-security-header-ingest (ingest-headers "Strict-Transport-Security")
+        response-x-content-type-options-header-ingest (ingest-headers "X-Content-Type-Options")
+        response-x-frame-options-header-ingest (ingest-headers "X-Frame-Options")
+        response-x-xss-protection-header-ingest (ingest-headers "X-XSS-Protection")
         _ (index/wait-until-indexed)
         {search-headers :headers} (search/find-concepts-in-format
                                     "application/echo10+xml" :collection {})
@@ -28,6 +32,10 @@
         cmr-took (search-headers "CMR-Took")
         search-request-id (search-headers "CMR-Request-Id")
         search-x-request-id (search-headers "X-Request-Id")
+        response-strict-transport-security-header-search (search-headers "Strict-Transport-Security")
+        response-x-content-type-options-header-search (search-headers "X-Content-Type-Options")
+        response-x-frame-options-header-search (search-headers "X-Frame-Options")
+        response-x-xss-protection-header-search (search-headers "X-XSS-Protection")
         req-id-regex #"\w{8}-\w{4}-\w{4}-\w{4}-\w{12}"]
     (is (re-matches #"application\/echo10\+xml.*" content-type))
     (is (= aca-origin "*"))
@@ -36,6 +44,14 @@
     (is (= search-request-id search-x-request-id))
     (is (re-matches req-id-regex ingest-request-id))
     (is (re-matches req-id-regex search-request-id))
+    (is (= response-strict-transport-security-header-ingest "max-age=31536000"))
+    (is (= response-x-content-type-options-header-ingest "nosniff"))
+    (is (= response-x-frame-options-header-ingest "SAMEORIGIN"))
+    (is (= response-x-xss-protection-header-ingest "1; mode=block"))
+    (is (= response-strict-transport-security-header-search "max-age=31536000"))
+    (is (= response-x-content-type-options-header-search "nosniff"))
+    (is (= response-x-frame-options-header-search "SAMEORIGIN"))
+    (is (= response-x-xss-protection-header-search "1; mode=block"))
     (is (re-matches #"\d+" cmr-took))))
 
 (defn- cmr-request-id-in-header?
