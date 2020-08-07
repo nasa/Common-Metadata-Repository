@@ -14,8 +14,8 @@
   {:default "1.15.3"})
 
 (defconfig launchpad-token-enforced
-  "Flag for whether or not launchpad token is enforeced."
-  {:default false
+  "Flag for whether or not launchpad token is enforced."
+  {:default false 
    :type Boolean})
 
 (defconfig release-version

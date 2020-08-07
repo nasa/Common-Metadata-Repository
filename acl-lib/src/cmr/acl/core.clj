@@ -24,7 +24,8 @@
   "Returns the token the user passed in the headers or parameters"
   [params headers]
   (let [non-empty-string #(when-not (str/blank? %) %)]
-    (or (non-empty-string (:token params))
+    (or (non-empty-string (get headers tc/authorization-header))
+        (non-empty-string (:token params))
         (non-empty-string (get headers tc/token-header)))))
 
 (defn- get-client-id
