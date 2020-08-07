@@ -213,7 +213,7 @@
 (defn email-granule-url-list
  "take a list of URLs and format them for an email"
  [gran-ref-location]
- (string/join "\n"(map #(str "* [" % "](" % ")\n") gran-ref-location)))
+ (string/join "\n" (map #(str "* [" % "](" % ")") gran-ref-location)))
 
 (defn create-email-content
  "Create an email body for subscriptions"
