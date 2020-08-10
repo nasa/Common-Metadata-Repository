@@ -86,7 +86,6 @@
                         :errors [(str "Format [8-track tape] was not a valid keyword.")]}]}
              response)))
 
-
   (are3 [attribs]
         (assert-valid-keywords attribs)
 
@@ -97,7 +96,7 @@
                :AverageFileSize 50
                :AverageFileSizeUnit "MB"
                :Fees "None currently"
-               :Format "HDF"}]}}
+               :Format "HDF5"}]}}
 
         "Valid Case Insensitive"
         {:ArchiveAndDistributionInformation
@@ -106,7 +105,7 @@
              :AverageFileSize 50
              :AverageFileSizeUnit "MB"
              :Fees "None currently"
-             :Format "hdf"}]}}
+             :Format "hdf5"}]}}
 
         "Valid Case Sensitive"
         {:ArchiveAndDistributionInformation
