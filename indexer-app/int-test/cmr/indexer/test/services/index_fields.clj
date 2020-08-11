@@ -21,7 +21,7 @@
 (def test-config
   "Return the configuration for elasticsearch"
   {:host "localhost"
-   :port 9213
+   :port 9210
    :admin-token (str "Basic " (b64/encode (.getBytes "password")))})
 
 (def context (atom nil))
@@ -100,14 +100,11 @@
 (defn server-setup
   "Fixture that starts an instance of elastic in the JVM runs the tests and then shuts it down."
   [f]
-  (let [http-port (:port test-config)
-        server (lifecycle/start (elastic-server/create-server http-port) nil)]
+  (let [http-port (:port test-config)]
     (reset! context {:system {:db {:config test-config
                                    :conn (esr/connect (str "http://localhost:" http-port))}}})
     (try
-      (f)
-      (finally
-        (lifecycle/stop server nil)))))
+      (f))))
 
 (defn index-setup
   "Fixture that creates an index and drops it."
