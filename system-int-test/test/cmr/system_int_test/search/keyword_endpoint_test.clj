@@ -414,19 +414,23 @@
                              [{"value" "ANGOLA",
                                "uuid"
                                "9b0a194d-d617-4fed-9625-df176319892d"}]}]}]}]}
-   :granule-data-format {"granuledataformat"
-                          [{"value" "JPEG", "uuid"
-                            [{"value" "7972d59f-0d8d-4332-9a2d-d538d90976ba",
-                              "uuid" "7972d59f-0d8d-4332-9a2d-d538d90976ba"}]}
-                           {"value" "Value3", "uuid"
-                            [{"value" "45e4f52a-80ae-4ef3-882f-c2849eb4e18a",
-                              "uuid" "45e4f52a-80ae-4ef3-882f-c2849eb4e18a"}]}
-                           {"value" "HDF", "uuid"
-                            [{"value" "a0664fe4-ac04-4de7-91ba-ecbccfc0807f",
-                              "uuid" "a0664fe4-ac04-4de7-91ba-ecbccfc0807f"}]}
-                           {"value" "hdf", "uuid"
-                            [{"value" "c5796028-6835-49f9-be6c-cf26f363623b",
-                              "uuid" "c5796028-6835-49f9-be6c-cf26f363623b"}]}]}})
+   :granule-data-format {"short_name"
+                         [{"value" "HDF5",
+                           "uuid"
+                           [{"value" "1c406abc-104d-4517-96b8-dbbcf515f00f",
+                             "uuid" "1c406abc-104d-4517-96b8-dbbcf515f00f"}]}
+                          {"value" "CSV",
+                           "uuid"
+                           [{"value" "465809cc-e76c-4630-8594-bb8bd7a1a380",
+                             "uuid" "465809cc-e76c-4630-8594-bb8bd7a1a380"}]}
+                          {"value" "HDF4",
+                           "uuid"
+                           [{"value" "e5c126f8-0435-4cef-880f-72a1d2d792f2",
+                             "uuid" "e5c126f8-0435-4cef-880f-72a1d2d792f2"}]}
+                          {"value" "JPEG",
+                           "uuid"
+                           [{"value" "7443bb2d-1dbb-44d1-bd29-0241d30fbc57",
+                             "uuid" "7443bb2d-1dbb-44d1-bd29-0241d30fbc57"}]}]}})
 
 
 (deftest get-keywords-test
