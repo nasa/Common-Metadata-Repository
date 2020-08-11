@@ -227,7 +227,7 @@
       ((ring-json/wrap-json-response handler) request))))
 
 (defn add-security-header-response-handler
-  ""
+  "Adds a number of security related response headers."
   [handler]
   (fn [{context :request-context :as request}]
     (if-let [request-id (cxt/context->request-id context)]
