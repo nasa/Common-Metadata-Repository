@@ -125,7 +125,7 @@
                                          (integration-test-namespaces))
 
         test-results-handler (fail-fast?->test-results-handler fail-fast?)
-        unittest-results (run-tests unit-test-namespaces true)
+        unittest-results (run-tests unit-test-namespaces false)
         inttest-results (run-tests integration-test-namespaces false)
         [took test-results] (u/time-execution
                               (test-results-handler
