@@ -47,28 +47,32 @@
     (qm/->SpatialCondition (shape->search-shape shape))))
 
 (defn url-value->spatial-conditions
-  [type value]
+  [type value options]
   ;; Note: value can be a single string or a vector of strings. (flatten [value])
   ;; converts the value to a sequence of strings irrespective of the type
-  (gc/and-conds
-   (map (partial url-value->spatial-condition type) (flatten [value]))))
+  (let [operator (if (= "true" (get-in options [type :or]))
+                   :or
+                   :and)]
+    (gc/group-conds
+     operator
+     (map (partial url-value->spatial-condition type) (flatten [value])))))
 
 (defmethod p/parameter->condition :polygon
   [_context concept-type param value options]
-  (url-value->spatial-conditions :polygon value))
+  (url-value->spatial-conditions :polygon value options))
 
 (defmethod p/parameter->condition :bounding-box
   [_context concept-type param value options]
-  (url-value->spatial-conditions :bounding-box value))
+  (url-value->spatial-conditions :bounding-box value options))
 
 (defmethod p/parameter->condition :point
   [_context concept-type param value options]
-  (url-value->spatial-conditions :point value))
+  (url-value->spatial-conditions :point value options))
 
 (defmethod p/parameter->condition :line
   [_context concept-type param value options]
-  (url-value->spatial-conditions :line value))
+  (url-value->spatial-conditions :line value options))
 
 (defmethod p/parameter->condition :circle
   [_context concept-type param value options]
-  (url-value->spatial-conditions :circle value))
+  (url-value->spatial-conditions :circle value options))

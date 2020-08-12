@@ -441,6 +441,33 @@
         ["0,89,100" "0,89,1000000"] [whole-world on-np]
         ["0,0,1000" "0,89,1000" "0,89,1000000"] [whole-world]))
 
+    (testing "valid circle searches with ORed results"
+      (are [lon-lat-radius items]
+        (let [found (search/find-refs
+                     :collection
+                     {:circle lon-lat-radius
+                      :page-size 50
+                      "options[circle][or]" "true"})
+              matches? (d/refs-match? items found)]
+          (when-not matches?
+            (println "Expected:" (->> items (map :entry-title) sort pr-str))
+            (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+          matches?)
+
+        ["0,89,100" "0,89,1000000"] [along-am-line
+                                     north-pole
+                                     on-np
+                                     touches-np
+                                     very-tall-cart
+                                     whole-world]
+        ["0,0,1000" "0,89,1000" "0,89,1000000"] [along-am-line
+                                                 north-pole on-np
+                                                 polygon-with-holes
+                                                 touches-np
+                                                 very-tall-cart
+                                                 whole-world]
+        ["179.8,41,100000" "-179.9,22,100000"] [whole-world am-point across-am-poly along-am-line]))
+
     (testing "AQL spatial search"
       (are [type ords items]
         (let [refs (search/find-refs-with-aql :collection [{type ords}])
@@ -464,7 +491,37 @@
         :point [17.73 2.21] [whole-world normal-brs]
         :line [-0.37,-14.07,4.75,1.27,25.13,-15.51]
         [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
-         normal-poly-cart]))))
+         normal-poly-cart])
+
+     (testing "ORed spatial search"
+       (are [type coords items]
+         (let [options (str "options[" type "][or]")
+               refs (search/find-refs-with-aql
+                      :collection
+                      [{type coords
+                        :page-size 50
+                        options "true"}])
+               result (d/refs-match? items refs)]
+           (when-not result
+             (println "Expected:" (pr-str (map :entry-title items)))
+             (println "Actual:" (pr-str (map :name (:refs refs)))))
+           result)
+         :polygon [20.16,-13.7, 21.64,12.43, 12.47,11.84, -22.57,7.06,20.16,-13.7]
+         [whole-world normal-poly normal-brs polygon-with-holes normal-line normal-line-cart]
+
+         :box [23.59,-4,25.56,-15.47] [whole-world normal-line-cart]
+
+         ;; Across antimeridian
+         :box [170 20 -170 10]
+         [whole-world across-am-br along-am-line]
+
+         :box [166.11,53.04,-166.52,-19.14]
+         [whole-world across-am-poly across-am-br am-point very-wide-cart along-am-line]
+
+         :point [17.73 2.21] [whole-world normal-brs]
+         :line [-0.37,-14.07,4.75,1.27,25.13,-15.51]
+         [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
+          normal-poly-cart])))))
 
 (def all-tiles
   [[8 8] [35 7] [7 6] [28 8] [27 8] [8 7] [16 6] [8 11] [22 10] [9 8] [10 14] [12 12] [8 9]
