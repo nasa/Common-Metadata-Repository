@@ -491,37 +491,24 @@
         :point [17.73 2.21] [whole-world normal-brs]
         :line [-0.37,-14.07,4.75,1.27,25.13,-15.51]
         [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
-         normal-poly-cart])
+         normal-poly-cart]))
 
-     (testing "ORed spatial search"
-       (are [type coords items]
-         (let [options (str "options[" type "][or]")
-               refs (search/find-refs-with-aql
-                      :collection
-                      [{type coords
-                        :page-size 50
-                        options "true"}])
-               result (d/refs-match? items refs)]
-           (when-not result
-             (println "Expected:" (pr-str (map :entry-title items)))
-             (println "Actual:" (pr-str (map :name (:refs refs)))))
-           result)
-         :polygon [20.16,-13.7, 21.64,12.43, 12.47,11.84, -22.57,7.06,20.16,-13.7]
-         [whole-world normal-poly normal-brs polygon-with-holes normal-line normal-line-cart]
-
-         :box [23.59,-4,25.56,-15.47] [whole-world normal-line-cart]
-
-         ;; Across antimeridian
-         :box [170 20 -170 10]
-         [whole-world across-am-br along-am-line]
-
-         :box [166.11,53.04,-166.52,-19.14]
-         [whole-world across-am-poly across-am-br am-point very-wide-cart along-am-line]
-
-         :point [17.73 2.21] [whole-world normal-brs]
-         :line [-0.37,-14.07,4.75,1.27,25.13,-15.51]
-         [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
-          normal-poly-cart])))))
+    (testing "ORed spatial search"
+       (let [poly-coordinates ["-16.79,-12.71,-6.32,-10.95,-5.74,-6.11,-15.18,-7.63,-16.79,-12.71"
+                               "0.53,39.23,21.57,59.8,-112.21,84.48,-13.37,40.91,0.53,39.23"]
+             poly-refs (search/find-refs
+                        :collection
+                        {:polygon poly-coordinates
+                         "options[polygon][or]" "true"})
+             poly-items [wide-north on-np normal-poly very-wide-cart whole-world normal-brs]
+             bbox-refs (search/find-refs
+                               :collection
+                               {:bounding-box ["166.11,-19.14,-166.52,53.04"
+                                               "23.59,-15.47,25.56,-4"]
+                                              "options[bounding_box][or]" "true"})
+             bbox-items [across-am-poly very-wide-cart am-point along-am-line normal-line-cart whole-world across-am-br]]
+        (is (d/refs-match? poly-items poly-refs))
+        (is (d/refs-match? bbox-items bbox-refs))))))
 
 (def all-tiles
   [[8 8] [35 7] [7 6] [28 8] [27 8] [8 7] [16 6] [8 11] [22 10] [9 8] [10 14] [12 12] [8 9]
