@@ -109,11 +109,11 @@
   (testing "must be called with a revision-id"
     (let [db (memory/create-db [example-concept])]
       (is (thrown-with-msg? AssertionError #"Assert failed: .*revision-id"
-                            (cs/try-to-save db {:provider-id "PROV1"}
+                            (cs/try-to-save db {:provider-id "PROV1"} nil
                                             (dissoc example-concept :revision-id))))))
   (testing "valid with revision-id"
     (let [db (memory/create-db [example-concept])
-          result (cs/try-to-save db {:provider-id "PROV1"} (assoc example-concept :revision-id 2))]
+          result (cs/try-to-save db {:provider-id "PROV1"} nil (assoc example-concept :revision-id 2))]
       (is (= 2 (:revision-id result)))))
   (testing "conflicting concept-id and revision-id"
     (tu/assert-exception-thrown-with-errors
@@ -121,6 +121,7 @@
       [(messages/concept-id-and-revision-id-conflict (:concept-id example-concept) 1)]
       (cs/try-to-save (memory/create-db [example-concept])
                       {:provider-id "PROV1"}
+                      nil
                       (assoc example-concept :revision-id 1)))))
 
 (deftest delete-expired-concepts-test
@@ -142,7 +143,7 @@
 
           fake-save (fn [& args]
                       (when-not @saved
-                        (orig-save db {:provider-id "PROV1"} expired-2)
+                        (orig-save db {:provider-id "PROV1"} nil expired-2)
                         (reset! saved true))
                       (apply orig-save args))]
       ;; replace cs/try-to-save with our overridden function for this test

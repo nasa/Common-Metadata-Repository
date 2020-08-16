@@ -61,7 +61,7 @@
     :result
     {}
     (reduce-kv (fn [memo k v]
-                 (conj memo (xml/element (keyword k) {} v)))
+                 (conj memo (xml/element (keyword k) {} (if (map? v) (str v) v))))
                []
                m))))
 

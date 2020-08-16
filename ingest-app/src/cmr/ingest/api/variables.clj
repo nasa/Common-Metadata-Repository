@@ -27,29 +27,41 @@
 
 (defn ingest-variable
   "Processes a request to create or update a variable."
-  [provider-id native-id request]
-  (let [{:keys [body content-type headers request-context]} request
-        concept (api-core/body->concept!
-                 :variable provider-id native-id body content-type headers)]
-    (lt-validation/validate-launchpad-token request-context)
-    (api-core/verify-provider-exists request-context provider-id)
-    (acl/verify-ingest-management-permission
-      request-context :update :provider-object provider-id)
-    (common-enabled/validate-write-enabled request-context "ingest")
-    (let [concept (validate-and-prepare-variable-concept concept)
-          {concept-format :format metadata :metadata} concept
-          variable (spec/parse-metadata request-context :variable concept-format metadata)
-          _ (v/umm-spec-validate-variable
-             variable request-context (not (ingest-config/validate-umm-var-keywords)))
-          concept-with-user-id (api-core/set-user-id concept request-context headers)
-          ;; Log the ingest attempt
-          _ (info (format "Ingesting variable %s from client %s"
-                          (api-core/concept->loggable-string concept-with-user-id)
-                          (:client-id request-context)))
-          save-variable-result (ingest/save-variable request-context concept-with-user-id)]
-      ;; Log the successful ingest, with the metadata size in bytes.
-      (api-core/log-concept-with-metadata-size concept-with-user-id request-context)
-      (api-core/generate-ingest-response headers save-variable-result))))
+  ([provider-id native-id request]
+   (ingest-variable provider-id native-id request nil nil))
+  ([provider-id native-id request coll-concept-id]
+   (ingest-variable provider-id native-id request coll-concept-id nil))
+  ([provider-id native-id request coll-concept-id coll-revision-id]
+   (let [provider-id (if coll-concept-id
+                       (last (string/split coll-concept-id #"C[0-9]+-"))
+                       provider-id)
+         {:keys [body content-type headers request-context]} request
+         concept (api-core/body->concept!
+                  :variable provider-id native-id body content-type headers)]
+
+     (lt-validation/validate-launchpad-token request-context)
+     (api-core/verify-provider-exists request-context provider-id)
+     (acl/verify-ingest-management-permission
+       request-context :update :provider-object provider-id)
+     (common-enabled/validate-write-enabled request-context "ingest")
+     (let [concept (validate-and-prepare-variable-concept concept)
+           {concept-format :format metadata :metadata} concept
+           variable (spec/parse-metadata request-context :variable concept-format metadata)
+           _ (v/umm-spec-validate-variable
+               variable request-context (not (ingest-config/validate-umm-var-keywords)))
+           concept-with-user-id (util/remove-nil-keys
+                                  (-> concept
+                                      (api-core/set-user-id request-context headers)
+                                      (assoc :coll-concept-id coll-concept-id
+                                             :coll-revision-id coll-revision-id)))
+           ;; Log the ingest attempt
+           _ (info (format "Ingesting variable %s from client %s"
+                           (api-core/concept->loggable-string concept-with-user-id)
+                           (:client-id request-context)))
+           save-variable-result (ingest/save-variable request-context concept-with-user-id)]
+       ;; Log the successful ingest, with the metadata size in bytes.
+       (api-core/log-concept-with-metadata-size concept-with-user-id request-context)
+       (api-core/generate-ingest-response headers save-variable-result)))))
 
 (defn delete-variable
   "Deletes the variable with the given provider id and native id."

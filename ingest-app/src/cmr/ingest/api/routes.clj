@@ -78,6 +78,21 @@
 
 (def ingest-routes
   (routes
+    ;; variable ingest routes with association
+    (api-core/set-default-error-format
+     :xml
+     (context "/collections/:coll-concept-id" [coll-concept-id]
+       (context "/:coll-revision-id" [coll-revision-id]
+         (context "/variables/:native-id" [native-id]
+          (PUT "/"
+           request
+           (variables/ingest-variable
+             nil native-id request coll-concept-id coll-revision-id))))
+       (context "/variables/:native-id" [native-id]
+         (PUT "/"
+           request
+           (variables/ingest-variable
+             nil native-id request coll-concept-id)))))
     ;; Provider ingest routes
     (api-core/set-default-error-format
      :xml

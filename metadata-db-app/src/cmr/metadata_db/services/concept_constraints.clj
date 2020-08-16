@@ -160,6 +160,7 @@
    :service [(partial pfn-constraint :service-name)]
    :tool [(partial pfn-constraint :tool-name)]
    :subscription [(partial pfn-constraint :subscription-name)]
+   ;; will remove this fingerprint check when updating tests later.
    :variable [(unique-field-constraint :fingerprint)]})
 
 (defn perform-post-commit-constraint-checks
