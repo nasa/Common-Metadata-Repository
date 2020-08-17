@@ -223,24 +223,16 @@
   :subject "Email Subscription Notification"
   :body [{:type "text/html"
    :content (markdown/md-to-html-string (str
-<<<<<<< HEAD
     "\nYou have subscribed to receive notifications when data is added to the following query:\n\n"
     "`" (get-in subscription [:metadata "CollectionConceptId"]) "`\n\n"
     "`" (get-in subscription [:metadata "Query"]) "`\n"
     "\nSince this query was last run at "
     (get-in subscription [:metadata :start-time])
-=======
-    "\nYou have subscribed to receive notifications when the following query is updated:\n\n"
-    (get-in subscription [:metadata :Query])
-    "\n\nSince this query was last run at"
-    (get-in subscription [:metadata :updated_since])
->>>>>>> upstream/master
     ", the following granules have been added or updated:\n\n"
     (email-granule-url-list gran-ref-location)
     "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"
     ))}]})
 
-<<<<<<< HEAD
 (defn- add-updated-since
  [raw time-constraint]
  (let [parts (clojure.string/split time-constraint, #",")
@@ -248,8 +240,6 @@
   end-time (last parts)]
   (assoc raw :start-time start-time :end-time end-time)))
 
-=======
->>>>>>> upstream/master
 (defn- process-subscriptions
   "Process each subscription in subscriptions."
   [context subscriptions time-constraint]
