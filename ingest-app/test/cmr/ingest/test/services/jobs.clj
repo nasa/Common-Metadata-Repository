@@ -26,14 +26,21 @@
    "cmr-support@earthdata.nasa.gov"
    "someone@gmail.com"
    '("https://cmr.link/g1" "https://cmr.link/g2" "https://cmr.link/g3")
-   {:metadata {:SubscriberId "tcherry"}})]
+   {:metadata {:start-time "2020-05-04T12:51:36Z"
+    :end-time "2020-05-05T12:51:36Z"
+    "Name" "valid1"
+    "CollectionConceptId" "C1200370131-EDF_DEV06"
+    "Query" "updated_since[]=2020-05-04T12:51:36Z"
+    "SubscriberId" "someone1"
+    "EmailAddress" "someone@gmail.com"}})]
   (is (= (:to actual) "someone@gmail.com"))
   (is (= (:subject actual) "Email Subscription Notification"))
   (is (= (:type (first (:body actual))) "text/html"))
   (is (= (:content (first (:body actual)))
-   (str "<p>You have subscribed to receive notifications when the following "
-    "query is updated:</p>"
-    "<p>Since this query was last run at, the following granules have been "
+   (str "<p>You have subscribed to receive notifications when data is added to the following query:</p>"
+    "<p><code>C1200370131-EDF&#95;DEV06</code></p>"
+    "<p><code>updated&#95;since&#91;&#93;=2020-05-04T12:51:36Z</code></p>"
+    "<p>Since this query was last run at 2020-05-04T12:51:36Z, the following granules have been "
     "added or updated:</p>"
     "<ul><li><a href='https://cmr.link/g1'>https://cmr.link/g1</a></li><li>"
     "<a href='https://cmr.link/g2'>https://cmr.link/g2</a></li><li>"
