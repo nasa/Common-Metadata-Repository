@@ -470,11 +470,10 @@
         association (merge (first associations)
                            {:source-concept-id (:concept-id concept)
                             :source-concept-type :variable
-                            :user-id (:user-id concept)})
-        mdb-context (assoc context :system
-                           (get-in context [:system :embedded-systems :metadata-db]))]
+                            :user-id (:user-id concept)})]
+        ;; context passed from perform-post-commit-association is already a mdb-context.
     (debug "associate-variable validation-time:" validation-time)
-    (update-association mdb-context association :insert)))
+    (update-association context association :insert)))
 
 (defn- perform-post-commit-association
   "Performs a post commit variable association. If failed, roll back
