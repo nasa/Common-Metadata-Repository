@@ -68,7 +68,7 @@
    :concepts [:short-name :long-name :uuid]
    :iso-topic-categories [:iso-topic-category :uuid]
    :related-urls [:type :subtype :uuid]
-   :granule-data-format [:granuledataformat :uuid]})
+   :granule-data-format [:short-name :long-name :uuid]})
 
 (def keyword-scheme->expected-field-names
   "Maps each keyword scheme to the expected field names to be returned by KMS. We changed
