@@ -49,11 +49,13 @@
            variable (spec/parse-metadata request-context :variable concept-format metadata)
            _ (v/umm-spec-validate-variable
                variable request-context (not (ingest-config/validate-umm-var-keywords)))
-           concept-with-user-id (util/remove-nil-keys
-                                  (-> concept
-                                      (api-core/set-user-id request-context headers)
-                                      (assoc :coll-concept-id coll-concept-id
-                                             :coll-revision-id coll-revision-id)))
+           concept-with-user-id
+            (util/remove-nil-keys
+              (-> concept
+                  (api-core/set-user-id request-context headers)
+                  (assoc :coll-concept-id coll-concept-id
+                         :coll-revision-id (when coll-revision-id
+                                             (read-string coll-revision-id)))))
            ;; Log the ingest attempt
            _ (info (format "Ingesting variable %s from client %s"
                            (api-core/concept->loggable-string concept-with-user-id)
