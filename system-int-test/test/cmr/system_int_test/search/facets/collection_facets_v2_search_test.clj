@@ -5,7 +5,6 @@
    [cmr.common.mime-types :as mt]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.services.query-execution.facets.collection-v2-facets :as frf2]
-   [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]
    [cmr.system-int-test.data2.umm-spec-common :as umm-spec-common]
@@ -63,7 +62,6 @@
              :AverageFileSizeUnit "MB"
              :Fees "None currently"
              :Format "NetCDF-3"}]})
-
 (def facets-size-error-msg
   "Collection parameter facets_size needs to be passed in like facets_size[platform]=n1&facets_size[instrument]=n2 with n1 and n2 being a positive integer, which will be translated into a map with positive integer string values like {:platform \"1\" :instrument \"2\"}")
 
@@ -95,7 +93,8 @@
                             (fu/platforms fu/FROM_KMS 2 2 1)
                             (fu/processing-level-id "PL1")
                             {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
-                             :ArchiveAndDistributionInformation gdf1})
+                             :ArchiveAndDistributionInformation gdf1
+                             :TilingIdentificationSystems (data-umm-spec/tiling-identification-systems "MISR" "CALYPSO")})
         coll2 (fu/make-coll 2 "PROV1"
                             (fu/science-keywords sk1 sk3)
                             (fu/projects "proj1" "PROJ2")
@@ -158,7 +157,7 @@
       (is (= fr/expected-v2-facets-remove-links (search-and-return-v2-facets search-params))))
     (testing "Some fields not applied for facets"
       (let [response (search-and-return-v2-facets
-                      (dissoc search-params :platform-h :project-h :data-center-h :granule-data-format-h))]
+                      (dissoc search-params :platform-h :project-h :data-center-h :granule-data-format-h :coordinate-system))]
         (is (not (fu/applied? response :platform-h)))
         (is (not (fu/applied? response :project-h)))
         (is (not (fu/applied? response :data-center-h)))
