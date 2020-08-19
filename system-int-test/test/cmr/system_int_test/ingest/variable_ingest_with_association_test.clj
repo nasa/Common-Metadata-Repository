@@ -2,14 +2,8 @@
   "CMR variable ingest with association integration tests."
   (:require
    [clojure.test :refer :all]
-   [cmr.common-app.test.side-api :as side]
-   [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.util :refer [are3]]
-   [cmr.ingest.config :as ingest-config]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
