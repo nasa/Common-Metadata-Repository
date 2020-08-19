@@ -431,7 +431,51 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 
 ### <a name="create-update-variable"></a> Create / Update a Variable
 
-Variable metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+A new variable ingest endpoint is provided to ensure that variable association is created at variable ingest time.
+Variable metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/collections/<collection-concept-id>/<collection-revision-id>/variables/<native-id>`.  `<collection-revision-id>` is optional. The response will include the [concept id](#concept-id),[revision id](#revision-id), variable-association and associated-item.
+
+```
+curl -i -XPUT \
+-H "Content-type: application/vnd.nasa.cmr.umm+json" \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/collections/C1200000005-PROV1/1/variables/sampleVariableNativeId33 -d \
+"{\"ValidRange\":{},
+  \"Dimensions\":\"11\",
+  \"Scale\":\"1.0\",
+  \"Offset\":\"0.0\",
+  \"FillValue\":\"-9999.0\",
+  \"Units\":\"m\",
+  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
+                        \"Topic\":\"sk-B\",
+                        \"Term\":\"sk-C\"}],
+  \"Name\":\"A-name\",
+  \"VariableType\":\"SCIENCE_VARIABLE\",
+  \"LongName\":\"A long UMM-Var name\",
+  \"DimensionsName\":\"H2OFunc\",
+  \"DataType\":\"float32\"}"
+```
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>V1200000012-PROV1</concept-id>
+  <revision-id>1</revision-id>
+  <variable-association>{:concept-id "VA1200000007-CMR", :revision-id 1}</variable-association>
+  <associated-item>{:concept-id "C1200000005-PROV1", :revision-id 1}</associated-item> 
+</result>
+```
+
+#### Successful Response in JSON
+
+By passing the option `-H "Accept: application/json"` to `curl`, one may
+get a JSON response:
+
+```
+{"concept-id":"V1200000012-PROV1","revision-id":1,"variable-association":{"concept-id":"VA1200000007-CMR","revision-id":1},"associated-item":{"concept-id":"C1200000005-PROV1","revision-id":1}}
+```
+
+Variable metadata can continue to be updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
 ```
 curl -i -XPUT \

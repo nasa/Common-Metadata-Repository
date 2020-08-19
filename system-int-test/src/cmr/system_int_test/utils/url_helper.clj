@@ -178,6 +178,7 @@
           (transmit-config/ingest-port)
           (name concept-type)))
 
+
 (defn ingest-url
   [provider-id type native-id]
   (format "http://localhost:%s/providers/%s/%ss/%s"
@@ -185,6 +186,21 @@
           (codec/url-encode provider-id)
           (name type)
           (codec/url-encode native-id)))
+
+(defn ingest-variable-url
+  ([coll-id native-id]
+   (ingest-variable-url coll-id nil native-id))
+  ([coll-id coll-revision-id native-id]
+   (if coll-revision-id
+     (format "http://localhost:%s/collections/%s/%s/variables/%s"
+             (transmit-config/ingest-port)
+             (codec/url-encode coll-id)
+             (codec/url-encode coll-revision-id)
+             (codec/url-encode native-id))
+     (format "http://localhost:%s/collections/%s/variables/%s"
+          (transmit-config/ingest-port)
+          (codec/url-encode coll-id)
+          (codec/url-encode native-id)))))
 
 (defn validate-url
   [provider-id type native-id]
