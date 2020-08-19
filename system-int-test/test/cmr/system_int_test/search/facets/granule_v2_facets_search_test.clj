@@ -325,3 +325,112 @@
                     (assert-granules-match [gran2010-1 gran2010-2 gran2010-3] granules-response)
                     (is (= :apply (get-link-type "01" updated-month-facets)))
                     (is (= :apply (get-link-type "05" updated-month-facets)))))))))))))
+
+(defn- ingest-granule-with-track
+  "ingest a generated granule on the given provider, parent collection and track info"
+  [provider-id coll track]
+  (d/ingest provider-id
+            (dg/granule-with-umm-spec-collection
+             coll (:concept-id coll)
+             {:spatial-coverage (dg/spatial-with-track track)})
+            {:format :umm-json}))
+
+(deftest cycle-facets-test
+  (let [coll1 (d/ingest-umm-spec-collection
+               "PROV1" (data-umm-c/collection
+                        {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                         :EntryTitle "E1"
+                         :ShortName "S1"}))
+        coll2 (d/ingest-umm-spec-collection
+               "PROV2" (data-umm-c/collection
+                        {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                         :EntryTitle "E2"
+                         :ShortName "S2"}))
+        coll1-concept-id (:concept-id coll1)
+        coll2-concept-id (:concept-id coll2)
+        gran1 (ingest-granule-with-track "PROV1" coll1
+                                         {:cycle 1
+                                          :passes [{:pass 1}]})
+        gran2 (ingest-granule-with-track "PROV1" coll1
+                                         {:cycle 2
+                                          :passes [{:pass 1}]})
+        gran3 (ingest-granule-with-track "PROV1" coll1
+                                         {:cycle 1
+                                          :passes [{:pass 2}]})
+        ;; granules for testing multiple passes and tiles
+        gran4 (ingest-granule-with-track "PROV2" coll2
+                                         {:cycle 3
+                                          :passes [{:pass 1 :tiles ["1L"]}]})
+        gran5 (ingest-granule-with-track "PROV2" coll2
+                                         {:cycle 3
+                                          :passes [{:pass 1 :tiles ["1R"]}
+                                                   {:pass 2 :tiles ["1L"]}]})
+        gran6 (ingest-granule-with-track "PROV2" coll2
+                                         {:cycle 42
+                                          :passes [{:pass 1 :tiles ["1L"]}]})
+        ;; granules for testing Full track tiles and multiple tiles
+        gran7 (ingest-granule-with-track "PROV2" coll2
+                                         {:cycle 3
+                                          :passes [{:pass 3 :tiles ["1L"]}
+                                                   {:pass 4 :tiles ["1L"]}]})
+        gran8 (ingest-granule-with-track "PROV2" coll2
+                                         {:cycle 3
+                                          :passes [{:pass 3 :tiles ["1R"]}
+                                                   {:pass 4 :tiles ["2L"]}]})
+        gran9 (ingest-granule-with-track "PROV2" coll2
+                                         {:cycle 3
+                                          :passes [{:pass 3 :tiles ["1F"]}
+                                                   {:pass 4 :tiles ["2L"]}]})
+
+        gran10 (ingest-granule-with-track "PROV2" coll2
+                                          {:cycle 3
+                                           :passes [{:pass 3 :tiles ["5F" "6R"]}
+                                                    {:pass 4 :tiles ["5L" "6R"]}]})
+        gran11 (ingest-granule-with-track "PROV2" coll2
+                                          {:cycle 42
+                                           :passes [{:pass 3 :tiles ["5R" "6L"]}
+                                                    {:pass 4 :tiles ["5L" "6R" "8F"]}]})]
+    (index/wait-until-indexed)
+
+    (let [root-node (search-and-return-v2-facets {:collection-concept-id coll2-concept-id
+                                                  :page_size 10})
+          cycle-node (-> root-node :children first)
+          cycle-facets (:children cycle-node)]
+      (clojure.pprint/pprint root-node)
+      (testing "Facet structure correct"
+        (is (= "Browse Granules" (:title root-node)))
+        (is (= "group" (:type root-node)))
+        (is (= true (:has_children root-node)))
+        (is (= "Cycle" (:title cycle-node)))
+        (is (= "group" (:type cycle-node)))
+        (is (= true (:has_children cycle-node))))
+      (testing "Cycles returned in ascending order"
+        (is (= ["3" "42"] (map :title cycle-facets))))
+      (testing "Cycles have a type of filter"
+        (is (= ["filter" "filter"] (map :type cycle-facets))))
+      (testing "Counts correct"
+        (util/are3
+          [title cnt]
+          (is (= cnt (get-count-by-title cycle-facets title)))
+          "3" "3" 6
+          "42" "42" 2))
+      (testing "Traversals"
+        (let [cycle-selected-result (search-and-return-v2-facets
+                                      {:collection-concept-id coll2-concept-id
+                                       :page_size 10
+                                       :cycle 42})]
+          (is (= {:title "Browse Granules"
+                  :type "group"
+                  :has_children true
+                  :children
+                  [{:title "Cycle"
+                    :type "group"
+                    :applied true
+                    :has_children true
+                    :children
+                    [{:title "42"
+                      :type "filter"
+                      :applied true
+                      :count 2
+                      :links {:remove "http://localhost:3003/granules.json?page_size=10&include_facets=v2&collection_concept_id=C1200000010-PROV2"} :has_children false}]}]}
+                 cycle-selected-result)))))))

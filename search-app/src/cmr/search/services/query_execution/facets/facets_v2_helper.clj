@@ -58,6 +58,20 @@
    :children children})
 
 (defn generate-filter-node
+  "Returns a filter node for the provided title, applied?"
+  [base-url query-params field-name term term-count applied?]
+  (let [links (if applied?
+                (lh/create-link base-url query-params field-name term)
+                (lh/create-apply-link base-url query-params field-name term))]
+    (merge sorted-facet-map
+           {:title term
+            :type :filter
+            :applied (= :remove (first (keys links)))
+            :links links
+            :count term-count
+            :has_children false})))
+
+(defn filter-node-generator
   "Returns a function to generate a child node with the provided base-url, query-params, and
   field-name. Returned function takes a tuple (a term and a count of collections containing that
   term)."

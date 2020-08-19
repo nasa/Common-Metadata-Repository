@@ -209,6 +209,10 @@
   field-name and value.
   Field-name must be of the form <string>[<int>][<string>] such as science_keywords[0][topic]."
   [base-url query-params field-name ancestors-map parent-indexes value has-siblings? & _]
+  (printf "create-apply-link-for-hierarchical-field[%s][%s] ===================\n" field-name value)
+  (clojure.pprint/pprint query-params)
+  (clojure.pprint/pprint ancestors-map)
+  (clojure.pprint/pprint parent-indexes)
   (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
         index-to-use (if (or has-siblings? (empty? parent-indexes))
                        (inc (get-max-index-for-field-name query-params base-field))
@@ -218,13 +222,13 @@
         updated-query-params (if (or has-siblings? (empty? parent-indexes))
                                ;; Add all of the ancestors for this index
                                (reduce
-                                (fn [query-params [k v]]
-                                  (let [param-name (format "%s[%d][%s]" base-field index-to-use k)]
-                                    (assoc query-params param-name v)))
-                                updated-query-params
-                                ancestors-map)
+                                 (fn [query-params [k v]]
+                                   (let [param-name (format "%s[%d][%s]" base-field index-to-use k)]
+                                     (assoc query-params param-name v)))
+                                 updated-query-params
+                                 ancestors-map)
                                updated-query-params)]
-    {:apply (lh/generate-query-string base-url updated-query-params)}))
+    {:apply (lh/generate-query-string base-url (dissoc updated-query-params "cycle[0][passes]"))}))
 
 (defn create-link-for-hierarchical-field
   "Creates either a remove or an apply link based on whether this particular value is already
@@ -238,9 +242,16 @@
    (create-link-for-hierarchical-field base-url query-params field-name nil nil value false nil))
   ([base-url query-params field-name ancestors-map parent-indexes value has-siblings?
     applied-children-tuples]
+   (printf "create-link-for-hierarchical-field[%s][%s] ================\n" field-name value)
+   (clojure.pprint/pprint query-params)
+   (clojure.pprint/pprint ancestors-map)
+   (clojure.pprint/pprint parent-indexes)
+   (clojure.pprint/pprint applied-children-tuples)
    (if (keys (dissoc ancestors-map "category"))
      (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
-           ancestor-matches (get-matching-ancestors base-field query-params parent-indexes
+           ancestor-matches (get-matching-ancestors base-field
+                                                    query-params
+                                                    parent-indexes
                                                     (assoc ancestors-map subfield value))]
        (if (seq ancestor-matches)
          (let [indexes (get-indexes-for-field-name ancestor-matches base-field)

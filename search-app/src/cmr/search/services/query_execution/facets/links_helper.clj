@@ -27,6 +27,8 @@
   "Create a link that will modify the current search to also filter by the given field-name and
   value."
   [base-url query-params field-name value]
+  (printf "create-apply-link[%s][%s] ================\n" field-name value)
+  (clojure.pprint/pprint query-params)
   (let [field-name (str (csk/->snake_case_string field-name) "[]")
         existing-values (flatten [(get query-params field-name)])
         updated-query-params (assoc query-params
@@ -81,10 +83,12 @@
   being filtered on within the provided query-params. Returns a tuple of the type of link created
   and the link itself. Looks for matches case insensitively."
   [base-url query-params field-name value]
+  (printf "create-link[%s][%s] ==================\n" field-name value)
+  (clojure.pprint/pprint query-params)
   (let [field-name-snake-case (csk/->snake_case_string field-name)
         values-for-field (get-values-for-field query-params field-name)
         value-exists (some #{(str/lower-case value)}
-                          (keep #(when % (str/lower-case %)) values-for-field))]
+                           (keep #(when % (str/lower-case %)) values-for-field))]
     (if value-exists
       (create-remove-link base-url query-params field-name value)
       (create-apply-link base-url query-params field-name value))))
