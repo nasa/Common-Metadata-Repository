@@ -158,10 +158,16 @@
                    formatted-aggs
                    base-url
                    query-params)]
-    (v2h/generate-group-node
-      granule-cycle
-      applied?
-      children)))
+    (assoc (merge v2h/sorted-facet-map
+                   (v2h/generate-filter-node
+                     base-url
+                     query-params
+                     "cycle"
+                     granule-cycle
+                     (count formatted-children)
+                     applied?))
+           :children
+           children)))
 
 (defn create-cycle-subfacets-map
   [base-url query-params aggs]
@@ -181,9 +187,7 @@
                       (get query-params "cycle[]")
                       (:cycle aggs)))]
     (when (seq subfacets)
-      (let [applied? (facet-query-applied? query-params "cycle.*")
-            updated-subfacets (add-spatial-group-nodes-to-facets [subfacets]
-                                                                 group-nodes-in-order-spatial)]
+      (let [applied? (facet-query-applied? query-params "cycle.*")]
         (merge v2h/sorted-facet-map
                (v2h/generate-group-node "Cycle" applied? subfacets))))))
 
