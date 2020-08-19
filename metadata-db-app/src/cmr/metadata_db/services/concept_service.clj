@@ -520,8 +520,8 @@
 
         ;; Perform post commit variable association
         (if (and (= :variable (:concept-type concept))
-                   (not (nil? (:coll-concept-id concept)))
-                   (not (:deleted concept)))
+                 (:coll-concept-id concept)
+                 (not (:deleted concept)))
           ;; If errors occur, rollback, otherwise return variable concept with the association info:
           ;; {:variable_association {:concept_id VA1-CMR :revision_id 1},
           ;;  :associated_item {:concept_id C5-PROV1 :revision_id 2}}
