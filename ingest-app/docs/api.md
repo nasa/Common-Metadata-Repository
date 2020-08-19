@@ -457,13 +457,19 @@ curl -i -XPUT \
 #### Successful Response in XML
 
 ```
-<?xml version="1.0" encoding="UTF-8"?>
-<result>
-  <concept-id>V1200000012-PROV1</concept-id>
-  <revision-id>1</revision-id>
-  <variable-association>{:concept-id "VA1200000007-CMR", :revision-id 1}</variable-association>
-  <associated-item>{:concept-id "C1200000005-PROV1", :revision-id 1}</associated-item> 
+<?xml version="1.0" encoding="UTF-8"?><result>
+    <concept-id>V1200000006-PROV1</concept-id>
+    <revision-id>1</revision-id>
+    <variable-association>
+        <concept-id>VA1200000007-CMR</concept-id>
+        <revision-id>1</revision-id>
+    </variable-association>
+    <associated-item>
+        <concept-id>C1200000005-PROV1</concept-id>
+        <revision-id>1</revision-id>
+    </associated-item>
 </result>
+
 ```
 
 #### Successful Response in JSON
@@ -472,7 +478,19 @@ By passing the option `-H "Accept: application/json"` to `curl`, one may
 get a JSON response:
 
 ```
-{"concept-id":"V1200000012-PROV1","revision-id":1,"variable-association":{"concept-id":"VA1200000007-CMR","revision-id":1},"associated-item":{"concept-id":"C1200000005-PROV1","revision-id":1}}
+{
+  "concept-id" : "V1200000006-PROV1",
+  "revision-id" : 1,
+  "variable-association" : {
+    "concept-id" : "VA1200000007-CMR",
+    "revision-id" : 1 
+  },
+  "associated-item" : {
+    "concept-id" : "C1200000005-PROV1",
+    "revision-id" : 1
+  }
+}
+
 ```
 
 Variable metadata can continue to be updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).

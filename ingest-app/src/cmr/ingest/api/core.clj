@@ -44,6 +44,16 @@
    mt/xml :xml
    mt/json :json})
 
+(defn- create-nested-elements
+  "Create xml element for the nested maps."
+  [m]
+  (reduce-kv (fn [memo k v]
+                 (conj memo (xml/element (keyword k) {} (if (map? v) 
+                                                          (create-nested-elements v)
+                                                          v))))
+             []
+             m))
+
 (defn- result-map->xml
   "Converts all keys in a map to tags with values given by the map values to form a trivial
   xml document.
@@ -60,10 +70,7 @@
    (xml/element
     :result
     {}
-    (reduce-kv (fn [memo k v]
-                 (conj memo (xml/element (keyword k) {} (if (map? v) (str v) v))))
-               []
-               m))))
+    (create-nested-elements m))))
 
 (defn get-ingest-result-format
   "Returns the requested ingest result format parsed from the Accept header or :xml

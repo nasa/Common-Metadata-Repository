@@ -480,7 +480,6 @@
   variable ingest."
   [context concept rollback-function]
   (let [result (associate-variable context concept)]
-    ;;{:variable-association {:concept-id "VA1-CMR" :revision_id 1} :associated-item {:concept-id "C5-PROV1"}}]
     (when-let [errors (:errors result)]
       (rollback-function)
       (errors/throw-service-errors :conflict errors))
