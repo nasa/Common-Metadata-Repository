@@ -99,7 +99,9 @@
   field."
   [query-params parent-field subfield]
   (let [subfield-reg-ex (re-pattern (str parent-field ".*" subfield ".*"))
-        relevant-query-params (filter (fn [[k _]] (re-matches subfield-reg-ex k)) query-params)]
+        relevant-query-params (filter (fn [[k _]]
+                                        (re-matches subfield-reg-ex k))
+                                      query-params)]
     (some? (seq relevant-query-params))))
 
 (defn- get-indexes-in-params

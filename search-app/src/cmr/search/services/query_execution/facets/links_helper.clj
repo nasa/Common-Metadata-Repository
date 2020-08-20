@@ -27,8 +27,6 @@
   "Create a link that will modify the current search to also filter by the given field-name and
   value."
   [base-url query-params field-name value]
-  (printf "create-apply-link[%s][%s] ================\n" field-name value)
-  (clojure.pprint/pprint query-params)
   (let [field-name (str (csk/->snake_case_string field-name) "[]")
         existing-values (flatten [(get query-params field-name)])
         updated-query-params (assoc query-params
@@ -55,12 +53,26 @@
      query-params
      [field-name-snake-case (str field-name-snake-case "[]")])))
 
+(defn remove-matching-params
+  [pattern query-params]
+  (let [all-keys (keys query-params)
+        rx (re-pattern pattern)
+        to-remove (mapv (partial re-matches rx)
+                        all-keys)]
+    (apply (partial dissoc
+                    query-params)
+           to-remove)))
+
 (defn create-remove-link
   "Create a link that will modify the current search to no longer filter on the given field-name and
   value. Looks for matches case insensitively."
   [base-url query-params field-name value]
-  (let [updated-query-params (remove-value-from-query-params query-params field-name value)]
-    {:remove (generate-query-string base-url updated-query-params)}))
+  (let [updated-query-params (remove-value-from-query-params query-params field-name value)
+        ;; pass may not be queried without a cycle
+        params (if (= "cycle" field-name)
+                 (remove-matching-params "passes.*" updated-query-params)
+                 updated-query-params)]
+    {:remove (generate-query-string base-url params)}))
 
 (defn get-values-for-field
   "Returns a list of all of the values for the provided field-name. Includes values for keys of
@@ -83,10 +95,7 @@
   being filtered on within the provided query-params. Returns a tuple of the type of link created
   and the link itself. Looks for matches case insensitively."
   [base-url query-params field-name value]
-  (printf "create-link[%s][%s] ==================\n" field-name value)
-  (clojure.pprint/pprint query-params)
-  (let [field-name-snake-case (csk/->snake_case_string field-name)
-        values-for-field (get-values-for-field query-params field-name)
+  (let [values-for-field (get-values-for-field query-params field-name)
         value-exists (some #{(str/lower-case value)}
                            (keep #(when % (str/lower-case %)) values-for-field))]
     (if value-exists
