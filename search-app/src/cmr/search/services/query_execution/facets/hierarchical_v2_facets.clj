@@ -1,6 +1,6 @@
 (ns cmr.search.services.query-execution.facets.hierarchical-v2-facets
   "Functions for generating v2 facet responses for hierarchical fields. Hierarchical fields are any
-   fields which contain some subfields such as science keywords which have subfields of Category,
+  fields which contain some subfields such as science keywords which have subfields of Category,
   Topic, Term, and Variable Levels 1, 2, and 3. On the query parameter API hierarchical fields are
   specified with field[index][subfield] such as science_keyword[0][category]."
   (:require
@@ -11,7 +11,6 @@
    [cmr.common-app.services.search.parameters.converters.nested-field :as nested-field]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
-   [cmr.search.services.query-execution.facets.links-helper :as lh]
    [cmr.search.services.query-execution.facets.hierarchical-links-helper :as hlh]
    [cmr.search.services.query-execution.facets.temporal-facets :as temporal-facets]))
 
@@ -22,7 +21,6 @@
     (condp = stripped-field
       "variables" nested-field/variable-subfields
       "temporal-facet" nested-field/temporal-facet-subfields
-
       ;; else
       (kms-fetcher/nested-fields-mappings (keyword stripped-field)))))
 
