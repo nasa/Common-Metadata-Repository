@@ -6,7 +6,6 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common-app.services.search.query-execution :as query-execution]
-   [cmr.common.config :refer [defconfig]]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
@@ -94,15 +93,6 @@
 (defn create-prioritized-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all flat fields."
   [concept-type elastic-aggregations facet-fields base-url query-params]
-  {:post [(do (clojure.pprint/pprint %)
-              (println "============")
-              true)]}
-  (println "create-prioritized-v2-facets =============")
-  (printf "concept-type: %s\n" (name concept-type))
-  (clojure.pprint/pprint elastic-aggregations)
-  (clojure.pprint/pprint facet-fields)
-  (printf "base-url: %s\n" base-url)
-  (clojure.pprint/pprint query-params)
   (let [flat-fields (remove nil? (map #(get (facet-fields->aggregation-fields concept-type) %) facet-fields))]
     (remove nil?
             (for [field-name flat-fields
@@ -179,7 +169,7 @@
   (let [query-string (:query-string context)
         concept-type (:concept-type query)
         facet-fields (:facet-fields query)
-        facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))
+        facet-fields (or facet-fields (facets-v2-params concept-type))
         facets-size (:facets-size query)
         facet-fields-map (get-facet-fields-map concept-type facet-fields facets-size)
         query-params (parse-params query-string "UTF-8")]
@@ -192,6 +182,6 @@
   [context query elastic-results query-results _]
   (let [concept-type (:concept-type query)
         facet-fields (:facet-fields query)
-        facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))
+        facet-fields (or facet-fields (facets-v2-params concept-type))
         aggregations (:aggregations elastic-results)]
     (assoc query-results :facets (create-v2-facets context concept-type aggregations facet-fields))))

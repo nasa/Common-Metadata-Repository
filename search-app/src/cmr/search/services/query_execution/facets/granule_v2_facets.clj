@@ -53,7 +53,7 @@
 (defmethod v2-facets/v2-facets-result-field-in-order :granule
   [_]
   ["Temporal"
-   "Spatial"])
+   "Cycle"])
 
 (defn single-collection-validation
   "Validates that the provided query is limited to a single collection. We do this to prevent
@@ -63,7 +63,7 @@
         collection-count (count collection-ids)]
     (when-not (= 1 collection-count)
       [(format "Granule V2 facets are limited to a single collection, but query matched %s collections."
-               (if (= 0 collection-count) "an undetermined number of" collection-count))])))
+               (if (zero? collection-count) "an undetermined number of" collection-count))])))
 
 (def validations
   "Validation functions to run for v2 granule facets."
@@ -194,7 +194,7 @@
 (defmethod v2-facets/create-v2-facets-by-concept-type :granule
   [concept-type base-url query-params aggs _]
   (remove nil?
-          (conj []
-                (create-temporal-subfacets-map base-url query-params aggs)
-                (create-cycle-subfacets-map base-url query-params aggs))))
+          (vector
+            (create-temporal-subfacets-map base-url query-params aggs)
+            (create-cycle-subfacets-map base-url query-params aggs))))
 

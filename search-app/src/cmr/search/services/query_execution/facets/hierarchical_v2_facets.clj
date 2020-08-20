@@ -168,12 +168,13 @@
 (defn- extract-value-from-bucket
   "Returns the value from a bucket. The value could be from either :key or :key_as_string."
   [bucket field]
-  (let [value (or (:key_as_string bucket)
-                  (:key bucket))]
-    (try
-      (temporal-facets/parse-date value field)
-      (catch Exception _e
-        value))))
+  (let [value (:key_as_string bucket)]
+    (if (some? value)
+      (try
+        (temporal-facets/parse-date value field)
+        (catch Exception _e
+          value))
+      (:key bucket))))
 
 (defn- process-temporal-bucket
   "Generate children nodes for a hierarchical facet v2 response for a temporal facet subfield.
@@ -210,9 +211,7 @@
                              #(sort-by :title util/compare-natural-strings %)))
         children-values-to-remove (find-applied-children sub-facets field-hierarchy false)
         has-siblings? (has-siblings-fn value)
-        links (if (or (= :cycle field))
-                (generate-links-fn field value)
-                (generate-links-fn value has-siblings? children-values-to-remove))]
+        links (generate-links-fn value has-siblings? children-values-to-remove)]
     (v2h/generate-hierarchical-filter-node value count links sub-facets)))
 
 (defn- generate-hierarchical-children
@@ -375,7 +374,7 @@
                                      (get-terms-for-subfield hierarchical-facet subfield
                                                              field-hierarchy))]
             (for [term search-terms
-                  :when (not (some #{(string/lower-case term)} terms-in-facets))]
+                  :when (not-any? #{(string/lower-case term)} terms-in-facets)]
               [subfield term])))))))
 
 (defn- prune-hierarchical-facet

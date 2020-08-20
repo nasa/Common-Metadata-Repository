@@ -58,7 +58,7 @@
    :children children})
 
 (defn generate-filter-node
-  "Returns a filter node for the provided title, applied?"
+  "Returns a filter node for the provided title"
   [base-url query-params field-name term term-count applied?]
   (let [links (if applied?
                 (lh/create-link base-url query-params field-name term)
