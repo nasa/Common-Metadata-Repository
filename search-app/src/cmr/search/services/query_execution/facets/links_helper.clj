@@ -54,6 +54,7 @@
      [field-name-snake-case (str field-name-snake-case "[]")])))
 
 (defn remove-matching-params
+  "Return a collection without keys matching a provided pattern."
   [pattern query-params]
   (let [all-keys (keys query-params)
         rx (re-pattern pattern)
