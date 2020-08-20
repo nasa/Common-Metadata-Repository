@@ -1,5 +1,7 @@
 (ns cmr.search.services.query-execution.facets.cycle-facets
-  "Functions for generating the spatial facets within v2 granule facets.")
+  "Functions for generating the spatial facets within v2 granule 
+  facets. Creates aggregations for cycles, further aggregated by 
+  pass.")
 
 (def aggregate-by-cycle {:histogram
                          {:field :cycle
@@ -13,6 +15,8 @@
                                        :interval 1}}}})
 
 (defn query-params->cycle-facet-aggs
+  "Returns the correct level of a cycle-pass query depending on if a 
+  cycle param has been passed."
   [query-params]
   (let [field-regex (re-pattern "cycle.*")
         cycle-params (keep (fn [[k _]]

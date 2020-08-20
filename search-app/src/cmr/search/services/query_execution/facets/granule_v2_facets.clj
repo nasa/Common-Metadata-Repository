@@ -131,6 +131,7 @@
                (v2h/generate-group-node "Temporal" applied?
                                         [updated-subfacets]))))))
 (defn create-cycle-facet
+  "Returns a filter facet node for a cycle."
   [base-url query-params applied? agg]
   (v2h/generate-filter-node 
     base-url
@@ -141,6 +142,7 @@
     applied?) )
 
 (defn- create-cycle-facets
+  "Returns an array of cycle filter facets"
   [base-url query-params applied? buckets]
   (map (partial create-cycle-facet
                 base-url
@@ -149,6 +151,7 @@
        buckets))
 
 (defn create-cycle-pass-facets
+  "Creates a cycle filter that also contains pass filters"
   [base-url query-params applied? granule-cycle aggs]
   (let [formatted-children (map #(assoc % :key (str (int (:key %))))
                                 (get-in aggs [:pass :buckets]))
@@ -171,6 +174,7 @@
              children))))
 
 (defn create-cycle-subfacets-map
+  "Handle the case of cycle aggregation for V2 facets"
   [base-url query-params aggs]
   (let [applied? (facet-query-applied?
                    query-params "cycle.*")
