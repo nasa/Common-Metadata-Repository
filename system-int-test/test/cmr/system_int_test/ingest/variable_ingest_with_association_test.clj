@@ -125,6 +125,18 @@
                       {:native-id "var1"
                        :revision-id 5
                        :coll-concept-id (:concept-id coll1-PROV1-1)})
-            {:keys [concept-id revision-id]} (variable-util/ingest-variable-with-association concept)]
+            {:keys [concept-id revision-id variable-association]} (variable-util/ingest-variable-with-association concept)]
         (is (= 5 revision-id))
-        (is (mdb/concept-exists-in-mdb? concept-id 5))))))
+        (is (mdb/concept-exists-in-mdb? concept-id 5))
+        (is (= 2 (:revision-id variable-association)))
+        (is (mdb/concept-exists-in-mdb? (:concept-id variable-association) 1))
+        ;; delete the collection.
+        (let [response (ingest/delete-concept 
+                         (data-core/umm-c-collection->concept coll1-PROV1-1 :echo10)
+                         {:accept-format :json
+                          :raw? true})]
+           (is (= 200 (:status response)))
+           (index/wait-until-indexed)
+           ;; both the variable and variable association should be deleted too. 
+           (is (= true (:deleted (mdb/get-concept concept-id))))
+           (is (= true (:deleted (mdb/get-concept (:concept-id variable-association))))))))))

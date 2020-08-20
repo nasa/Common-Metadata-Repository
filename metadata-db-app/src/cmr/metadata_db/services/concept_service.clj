@@ -685,17 +685,30 @@
     (distinct (map :concept-id (c/get-expired-concepts db provider :collection)))))
 
 (defn- tombstone-associations
-  "Tombstone the associations that matches the given search params,
+  "Tombstone the associations that matches the given search params, Also tombstone
+  all the variables associated with these associations when concept-type is :collection,
+  and assoc-type is :variable-association.
   skip-publication? flag controls if association deletion event should be generated,
   skip-publication? true means no association deletion event should be generated."
-  [context assoc-type search-params skip-publication?]
+  [context assoc-type search-params skip-publication? concept-type]
   (let [associations (search/find-concepts context search-params)]
-    (doseq [association associations]
-      (save-concept-revision context {:concept-type assoc-type
-                                      :concept-id (:concept-id association)
-                                      :deleted true
-                                      :user-id "cmr"
-                                      :skip-publication skip-publication?}))))
+    (if (and (= :collection concept-type)
+             (= :variable-association assoc-type))
+      ;; When a collection is deleted, all the variables associated with it should be deleted,
+      ;; which in turn will delete all the associations.
+      (doseq [var-concept-id (distinct (map #(get-in % [:extra-fields :variable-concept-id])
+                                            associations))]
+        (save-concept-revision context {:concept-type :variable
+                                        :concept-id var-concept-id
+                                        :deleted true
+                                        :user-id "cmr"
+                                        :skip-publication skip-publication?}))
+      (doseq [association associations]
+        (save-concept-revision context {:concept-type assoc-type
+                                        :concept-id (:concept-id association)
+                                        :deleted true
+                                        :user-id "cmr"
+                                        :skip-publication skip-publication?})))))
 
 (defn- delete-associations-for-collection-concept
   "Delete the associations associated with the given collection revision and association type,
@@ -707,7 +720,7 @@
                         :associated-revision-id coll-revision-id
                         :exclude-metadata true
                         :latest true})]
-    (tombstone-associations context assoc-type search-params true)))
+    (tombstone-associations context assoc-type search-params true :collection)))
 
 (defmulti delete-associations
   "Delete the associations of the given association type that is associated with
@@ -743,7 +756,7 @@
                           :exclude-metadata true
                           :latest true})]
       ;; create variable association tombstones and queue the variable association delete events
-      (tombstone-associations context assoc-type search-params false))))
+      (tombstone-associations context assoc-type search-params false :variable))))
 
 (defmethod delete-associations :service
   [context concept-type concept-id revision-id assoc-type]
@@ -754,7 +767,7 @@
                           :exclude-metadata true
                           :latest true})]
       ;; create variable association tombstones and queue the variable association delete events
-      (tombstone-associations context assoc-type search-params false))))
+      (tombstone-associations context assoc-type search-params false :service))))
 
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
