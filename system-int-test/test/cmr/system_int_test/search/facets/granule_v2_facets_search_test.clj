@@ -396,7 +396,6 @@
                                                   :page_size 10})
           cycle-node (-> root-node :children first)
           cycle-facets (:children cycle-node)]
-      (clojure.pprint/pprint root-node)
       (testing "Facet structure correct"
         (is (= "Browse Granules" (:title root-node)))
         (is (= "group" (:type root-node)))

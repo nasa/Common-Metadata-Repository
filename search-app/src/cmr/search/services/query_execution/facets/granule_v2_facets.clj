@@ -158,16 +158,17 @@
                    formatted-aggs
                    base-url
                    query-params)]
-    (assoc (merge v2h/sorted-facet-map
-                   (v2h/generate-filter-node
-                     base-url
-                     query-params
-                     "cycle"
-                     granule-cycle
-                     (count formatted-children)
-                     applied?))
-           :children
-           children)))
+    (when (seq children)
+      (assoc (merge v2h/sorted-facet-map
+                    (v2h/generate-filter-node
+                      base-url
+                      query-params
+                      "cycle"
+                      granule-cycle
+                      (count formatted-children)
+                      applied?))
+             :children
+             children))))
 
 (defn create-cycle-subfacets-map
   [base-url query-params aggs]
