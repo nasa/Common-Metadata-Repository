@@ -186,7 +186,7 @@
                                 (into {} (for [[k v] ancestor
                                                :when (= (str/lower-case v)
                                                         (some->
-                                                         (get query-params k) str/lower-case))]
+                                                          (get query-params k) str/lower-case))]
                                            [k v])))
                               ancestors-to-match)]
     ;; Filter the results to only those where every ancestor was found in the query parameters for
@@ -238,11 +238,6 @@
    (create-link-for-hierarchical-field base-url query-params field-name nil nil value false nil))
   ([base-url query-params field-name ancestors-map parent-indexes value has-siblings?
     applied-children-tuples]
-   (printf "create-link-for-hierarchical-field[%s][%s] ================\n" field-name value)
-   (clojure.pprint/pprint query-params)
-   (clojure.pprint/pprint ancestors-map)
-   (clojure.pprint/pprint parent-indexes)
-   (clojure.pprint/pprint applied-children-tuples)
    (if (keys (dissoc ancestors-map "category"))
      (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
            ancestor-matches (get-matching-ancestors base-field
