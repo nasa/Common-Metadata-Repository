@@ -259,14 +259,8 @@
                  recursively the aggregations are reduced to just the portion relevant to that
                  field."
   ([base-field field-hierarchy base-url query-params elastic-aggs]
-   (parse-hierarchical-bucket-v2 base-field
-                                 nil
-                                 field-hierarchy
-                                 base-url
-                                 query-params
-                                 nil
-                                 nil
-                                 elastic-aggs))
+   (parse-hierarchical-bucket-v2
+     base-field nil field-hierarchy base-url query-params nil nil elastic-aggs))
   ([base-field parent-subfield field-hierarchy base-url query-params ancestors-map parent-value
     elastic-aggs]
    (when-let [subfield (first field-hierarchy)]
@@ -448,14 +442,15 @@
   that field."
   [field bucket-map base-url query-params]
   (let [field-hierarchy (get-field-hierarchy field query-params)
-        hierarchical-facet (-> (parse-hierarchical-bucket-v2
+        v2-buckets (parse-hierarchical-bucket-v2
                                  field
                                  field-hierarchy
                                  base-url
                                  query-params
                                  bucket-map)
-                               (prune-hierarchical-facet field true)
-                               (remove-non-earth-science-keywords field))
+        hierarchical-facet (-> v2-buckets
+                             (prune-hierarchical-facet field true)
+                             (remove-non-earth-science-keywords field))
         subfield-term-tuples (get-missing-subfield-term-tuples
                                field
                                field-hierarchy
@@ -480,7 +475,7 @@
     (when (seq sub-facets)
       (let [field-reg-ex (re-pattern (str (csk/->snake_case_string field) ".*"))
             applied? (->> query-params
-                          (filter (fn [[k _]] (re-matches field-reg-ex k)))
+                          (filter (fn [[k]] (re-matches field-reg-ex k)))
                           seq
                           some?)]
         [(merge v2h/sorted-facet-map
