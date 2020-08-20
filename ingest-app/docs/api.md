@@ -324,6 +324,8 @@ Collection metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPO
 
     curl -i -XDELETE -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
 
+Note: When a collection is deleted, all the associaitons will be deleted(tombstoned) too. With the new requirement that a variable can not exist without an association with a collection, since each variable can only be associated with one collection, all the variables associated with the deleted collection will be deleted too.
+
 #### Successful Response in XML
 
 ```
