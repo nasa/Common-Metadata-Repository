@@ -109,14 +109,16 @@
 
 
 (defn- facet-query-applied?
+  "Returns true if the query-params keys match a provided pattern."
   [query-params pattern]
   (let [regex (re-pattern pattern)]
     (->> query-params
-         (filter (fn [[k _]] (re-matches regex k)))
+         (filter (fn [[k]] (re-matches regex k)))
          seq
          some?)))
 
 (defn- create-temporal-subfacets-map
+  "Returns a facet for Temporal queries."
   [base-url query-params aggs]
   (let [subfacets (hv2/hierarchical-bucket-map->facets-v2
                     :temporal-facet
@@ -142,7 +144,7 @@
     applied?) )
 
 (defn- create-cycle-facets
-  "Returns an array of cycle filter facets"
+  "Returns an array of cycle filter facets."
   [base-url query-params applied? buckets]
   (map (partial create-cycle-facet
                 base-url
