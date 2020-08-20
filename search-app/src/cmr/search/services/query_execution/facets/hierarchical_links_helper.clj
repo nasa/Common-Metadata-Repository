@@ -209,10 +209,6 @@
   field-name and value.
   Field-name must be of the form <string>[<int>][<string>] such as science_keywords[0][topic]."
   [base-url query-params field-name ancestors-map parent-indexes value has-siblings? & _]
-  (printf "create-apply-link-for-hierarchical-field[%s][%s] ===================\n" field-name value)
-  (clojure.pprint/pprint query-params)
-  (clojure.pprint/pprint ancestors-map)
-  (clojure.pprint/pprint parent-indexes)
   (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
         index-to-use (if (or has-siblings? (empty? parent-indexes))
                        (inc (get-max-index-for-field-name query-params base-field))
@@ -228,7 +224,7 @@
                                  updated-query-params
                                  ancestors-map)
                                updated-query-params)]
-    {:apply (lh/generate-query-string base-url (dissoc updated-query-params "cycle[0][passes]"))}))
+    {:apply (lh/generate-query-string base-url updated-query-params)}))
 
 (defn create-link-for-hierarchical-field
   "Creates either a remove or an apply link based on whether this particular value is already
