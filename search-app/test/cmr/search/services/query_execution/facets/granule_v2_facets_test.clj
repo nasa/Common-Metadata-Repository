@@ -109,21 +109,7 @@
                     :links
                     {:apply
                      "http://localhost:3003/granules.json?page_size=10&include_facets=v2&collection_concept_id=C1-PROV1&temporal_facet%5B0%5D%5Byear%5D=2012"}
-                    :has_children true})}]}
-              {:title "Cycle"
-               :type :group
-               :applied false
-               :has_children true
-               :children
-               {:title nil
-                :type :filter
-                :applied false
-                :count 0
-                :links
-                {:apply
-                 "http://localhost:3003/granules.json?page_size=10&include_facets=v2&collection_concept_id=C1-PROV1"}
-                :has_children false
-                :children nil}}]
+                    :has_children true})}]}]
              result))))
 
   (testing "cycle"
