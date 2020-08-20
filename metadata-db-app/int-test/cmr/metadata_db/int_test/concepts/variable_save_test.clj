@@ -50,16 +50,20 @@
         (is (= concept1-concept-id concept-id))
         (is (= 2 revision-id))))
 
-    (testing "save variable with the same data, but a different native id is not allowed"
-      (let [concept2 (assoc concept1 :native-id "different-native-id")
-            {:keys [status errors]} (util/save-concept concept2)]
-        (is (= 409 status))
-        (is (= [(format (str "The Fingerprint of the variable which is defined by the variable's "
-                             "Instrument short name, variable short name, units and dimensions "
-                             "must be unique. The following variable with the same fingerprint "
-                             "but different native id was found: [%s].")
-                        concept1-concept-id)]
-               errors))))
+    ;; Uniqueness of variable name and association collection info is checked at association creation,
+    ;; after the old fingerprint check is removed. However, many tests that assumed the old way of
+    ;; ingesting variables without collection info are obsolete. They either need to be removed completely
+    ;; or modified to suit the new variable ingest condition.
+    ;;(testing "save variable with the same data, but a different native id is not allowed"
+     ;; (let [concept2 (assoc concept1 :native-id "different-native-id")
+      ;;      {:keys [status errors]} (util/save-concept concept2)]
+       ;; (is (= 409 status))
+        ;;(is (= [(format (str "The Fingerprint of the variable which is defined by the variable's "
+         ;;                    "Instrument short name, variable short name, units and dimensions "
+          ;;                   "must be unique. The following variable with the same fingerprint "
+           ;;                  "but different native id was found: [%s].")
+            ;;            concept1-concept-id)]
+             ;;  errors))))
 
     (testing "save variable with same data but different provider"
       (let [concept3 (assoc concept1 :provider-id "PROV2")

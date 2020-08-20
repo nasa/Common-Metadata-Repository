@@ -2,6 +2,7 @@
   "CMR variable ingest with association integration tests."
   (:require
    [clojure.test :refer :all]
+   [clojure.string :as string]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]
@@ -112,12 +113,10 @@
                 ;; with the same collection.
                 {:keys [status errors]} (variable-util/ingest-variable-with-association concept)]
             (is (= 409 status))
-            (is (= [(format (str "The Fingerprint of the variable which is defined by the variable's "
-                                 "Instrument short name, variable short name, units and dimensions "
-                                 "must be unique. The following variable with the same fingerprint "
-                                 "but different native id was found: [%s].")
-                            var-concept-id)]
-                   errors))))))
+            (is (= (format (str "collection [%s] can not be associated because the collection "
+                                 "is already associated with another variable [%s] with same name.")
+                           (:concept-id coll1-PROV1-1) var-concept-id)
+                   (second (string/split (first errors) #" and "))))))))
 
     (testing "ingest of a variable concept with a revision id"
       (let [concept (variable-util/make-variable-concept 

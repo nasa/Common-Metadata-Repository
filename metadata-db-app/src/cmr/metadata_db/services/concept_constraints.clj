@@ -159,9 +159,7 @@
    :acl [(unique-field-constraint :acl-identity)]
    :service [(partial pfn-constraint :service-name)]
    :tool [(partial pfn-constraint :tool-name)]
-   :subscription [(partial pfn-constraint :subscription-name)]
-   ;; will remove this fingerprint check when updating tests later.
-   :variable [(unique-field-constraint :fingerprint)]})
+   :subscription [(partial pfn-constraint :subscription-name)]})
 
 (defn perform-post-commit-constraint-checks
   "Perform the post commit constraint checks aggregating any constraint
