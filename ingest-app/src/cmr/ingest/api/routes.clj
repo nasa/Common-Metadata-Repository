@@ -92,7 +92,7 @@
          (PUT "/"
            request
            (variables/ingest-variable
-             nil native-id request coll-concept-id)))))
+             nil native-id request coll-concept-id nil)))))
     ;; Provider ingest routes
     (api-core/set-default-error-format
      :xml

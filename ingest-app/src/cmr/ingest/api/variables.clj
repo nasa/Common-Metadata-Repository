@@ -29,8 +29,6 @@
   "Processes a request to create or update a variable."
   ([provider-id native-id request]
    (ingest-variable provider-id native-id request nil nil))
-  ([provider-id native-id request coll-concept-id]
-   (ingest-variable provider-id native-id request coll-concept-id nil))
   ([provider-id native-id request coll-concept-id coll-revision-id]
    (let [provider-id (if coll-concept-id
                        (last (string/split coll-concept-id #"C[0-9]+-"))

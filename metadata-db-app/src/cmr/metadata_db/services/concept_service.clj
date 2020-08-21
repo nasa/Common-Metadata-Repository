@@ -459,8 +459,8 @@
   [context concept]
   (let [;; associations is a list of one association.
         associations [(cutil/remove-nil-keys
-                        (assoc {} :concept-id (:coll-concept-id concept)
-                                  :revision-id (:coll-revision-id concept)))]
+                        {:concept-id (:coll-concept-id concept)
+                         :revision-id (:coll-revision-id concept)})]
         var-concept-id (:concept-id concept)
         [validation-time associations] (cutil/time-execution
                                          (var-assoc-validation/validate-associations
