@@ -396,40 +396,66 @@
                                                   :page_size 10})
           cycle-node (-> root-node :children first)
           cycle-facets (:children cycle-node)]
-      (testing "Facet structure correct"
+      (testing "and the facet structure correct"
         (is (= "Browse Granules" (:title root-node)))
         (is (= "group" (:type root-node)))
         (is (= true (:has_children root-node)))
         (is (= "Cycle" (:title cycle-node)))
         (is (= "group" (:type cycle-node)))
         (is (= true (:has_children cycle-node))))
-      (testing "Cycles returned in ascending order"
+      (testing "and cycles returned in ascending order"
         (is (= ["3" "42"] (map :title cycle-facets))))
-      (testing "Cycles have a type of filter"
+      (testing "and cycles have a type of filter"
         (is (= ["filter" "filter"] (map :type cycle-facets))))
-      (testing "Counts correct"
+      (testing "and counts are correct"
         (util/are3
           [title cnt]
           (is (= cnt (get-count-by-title cycle-facets title)))
           "3" "3" 6
           "42" "42" 2))
-      (testing "Traversals"
-        (let [cycle-selected-result (search-and-return-v2-facets
-                                      {:collection-concept-id coll2-concept-id
-                                       :page_size 10
-                                       :cycle 42})]
-          (is (= {:title "Browse Granules"
-                  :type "group"
-                  :has_children true
-                  :children
-                  [{:title "Cycle"
-                    :type "group"
-                    :applied true
-                    :has_children true
-                    :children
-                    [{:title "42"
-                      :type "filter"
-                      :applied true
-                      :count 2
-                      :links {:remove "http://localhost:3003/granules.json?page_size=10&include_facets=v2&collection_concept_id=C1200000010-PROV2"} :has_children false}]}]}
-                 cycle-selected-result)))))))
+      
+      (testing "and selecting a cycle"
+        (let [response (traverse-link "3" cycle-facets)
+              body-for-cycle-3-query (json/parse-string (:body response) true)
+              c3-filter (-> body-for-cycle-3-query
+                            (get-in [:feed :facets])
+                            :children
+                            first
+                            :children)]
+
+          (testing "returns results for the cycle selected"
+            (is (= "3" (:title c3-filter)))
+            (is (= "filter" (:type c3-filter)))
+            (is (= :remove (first (keys (:links c3-filter))))))
+          
+          (testing "returns pass results"
+            (let [c3-pass-group (get c3-filter :children)]
+              (is (not= nil c3-pass-group))
+              (is (= ["1" "2" "3" "4"] (map :title (:children c3-pass-group))))
+
+              (testing "and selecting a pass"
+                (let [c3-p3-response (traverse-link "3" (:children c3-pass-group))
+                      c3-p3-body (json/parse-string (:body c3-p3-response) true)
+                      c3-pass-group (-> c3-p3-body
+                                       (get-in [:feed :facets])
+                                       :children
+                                       first
+                                       :children
+                                       :children)
+                      c3-p3-filter (-> c3-pass-group
+                                       :children
+                                       first)
+                      c3-p4-filter (-> c3-pass-group
+                                       :children
+                                       second)]
+                  (testing "shows available sibling passes"
+                    (is (= "3" (:title c3-p3-filter)))
+                    (is (= "filter" (:type c3-p3-filter)))
+
+                    (is (= "4" (:title c3-p4-filter)))
+                    (is (= "filter" (:type c3-p4-filter)))
+                    
+                    (testing "and correct remove or apply link options"
+                      (is (= :remove (first (keys (:links c3-p3-filter)))))
+                      (is (= :apply (first (keys (:links c3-p4-filter))))))))))))))))
+
