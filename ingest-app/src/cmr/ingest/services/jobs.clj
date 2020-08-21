@@ -218,25 +218,38 @@
 (defn create-email-content
  "Create an email body for subscriptions"
  [from-email-address to-email-address gran-ref-location subscription]
- {:from from-email-address
-  :to to-email-address
-  :subject "Email Subscription Notification"
-  :body [{:type "text/html"
-   :content (markdown/md-to-html-string (str
-    "\nYou have subscribed to receive notifications when the following query is updated:\n\n"
-    (get-in subscription [:metadata :Query])
-    "\n\nSince this query was last run at"
-    (get-in subscription [:metadata :updated_since])
-    ", the following granules have been added or updated:\n\n"
-    (email-granule-url-list gran-ref-location)
-    "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"
-    ))}]})
+ (let [meta-concept-id (get-in subscription [:metadata "CollectionConceptId"])
+  meta-query (get-in subscription [:metadata "Query"])
+  meta-start-time (get-in subscription [:metadata :start-time])]
+  {:from from-email-address
+   :to to-email-address
+   :subject "Email Subscription Notification"
+   :body [{:type "text/html"
+    :content (markdown/md-to-html-string (str
+     "You have subscribed to receive notifications when data is added to the following query:\n\n"
+     "`" meta-concept-id "`\n\n"
+     "`" meta-query "`\n\n"
+     "Since this query was last run at "
+     meta-start-time
+     ", the following granules have been added or updated:\n\n"
+     (email-granule-url-list gran-ref-location)
+     "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"
+     ))}]}))
+
+(defn- add-updated-since
+ "Pull out the start and end times from a time-constraint value and associate them to a map"
+ [raw time-constraint]
+ (let [parts (clojure.string/split time-constraint, #",")
+  start-time (first parts)
+  end-time (last parts)]
+  (assoc raw :start-time start-time :end-time end-time)))
 
 (defn- process-subscriptions
   "Process each subscription in subscriptions."
   [context subscriptions time-constraint]
-  (doseq [subscription subscriptions
-         :let [email-address (get-in subscription [:extra-fields :email-address])
+  (doseq [raw_subscription subscriptions
+         :let [subscription (add-updated-since raw_subscription time-constraint)
+               email-address (get-in subscription [:extra-fields :email-address])
                sub-name (get-in subscription [:extra-fields :subscription-name])
                coll-id (get-in subscription [:extra-fields :collection-concept-id])
                query-string (-> (:metadata subscription)

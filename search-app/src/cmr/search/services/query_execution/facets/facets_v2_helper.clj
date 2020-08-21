@@ -20,7 +20,8 @@
    :science-keywords-h "Keywords"
    :variables-h "Measurements"
    :temporal "Temporal"
-   :granule-data-format-h "Data Format"})
+   :granule-data-format-h "Data Format"
+   :tiling-system "Tiling System"})
 
 (defn terms-facet
   "Construct a terms query to be applied for the given field. Size specifies the number of results

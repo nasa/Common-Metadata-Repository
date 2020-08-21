@@ -26,7 +26,8 @@
    :project :project-sn-humanized
    :processing-level-id :processing-level-id-humanized
    :variables :variables
-   :granule-data-format :granule-data-format-humanized})
+   :granule-data-format :granule-data-format-humanized
+   :tiling-system :two-d-coordinate-system-name})
 
 (defmethod v2-facets/facets-v2-params->elastic-fields :collection
   [_]
