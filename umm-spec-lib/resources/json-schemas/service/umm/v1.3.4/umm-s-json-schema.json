@@ -127,13 +127,9 @@
       "additionalProperties": false,
       "description": "This object describes service options, data transformations and output formats.",
       "properties": {
-        "SubsetTypes": {
-          "description": "This element is used to identify the list of supported subsetting requests.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SubsetTypeEnum"
-          },
-          "minItems": 0
+        "Subset": {
+          "description": "This element is used to identify the set of supported subsetting capabilities, Spatial, Temporal, and Variable.",
+          "$ref": "#/definitions/SubsetType"
         },
         "VariableAggregationSupportedMethods": {
           "description": "This element is used to identify the list of supported methods of variable aggregation.",
@@ -167,22 +163,6 @@
           },
           "minItems": 0
         },
-        "SupportedInputFormats": {
-          "description": "The project element describes the list of input format names supported by the service.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SupportedFormatTypeEnum"
-          },
-          "minItems": 0
-        },
-        "SupportedOutputFormats": {
-          "description": "The project element describes the list of output format names supported by the service.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SupportedFormatTypeEnum"
-          },
-          "minItems": 0
-        },
         "SupportedReformattings": {
           "description": "The project element describes the list of format name combinations which explicitly state which re-formatting options are available. These are entered as pairs of values, e.g. if NetCDF-3 -> NetCDF-4 is a valid supported reformatting, these two values would be entered as a pair.",
           "type": "array",
@@ -196,6 +176,195 @@
           "type": "number"
         }
       }
+    },
+    "SubsetType": {
+      "description": "This element is used to identify the set of supported subsetting capabilities, Spatial, Temporal, and Variable.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SpatialSubset": {
+          "description": "This element describes what kind of spatial subsetting the service provides. The sub elements provide the details.",
+          "$ref": "#/definitions/SpatialSubsetType"
+        },
+        "TemporalSubset": {
+          "description": "This element describes that the service provides temporal subsetting.",
+          "$ref": "#/definitions/TemporalSubsetType"
+        },
+        "VariableSubset": {
+          "description": "This element describes that the service provides variable subsetting.",
+          "$ref": "#/definitions/VariableSubsetType"
+        }
+      },
+      "anyOf": [{
+        "required": ["SpatialSubset"]
+      }, {
+        "required": ["TemporalSubset"]
+      }, {
+        "required": ["VariableSubset"]
+      }]
+    },
+    "SpatialSubsetType": {
+      "description": "This element describes what kind of spatial subsetting the service provides. The sub elements provide the details.",
+      "type": "object",
+      "additionalProperties": false,   
+      "properties": {
+        "Point": {
+          "description": "This element describes that the service provides a point spatial subsetting capability.",
+          "$ref": "#/definitions/SpatialSubsetPointType"
+        },
+        "Circle": {
+          "description": "The described service provides a point and radius spatial subsetting capability where the point and radius describe a spatial circle.",
+          "$ref": "#/definitions/SpatialSubsetCircleType"
+        },
+        "Line": {
+          "description": "This element describes that the service provides a line spatial subsetting capability.",
+          "$ref": "#/definitions/SpatialSubsetLineType"
+        },
+        "BoundingBox": {
+          "description": "This element describes that the service provides a bounding box spatial subsetting capability.",
+          "$ref": "#/definitions/SpatialSubsetBoundingBoxType"
+        },
+        "Polygon": {
+          "description": "This element describes that the service provides a polygon spatial subsetting capability.",
+          "$ref": "#/definitions/SpatialSubsetPolygonType"
+        },
+        "Shapefile": {
+          "description": "This element describes that the service provides a shapefile spatial subsetting capability.",
+          "$ref": "#/definitions/SpatialSubsetShapefileType"
+        }
+      },
+      "anyOf": [{
+        "required": ["Point"]
+      }, {
+        "required": ["Circle"]
+      }, {
+        "required": ["Line"]
+      }, {
+        "required": ["BoundingBox"]
+      }, {
+        "required": ["Polygon"]
+      }, {        
+        "required": ["Shapefile"]
+      }]
+    },
+    "SpatialSubsetPointType": {
+      "description": "The described service provides a point spatial subsetting capability.",
+      "type": "object",
+      "additionalProperties": false,   
+      "properties": {
+        "AllowMultipleValues": {
+          "description": "The described service will accept a list of values, such as an array of multiple points, if this element is true. A value of false or the element is not used means the service only accepts a single point.",
+          "type": "boolean"
+        }
+      },
+      "required": ["AllowMultipleValues"]
+    },
+    "SpatialSubsetCircleType": {
+      "description": "The described service provides a point and radius spatial subsetting capability where the point and radius describe a spatial circle.",
+      "type": "object",
+      "additionalProperties": false,   
+      "properties": {
+        "AllowMultipleValues": {
+          "description": "The described service will accept a list of values, such as an array of multiple circles, if this element is true. A value of false or the element is not used means the service only accepts a single circle (point and radius).",
+          "type": "boolean"
+        }
+      },
+      "required": ["AllowMultipleValues"]
+    },
+    "SpatialSubsetLineType": {
+      "description": "The described service provides a line spatial subsetting capability.",
+      "type": "object",
+      "additionalProperties": false,   
+      "properties": {
+        "MaximumNumberOfPoints": {
+          "description": "The maximum number of points that can be used can be specified.",
+          "type": "number"
+        },
+        "AllowMultipleValues": {
+          "description": "The described service will accept a list of values, such as an array of lines, if this element is true. A value of false or the element is not used means the service only accepts a single line.",
+          "type": "boolean"
+        }
+      },
+      "required": ["AllowMultipleValues"]
+    },
+    "SpatialSubsetBoundingBoxType": {
+      "description": "The described service provides a bounding box spatial subsetting capability.",
+      "type": "object",
+      "additionalProperties": false,   
+      "properties": {
+        "AllowMultipleValues": {
+          "description": "The described service will accept a list of values, such as an array of multiple bounding boxes, if this element is true. A value of false or the element is not used means the service only accepts a single bounding box.",
+          "type": "boolean"
+        }
+      },
+      "required": ["AllowMultipleValues"]
+    },
+    "SpatialSubsetPolygonType": {
+      "description": "The described service provides a polygon spatial subsetting capability.",
+      "type": "object",
+      "additionalProperties": false,   
+      "properties": {
+        "MaximumNumberOfPoints": {
+          "description": "The maximum number of points that can be specified.",
+          "type": "number"
+        },
+        "AllowMultipleValues": {
+          "description": "The described service will accept a list of values, such as an array of multiple polygons, if this element is true. A value of false or the element is not used means the service only accepts a single polygon.",
+          "type": "boolean"
+        }
+      },
+      "required": ["AllowMultipleValues"]
+    },    
+    "SpatialSubsetShapefileType": {
+      "description": "The described service provides a shapefile spatial subsetting capability. Additional information should be provided for this type of subsetter which includes the shapefile format, maximum number of points and the maximum file size in bytes.",
+      "type": "array",
+      "items": {"$ref": "#/definitions/SpatialSubsetShapefileInformationType"},
+      "minItems": 1
+    },
+    "SpatialSubsetShapefileInformationType": {
+      "description": "Additional information should be provided for this type of subsetter which includes the shapefile format, maximum number of points and the maximum file size in bytes.",
+      "type": "object",
+      "additionalProperties": false,   
+      "properties": {
+        "Format": {
+          "description": "This element is used to identify the file format used in the shapefile.",
+          "type": "string",
+          "enum": ["ESRI", "KML", "GeoJSON"]
+        },
+        "MaximumFileSizeInBytes": {
+          "description": "This element describes the maximum file size in bytes of the shapefile that can be sent to the service.",
+          "type": "number"
+        },
+        "MaximumNumberOfPoints": {
+          "description": "This element describes the maximum number of points contained in the shapefile that can be sent to the service.",
+          "type": "number"
+        }
+      },
+      "required": ["Format"]
+    },
+    "TemporalSubsetType": {
+      "description": "This element describes that the service provides temporal subsetting.",
+      "type": "object",
+      "additionalProperties": false,   
+      "properties": {
+        "AllowMultipleValues": {
+          "description": "The described service will accept a list of values, such as an array of temporal values, if this element is true. A value of false or the element is not used means the service only accepts a temporal value.",
+          "type": "boolean"
+        }
+      },
+      "required": ["AllowMultipleValues"]
+    },
+    "VariableSubsetType": {
+      "description": "This element describes that the service provides variable subsetting.",
+      "type": "object",
+      "additionalProperties": false,   
+      "properties": {
+        "AllowMultipleValues": {
+          "description": "The described service will accept a list of values, such as an array of variables, if this element is true. A value of false or the element is not used means the service only accepts a variable.",
+          "type": "boolean"
+        }
+      },
+      "required": ["AllowMultipleValues"]
     },
     "SupportedReformattingsPairType": {
       "type": "object",
@@ -259,11 +428,6 @@
         }
       }
     },
-    "SubsetTypeEnum": {
-      "description": "This element is used to identify the subset type of the variable.",
-      "type": "string",
-      "enum": ["Spatial", "Temporal", "Variable"]
-    },
     "VariableAggregationTypeEnum": {
       "description": "This element is used to identify the list of supported methods of variable aggregation.",
       "type": "string",
@@ -277,7 +441,7 @@
     "SupportedFormatTypeEnum": {
      "description": "This element contains a list of file formats supported by the service.",
      "type": "string",
-     "enum": ["HDF4", "HDF5", "HDF-EOS", "HDF-EOS2", "HDF-EOS5", "NETCDF-3", "NETCDF-4", "GEOTIFF", "GEOTIFFINT16", "GEOTIFFFLOAT32", "XML", "ASCII", "BINARY", "ICARTT", "PNG", "JPEG", "GIF", "TIFF", "XLSX", "JSON", "CSV", "KML", "PNG24", "BMP", "ZARR", "Shapefile", "GeoJSON", "COG", "WKT"]
+     "enum": ["HDF4", "HDF5", "HDF-EOS", "HDF-EOS2", "HDF-EOS5", "NETCDF-3", "NETCDF-4", "GEOTIFF", "GEOTIFFINT16", "GEOTIFFFLOAT32", "XML", "ASCII", "BINARY", "ICARTT", "PNG", "JPEG", "GIF", "TIFF", "XLSX", "JSON", "CSV", "KML", "PNG24", "BMP", "ZARR", "Shapefile", "Shapefile+zip", "GeoJSON", "COG", "WKT"]
     },
     "URLType": {
       "type": "object",
@@ -538,7 +702,7 @@
     "ServiceTypeEnum": {
       "description": "This element is used to identify the type of the service.",
       "type": "string",
-      "enum": ["OPeNDAP", "THREDDS", "WEB SERVICES", "ESI", "ECHO ORDERS", "WCS", "WMS", "WMTS", "EGI - No Processing", "SOFTWARE PACKAGE", "TOOL", "WEB PORTAL", "International Web Portal", "MODEL", "NOT PROVIDED"]
+      "enum": ["OPeNDAP", "THREDDS", "WEB SERVICES", "ESI", "ECHO ORDERS", "WCS", "WMS", "WMTS", "EGI - No Processing", "SOFTWARE PACKAGE", "TOOL", "WEB PORTAL", "International Web Portal", "MODEL", "Harmony", "NOT PROVIDED"]
     },
     "ServiceQualityType": {
       "type": "object",

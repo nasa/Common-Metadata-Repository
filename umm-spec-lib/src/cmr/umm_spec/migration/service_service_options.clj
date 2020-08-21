@@ -2,7 +2,8 @@
   "Contains functions for migrating between versions of the UMM Service schema
    for service options."
   (:require
-   [clojure.set :as set]))
+   [clojure.set :as set]
+   [cmr.common.util :refer [remove-nil-keys remove-empty-maps]]))
 
 (defn- duplicate-supported-projections
   "Duplicate the SupportedProjections in v1.1 ServiceOptions to SupportedInputProjections
@@ -204,7 +205,6 @@
 (defn update-service-options-1_3->1_3_1
   "Update the service options from the passed in 1.3.1 UMM-S record to a valid UMM-S version 1.3 record."
   [s]
-  (def s s)
   (update-in s [:ServiceOptions :SupportedReformattings] #(update-supported-reformattings-for-1-3-1 %)))
 
 (defn remove-non-valid-formats-1_3_3-to-1_3_2
@@ -219,7 +219,6 @@
 
 (defn remove-reformattings-when-input-not-valid
   [reformatting]
-  (def reformatting reformatting)
   (let [input (remove-non-valid-formats-1_3_3-to-1_3_2 (vector (:SupportedInputFormat reformatting)))]
     (when input
       (update reformatting :SupportedOutputFormats remove-non-valid-formats-1_3_3-to-1_3_2))))
@@ -228,3 +227,122 @@
   "Remove the non valid formats going from UMM-S version 1.3.3 to UMM-S version 1.3.2"
   [reformattings]
   (remove nil? (map #(remove-reformattings-when-input-not-valid %) reformattings)))
+
+(defn- create-spatial-subset-type-1_3_4
+  "Create a spatial subset map as per UMM-S version 1.3.4 depending on the passed in service type.
+   Looking at the UMM-S records that exist in OPS and UAT, we can migrate existing UMM-S records
+   to this new spatial subset structure. Pass back the spatial subset map depending on this type
+   or nil if it is determined that spatial is not supported."
+  [service-type]
+  (case service-type
+        ("OPeNDAP"
+         "THREDDS") {:BoundingBox {:AllowMultipleValues false}}
+        ("ESI"
+         "ECHO ORDERS") {:BoundingBox {:AllowMultipleValues false}
+                         :Shapefile [{:Format "ESRI"}
+                                     {:Format "KML"}
+                                     {:Format "GeoJSON"}]}
+        nil))
+
+(defn- create-variable-subset-type-1_3_4
+  "Create a variable subset map as per UMM-S version 1.3.4 depending on the passed in service type.
+   Looking at the UMM-S records that exist in OPS and UAT, we can migrate existing UMM-S records
+   to this new variable subset structure. Pass back the variable subset map depending on this type."
+  [service-type]
+  (case service-type
+        ("OPeNDAP"
+         "ECHO ORDERS"
+         "ESI"
+         "THREDDS") {:AllowMultipleValues true}
+        {:AllowMultipleValues false}))
+
+(defn- create-subset-type-1_3_4
+  "Create a variable, temporal, or spatial map for the subset element as per UMM-S version 1.3.4
+   depending on the passed in subset type. The passed in service-type will be used to determine what
+   sub elements and values will be used. A map for variable, temporal, or spatial data is passed back."
+  [subset-type service-type]
+  (case subset-type
+        "Variable" {:VariableSubset (create-variable-subset-type-1_3_4 service-type)}
+        "Temporal" {:TemporalSubset {:AllowMultipleValues false}}
+        "Spatial" {:SpatialSubset (create-spatial-subset-type-1_3_4 service-type)}
+        nil))
+
+(defn create-subset-type-1_3_3-to-1_3_4
+  "Create the UMM-S version 1.3.4 subset element using the service type to make choices of which
+   sub elements to use.  A full map that represents the subset structure is passed back."
+  [s]
+  (let [service-type (:Type s)
+        subset-types (distinct
+                       (get-in s [:ServiceOptions :SubsetTypes]))]
+    (->> subset-types
+         (map #(create-subset-type-1_3_4 % service-type))
+         (into {})
+         (remove-nil-keys)
+         (remove-empty-maps))))
+
+(defn find-first-supported-reformatting
+  "Look through the passed in collection which contains the supported reformatings and return the
+   index of the array of the first occurence where the SupportedInputFormat matches the passed in
+   input-format."
+  [input-format coll]
+  (first
+    (keep-indexed #(when (= (:SupportedInputFormat %2) input-format) %1) coll)))
+
+(defn move-supported-formats-to-reformattings-for-1_3_4
+  "Take the passed in input-formats and output-formats and convert the data
+   to the passed in supported-reformattings. Any duplicate data in the
+   output-formats sub element is omitted."
+  [supported-reformattings input-formats output-formats]
+  (let [join-formats (fn [sup-ref input-format]
+                       (let [sup-ref (if sup-ref
+                                       sup-ref
+                                       [])
+                             index (find-first-supported-reformatting input-format sup-ref)
+                             struct (get sup-ref index)]
+                         (if index
+                           (assoc sup-ref index
+                                  (update struct :SupportedOutputFormats
+                                          #(into [] (distinct (concat % output-formats)))))
+                           (assoc sup-ref (count sup-ref) {:SupportedInputFormat input-format
+                                                           :SupportedOutputFormats output-formats}))))]
+    (reduce join-formats supported-reformattings input-formats)))
+
+(defn create-subset-type-1_3_4-to-1_3_3
+  "Using the passed in UMM-S version 1.3.4 subset structure, build a vector for UMM-S version 1.3.3
+   SubsetTypes"
+  [subset]
+  (let [create-subset-type
+         (fn [subset-type-vector subset-type]
+           (case subset-type
+                 :SpatialSubset (conj subset-type-vector "Spatial")
+                 :TemporalSubset (conj subset-type-vector "Temporal")
+                 :VariableSubset (conj subset-type-vector "Variable")))]
+    (reduce create-subset-type [] (keys subset))))
+
+(defn- replace-non-valid-formats-1_3_4-to-1_3_3
+  "Find and replace the non valid Supported Format enumerations when migrating from 1.3.4 to 1.3.3."
+  [supported-format-vector]
+  (if (some #(= "Shapefile+zip" %) supported-format-vector)
+    (let [supported-format-vector (->> supported-format-vector
+                                       (remove #(= "Shapefile+zip" %))
+                                       (into []))]
+      (into []
+        (-> supported-format-vector
+            (assoc (count supported-format-vector) "Shapefile")
+            (distinct))))
+    supported-format-vector))
+
+(defn- remove-reformattings-when-input-not-valid-1_3_4-to-1_3_3
+  "Get the replaced vector values and place them in the proper place in the
+   supported reformatting map."
+  [reformatting]
+  (let [input (replace-non-valid-formats-1_3_4-to-1_3_3 (vector (:SupportedInputFormat reformatting)))]
+    (when input
+      (-> reformatting
+          (assoc :SupportedInputFormat (first input))
+          (update :SupportedOutputFormats replace-non-valid-formats-1_3_4-to-1_3_3)))))
+
+(defn remove-reformattings-non-valid-formats-1_3_4-to-1_3_3
+  "Replace the non valid formats going from UMM-S version 1.3.4 to UMM-S version 1.3.3"
+  [reformattings]
+  (remove nil? (map #(remove-reformattings-when-input-not-valid-1_3_4-to-1_3_3 %) reformattings)))
