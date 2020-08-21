@@ -265,7 +265,7 @@
                                                  (c/get-concept db concept-type provider concept-id)))
           revision-id (if existing-revision-id (inc existing-revision-id) 1)]
       ;; The first revision of a variable without collection info will be rejected.
-      ;; will do this together with tests later.
+      ;; will do this later in CMR-6605t
       ;;(when (and (= :variable (:concept-type concept))
        ;;          (= 1 revision-id)
         ;;         (nil? (:coll-concept-id concept)))

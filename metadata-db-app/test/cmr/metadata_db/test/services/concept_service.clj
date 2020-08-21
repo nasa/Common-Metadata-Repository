@@ -107,22 +107,25 @@
 ;;; Verify that the try-to-save logic is correct.
 (deftest try-to-save-test
   (testing "must be called with a revision-id"
-    (let [db (memory/create-db [example-concept])]
+    (let [db (memory/create-db [example-concept])
+          nil-context nil]
       (is (thrown-with-msg? AssertionError #"Assert failed: .*revision-id"
-                            (cs/try-to-save db {:provider-id "PROV1"} nil
+                            (cs/try-to-save db {:provider-id "PROV1"} nil-context
                                             (dissoc example-concept :revision-id))))))
   (testing "valid with revision-id"
     (let [db (memory/create-db [example-concept])
-          result (cs/try-to-save db {:provider-id "PROV1"} nil (assoc example-concept :revision-id 2))]
+          nil-context nil
+          result (cs/try-to-save db {:provider-id "PROV1"} nil-context (assoc example-concept :revision-id 2))]
       (is (= 2 (:revision-id result)))))
   (testing "conflicting concept-id and revision-id"
-    (tu/assert-exception-thrown-with-errors
-      :conflict
-      [(messages/concept-id-and-revision-id-conflict (:concept-id example-concept) 1)]
-      (cs/try-to-save (memory/create-db [example-concept])
-                      {:provider-id "PROV1"}
-                      nil
-                      (assoc example-concept :revision-id 1)))))
+    (let [nil-context nil]
+      (tu/assert-exception-thrown-with-errors
+        :conflict
+        [(messages/concept-id-and-revision-id-conflict (:concept-id example-concept) 1)]
+        (cs/try-to-save (memory/create-db [example-concept])
+                        {:provider-id "PROV1"}
+                        nil-context
+                        (assoc example-concept :revision-id 1))))))
 
 (deftest delete-expired-concepts-test
   (testing "basic case"
@@ -140,10 +143,11 @@
           expired-2 (-> expired (assoc :revision-id 2))
           orig-save cs/try-to-save
           saved (atom false)
+          nil-context nil
 
           fake-save (fn [& args]
                       (when-not @saved
-                        (orig-save db {:provider-id "PROV1"} nil expired-2)
+                        (orig-save db {:provider-id "PROV1"} nil-context expired-2)
                         (reset! saved true))
                       (apply orig-save args))]
       ;; replace cs/try-to-save with our overridden function for this test

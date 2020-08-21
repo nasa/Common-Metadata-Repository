@@ -53,7 +53,7 @@
     ;; Uniqueness of variable name and association collection info is checked at association creation,
     ;; after the old fingerprint check is removed. However, many tests that assumed the old way of
     ;; ingesting variables without collection info are obsolete. They either need to be removed completely
-    ;; or modified to suit the new variable ingest condition.
+    ;; or modified to suit the new variable ingest condition. The test cleanup ticket is CMR-6603.
     ;;(testing "save variable with the same data, but a different native id is not allowed"
      ;; (let [concept2 (assoc concept1 :native-id "different-native-id")
       ;;      {:keys [status errors]} (util/save-concept concept2)]
