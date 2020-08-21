@@ -660,17 +660,13 @@
 
             (testing "delete collection affect the associated collections in search result"
               (let [coll1-concept (mdb/get-concept (:concept-id coll1))
-                    _ (ingest/delete-concept coll1-concept)
-                    ;; Now variable1 is not associated with any collection, as coll1 is deleted
-                    expected-variable1 (assoc expected-variable1
-                                              :associated-collections
-                                              nil)]
+                    _ (ingest/delete-concept coll1-concept)]
                 (index/wait-until-indexed)
 
-                (du/assert-variable-umm-jsons-match
-                 umm-version/current-variable-version [expected-variable1]
-                 (search/find-concepts-umm-json
-                  :variable {:keyword updated-long-name}))))))))))
+                ;; Now the variable is deleted through collection deletion.
+                (is (= 0 (get-in (search/find-concepts-umm-json
+                                   :variable {:keyword updated-long-name})
+                                 [:results :hits])))))))))))
 
 (deftest variable-search-sort
   (let [variable1 (variables/ingest-variable-with-attrs {:native-id "var1"

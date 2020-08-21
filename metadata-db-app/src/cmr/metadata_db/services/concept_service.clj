@@ -702,7 +702,7 @@
                                         :concept-id var-concept-id
                                         :deleted true
                                         :user-id "cmr"
-                                        :skip-publication skip-publication?}))
+                                        :skip-publication false}))
       (doseq [association associations]
         (save-concept-revision context {:concept-type assoc-type
                                         :concept-id (:concept-id association)
@@ -802,7 +802,6 @@
             (delete-associations context concept-type concept-id nil :variable-association)
             ;; delete the associated service associations if applicable
             (delete-associations context concept-type concept-id nil :service-association)
-
             ;; skip publication flag is set for tag association when its associated
             ;; collection revision is force deleted. In this case, the association is no longer
             ;; needed to be indexed, so we don't publish the deletion event.
