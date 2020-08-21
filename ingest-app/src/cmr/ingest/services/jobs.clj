@@ -262,7 +262,7 @@
                params2 (merge {:revision-date time-constraint
                                :collection-concept-id coll-id}
                               query-params)]]
-      (info "Processing subscription: " sub-name " with " (str subscription) "."
+      (info "Processing subscription: " sub-name)
       (try
         (let [gran-ref1 (search/find-granule-references context params1)
               gran-ref2 (search/find-granule-references context params2)
