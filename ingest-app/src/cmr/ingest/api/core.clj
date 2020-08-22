@@ -45,7 +45,7 @@
    mt/json :json})
 
 (defn- create-nested-elements
-  "Create xml element for the nested maps."
+  "Create nested elements for the nested maps."
   [m]
   (reduce-kv (fn [memo k v]
                  (conj memo (xml/element (keyword k) {} (if (map? v) 
