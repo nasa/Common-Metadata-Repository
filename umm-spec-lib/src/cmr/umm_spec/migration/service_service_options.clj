@@ -336,11 +336,10 @@
   "Get the replaced vector values and place them in the proper place in the
    supported reformatting map."
   [reformatting]
-  (let [input (replace-non-valid-formats-1_3_4-to-1_3_3 (vector (:SupportedInputFormat reformatting)))]
-    (when input
-      (-> reformatting
-          (assoc :SupportedInputFormat (first input))
-          (update :SupportedOutputFormats replace-non-valid-formats-1_3_4-to-1_3_3)))))
+  (when-let [input (replace-non-valid-formats-1_3_4-to-1_3_3 (vector (:SupportedInputFormat reformatting)))]
+    (-> reformatting
+        (assoc :SupportedInputFormat (first input))
+        (update :SupportedOutputFormats replace-non-valid-formats-1_3_4-to-1_3_3))))
 
 (defn remove-reformattings-non-valid-formats-1_3_4-to-1_3_3
   "Replace the non valid formats going from UMM-S version 1.3.4 to UMM-S version 1.3.3"
