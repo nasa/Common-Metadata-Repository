@@ -19,6 +19,7 @@
         <th>Collection</th>
         <th>Short Name</th>
         <th>Version</th>
+        <th>Directory</th>
       </tr>
     </thead>
     <tbody>
@@ -32,6 +33,17 @@
         </td>
         <td>
           {{ holding.version-id }}
+        </td>
+        <td>
+          <ul>
+          {% for facet in holding.facets %}
+          <li>
+            <a href="{{ base-url }}/virtual-directory/{{ holding.concept-id }}">
+              Browse
+            </a>
+            </li>
+          {% endfor %}
+          <ul>
         </td>
       </tr>
       {% endfor %}

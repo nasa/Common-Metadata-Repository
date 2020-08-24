@@ -10,7 +10,6 @@
   this context; the data functions defined herein are specifically for use
   in page templates, structured explicitly for their needs."
   (:require
-   [clj-time.core :as clj-time]
    [clojure.string :as string]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -18,7 +17,7 @@
    [cmr.common-app.services.search.query-model :as query-model]
    [cmr.common-app.site.data :as common-data]
    [cmr.common.doi :as doi]
-   [cmr.common.log :refer :all]
+   [cmr.common.log :refer [debug error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [defn-timed]]
    [cmr.search.services.query-service :as query-svc]
@@ -60,16 +59,30 @@
   request context which contains the state of a running CMR."
   (fn [context & args] (:execution-context context)))
 
+(defn get-facet-data-for-collection
+  "TODO cache this, 24h expiration"
+  [context coll-id]
+  (printf "get-facet-data-for-collection[%s] =========\n" coll-id)
+  (as-> (config/application-public-root-url :search) data
+        (format "%sgranules" data)
+        (util/endpoint-get data {:accept mt/json
+                                 :query-params {:collection_concept_id coll-id
+                                                :include_facets "v2"
+                                                :page-size 0}})
+        (do (clojure.pprint/pprint data) data)
+        (get-in data [:feed :facets :children])))
+
 (defmethod collection-data :cli
   [context tag provider-id]
   (as-> (config/application-public-root-url :search) data
-        (format "%scollections" data)
-        (util/endpoint-get data {:accept mt/umm-json-results
-                                 :query-params {:provider provider-id
-                                                :tag-key tag
-                                                :page-size 2000}})
-        (:items data)
-        (sort-by #(get-in % [:umm :EntryTitle]) data)))
+    (format "%scollections" data)
+    (util/endpoint-get data {:accept mt/umm-json-results
+                             :query-params {:provider provider-id
+                                            :tag-key tag
+                                            :include_facets "v2"
+                                            :page-size 2000}})
+    (:items (map #(assoc % :facets (get-facet-data-for-collection context (:concept-id %)))) data)
+    (sort-by #(get-in % [:umm :EntryTitle]) data)))
 
 (defn-timed get-collection-data
   "Get the collection data from elastic by provider id and tag. Sort results
@@ -91,7 +104,10 @@
                                                   :short-name
                                                   :version-id]})
         result (query-exec/execute-query context query)]
-    (sort-by :entry-title (:items result))))
+    (->> result
+         :items
+         (map #(assoc % :facets (get-facet-data-for-collection context (:concept-id %))))
+         (sort-by :entry-title))))
 
 (defmethod collection-data :default
   [context tag provider-id]
@@ -180,14 +196,18 @@
   ([context provider-id tag]
    (get-provider-tag-landing-links context provider-id tag (constantly true)))
   ([context provider-id tag filter-fn]
-   (merge
-    (base-page context)
-    {:provider-id provider-id
-     :tag-name (util/supported-directory-tags tag)
-     :holdings (filter filter-fn
-                       (make-holdings-data
-                        (util/get-app-url context)
-                        (collection-data context tag provider-id)))})))
+   (let [holdings (filter filter-fn
+                        (make-holdings-data
+                          (util/get-app-url context)
+                          (collection-data context tag provider-id)))]
+     ;; DELETE ME
+     (clojure.pprint/pprint holdings)
+     ;; DELETE ME
+     (merge
+       (base-page context)
+       {:provider-id provider-id
+        :tag-name (util/supported-directory-tags tag)
+        :holdings holdings}))))
 
 (defn get-provider-tag-sitemap-landing-links
   "Generate the data necessary to render EOSDIS landing page links that will
