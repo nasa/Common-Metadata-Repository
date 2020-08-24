@@ -218,19 +218,20 @@
 (defn create-email-content
  "Create an email body for subscriptions"
  [from-email-address to-email-address gran-ref-location subscription]
- (let [meta-concept-id (get-in subscription [:metadata "CollectionConceptId"])
-  meta-query (get-in subscription [:metadata "Query"])
-  meta-start-time (get-in subscription [:metadata :start-time])]
+ (let [metadata (json/parse-string (:metadata subscription))
+  concept-id (get-in subscription [:extra-fields :collection-concept-id])
+  meta-query (get metadata "Query")
+  sub-start-time (:start-time subscription)]
   {:from from-email-address
    :to to-email-address
    :subject "Email Subscription Notification"
    :body [{:type "text/html"
     :content (markdown/md-to-html-string (str
      "You have subscribed to receive notifications when data is added to the following query:\n\n"
-     "`" meta-concept-id "`\n\n"
+     "`" concept-id "`\n\n"
      "`" meta-query "`\n\n"
      "Since this query was last run at "
-     meta-start-time
+     sub-start-time
      ", the following granules have been added or updated:\n\n"
      (email-granule-url-list gran-ref-location)
      "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"
@@ -262,7 +263,9 @@
                params2 (merge {:revision-date time-constraint
                                :collection-concept-id coll-id}
                               query-params)]]
-      (info "Processing subscription: " sub-name " with " (str subscription) "."
+      ; remove these comments before going to production
+      (info "********************************")
+      (info "Processing subscription: " sub-name " with\n" (str subscription) ".")
       (try
         (let [gran-ref1 (search/find-granule-references context params1)
               gran-ref2 (search/find-granule-references context params2)
@@ -270,6 +273,9 @@
               gran-ref-location (map :location gran-ref)]
           (when (seq gran-ref)
             (info "Start sending email for subscription: " sub-name)
+            (error (str
+             "email\n"
+             (create-email-content (mail-sender) email-address gran-ref-location subscription)))
             (postal-core/send-message {:host (email-server-host) :port (email-server-port)}
                                       (create-email-content (mail-sender) email-address gran-ref-location subscription))
             (info "Finished sending email for subscription: " sub-name)))

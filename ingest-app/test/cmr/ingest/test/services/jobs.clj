@@ -26,13 +26,14 @@
    "cmr-support@earthdata.nasa.gov"
    "someone@gmail.com"
    '("https://cmr.link/g1" "https://cmr.link/g2" "https://cmr.link/g3")
-   {:metadata {:start-time "2020-05-04T12:51:36Z"
-    :end-time "2020-05-05T12:51:36Z"
-    "Name" "valid1"
-    "CollectionConceptId" "C1200370131-EDF_DEV06"
-    "Query" "updated_since[]=2020-05-04T12:51:36Z"
-    "SubscriberId" "someone1"
-    "EmailAddress" "someone@gmail.com"}})]
+   {:extra-fields {:collection-concept-id "C1200370131-EDF_DEV06"}
+    :metadata "{\"Name\": \"valid1\",
+     \"CollectionConceptId\": \"C1200370131-EDF_DEV06\",
+     \"Query\": \"updated_since[]=2020-05-04T12:51:36Z\",
+     \"SubscriberId\": \"someone1\",
+     \"EmailAddress\": \"someone@gmail.com\"}"
+    :start-time "2020-05-04T12:51:36Z"
+    :end-time "2020-05-05T12:51:36Z"})]
   (is (= (:to actual) "someone@gmail.com"))
   (is (= (:subject actual) "Email Subscription Notification"))
   (is (= (:type (first (:body actual))) "text/html"))
