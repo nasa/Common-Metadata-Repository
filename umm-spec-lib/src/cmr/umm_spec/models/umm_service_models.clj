@@ -118,6 +118,16 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ContactGroupType)
 
+;; This element describes that the service provides temporal subsetting.
+(defrecord TemporalSubsetType
+  [
+   ;; The described service will accept a list of values, such as an array of temporal values, if
+   ;; this element is true. A value of false or the element is not used means the service only
+   ;; accepts a temporal value.
+   AllowMultipleValues
+  ])
+(record-pretty-printer/enable-record-pretty-printing TemporalSubsetType)
+
 ;; Defines a service organization which is either an organization or institution responsible for
 ;; distributing, archiving, or processing the data via a service, etc.
 (defrecord ServiceOrganizationType
@@ -245,6 +255,31 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ContactMechanismType)
 
+;; This element describes what kind of spatial subsetting the service provides. The sub elements
+;; provide the details.
+(defrecord SpatialSubsetType
+  [
+   ;; This element describes that the service provides a point spatial subsetting capability.
+   Point
+
+   ;; The described service provides a point and radius spatial subsetting capability where the
+   ;; point and radius describe a spatial circle.
+   Circle
+
+   ;; This element describes that the service provides a line spatial subsetting capability.
+   Line
+
+   ;; This element describes that the service provides a bounding box spatial subsetting capability.
+   BoundingBox
+
+   ;; This element describes that the service provides a polygon spatial subsetting capability.
+   Polygon
+
+   ;; This element describes that the service provides a shapefile spatial subsetting capability.
+   Shapefile
+  ])
+(record-pretty-printer/enable-record-pretty-printing SpatialSubsetType)
+
 ;; The extent consists of .
 (defrecord ExtentType
   [
@@ -262,6 +297,19 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ExtentType)
 
+;; The described service provides a polygon spatial subsetting capability.
+(defrecord SpatialSubsetPolygonType
+  [
+   ;; The maximum number of points that can be specified.
+   MaximumNumberOfPoints
+
+   ;; The described service will accept a list of values, such as an array of multiple polygons, if
+   ;; this element is true. A value of false or the element is not used means the service only
+   ;; accepts a single polygon.
+   AllowMultipleValues
+  ])
+(record-pretty-printer/enable-record-pretty-printing SpatialSubsetPolygonType)
+
 ;; This object describes service quality, composed of the quality flag, the quality flagging system,
 ;; traceability and lineage.
 (defrecord ServiceQualityType
@@ -276,6 +324,16 @@
    Lineage
   ])
 (record-pretty-printer/enable-record-pretty-printing ServiceQualityType)
+
+;; The described service provides a point spatial subsetting capability.
+(defrecord SpatialSubsetPointType
+  [
+   ;; The described service will accept a list of values, such as an array of multiple points, if
+   ;; this element is true. A value of false or the element is not used means the service only
+   ;; accepts a single point.
+   AllowMultipleValues
+  ])
+(record-pretty-printer/enable-record-pretty-printing SpatialSubsetPointType)
 
 ;; This element is used to identify the input projection type of the variable.
 (defrecord SupportedProjectionType
@@ -330,6 +388,17 @@
    DataResourceTimePoints
   ])
 (record-pretty-printer/enable-record-pretty-printing DataResourceTemporalExtentType)
+
+;; The described service provides a point and radius spatial subsetting capability where the point
+;; and radius describe a spatial circle.
+(defrecord SpatialSubsetCircleType
+  [
+   ;; The described service will accept a list of values, such as an array of multiple circles, if
+   ;; this element is true. A value of false or the element is not used means the service only
+   ;; accepts a single circle (point and radius).
+   AllowMultipleValues
+  ])
+(record-pretty-printer/enable-record-pretty-printing SpatialSubsetCircleType)
 
 ;; The DataResource class describes the layers, feature types or coverages available from the
 ;; service.
@@ -421,6 +490,22 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing AxisType)
 
+;; This element is used to identify the set of supported subsetting capabilities, Spatial, Temporal,
+;; and Variable.
+(defrecord SubsetType
+  [
+   ;; This element describes what kind of spatial subsetting the service provides. The sub elements
+   ;; provide the details.
+   SpatialSubset
+
+   ;; This element describes that the service provides temporal subsetting.
+   TemporalSubset
+
+   ;; This element describes that the service provides variable subsetting.
+   VariableSubset
+  ])
+(record-pretty-printer/enable-record-pretty-printing SubsetType)
+
 (defrecord ContactPersonType
   [
    ;; This is the roles of the service contact.
@@ -491,6 +576,19 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ParameterType)
 
+;; The described service provides a line spatial subsetting capability.
+(defrecord SpatialSubsetLineType
+  [
+   ;; The maximum number of points that can be used can be specified.
+   MaximumNumberOfPoints
+
+   ;; The described service will accept a list of values, such as an array of lines, if this element
+   ;; is true. A value of false or the element is not used means the service only accepts a single
+   ;; line.
+   AllowMultipleValues
+  ])
+(record-pretty-printer/enable-record-pretty-printing SpatialSubsetLineType)
+
 ;; This element contains the URL of the invocation of the operation(s) made possible via this
 ;; service.
 (defrecord ConnectPointType
@@ -509,14 +607,21 @@
 ;; This object describes service options, data transformations and output formats.
 (defrecord ServiceOptionsType
   [
+   ;; This element is used to identify the set of supported subsetting capabilities, Spatial,
+   ;; Temporal, and Variable.
+   Subset
+
    ;; This element is used to identify the list of supported methods of variable aggregation.
    VariableAggregationSupportedMethods
 
-   ;; This element is used to identify the list of supported subsetting requests.
-   SubsetTypes
+   ;; This element is used to identify the list of supported input projections types.
+   SupportedInputProjections
 
-   ;; The project element describes the list of input format names supported by the service.
-   SupportedInputFormats
+   ;; This element is used to identify the list of supported output projections types.
+   SupportedOutputProjections
+
+   ;; This element is used to identify the list of supported interpolation types.
+   InterpolationTypes
 
    ;; The project element describes the list of format name combinations which explicitly state
    ;; which re-formatting options are available. These are entered as pairs of values, e.g. if
@@ -524,23 +629,21 @@
    ;; pair.
    SupportedReformattings
 
-   ;; This element is used to identify the list of supported input projections types.
-   SupportedInputProjections
-
-   ;; This element is used to identify the list of supported interpolation types.
-   InterpolationTypes
-
    ;; This field indicates the maximum number of granules which this service can process with one
    ;; request.
    MaxGranules
-
-   ;; This element is used to identify the list of supported output projections types.
-   SupportedOutputProjections
-
-   ;; The project element describes the list of output format names supported by the service.
-   SupportedOutputFormats
   ])
 (record-pretty-printer/enable-record-pretty-printing ServiceOptionsType)
+
+;; The described service provides a bounding box spatial subsetting capability.
+(defrecord SpatialSubsetBoundingBoxType
+  [
+   ;; The described service will accept a list of values, such as an array of multiple bounding
+   ;; boxes, if this element is true. A value of false or the element is not used means the service
+   ;; only accepts a single bounding box.
+   AllowMultipleValues
+  ])
+(record-pretty-printer/enable-record-pretty-printing SpatialSubsetBoundingBoxType)
 
 ;; This object describes the supported reformatting pairs, e.g. NetCDF4 -> [COG]. For every input
 ;; there is 1 or more outputs.
@@ -554,6 +657,23 @@
    SupportedOutputFormats
   ])
 (record-pretty-printer/enable-record-pretty-printing SupportedReformattingsPairType)
+
+;; Additional information should be provided for this type of subsetter which includes the shapefile
+;; format, maximum number of points and the maximum file size in bytes.
+(defrecord SpatialSubsetShapefileInformationType
+  [
+   ;; This element is used to identify the file format used in the shapefile.
+   Format
+
+   ;; This element describes the maximum file size in bytes of the shapefile that can be sent to the
+   ;; service.
+   MaximumFileSizeInBytes
+
+   ;; This element describes the maximum number of points contained in the shapefile that can be
+   ;; sent to the service.
+   MaximumNumberOfPoints
+  ])
+(record-pretty-printer/enable-record-pretty-printing SpatialSubsetShapefileInformationType)
 
 ;; This entity contains the physical address details for the contact.
 (defrecord AddressType
@@ -612,3 +732,13 @@
    LicenseText
   ])
 (record-pretty-printer/enable-record-pretty-printing UseConstraintsType)
+
+;; This element describes that the service provides variable subsetting.
+(defrecord VariableSubsetType
+  [
+   ;; The described service will accept a list of values, such as an array of variables, if this
+   ;; element is true. A value of false or the element is not used means the service only accepts a
+   ;; variable.
+   AllowMultipleValues
+  ])
+(record-pretty-printer/enable-record-pretty-printing VariableSubsetType)

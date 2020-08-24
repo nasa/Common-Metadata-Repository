@@ -351,11 +351,11 @@
         {serv1-concept-id :concept-id} (service-util/ingest-service-with-attrs
                                         {:native-id "serv1"
                                          :Name "service1"
-                                         :ServiceOptions {:SubsetTypes ["Variable"]}})
+                                         :ServiceOptions {:Subset {:VariableSubset {:AllowMultipleValues true}}}})
         {serv2-concept-id :concept-id} (service-util/ingest-service-with-attrs
                                         {:native-id "serv2"
                                          :Name "service2"
-                                         :ServiceOptions {:SubsetTypes ["Temporal"]}})]
+                                         :ServiceOptions {:Subset {:TemporalSubset {:AllowMultipleValues true}}}})]
     ;; index the collections so that they can be found during variable association
     (index/wait-until-indexed)
 
