@@ -278,7 +278,7 @@ These are query parameters that control what extra data is included with collect
   * Accept - specifies the MimeType to return search results in. Default is "application/xml".
     * `curl -H "Accept: application/xml" -i "%CMR-ENDPOINT%/collections"`
   * `Echo-Token` - specifies an ECHO token to use to authenticate yourself.
-  * `Authorization: Bearer` - specifies an URS Authorization Bearer token to use to authenticate yourself.
+  * `Authorization: Bearer` - specifies an EDL Authorization Bearer token to use to authenticate yourself.
     * `curl -H "Authorization: Bearer <access_token>" -i "%CMR-ENDPOINT%/collections"`
   * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
   * `X-Request-Id` - This provides standard X-Request-Id support to allow user to pass in some random ID which will be logged on the server side for debugging purpose.
