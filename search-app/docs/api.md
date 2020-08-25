@@ -212,7 +212,7 @@ The Maximum URL Length supported by CMR is indirectly controlled by the Request 
 
 #### <a name="cors-header-support"></a> CORS Header support
 
-The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Echo-Token and Client-Id. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id and CMR-Scroll-Id.
+The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Echo-Token, Authorization, and Client-Id. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id and CMR-Scroll-Id.
 
 #### <a name="query-parameters"></a> Query Parameters
 
@@ -278,6 +278,8 @@ These are query parameters that control what extra data is included with collect
   * Accept - specifies the MimeType to return search results in. Default is "application/xml".
     * `curl -H "Accept: application/xml" -i "%CMR-ENDPOINT%/collections"`
   * `Echo-Token` - specifies an ECHO token to use to authenticate yourself.
+  * `Authorization: Bearer` - specifies an URS Authorization Bearer token to use to authenticate yourself.
+    * `curl -H "Authorization: Bearer <access_token>" -i "%CMR-ENDPOINT%/collections"`
   * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
   * `X-Request-Id` - This provides standard X-Request-Id support to allow user to pass in some random ID which will be logged on the server side for debugging purpose.
   * `CMR-Request-Id` - This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems.  
