@@ -59,18 +59,24 @@
   request context which contains the state of a running CMR."
   (fn [context & args] (:execution-context context)))
 
+(defn get-facet-doc-count
+  [facet]
+  (apply +
+         (get facet :count 0)
+         (when-let [children (:children facet)]
+           (map get-facet-doc-count children))))
+
 (defn get-facet-data-for-collection
   "TODO cache this, 24h expiration"
   [context coll-id]
-  (printf "get-facet-data-for-collection[%s] =========\n" coll-id)
   (as-> (config/application-public-root-url :search) data
         (format "%sgranules" data)
         (util/endpoint-get data {:accept mt/json
                                  :query-params {:collection_concept_id coll-id
                                                 :include_facets "v2"
                                                 :page-size 0}})
-        (do (clojure.pprint/pprint data) data)
-        (get-in data [:feed :facets :children])))
+        (get-in data [:feed :facets :children])
+        (map #(assoc % :doc_count (get-facet-doc-count %)) data)))
 
 (defmethod collection-data :cli
   [context tag provider-id]
@@ -200,9 +206,6 @@
                         (make-holdings-data
                           (util/get-app-url context)
                           (collection-data context tag provider-id)))]
-     ;; DELETE ME
-     (clojure.pprint/pprint holdings)
-     ;; DELETE ME
      (merge
        (base-page context)
        {:provider-id provider-id

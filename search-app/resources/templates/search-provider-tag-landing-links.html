@@ -34,14 +34,13 @@
         <td>
           {{ holding.version-id }}
         </td>
-        <td>
-          <ul>
+        <td style="display:flex;">
+          <a href="{{ base-url }}virtual-directory/{{ holding.concept-id }}">Browse</a>
+          <ul class="no-bullet" style="margin:0;" id="{{ holding.concept-id }}-facet-data"
           {% for facet in holding.facets %}
-          <li>
-            <a href="{{ base-url }}/virtual-directory/{{ holding.concept-id }}">
-              Browse
-            </a>
-            </li>
+          <li id="{{ holding.concept-id }}-facet-data-{{ facet.title }}">
+            {{ facet.title }} : {{ facet.doc_count }} Granule(s)
+           </li>
           {% endfor %}
           <ul>
         </td>
