@@ -60,6 +60,7 @@
   (fn [context & args] (:execution-context context)))
 
 (defn get-facet-doc-count
+  "Recurse through facet groups to get a total document count."
   [facet]
   (apply +
          (get facet :count 0)
@@ -67,7 +68,7 @@
            (map get-facet-doc-count children))))
 
 (defn get-facet-data-for-collection
-  "TODO cache this, 24h expiration"
+  "Gets facet data and calculates the child doc_count for each facet."
   [context coll-id]
   (as-> (config/application-public-root-url :search) data
         (format "%sgranules" data)
@@ -81,14 +82,14 @@
 (defmethod collection-data :cli
   [context tag provider-id]
   (as-> (config/application-public-root-url :search) data
-    (format "%scollections" data)
-    (util/endpoint-get data {:accept mt/umm-json-results
-                             :query-params {:provider provider-id
-                                            :tag-key tag
-                                            :include_facets "v2"
-                                            :page-size 2000}})
-    (:items (map #(assoc % :facets (get-facet-data-for-collection context (:concept-id %)))) data)
-    (sort-by #(get-in % [:umm :EntryTitle]) data)))
+        (format "%scollections" data)
+        (util/endpoint-get data {:accept mt/umm-json-results
+                                 :query-params {:provider provider-id
+                                                :tag-key tag
+                                                :include_facets "v2"
+                                                :page-size 2000}})
+        (:items (map #(assoc % :facets (get-facet-data-for-collection context (:concept-id %)))) data)
+        (sort-by #(get-in % [:umm :EntryTitle]) data)))
 
 (defn-timed get-collection-data
   "Get the collection data from elastic by provider id and tag. Sort results
