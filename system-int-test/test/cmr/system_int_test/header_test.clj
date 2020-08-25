@@ -138,6 +138,7 @@
                               (get-in [:headers "Access-Control-Allow-Headers"])
                               (string/split #", "))]
       (is (some #{"Echo-Token"} allowed-headers))
+      (is (some #{"Authorization"} allowed-headers))
       (is (some #{"Client-Id"} allowed-headers))
       (is (some #{"CMR-Request-Id"} allowed-headers))
       (is (some #{"X-Request-Id"} allowed-headers))
