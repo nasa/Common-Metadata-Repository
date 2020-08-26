@@ -74,9 +74,7 @@
 
 (defmethod gcrf/query-results->concept-ids :query-specified
   [results]
-  (->> results
-       :items
-       (map :concept-id)))
+  (map :concept-id (:items results)))
 
 (defn-timed get-collection-data
   "Get the collection data from elastic by provider id and tag. Sort results

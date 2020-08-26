@@ -1,16 +1,19 @@
 (ns cmr.system-int-test.site.holdings-provider-test
-  (:require [clojure.test :refer :all]
-            [clojure.string :refer [trim]]
-            [cmr.mock-echo.client.echo-util :as echo]
-            [cmr.system-int-test.data2.core :as data]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-            [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
-            [cmr.system-int-test.system :as system]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [crouton.html :as html]))
+  "Integration tests for provider holdings page."
+  (:require
+   [clojure.test :refer :all]
+   [clojure.string :refer [trim]]
+   [cmr.mock-echo.client.echo-util :as echo]
+   [cmr.system-int-test.data2.core :as data]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
+   [cmr.system-int-test.system :as system]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.tag-util :as tags]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [crouton.html :as html]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"}
@@ -95,7 +98,8 @@
     (index/wait-until-indexed)
 
     (testing "Page renders"
-      (let [page-data (html/parse "http://localhost:3003/site/collections/directory/PROV1/tag1")]
+      (let [page-data (html/parse (format "%s/PROV1/tag1"
+                                          (url/search-site-providers-holdings-url)))]
         (is (not= nil page-data))
         
         (testing "Virtual directory links exist for each collection."

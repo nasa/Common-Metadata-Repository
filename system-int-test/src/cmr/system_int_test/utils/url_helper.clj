@@ -355,6 +355,16 @@
   []
   (str (search-root) "concepts/"))
 
+(defn search-site-url
+  "Returns the url root for search site documentation."
+  []
+  (str (search-root) "site/"))
+
+(defn search-site-providers-holdings-url
+  "Returns the base url for the provider holdings for a collection"
+  []
+  (str (search-site-url) "collections/directory/"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Bootstrap URLs
 
