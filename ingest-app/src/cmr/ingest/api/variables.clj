@@ -36,17 +36,14 @@
          concept (api-core/body->concept!
                   :variable provider-id native-id body content-type headers)]
 
-     ;; Ensures the associated collection is visible and not deleted.
-     (v/validate-variable-associated-collection
-       request-context
-       coll-concept-id
-       coll-revision-id)
-
      (lt-validation/validate-launchpad-token request-context)
      (api-core/verify-provider-exists request-context provider-id)
      (acl/verify-ingest-management-permission
        request-context :update :provider-object provider-id)
      (common-enabled/validate-write-enabled request-context "ingest")
+     ;; Ensures the associated collection is visible and not deleted.
+     (v/validate-variable-associated-collection
+       request-context coll-concept-id coll-revision-id)
      (let [concept (validate-and-prepare-variable-concept concept)
            {concept-format :format metadata :metadata} concept
            variable (spec/parse-metadata request-context :variable concept-format metadata)
