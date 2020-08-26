@@ -10,7 +10,6 @@
   this context; the data functions defined herein are specifically for use
   in page templates, structured explicitly for their needs."
   (:require
-   [clj-time.core :as clj-time]
    [clojure.string :as string]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -18,9 +17,10 @@
    [cmr.common-app.services.search.query-model :as query-model]
    [cmr.common-app.site.data :as common-data]
    [cmr.common.doi :as doi]
-   [cmr.common.log :refer :all]
+   [cmr.common.log :refer [debug error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [defn-timed]]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.site.util :as util]
    [cmr.transmit.config :as config]
@@ -67,31 +67,39 @@
         (util/endpoint-get data {:accept mt/umm-json-results
                                  :query-params {:provider provider-id
                                                 :tag-key tag
+                                                :include_facets "v2"
                                                 :page-size 2000}})
         (:items data)
         (sort-by #(get-in % [:umm :EntryTitle]) data)))
+
+(defmethod gcrf/query-results->concept-ids :query-specified
+  [results]
+  (map :concept-id (:items results)))
 
 (defn-timed get-collection-data
   "Get the collection data from elastic by provider id and tag. Sort results
   by entry title"
   [context tag provider-id]
   (let [conditions (query-svc/generate-query-conditions-for-parameters
-                    context
-                    :collection
-                    {:tag-key tag
-                     :provider provider-id})
+                     context
+                     :collection
+                     {:tag-key tag
+                      :provider provider-id})
         query (query-model/query {:concept-type :collection
                                   :condition (gc/and-conds conditions)
                                   :skip-acls? false
                                   :page-size :unlimited
                                   :result-format :query-specified
+                                  :result-features [:granule-counts]
                                   :result-fields [:concept-id
                                                   :doi
                                                   :entry-title
                                                   :short-name
                                                   :version-id]})
-        result (query-exec/execute-query context query)]
-    (sort-by :entry-title (:items result))))
+        result (query-exec/execute-query context query)
+        {:keys [items granule-counts-map]} result]
+    (sort-by :entry-title
+             (map #(assoc % :granule-count (get granule-counts-map (:concept-id %))) items))))
 
 (defmethod collection-data :default
   [context tag provider-id]
@@ -126,7 +134,9 @@
   "Given a single item from a query's collections, update the item with data
   for linking to its landing page."
   [cmr-base-url item]
-  (assoc item :canonical-link-href (doi/get-landing-page cmr-base-url item) :cmr-link-href (doi/get-cmr-landing-page cmr-base-url (:concept-id item))))
+  (assoc item
+         :canonical-link-href (doi/get-landing-page cmr-base-url item)
+         :cmr-link-href (doi/get-cmr-landing-page cmr-base-url (:concept-id item))))
 
 (defn make-holdings-data
   "Given a collection from an elastic search query, generate landing page
@@ -180,14 +190,15 @@
   ([context provider-id tag]
    (get-provider-tag-landing-links context provider-id tag (constantly true)))
   ([context provider-id tag filter-fn]
-   (merge
-    (base-page context)
-    {:provider-id provider-id
-     :tag-name (util/supported-directory-tags tag)
-     :holdings (filter filter-fn
-                       (make-holdings-data
-                        (util/get-app-url context)
-                        (collection-data context tag provider-id)))})))
+   (let [holdings (filter filter-fn
+                        (make-holdings-data
+                          (util/get-app-url context)
+                          (collection-data context tag provider-id)))]
+     (merge
+       (base-page context)
+       {:provider-id provider-id
+        :tag-name (util/supported-directory-tags tag)
+        :holdings holdings}))))
 
 (defn get-provider-tag-sitemap-landing-links
   "Generate the data necessary to render EOSDIS landing page links that will
