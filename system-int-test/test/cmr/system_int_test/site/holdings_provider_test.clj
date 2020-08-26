@@ -1,5 +1,6 @@
 (ns cmr.system-int-test.site.holdings-provider-test
   (:require [clojure.test :refer :all]
+            [clojure.string :refer [trim]]
             [cmr.mock-echo.client.echo-util :as echo]
             [cmr.system-int-test.data2.core :as data]
             [cmr.system-int-test.data2.granule :as dg]
@@ -19,6 +20,7 @@
                        tags/grant-all-tag-fixture]))
 
 (defn find-element-by-type
+  "Search a dom tree for all elements of a given type and return them."
   [e-type dom-node]
   (flatten (lazy-cat (when (= e-type (:tag dom-node))
                        [dom-node])
@@ -27,6 +29,7 @@
                             children)))))
 
 (defn find-element-by-id
+  "Search a dom for an element with a given ID."
   [id dom-node]
   (let [tree (lazy-cat (when (= id (get-in dom-node [:attrs :id]))
                          [dom-node])
@@ -91,12 +94,30 @@
       tag1-colls)
     (index/wait-until-indexed)
 
-    (testing "virtual directory links exist"
+    (testing "Page renders"
       (let [page-data (html/parse "http://localhost:3003/site/collections/directory/PROV1/tag1")]
-        (is (= 2
-               (->> page-data
-                    (find-element-by-type :a)
-                    (filter #(re-matches #".*virtual-directory/C\d-PROV\d.*"
-                                         (get-in % [:attrs :href])))
-                    count)))))))
+        (is (not= nil page-data))
+        
+        (testing "Virtual directory links exist for each collection."
+          (is (= 2
+                 (->> page-data
+                      (find-element-by-type :a)
+                      (filter #(re-matches #".*virtual-directory/C\d-PROV\d.*"
+                                           (get-in % [:attrs :href])))
+                      count))))
+
+        (testing "Collection granule counts are correct."
+          (is (= "Browse 2 Granules"
+                 (->> page-data
+                      (find-element-by-id "C2-PROV1-virtual-directory-link")
+                      :content
+                      first
+                      trim)))
+          
+          (is (= "Browse 1 Granules"
+                 (->> page-data
+                      (find-element-by-id "C1-PROV1-virtual-directory-link")
+                      :content
+                      first
+                      trim))))))))
 
