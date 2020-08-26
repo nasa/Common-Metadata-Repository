@@ -394,15 +394,16 @@
 
     (let [root-node (search-and-return-v2-facets {:collection-concept-id coll2-concept-id
                                                   :page_size 10})
-          cycle-node (-> root-node :children first)
+          spatial-node (-> root-node :children first)
+          cycle-node (first (:children spatial-node))
           cycle-facets (:children cycle-node)]
       (testing "and the facet structure correct"
         (is (= "Browse Granules" (:title root-node)))
         (is (= "group" (:type root-node)))
         (is (= true (:has_children root-node)))
-        (is (= "Cycle" (:title cycle-node)))
-        (is (= "group" (:type cycle-node)))
-        (is (= true (:has_children cycle-node))))
+        (is (= "Spatial" (:title spatial-node)))
+        (is (= "group" (:type spatial-node)))
+        (is (= true (:has_children spatial-node))))
       (testing "and cycles returned in ascending order"
         (is (= ["3" "42"] (map :title cycle-facets))))
       (testing "and cycles have a type of filter"
@@ -420,8 +421,14 @@
               c3-filter (-> body-for-cycle-3-query
                             (get-in [:feed :facets])
                             :children
+                            ;; Spatial group
+                            first 
+                            :children
+                            ;; Cycle Group
                             first
-                            :children)]
+                            :children
+                            ;; Cycle[]=3 Filter
+                            first)]
 
           (testing "returns results for the cycle selected"
             (is (= "3" (:title c3-filter)))
@@ -429,7 +436,7 @@
             (is (= :remove (first (keys (:links c3-filter))))))
           
           (testing "returns pass results"
-            (let [c3-pass-group (get c3-filter :children)]
+            (let [c3-pass-group (first (get c3-filter :children))]
               (is (not= nil c3-pass-group))
               (is (= ["1" "2" "3" "4"] (map :title (:children c3-pass-group))))
 
@@ -439,9 +446,17 @@
                       c3-pass-group (-> c3-p3-body
                                        (get-in [:feed :facets])
                                        :children
+                                       ;; Spatial Group
                                        first
                                        :children
-                                       :children)
+                                       ;; Cycle Group
+                                       first
+                                       :children                                       
+                                       ;; Cycle[]=3 Filter
+                                       first
+                                       :children
+                                       ;; Pass Group
+                                       first)
                       c3-p3-filter (-> c3-pass-group
                                        :children
                                        first)

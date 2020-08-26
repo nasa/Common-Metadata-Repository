@@ -53,7 +53,7 @@
 (defmethod v2-facets/v2-facets-result-field-in-order :granule
   [_]
   ["Temporal"
-   "Cycle"])
+   "Spatial"])
 
 (defn single-collection-validation
   "Validates that the provided query is limited to a single collection. We do this to prevent
@@ -78,8 +78,8 @@
   ["Year" "Month" "Day"])
 
 (def group-nodes-in-order-spatial
-  "The titles of cycle facet group nodes in order."
-  ["Pass"])
+  "The titles of spatial facet group nodes in order."
+  ["Cycle" "Pass"])
 
 (defn add-temporal-group-nodes-to-facets
   "Adds group nodes (Year, Month, Day) as applicable to the provided facets."
@@ -164,18 +164,18 @@
                    base-url
                    query-params)]
     (when (seq children)
-      (assoc (merge v2h/sorted-facet-map
-                    (v2h/generate-filter-node
-                      base-url
-                      query-params
-                      "cycle"
-                      granule-cycle
-                      (count formatted-children)
-                      applied?))
-             :children
-             children))))
+      [(assoc (merge v2h/sorted-facet-map
+                      (v2h/generate-filter-node
+                        base-url
+                        query-params
+                        "cycle"
+                        granule-cycle
+                        (count formatted-children)
+                        applied?))
+               :children
+               [children])])))
 
-(defn create-cycle-subfacets-map
+(defn create-spatial-subfacets-map
   "Handle the case of cycle aggregation for V2 facets"
   [base-url query-params aggs]
   (let [applied? (facet-query-applied?
@@ -192,16 +192,17 @@
                       query-params
                       applied?
                       (get query-params "cycle[]")
-                      (:cycle aggs)))]
+                      (:cycle aggs)))
+        applied? (facet-query-applied? query-params "cycle.*")
+        cycle-root (v2h/generate-group-node "Cycle" applied? subfacets)]
     (when (seq subfacets)
-      (let [applied? (facet-query-applied? query-params "cycle.*")]
-        (merge v2h/sorted-facet-map
-               (v2h/generate-group-node "Cycle" applied? subfacets))))))
+      (merge v2h/sorted-facet-map
+             (v2h/generate-group-node "Spatial" false [cycle-root])))))
 
 (defmethod v2-facets/create-v2-facets-by-concept-type :granule
   [concept-type base-url query-params aggs _]
   (remove nil?
           (vector
             (create-temporal-subfacets-map base-url query-params aggs)
-            (create-cycle-subfacets-map base-url query-params aggs))))
+            (create-spatial-subfacets-map base-url query-params aggs))))
 

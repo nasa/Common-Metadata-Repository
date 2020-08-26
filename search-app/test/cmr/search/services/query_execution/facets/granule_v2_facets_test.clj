@@ -5,27 +5,27 @@
 
 (deftest create-cycle-subfacets-map-test
   (testing "no filter added"
-    (let [result (gv2f/create-cycle-subfacets-map 
+    (let [result (gv2f/create-spatial-subfacets-map 
                    "http://localhost:3003/granules.json"
                    {"page_size" "10"
                     "include_facets" "v2"
                     "collection_concept_id" "C1-PROV1"}
                    {:cycle {:buckets [{:key 3.0 :doc_count 6}
                                       {:key 42.0 :doc_count 2}]}})
-          children (:children result)]
-      (is (= "Cycle" (:title result)))
-      (is (= 2 (count (:children result))))
+          cycle-facet (first (:children result))]
+      (is (= "Spatial" (:title result)))
+      (is (= 1 (count (:children result))))
 
-      (is (= "3" (:title (first children))))
+      (is (= "Cycle" (:title cycle-facet)))
       (is (= {:apply "http://localhost:3003/granules.json?page_size=10&include_facets=v2&collection_concept_id=C1-PROV1&cycle%5B%5D=3"}
-             (:links (first children))))
+             (:links (first (:children cycle-facet)))))
 
-      (is (= "42" (:title (second children))))
+      (is (= "42" (:title (second (:children cycle-facet)))))
       (is (= {:apply "http://localhost:3003/granules.json?page_size=10&include_facets=v2&collection_concept_id=C1-PROV1&cycle%5B%5D=42"}
-             (:links (second children))))))
+             (:links (second (:children cycle-facet)))))))
 
   (testing "cycle selected"
-    (let [result (gv2f/create-cycle-subfacets-map 
+    (let [result (gv2f/create-spatial-subfacets-map 
                    "http://localhost:3003/granules.json"
                    {"page_size" "10"
                     "include_facets" "v2"
@@ -39,11 +39,11 @@
                       [{:key 1.0 :doc_count 1}
                        {:key 3.0 :doc_count 1}
                        {:key 4.0 :doc_count 1}]}}})
-          children (:children result)]
-      (is (= "42" (:title children)))
+          cycle-42 (-> result :children first :children first)]
+      (is (= "42" (:title cycle-42)))
       (is (= {:remove          
               "http://localhost:3003/granules.json?page_size=10&include_facets=v2&collection_concept_id=C1-PROV1"}
-             (:links children))))))
+             (:links cycle-42))))))
 
 (deftest create-v2-facets-by-concept-type-test
   (testing "temporal"
@@ -153,27 +153,31 @@
                          [{:key 1.0 :doc_count 1}
                           {:key 3.0 :doc_count 1}
                           {:key 4.0 :doc_count 1}]}}}]}}
-
                    nil)]
-      (is (= [{:title "Cycle"          
+      (is (= [{:title "Spatial"
                :type :group
                :applied false
-               :has_children true
+               :has_children true 
                :children
-               '({:title "3"
-                  :type :filter
-                  :applied false
-                  :count 6
-                  :links
-                  {:apply
-                   "http://localhost:3003/granules.json?page_size=10&include_facets=v2&collection_concept_id=C1-PROV1&cycle%5B%5D=3"}
-                  :has_children false}
-                 {:title "42"
-                  :type :filter
-                  :applied false
-                  :count 2
-                  :links
-                  {:apply
-                   "http://localhost:3003/granules.json?page_size=10&include_facets=v2&collection_concept_id=C1-PROV1&cycle%5B%5D=42"}
-                  :has_children false})}]
+               [{:title "Cycle"          
+                 :type :group
+                 :applied false
+                 :has_children true
+                 :children
+                 [{:title "3"
+                   :type :filter
+                   :applied false
+                   :count 6
+                   :links
+                   {:apply
+                    "http://localhost:3003/granules.json?page_size=10&include_facets=v2&collection_concept_id=C1-PROV1&cycle%5B%5D=3"}
+                   :has_children false}
+                  {:title "42"
+                   :type :filter
+                   :applied false
+                   :count 2
+                   :links
+                   {:apply
+                    "http://localhost:3003/granules.json?page_size=10&include_facets=v2&collection_concept_id=C1-PROV1&cycle%5B%5D=42"}
+                   :has_children false}]}]}]
              result)))))
