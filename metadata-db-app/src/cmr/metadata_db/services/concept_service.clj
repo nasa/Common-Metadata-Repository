@@ -475,10 +475,46 @@
     (debug "associate-variable validation-time:" validation-time)
     (update-association context association :insert)))
 
+(defn get-concept
+  "Get a concept by concept-id."
+  ([context concept-id]
+   (let [db (util/context->db context)
+         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
+         provider (provider-service/get-provider-by-id context provider-id true)]
+     (or (c/get-concept db concept-type provider concept-id)
+         (cmsg/data-error :not-found
+                          msg/concept-does-not-exist
+                          concept-id))))
+  ([context concept-id revision-id]
+   (let [db (util/context->db context)
+         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
+         provider (provider-service/get-provider-by-id context provider-id true)]
+     (or (c/get-concept db concept-type provider concept-id revision-id)
+         (cmsg/data-error :not-found
+                          msg/concept-with-concept-id-and-rev-id-does-not-exist
+                          concept-id
+                          revision-id)))))
+
 (defn- perform-post-commit-association
   "Performs a post commit variable association. If failed, roll back
   variable ingest."
   [context concept rollback-function]
+
+  ;; Before creating a variable association, make sure the collection
+  ;; is not deleted to minimize the risk.
+  (let [{:keys [coll-concept-id coll-revision-id]} concept
+        collection (if coll-revision-id
+                     (get-concept context coll-concept-id coll-revision-id)
+                     (get-concept context coll-concept-id))
+        err-msg (if coll-revision-id
+                  (format "Collection [%s] revision [%s] is deleted from db"
+                          coll-concept-id coll-revision-id)
+                  (format "Collection [%s] is deleted from db"
+                          coll-concept-id))]
+    (when (:deleted collection)
+      (rollback-function)
+      (errors/throw-service-errors :invalid-data [err-msg])))
+
   (let [result (associate-variable context concept)]
     (when-let [errors (:errors result)]
       (rollback-function)
@@ -533,26 +569,6 @@
       (handle-save-errors concept result))))
 
 ;;; service methods
-
-(defn get-concept
-  "Get a concept by concept-id."
-  ([context concept-id]
-   (let [db (util/context->db context)
-         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
-         provider (provider-service/get-provider-by-id context provider-id true)]
-     (or (c/get-concept db concept-type provider concept-id)
-         (cmsg/data-error :not-found
-                          msg/concept-does-not-exist
-                          concept-id))))
-  ([context concept-id revision-id]
-   (let [db (util/context->db context)
-         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
-         provider (provider-service/get-provider-by-id context provider-id true)]
-     (or (c/get-concept db concept-type provider concept-id revision-id)
-         (cmsg/data-error :not-found
-                          msg/concept-with-concept-id-and-rev-id-does-not-exist
-                          concept-id
-                          revision-id)))))
 
 (defn- latest-revision?
   "Given a concept-id and a revision-id, perform a check whether the

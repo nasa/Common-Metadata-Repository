@@ -79,23 +79,14 @@
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
          response)))
 
-    (testing "Associate to deleted collections"
-      (let [c1-p1-concept (mdb/get-concept c1-p1)
-            _ (ingest/delete-concept c1-p1-concept)
-            _ (index/wait-until-indexed)
-            response (association-util/associate-by-concept-ids
-                      token concept-id [{:concept-id c1-p1}])]
-        ;; when the collection was deleted, the variable got deleted too
-        (is (= 404 (:status response)))
-        (is (= ["Variable with concept id [V1200000025-PROV1] was deleted."] (:errors response)))))
- 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [response (association-util/associate-by-concept-ids token
                                                                 concept-id
                                                                 [{:concept-id c4-p3}])]
-        (is (= 404 (:status response)))
-        (is (= ["Variable with concept id [V1200000025-PROV1] was deleted."] (:errors response)))))))
+        (vu/assert-variable-association-bad-request
+          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
+          response)))))
 
 (deftest associate-variable-failure-test
   (echo-util/grant-registered-users (system/context)

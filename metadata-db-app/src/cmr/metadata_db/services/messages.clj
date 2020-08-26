@@ -228,21 +228,6 @@
           field-name
           field-value))
 
-(defn inaccessible-collection
-  [concept-id]
-  (format "Collection [%s] does not exist or is not visible." concept-id))
-
-(defn tombstone-collection
-  [assoc-type {:keys [concept-id revision-id]}]
-  (format (str "Collection with concept id [%s] revision id [%s] is a tombstone. We don't allow "
-               "%s association with individual collection revisions that are tombstones.")
-          concept-id revision-id (name assoc-type)))
-
-(defn inaccessible-collection-revision
-  [{:keys [concept-id revision-id]}]
-  (format "Collection with concept id [%s] revision id [%s] does not exist or is not visible."
-          concept-id revision-id))
-
 (defn delete-association-not-found
   [assoc-type native-id]
   (let [[identifier concept-id revision-id] (str/split native-id #"/")]

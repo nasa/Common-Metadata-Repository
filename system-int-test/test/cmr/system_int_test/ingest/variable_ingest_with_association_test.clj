@@ -118,6 +118,74 @@
                            (:concept-id coll1-PROV1-1) var-concept-id)
                    (second (string/split (first errors) #" and "))))))))
 
+    (testing "ingest of a new variable concept with association on specific revision on PROV1"
+      (let [concept (variable-util/make-variable-concept
+                     {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land_3"
+                                                              :Size 3
+                                                              :Type "OTHER"})]
+                      :AcquisitionSourceName "Instrument1"}
+                     {:native-id "var3"
+                      :coll-concept-id (:concept-id coll2-PROV1-1)
+                      :coll-revision-id 1})
+            {:keys [concept-id revision-id variable-association]}
+              (variable-util/ingest-variable-with-association concept)
+            va-concept-id (:concept-id variable-association)
+            va-revision-id (:revision-id variable-association)]
+        (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+        (is (= 1 revision-id))
+        (is (mdb/concept-exists-in-mdb? va-concept-id va-revision-id))
+        (is (= 1 va-revision-id))))
+
+    (testing "ingest of a new variable concept with association on an invalid revision on PROV1"
+      (let [concept (variable-util/make-variable-concept
+                     {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land_4"
+                                                              :Size 3
+                                                              :Type "OTHER"})]
+                      :AcquisitionSourceName "Instrument1"}
+                     {:native-id "var4"
+                      :coll-concept-id (:concept-id coll2-PROV1-1)
+                      :coll-revision-id 3})
+            response
+              (variable-util/ingest-variable-with-association concept)
+            errors (:errors response)
+            expected-errors [(format "Collection [%s] revision [3] does not exist"
+                                     (:concept-id coll2-PROV1-1))]]
+         (is (= expected-errors errors))))
+
+    (testing "ingest of a new variable concept with association on a deleted collection on PROV1"
+      (let [concept1 (variable-util/make-variable-concept
+                       {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land_4"
+                                                                :Size 3
+                                                                :Type "OTHER"})]
+                        :AcquisitionSourceName "Instrument1"}
+                       {:native-id "var4"
+                        :coll-concept-id (:concept-id coll2-PROV1-1)
+                        :coll-revision-id 3})
+            concept2 (variable-util/make-variable-concept
+                       {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land_4"
+                                                                :Size 3
+                                                                :Type "OTHER"})]
+                        :AcquisitionSourceName "Instrument1"}
+                       {:native-id "var4"
+                        :coll-concept-id (:concept-id coll2-PROV1-1)})
+            _ (ingest/delete-concept
+                (data-core/umm-c-collection->concept coll2-PROV1-1 :echo10)
+                {:accept-format :json
+                 :raw? true})
+            _ (index/wait-until-indexed)
+            response1
+              (variable-util/ingest-variable-with-association concept1)
+            response2
+              (variable-util/ingest-variable-with-association concept2)
+            errors1 (:errors response1)
+            expected-errors1 [(format "Collection [%s] revision [3] is deleted"
+                                      (:concept-id coll2-PROV1-1))]
+            errors2 (:errors response2)
+            expected-errors2 [(format "Collection [%s] does not exist or is not visible."
+                                      (:concept-id coll2-PROV1-1))]]
+         (is (= expected-errors1 errors1))
+         (is (= expected-errors2 errors2))))
+
     (testing "ingest of a variable concept with a revision id"
       (let [concept (variable-util/make-variable-concept 
                       {} 
@@ -128,14 +196,21 @@
         (is (= 5 revision-id))
         (is (mdb/concept-exists-in-mdb? concept-id 5))
         (is (= 2 (:revision-id variable-association)))
-        (is (mdb/concept-exists-in-mdb? (:concept-id variable-association) 1))
-        ;; delete the collection.
-        (let [response (ingest/delete-concept 
-                         (data-core/umm-c-collection->concept coll1-PROV1-1 :echo10)
-                         {:accept-format :json
-                          :raw? true})]
-           (is (= 200 (:status response)))
-           (index/wait-until-indexed)
-           ;; both the variable and variable association should be deleted too. 
-           (is (= true (:deleted (mdb/get-concept concept-id))))
-           (is (= true (:deleted (mdb/get-concept (:concept-id variable-association))))))))))
+        (is (mdb/concept-exists-in-mdb? (:concept-id variable-association) 1))))
+
+    (testing "Deletion of a collection propagates to deletion of variables associated with the collection."
+      (let [concept (variable-util/make-variable-concept
+                      {}
+                      {:native-id "var1"
+                       :coll-concept-id (:concept-id coll1-PROV1-1)})
+            {:keys [concept-id variable-association]} (variable-util/ingest-variable-with-association concept)
+            ;; delete the collection.
+            response (ingest/delete-concept
+                       (data-core/umm-c-collection->concept coll1-PROV1-1 :echo10)
+                       {:accept-format :json
+                        :raw? true})]
+         (is (= 200 (:status response)))
+         (index/wait-until-indexed)
+         ;; both the variable and variable association should be deleted too.
+         (is (= true (:deleted (mdb/get-concept concept-id))))
+         (is (= true (:deleted (mdb/get-concept (:concept-id variable-association)))))))))

@@ -1,7 +1,6 @@
 (ns cmr.ingest.api.variables
   "Variable ingest functions in support of the ingest API."
   (:require
-   [cheshire.core :as json]
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
@@ -36,6 +35,12 @@
          {:keys [body content-type headers request-context]} request
          concept (api-core/body->concept!
                   :variable provider-id native-id body content-type headers)]
+
+     ;; Ensures the associated collection is visible and not deleted.
+     (v/validate-variable-associated-collection
+       request-context
+       coll-concept-id
+       coll-revision-id)
 
      (lt-validation/validate-launchpad-token request-context)
      (api-core/verify-provider-exists request-context provider-id)
