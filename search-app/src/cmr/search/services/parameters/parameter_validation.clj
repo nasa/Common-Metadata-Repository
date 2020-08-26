@@ -156,6 +156,7 @@
    :sensor cpv/string-plus-and-options
    :short-name cpv/string-plus-and-options
    :simplify-shapefile cpv/string-param-options
+   :spatial cpv/and-or-option
    :spatial-keyword cpv/string-plus-and-options
    :temporal (conj exclude-plus-and-or-option :limit-to-granules)
    :two-d-coordinate-system cpv/string-param-options
@@ -259,11 +260,11 @@
 
 (defmethod cpv/valid-query-level-options :collection
   [_]
-  #{:highlights})
+  #{:highlights :spatial})
 
 (defmethod cpv/valid-query-level-params :granule
   [_]
-  #{:echo-compatible :include-facets})
+  #{:echo-compatible :include-facets :spatial})
 
 (defmethod cpv/valid-query-level-params :variable
   [_]

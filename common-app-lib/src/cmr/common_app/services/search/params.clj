@@ -2,6 +2,7 @@
   "Contains common code for handling search parameters and converting them into a query model."
   (:require
    [camel-snake-kebab.core :as csk]
+   [clojure.data :as data]
    [clojure.string :as string]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-model :as qm]
@@ -215,6 +216,55 @@
   [concept-type params]
   (default-parse-query-level-params concept-type params))
 
+(defn- generate-conditions
+  "Converts given parameters into elasticsearch conditions"
+  [context concept-type params options]
+  (map (fn [[param value]]
+           (parameter->condition context concept-type param value options))
+        params))
+
+(defn- create-combined-conditions
+  "When valid spatial parameters are given and the spatial OR option is passed,
+   create proper search conditions"
+  [context concept-type options spatial-params non-spatial-params]
+  (let [spatial-conditions (when-not (empty? spatial-params)
+                       (generate-conditions
+                        context concept-type spatial-params options))
+        combined-spatial-conditions (gc/or-conds spatial-conditions)
+        non-spatial-conditions (when-not (empty? non-spatial-params)
+                                 (generate-conditions
+                                  context concept-type non-spatial-params options))
+        combined-non-spatial-conditions (when non-spatial-conditions
+                                          (gc/and-conds non-spatial-conditions))]
+    (if (and combined-spatial-conditions combined-non-spatial-conditions)
+        (gc/and-conds (conj combined-spatial-conditions combined-non-spatial-conditions))
+        (conj combined-spatial-conditions combined-non-spatial-conditions))))
+
+(defn- combine-query-conditions
+  "Appropriately combine query operators based on given options"
+  [context concept-type options params query-attribs]
+  (let [valid-spatial-params [:bounding-box :circle :point :line :polygon :bounding-box]
+        spatial-option (if (= (get-in options [:spatial :or]) "true")
+                           :or
+                           :and)
+        user-spatial-params (when-not (empty? params)
+                              (select-keys params valid-spatial-params))
+        user-non-spatial-params (-> params
+                                    (data/diff user-spatial-params)
+                                    first)
+        conditions (generate-conditions context concept-type params options)]
+    (if (and (= :or spatial-option)
+             (not (empty? user-spatial-params))
+             (= concept-type :collection))
+      (qm/query (assoc query-attribs
+                       :condition
+                       (create-combined-conditions context
+                                                   concept-type
+                                                   options
+                                                   user-spatial-params
+                                                   user-non-spatial-params)))
+      (qm/query (assoc query-attribs :condition (gc/and-conds conditions))))))
+
 (defn parse-parameter-query
   "Converts parameters into a query model."
   [context concept-type params]
@@ -226,9 +276,6 @@
                 ;; matches everything
                 (qm/query query-attribs)
                 ;; Convert params into conditions
-                (let [conditions (map (fn [[param value]]
-                                        (parameter->condition context concept-type param value options))
-                                      params)]
-                  (qm/query (assoc query-attribs :condition (gc/and-conds conditions)))))]
+                (combine-query-conditions context concept-type options params query-attribs))]
     ;; add the scroll-id if present
     (merge query (when scroll-id {:scroll-id scroll-id}))))

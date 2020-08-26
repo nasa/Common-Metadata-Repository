@@ -50,7 +50,8 @@
   [type value options]
   ;; Note: value can be a single string or a vector of strings. (flatten [value])
   ;; converts the value to a sequence of strings irrespective of the type
-  (let [operator (if (= "true" (get-in options [type :or]))
+  (let [operator (if (or (= "true" (get-in options [:spatial :or]))
+                         (= "true" (get-in options [type :or])))
                    :or
                    :and)]
     (gc/group-conds

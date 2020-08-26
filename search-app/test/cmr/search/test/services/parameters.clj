@@ -1,11 +1,12 @@
 (ns cmr.search.test.services.parameters
-  (:require [clojure.test :refer :all]
-            [cmr.common.util :refer [are2]]
-            [cmr.common-app.services.search.params :as p]
-            [cmr.common-app.services.search.query-model :as q]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.search.services.parameters.legacy-parameters :as lp]
-            [cmr.search.services.parameters.provider-short-name :as psn]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.params :as p]
+   [cmr.common-app.services.search.query-model :as q]
+   [cmr.common.util :refer [are2]]
+   [cmr.search.services.parameters.legacy-parameters :as lp]
+   [cmr.search.services.parameters.provider-short-name :as psn]))
 
 (deftest replace-parameter-aliases-test
   (testing "with options"

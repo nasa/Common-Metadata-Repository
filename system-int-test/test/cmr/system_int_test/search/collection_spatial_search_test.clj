@@ -1,25 +1,17 @@
 (ns cmr.system-int-test.search.collection-spatial-search-test
   (:require
    [clojure.test :refer :all]
-   [cmr.common.dev.util :as dev-util]
    [cmr.common.util :as u :refer [are3]]
    [cmr.spatial.codec :as codec]
-   [cmr.spatial.derived :as derived]
    [cmr.spatial.line-string :as l]
-   [cmr.spatial.lr-binary-search :as lbs]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.ring-relations :as rr]
-   [cmr.spatial.serialize :as srl]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.umm.echo10.echo10-collection :as ec]
-   [cmr.umm.umm-collection :as c]
    [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -447,25 +439,15 @@
                      :collection
                      {:circle lon-lat-radius
                       :page-size 50
-                      "options[circle][or]" "true"})
+                      "options[spatial][or]" "true"})
               matches? (d/refs-match? items found)]
           (when-not matches?
             (println "Expected:" (->> items (map :entry-title) sort pr-str))
             (println "Actual:" (->> found :refs (map :name) sort pr-str)))
           matches?)
 
-        ["0,89,100" "0,89,1000000"] [along-am-line
-                                     north-pole
-                                     on-np
-                                     touches-np
-                                     very-tall-cart
-                                     whole-world]
-        ["0,0,1000" "0,89,1000" "0,89,1000000"] [along-am-line
-                                                 north-pole on-np
-                                                 polygon-with-holes
-                                                 touches-np
-                                                 very-tall-cart
-                                                 whole-world]
+        ["0,89,100" "0,89,1000000"] [along-am-line north-pole on-np touches-np very-tall-cart whole-world]
+        ["0,0,1000" "0,89,1000" "0,89,1000000"] [along-am-line north-pole on-np polygon-with-holes touches-np very-tall-cart whole-world]
         ["179.8,41,100000" "-179.9,22,100000"] [whole-world am-point across-am-poly along-am-line]))
 
     (testing "AQL spatial search"
@@ -499,14 +481,21 @@
              poly-refs (search/find-refs
                         :collection
                         {:polygon poly-coordinates
-                         "options[polygon][or]" "true"})
+                         "options[spatial][or]" "true"})
              poly-items [wide-north on-np normal-poly very-wide-cart whole-world normal-brs]
              bbox-refs (search/find-refs
                                :collection
                                {:bounding-box ["166.11,-19.14,-166.52,53.04"
                                                "23.59,-15.47,25.56,-4"]
-                                              "options[bounding_box][or]" "true"})
-             bbox-items [across-am-poly very-wide-cart am-point along-am-line normal-line-cart whole-world across-am-br]]
+                                              "options[spatial][or]" "true"})
+             bbox-items [across-am-poly very-wide-cart am-point along-am-line normal-line-cart whole-world across-am-br]
+             combined-refs (search/find-refs
+                            :collection
+                            {:circle "179.8,41,100000"
+                             :bounding-box "166.11,-19.14,-166.52,53.04"
+                             "options[spatial][or]" "true"})
+             combined-items [across-am-poly along-am-line whole-world across-am-br am-point very-wide-cart]]
+        (is (d/refs-match? combined-items combined-refs))
         (is (d/refs-match? poly-items poly-refs))
         (is (d/refs-match? bbox-items bbox-refs))))))
 
