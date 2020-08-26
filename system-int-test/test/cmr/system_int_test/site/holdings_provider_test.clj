@@ -98,7 +98,7 @@
     (index/wait-until-indexed)
 
     (testing "Page renders"
-      (let [page-data (html/parse (format "%s/PROV1/tag1"
+      (let [page-data (html/parse (format "%sPROV1/tag1"
                                           (url/search-site-providers-holdings-url)))]
         (is (not= nil page-data))
         
