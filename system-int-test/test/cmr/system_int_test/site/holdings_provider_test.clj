@@ -1,6 +1,5 @@
 (ns cmr.system-int-test.site.holdings-provider-test
   (:require [clojure.test :refer :all]
-            [clojure.string :as string]
             [cmr.mock-echo.client.echo-util :as echo]
             [cmr.system-int-test.data2.core :as data]
             [cmr.system-int-test.data2.granule :as dg]
@@ -63,8 +62,9 @@
         _g2 (data/ingest "PROV1"
                          (dg/granule-with-umm-spec-collection
                            coll2 (:concept-id coll2)
-                           {:spatial-coverage (dg/spatial-with-track {:cycle 1
-                                                                      :passes [{:pass 1}]})
+                           {:spatial-coverage (dg/spatial-with-track
+                                                {:cycle 1
+                                                 :passes [{:pass 1}]})
                             :beginning-date-time "2012-01-01T00:00:00.000Z"
                             :ending-date-time "2012-01-01T00:00:00.000Z"})
                          {:format :umm-json})
@@ -72,9 +72,10 @@
         _g3 (data/ingest "PROV1"
                          (dg/granule-with-umm-spec-collection
                            coll2 (:concept-id coll2)
-                           {:spatial-coverage (dg/spatial-with-track {:cycle 2
-                                                                      :passes [{:pass 3}
-                                                                               {:pass 4}]})
+                           {:spatial-coverage (dg/spatial-with-track
+                                                {:cycle 2
+                                                 :passes [{:pass 3}
+                                                          {:pass 4}]})
                             :beginning-date-time "2012-01-01T00:00:00.000Z"
                             :ending-date-time "2012-01-01T00:00:00.000Z"})
                          {:format :umm-json})
@@ -92,18 +93,10 @@
 
     (testing "virtual directory links exist"
       (let [page-data (html/parse "http://localhost:3003/site/collections/directory/PROV1/tag1")]
-        (clojure.pprint/pprint page-data)
-        (is (not= nil page-data))
         (is (= 2
                (->> page-data
                     (find-element-by-type :a)
                     (filter #(re-matches #".*virtual-directory/C\d-PROV\d.*"
                                          (get-in % [:attrs :href])))
-                    count)))
-        (is (= "Temporal : 2 Granule(s)"
-               (->> page-data
-                    (find-element-by-id "C2-PROV1-facet-data-Temporal")
-                    :content
-                    first
-                    string/trim)))))))
+                    count)))))))
 

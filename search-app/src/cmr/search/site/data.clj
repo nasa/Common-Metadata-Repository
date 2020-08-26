@@ -20,6 +20,7 @@
    [cmr.common.log :refer [debug error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [defn-timed]]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.site.util :as util]
    [cmr.transmit.config :as config]
@@ -59,26 +60,6 @@
   request context which contains the state of a running CMR."
   (fn [context & args] (:execution-context context)))
 
-(defn get-facet-doc-count
-  "Recurse through facet groups to get a total document count."
-  [facet]
-  (apply +
-         (get facet :count 0)
-         (when-let [children (:children facet)]
-           (map get-facet-doc-count children))))
-
-(defn get-facet-data-for-collection
-  "Gets facet data and calculates the child doc_count for each facet."
-  [context coll-id]
-  (as-> (config/application-public-root-url :search) data
-        (format "%sgranules" data)
-        (util/endpoint-get data {:accept mt/json
-                                 :query-params {:collection_concept_id coll-id
-                                                :include_facets "v2"
-                                                :page-size 0}})
-        (get-in data [:feed :facets :children])
-        (map #(assoc % :doc_count (get-facet-doc-count %)) data)))
-
 (defmethod collection-data :cli
   [context tag provider-id]
   (as-> (config/application-public-root-url :search) data
@@ -88,33 +69,39 @@
                                                 :tag-key tag
                                                 :include_facets "v2"
                                                 :page-size 2000}})
-        (:items (map #(assoc % :facets (get-facet-data-for-collection context (:concept-id %)))) data)
+        (:items data)
         (sort-by #(get-in % [:umm :EntryTitle]) data)))
+
+(defmethod gcrf/query-results->concept-ids :query-specified
+  [results]
+  (->> results
+       :items
+       (map :concept-id)))
 
 (defn-timed get-collection-data
   "Get the collection data from elastic by provider id and tag. Sort results
   by entry title"
   [context tag provider-id]
   (let [conditions (query-svc/generate-query-conditions-for-parameters
-                    context
-                    :collection
-                    {:tag-key tag
-                     :provider provider-id})
+                     context
+                     :collection
+                     {:tag-key tag
+                      :provider provider-id})
         query (query-model/query {:concept-type :collection
                                   :condition (gc/and-conds conditions)
                                   :skip-acls? false
                                   :page-size :unlimited
                                   :result-format :query-specified
+                                  :result-features [:granule-counts]
                                   :result-fields [:concept-id
                                                   :doi
                                                   :entry-title
                                                   :short-name
                                                   :version-id]})
-        result (query-exec/execute-query context query)]
-    (->> result
-         :items
-         (map #(assoc % :facets (get-facet-data-for-collection context (:concept-id %))))
-         (sort-by :entry-title))))
+        result (query-exec/execute-query context query)
+        {:keys [items granule-counts-map]} result]
+    (sort-by :entry-title
+             (map #(assoc % :granule-count (get granule-counts-map (:concept-id %))) items))))
 
 (defmethod collection-data :default
   [context tag provider-id]
@@ -149,7 +136,9 @@
   "Given a single item from a query's collections, update the item with data
   for linking to its landing page."
   [cmr-base-url item]
-  (assoc item :canonical-link-href (doi/get-landing-page cmr-base-url item) :cmr-link-href (doi/get-cmr-landing-page cmr-base-url (:concept-id item))))
+  (assoc item
+         :canonical-link-href (doi/get-landing-page cmr-base-url item)
+         :cmr-link-href (doi/get-cmr-landing-page cmr-base-url (:concept-id item))))
 
 (defn make-holdings-data
   "Given a collection from an elastic search query, generate landing page
