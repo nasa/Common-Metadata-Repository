@@ -112,7 +112,7 @@
                     :has_children true})}]}]
              result))))
 
-  (testing "cycle"
+  (testing "Spatial"
     (let [result (v2-facets/create-v2-facets-by-concept-type
                    :granule
                    "http://localhost:3003/granules.json"
@@ -121,13 +121,10 @@
                     "collection_concept_id" "C1-PROV1"}
                    {:cycle {:buckets [{:key 3.0 :doc_count 6}
                                       {:key 42.0 :doc_count 2}]}}
-                   nil)
-          cycle (-> result
-                    first
-                    (:children)
-                    (first))]
-      (is (= "Cycle" (:title cycle)))
-      (is (= 2 (count (:children cycle))))))
+                   nil)]
+      (is (= "Spatial" (:title (first result))))
+      (is (= 1 (count (:children (first result)))))
+      (is (= "Cycle" (:title (first (:children (first result))))))))
   (testing "cycle and pass"
     (let [result (v2-facets/create-v2-facets-by-concept-type
                    :granule
