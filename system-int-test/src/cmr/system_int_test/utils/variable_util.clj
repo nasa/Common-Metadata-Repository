@@ -116,6 +116,18 @@
     (swap! unique-index inc)
     (make-variable-concept metadata-attrs attrs @unique-index)))
 
+(defn ingest-variable-with-association
+  "A convenience function for ingesting a variable with collection association during tests."
+  ([]
+   (ingest-variable-with-association (make-variable-concept)))
+  ([variable-concept]
+   (ingest-variable-with-association variable-concept default-opts))
+  ([variable-concept opts]
+   (let [result (ingest-util/ingest-variable variable-concept opts)
+         attrs (select-keys variable-concept
+                            [:provider-id :native-id :metadata])]
+     (merge result attrs))))
+
 (defn ingest-variable
   "A convenience function for ingesting a variable during tests."
   ([]
