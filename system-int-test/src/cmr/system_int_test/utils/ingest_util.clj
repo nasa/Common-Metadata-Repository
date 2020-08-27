@@ -322,6 +322,33 @@
      :metadata metadata
      :format mime-type}))
 
+(defn ingest-variable
+  "Ingest a variable using the new association endpoint."
+  ([variable]
+   (ingest-variable variable {}))
+  ([variable options]
+   (let [{:keys [metadata format concept-id revision-id native-id coll-concept-id coll-revision-id]} variable
+         {:keys [client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id]} options
+         accept-format (:accept-format options)
+         headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
+                                        "Cmr-Revision-id" revision-id
+                                        "Cmr-Validate-Keywords" validate-keywords
+                                        "Cmr-Validate-Umm-C" validate-umm-c
+                                        "Echo-Token" "mock-echo-system-token" 
+                                        "User-Id" user-id
+                                        "Client-Id" client-id
+                                        "CMR-Request-Id" cmr-request-id
+                                        "X-Request-Id" x-request-id})
+         params {:method :put
+                 :url (url/ingest-variable-url coll-concept-id coll-revision-id native-id)
+                 :body  metadata
+                 :content-type format
+                 :headers headers
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}
+         params (merge params (when accept-format {:accept accept-format}))]
+     (parse-ingest-response (client/request params) options))))
+
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
   ([concept]

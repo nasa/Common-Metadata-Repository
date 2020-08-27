@@ -1,6 +1,7 @@
 (ns cmr.ingest.validation.validation
   "Provides functions to validate concept"
   (:require
+    [cheshire.core :as json]
     [clojure.string :as str]
     [cmr.common.util :as util :refer [defn-timed]]
     [cmr.common-app.services.kms-fetcher :as kms-fetcher]
@@ -13,6 +14,7 @@
     [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
     [cmr.ingest.services.messages :as msg]
     [cmr.ingest.validation.business-rule-validation :as bv]
+    [cmr.transmit.search :as transmit-search]
     [cmr.umm-spec.json-schema :as json-schema]
     [cmr.umm-spec.umm-json :as umm-json]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
@@ -245,3 +247,43 @@
       (do
         (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
+
+(defn validate-variable-associated-collection
+  "Validate the collection being associated to is accessible."
+  [context coll-concept-id coll-revision-id]
+  (when coll-concept-id
+    (let [params (if coll-revision-id
+                   {:concept-id coll-concept-id
+                    :all-revisions true}
+                   {:concept-id coll-concept-id})
+          response (transmit-search/search-for-collections
+                     context
+                     params
+                     {:raw? true
+                      :http-options {:accept mt/umm-json}})
+          items (-> response
+                    :body
+                    (json/parse-string true)
+                    :items)
+          revision-info (->> items
+                             (map :meta)
+                             (map #(select-keys % [:revision-id :deleted])))]
+      (if (seq revision-info)
+        (when coll-revision-id
+          (if-let [revision (->> revision-info
+                                 (filter #(= (read-string coll-revision-id)
+                                             (:revision-id %)))
+                                 first)]
+            (when (:deleted revision)
+              (errors/throw-service-error
+                :invalid-data
+                (format "Collection [%s] revision [%s] is deleted"
+                        coll-concept-id coll-revision-id)))
+            (errors/throw-service-error
+              :invalid-data
+              (format "Collection [%s] revision [%s] does not exist"
+                      coll-concept-id coll-revision-id))))
+        (errors/throw-service-error
+          :invalid-data
+          (format "Collection [%s] does not exist or is not visible."
+                  coll-concept-id))))))
