@@ -227,3 +227,13 @@
           provider-id
           field-name
           field-value))
+
+(defn delete-association-not-found
+  [assoc-type native-id]
+  (let [[identifier concept-id revision-id] (str/split native-id #"/")]
+    (if revision-id
+      (format (str "%s [%s] is not associated with the specific collection concept revision "
+                   "concept id [%s] and revision id [%s].")
+              (str/capitalize (name assoc-type)) identifier concept-id revision-id)
+      (format "%s [%s] is not associated with collection [%s]."
+              (str/capitalize (name assoc-type)) identifier concept-id))))

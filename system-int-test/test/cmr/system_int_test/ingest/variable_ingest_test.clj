@@ -64,25 +64,7 @@
             (is (= 2 revision-id))
             (is (= "f89e99210c80df96d6d35f005d57c5f8"
                    (get-in (mdb/get-concept concept-id revision-id)
-                           [:extra-fields :fingerprint])))))
-
-        (testing "ingest of the existing variable with a different native-id is not allowed"
-          (let [concept (variable-util/make-variable-concept
-                         {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
-                                                                  :Size 3
-                                                                  :Type "OTHER"})]
-                          :AcquisitionSourceName "Instrument1"}
-                         {:native-id "var2"})
-                {:keys [status errors]} (variable-util/ingest-variable
-                                         concept
-                                         (variable-util/token-opts token))]
-            (is (= 409 status))
-            (is (= [(format (str "The Fingerprint of the variable which is defined by the variable's "
-                                 "Instrument short name, variable short name, units and dimensions "
-                                 "must be unique. The following variable with the same fingerprint "
-                                 "but different native id was found: [%s].")
-                            var-concept-id)]
-                   errors))))))
+                           [:extra-fields :fingerprint])))))))
 
     (testing "ingest of a variable concept with a revision id"
       (let [concept (variable-util/make-variable-concept {} {:native-id "var1"
@@ -320,20 +302,6 @@
     ;; sanity check
     (is (mdb/concept-exists-in-mdb? var-concept-id initial-revision-id))
     (is (= 1 initial-revision-id))
-
-    (testing "ingest of a variable with the same fingerprint but a different native id is not OK"
-      (let [concept (variable-util/make-variable-concept
-                     {:Name "var1"} {:native-id "a-different-native-id"})
-            {:keys [status errors]} (variable-util/ingest-variable
-                                     concept
-                                     (variable-util/token-opts token))]
-        (is (= 409 status))
-        (is (= [(format (str "The Fingerprint of the variable which is defined by the variable's "
-                             "Instrument short name, variable short name, units and dimensions "
-                             "must be unique. The following variable with the same fingerprint "
-                             "but different native id was found: [%s].")
-                        var-concept-id)]
-               errors))))
 
     (let [;; variable with a different variable name, but the same native-id
            concept (variable-util/make-variable-concept

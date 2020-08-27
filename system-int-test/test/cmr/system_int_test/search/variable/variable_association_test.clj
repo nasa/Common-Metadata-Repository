@@ -79,24 +79,14 @@
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
          response)))
 
-    (testing "Associate to deleted collections"
-      (let [c1-p1-concept (mdb/get-concept c1-p1)
-            _ (ingest/delete-concept c1-p1-concept)
-            _ (index/wait-until-indexed)
-            response (association-util/associate-by-concept-ids
-                      token concept-id [{:concept-id c1-p1}])]
-        (vu/assert-variable-association-bad-request
-         {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
-         response)))
-
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [response (association-util/associate-by-concept-ids token
                                                                 concept-id
                                                                 [{:concept-id c4-p3}])]
         (vu/assert-variable-association-bad-request
-         {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
-         response)))))
+          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
+          response)))))
 
 (deftest associate-variable-failure-test
   (echo-util/grant-registered-users (system/context)
@@ -348,17 +338,22 @@
       (association-util/associate-by-concept-ids token
                                                 concept-id
                                                 [{:concept-id (:concept-id latest-coll)}])
-      (assert-variable-associated [latest-coll])
+      ;; The association above fails because variable with concept-id was deleted when the
+      ;; collection was deleted.
+      (assert-variable-associated [])
 
       (testing "Variable still associated with collection after updating variable"
         (let [updated-variable (vu/ingest-variable var-concept)]
-          (is (= {:status 200 :concept-id concept-id :revision-id 2}
+          ;; when the collection was deleted, the variable was deleted and the revision-id
+          ;; was 2, now ingest again, it's 3.
+          (is (= {:status 200 :concept-id concept-id :revision-id 3}
                  (select-keys updated-variable [:status :concept-id :revision-id])))
           (index/wait-until-indexed)
-          (assert-variable-associated [latest-coll])))
+          ;; there wasn't association created.
+          (assert-variable-associated [])))
 
       (testing "Variable not associated with collection after deleting and recreating the variable"
-        (is (= {:status 200 :concept-id concept-id :revision-id 3}
+        (is (= {:status 200 :concept-id concept-id :revision-id 4}
                (select-keys (ingest/delete-concept var-concept {:token token})
                             [:status :concept-id :revision-id])))
         (index/wait-until-indexed)
@@ -368,7 +363,7 @@
 
         (testing "Not associated after variable is recreated."
           ;; create a new revision of the variable
-          (is (= {:status 200 :concept-id concept-id :revision-id 4}
+          (is (= {:status 200 :concept-id concept-id :revision-id 5}
                  (select-keys (vu/ingest-variable var-concept) [:status :concept-id :revision-id])))
           (index/wait-until-indexed)
 

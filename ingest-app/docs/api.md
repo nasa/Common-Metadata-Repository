@@ -69,6 +69,10 @@ application/vnd.nasa.cmr.umm+json;version=1.14
 
 All Ingest API operations require specifying a token obtained from URS or ECHO. The token should be specified using the `Echo-Token` header.
 
+#### <a name="authorization-header"></a> Authorization Header
+
+The token can alternatively be specified using the `Authorization: Bearer` header, and by specifying a Bearer token.
+
 #### <a name="accept-header"></a> Accept Header
 
 The Accept header specifies the format of the response message. The Accept header will default to XML for the normal Ingest APIs. `application/json` can be specified if you prefer responses in JSON.
@@ -324,6 +328,8 @@ Collection metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPO
 
     curl -i -XDELETE -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
 
+Note: When a collection is deleted, all the associaitons will be deleted(tombstoned) too. With the new requirement that a variable can not exist without an association with a collection, since each variable can only be associated with one collection, all the variables associated with the deleted collection will be deleted too.
+
 #### Successful Response in XML
 
 ```
@@ -431,7 +437,71 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 
 ### <a name="create-update-variable"></a> Create / Update a Variable
 
-Variable metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+A new variable ingest endpoint is provided to ensure that variable association is created at variable ingest time.
+Variable concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/collections/<collection-concept-id>/<collection-revision-id>/variables/<native-id>`.  `<collection-revision-id>` is optional. The response will include the [concept id](#concept-id),[revision id](#revision-id), variable-association and associated-item.
+
+Note: There is no more fingerprint check at variable's ingest/update time because the existing fingerprint is obsolete. The new variable uniqueness is defined by variable name and the collection it's associated with and is checked at variable association creation time.
+
+```
+curl -i -XPUT \
+-H "Content-type: application/vnd.nasa.cmr.umm+json" \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/collections/C1200000005-PROV1/1/variables/sampleVariableNativeId33 -d \
+"{\"ValidRange\":{},
+  \"Dimensions\":\"11\",
+  \"Scale\":\"1.0\",
+  \"Offset\":\"0.0\",
+  \"FillValue\":\"-9999.0\",
+  \"Units\":\"m\",
+  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
+                        \"Topic\":\"sk-B\",
+                        \"Term\":\"sk-C\"}],
+  \"Name\":\"A-name\",
+  \"VariableType\":\"SCIENCE_VARIABLE\",
+  \"LongName\":\"A long UMM-Var name\",
+  \"DimensionsName\":\"H2OFunc\",
+  \"DataType\":\"float32\"}"
+```
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?><result>
+    <concept-id>V1200000006-PROV1</concept-id>
+    <revision-id>1</revision-id>
+    <variable-association>
+        <concept-id>VA1200000007-CMR</concept-id>
+        <revision-id>1</revision-id>
+    </variable-association>
+    <associated-item>
+        <concept-id>C1200000005-PROV1</concept-id>
+        <revision-id>1</revision-id>
+    </associated-item>
+</result>
+
+```
+
+#### Successful Response in JSON
+
+By passing the option `-H "Accept: application/json"` to `curl`, one may
+get a JSON response:
+
+```
+{
+  "concept-id" : "V1200000006-PROV1",
+  "revision-id" : 1,
+  "variable-association" : {
+    "concept-id" : "VA1200000007-CMR",
+    "revision-id" : 1 
+  },
+  "associated-item" : {
+    "concept-id" : "C1200000005-PROV1",
+    "revision-id" : 1
+  }
+}
+
+```
+
+Variable concept can continue to be updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
 ```
 curl -i -XPUT \
@@ -475,7 +545,7 @@ get a JSON response:
 
 ### <a name="delete-variable"></a> Delete a Variable
 
-Variable metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+Variable concept can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
 ```
 curl -i -X DELETE \
