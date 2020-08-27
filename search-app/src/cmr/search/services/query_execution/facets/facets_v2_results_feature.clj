@@ -61,6 +61,10 @@
     :start-date
     (temporal-facets/temporal-facet query-params)
 
+    :two-d-coordinate-system-name
+    {:terms {:field (keyword (name (get (facets-v2-params->elastic-fields concept-type) facet-field)))
+             :size size}}
+
     :cycle
     (cycle-facets/cycle-facet query-params)
 
@@ -69,7 +73,7 @@
 
 (defn- facets-v2-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
-  from a collection search. values in facet-fields-map specifies the number of results to return for the facet. 
+  from a collection search. values in facet-fields-map specifies the number of results to return for the facet.
   Only a subset of the facets are returned in the v2 facets, specifically those that help enable dataset discovery."
   [concept-type query-params facet-fields-map]
   (into {}
@@ -77,7 +81,7 @@
           [(get (facet-fields->aggregation-fields concept-type) field)
            (facet-query concept-type field (field facet-fields-map) query-params)])))
 
-(defn- add-terms-with-zero-matching-collections
+(defn add-terms-with-zero-matching-collections
   "Takes a sequence of tuples and a sequence of search terms. The tuples are of the form search term
   and number of matching collections. For any search term provided that is not in the tuple of value
   counts, a new tuple is added with the search term and a count of 0."
@@ -157,12 +161,12 @@
 
 (defn- get-facet-fields-map
   "Returns a map with the keys being the keys in facet-fields-list
-  and the values being the related facet size in the facets-size map. 
+  and the values being the related facet size in the facets-size map.
   If the value is not present in facets-size-map, use the default value.
   Note: facets-v2-params-with-default-size contains all the keys in facet-fields-list."
   [concept-type facet-fields-list facets-size-map]
-  (select-keys (merge (facets-v2-params-with-default-size concept-type) facets-size-map) 
-               facet-fields-list)) 
+  (select-keys (merge (facets-v2-params-with-default-size concept-type) facets-size-map)
+               facet-fields-list))
 
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
   [context query _]

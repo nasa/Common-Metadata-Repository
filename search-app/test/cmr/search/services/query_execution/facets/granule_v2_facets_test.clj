@@ -5,7 +5,7 @@
 
 (deftest create-cycle-subfacets-map-test
   (testing "no filter added"
-    (let [result (gv2f/create-spatial-subfacets-map 
+    (let [result (gv2f/create-spatial-subfacets-map
                    "http://localhost:3003/granules.json"
                    {"page_size" "10"
                     "include_facets" "v2"
@@ -25,7 +25,7 @@
              (:links (second (:children cycle-facet)))))))
 
   (testing "cycle selected"
-    (let [result (gv2f/create-spatial-subfacets-map 
+    (let [result (gv2f/create-spatial-subfacets-map
                    "http://localhost:3003/granules.json"
                    {"page_size" "10"
                     "include_facets" "v2"
@@ -41,13 +41,13 @@
                        {:key 4.0 :doc_count 1}]}}})
           cycle-42 (-> result :children first :children first)]
       (is (= "42" (:title cycle-42)))
-      (is (= {:remove          
+      (is (= {:remove
               "http://localhost:3003/granules.json?page_size=10&include_facets=v2&collection_concept_id=C1-PROV1"}
              (:links cycle-42))))))
 
 (deftest create-v2-facets-by-concept-type-test
   (testing "temporal"
-    (let [result (v2-facets/create-v2-facets-by-concept-type 
+    (let [result (v2-facets/create-v2-facets-by-concept-type
                    :granule
                    "http://localhost:3003/granules.json"
                    {"page_size" "10"
@@ -68,7 +68,7 @@
                        :key 1325376000000
                        :doc_count 1}]}}
                    nil)]
-      (is (= [{:title "Temporal"          
+      (is (= [{:title "Temporal"
                :type :group
                :applied false
                :has_children true
@@ -126,7 +126,7 @@
       (is (= 1 (count (:children (first result)))))
       (is (= "Cycle" (:title (first (:children (first result))))))))
   (testing "cycle and pass"
-    (let [result (v2-facets/create-v2-facets-by-concept-type 
+    (let [result (v2-facets/create-v2-facets-by-concept-type
                    :granule
                    "http://localhost:3003/granules.json"
                    {"page_size" "10"
@@ -158,9 +158,9 @@
       (is (= [{:title "Spatial"
                :type :group
                :applied false
-               :has_children true 
+               :has_children true
                :children
-               [{:title "Cycle"          
+               [{:title "Cycle"
                  :type :group
                  :applied false
                  :has_children true

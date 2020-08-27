@@ -21,7 +21,7 @@
    :variables-h "Measurements"
    :temporal "Temporal"
    :granule-data-format-h "Data Format"
-   :tiling-system "Tiling System"})
+   :two-d-coordinate-system-name-h "Tiling System"})
 
 (defn terms-facet
   "Construct a terms query to be applied for the given field. Size specifies the number of results

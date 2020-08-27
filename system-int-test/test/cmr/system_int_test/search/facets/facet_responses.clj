@@ -156,7 +156,20 @@
        :links
        {:apply
         "http://localhost:3003/collections.json?page_size=0&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement2"},
-       :has_children true}]}]})
+       :has_children true}]},
+    {:title "Tiling System",
+     :type "group",
+     :applied false,
+     :has_children true,
+     :children
+     [{:title "MISR",
+       :type "filter",
+       :applied false,
+       :count 1,
+       :links
+       {:apply
+        "http://localhost:3003/collections.json?page_size=0&include_facets=v2&two_d_coordinate_system_name%5B%5D=MISR"},
+       :has_children false}]}]})
 
 (def expected-v2-facets-remove-links
   "Expected facets to be returned in the facets v2 response for a search that includes all of the
@@ -356,7 +369,20 @@
                :links
                {:apply
                 "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&variables_h%5B1%5D%5Bmeasurement%5D=Measurement2&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-               :has_children true}]}]})
+               :has_children true}]},
+            {:title "Tiling System",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "MISR",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&variables_h%5B0%5D%5Bvariable%5D=Variable1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&two_d_coordinate_system_name%5B%5D=MISR&platform_h=DIADEM-1D&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement1&science_keywords_h%5B0%5D%5Bcategory%5D=Earth+Science&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+               :has_children false}]}]})
 
 (def partial-v2-facets
   "Expected facet results with some facets present and some not included because there were not any
@@ -983,7 +1009,19 @@
                :links
                {:apply
                 "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&page_size=0&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement2"},
-               :has_children true}]}]})
+               :has_children true}]},
+            {:title "Tiling System",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "MISR",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&page_size=0&include_facets=v2&two_d_coordinate_system_name%5B%5D=MISR"},
+               :has_children false}]}]})
 
 (def expected-v2-facets-apply-links-with-selecting-facet-outside-of-facets-size
   "Expected facets to be returned in the facets v2 response. The structure of the v2 facet response
@@ -1141,7 +1179,19 @@
                :links
                {:apply
                 "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&platform_h=diadem-1D&page_size=0&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement2"},
-               :has_children true}]}]})
+               :has_children true}]},
+            {:title "Tiling System",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "MISR",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply "http://localhost:3003/collections.json?facets_size%5Bplatform%5D=1&platform_h=diadem-1D&page_size=0&include_facets=v2&two_d_coordinate_system_name%5B%5D=MISR"},
+               :has_children false}]}]})
 
 (def expected-v2-facets-apply-links-with-facets-size-and-non-existing-selecting-facet
   "Expected facets to be returned in the facets v2 response. The structure of the v2 facet response
@@ -1334,4 +1384,16 @@
                :links
                {:apply
                 "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&variables_h%5B0%5D%5Bmeasurement%5D=Measurement2"},
-               :has_children true}]}]})
+               :has_children true}]},
+            {:title "Tiling System",
+             :type "group",
+             :applied false,
+             :has_children true,
+             :children
+             [{:title "MISR",
+               :type "filter",
+               :applied false,
+               :count 1,
+               :links
+               {:apply "http://localhost:3003/collections.json?platform_h=diadem-1D&page_size=0&include_facets=v2&two_d_coordinate_system_name%5B%5D=MISR"},
+               :has_children false}]}]})
