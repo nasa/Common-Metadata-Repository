@@ -15,6 +15,10 @@
   "The subfields of the granule temporal facet nested field."
   [:year :month :day])
 
+(def cycle-passes-subfields
+  "The subfields of the granule cycle-pass nested field."
+  [:pass])
+
 (def pass-subfields
   "The subfields of the granule pass nested field."
   [:pass :tiles])

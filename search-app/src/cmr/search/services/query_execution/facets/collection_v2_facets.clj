@@ -3,18 +3,14 @@
   https://wiki.earthdata.nasa.gov/display/CMR/Updated+facet+response"
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.set :as set]
-   [clojure.string :as str]
-   [cmr.common-app.services.search.query-execution :as query-execution]
+   [clojure.string :as string]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as v2-facets]
    [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
-   [cmr.search.services.query-execution.facets.links-helper :as lh]
-   [cmr.transmit.connection :as conn]
-   [ring.util.codec :as codec]))
+   [cmr.search.services.query-execution.facets.links-helper :as lh]))
 
 (def collection-facets-v2-params->elastic-fields
   "Defines the mapping of the base search parameters for the v2 facets fields to its field names
@@ -85,8 +81,8 @@
         snake-case-field (csk/->snake_case_string facet-field)
         applied? (some? (or (get query-params snake-case-field)
                             (get query-params (str snake-case-field "[]"))))
-        query-field (keyword (str/replace (name facet-field) #"-h" ""))
-        children (map (v2h/generate-filter-node base-url query-params query-field applied?)
+        query-field (keyword (string/replace (name facet-field) #"-h" ""))
+        children (map (v2h/filter-node-generator base-url query-params query-field applied?)
                       (sort-by first util/compare-natural-strings value-counts))]
     (when (seq children)
       (vector

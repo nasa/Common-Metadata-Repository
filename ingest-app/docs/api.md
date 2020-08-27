@@ -69,6 +69,10 @@ application/vnd.nasa.cmr.umm+json;version=1.14
 
 All Ingest API operations require specifying a token obtained from URS or ECHO. The token should be specified using the `Echo-Token` header.
 
+#### <a name="authorization-header"></a> Authorization Header
+
+The token can alternatively be specified using the `Authorization: Bearer` header, and by specifying a Bearer token.
+
 #### <a name="accept-header"></a> Accept Header
 
 The Accept header specifies the format of the response message. The Accept header will default to XML for the normal Ingest APIs. `application/json` can be specified if you prefer responses in JSON.

@@ -33,34 +33,28 @@
         {serv1-concept-id :concept-id} (service-util/ingest-service-with-attrs
                                         {:native-id "serv1"
                                          :Name "service1"})
-        {serv2-concept-id :concept-id} (service-util/ingest-service-with-attrs
-                                        {:native-id "serv2"
-                                         :Name "service2"
-                                         :ServiceOptions {:SupportedInputFormats ["PNG"]}})
         {serv3-concept-id :concept-id} (service-util/ingest-service-with-attrs
                                         {:native-id "serv3"
                                          :Name "service3"
-                                         :ServiceOptions {:SupportedInputFormats ["TIFF"]
-                                                          :SupportedOutputFormats ["TIFF"]}})
+                                         :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "TIFF"
+                                                                                    :SupportedOutputFormats ["TIFF"]}]}})
         serv4-concept (service-util/make-service-concept
                        {:native-id "serv4"
                         :Name "Service4"
-                        :ServiceOptions {:SupportedInputFormats ["TIFF"]
-                                         :SupportedOutputFormats ["PNG"]}})
+                        :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "TIFF"
+                                                                   :SupportedOutputFormats ["PNG"]}]}})
         {serv4-concept-id :concept-id} (service-util/ingest-service serv4-concept)]
     ;; index the collections so that they can be found during service association
     (index/wait-until-indexed)
     (au/associate-by-concept-ids token serv1-concept-id [{:concept-id (:concept-id coll1)}
                                                          {:concept-id (:concept-id coll2)}])
-    (au/associate-by-concept-ids token serv2-concept-id [{:concept-id (:concept-id coll1)}
-                                                         {:concept-id (:concept-id coll2)}])
     (index/wait-until-indexed)
 
     ;; verify collection associated with a service with no supported output format, has-formats false
     (service-util/assert-collection-search-result
-     coll1 {:has-formats false} [serv1-concept-id serv2-concept-id])
+     coll1 {:has-formats false} [serv1-concept-id])
     (service-util/assert-collection-search-result
-     coll2 {:has-formats false} [serv1-concept-id serv2-concept-id])
+     coll2 {:has-formats false} [serv1-concept-id])
 
     (au/associate-by-concept-ids token serv3-concept-id [{:concept-id (:concept-id coll1)}
                                                          {:concept-id (:concept-id coll2)}])
@@ -69,9 +63,9 @@
     ;; verify collection associated with services with a single output format that matches
     ;; the its single input format, has-formats false
     (service-util/assert-collection-search-result
-     coll1 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id])
+     coll1 {:has-formats false} [serv1-concept-id serv3-concept-id])
     (service-util/assert-collection-search-result
-     coll2 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id])
+     coll2 {:has-formats false} [serv1-concept-id serv3-concept-id])
 
     (au/associate-by-concept-ids token serv4-concept-id [{:concept-id (:concept-id coll1)}
                                                          {:concept-id (:concept-id coll2)}])
@@ -80,9 +74,9 @@
     ;; verify collection associated with services with one supported output formats that does not
     ;; match its input formats, has-formats true
     (service-util/assert-collection-search-result
-     coll1 {:has-formats true} [serv1-concept-id serv2-concept-id serv3-concept-id serv4-concept-id])
+     coll1 {:has-formats true} [serv1-concept-id serv3-concept-id serv4-concept-id])
     (service-util/assert-collection-search-result
-     coll2 {:has-formats true} [serv1-concept-id serv2-concept-id serv3-concept-id serv4-concept-id])
+     coll2 {:has-formats true} [serv1-concept-id serv3-concept-id serv4-concept-id])
 
     (testing "delete service affect collection search has-formats field"
       ;; Delete service4
@@ -91,9 +85,9 @@
 
       ;; verify has-formats is false after the service with two supported formats is deleted
       (service-util/assert-collection-search-result
-       coll1 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id])
+       coll1 {:has-formats false} [serv1-concept-id serv3-concept-id])
       (service-util/assert-collection-search-result
-       coll2 {:has-formats false} [serv1-concept-id serv2-concept-id serv3-concept-id]))
+       coll2 {:has-formats false} [serv1-concept-id serv3-concept-id]))
 
     (testing "update service affect collection search has-formats field"
       ;; before update service3, collections' has formats is false
@@ -101,19 +95,21 @@
        coll1
        {:has-formats false :has-transforms false :has-spatial-subsetting false :has-temporal-subsetting false
         :has-variables false}
-       [serv1-concept-id serv2-concept-id serv3-concept-id])
+       [serv1-concept-id serv3-concept-id])
       (service-util/assert-collection-search-result
        coll2
        {:has-formats false :has-transforms false :has-spatial-subsetting false :has-temporal-subsetting false
         :has-variables false}
-       [serv1-concept-id serv2-concept-id serv3-concept-id])
+       [serv1-concept-id serv3-concept-id])
 
       ;; update service3 to have two supported formats and spatial subsetting
       (service-util/ingest-service-with-attrs
        {:native-id "serv3"
         :Name "service3"
-        :ServiceOptions {:SupportedOutputFormats ["TIFF" "JPEG"]
-                         :SubsetTypes ["Spatial"]}})
+        :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "PNG"
+                                                   :SupportedOutputFormats ["TIFF" "JPEG"]}]
+                         :Subset {:SpatialSubset {:BoundingBox {:AllowMultipleValues false}}}}})
+
       (index/wait-until-indexed)
       ;; verify has-formats is true after the service is updated with two supported formats
       ;; and has-spatial-subsetting is true after service is updated with Spatial SubsetTypes
@@ -122,14 +118,15 @@
        coll1
        {:has-formats true :has-transforms false :has-spatial-subsetting true :has-temporal-subsetting false
         :has-variables false}
-       [serv1-concept-id serv2-concept-id serv3-concept-id])
+       [serv1-concept-id serv3-concept-id])
 
       ;; update service3 to temporal subsetting and  also have InterpolationTypes
       (service-util/ingest-service-with-attrs
        {:native-id "serv3"
         :Name "service3"
-        :ServiceOptions {:SupportedOutputFormats ["TIFF" "JPEG"]
-                         :SubsetTypes ["Temporal"]
+        :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "PNG"
+                                                   :SupportedOutputFormats ["TIFF" "JPEG"]}]
+                         :Subset {:TemporalSubset {:AllowMultipleValues false}}
                          :InterpolationTypes ["Nearest Neighbor"]}})
       (index/wait-until-indexed)
       ;; verify has-transforms is true after the service is updated with InterpolationTypes
@@ -137,12 +134,12 @@
        coll1
        {:has-formats true :has-transforms true :has-spatial-subsetting false :has-temporal-subsetting true
         :has-variables false}
-       [serv1-concept-id serv2-concept-id serv3-concept-id])
+       [serv1-concept-id serv3-concept-id])
       (service-util/assert-collection-search-result
        coll2
        {:has-formats true :has-transforms true :has-spatial-subsetting false :has-temporal-subsetting true
         :has-variables false}
-       [serv1-concept-id serv2-concept-id serv3-concept-id]))
+       [serv1-concept-id serv3-concept-id]))
 
     (testing "variable associations together with service associations"
       (let [{var-concept-id :concept-id} (variable-util/ingest-variable-with-attrs
@@ -156,12 +153,12 @@
          coll1
          {:has-formats true :has-transforms true :has-spatial-subsetting false :has-temporal-subsetting true
           :has-variables true}
-         [serv1-concept-id serv2-concept-id serv3-concept-id] [var-concept-id])
+         [serv1-concept-id serv3-concept-id] [var-concept-id])
         (service-util/assert-collection-search-result
          coll2
          {:has-formats true :has-transforms true :has-spatial-subsetting false :has-temporal-subsetting true
           :has-variables false}
-         [serv1-concept-id serv2-concept-id serv3-concept-id])))))
+         [serv1-concept-id serv3-concept-id])))))
 
 (deftest collection-service-search-has-transforms-and-service-deletion-test
   (testing "SupportedInputProjections and SupportedOutputProjections affects has-transforms"
@@ -245,7 +242,7 @@
         (service-util/ingest-service-with-attrs
          {:native-id "serv8"
           :Name "service8"
-          :ServiceOptions {:SubsetTypes ["Spatial"]}})
+          :ServiceOptions {:Subset {:SpatialSubset {:BoundingBox {:AllowMultipleValues false}}}}})
 
         {serv9-concept-id :concept-id}
         (service-util/ingest-service-with-attrs
@@ -257,15 +254,16 @@
         serv10-concept (service-util/make-service-concept
                         {:native-id "serv10"
                          :Name "service10"
-                         :ServiceOptions {:SubsetTypes ["Variable"]}})
+                         :ServiceOptions {:Subset {:VariableSubset {:AllowMultipleValues false}}}})
         {serv10-concept-id :concept-id} (service-util/ingest-service serv10-concept)
 
         ;; service for testing service deletion affects collection search result
         serv11-concept (service-util/make-service-concept
                         {:native-id "serv11"
                          :Name "service11"
-                         :ServiceOptions {:SubsetTypes ["Spatial"]
-                                          :SupportedOutputFormats ["TIFF" "JPEG"]
+                         :ServiceOptions {:Subset {:SpatialSubset {:BoundingBox {:AllowMultipleValues false}}}
+                                          :SupportedReformattings [{:SupportedInputFormat "HDF4"
+                                                                    :SupportedOutputFormats ["TIFF" "JPEG"]}]
                                           :InterpolationTypes ["Nearest Neighbor"]}})
         {serv11-concept-id :concept-id} (service-util/ingest-service serv11-concept)]
     (index/wait-until-indexed)
