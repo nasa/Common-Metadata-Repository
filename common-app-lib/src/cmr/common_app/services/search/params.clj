@@ -249,12 +249,9 @@
         spatial-option (if (= (get-in options [:spatial :or]) "true")
                            :or
                            :and)
-        spatial-params (when (seq params)
-                         (select-keys params valid-spatial-params))]
+        spatial-params (select-keys params valid-spatial-params)]
     (if (and (= :or spatial-option)
-             (seq spatial-params)
-             (or (= :collection concept-type)
-                 (= :granule concept-type)))
+             (seq spatial-params))
         (qm/query
          (assoc query-attribs :condition (create-combined-conditions context
                                                                      concept-type
