@@ -174,6 +174,10 @@
 
 (defconfig email-subscription-processing-interval
   "Number of seconds between jobs processing email subscriptions."
+  {:default 60;3600
+   :type Long})
+(defconfig email-subscription-processing-lookback
+  "Number of seconds to look back for granual changes."
   {:default 3600
    :type Long})
 
@@ -248,6 +252,8 @@
 (defn- process-subscriptions
   "Process each subscription in subscriptions."
   [context subscriptions time-constraint]
+  (error "* * * * * *")
+  (error "process-subscriptions" time-constraint)
   (doseq [raw_subscription subscriptions
          :let [subscription (add-updated-since raw_subscription time-constraint)
                email-address (get-in subscription [:extra-fields :email-address])
@@ -264,21 +270,23 @@
                                :collection-concept-id coll-id}
                               query-params)]]
       ; remove these comments before going to production
-      (info "********************************")
-      (info "Processing subscription: " sub-name " with\n" (str subscription) ".")
+      (error "********************************")
+      (error "Processing subscription: " sub-name " with\n" (str subscription) ".")
       (try
         (let [gran-ref1 (search/find-granule-references context params1)
               gran-ref2 (search/find-granule-references context params2)
               gran-ref (distinct (concat gran-ref1 gran-ref2))
               gran-ref-location (map :location gran-ref)]
+          (error "gran ref 1:" (pr-str gran-ref1))
+          (error "gran ref 2:" (pr-str gran-ref2))
+          (error "gran-ref: " (pr-str gran-ref))
           (when (seq gran-ref)
+           (let [email-content (create-email-content (mail-sender) email-address gran-ref-location subscription)
+                email-settings {:host (email-server-host) :port (email-server-port)}]
             (info "Start sending email for subscription: " sub-name)
-            (error (str
-             "email\n"
-             (create-email-content (mail-sender) email-address gran-ref-location subscription)))
-            (postal-core/send-message {:host (email-server-host) :port (email-server-port)}
-                                      (create-email-content (mail-sender) email-address gran-ref-location subscription))
-            (info "Finished sending email for subscription: " sub-name)))
+            (error (str "email\n" email-content)
+            (postal-core/send-message email-settings email-content)
+            (info "Finished sending email for subscription: " sub-name)))))
        (catch Exception e
          (error "Exception caught in email subscription: " sub-name "\n\n"  (.getMessage e))))))
 
@@ -287,7 +295,7 @@
   in the subscription and were created/updated during the last processing interval."
   [context]
   (let [end-time (t/now)
-        start-time (t/minus end-time (t/seconds (email-subscription-processing-interval)))
+        start-time (t/minus end-time (t/seconds (email-subscription-processing-lookback)))
         time-constraint (str (str start-time) "," (str end-time))
         subscriptions
          (->> (mdb/find-concepts context {:latest true} :subscription)
