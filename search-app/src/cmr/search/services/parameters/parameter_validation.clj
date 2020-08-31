@@ -180,37 +180,38 @@
 
 (defmethod cpv/valid-parameter-options :granule
   [_]
-  {:native-id cpv/string-param-options
+  {:attribute exclude-plus-or-option
+   :campaign cpv/string-plus-and-options
    :collection-concept-id cpv/pattern-option
+   :collection-data-type cpv/string-param-options
+   :created-at cpv/and-option
+   :crid-id cpv/string-plus-and-options
    :data-center cpv/string-plus-and-options
    :dataset-id cpv/pattern-option
-   :entry-title cpv/string-plus-and-options
-   :short-name cpv/string-plus-and-options
-   :version cpv/string-param-options
-   :granule-ur cpv/string-param-options
-   :producer-granule-id cpv/string-param-options
-   :readable-granule-name cpv/string-plus-and-options
-   :project cpv/string-plus-and-options
-   :campaign cpv/string-plus-and-options
-   :platform cpv/string-plus-and-exclude-collection-options
-   :sensor cpv/string-plus-and-exclude-collection-options
-   :instrument cpv/string-plus-and-exclude-collection-options
-   :collection-data-type cpv/string-param-options
    :day-night cpv/string-param-options
-   :two-d-coordinate-system cpv/string-param-options
-   :grid cpv/string-param-options
-   :science-keywords cpv/string-plus-or-options
-   :spatial-keyword cpv/string-plus-and-options
+   :entry-title cpv/string-plus-and-options
    :feature-id cpv/string-plus-and-options
-   :crid-id cpv/string-plus-and-options
-   :provider cpv/string-param-options
-   :attribute exclude-plus-or-option
-   :temporal exclude-plus-and-or-option
-   :created-at cpv/and-option
+   :granule-ur cpv/string-param-options
+   :grid cpv/string-param-options
+   :instrument cpv/string-plus-and-exclude-collection-options
+   :native-id cpv/string-param-options
    :passes cpv/and-option
+   :platform cpv/string-plus-and-exclude-collection-options
+   :producer-granule-id cpv/string-param-options
    :production-date cpv/and-option
+   :project cpv/string-plus-and-options
+   :provider cpv/string-param-options
+   :readable-granule-name cpv/string-plus-and-options
    :revision-date cpv/and-option
-   :simplify-shapefile cpv/string-param-options})
+   :science-keywords cpv/string-plus-or-options
+   :sensor cpv/string-plus-and-exclude-collection-options
+   :short-name cpv/string-plus-and-options
+   :simplify-shapefile cpv/string-param-options
+   :spatial cpv/and-or-option
+   :spatial-keyword cpv/string-plus-and-options
+   :temporal exclude-plus-and-or-option
+   :two-d-coordinate-system cpv/string-param-options
+   :version cpv/string-param-options})
 
 (defmethod cpv/valid-parameter-options :tag
   [_]
@@ -261,6 +262,10 @@
 (defmethod cpv/valid-query-level-options :collection
   [_]
   #{:highlights :spatial})
+
+(defmethod cpv/valid-query-level-options :granule
+  [_]
+  #{:spatial})
 
 (defmethod cpv/valid-query-level-params :granule
   [_]

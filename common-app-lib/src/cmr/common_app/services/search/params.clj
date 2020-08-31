@@ -227,9 +227,11 @@
   "When valid spatial parameters are given and the spatial OR option is passed,
    create proper search conditions"
   [context concept-type options params spatial-params]
-  (let [spatial-conditions (generate-conditions
-                             context concept-type spatial-params options)
-        combined-spatial-conditions (gc/or-conds spatial-conditions)
+  (let [spatial-conditions (when (seq spatial-params)
+                             (generate-conditions
+                               context concept-type spatial-params options))
+        combined-spatial-conditions (when (seq spatial-params)
+                                      (gc/or-conds spatial-conditions))
         non-spatial-params (-> params
                                (data/diff spatial-params)
                                first)
@@ -237,10 +239,9 @@
                                  (generate-conditions
                                   context concept-type non-spatial-params options))
         combined-non-spatial-conditions (when (seq non-spatial-conditions)
-                                          (gc/and-conds non-spatial-conditions))]
-    (if (and combined-spatial-conditions combined-non-spatial-conditions)
-        (gc/and-conds (conj combined-spatial-conditions combined-non-spatial-conditions))
-        (conj combined-spatial-conditions combined-non-spatial-conditions))))
+                                          (gc/and-conds non-spatial-conditions))
+        all-conditions (remove nil? [combined-spatial-conditions combined-non-spatial-conditions])]
+    (gc/and-conds all-conditions)))
 
 (defn- params->query-conditions
   "Appropriately combine query operators based on given options"
