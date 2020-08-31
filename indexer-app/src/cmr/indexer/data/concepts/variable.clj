@@ -31,24 +31,13 @@
       (map #(merge base-doc (measurement-quantity->elastic-doc %)) quantities)
       [base-doc])))
 
-(defn- get-full-path
-  "Returns the full path to the variable in a granule"
-  [group-path name]
-  (if (string/blank? group-path)
-    name
-    (str group-path "/" name)))
-
-
 (defmethod es/parsed-concept->elastic-doc :variable
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
                 revision-date format extra-fields variable-associations]} concept
         {:keys [variable-name measurement]} extra-fields
-        alias (:Alias parsed-concept)
-        group-path (get-in parsed-concept [:Characteristics :GroupPath])
-        instrument (:AcquisitionSourceName parsed-concept)
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
-        schema-keys [:ScienceKeywords :AcquisitionSourceName
+        schema-keys [:ScienceKeywords
                      :measurement :variable-name :variable-associations :set-names]
         keyword-values (keyword-util/concept-keys->keyword-text
                         (merge parsed-concept extra-fields
@@ -79,14 +68,8 @@
        :deleted deleted
        :variable-name variable-name
        :variable-name-lowercase (string/lower-case variable-name)
-       :full-path (get-full-path group-path variable-name)
-       :full-path-lowercase (string/lower-case (get-full-path group-path variable-name))
-       :alias alias
-       :alias-lowercase (util/safe-lowercase alias)
        :measurement measurement
        :measurement-lowercase (string/lower-case measurement)
-       :instrument instrument
-       :instrument-lowercase (string/lower-case instrument)
        :provider-id provider-id
        :provider-id-lowercase (string/lower-case provider-id)
        :native-id native-id

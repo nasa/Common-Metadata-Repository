@@ -9,10 +9,7 @@
    [cmr.umm-spec.validation.umm-spec-validation-core :as v]))
 
 (deftest umm-variable-creation
-  (is (= [:AcquisitionSourceName
-          :Alias
-          :Characteristics
-          :DataType
+  (is (= [:DataType
           :Definition
           :Dimensions
           :FillValues
@@ -24,8 +21,8 @@
           :Scale
           :ScienceKeywords
           :Sets
-          :SizeEstimation
           :Units
+          :IndexRanges
           :ValidRanges
           :VariableSubType
           :VariableType]

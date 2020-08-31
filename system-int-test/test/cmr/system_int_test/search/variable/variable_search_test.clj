@@ -73,39 +73,28 @@
 (deftest search-for-variables-test
   (let [token (e/login (s/context) "user1")
         variable1 (variables/ingest-variable-with-attrs {:native-id "VAR1"
-                                                         :Alias "Alias1"
                                                          :Name "Variable1"
                                                          :LongName "Measurement1"
                                                          :Sets [{:Name "TESTSETNAME"
                                                                  :Type "Science"
                                                                  :Size 2
                                                                  :Index 2}]
-                                                         :AcquisitionSourceName "InstrumentX"
-                                                         :Characteristics {:GroupPath "     "}
                                                          :provider-id "PROV1"})
         variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
-                                                         :Alias "Alias2"
                                                          :Name "Variable2"
                                                          :LongName "Measurement2"
-                                                         :AcquisitionSourceName "Instrument2"
-                                                         :Characteristics {:GroupPath "/foo/bar"}
                                                          :provider-id "PROV1"})
         variable3 (variables/ingest-variable-with-attrs {:native-id "var3"
-                                                         :Alias "Alias3"
                                                          :Name "a subsitute for variable2"
                                                          :LongName "variable1"
                                                          :Sets [{:Name "TESTSETNAME"
                                                                  :Type "Science"
                                                                  :Size 2
                                                                  :Index 2}]
-                                                         :AcquisitionSourceName "Instrument123"
                                                          :provider-id "PROV2"})
         variable4 (variables/ingest-variable-with-attrs {:native-id "special-variable"
-                                                         :Alias "v.other"
                                                          :Name "v.other"
                                                          :LongName "m.other"
-                                                         :AcquisitionSourceName "Instrument.other"
-                                                         :Characteristics {:GroupPath "/foo/bar"}
                                                          :provider-id "PROV2"})
 
         [coll1 coll2 coll3] (doall (for [n (range 1 4)]
@@ -170,44 +159,6 @@
       {:name ["Variable1" "*other"] "options[name][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; Alias Param
-      "By alias case sensitive - exact match"
-      [variable1]
-      {:alias "Alias1"}
-
-      "By alias case sensitive, default ignore-case true"
-      [variable1]
-      {:alias "alias1"}
-
-      "By alias ignore case false"
-      []
-      {:alias "alias1" "options[alias][ignore-case]" false}
-
-      "By alias ignore case true"
-      [variable1]
-      {:alias "alias1" "options[alias][ignore-case]" true}
-
-      "By alias Pattern, default false"
-      []
-      {:alias "*other"}
-
-      "By alias Pattern true"
-      [variable4]
-      {:alias "*other" "options[alias][pattern]" true}
-
-      "By alias Pattern false"
-      []
-      {:alias "*other" "options[alias][pattern]" false}
-
-      "By multiple aliases"
-      [variable1 variable2]
-      {:alias ["Alias1" "Alias2"]}
-
-      "By multiple aliases with options"
-      [variable1 variable4]
-      {:alias ["Alias1" "*other"] "options[alias][pattern]" true}
-
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; variable-name Param
       "By variable-name case sensitive - exact match"
       [variable1]
@@ -244,44 +195,6 @@
       "By multiple variable-names with options"
       [variable1 variable4]
       {:variable-name ["Variable1" "*other"] "options[variable-name][pattern]" true}
-
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; instrument Param
-      "By instrument case sensitive - exact match"
-      [variable1]
-      {:instrument "InstrumentX"}
-
-      "By instrument case sensitive, default ignore-case true"
-      [variable1]
-      {:instrument "instrumentx"}
-
-      "By instrument ignore case false"
-      []
-      {:instrument "instrumentx" "options[instrument][ignore-case]" false}
-
-      "By instrument ignore case true"
-      [variable1]
-      {:instrument "instrumentx" "options[instrument][ignore-case]" true}
-
-      "By instrument Pattern, default false"
-      []
-      {:instrument "*other"}
-
-      "By instrument Pattern true"
-      [variable4]
-      {:instrument "*other" "options[instrument][pattern]" true}
-
-      "By instrument Pattern false"
-      []
-      {:instrument "*other" "options[instrument][pattern]" false}
-
-      "By multiple instruments"
-      [variable1 variable2]
-      {:instrument ["instrumentx" "instrument2"]}
-
-      "By multiple instruments with options"
-      [variable1 variable4]
-      {:instrument ["InstrumentX" "*other"] "options[instrument][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; provider Param
@@ -360,52 +273,6 @@
       {:native-id ["VAR1" "special*"] "options[native-id][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; full-path Param
-      "By full-path - name and group path exact match" 
-      [variable2]
-      {:full-path "/foo/bar/Variable2"}
-
-      "By full-path case insensitive, default ignore-case true"
-      [variable2]
-      {:full-path "/foo/bar/variable2"}
-
-      "By full-path ignore case false"
-      []
-      {:full-path "/foo/bar/variable2" "options[full-path][ignore-case]" false}
-
-      "By full-path ignore case true"
-      [variable2]
-      {:full-path "/foo/bar/variable2" "options[native-id][ignore-case]" true}
-
-      "By full-path Pattern, default false"
-      []
-      {:full-path "/foo/bar/*"}
-
-      "By full-path - Pattern true" 
-      [variable2 variable4]
-      {:full-path "/foo/bar/*" "options[full-path][pattern]" true}
-
-      "By full-path - just name"
-      [variable1]
-      {:full-path "Variable1"}
-      
-      "By full-path - no match"
-      []
-      {:full-path "Variable2"}
-
-      "By full-path - ignore all white space group path"
-      [variable1]
-      {:full-path "Variable1"}
-
-      "By multiple full-paths"
-      [variable1 variable2]
-      {:full-path ["Variable1" "/foo/bar/Variable2"]}
-
-      "By multiple full-paths with options"
-      [variable2 variable3 variable4]
-      {:full-path ["a subsitute for variable2" "/foo/bar/*"] "options[full-path][pattern]" true}
-
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; concept-id Param
       "By concept-id - single"
       [variable1]
@@ -428,10 +295,6 @@
       "By keyword match both variable_name and measurement"
       [variable1 variable3]
       {:keyword "variable1"}
-
-      "By keyword match instrument"
-      [variable1]
-      {:keyword "InstrumentX"}
 
       "By keyword match associated collection"
       [variable1]

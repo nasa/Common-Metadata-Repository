@@ -3481,13 +3481,6 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: pattern, ignore_case
 * native_id
   * options: pattern, ignore_case
-* alias
-  * options: pattern, ignore_case
-* full_path - This is a computed field. It is contructed by joining the  `Characteristics/GroupPath` field with
-  the `Name` field using a forward slash (/). For example: `GroupPath`: '/foo/bar', `Name`: 'temp' => '/foo/bar/temp'
-  * options: pattern, ignore_case
-* instrument
-  * options: pattern, ignore_case
 * concept_id
 * measurement_identifiers
   * options: ignore_case, or
@@ -3504,7 +3497,6 @@ The following fields are indexed for keyword (free text) search:
 
 * Variable name
 * Variable long name
-* Instrument name
 * Science keywords (category, detailed variable, term, topic, variables 1-3)
 * Variable set names
 * Associated collection concept ids
