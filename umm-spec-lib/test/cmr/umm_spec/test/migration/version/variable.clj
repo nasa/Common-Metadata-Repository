@@ -343,3 +343,173 @@
                                  {:MeasurementContextMedium "Surface"
                                   :MeasurementContextMediumURI "http://purl.obolibrary.org/obo/ENVO_01000811"
                                   :MeasurementObject "radiative_flux"}])))))
+
+(def variable-concept-16
+  {:ValidRanges
+   [{:Min -2005,
+     :Max 45005,
+     :CodeSystemIdentifierMeaning
+     ["Test Code System 2."],
+     :CodeSystemIdentifierValue ["CSIV 2."]}],
+   :Dimensions
+   [{:Name "time",
+     :Size 1,
+     :Type "TIME_DIMENSION"}
+    {:Name "nj",
+     :Size 3072,
+     :Type "ALONG_TRACK_DIMENSION"}
+    {:Name "ni",
+     :Size 4096,
+     :Type "CROSS_TRACK_DIMENSION"}],
+   :AdditionalIdentifiers
+   [{:Identifier "CF_Standard_Description",
+     :Description
+     "The sea surface subskin temperature is the temperature at the base of the conductive laminar sub-layer of the ocean surface, that is, at a depth of approximately 1 - 1.5 millimeters below the air-sea interface. For practical purposes, this quantity can be well approximated to the measurement of surface temperature by a microwave radiometer operating in the 6 - 11 gigahertz frequency range, but the relationship is neither direct nor invariant to changing physical conditions or to the specific geometry of the microwave measurements. Measurements of this quantity are subject to a large potential diurnal cycle due to thermal stratification of the upper ocean layer in low wind speed high solar irradiance conditions."}],
+   :Scale 0.01,
+   :Offset 273.15,
+   :Sets
+   [{:Name "Data_Fields",
+     :Type "General",
+     :Size 18,
+     :Index 11}],
+   :Units "kelvin",
+   :SamplingIdentifiers
+   [{:SamplingMethod
+     "Test sampling method on Ship observations",
+     :MeasurementConditions
+     "Test measurement conditions",
+     :ReportingConditions
+     "Test reporting conditions"}],
+   :FillValues
+   [{:Value -327685, :Type "SCIENCE_FILLVALUE"}],
+   :Definition
+   "sea surface subskin temperature in units of kelvin",
+   :ScienceKeywords
+   [{:Category "EARTH SCIENCE",
+     :Topic "SPECTRAL/ENGINEERING",
+     :Term "MICROWAVE",
+     :VariableLevel1 "SEA SURFACE TEMPERATURE",
+     :VariableLevel2
+     "MAXIMUM/MINIMUM TEMPERATURE",
+     :VariableLevel3
+     "24 HOUR MAXIMUM TEMPERATURE",
+     :DetailedVariable "details_4385"}
+    {:Category "EARTH SCIENCE",
+     :Topic "SPECTRAL/ENGINEERING",
+     :Term "MICROWAVE",
+     :VariableLevel1 "MICROWAVE IMAGERY"}],
+   :Name "sea_surface_temperature",
+   :VariableType "SCIENCE_VARIABLE",
+   :VariableSubType "SCIENCE_ARRAY",
+   :Alias "Test alias"
+   :AcquisitionSourceName "TestAcquisitionSourceName"
+   :Characteristics {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
+                     :IndexRanges
+                     {:LatRange [-59.875 89.875],
+                      :LonRange [-179.875 179.875]}}
+   :MeasurementIdentifiers
+   [{:MeasurementContextMedium "ocean",
+     :MeasurementContextMediumURI
+     "http://www.ontobee.org/ontology/ENVO?iri=http://purl.obolibrary.org/obo/ENVO_01000324",
+     :MeasurementObject "sea_surface_subskin",
+     :MeasurementObjectURI
+     "https://gcmd.earthdata.nasa.gov/kms/concept/68a09c56-be36-4100-8757-3a6eec7dc251",
+     :MeasurementQuantities
+     [{:Value "temperature",
+       :MeasurementQuantityURI
+       "http://www.ontobee.org/ontology/PATO?iri=http://purl.obolibrary.org/obo/PATO_0000146"}]}],
+   :LongName "sea surface subskin temperature",
+   :StandardName
+   "sea_surface_foundation_temperature",
+   :SizeEstimation {:AverageSizeOfGranulesSampled 1
+                    :AvgCompressionRateASCII 2
+                    :AvgCompressionRateNetCDF4 3}
+   :DataType "short"})
+
+(def variable-concept-17
+  {:ValidRanges
+   [{:Min -2005,
+     :Max 45005,
+     :CodeSystemIdentifierMeaning
+     ["Test Code System 2."],
+     :CodeSystemIdentifierValue ["CSIV 2."]}],
+   :Dimensions
+   [{:Name "time",
+     :Size 1,
+     :Type "TIME_DIMENSION"}
+    {:Name "nj",
+     :Size 3072,
+     :Type "ALONG_TRACK_DIMENSION"}
+    {:Name "ni",
+     :Size 4096,
+     :Type "CROSS_TRACK_DIMENSION"}],
+   :AdditionalIdentifiers
+   [{:Identifier "CF_Standard_Description",
+     :Description
+     "The sea surface subskin temperature is the temperature at the base of the conductive laminar sub-layer of the ocean surface, that is, at a depth of approximately 1 - 1.5 millimeters below the air-sea interface. For practical purposes, this quantity can be well approximated to the measurement of surface temperature by a microwave radiometer operating in the 6 - 11 gigahertz frequency range, but the relationship is neither direct nor invariant to changing physical conditions or to the specific geometry of the microwave measurements. Measurements of this quantity are subject to a large potential diurnal cycle due to thermal stratification of the upper ocean layer in low wind speed high solar irradiance conditions."}],
+   :Scale 0.01,
+   :IndexRanges
+   {:LatRange [-59.875 89.875],
+    :LonRange [-179.875 179.875]}
+   :Offset 273.15,
+   :Sets
+   [{:Name "Data_Fields",
+     :Type "General",
+     :Size 18,
+     :Index 11}],
+   :Units "kelvin",
+   :SamplingIdentifiers
+   [{:SamplingMethod
+     "Test sampling method on Ship observations",
+     :MeasurementConditions
+     "Test measurement conditions",
+     :ReportingConditions
+     "Test reporting conditions"}],
+   :FillValues
+   [{:Value -327685, :Type "SCIENCE_FILLVALUE"}],
+   :Definition
+   "sea surface subskin temperature in units of kelvin",
+   :ScienceKeywords
+   [{:Category "EARTH SCIENCE",
+     :Topic "SPECTRAL/ENGINEERING",
+     :Term "MICROWAVE",
+     :VariableLevel1 "SEA SURFACE TEMPERATURE",
+     :VariableLevel2
+     "MAXIMUM/MINIMUM TEMPERATURE",
+     :VariableLevel3
+     "24 HOUR MAXIMUM TEMPERATURE",
+     :DetailedVariable "details_4385"}
+    {:Category "EARTH SCIENCE",
+     :Topic "SPECTRAL/ENGINEERING",
+     :Term "MICROWAVE",
+     :VariableLevel1 "MICROWAVE IMAGERY"}],
+   :Name "/MODIS_Grid_Daily_1km_LST/Data_Fields/sea_surface_temperature",
+   :VariableType "SCIENCE_VARIABLE",
+   :VariableSubType "SCIENCE_ARRAY",
+   :MeasurementIdentifiers
+   [{:MeasurementContextMedium "ocean",
+     :MeasurementContextMediumURI
+     "http://www.ontobee.org/ontology/ENVO?iri=http://purl.obolibrary.org/obo/ENVO_01000324",
+     :MeasurementObject "sea_surface_subskin",
+     :MeasurementObjectURI
+     "https://gcmd.earthdata.nasa.gov/kms/concept/68a09c56-be36-4100-8757-3a6eec7dc251",
+     :MeasurementQuantities
+     [{:Value "temperature",
+       :MeasurementQuantityURI
+       "http://www.ontobee.org/ontology/PATO?iri=http://purl.obolibrary.org/obo/PATO_0000146"}]}],
+   :LongName "sea surface subskin temperature",
+   :StandardName
+   "sea_surface_foundation_temperature",
+   :DataType "short"})
+
+(deftest migrate-17->16
+  (is (= (-> variable-concept-16
+             (assoc :AcquisitionSourceName u/not-provided)
+             (dissoc :Alias :SizeEstimation)
+             (assoc :Name "/MODIS_Grid_Daily_1km_LST/Data_Fields/sea_surface_temperature")
+             (assoc-in [:Characteristics :GroupPath] "/MODIS_Grid_Daily_1km_LST/Data_Fields/sea_surface_temperature"))
+         (vm/migrate-umm {} :variable "1.7" "1.6" variable-concept-17))))
+
+(deftest migrate-16->17
+  (is (= (assoc variable-concept-17 :Name "sea_surface_temperature")
+         (vm/migrate-umm {} :variable "1.6" "1.7" variable-concept-16))))
