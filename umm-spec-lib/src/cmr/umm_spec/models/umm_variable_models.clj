@@ -12,10 +12,17 @@
    ;; example of a dimension size is '1200'. Variables are rarely one dimensional.
    Dimensions
 
+   ;; Any additional identifiers of a variable.
+   AdditionalIdentifiers
+
    ;; The scale is the numerical factor by which all values in the stored data field are multiplied
    ;; in order to obtain the original values. May be used together with Offset. An example of a
    ;; scale factor is '0.002'
    Scale
+
+   ;; This element describes the x and y dimension ranges for this variable. Typically these values
+   ;; are 2 latitude and longitude ranges, but they don't necessarily have to be.
+   IndexRanges
 
    ;; The offset is the value which is either added to or subtracted from all values in the stored
    ;; data field in order to obtain the original values. May be used together with Scale. An example
@@ -41,15 +48,6 @@
    ;; The definition of the variable.
    Definition
 
-   ;; The acquisition source name such as an instrument short name or simulation name to which the
-   ;; variable belongs. The acquisition source name is used to help determine uniqueness along with
-   ;; Name, Units, and Dimensions in the metadata content for each variable metadata record. For
-   ;; more information please see https://wiki.earthdata.nasa.gov/display/DUTRAIN/UMM-VAR+uniqueness
-   AcquisitionSourceName
-
-   ;; The characteristics of a variable. The elements of this section apply to a Variable.
-   Characteristics
-
    ;; Controlled Science Keywords describing the measurements/variables. The controlled vocabulary
    ;; for Science Keywords is maintained in the Keyword Management System (KMS).
    ScienceKeywords
@@ -65,22 +63,31 @@
    ;; SCIENCE_VECTOR, SCIENCE_ARRAY, SCIENCE_EVENTFLAG, OTHER.
    VariableSubType
 
-   ;; The size estimation information of a variable.
-   SizeEstimation
-
-   ;; The alias for the name of a variable.
-   Alias
-
    ;; The measurement information of a variable.
    MeasurementIdentifiers
 
    ;; The expanded or long name related to the variable Name.
    LongName
 
+   ;; This is the more formal or scientific name, .e.g., the CF Standard Name.
+   StandardName
+
    ;; Specify data type of a variable. These types can be either: uint8, uint16, etc.
    DataType
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-Var)
+
+;; The elements of this section apply to an additional identifier.
+(defrecord AdditionalIdentifierType
+  [
+   ;; The actual identifier.
+   Identifier
+
+   ;; This element describes to a person or machine what the identifier is called. e.g., if the
+   ;; identifier is 1057.2345/asfb then the Description should be DOI or Digital Object Identifier.
+   Description
+  ])
+(record-pretty-printer/enable-record-pretty-printing AdditionalIdentifierType)
 
 ;; The fill value, fill value type and fill value description of the variable in the data file. The
 ;; fill value is generally a value which falls outside the valid range. For example, if the valid
@@ -156,19 +163,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ValidRangeType)
 
-;; The elements of this section apply to variable size estimation.
-(defrecord SizeEstimationType
-  [
-   ;; This element contains the average size for the sampled granules in bytes.
-   AverageSizeOfGranulesSampled
-
-   ;; This element is a list of 1 or more average compression rate(s) as a ratio for the granule in
-   ;; the specified format. The size estimation service takes this information so that it can
-   ;; calculate the approximate downloadable size for the variable.
-   AverageCompressionInformation
-  ])
-(record-pretty-printer/enable-record-pretty-printing SizeEstimationType)
-
 ;; The elements of this section allow authors to provide community sourced words or phrases to
 ;; further describe the variable data.
 (defrecord MeasurementIdentifierType
@@ -209,20 +203,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing DimensionType)
 
-;; This type defines the container for a specific rate as a ratio for the granule with the
-;; accompanying file format.
-(defrecord AverageCompressionInformationType
-  [
-   ;; This element contains the average compression rate as a ratio for the granule for the
-   ;; specified format.
-   Rate
-
-   ;; This element contains the file format that the size estimation service supports for the given
-   ;; rate as a ratio for the granule to be able to predict the size of the downloadable product.
-   Format
-  ])
-(record-pretty-printer/enable-record-pretty-printing AverageCompressionInformationType)
-
 ;; The index ranges consist of a LatRange and a LonRange.
 (defrecord IndexRangesType
   [
@@ -246,19 +226,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing MeasurementQuantityType)
 
-;; The elements of this section apply to a variable.
-(defrecord CharacteristicsType
-  [
-   ;; This element describes the x and y dimension ranges for this variable. Typically these values
-   ;; are 2 latitude and longitude ranges, but they don't necessarily have to be.
-   IndexRanges
-
-   ;; The full path to the variable within the Granule structure. For example,
-   ;; '/MODIS_Grid_Daily_1km_LST/Data_Fields'.
-   GroupPath
-  ])
-(record-pretty-printer/enable-record-pretty-printing CharacteristicsType)
-
 ;; The elements of this section apply to variable sets.
 (defrecord SetType
   [
@@ -279,14 +246,3 @@
    Index
   ])
 (record-pretty-printer/enable-record-pretty-printing SetType)
-
-;; The coordinates consist of a latitude and longitude.
-(defrecord CoordinatesType
-  [
-   ;; The latitude of the point.
-   Lat
-
-   ;; The longitude of the point.
-   Lon
-  ])
-(record-pretty-printer/enable-record-pretty-printing CoordinatesType)
