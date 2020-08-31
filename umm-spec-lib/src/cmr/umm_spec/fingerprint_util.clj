@@ -24,9 +24,8 @@
   "Returns the fingerprint of the given variable metadata."
   [variable-metadata]
   (let [parsed (json/decode variable-metadata true)
-        {:keys [AcquisitionSourceName Name Units Dimensions]} parsed
-        id-string (format "%s|%s|%s|%s"
-                          (normalized-string AcquisitionSourceName)
+        {:keys [Name Units Dimensions]} parsed
+        id-string (format "%s|%s|%s"
                           (normalized-string Name)
                           (normalized-string Units)
                           (pr-str (mapv dimension->str Dimensions)))]
