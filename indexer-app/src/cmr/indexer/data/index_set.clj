@@ -702,8 +702,6 @@
    :provider-id-lowercase (m/doc-values m/string-field-mapping)
    :variable-name (m/doc-values m/string-field-mapping)
    :variable-name-lowercase (m/doc-values m/string-field-mapping)
-   :full-path (m/doc-values m/string-field-mapping)
-   :full-path-lowercase (m/doc-values m/string-field-mapping)
    :measurement (m/doc-values m/string-field-mapping)
    :measurement-lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping

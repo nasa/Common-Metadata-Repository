@@ -361,10 +361,6 @@
     {:Name "ni",
      :Size 4096,
      :Type "CROSS_TRACK_DIMENSION"}],
-   :AdditionalIdentifiers
-   [{:Identifier "CF_Standard_Description",
-     :Description
-     "The sea surface subskin temperature is the temperature at the base of the conductive laminar sub-layer of the ocean surface, that is, at a depth of approximately 1 - 1.5 millimeters below the air-sea interface. For practical purposes, this quantity can be well approximated to the measurement of surface temperature by a microwave radiometer operating in the 6 - 11 gigahertz frequency range, but the relationship is neither direct nor invariant to changing physical conditions or to the specific geometry of the microwave measurements. Measurements of this quantity are subject to a large potential diurnal cycle due to thermal stratification of the upper ocean layer in low wind speed high solar irradiance conditions."}],
    :Scale 0.01,
    :Offset 273.15,
    :Sets
@@ -419,8 +415,6 @@
        :MeasurementQuantityURI
        "http://www.ontobee.org/ontology/PATO?iri=http://purl.obolibrary.org/obo/PATO_0000146"}]}],
    :LongName "sea surface subskin temperature",
-   :StandardName
-   "sea_surface_foundation_temperature",
    :SizeEstimation {:AverageSizeOfGranulesSampled 1
                     :AvgCompressionRateASCII 2
                     :AvgCompressionRateNetCDF4 3}
@@ -507,9 +501,15 @@
              (assoc :AcquisitionSourceName u/not-provided)
              (dissoc :Alias :SizeEstimation)
              (assoc :Name "/MODIS_Grid_Daily_1km_LST/Data_Fields/sea_surface_temperature")
-             (assoc-in [:Characteristics :GroupPath] "/MODIS_Grid_Daily_1km_LST/Data_Fields/sea_surface_temperature"))
+             (assoc-in [:Characteristics :GroupPath] "/MODIS_Grid_Daily_1km_LST/Data_Fields/sea_surface_temperature")
+             (assoc :AdditionalIdentifiers [{:Identifier "CF_Standard_Description",
+                                             :Description
+                                             "The sea surface subskin temperature is the temperature at the base of the conductive laminar sub-layer of the ocean surface, that is, at a depth of approximately 1 - 1.5 millimeters below the air-sea interface. For practical purposes, this quantity can be well approximated to the measurement of surface temperature by a microwave radiometer operating in the 6 - 11 gigahertz frequency range, but the relationship is neither direct nor invariant to changing physical conditions or to the specific geometry of the microwave measurements. Measurements of this quantity are subject to a large potential diurnal cycle due to thermal stratification of the upper ocean layer in low wind speed high solar irradiance conditions.",}])
+             (assoc :StandardName "sea_surface_foundation_temperature"))
          (vm/migrate-umm {} :variable "1.7" "1.6" variable-concept-17))))
 
 (deftest migrate-16->17
-  (is (= (assoc variable-concept-17 :Name "sea_surface_temperature")
+  (is (= (-> variable-concept-17
+             (assoc :Name "sea_surface_temperature")
+             (dissoc :AdditionalIdentifiers :StandardName))
          (vm/migrate-umm {} :variable "1.6" "1.7" variable-concept-16))))
