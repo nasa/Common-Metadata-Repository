@@ -113,7 +113,55 @@
     [{:SupportedInputFormat "HDF4"
       :SupportedOutputFormats ["GEOTIFFFLOAT32" "HDF4","NETCDF-3","NETCDF-4","BINARY","ASCII", "ZARR", "GeoJSON"]}
      {:SupportedInputFormat "Shapefile"
-      :SupportedOutputFormats ["HDF4","NETCDF-3","NETCDF-4","BINARY","ASCII", "ZARR", "GeoJSON"]}]))
+      :SupportedOutputFormats ["HDF4","NETCDF-3","NETCDF-4","BINARY","ASCII", "ZARR", "GeoJSON"]}]
+
+    "Testing empty input/ouput formats."
+    {:SupportedInputFormats []
+     :SupportedOutputFormats []
+     :SupportedReformattings [{:SupportedInputFormat "HDF4"
+                               :SupportedOutputFormats ["GEOTIFFFLOAT32"]}]}
+    [{:SupportedInputFormat "HDF4"
+      :SupportedOutputFormats ["GEOTIFFFLOAT32"]}]
+
+    "Testing empty output formats and nil input formats."
+    {:SupportedOutputFormats []
+     :SupportedReformattings [{:SupportedInputFormat "HDF4"
+                               :SupportedOutputFormats ["GEOTIFFFLOAT32"]}]}
+    [{:SupportedInputFormat "HDF4"
+      :SupportedOutputFormats ["GEOTIFFFLOAT32"]}]
+
+    "Testing empty input formats and nil output formats."
+    {:SupportedInputFormats []
+     :SupportedReformattings [{:SupportedInputFormat "HDF4"
+                               :SupportedOutputFormats ["GEOTIFFFLOAT32"]}]}
+    [{:SupportedInputFormat "HDF4"
+      :SupportedOutputFormats ["GEOTIFFFLOAT32"]}]
+
+    "Testing nil input and output formats."
+    {:SupportedInputFormats nil
+     :SupportedReformattings [{:SupportedInputFormat "HDF4"
+                               :SupportedOutputFormats ["GEOTIFFFLOAT32"]}]}
+    [{:SupportedInputFormat "HDF4"
+      :SupportedOutputFormats ["GEOTIFFFLOAT32"]}]
+
+    "Testing nil input formats and supported reformattings."
+    {:SupportedOutputFormats ["GEOTIFFFLOAT32"]}
+    nil
+
+    "Tested with SupportedReformattings which is an empty list."
+    {:SupportedInputFormats [ "ASCII" "GEOTIFF" "NETCDF-3"]
+     :SupportedOutputFormats [ "ASCII" "GEOTIFF" "NETCDF-3"]
+     :SupportedReformatting '()}
+    [{:SupportedInputFormat "ASCII",
+      :SupportedOutputFormats ["ASCII" "GEOTIFF" "NETCDF-3"]}
+     {:SupportedInputFormat "GEOTIFF",
+      :SupportedOutputFormats ["ASCII" "GEOTIFF" "NETCDF-3"]}
+     {:SupportedInputFormat "NETCDF-3",
+      :SupportedOutputFormats ["ASCII" "GEOTIFF" "NETCDF-3"]}]
+
+    "Testing nil inputs."
+    nil
+    nil))
 
 (deftest create-subset-type-1-3-4-to-1-3-3-test
   "Test to see if umm-s version 1.3.3 SupportedInputFormats and SupportedOutputFormats are converted

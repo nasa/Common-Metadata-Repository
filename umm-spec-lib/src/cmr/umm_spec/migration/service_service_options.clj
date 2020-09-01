@@ -294,7 +294,7 @@
    output-formats sub element is omitted."
   [supported-reformattings input-formats output-formats]
   (let [join-formats (fn [sup-ref input-format]
-                       (let [sup-ref (if sup-ref
+                       (let [sup-ref (if (seq sup-ref)
                                        sup-ref
                                        [])
                              index (find-first-supported-reformatting input-format sup-ref)
