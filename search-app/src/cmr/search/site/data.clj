@@ -185,6 +185,11 @@
        (hash-map :providers)
        (merge (base-page context))))
 
+(defn app-url->virtual-directory-url
+  "Convert the search-app url into the Virtual Directory url."
+  [base-url]
+  (string/replace base-url #"search\/?" "virtual-directory/"))
+
 (defn get-provider-tag-landing-links
   "Generate the data necessary to render EOSDIS landing page links."
   ([context provider-id tag]
@@ -193,10 +198,13 @@
    (let [holdings (filter filter-fn
                         (make-holdings-data
                           (util/get-app-url context)
-                          (collection-data context tag provider-id)))]
+                          (collection-data context tag provider-id)))
+         common-data (base-page context)
+         virtual-directory-url (app-url->virtual-directory-url (get common-data :base-url))]
      (merge
-       (base-page context)
-       {:provider-id provider-id
+       common-data
+       {:virtual-directory-url virtual-directory-url
+        :provider-id provider-id
         :tag-name (util/supported-directory-tags tag)
         :holdings holdings}))))
 
