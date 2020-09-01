@@ -267,6 +267,7 @@ These are query parameters that control what extra data is included with collect
   * `hierarchical_facets` - If this parameter is set to "true" and the parameter `include_facets` is set to "true" the facets that are returned will be hierarchical. Hierarchical facets are described in the facets section below.
   * `include_highlights` - If this parameter is set to "true", the collection results will contain an additional field, 'highlighted_summary_snippets'. The field is an array of strings which contain a snippet of the summary which highlight any terms which match the terms provided in the keyword portion of a search. By default up to 5 snippets may be returned with each individual snippet being up to 100 characters, and keywords in the snippets are delineated with begin tag `<em>` and end tag `</em>`. This is configurable using `options[highlights][param]=value`. Supported option params are `begin_tag`, `end_tag`, `snippet_length` and `num_snippets`. The values for `snippet_length` and `num_snippets` must be integers greater than 0.
   * `include_tags` - If this parameter is set (e.g. `include_tags=gov.nasa.earthdata.search.*,gov.nasa.echo.*`), the collection results will contain an additional field 'tags' within each collection. The value of the tags field is a list of tag_keys that are associated with the collection. Only the tags with tag_key matching the values of `include_tags` parameter (with wildcard support) are included in the results. This parameter is supported in JSON, ATOM, ECHO10, DIF, DIF10, ISO19115 and native result formats.
+  * `spatial` - This option allows the user to specify whether spatial conditions are ANDed or ORed together. This will apply across different types of spatial conditions.
 
   _There is a known bug with the `snippet_length` parameter that occasionally leads to snippets that are longer than `snippet_length` characters._
 
@@ -1688,32 +1689,45 @@ Find collections matching service concept id.
 ##### <a name="c-polygon"></a> Polygon
 
 Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.
+This parameter supports the and/or option as shown below.
 
-    curl "%CMR-ENDPOINT%/collections?polygon=10,10,30,10,30,20,10,20,10,10"
+    curl "%CMR-ENDPOINT%/collections?polygon[]=10,10,30,10,30,20,10,20,10,10"
+
+    curl "%CMR-ENDPOINT%/collections?polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11&options[polygon][or]=true"
 
 ##### <a name="c-bounding-box"></a> Bounding Box
 
 Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude, lower left latitude, upper right longitude, upper right latitude.
+This parameter supports the and/or option as shown below.
 
-    curl "%CMR-ENDPOINT%/collections?bounding_box=-10,-5,10,5
+    curl "%CMR-ENDPOINT%/collections?bounding_box[]=-10,-5,10,5
+
+    curl "%CMR-ENDPOINT%/collections?bounding_box[]=-10,-5,10,5&bounding_box[]=-11,-6,11,6&options[bounding_box][or]=true
 
 ##### <a name="c-point"></a> Point
 
-Search using a point involves using a pair of values representing the point coordinates as parameters. The first value is the longitude and second value is the latitude.
+Search using a point involves using a pair of values representing the point coordinates as parameters. The first value is the longitude and second value is the latitude. This parameter supports the and/or option as shown below.
 
     curl "%CMR-ENDPOINT%/collections?point=100,20"
 
+    curl "%CMR-ENDPOINT%/collections?point=100,20&point=80,20&options[point][or]=true"
+
 ##### <a name="c-line"></a> Line
 
-Lines are provided as a list of comma separated values representing coordinates of points along the line. The coordinates are listed in the format lon1, lat1, lon2, lat2, lon3, lat3, and so on.
+Lines are provided as a list of comma separated values representing coordinates of points along the line. The coordinates are listed in the format lon1, lat1, lon2, lat2, lon3, lat3, and so on. This parameter supports the and/or option as shown below.
 
-    curl "%CMR-ENDPOINT%/collections?line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
+    curl "%CMR-ENDPOINT%/collections?line[]=-0.37,-14.07,4.75,1.27,25.13,-15.51"
+
+    curl "%CMR-ENDPOINT%/collections?line[]=-0.37,-14.07,4.75,1.27,25.13,-15.51&line[]=-1.37,-15.07,5.75,2.27,26.13,-16.51&options[line][or]=true"
 
 ##### <a name="c-circle"></a> Circle
 
 Circle defines a circle area on the earth with a center point and a radius. The center parameters must be 3 comma-separated numbers: longitude of the center point, latitude of the center point, radius of the circle in meters. The circle center cannot be on North or South pole. The radius of the circle must be between 10 and 6,000,000.
+This parameter supports the and/or option as shown below.
 
-    curl "%CMR-ENDPOINT%/collections?circle=-87.629717,41.878112,1000"
+    curl "%CMR-ENDPOINT%/collections?circle[]=-87.629717,41.878112,1000"
+
+    curl "%CMR-ENDPOINT%/collections?circle[]=-87.629717,41.878112,1000&circle[]=-75,41.878112,1000&options[circle][or]=true"
 
 Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are AND'd in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon.
 
