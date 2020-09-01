@@ -2,16 +2,16 @@
   "Defines the API for autocomplete-suggest in the CMR."
   (:require
     [clojure.string :as string]
-    [compojure.core :refer :all]
+    [cmr.acl.core :as acl-core]
+    [cmr.common-app.api.routes :as common-routes]
+    [cmr.common-app.services.search.params :as common-params]
     [cmr.common.log :refer [debug info warn error]]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as svc-errors]
-    [cmr.common-app.api.routes :as common-routes]
-    [cmr.common-app.services.search.params :as common-params]
     [cmr.search.api.core :as core-api]
     [cmr.search.services.autocomplete-service :as ac]
     [cmr.search.services.parameters.parameter-validation :as pv]
-    [cmr.search.services.query-service :as qs]))
+    [compojure.core :refer :all]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Support Functions
@@ -62,7 +62,7 @@
                             (common-params/default-parse-query-level-params :autocomplete params))
         query (lower-case-and-trim (:q params))
         types (:type params)
-        token (get headers "echo-token")]
+        token (acl-core/get-token params headers)]
     (when (empty? query)
       (svc-errors/throw-service-errors :bad-request ["Missing param [q]"]))
     (process-autocomplete-query ctx query types opts token)))

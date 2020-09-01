@@ -20,7 +20,7 @@
 (def CURL_CLIENT_ID "curl")
 (def UNKNOWN_CLIENT_ID "unknown")
 
-(defn- get-token
+(defn get-token
   "Returns the token the user passed in the headers or parameters"
   [params headers]
   (let [non-empty-string #(when-not (str/blank? %) %)]
