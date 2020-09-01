@@ -62,24 +62,7 @@
             (is (= 2 revision-id))
             (is (= "4853d15e6d335604e7ff944c7fbe6c61"
                    (get-in (mdb/get-concept concept-id revision-id)
-                           [:extra-fields :fingerprint])))))
-
-        (testing "ingest of the existing variable with a different native-id is not allowed"
-          (let [concept (variable-util/make-variable-concept
-                         {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
-                                                                  :Size 3
-                                                                  :Type "OTHER"})]}
-                         {:native-id "var2"})
-                {:keys [status errors]} (variable-util/ingest-variable
-                                         concept
-                                         (variable-util/token-opts token))]
-            (is (= 409 status))
-            (is (= [(format (str "The Fingerprint of the variable which is defined by the variable's "
-                                 "Instrument short name, variable short name, units and dimensions "
-                                 "must be unique. The following variable with the same fingerprint "
-                                 "but different native id was found: [%s].")
-                            var-concept-id)]
-                   errors))))))
+                           [:extra-fields :fingerprint])))))))
 
     (testing "ingest of a variable concept with a revision id"
       (let [concept (variable-util/make-variable-concept {} {:native-id "var1"
