@@ -134,13 +134,13 @@
                                         [updated-subfacets]))))))
 (defn create-cycle-facet
   "Returns a filter facet node for a cycle."
-  [base-url query-params applied? agg]
+  [base-url query-params applied? aggs]
   (v2h/generate-filter-node 
     base-url
     query-params
     "cycle"
-    (str (int (:key agg)))
-    (:doc_count agg)
+    (str (int (:key aggs)))
+    (:doc_count aggs)
     applied?) )
 
 (defn- create-cycle-facets
@@ -165,15 +165,15 @@
                    query-params)]
     (when (seq children)
       [(assoc (merge v2h/sorted-facet-map
-                      (v2h/generate-filter-node
-                        base-url
-                        query-params
-                        "cycle"
-                        granule-cycle
-                        (count formatted-children)
-                        applied?))
-               :children
-               [children])])))
+                     (v2h/generate-filter-node
+                       base-url
+                       query-params
+                       "cycle"
+                       granule-cycle
+                       (get-in aggs [:aggs :doc_count])
+                       applied?))
+              :children
+              [children])])))
 
 (defn create-spatial-subfacets-map
   "Handle the case of cycle aggregation for V2 facets"
