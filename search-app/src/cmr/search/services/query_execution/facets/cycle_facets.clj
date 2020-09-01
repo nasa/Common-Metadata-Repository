@@ -6,20 +6,24 @@
 (def aggregate-by-cycle {:histogram
                          {:field :cycle
                           :min_doc_count 1
-                          :interval 1}})
+                          :interval 1}}) 
 
 (def aggregate-by-pass {:nested {:path "passes"}
-                        :aggs {:pass {:histogram
-                                      {:field "passes.pass"
-                                       :min_doc_count 1
-                                       :interval 1}}}})
+                        :aggs {:pass
+                               {:terms
+                                {:field "passes.pass"}}
+                               :aggs
+                               {:reverse_nested {}
+                                :aggs {:concept-id
+                                       {:terms {:field :concept-id
+                                                :size 1}}}}}})
 
 (defn query-params->cycle-facet-aggs
   "Returns the correct level of a cycle-pass query depending on if a 
   cycle param has been passed."
   [query-params]
   (let [field-regex (re-pattern "cycle.*")
-        cycle-params (keep (fn [[k _]]
+        cycle-params (keep (fn [[k]]
                              (when (re-matches field-regex k) k))
                            query-params)]
     (if (= "cycle[]" (first cycle-params))
