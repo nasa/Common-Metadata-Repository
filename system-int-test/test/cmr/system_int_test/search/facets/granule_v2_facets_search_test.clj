@@ -438,7 +438,8 @@
           (testing "returns pass results"
             (let [c3-pass-group (first (get c3-filter :children))]
               (is (not= nil c3-pass-group))
-              (is (= ["1" "2" "3" "4"] (map :title (:children c3-pass-group))))
+              (is (= #{"1" "2" "3" "4"}
+                     (set (map :title (:children c3-pass-group)))))
 
               (testing "and selecting a pass"
                 (let [c3-p3-response (traverse-link "3" (:children c3-pass-group))
