@@ -13,7 +13,8 @@
    [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :refer [defconfig]]
-   [cmr.common.log :refer [info]]
+   [cmr.common.jobs :refer [def-stateful-job]]
+   [cmr.common.log :refer [debug info error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
@@ -235,9 +236,10 @@
 (defn refresh-cache
   "Refreshes the collection granule aggregates in the cache."
   [context granules-updated-in-last-n]
-  (if granules-updated-in-last-n
-    (partial-cache-refresh context granules-updated-in-last-n)
-    (full-cache-refresh context)))
+  (let [cache (c/context->cache context coll-gran-aggregate-cache-key)]
+    (if granules-updated-in-last-n
+      (partial-cache-refresh context granules-updated-in-last-n)
+      (full-cache-refresh context))))
 
 (defn get-coll-gran-aggregates
   "Returns the map of granule aggregate information for the collection. Will return nil if the

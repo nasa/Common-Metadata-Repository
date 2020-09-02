@@ -166,7 +166,7 @@
   "Get all the fields for a normal collection index operation."
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id native-id
-                created-at revision-date deleted format
+                created-at revision-date deleted format extra-fields
                 tag-associations variable-associations service-associations]} concept
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
         {short-name :ShortName version-id :Version entry-title :EntryTitle
@@ -252,8 +252,8 @@
         data-center-names (keep meaningful-short-name-fn data-centers)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true/false value
-        downloadable (seq (ru/downloadable-urls related-urls))
-        browsable (seq (ru/browse-urls related-urls))
+        downloadable (not (empty? (ru/downloadable-urls related-urls)))
+        browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (date-util/data-update-date collection)
         update-time (index-util/date->elastic update-time)
         index-time (index-util/date->elastic (tk/now))
@@ -368,7 +368,7 @@
             :summary summary
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
-            :has-opendap-url (seq(filter opendap-util/opendap-url? related-urls))
+            :has-opendap-url (not (empty? (filter opendap-util/opendap-url? related-urls)))
             :publication-references opendata-references
             :collection-citations (map json/generate-string opendata-citations)
             :update-time update-time
