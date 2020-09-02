@@ -174,7 +174,7 @@
 
 (defconfig email-subscription-processing-interval
   "Number of seconds between jobs processing email subscriptions."
-  {:default 60;3600
+  {:default 600;3600
    :type Long})
 (defconfig email-subscription-processing-lookback
   "Number of seconds to look back for granual changes."
@@ -264,10 +264,12 @@
                                 :Query)
                query-params (create-query-params query-string)
                params1 (merge {:created-at time-constraint
-                               :collection-concept-id coll-id}
+                               :collection-concept-id coll-id
+                               :token (cmr.transmit.config/echo-system-token)}
                               query-params)
                params2 (merge {:revision-date time-constraint
-                               :collection-concept-id coll-id}
+                               :collection-concept-id coll-id
+                               :token (cmr.transmit.config/echo-system-token)}
                               query-params)]]
       ; remove these comments before going to production
       (error "********************************")
@@ -277,16 +279,15 @@
               gran-ref2 (search/find-granule-references context params2)
               gran-ref (distinct (concat gran-ref1 gran-ref2))
               gran-ref-location (map :location gran-ref)]
-          (error "gran ref 1:" (pr-str gran-ref1))
-          (error "gran ref 2:" (pr-str gran-ref2))
-          (error "gran-ref: " (pr-str gran-ref))
+          (error "gran-ref-locations: " gran-ref-location)
           (when (seq gran-ref)
            (let [email-content (create-email-content (mail-sender) email-address gran-ref-location subscription)
                 email-settings {:host (email-server-host) :port (email-server-port)}]
-            (info "Start sending email for subscription: " sub-name)
-            (error (str "email\n" email-content)
+            (error "Start sending email for subscription: " sub-name)
+            (error "\n\n*********\nemail:\n" email-content "\n***********")
+            (error "call smtp now")
             (postal-core/send-message email-settings email-content)
-            (info "Finished sending email for subscription: " sub-name)))))
+            (info "Finished sending email for subscription: " sub-name))))
        (catch Exception e
          (error "Exception caught in email subscription: " sub-name "\n\n"  (.getMessage e))))))
 

@@ -51,13 +51,17 @@
   [context params]
   (let [conn (config/context->app-connection context :search)
         request-url (str (conn/root-url conn) "/granules.xml")
+        request-body (dissoc params :token)
+        token (:token params)
+        header (ch/context->http-headers context)
         response (client/post request-url
                               (merge
                                 (config/conn-params conn)
-                                {:body (codec/form-encode params)
+                                {:body (codec/form-encode request-body)
                                  :content-type mt/form-url-encoded
                                  :throw-exceptions false
-                                 :headers (ch/context->http-headers context)}))
+                                 :headers (if (nil? token) header
+                                    (assoc header config/token-header token))}))
         {:keys [status body]} response]
     (if (= status 200)
       (parse-granule-response body)
@@ -79,4 +83,3 @@
 (h/defsearcher search-for-subscriptions :search
   (fn [conn]
     (format "%s/subscriptions" (conn/root-url conn))))
-
