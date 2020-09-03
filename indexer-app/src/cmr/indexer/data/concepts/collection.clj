@@ -9,6 +9,7 @@
    [cmr.common-app.config :as common-config]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
@@ -31,7 +32,9 @@
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.concepts.service :as service]
    [cmr.indexer.data.concepts.spatial :as spatial]
+   [cmr.indexer.data.concepts.subscription :as subscription]
    [cmr.indexer.data.concepts.tag :as tag]
+   [cmr.indexer.data.concepts.tool :as tool]
    [cmr.indexer.data.concepts.variable :as variable]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.umm-spec.acl-matchers :as umm-matchers]
@@ -41,8 +44,10 @@
    [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.related-url :as ru]
    [cmr.umm-spec.time :as spec-time]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.util :as su]
-   [cmr.umm.collection.entry-id :as eid]))
+   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm.umm-collection :as umm-c]))
 
 (defn spatial->elastic
   [collection]
