@@ -6,7 +6,7 @@
 (def ^:private sub-notifications-column-sql
  "id NUMBER,
  subscription_concept_id VARCHAR(255) NOT NULL,
- notification_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL")
+ last_notified_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL")
 
  (def ^:private sub-notifications-constraint-sql
    (str "CONSTRAINT sub_notifications_pk PRIMARY KEY (id)"))
