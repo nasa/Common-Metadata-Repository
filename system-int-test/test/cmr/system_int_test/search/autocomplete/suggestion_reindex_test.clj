@@ -13,7 +13,8 @@
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]))
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.access-control :as ac]))
 
 (defn- scores-descending?
   [results]
@@ -83,6 +84,11 @@
                                             :Topic "BIOSPHERE"
                                             :Term "Nothofagus"}))
 
+(def sk12 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
+                                            :Topic "Oceans"
+                                            :Term "Ocean Optics"
+                                            :VariableLevel1 "Bioluminescence"}))
+
 (def gdf1 {:FileDistributionInformation
            [{:FormatType "Binary"
              :AverageFileSize 50
@@ -92,7 +98,8 @@
 
 (defn autocomplete-reindex-fixture
   [f]
-  (let [coll1 (d/ingest "PROV1"
+  (let [admin-read-group-concept-id (e/get-or-create-group (s/context) "admin-read-group")
+        coll1 (d/ingest "PROV1"
                         (dc/collection
                           {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
                            :ArchiveAndDistributionInformation gdf1
@@ -108,23 +115,59 @@
                             (fu/processing-level-id "PL1")
                             {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
                              :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]})
+
         coll3 (d/ingest-concept-with-metadata-file "CMR-6287/C1000000029-EDF_OPS.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
                                                     :format-key :echo10})
-        coll4 (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7 sk8 sk9 sk11))]
+        coll4 (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7 sk8 sk9 sk11))
+        coll5 (d/ingest-umm-spec-collection
+                "PROV2"
+                (data-umm-spec/collection
+                  {:EntryTitle "Secret Collection"
+                   :Projects (:Projects (fu/projects "From whence you came!"))
+                   :Platforms (:Platforms (fu/platforms "SECRET" 2 2 1))
+                   :ScienceKeywords (:ScienceKeywords (fu/science-keywords sk12))
+                   :AccessConstraints (data-umm-spec/access-constraints
+                                         {:Value 1 :Description "Those files are for British eyes only."})})
+                {:format :umm-json})
+        c1-echo (d/ingest "PROV1"
+                          (dc/collection {:entry-title "c1-echo" :access-value 1})
+                          {:format :echo10})
+        group1-concept-id (e/get-or-create-group (s/context) "group1")
+        group-acl (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))]
 
+    (ingest/reindex-collection-permitted-groups "mock-echo-system-token")
     (index/wait-until-indexed)
+
     (index/reindex-suggestions)
     (index/wait-until-indexed)
+
+    (search/clear-caches)
 
     (f)))
 
 (use-fixtures :each (join-fixtures
-                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
+                                             {:grant-all-search? false})
+                       (ingest/grant-all-search-fixture ["PROV1"])
                        hu/grant-all-humanizers-fixture
                        hu/save-sample-humanizers-fixture
                        autocomplete-reindex-fixture]))
+
+(deftest token-test
+  (let [user1-token (e/login (s/context) "user1" [(e/get-or-create-group (s/context) "group1")])
+        _ (index/refresh-elastic-index)]
+    (testing "Suggestions associated to collections with access constraints are returned"
+      (compare-autocomplete-results
+       (get-in (search/get-autocomplete-json "q=From" {:headers {:echo-token user1-token}}) [:feed :entry])
+       [{:type "project",
+          :value "From whence you came!",
+          :fields "From whence you came!"}]))
+    (testing "Suggestions associated to collections with access constraints not returned without a token"
+      (compare-autocomplete-results
+       (get-in (search/get-autocomplete-json "q=From") [:feed :entry])
+       []))))
 
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
