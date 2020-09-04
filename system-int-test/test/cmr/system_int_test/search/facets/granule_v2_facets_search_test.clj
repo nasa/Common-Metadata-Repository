@@ -381,15 +381,12 @@
                                          {:cycle 3
                                           :passes [{:pass 3 :tiles ["1F"]}
                                                    {:pass 4 :tiles ["2L"]}]})
-
         gran10 (ingest-granule-with-track "PROV2" coll2
                                           {:cycle 3
-                                           :passes [{:pass 3 :tiles ["5F" "6R"]}
-                                                    {:pass 4 :tiles ["5L" "6R"]}]})
+                                           :passes [{:pass 3 :tiles ["5F" "6R"]}]})
         gran11 (ingest-granule-with-track "PROV2" coll2
                                           {:cycle 42
-                                           :passes [{:pass 3 :tiles ["5R" "6L"]}
-                                                    {:pass 4 :tiles ["5L" "6R" "8F"]}]})]
+                                           :passes [{:pass 3 :tiles ["5R" "6L"]}]})]
     (index/wait-until-indexed)
 
     (let [root-node (search-and-return-v2-facets {:collection-concept-id coll2-concept-id
@@ -438,7 +435,8 @@
           (testing "returns pass results"
             (let [c3-pass-group (first (get c3-filter :children))]
               (is (not= nil c3-pass-group))
-              (is (= ["1" "2" "3" "4"] (map :title (:children c3-pass-group))))
+              (is (= #{"1" "2" "3" "4"}
+                     (set (map :title (:children c3-pass-group)))))
 
               (testing "and selecting a pass"
                 (let [c3-p3-response (traverse-link "3" (:children c3-pass-group))
@@ -466,9 +464,14 @@
                   (testing "shows available sibling passes"
                     (is (= "3" (:title c3-p3-filter)))
                     (is (= "filter" (:type c3-p3-filter)))
+                    (is (= 4 (:count c3-p3-filter)))
 
                     (is (= "4" (:title c3-p4-filter)))
                     (is (= "filter" (:type c3-p4-filter)))
+                    (is (= 3 (:count c3-p4-filter)))
+
+                    (testing "and cycle count is correct"
+                      (is (= 6 (:count c3-filter))))
                     
                     (testing "and correct remove or apply link options"
                       (is (= :remove (first (keys (:links c3-p3-filter)))))

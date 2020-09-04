@@ -19,9 +19,9 @@
         coll1-PROV1-1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                            :ShortName "S1"}))
         coll1-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
-                                                                                            :ShortName "S1"})) 
+                                                                                            :ShortName "S1"}))
         coll2-PROV1-1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
-                                                                                           :ShortName "S2"}))
+                                                                                            :ShortName "S2"}))
         coll2-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
                                                                                             :ShortName "S2"}))
         coll1-PROV2-1 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E1"
@@ -31,18 +31,17 @@
         coll2-PROV2-1 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
                                                                                             :ShortName "S2"}))
         coll2-PROV2-2 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
-                                                                                            :ShortName "S2"})) 
+                                                                                            :ShortName "S2"}))
         _ (index/wait-until-indexed)]
 
     (testing "ingest of a new variable concept with association on PROV1"
       (let [concept (variable-util/make-variable-concept
                      {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
                                                               :Size 3
-                                                              :Type "OTHER"})]
-                      :AcquisitionSourceName "Instrument1"}
+                                                              :Type "OTHER"})]}
                      {:native-id "var1"
                       :coll-concept-id (:concept-id coll1-PROV1-1)})
-            {:keys [concept-id revision-id variable-association]} 
+            {:keys [concept-id revision-id variable-association]}
               (variable-util/ingest-variable-with-association concept)
             var-concept-id concept-id
             va-concept-id (:concept-id variable-association)
@@ -56,8 +55,7 @@
           (let [concept (variable-util/make-variable-concept
                          {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
                                                                   :Size 3
-                                                                 :Type "OTHER"})]
-                          :AcquisitionSourceName "Instrument1"}
+                                                                 :Type "OTHER"})]}
                          {:native-id "var1"
                           :coll-concept-id (:concept-id coll1-PROV2-1)
                           :coll-revision-id (:revision-id coll1-PROV2-1)})
@@ -74,8 +72,7 @@
           (let [concept (variable-util/make-variable-concept
                          {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
                                                                   :Size 3
-                                                                 :Type "OTHER"})]
-                          :AcquisitionSourceName "Instrument1"}
+                                                                 :Type "OTHER"})]}
                          {:native-id "var1"
                           :coll-concept-id (:concept-id coll1-PROV2-1)
                           :coll-revision-id (:revision-id coll1-PROV2-2)})
@@ -93,8 +90,7 @@
           (let [concept (variable-util/make-variable-concept
                          {:Dimensions [(umm-v/map->DimensionType {:Name " Solution_3_Land "
                                                                   :Size 3
-                                                                  :Type "OTHER"})]
-                          :AcquisitionSourceName " Instrument1 "}
+                                                                  :Type "OTHER"})]}
                          {:native-id "var1"})
                 {:keys [concept-id revision-id]} (variable-util/ingest-variable
                                                   concept)]
@@ -105,8 +101,7 @@
           (let [concept (variable-util/make-variable-concept
                          {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
                                                                   :Size 3
-                                                                  :Type "OTHER"})]
-                          :AcquisitionSourceName "Instrument1"}
+                                                                  :Type "OTHER"})]}
                          {:native-id "var2"
                           :coll-concept-id (:concept-id coll1-PROV1-1)})
                 ;; Two variables with the same name (var1, var2) can not be associated
@@ -122,8 +117,7 @@
       (let [concept (variable-util/make-variable-concept
                      {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land_3"
                                                               :Size 3
-                                                              :Type "OTHER"})]
-                      :AcquisitionSourceName "Instrument1"}
+                                                              :Type "OTHER"})]}
                      {:native-id "var3"
                       :coll-concept-id (:concept-id coll2-PROV1-1)
                       :coll-revision-id 1})
@@ -140,8 +134,7 @@
       (let [concept (variable-util/make-variable-concept
                      {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land_4"
                                                               :Size 3
-                                                              :Type "OTHER"})]
-                      :AcquisitionSourceName "Instrument1"}
+                                                              :Type "OTHER"})]}
                      {:native-id "var4"
                       :coll-concept-id (:concept-id coll2-PROV1-1)
                       :coll-revision-id 3})
@@ -156,16 +149,14 @@
       (let [concept1 (variable-util/make-variable-concept
                        {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land_4"
                                                                 :Size 3
-                                                                :Type "OTHER"})]
-                        :AcquisitionSourceName "Instrument1"}
+                                                                :Type "OTHER"})]}
                        {:native-id "var4"
                         :coll-concept-id (:concept-id coll2-PROV1-1)
                         :coll-revision-id 3})
             concept2 (variable-util/make-variable-concept
                        {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land_4"
                                                                 :Size 3
-                                                                :Type "OTHER"})]
-                        :AcquisitionSourceName "Instrument1"}
+                                                                :Type "OTHER"})]}
                        {:native-id "var4"
                         :coll-concept-id (:concept-id coll2-PROV1-1)})
             _ (ingest/delete-concept
@@ -187,8 +178,8 @@
          (is (= expected-errors2 errors2))))
 
     (testing "ingest of a variable concept with a revision id"
-      (let [concept (variable-util/make-variable-concept 
-                      {} 
+      (let [concept (variable-util/make-variable-concept
+                      {}
                       {:native-id "var1"
                        :revision-id 5
                        :coll-concept-id (:concept-id coll1-PROV1-1)})

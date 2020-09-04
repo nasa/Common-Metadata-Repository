@@ -27,7 +27,7 @@
           variable-metadata-partial))
 
 (deftest get-variable-fingerprint-test
-  (is (= "54ccba05163a514021bfee3a5460909b"
+  (is (= "698b82b0b96c343e0867dcb62a9e520c"
          (fingerprint/get-variable-fingerprint variable-metadata)
          (fingerprint/get-variable-fingerprint
           variable-metadata-with-dimension-fields-in-different-order))))
