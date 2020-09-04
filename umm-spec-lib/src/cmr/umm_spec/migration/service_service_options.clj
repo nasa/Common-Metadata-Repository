@@ -200,10 +200,10 @@
    SupportedOutputFormats."
   [supported-reformattings]
   (let [group (group-by :SupportedInputFormat supported-reformattings)]
-    (map #(build-supported-reformattings-pair-for-1-3-1 %) group)))
+    (into [] (map #(build-supported-reformattings-pair-for-1-3-1 %) group))))
 
 (defn update-service-options-1_3->1_3_1
-  "Update the service options from the passed in 1.3.1 UMM-S record to a valid UMM-S version 1.3 record."
+  "Update the service options from the passed in 1.3 UMM-S record to a valid UMM-S version 1.3.1 record."
   [s]
   (update-in s [:ServiceOptions :SupportedReformattings] #(update-supported-reformattings-for-1-3-1 %)))
 
@@ -293,7 +293,9 @@
    to the passed in supported-reformattings. Any duplicate data in the
    output-formats sub element is omitted."
   [supported-reformattings input-formats output-formats]
-  (let [join-formats (fn [sup-ref input-format]
+  (let [supported-reformattings (when (seq supported-reformattings)
+                                  (into [] supported-reformattings))
+        join-formats (fn [sup-ref input-format]
                        (let [sup-ref (if (seq sup-ref)
                                        sup-ref
                                        [])
