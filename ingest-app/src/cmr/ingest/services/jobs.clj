@@ -174,7 +174,7 @@
 
 (defconfig email-subscription-processing-interval
   "Number of seconds between jobs processing email subscriptions."
-  {:default 600;3600
+  {:default 3600
    :type Long})
 (defconfig email-subscription-processing-lookback
   "Number of seconds to look back for granual changes."
