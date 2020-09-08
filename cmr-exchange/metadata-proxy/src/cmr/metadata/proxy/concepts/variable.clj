@@ -16,7 +16,7 @@
 ;; XXX We can pull this from configuration once async-get-metadata function
 ;;     signatures get updated to accept the system data structure as an arg.
 (def variables-api-path "/variables")
-(def pinned-variable-schema-version "1.4")
+(def pinned-variable-schema-version "1.7")
 (def results-content-type "application/vnd.nasa.cmr.umm_results+json")
 (def charset "charset=utf-8")
 (def accept-format "%s; version=%s; %s")
@@ -25,7 +25,6 @@
                            pinned-variable-schema-version
                            charset))
 (def id-search-constraint "concept_id[]")
-(def alias-search-constraint "alias[]")
 (def max-page-size 2000)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -38,21 +37,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn build-query
-  "Build variable search query based on variable-info, which could be
-  list of concept-ids, or aliases. search-constraint could be either
-  concept_id[] or alias[]." 
+  "Build variable search query based on variable-info, which will be
+  list of concept-ids."
   [variable-info search-constraint]
   (string/join
     "&"
     (conj
       (map #(str (codec/url-encode search-constraint) "=" %) variable-info)
-      (str "page_size=" max-page-size)
-      (str (codec/url-encode "options[alias][pattern]") "=true"))))
+      (str "page_size=" max-page-size))))
 
 (defn async-get-metadata
-  "Given variable-info, which could be a list of concept-ids or aliases, 
-  and the search-constraint, which could be concept_id[] or alias[], 
-  returns the metadata for the related variables."
+  "Given variable-info, which will be a list of concept-ids,
+  and the search-constraint, returns the metadata for the related variables."
   [search-endpoint user-token variable-info search-constraint]
   (if (seq variable-info)
     (let [url (str search-endpoint variables-api-path)
@@ -76,20 +72,6 @@
   [search-endpoint user-token ids]
   (async-get-metadata search-endpoint user-token ids id-search-constraint))
 
-(defn async-get-metadata-by-aliases
-  "Get variables by aliases"
-  [search-endpoint user-token aliases]
-  ;; aliases could be variable aliases or group nodes. If it's alias, we will
-  ;; search for alias=<alias>, if it's group nodes, we will search for alias=<alias>/* 
-  ;; There is no way to distinguish a true alias and a group node. So we will search for both.
-  ;; Note: we don't want to search for alias=<alias>* because say <alias>=/a/b/c and it's a group
-  ;; node, alias=/a/b/c* will include /a/b/c1/* /a/b/c2/* but we are only interested in /a/b/c/*
-  (let [group-nodes (map #(if (= "/" (last (string/split % #""))) 
-                            (str % "*")
-                            (str % "/*")) aliases)
-        aliases-and-nodes (concat aliases group-nodes)] 
-    (async-get-metadata search-endpoint user-token aliases-and-nodes alias-search-constraint)))
-
 (defn extract-metadata
   [promise]
   (let [rslts @promise]
@@ -108,10 +90,6 @@
   [search-endpoint user-token params]
   (let [promise-by-ids (when-let [ids (:variables params)]
                          (async-get-metadata-by-ids search-endpoint user-token ids))
-        promise-by-aliases (when-let [aliases (:variable-aliases params)]
-                             (async-get-metadata-by-aliases search-endpoint user-token aliases))
-        variables-by-ids (when promise-by-ids 
-                           (extract-metadata promise-by-ids))
-        variables-by-aliases (when promise-by-aliases
-                               (extract-metadata promise-by-aliases))]
-    (distinct (concat variables-by-ids variables-by-aliases))))
+        variables-by-ids (when promise-by-ids
+                           (extract-metadata promise-by-ids))]
+    variables-by-ids))

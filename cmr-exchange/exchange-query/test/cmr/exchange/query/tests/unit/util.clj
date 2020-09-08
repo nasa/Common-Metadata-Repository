@@ -88,5 +88,5 @@
 (deftest unique-params-keys
   (is (= #{:coverage :rangesubset :timeposition}
          (util/unique-params-keys wcs/map->CollectionWcsStyleParams)))
-  (is (= #{:exclude-granules :variable-aliases :variables :granules :bounding-box :temporal :service-id}
+  (is (= #{:exclude-granules :variables :granules :bounding-box :temporal :service-id}
          (util/unique-params-keys cmr/map->CollectionCmrStyleParams))))
