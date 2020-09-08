@@ -2,13 +2,9 @@
   "Defines the API for search-by-concept in the CMR."
   (:require
    [clojure.string :as string]
-   [clojure.walk :as walk]
-   [clj-http.client :as client]
    [cmr.common-app.api.routes :as common-routes]
-   [cmr.common-app.services.search :as search]
-   [cmr.common.cache :as cache]
    [cmr.common.config :refer [defconfig]]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
@@ -87,7 +83,7 @@
   [headers]
   (and (false? (allow-all-granule-params-flag))
        (or (not (some? (get headers "client-id")))
-           (not (= "true" (get headers (string/lower-case (allow-all-gran-header))))))))
+           (not= "true" (get headers (string/lower-case (allow-all-gran-header)))))))
 
 (defn- handle-all-granule-params
   "Throws error if all granule params needs to be rejected."
@@ -169,9 +165,8 @@
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
                         (name concept-type) (:client-id ctx)
                         (rfh/printable-result-format result-format) (pr-str params)))
-        search-params (if cached-search-params
-                        cached-search-params
-                        (lp/process-legacy-psa params))
+        search-params (or cached-search-params
+                          (lp/process-legacy-psa params))
         _ (handle-granule-search-params headers concept-type search-params short-scroll-id)
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
     (if (:scroll-id results)

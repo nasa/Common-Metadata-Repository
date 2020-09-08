@@ -4,7 +4,6 @@
    [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.test :refer :all]
-   [cmr.common.concepts :as cu]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.spatial.line-string :as l]

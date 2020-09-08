@@ -96,17 +96,22 @@
   {:attribute :attribute
    :bounding-box :bounding-box
    :browsable :boolean
+   :circle :circle
    :cloud-cover :num-range
    :collection-concept-id :string
    :concept-id :granule-concept-id
    :created-at :multi-date-range
+   :crid-id :string
+   :cycle :int
    :day-night :string
    :downloadable :boolean
    :entry-title :collection-query
    :equator-crossing-date :equator-crossing-date
    :equator-crossing-longitude :equator-crossing-longitude
    :exclude :exclude
+   :feature-id :string
    :granule-ur :string
+   :include-polygons :boolean
    :instrument :inheritance
    :line :line
    :native-id :string
@@ -114,26 +119,22 @@
    :platform :inheritance
    :point :point
    :polygon :polygon
-   :circle :circle
+   :passes :passes
    :producer-granule-id :string
    :production-date :multi-date-range
    :project :string
-   :feature-id :string
-   :crid-id :string
    :provider :collection-query
    :readable-granule-name :readable-granule-name
    :revision-date :multi-date-range
    :sensor :inheritance
+   :shapefile :shapefile
    :short-name :collection-query
+   :simplify-shapefile :boolean
    :temporal :temporal
    :temporal-facet :temporal-facet
    :two-d-coordinate-system :two-d-coordinate-system
    :updated-since :updated-since
-   :version :collection-query
-   :cycle :int
-   :passes :passes
-   :shapefile :shapefile
-   :simplify-shapefile :boolean})
+   :version :collection-query})
 
 (defmethod common-params/param-mappings :tag
   [_]
@@ -461,10 +462,11 @@
                                  :granule params lp/param-aliases)
         result-features (when (= "v2" (util/safe-lowercase (:include-facets params)))
                           [:facets-v2])]
-    [(dissoc params :echo-compatible :include-facets :simplify-shapefile)
+    [(dissoc params :echo-compatible :include-facets :include-polygons :simplify-shapefile)
      (merge query-attribs
             {:echo-compatible? (= "true" (:echo-compatible params))
              :simplify-shapefile? (= "true" (:simplify-shapefile params))
+             :include-polygons? (= "true" (:include-polygons params))
              :result-features result-features})]))
 
 (defmethod common-params/parse-query-level-params :variable

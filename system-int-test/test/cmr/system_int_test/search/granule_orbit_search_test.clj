@@ -1,17 +1,14 @@
 (ns cmr.system-int-test.search.granule-orbit-search-test
   "Tests for spatial search with orbital back tracking."
   (:require
-   [clojure.string :as s]
    [clojure.test :refer :all]
    [cmr.common.util :as u]
    [cmr.spatial.codec :as codec]
-   [cmr.spatial.derived :as derived]
    [cmr.spatial.kml :as kml]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as point]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -20,7 +17,9 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.umm.umm-spatial :as umm-s]))
+   [cmr.umm.umm-spatial :as umm-s])
+  (:import
+   [cmr.spatial.polygon Polygon]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -44,6 +43,45 @@
                                      orbit
                                      nil)}
                 other-attribs))))))
+
+(deftest echo-10-polygons-exclusion-test
+  (let [coll (d/ingest-concept-with-metadata-file
+               "CMR-4722/OMSO2.003-collection.xml"
+               {:provider-id "PROV1"
+                :concept-type :collection
+                :native-id "OMSO2-collection"
+                :format-key :dif10})
+        echo-granule (d/ingest-concept-with-metadata-file
+                       "CMR-4722/OMSO2.003-granule.xml"
+                       {:provider-id "PROV1"
+                        :concept-type :granule
+                        :concept-id "C4-PROV1"
+                        :native-id "OMSO2-granule"
+                        :format-key :echo10})]
+    (index/wait-until-indexed)
+
+    (testing "polygons are excluded by default"
+      (let [response (search/find-concepts-json :granule
+                                                {:provider-id "PROV1"})
+            echo-10-granule (first (get-in response [:results :entries]))]
+        (is (= 0 (count (filter #(instance? Polygon %)
+                                (:shapes echo-10-granule)))))))
+
+    (testing "polygons are excluded when explicitely excluded"
+      (let [response (search/find-concepts-json :granule
+                                                {:provider-id "PROV1"
+                                                 :include-polygons false})
+            echo-10-granule (first (get-in response [:results :entries]))]
+        (is (= 0 (count (filter #(instance? Polygon %)
+                                (:shapes echo-10-granule)))))))
+    
+    (testing "polygons are included when explicitlely specified"
+      (let [response (search/find-concepts-json :granule
+                                                {:provider-id "PROV1"
+                                                 :include-polygons true})
+            echo-10-granule (first (get-in response [:results :entries]))]
+        (is (= 2 (count (filter #(instance? Polygon %)
+                                (:shapes echo-10-granule)))))))))
 
 (deftest orbit-bug-CMR-4722
   (let [coll (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"

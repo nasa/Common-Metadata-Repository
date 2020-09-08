@@ -5,13 +5,11 @@
    [clj-time.core :as time]
    [clojure.data.xml :as x]
    [clojure.edn :as edn]
-   [clojure.set :as set]
    [clojure.walk :as walk]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.results-model :as r]
-   [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as util]
    [cmr.search.models.query :as q]
    [cmr.search.results-handlers.atom-links-results-handler :as atom-links]
@@ -105,8 +103,9 @@
                    acl-rhh/granule-elastic-fields)))))
 
 (defn- collection-elastic-result->query-result-item
-  [elastic-result]
-  (let [{concept-id :_id
+  [query elastic-result]
+  (let [include-polygons? (:include-polygons? query)
+        {concept-id :_id
          score :_score
          {short-name :short-name
           version-id :version-id
@@ -176,7 +175,6 @@
             :browse-flag browsable
             :associated-difs associated-difs
             :coordinate-system coordinate-system
-            :shapes (srl/ords-info->shapes ords-info ords)
             :orbit-parameters {:swath-width swath-width
                                :period period
                                :inclination-angle inclination-angle
@@ -191,6 +189,8 @@
             :associations (some-> associations-gzip-b64
                                   util/gzip-base64->string
                                   edn/read-string)}
+           (when include-polygons?
+             {:shapes (srl/ords-info->shapes ords-info ords)})
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn- granule-elastic-result->query-result-item
@@ -270,7 +270,8 @@
         elastic-matches (get-in elastic-results [:hits :hits])
         items (if (= :granule (:concept-type query))
                 (granule-elastic-results->query-result-items context query elastic-matches)
-                (map collection-elastic-result->query-result-item elastic-matches))]
+                (map (partial collection-elastic-result->query-result-item query)
+                     elastic-matches))]
     (r/map->Results {:hits hits
                      :items items
                      :timed-out (:timed_out elastic-results)
