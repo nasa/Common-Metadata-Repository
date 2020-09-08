@@ -885,10 +885,6 @@
         {:keys [concept-type concept-id]} concept]
 
     (validate-concept-revision-id db provider concept)
-    ;; validate variable name
-    (when (= :variable concept-type)
-      (let [previous-concept (c/get-concept db concept-type provider concept-id)]
-        (validate-variable-name-not-changed concept previous-concept)))
 
     (let [concept (->> concept
                        (set-or-generate-revision-id db provider)

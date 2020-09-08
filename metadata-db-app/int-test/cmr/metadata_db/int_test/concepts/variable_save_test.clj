@@ -70,25 +70,4 @@
             {:keys [status concept-id revision-id]} (util/save-concept concept3)]
         (is (= status 201))
         (is (not= concept1-concept-id concept-id))
-        (is (= 1 revision-id))))
-
-    (let [concept4-var-name "different-variable-name"
-          concept4 (update concept1 :extra-fields assoc :variable-name concept4-var-name)]
-      (testing (str "save variable with the same native id, but a different variable name "
-                    "on a non-deleted variable is not allowed")
-        (let [{:keys [status errors]} (util/save-concept concept4)
-              expected-error (format
-                              "Variable name [%s] does not match the existing variable name [%s]"
-                              concept4-var-name
-                              (get-in concept1 [:extra-fields :variable-name]))]
-          (is (= 422 status))
-          (is (= [expected-error] errors))))
-
-      (testing (str "save variable with the same native id, but a different variable name "
-                    "on a deleted variable is OK")
-        (let [{delete-status :status
-               delete-revision-id :revision-id} (util/delete-concept concept1-concept-id)
-              {:keys [status concept-id revision-id]} (util/save-concept concept4)]
-          (is (= 201 status))
-          (is (= concept1-concept-id concept-id))
-          (is (= (inc delete-revision-id) revision-id)))))))
+        (is (= 1 revision-id))))))
