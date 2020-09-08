@@ -253,7 +253,7 @@
             {:keys [status errors]} (ingest/ingest-concept concept
                                                            (variable-util/token-opts token))]
         (is (= 400 status))
-        (is (= ["#/Name: expected minLength: 1, actual: 0"]
+        (is (= ["#/Name: expected minLength: 1, actual: 0" "#/Name: string [] does not match pattern [\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,255}"]
                errors))))
     (testing "ingest of variable concept JSON schema validation invalid field"
       (let [concept (variable-util/make-variable-concept {:InvalidField "xxx"})
@@ -299,28 +299,7 @@
                                             (variable-util/token-opts token))]
     ;; sanity check
     (is (mdb/concept-exists-in-mdb? var-concept-id initial-revision-id))
-    (is (= 1 initial-revision-id))
-
-    (let [;; variable with a different variable name, but the same native-id
-           concept (variable-util/make-variable-concept
-                    {:Name "new-var-name"} {:native-id "var-to-be-updated"})]
-      (testing "update the variable with a different variable name is not allowed"
-        (let [{:keys [status errors]} (variable-util/ingest-variable
-                                       concept
-                                       (variable-util/token-opts token))]
-          (is (= 422 status))
-          (is (= ["Variable name [new-var-name] does not match the existing variable name [var1]"]
-                 errors))))
-
-      (testing "after the variable is deleted, update the variable with a different name is OK"
-        ;; delete the variable
-        (ingest/delete-concept concept {:token token})
-        (let [{:keys [status concept-id revision-id]} (variable-util/ingest-variable
-                                                       concept
-                                                       (variable-util/token-opts token))]
-          (is (= 200 status))
-          (is (= var-concept-id concept-id))
-          (is (= (+ initial-revision-id 2) revision-id)))))))
+    (is (= 1 initial-revision-id))))
 
 (deftest variable-ingest-validation-test
   (testing "ingest validation on UMM-Var KMS keywords"
