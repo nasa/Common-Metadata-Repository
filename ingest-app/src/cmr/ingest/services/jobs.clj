@@ -223,9 +223,9 @@
  "Create an email body for subscriptions"
  [from-email-address to-email-address gran-ref-location subscription]
  (let [metadata (json/parse-string (:metadata subscription))
-  concept-id (get-in subscription [:extra-fields :collection-concept-id])
-  meta-query (get metadata "Query")
-  sub-start-time (:start-time subscription)]
+       concept-id (get-in subscription [:extra-fields :collection-concept-id])
+       meta-query (get metadata "Query")
+       sub-start-time (:start-time subscription)]
   {:from from-email-address
    :to to-email-address
    :subject "Email Subscription Notification"
@@ -245,8 +245,8 @@
  "Pull out the start and end times from a time-constraint value and associate them to a map"
  [raw time-constraint]
  (let [parts (clojure.string/split time-constraint, #",")
-  start-time (first parts)
-  end-time (last parts)]
+       start-time (first parts)
+       end-time (last parts)]
   (assoc raw :start-time start-time :end-time end-time)))
 
 (defn- process-subscriptions
@@ -269,7 +269,6 @@
                                :collection-concept-id coll-id
                                :token (cmr.transmit.config/echo-system-token)}
                               query-params)]]
-      ; remove these comments before going to production
       (debug "Processing subscription: " sub-name " with\n" (str subscription) ".")
       (try
         (let [gran-ref1 (search/find-granule-references context params1)
@@ -290,7 +289,7 @@
   [context]
   (let [end-time (t/now)
         start-time (t/minus end-time (t/seconds (email-subscription-processing-lookback)))
-        time-constraint (str (str start-time) "," (str end-time))
+        time-constraint (str start-time "," end-time)
         subscriptions
          (->> (mdb/find-concepts context {:latest true} :subscription)
               (filter #(not (:deleted %)))
