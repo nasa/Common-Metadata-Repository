@@ -209,4 +209,4 @@
       (assoc :AcquisitionSourceName spec-util/not-provided)
       (assoc-in [:Characteristics :IndexRanges] (get v :IndexRanges))
       (assoc-in [:Characteristics :GroupPath] (get v :Name))
-      (dissoc :IndexRanges)))
+      (dissoc :IndexRanges :StandardName)))
