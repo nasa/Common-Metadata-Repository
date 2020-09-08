@@ -32,11 +32,7 @@
    ;; OPeNDAP URL. This is used for subsetting.
    variables
    ;;
-   ;; `variables-aliases` is a list of variable aliases to be specified when creating the
-   ;; OPeNDAP URL. This is used for subsetting.
-   variable-aliases
-   ;;
-   ;; `service-id` concept id for a service. 
+   ;; `service-id` concept id for a service.
    service-id
    ;;
    ;; `subset` is used the same way as `subset` for WCS where latitudes,
@@ -64,8 +60,7 @@
                                 %
                                 #{(keyword "granules[]")
                                   (keyword "temporal[]")
-                                  (keyword "variables[]")
-                                  (keyword "variable-aliases[]")}))
+                                  (keyword "variables[]")}))
 
 (defn ->query-string
   [this]
@@ -86,7 +81,6 @@
         subset (:subset params)
         granules-array (query-util/get-array-param params :granules)
         variables-array (query-util/get-array-param params :variables)
-        variable-aliases-array (query-util/get-array-param params :variable-aliases)
         temporal-array (query-util/get-array-param params :temporal)]
     (log/trace "original bounding-box:" (:bounding-box params))
     (log/trace "bounding-box:" bounding-box)
@@ -95,8 +89,6 @@
       (log/trace "granules-array:" granules-array))
     (when variables-array
       (log/trace "variables-array:" variables-array))
-    (when variable-aliases-array
-      (log/trace "variable-aliases-array:" variable-aliases-array))
     (map->CollectionCmrStyleParams
       (-> params
           (assoc
@@ -107,9 +99,6 @@
            :variables (if (query-util/not-array? variables-array)
                         (query-util/split-comma->sorted-coll (:variables params))
                         variables-array)
-           :variable-aliases (if (query-util/not-array? variable-aliases-array)
-                               (query-util/split-comma->sorted-coll (:variable-aliases params))
-                               variable-aliases-array)
            :exclude-granules (util/bool (:exclude-granules params))
            :subset (if (seq bounding-box)
                     (query-util/bounding-box->subset bounding-box)
@@ -123,8 +112,7 @@
                        temporal-array))
           (dissoc (keyword "granules[]")
                   (keyword "temporal[]")
-                  (keyword "variables[]")
-                  (keyword "variable-aliases[]"))))))
+                  (keyword "variables[]"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation of Collections Params API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;

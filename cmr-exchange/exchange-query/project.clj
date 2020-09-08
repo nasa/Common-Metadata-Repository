@@ -19,20 +19,20 @@
   :url "https://github.com/cmr-exchange/cmr-exchange-query"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.10.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
-                 [com.stuartsierra/component "0.4.0"]
+                 [com.stuartsierra/component "1.0.0"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
-                 [org.clojure/clojure "1.9.0"]
-                 [ring/ring-codec "1.1.1"]]
+                 [org.clojure/clojure "1.10.1"]
+                 [ring/ring-codec "1.1.2"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]
   :aot [clojure.tools.logging.impl]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
-             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.2"]]
+             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.4"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
@@ -43,11 +43,11 @@
                                      ;; The following is excluded because it stomps on twig's logger
                                      [org.slf4j/slf4j-simple]]}
              :system {:dependencies [[clojusc/system-manager "0.3.0"]]}
-             :local {:dependencies [[org.clojure/tools.namespace "0.2.11"]
+             :local {:dependencies [[org.clojure/tools.namespace "1.0.0"]
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
                                [lein-shell "0.5.0"]
-                               [venantius/ultra "0.5.4"]]
+                               [venantius/ultra "0.6.0"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[debugger "0.2.1"]]
@@ -56,12 +56,12 @@
                                   :init ~(println (get-banner))}}
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.3.5"]
+                    :plugins [[jonase/eastwood "0.3.11"]
                               [lein-ancient "0.6.15"]
-                              [lein-bikeshed "0.5.1"]
-                              [lein-kibit "0.1.6"]]}
-             :test {:dependencies [[clojusc/ltest "0.3.0"]]
-                    :plugins [[lein-ltest "0.3.0"]
+                              [lein-bikeshed "0.5.2"]
+                              [lein-kibit "0.1.8"]]}
+             :test {:dependencies [[clojusc/ltest "0.4.0"]]
+                    :plugins [[lein-ltest "0.4.0"]
                               [test2junit "1.4.2"]]
                     :jvm-opts ["-Dcmr.testing.config.data=testing-value"]
                     :test2junit-output-dir "junit-test-results"
