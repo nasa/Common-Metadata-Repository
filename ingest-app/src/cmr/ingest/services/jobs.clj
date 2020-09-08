@@ -252,8 +252,6 @@
 (defn- process-subscriptions
   "Process each subscription in subscriptions."
   [context subscriptions time-constraint]
-  (error "* * * * * *")
-  (error "process-subscriptions" time-constraint)
   (doseq [raw_subscription subscriptions
          :let [subscription (add-updated-since raw_subscription time-constraint)
                email-address (get-in subscription [:extra-fields :email-address])
@@ -272,22 +270,17 @@
                                :token (cmr.transmit.config/echo-system-token)}
                               query-params)]]
       ; remove these comments before going to production
-      (error "********************************")
-      (error "Processing subscription: " sub-name " with\n" (str subscription) ".")
+      (debug "Processing subscription: " sub-name " with\n" (str subscription) ".")
       (try
         (let [gran-ref1 (search/find-granule-references context params1)
               gran-ref2 (search/find-granule-references context params2)
               gran-ref (distinct (concat gran-ref1 gran-ref2))
               gran-ref-location (map :location gran-ref)]
-          (error "gran-ref-locations: " gran-ref-location)
+          (debug "gran-ref-locations for " sub-name ": " gran-ref-location)
           (when (seq gran-ref)
            (let [email-content (create-email-content (mail-sender) email-address gran-ref-location subscription)
                 email-settings {:host (email-server-host) :port (email-server-port)}]
-            (error "Start sending email for subscription: " sub-name)
-            (error "\n\n*********\nemail:\n" email-content "\n***********")
-            (error "call smtp now")
             (postal-core/send-message email-settings email-content)
-            (info "Finished sending email for subscription: " sub-name))))
        (catch Exception e
          (error "Exception caught in email subscription: " sub-name "\n\n"  (.getMessage e))))))
 
