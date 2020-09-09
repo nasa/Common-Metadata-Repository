@@ -2,19 +2,15 @@
   "Contains XML helpers for extracting data from XML structs created using clojure.data.xml.
   See the test file for examples."
   (:require [cmr.common.date-time-parser :as p]
-            [cmr.common.services.errors :as errors]
-            [clojure.string :as string]
-            [clojure.java.io :as io])
+            [clojure.string :as string])
   (:import javax.xml.validation.SchemaFactory
            javax.xml.XMLConstants
            javax.xml.transform.stream.StreamSource
            org.xml.sax.ext.DefaultHandler2
            java.io.StringReader
            java.io.StringWriter
-           org.w3c.dom.Node
            org.w3c.dom.bootstrap.DOMImplementationRegistry
            org.w3c.dom.ls.DOMImplementationLS
-           org.w3c.dom.ls.LSSerializer
            org.xml.sax.InputSource
            org.xml.sax.SAXParseException
            javax.xml.parsers.DocumentBuilderFactory))
