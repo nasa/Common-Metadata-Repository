@@ -15,10 +15,10 @@
                                  {:SupportedInputFormat "HDF6", :SupportedOutputFormat "H3"}
                                  {:SupportedInputFormat "HDF5", :SupportedOutputFormat "H4"}]]
 
-    (is (= '({:SupportedInputFormat "HDF5",
-              :SupportedOutputFormats ["H1" "H2" "H3" "H4"]}
-             {:SupportedInputFormat "HDF6",
-               :SupportedOutputFormats ["H1" "H2" "H3"]})
+    (is (= [{:SupportedInputFormat "HDF5",
+             :SupportedOutputFormats ["H1" "H2" "H3" "H4"]}
+            {:SupportedInputFormat "HDF6",
+             :SupportedOutputFormats ["H1" "H2" "H3"]}]
            (service/update-supported-reformattings-for-1-3-1 supported-reformattings)))))
 
 (deftest update-supported-reformattings-for-1-3-test
@@ -151,7 +151,7 @@
     "Tested with SupportedReformattings which is an empty list."
     {:SupportedInputFormats [ "ASCII" "GEOTIFF" "NETCDF-3"]
      :SupportedOutputFormats [ "ASCII" "GEOTIFF" "NETCDF-3"]
-     :SupportedReformatting '()}
+     :SupportedReformattings '()}
     [{:SupportedInputFormat "ASCII",
       :SupportedOutputFormats ["ASCII" "GEOTIFF" "NETCDF-3"]}
      {:SupportedInputFormat "GEOTIFF",
@@ -161,7 +161,19 @@
 
     "Testing nil inputs."
     nil
-    nil))
+    nil
+
+    "Testing with SupportedReformattings as a set instead of a vector"
+    {:SupportedInputFormats ["GEOTIFF" "NETCDF-3"]
+     :SupportedOutputFormats ["GEOTIFF" "NETCDF-3"]
+     :SupportedReformattings '({:SupportedInputFormat "ASCII"
+                                :SupportedOutputFormats ["ASCII" "GEOTIFF" "NETCDF-3"]})}
+    [{:SupportedInputFormat "ASCII",
+      :SupportedOutputFormats ["ASCII" "GEOTIFF" "NETCDF-3"]}
+     {:SupportedInputFormat "GEOTIFF",
+      :SupportedOutputFormats ["GEOTIFF" "NETCDF-3"]}
+     {:SupportedInputFormat "NETCDF-3",
+      :SupportedOutputFormats ["GEOTIFF" "NETCDF-3"]}]))
 
 (deftest create-subset-type-1-3-4-to-1-3-3-test
   "Test to see if umm-s version 1.3.3 SupportedInputFormats and SupportedOutputFormats are converted
