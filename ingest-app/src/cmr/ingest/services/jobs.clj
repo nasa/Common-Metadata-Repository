@@ -176,6 +176,10 @@
   "Number of seconds between jobs processing email subscriptions."
   {:default 3600
    :type Long})
+(defconfig email-subscription-processing-lookback
+  "Number of seconds to look back for granual changes."
+  {:default 3600
+   :type Long})
 
 (defn trigger-full-refresh-collection-granule-aggregation-cache
   "Triggers a refresh of the collection granule aggregation cache in the Indexer."
@@ -218,19 +222,21 @@
 (defn create-email-content
  "Create an email body for subscriptions"
  [from-email-address to-email-address gran-ref-location subscription]
- (let [meta-concept-id (get-in subscription [:metadata "CollectionConceptId"])
-  meta-query (get-in subscription [:metadata "Query"])
-  meta-start-time (get-in subscription [:metadata :start-time])]
+
+ (let [metadata (json/parse-string (:metadata subscription))
+       concept-id (get-in subscription [:extra-fields :collection-concept-id])
+       meta-query (get metadata "Query")
+       sub-start-time (:start-time subscription)]
   {:from from-email-address
    :to to-email-address
    :subject "Email Subscription Notification"
    :body [{:type "text/html"
     :content (markdown/md-to-html-string (str
      "You have subscribed to receive notifications when data is added to the following query:\n\n"
-     "`" meta-concept-id "`\n\n"
+     "`" concept-id "`\n\n"
      "`" meta-query "`\n\n"
      "Since this query was last run at "
-     meta-start-time
+     sub-start-time
      ", the following granules have been added or updated:\n\n"
      (email-granule-url-list gran-ref-location)
      "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"
@@ -240,8 +246,8 @@
  "Pull out the start and end times from a time-constraint value and associate them to a map"
  [raw time-constraint]
  (let [parts (clojure.string/split time-constraint, #",")
-  start-time (first parts)
-  end-time (last parts)]
+       start-time (first parts)
+       end-time (last parts)]
   (assoc raw :start-time start-time :end-time end-time)))
 
 (defn- process-subscriptions
@@ -257,22 +263,24 @@
                                 :Query)
                query-params (create-query-params query-string)
                params1 (merge {:created-at time-constraint
-                               :collection-concept-id coll-id}
+                               :collection-concept-id coll-id
+                               :token (cmr.transmit.config/echo-system-token)}
                               query-params)
                params2 (merge {:revision-date time-constraint
-                               :collection-concept-id coll-id}
+                               :collection-concept-id coll-id
+                               :token (cmr.transmit.config/echo-system-token)}
                               query-params)]]
-      (info "Processing subscription: " sub-name)
+      (debug "Processing subscription: " sub-name " with\n" (str subscription) ".")
       (try
         (let [gran-ref1 (search/find-granule-references context params1)
               gran-ref2 (search/find-granule-references context params2)
               gran-ref (distinct (concat gran-ref1 gran-ref2))
               gran-ref-location (map :location gran-ref)]
+          (debug "gran-ref-locations for " sub-name ": " gran-ref-location)
           (when (seq gran-ref)
-            (info "Start sending email for subscription: " sub-name)
-            (postal-core/send-message {:host (email-server-host) :port (email-server-port)}
-                                      (create-email-content (mail-sender) email-address gran-ref-location subscription))
-            (info "Finished sending email for subscription: " sub-name)))
+           (let [email-content (create-email-content (mail-sender) email-address gran-ref-location subscription)
+                email-settings {:host (email-server-host) :port (email-server-port)}]
+            (postal-core/send-message email-settings email-content))))
        (catch Exception e
          (error "Exception caught in email subscription: " sub-name "\n\n"  (.getMessage e))))))
 
@@ -281,8 +289,8 @@
   in the subscription and were created/updated during the last processing interval."
   [context]
   (let [end-time (t/now)
-        start-time (t/minus end-time (t/seconds (email-subscription-processing-interval)))
-        time-constraint (str (str start-time) "," (str end-time))
+        start-time (t/minus end-time (t/seconds (email-subscription-processing-lookback)))
+        time-constraint (str start-time "," end-time)
         subscriptions
          (->> (mdb/find-concepts context {:latest true} :subscription)
               (filter #(not (:deleted %)))
