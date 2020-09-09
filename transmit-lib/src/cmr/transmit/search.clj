@@ -60,8 +60,7 @@
                                 {:body (codec/form-encode request-body)
                                  :content-type mt/form-url-encoded
                                  :throw-exceptions false
-                                 :headers (if (nil? token) header
-                                    (assoc header config/token-header token))}))
+                                 :headers (if token (assoc header config/token-header token) header)}))
         {:keys [status body]} response]
     (if (= status 200)
       (parse-granule-response body)
