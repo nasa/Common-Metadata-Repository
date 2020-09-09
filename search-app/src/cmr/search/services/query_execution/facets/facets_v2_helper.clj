@@ -20,7 +20,8 @@
    :science-keywords-h "Keywords"
    :variables-h "Measurements"
    :temporal "Temporal"
-   :granule-data-format-h "Data Format"})
+   :granule-data-format-h "Data Format"
+   :two-d-coordinate-system-name-h "Tiling System"})
 
 (defn terms-facet
   "Construct a terms query to be applied for the given field. Size specifies the number of results
@@ -58,6 +59,20 @@
    :children children})
 
 (defn generate-filter-node
+  "Returns a filter node for the provided title"
+  [base-url query-params field-name term term-count applied?]
+  (let [links (if applied?
+                (lh/create-link base-url query-params field-name term)
+                (lh/create-apply-link base-url query-params field-name term))]
+    (merge sorted-facet-map
+           {:title term
+            :type :filter
+            :applied (= :remove (first (keys links)))
+            :links links
+            :count term-count
+            :has_children false})))
+
+(defn filter-node-generator
   "Returns a function to generate a child node with the provided base-url, query-params, and
   field-name. Returned function takes a tuple (a term and a count of collections containing that
   term)."

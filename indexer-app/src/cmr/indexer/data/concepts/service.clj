@@ -69,40 +69,40 @@
   [context service-concept]
   (let [service (concept-parser/parse-concept context service-concept)
         format-pairs (get-in service [:ServiceOptions :SupportedReformattings])
-        input-formats (distinct (concat (get-in service [:ServiceOptions :SupportedInputFormats])
-                                        (map :SupportedInputFormat format-pairs)))
-        output-formats (distinct (concat (get-in service [:ServiceOptions :SupportedOutputFormats])
-                                         (mapcat :SupportedOutputFormats format-pairs)))]
+        input-formats (distinct (map :SupportedInputFormat format-pairs))
+        output-formats (distinct (mapcat :SupportedOutputFormats format-pairs))]
     (not (or (= (count output-formats) 0)
              (and (= (count output-formats) 1)
                   (= input-formats output-formats))))))
 
 (defn- has-subset-type?
-  "Returns true if the given service has a defined SubsetType with one of its
+  "Returns true if the given service has a defined Subset with one of its
   values matches the given subset type."
   [context service-concept subset-type]
   (let [service (concept-parser/parse-concept context service-concept)
-        {{subset-types :SubsetTypes} :ServiceOptions} service]
+        {{subset-types :Subset} :ServiceOptions} service]
     (and (seq subset-types)
-         (contains? (set subset-types) subset-type))))
+         (-> subset-types
+             (subset-type)
+             (some?)))))
 
 (defn- has-spatial-subsetting?
   "Returns true if the given service has a defined SubsetType with one of its
   values being 'Spatial'."
   [context service-concept]
-  (has-subset-type? context service-concept "Spatial"))
+  (has-subset-type? context service-concept :SpatialSubset))
 
 (defn- has-temporal-subsetting?
   "Returns true if the given service has a defined SubsetType with one of its
   values being 'Temporal'."
   [context service-concept]
-  (has-subset-type? context service-concept "Temporal"))
+  (has-subset-type? context service-concept :TemporalSubset))
 
 (defn- has-variables?
   "Returns true if the given service has a defined SubsetType with one of its
   values being 'Variable'."
   [context service-concept]
-  (has-subset-type? context service-concept "Variable"))
+  (has-subset-type? context service-concept :VariableSubset))
 
 (defn- has-transforms?
   "Returns true if the given service has a defined SubsetTypes or InterpolationTypes,

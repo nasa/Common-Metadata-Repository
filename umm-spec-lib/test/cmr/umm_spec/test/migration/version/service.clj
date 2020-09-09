@@ -588,6 +588,32 @@
    (is (= s1-3-2
           (vm/migrate-umm
             {} :service "1.3.3" "1.3.2" s1-3-3)))))
+
+(deftest migrate-main-fields-1-3-3->1-3-4
+  "Test the full migration of UMM-S from version 1.3.3 to version 1.3.4 using predefined example files."
+  (let [s1-3-3 (decode
+                 ;; Service_v1.3.3-from-v1.3.4.json is used correctly here.
+                 (slurp (io/file (io/resource "example-data/umm-json/service/v1.3.3/Service_v1.3.3-to-v1.3.4.json")))
+                 true)
+        s1-3-4 (decode
+                 (slurp (io/file (io/resource "example-data/umm-json/service/v1.3.4/Service_v1.3.4-from-v1.3.3.json")))
+                 true)]
+    (is (= s1-3-4
+           (vm/migrate-umm
+             {} :service "1.3.3" "1.3.4" s1-3-3)))))
+
+(deftest migrate-main-fields-1-3-4->1-3-3
+  "Test the full migration of UMM-S from version 1.3.4 to version 1.3.3 using predefined example files."
+  (let [s1-3-3 (decode
+                 (slurp (io/file (io/resource "example-data/umm-json/service/v1.3.3/Service_v1.3.3-from-v1.3.4.json")))
+                 true)
+        s1-3-4 (decode
+                 (slurp (io/file (io/resource "example-data/umm-json/service/v1.3.4/Service_v1.3.4-to-v1.3.3.json")))
+                 true)]
+   (is (= s1-3-3
+          (vm/migrate-umm
+            {} :service "1.3.4" "1.3.3" s1-3-4)))))
+
 (comment
 
  (core/validate-metadata

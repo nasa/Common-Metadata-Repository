@@ -7,27 +7,20 @@
    [clojure.string :as s]
    [cmr.common-app.services.search.messages :as d-msg]
    [cmr.common-app.services.search.parameter-validation :as cpv]
-   [cmr.common-app.services.search.params :as common-params]
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common.concepts :as cc]
    [cmr.common.mime-types :as mt]
-   [cmr.common.config :as cfg]
    [cmr.common.date-time-parser :as dt-parser]
-   [cmr.common.date-time-range-parser :as dtr-parser]
    [cmr.common.parameter-parser :as parser]
    [cmr.common.services.errors :as errors]
-   [cmr.common.services.messages :as c-msg]
    [cmr.common.util :as util]
    [cmr.search.data.keywords-to-elastic :as k2e]
    [cmr.search.services.messages.attribute-messages :as attrib-msg]
    [cmr.search.services.messages.common-messages :as msg]
    [cmr.search.services.messages.orbit-number-messages :as on-msg]
    [cmr.search.services.parameters.converters.attribute :as attrib]
-   [cmr.search.services.parameters.converters.orbit-number :as on]
-   [cmr.search.services.parameters.legacy-parameters :as lp]
    [cmr.search.services.parameters.validation.track :as track]
    [cmr.search.services.parameters.validation.util :as validation-util]
-   [cmr.spatial.circle :as spatial-circle]
    [cmr.spatial.codec :as spatial-codec]
    [cmr.spatial.validation :as sv])
   (:import
@@ -127,41 +120,47 @@
 
 (defmethod cpv/valid-parameter-options :collection
   [_]
-  {:native-id cpv/string-param-options
+  {:archive-center cpv/string-param-options
+   :attribute exclude-plus-or-option
+   :author cpv/string-plus-and-options
+   :bounding-box cpv/and-or-option
+   :campaign cpv/string-plus-and-options
+   :circle cpv/and-or-option
+   :collection-data-type cpv/string-param-options
+   :created-at cpv/and-option
    :data-center cpv/string-plus-and-options
    :data-center-h cpv/string-plus-and-options
-   :archive-center cpv/string-param-options
    :dataset-id cpv/pattern-option
-   :entry-title cpv/string-plus-and-options
    :doi cpv/string-plus-and-options
-   :short-name cpv/string-plus-and-options
    :entry-id cpv/string-plus-and-options
-   :version cpv/string-param-options
-   :project cpv/string-plus-and-options
-   :project-h cpv/string-plus-and-options
-   :campaign cpv/string-plus-and-options
-   :platform cpv/string-plus-and-options
-   :platform-h cpv/string-plus-and-options
-   :sensor cpv/string-plus-and-options
-   :instrument cpv/string-plus-and-options
-   :instrument-h cpv/string-plus-and-options
+   :entry-title cpv/string-plus-and-options
    :granule-data-format cpv/string-plus-and-options
    :granule-data-format-h cpv/string-plus-and-options
-   :collection-data-type cpv/string-param-options
    :grid cpv/string-param-options
-   :two-d-coordinate-system cpv/string-param-options
+   :highlights highlights-option
+   :instrument cpv/string-plus-and-options
+   :instrument-h cpv/string-plus-and-options
    :keyword cpv/pattern-option
+   :line cpv/and-or-option
+   :native-id cpv/string-param-options
+   :platform cpv/string-plus-and-options
+   :platform-h cpv/string-plus-and-options
+   :point cpv/and-or-option
+   :polygon cpv/and-or-option
+   :project cpv/string-plus-and-options
+   :project-h cpv/string-plus-and-options
+   :provider cpv/string-param-options
+   :revision-date cpv/and-option
    :science-keywords cpv/string-plus-or-options
    :science-keywords-h cpv/string-plus-or-options
-   :spatial-keyword cpv/string-plus-and-options
-   :provider cpv/string-param-options
-   :attribute exclude-plus-or-option
-   :temporal (conj exclude-plus-and-or-option :limit-to-granules)
-   :revision-date cpv/and-option
-   :created-at cpv/and-option
-   :highlights highlights-option
-   :author cpv/string-plus-and-options
+   :sensor cpv/string-plus-and-options
+   :short-name cpv/string-plus-and-options
    :simplify-shapefile cpv/string-param-options
+   :spatial cpv/and-or-option
+   :spatial-keyword cpv/string-plus-and-options
+   :temporal (conj exclude-plus-and-or-option :limit-to-granules)
+   :two-d-coordinate-system cpv/string-param-options
+   :version cpv/string-param-options
 
    ;; Tag related parameters
    :tag-key cpv/pattern-option
@@ -181,37 +180,38 @@
 
 (defmethod cpv/valid-parameter-options :granule
   [_]
-  {:native-id cpv/string-param-options
+  {:attribute exclude-plus-or-option
+   :campaign cpv/string-plus-and-options
    :collection-concept-id cpv/pattern-option
+   :collection-data-type cpv/string-param-options
+   :created-at cpv/and-option
+   :crid-id cpv/string-plus-and-options
    :data-center cpv/string-plus-and-options
    :dataset-id cpv/pattern-option
-   :entry-title cpv/string-plus-and-options
-   :short-name cpv/string-plus-and-options
-   :version cpv/string-param-options
-   :granule-ur cpv/string-param-options
-   :producer-granule-id cpv/string-param-options
-   :readable-granule-name cpv/string-plus-and-options
-   :project cpv/string-plus-and-options
-   :campaign cpv/string-plus-and-options
-   :platform cpv/string-plus-and-exclude-collection-options
-   :sensor cpv/string-plus-and-exclude-collection-options
-   :instrument cpv/string-plus-and-exclude-collection-options
-   :collection-data-type cpv/string-param-options
    :day-night cpv/string-param-options
-   :two-d-coordinate-system cpv/string-param-options
-   :grid cpv/string-param-options
-   :science-keywords cpv/string-plus-or-options
-   :spatial-keyword cpv/string-plus-and-options
+   :entry-title cpv/string-plus-and-options
    :feature-id cpv/string-plus-and-options
-   :crid-id cpv/string-plus-and-options
-   :provider cpv/string-param-options
-   :attribute exclude-plus-or-option
-   :temporal exclude-plus-and-or-option
-   :created-at cpv/and-option
+   :granule-ur cpv/string-param-options
+   :grid cpv/string-param-options
+   :instrument cpv/string-plus-and-exclude-collection-options
+   :native-id cpv/string-param-options
    :passes cpv/and-option
+   :platform cpv/string-plus-and-exclude-collection-options
+   :producer-granule-id cpv/string-param-options
    :production-date cpv/and-option
+   :project cpv/string-plus-and-options
+   :provider cpv/string-param-options
+   :readable-granule-name cpv/string-plus-and-options
    :revision-date cpv/and-option
-   :simplify-shapefile cpv/string-param-options})
+   :science-keywords cpv/string-plus-or-options
+   :sensor cpv/string-plus-and-exclude-collection-options
+   :short-name cpv/string-plus-and-options
+   :simplify-shapefile cpv/string-param-options
+   :spatial cpv/and-or-option
+   :spatial-keyword cpv/string-plus-and-options
+   :temporal exclude-plus-and-or-option
+   :two-d-coordinate-system cpv/string-param-options
+   :version cpv/string-param-options})
 
 (defmethod cpv/valid-parameter-options :tag
   [_]
@@ -261,11 +261,15 @@
 
 (defmethod cpv/valid-query-level-options :collection
   [_]
-  #{:highlights})
+  #{:highlights :spatial})
+
+(defmethod cpv/valid-query-level-options :granule
+  [_]
+  #{:spatial})
 
 (defmethod cpv/valid-query-level-params :granule
   [_]
-  #{:echo-compatible :include-facets})
+  #{:echo-compatible :include-facets :spatial})
 
 (defmethod cpv/valid-query-level-params :variable
   [_]

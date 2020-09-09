@@ -686,7 +686,9 @@
    These are the fields that will be stored in an Elasticsearch document."
   {:type m/string-field-mapping
    :fields (m/not-indexed m/string-field-mapping)
-   :value m/search-as-you-type-field-mapping})
+   :value m/search-as-you-type-field-mapping
+   :contains-public-collections (m/doc-values m/bool-field-mapping)
+   :permitted-group-ids (m/doc-values m/string-field-mapping)})
 
 (defmapping variable-mapping :variable
   "Defines the elasticsearch mapping for storing variables. These are the
@@ -702,14 +704,8 @@
    :provider-id-lowercase (m/doc-values m/string-field-mapping)
    :variable-name (m/doc-values m/string-field-mapping)
    :variable-name-lowercase (m/doc-values m/string-field-mapping)
-   :alias (m/doc-values m/string-field-mapping)
-   :alias-lowercase (m/doc-values m/string-field-mapping)
-   :full-path (m/doc-values m/string-field-mapping)
-   :full-path-lowercase (m/doc-values m/string-field-mapping)
    :measurement (m/doc-values m/string-field-mapping)
    :measurement-lowercase (m/doc-values m/string-field-mapping)
-   :instrument (m/doc-values m/string-field-mapping)
-   :instrument-lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
    :deleted (m/doc-values m/bool-field-mapping)
    :user-id (m/doc-values m/string-field-mapping)

@@ -222,6 +222,7 @@
 (defn create-email-content
  "Create an email body for subscriptions"
  [from-email-address to-email-address gran-ref-location subscription]
+
  (let [metadata (json/parse-string (:metadata subscription))
        concept-id (get-in subscription [:extra-fields :collection-concept-id])
        meta-query (get metadata "Query")

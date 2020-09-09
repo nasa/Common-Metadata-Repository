@@ -3,18 +3,14 @@
   https://wiki.earthdata.nasa.gov/display/CMR/Updated+facet+response"
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.set :as set]
-   [clojure.string :as str]
-   [cmr.common-app.services.search.query-execution :as query-execution]
+   [clojure.string :as string]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as v2-facets]
    [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
-   [cmr.search.services.query-execution.facets.links-helper :as lh]
-   [cmr.transmit.connection :as conn]
-   [ring.util.codec :as codec]))
+   [cmr.search.services.query-execution.facets.links-helper :as lh]))
 
 (def collection-facets-v2-params->elastic-fields
   "Defines the mapping of the base search parameters for the v2 facets fields to its field names
@@ -26,7 +22,8 @@
    :project :project-sn-humanized
    :processing-level-id :processing-level-id-humanized
    :variables :variables
-   :granule-data-format :granule-data-format-humanized})
+   :granule-data-format :granule-data-format-humanized
+   :two-d-coordinate-system-name :two-d-coord-name})
 
 (defmethod v2-facets/facets-v2-params->elastic-fields :collection
   [_]
@@ -61,7 +58,7 @@
 (defmethod v2-facets/v2-facets-result-field-in-order :collection
   [_]
   ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels"
-   "Measurements" "Output File Formats" "Reprojections"])
+   "Measurements" "Output File Formats" "Reprojections" "Tiling System"])
 
 (defmethod v2-facets/v2-facets-root :collection
   [_]
@@ -72,6 +69,25 @@
   "Controls whether or not to display variable facets. Feature toggle needed while prototyping
   with EDSC in certain environments."
   {:type Boolean :default false})
+
+(defn create-two-d-v2-facets
+  "Parses the elastic aggregations and generates the v2 facets for the
+   two-d-coordinate-system-name field."
+  [elastic-aggregations base-url query-params facet-field]
+  (let [search-terms-from-query (lh/get-values-for-field query-params facet-field)
+        value-counts (v2-facets/add-terms-with-zero-matching-collections
+                      (frf/buckets->value-count-pairs (get elastic-aggregations facet-field))
+                      search-terms-from-query)
+        snake-case-field (csk/->snake_case_string facet-field)
+        applied? (some? (or (get query-params snake-case-field)
+                            (get query-params (str snake-case-field "[]"))))
+        query-field (keyword (string/replace (name facet-field) #"-h" ""))
+        children (map (v2h/filter-node-generator base-url query-params query-field applied?)
+                      (sort-by first util/compare-natural-strings value-counts))]
+    (when (seq children)
+      (vector
+       (v2h/generate-group-node (facet-field v2h/fields->human-readable-label) applied?
+                                children)))))
 
 (defmethod v2-facets/create-v2-facets-by-concept-type :collection
   [concept-type base-url query-params aggs facet-fields]
@@ -84,8 +100,12 @@
         variables-facets (when (and (facet-fields-set :variables) (include-variable-facets))
                            (hv2/create-hierarchical-v2-facets
                             aggs base-url query-params :variables-h))
+        two-d-facets (when (facet-fields-set :two-d-coordinate-system-name)
+                       (create-two-d-v2-facets
+                         aggs base-url query-params :two-d-coordinate-system-name-h))
         v2-facets (concat science-keywords-facets
                           (v2-facets/create-prioritized-v2-facets
                            :collection aggs flat-facet-fields base-url query-params)
-                          variables-facets)]
+                          variables-facets
+                          two-d-facets)]
     v2-facets))

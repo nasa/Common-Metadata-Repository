@@ -325,3 +325,155 @@
                     (assert-granules-match [gran2010-1 gran2010-2 gran2010-3] granules-response)
                     (is (= :apply (get-link-type "01" updated-month-facets)))
                     (is (= :apply (get-link-type "05" updated-month-facets)))))))))))))
+
+(defn- ingest-granule-with-track
+  "ingest a generated granule on the given provider, parent collection and track info"
+  [provider-id coll track]
+  (d/ingest provider-id
+            (dg/granule-with-umm-spec-collection
+             coll (:concept-id coll)
+             {:spatial-coverage (dg/spatial-with-track track)})
+            {:format :umm-json}))
+
+(deftest cycle-facets-test
+  (let [coll1 (d/ingest-umm-spec-collection
+               "PROV1" (data-umm-c/collection
+                        {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                         :EntryTitle "E1"
+                         :ShortName "S1"}))
+        coll2 (d/ingest-umm-spec-collection
+               "PROV2" (data-umm-c/collection
+                        {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                         :EntryTitle "E2"
+                         :ShortName "S2"}))
+        coll1-concept-id (:concept-id coll1)
+        coll2-concept-id (:concept-id coll2)
+        gran1 (ingest-granule-with-track "PROV1" coll1
+                                         {:cycle 1
+                                          :passes [{:pass 1}]})
+        gran2 (ingest-granule-with-track "PROV1" coll1
+                                         {:cycle 2
+                                          :passes [{:pass 1}]})
+        gran3 (ingest-granule-with-track "PROV1" coll1
+                                         {:cycle 1
+                                          :passes [{:pass 2}]})
+        ;; granules for testing multiple passes and tiles
+        gran4 (ingest-granule-with-track "PROV2" coll2
+                                         {:cycle 3
+                                          :passes [{:pass 1 :tiles ["1L"]}]})
+        gran5 (ingest-granule-with-track "PROV2" coll2
+                                         {:cycle 3
+                                          :passes [{:pass 1 :tiles ["1R"]}
+                                                   {:pass 2 :tiles ["1L"]}]})
+        gran6 (ingest-granule-with-track "PROV2" coll2
+                                         {:cycle 42
+                                          :passes [{:pass 1 :tiles ["1L"]}]})
+        ;; granules for testing Full track tiles and multiple tiles
+        gran7 (ingest-granule-with-track "PROV2" coll2
+                                         {:cycle 3
+                                          :passes [{:pass 3 :tiles ["1L"]}
+                                                   {:pass 4 :tiles ["1L"]}]})
+        gran8 (ingest-granule-with-track "PROV2" coll2
+                                         {:cycle 3
+                                          :passes [{:pass 3 :tiles ["1R"]}
+                                                   {:pass 4 :tiles ["2L"]}]})
+        gran9 (ingest-granule-with-track "PROV2" coll2
+                                         {:cycle 3
+                                          :passes [{:pass 3 :tiles ["1F"]}
+                                                   {:pass 4 :tiles ["2L"]}]})
+        gran10 (ingest-granule-with-track "PROV2" coll2
+                                          {:cycle 3
+                                           :passes [{:pass 3 :tiles ["5F" "6R"]}]})
+        gran11 (ingest-granule-with-track "PROV2" coll2
+                                          {:cycle 42
+                                           :passes [{:pass 3 :tiles ["5R" "6L"]}]})]
+    (index/wait-until-indexed)
+
+    (let [root-node (search-and-return-v2-facets {:collection-concept-id coll2-concept-id
+                                                  :page_size 10})
+          spatial-node (-> root-node :children first)
+          cycle-node (first (:children spatial-node))
+          cycle-facets (:children cycle-node)]
+      (testing "and the facet structure correct"
+        (is (= "Browse Granules" (:title root-node)))
+        (is (= "group" (:type root-node)))
+        (is (= true (:has_children root-node)))
+        (is (= "Spatial" (:title spatial-node)))
+        (is (= "group" (:type spatial-node)))
+        (is (= true (:has_children spatial-node))))
+      (testing "and cycles returned in ascending order"
+        (is (= ["3" "42"] (map :title cycle-facets))))
+      (testing "and cycles have a type of filter"
+        (is (= ["filter" "filter"] (map :type cycle-facets))))
+      (testing "and counts are correct"
+        (util/are3
+          [title cnt]
+          (is (= cnt (get-count-by-title cycle-facets title)))
+          "3" "3" 6
+          "42" "42" 2))
+      
+      (testing "and selecting a cycle"
+        (let [response (traverse-link "3" cycle-facets)
+              body-for-cycle-3-query (json/parse-string (:body response) true)
+              c3-filter (-> body-for-cycle-3-query
+                            (get-in [:feed :facets])
+                            :children
+                            ;; Spatial group
+                            first 
+                            :children
+                            ;; Cycle Group
+                            first
+                            :children
+                            ;; Cycle[]=3 Filter
+                            first)]
+
+          (testing "returns results for the cycle selected"
+            (is (= "3" (:title c3-filter)))
+            (is (= "filter" (:type c3-filter)))
+            (is (= :remove (first (keys (:links c3-filter))))))
+          
+          (testing "returns pass results"
+            (let [c3-pass-group (first (get c3-filter :children))]
+              (is (not= nil c3-pass-group))
+              (is (= #{"1" "2" "3" "4"}
+                     (set (map :title (:children c3-pass-group)))))
+
+              (testing "and selecting a pass"
+                (let [c3-p3-response (traverse-link "3" (:children c3-pass-group))
+                      c3-p3-body (json/parse-string (:body c3-p3-response) true)
+                      c3-pass-group (-> c3-p3-body
+                                       (get-in [:feed :facets])
+                                       :children
+                                       ;; Spatial Group
+                                       first
+                                       :children
+                                       ;; Cycle Group
+                                       first
+                                       :children                                       
+                                       ;; Cycle[]=3 Filter
+                                       first
+                                       :children
+                                       ;; Pass Group
+                                       first)
+                      c3-p3-filter (-> c3-pass-group
+                                       :children
+                                       first)
+                      c3-p4-filter (-> c3-pass-group
+                                       :children
+                                       second)]
+                  (testing "shows available sibling passes"
+                    (is (= "3" (:title c3-p3-filter)))
+                    (is (= "filter" (:type c3-p3-filter)))
+                    (is (= 4 (:count c3-p3-filter)))
+
+                    (is (= "4" (:title c3-p4-filter)))
+                    (is (= "filter" (:type c3-p4-filter)))
+                    (is (= 3 (:count c3-p4-filter)))
+
+                    (testing "and cycle count is correct"
+                      (is (= 6 (:count c3-filter))))
+                    
+                    (testing "and correct remove or apply link options"
+                      (is (= :remove (first (keys (:links c3-p3-filter)))))
+                      (is (= :apply (first (keys (:links c3-p4-filter))))))))))))))))
+

@@ -421,3 +421,29 @@
       (update-in [:ServiceOptions :SupportedInputFormats] service-options/remove-non-valid-formats-1_3_3-to-1_3_2)
       (update-in [:ServiceOptions :SupportedOutputFormats] service-options/remove-non-valid-formats-1_3_3-to-1_3_2)
       (update-in [:ServiceOptions :SupportedReformattings] service-options/remove-reformattings-non-valid-formats)))
+
+(defmethod interface/migrate-umm-version [:service "1.3.3" "1.3.4"]
+  [context s & _]
+  (def s s)
+  (let [type (:Type s)]
+    (-> s
+        (assoc-in [:ServiceOptions :Subset] (service-options/create-subset-type-1_3_3-to-1_3_4 s))
+        (update-in [:ServiceOptions :SupportedReformattings]
+                   #(service-options/move-supported-formats-to-reformattings-for-1_3_4
+                     %
+                     (get-in s [:ServiceOptions :SupportedInputFormats])
+                     (get-in s [:ServiceOptions :SupportedOutputFormats])))
+        (update-in [:ServiceOptions] dissoc :SubsetTypes :SupportedInputFormats :SupportedOutputFormats))))
+
+(defmethod interface/migrate-umm-version [:service "1.3.4" "1.3.3"]
+  [context s & _]
+  (-> s
+      (update :Type #(if (= % "Harmony")
+                       "NOT PROVIDED"
+                       %))
+      (assoc-in [:ServiceOptions :SubsetTypes]
+                (service-options/create-subset-type-1_3_4-to-1_3_3
+                  (get-in s [:ServiceOptions :Subset])))
+      (update-in [:ServiceOptions] dissoc :Subset)
+      (update-in [:ServiceOptions :SupportedReformattings]
+                 service-options/remove-reformattings-non-valid-formats-1_3_4-to-1_3_3)))

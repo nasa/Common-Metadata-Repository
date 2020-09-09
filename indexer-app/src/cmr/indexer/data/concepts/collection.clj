@@ -137,21 +137,6 @@
       (assoc-nil-if :ScienceKeywords (= (:ScienceKeywords collection) su/not-provided-science-keywords))
       (assoc-nil-if :DataCenters (= (:DataCenters collection) [su/not-provided-data-center]))))
 
-(defn- get-coll-permitted-group-ids
-  "Returns the groups ids (group guids, 'guest', 'registered') that have permission to read
-  this collection"
-  [context provider-id coll]
-  (->> (acl-fetcher/get-acls context [:catalog-item])
-       ;; Find only acls that are applicable to this collection
-       (filter (partial umm-matchers/coll-applicable-acl? provider-id coll))
-       ;; Get the permissions they grant
-       (mapcat :group-permissions)
-       ;; Find permissions that grant read
-       (filter #(some (partial = "read") (:permissions %)))
-       ;; Get the group guids or user type of those permissions
-       (map #(or (:group-id %) (some-> % :user-type name)))
-       distinct))
-
 (defn- associations->gzip-base64-str
   "Returns the gziped base64 string for the given variable associations and service associations"
   [variable-associations service-associations]
@@ -281,7 +266,7 @@
         insert-time (index-util/date->elastic insert-time)
         coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
                                               :Geometry :CoordinateSystem])
-        permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)
+        permitted-group-ids (collection-util/get-coll-permitted-group-ids context provider-id collection)
         {:keys [granule-start-date granule-end-date]}
         (cgac/get-coll-gran-aggregates context concept-id)
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
@@ -450,8 +435,8 @@
         ;; only used to get default ACLs for tombstones
         tombstone-umm (umm-collection/map->UMM-C {:EntryTitle entry-title})
         tombstone-umm (merge {:concept-id concept-id} tombstone-umm)
-        tombstone-permitted-group-ids (get-coll-permitted-group-ids context
-                                                                    provider-id tombstone-umm)]
+        tombstone-permitted-group-ids (collection-util/get-coll-permitted-group-ids
+                                       context provider-id tombstone-umm)]
     {:concept-id concept-id
      :revision-id revision-id
      :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
