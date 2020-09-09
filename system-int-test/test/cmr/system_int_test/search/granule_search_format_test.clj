@@ -564,15 +564,16 @@
                  (-> response :results :entries first :size))))))
 
     (testing "json"
-      (let [gran-json (dj/granules->expected-json [gran1] [coll1] "granules.json?granule_ur=Granule1")
-            response (search/find-concepts-json :granule {:granule-ur "Granule1"})]
+      (let [gran-json (dj/granules->expected-json [gran1] [coll1] "granules.json?granule_ur=Granule1&include_polygons=true")
+            response (search/find-concepts-json :granule {:granule-ur "Granule1"
+                                                          :include-polygons true})]
         (is (= 200 (:status response)))
         (is (= gran-json
                (:results response))))
 
       (let [gran-json (dj/granules->expected-json
-                        [gran1 gran2 gran3 gran4 gran5] [coll1 coll2 coll3 coll1 coll3] "granules.json")
-            response (search/find-concepts-json :granule {})]
+                        [gran1 gran2 gran3 gran4 gran5] [coll1 coll2 coll3 coll1 coll3] "granules.json?include_polygons=true")
+            response (search/find-concepts-json :granule {:include-polygons true})]
         (is (= 200 (:status response)))
         (is (= gran-json
                (:results response))))
