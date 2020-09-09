@@ -78,7 +78,7 @@
         value-counts (v2-facets/add-terms-with-zero-matching-collections
                       (frf/buckets->value-count-pairs (get elastic-aggregations facet-field))
                       search-terms-from-query)
-        snake-case-field (csk/->snake_case_string facet-field)
+        snake-case-field (string/replace (csk/->snake_case_string facet-field) #"_h" "")
         applied? (some? (or (get query-params snake-case-field)
                             (get query-params (str snake-case-field "[]"))))
         query-field (keyword (string/replace (name facet-field) #"-h" ""))
