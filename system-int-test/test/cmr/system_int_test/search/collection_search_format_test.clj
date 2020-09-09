@@ -42,9 +42,9 @@
 
 (comment
  ((ingest/reset-fixture
-                       {"provguid1" "PROV1"
-                        "provguid2" "PROV2"
-                        "usgsguid" "USGS_EROS"})
+    {"provguid1" "PROV1"
+     "provguid2" "PROV2"
+     "usgsguid" "USGS_EROS"})
   (constantly nil)))
 
 (deftest simple-search-test
