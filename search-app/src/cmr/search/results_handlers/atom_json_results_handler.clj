@@ -139,7 +139,8 @@
   [context opts concept-type results]
   (let [{:keys [items facets]} results
         result-items (as-> items data
-                       (if (:include-polygons? opts)
+                       (if (and (:granule concept-type)
+                                (:include-polygons? opts))
                          data
                          (map #(dissoc % :shapes) data))
                        (if (= :granule concept-type)

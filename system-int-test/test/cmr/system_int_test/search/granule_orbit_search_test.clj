@@ -44,7 +44,7 @@
                                      nil)}
                 other-attribs))))))
 
-(deftest echo-10-polygons-exclusion-test
+(deftest polygons-exclusion-test
   (let [_coll (d/ingest-concept-with-metadata-file
                 "CMR-4722/OMSO2.003-collection.xml"
                 {:provider-id "PROV1"

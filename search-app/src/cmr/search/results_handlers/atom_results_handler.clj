@@ -104,8 +104,7 @@
 
 (defn- collection-elastic-result->query-result-item
   [query elastic-result]
-  (let [include-polygons? (:include-polygons? query)
-        {concept-id :_id
+  (let [{concept-id :_id
          score :_score
          {short-name :short-name
           version-id :version-id
@@ -175,6 +174,7 @@
             :browse-flag browsable
             :associated-difs associated-difs
             :coordinate-system coordinate-system
+            :shapes (srl/ords-info->shapes ords-info ords)
             :orbit-parameters {:swath-width swath-width
                                :period period
                                :inclination-angle inclination-angle
@@ -189,8 +189,6 @@
             :associations (some-> associations-gzip-b64
                                   util/gzip-base64->string
                                   edn/read-string)}
-           (when include-polygons?
-             {:shapes (srl/ords-info->shapes ords-info ords)})
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn- granule-elastic-result->query-result-item

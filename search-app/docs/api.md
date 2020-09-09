@@ -2293,7 +2293,7 @@ Exclude granule by parent concept id
 
 Include generated polygons in orbital granules. False by default.
 
-Note: Including generated polygons may increase result sizes by several orders of magnitude.n
+Note: Including generated polygons may increase result sizes by several orders of magnitude.
 
 ```
 curl "%CMR-ENDPOINT%/granules?provider=PROV1&include_polygons=true"
