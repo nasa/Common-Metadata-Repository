@@ -279,7 +279,7 @@
           (when (seq gran-ref)
            (let [email-content (create-email-content (mail-sender) email-address gran-ref-location subscription)
                 email-settings {:host (email-server-host) :port (email-server-port)}]
-            (postal-core/send-message email-settings email-content)
+            (postal-core/send-message email-settings email-content))))
        (catch Exception e
          (error "Exception caught in email subscription: " sub-name "\n\n"  (.getMessage e))))))
 
