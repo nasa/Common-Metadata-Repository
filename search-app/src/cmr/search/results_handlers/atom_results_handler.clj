@@ -103,7 +103,7 @@
                    acl-rhh/granule-elastic-fields)))))
 
 (defn- collection-elastic-result->query-result-item
-  [query elastic-result]
+  [elastic-result]
   (let [{concept-id :_id
          score :_score
          {short-name :short-name
@@ -268,8 +268,7 @@
         elastic-matches (get-in elastic-results [:hits :hits])
         items (if (= :granule (:concept-type query))
                 (granule-elastic-results->query-result-items context query elastic-matches)
-                (map (partial collection-elastic-result->query-result-item query)
-                     elastic-matches))]
+                (map collection-elastic-result->query-result-item elastic-matches))]
     (r/map->Results {:hits hits
                      :items items
                      :timed-out (:timed_out elastic-results)

@@ -138,14 +138,13 @@
 (defmethod results->json false
   [context opts concept-type results]
   (let [{:keys [items facets]} results
-        result-items (as-> items data
-                       (if (and (:granule concept-type)
-                                (:include-polygons? opts))
-                         data
-                         (map #(dissoc % :shapes) data))
-                       (if (= :granule concept-type)
-                         (atom/append-collection-links context data)
-                         data))]
+        result-items (if (= :granule concept-type)
+                       (as-> items data
+                         (if (:include-polygons? opts)
+                           data
+                           (map #(dissoc % :shapes) data))
+                         (atom/append-collection-links context data))
+                       items)]
     {:feed
      (util/remove-nil-keys
        {:updated (str (time/now))
