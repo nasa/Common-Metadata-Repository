@@ -47,6 +47,10 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 
 All Access Control API operations require specifying a token obtained from URS or ECHO. The token should be specified using the `Echo-Token` header.
 
+#### <a name="authorization-header"></a> Authorization Header
+
+The token can alternatively be specified using the `Authorization: Bearer` header, and by specifying a Bearer token.
+
 #### <a name="cmr-revision-id-header"></a> Cmr-Revision-Id Header
 
 The revision id header allows specifying the revision id to use when saving the concept.  It is optional for all acl update.  The update will be rejected when 1. the revision id specified is not an integer. 2. the revision id specified <= current revision id of the acl - a HTTP Status code of 409 will be returned indicating a conflict.

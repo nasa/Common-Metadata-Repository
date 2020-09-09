@@ -19,6 +19,7 @@
         <th>Collection</th>
         <th>Short Name</th>
         <th>Version</th>
+        <th>Directory</th>
       </tr>
     </thead>
     <tbody>
@@ -32,6 +33,10 @@
         </td>
         <td>
           {{ holding.version-id }}
+        </td>
+        <td>
+           <a id="{{ holding.concept-id }}-virtual-directory-link"
+              href="{{ virtual-directory-url }}collections/{{ holding.concept-id }}">Browse {{ holding.granule-count }} Granules</a>
         </td>
       </tr>
       {% endfor %}

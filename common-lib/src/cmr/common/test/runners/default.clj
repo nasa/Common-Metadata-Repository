@@ -14,6 +14,7 @@
   (:require
    [clojure.set :as set]
    [clojure.test :as t]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.dev.util :as du]
    [cmr.common.test.runners.util]
    [cmr.common.util :as u]
@@ -23,6 +24,11 @@
   [cmr.common.test.runners.util
    integration-test-namespaces
    unit-test-namespaces])
+
+(defconfig unit-test-parallel
+  "Indicates whether to run unit tests in parallel. Default to false for dev system to run stable."
+  {:type Boolean
+   :default false})
 
 (defn run-tests
   "Runs all the tests matching the list of namespace regular expressions. The tests are run
@@ -125,7 +131,7 @@
                                          (integration-test-namespaces))
 
         test-results-handler (fail-fast?->test-results-handler fail-fast?)
-        unittest-results (run-tests unit-test-namespaces false)
+        unittest-results (run-tests unit-test-namespaces (unit-test-parallel))
         inttest-results (run-tests integration-test-namespaces false)
         [took test-results] (u/time-execution
                               (test-results-handler

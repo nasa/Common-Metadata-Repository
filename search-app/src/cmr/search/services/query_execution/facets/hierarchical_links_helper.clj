@@ -186,7 +186,7 @@
                                 (into {} (for [[k v] ancestor
                                                :when (= (str/lower-case v)
                                                         (some->
-                                                         (get query-params k) str/lower-case))]
+                                                          (get query-params k) str/lower-case))]
                                            [k v])))
                               ancestors-to-match)]
     ;; Filter the results to only those where every ancestor was found in the query parameters for
@@ -218,11 +218,11 @@
         updated-query-params (if (or has-siblings? (empty? parent-indexes))
                                ;; Add all of the ancestors for this index
                                (reduce
-                                (fn [query-params [k v]]
-                                  (let [param-name (format "%s[%d][%s]" base-field index-to-use k)]
-                                    (assoc query-params param-name v)))
-                                updated-query-params
-                                ancestors-map)
+                                 (fn [query-params [k v]]
+                                   (let [param-name (format "%s[%d][%s]" base-field index-to-use k)]
+                                     (assoc query-params param-name v)))
+                                 updated-query-params
+                                 ancestors-map)
                                updated-query-params)]
     {:apply (lh/generate-query-string base-url updated-query-params)}))
 
@@ -240,7 +240,9 @@
     applied-children-tuples]
    (if (keys (dissoc ancestors-map "category"))
      (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
-           ancestor-matches (get-matching-ancestors base-field query-params parent-indexes
+           ancestor-matches (get-matching-ancestors base-field
+                                                    query-params
+                                                    parent-indexes
                                                     (assoc ancestors-map subfield value))]
        (if (seq ancestor-matches)
          (let [indexes (get-indexes-for-field-name ancestor-matches base-field)

@@ -21,7 +21,7 @@
     [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
     [cmr.common.config :refer [defconfig]]
     [cmr.common.jobs :refer [def-stateful-job]]
-    [cmr.common.log :as log :refer (debug info warn error)]
+    [cmr.common.log :as log :refer [debug info warn error]]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]
     [cmr.redis-utils.redis-cache :as redis-cache]

@@ -388,7 +388,7 @@
 
 (defn grant-all-subscription-sm
   "Creates a SUBSCRIPTION_MANAGEMENT acl in mock echo granting guest and registered users ability to do all
-  subscription related operations" 
+  subscription related operations"
   [context provider-guid guest-permissions registered-permissions]
   (grant context
          [{:permissions guest-permissions

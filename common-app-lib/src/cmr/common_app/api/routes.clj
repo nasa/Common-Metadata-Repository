@@ -55,14 +55,6 @@
   "This CORS header is to define how long in seconds the response of the preflight request can be cached"
   "Access-Control-Max-Age")
 
-(def RESPONSE_STRICT_TRANSPORT_SECURITY_HEADER "Strict-Transport-Security")
-
-(def RESPONSE_X_CONTENT_TYPE_OPTIONS_HEADER "X-Content-Type-Options")
-
-(def RESPONSE_X_FRAME_OPTIONS_HEADER "X-Frame-Options")
-
-(def RESPONSE_X_XSS_PROTECTION_HEADER "X-XSS-Protection")
-
 (defn- search-response-headers
   "Generate headers for search response. CORS response headers can be tested through
   dev-system/resources/cors_headers_test.html"
@@ -92,7 +84,7 @@
    :headers {CONTENT_TYPE_HEADER "text/plain; charset=utf-8"
              CORS_ORIGIN_HEADER "*"
              CORS_METHODS_HEADER "POST, GET, OPTIONS"
-             CORS_CUSTOM_ALLOWED_HEADER "Echo-Token, Accept, Content-Type, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id"
+             CORS_CUSTOM_ALLOWED_HEADER "Echo-Token, Accept, Content-Type, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, Authorization"
              ;; the value in seconds for how long the response to the preflight request can be cached
              ;; set to 30 days
              CORS_MAX_AGE_HEADER "2592000"}})
@@ -224,17 +216,4 @@
           (handler)
           (assoc-in [:headers RESPONSE_REQUEST_ID_HEADER] request-id)
           (assoc-in [:headers RESPONSE_X_REQUEST_ID_HEADER] request-id))
-      ((ring-json/wrap-json-response handler) request))))
-
-(defn add-security-header-response-handler
-  "Adds a number of security related response headers."
-  [handler]
-  (fn [{context :request-context :as request}]
-    (if-let [request-id (cxt/context->request-id context)]
-      (-> request
-          (handler)
-          (assoc-in [:headers RESPONSE_STRICT_TRANSPORT_SECURITY_HEADER] "max-age=31536000")
-          (assoc-in [:headers RESPONSE_X_CONTENT_TYPE_OPTIONS_HEADER] "nosniff")
-          (assoc-in [:headers RESPONSE_X_FRAME_OPTIONS_HEADER] "SAMEORIGIN")
-          (assoc-in [:headers RESPONSE_X_XSS_PROTECTION_HEADER] "1; mode=block"))
       ((ring-json/wrap-json-response handler) request))))

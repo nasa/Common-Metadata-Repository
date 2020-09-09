@@ -5,7 +5,7 @@
    [cmr.acl.core :as a]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.indexer.data.concepts.collection :as coll]))
+   [cmr.indexer.data.concepts.collection.collection-util :as coll-util]))
 
 (defn context-with-acls
   "Creates a fake context with the acls in an acl cache"
@@ -28,7 +28,7 @@
 
 (def get-coll-permitted-group-ids
   "Allow testing private function"
-  #'coll/get-coll-permitted-group-ids)
+  #'coll-util/get-coll-permitted-group-ids)
 
 (deftest test-get-coll-permitted-group-ids
   (testing "group access"

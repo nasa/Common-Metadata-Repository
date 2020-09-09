@@ -32,6 +32,12 @@
   (umm-cmn/map->InstrumentType (merge {:ShortName (d/unique-str "short-name")}
                                       attribs)))
 
+(defn access-constraints
+  "Return an access constraint based on passed in attribs"
+  [attribs]
+  (umm-cmn/map->AccessConstraintsType {:Value (:Value attribs)
+                                       :Description (:Description attribs)}))
+
 (defn instruments
   "Return a sequence of instruments with the given short names"
   [& short-names]

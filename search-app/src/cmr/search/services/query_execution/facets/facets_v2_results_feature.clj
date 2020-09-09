@@ -6,12 +6,12 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common-app.services.search.query-execution :as query-execution]
-   [cmr.common.config :refer [defconfig]]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
    [cmr.search.services.query-execution.facets.links-helper :as lh]
+   [cmr.search.services.query-execution.facets.cycle-facets :as cycle-facets]
    [cmr.search.services.query-execution.facets.temporal-facets :as temporal-facets]
    [cmr.transmit.connection :as conn]
    [ring.util.codec :as codec]))
@@ -60,12 +60,20 @@
 
     :start-date
     (temporal-facets/temporal-facet query-params)
+
+    :two-d-coordinate-system-name
+    {:terms {:field (keyword (name (get (facets-v2-params->elastic-fields concept-type) facet-field)))
+             :size size}}
+
+    :cycle
+    (cycle-facets/cycle-facet query-params)
+
     ;; else
     (v2h/prioritized-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)))
 
 (defn- facets-v2-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
-  from a collection search. values in facet-fields-map specifies the number of results to return for the facet. 
+  from a collection search. values in facet-fields-map specifies the number of results to return for the facet.
   Only a subset of the facets are returned in the v2 facets, specifically those that help enable dataset discovery."
   [concept-type query-params facet-fields-map]
   (into {}
@@ -73,7 +81,7 @@
           [(get (facet-fields->aggregation-fields concept-type) field)
            (facet-query concept-type field (field facet-fields-map) query-params)])))
 
-(defn- add-terms-with-zero-matching-collections
+(defn add-terms-with-zero-matching-collections
   "Takes a sequence of tuples and a sequence of search terms. The tuples are of the form search term
   and number of matching collections. For any search term provided that is not in the tuple of value
   counts, a new tuple is added with the search term and a count of 0."
@@ -89,21 +97,21 @@
 (defn create-prioritized-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all flat fields."
   [concept-type elastic-aggregations facet-fields base-url query-params]
-  (let [flat-fields (map #(get (facet-fields->aggregation-fields concept-type) %) facet-fields)]
+  (let [flat-fields (remove nil? (map #(get (facet-fields->aggregation-fields concept-type) %) facet-fields))]
     (remove nil?
-      (for [field-name flat-fields
-            :let [search-terms-from-query (lh/get-values-for-field query-params field-name)
-                  value-counts (add-terms-with-zero-matching-collections
-                                (frf/buckets->value-count-pairs (get-in elastic-aggregations [field-name :values]))
-                                search-terms-from-query)
-                  snake-case-field (csk/->snake_case_string field-name)
-                  applied? (some? (or (get query-params snake-case-field)
-                                      (get query-params (str snake-case-field "[]"))))
-                  children (map (v2h/generate-filter-node base-url query-params field-name applied?)
-                                (sort-by first util/compare-natural-strings value-counts))]]
-        (when (seq children)
-          (v2h/generate-group-node (field-name v2h/fields->human-readable-label) applied?
-                                   children))))))
+            (for [field-name flat-fields
+                  :let [search-terms-from-query (lh/get-values-for-field query-params field-name)
+                        value-counts (add-terms-with-zero-matching-collections
+                                       (frf/buckets->value-count-pairs (get-in elastic-aggregations [field-name :values]))
+                                       search-terms-from-query)
+                        snake-case-field (csk/->snake_case_string field-name)
+                        applied? (some? (or (get query-params snake-case-field)
+                                            (get query-params (str snake-case-field "[]"))))
+                        children (map (v2h/filter-node-generator base-url query-params field-name applied?)
+                                      (sort-by first util/compare-natural-strings value-counts))]]
+              (when (seq children)
+                (v2h/generate-group-node (field-name v2h/fields->human-readable-label) applied?
+                                         children))))))
 
 (defn- parse-params
   "Parse parameters from a query string into a map. Taken directly from ring code."
@@ -153,19 +161,19 @@
 
 (defn- get-facet-fields-map
   "Returns a map with the keys being the keys in facet-fields-list
-  and the values being the related facet size in the facets-size map. 
+  and the values being the related facet size in the facets-size map.
   If the value is not present in facets-size-map, use the default value.
   Note: facets-v2-params-with-default-size contains all the keys in facet-fields-list."
   [concept-type facet-fields-list facets-size-map]
-  (select-keys (merge (facets-v2-params-with-default-size concept-type) facets-size-map) 
-               facet-fields-list)) 
+  (select-keys (merge (facets-v2-params-with-default-size concept-type) facets-size-map)
+               facet-fields-list))
 
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
   [context query _]
   (let [query-string (:query-string context)
         concept-type (:concept-type query)
         facet-fields (:facet-fields query)
-        facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))
+        facet-fields (or facet-fields (facets-v2-params concept-type))
         facets-size (:facets-size query)
         facet-fields-map (get-facet-fields-map concept-type facet-fields facets-size)
         query-params (parse-params query-string "UTF-8")]
@@ -178,6 +186,6 @@
   [context query elastic-results query-results _]
   (let [concept-type (:concept-type query)
         facet-fields (:facet-fields query)
-        facet-fields (if facet-fields facet-fields (facets-v2-params concept-type))
+        facet-fields (or facet-fields (facets-v2-params concept-type))
         aggregations (:aggregations elastic-results)]
     (assoc query-results :facets (create-v2-facets context concept-type aggregations facet-fields))))

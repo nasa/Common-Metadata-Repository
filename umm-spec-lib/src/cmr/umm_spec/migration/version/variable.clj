@@ -3,7 +3,8 @@
   (:require
    [clojure.string :as string]
    [cmr.common.util :as util]
-   [cmr.umm-spec.migration.version.interface :as interface]))
+   [cmr.umm-spec.migration.version.interface :as interface]
+   [cmr.umm-spec.util :as spec-util]))
 
 (defn- sample-1-1->1-2
   [x]
@@ -195,3 +196,17 @@
 (defmethod interface/migrate-umm-version [:variable "1.5" "1.6"]
   [context v & _]
   (util/update-in-each v [:MeasurementIdentifiers] measurement_1_5->measurement_1_6))
+
+(defmethod interface/migrate-umm-version [:variable "1.6" "1.7"]
+  [context v & _]
+  (-> v
+      (assoc :IndexRanges (get-in v [:Characteristics :IndexRanges]))
+      (dissoc :Alias :AcquisitionSourceName :Characteristics :SizeEstimation)))
+
+(defmethod interface/migrate-umm-version [:variable "1.7" "1.6"]
+  [context v & _]
+  (-> v
+      (assoc :AcquisitionSourceName spec-util/not-provided)
+      (assoc-in [:Characteristics :IndexRanges] (get v :IndexRanges))
+      (assoc-in [:Characteristics :GroupPath] (get v :Name))
+      (dissoc :IndexRanges)))

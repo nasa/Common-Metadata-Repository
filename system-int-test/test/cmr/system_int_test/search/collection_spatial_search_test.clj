@@ -1,25 +1,17 @@
 (ns cmr.system-int-test.search.collection-spatial-search-test
   (:require
    [clojure.test :refer :all]
-   [cmr.common.dev.util :as dev-util]
    [cmr.common.util :as u :refer [are3]]
    [cmr.spatial.codec :as codec]
-   [cmr.spatial.derived :as derived]
    [cmr.spatial.line-string :as l]
-   [cmr.spatial.lr-binary-search :as lbs]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.ring-relations :as rr]
-   [cmr.spatial.serialize :as srl]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.umm.echo10.echo10-collection :as ec]
-   [cmr.umm.umm-collection :as c]
    [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -441,6 +433,23 @@
         ["0,89,100" "0,89,1000000"] [whole-world on-np]
         ["0,0,1000" "0,89,1000" "0,89,1000000"] [whole-world]))
 
+    (testing "valid circle searches with ORed results"
+      (are [lon-lat-radius items]
+        (let [found (search/find-refs
+                     :collection
+                     {:circle lon-lat-radius
+                      :page-size 50
+                      "options[spatial][or]" "true"})
+              matches? (d/refs-match? items found)]
+          (when-not matches?
+            (println "Expected:" (->> items (map :entry-title) sort pr-str))
+            (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+          matches?)
+
+        ["0,89,100" "0,89,1000000"] [along-am-line north-pole on-np touches-np very-tall-cart whole-world]
+        ["0,0,1000" "0,89,1000" "0,89,1000000"] [along-am-line north-pole on-np polygon-with-holes touches-np very-tall-cart whole-world]
+        ["179.8,41,100000" "-179.9,22,100000"] [whole-world am-point across-am-poly along-am-line]))
+
     (testing "AQL spatial search"
       (are [type ords items]
         (let [refs (search/find-refs-with-aql :collection [{type ords}])
@@ -464,7 +473,38 @@
         :point [17.73 2.21] [whole-world normal-brs]
         :line [-0.37,-14.07,4.75,1.27,25.13,-15.51]
         [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
-         normal-poly-cart]))))
+         normal-poly-cart]))
+
+    (testing "ORed spatial search"
+       (let [poly-coordinates ["-16.79,-12.71,-6.32,-10.95,-5.74,-6.11,-15.18,-7.63,-16.79,-12.71"
+                               "0.53,39.23,21.57,59.8,-112.21,84.48,-13.37,40.91,0.53,39.23"]
+             poly-refs (search/find-refs
+                        :collection
+                        {:polygon poly-coordinates
+                         "options[spatial][or]" "true"})
+             bbox-refs (search/find-refs
+                               :collection
+                               {:bounding-box ["166.11,-19.14,-166.52,53.04"
+                                               "23.59,-15.47,25.56,-4"]
+                                              "options[spatial][or]" "true"})
+             combined-refs (search/find-refs
+                            :collection
+                            {:circle "179.8,41,100000"
+                             :bounding-box "166.11,-19.14,-166.52,53.04"
+                             "options[spatial][or]" "true"})
+             anded-refs (search/find-refs
+                         :collection
+                         {:circle "179.8,41,100000"
+                          :bounding-box "166.11,-19.14,-166.52,53.04"
+                          "options[spatial][or]" "false"})]
+        (is (d/refs-match? [across-am-poly along-am-line whole-world across-am-br am-point very-wide-cart]
+                           combined-refs))
+        (is (d/refs-match? [wide-north on-np normal-poly very-wide-cart whole-world normal-brs]
+                           poly-refs))
+        (is (d/refs-match? [across-am-poly very-wide-cart am-point along-am-line normal-line-cart whole-world across-am-br]
+                           bbox-refs))
+        (is (d/refs-match? [across-am-poly along-am-line whole-world]
+                           anded-refs))))))
 
 (def all-tiles
   [[8 8] [35 7] [7 6] [28 8] [27 8] [8 7] [16 6] [8 11] [22 10] [9 8] [10 14] [12 12] [8 9]

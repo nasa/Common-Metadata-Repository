@@ -3,10 +3,11 @@
   (:require
    [clj-time.core :as t]
    [clojure.set :as set]
-   [clojure.string]
+   [clojure.string :as string]
    [cmr.common.concepts :as cu]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.log :refer (debug error info warn trace)]
+   [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
    [cmr.common.time-keeper :as time-keeper]
@@ -19,7 +20,8 @@
    [cmr.metadata-db.services.messages :as msg]
    [cmr.metadata-db.services.provider-service :as provider-service]
    [cmr.metadata-db.services.search-service :as search]
-   [cmr.metadata-db.services.util :as util])
+   [cmr.metadata-db.services.util :as util]
+   [cmr.metadata-db.services.variable-association-validation :as var-assoc-validation])
   ;; Required to get code loaded
   ;; XXX This is really awful, and we do it a lot in the CMR. What we've got
   ;;     as a result of this is a leak from implementation into a separate part
@@ -79,6 +81,56 @@
   #{:tag :tag-association :humanizer :variable-association :service-association})
 
 ;;; utility methods
+(def ^:private native-id-separator-character
+  "This is the separator character used when creating the native id for an association."
+  "/")
+
+(def ^:private association-conflict-error-message
+  "Failed to %s %s [%s] with collection [%s] because it conflicted with a concurrent %s on the
+  same %s and collection. This means that someone is sending the same request to the CMR at the
+  same time.")
+
+(def ^:private association-unknown-error-message
+  "Failed to %s %s [%s] with collection [%s] due to unknown type of error.")
+
+(defn- context->user-id
+  "Returns user id of the token in the context. Throws an error if no token is provided"
+  [context]
+  (if-let [token (:token context)]
+    (cutil/lazy-get context :user-id)
+    (errors/throw-service-error
+     :unauthorized "Associations cannot be modified without a valid user token.")))
+
+(defn- association->native-id
+  "Returns the native id of the given association."
+  [association]
+  (let [{coll-concept-id :concept-id
+         coll-revision-id :revision-id
+         source-concept-id :source-concept-id} association
+        native-id (str source-concept-id native-id-separator-character coll-concept-id)]
+    (if coll-revision-id
+      (str native-id native-id-separator-character coll-revision-id)
+      native-id)))
+
+(defn- association->concept-map
+  [variable-association]
+  (let [{:keys [source-concept-id originator-id native-id user-id data errors]
+         coll-concept-id :concept-id
+         coll-revision-id :revision-id} variable-association]
+    {:concept-type :variable-association
+     :native-id native-id
+     :user-id user-id
+     :format mt/edn
+     :metadata (pr-str
+                 (cutil/remove-nil-keys
+                   {:variable-concept-id source-concept-id
+                    :originator-id originator-id
+                    :associated-concept-id coll-concept-id
+                    :associated-revision-id coll-revision-id
+                    :data data}))
+     :extra-fields {:variable-concept-id source-concept-id
+                    :associated-concept-id coll-concept-id
+                    :associated-revision-id coll-revision-id}}))
 
 (defn validate-system-level-concept
   "Validates that system level concepts are only associated with the system level provider,
@@ -195,6 +247,12 @@
   [_db _provider concept]
   concept)
 
+(defn- variable-missing-coll-info-msg
+  "Returns the message for variable missing collection info"
+  [native-id]
+  (format "Variable [%s] can not be ingested without collection info."
+          native-id))
+
 (defn- set-or-generate-revision-id
   "Get the next available revision id from the DB for the given concept or
   one if the concept has never been saved."
@@ -206,6 +264,12 @@
           existing-revision-id (:revision-id (or previous-revision
                                                  (c/get-concept db concept-type provider concept-id)))
           revision-id (if existing-revision-id (inc existing-revision-id) 1)]
+      ;; The first revision of a variable without collection info will be rejected.
+      ;; will do this later in CMR-6605t
+      ;;(when (and (= :variable (:concept-type concept))
+       ;;          (= 1 revision-id)
+        ;;         (nil? (:coll-concept-id concept)))
+        ;;(cmsg/data-error :invalid-data variable-missing-coll-info-msg (:native-id concept)))
       (assoc concept :revision-id revision-id))))
 
 (defn- check-concept-revision-id
@@ -303,12 +367,166 @@
     ;; else
     (errors/internal-error! (:error-message result) (:throwable result))))
 
+(defmulti save-concept-revision
+  "Store a concept record, which could be a tombstone, and return the revision."
+  (fn [context concept]
+    (boolean (:deleted concept))))
+
+(defn- save-concept-in-mdb
+  "Save the given concept in metadata-db using the given embedded metadata-db context."
+  [mdb-context concept]
+  (let [{:keys [concept-id revision-id]} (save-concept-revision mdb-context concept)]
+    {:concept-id concept-id, :revision-id revision-id}))
+
+(defn- delete-association
+  "Delete the association with the given native-id using the given embedded metadata-db context."
+  [mdb-context source-concept-type native-id]
+  (let [source-concept-type-str (name source-concept-type)
+        assoc-concept-type (keyword (str source-concept-type-str "-association"))
+        existing-concept (first (search/find-concepts mdb-context
+                                                      {:concept-type assoc-concept-type
+                                                       :native-id native-id
+                                                       :exclude-metadata true
+                                                       :latest true}))
+        concept-id (:concept-id existing-concept)]
+    (if concept-id
+      (if (:deleted existing-concept)
+        {:message {:warnings [(format "%s association [%s] is already deleted."
+                                      (string/capitalize source-concept-type-str) concept-id)]}}
+        (let [concept {:concept-type assoc-concept-type
+                       :concept-id concept-id
+                       :user-id (context->user-id mdb-context)
+                       :deleted true}]
+          (save-concept-in-mdb mdb-context concept)))
+      {:message {:warnings [(msg/delete-association-not-found
+                             source-concept-type native-id)]}})))
+
+(defn- update-association
+  "Based on the input operation type (:insert or :delete), insert or delete the given association
+  using the embedded metadata-db, returns the association result in the format of
+  {:variable-association {:concept-id VA1-CMR :revision-id 1}
+   :associated-item {:concept_id C5-PROV1 :revision_id 2}}
+  or
+  {errors: [Collection [C6-PROV1] does not exist or is not visible.],
+  associated_item: {concept_id: C6-PROV1}}."
+  [mdb-context association operation]
+  ;; save each association if there is no errors on it, otherwise returns the errors.
+  (let [{:keys [source-concept-id source-concept-type errors]
+         coll-concept-id :concept-id
+         coll-revision-id :revision-id} association
+        native-id (association->native-id association)
+        source-concept-type-str (name source-concept-type)
+        assoc-concept-type (keyword (str source-concept-type-str "-association"))
+        association (assoc association :native-id native-id)
+        associated-item (cutil/remove-nil-keys
+                         {:concept-id coll-concept-id :revision-id coll-revision-id})]
+    (if (seq errors)
+      {:errors errors :associated-item associated-item}
+      (try
+        (let [{:keys [concept-id revision-id message]} ;; only delete-association could potentially return message
+              (if (= :insert operation)
+                (save-concept-in-mdb
+                  mdb-context (association->concept-map association))
+                (delete-association mdb-context source-concept-type native-id))]
+          (if (some? message)
+            (merge {:associated-item associated-item} message)
+            {assoc-concept-type {:concept-id concept-id :revision-id revision-id}
+             :associated-item associated-item}))
+        (catch clojure.lang.ExceptionInfo e ; Report a specific error in the case of a conflict, otherwise throw error
+          (let [exception-data (ex-data e)
+                type (:type exception-data)
+                errors (:errors exception-data)]
+            (cond
+              (= :conflict type)  {:errors (format association-conflict-error-message
+                                                   (if (= :insert operation) "associate" "dissociate")
+                                                   source-concept-type-str
+                                                   source-concept-id
+                                                   coll-concept-id
+                                                   (if (= :insert operation) "association" "dissociation")
+                                                   source-concept-type-str)
+                                   :associated-item associated-item}
+              (= :can-not-associate type) {:errors errors
+                                           :associated-item associated-item}
+              :else {:errors (format association-unknown-error-message
+                                                   (if (= :insert operation) "associate" "dissociate")
+                                                   source-concept-type-str
+                                                   source-concept-id
+                                                   coll-concept-id)})))))))
+
+(defn- associate-variable
+  "Associate variable concept to collection defined by coll-concept-id
+  and coll-revision-id in concept."
+  [context concept]
+  (let [;; associations is a list of one association.
+        associations [(cutil/remove-nil-keys
+                        {:concept-id (:coll-concept-id concept)
+                         :revision-id (:coll-revision-id concept)})]
+        var-concept-id (:concept-id concept)
+        [validation-time associations] (cutil/time-execution
+                                         (var-assoc-validation/validate-associations
+                                           context var-concept-id associations))
+        ;; association is created together with variable so the user-id
+        ;; in association is the same as the user-id in variable concept.
+        association (merge (first associations)
+                           {:source-concept-id (:concept-id concept)
+                            :source-concept-type :variable
+                            :user-id (:user-id concept)})]
+        ;; context passed from perform-post-commit-association is already a mdb-context.
+    (debug "associate-variable validation-time:" validation-time)
+    (update-association context association :insert)))
+
+(defn get-concept
+  "Get a concept by concept-id."
+  ([context concept-id]
+   (let [db (util/context->db context)
+         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
+         provider (provider-service/get-provider-by-id context provider-id true)]
+     (or (c/get-concept db concept-type provider concept-id)
+         (cmsg/data-error :not-found
+                          msg/concept-does-not-exist
+                          concept-id))))
+  ([context concept-id revision-id]
+   (let [db (util/context->db context)
+         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
+         provider (provider-service/get-provider-by-id context provider-id true)]
+     (or (c/get-concept db concept-type provider concept-id revision-id)
+         (cmsg/data-error :not-found
+                          msg/concept-with-concept-id-and-rev-id-does-not-exist
+                          concept-id
+                          revision-id)))))
+
+(defn- perform-post-commit-association
+  "Performs a post commit variable association. If failed, roll back
+  variable ingest."
+  [context concept rollback-function]
+
+  ;; Before creating a variable association, make sure the collection
+  ;; is not deleted to minimize the risk.
+  (let [{:keys [coll-concept-id coll-revision-id]} concept
+        collection (if coll-revision-id
+                     (get-concept context coll-concept-id coll-revision-id)
+                     (get-concept context coll-concept-id))
+        err-msg (if coll-revision-id
+                  (format "Collection [%s] revision [%s] is deleted from db"
+                          coll-concept-id coll-revision-id)
+                  (format "Collection [%s] is deleted from db"
+                          coll-concept-id))]
+    (when (:deleted collection)
+      (rollback-function)
+      (errors/throw-service-errors :invalid-data [err-msg])))
+
+  (let [result (associate-variable context concept)]
+    (when-let [errors (:errors result)]
+      (rollback-function)
+      (errors/throw-service-errors :conflict errors))
+    result))
+
 ;; dynamic is here only for testing purposes to test failure cases.
 (defn ^:dynamic try-to-save
   "Try to save a concept. The concept must include a revision-id. Ensures that revision-id and
   concept-id constraints are enforced as well as post commit uniqueness constraints. Returns the
   concept if successful, otherwise throws an exception."
-  [db provider concept]
+  [db provider context concept]
   {:pre [(:revision-id concept)]}
   (let [result (c/save-concept db provider concept)
         ;; When there are constraint violations we send in a rollback function to delete the
@@ -334,30 +552,23 @@
           provider
           concept
           rollback-fn)
-        concept)
+
+        ;; Perform post commit variable association
+        (if (and (= :variable (:concept-type concept))
+                 (:coll-concept-id concept)
+                 (not (:deleted concept)))
+          ;; If errors occur, rollback, otherwise return variable concept with the association info:
+          ;; {:variable_association {:concept_id VA1-CMR :revision_id 1},
+          ;;  :associated_item {:concept_id C5-PROV1 :revision_id 2}}
+          (let [assoc-info (perform-post-commit-association
+                             context
+                             concept
+                             rollback-fn)]
+             (merge concept assoc-info))
+           concept))
       (handle-save-errors concept result))))
 
 ;;; service methods
-
-(defn get-concept
-  "Get a concept by concept-id."
-  ([context concept-id]
-   (let [db (util/context->db context)
-         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
-         provider (provider-service/get-provider-by-id context provider-id true)]
-     (or (c/get-concept db concept-type provider concept-id)
-         (cmsg/data-error :not-found
-                          msg/concept-does-not-exist
-                          concept-id))))
-  ([context concept-id revision-id]
-   (let [db (util/context->db context)
-         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
-         provider (provider-service/get-provider-by-id context provider-id true)]
-     (or (c/get-concept db concept-type provider concept-id revision-id)
-         (cmsg/data-error :not-found
-                          msg/concept-with-concept-id-and-rev-id-does-not-exist
-                          concept-id
-                          revision-id)))))
 
 (defn- latest-revision?
   "Given a concept-id and a revision-id, perform a check whether the
@@ -489,23 +700,31 @@
         provider (provider-service/get-provider-by-id context provider-id true)]
     (distinct (map :concept-id (c/get-expired-concepts db provider :collection)))))
 
-(defmulti save-concept-revision
-  "Store a concept record, which could be a tombstone, and return the revision."
-  (fn [context concept]
-    (boolean (:deleted concept))))
-
 (defn- tombstone-associations
-  "Tombstone the associations that matches the given search params,
+  "Tombstone the associations that matches the given search params, Also tombstone
+  all the variables associated with these associations when concept-type is :collection,
+  and assoc-type is :variable-association.
   skip-publication? flag controls if association deletion event should be generated,
   skip-publication? true means no association deletion event should be generated."
-  [context assoc-type search-params skip-publication?]
+  [context assoc-type search-params skip-publication? concept-type]
   (let [associations (search/find-concepts context search-params)]
-    (doseq [association associations]
-      (save-concept-revision context {:concept-type assoc-type
-                                      :concept-id (:concept-id association)
-                                      :deleted true
-                                      :user-id "cmr"
-                                      :skip-publication skip-publication?}))))
+    (if (and (= :collection concept-type)
+             (= :variable-association assoc-type))
+      ;; When a collection is deleted, all the variables associated with it should be deleted,
+      ;; which in turn will delete all the associations.
+      (doseq [var-concept-id (distinct (map #(get-in % [:extra-fields :variable-concept-id])
+                                            associations))]
+        (save-concept-revision context {:concept-type :variable
+                                        :concept-id var-concept-id
+                                        :deleted true
+                                        :user-id "cmr"
+                                        :skip-publication false}))
+      (doseq [association associations]
+        (save-concept-revision context {:concept-type assoc-type
+                                        :concept-id (:concept-id association)
+                                        :deleted true
+                                        :user-id "cmr"
+                                        :skip-publication skip-publication?})))))
 
 (defn- delete-associations-for-collection-concept
   "Delete the associations associated with the given collection revision and association type,
@@ -517,7 +736,7 @@
                         :associated-revision-id coll-revision-id
                         :exclude-metadata true
                         :latest true})]
-    (tombstone-associations context assoc-type search-params true)))
+    (tombstone-associations context assoc-type search-params true :collection)))
 
 (defmulti delete-associations
   "Delete the associations of the given association type that is associated with
@@ -553,7 +772,7 @@
                           :exclude-metadata true
                           :latest true})]
       ;; create variable association tombstones and queue the variable association delete events
-      (tombstone-associations context assoc-type search-params false))))
+      (tombstone-associations context assoc-type search-params false :variable))))
 
 (defmethod delete-associations :service
   [context concept-type concept-id revision-id assoc-type]
@@ -564,7 +783,7 @@
                           :exclude-metadata true
                           :latest true})]
       ;; create variable association tombstones and queue the variable association delete events
-      (tombstone-associations context assoc-type search-params false))))
+      (tombstone-associations context assoc-type search-params false :service))))
 
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
@@ -594,12 +813,11 @@
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)
           (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
-                                          (try-to-save db provider))]
+                                          (try-to-save db provider context))]
             ;; delete the associated variable associations if applicable
             (delete-associations context concept-type concept-id nil :variable-association)
             ;; delete the associated service associations if applicable
             (delete-associations context concept-type concept-id nil :service-association)
-
             ;; skip publication flag is set for tag association when its associated
             ;; collection revision is force deleted. In this case, the association is no longer
             ;; needed to be indexed, so we don't publish the deletion event.
@@ -675,7 +893,7 @@
     (let [concept (->> concept
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
-                       (try-to-save db provider))
+                       (try-to-save db provider context))
           revision-id (:revision-id concept)]
       ;; publish tombstone delete event if the previous concept revision is a granule tombstone
       (when (and (= :granule concept-type)
@@ -834,7 +1052,7 @@
                               (update-in [:revision-id] inc)
                               (assoc :deleted true :metadata ""))]
             (try
-              (try-to-save db provider tombstone)
+              (try-to-save db provider context tombstone)
               (ingest-events/publish-event
                context (ingest-events/concept-expire-event c))
               (catch clojure.lang.ExceptionInfo e

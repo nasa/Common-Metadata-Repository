@@ -1,27 +1,17 @@
 (ns cmr.system-int-test.search.granule-spatial-search-test
   (:require
-   [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.common.dev.util :as dev-util]
-   [cmr.spatial.arc :as a]
-   [cmr.spatial.cartesian-ring :as cr]
    [cmr.spatial.codec :as codec]
-   [cmr.spatial.derived :as derived]
-   [cmr.spatial.geodetic-ring :as gr]
-   [cmr.spatial.line-segment :as s]
    [cmr.spatial.line-string :as l]
-   [cmr.spatial.lr-binary-search :as lbs]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.messages :as smsg]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.ring-relations :as rr]
-   [cmr.spatial.serialize :as srl]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -34,9 +24,6 @@
 
   (dev-sys-util/reset)
   (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"}))
-
-
-
 
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
@@ -434,6 +421,41 @@
         ;; multiple circles are ANDed together
         ["0,89,100" "0,89,1000000"] [whole-world on-np]
         ["0,0,1000" "0,89,1000" "0,89,1000000"] [whole-world]))
+
+  (testing "ORed spatial search"
+     (let [poly-coordinates ["-16.79,-12.71,-6.32,-10.95,-5.74,-6.11,-15.18,-7.63,-16.79,-12.71"
+                             "0.53,39.23,21.57,59.8,-112.21,84.48,-13.37,40.91,0.53,39.23"]
+           poly-refs (search/find-refs
+                      :granule
+                      {:provider "PROV1"
+                       :polygon poly-coordinates
+                       "options[spatial][or]" "true"})
+           bbox-refs (search/find-refs
+                             :granule
+                             {:provider "PROV1"
+                              :bounding-box ["166.11,-19.14,-166.52,53.04"
+                                             "23.59,-15.47,25.56,-4"]
+                                             "options[spatial][or]" "true"})
+           combined-refs (search/find-refs
+                          :granule
+                          {:provider "PROV1"
+                           :circle "179.8,41,100000"
+                           :bounding-box "166.11,-19.14,-166.52,53.04"
+                           "options[spatial][or]" "true"})
+           anded-refs (search/find-refs
+                       :granule
+                       {:provider "PROV1"
+                        :circle "179.8,41,100000"
+                        :bounding-box "166.11,-19.14,-166.52,53.04"
+                        "options[spatial][or]" "false"})]
+      (is (d/refs-match? [across-am-poly whole-world across-am-br am-point very-wide-cart]
+                         combined-refs))
+      (is (d/refs-match? [wide-north on-np normal-poly very-wide-cart whole-world normal-brs]
+                         poly-refs))
+      (is (d/refs-match? [across-am-poly very-wide-cart am-point normal-line-cart whole-world across-am-br]
+                         bbox-refs))
+      (is (d/refs-match? [across-am-poly whole-world]
+                         anded-refs))))
 
     (testing "AQL spatial search"
       (are [type ords items]

@@ -64,6 +64,10 @@
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s" status body)))))
 
+(h/defsearcher search-for-collections :search
+  (fn [conn]
+    (format "%s/collections" (conn/root-url conn))))
+
 (h/defsearcher search-for-variables :search
   (fn [conn]
     (format "%s/variables" (conn/root-url conn))))

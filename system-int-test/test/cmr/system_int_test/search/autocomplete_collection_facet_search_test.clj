@@ -12,30 +12,31 @@
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.search-util :as search]))
 
-(def ^:private test-values [{:value "foo" :type "instrument"}
-                            {:value "bar" :type "platform"}
-                            {:value "baaz" :type "instrument"}
-                            {:value "BAAZ" :type "platform"}
+(def ^:private test-values [{:value "foo" :type "instrument" :contains-public-collections :true}
+                            {:value "bar" :type "platform" :contains-public-collections :true}
+                            {:value "baaz" :type "instrument" :contains-public-collections :true}
+                            {:value "BAAZ" :type "platform" :contains-public-collections :true}
                             {:value "ATMOSPHERE:EARTH SCIENCE:LIQUID PRECIPITATION:RAIN:FREEZING RAIN"
                              :type "science_keyword"
-                             :fields "variable-level-3"}
-                            {:value "africa" :type "spatial_keyword"}
-                            {:value "antarctica" :type "spatial_keyword"}
-                            {:value "arctic" :type "spatial_keyword"}
-                            {:value "asia" :type "spatial_keyword"}
-                            {:value "australia" :type "spatial_keyword"}
-                            {:value "europe" :type "spatial_keyword"}
-                            {:value "gulf of mexico" :type "spatial_keyword"}
-                            {:value "gulf of lion" :type "spatial_keyword"}
-                            {:value "gulf of sidra" :type "spatial_keyword"}
-                            {:value "gulf of thailand" :type "spatial_keyword"}
-                            {:value "persian gulf" :type "spatial_keyword"}
-                            {:value "north america" :type "spatial_keyword"}
-                            {:value "south america" :type "spatial_keyword"}
-                            {:value "arctic ocean" :type "spatial_keyword"}
-                            {:value "atlantic ocean" :type "spatial_keyword"}
-                            {:value "pacific ocean" :type "spatial_keyword"}
-                            {:value "indian ocean" :type "spatial_keyword"}])
+                             :fields "variable-level-3"
+                             :contains-public-collections :true}
+                            {:value "africa" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "antarctica" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "arctic" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "asia" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "australia" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "europe" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "gulf of mexico" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "gulf of lion" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "gulf of sidra" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "gulf of thailand" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "persian gulf" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "north america" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "south america" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "arctic ocean" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "atlantic ocean" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "pacific ocean" :type "spatial_keyword" :contains-public-collections :true}
+                            {:value "indian ocean" :type "spatial_keyword" :contains-public-collections :true}])
 
 (defn autocomplete-fixture
   [f]
