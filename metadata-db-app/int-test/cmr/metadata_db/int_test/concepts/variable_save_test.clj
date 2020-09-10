@@ -70,4 +70,12 @@
             {:keys [status concept-id revision-id]} (util/save-concept concept3)]
         (is (= status 201))
         (is (not= concept1-concept-id concept-id))
-        (is (= 1 revision-id))))))
+        (is (= 1 revision-id)))
+      (let [concept4-var-name "different-variable-name"
+            concept4 (update concept1 :extra-fields assoc :variable-name concept4-var-name)]
+        (testing (str "save variable with the same native id, but a different variable name "
+                      "on a non-deleted variable is allowed")
+          (let [{:keys [status concept-id revision-id]} (util/save-concept concept4)]
+            (is (= 201 status))
+            (is (= concept1-concept-id concept-id))
+            (is (= 3 revision-id))))))))
