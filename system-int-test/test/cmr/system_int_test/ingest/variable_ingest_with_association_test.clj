@@ -274,8 +274,8 @@
                                                                        :Type "OTHER"})]
                                :AcquisitionSourceName "Instrument1"}
                             {:native-id "var1"
-                             :coll-concept-id (:concept-id coll1-PROV1-2)
-                             :coll-revision-id (:revision-id coll1-PROV1-2)})
+                             :coll-concept-id (:concept-id coll2-PROV1-1)
+                             :coll-revision-id (:revision-id coll2-PROV1-1)})
                     {:keys [concept-id revision-id variable-association]}
                       (variable-util/ingest-variable-with-association concept)
                     va-concept-id-3 (:concept-id variable-association)
