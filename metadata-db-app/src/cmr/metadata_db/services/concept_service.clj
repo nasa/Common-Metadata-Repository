@@ -20,8 +20,7 @@
    [cmr.metadata-db.services.messages :as msg]
    [cmr.metadata-db.services.provider-service :as provider-service]
    [cmr.metadata-db.services.search-service :as search]
-   [cmr.metadata-db.services.util :as util]
-   [cmr.metadata-db.services.variable-association-validation :as var-assoc-validation])
+   [cmr.metadata-db.services.util :as util])
   ;; Required to get code loaded
   ;; XXX This is really awful, and we do it a lot in the CMR. What we've got
   ;;     as a result of this is a leak from implementation into a separate part
@@ -378,10 +377,10 @@
   (let [{:keys [concept-id revision-id]} (save-concept-revision mdb-context concept)]
     {:concept-id concept-id, :revision-id revision-id}))
 
-(defn- delete-association
-  "Delete the association with the given native-id using the given embedded metadata-db context."
-  [mdb-context source-concept-type native-id]
-  (let [source-concept-type-str (name source-concept-type)
+(defn- delete-variable-association
+  "Delete variable association with the given native-id using the given embedded metadata-db context."
+  [mdb-context native-id]
+  (let [source-concept-type-str "variable"
         assoc-concept-type (keyword (str source-concept-type-str "-association"))
         existing-concept (first (search/find-concepts mdb-context
                                                       {:concept-type assoc-concept-type
@@ -399,81 +398,69 @@
                        :deleted true}]
           (save-concept-in-mdb mdb-context concept)))
       {:message {:warnings [(msg/delete-association-not-found
-                             source-concept-type native-id)]}})))
+                             :variable native-id)]}})))
 
-(defn- update-association
-  "Based on the input operation type (:insert or :delete), insert or delete the given association
+(defn- update-variable-association
+  "Based on the input operation type (:insert or :delete), insert or delete the variable association
   using the embedded metadata-db, returns the association result in the format of
   {:variable-association {:concept-id VA1-CMR :revision-id 1}
-   :associated-item {:concept_id C5-PROV1 :revision_id 2}}
-  or
-  {errors: [Collection [C6-PROV1] does not exist or is not visible.],
-  associated_item: {concept_id: C6-PROV1}}."
+   :associated-item {:concept_id C5-PROV1 :revision_id 2}}"
   [mdb-context association operation]
   ;; save each association if there is no errors on it, otherwise returns the errors.
-  (let [{:keys [source-concept-id source-concept-type errors]
+  (let [{source-concept-id :source-concept-id
          coll-concept-id :concept-id
          coll-revision-id :revision-id} association
         native-id (association->native-id association)
-        source-concept-type-str (name source-concept-type)
-        assoc-concept-type (keyword (str source-concept-type-str "-association"))
+        source-concept-type-str "variable"
         association (assoc association :native-id native-id)
         associated-item (cutil/remove-nil-keys
                          {:concept-id coll-concept-id :revision-id coll-revision-id})]
-    (if (seq errors)
-      {:errors errors :associated-item associated-item}
-      (try
-        (let [{:keys [concept-id revision-id message]} ;; only delete-association could potentially return message
-              (if (= :insert operation)
-                (save-concept-in-mdb
-                  mdb-context (association->concept-map association))
-                (delete-association mdb-context source-concept-type native-id))]
-          (if (some? message)
-            (merge {:associated-item associated-item} message)
-            {assoc-concept-type {:concept-id concept-id :revision-id revision-id}
-             :associated-item associated-item}))
-        (catch clojure.lang.ExceptionInfo e ; Report a specific error in the case of a conflict, otherwise throw error
-          (let [exception-data (ex-data e)
-                type (:type exception-data)
-                errors (:errors exception-data)]
-            (cond
-              (= :conflict type)  {:errors (format association-conflict-error-message
-                                                   (if (= :insert operation) "associate" "dissociate")
-                                                   source-concept-type-str
-                                                   source-concept-id
-                                                   coll-concept-id
-                                                   (if (= :insert operation) "association" "dissociation")
-                                                   source-concept-type-str)
-                                   :associated-item associated-item}
-              (= :can-not-associate type) {:errors errors
-                                           :associated-item associated-item}
-              :else {:errors (format association-unknown-error-message
-                                                   (if (= :insert operation) "associate" "dissociate")
-                                                   source-concept-type-str
-                                                   source-concept-id
-                                                   coll-concept-id)})))))))
+    (try
+      (let [{:keys [concept-id revision-id message]} ;; delete-variable-association could potentially return message
+            (if (= :insert operation)
+              (save-concept-in-mdb
+                mdb-context (association->concept-map association))
+              (delete-variable-association mdb-context native-id))]
+        (if (some? message)
+          (merge {:associated-item associated-item} message)
+          {:variable-association {:concept-id concept-id :revision-id revision-id}
+           :associated-item associated-item}))
+      (catch clojure.lang.ExceptionInfo e ; Report a specific error in the case of a conflict, otherwise throw error
+        (let [exception-data (ex-data e)
+              type (:type exception-data)
+              errors (:errors exception-data)]
+          (cond
+            (= :conflict type)  {:errors (format association-conflict-error-message
+                                                 (if (= :insert operation) "associate" "dissociate")
+                                                 source-concept-type-str
+                                                 source-concept-id
+                                                 coll-concept-id
+                                                 (if (= :insert operation) "association" "dissociation")
+                                                 source-concept-type-str)
+                                 :associated-item associated-item}
+            (= :can-not-associate type) {:errors errors
+                                         :associated-item associated-item}
+            :else {:errors (format association-unknown-error-message
+                                                 (if (= :insert operation) "associate" "dissociate")
+                                                 source-concept-type-str
+                                                 source-concept-id
+                                                 coll-concept-id)}))))))
 
 (defn- associate-variable
   "Associate variable concept to collection defined by coll-concept-id
   and coll-revision-id in concept."
   [context concept]
-  (let [;; associations is a list of one association.
-        associations [(cutil/remove-nil-keys
-                        {:concept-id (:coll-concept-id concept)
-                         :revision-id (:coll-revision-id concept)})]
-        var-concept-id (:concept-id concept)
-        [validation-time associations] (cutil/time-execution
-                                         (var-assoc-validation/validate-associations
-                                           context var-concept-id associations))
-        ;; association is created together with variable so the user-id
-        ;; in association is the same as the user-id in variable concept.
-        association (merge (first associations)
-                           {:source-concept-id (:concept-id concept)
-                            :source-concept-type :variable
-                            :user-id (:user-id concept)})]
-        ;; context passed from perform-post-commit-association is already a mdb-context.
-    (debug "associate-variable validation-time:" validation-time)
-    (update-association context association :insert)))
+  (let [;; No more association validation here:
+        ;; collection validation is moved to ingest.
+        ;; Conflict validation is removed because we are replacing the old
+        ;; association(s) with the new association.
+        association (cutil/remove-nil-keys
+                      {:concept-id (:coll-concept-id concept)
+                       :revision-id (:coll-revision-id concept)
+                       :source-concept-id (:concept-id concept)
+                       :user-id (:user-id concept)})]
+    ;; context passed from perform-post-commit-association is already a mdb-context.
+    (update-variable-association context association :insert)))
 
 (defn get-concept
   "Get a concept by concept-id."
@@ -495,11 +482,10 @@
                           concept-id
                           revision-id)))))
 
-(defn- perform-post-commit-association
+(defn- perform-post-commit-variable-association
   "Performs a post commit variable association. If failed, roll back
   variable ingest."
   [context concept rollback-function]
-
   ;; Before creating a variable association, make sure the collection
   ;; is not deleted to minimize the risk.
   (let [{:keys [coll-concept-id coll-revision-id]} concept
@@ -520,6 +506,35 @@
       (rollback-function)
       (errors/throw-service-errors :conflict errors))
     result))
+
+(defn- perform-post-commit-variable-dissociation
+  "Performs a post commit variable dissociation - delete all the existing variable
+  associations for the variable that va-concept is associated with. If failed, roll back
+  ingest for va-concept - a variable association concept, throw error, which will roll
+  back ingest for the variable."
+  [context va-concept rollback-function]
+  (let [variable-concept-id (get-in va-concept [:extra-fields :variable-concept-id])
+        va-concept-id (:concept-id va-concept)
+        vas (->> (search/find-concepts context
+                                       {:concept-type :variable-association
+                                        :variable-concept-id variable-concept-id
+                                        :exclude-metadata true
+                                        :latest true})
+                  ;; Get all the associations except for the va-concept.
+                  (filter #(not= va-concept-id (:concept-id %)))
+                  (filter #(not (:deleted %))))]
+    (doseq [va vas]
+      (let [association {:source-concept-id (get-in va [:extra-fields :variable-concept-id])
+                         :concept-id (get-in va [:extra-fields :associated-concept-id])
+                         :revision-id (get-in va [:extra-fields :associated-revision-id])}
+            result (update-variable-association context association :delete)
+            err-msg (format "Can not dissociate existing association [%s]" (:concept-id va))]
+        (when-let [errors (:errors result)]
+          (rollback-function)
+          ;; Error will be caught in update-variable-association when va-concept was inserted,
+          ;; which will rollback variable ingest in perform-post-commit-variable-association.
+          (errors/throw-service-errors :can-not-associate [err-msg]))))
+    va-concept))
 
 ;; dynamic is here only for testing purposes to test failure cases.
 (defn ^:dynamic try-to-save
@@ -560,12 +575,16 @@
           ;; If errors occur, rollback, otherwise return variable concept with the association info:
           ;; {:variable_association {:concept_id VA1-CMR :revision_id 1},
           ;;  :associated_item {:concept_id C5-PROV1 :revision_id 2}}
-          (let [assoc-info (perform-post-commit-association
-                             context
-                             concept
-                             rollback-fn)]
+          (let [assoc-info (perform-post-commit-variable-association context concept rollback-fn)]
              (merge concept assoc-info))
-           concept))
+           (if (and (= :variable-association (:concept-type concept))
+                    (not (:deleted concept)))
+             ;; Perform post commit variable dissociation, if there exist any other variable associations,
+             ;; for the same variable as the one in the variable association concept.
+             ;; If errors occur, rollback the association insert, then throw error, which will rollback the
+             ;; variable insert.
+             (perform-post-commit-variable-dissociation context concept rollback-fn)
+             concept)))
       (handle-save-errors concept result))))
 
 ;;; service methods
