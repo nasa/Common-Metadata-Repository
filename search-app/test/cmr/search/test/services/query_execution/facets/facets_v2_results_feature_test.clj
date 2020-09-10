@@ -137,7 +137,7 @@
                  :facets-size nil}]
       (is (= {:two-d-coordinate-system-name-h
                {:terms {:field :two-d-coord-name, :size 50}}}
-             (:aggregations (cmr.common-app.services.search.query-execution/pre-process-query-result-feature context query :facets-v2)))))))
+             (:aggregations (query-execution/pre-process-query-result-feature context query :facets-v2)))))))
 
 (deftest post-process-query-result-feature-test
   (testing "Testing the post processing of the query without facets in the query."
