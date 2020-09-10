@@ -133,6 +133,11 @@
                       trim))))
         
         (testing "Collections with no granules do not have link"
-          (is (= nil
-                 (find-element-by-id "C3-PROV1-virtual-directory-link" page-data))))))))
+          (is (= nil (find-element-by-id "C3-PROV1-virtual-directory-link" page-data)))
+          (is (= "No Granules"
+                 (->> page-data
+                      (find-element-by-id "C3-PROV1-no-granules-msg")
+                      :content
+                      first
+                      trim))))))))
 
