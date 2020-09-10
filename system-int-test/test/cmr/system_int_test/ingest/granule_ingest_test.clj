@@ -43,7 +43,7 @@
         orig-coll (data-umm-c/collection-concept (assoc common-fields :native-id "native1"))
         _ (ingest/ingest-concept orig-coll)
 
-        ;; delete the collection
+        ;; delete the collection 
         deleted-response (ingest/delete-concept orig-coll)
 
         ;; Create collection again with same details but a different native id
@@ -339,7 +339,7 @@
     (is (= "Name/With/Slashes" (:native-id ingested-concept)))))
 
 (deftest granule-schema-validation-test
-  (are3 [concept-format validation-errors]
+  (are3 [concept-format error-patterns]
     (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
           concept (data-core/item->concept
                    (granule/granule-with-umm-spec-collection collection (:concept-id collection) {:beginning-date-time "2010-12-12T12:00:00Z"})
@@ -350,19 +350,21 @@
                                        ;; this is to cause validation error for iso-smap format
                                        (str/replace "gmd:DS_Series" "XXXX")))
           {:keys [status errors]} (ingest/ingest-concept invalid-granule)]
-      (is (= [400 validation-errors] [status errors])))
+      (is (= [400] [status]))
+      (is (= (count errors)
+             (count (map #(re-find (re-pattern %1) %2) error-patterns errors)))))
 
     "ECHO10 invalid datetime format"
-    :echo10 ["Exception while parsing invalid XML: Line 1 - cvc-datatype-valid.1.2.1: 'A.000Z' is not a valid value for 'dateTime'."
-             "Exception while parsing invalid XML: Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'BeginningDateTime' is not valid."]
+    :echo10 ["'A\\.000Z' is not a valid value for 'dateTime'"
+             "The value 'A\\.000Z' of element 'BeginningDateTime' is not valid"]
 
     "ISO SMAP invalid datetime format"
-    :iso-smap ["Exception while parsing invalid XML: Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]
+    :iso-smap ["Exception while parsing invalid XML: Line 1 - cvc-elt\\.1(\\.\\s)?: Cannot find the declaration of element 'XXXX'\\."]
 
     "UMM-G invalid datetime format"
-    :umm-json ["#/TemporalExtent/RangeDateTime/BeginningDateTime: [A.000Z] is not a valid date-time. Expected [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.[0-9]{1,9}Z, yyyy-MM-dd'T'HH:mm:ss[+-]HH:mm, yyyy-MM-dd'T'HH:mm:ss.[0-9]{1,9}[+-]HH:mm]"
-               "#/TemporalExtent: required key [SingleDateTime] not found"
-               "#/TemporalExtent: extraneous key [RangeDateTime] is not permitted"]))
+    :umm-json ["#/TemporalExtent/RangeDateTime/BeginningDateTime: \\[A\\.000Z\\] is not a valid date-time\\. Expected \\[yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss\\.\\[0-9\\]\\{1,9\\}Z, yyyy-MM-dd'T'HH:mm:ss\\[+-\\]HH:mm, yyyy-MM-dd'T'HH:mm:ss\\.\\[0-9\\]\\{1,9\\}\\[+-\\]HH:mm\\]"
+               "#/TemporalExtent: required key \\[SingleDateTime\\] not found"
+               "#/TemporalExtent: extraneous key \\[RangeDateTime\\] is not permitted"]))
 
 (deftest ingest-smap-iso-granule-test
   (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "correct"
