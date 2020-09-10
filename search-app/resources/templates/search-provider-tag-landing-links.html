@@ -35,8 +35,10 @@
           {{ holding.version-id }}
         </td>
         <td>
+          {% if holding.granule-count %}
            <a id="{{ holding.concept-id }}-virtual-directory-link"
-              href="{{ virtual-directory-url }}collections/{{ holding.concept-id }}">Browse {{ holding.granule-count }} Granules</a>
+              href="{{ virtual-directory-url }}collections/{{ holding.concept-id }}">Browse {{ holding.granule-count }} Granule{% if holding.granule-count > 1 %}s{% endif %}</a>
+           {% endif %}
         </td>
       </tr>
       {% endfor %}
