@@ -701,9 +701,9 @@
   (testing "valid xml"
     (is (empty? (c/validate-xml valid-collection-xml))))
   (testing "invalid xml"
-    (is (not= []
-              (re-matches #"Exception while parsing invalid XML.*"
-                          (first (c/validate-xml (s/replace valid-collection-xml "Personnel" "XXXX"))))))))
+    (is (= "Exception while parsing invalid XML"
+           (re-find #"Exception while parsing invalid XML"
+                    (first (c/validate-xml (s/replace valid-collection-xml "Personnel" "XXXX"))))))))
 
 (deftest parse-nil-version-test
   ;; UMM-C is now making the version field a required field. It is optional in DIF-9 so we provide

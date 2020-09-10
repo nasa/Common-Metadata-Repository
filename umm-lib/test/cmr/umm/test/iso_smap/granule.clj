@@ -213,6 +213,6 @@
   (testing "valid xml"
     (is (= 0 (count (g/validate-xml sample-granule-xml)))))
   (testing "invalid xml"
-    (is (not= []
-              (re-matches #"Exception while parsing invalid XML.*"
-                          (first (g/validate-xml (string/replace sample-granule-xml "fileIdentifier" "XXXX"))))))))
+    (is (= "Exception while parsing invalid XML"
+           (re-find #"Exception while parsing invalid XML"
+                    (first (g/validate-xml (string/replace sample-granule-xml "fileIdentifier" "XXXX"))))))))

@@ -674,6 +674,6 @@
   (testing "valid xml"
     (is (empty? (c/validate-xml dif10-collection-xml))))
   (testing "invalid xml"
-    (is (not= []
-              (re-matches #"Exception while parsing invalid XML.*"
-                          (first (c/validate-xml (s/replace dif10-collection-xml "Platform" "XXXX"))))))))
+    (is (= "Exception while parsing invalid XML"
+           (re-find #"Exception while parsing invalid XML"
+                    (first (c/validate-xml (s/replace dif10-collection-xml "Platform" "XXXX"))))))))

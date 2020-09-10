@@ -384,9 +384,9 @@
   (testing "valid xml"
     (is (= 0 (count (c/validate-xml valid-collection-xml)))))
   (testing "invalid xml"
-    (is (not= []
-              (re-matches #"Exception while parsing invalid XML.*"
-                          (first (c/validate-xml (s/replace valid-collection-xml "fileIdentifier" "XXXX"))))))))
+    (is (= "Exception while parsing invalid XML"
+           (re-find #"Exception while parsing invalid XML"
+                    (first (c/validate-xml (s/replace valid-collection-xml "fileIdentifier" "XXXX"))))))))
 
 (deftest parse-collection-defaults-test
   "Check that defaults are being added correctly to create valid umm"

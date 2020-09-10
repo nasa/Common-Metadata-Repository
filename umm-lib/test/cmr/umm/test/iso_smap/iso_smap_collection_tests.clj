@@ -260,6 +260,6 @@
   (testing "valid xml"
     (is (= 0 (count (isc/validate-xml sample-collection-xml)))))
   (testing "invalid xml"
-    (is (not= []
-              (re-matches #"Exception while parsing invalid XML.*"
-                          (first (isc/validate-xml (s/replace sample-collection-xml "fileIdentifier" "XXXX"))))))))
+    (is (= "Exception while parsing invalid XML"
+           (re-find #"Exception while parsing invalid XML"
+                    (first (isc/validate-xml (s/replace sample-collection-xml "fileIdentifier" "XXXX"))))))))

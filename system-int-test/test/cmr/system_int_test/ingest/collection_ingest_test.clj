@@ -616,18 +616,18 @@
                                     (string/replace "gmd:DS_Series" "XXXX"))))]
          (index/wait-until-indexed)
          (= [400] [status])
-         (is (not= []
-                   (map #(re-matches (re-pattern %2) %1) errors err-patterns))))
+         (is (= (count err-patterns)
+                (count (map #(re-find (re-pattern %1) %2) err-patterns errors)))))
 
-    :echo10 ["'A.000Z' is not a valid value for 'dateTime'."
-             "The value 'A.000Z' of element 'BeginningDateTime' is not valid"]
+    :echo10 ["'A\\.000Z' is not a valid value for 'dateTime'"
+             "'A\\.000Z' of element 'BeginningDateTime' is not valid"]
 
-    :dif10 ["'A.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'."
-            "The value 'A.000Z' of element 'Beginning_Date_Time' is not valid."]
+    :dif10 ["'A\\.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'"
+            "The value 'A\\.000Z' of element 'Beginning_Date_Time' is not valid"]
 
-    :iso19115 ["Exception while parsing invalid XML.*"]
+    :iso19115 ["Exception while parsing invalid XML"]
 
-    :iso-smap ["Exception while parsing invalid XML.*"]))
+    :iso-smap ["Exception while parsing invalid XML"]))
 
 (deftest ingest-umm-json
   (let [json (umm-spec/generate-metadata test-context expected-conversion/curr-ingest-ver-example-collection-record :umm-json)
