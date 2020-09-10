@@ -253,7 +253,7 @@
             {:keys [status errors]} (ingest/ingest-concept concept
                                                            (variable-util/token-opts token))]
         (is (= 400 status))
-        (is (= ["#/Name: expected minLength: 1, actual: 0" "#/Name: string [] does not match pattern [\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,255}"]
+        (is (= ["#/Name: expected minLength: 1, actual: 0"]
                errors))))
     (testing "ingest of variable concept JSON schema validation invalid field"
       (let [concept (variable-util/make-variable-concept {:InvalidField "xxx"})
