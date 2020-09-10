@@ -8,8 +8,7 @@
       "description": "The name of a variable.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 256,
-      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,255}"
+      "maxLength": 256
     },
     "StandardName": {
       "description": "This is the more formal or scientific name, .e.g., the CF Standard Name.",
