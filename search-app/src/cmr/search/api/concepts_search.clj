@@ -268,14 +268,17 @@
   (if-let [short-scroll-id (-> body
                                (json/parse-string true)
                                :scroll_id)]
+    ;; if the short scroll id is valid, retrieve the real scroll id
     (if-let [scroll-id (->> short-scroll-id
                             (core-api/get-scroll-id-and-search-params-from-cache context)
                             :scroll-id)]
+      ;; clear the scroll session for the scroll id
       (query-svc/clear-scroll context scroll-id)
       (svc-errors/throw-service-error
        :invalid-data (format "scroll_id [%s] not found." short-scroll-id)))
     (svc-errors/throw-service-error
      :invalid-data "scroll_id must be provided."))
+  ;; no errors, return 204
   {:status 204})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
