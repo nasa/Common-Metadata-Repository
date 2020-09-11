@@ -2291,7 +2291,7 @@ Exclude granule by parent concept id
     
 #### <a name="g-include-polygons"></a> Include generated orbital polygons.
 
-Include generated polygons in orbital granules. False by default.
+Include generated polygons in orbital granules for ATOM and JSON results. False by default.
 
 Note: Including generated polygons may increase result sizes by several orders of magnitude.
 
