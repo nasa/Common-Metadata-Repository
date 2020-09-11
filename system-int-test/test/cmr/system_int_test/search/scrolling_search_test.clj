@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.scrolling-search-test
   "Tests for using the scroll parameter to retrieve search results"
   (:require
+   [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common-app.api.routes :as routes]
@@ -10,10 +11,12 @@
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.granule :as data2-granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]))
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.url-helper :as url]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -89,25 +92,30 @@
         coll1-cid (get-in coll1 [:concept-id])
         coll2-cid (get-in coll2 [:concept-id])
         gran1 (data2-core/ingest "PROV1"
-                                 (data2-granule/granule-with-umm-spec-collection coll1
-                                                                                 coll1-cid
-                                                                                 {:granule-ur "Granule1"}))
+                                 (data2-granule/granule-with-umm-spec-collection
+                                  coll1
+                                  coll1-cid
+                                  {:granule-ur "Granule1"}))
         gran2 (data2-core/ingest "PROV1"
-                          (data2-granule/granule-with-umm-spec-collection coll1
-                                                                          coll1-cid
-                                                                          {:granule-ur "Granule2"}))
+                                 (data2-granule/granule-with-umm-spec-collection
+                                  coll1
+                                  coll1-cid
+                                  {:granule-ur "Granule2"}))
         gran3 (data2-core/ingest "PROV1"
-                          (data2-granule/granule-with-umm-spec-collection coll1
-                                                                          coll1-cid
-                                                                          {:granule-ur "Granule3"}))
+                                 (data2-granule/granule-with-umm-spec-collection
+                                  coll1
+                                  coll1-cid
+                                  {:granule-ur "Granule3"}))
         gran4 (data2-core/ingest "PROV1"
-                          (data2-granule/granule-with-umm-spec-collection coll2
-                                                                          coll2-cid
-                                                                          {:granule-ur "Granule4"}))
+                                 (data2-granule/granule-with-umm-spec-collection
+                                  coll2
+                                  coll2-cid
+                                  {:granule-ur "Granule4"}))
         gran5 (data2-core/ingest "PROV1"
-                          (data2-granule/granule-with-umm-spec-collection coll2
-                                                                          coll2-cid
-                                                                          {:granule-ur "Granule5"}))
+                                 (data2-granule/granule-with-umm-spec-collection
+                                  coll2
+                                  coll2-cid
+                                  {:granule-ur "Granule5"}))
         all-grans [gran1 gran2 gran3 gran4 gran5]]
     (index/wait-until-indexed)
 
@@ -143,23 +151,72 @@
 
     (testing "Scrolling with different search params from the original"
       (let [result (search/find-concepts-in-format
-                     mime-types/xml
-                     :granule
-                     {:provider "PROV1" :scroll true :page-size 2})
+                    mime-types/xml
+                    :granule
+                    {:provider "PROV1" :scroll true :page-size 2})
             format (get-in result [:headers :Content-Type])
             hits (get-in result [:headers :CMR-Hits])
             scroll-id (get-in result [:headers :CMR-Scroll-Id])
             ;; Do a subsequent scroll search with different format, provider, scroll and page-size.
             ;; Verify the new search params are ignored. It still returns the same xml format.
             subsequent-result (search/find-concepts-in-format
-                                mime-types/json
-                                :granule
-                                {:provider "PROV2" :scroll false :page-size 10}
-                                {:headers {routes/SCROLL_ID_HEADER scroll-id}})
+                               mime-types/json
+                               :granule
+                               {:provider "PROV2" :scroll false :page-size 10}
+                               {:headers {routes/SCROLL_ID_HEADER scroll-id}})
             subsequent-format (get-in subsequent-result [:headers :Content-Type])
             subsequent-hits (get-in subsequent-result [:headers :CMR-Hits])]
-         (is (= hits subsequent-hits))
-         (is (= format subsequent-format))))
+        (is (= hits subsequent-hits))
+        (is (= format subsequent-format))))
+
+    (testing "clear scroll"
+      (let [{:keys [scroll-id] :as result} (search/find-refs
+                                            :granule
+                                            {:provider "PROV1" :scroll true :page-size 2})]
+        (testing "First call returns scroll-id and hits count with page-size results"
+          (is (data2-core/refs-match? [gran1 gran2] result)))
+
+        (testing "clear scroll call is successful"
+          (let [{:keys [status]} (search/clear-scroll scroll-id)]
+            (is (= 204 status))))
+
+        (testing "searching with the cleared scroll id got error"
+          (let [{:keys [status errors]} (search/find-refs
+                                         :granule
+                                         {:scroll true}
+                                         {:allow-failure? true
+                                          :headers {routes/SCROLL_ID_HEADER scroll-id}})]
+            (is (= 404 status))
+            (is (re-matches #"Scroll session \[.*\] does not exist" (first errors)))))
+
+        (testing "clear scroll second time is OK"
+          (let [{:keys [status]} (search/clear-scroll scroll-id)]
+            (is (= 204 status))))
+
+        (testing "clear scroll on non-existent scroll id"
+          (let [{:keys [status errors]} (search/clear-scroll "non-existent-scroll-id")]
+            (is (= 404 status))
+            (is (= ["Scroll session [non-existent-scroll-id] does not exist"] errors))))
+
+        (testing "clear scroll without scroll id"
+          (let [{:keys [status errors]} (search/get-search-failure-data
+                                         (client/post (url/clear-scroll-url)
+                                                      {:content-type mime-types/json
+                                                       :body "{}"
+                                                       :throw-exceptions true
+                                                       :connection-manager (s/conn-mgr)}))]
+            (is (= 422 status))
+            (is (= ["scroll_id must be provided."] errors))))
+
+        (testing "clear scroll with unsupported content type"
+          (let [{:keys [status errors]} (search/get-search-failure-xml-data
+                                         (client/post (url/clear-scroll-url)
+                                                      {:content-type mime-types/xml
+                                                       :body "<scroll_id>abc</scroll_id>"
+                                                       :throw-exceptions true
+                                                       :connection-manager (s/conn-mgr)}))]
+            (is (= 415 status))
+            (is (= ["Unsupported content type [application/xml]"] errors))))))
 
     ;; The following test is included for completeness to test session timeouts, but it
     ;; cannot be run regularly because it is impossible to predict how long it will take
@@ -182,12 +239,12 @@
           (Thread/sleep 100000)
           (testing "Subsequent calls get unknown scroll-id error"
             (let [response (search/find-refs :granule
-                                            {:scroll true}
-                                            {:allow-failure? true
-                                             :headers {routes/SCROLL_ID_HEADER scroll-id}})]
+                                             {:scroll true}
+                                             {:allow-failure? true
+                                              :headers {routes/SCROLL_ID_HEADER scroll-id}})]
               (is (= 404 (:status response)))
               (is (= (str "Scroll session [" scroll-id "] does not exist")
-                    (first (:errors response))))))
+                     (first (:errors response))))))
           (es-config/set-elastic-scroll-timeout! timeout)))
 
     (testing "disable scrolling"
@@ -198,7 +255,7 @@
                                        {:allow-failure? true})]
         (is (= 400 (:status response)))
         (is (= "Scrolling is disabled."
-                (first (:errors response)))))
+               (first (:errors response)))))
       (dev-sys-util/eval-in-dev-sys
        `(cmr.common-app.services.search.parameter-validation/set-scrolling-enabled! true)))
 

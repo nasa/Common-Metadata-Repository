@@ -198,6 +198,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Retrieving Community Usage Metrics](#retrieving-community-usage-metrics)
   * [Administrative Tasks](#administrative-tasks)
     * [Clear the cache](#clear-the-cache)
+    * [Clear scroll session](#clear-scroll)
     * [Reset the application to the initial state](#reset-the-application-to-the-initial-state)
     * [Querying caches](#querying-caches)
     * [Check application health](#check-application-health)
@@ -4752,6 +4753,10 @@ permission.
 #### <a name="clear-the-cache"></a> Clear the cache
 
     curl -i -XPOST %CMR-ENDPOINT%/clear-cache
+
+#### <a name="clear-scroll"></a> Clear scroll session
+
+    curl -i -XPOST -H "Content-Type: application/json" %CMR-ENDPOINT%/clear-scroll -d '{ "scroll_id" : "xxxx"}'
 
 #### <a name="reset-the-application-to-the-initial-state"></a> Reset the application to the initial state
 

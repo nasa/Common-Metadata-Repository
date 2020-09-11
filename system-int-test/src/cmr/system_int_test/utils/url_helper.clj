@@ -381,6 +381,11 @@
   []
   (str (search-site-url) "collections/directory/"))
 
+(defn clear-scroll-url
+  "Returns the url for clearing a scroll context"
+  []
+  (str (search-root) "clear-scroll"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Bootstrap URLs
 
