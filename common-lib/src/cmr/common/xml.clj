@@ -1,19 +1,21 @@
 (ns cmr.common.xml
   "Contains XML helpers for extracting data from XML structs created using clojure.data.xml.
   See the test file for examples."
-  (:require [cmr.common.date-time-parser :as p]
-            [clojure.string :as string])
-  (:import javax.xml.validation.SchemaFactory
-           javax.xml.XMLConstants
-           javax.xml.transform.stream.StreamSource
-           org.xml.sax.ext.DefaultHandler2
-           java.io.StringReader
-           java.io.StringWriter
-           org.w3c.dom.bootstrap.DOMImplementationRegistry
-           org.w3c.dom.ls.DOMImplementationLS
-           org.xml.sax.InputSource
-           org.xml.sax.SAXParseException
-           javax.xml.parsers.DocumentBuilderFactory))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.date-time-parser :as p])
+  (:import
+   javax.xml.validation.SchemaFactory
+   javax.xml.XMLConstants
+   javax.xml.transform.stream.StreamSource
+   org.xml.sax.ext.DefaultHandler2
+   java.io.StringReader
+   java.io.StringWriter
+   org.w3c.dom.bootstrap.DOMImplementationRegistry
+   org.w3c.dom.ls.DOMImplementationLS
+   org.xml.sax.InputSource
+   org.xml.sax.SAXParseException
+   javax.xml.parsers.DocumentBuilderFactory))
 
 (defn remove-xml-processing-instructions
   "Removes xml processing instructions from XML so it can be embedded in another XML document"
@@ -117,7 +119,7 @@
     ;; allows them to be double. But we need them to be integers.
     (try
       (Integer. s)
-      (catch Exception e
+      (catch Exception _e
         s))))
 
 (defn bool-at-path
