@@ -1,4 +1,4 @@
-(ns cmr.search.api.routes  
+(ns cmr.search.api.routes
   (:require
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
@@ -96,7 +96,7 @@
         ;; Provider holdings
         providers-api/holdings-routes
 
-        ;; Add routes for autocomplete 
+        ;; Add routes for autocomplete
         autocomplete-api/autocomplete-api-routes
 
         ;; Resets the application back to it's initial state.
@@ -129,4 +129,7 @@
          #(acl/verify-ingest-management-permission % :update))
 
         ;; Add routes for searching tiles
-        concepts-search-api/tiles-routes))))
+        concepts-search-api/tiles-routes
+
+        ;; clear scroll routes
+        concepts-search-api/clear-scroll-routes))))

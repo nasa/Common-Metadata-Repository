@@ -531,3 +531,8 @@
                    value (if (sequential? values) values [values])]
                (shape-param->tile-set param-name value)))
       (tile/all-tiles))))
+
+(defn clear-scroll
+  "Clear the scroll context for the given scroll id"
+  [context scroll-id]
+  (es-helper/clear-scroll (common-idx/context->conn context) scroll-id))
