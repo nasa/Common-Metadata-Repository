@@ -811,3 +811,13 @@
        :opendata (map :identifier (:dataset (json/decode response true)))
        :xml (parse-xml-concept-ids response [:references :reference] [:id])
        :umm-json (map #(get-in % [:meta :concept-id]) (:items (json/decode response true)))))))
+
+(defn clear-scroll
+  "Executes a search request to clear the scroll context for the given scroll id"
+  [scroll-id]
+  (get-search-failure-data
+   (client/post (url/clear-scroll-url)
+                {:content-type mime-types/json
+                 :body (json/generate-string {:scroll_id scroll-id})
+                 :throw-exceptions true
+                 :connection-manager (s/conn-mgr)})))

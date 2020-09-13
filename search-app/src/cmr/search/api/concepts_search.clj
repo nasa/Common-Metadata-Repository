@@ -1,7 +1,10 @@
 (ns cmr.search.api.concepts-search
   "Defines the API for search-by-concept in the CMR."
   (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
    [clojure.string :as string]
+   [clojure.walk :as walk]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer [debug info warn error]]
@@ -196,8 +199,7 @@
       :else
       {:status 415
        :headers {common-routes/CORS_ORIGIN_HEADER "*"}
-       :body (str "Unsupported content type ["
-                  (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER)) "]")})))
+       :body (str "Unsupported content type [" content-type-header "]")})))
 
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."
@@ -246,6 +248,35 @@
                   (:client-id ctx) (rfh/printable-result-format (:result-format params))
                   (pr-str params)))
     (core-api/search-response ctx (query-svc/get-deleted-granules ctx params))))
+
+(defn- validate-content-type
+  "Validate the given headers has the expected content type."
+  [headers expected-content-type]
+  (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))]
+    (when-not (= expected-content-type content-type-header)
+      (svc-errors/throw-service-error
+       :invalid-content-type (str "Unsupported content type [" content-type-header "]")))))
+
+(defn- clear-scroll
+  "Invokes query service to clear the scroll context for the given scroll id.
+   The concept type of the request must be JSON."
+  [context headers body]
+  (validate-content-type headers mt/json)
+  (if-let [short-scroll-id (-> body
+                               (json/parse-string true)
+                               :scroll_id)]
+    ;; if the short scroll id is valid, retrieve the real scroll id
+    (if-let [scroll-id (->> short-scroll-id
+                            (core-api/get-scroll-id-and-search-params-from-cache context)
+                            :scroll-id)]
+      ;; clear the scroll session for the scroll id
+      (query-svc/clear-scroll context scroll-id)
+      (svc-errors/throw-service-error
+       :invalid-data (format "scroll_id [%s] not found." short-scroll-id)))
+    (svc-errors/throw-service-error
+     :invalid-data "scroll_id must be provided."))
+  ;; no errors, return 204
+  {:status 204})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions
@@ -300,6 +331,12 @@
   (GET "/tiles"
     {params :params ctx :request-context}
     (find-tiles ctx params)))
+
+(def clear-scroll-routes
+  "Routes for /search/clear-scroll."
+  (POST "/clear-scroll"
+    {ctx :request-context headers :headers body :body-copy}
+    (clear-scroll ctx headers body)))
 
 (def data-json-routes
   "Route for data.json response. Socrata does not support harvesting from

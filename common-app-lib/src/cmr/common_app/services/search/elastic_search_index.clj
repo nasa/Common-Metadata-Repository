@@ -101,7 +101,7 @@
   (try
     (es-helper/scroll (context->conn context) scroll-id {:scroll (es-config/elastic-scroll-timeout)})
     (catch ExceptionInfo e
-           (handle-es-exception e scroll-id))))
+      (handle-es-exception e scroll-id))))
 
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."

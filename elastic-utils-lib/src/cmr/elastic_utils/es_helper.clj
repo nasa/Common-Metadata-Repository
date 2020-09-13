@@ -99,3 +99,9 @@
   ([conn operations params]
    (when (not-empty operations)
      (bulk-with-url conn (rest/bulk-url conn) operations params))))
+
+(defn clear-scroll
+  "Performs a clear scroll call for the given scroll id"
+  [conn scroll-id]
+  (rest/delete conn (rest/scroll-url conn) {:content-type :json
+                                            :body {:scroll_id scroll-id}}))

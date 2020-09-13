@@ -57,6 +57,13 @@
                            :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                            :EntryTitle "C2-PROV1-et"
                            :ShortName "C2-PROV1-sn"}))
+
+        coll3 (data/ingest-umm-spec-collection
+                "PROV1" (data-umm-c/collection
+                          {:concept-id "C3-PROV1"
+                           :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                           :EntryTitle "C3-PROV1-mt"
+                           :ShortName "granule-less collection"}))
         _ (index/wait-until-indexed)
 
         _g1 (data/ingest "PROV1" (dg/granule-with-umm-spec-collection
@@ -88,7 +95,7 @@
 
         _ (index/wait-until-indexed)
         user1-token (echo/login (system/context) "user1")
-        tag1-colls [coll1 coll2]
+        tag1-colls [coll1 coll2 coll3]
         tag-key "tag1"]
 
     (tags/save-tag
@@ -110,7 +117,7 @@
                                            (get-in % [:attrs :href])))
                       count))))
 
-        (testing "Collection granule counts are correct."
+        (testing "Collection granule counts and pluralizations are correct."
           (is (= "Browse 2 Granules"
                  (->> page-data
                       (find-element-by-id "C2-PROV1-virtual-directory-link")
@@ -118,9 +125,18 @@
                       first
                       trim)))
           
-          (is (= "Browse 1 Granules"
+          (is (= "Browse 1 Granule"
                  (->> page-data
                       (find-element-by-id "C1-PROV1-virtual-directory-link")
+                      :content
+                      first
+                      trim))))
+        
+        (testing "Collections with no granules do not have link"
+          (is (= nil (find-element-by-id "C3-PROV1-virtual-directory-link" page-data)))
+          (is (= "No Granules"
+                 (->> page-data
+                      (find-element-by-id "C3-PROV1-no-granules-msg")
                       :content
                       first
                       trim))))))))
