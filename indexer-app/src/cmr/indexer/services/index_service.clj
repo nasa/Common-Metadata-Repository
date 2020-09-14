@@ -10,7 +10,7 @@
    [cmr.common.concepts :as cs]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.date-time-parser :as date]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
@@ -256,10 +256,9 @@
   "Returns whether or not the term is an anti-value. e.g. \"not applicable\" or \"not provided\".
   This is case-insensitive"
   [term]
-  {:pre [(some? term)]}
-  (let [anti-value-matcher (re-matcher #"(none|not (provided|applicable))"
-                                       (s/lower-case term))]
-    (some? (re-find anti-value-matcher))))
+  (let [rx (re-pattern #"(none|not (provided|applicable))")]
+    (or (nil? term)
+        (some? (re-find rx (s/lower-case term))))))
 
 (defn anti-value-suggestion?
   "Returns whether an autocomplete suggestion has an anti-value as the :value
@@ -268,19 +267,23 @@
   (let [{:keys [value]} suggestion]
     (anti-value? value)))
 
+(defn- parse-collection
+  "Parses collection into concepts. Returns nil on error."
+  [context collection]
+  (try
+    (cp/parse-concept context collection)
+    (catch Exception e
+      (error (format "An error occurred while parsing collection: %s"
+                     (.getMessage e)))
+      nil)))
+
 (defn- collection->suggestion-doc
   "Convert collection concept metadata to UMM-C and pull facet fields
   to be indexed as autocomplete suggestion doc"
   [context collections provider-id]
   (let [parsed-concepts (->> collections
-                             (remove #(= true (:deleted %)))
-                             (map #(try
-                                     (cp/parse-concept context %)
-                                     (catch Exception e
-                                       (error (format "An error occurred while parsing collection for autocomplete suggestions: %s"
-                                                      (.getMessage e)))
-                                       (debug %)
-                                       nil)))
+                             (remove :deleted)
+                             (map parse-collection)
                              (remove nil?))
         collection-permissions (map (fn [collection]
                                       (let [permissions (collection-util/get-coll-permitted-group-ids context provider-id collection)]
