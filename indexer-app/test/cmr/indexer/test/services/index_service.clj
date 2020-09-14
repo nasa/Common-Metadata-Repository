@@ -26,17 +26,8 @@
 
        {:value "none"} true
        {:value "not applicable"} true
-       {:value "not provided"} true)
-
-  (testing "null values don't fail indexing"
-    (is (= [false
-            true
-            true
-            true
-            true]
-           (map #(index-svc/anti-value-suggestion? %)
-                [{:value "ice-sat"}
-                 {:value nil}
-                 {:value "none"}
-                 {:value "not applicable"}
-                 {:value "NOT PROVIDED"}])))))
+       {:value "not provided"} true
+       {:value ""} true
+       {:value "      "} true
+       {:value "\n\t"} true
+       {:value nil} true))
