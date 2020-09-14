@@ -16,7 +16,14 @@
   (if-not (empty? user-acls)
     (gc/or-conds [public-collections-condition
                   (gc/or-conds
-                   (map #(qm/text-condition :permitted-group-ids %) user-acls))])
+                   ; case insensitive pattern condition to allow searching through
+                   ; concatenated group names
+                   (map (fn [acl-id]
+                          (qm/string-condition :permitted-group-ids
+                                               (format "*%s*" acl-id)
+                                               :false
+                                               :true))
+                        user-acls))])
     public-collections-condition))
 
 (defn- empty-token-with-type

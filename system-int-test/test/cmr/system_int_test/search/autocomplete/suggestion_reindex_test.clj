@@ -135,7 +135,9 @@
                           (dc/collection {:entry-title "c1-echo" :access-value 1})
                           {:format :echo10})
         group1-concept-id (e/get-or-create-group (s/context) "group1")
-        group-acl (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))]
+        group2-concept-id (e/get-or-create-group (s/context) "group2")
+        group-acl (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))
+        group2-acl (e/grant-group (s/context) group2-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))]
 
     (ingest/reindex-collection-permitted-groups "mock-echo-system-token")
     (index/wait-until-indexed)
