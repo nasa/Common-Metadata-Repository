@@ -258,6 +258,7 @@
   [term]
   (let [rx (re-pattern #"(none|not (provided|applicable))")]
     (or (nil? term)
+        (= "" (s/trim term))
         (some? (re-find rx (s/lower-case term))))))
 
 (defn anti-value-suggestion?
