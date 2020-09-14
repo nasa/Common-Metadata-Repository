@@ -23,7 +23,7 @@
                                                (format "*%s*" acl-id)
                                                :false
                                                :true))
-                        user-acls))])
+                        (into user-acls ["registered"])))])
     public-collections-condition))
 
 (defn- empty-token-with-type
