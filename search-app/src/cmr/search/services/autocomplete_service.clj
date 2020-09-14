@@ -12,18 +12,18 @@
 (defn- user-groups-condition
   "Create condition to filter suggestions based on a user's permissions.
   Only create the :permitted-group-id condition if a user belongs to groups."
-  [user-acls]
-  (if-not (empty? user-acls)
+  [group-ids]
+  (if-not (empty? group-ids)
     (gc/or-conds [public-collections-condition
                   (gc/or-conds
                    ; case insensitive pattern condition to allow searching through
                    ; concatenated group names
-                   (map (fn [acl-id]
+                   (map (fn [group-id]
                           (qm/string-condition :permitted-group-ids
-                                               (format "*%s*" acl-id)
+                                               (format "*%s*" group-id)
                                                :false
                                                :true))
-                        (into user-acls ["registered"])))])
+                        group-ids))])
     public-collections-condition))
 
 (defn- empty-token-with-type
@@ -40,21 +40,21 @@
 
 (defn- non-empty-token-with-type
   "AND together token and user-group conditions with root condition."
-  [root types user-acls]
-  (let [types-and-groups-map (conj (user-groups-condition user-acls)
+  [root types group-ids]
+  (let [types-and-groups-map (conj (user-groups-condition group-ids)
                                    (map #(qm/text-condition :type %) types))
         types-and-groups-conditions (gc/and-conds [types-and-groups-map])]
     (gc/and-conds [root types-and-groups-conditions])))
 
 (defn- non-empty-token-without-type
   "AND together root condition with user-group conditions."
-  [root user-acls]
-  (gc/and-conds [root (user-groups-condition user-acls)]))
+  [root group-ids]
+  (gc/and-conds [root (user-groups-condition group-ids)]))
 
 (defn build-autocomplete-condition
   "Construct root condition, then augment it with permissions and types filters
   where applicable."
-  [term types token user-acls]
+  [term types token group-ids]
   (let [root (gc/or-conds [(qm/match :value term)
                            (qm/multi-match :phrase_prefix
                                            ["value" "value._2gram" "value._3gram"]
@@ -62,17 +62,22 @@
     (cond
       (and (empty? token)(empty? types)) (empty-token-without-type root)
       (and (empty? token) (seq types)) (empty-token-with-type root types)
-      (and (seq token) (seq types)) (non-empty-token-with-type root types user-acls)
-      (and (seq token) (empty? types)) (non-empty-token-without-type root user-acls))))
+      (and (seq token) (seq types)) (non-empty-token-with-type root types group-ids)
+      (and (seq token) (empty? types)) (non-empty-token-without-type root group-ids))))
 
 (defn autocomplete
   "Execute elasticsearch query to get autocomplete suggestions"
   [context term types opts token]
-  (let [acl-ids (->> (af/get-acls context [:catalog-item])
-                     (map :group-permissions)
-                     (mapcat #(map :group-id %))
-                     (remove nil?))
-        condition (build-autocomplete-condition term types token acl-ids)
+  (let [acls (af/get-acls context [:catalog-item])
+        group-permissions (map :group-permissions acls)
+        group-ids (->> group-permissions
+                       (mapcat #(map :group-id %))
+                       (remove nil?))
+        registered (->> group-permissions
+                        (mapcat #(map :user-type %))
+                        (filter #(= % "registered"))
+                        distinct)
+        condition (build-autocomplete-condition term types token (into registered group-ids))
         query (qm/query {:concept-type :autocomplete
                          :page-size (:page-size opts)
                          :offset (:offset opts)
