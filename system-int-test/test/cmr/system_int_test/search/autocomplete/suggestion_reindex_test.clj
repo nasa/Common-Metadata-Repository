@@ -131,11 +131,23 @@
                    :AccessConstraints (data-umm-spec/access-constraints
                                          {:Value 1 :Description "Those files are for British eyes only."})})
                 {:format :umm-json})
+        coll6 (d/ingest-umm-spec-collection
+                "PROV2"
+                (data-umm-spec/collection
+                  {:ShortName "short but not so short that it's not unique"
+                   :EntryTitle "Registered Collection"
+                   :Projects (:Projects (fu/projects "REGISTERED"))
+                   :Platforms (:Platforms (fu/platforms "REGISTERED" 2 2 1))})
+                {:format :umm-json})
         c1-echo (d/ingest "PROV1"
                           (dc/collection {:entry-title "c1-echo" :access-value 1})
                           {:format :echo10})
         group1-concept-id (e/get-or-create-group (s/context) "group1")
-        group-acl (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))]
+        group2-concept-id (e/get-or-create-group (s/context) "group2")
+        group3-concept-id (e/get-or-create-group (s/context) "group3")
+        group-acl (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))
+        group2-acl (e/grant-group (s/context) group2-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))
+        group3-acl (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2" (e/coll-id ["Registered Collection"])))]
 
     (ingest/reindex-collection-permitted-groups "mock-echo-system-token")
     (index/wait-until-indexed)
@@ -157,6 +169,7 @@
 
 (deftest token-test
   (let [user1-token (e/login (s/context) "user1" [(e/get-or-create-group (s/context) "group1")])
+        user3-token (e/login (s/context) "user3" [(e/get-or-create-group (s/context) "group3")])
         _ (index/refresh-elastic-index)]
     (testing "Suggestions associated to collections with access constraints are returned"
       (compare-autocomplete-results
@@ -167,7 +180,17 @@
     (testing "Suggestions associated to collections with access constraints not returned without a token"
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=From") [:feed :entry])
-       []))))
+       []))
+    (testing "Suggestion associated to collections granted to registered users"
+      (compare-autocomplete-results
+       (get-in (search/get-autocomplete-json "q=REGISTERED" {:headers {:echo-token user3-token}}) [:feed :entry])
+       [{:score 4.5634737 :type "project" :value "REGISTERED" :fields "REGISTERED"}
+        {:score 3.2571084 :type "instrument" :value "REGISTERED-p0-i0" :fields "REGISTERED-p0-i0"}
+        {:score 3.187054 :type "platform" :value "REGISTERED-p0" :fields "REGISTERED-p0"}
+        {:score 3.187054 :type "platform" :value "REGISTERED-p1" :fields "REGISTERED-p1"}
+        {:score 3.136525 :type "instrument" :value "REGISTERED-p0-i1" :fields "REGISTERED-p0-i1"}
+        {:score 3.136525 :type "instrument" :value "REGISTERED-p1-i0" :fields "REGISTERED-p1-i0"}
+        {:score 3.136525 :type "instrument" :value "REGISTERED-p1-i1" :fields "REGISTERED-p1-i1"}]))))
 
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"

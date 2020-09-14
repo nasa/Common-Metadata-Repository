@@ -210,7 +210,7 @@
                                true
                                false)
         permitted-group-ids (->> permissions
-                                 (remove #(or (= "registered" %) (= "guest" %)))
+                                 (remove #(= "guest" %))
                                  (s/join ",")
                                  not-empty)]
     (if (seq (re-find sk-matcher))
