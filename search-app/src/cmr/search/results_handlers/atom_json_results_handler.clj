@@ -126,34 +126,45 @@
 
 (defmulti results->json
   "Converts search results into json"
-  (fn [context echo-compatible? include-facets? concept-type results]
-    (and echo-compatible? include-facets?)))
+  (fn [context opts concept-type results]
+    (and (:echo-compatible? opts)
+         (:include-facets? opts))))
 
 (defmethod results->json true
-  [context echo-compatible? include-facets? concept-type results]
+  [context opts concept-type results]
   (let [{:keys [facets]} results]
     (frf/facets->echo-json facets)))
 
 (defmethod results->json false
-  [context echo-compatible? include-facets? concept-type results]
+  [context opts concept-type results]
   (let [{:keys [items facets]} results
-        items (if (= :granule concept-type)
-                (atom/append-collection-links context items)
-                items)]
+        result-items (if (= :granule concept-type)
+                       (as-> items data
+                         (if (:include-polygons? opts)
+                           data
+                           (map #(dissoc % :shapes) data))
+                         (atom/append-collection-links context data))
+                       items)]
     {:feed
      (util/remove-nil-keys
        {:updated (str (time/now))
         :id (url/atom-request-url context concept-type :json)
         :title (atom/concept-type->atom-title concept-type)
-        :entry (map (partial atom-reference->json results concept-type) items)
+        :entry (map (partial atom-reference->json results concept-type) result-items)
         :facets facets})}))
 
 (defn- search-results->response
   [context query results]
   (let [{:keys [concept-type echo-compatible? result-features]} query
         include-facets? (boolean (some #{:facets} result-features))
+        include-polygons? (:include-polygons? query)
         response-results (results->json
-                           context echo-compatible? include-facets? concept-type results)]
+                           context
+                           {:echo-compatible? echo-compatible?
+                            :include-facets? include-facets?
+                            :include-polygons? include-polygons?}
+                           concept-type
+                           results)]
     (json/generate-string response-results)))
 
 (defn- single-result->response

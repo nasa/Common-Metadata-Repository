@@ -1,9 +1,7 @@
 (ns cmr.system-int-test.search.collection-search-format-test
   "This tests ingesting and searching for collections in different formats."
   (:require
-   [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.data.xml :as x]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
@@ -11,17 +9,14 @@
    [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.url-util :as url-util]
-   [cmr.common.util :as util :refer [are2 are3]]
-   [cmr.common.xml :as cx]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.search.validators.opendata :as opendata-json]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.atom :as da]
-   [cmr.system-int-test.data2.atom-json :as dj]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -31,32 +26,34 @@
    [cmr.system-int-test.data2.umm-spec-collection :as umm-spec-collection]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-   [cmr.system-int-test.utils.fast-xml :as fx]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.url-helper :as url]
    [cmr.umm-spec.test.expected-conversion :as exp-conv]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.versioning :as umm-version]
    [cmr.umm.umm-core :as umm]
    [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures :each (join-fixtures
-                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"})
+                      [(ingest/reset-fixture {"provguid1" "PROV1"
+                                              "provguid2" "PROV2"
+                                              "usgsguid" "USGS_EROS"})
                        (search/freeze-resume-time-fixture)]))
 
 (comment
  ((ingest/reset-fixture
-                       {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"})
+    {"provguid1" "PROV1"
+     "provguid2" "PROV2"
+     "usgsguid" "USGS_EROS"})
   (constantly nil)))
 
 (deftest simple-search-test
-  (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
-                                                  :version-id "V1"
-                                                  ;; Whitespace here but not stripped out for expected
-                                                  ;; results. It will be present in metadata.
-                                                  :entry-title "   ET1   "})
+  (let [c1-echo (d/ingest "PROV1"
+                          (dc/collection {:short-name "S1"
+                                          :version-id "V1"
+                                          ;; Whitespace here but not stripped out for expected
+                                          ;; results. It will be present in metadata.
+                                          :entry-title "   ET1   "})
                           {:format :echo10})]
     (index/wait-until-indexed)
     (let [params {:concept-id (:concept-id c1-echo)}

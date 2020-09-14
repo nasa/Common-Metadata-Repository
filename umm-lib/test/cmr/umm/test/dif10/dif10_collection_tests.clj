@@ -1,14 +1,12 @@
 (ns cmr.umm.test.dif10.dif10-collection-tests
   "Tests parsing and generating DIF 10 Collection XML."
   (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :refer [defspec]]
+            [cmr.common.test.test-check-ext :refer [checking defspec]]
             [clj-time.core :as t]
             [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
             [clojure.string :as s]
             [cmr.common.joda-time]
             [cmr.common.date-time-parser :as p]
-            [cmr.common.util :as util]
             [cmr.umm.test.generators.collection :as coll-gen]
             [cmr.umm.dif10.dif10-collection :as c]
             [cmr.umm.echo10.echo10-collection :as echo10-c]
@@ -18,24 +16,13 @@
             [cmr.spatial.mbr :as m]
             [cmr.umm.dif10.collection.platform :as platform]
             [cmr.umm.dif10.collection.personnel :as personnel]
-            [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
-            [cmr.umm.collection.product-specific-attribute :as psa]
-            [cmr.common.test.test-check-ext :as ext :refer [checking]])
+            [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10])
   (:import cmr.spatial.mbr.Mbr))
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
            (let [xml (dif10/umm->dif10-xml collection)]
              (empty? (c/validate-xml xml)))))
-
-(comment
-
-
-  ((let [xml (dif10/umm->dif10-xml failing-value)]
-     (c/validate-xml xml))))
-
-
-
 
 (defn- related-urls->expected-parsed
   [related-urls]
@@ -687,11 +674,6 @@
   (testing "valid xml"
     (is (empty? (c/validate-xml dif10-collection-xml))))
   (testing "invalid xml"
-    (is (= [(str "Exception while parsing invalid XML: "
-                 "Line 24 - cvc-complex-type.2.4.a: Invalid content"
-                 " was found starting with element 'XXXX'. One of"
-                 " '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Science_Keywords,"
-                 " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":ISO_Topic_Category,"
-                 " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Ancillary_Keyword,"
-                 " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Platform}' is expected.")]
-           (c/validate-xml (s/replace dif10-collection-xml "Platform" "XXXX"))))))
+    (is (= "Exception while parsing invalid XML"
+           (re-find #"Exception while parsing invalid XML"
+                    (first (c/validate-xml (s/replace dif10-collection-xml "Platform" "XXXX"))))))))

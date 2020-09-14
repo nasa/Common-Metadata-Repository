@@ -1,24 +1,21 @@
 (ns cmr.umm.test.iso-smap.iso-smap-collection-tests
   "Tests parsing and generating SMAP ISO Collection XML."
   (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :refer [defspec]]
+            [cmr.common.test.test-check-ext :refer [checking defspec]]
             [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
             [clojure.string :as s]
             [clojure.java.io :as io]
             [cmr.common.joda-time]
             [cmr.common.date-time-parser :as p]
             [cmr.spatial.mbr :as mbr]
             [cmr.umm.test.generators.collection :as coll-gen]
-            [cmr.umm.iso-smap.iso-smap-collection :as c]
+            [cmr.umm.iso-smap.iso-smap-collection :as isc]
             [cmr.umm.echo10.echo10-collection :as echo10-c]
             [cmr.umm.echo10.echo10-core :as echo10]
             [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.umm-spatial :as umm-s]
             [cmr.umm.iso-smap.iso-smap-core :as iso]
             [clj-time.format :as f]
-            [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
-            [cmr.common.test.test-check-ext :as ext :refer [checking]]))
+            [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]))
 
 (defn- spatial-coverage->expected-parsed
   "Returns the expected parsed spatial-coverage for the given spatial-coverage"
@@ -145,12 +142,12 @@
     (let [xml (iso/umm->iso-smap-xml collection)]
       (and
         (> (count xml) 0)
-        (= 0 (count (c/validate-xml xml)))))))
+        (= 0 (count (isc/validate-xml xml)))))))
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
     (let [xml (iso/umm->iso-smap-xml collection)
-          parsed (c/parse-collection xml)
+          parsed (isc/parse-collection xml)
           expected-parsed (umm->expected-parsed-smap-iso collection)]
       (= parsed expected-parsed))))
 
@@ -158,7 +155,7 @@
   (checking "iso smap parse between formats" 100
     [collection coll-gen/collections]
     (let [xml (iso/umm->iso-smap-xml collection)
-          parsed-iso (c/parse-collection xml)
+          parsed-iso (isc/parse-collection xml)
           echo10-xml (echo10/umm->echo10-xml parsed-iso)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-smap-iso collection))]
@@ -255,21 +252,14 @@
 
 (deftest parse-collection-test
   (testing "parse collection"
-    (is (= expected-collection (c/parse-collection sample-collection-xml))))
+    (is (= expected-collection (isc/parse-collection sample-collection-xml))))
   (testing "parse temporal"
-    (is (= expected-temporal (c/parse-temporal sample-collection-xml)))))
+    (is (= expected-temporal (isc/parse-temporal sample-collection-xml)))))
 
 (deftest validate-xml
   (testing "valid xml"
-    (is (= 0 (count (c/validate-xml sample-collection-xml)))))
+    (is (= 0 (count (isc/validate-xml sample-collection-xml)))))
   (testing "invalid xml"
-    (is (= [(str "Exception while parsing invalid XML: Line 6 - cvc-complex-type.2.4.a: Invalid content was found "
-                 "starting with element 'gmd:XXXX'. One of "
-                 "'{\"http://www.isotc211.org/2005/gmd\":fileIdentifier, "
-                 "\"http://www.isotc211.org/2005/gmd\":language, "
-                 "\"http://www.isotc211.org/2005/gmd\":characterSet, "
-                 "\"http://www.isotc211.org/2005/gmd\":parentIdentifier, "
-                 "\"http://www.isotc211.org/2005/gmd\":hierarchyLevel, "
-                 "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
-                 "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
-           (c/validate-xml (s/replace sample-collection-xml "fileIdentifier" "XXXX"))))))
+    (is (= "Exception while parsing invalid XML"
+           (re-find #"Exception while parsing invalid XML"
+                    (first (isc/validate-xml (s/replace sample-collection-xml "fileIdentifier" "XXXX"))))))))
