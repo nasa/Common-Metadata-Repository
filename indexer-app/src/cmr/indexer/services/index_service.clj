@@ -282,9 +282,10 @@
   "Convert collection concept metadata to UMM-C and pull facet fields
   to be indexed as autocomplete suggestion doc"
   [context collections provider-id]
-  (let [parsed-concepts (->> collections
+  (let [parse-coll (partial parse-collection context)
+        parsed-concepts (->> collections
                              (remove :deleted)
-                             (map parse-collection)
+                             (map parse-coll)
                              (remove nil?))
         collection-permissions (map (fn [collection]
                                       (let [permissions (collection-util/get-coll-permitted-group-ids context provider-id collection)]
