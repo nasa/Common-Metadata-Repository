@@ -11,7 +11,10 @@
 
 (defmethod c-spec/gen-concept :variable-association
   [_ provider-id uniq-num attributes]
-  (let [concept-attributes (or (:concept-attributes attributes) {})
+  (let [provider-id (if (= "CMR" provider-id)
+                      "REG_PROV"
+                      provider-id)
+        concept-attributes (or (:concept-attributes attributes) {})
         concept (concepts/create-and-save-concept :collection provider-id uniq-num 1
                                                   concept-attributes)
         variable-attributes (or (:variable-attributes attributes) {})
