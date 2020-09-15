@@ -82,6 +82,13 @@
   [file-informations]
   (map #(dissoc % :FormatDescription) file-informations))
 
+(defn- drop-military-grid-reference-system
+  "Drop TilingIdentificationSystems with name Military Grid Reference System."
+  [tiling-identification-systems]
+  (->> tiling-identification-systems
+       (remove #(= "Military Grid Reference System" (:TilingIdentificationSystemName %)))
+       seq))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collection Migration Implementations
 
@@ -323,3 +330,12 @@
   (-> c
       (update-in [:ArchiveAndDistributionInformation :FileArchiveInformation] remove-format-descriptions)
       (update-in [:ArchiveAndDistributionInformation :FileDistributionInformation] remove-format-descriptions)))
+
+(defmethod interface/migrate-umm-version [:collection "1.15.3" "1.15.4"]
+  [context c & _]
+  ;; No need to migrate - "Military Grid Reference System" was added to TilingIdentificationSystemNameEnum
+  c)
+
+(defmethod interface/migrate-umm-version [:collection "1.15.4" "1.15.3"]
+  [context c & _]
+  (update c :TilingIdentificationSystems drop-military-grid-reference-system))

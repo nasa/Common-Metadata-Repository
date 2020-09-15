@@ -2394,3 +2394,40 @@
                   {:Format "netCDF-5"
                    :FormatType "Supported"}]}}
              result)))))
+
+(def sample-collection-1-15-4
+  {:TilingIdentificationSystems [{
+     :TilingIdentificationSystemName "MODIS Tile EASE",
+     :Coordinate1 {
+       :MinimumValue -100,
+       :MaximumValue -50
+     },
+     :Coordinate2 {
+       :MinimumValue 50,
+       :MaximumValue 100
+     }
+   },
+     {:TilingIdentificationSystemName "Military Grid Reference System",
+      :Coordinate1 {
+        :MinimumValue -100,
+        :MaximumValue -50
+      },
+      :Coordinate2 {
+        :MinimumValue 50,
+        :MaximumValue 100}}]})
+
+(deftest migrate-1-15-4-to-1-15-3
+  "Test the migration of collections from 1.15.4 to 1.15.3."
+
+  (testing "Drop Military Grid Reference System TilingIdentificationSystems"
+    (let [result (vm/migrate-umm {} :collection "1.15.4" "1.15.3" sample-collection-1-15-4)]
+      (is (= {:TilingIdentificationSystems [{
+               :TilingIdentificationSystemName "MODIS Tile EASE",
+               :Coordinate1 {
+                 :MinimumValue -100,
+                 :MaximumValue -50
+                 },
+               :Coordinate2 {
+                 :MinimumValue 50,
+                 :MaximumValue 100}}]}
+             result)))))
