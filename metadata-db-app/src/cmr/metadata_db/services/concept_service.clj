@@ -380,19 +380,16 @@
 (defn- delete-variable-association
   "Delete variable association with the given native-id using the given embedded metadata-db context."
   [mdb-context native-id]
-  (let [source-concept-type-str "variable"
-        assoc-concept-type (keyword (str source-concept-type-str "-association"))
-        existing-concept (first (search/find-concepts mdb-context
-                                                      {:concept-type assoc-concept-type
+  (let [existing-concept (first (search/find-concepts mdb-context
+                                                      {:concept-type :variable-association
                                                        :native-id native-id
                                                        :exclude-metadata true
                                                        :latest true}))
         concept-id (:concept-id existing-concept)]
     (if concept-id
       (if (:deleted existing-concept)
-        {:message {:warnings [(format "%s association [%s] is already deleted."
-                                      (string/capitalize source-concept-type-str) concept-id)]}}
-        (let [concept {:concept-type assoc-concept-type
+        {:message {:warnings [(format "VARIABLE association [%s] is already deleted." concept-id)]}}
+        (let [concept {:concept-type :variable-associationn
                        :concept-id concept-id
                        :user-id (context->user-id mdb-context)
                        :deleted true}]
@@ -576,15 +573,15 @@
           ;; {:variable_association {:concept_id VA1-CMR :revision_id 1},
           ;;  :associated_item {:concept_id C5-PROV1 :revision_id 2}}
           (let [assoc-info (perform-post-commit-variable-association context concept rollback-fn)]
-             (merge concept assoc-info))
-           (if (and (= :variable-association (:concept-type concept))
-                    (not (:deleted concept)))
-             ;; Perform post commit variable dissociation, if there exist any other variable associations,
-             ;; for the same variable as the one in the variable association concept.
-             ;; If errors occur, rollback the association insert, then throw error, which will rollback the
-             ;; variable insert.
-             (perform-post-commit-variable-dissociation context concept rollback-fn)
-             concept)))
+            (merge concept assoc-info))
+          (if (and (= :variable-association (:concept-type concept))
+                   (not (:deleted concept)))
+            ;; Perform post commit variable dissociation, if there exist any other variable associations,
+            ;; for the same variable as the one in the variable association concept.
+            ;; If errors occur, rollback the association insert, then throw error, which will rollback the
+            ;; variable insert.
+            (perform-post-commit-variable-dissociation context concept rollback-fn)
+            concept)))
       (handle-save-errors concept result))))
 
 ;;; service methods
