@@ -11,7 +11,7 @@
    [cmr.spatial.ring-relations :as rr]))
 
 (def valid-tile-identification-system-names
-  "Valid names for TilingIdentificationSystemName as stated in CMR-3675"
+  "Valid names for TilingIdentificationSystemName"
   ["CALIPSO"
    "MISR"
    "MODIS Tile EASE"
@@ -19,7 +19,8 @@
    "WELD Alaska Tile"
    "WELD CONUS Tile"
    "WRS-1"
-   "WRS-2"])
+   "WRS-2"
+   "Military Grid Reference System"])
 
 (def upcase-valid-tile-identification-system-names
   "Upcase values to allow for case-insenitive validation"
