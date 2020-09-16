@@ -169,7 +169,8 @@
   "Currently only validates the parameter comprehensive as a boolean."
   [params]
   (cpv/validate-parameters
-   nil params
+   nil
+   params
    [(partial cpv/validate-boolean-param :comprehensive)]))
 
 (defn update-community-usage
