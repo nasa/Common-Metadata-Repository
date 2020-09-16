@@ -408,7 +408,6 @@
    unrecognized-params-in-options-validation
    parameter-options-validation])
 
-
 (defn validate-parameters
   "Applies the list of validations to the parameters throwing an exception if there were any errors.
    An optional list of other errors can be passed in to add to the set that's thrown."
