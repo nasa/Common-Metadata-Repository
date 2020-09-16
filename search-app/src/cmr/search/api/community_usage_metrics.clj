@@ -21,10 +21,10 @@
 
 (defn- update-community-usage
   "Processes a community usage update request"
-  [context headers body]
+  [context headers params body]
   (acl/verify-ingest-management-permission context :update)
   (mt/extract-header-mime-type #{mt/csv} headers "content-type" true)
-  (let [result (metrics-service/update-community-usage context body)
+  (let [result (metrics-service/update-community-usage context params body)
         status-code (if (= 1 (:revision-id result)) 201 200)]
     (community-usage-metrics-response status-code result)))
 
@@ -33,8 +33,8 @@
   (context "/community-usage-metrics" []
 
     ;; create/update community usage metrics
-    (PUT "/" {:keys [request-context headers body]}
-      (update-community-usage request-context headers (slurp body)))
+    (PUT "/" {:keys [request-context headers params body]}
+      (update-community-usage request-context headers params (slurp body)))
 
     ;; retrieve community usage metrics
     (GET "/" {:keys [request-context]}
