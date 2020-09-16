@@ -19,7 +19,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /collections/\<collection-concept-id>/\<collection-revision-id>/variables/\<native-id>
     * [PUT - Create or update a variable with assoication.](#create-update-variable)
   * /providers/\<provider-id>/variables/\<native-id>
-    * [PUT - update a variable.](#create-update-variable)
+    * [PUT - Update a variable.](#create-update-variable)
     * [DELETE - Delete a variable.](#delete-variable)
   * /providers/\<provider-id>/services/\<native-id>
     * [PUT - Create or update a service.](#create-update-service)
