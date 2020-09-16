@@ -10,12 +10,15 @@
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}))
 
 (defmethod c-spec/gen-concept :variable-association
-  [_ _ uniq-num attributes]
-  (let [concept-attributes (or (:concept-attributes attributes) {})
-        concept (concepts/create-and-save-concept :collection "REG_PROV" uniq-num 1
+  [_ provider-id uniq-num attributes]
+  (let [provider-id (if (= "CMR" provider-id)
+                      "REG_PROV"
+                      provider-id)
+        concept-attributes (or (:concept-attributes attributes) {})
+        concept (concepts/create-and-save-concept :collection provider-id uniq-num 1
                                                   concept-attributes)
         variable-attributes (or (:variable-attributes attributes) {})
-        variable (concepts/create-and-save-concept :variable "REG_PROV" uniq-num 1
+        variable (concepts/create-and-save-concept :variable provider-id uniq-num 1
                                                    variable-attributes)
         attributes (dissoc attributes :concept-attributes :variable-attributes)]
     (concepts/create-concept :variable-association concept variable uniq-num attributes)))

@@ -265,32 +265,6 @@
                                        "because the collection is already associated with another variable [%s] with same name.")
                                   variable-concept-id associated-concept-id v-concept-id-same-name)}))))
 
-(defn validate-variable-not-associated-with-another-collection
-  "Validates that variable-concept-id in the concept is not associated with another collection.
-  Returns nil if valid and an error response if invalid."
-  [db concept]
-  (let [variable-concept-id (get-in concept [:extra-fields :variable-concept-id])
-        associated-concept-id (get-in concept [:extra-fields :associated-concept-id])]
-    (when (and variable-concept-id associated-concept-id)
-      ;;Get all the same variables that are not deleted and are associated with other collections.
-      (let [stmt [(format "select va.associated_concept_id
-                           from   cmr_variable_associations va,
-                                  (select concept_id, max(revision_id) maxrev
-                                   from cmr_variable_associations group by concept_id) latestva
-                           where  va.revision_id = latestva.maxrev
-                           and    va.concept_id = latestva.concept_id
-                           and    va.deleted = 0
-                           and    va.variable_concept_id = '%s'
-                           and    va.associated_concept_id != '%s'"
-                          variable-concept-id associated-concept-id)]
-            result (first (su/query db stmt))
-            associated_concept_id (:associated_concept_id result)]
-        (when associated_concept_id
-          {:error :variable-associated-with-another-collection
-           :error-message (format (str "Variable [%s] and collection [%s] can not be associated "
-                                       "because the variable is already associated with another collection [%s].")
-                                  variable-concept-id associated-concept-id associated_concept_id)})))))
-
 (defn validate-same-provider-variable-association
   "Validates that variable and the collection in the concept being saved are from the same provider.
   Returns nil if valid and an error response if invalid."
@@ -430,8 +404,7 @@
      (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
                         (when (= :variable-association (:concept-type concept))
                           (or (validate-same-provider-variable-association concept)
-                              (validate-collection-not-associated-with-another-variable-with-same-name db concept)
-                              (validate-variable-not-associated-with-another-collection db concept))))]
+                              (validate-collection-not-associated-with-another-variable-with-same-name db concept))))]
        ;; There was a concept id, native id mismatch with earlier concepts
        error
        ;; Concept id native id pair was valid

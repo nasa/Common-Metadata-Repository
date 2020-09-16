@@ -205,3 +205,78 @@
          ;; both the variable and variable association should be deleted too.
          (is (= true (:deleted (mdb/get-concept concept-id))))
          (is (= true (:deleted (mdb/get-concept (:concept-id variable-association)))))))))
+
+(deftest variable-ingest-with-association-update-test
+  (let [;; ingest 4 collections, each with 2 revisions
+        coll1-PROV1-1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                                                           :ShortName "S1"}))
+        coll1-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                                                            :ShortName "S1"}))
+        coll2-PROV1-1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+                                                                                           :ShortName "S2"}))
+        coll2-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+                                                                                            :ShortName "S2"}))
+        _ (index/wait-until-indexed)]
+
+    (testing "ingest of a new variable concept with association on PROV1"
+      (let [concept (variable-util/make-variable-concept
+                     {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
+                                                              :Size 3
+                                                              :Type "OTHER"})]
+                      :AcquisitionSourceName "Instrument1"}
+                     {:native-id "var1"
+                      :coll-concept-id (:concept-id coll1-PROV1-1)})
+            {:keys [concept-id revision-id variable-association]}
+              (variable-util/ingest-variable-with-association concept)
+            var-concept-id concept-id
+            va-concept-id-1 (:concept-id variable-association)
+            va-revision-id-1 (:revision-id variable-association)]
+        (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+        (is (= 1 revision-id))
+        (is (mdb/concept-exists-in-mdb? va-concept-id-1 va-revision-id-1))
+        (is (= 1 va-revision-id-1))
+
+        (testing  "update the variable above with the same collection with revision on PROV1 is OK"
+          (let [concept (variable-util/make-variable-concept
+                          {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
+                                                                   :Size 3
+                                                                   :Type "OTHER"})]
+                           :AcquisitionSourceName "Instrument1"}
+                          {:native-id "var1"
+                           :coll-concept-id (:concept-id coll1-PROV1-1)
+                           :coll-revision-id (:revision-id coll1-PROV1-1)})
+                {:keys [concept-id revision-id variable-association]}
+                  (variable-util/ingest-variable-with-association concept)
+                va-concept-id-2 (:concept-id variable-association)
+                va-revision-id-2 (:revision-id variable-association)]
+            (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+            (is (= 2 revision-id))
+            (is (mdb/concept-exists-in-mdb? va-concept-id-2 va-revision-id-2))
+            (is (= 1 va-revision-id-2))
+            (is (not= va-concept-id-2 va-concept-id-1))
+
+            ;; Verify va-concept-1 is deleted.
+            (is (= true (:deleted (mdb/get-concept va-concept-id-1))))
+
+            (testing  "update the variable above with different collection on PROV1 is OK"
+              (let [concept (variable-util/make-variable-concept
+                              {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
+                                                                       :Size 3
+                                                                       :Type "OTHER"})]
+                               :AcquisitionSourceName "Instrument1"}
+                            {:native-id "var1"
+                             :coll-concept-id (:concept-id coll2-PROV1-1)
+                             :coll-revision-id (:revision-id coll2-PROV1-1)})
+                    {:keys [concept-id revision-id variable-association]}
+                      (variable-util/ingest-variable-with-association concept)
+                    va-concept-id-3 (:concept-id variable-association)
+                    va-revision-id-3 (:revision-id variable-association)]
+            (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+            (is (= 3 revision-id))
+            (is (mdb/concept-exists-in-mdb? va-concept-id-3 va-revision-id-3))
+            (is (= 1 va-revision-id-3))
+            (is (not= va-concept-id-3 va-concept-id-2))
+
+            ;; Verify va-concept-2 is deleted.
+            (is (= true (:deleted (mdb/get-concept va-concept-id-2))))))))))))
+

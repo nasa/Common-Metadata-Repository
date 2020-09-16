@@ -184,39 +184,6 @@
                                        "because the collection is already associated with another variable [%s] with same name.")
                                   variable-concept-id associated-concept-id v-concept-id-same-name)})))))
 
-(defn validate-variable-not-associated-with-another-collection
-  "Validates that variable in the concept is not associated with a different collection
-  from the collection in the concept.
-  Returns nil if valid and an error response if invalid."
-  [db concept]
-  (let [variable-concept-id (get-in concept [:extra-fields :variable-concept-id])
-        associated-concept-id (get-in concept [:extra-fields :associated-concept-id])]
-    (when (and variable-concept-id associated-concept-id)
-      (let [;;Get all the same variable and other collection associations that are deleted.
-            deleted-associations (->> @(:concepts-atom db)
-                                      (filter #(= variable-concept-id (get-in % [:extra-fields :variable-concept-id])))
-                                      (filter #(not= associated-concept-id (get-in % [:extra-fields :associated-concept-id])))
-                                      (filter #(= true (:deleted %))))
-            associated-concept-ids-in-deleted-associations
-             (map #(get-in % [:extra-fields :associated-concept-id]) deleted-associations)
-
-            ;;Get all the same variable and other collection associations that are not deleted 
-            first-concept (->> @(:concepts-atom db)
-                               (filter #(= variable-concept-id (get-in % [:extra-fields :variable-concept-id])))
-                               (filter #(not= associated-concept-id (get-in % [:extra-fields :associated-concept-id])))
-                               (filter #(= false (:deleted %)))
-                               ;; need to exclude the collections that are referenced in the deleted associations. 
-                               (filter #(not (concept-id-in-list?
-                                               associated-concept-ids-in-deleted-associations
-                                               (get-in % [:extra-fields :associated-concept-id]))))
-                               first)
-            associated_concept_id (get-in first-concept [:extra-fields :associated-concept-id])]
-        (when associated_concept_id
-          {:error :variable-associated-with-another-collection
-           :error-message (format (str "Variable [%s] and collection [%s] can not be associated "
-                                       "because the variable is already associated with another collection [%s].")
-                                  variable-concept-id associated-concept-id associated_concept_id)})))))
-
 (defn validate-same-provider-variable-association
   "Validates that variable and the collection in the concept being saved are from the same provider.
   Returns nil if valid and an error response if invalid."
@@ -408,8 +375,7 @@
   (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
                      (when (= :variable-association (:concept-type concept))
                        (or (validate-same-provider-variable-association concept)
-                           (validate-collection-not-associated-with-another-variable-with-same-name db concept)
-                           (validate-variable-not-associated-with-another-collection db concept))))]
+                           (validate-collection-not-associated-with-another-variable-with-same-name db concept))))]
    ;; There was a concept id, native id mismatch with earlier concepts
    error
    ;; Concept id native id pair was valid

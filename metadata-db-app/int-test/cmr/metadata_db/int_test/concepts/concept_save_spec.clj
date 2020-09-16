@@ -188,7 +188,7 @@
           [#"Expected revision-id of \[3\] got \[1\] for \[\w+-\w+\]"])))
 
     (testing "auto-increment of revision-id with skipped revisions"
-      (let [concept (gen-concept concept-type provider-id 1 {})
+      (let [concept (gen-concept concept-type provider-id 11 {})
             {:keys [concept-id]} (util/save-concept concept)
             concept-with-concept-id (assoc concept :concept-id concept-id)
             _ (util/save-concept (assoc concept-with-concept-id :revision-id 100))
@@ -198,7 +198,7 @@
         (is (= 101 revision-id (:revision-id retrieved-concept)))))
 
     (testing "save concept results in incremented transaction-id"
-      (let [concept (gen-concept concept-type provider-id 1 {})]
+      (let [concept (gen-concept concept-type provider-id 12 {})]
         (loop [index 0
                transaction-id 0]
           (when (< index 10)
