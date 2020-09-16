@@ -222,8 +222,7 @@
       (let [concept (variable-util/make-variable-concept
                      {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
                                                               :Size 3
-                                                              :Type "OTHER"})]
-                      :AcquisitionSourceName "Instrument1"}
+                                                              :Type "OTHER"})]}
                      {:native-id "var1"
                       :coll-concept-id (:concept-id coll1-PROV1-1)})
             {:keys [concept-id revision-id variable-association]}
@@ -240,8 +239,7 @@
           (let [concept (variable-util/make-variable-concept
                           {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
                                                                    :Size 3
-                                                                   :Type "OTHER"})]
-                           :AcquisitionSourceName "Instrument1"}
+                                                                   :Type "OTHER"})]}
                           {:native-id "var1"
                            :coll-concept-id (:concept-id coll1-PROV1-1)
                            :coll-revision-id (:revision-id coll1-PROV1-1)})
@@ -262,8 +260,7 @@
               (let [concept (variable-util/make-variable-concept
                               {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
                                                                        :Size 3
-                                                                       :Type "OTHER"})]
-                               :AcquisitionSourceName "Instrument1"}
+                                                                       :Type "OTHER"})]}
                             {:native-id "var1"
                              :coll-concept-id (:concept-id coll2-PROV1-1)
                              :coll-revision-id (:revision-id coll2-PROV1-1)})
