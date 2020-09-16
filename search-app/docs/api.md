@@ -2286,6 +2286,11 @@ Exclude granule by concept id
 Exclude granule by parent concept id
 
     curl "%CMR-ENDPOINT%/granules?provider=PROV1&provider=PROV2&echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=C1000000001-CMR_PROV2"
+<<<<<<< e88dc73a07a60f90f5766733cb4e5d77b6a1c396
+=======
+
+#### <a name="g-include-polygons"></a> Include generated orbital polygons.
+>>>>>>> CMR-6624 Updates documentation.
 
 #### <a name="sorting-granule-results"></a> Sorting Granule Results
 
@@ -4601,7 +4606,7 @@ Community usage metrics are metrics showing how many times a particular version 
 
 #### <a name="updating-community-usage-metrics"></a> Updating Community Usage Metrics
 
-Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid ECHO token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR.
+Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid ECHO token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR. The comprehensive parameter accepts a boolean value, true will cause a lookup verification on each line, false will try and short cut the lookup by checking first against the current metrics humanizer, defaults to false.
 
 Note that when sending the data, use the --data-binary option so that the linebreaks in the CSV data are not removed. See the example below.
 
