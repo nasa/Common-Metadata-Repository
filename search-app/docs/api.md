@@ -169,8 +169,6 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Retrieving All Revisions of a Variable](#retrieving-all-revisions-of-a-variable)
     * [Sorting Variable Results](#sorting-variable-results)
     * [Variable Access Control](#variable-access-control)
-    * [Variable association](#variable-association)
-    * [Variable dissociation](#variable-dissociation)
   * [Service](#service)
     * [Searching for Services](#searching-for-services)
         * [Service Search Parameters](#service-search-params)
@@ -3714,116 +3712,6 @@ Examples of sorting by long_name in descending (reverse alphabetical) and ascend
 #### <a name="variable-access-control"></a> Variable Access Control
 
 Access to variable and variable association is granted through the provider via the INGEST_MANAGMENT_ACL. Users can only create, update, or delete a variable if they are granted the appropriate permission. Associating and dissociating collections with a variable is considered an update.
-
-#### <a name="variable-association"></a> Variable Association
-
-A variable identified by its concept id can be associated with collections through a list of collection concept revisions. The variable association request normally returns status code 200 with a response that consists of a list of individual variable association responses, one for each variable association attempted to create. Each individual variable association response has an `associated_item` field and either a `variable_association` field with the variable association concept id and revision id when the variable association succeeded or an `errors` field with detailed error message when the variable association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during variable association. Here is a sample variable association request and its response:
-
-Note: The following new features are added to support UVG:
-1. Each variable can only be associated with one collection.
-2. Each collection can only be associated with variables that don't share the same name.
-3. variable and collection can only be associated if they are from the same provider.
-
-Future work:
-1. Currently we are not addressing any existing data that doesn't satisfy the above requirements.
-2. We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list. A ticket is filed to address these issues in the future if necessary.
-
-```
-curl -XPOST -i -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/associations/variables/V1200000008-PROV1/collections/C1200000005-PROV1
-
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=UTF-8
-Content-Length: 168
-
-[
-  {
-    "variable_association":{
-      "concept_id":"VA1200000008-CMR",
-      "revision_id":1
-    },
-    "associated_item":{
-      "concept_id":"C1200000005-PROV1"
-    }
-  }
-]
-```
-
-##### DEPRECATED
-Passing the association target concept-id in the body of the POST has been deprecated.
-
-```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/VA1200000008-CMR/associations -d \
-'[{"concept_id": "C1200000005-PROV1"}]'
-
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=UTF-8
-Content-Length: 168
-
-[
-  {
-    "variable_association":{
-      "concept_id":"VA1200000008-CMR"
-      "revision_id":1
-    },
-    "associated_item":{
-      "concept_id":"C1200000005-PROV1"
-    }
-  }
-]
-```
-
-On occasions when variable association cannot be processed at all due to invalid input, the variable association request will return a failure status code with the appropriate error message.
-
-#### <a name="variable-dissociation"></a> Variable Dissociation
-
-A variable identified by its concept id can be dissociated from collections similar to variable association requests.
-
-```
-curl -XDELETE -i -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/associations/variables/V1200000008-PROV1/collections/C1200000005-PROV1
-
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=UTF-8
-Content-Length: 168
-
-[
-  {
-    "variable_association":{
-      "concept_id":"VA1200000009-CMR",
-      "revision_id":2
-    },
-    "associated_item":{
-      "concept_id":"C1200000005-PROV1"
-    }
-  }
-```
-
-##### DEPRECATED
-Sending the list of targets to dissociate from has been deprecated.
-
-We still require a list of collection concept revisions to be passed in, even though only one collection revision is allowed in the list.
-```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
-'[{"concept_id": "C1200000005-PROV1"}]'
-
-
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=UTF-8
-Content-Length: 168
-
-[
-  {
-    "variable_association":{
-      "concept_id":"VA1200000008-PROV1",
-      "revision_id":2
-    },
-    "associated_item":{
-      "concept_id":"C1200000005-PROV1"
-    }
-  }
-]
-```
-
-On occasions when variable dissociation cannot be processed at all due to invalid input, the variable dissociation request will return a failure status code with the appropriate error message.
 
 ### <a name="service"></a> Service
 
