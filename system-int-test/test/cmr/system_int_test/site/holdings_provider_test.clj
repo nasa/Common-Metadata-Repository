@@ -113,7 +113,7 @@
           (is (= 2
                  (->> page-data
                       (find-element-by-type :a)
-                      (filter #(re-matches #".*virtual-directory/C\d-PROV\d.*"
+                      (filter #(re-matches #".*collections/C\d-PROV\d.*"
                                            (get-in % [:attrs :href])))
                       count))))
 
