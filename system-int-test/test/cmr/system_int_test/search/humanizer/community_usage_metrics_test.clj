@@ -265,7 +265,7 @@
 
 (def sample-aggregation-csv
   "Sample CSV to test aggregation of access counts in different CSV entries with the same short-name
- and version"
+   and version"
   "Product,Version,Hosts\nAMSR-L1A,3,4\nAMSR-L1A,3,6\nAMSR-L1A,N/A,87\nAMSR-L1A,N/A,10\nMAPSS_MOD04_L2,4,12")
 
 (def sample-aggregation-data
