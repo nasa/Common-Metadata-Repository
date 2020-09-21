@@ -37,7 +37,7 @@
   "Query elastic for a collection with a given entry-title, returns short-name"
   [context entry-title]
   (when (seq entry-title)
-    (let [condition (qm/string-condition :entry-title (str entry-title "*") true true)
+    (let [condition (qm/string-condition :entry-title (str entry-title "*") false true)
           query (qm/query {:concept-type :collection
                            :condition condition
                            :page-size 1
@@ -66,7 +66,7 @@
 (defn- comprehensive-collection-short-name-search
   "This function checks CMR for a collection with given short-name, if it can't find it
    Then it will check for a collection with that entry-title and return its short-name.
-   Currently there are providers who are supply non-short-name values in short-name, which breaks usage
+   Currently there are providers who are supplying non-short-name values in short-name, which breaks usage
    metrics.  This is a short term solution to this problem, the long term solution is correcting the
    EMS data which may take a long time to happen."
   [context short-name]
@@ -88,31 +88,39 @@
    version (can be 'N/A' or a version number), and access-count (hosts)"
   [context csv-line product-col version-col hosts-col comprehensive current-metrics]
   (when (seq (remove empty? csv-line)) ; Don't process empty lines
-   (let [short-name (read-csv-column csv-line product-col)
-         version (read-csv-column csv-line version-col)
-         searched-short-name (if (= "true" comprehensive)
-                              (comprehensive-collection-short-name-search context short-name)
-                              (efficient-collection-short-name-search context short-name current-metrics))]
-     {:short-name (if (seq short-name)
-                    (if (seq searched-short-name)
-                      searched-short-name
-                      short-name)
-                    (errors/throw-service-error :invalid-data
-                      "Error parsing 'Product' CSV Data. Product may not be empty."))
-      :version version
-      :access-count (let [access-count (read-csv-column csv-line hosts-col)]
-                      (if (seq access-count)
-                        (try
-                          (Integer/parseInt (str/replace access-count "," "")) ; Remove commas in large ints
-                          (catch java.lang.NumberFormatException e
-                            (errors/throw-service-error :invalid-data
-                              (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
-                                           "[%s]. Hosts must be an integer.")
-                                short-name version))))
-                       (errors/throw-service-error :invalid-data
-                         (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
-                                       "[%s]. Hosts may not be empty.")
-                           short-name version))))})))
+    (let [short-name (read-csv-column csv-line product-col)]
+      (when-not (seq short-name)
+        (errors/throw-service-error :invalid-data
+          "Error parsing 'Product' CSV Data. Product may not be empty."))
+      (let [version (read-csv-column csv-line version-col)
+            searched-short-name (if (= "true" comprehensive)
+                                  (comprehensive-collection-short-name-search context short-name)
+                                  (efficient-collection-short-name-search context short-name current-metrics))]
+        (def csv-line "PROV1,SHORTNAME1,N/A,1")
+        (def short-name "SHORTNAME1")
+        {:short-name (if (seq searched-short-name)
+                       searched-short-name
+                       (do
+                         (warn (format (str "While constructing community metrics humanizer, "
+                                            "could not find corresponding collection when searching for the term %s. "
+                                            "Csv line entry: %s")
+                                       short-name
+                                       csv-line))
+                         short-name))
+         :version version
+         :access-count (let [access-count (read-csv-column csv-line hosts-col)]
+                         (if (seq access-count)
+                           (try
+                             (Integer/parseInt (str/replace access-count "," "")) ; Remove commas in large ints
+                             (catch java.lang.NumberFormatException e
+                               (errors/throw-service-error :invalid-data
+                                 (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
+                                              "[%s]. Hosts must be an integer.")
+                                   short-name version))))
+                          (errors/throw-service-error :invalid-data
+                            (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
+                                          "[%s]. Hosts may not be empty.")
+                              short-name version))))}))))
 
 (defn- validate-and-read-csv
   "Validate the ingested community usage metrics csv and if valid, return the data lines read
