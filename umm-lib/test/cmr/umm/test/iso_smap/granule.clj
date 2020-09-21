@@ -4,6 +4,7 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.date-time-parser :as p]
    ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
@@ -213,6 +214,13 @@
   (testing "valid xml"
     (is (= 0 (count (g/validate-xml sample-granule-xml)))))
   (testing "invalid xml"
-    (is (= "Exception while parsing invalid XML"
-           (re-find #"Exception while parsing invalid XML"
-                    (first (g/validate-xml (string/replace sample-granule-xml "fileIdentifier" "XXXX"))))))))
+    (is (= [(str "Exception while parsing invalid XML: Line 7 - cvc-complex-type.2.4.a: Invalid content was found "
+                 "starting with element 'gmd:XXXX'. One of "
+                 "'{\"http://www.isotc211.org/2005/gmd\":fileIdentifier, "
+                 "\"http://www.isotc211.org/2005/gmd\":language, "
+                 "\"http://www.isotc211.org/2005/gmd\":characterSet, "
+                 "\"http://www.isotc211.org/2005/gmd\":parentIdentifier, "
+                 "\"http://www.isotc211.org/2005/gmd\":hierarchyLevel, "
+                 "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
+                 "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
+           (g/validate-xml (string/replace sample-granule-xml "fileIdentifier" "XXXX"))))))

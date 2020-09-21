@@ -8,6 +8,7 @@
    [cmr.umm.test.validation.validation-test-helpers :as helpers]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
+   [cmr.common.date-time-parser :as dtp]
    [cmr.common.services.errors :as e]
    [cmr.common.util :as u]
    [cmr.umm.collection.product-specific-attribute :as psa]))

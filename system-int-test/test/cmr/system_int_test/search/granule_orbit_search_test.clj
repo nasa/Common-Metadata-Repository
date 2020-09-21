@@ -1,14 +1,17 @@
 (ns cmr.system-int-test.search.granule-orbit-search-test
   "Tests for spatial search with orbital back tracking."
   (:require
+   [clojure.string :as s]
    [clojure.test :refer :all]
-   [cmr.common.util :as u :refer [are3]]
+   [cmr.common.util :as u]
    [cmr.spatial.codec :as codec]
+   [cmr.spatial.derived :as derived]
    [cmr.spatial.kml :as kml]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as point]
    [cmr.spatial.polygon :as poly]
+   [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -17,9 +20,7 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.umm.umm-spatial :as umm-s])
-  (:import
-   [cmr.spatial.polygon Polygon]))
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -43,39 +44,6 @@
                                      orbit
                                      nil)}
                 other-attribs))))))
-
-(deftest polygons-exclusion-test
-  (let [_coll (d/ingest-concept-with-metadata-file
-                "CMR-4722/OMSO2.003-collection.xml"
-                {:provider-id "PROV1"
-                 :concept-type :collection
-                 :native-id "OMSO2-collection"
-                 :format-key :dif10})
-        _echo-granule (d/ingest-concept-with-metadata-file
-                        "CMR-4722/OMSO2.003-granule.xml"
-                        {:provider-id "PROV1"
-                         :concept-type :granule
-                         :concept-id "C4-PROV1"
-                         :native-id "OMSO2-granule"
-                         :format-key :echo10})]
-    (index/wait-until-indexed)
-
-    (are3 [input expected]
-          (let [query (merge {:provider-id "PROV1"} input)
-                response (search/find-concepts-json :granule query)
-                granule (first (get-in response [:results :entries]))
-                is-polygon? (partial instance? Polygon)]
-            (is (= expected
-                   (count (filter is-polygon? (:shapes granule))))))
-
-          "polygons are excluded by default"
-          nil 0
-          
-          "polygons are excluded"
-          {:include-polygons false} 0
-
-          "polygons are included"
-          {:include-polygons true} 2)))
 
 (deftest orbit-bug-CMR-4722
   (let [coll (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
@@ -478,8 +446,7 @@
                                                    :concept-type :granule
                                                    :format-key :iso-smap})
         _ (index/wait-until-indexed)
-        json-response (search/find-concepts-json :granule {:concept-id (:concept-id gran)
-                                                           :include-polygons true})
+        json-response (search/find-concepts-json :granule {:concept-id (:concept-id gran)})
         granule-json (-> json-response :results :entries first)
         expected-points-in-polygons [(point/point 25.235719457640535 -21.19078458692315)
                                      (point/point 23.13297924763377 -39.771484792279814)

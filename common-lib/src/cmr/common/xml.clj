@@ -1,9 +1,10 @@
 (ns cmr.common.xml
   "Contains XML helpers for extracting data from XML structs created using clojure.data.xml.
   See the test file for examples."
-  (:require
-   [clojure.string :as string]
-   [cmr.common.date-time-parser :as p])
+  (:require [cmr.common.date-time-parser :as p]
+            [cmr.common.services.errors :as errors]
+            [clojure.string :as string]
+            [clojure.java.io :as io])
   (:import javax.xml.validation.SchemaFactory
            javax.xml.XMLConstants
            javax.xml.transform.stream.StreamSource
@@ -120,7 +121,7 @@
     ;; allows them to be double. But we need them to be integers.
     (try
       (Integer. s)
-      (catch Exception _e
+      (catch Exception e
         s))))
 
 (defn bool-at-path

@@ -4,6 +4,7 @@
    [clojure.java.io :as io]
    [clojure.string :as s]
    [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.date-time-parser :as p]
    [cmr.common.joda-time]
@@ -11,6 +12,9 @@
    ;; this is not needed until the ECHO to ISO XSLT is fixed
    ;; [cmr.common.xml.xslt :as xslt]
    [cmr.spatial.derived :as d]
+   [cmr.spatial.encoding.gmd :as gmd]
+   [cmr.spatial.relations :as r]
+   [cmr.umm.echo10.collection.personnel :as echo-pe]
    [cmr.umm.echo10.echo10-collection :as echo10-c]
    [cmr.umm.echo10.echo10-core :as echo10]
    [cmr.umm.iso-mends.iso-mends-collection :as c]
@@ -384,9 +388,16 @@
   (testing "valid xml"
     (is (= 0 (count (c/validate-xml valid-collection-xml)))))
   (testing "invalid xml"
-    (is (= "Exception while parsing invalid XML"
-           (re-find #"Exception while parsing invalid XML"
-                    (first (c/validate-xml (s/replace valid-collection-xml "fileIdentifier" "XXXX"))))))))
+    (is (= [(str "Exception while parsing invalid XML: Line 15 - cvc-complex-type.2.4.a: Invalid content was found "
+                 "starting with element 'gmd:XXXX'. One of "
+                 "'{\"http://www.isotc211.org/2005/gmd\":fileIdentifier, "
+                 "\"http://www.isotc211.org/2005/gmd\":language, "
+                 "\"http://www.isotc211.org/2005/gmd\":characterSet, "
+                 "\"http://www.isotc211.org/2005/gmd\":parentIdentifier, "
+                 "\"http://www.isotc211.org/2005/gmd\":hierarchyLevel, "
+                 "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
+                 "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
+           (c/validate-xml (s/replace valid-collection-xml "fileIdentifier" "XXXX"))))))
 
 (deftest parse-collection-defaults-test
   "Check that defaults are being added correctly to create valid umm"

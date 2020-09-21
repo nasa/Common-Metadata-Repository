@@ -16,12 +16,12 @@
 
 (deftest aql-validation-test
   (testing "invalid against AQL schema"
-    (let [response (search/find-refs-with-aql-string "<foo/>")
-          {:keys [status errors]} response]
-      (is (= 400 status))
-      (is (= "Cannot find the declaration of element 'foo'."
-             (re-find #"Cannot find the declaration of element 'foo'\."
-                      (first errors)))))
+    (is (= {:errors [(msg/invalid-aql "Exception while parsing invalid XML: Line 1 - cvc-elt.1: Cannot find the declaration of element 'foo'.")]
+            :status 400}
+           (search/find-refs-with-aql-string "<foo/>")))
+    (is (= {:errors [(msg/invalid-aql "Exception while parsing invalid XML: Line 1 - Content is not allowed in prolog.")]
+            :status 400}
+           (search/find-refs-with-aql-string "not even valid xml")))
     (is (= {:errors [(msg/invalid-aql (str "Exception while parsing invalid XML: Line 7 - cvc-complex-type.2.4.a: Invalid content was "
                                            "found starting with element 'dataSetId'. One of "
                                            "'{granuleCondition, collectionCondition}' is expected."))]
