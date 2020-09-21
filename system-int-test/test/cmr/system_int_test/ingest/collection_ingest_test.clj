@@ -3,6 +3,7 @@
 
   For collection permissions tests, see `provider-ingest-permissions-test`."
   (:require
+   [clj-http.client :as client]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
@@ -10,7 +11,7 @@
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.date-time-parser :as date-time-parser]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -19,6 +20,7 @@
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as system]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -598,7 +600,7 @@
         (is (= 200 (:status delete-result)))))))
 
 (deftest schema-validation-test
-  (are [concept-format err-patterns]
+  (are [concept-format validation-errors]
        (let [concept (data-umm-c/collection-concept
                        {:TemporalExtents [(data-umm-cmn/temporal-extent
                                             {:beginning-date-time "2010-12-12T12:00:00Z"})]}
@@ -615,19 +617,25 @@
                                     ;; this is to cause validation error for iso-smap format
                                     (string/replace "gmd:DS_Series" "XXXX"))))]
          (index/wait-until-indexed)
-         (= [400] [status])
-         (is (= (count err-patterns)
-                (count (map #(re-find (re-pattern %1) %2) err-patterns errors)))))
+         (= [400 validation-errors] [status errors]))
 
-    :echo10 ["'A\\.000Z' is not a valid value for 'dateTime'"
-             "'A\\.000Z' of element 'BeginningDateTime' is not valid"]
+       :echo10 ["Exception while parsing invalid XML: Line 1 - cvc-datatype-valid.1.2.1: 'A.000Z' is not a valid value for 'dateTime'."
+                "Exception while parsing invalid XML: Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'BeginningDateTime' is not valid."]
 
-    :dif10 ["'A\\.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'"
-            "The value 'A\\.000Z' of element 'Beginning_Date_Time' is not valid"]
+       :dif10 ["Exception while parsing invalid XML: Line 1 - cvc-datatype-valid.1.2.3: 'A.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'."
+               "Exception while parsing invalid XML: Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'Beginning_Date_Time' is not valid."]
 
-    :iso19115 ["Exception while parsing invalid XML"]
+       :iso19115 [(str "Exception while parsing invalid XML: Line 1 - cvc-complex-type.2.4.a: Invalid content was found "
+                       "starting with element 'gmd:XXXX'. One of "
+                       "'{\"http://www.isotc211.org/2005/gmd\":fileIdentifier, "
+                       "\"http://www.isotc211.org/2005/gmd\":language, "
+                       "\"http://www.isotc211.org/2005/gmd\":characterSet, "
+                       "\"http://www.isotc211.org/2005/gmd\":parentIdentifier, "
+                       "\"http://www.isotc211.org/2005/gmd\":hierarchyLevel, "
+                       "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
+                       "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
 
-    :iso-smap ["Exception while parsing invalid XML"]))
+       :iso-smap ["Exception while parsing invalid XML: Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
 
 (deftest ingest-umm-json
   (let [json (umm-spec/generate-metadata test-context expected-conversion/curr-ingest-ver-example-collection-record :umm-json)

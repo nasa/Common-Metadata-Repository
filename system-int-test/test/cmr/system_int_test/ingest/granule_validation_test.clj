@@ -46,19 +46,6 @@
     (is (= {:status expected-status-code :errors expected-errors}
            (select-keys response [:status :errors])))))
 
-(defn assert-validation-errors-rx
-  "Asserts that when the granule and optional collection concept are validated the expected errors
-  are returned. The collection concept can be passed as a third argument and it will be sent along
-  with the granule instead of using a previously ingested collection."
-  [expected-status-code expected-errors-rx & gran-and-optional-coll-concept]
-  (let [response (apply ingest/validate-granule gran-and-optional-coll-concept)]
-    (is (= expected-status-code (:status response)))
-    (is (pos? (count (:errors response))))
-    (is (= (count (:errors response))
-           (count (map #(re-find (re-pattern %1) %2)
-                       expected-errors-rx
-                       (:errors response)))))))
-
 (defn assert-validation-success
   "Asserts that when the granule and optional collection concept are valid. The collection concept
   can be passed as a third argument and it will be sent along with the granule instead of using a
@@ -104,9 +91,10 @@
             (assert-validation-success concept (d/umm-c-collection->concept collection :dif))))
 
         (testing "invalid collection xml"
-          (assert-validation-errors-rx
+          (assert-validation-errors
             400
-            ["Cannot find the declaration of element 'Granule'\\."]
+            [(msg/invalid-parent-collection-for-validation
+               "Exception while parsing invalid XML: Line 1 - cvc-elt.1: Cannot find the declaration of element 'Granule'.")]
             (d/item->concept (dg/granule-with-umm-spec-collection collection (:concept-id collection)))
             (assoc coll-concept :metadata invalid-granule-xml)))
 
