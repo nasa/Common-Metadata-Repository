@@ -2,6 +2,7 @@
   "Defines a component which can be used to generate an HTML response of a UMM-C collection. Uses the
    MMT ERB code along with JRuby to generate it."
   (:require
+   [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as str]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -122,10 +123,32 @@
        (search/find-concepts context :granule)
        :hits))
 
+(defn- get-services-for-collection
+  "Retrieve service association for the collection corresponding to concept-id."
+  [context concept-id]
+  (let [collection-results (->> {:concept-id concept-id
+                                 :result-format {:format :umm-json-results}}
+                                (params/parse-parameter-query context :collection)
+                                (search/find-concepts context :collection)
+                                :results)
+        items (:items (json/parse-string collection-results true))
+        service-ids (get-in (first items) [:meta :associations :services])]
+    (for [service-id service-ids
+          :let [service-results (->> {:concept-id service-id
+                                      :result-format {:format :umm-json-results}}
+                                     (params/parse-parameter-query context :service)
+                                     (search/find-concepts context :service)
+                                     :results)
+                items (:items (json/parse-string service-results true))]]
+      (first items))))
+
 (defn- get-additional-information
   "Retrieve additional information for collection rendering."
   [context concept-id]
-  {"granule_count" (get-granule-count-for-collection context concept-id)})
+  (println "services: " (map #(umm-json/umm->json %) (get-services-for-collection context concept-id)))
+  {"granule_count" (get-granule-count-for-collection context concept-id)
+   "root_url" (config/application-public-root-url context)
+   "services" (map #(umm-json/umm->json %) (get-services-for-collection context concept-id))})
 
 (defn render-collection
   "Renders a UMM-C collection record and returns the HTML as a string."

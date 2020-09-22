@@ -6,6 +6,16 @@
 require 'json'
 metadata =  JSON.parse(umm_json)
 
+services = additional_information['services']
+services_array = []
+services&.each do |service|
+  services_array << JSON.parse(service)
+end
+
+additional_information_hash = { 'services' => services_array }
+additional_information_hash['granules_count'] = additional_information['granules_count']
+additional_information_hash['root_url'] = additional_information['root_url']
+
 %>
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"  lang="en"> <![endif]-->
@@ -39,7 +49,7 @@ metadata =  JSON.parse(umm_json)
      </div>
   </header>
   <div class="row row-content">
-      <%= render partial: 'cmr_metadata_preview/metadata_preview', locals: { metadata: metadata, edsc_url: edsc_url, concept_id: concept_id, additional_information: additional_information} %>
+      <%= render partial: 'cmr_metadata_preview/metadata_preview', locals: { metadata: metadata, edsc_url: edsc_url, concept_id: concept_id, additional_information: additional_information_hash} %>
     </div>
 </body>
 </html>
