@@ -394,7 +394,7 @@
 (defn extract-indexranges
   [entry]
   (when entry
-    (let [ranges (get-in entry [:umm :Characteristics :IndexRanges])
+    (let [ranges (get-in entry [:umm :IndexRanges])
           lo-lon (parse-lon-low (first (:LonRange ranges)))
           hi-lon (parse-lon-high (last (:LonRange ranges)))
           lo-lat (parse-lat-low (first (:LatRange ranges)))
