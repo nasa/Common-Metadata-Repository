@@ -17,8 +17,10 @@
                 revision-date format extra-fields]} concept
         {:keys [service-name]} extra-fields
         long-name (:LongName parsed-concept)
+        service-type (:Type parsed-concept)
         schema-keys [:LongName
                      :Name
+                     :Type
                      :Version
                      :AncillaryKeywords
                      :ContactGroups
@@ -46,6 +48,7 @@
        :deleted deleted
        :service-name service-name
        :service-name-lowercase (string/lower-case service-name)
+       :service-type-lowercase (string/lower-case service-type)
        :long-name long-name
        :long-name-lowercase (string/lower-case long-name)
        :provider-id provider-id

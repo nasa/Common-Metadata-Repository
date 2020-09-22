@@ -158,6 +158,7 @@
 (defmethod common-params/param-mappings :service
   [_]
   {:name :string
+   :type :string
    :provider :string
    :native-id :string
    :concept-id :string

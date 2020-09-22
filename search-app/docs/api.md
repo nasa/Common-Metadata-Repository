@@ -2287,7 +2287,7 @@ Exclude granule by concept id
 Exclude granule by parent concept id
 
     curl "%CMR-ENDPOINT%/granules?provider=PROV1&provider=PROV2&echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=C1000000001-CMR_PROV2"
-    
+
 #### <a name="g-include-polygons"></a> Include generated orbital polygons.
 
 Include generated polygons in orbital granules for ATOM and JSON results. False by default.
@@ -3738,6 +3738,7 @@ These parameters will match fields within a service. They are case insensitive b
 
 * name
   * options: pattern, ignore_case
+* type
 * provider
   * options: pattern, ignore_case
 * native_id
@@ -3750,6 +3751,7 @@ The following fields are indexed for keyword (free text) search:
 
 * Service name
 * Service long name
+* Service type
 * Service version
 * Service keywords (category, term specific term, topic)
 * Service organizations (short and long names, roles)

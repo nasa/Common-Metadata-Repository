@@ -111,7 +111,8 @@
 (defmethod q2e/concept-type->field-mappings :service
   [_]
   {:provider :provider-id
-   :name :service-name})
+   :name :service-name
+   :type :service-type-lowercase})
 
 (defmethod q2e/concept-type->field-mappings :tool
   [_]
@@ -189,7 +190,8 @@
 (defmethod q2e/field->lowercase-field-mappings :service
   [_]
   {:provider "provider-id-lowercase"
-   :name "service-name-lowercase"})
+   :name "service-name-lowercase"
+   :type "service-type-lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :tool
   [_]
@@ -337,6 +339,7 @@
   [_]
   {:service-name :service-name-lowercase
    :name :service-name-lowercase
+   :type :service-type-lowercase
    :long-name :long-name-lowercase
    :provider :provider-id-lowercase})
 

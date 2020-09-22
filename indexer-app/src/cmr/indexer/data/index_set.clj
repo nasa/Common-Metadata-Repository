@@ -728,6 +728,7 @@
    :service-name-lowercase (m/doc-values m/string-field-mapping)
    :long-name (m/doc-values m/string-field-mapping)
    :long-name-lowercase (m/doc-values m/string-field-mapping)
+   :service-type-lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
    :deleted (m/doc-values m/bool-field-mapping)
    :user-id (m/doc-values m/string-field-mapping)
