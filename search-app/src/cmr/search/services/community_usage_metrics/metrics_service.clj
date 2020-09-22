@@ -96,8 +96,6 @@
             searched-short-name (if (= "true" comprehensive)
                                   (comprehensive-collection-short-name-search context short-name)
                                   (efficient-collection-short-name-search context short-name current-metrics))]
-        (def csv-line "PROV1,SHORTNAME1,N/A,1")
-        (def short-name "SHORTNAME1")
         {:short-name (if (seq searched-short-name)
                        searched-short-name
                        (do
