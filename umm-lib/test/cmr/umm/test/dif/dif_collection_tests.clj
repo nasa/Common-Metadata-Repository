@@ -4,8 +4,10 @@
 
             ; [clojure.test.check.clojure-test :refer [defspec]]
             ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [checking defspec]]
+            [cmr.common.test.test-check-ext :refer [defspec]]
+
             [clojure.test.check.properties :refer [for-all]]
+            [clojure.test.check.generators :as gen]
             [clojure.string :as s]
             [cmr.common.joda-time]
             [cmr.common.date-time-parser :as p]
@@ -18,7 +20,8 @@
             [cmr.umm.dif.dif-core :as dif]
             [cmr.spatial.mbr :as m]
             [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
-            [cmr.umm.validation.validation-core :as v])
+            [cmr.umm.validation.validation-core :as v]
+            [cmr.common.test.test-check-ext :as ext :refer [checking]])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn- spatial-coverage->expected-parsed
@@ -701,9 +704,12 @@
   (testing "valid xml"
     (is (empty? (c/validate-xml valid-collection-xml))))
   (testing "invalid xml"
-    (is (= "Exception while parsing invalid XML"
-           (re-find #"Exception while parsing invalid XML"
-                    (first (c/validate-xml (s/replace valid-collection-xml "Personnel" "XXXX"))))))))
+    (is (= [(str "Exception while parsing invalid XML: " 
+                 "Line 18 - cvc-complex-type.2.4.a: Invalid content was found starting with element 'XXXX'. "
+                 "One of '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Center_URL, "
+                 "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Set_ID, "
+                 "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Personnel}' is expected.")]
+           (c/validate-xml (s/replace valid-collection-xml "Personnel" "XXXX"))))))
 
 (deftest parse-nil-version-test
   ;; UMM-C is now making the version field a required field. It is optional in DIF-9 so we provide

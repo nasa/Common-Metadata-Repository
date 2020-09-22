@@ -4,11 +4,15 @@
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.humanizer-util :as humanizer-util]
+   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
+                                           "provguid2" "PROV2"}))
 
 ;; Intentional space before version and empty CSV line for testing
 (def sample-usage-csv
@@ -64,7 +68,7 @@
         (is (= 2 revision-id))
         (humanizer-util/assert-humanizers-saved
          {:community-usage-metrics [{:short-name "AST_09XT" :version "3" :access-count 156}]}
-         "admin" 
+         "admin"
          concept-id
          revision-id)))))
 
@@ -84,6 +88,105 @@
       (is (= {:status 401
               :errors ["You do not have permission to perform that action."]}
              (humanizer-util/update-community-usage-metrics token sample-usage-csv))))))
+
+(def comprehensive-usage-test-csv
+ "Provider,Product,ProductVersion,Hosts
+  PROV1,SHORTNAME1,N/A,1
+  PROV1,ENTRYTITLE2,N/A,2
+  PROV1,ENTRYTITLE2.1,N/A,3
+  PROV1,SHORTNAME2,N/A,5
+  PROV1,NONEXISTENTCOL1,N/A,6
+  PROV2,SHORTNAME1,N/A,7
+  PROV2,ENTRYTITLE2,N/A,8
+  PROV2,ENTRYTITLE2.1,N/A,9
+  PROV2,SHORTNAME2,N/A,11
+  PROV2,NONEXISTENTCOL2,N/A,12")
+
+(def comprehensive-usage-test-result
+ [{:short-name "SHORTNAME1" :access-count 30}
+  {:short-name "SHORTNAME2" :access-count 16}
+  {:short-name "NONEXISTENTCOL1" :access-count 6}
+  {:short-name "NONEXISTENTCOL2" :access-count 12}])
+
+(deftest update-community-metrics-test-with-comprehensive
+  (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                          {:ShortName "SHORTNAME1"
+                                           :EntryTitle "ENTRYTITLE1"})
+                                 {:token "mock-echo-system-token"})
+  (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                          2
+                                          {:ShortName "SHORTNAME1"
+                                           :EntryTitle "ENTRYTITLE2"})
+                                 {:token "mock-echo-system-token"})
+  (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                          3
+                                          {:ShortName "SHORTNAME1"
+                                           :EntryTitle "ENTRYTITLE2.1"})
+                                 {:token "mock-echo-system-token"})
+  (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                          {:ShortName "SHORTNAME2"
+                                           :EntryTitle "ENTRYTITLE3"})
+                                 {:token "mock-echo-system-token"})
+  (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection
+                                          {:ShortName "SHORTNAME1"
+                                           :EntryTitle "ENTRYTITLE1"})
+                                 {:token "mock-echo-system-token"})
+  (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection
+                                          4
+                                          {:ShortName "SHORTNAME1"
+                                           :EntryTitle "ENTRYTITLE2"})
+                                 {:token "mock-echo-system-token"})
+  (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection
+                                          5
+                                          {:ShortName "SHORTNAME1"
+                                           :EntryTitle "ENTRYTITLE2.1"})
+                                 {:token "mock-echo-system-token"})
+  (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection
+                                          {:ShortName "SHORTNAME2"
+                                           :EntryTitle "ENTRYTITLE4"})
+                                 {:token "mock-echo-system-token"})
+  (index/wait-until-indexed)
+  (testing "Create community usage with invalid comprehensive param"
+    (let [response (humanizer-util/update-community-usage-metrics
+                     "mock-echo-system-token"
+                     comprehensive-usage-test-csv
+                     {:http-options {:query-params {:comprehensive "wrong"}}})]
+      (is (= {:status 400
+              :errors
+              ["Parameter comprehensive must take value of true or false but was [wrong]"]}
+             response))))
+
+  (testing "Create community usage with comprehensive is true"
+    (let [response (humanizer-util/update-community-usage-metrics
+                     "mock-echo-system-token"
+                     comprehensive-usage-test-csv
+                     {:http-options {:query-params {:comprehensive "true"}}})]
+      (humanizer-util/assert-humanizers-saved
+       {:community-usage-metrics comprehensive-usage-test-result}
+       "ECHO_SYS"
+       (:concept-id response)
+       (:revision-id response))))
+
+  (testing "Create community usage with comprehensive is false"
+    (let [response (humanizer-util/update-community-usage-metrics
+                     "mock-echo-system-token"
+                     comprehensive-usage-test-csv
+                     {:http-options {:query-params {:comprehensive "false"}}})]
+      (humanizer-util/assert-humanizers-saved
+       {:community-usage-metrics comprehensive-usage-test-result}
+       "ECHO_SYS"
+       (:concept-id response)
+       (:revision-id response))))
+
+  (testing "Create community usage with comprehensive is not included"
+    (let [response (humanizer-util/update-community-usage-metrics
+                     "mock-echo-system-token"
+                     comprehensive-usage-test-csv)]
+      (humanizer-util/assert-humanizers-saved
+       {:community-usage-metrics comprehensive-usage-test-result}
+       "ECHO_SYS"
+       (:concept-id response)
+       (:revision-id response)))))
 
 (deftest update-community-usage-metrics-validation-test
   (let [admin-update-group-concept-id (echo-util/get-or-create-group (system/context) "admin-update-group")

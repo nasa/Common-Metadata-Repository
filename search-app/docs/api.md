@@ -124,7 +124,6 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Cycle](#g-cycle)
     * [Passes](#g-passes)
     * [Exclude by id](#g-exclude-by-id)
-    * [Include polygons](#g-include-polygons)
   * [Sorting granule results](#sorting-granule-results)
   * [Retrieving concepts by concept-id and revision-id](#retrieving-concepts-by-concept-id-and-revision-id)
   * [Search with POST](#search-with-post)
@@ -2294,11 +2293,7 @@ Include generated polygons in orbital granules for ATOM and JSON results. False 
 
 Note: Including generated polygons may increase result sizes by several orders of magnitude.
 
-```
-curl "%CMR-ENDPOINT%/granules?provider=PROV1&include_polygons=true"
-```
-
-### <a name="sorting-granule-results"></a> Sorting Granule Results
+#### <a name="sorting-granule-results"></a> Sorting Granule Results
 
 Granule results are sorted by ascending provider and start date by default. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+`(Note: `+` must be URL encoded as %2B) can be used to explicitly request ascending.
 
@@ -4614,7 +4609,7 @@ Community usage metrics are metrics showing how many times a particular version 
 
 #### <a name="updating-community-usage-metrics"></a> Updating Community Usage Metrics
 
-Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid ECHO token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR.
+Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid ECHO token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR. The comprehensive parameter accepts a boolean value, true will cause a lookup verification on each line, false will try and short cut the lookup by checking first against the current metrics humanizer, defaults to false.
 
 Note that when sending the data, use the --data-binary option so that the linebreaks in the CSV data are not removed. See the example below.
 

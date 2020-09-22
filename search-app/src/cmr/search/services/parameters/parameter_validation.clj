@@ -193,7 +193,6 @@
    :feature-id cpv/string-plus-and-options
    :granule-ur cpv/string-param-options
    :grid cpv/string-param-options
-   :include-polygons cpv/string-param-options
    :instrument cpv/string-plus-and-exclude-collection-options
    :native-id cpv/string-param-options
    :passes cpv/and-option
@@ -623,7 +622,7 @@
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
                                          :include-has-granules :has-granules :hierarchical-facets
                                          :include-highlights :all-revisions :has-opendap-url
-                                         :include-polygons :simplify-shapefile])]
+                                         :simplify-shapefile])]
     (mapcat
       (fn [[param value]]
         (when-not (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))

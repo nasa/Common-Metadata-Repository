@@ -21,9 +21,11 @@
    [cmr.search.services.messages.common-messages :as msg]
    [cmr.search.site.routes :as site-routes]
    [compojure.core :refer [GET context routes]]
+   [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params]))
+   [ring.middleware.params :as params]
+   [ring.middleware.multipart-params :refer [wrap-multipart-params]]))
 
 (defn find-query-str-mixed-arity-param
   "Return the first parameter that has mixed arity, i.e., appears with both single and multivalued in
