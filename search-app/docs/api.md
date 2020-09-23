@@ -1672,12 +1672,17 @@ Collections can be found by searching for associated services. The following ser
 
 * service_name
   * supports `pattern`, `ignore_case` and option `and`
+* service_type
 * service_concept_id
   * supports option `and`
 
 Find collections matching service name.
 
     curl "%CMR-ENDPOINT%/collections?service_name=AtlasNorth"
+
+Find collections matching service type. In this example find all collections matching both service types of Harmony or OPeNDAP.
+
+    curl "%CMR-ENDPOINT%/collections?service_type=Harmony&service_type=OPeNDAP"
 
 Find collections matching service concept id.
 
