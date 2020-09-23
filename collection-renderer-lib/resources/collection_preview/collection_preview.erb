@@ -13,7 +13,7 @@ services&.each do |service|
 end
 
 additional_information_hash = { 'services' => services_array }
-additional_information_hash['granules_count'] = additional_information['granules_count']
+additional_information_hash['granule_count'] = additional_information['granule_count'] || 0
 additional_information_hash['root_url'] = additional_information['root_url']
 
 %>

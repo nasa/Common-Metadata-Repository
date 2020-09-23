@@ -145,7 +145,6 @@
 (defn- get-additional-information
   "Retrieve additional information for collection rendering."
   [context concept-id]
-  (println "services: " (map #(umm-json/umm->json %) (get-services-for-collection context concept-id)))
   {"granule_count" (get-granule-count-for-collection context concept-id)
    "root_url" (config/application-public-root-url context)
    "services" (map #(umm-json/umm->json %) (get-services-for-collection context concept-id))})
