@@ -70,6 +70,18 @@
         {:LatRange [90 -90]
          :LonRange [-180 180]}}}})
 
+(def ummvar-1-7-index-ranges
+  {:umm
+   {:IndexRanges
+     {:LatRange [-90 90]
+      :LonRange [-180 180]}}})
+
+(def ummvar-1-7-index-ranges-reversed
+  {:umm
+   {:IndexRanges
+     {:LatRange [90 -90]
+      :LonRange [-180 180]}}})
+
 (deftest lon-dim
   (is (nil? (geog/lon-dim (geog/extract-dimensions no-spatial-dims))))
   (is (= {:Size 270, :Name :Longitude, :Type nil}
@@ -128,12 +140,12 @@
     (is (= {:low {:lon -180 :lat -90}
             :high {:lon 180 :lat 90}
             :lat-reversed? false}
-           (into {} (geog/extract-indexranges ummvar-1-2-index-ranges)))))
+           (into {} (geog/extract-indexranges ummvar-1-7-index-ranges)))))
   (testing "Index ranges indicating reversed latitudinal values ..."
     (is (= {:low {:lon -180 :lat -90}
             :high {:lon 180 :lat 90}
             :lat-reversed? true}
-           (into {} (geog/extract-indexranges ummvar-1-2-index-ranges-reversed))))))
+           (into {} (geog/extract-indexranges ummvar-1-7-index-ranges-reversed))))))
 
 (deftest create-opendap-bounds
   (let [dims (array-map :Longitude {:Size 360} :Latitude {:Size 180})
