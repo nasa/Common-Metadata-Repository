@@ -294,9 +294,12 @@
                 :errors #{"Parameter [foo] was not recognized."
                           "Parameter [bar] was not recognized."}}
                (update-in (ex-data e) [:errors] set))))))
+  (testing "Collection service type parameters."
+    (is (= {:service-type "Harmony"}
+           (pv/validate-parameters :collection {:service-type "Harmony"}))))
   (testing "Service type parameters."
     (is (= {:type "Harmony"}
-           (pv/validate-parameters :service {:type "Harmony"})))))
+           (pv/validate-parameters :service {:type "Harmony"}))))
   (testing "Service failed invalid parameters."
     (try
       (pv/validate-parameters :service {:foo "Harmony"}))
@@ -304,7 +307,7 @@
       (catch clojure.lang.ExceptionInfo e
         (is (= {:type :bad-request
                 :errors #{"Parameter [foo] was not recognized."}}
-               (update-in (ex-data e) [:errors] set)))))
+               (update-in (ex-data e) [:errors] set))))))
 
 (deftest exclude-validation-test
   (testing "concept-id is a valid key to exclude"

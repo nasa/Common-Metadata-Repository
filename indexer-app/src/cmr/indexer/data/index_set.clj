@@ -499,6 +499,7 @@
           ;; associated services
           :service-names (m/doc-values m/string-field-mapping)
           :service-names-lowercase (m/doc-values m/string-field-mapping)
+          :service-types-lowercase (m/doc-values m/string-field-mapping)
           :service-concept-ids (m/doc-values m/string-field-mapping)
 
           ;; associations with the collection stored as EDN gzipped and base64 encoded for retrieving purpose

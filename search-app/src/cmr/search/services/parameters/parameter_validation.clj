@@ -38,7 +38,7 @@
                       :collection-data-type :project :project-h :entry-id :version :provider
                       :entry-title :doi :native-id :platform :platform-h :processing-level-id
                       :processing-level-id-h :sensor :data-center-h :measurement :variable-name
-                      :variable-concept-id :variable-native-id :author :service-name
+                      :variable-concept-id :variable-native-id :author :service-name :service-type
                       :service-concept-id :granule-data-format :granule-data-format-h}
     :always-case-sensitive #{:echo-collection-id}
     :disallow-pattern #{:echo-collection-id}}))
@@ -176,6 +176,7 @@
 
    ;; service related parameters
    :service-name cpv/string-plus-and-options
+   :service-type cpv/string-param-options
    :service-concept-id cpv/and-option})
 
 (defmethod cpv/valid-parameter-options :granule

@@ -127,9 +127,11 @@
   [context service-associations]
   (let [service-concepts (service-associations->service-concepts context service-associations)
         service-names (map #(get-in % [:extra-fields :service-name]) service-concepts)
+        service-types (map #(get-in % [:extra-fields :service-type]) service-concepts)
         service-concept-ids (map :concept-id service-concepts)]
     {:service-names service-names
      :service-names-lowercase (map string/lower-case service-names)
+     :service-types-lowercase (map string/lower-case service-types)
      :service-concept-ids service-concept-ids
      :has-formats (boolean (some #(has-formats? context %) service-concepts))
      :has-spatial-subsetting (boolean (some #(has-spatial-subsetting? context %) service-concepts))

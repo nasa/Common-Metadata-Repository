@@ -57,6 +57,7 @@
                           :sensor :sensor-sn
                           :service-concept-id :service-concept-ids
                           :service-name :service-names
+                          :service-type :service-types-lowercase
                           :two-d-coordinate-system-name :two-d-coord-name
                           :updated-since :revision-date
                           :usage-score :usage-relevancy-score
@@ -147,6 +148,7 @@
    :sensor-sn :sensor
    :service-concept-ids :service-concept-id
    :service-names :service-name
+   :service-types-lowercase :service-type
    :two-d-coord-name :two-d-coordinate-system-name
    :variable-concept-ids :variable-concept-id
    :variable-names :variable-name
@@ -180,7 +182,8 @@
    :variable-native-id "variable-native-ids-lowercase"
    :measurement "measurements-lowercase"
    :author "authors-lowercase"
-   :service-name "service-names-lowercase"})
+   :service-name "service-names-lowercase"
+   :service-type "service-types-lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :variable
   [_]
