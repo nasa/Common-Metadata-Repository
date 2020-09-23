@@ -496,7 +496,13 @@
                          :collection
                          {:circle "179.8,41,100000"
                           :bounding-box "166.11,-19.14,-166.52,53.04"
-                          "options[spatial][or]" "false"})]
+                          "options[spatial][or]" "false"})
+             bbox-with-other-options (search/find-refs
+                                       :collection
+                                       {:bounding-box ["166.11,-19.14,-166.52,53.04"
+                                                       "23.59,-15.47,25.56,-4"]
+                                        :include_granule_counts "true"
+                                        "options[spatial][or]" "true"})]
         (is (d/refs-match? [across-am-poly along-am-line whole-world across-am-br am-point very-wide-cart]
                            combined-refs))
         (is (d/refs-match? [wide-north on-np normal-poly very-wide-cart whole-world normal-brs]
@@ -504,7 +510,9 @@
         (is (d/refs-match? [across-am-poly very-wide-cart am-point along-am-line normal-line-cart whole-world across-am-br]
                            bbox-refs))
         (is (d/refs-match? [across-am-poly along-am-line whole-world]
-                           anded-refs))))))
+                           anded-refs))
+        (is (d/refs-match? [across-am-poly very-wide-cart am-point along-am-line normal-line-cart whole-world across-am-br]
+                           bbox-with-other-options))))))
 
 (def all-tiles
   [[8 8] [35 7] [7 6] [28 8] [27 8] [8 7] [16 6] [8 11] [22 10] [9 8] [10 14] [12 12] [8 9]

@@ -31,13 +31,11 @@
 
 (defn- valid-parent-condition?
   "The granule count query extractor can extract spatial and temporal conditions from a collection
-  query. It only supports extracting spatial and temporal conditions that aren't OR'd or negated
-  as well. Returns true if the parent condition is allowed"
+  query. It only supports extracting spatial and temporal conditions that aren't negated. Returns true if the parent condition is allowed"
   [condition]
   (let [cond-type (type condition)]
     (or (= cond-type Query)
-        (and (= cond-type ConditionGroup)
-             (= :and (:operation condition))))))
+        (= cond-type ConditionGroup))))
 
 (defn- validate-path-to-condition
   "Validates that the path to the condition we are extracting from the query doesn't contain
