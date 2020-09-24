@@ -52,14 +52,16 @@
     (get-in query-field->elastic-doc-values-fields [concept-type field] field)
     field))
 
-(defn filter-expired-concepts
+(defn- filter-expired-concepts
   "Remove concepts that have an expired delete-time."
   [batch]
   (filter (fn [concept]
             (let [delete-time-str (get-in concept [:extra-fields :delete-time])
                   delete-time (when delete-time-str
                                 (date/parse-datetime delete-time-str))]
-              (or (nil? delete-time)
+              ;; do not filter out the concept if it is deleted (see CMR-6731)
+              (or (:deleted concept)
+                  (nil? delete-time)
                   (t/after? delete-time (tk/now)))))
           batch))
 
