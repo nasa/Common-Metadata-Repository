@@ -1673,6 +1673,7 @@ Collections can be found by searching for associated services. The following ser
 * service_name
   * supports `pattern`, `ignore_case` and option `and`
 * service_type
+  * supports `pattern` and `ignore_case`
 * service_concept_id
   * supports option `and`
 
@@ -3739,6 +3740,7 @@ These parameters will match fields within a service. They are case insensitive b
 * name
   * options: pattern, ignore_case
 * type
+  * options: pattern, ignore_case
 * provider
   * options: pattern, ignore_case
 * native_id

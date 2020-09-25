@@ -226,10 +226,25 @@
       [service1 service2 service3]
       {:type "OPeNDAP"}
 
+      "By service type case insensitive by default."
+      [service1 service2 service3]
+      {:type "OPeNDAp"}
+
       "By service types"
       [service1 service2 service3 service4]
-      {:type ["OPeNDAP" "Harmony"]})))
+      {:type ["OPeNDAP" "Harmony"]}
 
+      "By service type pattern true"
+      [service1 service2 service3]
+      {:type "OPeN*" "options[type][pattern]" true}
+
+      "By service type pattern false"
+      []
+      {:type "OPeN*" "options[type][pattern]" false}
+
+      "By service type ignore case true"
+      [service1 service2 service3]
+      {:type "OPeNDAp" "options[type][ignore-case]" true})))
 
 (deftest search-service-simple-keywords-test
   (let [svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
