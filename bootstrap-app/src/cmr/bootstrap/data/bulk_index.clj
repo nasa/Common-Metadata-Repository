@@ -234,7 +234,12 @@
                                                                          (:db-batch-size system))]
                           concept-batch)
         total (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
-    (index/bulk-index {:system (helper/get-indexer system)} concept-batches {:all-revisions-index? true})
+
+    ;; for concept types that have all revisions index, also index the all revisions index
+    (when-not (#{:tag :granule} concept-type)
+      (index/bulk-index
+       {:system (helper/get-indexer system)} concept-batches {:all-revisions-index? true}))
+
     (info "Indexed " total " concepts.")
     total))
 
