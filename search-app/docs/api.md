@@ -2293,12 +2293,6 @@ Exclude granule by parent concept id
 
     curl "%CMR-ENDPOINT%/granules?provider=PROV1&provider=PROV2&echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=C1000000001-CMR_PROV2"
 
-#### <a name="g-include-polygons"></a> Include generated orbital polygons.
-
-Include generated polygons in orbital granules for ATOM and JSON results. False by default.
-
-Note: Including generated polygons may increase result sizes by several orders of magnitude.
-
 #### <a name="sorting-granule-results"></a> Sorting Granule Results
 
 Granule results are sorted by ascending provider and start date by default. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+`(Note: `+` must be URL encoded as %2B) can be used to explicitly request ascending.
