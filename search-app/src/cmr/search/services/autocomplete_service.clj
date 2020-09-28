@@ -65,19 +65,24 @@
       (and (seq token) (seq types)) (non-empty-token-with-type root types group-ids)
       (and (seq token) (empty? types)) (non-empty-token-without-type root group-ids))))
 
-(defn autocomplete
-  "Execute elasticsearch query to get autocomplete suggestions"
-  [context term types opts token]
-  (let [acls (af/get-acls context [:catalog-item])
-        group-permissions (map :group-permissions acls)
+(defn fetch-group-ids-for-autocomplete
+  "Fetch a distinct set of group-ids for an autocomplete query"
+  [acls]
+  (let [group-permissions (map :group-permissions acls)
         group-ids (->> group-permissions
                        (mapcat #(map :group-id %))
                        (remove nil?))
         registered (->> group-permissions
                         (mapcat #(map :user-type %))
-                        (filter #(= % "registered"))
-                        distinct)
-        condition (build-autocomplete-condition term types token (into registered group-ids))
+                        (filter #(= % "registered")))]
+    (distinct (into registered group-ids))))
+
+(defn autocomplete
+  "Execute elasticsearch query to get autocomplete suggestions"
+  [context term types opts token]
+  (let [acls (af/get-acls context [:catalog-item])
+        group-ids (fetch-group-ids-for-autocomplete acls)
+        condition (build-autocomplete-condition term types token group-ids)
         query (qm/query {:concept-type :autocomplete
                          :page-size (:page-size opts)
                          :offset (:offset opts)
