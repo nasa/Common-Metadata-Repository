@@ -2274,11 +2274,6 @@ Exclude granule by concept id
 Exclude granule by parent concept id
 
     curl "%CMR-ENDPOINT%/granules?provider=PROV1&provider=PROV2&echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=C1000000001-CMR_PROV2"
-<<<<<<< e88dc73a07a60f90f5766733cb4e5d77b6a1c396
-=======
-
-#### <a name="g-include-polygons"></a> Include generated orbital polygons.
->>>>>>> CMR-6624 Updates documentation.
 
 #### <a name="sorting-granule-results"></a> Sorting Granule Results
 
