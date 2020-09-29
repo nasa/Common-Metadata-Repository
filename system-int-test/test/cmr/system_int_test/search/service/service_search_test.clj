@@ -244,7 +244,23 @@
 
       "By service type ignore case true"
       [service1 service2 service3]
-      {:type "OPeNDAp" "options[type][ignore-case]" true})))
+      {:type "OPeNDAp" "options[type][ignore-case]" true}
+
+      "By service type ignore case true 2"
+      [service1 service2 service3]
+      {:type "opendap" "options[type][ignore-case]" true}
+
+      "By service type ignore case missing"
+      [service1 service2 service3]
+      {:type "opendap"}
+
+      "By service type ignore case false"
+      [service1 service2 service3]
+      {:type "opendap" "options[type][ignore-case]" false}
+
+      "By service type ignore case false 2"
+      []
+      {:type "OPeNDAP" "options[type][ignore-case]" false})))
 
 (deftest search-service-simple-keywords-test
   (let [svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
