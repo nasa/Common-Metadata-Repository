@@ -354,7 +354,8 @@
                                          :Name "Service2"})
         {serv3-concept-id :concept-id} (service-util/ingest-service-with-attrs
                                         {:native-id "someServ"
-                                         :Name "SomeService"})
+                                         :Name "SomeService"
+                                         :Type "Harmony"})
         {serv4-concept-id :concept-id} (service-util/ingest-service-with-attrs
                                         {:native-id "S4"
                                          :Name "Name4"})]
@@ -430,4 +431,18 @@
         [coll1 coll2 coll3] [serv1-concept-id serv2-concept-id] {:and false}
 
         "AND option true"
-        [coll2] [serv1-concept-id serv2-concept-id] {:and true}))))
+        [coll2] [serv1-concept-id serv2-concept-id] {:and true}))
+
+    (testing "search collections by service types"
+      (are3 [items service]
+        (let [params (merge {:service_type service})]
+          (d/refs-match? items (search/find-refs :collection params)))
+
+        "single service search"
+        [coll4] "Harmony"
+
+        "different single service search"
+        [coll1 coll2 coll3] "OPeNDAP"
+
+        "multiple search search"
+        [coll1 coll2 coll3 coll4] ["Harmony" "OPeNDAP"]))))

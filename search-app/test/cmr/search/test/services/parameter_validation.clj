@@ -16,7 +16,7 @@
    :page-size 10
    :options {:entry-title {:ignore-case "true"}}})
 
-(def valid-sience-keywords-search-term-msg
+(def valid-science-keywords-search-term-msg
   "Valid Science Keywords search term message for error message check in tests"
   (str "The valid search terms are [\"category\" \"topic\" \"term\" \"variable-level-1\" "
        "\"variable-level-2\" \"variable-level-3\" \"detailed-variable\" \"uuid\" \"any\"]."))
@@ -112,7 +112,8 @@
                                           (cmsg/invalid-sort-key "chew" :collection)]
       ["foo" "-bar" "+chew"] :granule [(cmsg/invalid-sort-key "foo" :granule)
                                        (cmsg/invalid-sort-key "bar" :granule)
-                                       (cmsg/invalid-sort-key "chew" :granule)]))
+                                       (cmsg/invalid-sort-key "chew" :granule)]
+      ["type"] :service []))
 
   ;; Orbit Number
   (testing "Valid exact orbit_number"
@@ -258,12 +259,12 @@
     :detailed-variable)
 
   (is (= [(str "Parameter [categories] is not a valid [science_keywords] search term. "
-               valid-sience-keywords-search-term-msg)]
+               valid-science-keywords-search-term-msg)]
          (#'pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"}}})))
   (is (= [(str "Parameter [categories] is not a valid [science_keywords] search term. "
-               valid-sience-keywords-search-term-msg)
+               valid-science-keywords-search-term-msg)
           (str "Parameter [topics] is not a valid [science_keywords] search term. "
-               valid-sience-keywords-search-term-msg)]
+               valid-science-keywords-search-term-msg)]
          (#'pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"
                                                                                                          :topics "Topic1"}}}))))
 
@@ -292,7 +293,21 @@
         (is (= {:type :bad-request
                 :errors #{"Parameter [foo] was not recognized."
                           "Parameter [bar] was not recognized."}}
-               (update-in (ex-data e) [:errors] set)))))))
+               (update-in (ex-data e) [:errors] set))))))
+  (testing "Collection service type parameters."
+    (is (= {:service-type "Harmony"}
+           (pv/validate-parameters :collection {:service-type "Harmony"}))))
+  (testing "Service type parameters."
+    (is (= {:type "Harmony"}
+           (pv/validate-parameters :service {:type "Harmony"}))))
+  (testing "Service failed invalid parameters."
+    (try
+      (pv/validate-parameters :service {:foo "Harmony"}))
+      (is false "An error should have been thrown.")
+      (catch clojure.lang.ExceptionInfo e
+        (is (= {:type :bad-request
+                :errors #{"Parameter [foo] was not recognized."}}
+               (update-in (ex-data e) [:errors] set))))))
 
 (deftest exclude-validation-test
   (testing "concept-id is a valid key to exclude"

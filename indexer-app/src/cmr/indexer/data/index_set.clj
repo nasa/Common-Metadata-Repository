@@ -499,6 +499,7 @@
           ;; associated services
           :service-names (m/doc-values m/string-field-mapping)
           :service-names-lowercase (m/doc-values m/string-field-mapping)
+          :service-types-lowercase (m/doc-values m/string-field-mapping)
           :service-concept-ids (m/doc-values m/string-field-mapping)
 
           ;; associations with the collection stored as EDN gzipped and base64 encoded for retrieving purpose
@@ -728,6 +729,7 @@
    :service-name-lowercase (m/doc-values m/string-field-mapping)
    :long-name (m/doc-values m/string-field-mapping)
    :long-name-lowercase (m/doc-values m/string-field-mapping)
+   :service-type-lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
    :deleted (m/doc-values m/bool-field-mapping)
    :user-id (m/doc-values m/string-field-mapping)

@@ -89,6 +89,7 @@
 
    ;; service parameters
    :service-name :string
+   :service-type :string
    :service-concept-id :string})
 
 (defmethod common-params/param-mappings :granule
@@ -157,6 +158,7 @@
 (defmethod common-params/param-mappings :service
   [_]
   {:name :string
+   :type :string
    :provider :string
    :native-id :string
    :concept-id :string

@@ -75,6 +75,7 @@
                                                       :provider-id "PROV2"})
         service4 (services/ingest-service-with-attrs {:native-id "serv4"
                                                       :Name "s.other"
+                                                      :Type "Harmony"
                                                       :provider-id "PROV2"})
         prov1-services [service1 service2]
         prov2-services [service3 service4]
@@ -219,7 +220,47 @@
       ;; Combination of params
       "Combination of params"
       [service3]
-      {:native-id "svc*" :provider "PROV2" "options[native-id][pattern]" true})))
+      {:native-id "svc*" :provider "PROV2" "options[native-id][pattern]" true}
+
+      "By service type"
+      [service1 service2 service3]
+      {:type "OPeNDAP"}
+
+      "By service type case insensitive by default."
+      [service1 service2 service3]
+      {:type "OPeNDAp"}
+
+      "By service types"
+      [service1 service2 service3 service4]
+      {:type ["OPeNDAP" "Harmony"]}
+
+      "By service type pattern true"
+      [service1 service2 service3]
+      {:type "OPeN*" "options[type][pattern]" true}
+
+      "By service type pattern false"
+      []
+      {:type "OPeN*" "options[type][pattern]" false}
+
+      "By service type ignore case true"
+      [service1 service2 service3]
+      {:type "OPeNDAp" "options[type][ignore-case]" true}
+
+      "By service type ignore case true 2"
+      [service1 service2 service3]
+      {:type "opendap" "options[type][ignore-case]" true}
+
+      "By service type ignore case missing"
+      [service1 service2 service3]
+      {:type "opendap"}
+
+      "By service type ignore case false"
+      [service1 service2 service3]
+      {:type "opendap" "options[type][ignore-case]" false}
+
+      "By service type ignore case false 2"
+      []
+      {:type "OPeNDAP" "options[type][ignore-case]" false})))
 
 (deftest search-service-simple-keywords-test
   (let [svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
@@ -440,6 +481,7 @@
                                                       :provider-id "PROV1"})
         service4 (services/ingest-service-with-attrs {:native-id "svc4"
                                                       :Name "service"
+                                                      :Type "Harmony"
                                                       :LongName "LongName3"
                                                       :provider-id "PROV1"})]
     (index/wait-until-indexed)
@@ -495,7 +537,19 @@
 
       "Sort by name then provider id descending order"
       ["-name" "-provider"]
-      [service2 service1 service4 service3])))
+      [service2 service1 service4 service3]
+
+      "Sort by service type"
+      ["type"]
+      [service4 service2 service3 service1]
+
+      "Sort by service type in descending order"
+      ["-type"]
+      [service2 service3 service1 service4]
+
+      "Sort by type name ascending then provider id descending order"
+      ["type" "name" "-provider"]
+      [service4 service3 service1 service2])))
 
 (deftest service-search-in-umm-json-format-test
   (testing "service search result in UMM JSON format has associated collections"

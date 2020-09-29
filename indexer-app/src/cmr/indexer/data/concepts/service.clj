@@ -17,8 +17,10 @@
                 revision-date format extra-fields]} concept
         {:keys [service-name]} extra-fields
         long-name (:LongName parsed-concept)
+        service-type (:Type parsed-concept)
         schema-keys [:LongName
                      :Name
+                     :Type
                      :Version
                      :AncillaryKeywords
                      :ContactGroups
@@ -46,6 +48,7 @@
        :deleted deleted
        :service-name service-name
        :service-name-lowercase (string/lower-case service-name)
+       :service-type-lowercase (string/lower-case service-type)
        :long-name long-name
        :long-name-lowercase (string/lower-case long-name)
        :provider-id provider-id
@@ -119,14 +122,22 @@
     (or (seq interpolation-types)
         (> (count supported-projections) 1))))
 
+(defn- get-service-type
+  "Get the service type from the service metadata that exists in the service-concept so that it can be indexed with the 
+   collection when associating a service with a collection." 
+  [context service-concept]
+  (:Type (concept-parser/parse-concept context service-concept)))
+
 (defn service-associations->elastic-doc
   "Converts the service association into the portion going in the collection elastic document."
   [context service-associations]
   (let [service-concepts (service-associations->service-concepts context service-associations)
         service-names (map #(get-in % [:extra-fields :service-name]) service-concepts)
+        service-types (map #(get-service-type context %) service-concepts)
         service-concept-ids (map :concept-id service-concepts)]
     {:service-names service-names
      :service-names-lowercase (map string/lower-case service-names)
+     :service-types-lowercase (map string/lower-case service-types)
      :service-concept-ids service-concept-ids
      :has-formats (boolean (some #(has-formats? context %) service-concepts))
      :has-spatial-subsetting (boolean (some #(has-spatial-subsetting? context %) service-concepts))
