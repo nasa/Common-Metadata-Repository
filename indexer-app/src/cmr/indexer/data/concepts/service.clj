@@ -122,12 +122,18 @@
     (or (seq interpolation-types)
         (> (count supported-projections) 1))))
 
+(defn- get-service-type
+  "Get the service type from the service metadata that exists in the service-concept so that it can be indexed with the 
+   collection when associating a service with a collection." 
+  [context service-concept]
+  (:Type (concept-parser/parse-concept context service-concept)))
+
 (defn service-associations->elastic-doc
   "Converts the service association into the portion going in the collection elastic document."
   [context service-associations]
   (let [service-concepts (service-associations->service-concepts context service-associations)
         service-names (map #(get-in % [:extra-fields :service-name]) service-concepts)
-        service-types (map #(get-in % [:extra-fields :service-type]) service-concepts)
+        service-types (map #(get-service-type context %) service-concepts)
         service-concept-ids (map :concept-id service-concepts)]
     {:service-names service-names
      :service-names-lowercase (map string/lower-case service-names)
