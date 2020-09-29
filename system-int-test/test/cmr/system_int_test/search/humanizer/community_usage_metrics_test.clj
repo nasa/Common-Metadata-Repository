@@ -93,20 +93,24 @@
  "Provider,Product,ProductVersion,Hosts
   PROV1,SHORTNAME1,N/A,1
   PROV1,ENTRYTITLE2,N/A,2
-  PROV1,ENTRYTITLE2.1,N/A,3
+  PROV1,ENTRYTITLE2:1,N/A,3
   PROV1,SHORTNAME2,N/A,5
   PROV1,NONEXISTENTCOL1,N/A,6
   PROV2,SHORTNAME1,N/A,7
   PROV2,ENTRYTITLE2,N/A,8
-  PROV2,ENTRYTITLE2.1,N/A,9
+  PROV2,ENTRYTITLE2:1,N/A,9
   PROV2,SHORTNAME2,N/A,11
-  PROV2,NONEXISTENTCOL2,N/A,12")
+  PROV2,NONEXISTENTCOL2,N/A,12
+  PROV1,NONEXISTENTCOL1:1,N/A,13
+  PROV2,NONEXISTENTCOL2:1,N/A,14")
 
 (def comprehensive-usage-test-result
  [{:short-name "SHORTNAME1" :access-count 30}
   {:short-name "SHORTNAME2" :access-count 16}
   {:short-name "NONEXISTENTCOL1" :access-count 6}
-  {:short-name "NONEXISTENTCOL2" :access-count 12}])
+  {:short-name "NONEXISTENTCOL2" :access-count 12}
+  {:short-name "NONEXISTENTCOL1:1" :access-count 13}
+  {:short-name "NONEXISTENTCOL2:1" :access-count 14}])
 
 (deftest update-community-metrics-test-with-comprehensive
   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection

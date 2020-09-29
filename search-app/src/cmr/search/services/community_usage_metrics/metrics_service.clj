@@ -37,7 +37,8 @@
   "Query elastic for a collection with a given entry-title, returns short-name"
   [context entry-title]
   (when (seq entry-title)
-    (let [condition (qm/string-condition :entry-title (str entry-title "*") false true)
+    (let [entry-title (first (str/split entry-title #":"))
+          condition (qm/string-condition :entry-title entry-title false false)
           query (qm/query {:concept-type :collection
                            :condition condition
                            :page-size 1
