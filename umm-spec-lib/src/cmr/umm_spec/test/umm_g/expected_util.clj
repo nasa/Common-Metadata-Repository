@@ -51,9 +51,9 @@
   excluded list below."
   [gran]
   (let [data-granule (when (:data-granule gran)
-                       (update (:data-granule gran) :archive-distribution-file-name #(if (nil? %)
-                                                                                       umm-spec-util/not-provided
-                                                                                       %)))]
+                       (update (:data-granule gran) :archive-distribution-file-name #(if %
+                                                                                       %
+                                                                                       umm-spec-util/not-provided)))]
     (-> gran
         (util/update-in-each [:measured-parameters] expected-measured-parameter)
         (update-in [:spatial-coverage :geometries] set)

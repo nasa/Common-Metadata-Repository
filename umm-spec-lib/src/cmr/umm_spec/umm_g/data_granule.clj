@@ -66,9 +66,9 @@
                                            (distinct feature-ids))]
                        (seq (concat producer-gran-id crid-ids feature-ids)))
        :ProductionDateTime production-date-time
-       :ArchiveAndDistributionInformation [{:Name (if (nil? archive-distribution-file-name)
-                                                    util/not-provided
-                                                    archive-distribution-file-name)
+       :ArchiveAndDistributionInformation [{:Name (if archive-distribution-file-name
+                                                    archive-distribution-file-name
+                                                    util/not-provided)
                                             :Size size
                                             :SizeInBytes size-in-bytes
                                             :Checksum (when checksum
