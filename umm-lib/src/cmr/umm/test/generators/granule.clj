@@ -44,7 +44,7 @@
                   :production-date-time ext-gen/date-time
                   :size (ext-gen/choose-double 0 1024)
                   :archive-distribution-file-name
-                    (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 10))))))
+                    (ext-gen/optional (ext-gen/string-ascii 1 10)))))
 
 (def cloud-cover-values
   (gen/fmap double gen/ratio))

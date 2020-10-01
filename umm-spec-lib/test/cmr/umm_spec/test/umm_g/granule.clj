@@ -17,6 +17,16 @@
           metadata (core/generate-metadata {} granule :umm-json)]
       (is (empty? (core/validate-metadata :granule :umm-json metadata))))))
 
+(deftest generate-and-parse-umm-g-granule-test-seed
+  (checking-with-seed "umm-g round tripping" 100 1601556014491
+    [granule (gen/no-shrink generators/umm-g-granules)]
+    (let [granule (sanitizer/sanitize-granule granule)
+          umm-g-metadata (core/generate-metadata {} granule :umm-json)
+          actual (core/parse-metadata {} :granule :umm-json umm-g-metadata)
+          expected (expected-util/umm->expected-parsed granule)
+          actual (update-in actual [:spatial-coverage :geometries] set)]
+      (is (= expected actual)))))
+
 (deftest generate-and-parse-umm-g-granule-test
   (checking "umm-g round tripping" 100
     [granule (gen/no-shrink generators/umm-g-granules)]
@@ -32,4 +42,7 @@
 
 (deftest parse-granule-test
   (testing "parse granule"
-    (is (= expected-util/expected-sample-granule (core/parse-metadata {} :granule :umm-json sample-umm-g-granule)))))
+    (is (= (assoc-in expected-util/expected-sample-granule
+                     [:data-granule :archive-distribution-file-name]
+                     "GranuleZipFile")
+           (core/parse-metadata {} :granule :umm-json sample-umm-g-granule)))))
