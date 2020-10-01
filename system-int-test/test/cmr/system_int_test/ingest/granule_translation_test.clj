@@ -7,7 +7,8 @@
    [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm-spec.test.location-keywords-helper :as location-keywords-helper]
    [cmr.umm-spec.test.umm-g.expected-util :as expected-util]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]))
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.util :as umm-spec-util]))
 
 (def ^:private valid-input-formats
   [:umm-json
@@ -89,6 +90,15 @@
           ;; UMM fields will be added when ISO SMAP granule support is added.
           (is (= (:granule-ur expected) (:granule-ur actual-parsed)))
 
+          (= :echo10 output-format)
+          (is (= (assoc-in expected [:data-granule :archive-distribution-file-name] nil) actual-parsed))
+
+          (and (= :echo10 input-format)
+               (= :umm-json output-format))
+          (is (= (assoc-in expected
+                           [:data-granule :archive-distribution-file-name]
+                           umm-spec-util/not-provided)
+                 actual-parsed))
           :else
           (is (= expected actual-parsed))))))
 

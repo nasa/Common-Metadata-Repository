@@ -59,6 +59,9 @@
 
    ;; currently not mapped to any echo10/iso-smap granule schema.
    feature-ids
+
+   ;; maps to UMM-G ArchiveAndDistributionInformation/Name only.
+   archive-distribution-file-name
    ])
 
 (defrecord GranuleTemporal

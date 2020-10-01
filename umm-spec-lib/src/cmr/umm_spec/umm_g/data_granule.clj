@@ -47,13 +47,14 @@
          :checksum (when-let [checksum (get (first ArchiveAndDistributionInformation) :Checksum)]
                      (g/map->Checksum
                        {:value (:Value checksum)
-                        :algorithm (:Algorithm checksum)}))}))))
+                        :algorithm (:Algorithm checksum)}))
+         :archive-distribution-file-name (get (first ArchiveAndDistributionInformation) :Name)}))))
 
 (defn DataGranule->umm-g-data-granule
   "Returns the UMM-G DataGranule from the given umm-lib granule model DataGranule."
   [data-granule]
   (when data-granule
-    (let [{:keys [producer-gran-id day-night crid-ids feature-ids
+    (let [{:keys [producer-gran-id day-night crid-ids feature-ids archive-distribution-file-name
                   production-date-time size size-unit size-in-bytes checksum]} data-granule]
       {:DayNightFlag (get umm-lib-day-night->umm-g-day-night day-night "Unspecified")
        :Identifiers (let [producer-gran-id (when producer-gran-id
@@ -65,12 +66,14 @@
                                            (distinct feature-ids))]
                        (seq (concat producer-gran-id crid-ids feature-ids)))
        :ProductionDateTime production-date-time
-       :ArchiveAndDistributionInformation [{:Name util/not-provided
+       :ArchiveAndDistributionInformation [{:Name (if (nil? archive-distribution-file-name)
+                                                    util/not-provided
+                                                    archive-distribution-file-name)
                                             :Size size
                                             :SizeInBytes size-in-bytes
                                             :Checksum (when checksum
                                                         {:Value (:value checksum)
-                                                         :Algorithm (:algorithm checksum)})  
+                                                         :Algorithm (:algorithm checksum)})
                                             :SizeUnit (if size-unit
                                                         size-unit
                                                         "NA")}]})))

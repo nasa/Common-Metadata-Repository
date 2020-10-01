@@ -21,7 +21,7 @@
   "Returns the expected data-granule for comparison with the parsed record."
   [data-granule]
   (some-> data-granule
-          (assoc :crid-ids nil :feature-ids nil)
+          (assoc :crid-ids nil :feature-ids nil :archive-distribution-file-name nil)
           (update :day-night #(if % % "UNSPECIFIED"))))
 
 (defn umm->expected-parsed-echo10
@@ -31,7 +31,8 @@
   (-> gran
       ;; Update the related-urls as ECHO10 OnlineResources' title is built as description plus resource-type
       (update-in [:related-urls] tc/umm-related-urls->expected-related-urls)
-      ;; Set crid-ids and feature-ids to nil when data-granule exists since they are not supported in echo10.
+      ;; Set crid-ids, feature-ids, and archive-distribution-file-name to nil when
+      ;; data-granule exists since they are not supported in echo10.
       (update-in [:data-granule] data-granule->expected)
       umm-g/map->UmmGranule))
 
