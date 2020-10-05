@@ -12,11 +12,18 @@
     [cmr.ingest.data.ingest-events :as ingest-events]
     [cmr.ingest.data.provider-acl-hash :as pah]
     [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
+    [cmr.ingest.services.ingest-service.subscription :as sub]
     [cmr.transmit.echo.acls :as echo-acls]
     [cmr.transmit.metadata-db :as mdb]
     [cmr.transmit.search :as search]
     [markdown.core :as markdown]
     [postal.core :as postal-core]))
+
+;Call the following to trigger a job, example below will fire an email subscription
+;UPDATE QRTZ_TRIGGERS
+;SET NEXT_FIRE_TIME =(((cast (SYS_EXTRACT_UTC(SYSTIMESTAMP) as DATE) - DATE'1970-01-01')*86400 + 1200) * 1000)
+;WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
+
 
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
   "The number of seconds between jobs to check for ACL changes and reindex collections."
@@ -250,13 +257,19 @@
        end-time (last parts)]
   (assoc raw :start-time start-time :end-time end-time)))
 
+(defn- send-update-subscription-notification-time
+  "handle any packaging of data here before sending it off to transmit package"
+  [context data]
+  (debug "send-update-subscription-notification-time with" data)
+  (search/save-subscription-notification-time context data))
+
 (defn- process-subscriptions
   "Process each subscription in subscriptions."
   [context subscriptions time-constraint]
   (doseq [raw_subscription subscriptions
          :let [subscription (add-updated-since raw_subscription time-constraint)
                email-address (get-in subscription [:extra-fields :email-address])
-               sub-name (get-in subscription [:extra-fields :subscription-name])
+               sub-id (get subscription :concept-id)
                coll-id (get-in subscription [:extra-fields :collection-concept-id])
                query-string (-> (:metadata subscription)
                                 (json/decode true)
@@ -270,19 +283,22 @@
                                :collection-concept-id coll-id
                                :token (cmr.transmit.config/echo-system-token)}
                               query-params)]]
-      (debug "Processing subscription: " sub-name " with\n" (str subscription) ".")
+      (debug "Processing subscription: " sub-id " with\n" (str subscription) ".")
       (try
+        ; TODO - a comment from CMR-6612's review is to not have 3 let statments, simplyfy the code after a merge
         (let [gran-ref1 (search/find-granule-references context params1)
               gran-ref2 (search/find-granule-references context params2)
               gran-ref (distinct (concat gran-ref1 gran-ref2))
               gran-ref-location (map :location gran-ref)]
-          (debug "gran-ref-locations for " sub-name ": " gran-ref-location)
+          (debug "gran-ref-locations for " sub-id ": " gran-ref-location)
           (when (seq gran-ref)
            (let [email-content (create-email-content (mail-sender) email-address gran-ref-location subscription)
                 email-settings {:host (email-server-host) :port (email-server-port)}]
-            (postal-core/send-message email-settings email-content))))
+            (postal-core/send-message email-settings email-content)))
+          (send-update-subscription-notification-time context sub-id))
        (catch Exception e
-         (error "Exception caught in email subscription: " sub-name "\n\n"  (.getMessage e))))))
+         (error "Exception caught in email subscription: " sub-id "\n\n"
+          (.getMessage e) "\n\n" e)))))
 
 (defn- email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
@@ -294,7 +310,7 @@
         subscriptions
          (->> (mdb/find-concepts context {:latest true} :subscription)
               (filter #(not (:deleted %)))
-              (map #(select-keys % [:extra-fields :metadata])))]
+              (map #(select-keys % [:concept-id :extra-fields :metadata])))]
     (process-subscriptions context subscriptions time-constraint)))
 
 (defn trigger-autocomplete-suggestions-reindex

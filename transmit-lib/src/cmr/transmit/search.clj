@@ -4,6 +4,7 @@
    [clj-http.client :as client]
    [clojure.data.xml :as x]
    [cmr.common.api.context :as ch]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
@@ -12,6 +13,29 @@
    [cmr.transmit.connection :as conn]
    [cmr.transmit.http-helper :as h]
    [ring.util.codec :as codec]))
+
+(defn token-header
+ [context]
+ (assoc (ch/context->http-headers context)
+   config/token-header (config/echo-system-token)))
+
+(defn-timed save-subscription-notification-time
+ "make an http call to the database application"
+ [context data]
+ (let [conn (config/context->app-connection context :metadata-db)
+       request-url (str (conn/root-url conn) (format "/subscription/%s/notification/time" data))
+       response (client/put request-url
+                            (merge
+                              (config/conn-params conn)
+                              {:accept :xml
+                               :headers (token-header context)
+                               :throw-exceptions false}))
+       {:keys [headers body]} response
+       status (int (:status response))]
+   (if (= status 204)
+     (debug "success talking to DB layer")
+     (errors/internal-error!
+       (format "Subscription update failed. status: %s body: %s" status body)))))
 
 (defn-timed find-granule-hits
   "Returns granule hits that match the given search parameters."

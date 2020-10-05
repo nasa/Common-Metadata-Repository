@@ -7,6 +7,7 @@
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as system]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]))
@@ -19,9 +20,14 @@
                   {"provguid1" "PROV1" "provguid2" "PROV2"}
                   [:read :update]
                   [:read :update])
+                (dev-sys-util/freeze-resume-time-fixture)
                 (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV3"}
                                                                   [:read]
                                                                   [:read :update])]))
+
+(defn- current-time
+  []
+  (str (first (clojure.string/split (str (java.time.LocalDateTime/now)) #"\.")) "Z"))
 
 (deftest subscription-ingest-on-prov3-test
   (testing "ingest on PROV3, guest is not granted ingest permission for SUBSCRIPTION_MANAGEMENT ACL"
@@ -179,6 +185,22 @@
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept
                                               (dissoc concept :concept-id))]
         (is (= [supplied-concept-id 3] [concept-id revision-id]))))))
+
+(deftest update-subscription-notification
+  (system/only-with-real-database
+    (let [_ (dev-sys-util/freeze-time! "2020-01-01T10:00:00Z")
+          supplied-concept-id "SUB1000-PROV1"
+          metadata {:concept-id supplied-concept-id :native-id "Atlantic-1"}
+          concept (subscription-util/make-subscription-concept metadata)]
+      (subscription-util/ingest-subscription concept)
+      (testing "send an update event to an new subscription"
+        (let [resp (subscription-util/update-subscription-notification supplied-concept-id)]
+          (is (= 204 (:status resp))))
+        (let [resp (subscription-util/update-subscription-notification "-Fake-Id-")]
+          (is (= 404 (:status resp))))
+        (let [resp (subscription-util/update-subscription-notification "SUB8675309-foobar")]
+          (is (= 404 (:status resp))))
+        ))))
 
 (deftest subscription-ingest-schema-validation-test
   (testing "ingest of subscription concept JSON schema validation missing field"

@@ -130,6 +130,7 @@
   (if bool
     (q-config/set-queue-type! "aws")
     (q-config/set-queue-type! "local")))
+    ;(q-config/set-queue-type! "memory"))) ; why is this not used over local?
 
 ;; If the ENV var was set, let's make it a keyword, which is what the config
 ;; for dev-system expects.
