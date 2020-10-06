@@ -143,7 +143,7 @@
 (defn mdb-subscription-notification-time
   "URL to notification time in metadata db app"
   [concept-id]
-  (format "http://localhost:%s/subscription/%s/notification/time"
+  (format "http://localhost:%s/subscription/%s/notification-time"
           (transmit-config/metadata-db-port)
           concept-id))
 
