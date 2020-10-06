@@ -10,6 +10,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [CORS Header support](#cors-header-support)
     * [Query Parameters](#query-parameters)
     * [Paging Details](#paging-details)
+    * [Scrolling Details](#scrolling-details)
     * [Parameter Options](#parameter-options)
     * [Collection Result Feature Parameters](#collection-result-features)
     * [Headers](#headers)
@@ -241,6 +242,8 @@ Scrolling allows the retrieval of all results of a query in an efficient manner.
 Scrolling is *session based*; the first search conducted with the `scroll` parameter set to `true` will return a session id in the form of a `CMR-Scroll-Id` header. This header should be included in subsequent searches until the desired number of results have been retrieved. Sessions time out after 10 minutes of inactivity; each new query before the timeout is reached with a given `CMR-Scroll-Id` header will reset the timeout to 10 minutes. Queries occurring after a session has timed out will result in an HTTP 404 status code and error message.
 
 When all the results have been returned subsequent calls using the same `CMR-Scroll-Id` header will return an empty list.
+
+Important note: Clients use scrolling (especially via programatic api or scripts) should explicitly invoke [`clear scroll session`] (#clear-scroll) to release the scroll session when they are done. This will allow the scroll sessions be released promptly to free up system resources.
 
 #### <a name="parameter-options"></a> Parameter Options
 
@@ -4660,6 +4663,8 @@ permission.
 #### <a name="clear-scroll"></a> Clear scroll session
 
     curl -i -XPOST -H "Content-Type: application/json" %CMR-ENDPOINT%/clear-scroll -d '{ "scroll_id" : "xxxx"}'
+
+It returns HTTP status code 204 when successful.
 
 #### <a name="reset-the-application-to-the-initial-state"></a> Reset the application to the initial state
 
