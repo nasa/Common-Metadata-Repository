@@ -243,7 +243,7 @@ Scrolling is *session based*; the first search conducted with the `scroll` param
 
 When all the results have been returned subsequent calls using the same `CMR-Scroll-Id` header will return an empty list.
 
-Important note: Clients use scrolling (especially via programatic api or scripts) should explicitly invoke [`clear scroll session`] (#clear-scroll) to release the scroll session when they are done. This will allow the scroll sessions be released promptly to free up system resources.
+Important note: Clients using scrolling (especially via programatic api or scripts) should explicitly invoke [`clear scroll session`] (#clear-scroll) to release the scroll session when they are finished. This will end the scroll session and free up system resources.
 
 #### <a name="parameter-options"></a> Parameter Options
 
