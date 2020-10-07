@@ -17,20 +17,20 @@
                                                           :entry-title "et1"
                                                           :version-id "v1"
                                                           :short-name "s1"}})
+        coll-concept-id (:concept-id coll1)
         coll2 (concepts/create-and-save-concept
                :collection "REG_PROV" 2 1 {:extra-fields {:entry-id "entry-2"
                                                           :entry-title "et2"
                                                           :version-id "v1"
                                                           :short-name "s2"}})
-        associated-variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
-        var-association1 (concepts/create-and-save-concept
-                          :variable-association coll1 associated-variable 1 3)]
+        associated-variable (concepts/create-and-save-concept
+                              :variable "REG_PROV" 1 3 {:coll-concept-id coll-concept-id})
+        var-assn-concept-id (get-in associated-variable [:variable-association :concept-id])
+        var-association1 (:concept (util/get-concept-by-id var-assn-concept-id))]
     (testing "find latest revisions"
       (are3 [variable-associations params]
         (is (= (set variable-associations)
-               (set (->> (util/find-latest-concepts :variable-association params)
-                         :concepts
-                         (map #(dissoc % :provider-id :revision-date :transaction-id))))))
+               (set (:concepts (util/find-latest-concepts :variable-association params)))))
 
         "by associated-concept-id"
         [var-association1]

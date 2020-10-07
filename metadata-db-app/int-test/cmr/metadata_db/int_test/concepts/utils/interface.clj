@@ -111,5 +111,7 @@
         concept (apply create-concept concept-type parsed-args)
         _ (dotimes [n (dec num-revisions)]
             (util/assert-no-errors (util/save-concept concept)))
-        {:keys [concept-id revision-id]} (util/save-concept concept)]
-    (assoc concept :concept-id concept-id :revision-id revision-id)))
+        {:keys [concept-id revision-id variable-association]} (util/save-concept concept)]
+    (if (= :variable concept-type)
+      (assoc concept :concept-id concept-id :revision-id revision-id :variable-association variable-association)
+      (assoc concept :concept-id concept-id :revision-id revision-id))))

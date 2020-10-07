@@ -10,17 +10,20 @@
                                                  {:provider-id "SMAL_PROV1" :small true}))
 
 (deftest find-variables
-  (let [;; create two variables with the same native-id on different providers with multiple revisions
-         variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1 3)
-         variable2 (concepts/create-and-save-concept :variable "SMAL_PROV1" 1 2)]
-    (println "Variable1 is:" variable1)
-    (println "Variable2 is:" variable2)
+  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
+        coll1-concept-id (:concept-id coll1)
+        coll2 (concepts/create-and-save-concept :collection "SMAL_PROV1" 1 1)
+        coll2-concept-id (:concept-id coll2)
+        ;; create two variables with the same native-id on different providers with multiple revisions
+        variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1 3 {:coll-concept-id coll1-concept-id})
+        variable2 (concepts/create-and-save-concept :variable "SMAL_PROV1" 1 2 {:coll-concept-id coll2-concept-id})]
     (testing "find latest revisions"
       (are3 [variables params]
-        (is (= (set variables)
+        (is (= (set (map #(dissoc % :coll-concept-id :variable-association) variables))
                (set (->> (util/find-latest-concepts :variable params)
                          :concepts
-                         util/concepts-for-comparison))))
+                         util/concepts-for-comparison
+                         (map #(dissoc % :coll-concept-id))))))
 
         "with metadata search by provider-id"
         [variable1] {:provider-id "REG_PROV"}
