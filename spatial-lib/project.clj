@@ -61,10 +61,10 @@
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
-            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "_kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "kaocha" ["shell" "echo" "== Skipping Kaocha Temporarily =="]
             "itest" ["shell" "echo" "== No integration tests =="]
             "utest" ["shell" "echo" "== skipping tests for now =="]
-            "_utest" ["kaocha" "--focus" "unit"]
 
             ;; Linting aliases
             "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
