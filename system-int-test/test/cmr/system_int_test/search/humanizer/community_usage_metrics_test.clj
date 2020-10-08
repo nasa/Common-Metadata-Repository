@@ -91,26 +91,28 @@
 
 (def comprehensive-usage-test-csv
  "Provider,Product,ProductVersion,Hosts
-  PROV1,SHORTNAME1,N/A,1
-  PROV1,ENTRYTITLE2,N/A,2
-  PROV1,ENTRYTITLE2:1,N/A,3
-  PROV1,SHORTNAME2,N/A,5
-  PROV1,NONEXISTENTCOL1,N/A,6
-  PROV2,SHORTNAME1,N/A,7
-  PROV2,ENTRYTITLE2,N/A,8
-  PROV2,ENTRYTITLE2:1,N/A,9
-  PROV2,SHORTNAME2,N/A,11
-  PROV2,NONEXISTENTCOL2,N/A,12
-  PROV1,NONEXISTENTCOL1:1,N/A,13
-  PROV2,NONEXISTENTCOL2:1,N/A,14")
+  PROV1,SHORTNAME1,N/A,100
+  PROV1,ENTRYTITLE2,N/A,100
+  PROV1,ENTRYTITLE2:1,N/A,100
+  PROV1,ENTRY:TITLE3:1,N/A,100
+  PROV1,SHORTNAME2,N/A,10
+  PROV1,NONEXISTENTCOL1,N/A,1
+  PROV1,NONEXISTENTCOL1:1,N/A,1
+  PROV2,SHORTNAME1,N/A,100
+  PROV2,ENTRYTITLE2,N/A,100
+  PROV2,ENTRYTITLE2:1,N/A,100
+  PROV2,ENTRY:TITLE3:1,N/A,100
+  PROV2,SHORTNAME2,N/A,10
+  PROV2,NONEXISTENTCOL2,N/A,1
+  PROV2,NONEXISTENTCOL2:1,N/A,1")
 
 (def comprehensive-usage-test-result
- [{:short-name "SHORTNAME1" :access-count 30}
-  {:short-name "SHORTNAME2" :access-count 16}
-  {:short-name "NONEXISTENTCOL1" :access-count 6}
-  {:short-name "NONEXISTENTCOL2" :access-count 12}
-  {:short-name "NONEXISTENTCOL1:1" :access-count 13}
-  {:short-name "NONEXISTENTCOL2:1" :access-count 14}])
+ [{:short-name "SHORTNAME1" :access-count 800}
+  {:short-name "SHORTNAME2" :access-count 20}
+  {:short-name "NONEXISTENTCOL1" :access-count 1}
+  {:short-name "NONEXISTENTCOL1:1" :access-count 1}
+  {:short-name "NONEXISTENTCOL2" :access-count 1}
+  {:short-name "NONEXISTENTCOL2:1" :access-count 1}])
 
 (deftest update-community-metrics-test-with-comprehensive
   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
@@ -125,11 +127,11 @@
   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                           3
                                           {:ShortName "SHORTNAME1"
-                                           :EntryTitle "ENTRYTITLE2.1"})
+                                           :EntryTitle "ENTRY:TITLE3"})
                                  {:token "mock-echo-system-token"})
   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                           {:ShortName "SHORTNAME2"
-                                           :EntryTitle "ENTRYTITLE3"})
+                                           :EntryTitle "ENTRYTITLE4"})
                                  {:token "mock-echo-system-token"})
   (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection
                                           {:ShortName "SHORTNAME1"
@@ -143,11 +145,11 @@
   (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection
                                           5
                                           {:ShortName "SHORTNAME1"
-                                           :EntryTitle "ENTRYTITLE2.1"})
+                                           :EntryTitle "ENTRY:TITLE3"})
                                  {:token "mock-echo-system-token"})
   (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection
                                           {:ShortName "SHORTNAME2"
-                                           :EntryTitle "ENTRYTITLE4"})
+                                           :EntryTitle "ENTRYTITLE5"})
                                  {:token "mock-echo-system-token"})
   (index/wait-until-indexed)
   (testing "Create community usage with invalid comprehensive param"
