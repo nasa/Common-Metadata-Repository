@@ -17,6 +17,6 @@
  :fail-fast? false
 
  :reporter #profile {:default [kaocha.report/dots]
-                     :ci [kaocha.report.progress/report]}
+                     :ci [kaocha.report/documentation]}
 
  :kaocha.plugin.junit-xml/target-file "target/junit.xml"}

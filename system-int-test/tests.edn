@@ -12,7 +12,7 @@
 
  :fail-fast? false
 
- :reporter [kaocha.report.progress/report]
+ :reporter [kaocha.report/documentation]
 
  :kaocha.plugin.randomize/randomize? false
  :kaocha.plugin.profiling/profiling? false
