@@ -15,7 +15,7 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
                  [org.elasticsearch/elasticsearch "7.5.2"]
-                 [org.testcontainers/testcontainers "1.14.1"]
+                 [org.testcontainers/testcontainers "1.15.0-rc2"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]
             [test2junit "1.3.3"]]

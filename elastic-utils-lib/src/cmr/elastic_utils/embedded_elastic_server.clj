@@ -8,7 +8,7 @@
   (:import
    (java.time Duration)
    (org.testcontainers.containers FixedHostPortGenericContainer Network)
-   (org.testcontainers.containers.wait Wait)
+   (org.testcontainers.containers.wait.strategy Wait)
    (org.testcontainers.images.builder ImageFromDockerfile)))
 
 (def ^:private elasticsearch-official-docker-image
