@@ -384,7 +384,7 @@
   (testing "parse access value"
     (is (= 4.2 (c/parse-access-value all-fields-collection-xml)))))
 
-(deftest validate-xml
+(deftest ^:kaocha/skip validate-xml
   (testing "valid xml"
     (is (= 0 (count (c/validate-xml valid-collection-xml)))))
   (testing "invalid xml"

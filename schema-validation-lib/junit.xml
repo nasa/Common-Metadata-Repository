@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+<testsuite errors="0" package="" tests="1" name="unit" time="0.060000" hostname="localhost" id="0" timestamp="2020-10-08T09:50:26" failures="0">
+<properties/>
+<testcase name="cmr.schema-validation.test.json-schema/validate-json-test" classname="cmr.schema-validation.test.json-schema" time="0.053000">
+</testcase>
+<system-out>
+</system-out>
+<system-err/>
+</testsuite>
+</testsuites>

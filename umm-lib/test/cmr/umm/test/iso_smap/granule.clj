@@ -210,7 +210,7 @@
   (testing "parse orbit"
     (is (= expected-orbit (g/parse-spatial sample-granule-xml-orbit)))))
 
-(deftest validate-xml
+(deftest ^:kaocha/skip validate-xml
   (testing "valid xml"
     (is (= 0 (count (g/validate-xml sample-granule-xml)))))
   (testing "invalid xml"

@@ -24,6 +24,19 @@
                                         "search-app"
                                         "virtual-product-app"
                                         "es-spatial-plugin"]}}}
+  :placeholders {:inherited
+                 {:profiles
+                  {:kaocha
+                   {:dependencies [[lambdaisland/kaocha "1.0.700"]
+                                   [lambdaisland/kaocha-cloverage "1.0.63"]
+                                   [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
+                  :aliases {
+                            ;; Kaocha test aliases
+                            ;; refer to tests.edn for test configuration
+                            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+                            "itest" ["kaocha" "--focus" "integration"]
+                            "utest" ["kaocha" "--focus" "unit"]}}}
+
   :aliases {"kibit"
             ["modules" "kibit"]
             "eastwood"
@@ -45,8 +58,8 @@
             ["shell" "cmr" "stop" "local" "sqs-sns"]
             "restart-sqs-sns"
             ["do"
-              ["stop-sqs-sns"]
-              ["start-sqs-sns"]]
+             ["stop-sqs-sns"]
+             ["start-sqs-sns"]]
             ;; Dev
             "clean-all" ["modules" "do" "clean"]
             "repl"

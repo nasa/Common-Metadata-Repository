@@ -1,0 +1,20 @@
+#kaocha/v1
+{:tests [{:id :integration
+          :test-paths ["test"]}]
+
+ :plugins [:kaocha.plugin.alpha/info
+           :junit-xml
+           :print-invocations
+           :profiling
+           :notifier]
+
+ :color? true
+
+ :fail-fast? true
+
+ :reporter [kaocha.report.progress/progress]
+
+ :kaocha.plugin.randomize/randomize? false
+ :kaocha.plugin.profiling/profiling? false
+
+ :kaocha.plugin.junit-xml/target-file "target/junit.xml"}

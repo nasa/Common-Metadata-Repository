@@ -1,0 +1,18 @@
+#kaocha/v1
+{:tests [{:id :unit
+          :kaocha/ns-patterns ["cmr.schema-validation.test*" "-test$"]}]
+
+ :plugins [:kaocha.plugin.alpha/info
+           :kaocha.plugin/cloverage
+           :junit-xml
+           :print-invocations
+           :profiling
+           :notifier]
+
+ :color? true
+
+ :fail-fast? false
+
+ :reporter [kaocha.report/dots]
+
+ :kaocha.plugin.junit-xml/target-file "target/junit.xml"}

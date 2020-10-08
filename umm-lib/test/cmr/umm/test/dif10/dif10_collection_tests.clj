@@ -683,7 +683,7 @@
   (testing "parse collection access value"
     (is (= 1.0 (c/parse-access-value dif10-collection-xml)))))
 
-(deftest validate-xml
+(deftest ^:kaocha/skip validate-xml
   (testing "valid xml"
     (is (empty? (c/validate-xml dif10-collection-xml))))
   (testing "invalid xml"

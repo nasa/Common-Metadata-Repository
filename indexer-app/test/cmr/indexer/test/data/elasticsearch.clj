@@ -83,7 +83,7 @@
   (when (> num-items 1)
     (concat [invalid-item-resp] (take (dec num-items) (repeatedly valid-item-resp)))))
 
-(deftest bulk-index-continues-on-error-test
+(deftest ^:kaocha/pending bulk-index-continues-on-error-test
   (testing "400 in response doesn't throw exception"
     ;; Just call handle-bulk-index-reponse to demonstrate it doesn't throw exception
     (let [fake-resp (some-failed-bulk-index-response 1000)]

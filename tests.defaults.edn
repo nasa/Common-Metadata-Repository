@@ -1,0 +1,11 @@
+#kaocha/v1
+{:color? true
+
+ :fail-fast? false
+
+ :reporter [kaocha.report/documentation]
+
+ :plugins [:kaocha.plugin.alpha/info
+           :print-invocations
+           :profiling
+           :notifier]}
