@@ -8,10 +8,11 @@
            :profiling
            :notifier]
 
- :color? true
+ :color? {:default true :ci false}
 
  :fail-fast? false
 
- :reporter [kaocha.report/dots]
+ :reporter #profile {:default [kaocha.report/dots]
+                     :ci [kaocha.report.progress/report]}
 
  :kaocha.plugin.junit-xml/target-file "target/junit.xml"}

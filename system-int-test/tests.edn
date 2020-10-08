@@ -8,11 +8,11 @@
            :profiling
            :notifier]
 
- :color? true
+ :color? {:default true :ci false}
 
- :fail-fast? true
+ :fail-fast? false
 
- :reporter [kaocha.report.progress/progress]
+ :reporter [kaocha.report.progress/report]
 
  :kaocha.plugin.randomize/randomize? false
  :kaocha.plugin.profiling/profiling? false
