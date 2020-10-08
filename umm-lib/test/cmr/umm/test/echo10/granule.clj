@@ -411,7 +411,7 @@
     <Orderable>false</Orderable>
   </Granule>")
 
-(deftest ^:kaocha/skip validate-xml
+(deftest ^:kaocha/pending validate-xml
   (testing "valid granule collection ref with dataset id"
     (is (empty? (g/validate-xml valid-granule-xml-w-datasetid))))
   (testing "valid granule collection ref with short name and version id"

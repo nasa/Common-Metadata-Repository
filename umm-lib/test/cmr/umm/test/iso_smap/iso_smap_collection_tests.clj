@@ -259,7 +259,7 @@
   (testing "parse temporal"
     (is (= expected-temporal (c/parse-temporal sample-collection-xml)))))
 
-(deftest ^:kaocha/skip validate-xml
+(deftest ^:kaocha/pending validate-xml
   (testing "valid xml"
     (is (= 0 (count (c/validate-xml sample-collection-xml)))))
   (testing "invalid xml"

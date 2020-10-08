@@ -6,8 +6,7 @@
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]))
 
-;; TODO move to integration tests, requires running components
-(deftest ^:kaocha/skip acl-log-messag
+(deftest ^:kaocha/pending acl-log-messag
   (let [token (e/login (u/conn-context) "admin")]
     (testing "Create, update, and delete ACL log message function"
       (are3 [new-acl existing-acl action expected-message]

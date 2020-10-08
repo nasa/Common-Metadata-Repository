@@ -700,7 +700,7 @@
   (testing "parse collection access value"
     (is (= 1.0 (c/parse-access-value all-fields-collection-xml)))))
 
-(deftest ^:kaocha/skip validate-xml
+(deftest ^:kaocha/pending validate-xml
   (testing "valid xml"
     (is (empty? (c/validate-xml valid-collection-xml))))
   (testing "invalid xml"
