@@ -139,11 +139,10 @@
 (deftest force-delete-variable-with-associations
   (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
         coll-concept-id (:concept-id coll)
-        var-concept (concepts/create-and-save-concept :variable "REG_PROV" 1 3)
+        var-concept (concepts/create-and-save-concept :variable "REG_PROV" 1 3 {:coll-concept-id coll-concept-id})
         var-concept-id (:concept-id var-concept)
-        var-assn (concepts/create-and-save-concept :variable-association
-                  coll var-concept 1)
-        var-assn-concept-id (:concept-id var-assn)]
+        var-assn-concept-id (get-in var-concept [:variable-association :concept-id])
+        var-assn (:concept (util/get-concept-by-id var-assn-concept-id))]
     (testing "initial conditions"
       ;; creation results as expected
       (is (= 3 (:revision-id var-concept)))

@@ -242,8 +242,17 @@
                                :connection-manager (conn-mgr)})
         status (:status response)
         body (json/decode (:body response) true)
-        {:keys [revision-id concept-id errors]} body]
-    {:status status :revision-id revision-id :concept-id concept-id :errors errors}))
+        {:keys [revision-id concept-id errors variable-association]} body]
+    (if (= :variable (:concept-type concept))
+      {:status status
+       :revision-id revision-id
+       :concept-id concept-id
+       :errors errors
+       :variable-association variable-association}
+      {:status status
+       :revision-id revision-id
+       :concept-id concept-id
+       :errors errors})))
 
 (defn save-concept
   "Make a POST request to save a concept with JSON encoding of the concept.
@@ -330,8 +339,15 @@
   [concept]
   (let [{:keys [concept-id revision-id]} concept
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
-    (is (= (expected-concept concept)
-           (dissoc stored-concept :revision-date :transaction-id :created-at)))))
+    (if (= :variable (:concept-type concept))
+      ;; We added :coll-concept-id in the attribute in the tests, it'll appear in both concept and
+      ;; stored-concept in memory db, but not in the stored-concept in real db. This is the cas
+      ;; for all the concept types when you add new attributes in the test. So, we want to remove
+      ;; :coll-concept-id from both.
+      (is (= (dissoc (expected-concept concept) :coll-concept-id)
+             (dissoc stored-concept :revision-date :transaction-id :created-at :coll-concept-id)))
+      (is (= (expected-concept concept)
+             (dissoc stored-concept :revision-date :transaction-id :created-at))))))
 
 (defn is-tag-association-deleted?
   "Returns if the ta is marked as deleted in metadata-db"

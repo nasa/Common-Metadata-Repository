@@ -21,9 +21,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest delete-concepts-test
-  (doseq [concept-type [:collection :granule :variable :variable-association :service
+  (doseq [concept-type [:collection :granule :service
                         :service-association :subscription :tool]]
     (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
+
+(deftest delete-variable-and-association-concepts-test
+  (cd-spec/general-delete-variable-and-association-test ["REG_PROV" "SMAL_PROV"]))
 
 (deftest delete-tag-general
   (cd-spec/general-delete-test :tag ["CMR"]))
@@ -56,8 +59,10 @@
 (deftest variable-delete-cascades-associations
   (testing "delete cascades to variable associations"
     (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
-          variable (concepts/create-and-save-concept :variable "REG_PROV" 1)
-          variable-association (concepts/create-and-save-concept :variable-association coll variable 1 1)]
+          coll-concept-id (:concept-id coll)
+          variable (concepts/create-and-save-concept :variable "REG_PROV" 1 1 {:coll-concept-id coll-concept-id})
+          var-assn-concept-id (get-in variable [:variable-association :concept-id])
+          variable-association (:concept (util/get-concept-by-id var-assn-concept-id))]
       (testing "variable association was saved and is not a tombstone"
         (is (= false (is-association-tombstone? variable-association))))
       (testing "variable association is tombstoned after variable is deleted"
@@ -91,11 +96,13 @@
 (deftest delete-collection-using-delete-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (concepts/create-and-save-concept :collection provider-id 1 3)
+          coll1-concept-id (:concept-id coll1)
           gran1 (concepts/create-and-save-concept :granule provider-id coll1 1 2)
           coll2 (concepts/create-and-save-concept :collection provider-id 2)
           gran3 (concepts/create-and-save-concept :granule provider-id coll2 2)
-          variable (concepts/create-and-save-concept :variable provider-id 1)
-          variable-association (concepts/create-and-save-concept :variable-association coll1 variable 1 1)
+          variable (concepts/create-and-save-concept :variable provider-id 1 1 {:coll-concept-id coll1-concept-id})
+          var-assn-concept-id (get-in variable [:variable-association :concept-id])
+          variable-association (:concept (util/get-concept-by-id var-assn-concept-id))
           service (concepts/create-and-save-concept :service provider-id 1)
           service-association (concepts/create-and-save-concept :service-association coll1 service 1 1)]
 
@@ -140,11 +147,13 @@
 (deftest delete-collection-using-save-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (concepts/create-and-save-concept :collection provider-id 1 3)
+          coll1-concept-id (:concept-id coll1)
           gran1 (concepts/create-and-save-concept :granule provider-id coll1 1 2)
           coll2 (concepts/create-and-save-concept :collection provider-id 2)
           gran3 (concepts/create-and-save-concept :granule provider-id coll2 2)
-          variable (concepts/create-and-save-concept :variable provider-id 1)
-          variable-association (concepts/create-and-save-concept :variable-association coll1 variable 1 1)
+          variable (concepts/create-and-save-concept :variable provider-id 1 1 {:coll-concept-id coll1-concept-id})
+          var-assn-concept-id (get-in variable [:variable-association :concept-id])
+          variable-association (:concept (util/get-concept-by-id var-assn-concept-id))
           service (concepts/create-and-save-concept :service provider-id 1)
           service-association (concepts/create-and-save-concept :service-association coll1 service 1 1)]
 

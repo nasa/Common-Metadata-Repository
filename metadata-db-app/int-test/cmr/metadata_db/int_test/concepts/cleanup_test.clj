@@ -281,40 +281,29 @@
     (is (all-revisions-exist? ta2)))
  (side/eval-form `(tk/clear-current-time!)))
 
-(deftest old-variable-revisions-are-cleaned-up
+(deftest old-variable-and-association-revisions-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1 13)
-        variable2 (concepts/create-and-save-concept :variable "REG_PROV" 2 3)]
+  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
+        coll-concept-id (:concept-id coll1)
+        variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1 13 {:coll-concept-id coll-concept-id})
+        va1 {:concept-id (get-in variable1 [:variable-association :concept-id])
+             :revision-id (get-in variable1 [:variable-association :revision-id])}
+        variable2 (concepts/create-and-save-concept :variable "REG_PROV" 2 3 {:coll-concept-id coll-concept-id})
+        va2 {:concept-id (get-in variable2 [:variable-association :concept-id])
+             :revision-id (get-in variable2 [:variable-association :revision-id])}]
 
     ;; Verify prior revisions exist
-    (is (every? all-revisions-exist? [variable1 variable2]))
+    (is (every? all-revisions-exist? [variable1 variable2 va1 va2]))
 
     (is (= 204 (util/old-revision-concept-cleanup)))
 
     ;; Any more than 10 of the variable revisions should have been cleaned up
     (is (revisions-removed? variable1 (range 1 4)))
     (is (revisions-exist? variable1 (range 4 13)))
-
-    (is (all-revisions-exist? variable2)))
-  (side/eval-form `(tk/clear-current-time!)))
-
-(deftest old-variable-association-revisions-are-cleaned-up
-  (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
-        variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1 1)
-        variable2 (concepts/create-and-save-concept :variable "REG_PROV" 2 1)
-        va1 (concepts/create-and-save-concept :variable-association coll1 variable1 1 13)
-        va2 (concepts/create-and-save-concept :variable-association coll1 variable2 2 3)]
-
-    ;; Verify prior revisions exist
-    (is (every? all-revisions-exist? [va1 va2]))
-
-    (is (= 204 (util/old-revision-concept-cleanup)))
-
-    ;; Any more than 10 of the variable revisions should have been cleaned up
     (is (revisions-removed? va1 (range 1 4)))
     (is (revisions-exist? va1 (range 4 13)))
 
+    (is (all-revisions-exist? variable2))
     (is (all-revisions-exist? va2)))
   (side/eval-form `(tk/clear-current-time!)))
 
