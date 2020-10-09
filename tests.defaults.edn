@@ -1,5 +1,5 @@
 #kaocha/v1
-{:color #profile {:default true :ci false}
+{:color? #profile {:default true :ci false}
 
  :fail-fast? false
 

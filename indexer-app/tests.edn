@@ -12,7 +12,7 @@
            :profiling
            :notifier]
 
- :color #profile {:default true :ci false}
+ :color? #profile {:default true :ci false}
 
  :fail-fast? false
 
