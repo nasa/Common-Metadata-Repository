@@ -6,7 +6,6 @@
    [clojure.string :as string]
    [cmr.common.concepts :as common-concepts]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.log :refer [debug error info trace warn]]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as t] ; don't use clj-time
    [cmr.common.util :as util]
@@ -20,8 +19,9 @@
   (:import
    (cmr.oracle.connection OracleStore)))
 
-; a note about prepared statments, j/query using ? and [] is the same as
-; db-do-prepared. Do not use format function with %s
+; A note about prepared statments, with j/query using ? and [] is the same as
+; j/db-do-prepared. Do not use the string format function with %s as this could
+; allow sql injection
 
 (defn dbresult->sub-notification
   "Converts a map result from the database to a provider map"
@@ -82,19 +82,6 @@
    "cmr_sub_notifications"
    ["subscription_concept_id = ?" subscription-id]))
 
-(def behaviour
- {:save-cmr-sub-notifications save-sub-notification
-  :get-cmr-sub-notification get-sub-notification
-  :update-cmr-sub-notifications update-sub-notification
-  :delete-cmr-sub-notifications delete-sub-notification
-  ;:reset-cmr-sub-notifications reset-sub-notification
-  })
-
-;; TODO: no idea what this is for - should it be fixed or removed
-;(extend OracleStore
-;        p/ProvidersStore
-;        behaviour)
-
 (comment
   (def db (get-in user/system [:apps :metadata-db :db]))
 
@@ -106,5 +93,4 @@
   (println (sub-notification-exists? db "SUB1234-test"))
   (println (get-sub-notification db "SUB1234-test"))
   (println (update-sub-notification db "SUB1234-test"))
-  (println (delete-sub-notification db "SUB1234-test"))
-)
+  (println (delete-sub-notification db "SUB1234-test")) )

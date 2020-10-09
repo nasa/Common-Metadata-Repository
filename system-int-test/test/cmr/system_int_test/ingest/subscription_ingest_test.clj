@@ -199,8 +199,7 @@
         (let [resp (subscription-util/update-subscription-notification "-Fake-Id-")]
           (is (= 404 (:status resp))))
         (let [resp (subscription-util/update-subscription-notification "SUB8675309-foobar")]
-          (is (= 404 (:status resp))))
-        ))))
+          (is (= 404 (:status resp))))))))
 
 (deftest subscription-ingest-schema-validation-test
   (testing "ingest of subscription concept JSON schema validation missing field"

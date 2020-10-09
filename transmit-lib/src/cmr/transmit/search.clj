@@ -4,7 +4,6 @@
    [clj-http.client :as client]
    [clojure.data.xml :as x]
    [cmr.common.api.context :as ch]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
@@ -32,8 +31,7 @@
                                :throw-exceptions false}))
        {:keys [headers body]} response
        status (int (:status response))]
-   (if (= status 204)
-     (debug "success talking to DB layer")
+   (when-not (= status 204)
      (errors/internal-error!
        (format "Subscription update failed. status: %s body: %s" status body)))))
 

@@ -1,13 +1,11 @@
 (ns cmr.metadata-db.services.sub-notifications
  "Buisness logic for subscription notifications"
   (:require
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.concepts :as common-concepts]
    [cmr.common.services.errors :as errors]
    [cmr.metadata-db.data.oracle.sub-notifications :as sub-note]
    [cmr.metadata-db.services.messages :as msg]
-   [cmr.metadata-db.services.util :as mdb-util]
-   ))
+   [cmr.metadata-db.services.util :as mdb-util]))
 
 (defn- update-subscription-notification-time-in-database
   "Do the work for updating the subscription notificitation time in the database.
@@ -27,9 +25,6 @@
   (def context context)
   (let [errors (common-concepts/concept-id-validation subscription-id)
         db (mdb-util/context->db context)]
-    (warn "here in public function with" subscription-id)
-    (println "here in public function with" subscription-id)
-    (error "error from concept id validation" errors)
     (if (nil? errors)
       (update-subscription-notification-time-in-database db subscription-id)
       (errors/throw-service-error

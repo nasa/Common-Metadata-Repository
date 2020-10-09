@@ -1,8 +1,6 @@
 (ns cmr.metadata-db.api.subscriptions
   "Defines the HTTP URL routes for the application as related to subscriptions."
   (:require
-   ;[cmr.acl.core :as acl]
-   ;[cmr.common.log :refer [debug info warn error]]
    [cmr.metadata-db.services.sub-notifications :as sub-note]
    [compojure.core :refer :all]))
 
@@ -21,6 +19,4 @@
     (PUT "/:subscription-concept-id/notification-time"
       {{:keys [subscription-concept-id] :as params} :params
        request-context :request-context}
-      ; is the following needed in some form?
-      ; (acl/verify-ingest-management-permission request-context :update) ; ???
       (update-subscription-notification-time request-context params))))
