@@ -341,7 +341,7 @@
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
     (if (= :variable (:concept-type concept))
       ;; We added :coll-concept-id in the attribute in the tests, it'll appear in both concept and
-      ;; stored-concept in memory db, but not in the stored-concept in real db. This is the cas
+      ;; stored-concept in memory db, but not in the stored-concept in real db. This is the case
       ;; for all the concept types when you add new attributes in the test. So, we want to remove
       ;; :coll-concept-id from both.
       (is (= (dissoc (expected-concept concept) :coll-concept-id)

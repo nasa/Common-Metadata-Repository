@@ -1,11 +1,13 @@
 (ns cmr.metadata-db.int-test.concepts.concept-save-spec
   "Defines a common set of tests for saving concepts."
-  (:require [clojure.test :refer :all]
-            [clj-time.core :as t]
-            [cmr.common.concepts :as cc]
-            [cmr.common.time-keeper :as time-keeper]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.concept-validations :as v]))
+  (:require
+   [clj-time.core :as t]
+   [clojure.test :refer :all]
+   [cmr.common.concepts :as cc]
+   [cmr.common.time-keeper :as time-keeper]
+   [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
+   [cmr.metadata-db.int-test.utility :as util]
+   [cmr.metadata-db.services.concept-validations :as v]))
 
 ;; Need this instead of direct string comparisons because we don't know ahead of time what
 ;; concept-ids will be generated, so the error messages must be checked with regexes instead
@@ -30,17 +32,23 @@
 
 (defn save-concept-test
   "Attempt to save a concept and compare the result to the expected result."
-  [concept exp-status exp-revision-id exp-errors]
-  (testing "save concept"
-    (let [{:keys [status revision-id concept-id errors]} (util/save-concept concept)]
-      (is (= exp-status status))
-      (is (= exp-revision-id revision-id))
-      (assert-error-messages-match exp-errors errors)
-      (when (= 201 exp-status)
-        (util/verify-concept-was-saved
-          (assoc concept :revision-id revision-id :concept-id concept-id)))))
-  ;; return `true` so we can use this inside an `are` macro
-  true)
+  ([concept exp-status exp-revision-id exp-errors]
+   (save-concept-test concept exp-status exp-revision-id exp-errors 1))
+  ([concept exp-status exp-revision-id exp-errors exp-va-revision-id]
+   (testing "save concept"
+     (let [{:keys [status revision-id concept-id errors variable-association]} (util/save-concept concept)]
+       (is (= exp-status status))
+       (is (= exp-revision-id revision-id))
+       (assert-error-messages-match exp-errors errors)
+       (when (= 201 exp-status)
+         (util/verify-concept-was-saved
+           (assoc concept :revision-id revision-id :concept-id concept-id)))
+
+       (when (and (= :variable (:concept-type concept))
+                  (nil? (seq errors)))
+         (is (= exp-va-revision-id (:revision-id variable-association))))
+       ;; return `true` so we can use this inside an `are` macro
+       true))))
 
 (defn save-concept-with-revision-id-test
   "Save a concept once then save it again with the provided revision id, validating that the
@@ -48,11 +56,19 @@
   [concept exp-status new-revision-id exp-errors]
   (time-keeper/clear-current-time!)
   (testing "save concept with revision id"
-    (let [{:keys [concept-id revision-id]} (util/save-concept concept)
+    (let [{:keys [concept-id revision-id variable-association]} (util/save-concept concept)
           revision-date1 (get-in (util/get-concept-by-id-and-revision concept-id revision-id)
                                  [:concept :revision-date])
+          va1 variable-association
+          va-revision-date1 (get-in (util/get-concept-by-id-and-revision
+                                      (:concept-id va1) (:revision-id va1))
+                                    [:concept :revision-date])
           updated-concept (assoc concept :revision-id new-revision-id :concept-id concept-id)
-          {:keys [status errors revision-id]} (util/save-concept updated-concept)
+          {:keys [status errors revision-id variable-association]} (util/save-concept updated-concept)
+          va2 variable-association
+          va-revision-date2 (get-in (util/get-concept-by-id-and-revision
+                                      (:concept-id va2) (:revision-id va2))
+                                    [:concept :revision-date])
           revision-date2 (get-in (util/get-concept-by-id-and-revision concept-id revision-id)
                                  [:concept :revision-date])]
       (is (= exp-status status))
@@ -60,7 +76,13 @@
       (when (= 201 exp-status)
         (is (= new-revision-id revision-id))
         (is (t/after? revision-date2 revision-date1))
-        (util/verify-concept-was-saved updated-concept)))))
+        (util/verify-concept-was-saved updated-concept))
+
+      (when (and (= :variable (:concept-type concept))
+                 (nil? (seq errors)))
+        (is (t/after? va-revision-date2 va-revision-date1))
+        (is (= 1 (:revision-id va1)))
+        (is (= 2 (:revision-id va2)))))))
 
 (defn save-concept-validate-field-saved-test
   "Save a concept and validate the the saved concept has the same value for the given field."
@@ -87,6 +109,13 @@
   (fn [concept-type provider-id uniq-num attributes]
     concept-type))
 
+(defmethod gen-concept :variable
+  [_ provider-id uniq-num attributes]
+  (let [coll (concepts/create-and-save-concept :collection provider-id uniq-num 1)
+        coll-concept-id (:concept-id coll)
+        attributes (merge {:coll-concept-id coll-concept-id} attributes)]
+    (concepts/create-concept :variable provider-id uniq-num attributes)))
+
 (def missing-parameter-errors
   "Map of parameters to expected error messages if the parameters are missing"
   {:concept-type [#"Concept must include concept-type."
@@ -111,9 +140,9 @@
   (doseq [[idx provider-id] (map-indexed vector provider-ids)]
     (testing "basic save"
       (let [concept (gen-concept concept-type provider-id 1 {})]
-        (save-concept-test concept 201 1 nil)
+        (save-concept-test concept 201 1 nil 1)
         (testing "save again with same concept-id"
-          (save-concept-test concept 201 2 nil))))
+          (save-concept-test concept 201 2 nil 2))))
 
     (testing "save with revision-date"
       (let [concept (gen-concept concept-type provider-id 2 {:revision-date (t/date-time 2001 1 1 12 12 14)})]
@@ -151,7 +180,7 @@
       (let [prefix (cc/concept-type->concept-prefix concept-type)
             concept-id (str prefix "10000-" provider-id)
             concept (gen-concept concept-type provider-id 19 {:concept-id concept-id})]
-        (save-concept-test concept 201 1 nil)
+        (save-concept-test concept 201 1 nil 1)
 
         (testing "get concept-id"
           (is (= {:status 200 :concept-id concept-id :errors nil}
@@ -175,7 +204,7 @@
       (let [concept (gen-concept concept-type provider-id 9 {})
             {:keys [concept-id]} (util/save-concept concept)]
         (is (= 201 (:status (util/delete-concept concept-id))))
-        (save-concept-test concept 201 3 nil)))
+        (save-concept-test concept 201 3 nil 3)))
 
     (testing "save after delete with invalid revision fails"
       (let [concept (gen-concept concept-type provider-id 10 {})

@@ -16,15 +16,11 @@
                      {:provider-id "PROV1" :small false}
                      {:provider-id "PROV2" :small false}))
 
-(defmethod c-spec/gen-concept :variable
-  [_ provider-id uniq-num attributes]
-  (concepts/create-concept :variable provider-id uniq-num attributes))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftest save-variable
+(deftest save-variable-and-association
   (c-spec/general-save-concept-test :variable ["PROV1" "PROV2"]))
 
 (deftest save-variable-with-missing-required-parameters
@@ -32,11 +28,17 @@
     :variable ["PROV1"] [:concept-type :provider-id :native-id :extra-fields]))
 
 (deftest save-variable-created-at
-  (let [concept (concepts/create-concept :variable "PROV1" 2)]
+  (let [coll (concepts/create-and-save-concept :collection "PROV1" 1 1)
+        coll-concept-id (:concept-id coll)
+        attributes {:coll-concept-id coll-concept-id}
+        concept (concepts/create-concept :variable "PROV1" 2 attributes)]
     (util/concept-created-at-assertions "variable" concept)))
 
 (deftest save-variable-with-same-variable-name
-  (let [concept1 (concepts/create-concept :variable "PROV1" 1)
+  (let [coll (concepts/create-and-save-concept :collection "PROV1" 1 1)
+        coll-concept-id (:concept-id coll)
+        attributes {:coll-concept-id coll-concept-id}
+        concept1 (concepts/create-concept :variable "PROV1" 1 attributes)
         {status :status
          revision-id :revision-id
          concept1-concept-id :concept-id} (util/save-concept concept1)]
@@ -50,27 +52,11 @@
         (is (= concept1-concept-id concept-id))
         (is (= 2 revision-id))))
 
-    ;; Uniqueness of variable name and association collection info is checked at association creation,
-    ;; after the old fingerprint check is removed. However, many tests that assumed the old way of
-    ;; ingesting variables without collection info are obsolete. They either need to be removed completely
-    ;; or modified to suit the new variable ingest condition. The test cleanup ticket is CMR-6603.
-    ;;(testing "save variable with the same data, but a different native id is not allowed"
-     ;; (let [concept2 (assoc concept1 :native-id "different-native-id")
-      ;;      {:keys [status errors]} (util/save-concept concept2)]
-       ;; (is (= 409 status))
-        ;;(is (= [(format (str "The Fingerprint of the variable which is defined by the variable's "
-         ;;                    "Instrument short name, variable short name, units and dimensions "
-          ;;                   "must be unique. The following variable with the same fingerprint "
-           ;;                  "but different native id was found: [%s].")
-            ;;            concept1-concept-id)]
-             ;;  errors))))
-
     (testing "save variable with same data but different provider"
       (let [concept3 (assoc concept1 :provider-id "PROV2")
-            {:keys [status concept-id revision-id]} (util/save-concept concept3)]
-        (is (= status 201))
-        (is (not= concept1-concept-id concept-id))
-        (is (= 1 revision-id)))
+            {:keys [errors status concept-id revision-id]} (util/save-concept concept3)]
+        (is (= status 409))
+        (is (= errors ["Variable [V1200000003-PROV2] and collection [C1200000000-PROV1] can not be associated because they do not belong to the same provider."])))
       (let [concept4-var-name "different-variable-name"
             concept4 (update concept1 :extra-fields assoc :variable-name concept4-var-name)]
         (testing (str "save variable with the same native id, but a different variable name "
