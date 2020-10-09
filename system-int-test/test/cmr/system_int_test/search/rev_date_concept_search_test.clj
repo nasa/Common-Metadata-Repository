@@ -16,7 +16,7 @@
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
                        (dev-sys-util/freeze-resume-time-fixture)]))
 
-(deftest search-collections-by-revision-date
+(deftest ^:in-memory-db search-collections-by-revision-date
   ;; We only test in memory mode here as this test uses time-keeper to freeze time. This will not
   ;; work for external db mode since the revision date would be set automatically by oracle
   ;; when concepts are saved and would not depend on the current time in time-keeper.
@@ -49,8 +49,8 @@
       (testing "search collections with revision_date[] ranges and options"
         (are2 [colls value options]
               (let [references (search/find-refs :collection
-                                                (merge {"revision_date[]" value} options))]
-               (data-core/refs-match? colls references))
+                                                 (merge {"revision_date[]" value} options))]
+                (data-core/refs-match? colls references))
 
               "range without begin - find all"
               [coll1 coll2 coll3 coll4-2 coll5] ",2015-01-01T10:00:00Z" {}
@@ -97,19 +97,19 @@
               "multiple ranges without options, should default to AND false"
               [coll3 coll4-2 coll5] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {}
 
-               "multiple ranges with option and false"
-               [coll3 coll4-2 coll5] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {"options[revision_date][and]" "false"}
+              "multiple ranges with option and false"
+              [coll3 coll4-2 coll5] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {"options[revision_date][and]" "false"}
 
-               "multiple ranges with option and true"
-               [coll4-2] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {"options[revision_date][and]" "true"}))
+              "multiple ranges with option and true"
+              [coll4-2] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {"options[revision_date][and]" "true"}))
 
 
       (testing "search collections with revision_date is OK"
         (are [colls param value]
-             (let [references (search/find-refs :collection {param value})]
-               (data-core/refs-match? colls references))
-             [coll1 coll2] "revision_date[]" "2000-01-01T10:00:00Z,2000-02-01T10:00:00Z"
-             [coll3 coll4-2 coll5] "revision_date" ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"]))
+            (let [references (search/find-refs :collection {param value})]
+              (data-core/refs-match? colls references))
+          [coll1 coll2] "revision_date[]" "2000-01-01T10:00:00Z,2000-02-01T10:00:00Z"
+          [coll3 coll4-2 coll5] "revision_date" ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"]))
 
       (testing "search collections with invalid revision date"
         (are2 [value err-pattern]
@@ -129,13 +129,13 @@
 
       (testing "search collections with updated_since"
         (are [colls param value]
-             (let [references (search/find-refs :collection {param value})]
-               (data-core/refs-match? colls references))
-             [coll1 coll2 coll3 coll4-2 coll5] "updated_since" "2000-01-01T10:00:00Z"
-             [coll1 coll2 coll3 coll4-2 coll5] "updated_since[]" "2000-01-01T10:00:00Z"
-             [coll2 coll3 coll4-2 coll5] "updated_since" "2000-02-01T00:00:00Z"
-             [coll5] "updated_since" "2015-01-01T10:00:00Z"
-             [] "updated_since" "2015-01-01T10:00:01Z"))
+            (let [references (search/find-refs :collection {param value})]
+              (data-core/refs-match? colls references))
+          [coll1 coll2 coll3 coll4-2 coll5] "updated_since" "2000-01-01T10:00:00Z"
+          [coll1 coll2 coll3 coll4-2 coll5] "updated_since[]" "2000-01-01T10:00:00Z"
+          [coll2 coll3 coll4-2 coll5] "updated_since" "2000-02-01T00:00:00Z"
+          [coll5] "updated_since" "2015-01-01T10:00:00Z"
+          [] "updated_since" "2015-01-01T10:00:01Z"))
       (testing "search collections with updated_since range is invalid"
         (are2 [value]
               (let [{:keys [status errors]} (search/find-refs :collection {"updated_since" value})
@@ -154,12 +154,12 @@
       (testing "JSON query"
         (testing "search collections with updated_since"
           (are [items search]
-               (data-core/refs-match? items (search/find-refs-with-json-query :collection {} search))
+              (data-core/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
-               [coll1 coll2 coll3 coll4-2 coll5] {:updated_since "2000-01-01T10:00:00Z"}
-               [coll2 coll3 coll4-2 coll5] {:updated_since "2000-02-01T00:00:00Z"}
-               [coll5] {:updated_since "2015-01-01T10:00:00Z"}
-               [] {:updated_since "2015-01-01T10:00:01Z"}))
+            [coll1 coll2 coll3 coll4-2 coll5] {:updated_since "2000-01-01T10:00:00Z"}
+            [coll2 coll3 coll4-2 coll5] {:updated_since "2000-02-01T00:00:00Z"}
+            [coll5] {:updated_since "2015-01-01T10:00:00Z"}
+            [] {:updated_since "2015-01-01T10:00:01Z"}))
 
         (testing "invalid update_time"
           (are2 [search exp-errors]
@@ -179,7 +179,7 @@
                       "Expected [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.[0-9]{1,9}Z, "
                       "yyyy-MM-dd'T'HH:mm:ss[+-]HH:mm, yyyy-MM-dd'T'HH:mm:ss.[0-9]{1,9}[+-]HH:mm]")]))))))
 
-(deftest search-granules-by-revision-date
+(deftest ^:in-memory-db search-granules-by-revision-date
   (system/only-with-in-memory-database
     (let [coll1 (data-core/ingest "PROV1" (collection/collection {}))
           _ (dev-sys-util/freeze-time! "2000-01-01T10:00:00Z")
@@ -230,10 +230,10 @@
               [gran4] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {"options[revision_date][and]" "true"}))
       (testing "search granules with revision_date is OK"
         (are [grans param value]
-             (let [references (search/find-refs :granule {param value})]
-               (data-core/refs-match? grans references))
-             [gran1 gran2] "revision_date" "2000-01-01T10:00:00Z,2000-02-01T10:00:00Z"
-             [gran3 gran4 gran5] "revision_date" ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"]))
+            (let [references (search/find-refs :granule {param value})]
+              (data-core/refs-match? grans references))
+          [gran1 gran2] "revision_date" "2000-01-01T10:00:00Z,2000-02-01T10:00:00Z"
+          [gran3 gran4 gran5] "revision_date" ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"]))
       (testing "search granules with invalid revision date"
         (are2 [value err-pattern]
               (let [{:keys [status errors]} (search/find-refs :granule {"revision_date" value})
@@ -252,13 +252,13 @@
 
       (testing "search granules with updated_since"
         (are [grans param value]
-             (let [references (search/find-refs :granule {param value})]
-               (data-core/refs-match? grans references))
-             [gran1 gran2 gran3 gran4 gran5] "updated_since" "2000-01-01T10:00:00Z"
-             [gran1 gran2 gran3 gran4 gran5] "updated_since[]" "2000-01-01T10:00:00Z"
-             [gran2 gran3 gran4 gran5] "updated_since" "2000-02-01T00:00:00Z"
-             [gran5] "updated_since" "2015-01-01T10:00:00Z"
-             [] "updated_since" "2015-01-01T10:00:01Z"))
+            (let [references (search/find-refs :granule {param value})]
+              (data-core/refs-match? grans references))
+          [gran1 gran2 gran3 gran4 gran5] "updated_since" "2000-01-01T10:00:00Z"
+          [gran1 gran2 gran3 gran4 gran5] "updated_since[]" "2000-01-01T10:00:00Z"
+          [gran2 gran3 gran4 gran5] "updated_since" "2000-02-01T00:00:00Z"
+          [gran5] "updated_since" "2015-01-01T10:00:00Z"
+          [] "updated_since" "2015-01-01T10:00:01Z"))
       (testing "search granules with updated_since range is invalid"
         (are2 [value]
               (let [{:keys [status errors]} (search/find-refs :granule {"updated_since" value})

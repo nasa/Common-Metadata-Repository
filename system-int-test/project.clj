@@ -89,7 +89,7 @@
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["kaocha" "--focus" "integration"]
-            "utest" ["shell" "echo" "== No unit tests =="]
+            "utest" ["shell" "echo" "== No unit tests - run \"lein itest\" or \"lein kaocha\" to run integration tests =="]
 
             ;; Linting aliases
             "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]

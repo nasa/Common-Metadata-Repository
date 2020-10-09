@@ -1,9 +1,9 @@
 #kaocha/v1
-{:color? {:default true :ci false}
+{:color #profile {:default true :ci false}
 
  :fail-fast? false
 
- :reporter [kaocha.report/dots]
+ :reporter [kaocha.report.progress/report]
 
  :plugins [:kaocha.plugin.alpha/info
            :print-invocations

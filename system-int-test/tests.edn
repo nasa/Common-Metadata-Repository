@@ -1,18 +1,23 @@
 #kaocha/v1
-{:tests [{:id :integration
-          :test-paths ["test"]}]
+{:tests #profile {:default [{:id :integration}]
+                  :ci [{:id :integration
+                        :skip-meta [:in-memory-db]}]}
 
  :plugins [:kaocha.plugin.alpha/info
+           :kaocha.plugin/randomize
            :junit-xml
            :print-invocations
            :profiling
            :notifier]
 
- :color? {:default true :ci false}
+ :color? #profile {:default true
+                   :ci false}
 
- :fail-fast? false
+ :fail-fast? #profile {:default true
+                       :ci false}
 
- :reporter [kaocha.report/documentation]
+ :reporter #profile {:default [kaocha.report.progress/report]
+                     :ci [kaocha.report/documentation]}
 
  :kaocha.plugin.randomize/randomize? false
  :kaocha.plugin.profiling/profiling? false
