@@ -2,6 +2,7 @@
   "This contains utilities for testing subscriptions."
   (:require
    [cheshire.core :as json]
+   [clj-http.client :as client]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mime-types]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -10,7 +11,9 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.url-helper :as urls]
    [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]
    [cmr.transmit.search :as transmit-search]
    [cmr.umm-spec.versioning :as versioning]))
 
@@ -46,6 +49,18 @@
                                               guest-permissions
                                               registered-permissions)))
     (f)))
+
+(defn update-subscription-notification
+  "Ingest a concept and return a map with status, concept-id, and revision-id"
+  [concept]
+  (let [request-url (urls/mdb-subscription-notification-time concept)
+        request (merge
+                  (config/conn-params (s/context))
+                  {:accept :xml :throw-exceptions false})
+        response (client/put request-url request)
+        {:keys [headers body]} response
+        status (int (:status response))]
+    response))
 
 (defn make-subscription-concept
   "Convenience function for creating a subscription concept"

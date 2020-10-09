@@ -9,6 +9,8 @@ browse-scaler/src/node_modules
 .project
 *.prefs
 *.eastwood
+.tags
+.tags1
 
 ###############################
 ### Test Files

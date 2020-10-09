@@ -129,7 +129,7 @@
   (reset! settings/aws? bool)
   (if bool
     (q-config/set-queue-type! "aws")
-    (q-config/set-queue-type! "local")))
+    (q-config/set-queue-type! "memory")))
 
 ;; If the ENV var was set, let's make it a keyword, which is what the config
 ;; for dev-system expects.

@@ -46,6 +46,9 @@
 (defn missing-extra-fields []
   "Concept must include extra-fields")
 
+(defn subscription-not-found [field]
+  (format "Subscription concept [%s] not found." (name field)))
+
 (defn invalid-tombstone-field [field]
   (format "Tombstone concept cannot include [%s]" (name field)))
 

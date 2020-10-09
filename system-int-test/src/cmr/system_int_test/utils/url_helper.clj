@@ -140,6 +140,13 @@
   (format "http://localhost:%s/concepts/search/service-associations"
           (transmit-config/metadata-db-port)))
 
+(defn mdb-subscription-notification-time
+  "URL to notification time in metadata db app"
+  [concept-id]
+  (format "http://localhost:%s/subscription/%s/notification-time"
+          (transmit-config/metadata-db-port)
+          concept-id))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Ingest URLs
 
