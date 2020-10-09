@@ -3,7 +3,6 @@
           :ns-patterns ["cmr.spatial.test*" "-test$"]}]
 
  :plugins [:kaocha.plugin.alpha/info
-           :kaocha.plugin/cloverage
            :junit-xml
            :print-invocations
            :profiling

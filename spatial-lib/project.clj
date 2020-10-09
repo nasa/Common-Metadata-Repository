@@ -54,17 +54,17 @@
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
-                                     [lambdaisland/kaocha-cloverage "1.0.63"]
+                                     ;; cloverage code-coverage is not compatible with this module
+                                     ;; [lambdaisland/kaocha-cloverage "1.0.63"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
-            "_kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
-            "kaocha" ["shell" "echo" "== Skipping Kaocha Temporarily =="]
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["shell" "echo" "== No integration tests =="]
-            "utest" ["shell" "echo" "== skipping tests for now =="]
+            "utest" ["kaocha" "--focus" "unit"]
 
             ;; Linting aliases
             "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
