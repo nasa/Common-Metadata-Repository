@@ -19,10 +19,6 @@
   [_ provider-id uniq-num attributes]
   (concepts/create-concept :service provider-id uniq-num attributes))
 
-(defmethod cs-spec/gen-concept :variable
-  [_ provider-id uniq-num attributes]
-  (concepts/create-concept :variable provider-id uniq-num attributes))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
