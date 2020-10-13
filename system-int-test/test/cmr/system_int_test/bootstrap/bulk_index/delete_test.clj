@@ -37,7 +37,7 @@
   (is (= (assoc expected-counts :status 200)
          (bootstrap/get-rebalance-status (:concept-id collection)))))
 
-(deftest bulk-delete-by-concept-id
+(deftest ^:oracle bulk-delete-by-concept-id
   (s/only-with-real-database
     (let [coll1 (core/save-collection "PROV1" 1)
           coll2 (core/save-collection "PROV1" 2)
@@ -106,7 +106,7 @@
 
 ;; This test runs bulk index with some concepts in mdb that are good, and some that are
 ;; deleted, and some that have not yet been deleted, but have an expired deletion date.
-(deftest bulk-index-with-some-deleted
+(deftest ^:oracle bulk-index-with-some-deleted
   (s/only-with-real-database
    ;; Disable message publishing so items are not indexed as part of the initial save.
    (core/disable-automatic-indexing)

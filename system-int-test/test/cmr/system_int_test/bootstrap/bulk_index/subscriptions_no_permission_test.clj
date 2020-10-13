@@ -14,7 +14,7 @@
                                              :grant-all-search? true
                                              :grant-all-access-control? false})]))
 
-(deftest bulk-index-subscriptions-no-permission
+(deftest ^:oracle bulk-index-subscriptions-no-permission
   (testing "Bulk index subscriptions for a single provider without a token"
     (system/only-with-real-database
       (let [{:keys [status errors]} (bootstrap/bulk-index-subscriptions "PROV1" nil)]

@@ -19,7 +19,7 @@
                                              :grant-all-search? true
                                              :grant-all-access-control? false})]))
 
-(deftest bulk-index-variables-for-provider
+(deftest ^:oracle bulk-index-variables-for-provider
   (testing "Bulk index variables for a single provider"
     (s/only-with-real-database
       ;; Disable message publishing so items are not indexed.
@@ -54,7 +54,7 @@
       ;; Re-enable message publishing.
       (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-variables
+(deftest ^:oracle bulk-index-variables
   (testing "Bulk index variables for multiple providers, explicitly"
     (s/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -78,7 +78,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-all-variables
+(deftest ^:oracle bulk-index-all-variables
   (testing "Bulk index variables for multiple providers, implicitly"
     (s/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -97,7 +97,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-variable-revisions
+(deftest ^:oracle bulk-index-variable-revisions
   (testing "Bulk index variables index all revisions index as well"
     (s/only-with-real-database
      ;; Disable message publishing so items are not indexed.

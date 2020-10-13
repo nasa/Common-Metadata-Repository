@@ -24,7 +24,7 @@
                                              :grant-all-search? true
                                              :grant-all-access-control? false})]))
 
-(deftest bulk-index-services-for-provider
+(deftest ^:oracle bulk-index-services-for-provider
   (testing "Bulk index services for a single provider"
     (s/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -59,7 +59,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-services
+(deftest ^:oracle bulk-index-services
   (testing "Bulk index services for multiple providers, explicitly"
     (s/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -83,7 +83,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-all-services
+(deftest ^:oracle bulk-index-all-services
   (testing "Bulk index services for multiple providers, implicitly"
     (s/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -102,7 +102,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-service-revisions
+(deftest ^:oracle bulk-index-service-revisions
   (testing "Bulk index services index all revisions index as well"
     (s/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -165,7 +165,7 @@
        ;; Re-enable message publishing.
        (core/reenable-automatic-indexing)))))
 
-(deftest bulk-index-collections-with-service-association-test
+(deftest ^:oracle bulk-index-collections-with-service-association-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
          coll1-concept-id (:concept-id coll1)

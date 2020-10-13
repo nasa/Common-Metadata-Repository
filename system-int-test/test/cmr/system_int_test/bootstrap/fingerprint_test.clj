@@ -16,7 +16,7 @@
                                              :grant-all-search? true
                                              :grant-all-access-control? false})]))
 
-(deftest fingerprint-variable-by-concept-id
+(deftest ^:oracle fingerprint-variable-by-concept-id
   (testing "Update fingerprint of variable by concept-id"
     (s/only-with-real-database
      (let [var1 (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)
@@ -89,7 +89,7 @@
            (is (= [422 ["Variable with concept-id [V1000-PROV1] does not exist"]]
                   [status errors]))))))))
 
-(deftest fingerprint-variables-for-provider
+(deftest ^:oracle fingerprint-variables-for-provider
   (testing "Update fingerprint of variables for a single provider"
     (s/only-with-real-database
      (let [var1 (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)
@@ -161,7 +161,7 @@
            (is (= 422 status))
            (is (= ["Provider [PROVX] does not exist"] errors))))))))
 
-(deftest fingerprint-all-variables
+(deftest ^:oracle fingerprint-all-variables
   (testing "Update fingerprint of all variables"
     (s/only-with-real-database
      (let [var1 (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)

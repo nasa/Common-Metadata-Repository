@@ -54,7 +54,6 @@
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
-                                     ;; cloverage code-coverage is not compatible with this module
                                      ;; [lambdaisland/kaocha-cloverage "1.0.63"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {;; Alias to test2junit for consistency with lein-test-out

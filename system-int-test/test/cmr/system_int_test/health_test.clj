@@ -60,12 +60,12 @@
    (is (= "User-agent: *" (first body)))
    (is (= "Disallow: /" (second body)))))
 
-(deftest metadata-db-health-test
+(deftest ^:oracle metadata-db-health-test
   (s/only-with-real-database
     (is (= [200 {:oracle {:ok? true}}]
            (get-app-health (url/mdb-health-url))))))
 
-(deftest indexer-health-test
+(deftest ^:oracle indexer-health-test
   (s/only-with-real-database
     (is (= [200 {:elastic_search {:ok? true}
                  :echo {:ok? true}
@@ -73,7 +73,7 @@
                  :metadata-db good-metadata-db-health}]
            (get-app-health (url/indexer-health-url))))))
 
-(deftest ingest-health-test
+(deftest ^:oracle ingest-health-test
   (s/only-with-real-database
     (is (= [200 {:oracle {:ok? true}
                  :echo {:ok? true}
@@ -82,28 +82,28 @@
                  :indexer good-indexer-health}]
            (get-app-health (url/ingest-health-url))))))
 
-(deftest search-health-test
+(deftest ^:oracle search-health-test
   (s/only-with-real-database
     (is (= [200 {:echo {:ok? true}
                  :internal-metadata-db good-metadata-db-health
                  :indexer good-indexer-health}]
            (get-app-health (url/search-health-url))))))
 
-(deftest bootstrap-health-test
+(deftest ^:oracle bootstrap-health-test
   (s/only-with-real-database
     (is (= [200 {:metadata-db good-metadata-db-health
                  :internal-metadata-db good-metadata-db-health
                  :indexer (update-in good-indexer-health [:dependencies] dissoc :message-queue)}]
            (get-app-health (url/bootstrap-health-url))))))
 
-(deftest virtual-product-health-test
+(deftest ^:oracle virtual-product-health-test
   (s/only-with-real-database
     (is (= [200 {:ingest good-ingest-health
                  :metadata-db good-metadata-db-health
                  :message-queue {:ok? true}}]
            (get-app-health (url/virtual-product-health-url))))))
 
-(deftest access-control-health-test
+(deftest ^:oracle access-control-health-test
   (s/only-with-real-database
     (is (= [200 {:echo {:ok? true}
                  :metadata-db good-metadata-db-health}]

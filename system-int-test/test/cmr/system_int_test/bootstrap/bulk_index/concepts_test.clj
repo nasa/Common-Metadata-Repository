@@ -60,14 +60,14 @@
      "Granules"
      :granule granules)))
 
-(deftest index-system-concepts-test-with-update-token
+(deftest ^:oracle index-system-concepts-test-with-update-token
   (s/only-with-real-database
    (let [read-update-token (create-read-update-token)
          {:keys [status errors]} (bootstrap/bulk-index-system-concepts {tc/token-header read-update-token})]
      (is (= [202 nil]
             [status errors])))))
 
-(deftest index-system-concepts-test
+(deftest ^:oracle index-system-concepts-test
   (s/only-with-real-database
    ;; Disable message publishing so items are not indexed as part of the initial save.
    (core/disable-automatic-indexing)
@@ -133,7 +133,7 @@
     ;; Re-enable message publishing.
     (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-by-concept-id
+(deftest ^:oracle bulk-index-by-concept-id
   (s/only-with-real-database
    ;; Disable message publishing so items are not indexed.
    (core/disable-automatic-indexing)
@@ -197,7 +197,7 @@
    ;; Re-enable message publishing.
    (core/reenable-automatic-indexing)))
 
-(deftest bulk-index-after-date-time
+(deftest ^:oracle bulk-index-after-date-time
   (s/only-with-real-database
    ;; Disable message publishing so items are not indexed.
    (core/disable-automatic-indexing)
@@ -262,7 +262,7 @@
    ;; Re-enable message publishing.
    (core/reenable-automatic-indexing)))
 
-(deftest bulk-index-all-providers
+(deftest ^:oracle bulk-index-all-providers
   (s/only-with-real-database
    ;; Disable message publishing so items are not indexed.
    (core/disable-automatic-indexing)

@@ -29,28 +29,28 @@
     ;; Create and return token
     (e/login (s/context) "admin-read-only" [admin-read-only-group-concept-id])))
 
-(deftest invalid-provider-bulk-index-validation-test-with-read-only-token
+(deftest ^:oracle invalid-provider-bulk-index-validation-test-with-read-only-token
   (s/only-with-real-database
    (let [read-only-token (create-read-only-token)
          {:keys [status errors]} (bootstrap/bulk-index-provider "NCD4580" {transmit-config/token-header read-only-token})]
      (is (= [401 ["You do not have permission to perform that action."]]
             [status errors])))))
 
-(deftest invalid-provider-bulk-index-validation-test
+(deftest ^:oracle invalid-provider-bulk-index-validation-test
   (s/only-with-real-database
     (testing "Validation of a provider supplied in a bulk-index request."
       (let [{:keys [status errors]} (bootstrap/bulk-index-provider "NCD4580")]
         (is (= [400 ["Provider: [NCD4580] does not exist in the system"]]
                [status errors]))))))
 
-(deftest invalid-provider-bulk-index-validation-test-without-token
+(deftest ^:oracle invalid-provider-bulk-index-validation-test-without-token
   (s/only-with-real-database
     (testing "Validation of a provider supplied in a bulk-index request."
       (let [{:keys [status errors]} (bootstrap/bulk-index-provider "NCD4580" nil)]
         (is (= [401 ["You do not have permission to perform that action."]]
                [status errors]))))))
 
-(deftest collection-bulk-index-validation-test
+(deftest ^:oracle collection-bulk-index-validation-test
   (s/only-with-real-database
     (let [umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
           xml1 (echo10/umm->echo10-xml umm1)
@@ -103,7 +103,7 @@
              [400 [err-msg2]] [(:status fail-stat2) (:errors fail-stat2)]
              [400 [err-msg1]] [(:status fail-stat3) (:errors fail-stat3)])))))
 
-(deftest invalid-route-test
+(deftest ^:oracle invalid-route-test
   (s/only-with-real-database
    (testing "Invalid route returns a 404"
     (let [response (client/request

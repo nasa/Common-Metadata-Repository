@@ -27,7 +27,7 @@
                          "provguid2" "PROV2"})
   (constantly true)))
 
-(deftest rebalance-collection-error-test
+(deftest ^:oracle rebalance-collection-error-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
          gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
@@ -161,7 +161,7 @@
       coll-holding)))
 
 ;; Rebalances a single collection with a single granule
-(deftest simple-rebalance-collection-test
+(deftest ^:oracle simple-rebalance-collection-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
          gran1 (ingest-granule-for-coll coll1 1)
@@ -207,7 +207,7 @@
          expected-provider-holdings
          "After finalize after clear cache")))))
 
-(deftest rebalance-collection-test
+(deftest ^:oracle rebalance-collection-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
@@ -282,7 +282,7 @@
          "After finalize after clear cache")))))
 
 ;; Tests rebalancing multiple collections at the same time.
-(deftest rebalance-multiple-collections-test
+(deftest ^:oracle rebalance-multiple-collections-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
@@ -343,7 +343,7 @@
        (search/clear-caches)
        (verify-provider-holdings expected-provider-holdings "After finalizing")))))
 
-(deftest rebalance-collection-after-other-collections-test
+(deftest ^:oracle rebalance-collection-after-other-collections-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
@@ -471,7 +471,7 @@
      (is (= 4 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll1)})))))
      (is (= 2 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll2)}))))))))
 
-(deftest rebalance-old-deleted-collection-back-to-small-collections-test
+(deftest ^:oracle rebalance-old-deleted-collection-back-to-small-collections-test
   (side/eval-form `(tk/set-time-override! (tk/now)))
   (s/only-with-real-database
    (let [deleted-coll (d/ingest "PROV1" (dc/collection {:entry-title "deleted-coll"}))
