@@ -6,6 +6,7 @@
    [clojure.data.csv :as csv]
    [clojure.string :as str]
    [cmr.common-app.services.search.parameter-validation :as cpv]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.log :as log :refer (debug info warn error)]
@@ -33,51 +34,38 @@
   (when (>= col 0)
     (nth csv-line col)))
 
-(defn- get-short-name-by-entry-title
-  "Query elastic for a collection with a given entry-title, returns short-name"
-  [context entry-title]
-  (when (seq entry-title)
-    (let [condition (qm/string-condition :entry-title (str entry-title "*") false true)
-          query (qm/query {:concept-type :collection
-                           :condition condition
-                           :page-size 1
-                           :all-revisions? true
-                           :result-format :query-specified
-                           :result-fields [:short-name]})
-          results (qe/execute-query context query)
-          short-name (first (map :short-name (:items results)))]
-      short-name)))
-
-(defn- get-collection-by-short-name
-  "Query elastic for collection with a given short-name, returns short-name"
-  [context short-name]
-  (when (seq short-name)
-    (let [condition (qm/string-condition :short-name short-name)
-          query (qm/query {:concept-type :collection
-                           :condition condition
-                           :page-size 1
-                           :all-revisions? true
-                           :result-format :query-specified
-                           :result-fields [:short-name]})
-          results (qe/execute-query context query)
-          short-name (first (map :short-name (:items results)))]
-      short-name)))
+(defn- get-collection-by-product-id
+  "Query elastic for a collection with a given product-id, parses out the value before the last : and
+   checks that value against both entry-title or short-name. Also checks the non-parsed value against
+   short-name."
+  [context product-id]
+  (when (seq product-id)
+    (when-let [parsed-product-id (as-> (re-find #"(^.+):|(^.+)" product-id) matches
+                                       (remove nil? matches)
+                                       (last matches))]
+      (let [condition (gc/or (qm/string-condition :entry-title parsed-product-id false false)
+                             (qm/string-condition :short-name parsed-product-id false false)
+                             (qm/string-condition :short-name product-id false false))
+            query (qm/query {:concept-type :collection
+                             :condition condition
+                             :page-size 1
+                             :result-format :query-specified
+                             :result-fields [:short-name]})
+            results (qe/execute-query context query)]
+        (:short-name (first (:items results)))))))
 
 (defn- comprehensive-collection-short-name-search
-  "This function checks CMR for a collection with given short-name, if it can't find it
-   Then it will check for a collection with that entry-title and return its short-name.
-   Currently there are providers who are supplying non-short-name values in short-name, which breaks usage
-   metrics.  This is a short term solution to this problem, the long term solution is correcting the
-   EMS data which may take a long time to happen."
+  "This function will check for a collection with the given product value against short-name and entry-title
+   and return its short-name.  Currently there are providers who are supplying non-short-name values
+   in short-name, which breaks usage metrics.  This is a short term solution to this problem,
+   the long term solution is correcting the EMS data which may take a long time to happen."
   [context short-name]
-  (if (get-collection-by-short-name context short-name)
-    short-name
-    (get-short-name-by-entry-title context short-name)))
+  (get-collection-by-product-id context short-name))
 
 (defn- efficient-collection-short-name-search
   "This function will check the current community-usage-metrics humanizer to see if this shortname exists,
    if it does, then it will return that short-name, otherwise it will try looking up the short-name via
-   entry-title."
+   product-id."
   [context short-name current-metrics]
   (if (get current-metrics short-name)
     short-name
