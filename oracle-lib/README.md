@@ -18,7 +18,7 @@ project.
 
 Download oracle Jars from Oracle's website. You can usually google for each of the jar files with a search term such as "oracle ucp jar" to find the location of each jar file. You need to download the following:
 
-  * `ojdbc6.jar` - Orcale JDBC Driver
+  * `ojdbc7.jar` - Orcale JDBC Driver
   * `ucp.jar` - Universal Connection Pool (not bundled with the JDBC driver)
   * `ons.jar` - Oracle Notification Services (should be on the same page as
     the JDBC driver)
