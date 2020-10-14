@@ -75,17 +75,6 @@
     <cpe>cpe:/a:git:git</cpe>
   </suppress>
 
-  <!-- Supressing oracle false positive. The fix is patched on the database server side,
-  not in the client connect JDBC jar.
-  see: https://www.oracle.com/technetwork/topics/security/public-vuln-to-advisory-mapping-093627.html -->
-  <suppress>
-    <notes><![CDATA[
-    file name: ojdbc6-11.2.0.4.jar
-    ]]></notes>
-    <gav regex="true">^com\.oracle:ojdbc6:.*$</gav>
-    <cve>CVE-2016-3506</cve>
-  </suppress>
-
   <!-- False positive drupal vulnerability in cmr-site-templates. -->
   <suppress>
     <notes><![CDATA[
