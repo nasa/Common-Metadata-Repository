@@ -306,7 +306,7 @@
                                (zipmap (keys x) (map remove-nils-empty-maps-seqs (vals x))))]
                (when (seq clean-map)
                  clean-map))
-    (vector? x) (when (not-empty x)
+    (vector? x) (when (seq x)
                   (into [] (keep remove-nils-empty-maps-seqs x)))
     (sequential? x) (when (seq x)
                       (keep remove-nils-empty-maps-seqs x))
