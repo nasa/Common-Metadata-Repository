@@ -6,7 +6,7 @@
                [org.clojure/clojure]
                [org.clojure/tools.reader]]
   :dependencies [[commons-io "2.6"]
-                 [commons-validator/commons-validator "1.5.1"]
+                 [commons-validator/commons-validator "1.7"]
                  [digest "1.4.8"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
