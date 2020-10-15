@@ -11,8 +11,7 @@
    [cmr.umm.umm-spatial :as umm-s]
    [cmr.umm-spec.umm-g.measured-parameters :as measured-parameters]
    [cmr.umm.umm-collection :as umm-c]
-   [cmr.umm.umm-granule :as umm-lib-g]
-   [cmr.umm-spec.util :as umm-spec-util]))
+   [cmr.umm.umm-granule :as umm-lib-g]))
 
 (defn- expected-qa-flags
   "Converts generated qa-flags to what is expected by using the sanitized flag values."
@@ -50,26 +49,21 @@
   parsing and generating in cmr.umm-spec.umm-g.granule, the fields should be taken off the
   excluded list below."
   [gran]
-  (let [data-granule (when (:data-granule gran)
-                       (update (:data-granule gran) :archive-distribution-file-name #(if %
-                                                                                       %
-                                                                                       umm-spec-util/not-provided)))]
-    (-> gran
-        (util/update-in-each [:measured-parameters] expected-measured-parameter)
-        (update-in [:spatial-coverage :geometries] set)
-        (assoc :data-granule data-granule)
-        ;; Need to remove the possible duplicate entries in crid-ids and feature-ids
-        ;; because Identifiers in UMM-G v1.4 can't contain any duplicates.
-        (as-> updated-umm (if (get-in updated-umm [:data-granule :crid-ids])
-                            (update-in updated-umm [:data-granule :crid-ids] distinct)
-                            updated-umm))
-        (as-> updated-umm (if (get-in updated-umm [:data-granule :feature-ids])
-                            (update-in updated-umm [:data-granule :feature-ids] distinct)
-                            updated-umm))
-        (as-> updated-umm (if (:data-granule updated-umm)
-                            (update-in updated-umm [:data-granule :day-night] #(if % % "UNSPECIFIED"))
-                            updated-umm))
-        umm-lib-g/map->UmmGranule)))
+  (-> gran
+      (util/update-in-each [:measured-parameters] expected-measured-parameter)
+      (update-in [:spatial-coverage :geometries] set)
+      ;; Need to remove the possible duplicate entries in crid-ids and feature-ids
+      ;; because Identifiers in UMM-G v1.4 can't contain any duplicates.
+      (as-> updated-umm (if (get-in updated-umm [:data-granule :crid-ids])
+                          (update-in updated-umm [:data-granule :crid-ids] distinct)
+                          updated-umm))
+      (as-> updated-umm (if (get-in updated-umm [:data-granule :feature-ids])
+                          (update-in updated-umm [:data-granule :feature-ids] distinct)
+                          updated-umm))
+      (as-> updated-umm (if (:data-granule updated-umm)
+                          (update-in updated-umm [:data-granule :day-night] #(if % % "UNSPECIFIED"))
+                          updated-umm))
+      umm-lib-g/map->UmmGranule))
 
 (def expected-sample-granule
   (umm-lib-g/map->UmmGranule
@@ -94,8 +88,7 @@
                                 {:value "E51569BF48DD0FD0640C6503A46D4753"
                                  :algorithm "MD5"})
                     :size-unit "MB"
-                    :size 0.023
-                    :archive-distribution-file-name "20020704000015-JPL-L2P_GHRSST-fv01.0.nc"})
+                    :size 0.023})
     :temporal (umm-lib-g/map->GranuleTemporal
                {:range-date-time (umm-c/map->RangeDateTime
                                   {:beginning-date-time (dtp/parse-datetime "2018-07-17T00:00:00.000Z")

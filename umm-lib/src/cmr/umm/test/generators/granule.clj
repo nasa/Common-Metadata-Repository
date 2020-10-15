@@ -42,9 +42,7 @@
                   :feature-ids (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 10)))
                   :day-night (ext-gen/optional (gen/elements ["DAY" "NIGHT" "BOTH" "UNSPECIFIED"]))
                   :production-date-time ext-gen/date-time
-                  :size (ext-gen/choose-double 0 1024)
-                  :archive-distribution-file-name
-                    (ext-gen/optional (ext-gen/string-ascii 1 10)))))
+                  :size (ext-gen/choose-double 0 1024))))
 
 (def cloud-cover-values
   (gen/fmap double gen/ratio))

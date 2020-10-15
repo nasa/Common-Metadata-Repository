@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.migration.related-url-migration
   "Contains helper functions for migrating between different versions of UMM related urls"
   (:require
-   [cmr.common.util :refer [update-in-each remove-nil-keys]]
+   [cmr.common.util :refer [update-in-each-vector remove-nil-keys]]
    [cmr.umm-spec.util :as util]
    [cmr.umm-spec.migration.related-url-migration-maps :as ru-maps]))
 
@@ -55,7 +55,7 @@
         (dissoc :GetService :GetData))))
 
 (defn migrate-url-content-types-up
-  "migrate from 1.9 to 1.8 based on URLContentType and Type"
+  "migrate from 1.8 to 1.9 based on URLContentType and Type"
   [related-url]
   (let [url-content-type (get related-url :URLContentType)
         type (get related-url :Type)]
@@ -259,56 +259,60 @@
        (assoc :URL url)
        (dissoc :URLs :Title))))
 
-(defn dissoc-titles-from-contact-information
-  "Remove :Title from a given vector of ContactInformation
-  to comply with UMM spec v1.9"
-  [contact-information]
-  (if-let [related-urls (:RelatedUrls contact-information)]
-   (update-in-each contact-information [:RelatedUrls] #(dissoc % :Title))
-   contact-information))
+(defn updating-main-related-url-for-1-9
+  [related-url]
+  (-> related-url
+      relation->url-content-type
+      migrate-url-content-types-up
+      (dissoc :Title :URLs)))
+
+(defn updating-main-related-urls-for-1-9
+  [related-urls]
+  (when (seq related-urls)
+    (mapv updating-main-related-url-for-1-9 (array-of-urls->url related-urls))))
+
+(defn updating-related-url-for-1-9
+  [related-url url-content-type]
+  (-> related-url
+      (assoc :URLContentType url-content-type)
+      (assoc :Type "HOME PAGE")
+      (dissoc :Relation :GetData :GetService :FileSize :MimeType :Title :URLs)))
+
+(defn updating-related-urls-for-1-9
+  [related-urls url-content-type]
+  (when (seq related-urls)
+    (mapv #(updating-related-url-for-1-9 % url-content-type) (array-of-urls->url related-urls))))
 
 (defn migrate-contacts-up
   "Migrate ContactPersons to comply with UMM spec v1.9"
   [contacts]
   (mapv (fn [contact]
-         (if (seq (:ContactInformation contact))
-          (-> contact
-              (update-in [:ContactInformation :RelatedUrls] array-of-urls->url)
-              (update-in-each [:ContactInformation :RelatedUrls]
-                (fn [related-url]
-                  (-> related-url
-                      (assoc :URLContentType "DataContactURL")
-                      (assoc :Type "HOME PAGE")
-                      (dissoc :Relation :GetData :GetService :FileSize :MimeType)))))
-          contact))
+          (if (seq (get-in contact [:ContactInformation :RelatedUrls]))
+            (update-in contact [:ContactInformation :RelatedUrls] updating-related-urls-for-1-9 "DataContactURL")
+            contact))
         contacts))
 
 (defn migrate-contacts-down
   "Migrate ContactPersons to UMM spec v1.8 and lower"
   [contacts]
   (for [contact contacts]
-   (if (seq (:ContactInformation contact))
-    (-> contact
-        (update-in [:ContactInformation :RelatedUrls] url->array-of-urls)
-        (update-in-each [:ContactInformation :RelatedUrls]
-          #(dissoc % :URLContentType :Type :Subtype)))
-    contact)))
+    (if (seq (get-in contact [:ContactInformation :RelatedUrls]))
+      (-> contact
+          (update-in [:ContactInformation :RelatedUrls] url->array-of-urls)
+          (update-in-each-vector [:ContactInformation :RelatedUrls]
+            #(dissoc % :URLContentType :Type :Subtype)))
+      contact)))
 
 (defn migrate-data-centers-up
   "Get RelatedUrls from DataCenters and dissoc the Title from any RelatedUrl"
   [data-centers]
   (mapv (fn [data-center]
-          (-> data-center
-              (update :ContactGroups migrate-contacts-up)
-              (update :ContactPersons migrate-contacts-up)
-              (update :ContactInformation dissoc-titles-from-contact-information)
-              (update-in [:ContactInformation :RelatedUrls] array-of-urls->url)
-              (update-in-each [:ContactInformation :RelatedUrls]
-                (fn [related-url]
-                  (-> related-url
-                      (assoc :URLContentType "DataCenterURL")
-                      (assoc :Type "HOME PAGE")
-                      (dissoc :Relation :GetData :GetService :FileSize :MimeType))))))
+          (let [data-center (-> data-center
+                                (update :ContactGroups migrate-contacts-up)
+                                (update :ContactPersons migrate-contacts-up))]
+            (if (seq (get-in data-center [:ContactInformation :RelatedUrls]))
+              (update-in data-center [:ContactInformation :RelatedUrls] updating-related-urls-for-1-9 "DataCenterURL")
+              data-center)))
         data-centers))
 
 (defn migrate-data-centers-down
@@ -316,23 +320,31 @@
    Complies with UMM spec v1.8 and lower"
   [data-centers]
   (if (not-empty data-centers)
-   (mapv (fn [data-center]
-           (-> data-center
-               (update :ContactGroups migrate-contacts-down)
-               (update :ContactPersons migrate-contacts-down)
-               (update-in [:ContactInformation :RelatedUrls] url->array-of-urls)
-               (update-in-each [:ContactInformation :RelatedUrls]
-                 #(dissoc % :URLContentType :Type :Subtype))))
+    (mapv (fn [data-center]
+            (let [data-center (-> data-center
+                                  (update :ContactGroups migrate-contacts-down)
+                                  (update :ContactPersons migrate-contacts-down))]
+              (if (seq (get-in data-center [:ContactInformation :RelatedUrls]))
+                (-> data-center
+                    (update-in [:ContactInformation :RelatedUrls] url->array-of-urls)
+                    (update-in-each-vector [:ContactInformation :RelatedUrls]
+                                           #(dissoc % :URLContentType :Type :Subtype)))
+                data-center)))
          data-centers)
    data-centers))
+
+(defn migrate-related-url-down-from-1_9
+  [related-url]
+  (-> related-url
+      migrate-url-content-types-down
+      url-content-type->relation))
 
 (defn migrate-down-from-1_9
   ":RelatedUrl {:URL url} -> :RelatedUrl {:URLs [url]} for a given collection"
   [collection]
   (-> collection
       (update :RelatedUrls url->array-of-urls)
-      (update-in-each [:RelatedUrls] migrate-url-content-types-down)
-      (update-in-each [:RelatedUrls] url-content-type->relation)
+      (update :RelatedUrls #(mapv migrate-related-url-down-from-1_9 %))
       (update :ContactGroups migrate-contacts-down)
       (update :ContactPersons migrate-contacts-down)
       (update :DataCenters migrate-data-centers-down)))
@@ -359,7 +371,7 @@
   [collection]
   (if (nil? (:RelatedUrls collection))
     collection
-    (update-in-each collection [:RelatedUrls] replace-existing-related-url-keywords "1.11")))
+    (update-in-each-vector collection [:RelatedUrls] replace-existing-related-url-keywords "1.11")))
 
 (defn migrate-down-from-1_11
   ":RelatedUrl Type and Subtypes have changed in UMM-C version 1.11 to correspond
@@ -368,7 +380,7 @@
   [collection]
   (if (nil? (:RelatedUrls collection))
     collection
-    (update-in-each collection [:RelatedUrls] replace-existing-related-url-keywords "1.10")))
+    (update-in-each-vector collection [:RelatedUrls] replace-existing-related-url-keywords "1.10")))
 
 (defn replace-existing-related-url-keywords-for-umm-12
   "Pass in a related url. If the keywords match what is in the umm-1-11-umm-url-types map then just
@@ -392,5 +404,5 @@
    values back to the old 8.6 keyword version."
   [collection]
   (if (:RelatedUrls collection)
-    (update-in-each collection [:RelatedUrls] replace-existing-related-url-keywords-for-umm-12)
+    (update-in-each-vector collection [:RelatedUrls] replace-existing-related-url-keywords-for-umm-12)
     collection))

@@ -297,6 +297,22 @@
     :else
       x))
 
+(defn remove-nils-empty-maps-seqs
+  "Recursively removes nils, maps with nil values, empty maps, empty vectors,
+   and empty sequences from the passed in form."
+  [x]
+  (cond
+    (nil? x) nil
+    (map? x) (let [clean-map (remove-nil-keys
+                               (zipmap (keys x) (map remove-nils-empty-maps-seqs (vals x))))]
+               (when (seq clean-map)
+                 clean-map))
+    (vector? x) (when (not-empty x)
+                  (into [] (keep remove-nils-empty-maps-seqs x)))
+    (sequential? x) (when (not-empty x)
+                      (keep remove-nils-empty-maps-seqs x))
+    :else x))
+
 (defn map-keys
   "Maps f over the keys in map m and updates all keys with the result of f.
   This is a recommended function from the Camel Snake Kebab library."
@@ -663,6 +679,16 @@
                                (apply f x args))
                              xs)))))
 
+(defn update-in-each-vector
+  "Like update-in-each but applied to each value in seq at path
+   and returns a vector."
+  [m path f & args]
+  (update-in m path (fn [xs]
+                      (when xs
+                        (mapv (fn [x]
+                                (apply f x args))
+                              xs)))))
+
 (defn update-in-all
   "For nested maps, this is identical to clojure.core/update-in. If it
   encounters a sequential structure at one of the keys, though, it applies
@@ -961,7 +987,7 @@
       :else "XXX")))
 
 (defn human-join
-  "Given a vector of strings, return a string joining the elements of the collection with 'separator', except for 
+  "Given a vector of strings, return a string joining the elements of the collection with 'separator', except for
   the last two which are joined with \"'separator' 'final-separator' \".
   Example: (fancy-join [\"One\" \"Two\" \"Three\"] \",\" \"or\") => \"One, Two, or Three\""
   [coll separator final-separator]

@@ -79,13 +79,8 @@
       ;; trim :orbital-model-name in each :orbit-calculated-spatial-domains
       (util/update-in-each [:orbit-calculated-spatial-domains]
                            #(assoc % :orbital-model-name (string/trim (:orbital-model-name %))))
-      ;; Set crid-ids, feature-ids, and archive-distribution-file-name to nil when 
-      ;; data-granule exists since they are not supported in echo10.
-      (update-in [:data-granule] #(if %
-                                    (assoc % :crid-ids nil
-                                             :feature-ids nil
-                                             :archive-distribution-file-name nil)
-                                    %))
+      ;; Set crid-ids and feature-ids to nil when data-granule exists since they are not supported in echo10.
+      (update-in [:data-granule] #(if % (assoc % :crid-ids nil :feature-ids nil) %))
       umm-g/map->UmmGranule))
 
 (defspec generate-granule-is-valid-xml-test 100
