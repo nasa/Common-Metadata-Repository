@@ -302,14 +302,13 @@
    and empty sequences from the passed in form."
   [x]
   (cond
-    (nil? x) nil
     (map? x) (let [clean-map (remove-nil-keys
                                (zipmap (keys x) (map remove-nils-empty-maps-seqs (vals x))))]
                (when (seq clean-map)
                  clean-map))
     (vector? x) (when (not-empty x)
                   (into [] (keep remove-nils-empty-maps-seqs x)))
-    (sequential? x) (when (not-empty x)
+    (sequential? x) (when (seq x)
                       (keep remove-nils-empty-maps-seqs x))
     :else x))
 
