@@ -20,11 +20,21 @@
   "Key for the scroll-id cache in the system cache map."
   "scroll-id-cache")
 
+(def scroll-first-page-cache-key
+  "Key for the first page of scroll results cache in the system cache map."
+  "scroll-first-page-cache")
+
 (defconfig scroll-id-cache-ttl
   "Time in milliseconds scroll-ids can stay in the cache before getting evicted."
   {:type Long
    ;; 24 hours
    :default (* 24 3600 1000)})
+
+(defconfig scroll-first-page-cache-ttl
+  "Time in milliseconds the first page of results can stay in the cache before getting evicted."
+  {:type Long
+    ;; 1 hour
+   :default (* 3600 1000)})
 
 (defn create-scroll-id-cache
   "Returns a single-threaded cache wrapping a fallback cache that uses a consistent cache backed by
@@ -35,6 +45,17 @@
    (fallback-cache/create-fallback-cache
     (mem-cache/create-in-memory-cache :ttl {} {:time-to-live (scroll-id-cache-ttl)})
     (redis-cache/create-redis-cache {:ttl (/ (scroll-id-cache-ttl) 1000)}))))
+
+(defn create-scroll-first-page-cache
+  "Returns a single-threaded cache wrapping a fallback cache that uses a consistent cache backed by
+  Redis. This cache is used to store a map of cmr scroll-ids to the first page of results
+  in a consistent way acrosss all instances of search. This is used to support scrolling with
+  sessions intitiated with a HEAD request."
+  []
+  (stl-cache/create-single-thread-lookup-cache
+   (fallback-cache/create-fallback-cache
+    (mem-cache/create-in-memory-cache :ttl {} {:time-to-live (scroll-first-page-cache-ttl)})
+    (redis-cache/create-redis-cache {:ttl (/ (scroll-first-page-cache-ttl) 1000)}))))
 
 (defn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
