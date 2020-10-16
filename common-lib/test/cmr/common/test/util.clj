@@ -141,6 +141,22 @@
     {:x {:y {:z 1}}} {:x {:y {:z 1 :a {:b nil}}}}
     [{:x 1} {:y 2}] [{} {:x 1} {:a nil :b {:c nil}} {:y 2}]))
 
+(deftest remove-nils-empty-maps-seqs
+  (testing "Remove nils, empty maps, emtpy vectors, and empty sequences test"
+    (is (= {:c {:y 5 :m ["1" "2"] :z 4 :t [{:e "1"} {:h "50"}] :u '(1 "2")} :b 1}
+           (util/remove-nils-empty-maps-seqs {:a nil
+                                              :b 1
+                                              :c {:z 4
+                                                  :y 5
+                                                  :x nil
+                                                  :w []
+                                                  :v '()
+                                                  :u '(1 "2")
+                                                  :t [{:e "1" :f nil} {:g nil :h "50"}]
+                                                  :m ["1" "2"]
+                                                  :s {}}
+                                              :d {:q nil :r nil}})))))
+
 (deftest rename-keys-with-test
   (testing "basic rename key tests"
     (let [params {:k [1 2]}
@@ -794,5 +810,22 @@
     (is (= (util/human-join["one" "two" "three"] "," "and") "one, two, and three")))
   (testing "four elements"
     (is (= (util/human-join ["one" "two" "three" "four"] "," "and") "one, two, three, and four"))))
-            
 
+(def update-in-each-vector-test-data
+  {:a {:b [{:c "description"
+            :d "DataContactURL"}
+           {:c "description2"
+            :d "DistributionURL"}
+           {:c "description3"
+            :d "DistributionURL"}]}})
+
+(deftest update-in-each-vector
+  (testing "update-in-each-vector"
+    (is (= {:a {:b '({:c "description"}
+                     {:c "description2"}
+                     {:c "description3"})}}
+           (util/update-in-each update-in-each-vector-test-data [:a :b] dissoc :d)))
+    (is (= {:a {:b [{:c "description"}
+                    {:c "description2"}
+                    {:c "description3"}]}}
+           (util/update-in-each-vector update-in-each-vector-test-data [:a :b] dissoc :d)))))

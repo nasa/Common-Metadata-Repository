@@ -22,6 +22,231 @@
    [cmr.umm-spec.util :as su]
    [cmr.umm-spec.versioning :as vers]))
 
+(def example-collection-record-edn-version-1-0
+  "An example record with fields supported by most formats in version 1.0!."
+  {:CollectionCitations [{:SeriesName "Series Name"
+                          :Creator "Bob"
+                          :ReleasePlace "Release Place"
+                          :Title "This is a title"
+                          :Publisher "Moe"
+                          :ReleaseDate (t/date-time 2000)
+                          :RelatedUrl {:URLs ["http://www.foo.com"]
+                                       :Title "Data Set Citation"
+                                       :Description "Data Set Citation"
+                                       :Relation ["VIEW RELATED INFORMATION" "Citation"]
+                                       :MimeType "text/html"}
+                          :IssueIdentification "Issue Identification"
+                          :Editor "Larry"
+                          :DataPresentationForm "Data Presentation Form"
+                          :Version "1"
+                          :OtherCitationDetails "Other Citation Details"}]
+   :MetadataDates [{:Date "2009-12-03T00:00:00.000Z"
+                    :Type "CREATE"}
+                   {:Date "2009-12-04T00:00:00.000Z"
+                    :Type "UPDATE"}]
+   :SpatialKeywords ["ANGOLA" "Detailed" "Somewhereville"]
+   :ISOTopicCategories ["FARMING" "INTELLIGENCE/MILITARY" "GEOSCIENTIFIC INFORMATION" "EXTRA TERRESTRIAL"]
+   :ShortName "Short"
+   :TilingIdentificationSystem {:TilingIdentificationSystemName "MISR"
+                                :Coordinate1 {:MinimumValue 1.0
+                                              :MaximumValue 10.0}
+                                :Coordinate2 {:MinimumValue 1.0
+                                              :MaximumValue 10.0}}
+   :Abstract "A very abstract collection"
+   :Personnel [{:Role "POINTOFCONTACT"
+                :Party {:Person {:Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                 :FirstName "John"
+                                 :MiddleName "D"
+                                 :LastName "Smith"}
+                        :ServiceHours "Weekdays 9AM - 5PM"
+                        :ContactInstructions "sample contact instruction"
+                        :Contacts [{:Type "Telephone"
+                                    :Value "301-851-1234"}
+                                   {:Type "Email"
+                                    :Value "cmr@nasa.gov"}]
+                        :Addresses [{:StreetAddresses ["NASA GSFC" "Code 610.2"]
+                                     :City "Greenbelt"
+                                     :StateProvince "MD"
+                                     :Country "U.S.A."
+                                     :PostalCode "20771"}]
+                        :RelatedUrls [{:Description "Contact related url description"
+                                       :URLs ["http://www.contact.foo.com"]}]}}]
+   :PublicationReferences [{:PublicationDate (t/date-time 2015)
+                            :OtherReferenceDetails "Other reference details"
+                            :Series "series"
+                            :Title "title"
+                            :DOI {:DOI "doi:xyz"
+                                  :Authority "DOI"}
+                            :Pages "100"
+                            :Edition "edition"
+                            :ReportNumber "25"
+                            :Volume "volume"
+                            :Publisher "publisher"
+                            :RelatedUrl {:URLs ["http://www.foo.com"]
+                                         :Title "Resource Name"
+                                         :Description "Resource Desc"
+                                         :Relation ["VIEW RELATED INFORMATION" "Citation"]
+                                         :MimeType "text/html"}
+                            :ISBN "1234567789"
+                            :Author "author"
+                            :Issue "issue"
+                            :PublicationPlace "publication place"}
+                           {:DOI {:DOI "identifier"
+                                  :Authority "authority"}}
+                           {:Title "some title"}]
+   :RelatedUrls [{:Description "Related url description"
+                  :URLs ["http://www.foo.com?a=1&ver=5"]
+                  :FileSize {:Size 10.0
+                             :Unit "MB"}
+                  :Relation ["GET DATA" "EARTHDATA SEARCH"]}
+                 {:Description "Related url 3 description"
+                  :URLs ["http://www.foo.com"]
+                  :MimeType "application/json"
+                  :Relation ["GET SERVICE"]}
+                 {:Description "Related url 2 description"
+                  :URLs ["http://www.foo.com"]
+                  :Relation ["GET RELATED VISUALIZATION" "GIBS"]}]
+   :DataDates [{:Date (t/date-time 2012)
+                :Type "CREATE"}
+               {:Date (t/date-time 2013)
+                :Type "UPDATE"}]
+   :Organizations [{:Role "ORIGINATOR"
+                    :Party {:OrganizationName {:ShortName "LPDAAC"}
+                            :Contacts [{:Type "Twitter"
+                                        :Value "@lpdaac"}]}}
+                   {:Role "POINTOFCONTACT"
+                    :Party {:OrganizationName {:ShortName "TNRIS"
+                                               :LongName "Texas Natural Resources Information System"}}}
+                   {:Role "POINTOFCONTACT"
+                    :Party {:OrganizationName {:ShortName "NSIDC"}
+                            :ServiceHours "Weekdays 9AM - 5PM"
+                            :ContactInstructions "sample contact instruction"
+                            :Contacts [{:Type "Telephone"
+                                        :Value "301-851-1234"}
+                                       {:Type "Email"
+                                        :Value "cmr@nasa.gov"}
+                                       {:Type "Fax"
+                                        :Value "301-851-4321"}]
+                            :Addresses [{:StreetAddresses ["NASA GSFC" "Code 610.2"]
+                                         :City "Greenbelt"
+                                         :StateProvince "MD"
+                                         :Country "U.S.A."
+                                         :PostalCode "20771"}]
+                            :RelatedUrls [{:Description "Contact related url description"
+                                           :URLs ["http://www.contact.shoo.com"]}]}}
+                   {:Role "PROCESSOR"
+                    :Party {:OrganizationName {:ShortName "Processing Center"
+                                               :LongName "processor.processor"}}}]
+   :AccessConstraints {:Description "Restriction Comment: Access constraints"
+                       :Value 0.0}
+   :SpatialExtent {:SpatialCoverageType "HORIZONTAL"
+                   :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
+                                             :Geometry {:CoordinateSystem "GEODETIC"
+                                                        :BoundingRectangles [{:WestBoundingCoordinate 25.0
+                                                                              :NorthBoundingCoordinate 45.0
+                                                                              :EastBoundingCoordinate 30.0
+                                                                              :SouthBoundingCoordinate -81.0}]}}
+                   :VerticalSpatialDomains [{:Type "Atmosphere Layer"
+                                             :Value "Some kind of value"}
+                                            {:Type "Maximum Depth"
+                                             :Value "Some kind of value2"}]
+                   :OrbitParameters {:SwathWidth 2.0
+                                     :Period 96.7
+                                     :InclinationAngle 94.0
+                                     :NumberOfOrbits 2.0
+                                     :StartCircularLatitude 50.0}
+                   :GranuleSpatialRepresentation "GEODETIC"}
+   :AdditionalAttributes [{:Group "Accuracy"
+                           :ParameterUnitsOfMeasure "Percent"
+                           :ParameterValueAccuracy "1"
+                           :MeasurementResolution "1"
+                           :ParameterRangeBegin "0.0"
+                           :ValueAccuracyExplanation "explaination for value accuracy"
+                           :Value "50"
+                           :Name "PercentGroundHit"
+                           :Description "Percent of data for this granule that had a detected ground return of the transmitted laser pulse."
+                           :UpdateDate "2015-10-22T00:00:00.000Z"
+                           :ParameterRangeEnd "100.0"
+                           :DataType "FLOAT"}
+                          {:Name "aa-name"
+                           :Description su/not-provided
+                           :DataType "INT"}]
+   :ScienceKeywords [{:Category "EARTH SCIENCE" :Topic "top" :Term "ter"}
+                     {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
+                      :VariableLevel1 "var 1" :VariableLevel2 "var 2"
+                      :VariableLevel3 "var 3" :DetailedVariable "detailed"}]
+   :Quality "Pretty good quality"
+   :EntryTitle "The entry title V5"
+   :Distributions [{:DistributionMedia "Online"
+                    :Sizes [{:Size 1
+                             :Unit "MB"}]
+                    :DistributionFormat "netCDF-4"
+                    :Fees "US $1.00 per CD-ROM"}
+                   {:DistributionMedia "Online"
+                    :Sizes [{:Size 1.5
+                             :Unit "MB"}]
+                    :DistributionFormat "netCDF-5"}]
+   :CollectionProgress "COMPLETE"
+   :SpatialInformation {:SpatialCoverageType "HORIZONTAL"
+                        :HorizontalCoordinateSystem {:GeodeticModel {:HorizontalDatumName "North American Datum 1983"
+                                                                     :EllipsoidName "GRS 1980"
+                                                                     :SemiMajorAxis 6378137
+                                                                     :DenominatorOfFlatteningRatio 298.257222101}
+                                                     :GeographicCoordinateSystem {:GeographicCoordinateUnits "Decimal Degrees"
+                                                                                  :LongitudeResolution 0.5
+                                                                                  :LatitudeResolution 0.5}}}
+   :CollectionDataType "SCIENCE_QUALITY"
+   :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
+   :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]
+   :ProcessingLevel {:ProcessingLevelDescription "Processing level description"
+                     :Id "3"}
+   :Platforms [{:ShortName "Platform 1"
+                :LongName "Example Platform Long Name 1"
+                :Type "Aircraft"
+                :Characteristics [{:Name "OrbitalPeriod"
+                                   :Description "Orbital period in decimal minutes."
+                                   :DataType "FLOAT"
+                                   :Unit "Minutes"
+                                   :Value "96.7"}]
+                   :Instruments [{:ShortName "An Instrument"
+                                  :LongName "The Full Name of An Instrument v123.4"
+                                  :Technique "Two cans and a string"
+                                  :NumberOfSensors 1
+                                  :OperationalModes ["on" "off"]
+                                  :Characteristics [{:Name "Signal to Noise Ratio"
+                                                     :Description "Is that necessary?"
+                                                     :DataType "FLOAT"
+                                                     :Unit "dB"
+                                                     :Value "10"}]
+                                  :Sensors [{:ShortName "ABC"
+                                             :LongName "Long Range Sensor"
+                                             :Characteristics [{:Name "Signal to Noise Ratio"
+                                                                :Description "Is that necessary?"
+                                                                :DataType "FLOAT"
+                                                                :Unit "dB"
+                                                                :Value "10"}]
+                                             :Technique "Drunken Fist"}]}]}]
+   :Projects [{:ShortName "project short_name"}]
+   :Version "V5"
+   :TemporalExtents [{:PrecisionOfSeconds 3
+                      :EndsAtPresentFlag false
+                      :RangeDateTimes [{:BeginningDateTime (t/date-time 2000)
+                                        :EndingDateTime (t/date-time 2001)}
+                                       {:BeginningDateTime (t/date-time 2002)
+                                        :EndingDateTime (t/date-time 2003)}]}]
+   :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
+                           :Description "Associated with a collection"
+                           :EntryId "AssocEntryId"
+                           :Version "V8"}
+                          {:Type "INPUT"
+                           :Description "Some other collection"
+                           :EntryId "AssocEntryId2"
+                           :Version "V2"}
+                          {:EntryId "AssocEntryId3"}
+                          {:Type "INPUT"
+                           :EntryId "AssocEntryId4"}]
+   :DataLanguage "eng"})
+
 (def example-collection-record-edn
   "An example record with fields supported by most formats."
   {:Platforms [{:ShortName "Platform 1"
@@ -257,7 +482,7 @@
                            :ParameterRangeBegin "0.0"
                            :ParameterRangeEnd "100.0"
                            :ParameterUnitsOfMeasure "Percent"
-                           :UpdateDate "2015-10-22"
+                           :UpdateDate "2015-10-22T00:00:00Z"
                            :Value "50"
                            :ParameterValueAccuracy "1"
                            :ValueAccuracyExplanation "explaination for value accuracy"}

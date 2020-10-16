@@ -163,9 +163,9 @@
 (defmethod interface/migrate-umm-version [:collection "1.5" "1.6"]
   [context c & _]
   (-> c
-      (update-in [:DataCenters] #(mapv ci/update-data-center-contact-info %))
-      (update-in [:ContactPersons] #(mapv ci/first-contact-info %))
-      (update-in [:ContactGroups] #(mapv ci/first-contact-info %))))
+      (update-in [:DataCenters] #(seq (mapv ci/update-data-center-contact-info %)))
+      (update-in [:ContactPersons] #(seq (mapv ci/first-contact-info %)))
+      (update-in [:ContactGroups] #(seq (mapv ci/first-contact-info %)))))
 
 (defmethod interface/migrate-umm-version [:collection "1.6" "1.5"]
   [context c & _]
@@ -198,12 +198,9 @@
   [context c & _]
   (-> c
       doi/migrate-doi-up
-      related-url/dissoc-titles-from-contact-information
-      (update :RelatedUrls related-url/array-of-urls->url)
-      (update-in-each [:RelatedUrls] related-url/relation->url-content-type)
+      (update :RelatedUrls related-url/updating-main-related-urls-for-1-9)
       (update-in-each [:PublicationReferences] related-url/migrate-related-url-to-online-resource)
       (update-in-each [:CollectionCitations] related-url/migrate-related-url-to-online-resource)
-      (update-in-each [:RelatedUrls] related-url/migrate-url-content-types-up)
       (update :DataCenters related-url/migrate-data-centers-up)
       (update :ContactGroups related-url/migrate-contacts-up)
       (update :ContactPersons related-url/migrate-contacts-up)
@@ -231,7 +228,7 @@
       geographic-coordinate-units-migration/migrate-geographic-coordinate-units-to-enum
       distance-units-migration/migrate-distance-units-to-enum
       ;; Remove the possible empty maps after setting geographic coordinate units and/or distance-units to nil.
-      util/remove-empty-maps
+      util/remove-nils-empty-maps-seqs
       (update-in [:SpatialExtent :VerticalSpatialDomains] spatial-conversion/drop-invalid-vertical-spatial-domains)
       char-data-type-normalization/migrate-up
       doi/migrate-missing-reason-up

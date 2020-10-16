@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.migration.spatial-extent-migration
   "Contains helper functions for migrating between different versions of UMM related urls"
   (:require
-   [cmr.common.util :refer [update-in-each remove-empty-maps remove-nil-keys]]
+   [cmr.common.util :refer [update-in-each remove-nils-empty-maps-seqs remove-nil-keys]]
    [cmr.umm-spec.util :as umm-spec-util]))
 
 (defn dissoc-center-point
@@ -233,7 +233,7 @@
       migrate-geodetic-model-up
       migrate-local-coordinate-system-up
       remove-nil-keys
-      remove-empty-maps))
+      remove-nils-empty-maps-seqs))
 
 (defn- migrate-spatial-coverage-type
   "Migrate the SpatialCoverageType value in 1.14 to the value in 1.13."
@@ -253,7 +253,7 @@
       (update-in [:SpatialExtent :HorizontalSpatialDomain] dissoc :ResolutionAndCoordinateSystem)
       (update-in [:SpatialExtent :SpatialCoverageType] migrate-spatial-coverage-type)
       remove-nil-keys
-      remove-empty-maps))
+      remove-nils-empty-maps-seqs))
 
 (defn migrate-up-to-1_15
   "Migrates horizontal data resolutions from 1.14 to 1.15"
@@ -373,7 +373,7 @@
                  :ResolutionAndCoordinateSystem
                  :HorizontalDataResolution
                  element]
-                (remove-empty-maps
+                (remove-nils-empty-maps-seqs
                   (map #(migrate-resolution-units-down-to_1_15_1 %) resolutions)))
       c)))
 

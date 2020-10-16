@@ -216,10 +216,9 @@
 
 (deftest umm-json-version-retrieval-test
   (let [user1-token (e/login (s/context) "user1")
-        coll expected-conversion/example-collection-record
+        json (json/generate-string expected-conversion/example-collection-record-edn-version-1-0)
         original-umm-version "1.0"
         original-mime-type (format "%s;version=%s" mt/umm-json original-umm-version)
-        json (umm-spec/generate-metadata test-context coll original-mime-type)
         ;; ingest the collection with umm json metadata in version 1.0
         {:keys [concept-id]} (d/ingest-concept-with-metadata {:provider-id  "PROV1"
                                                               :concept-type :collection
@@ -238,12 +237,14 @@
                 response (search/retrieve-concept concept-id nil
                                                   {:query-params {:token user1-token}
                                                    :accept accept-header})
-                response-concept-type (get-in response [:headers "Content-Type"])]
+                response-concept-type (get-in response [:headers "Content-Type"])
+                expected-edn (json/decode
+                               (expected-umm-json json expected-version original-umm-version))]
 
             (is (= 200 (:status response)))
             ;; retrieved result matches the expected umm json which is converted from the original
             ;; umm json version to the expected version
-            (is (= (expected-umm-json json expected-version original-umm-version) (:body response)))
+            (is (= expected-edn (json/decode (:body response))))
             (is (= mt/umm-json (mt/base-mime-type-of response-concept-type)))
             (is (= expected-version (mt/version-of response-concept-type))))
 
@@ -547,8 +548,8 @@
                                         (:concept-id coll1) nil {:throw-exceptions true
                                                                  :query-params {}}))]
         (is (= 404 status))
-        (is(= #{"Concept with concept-id [C1200000018-PROV3] could not be found."}
-              (set errors))))
+        (is (= #{"Concept with concept-id [C1200000018-PROV3] could not be found."}
+               (set errors))))
       ;; Guest users can't see PROV3 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                       (search/retrieve-concept
@@ -556,8 +557,8 @@
                                                                  :headers {transmit-config/token-header
                                                                            guest-token}}))]
         (is (= 404 status))
-        (is(= #{"Concept with concept-id [C1200000018-PROV3] could not be found."}
-              (set errors))))
+        (is (= #{"Concept with concept-id [C1200000018-PROV3] could not be found."}
+               (set errors))))
       ;; But registered users can see PROV3 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                       (search/retrieve-concept
@@ -565,7 +566,7 @@
                                                                  :headers {transmit-config/token-header
                                                                            user1-token}}))]
         (is (= 200 status))
-        (is(= nil errors)))
+        (is (= nil errors)))
       ;; Even registered users can't see PROV4 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                       (search/retrieve-concept
@@ -573,8 +574,8 @@
                                                                   :headers {transmit-config/token-header
                                                                             user1-token}}))]
         (is (= 404 status))
-        (is(= #{"Concept with concept-id [C1200000019-PROV4] could not be found."}
-              (set errors)))))
+        (is (= #{"Concept with concept-id [C1200000019-PROV4] could not be found."}
+               (set errors)))))
 
     (testing "ACLs - concept-id + revision-id retrieval"
       ;; no token
@@ -584,8 +585,8 @@
                                         (:revision-id coll1)
                                         {:throw-exceptions true}))]
         (is (= 404 status))
-        (is(= #{"Concept with concept-id [C1200000018-PROV3] and revision-id [1] could not be found."}
-              (set errors))))
+        (is (= #{"Concept with concept-id [C1200000018-PROV3] and revision-id [1] could not be found."}
+               (set errors))))
       ;; Guest users can't see PROV3 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                       (search/retrieve-concept
@@ -595,8 +596,8 @@
                                          :headers {transmit-config/token-header
                                                    guest-token}}))]
         (is (= 404 status))
-        (is(= #{"Concept with concept-id [C1200000018-PROV3] and revision-id [1] could not be found."}
-              (set errors))))
+        (is (= #{"Concept with concept-id [C1200000018-PROV3] and revision-id [1] could not be found."}
+               (set errors))))
       ;; But registered users can see PROV3 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                       (search/retrieve-concept
@@ -606,7 +607,7 @@
                                          :headers {transmit-config/token-header
                                                    user1-token}}))]
         (is (= 200 status))
-        (is(= nil errors)))
+        (is (= nil errors)))
       ;; Even registered users can't see PROV4 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                       (search/retrieve-concept
@@ -616,5 +617,5 @@
                                          :headers {transmit-config/token-header
                                                    user1-token}}))]
         (is (= 404 status))
-        (is(= #{"Concept with concept-id [C1200000019-PROV4] and revision-id [1] could not be found."}
-              (set errors)))))))
+        (is (= #{"Concept with concept-id [C1200000019-PROV4] and revision-id [1] could not be found."}
+               (set errors)))))))
