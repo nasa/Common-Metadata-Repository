@@ -1,12 +1,15 @@
-(ns cmr.access-control.test.services.acl-util
+(ns cmr.access-control.int-test.acl-util
   (:require
    [clojure.test :refer :all]
+   [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.services.acl-util :as acl-util]
    [cmr.access-control.test.util :as u]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]))
 
-(deftest ^:kaocha/pending acl-log-message
+(use-fixtures :each (fixtures/reset-fixture))
+
+(deftest acl-log-message
   (let [token (e/login (u/conn-context) "admin")]
     (testing "Create, update, and delete ACL log message function"
       (are3 [new-acl existing-acl action expected-message]
