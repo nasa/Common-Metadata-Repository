@@ -21,7 +21,7 @@
                                      :Description "Description"
                                      :Type "GET DATA"
                                      :Subtype "Earthdata Search"}
-                                    {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"
+                                    {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
                                      :URLContentType "PublicationURL"
                                      :Description "Description"
                                      :Type "VIEW RELATED INFORMATION"
@@ -103,7 +103,7 @@
                                         :URLContentType "DataCenterURL"
                                         :Description "Description"
                                         :Type "HOME PAGE"}
-                                       {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"
+                                       {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
                                         :URLContentType "DataCenterURL"
                                         :Description "Description"
                                         :Type "HOME PAGE"}]}}]})))
@@ -155,7 +155,7 @@
                                           :URLContentType "DataContactURL"
                                           :Description "Description"
                                           :Type "HOME PAGE"}
-                                         {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"
+                                         {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
                                           :URLContentType "DataContactURL"
                                           :Description "Description"
                                           :Type "HOME PAGE"}]}}]}]})))
@@ -207,7 +207,7 @@
                                           :URLContentType "DataContactURL"
                                           :Description "Description"
                                           :Type "HOME PAGE"}
-                                         {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"
+                                         {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
                                           :URLContentType "DataContactURL"
                                           :Description "Description"
                                           :Type "HOME PAGE"}]}}]}]})))
@@ -261,7 +261,7 @@
                                         :URLContentType "DataContactURL"
                                         :Description "Description"
                                         :Type "HOME PAGE"}
-                                       {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"
+                                       {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
                                         :URLContentType "DataContactURL"
                                         :Description "Description"
                                         :Type "HOME PAGE"}]}}]})))
@@ -315,7 +315,7 @@
                                         :URLContentType "DataContactURL"
                                         :Description "Description"
                                         :Type "HOME PAGE"}
-                                       {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"
+                                       {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
                                         :URLContentType "DataContactURL"
                                         :Description "Description"
                                         :Type "HOME PAGE"}]}}]})))
@@ -379,7 +379,7 @@
      (coll/map->UMM-C
                      {:CollectionCitations
                       [{:OnlineResource {:Linkage "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"}}
-                       {:OnlineResource {:Linkage "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"}}]})))
+                       {:OnlineResource {:Linkage "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"}}]})))
   (testing "Multiple invalid related urls"
     (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
@@ -397,7 +397,7 @@
      (coll/map->UMM-C
                      {:PublicationReferences
                       [{:OnlineResource {:Linkage "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"}}
-                       {:OnlineResource {:Linkage "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"}}]})))
+                       {:OnlineResource {:Linkage "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"}}]})))
   (testing "Multiple invalid related urls"
     (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
