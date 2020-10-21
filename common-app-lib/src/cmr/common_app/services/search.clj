@@ -34,8 +34,8 @@
 (defconfig scroll-first-page-cache-ttl
   "Time in milliseconds the first page of results can stay in the cache before getting evicted."
   {:type Long
-    ;; 1 hour
-   :default (* 3600 1000)})
+    ;; 15 minutes
+   :default (* 900 1000)})
 
 (defn create-scroll-id-cache
   "Returns a single-threaded cache wrapping a fallback cache that uses a consistent cache backed by
@@ -93,12 +93,12 @@
   [context scroll-id]
   (when scroll-id
     (when-let [result (-> context
-                     (cache/context->cache scroll-first-page-cache-key)
-                     (cache/get-value scroll-id))]
+                          (cache/context->cache scroll-first-page-cache-key)
+                          (cache/get-value scroll-id))]
       ;; clear the cache entry
       (-> context
-        (cache/context->cache scroll-first-page-cache-key)
-        (cache/set-value scroll-id nil))
+          (cache/context->cache scroll-first-page-cache-key)
+          (cache/set-value scroll-id nil))
       result)))
 
 (defn time-concept-search
