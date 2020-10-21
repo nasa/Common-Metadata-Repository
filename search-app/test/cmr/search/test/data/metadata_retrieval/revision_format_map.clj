@@ -89,7 +89,7 @@
             #{:echo10 {:format :umm-json
                        :version "1.3"}})))))
 
-(deftest add-additional-format-test
+(deftest ^:kaocha/pending add-additional-format-test
   (testing "Decompressed"
     (let [rfm (r/concept->revision-format-map nil tm/dif-concept #{:native})]
       (is (= (assoc rfm :echo10 (:metadata tm/echo10-concept))

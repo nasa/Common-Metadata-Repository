@@ -3,7 +3,8 @@
           :ns-patterns ["cmr.spatial.test*" "-test$"]}]
 
  :plugins [:kaocha.plugin.alpha/info
-           :kaocha.plugin/cloverage
+           ;; TODO: modify testing to let cloverage work
+           ;; :kaocha.plugin/cloverage
            :capture-output
            :junit-xml
            :notifier
