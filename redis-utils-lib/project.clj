@@ -63,7 +63,8 @@
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]
             ;; Linting aliases
-            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+            "kibit" ["do"
+                     ["with-profile" "lint" "shell" "echo" "== Kibit =="]
                      ["with-profile" "lint" "kibit"]]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Alias to test2junit for consistency with lein-test-out

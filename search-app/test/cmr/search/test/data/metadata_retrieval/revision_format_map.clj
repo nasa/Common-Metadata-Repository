@@ -89,16 +89,16 @@
             #{:echo10 {:format :umm-json
                        :version "1.3"}})))))
 
-(deftest ^:kaocha/pending add-additional-format-test
+(deftest add-additional-format-test
   (testing "Decompressed"
     (let [rfm (r/concept->revision-format-map nil tm/dif-concept #{:native})]
-      (= (assoc rfm :echo10 (:metadata tm/echo10-concept))
-         (r/add-additional-format nil :echo10 rfm))))
+      (is (= (assoc rfm :echo10 (:metadata tm/echo10-concept))
+             (r/add-additional-format nil :echo10 rfm)))))
   (testing "Compressed"
     (let [rfm (r/compress
                 (r/concept->revision-format-map nil tm/dif-concept #{:native}))]
-      (= (assoc rfm :echo10 (util/string->lz4-bytes (:metadata tm/echo10-concept)))
-         (r/add-additional-format nil :echo10 rfm)))))
+      (is (= (assoc rfm :echo10 (util/string->lz4-bytes (:metadata tm/echo10-concept)))
+             (r/add-additional-format nil :echo10 rfm))))))
 
 (defn test-rfm
   "Creates a revision format map with the specified formats."

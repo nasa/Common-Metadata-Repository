@@ -67,10 +67,10 @@
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Dclojure.compiler.direct-linking=true"
              "-Dorg.jruby.embed.localcontext.scope=singlethread"]
-  ;; Uncomment to enable logging in jetty.
-                                        ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
-                                        ; "-Dorg.eclipse.jetty.LEVEL=INFO"
-                                        ; "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
+             ;; Uncomment to enable logging in jetty.
+             ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
+             ; "-Dorg.eclipse.jetty.LEVEL=INFO"
+             ; "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
@@ -90,11 +90,11 @@
                                 ;; XXX Note that profiling can be kept in a profile,
                                 ;;     with no need to comment/uncomment.
                                 ;; Use the following to enable JMX profiling with visualvm
-                                        ;:jvm-opts ^:replace ["-server"
-                                        ;                     "-Dcom.sun.management.jmxremote"
-                                        ;                     "-Dcom.sun.management.jmxremote.ssl=false"
-                                        ;                     "-Dcom.sun.management.jmxremote.authenticate=false"
-                                        ;                     "-Dcom.sun.management.jmxremote.port=1098"]
+                                ;:jvm-opts ^:replace ["-server"
+                                ;                     "-Dcom.sun.management.jmxremote"
+                                ;                     "-Dcom.sun.management.jmxremote.ssl=false"
+                                ;                     "-Dcom.sun.management.jmxremote.authenticate=false"
+                                ;                     "-Dcom.sun.management.jmxremote.port=1098"]
                                 :source-paths ["src" "dev" "test"]
                                 :injections [(require 'pjstadig.humane-test-output)
                                              (pjstadig.humane-test-output/activate!)]}
@@ -111,7 +111,7 @@
              :run-in-memory {:jvm-opts ["-Dcmr.runmode=in-memory"]}
              :run-external {:jvm-opts ["-Dcmr.runmode=external"]}
              :uberjar {:main cmr.dev-system.runner
-                       ;; See http://stephen.genoprime.com/2013/11/14/uberjar-with-titan-dependency.html
+             ;; See http://stephen.genoprime.com/2013/11/14/uberjar-with-titan-dependency.html
                        :uberjar-merge-with {#"org\.apache\.lucene\.codecs\.*" [slurp str spit]}
                        :aot :all}
              :static {}

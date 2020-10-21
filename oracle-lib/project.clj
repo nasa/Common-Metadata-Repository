@@ -61,7 +61,8 @@
             "utest" ["kaocha" "--focus" "unit"]
 
             ;; Linting aliases
-            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+            "kibit" ["do"
+                     ["with-profile" "lint" "shell" "echo" "== Kibit =="]
                      ["with-profile" "lint" "kibit"]]
             ;; Eastwood needs special handling with libs that include oracle
             ;; drivers in the deps, in particulear:

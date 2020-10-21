@@ -92,7 +92,8 @@
             "utest" ["kaocha" "--focus" "unit"]
 
             ;; Linting aliases
-            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+            "kibit" ["do"
+                     ["with-profile" "lint" "shell" "echo" "== Kibit =="]
                      ["with-profile" "lint" "kibit"
                       ;; XXX the following are placed here to implicitly
                       ;; avoid cmr.ingest.validation, and in particular,
