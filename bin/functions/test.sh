@@ -46,7 +46,7 @@ Notes on the ENV variables:
 EOH
 
 function test_all {
-    cd $CMR_DIR && lein modules kaocha --profile ci --focus cmr.system_int_test.search.sitemaps_test
+    cd $CMR_DIR && lein modules kaocha --profile ci
 }
 
 function test_cicd {
