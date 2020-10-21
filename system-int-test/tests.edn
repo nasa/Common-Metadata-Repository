@@ -5,6 +5,7 @@
 
  :plugins [:kaocha.plugin.alpha/info
            :kaocha.plugin/randomize
+           :capture-output
            :junit-xml
            :print-invocations
            :profiling
