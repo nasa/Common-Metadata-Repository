@@ -270,9 +270,12 @@ Unit Tests:
 lein modules utest
 ```
 
-Integration Tests against running CMR system:
+Integration Tests against a running CMR system:
 ```
+# If running CMR with the in-memory database (default)
 lein modules itest --skip-meta :oracle
+
+# If running CMR with an external database
 lein modules itest --skip-meta :in-memory-db
 ```
 
