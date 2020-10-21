@@ -1,22 +1,28 @@
 #kaocha/v1
 {:tests [{:id :unit
-          :ns-patterns ["cmr.access-control.test" "-test$"]}
+          :ns-patterns ["cmr.access-control.test*" "-test$"]}
+
          {:id :integration
           :ns-patterns ["cmr.access-control.int-test*" "-test$"]
           :test-paths ["int-test"]}]
 
  :plugins [:kaocha.plugin.alpha/info
            :kaocha.plugin/cloverage
+           :capture-output
            :junit-xml
+           :notifier
            :print-invocations
-           :profiling
-           :notifier]
-
- :color? #profile {:default true :ci false}
+           :profiling]
 
  :fail-fast? false
 
- :reporter #profile {:default [kaocha.report.progress/report]
-                     :ci [kaocha.report/documentation]}
+ :color? #profile {:default true
+                   :ci false}
 
- :kaocha.plugin.junit-xml/target-file "target/junit.xml"}
+ :reporter #profile {:default kaocha.report.progress/report
+                     :ci kaocha.report/documentation}
+
+ :kaocha.plugin.junit-xml/target-file "target/junit.xml"
+
+ :kaocha.plugin.profiling/count 3
+ :kaocha.plugin.profiling/profiling? true}

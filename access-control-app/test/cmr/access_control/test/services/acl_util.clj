@@ -6,7 +6,7 @@
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]))
 
-(deftest ^:kaocha/pending acl-log-messag
+(deftest ^:kaocha/pending acl-log-message
   (let [token (e/login (u/conn-context) "admin")]
     (testing "Create, update, and delete ACL log message function"
       (are3 [new-acl existing-acl action expected-message]
