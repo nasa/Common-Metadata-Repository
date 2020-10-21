@@ -6,7 +6,7 @@
             [test2junit "1.3.3"]]
   :exclusions [[chesire]]
   :dependencies [[cheshire "5.8.1"]
-                 [com.github.everit-org.json-schema/org.everit.json.schema "1.11.0"]
+                 [com.github.everit-org.json-schema/org.everit.json.schema "1.12.1"]
                  [org.clojure/clojure "1.10.0"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :global-vars {*warn-on-reflection* true}
