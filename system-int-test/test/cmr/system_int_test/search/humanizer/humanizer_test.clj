@@ -70,11 +70,8 @@
 
     (testing "Create humanizer with nil body"
       (is (= {:status 400,
-              ;; The input to validation is just "null" in this case which leads
-              ;; the validator to believe the json is malformed and throw the
-              ;; below error messages before it is even validated against the schema.
               :errors
-              ["Invalid JSON: Trailing characters are not permitted. at 3 [character 4 line 1]"]}
+              ["#: expected type: JSONArray, found: Null"]}
              (humanizer-util/update-humanizers admin-update-token nil))))
 
     (testing "Create humanizer with empty array"
