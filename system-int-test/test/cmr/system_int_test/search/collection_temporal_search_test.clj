@@ -26,13 +26,14 @@
 ;; values of the min and max granule of the collection or the collection's temporal values if the
 ;; collection has no granules
 (deftest search-by-temporal-limit-to-granules
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection
-                                              1
-                                              {:EntryTitle "coll1"
-                                               :TemporalExtents [(data-umm-cmn/temporal-extent
-                                                                   {:beginning-date-time "2000-01-01T00:00:00Z"
-                                                                    :ending-date-time "2010-01-01T00:00:00Z"})]}))
+  (let [coll1 (d/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection
+                  1
+                  {:EntryTitle "coll1"
+                   :TemporalExtents [(data-umm-cmn/temporal-extent
+                                       {:beginning-date-time "2000-01-01T00:00:00Z"
+                                        :ending-date-time "2010-01-01T00:00:00Z"})]}))
         c1-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                   coll1
                                   (:concept-id coll1)
@@ -54,13 +55,14 @@
                                    :beginning-date-time "2007-01-01T00:00:00Z"
                                    :ending-date-time "2008-01-01T00:00:00Z"}))
 
-        coll2 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection
-                                              2
-                                              {:EntryTitle "coll2"
-                                               :TemporalExtents [(data-umm-cmn/temporal-extent
-                                                                   {:beginning-date-time "2001-01-01T00:00:00Z"
-                                                                    :ending-date-time "2005-01-01T00:00:00Z"})]}))
+        coll2 (d/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection
+                  2
+                  {:EntryTitle "coll2"
+                   :TemporalExtents [(data-umm-cmn/temporal-extent
+                                       {:beginning-date-time "2001-01-01T00:00:00Z"
+                                        :ending-date-time "2005-01-01T00:00:00Z"})]}))
 
         c2-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                   coll2
@@ -77,29 +79,32 @@
                                    :ending-date-time "2004-01-01T00:00:00Z"}))
 
         ;; Collection 3 has nof granules
-        coll3 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection
-                                              3
-                                              {:EntryTitle "coll3"
-                                               :TemporalExtents [(data-umm-cmn/temporal-extent
-                                                                   {:beginning-date-time "2002-01-01T00:00:00Z"
-                                                                    :ending-date-time "2005-01-01T00:00:00Z"})]}))
+        coll3 (d/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection
+                  3
+                  {:EntryTitle "coll3"
+                   :TemporalExtents [(data-umm-cmn/temporal-extent
+                                       {:beginning-date-time "2002-01-01T00:00:00Z"
+                                        :ending-date-time "2005-01-01T00:00:00Z"})]}))
 
         ;; Collection 4 has no granules and no end date.
-        coll4 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection
-                                              4
-                                              {:EntryTitle "coll4"
-                                               :TemporalExtents [(data-umm-cmn/temporal-extent
-                                                                   {:beginning-date-time "2004-01-01T00:00:00Z"})]}))
+        coll4 (d/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection
+                  4
+                  {:EntryTitle "coll4"
+                   :TemporalExtents [(data-umm-cmn/temporal-extent
+                                       {:beginning-date-time "2004-01-01T00:00:00Z"})]}))
 
         ;; Collection 5 has granules and no end date.
-        coll5 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection
-                                              5
-                                              {:EntryTitle "coll5"
-                                               :TemporalExtents [(data-umm-cmn/temporal-extent
-                                                                   {:beginning-date-time "2004-01-01T00:00:00Z"})]}))
+        coll5 (d/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection
+                  5
+                  {:EntryTitle "coll5"
+                   :TemporalExtents [(data-umm-cmn/temporal-extent
+                                       {:beginning-date-time "2004-01-01T00:00:00Z"})]}))
 
         c5-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                   coll5
@@ -116,11 +121,13 @@
                            :beginning-date-time "2008-01-01T00:00:00Z"}))
 
         ;; Coll6 is an NRT collection with granules that have temporal in recent time
-        coll6 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection
-                                              6
-                                              {:EntryTitle "coll6"
-                                               :TemporalExtents [(data-umm-cmn/temporal-extent {:beginning-date-time "2006-01-01T00:00:00Z"})]}))
+        coll6 (d/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection
+                  6
+                  {:EntryTitle "coll6"
+                   :TemporalExtents [(data-umm-cmn/temporal-extent
+                                       {:beginning-date-time "2006-01-01T00:00:00Z"})]}))
 
         dt-2-days-ago (f/unparse (f/formatters :date-time) (t/minus (t/now) (t/days 2)))
         dt-1-day-ago (f/unparse (f/formatters :date-time) (t/minus (t/now) (t/days 1)))
@@ -133,16 +140,17 @@
                                    :ending-date-time dt-2-days-ago}))
 
         ;; collection 7 contains multiple temporal ranges with gaps and has no ganules
-        coll7 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection
-                                              7
-                                              {:EntryTitle "coll7"
-                                               :TemporalExtents [(data-umm-cmn/temporal-extent
-                                                                   {:beginning-date-time "1997-05-01T00:00:00Z"
-                                                                    :ending-date-time "1997-05-02T00:00:00Z"})
-                                                                 (data-umm-cmn/temporal-extent
-                                                                   {:beginning-date-time "1997-05-05T00:00:00Z"
-                                                                    :ending-date-time "1997-05-06T00:00:00Z"})]}))]
+        coll7 (d/ingest-umm-spec-collection
+                "PROV1"
+                (data-umm-c/collection
+                  7
+                  {:EntryTitle "coll7"
+                   :TemporalExtents [(data-umm-cmn/temporal-extent
+                                       {:beginning-date-time "1997-05-01T00:00:00Z"
+                                        :ending-date-time "1997-05-02T00:00:00Z"})
+                                     (data-umm-cmn/temporal-extent
+                                       {:beginning-date-time "1997-05-05T00:00:00Z"
+                                        :ending-date-time "1997-05-06T00:00:00Z"})]}))]
     (index/wait-until-indexed)
 
     ;; Refresh the aggregate cache so that it includes all the granules that were added.
