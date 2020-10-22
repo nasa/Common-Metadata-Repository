@@ -154,8 +154,8 @@
   (let [provider "PROV2"
         tag "gov.nasa.eosdis"
         url-path (format
-                  "site/collections/directory/%s/%s/sitemap.xml"
-                  provider tag)
+                   "site/collections/directory/%s/%s/sitemap.xml"
+                   provider tag)
         response (site/get-search-response url-path)
         body (:body response)
         colls (@test-collections "PROV2")]
@@ -165,12 +165,12 @@
       (is (= 200 (:status response)))
       (is (string/includes? body "</changefreq>"))
       (is (string/includes?
-           body (format "concepts/%s.html</loc>" (second colls))))
+            body (format "concepts/%s.html</loc>" (second colls))))
       (is (string/includes?
-           body (format "concepts/%s.html</loc>" (last colls)))))
+            body (format "concepts/%s.html</loc>" (last colls)))))
     (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes?
-                body (format "%s.html</loc>" (first colls))))))))
+                 body (format "%s.html</loc>" (first colls))))))))
 
 (deftest sitemap-provider3
   (let [provider "PROV3"
