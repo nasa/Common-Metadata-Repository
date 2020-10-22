@@ -133,8 +133,8 @@
 
 (defmethod parameter->condition :boolean
   [_context concept-type param value options]
-  (let [value (u/safe-lowercase value) ]
-   (cond
+  (let [value (u/safe-lowercase value)]
+    (cond
     (or (= "true" value) (= "false" value))
     (qm/boolean-condition param (= "true" value))
     (= "unset" (string/lower-case value))
