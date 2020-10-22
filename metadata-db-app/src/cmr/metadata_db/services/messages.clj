@@ -224,6 +224,12 @@
                "Service associations are system level entities.")
           provider-id))
 
+(defn tool-associations-only-system-level
+  [provider-id]
+  (format (str "Tool association could not be associated with provider [%s]. "
+               "Tool associations are system level entities.")
+          provider-id))
+
 (defn concept-not-found
   [provider-id field-name field-value]
   (format "Unable to find saved concept for provider [%s] and %s [%s]"

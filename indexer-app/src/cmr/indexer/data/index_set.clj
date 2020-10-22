@@ -502,6 +502,12 @@
           :service-types-lowercase (m/doc-values m/string-field-mapping)
           :service-concept-ids (m/doc-values m/string-field-mapping)
 
+          ;; associated tools
+          :tool-names (m/doc-values m/string-field-mapping)
+          :tool-names-lowercase (m/doc-values m/string-field-mapping)
+          :tool-types-lowercase (m/doc-values m/string-field-mapping)
+          :tool-concept-ids (m/doc-values m/string-field-mapping)
+
           ;; associations with the collection stored as EDN gzipped and base64 encoded for retrieving purpose
           :associations-gzip-b64 m/binary-field-mapping
 
@@ -749,6 +755,7 @@
    :tool-name-lowercase (m/doc-values m/string-field-mapping)
    :long-name (m/doc-values m/string-field-mapping)
    :long-name-lowercase (m/doc-values m/string-field-mapping)
+   :tool-type-lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
    :deleted (m/doc-values m/bool-field-mapping)
    :user-id (m/doc-values m/string-field-mapping)

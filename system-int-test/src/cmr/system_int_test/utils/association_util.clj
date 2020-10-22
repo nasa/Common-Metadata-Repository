@@ -70,3 +70,12 @@
         :body
         first
         :service-association)))
+
+(defn make-tool-association
+  "Returns the tool association for associating the given tool and collections"
+  [token concept-id coll-concept-ids]
+  (let [response (associate-by-concept-ids token concept-id coll-concept-ids)]
+    (-> response
+        :body
+        first
+        :tool-association)))

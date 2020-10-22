@@ -46,6 +46,10 @@
 (defmethod parse-concept :tool
   [context concept]
   (umm/parse-metadata context concept))
+ 
+(defmethod parse-concept :tool-association
+  [context concept]
+  (edn/read-string (:metadata concept)))
 
 (defmethod parse-concept :default
  [context concept]
