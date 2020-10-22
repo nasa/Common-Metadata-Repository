@@ -15,6 +15,7 @@
    [cmr.search.api.providers :as providers-api]
    [cmr.search.api.services :as services-api]
    [cmr.search.api.tags :as tags-api]
+   [cmr.search.api.tools :as tools-api]
    [cmr.search.api.variables :as variables-api]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.health-service :as hs]
@@ -68,6 +69,9 @@
 
         ;; Add routes for service association
         services-api/service-api-routes
+
+        ;; Add routes for tool association
+        tools-api/tool-api-routes
 
         ;; Add routes for humanizers
         humanizers-api/humanizers-routes

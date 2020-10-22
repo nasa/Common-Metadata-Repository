@@ -274,7 +274,7 @@
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
          :keys [concept-id format-key has-variables has-formats has-transforms
-                has-spatial-subsetting has-temporal-subsetting services variables]} collection
+                has-spatial-subsetting has-temporal-subsetting services variables tools]} collection
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
         ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
@@ -299,9 +299,10 @@
         ;; Remove duplicate archive/distribution center from an echo10 conversion - only need one
         organizations (remove #(and (= archive-center (:org-name %)) (= :distribution-center (:type %))) organizations)
         temporal (:temporal collection)
-        associations (when (or (seq services) (seq variables))
+        associations (when (or (seq services) (seq variables) (seq tools))
                        (util/remove-map-keys empty? {:variables (set variables)
-                                                     :services (set services)}))]
+                                                     :services (set services)
+                                                     :tools (set tools)}))]
     (util/remove-nil-keys
      {:id concept-id
       :title entry-title

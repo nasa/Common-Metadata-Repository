@@ -44,7 +44,7 @@
   If the concept-type is error-sensitive the function will check for any errors in the results, and will return 400 if
   any are errors are present. Otherwise it will return 200"
   (fn [concept-type results]
-    (when (some #{concept-type} '(:variable :service))
+    (when (some #{concept-type} '(:variable :service :tool))
       :error-sensitive)))
 
 (defmethod association-results->status-code :default

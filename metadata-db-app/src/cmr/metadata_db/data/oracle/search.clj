@@ -42,7 +42,10 @@
                                 :variable_concept_id :user_id])
    :service-association (into common-columns
                               [:associated_concept_id :associated_revision_id
-                               :service_concept_id :user_id])})
+                               :service_concept_id :user_id])
+   :tool-association (into common-columns
+                           [:associated_concept_id :associated_revision_id
+                            :tool_concept_id :user_id])})
 
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept
