@@ -1,13 +1,10 @@
 (ns cmr.system-int-test.search.sitemaps-test
   (:require
-   [clj-http.client :as client]
    [clj-xml-validation.core :as xmlv]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.search.services.content-service :as content-service]
-   [cmr.search.site.static :as static]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.system :as s]
@@ -15,7 +12,6 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.site-util :as site]
    [cmr.system-int-test.utils.tag-util :as tags]
-   [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.models.umm-common-models :as cm]
    [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
@@ -41,14 +37,14 @@
          c1-p2 c2-p2 c3-p2] (doall (for [p ["PROV1" "PROV2"]
                                          n (range 1 4)]
                                      (d/ingest-umm-spec-collection
-                                      p
-                                      (-> exp-conv/curr-ingest-ver-example-collection-record
-                                          (assoc :ShortName (str "s" n))
-                                          (assoc :EntryTitle (str "Collection Item " n)))
-                                      {:format :umm-json
-                                       :accept-format :json})))
-         _ (index/wait-until-indexed)
-         [c1-p3 c2-p3 c3-p3] (doall (for [n (range 4 7)]
+                                       p
+                                       (-> exp-conv/curr-ingest-ver-example-collection-record
+                                           (assoc :ShortName (str "s" n))
+                                           (assoc :EntryTitle (str "Collection Item " n)))
+                                       {:format :umm-json
+                                        :accept-format :json})))
+        _ (index/wait-until-indexed)
+        [c1-p3 c2-p3 c3-p3] (doall (for [n (range 4 7)]
                                      (d/ingest-umm-spec-collection
                                        "PROV3"
                                        (-> exp-conv/curr-ingest-ver-example-collection-record
@@ -72,10 +68,10 @@
           doi-colls [c1-p3 c2-p3 c3-p3]
           all-colls (into nodoi-colls doi-colls)
           tag-colls [c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3]
-          tag (tags/save-tag
-                user-token
-                (tags/make-tag {:tag-key "gov.nasa.eosdis"})
-                tag-colls)]
+          _tag (tags/save-tag
+                 user-token
+                 (tags/make-tag {:tag-key "gov.nasa.eosdis"})
+                 tag-colls)]
       (index/wait-until-indexed)
       ;; Sanity checks
       (assert (= (count notag-colls) 3))
