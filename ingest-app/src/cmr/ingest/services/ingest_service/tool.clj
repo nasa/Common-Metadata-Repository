@@ -9,7 +9,7 @@
   under :extra-fields."
   [context concept tool]
   (assoc concept :extra-fields {:tool-name (:Name tool)
-                                :service-type (:Type tool)}))
+                                :tool-type (:Type tool)}))
 (defn-timed save-tool
   "Store a tool concept in mdb and indexer."
   [context concept]
