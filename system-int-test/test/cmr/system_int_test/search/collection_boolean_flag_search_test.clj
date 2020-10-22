@@ -44,6 +44,7 @@
       (are [items value]
          (d/refs-match? items (search/find-refs :collection {:online-only value}))
          [coll1 coll5] true
+         [coll1 coll5] "True"
          [coll2 coll3 coll4 coll6] false
          [coll1 coll2 coll3 coll4 coll5 coll6] "unset"))
 
