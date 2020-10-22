@@ -88,6 +88,21 @@
       }
     }
 
+#### Tool Association
+
+    {
+      "concept-type": "tool-association",
+      "native-id": "TL1200000008-PROV1/C1200000005-PROV1",
+      "user-id": "user1",
+      "format": "application/edn",
+      "metadata": "{:tool-concept-id \"TL1200000008-PROV1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1}",
+      "extra-fields": {
+        "tool-concept-id": "TL1200000008-PROV1",
+        "associated-concept-id": "C1200000005-PROV1",
+        "associated-revision-id": 1
+      }
+    }
+
 #### Subscription
 
     {
