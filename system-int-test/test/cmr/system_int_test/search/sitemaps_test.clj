@@ -62,14 +62,14 @@
     ;; Wait until collections are indexed so tags can be associated with them
     (index/wait-until-indexed)
     ;; Use the following to generate html links that will be matched in tests
-    (let [user-token (e/login (s/context) "user")
+    (let [_user-token (e/login (s/context) "user")
           notag-colls [c1-p1 c1-p2 c1-p3]
           nodoi-colls [c1-p1 c2-p1 c3-p1 c1-p2 c2-p2 c3-p2]
           doi-colls [c1-p3 c2-p3 c3-p3]
           all-colls (into nodoi-colls doi-colls)
           tag-colls [c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3]
           _tag (tags/save-tag
-                 user-token
+                 "mock-echo-system-token"
                  (tags/make-tag {:tag-key "gov.nasa.eosdis"})
                  tag-colls)]
       (index/wait-until-indexed)
