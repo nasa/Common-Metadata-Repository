@@ -91,17 +91,17 @@
     (f)))
 
 (use-fixtures :once (join-fixtures
-                      [(ingest/reset-fixture {"provguid1" "PROV1"
-                                              "provguid2" "PROV2"
-                                              "provguid3" "PROV3"})
-                       tags/grant-all-tag-fixture
-                       collections-fixture]))
+                     [(ingest/reset-fixture {"provguid1" "PROV1"
+                                             "provguid2" "PROV2"
+                                             "provguid3" "PROV3"})
+                      tags/grant-all-tag-fixture
+                      collections-fixture]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftest ^:kaocha/pending sitemap-master
+(deftest sitemap-master
   (let [response (site/get-search-response "sitemap.xml")
         body (:body response)]
     (testing "XML validation"
@@ -113,7 +113,7 @@
       (is (string/includes? body "/collections/directory/PROV2/gov.nasa.eosdis/sitemap.xml</loc>"))
       (is (string/includes? body "/collections/directory/PROV3/gov.nasa.eosdis/sitemap.xml</loc>")))))
 
-(deftest ^:kaocha/pending sitemap-top-level
+(deftest sitemap-top-level
   (let [response (site/get-search-response "site/sitemap.xml")
         body (:body response)]
     (testing "XML validation"
@@ -128,12 +128,12 @@
       (is (string/includes? body "/collections/directory/PROV2/gov.nasa.eosdis</loc>"))
       (is (string/includes? body "/collections/directory/PROV3/gov.nasa.eosdis</loc>")))))
 
-(deftest ^:kaocha/pending sitemap-provider1
+(deftest sitemap-provider1
   (let [provider "PROV1"
         tag "gov.nasa.eosdis"
         url-path (format
-                   "site/collections/directory/%s/%s/sitemap.xml"
-                   provider tag)
+                  "site/collections/directory/%s/%s/sitemap.xml"
+                  provider tag)
         response (site/get-search-response url-path)
         body (:body response)
         colls (@test-collections "PROV1")]
@@ -143,14 +143,14 @@
       (is (= 200 (:status response)))
       (is (string/includes? body "</changefreq>"))
       (is (string/includes?
-            body (format "concepts/%s.html</loc>" (second colls))))
+           body (format "concepts/%s.html</loc>" (second colls))))
       (is (string/includes?
-            body (format "concepts/%s.html</loc>" (last colls)))))
+           body (format "concepts/%s.html</loc>" (last colls)))))
     (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes?
-                 body (format "%s.html</loc>" (first colls))))))))
+                body (format "%s.html</loc>" (first colls))))))))
 
-(deftest ^:kaocha/pending sitemap-provider2
+(deftest sitemap-provider2
   (let [provider "PROV2"
         tag "gov.nasa.eosdis"
         url-path (format
@@ -172,12 +172,12 @@
       (is (not (string/includes?
                  body (format "%s.html</loc>" (first colls))))))))
 
-(deftest ^:kaocha/pending sitemap-provider3
+(deftest sitemap-provider3
   (let [provider "PROV3"
         tag "gov.nasa.eosdis"
         url-path (format
-                   "site/collections/directory/%s/%s/sitemap.xml"
-                   provider tag)
+                  "site/collections/directory/%s/%s/sitemap.xml"
+                  provider tag)
         response (site/get-search-response url-path)
         body (:body response)
         colls (@test-collections "PROV3")]
@@ -188,4 +188,4 @@
       (is (string/includes? body (format "concepts/%s.html</loc>" (last colls)))))
     (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes?
-                 body (format "%s.html</loc>" (first colls))))))))
+                body (format "%s.html</loc>" (first colls))))))))
