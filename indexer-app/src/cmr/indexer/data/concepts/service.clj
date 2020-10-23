@@ -75,7 +75,7 @@
         input-formats (distinct (map :SupportedInputFormat format-pairs))
         output-formats (distinct (mapcat :SupportedOutputFormats format-pairs))
         distinct-input-output (distinct (concat input-formats output-formats))]
-    (and (not= (count output-formats) 0)
+    (and (not (zero? (count output-formats)))
          (> (count distinct-input-output) 1))))
 
 (defn- has-subset-type?

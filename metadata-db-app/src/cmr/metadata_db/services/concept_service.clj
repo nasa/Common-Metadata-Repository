@@ -957,7 +957,7 @@
             (ingest-events/publish-tombstone-delete-msg
              context concept-type concept-id revision-id))))
 
-      ;; update service/tool associatons if applicable, i.e. when the concept is a service/tool,
+      ;; update service/tool associations if applicable, i.e. when the concept is a service/tool,
       ;; so that the collections can be updated in elasticsearch with the updated service/tool info
       (update-service-associations context concept-type concept-id)
       (update-tool-associations context concept-type concept-id)

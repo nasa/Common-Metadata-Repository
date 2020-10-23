@@ -55,7 +55,7 @@
   [context tool-associations]
   (let [tool-concept-ids (map :tool-concept-id tool-associations)
         tool-concepts (mdb/get-latest-concepts context tool-concept-ids true)]
-    (filter #(not (:deleted %)) tool-concepts)))
+    (remove :deleted tool-concepts)))
 
 (defn- has-formats?
   "Returns true if the given tool has more than one supported formats value.
@@ -66,7 +66,7 @@
         input-formats (:SupportedInputFormats tool)
         output-formats (:SupportedOutputFormats tool)
         distinct-input-output (distinct (concat input-formats output-formats))]
-    (and (not= (count output-formats) 0)
+    (and (not (zero? (count output-formats)))
          (> (count distinct-input-output) 1))))
 
 (defn- get-tool-type
