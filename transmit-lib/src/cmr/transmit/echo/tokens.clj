@@ -53,7 +53,6 @@
       (case (int status)
         200 (let [expires (some-> (get-in parsed [:token_info :expires])
                                   date-time-parser/parse-datetime)]
-              (clojure.pprint/pprint (str "This token expires [ " expires " ]"))
               (if (or (nil? expires)
                       (t/after? expires (tk/now)))
                 (get-in parsed [:token_info :user_name])

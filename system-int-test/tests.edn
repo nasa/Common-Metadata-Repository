@@ -4,12 +4,9 @@
                         :skip-meta [:in-memory-db]}]}
 
  :plugins [:kaocha.plugin.alpha/info
-           :kaocha.plugin/randomize
-           :capture-output
+           :kaocha.plugin/capture-output
            :junit-xml
-           :print-invocations
-           :profiling
-           :notifier]
+           :print-invocations]
 
  :color? #profile {:default true
                    :ci false}
@@ -17,10 +14,7 @@
  :fail-fast? #profile {:default true
                        :ci false}
 
- :reporter #profile {:default [kaocha.report.progress/report]
-                     :ci [kaocha.report/documentation]}
-
- :kaocha.plugin.randomize/randomize? false
- :kaocha.plugin.profiling/profiling? false
+ :reporter #profile {:default kaocha.report.progress/report
+                     :ci kaocha.report/documentation}
 
  :kaocha.plugin.junit-xml/target-file "target/junit.xml"}
