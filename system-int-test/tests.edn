@@ -5,6 +5,7 @@
 
  :plugins [:kaocha.plugin.alpha/info
            :kaocha.plugin/capture-output
+           :kaocha.plugin/randomize
            :junit-xml
            :print-invocations]
 
@@ -17,4 +18,5 @@
  :reporter #profile {:default kaocha.report.progress/report
                      :ci kaocha.report/documentation}
 
+ :kaocha.plugin.randomize/randomize? false
  :kaocha.plugin.junit-xml/target-file "target/junit.xml"}
