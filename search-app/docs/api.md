@@ -857,6 +857,7 @@ __Example__
       "associations" : {
         "variables" : [ "V1200000007-PROV1" ],
         "services" : [ "S1200000008-PROV1", "S1200000009-PROV1", "S1200000010-PROV1" ]
+        "tools" : [ "TL1200000011-PROV1", "TL1200000012-PROV1", "TL1200000013-PROV1" ]
       }
     } ]
   }
@@ -865,7 +866,7 @@ __Example__
 
 #### <a name="umm-json"></a> UMM JSON
 
-The UMM JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is applicable to collection, granule, variable and service searches. The UMM-JSON response is helpful if you wish to get the native-id of a concept after ingesting it. The version of the UMM returned will be the version requested or the latest version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
+The UMM JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is applicable to collection, granule, variable, service and tool searches. The UMM-JSON response is helpful if you wish to get the native-id of a concept after ingesting it. The version of the UMM returned will be the version requested or the latest version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
 
 This format can be retrieved in a variety of methods:
 
@@ -898,6 +899,7 @@ __Example__
       "associations" : {
         "variables" : [ "V1200000007-PROV1" ],
         "services" : [ "S1200000008-PROV1", "S1200000009-PROV1" ]
+        "tools" : [ "TL1200000010-PROV1", "TL1200000011-PROV1" ]
       }
     },
     "umm" : {

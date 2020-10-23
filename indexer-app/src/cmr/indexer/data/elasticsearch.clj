@@ -66,8 +66,8 @@
 (defmethod get-elastic-version :tool
   [concept]
   (apply max
-        (:transaction-id concept)
-        (map :transaction-id (:tool-associations concept))))
+         (:transaction-id concept)
+         (map :transaction-id (:tool-associations concept))))
 
 (defmethod get-elastic-version :default
   [concept]

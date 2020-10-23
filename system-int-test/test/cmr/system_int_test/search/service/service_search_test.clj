@@ -552,7 +552,7 @@
       [service4 service3 service1 service2])))
 
 (deftest service-search-in-umm-json-format-test
-  (testing "service search result in UMM JSON format has associated collections"
+  (testing "service search result in UMM JSON format does not have associated collections"
     (let [token (e/login (s/context) "user1")
           coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection) {:format :umm-json :token token})
           ;; create services
