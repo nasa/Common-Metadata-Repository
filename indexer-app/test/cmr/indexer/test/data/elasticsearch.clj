@@ -83,11 +83,13 @@
   (when (> num-items 1)
     (concat [invalid-item-resp] (take (dec num-items) (repeatedly valid-item-resp)))))
 
-(deftest ^:kaocha/pending bulk-index-continues-on-error-test
+(deftest bulk-index-continues-on-error-test
   (testing "400 in response doesn't throw exception"
     ;; Just call handle-bulk-index-reponse to demonstrate it doesn't throw exception
     (let [fake-resp (some-failed-bulk-index-response 1000)]
-      (#'es/handle-bulk-index-response fake-resp))))
+      (try
+        (is (= nil (#'es/handle-bulk-index-response fake-resp)))
+        (catch Exception e (is (= nil e) (.getMessage e)))))))
 
 (deftest extra-granule-indexes-test
   (testing "extra indexes configured"
