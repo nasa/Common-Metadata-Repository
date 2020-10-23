@@ -53,19 +53,20 @@
       (case (int status)
         200 (let [expires (some-> (get-in parsed [:token_info :expires])
                                   date-time-parser/parse-datetime)]
+              (clojure.pprint/pprint (str "This token expires [ " expires " ]"))
               (if (or (nil? expires)
                       (t/after? expires (tk/now)))
                 (get-in parsed [:token_info :user_name])
                 (errors/throw-service-error
-                 :unauthorized
-                 (format "Token [%s] has expired. Note the token value has been partially redacted." 
-                         (common-util/scrub-token token)))))
+                  :unauthorized
+                  (format "Token [%s] has expired. Note the token value has been partially redacted." 
+                          (common-util/scrub-token token)))))
         401 (errors/throw-service-errors
-             :unauthorized
-             (:errors (json/decode body true)))
+              :unauthorized
+              (:errors (json/decode body true)))
         404 (errors/throw-service-error
-             :unauthorized
-             (format "Token %s does not exist" token))
+              :unauthorized
+              (format "Token %s does not exist" token))
         ;; catalog-rest returns 401 when echo-rest returns 400 for expired token, we do the same in CMR
         400 (errors/throw-service-errors :unauthorized  (:errors (json/decode body true)))
         (r/unexpected-status-error! status body)))))
