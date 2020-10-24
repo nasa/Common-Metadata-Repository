@@ -5,6 +5,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.collection :as data2-collection]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
@@ -129,3 +130,32 @@
 
         "multiple search search"
         [coll1 coll2 coll3 coll4] ["Model" "Downloadable Tool"]))))
+
+(deftest collection-tool-search-result-fields-test
+  (let [token (e/login (s/context) "user1")
+        coll1 (d/ingest "PROV1" (data2-collection/collection {:entry-title "ET1"
+                                                              :short-name "S1"
+                                                              :version-id "V1"}))
+        ;; create tool
+        {tool1-concept-id :concept-id} (tool-util/ingest-tool-with-attrs
+                                         {:native-id "tl1"
+                                          :Name "tool1"
+                                          :SupportedOutputFormats ["TIFF" "JPEG"]
+                                          :SupportedInputFormats ["TIFF"]})
+
+        {tool2-concept-id :concept-id} (tool-util/ingest-tool-with-attrs
+                                         {:native-id "tl2"
+                                          :Name "tool2"
+                                          :SupportedOutputFormats ["TIFF"]
+                                          :SupportedInputFormats ["TIFF"]})]
+
+
+    ;; index the collections so that they can be found during service association
+    (index/wait-until-indexed)
+    (au/associate-by-concept-ids token tool1-concept-id [{:concept-id (:concept-id coll1)}])
+    (au/associate-by-concept-ids token tool2-concept-id [{:concept-id (:concept-id coll1)}])
+    (index/wait-until-indexed)
+
+    ;; verify search result on a collection associated with tools contains tool associations.
+    (tool-util/assert-collection-search-result
+     coll1 {:has-formats true} [tool1-concept-id tool2-concept-id])))
