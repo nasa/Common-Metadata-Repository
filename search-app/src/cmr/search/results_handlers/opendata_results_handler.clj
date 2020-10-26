@@ -451,7 +451,11 @@
 
 (defmethod qs/search-results->response [:collection :opendata]
   [context query results]
+  ;(println (:short-name (first (:instruments (last (:items results))))))
+  ;(println query)
   (let [{:keys [concept-type result-features]} query
         response-results (results->opendata
                            context concept-type results)]
+    ;(println "here in the function - tcherry")
+    ;(/ 0 0)
     (json/generate-string response-results)))
