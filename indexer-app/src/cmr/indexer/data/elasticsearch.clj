@@ -44,7 +44,8 @@
          (:transaction-id concept)
          (concat (map :transaction-id (:tag-associations concept))
                  (map :transaction-id (:variable-associations concept))
-                 (map :transaction-id (:service-associations concept)))))
+                 (map :transaction-id (:service-associations concept))
+                 (map :transaction-id (:tool-associations concept)))))
 
 (defmethod get-elastic-version :variable
   [concept]
@@ -64,7 +65,9 @@
 
 (defmethod get-elastic-version :tool
   [concept]
-  (:transaction-id concept))
+  (apply max
+         (:transaction-id concept)
+         (map :transaction-id (:tool-associations concept))))
 
 (defmethod get-elastic-version :default
   [concept]
@@ -234,7 +237,8 @@
           concept (-> concept
                       (update :tag-associations #(parse-non-tombstone-associations context %))
                       (update :variable-associations #(parse-non-tombstone-associations context %))
-                      (update :service-associations #(parse-non-tombstone-associations context %)))
+                      (update :service-associations #(parse-non-tombstone-associations context %))
+                      (update :tool-associations #(parse-non-tombstone-associations context %)))
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           index-names (idx-set/get-concept-index-names
                        context concept-id revision-id options

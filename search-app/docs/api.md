@@ -70,6 +70,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Variable parameters](#c-variable-parameters)
     * [Variables](#c-variables)
     * [Service parameters](#c-service-parameters)
+    * [Tool parameters](#c-tool-parameters)
     * [Spatial](#c-spatial)
         * [Polygon](#c-polygon)
         * [Bounding Box](#c-bounding-box)
@@ -185,6 +186,8 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Retrieving All Revisions of a Tool](#retrieving-all-revisions-of-a-tool)
     * [Sorting Tool Results](#sorting-tool-results)
     * [Tool Access Control](#tool-access-control)
+    * [Tool association](#tool-association)
+    * [Tool dissociation](#tool-dissociation)
   * [Subscription](#subscription)
     * [Searching for Subscriptions](#searching-for-subscriptions)
         * [Subscription Search Parameters](#subscription-search-params)
@@ -854,6 +857,7 @@ __Example__
       "associations" : {
         "variables" : [ "V1200000007-PROV1" ],
         "services" : [ "S1200000008-PROV1", "S1200000009-PROV1", "S1200000010-PROV1" ]
+        "tools" : [ "TL1200000011-PROV1", "TL1200000012-PROV1", "TL1200000013-PROV1" ]
       }
     } ]
   }
@@ -862,7 +866,7 @@ __Example__
 
 #### <a name="umm-json"></a> UMM JSON
 
-The UMM JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is applicable to collection, granule, variable and service searches. The UMM-JSON response is helpful if you wish to get the native-id of a concept after ingesting it. The version of the UMM returned will be the version requested or the latest version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
+The UMM JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is applicable to collection, granule, variable, service and tool searches. The UMM-JSON response is helpful if you wish to get the native-id of a concept after ingesting it. The version of the UMM returned will be the version requested or the latest version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
 
 This format can be retrieved in a variety of methods:
 
@@ -895,6 +899,7 @@ __Example__
       "associations" : {
         "variables" : [ "V1200000007-PROV1" ],
         "services" : [ "S1200000008-PROV1", "S1200000009-PROV1" ]
+        "tools" : [ "TL1200000010-PROV1", "TL1200000011-PROV1" ]
       }
     },
     "umm" : {
@@ -1691,6 +1696,29 @@ Find collections matching service type. In this example find all collections mat
 Find collections matching service concept id.
 
     curl "%CMR-ENDPOINT%/collections?service_concept_id\[\]=S100000-PROV1&service_concept_id\[\]=S12345-PROV1"
+
+#### <a name="c-tool-parameters"></a> Find collections by tool parameters
+
+Collections can be found by searching for associated tools. The following tool parameters are supported.
+
+* tool_name
+  * supports `pattern`, `ignore_case` and option `and`
+* tool_type
+  * supports `pattern` and `ignore_case`
+* tool_concept_id
+  * supports option `and`
+
+Find collections matching tool name.
+
+    curl "%CMR-ENDPOINT%/collections?tool_name=NASA_GISS_Panoply"
+
+Find collections matching tool type. In this example find all collections matching both tool types of Downloadable Tool or Web User Interface.
+
+    curl "%CMR-ENDPOINT%/collections?tool_type=Downloadable%20Tool&tool_type=Web%20User%20Interface"
+
+Find collections matching tool concept id.
+
+    curl "%CMR-ENDPOINT%/collections?tool_concept_id\[\]=TL100000-PROV1&tool_concept_id\[\]=TL12345-PROV1"
 
 #### <a name="c-spatial"></a> Find collections by Spatial
 
@@ -4349,6 +4377,87 @@ __Sample response__
 #### <a name="tool-access-control"></a> Tool Access Control
 
 Access to tool is granted through the provider via the INGEST_MANAGEMENT_ACL.
+
+#### <a name="tool-association"></a> Tool Association
+
+A tool identified by its concept id can be associated with collections through a list of collection concept revisions. The tool association request normally returns status code 200 with a response that consists of a list of individual tool association responses, one for each tool association attempted to create. Each individual tool association response has an `associated_item` field and either a `tool_association` field with the tool association concept id and revision id when the tool association succeeded or an `errors` field with detailed error message when the tool association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tool association. Here is a sample tool association request and its response:
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
+'[{"concept_id": "C1200000005-PROV1"},
+  {"concept_id": "C1200000006-PROV1"}]'
+
+HTTP/1.1 400 BAD REQUEST
+Content-Type: application/json; charset=UTF-8
+Content-Length: 168
+
+[
+  {
+    "tool_association":{
+      "concept_id":"TLA1200000009-CMR",
+      "revision_id":1
+    },
+    "associated_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  },
+  {
+    "errors":[
+      "Collection [C1200000006-PROV1] does not exist or is not visible."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000006-PROV1"
+    }
+  }
+]
+```
+
+On occassions when tool association cannot be processed at all due to invalid input, tool association request will return a failure status code with the appropriate error message.
+
+#### <a name="tool-dissociation"></a> Tool Dissociation
+
+A tool identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to tool association requests.
+
+```
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
+'[{"concept_id": "C1200000005-PROV1"},
+  {"concept_id": "C1200000006-PROV1"},
+  {"concept_id": "C1200000007-PROV1"}]'
+
+HTTP/1.1 400 BAD REQUEST
+Content-Type: application/json; charset=UTF-8
+Content-Length: 168
+
+[
+  {
+    "tool_association":{
+      "concept_id":"TLA1200000009-CMR",
+      "revision_id":2
+    },
+    "associated_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  },
+  {
+    "warnings":[
+      "Tool [TL1200000008-PROV1] is not associated with collection [C1200000006-PROV1]."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000006-PROV1"
+    }
+  },
+  {
+    "errors":[
+      "Collection [C1200000007-PROV1] does not exist or is not visible."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000007-PROV1"
+    }
+  }
+]
+```
+
+On occasions when tool dissociation cannot be processed at all due to invalid input, tool dissociation request will return a failure status code with the appropriate error message.
 
 ### <a name="subscription"></a> Subscription
 

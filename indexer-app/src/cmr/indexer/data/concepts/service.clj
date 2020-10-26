@@ -73,10 +73,10 @@
   (let [service (concept-parser/parse-concept context service-concept)
         format-pairs (get-in service [:ServiceOptions :SupportedReformattings])
         input-formats (distinct (map :SupportedInputFormat format-pairs))
-        output-formats (distinct (mapcat :SupportedOutputFormats format-pairs))]
-    (not (or (= (count output-formats) 0)
-             (and (= (count output-formats) 1)
-                  (= input-formats output-formats))))))
+        output-formats (distinct (mapcat :SupportedOutputFormats format-pairs))
+        distinct-input-output (distinct (concat input-formats output-formats))]
+    (and (not (zero? (count output-formats)))
+         (> (count distinct-input-output) 1))))
 
 (defn- has-subset-type?
   "Returns true if the given service has a defined Subset with one of its

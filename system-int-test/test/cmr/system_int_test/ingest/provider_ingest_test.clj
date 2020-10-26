@@ -177,6 +177,10 @@
                             token (:concept-id service1) [{:concept-id (:concept-id coll1)}])
           svc-association2 (au/make-service-association
                             token (:concept-id service2) [{:concept-id (:concept-id coll3)}])
+          tool-association1 (au/make-tool-association
+                            token (:concept-id tool1) [{:concept-id (:concept-id coll1)}])
+          tool-association2 (au/make-tool-association
+                            token (:concept-id tool2) [{:concept-id (:concept-id coll3)}])
           ;; create an access group to test cascading deletes
           access-group (u/map-keys->kebab-case
                         (access-control/create-group
@@ -264,6 +268,7 @@
         tool1
         sub1
         svc-association1
+        tool-association1
         access-group
         acl1
         acl2)
@@ -285,7 +290,8 @@
         service2
         tool2
         sub2
-        svc-association2)
+        svc-association2
+        tool-association2)
 
       ;; search on PROV1 finds nothing
       (is (d/refs-match?

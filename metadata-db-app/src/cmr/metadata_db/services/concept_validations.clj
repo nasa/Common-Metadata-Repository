@@ -55,7 +55,9 @@
    :variable-association {true #{}
                           false #{:associated-concept-id :associated-revision-id}}
    :service-association {true #{}
-                          false #{:associated-concept-id :associated-revision-id}}})
+                          false #{:associated-concept-id :associated-revision-id}}
+   :tool-association {true #{}
+                      false #{:associated-concept-id :associated-revision-id}}})
 
 (defn extra-fields-missing-validation
   "Validates that the concept is provided with extra fields and that all of them are present
@@ -226,6 +228,10 @@
   (validate-humanizer-concept concept))
 
 (defmethod validate-concept :service-association
+  [concept]
+  (validate-association-concept concept))
+
+(defmethod validate-concept :tool-association
   [concept]
   (validate-association-concept concept))
 
