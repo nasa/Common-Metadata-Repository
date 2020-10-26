@@ -18,6 +18,5 @@
  :reporter #profile {:default kaocha.report.progress/report
                      :ci kaocha.report/documentation}
 
- :kaocha.plugin.capture-output/capture-output? false
  :kaocha.plugin.randomize/randomize? false
  :kaocha.plugin.junit-xml/target-file "target/junit.xml"}
