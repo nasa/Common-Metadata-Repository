@@ -87,9 +87,13 @@
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
-            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
-            "itest" ["kaocha" "--focus" "integration"]
-            "utest" ["shell" "echo" "== No unit tests - run \"lein itest\" or \"lein kaocha\" to run integration tests =="]
+            ;; kaocha disabled for system-int-tests
+            "kaocha" ["do"
+                      ["shell" "echo" "Koacha disabled\ninvoking test-out"]
+                      ["test2junit"]]
+            "_kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "_itest" ["kaocha" "--focus" "integration"]
+            "_utest" ["shell" "echo" "== No unit tests - run \"lein itest\" or \"lein kaocha\" to run integration tests =="]
 
             ;; Linting aliases
             "kibit" ["do"
