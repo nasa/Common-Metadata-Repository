@@ -8,8 +8,8 @@
   "Returns tool concept with fields necessary for ingest into metadata db
   under :extra-fields."
   [context concept tool]
-  (assoc concept :extra-fields {:tool-name (:Name tool)})) 
-
+  (assoc concept :extra-fields {:tool-name (:Name tool)
+                                :tool-type (:Type tool)}))
 (defn-timed save-tool
   "Store a tool concept in mdb and indexer."
   [context concept]

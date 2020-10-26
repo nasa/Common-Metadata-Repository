@@ -114,6 +114,14 @@
             "$ref": "#/definitions/ConceptIdType"
           },
           "minItems": 0
+        },
+        "tools": {
+          "description": "The concept ids of tools assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 0
         }
       }
     },

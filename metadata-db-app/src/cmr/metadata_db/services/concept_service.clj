@@ -42,6 +42,7 @@
    [cmr.metadata-db.data.oracle.concepts.service]
    [cmr.metadata-db.data.oracle.concepts.tag-association]
    [cmr.metadata-db.data.oracle.concepts.tag]
+   [cmr.metadata-db.data.oracle.concepts.tool-association]
    [cmr.metadata-db.data.oracle.concepts.tool]
    [cmr.metadata-db.data.oracle.concepts.variable-association]
    [cmr.metadata-db.data.oracle.concepts.variable]
@@ -64,7 +65,8 @@
    :variable-association 10
    :service 10
    :tool 10
-   :service-association 10})
+   :service-association 10
+   :tool-association 10})
 
 (defconfig days-to-keep-tombstone
   "Number of days to keep a tombstone before is removed from the database."
@@ -77,7 +79,12 @@
 
 (def system-level-concept-types
   "A set of concept types that only exist on system level provider CMR."
-  #{:tag :tag-association :humanizer :variable-association :service-association})
+  #{:tag
+    :tag-association
+    :humanizer
+    :variable-association
+    :service-association
+    :tool-association})
 
 ;;; utility methods
 (def ^:private native-id-separator-character
@@ -146,7 +153,9 @@
                       :variable-association (msg/variable-associations-only-system-level
                                              provider-id)
                       :service-association (msg/service-associations-only-system-level
-                                             provider-id))]
+                                             provider-id)
+                      :tool-association (msg/tool-associations-only-system-level
+                                          provider-id))]
         (errors/throw-service-errors :invalid-data [err-msg])))))
 
 (defn- provider-ids-for-validation
@@ -757,8 +766,8 @@
 (defmulti delete-associations
   "Delete the associations of the given association type that is associated with
   the given concept type and concept id.
-  assoc-type can be :variable-association or :service-association,
-  concept-type can be :collection, :variable, or :service."
+  assoc-type can be :variable-association, :service-association or :tool-association,
+  concept-type can be :collection, :variable, :service or :tool."
   (fn [context concept-type concept-id revision-id assoc-type]
     concept-type))
 
@@ -798,8 +807,19 @@
                           :service-concept-id concept-id
                           :exclude-metadata true
                           :latest true})]
-      ;; create variable association tombstones and queue the variable association delete events
+      ;; create service association tombstones and queue the service association delete events
       (tombstone-associations context assoc-type search-params false :service))))
+
+(defmethod delete-associations :tool
+  [context concept-type concept-id revision-id assoc-type]
+  (when (= :tool-association assoc-type)
+    (let [search-params (cutil/remove-nil-keys
+                         {:concept-type assoc-type
+                          :tool-concept-id concept-id
+                          :exclude-metadata true
+                          :latest true})]
+      ;; create tool association tombstones and queue the tool association delete events
+      (tombstone-associations context assoc-type search-params false :tool))))
 
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
@@ -834,6 +854,8 @@
             (delete-associations context concept-type concept-id nil :variable-association)
             ;; delete the associated service associations if applicable
             (delete-associations context concept-type concept-id nil :service-association)
+            ;; delete the associated tool associations if applicable
+            (delete-associations context concept-type concept-id nil :tool-association)
             ;; skip publication flag is set for tag association when its associated
             ;; collection revision is force deleted. In this case, the association is no longer
             ;; needed to be indexed, so we don't publish the deletion event.
@@ -881,6 +903,26 @@
              ;; set user-id to cmr to indicate the association is created by CMR
              (assoc :user-id "cmr")))))))
 
+(defn- update-tool-associations
+  "Create a new revision for the non-tombstoned tool associations that is related to the
+  given concept; Does noting if the given concept is not a tool concept."
+  [context concept-type concept-id]
+  (when (= :tool concept-type)
+    (let [search-params (cutil/remove-nil-keys
+                         {:concept-type :tool-association
+                          :tool-concept-id concept-id
+                          :exclude-metadata true
+                          :latest true})
+          associations (filter #(= false (:deleted %))
+                               (search/find-concepts context search-params))]
+      (doseq [association associations]
+        (save-concept-revision
+         context
+         (-> association
+             (dissoc :revision-id :revision-date :transaction-id)
+             ;; set user-id to cmr to indicate the association is created by CMR
+             (assoc :user-id "cmr")))))))
+
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
   [context concept]
@@ -915,9 +957,10 @@
             (ingest-events/publish-tombstone-delete-msg
              context concept-type concept-id revision-id))))
 
-      ;; update service associatons if applicable, i.e. when the concept is a service,
-      ;; so that the collections can be updated in elasticsearch with the updated service info
+      ;; update service/tool associations if applicable, i.e. when the concept is a service/tool,
+      ;; so that the collections can be updated in elasticsearch with the updated service/tool info
       (update-service-associations context concept-type concept-id)
+      (update-tool-associations context concept-type concept-id)
       (ingest-events/publish-event
        context
        (ingest-events/concept-update-event concept))
@@ -941,6 +984,7 @@
   (delete-associated-tag-associations context concept-id revision-id)
   (delete-associations context concept-type concept-id revision-id :variable-association)
   (delete-associations context concept-type concept-id revision-id :service-association)
+  (delete-associations context concept-type concept-id revision-id :tool-association)
   (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
 
 (defmethod force-delete-cascading-events :variable

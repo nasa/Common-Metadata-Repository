@@ -140,6 +140,12 @@
   (format "http://localhost:%s/concepts/search/service-associations"
           (transmit-config/metadata-db-port)))
 
+(defn mdb-tool-association-search-url
+  "URL to search tool associations in metadata db."
+  []
+  (format "http://localhost:%s/concepts/search/tool-associations"
+          (transmit-config/metadata-db-port)))
+
 (defn mdb-subscription-notification-time
   "URL to notification time in metadata db app"
   [concept-id]

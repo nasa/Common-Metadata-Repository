@@ -13,8 +13,9 @@
     :granule
     :humanizer
     :service
-    :tool
     :service-association
+    :tool
+    :tool-association
     :tag
     :tag-association
     :variable
@@ -29,8 +30,9 @@
    "G" :granule
    "H" :humanizer
    "S" :service
-   "TL" :tool
    "SA" :service-association
+   "TL" :tool
+   "TLA" :tool-association
    "T" :tag
    "TA" :tag-association
    "V" :variable
