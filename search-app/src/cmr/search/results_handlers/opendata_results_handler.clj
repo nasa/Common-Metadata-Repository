@@ -245,7 +245,7 @@
     {:name (or archive-center umm-spec-util/not-provided)
      :subOrganizationOf hierarchy}))
 
-(defn modis-aster
+(defn modis-aster?
   "Logic to test for collections that use the MODIS or ASTER instruments as
   these are the only ones that should be included in the data.gov output as
   defined by The Data Curation for Discovery (DCD) team at Marshall Space Flight
@@ -260,7 +260,7 @@
   conditions. Takes the science keywords as a flat list rather than hierarchical
   and the current item needed for finding conditions."
   [science-keywords-flat item]
-  (if (some modis-aster (:instruments item))
+  (if (some modis-aster? (:instruments item))
     (conj science-keywords-flat "NGDA" "National Geospatial Data Asset")
     science-keywords-flat))
 
