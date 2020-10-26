@@ -81,6 +81,7 @@
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["shell" "echo" "== No integration tests =="]
             "utest" ["kaocha" "--focus" "unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
 
             ;; Linting aliases
             "kibit" ["do"

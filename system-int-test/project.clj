@@ -95,6 +95,7 @@
             "_kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "_itest" ["kaocha" "--focus" "integration"]
             "_utest" ["shell" "echo" "== No unit tests - run \"lein itest\" or \"lein kaocha\" to run integration tests =="]
+            "ci-test" ["kaocha"]
 
             ;; Linting aliases
             "kibit" ["do"

@@ -67,13 +67,13 @@
                    ;; XXX Note that profiling can be kept in a profile,
                    ;;     with no need to comment/uncomment.
                    ;; Uncomment this to enable assertions. Turn off during performance tests.
-                   ; "-ea"
+                                        ; "-ea"
 
                    ;; Use the following to enable JMX profiling with visualvm
-                   ; "-Dcom.sun.management.jmxremote"
-                   ; "-Dcom.sun.management.jmxremote.ssl=false"
-                   ; "-Dcom.sun.management.jmxremote.authenticate=false"
-                   ; "-Dcom.sun.management.jmxremote.port=1098"]
+                                        ; "-Dcom.sun.management.jmxremote"
+                                        ; "-Dcom.sun.management.jmxremote.ssl=false"
+                                        ; "-Dcom.sun.management.jmxremote.authenticate=false"
+                                        ; "-Dcom.sun.management.jmxremote.port=1098"]
                    :source-paths ["src" "dev" "test"]}
              :static {}
              ;; This profile is used for linting and static analysis. To run for this
@@ -100,6 +100,7 @@
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["shell" "echo" "== No integration tests =="]
             "utest" ["kaocha" "--focus" "unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
 
             ;; Linting aliases
             "kibit" ["do"

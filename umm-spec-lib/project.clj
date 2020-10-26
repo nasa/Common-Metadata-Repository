@@ -34,11 +34,11 @@
                    ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
                    ;; See https://github.com/technomancy/leiningen/wiki/Faster
                    :jvm-opts ^:replace ["-server"]
-      ;                      ;; Use the following to enable JMX profiling with visualvm
-      ;                      "-Dcom.sun.management.jmxremote"
-      ;                      "-Dcom.sun.management.jmxremote.ssl=false"
-      ;                      "-Dcom.sun.management.jmxremote.authenticate=false"
-      ;                      "-Dcom.sun.management.jmxremote.port=1098"]
+                                        ;                      ;; Use the following to enable JMX profiling with visualvm
+                                        ;                      "-Dcom.sun.management.jmxremote"
+                                        ;                      "-Dcom.sun.management.jmxremote.ssl=false"
+                                        ;                      "-Dcom.sun.management.jmxremote.authenticate=false"
+                                        ;                      "-Dcom.sun.management.jmxremote.port=1098"]
                    :source-paths ["src" "dev" "test"]
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]}
@@ -68,6 +68,7 @@
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["shell" "echo" "== No integration tests =="]
             "utest" ["kaocha" "--focus" "unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
 
             ;; Linting aliases
             "kibit" ["do"

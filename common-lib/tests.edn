@@ -20,5 +20,6 @@
 
  :kaocha.plugin.junit-xml/target-file "target/junit.xml"
 
+ ;; 3 slowest tests shown
  :kaocha.plugin.profiling/count 3
  :kaocha.plugin.profiling/profiling? true}

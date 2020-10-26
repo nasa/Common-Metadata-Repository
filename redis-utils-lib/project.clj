@@ -74,4 +74,5 @@
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["shell" "echo" "== No integration tests =="]
-            "utest" ["kaocha" "--focus" "unit"]})
+            "utest" ["kaocha" "--focus" "unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]})

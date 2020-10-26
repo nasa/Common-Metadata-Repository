@@ -28,7 +28,7 @@
                                   [proto-repl "0.3.1"]]
                    :jvm-opts ^:replace ["-server"]
                    ;; Uncomment this to enable assertions. Turn off during performance tests.
-                   ; "-ea"
+                                        ; "-ea"
 
                    ;; Use the following to enable JMX profiling with visualvm
                    ;; "-Dcom.sun.management.jmxremote"
@@ -63,6 +63,7 @@
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["shell" "echo" "== No integration tests =="]
             "utest" ["kaocha" "--focus" "unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
 
             ;; Linting aliases
             "kibit" ["do"

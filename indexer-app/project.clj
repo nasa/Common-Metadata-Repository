@@ -59,7 +59,7 @@
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["kaocha" "--focus" "integration"]
             "utest" ["kaocha" "--focus" "unit"]
-
+            "ci-test" ["kaocha" "--profile" ":ci"]
 
             "int-test-out" ["with-profile" "+integration-tests" "test2junit"]
             ;; Linting aliases
