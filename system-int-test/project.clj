@@ -89,8 +89,9 @@
             ;; refer to tests.edn for test configuration
             ;; kaocha disabled for system-int-tests
             "kaocha" ["do"
-                      ["shell" "echo" "Koacha disabled\ninvoking test-out"]
+                      ["shell" "echo" "kaocha is disabled\n\tinvoking test-out"]
                       ["test2junit"]]
+            ;; re-enable when kaocha is stable
             "_kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "_itest" ["kaocha" "--focus" "integration"]
             "_utest" ["shell" "echo" "== No unit tests - run \"lein itest\" or \"lein kaocha\" to run integration tests =="]
