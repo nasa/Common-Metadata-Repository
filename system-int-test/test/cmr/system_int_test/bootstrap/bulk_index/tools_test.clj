@@ -24,7 +24,7 @@
                                              :grant-all-search? true
                                              :grant-all-access-control? false})]))
 
-(deftest bulk-index-tools-for-provider
+(deftest ^:oracle bulk-index-tools-for-provider
   (testing "Bulk index tools for a single provider"
     (system/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -71,7 +71,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-tools
+(deftest ^:oracle bulk-index-tools
   (testing "Bulk index tools for multiple providers, explicitly"
     (system/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -98,7 +98,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-all-tools
+(deftest ^:oracle bulk-index-all-tools
   (testing "Bulk index tools for multiple providers, implicitly"
     (system/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -120,7 +120,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-tool-revisions
+(deftest ^:oracle bulk-index-tool-revisions
   (testing "Bulk index tools index all revisions index as well"
     (system/only-with-real-database
      ;; Disable message publishing so items are not indexed.

@@ -46,7 +46,7 @@ Notes on the ENV variables:
 EOH
 
 function test_all {
-    cd $CMR_DIR && lein test
+    cd $CMR_DIR && lein modules ci-test
 }
 
 function test_cicd {

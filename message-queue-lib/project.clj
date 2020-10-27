@@ -61,15 +61,26 @@
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
-             :internal-repos {}}
+             :internal-repos {}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
+                                     [lambdaisland/kaocha-cloverage "1.0.63"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["shell" "echo" "== No integration tests =="]
+            "utest" ["kaocha" "--focus" "unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+
             ;; Linting aliases
             "kibit"
             ["do"
-              ["shell" "echo" "== Kibit =="]
-              ["with-profile" "lint" "kibit"]]
+             ["shell" "echo" "== Kibit =="]
+             ["with-profile" "lint" "kibit"]]
             "eastwood"
             ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed"
@@ -80,7 +91,7 @@
             ["with-profile" "security" "dependency-check"]
             "lint"
             ["do"
-              ["check"] ["kibit"] ["eastwood"]]
+             ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]
             ;; Run a local copy of SQS/SNS
@@ -90,5 +101,5 @@
             ["shell" "cmr" "stop" "local" "sqs-sns"]
             "restart-sqs-sns"
             ["do"
-              ["stop-sqs-sns"]
-              ["start-sqs-sns"]]})
+             ["stop-sqs-sns"]
+             ["start-sqs-sns"]]})

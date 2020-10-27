@@ -400,7 +400,7 @@
            (c/validate-xml (s/replace valid-collection-xml "fileIdentifier" "XXXX"))))))
 
 (deftest parse-collection-defaults-test
-  "Check that defaults are being added correctly to create valid umm"
+  ;; Check that defaults are being added correctly to create valid umm
   (let [umm (c/parse-collection real-data-collection-xml)]
     (testing "default granule spatial represetation"
       (is (= :no-spatial (get-in umm [:spatial-coverage :granule-spatial-representation]))))

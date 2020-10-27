@@ -537,7 +537,7 @@
          (is (= 201 status))
          (is (= nil errors))))))
 
-(deftest delete-time-granule-ingest-test
+(deftest ^:oracle delete-time-granule-ingest-test
   (s/only-with-real-database
    (let [collection (data-core/ingest-umm-spec-collection
                      "PROV1"

@@ -25,7 +25,7 @@
                         [:read :update]
                         [:read :update])]))
 
-(deftest bulk-index-subscriptions-for-provider
+(deftest ^:oracle bulk-index-subscriptions-for-provider
   (testing "Bulk index subscriptions for a single provider"
     (system/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -68,7 +68,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-subscriptions
+(deftest ^:oracle bulk-index-subscriptions
   (testing "Bulk index subscriptions for multiple providers, explicitly"
     (system/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -95,7 +95,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-all-subscriptions
+(deftest ^:oracle bulk-index-all-subscriptions
   (testing "Bulk index subscriptions for multiple providers, implicitly"
     (system/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -117,7 +117,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-subscription-revisions
+(deftest ^:oracle bulk-index-subscription-revisions
   (testing "Bulk index subscriptions index all revisions index as well"
     (system/only-with-real-database
      ;; Disable message publishing so items are not indexed.

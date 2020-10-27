@@ -263,6 +263,22 @@ Once these are in place, you will be able to run the following:
 $ cmr test cicd
 ```
 
+Alternatively to run only certain types of tests, you may run the following:
+
+Unit Tests:
+```
+lein modules utest
+```
+
+Integration Tests against a running CMR system:
+```
+# If running CMR with the in-memory database (default)
+lein modules itest --skip-meta :oracle
+
+# If running CMR with an external database
+lein modules itest --skip-meta :in-memory-db
+```
+
 If you want to run tests against Oracle, bring up the Oracle VM and execute
 the following to create the users and run the migrations:
 

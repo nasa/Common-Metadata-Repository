@@ -91,16 +91,28 @@
                               [lein-shell "0.5.0"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
-             :internal-repos {}}
+             :internal-repos {}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
+                                     [lambdaisland/kaocha-cloverage "1.0.63"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {"generate-static" ["with-profile" "static"
                                "run" "-m" "cmr.search.site.static" "all"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["shell" "echo" "== No integration tests =="]
+            "utest" ["kaocha" "--focus" "unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+
             ;; Linting aliases
-            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
-                          ["with-profile" "lint" "kibit"]]
+            "kibit" ["do"
+                     ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+                     ["with-profile" "lint" "kibit"]]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]

@@ -1,4 +1,4 @@
-(ns cmr.orbits.ruby-specs
+(ns cmr.orbits.ruby-specs-test
   "Executes the Orbits RSPec tests as Clojure tests"
   (:require
    [clojure.java.io :as io]
@@ -28,8 +28,8 @@
       (testing spec-name
         (try
           (eval-jruby
-           jruby
-           (format "load 'spec/%s'" spec-name))
+            jruby
+            (format "load 'spec/%s'" spec-name))
           (catch Exception e
             (println "The spec failed to load. You may need to install the gems in orbits lib to continue."
                      "Run lein install-gems in orbits-lib and restart your REPL.")

@@ -10,7 +10,13 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :test {:plugins [[lein-shell "0.5.0"]
                               [test2junit "1.4.0"]]}}
-  :aliases {
+
+  :aliases { ;; Kaocha aliases - not used but needed for lein-modules
+            "kaocha"["with-profile" "test" "shell" "echo" "== No tests =="]
+            "itest" ["with-profile" "test" "shell" "echo" "== No integration tests =="]
+            "utest" ["with-profile" "test" "shell" "echo" "== No unit tests =="]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+
             ;; The following aliases are needed for the CMR build process.
             "generate-static" ["with-profile" "+test" "shell" "echo" "NO OP"]
             "check-sec" ["with-profile" "security" "dependency-check"]

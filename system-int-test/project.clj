@@ -78,12 +78,29 @@
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
-             :internal-repos {}}
+             :internal-repos {}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
+                                     [lambdaisland/kaocha-cloverage "1.0.63"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            ;; kaocha disabled for system-int-tests
+            "kaocha" ["do"
+                      ["shell" "echo" "kaocha is disabled\n\tinvoking test-out"]
+                      ["test2junit"]]
+            ;; re-enable when kaocha is stable
+            "_kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "_itest" ["kaocha" "--focus" "integration"]
+            "_utest" ["shell" "echo" "== No unit tests - run \"lein itest\" or \"lein kaocha\" to run integration tests =="]
+            "ci-test" ["kaocha"]
+
             ;; Linting aliases
-            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
-                          ["with-profile" "lint" "kibit"]]
+            "kibit" ["do"
+                     ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+                     ["with-profile" "lint" "kibit"]]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]

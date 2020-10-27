@@ -45,8 +45,8 @@
             ["shell" "cmr" "stop" "local" "sqs-sns"]
             "restart-sqs-sns"
             ["do"
-              ["stop-sqs-sns"]
-              ["start-sqs-sns"]]
+             ["stop-sqs-sns"]
+             ["start-sqs-sns"]]
             ;; Dev
             "clean-all" ["modules" "do" "clean"]
             "repl"

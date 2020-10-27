@@ -29,7 +29,7 @@
 
 
 
-(deftest collection-delete-time-test
+(deftest ^:in-memory-db collection-delete-time-test
   (s/only-with-in-memory-database
     (let [time-now (tk/now)
           make-coll (fn [prov entry-title num-secs-to-live]
@@ -39,8 +39,8 @@
                                                              {:EntryTitle entry-title
                                                               :ShortName (d/unique-str "short-name")
                                                               :DataDates 
-                                                                [(umm-cmn/map->DateType {:Date delete-time
-                                                                                         :Type "DELETE"})]}))))
+                                                              [(umm-cmn/map->DateType {:Date delete-time
+                                                                                       :Type "DELETE"})]}))))
           make-gran (fn [coll granule-ur]
                       (d/ingest (:provider-id coll) (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:granule-ur granule-ur})))
 
