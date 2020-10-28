@@ -200,9 +200,9 @@
             (gran-counts/granule-counts-match? :xml expected-counts refs))
 
           ;; north west quadrant, Smaller area around one granule in coll4
-          ["-180,0,0,90" "130,44,137,47"] {coll1 3 coll2 0 coll3 3 coll4 2 coll5 0 orbit-coll 1}
+          ["-180,0,0,90" "130,44,137,47"] {coll1 3 coll2 0 coll3 1 coll4 3 coll5 0 orbit-coll 1}
           ;; south east quadrant, Smaller area around one granule in coll4
-          ["130,44,137,47" "0,-90,180,0"] {coll1 3 coll3 0 coll4 3 coll5 2 orbit-coll 0}))
+          ["130,44,137,47" "0,-90,180,0"] {coll1 3 coll2 0 coll3 2 coll4 1 coll5 2 orbit-coll 0}))
 
       (testing "CMR-6515: no exception is thrown when no collections found before granule counts query"
         (let [response (search/find-refs

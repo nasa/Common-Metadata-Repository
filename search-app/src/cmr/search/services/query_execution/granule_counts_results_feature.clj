@@ -6,15 +6,16 @@
   (:require
    [clojure.data :as data]
    [clojure.string :as string]
-   [cmr.common.services.errors :as errors]
-   [cmr.search.services.query-walkers.condition-extractor :as condition-extractor]
-   [cmr.common-app.services.search.query-model :as q]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.elastic-search-index :as idx]
    [cmr.common-app.services.search.complex-to-simple :as c2s]
+   [cmr.common-app.services.search.elastic-search-index :as idx]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as query-execution]
+   [cmr.common-app.services.search.query-model :as q]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
-   [cmr.search.services.acl-service :as acl-service])
+   [cmr.common.services.errors :as errors]
+   [cmr.search.models.query :as qm]
+   [cmr.search.services.acl-service :as acl-service]
+   [cmr.search.services.query-walkers.condition-extractor :as condition-extractor])
   (:import [cmr.common_app.services.search.query_model
             Query
             ConditionGroup]
@@ -100,11 +101,11 @@
   (let [collection-id-conditions (q/string-conditions :collection-concept-id collection-ids true)
         ored-spatial-conditions (gc/or-conds spatial-conditions)]
     (if (seq collection-ids)
-        (gc/and-conds (remove empty? [collection-id-conditions
-                                      ored-spatial-conditions
-                                      temporal-conditions]))
-        ;; The results were empty so the granule count query doesn't need to find anything.
-        q/match-none)))
+      (gc/and-conds (remove empty? [collection-id-conditions
+                                    ored-spatial-conditions
+                                    temporal-conditions]))
+      ;; The results were empty so the granule count query doesn't need to find anything.
+      q/match-none)))
 
 (defn extract-granule-count-query
   "Extracts a query to find the number of granules per collection in the results from a collection query
@@ -116,7 +117,9 @@
         spatial-temp-conds (->> coll-query
                                 extract-spatial-and-temporal-conditions
                                 (map convert-spatial-or-temporal-condition))
-        spatial-conditions (map :shape spatial-temp-conds)
+        spatial-conditions (->> spatial-temp-conds
+                                (map :shape)
+                                (map qm/->SpatialCondition))
         temporal-conditions (remove :shape spatial-temp-conds)
         combined-conditions (if (and (= spatial-operator :or)
                                      (seq spatial-conditions))
@@ -151,7 +154,7 @@
 ;; This find granule counts per collection.
 (defmethod query-execution/post-process-query-result-feature :granule-counts
   [context query elastic-results query-results feature]
-  (if (= 0 (count (query-results->concept-ids query-results)))
+  (if (zero? (count (query-results->concept-ids query-results)))
     query-results
     (->> query-results
          (extract-granule-count-query query)
