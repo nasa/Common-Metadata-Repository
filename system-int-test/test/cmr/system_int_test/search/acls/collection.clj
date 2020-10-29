@@ -118,20 +118,30 @@
         group2-concept-id (e/get-or-create-group (s/context) "group2")
         group3-concept-id (e/get-or-create-group (s/context) "group3")
 
-        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+        sk1 (dc/science-keyword {:category "Cat1"
+                                 :topic "Topic1"
+                                 :term "Term1"
+                                 :variable-level-1 "Level1-1"
+                                 :variable-level-2 "Level1-2"
+                                 :variable-level-3 "Level1-3"
+                                 :detailed-variable "Detail1"})
+
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1" :science-keywords [sk1]}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"}))
         coll4 (d/ingest "PROV1" (dc/collection {:entry-title "coll4"
+                                                :science-keywords [sk1]
                                                 :access-value 5.0}))
         ;; no permission granted on coll5
         coll5 (d/ingest "PROV1" (dc/collection {:entry-title "coll5"}))
 
         ;; PROV2
-        coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6"}))
-        coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7"}))
+        coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6" :science-keywords [sk1]}))
+        coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :science-keywords [sk1]}))
         ;; A dif collection
         coll8 (d/ingest "PROV2" (dc/collection-dif
                                   {:entry-title "coll8"
+                                   :science-keywords [sk1]
                                    :short-name "S8"
                                    :version-id "V8"
                                    :long-name "coll8"})
@@ -140,7 +150,7 @@
         coll8 (assoc coll8 :original-format "DIF")
 
         ;; PROV3
-        coll9 (d/ingest "PROV3" (dc/collection {:entry-title "coll9"}))
+        coll9 (d/ingest "PROV3" (dc/collection {:entry-title "coll9" :science-keywords [sk1]}))
         coll10 (d/ingest "PROV3" (dc/collection {:entry-title "coll10"
                                                  :access-value 12.0}))
         ;; PROV4

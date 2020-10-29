@@ -553,16 +553,20 @@
                         (dc/collection
                          {:entry-title "Dataset3"
                           :personnel [p3]
+                          :science-keywords [sk1 sk2]
                           :spatial-coverage (dc/spatial {:gsr :orbit
                                                          :orbit op1})}))
-        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset4"}) {:format :iso-smap})
-        coll5 (d/ingest "PROV1" (dc/collection-dif {:entry-title "Dataset5"}) {:format :dif})
+
+        coll5 (d/ingest "PROV1" (dc/collection-dif {:entry-title "Dataset5"
+                                                    :science-keywords [sk1 sk2]})
+                                {:format :dif})
         coll6 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset6"
                                                 :short-name "ShortName#6"
                                                 :version-id "Version6"
                                                 :summary "Summary of coll6"
                                                 :organizations [(dc/org :archive-center "Larc")]
                                                 :projects pr1
+                                                :science-keywords [sk1 sk2]
                                                 :related-urls [ru4]
                                                 :beginning-date-time "2010-01-01T12:00:00Z"
                                                 :ending-date-time "2010-01-11T12:00:00Z"
@@ -577,6 +581,7 @@
                                                 :summary "Summary of coll7"
                                                 :organizations [(dc/org :archive-center "Larc")]
                                                 :personnel [p4]
+                                                :science-keywords [sk1 sk2]
                                                 :beginning-date-time "2010-01-01T12:00:00Z"
                                                 :ending-date-time "2010-01-11T12:00:00Z"
                                                 :spatial-coverage
@@ -588,6 +593,7 @@
                                                     :short-name "ShortName#8"
                                                     :version-id "Version8"
                                                     :summary "Summary of coll8"
+                                                    :science-keywords [sk1 sk2]
                                                     :organizations [(dc/org :archive-center "Landsat")]
                                                     :beginning-date-time "2010-01-01T12:00:00Z"
                                                     :ending-date-time "2010-01-11T12:00:00Z"
@@ -597,7 +603,8 @@
                                                                  :geometries [(m/mbr -180 90 180 -90)
                                                                               (m/mbr -10 20 30 -40)]})}))
         coll9 (d/ingest "PROV1"
-                        (dc/collection-dif10 {:entry-title "Dataset9"})
+                        (dc/collection-dif10 {:entry-title "Dataset9"
+                                              :science-keywords [sk1 sk2]})
                         {:format :dif10})
         _ (index/wait-until-indexed)
         ;; coll5's revision-date is needed to populate "modified" field in opendata.
@@ -606,16 +613,12 @@
                                 (get-in [:results :items])
                                 first
                                 (get-in [:meta :revision-date]))
-        ;; iso-smap LongName and CollectionCitation/Title have the same mapping.
-        ;; Need to add it to coll4 collection-citations to be exposed to citation creation.
-        coll4-opendata (assoc coll4 :collection-citations [{:title (get-in coll4 [:product :long-name])}])
         ;; Normally coll5 doesn't contain the :revision-date field. Only when this field is needed
         ;; to populate modified field, we add it to coll5 so that it can be used for the "expected" in opendata.clj.
         coll5-opendata (assoc coll5 :revision-date revision-date-coll5)]
-
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
-        (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+        (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll5 coll6 coll7
                                                  coll8 coll9] results))
       (testing "kml by concept-id"
         (let [results (search/find-concepts-kml :collection {:concept-id (:concept-id coll1)})]
@@ -629,18 +632,17 @@
         (is (= {:errors ["The mime type [text/csv] is not supported for collections."],
                 :status 400}
                (search/find-concepts-csv :collection {} {:url-extension "csv"})))))
-
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
-        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4-opendata coll5-opendata coll6 coll7 coll8 coll9] results))
+        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll5-opendata coll6 coll7 coll8 coll9] results))
+
       (testing "as extension"
         (let [results (search/find-concepts-opendata :collection {} {:url-extension "opendata"})]
-          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4-opendata coll5-opendata coll6 coll7 coll8 coll9] results)))
+          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll5-opendata coll6 coll7 coll8 coll9] results)))
       (testing "no opendata support for granules"
         (is (= {:errors ["The mime type [application/opendata+json] is not supported for granules."],
                 :status 400}
                (search/find-concepts-opendata :granule {})))))
-
     (testing "json schema validation catches invalid collections"
       (is (not-empty (opendata-json/validate-dataset (slurp (io/resource "problem_collection_opendata.json"))))))
 
@@ -650,7 +652,7 @@
             {:keys [status results]} response]
         (is (= [200 coll-atom] [status results])))
 
-      (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+      (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3 coll5 coll6 coll7
                                                       coll8 coll9] "collections.atom")
             response (search/find-concepts-atom :collection {})
             {:keys [status results]} response]
@@ -677,7 +679,7 @@
             {:keys [status results]} response]
         (is (= [200 coll-json] [status results])))
 
-      (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+      (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll5 coll6 coll7
                                                       coll8 coll9] "collections.json")
             response (search/find-concepts-json :collection {})
             {:keys [status results]} response]
