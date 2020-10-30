@@ -32,7 +32,8 @@
 (def default-opts
   "Default HTTP client options for use in the tests below."
   {:accept-format :json
-   :content-type content-type})
+   :content-type content-type
+   :token "mock-echo-system-token"})
 
 (defn token-opts
   "A little testing utility function that adds a user token to the default
