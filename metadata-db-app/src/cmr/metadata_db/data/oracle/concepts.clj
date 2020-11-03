@@ -385,50 +385,50 @@
 (defn get-transactions-for-concept
   [db provider concept-id]
   (j/with-db-transaction
-   [conn db]
-   (let [provider-id (:provider-id provider)
-         concept-type (common-concepts/concept-id->type concept-id)
-         table (tables/get-table-name provider concept-type)
-         stmt (su/build (select [:c.revision-id :c.transaction-id]
-                                (from (as (keyword table) :c))
-                                (where `(= :c.concept-id ~concept-id))))]
-     (map (fn [result] {:revision-id (long (:revision_id result))
-                        :transaction-id (long (:transaction_id result))})
-          (su/query conn stmt)))))
+    [conn db]
+    (let [provider-id (:provider-id provider)
+          concept-type (common-concepts/concept-id->type concept-id)
+          table (tables/get-table-name provider concept-type)
+          stmt (su/build (select [:c.revision-id :c.transaction-id]
+                                 (from (as (keyword table) :c))
+                                 (where `(= :c.concept-id ~concept-id))))]
+      (map (fn [result] {:revision-id (long (:revision_id result))
+                         :transaction-id (long (:transaction_id result))})
+           (su/query conn stmt)))))
 
 (defn save-concept
   [db provider concept]
   (try
     (j/with-db-transaction
-     [conn db]
-     (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
-                        (when (= :variable-association (:concept-type concept))
-                          (or (validate-same-provider-variable-association concept)
-                              (validate-collection-not-associated-with-another-variable-with-same-name db concept))))]
-       ;; There was a concept id, native id mismatch with earlier concepts
-       error
-       ;; Concept id native id pair was valid
-       (let [{:keys [concept-type]} concept
-             table (tables/get-table-name provider concept-type)
-             seq-name (str table "_seq")
-             [cols values] (concept->insert-args concept (:small provider))
-             stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
-                               "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL)")
-                          table
-                          (string/join "," cols)
-                          seq-name
-                          (string/join "," (repeat (count values) "?")))]
-         (trace "Executing" stmt "with values" (pr-str values))
-         (j/db-do-prepared db stmt values)
-         (after-save conn provider concept)
-         nil)))
+      [conn db]
+      (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
+                         (when (= :variable-association (:concept-type concept))
+                           (or (validate-same-provider-variable-association concept)
+                               (validate-collection-not-associated-with-another-variable-with-same-name db concept))))]
+        ;; There was a concept id, native id mismatch with earlier concepts
+        error
+        ;; Concept id native id pair was valid
+        (let [{:keys [concept-type]} concept
+              table (tables/get-table-name provider concept-type)
+              seq-name (str table "_seq")
+              [cols values] (concept->insert-args concept (:small provider))
+              stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
+                                "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL)")
+                           table
+                           (string/join "," cols)
+                           seq-name
+                           (string/join "," (repeat (count values) "?")))]
+          (trace "Executing" stmt "with values" (pr-str values))
+          (j/db-do-prepared db stmt values)
+          (after-save conn provider concept)
+          nil)))
     (catch Exception e
       (let [error-message (.getMessage e)
             error-code (cond
-                         (re-find #"unique constraint.*_CID_REV" error-message)
+                         (re-find #"unique constraint.*_[CID|CON]_REV" error-message)
                          :revision-id-conflict
 
-                         (re-find #"unique constraint.*_CON_REV" error-message)
+                         (re-find #"unique constraint.*TAG_ASSOCS_[CRI|UCR_I]" error-message)
                          :revision-id-conflict
 
                          :else
