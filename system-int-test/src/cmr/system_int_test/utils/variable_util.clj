@@ -32,8 +32,7 @@
 (def default-opts
   "Default HTTP client options for use in the tests below."
   {:accept-format :json
-   :content-type content-type
-   :token "mock-echo-system-token"})
+   :content-type content-type})
 
 (defn token-opts
   "A little testing utility function that adds a user token to the default
@@ -122,7 +121,9 @@
   ([]
    (ingest-variable-with-association (make-variable-concept)))
   ([variable-concept]
-   (ingest-variable-with-association variable-concept default-opts))
+   (ingest-variable-with-association
+     variable-concept
+     (assoc default-opts :token "mock-echo-system-token")))
   ([variable-concept opts]
    (let [result (ingest-util/ingest-variable variable-concept opts)
          attrs (select-keys variable-concept
