@@ -5,11 +5,13 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-system]
+   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.service-util :as service-util]
@@ -392,13 +394,19 @@
                                      "umm-var-guid2" "umm-var-user2")
           {update-token :token} (variable-util/setup-update-acl
                                  (s/context) "PROV1")
-          concept (variable-util/make-variable-concept)]
+          coll-concept-id (->> {:token update-token}
+                               (d/ingest "PROV1" (dc/collection))
+                               :concept-id)
+          _ (index/wait-until-indexed)
+          concept (variable-util/make-variable-concept
+                    {:Name "Variable1"}
+                    {:native-id "var1"
+                     :coll-concept-id coll-concept-id})]
       (testing "disallowed create responses:"
         (are3 [token expected]
-          (let [response (variable-util/ingest-variable
-                          concept
-                          (merge variable-util/default-opts
-                                 {:token token}))]
+          (let [response (variable-util/ingest-variable-with-association
+                           concept
+                           {:token token})]
             (is (= expected (:status response))))
           "no token provided"
           nil 401
@@ -422,8 +430,8 @@
           "regular user denied"
           registered-token 401))
       (testing "allowed responses:"
-        (let [create-response (variable-util/ingest-variable
-                               concept {:token update-token})
+        (let [create-response (variable-util/ingest-variable-with-association
+                                concept)
               delete-response (ingest/delete-concept concept {:token update-token})]
           (testing "create variable status"
             (is (= 201 (:status create-response))))
