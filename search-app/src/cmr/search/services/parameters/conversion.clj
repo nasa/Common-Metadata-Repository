@@ -91,7 +91,12 @@
    ;; service parameters
    :service-name :string
    :service-type :string
-   :service-concept-id :string})
+   :service-concept-id :string
+
+   ;; tool parameters
+   :tool-name :string
+   :tool-type :string
+   :tool-concept-id :string})
 
 (defmethod common-params/param-mappings :granule
   [_]
@@ -186,7 +191,7 @@
 
 (defmethod common-params/always-case-sensitive-fields :collection
   [_]
-  #{:concept-id :variable-concept-id :service-concept-id})
+  #{:concept-id :variable-concept-id :service-concept-id :tool-concept-id})
 
 (defmethod common-params/always-case-sensitive-fields :granule
   [_]
