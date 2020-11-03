@@ -2,6 +2,7 @@
   "Helper vars and functions for generating v2 facet responses."
   (:require
    [cmr.common.util :as util]
+   [cmr.search.services.humanizers.humanizer-range-facet-service :as range-facet-humanizers]
    [cmr.search.services.query-execution.facets.links-helper :as lh]))
 
 (def sorted-facet-map
@@ -21,7 +22,8 @@
    :variables-h "Measurements"
    :temporal "Temporal"
    :granule-data-format-h "Data Format"
-   :two-d-coordinate-system-name-h "Tiling System"})
+   :two-d-coordinate-system-name-h "Tiling System"
+   :horizontal-data-resolution-range "Horizontal Data Resolution"})
 
 (defn terms-facet
   "Construct a terms query to be applied for the given field. Size specifies the number of results
@@ -48,6 +50,20 @@
                            :size size
                            :order [{:priority :desc} {:_count :desc}]}
                    :aggs {:priority {:avg {:field (prioritized-facet-key field :priority)}}}}}})
+
+(defn prioritized-range-facet
+  "Construct a facet query for use with fields that have a priority value"
+  [context field]
+  ;; Facets on the :value field of the nested {:value :priority} map used by
+  ;; humanized facets, sort first by priority, then by count.
+  ;; Two facets with the same value can have different priorities based
+  ;; on the order of humanizer application, we have to average the priorities
+  ;; within each value bucket and cannot just use min or max.
+  (when-let [range-facets (range-facet-humanizers/get-range-facets context)]
+    {:nested {:path field}
+     :aggs {:values {:range {:field (prioritized-facet-key field :value)
+                             :ranges range-facets}
+                     :aggs {:priority {:avg {:field (prioritized-facet-key field :priority)}}}}}}))
 
 (defn generate-group-node
   "Returns a group node for the provided title, applied?, and children."

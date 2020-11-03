@@ -112,6 +112,7 @@
          "has-granules-map"
          "has-granules-or-cwic-map"
          "health"
+         "humanizer-range-facet-cache"
          "humanizer-report-cache"
          "index-names"
          "kms"

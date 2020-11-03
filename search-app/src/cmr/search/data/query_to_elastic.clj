@@ -45,6 +45,7 @@
                           :granule-end-date :granule-end-date-stored
                           :granule-start-date :granule-start-date-stored
                           :granule-data-format-h :granule-data-format-humanized
+                          :horizontal-data-resolution-range :horizontal-data-resolutions
                           :instrument :instrument-sn
                           :instrument-h :instrument-sn-humanized
                           :measurement :measurements
@@ -58,9 +59,6 @@
                           :service-concept-id :service-concept-ids
                           :service-name :service-names
                           :service-type :service-types-lowercase
-                          :tool-concept-id :tool-concept-ids
-                          :tool-name :tool-names
-                          :tool-type :tool-types-lowercase
                           :two-d-coordinate-system-name :two-d-coord-name
                           :updated-since :revision-date
                           :usage-score :usage-relevancy-score
@@ -121,8 +119,7 @@
 (defmethod q2e/concept-type->field-mappings :tool
   [_]
   {:provider :provider-id
-   :name :tool-name
-   :type :tool-type-lowercase})
+   :name :tool-name})
 
 (defmethod q2e/concept-type->field-mappings :subscription
   [_]
@@ -141,6 +138,7 @@
    :granule-end-date-stored :granule-end-date
    :granule-start-date-stored :granule-start-date
    :granule-data-format-humanized :granule-data-format-h
+   :horizontal-data-resolutions :horizontal-data-resolution-range
    :instrument-sn :instrument
    :instrument-sn-humanized :instrument-h
    :measurements :measurement
@@ -153,9 +151,6 @@
    :service-concept-ids :service-concept-id
    :service-names :service-name
    :service-types-lowercase :service-type
-   :tool-concept-ids :tool-concept-id
-   :tool-names :tool-name
-   :tool-types-lowercase :tool-type
    :two-d-coord-name :two-d-coordinate-system-name
    :variable-concept-ids :variable-concept-id
    :variable-names :variable-name
@@ -190,9 +185,7 @@
    :measurement "measurements-lowercase"
    :author "authors-lowercase"
    :service-name "service-names-lowercase"
-   :service-type "service-types-lowercase"
-   :tool-name "tool-names-lowercase"
-   :tool-type "tool-types-lowercase"})
+   :service-type "service-types-lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :variable
   [_]
@@ -208,8 +201,7 @@
 (defmethod q2e/field->lowercase-field-mappings :tool
   [_]
   {:provider "provider-id-lowercase"
-   :name "tool-name-lowercase"
-   :type "tool-type-lowercase"})
+   :name "tool-name-lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :subscription
   [_]
@@ -360,7 +352,6 @@
   [_]
   {:tool-name :tool-name-lowercase
    :name :tool-name-lowercase
-   :type :tool-type-lowercase
    :long-name :long-name-lowercase
    :provider :provider-id-lowercase})
 

@@ -28,6 +28,7 @@
    [cmr.indexer.data.concepts.collection.location-keyword :as clk]
    [cmr.indexer.data.concepts.collection.opendata :as opendata]
    [cmr.indexer.data.concepts.collection.platform :as platform]
+   [cmr.indexer.data.concepts.collection.resolution :as resolution]
    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.concepts.service :as service]
@@ -138,28 +139,23 @@
       (assoc-nil-if :DataCenters (= (:DataCenters collection) [su/not-provided-data-center]))))
 
 (defn- associations->gzip-base64-str
-  "Returns the gziped base64 string for the given variable,service and tool associations"
-  [variable-associations service-associations tool-associations]
+  "Returns the gziped base64 string for the given variable associations and service associations"
+  [variable-associations service-associations]
   (when (or (seq variable-associations)
-            (seq service-associations)
-            (seq tool-associations))
+            (seq service-associations))
     (util/string->gzip-base64
      (pr-str
       (util/remove-map-keys empty?
                             {:variables (mapv :variable-concept-id variable-associations)
-                             :services (mapv :service-concept-id service-associations)
-                             :tools (mapv :tool-concept-id tool-associations)})))))
+                             :services (mapv :service-concept-id service-associations)})))))
 
-(defn- variable-service-tool-associations->elastic-docs
-  "Returns the elastic docs for variable, service and tool assocations"
-  [context variable-associations service-associations tool-associations]
+(defn- variable-service-associations->elastic-docs
+  "Returns the elastic docs for variable and service assocations"
+  [context variable-associations service-associations]
   (let [variable-docs (variable/variable-associations->elastic-doc context variable-associations)
         service-docs (service/service-associations->elastic-doc context service-associations)
-        tool-docs (tool/tool-associations->elastic-doc context tool-associations)
-        has-variables (or (:has-variables variable-docs) (:has-variables service-docs))
-        has-formats (or (:has-formats service-docs) (:has-formats tool-docs))]
-    (merge variable-docs service-docs tool-docs
-           {:has-variables has-variables} {:has-formats has-formats})))
+        has-variables (or (:has-variables variable-docs) (:has-variables service-docs))]
+    (merge variable-docs service-docs {:has-variables has-variables})))
 
 (defn- get-granule-data-format
   "Returns the Format field from
@@ -176,8 +172,8 @@
   "Get all the fields for a normal collection index operation."
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id native-id
-                created-at revision-date deleted format extra-fields tag-associations
-                variable-associations service-associations tool-associations]} concept
+                created-at revision-date deleted format extra-fields
+                tag-associations variable-associations service-associations]} concept
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
@@ -287,7 +283,13 @@
         has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))
         granule-data-format (get-granule-data-format
                              (get-in collection [:ArchiveAndDistributionInformation
-                                                 :FileDistributionInformation]))]
+                                                 :FileDistributionInformation]))
+        horizontal-data-resolutions (resolution/get-horizontal-data-resolutions
+                                      (get-in collection
+                                              [:SpatialExtent
+                                               :HorizontalSpatialDomain
+                                               :ResolutionAndCoordinateSystem
+                                               :HorizontalDataResolution]))]
 
     (merge {:concept-id concept-id
             :doi-stored doi
@@ -418,13 +420,14 @@
                                                          :processing-level-id-humanized
                                                          first
                                                          :value-lowercase)
-            :associations-gzip-b64
-              (associations->gzip-base64-str
-                variable-associations service-associations tool-associations)
-            :usage-relevancy-score 0}
+            :associations-gzip-b64 (associations->gzip-base64-str
+                                    variable-associations service-associations)
+            :usage-relevancy-score 0
+            :horizontal-data-resolutions {:value horizontal-data-resolutions
+                                          :priority 0}}
 
-           (variable-service-tool-associations->elastic-docs
-            context variable-associations service-associations tool-associations)
+           (variable-service-associations->elastic-docs
+            context variable-associations service-associations)
            (collection-temporal-elastic context concept-id collection)
            (spatial/collection-orbit-parameters->elastic-docs collection)
            (spatial->elastic collection)

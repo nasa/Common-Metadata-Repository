@@ -255,6 +255,11 @@
    :value-lowercase m/string-field-mapping
    :priority m/int-field-mapping})
 
+(defnestedmapping float-prioritized-mapping
+  "Defines a float value and priority for use in boosting facets."
+  {:value m/float-field-mapping
+   :priority m/int-field-mapping})
+
 (defnestedmapping temporal-mapping
   "Defines mappings for TemporalExtents."
   {:start-date m/date-field-mapping
@@ -502,17 +507,12 @@
           :service-types-lowercase (m/doc-values m/string-field-mapping)
           :service-concept-ids (m/doc-values m/string-field-mapping)
 
-          ;; associated tools
-          :tool-names (m/doc-values m/string-field-mapping)
-          :tool-names-lowercase (m/doc-values m/string-field-mapping)
-          :tool-types-lowercase (m/doc-values m/string-field-mapping)
-          :tool-concept-ids (m/doc-values m/string-field-mapping)
-
           ;; associations with the collection stored as EDN gzipped and base64 encoded for retrieving purpose
           :associations-gzip-b64 m/binary-field-mapping
 
           ;; Relevancy score from community usage metrics
-          :usage-relevancy-score m/int-field-mapping}
+          :usage-relevancy-score m/int-field-mapping
+          :horizontal-data-resolutions float-prioritized-mapping}
          spatial-coverage-fields))
 
 (defmapping deleted-granule-mapping :deleted-granule
@@ -755,7 +755,6 @@
    :tool-name-lowercase (m/doc-values m/string-field-mapping)
    :long-name (m/doc-values m/string-field-mapping)
    :long-name-lowercase (m/doc-values m/string-field-mapping)
-   :tool-type-lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
    :deleted (m/doc-values m/bool-field-mapping)
    :user-id (m/doc-values m/string-field-mapping)
