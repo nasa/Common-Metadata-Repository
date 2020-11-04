@@ -396,6 +396,19 @@
                          :transaction-id (long (:transaction_id result))})
            (su/query conn stmt)))))
 
+(defn handle-oracle-exception
+  "Produces an error object from exceptions thrown from Oracle."
+  [exception]
+  (let [error-message (.getMessage exception)
+        error-code (cond
+                     (re-find #"unique constraint.*_[CRI|CID|CON](_REV)?"
+                              error-message)
+                     :revision-id-conflict
+
+                     :else
+                     :unknown-error)]
+    {:error error-code :error-message error-message :throwable exception}))
+
 (defn save-concept
   [db provider concept]
   (try
@@ -422,18 +435,7 @@
           (j/db-do-prepared db stmt values)
           (after-save conn provider concept)
           nil)))
-    (catch Exception e
-      (let [error-message (.getMessage e)
-            error-code (cond
-                         (re-find #"unique constraint.*_[CID|CON]_REV" error-message)
-                         :revision-id-conflict
-
-                         (re-find #"unique constraint.*TAG_ASSOCS_[CRI|UCR_I]" error-message)
-                         :revision-id-conflict
-
-                         :else
-                         :unknown-error)]
-        {:error error-code :error-message error-message :throwable e}))))
+    (catch Exception e (handle-oracle-exception e))))
 
 (defn force-delete
   [this concept-type provider concept-id revision-id]
