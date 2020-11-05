@@ -164,12 +164,12 @@
     (au/associate-by-concept-ids token tool2-concept-id [{:concept-id (:concept-id coll2)}])
     (index/wait-until-indexed)
 
-    ;; verify search result on coll1 contains associations with both tool1 and tool2, and has-formats being true
-    ;; because tool1 has more than one distinctive supported formats.
+    ;; verify search result on coll1 contains associations with both tool1 and tool2, and has-formats being false
+    ;; because tools have no effect on the has-formats flag
     (tool-util/assert-collection-search-result
-     coll1 {:has-formats true} [tool1-concept-id tool2-concept-id])
+     coll1 {:has-formats false} [tool1-concept-id tool2-concept-id])
 
     ;; verify search result on coll1 contains associations with tool2, and has-formats being false
-    ;; because tool2 doesn't have more than one distinctive supported formats.
+    ;; because tools have no effect on has-formats flag.
     (tool-util/assert-collection-search-result
      coll2 {:has-formats false} [tool2-concept-id])))
