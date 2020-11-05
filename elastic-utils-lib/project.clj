@@ -11,7 +11,6 @@
                  [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
-                 [log4j/log4j "1.2.17"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
                  [org.elasticsearch/elasticsearch "7.5.2"]
