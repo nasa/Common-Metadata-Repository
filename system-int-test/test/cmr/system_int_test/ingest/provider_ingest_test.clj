@@ -152,11 +152,18 @@
                                                                               :ShortName "S3"
                                                                               :Version "V3"}))
           gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1"))
-          variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
-                                                           :Name "Variable1"})
-          variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
-                                                           :Name "Variable2"
-                                                           :provider-id "PROV2"})
+          _ (index/wait-until-indexed)
+          variable1-concept (variables/make-variable-concept
+                              {:Name "Variable1"}
+                              {:native-id "var1"
+                               :coll-concept-id (:concept-id coll1)})
+          variable2-concept (variables/make-variable-concept
+                              {:Name "Variable2"
+                               :provider-id "PROV2"}
+                              {:native-id "var2"
+                               :coll-concept-id (:concept-id coll3)})
+          variable1 (variables/ingest-variable-with-association variable1-concept)
+          variable2 (variables/ingest-variable-with-association variable2-concept)
           service1 (services/ingest-service-with-attrs {:native-id "svc1"
                                                         :Name "service1"})
           service2 (services/ingest-service-with-attrs {:native-id "svc2"
