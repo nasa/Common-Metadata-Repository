@@ -999,7 +999,7 @@
 
 ;; The next set of declarations and a function is to convert numbers of specific units to meters.
 ;; It is used to convert
-(def decimal-degress->meters
+(def decimal-degress->meters-conversion-factor
   "We are using the great circle algorithm https://en.wikipedia.org/wiki/Great-circle_distance
    as the conversion from Decimal Degrees to meters. (2*pi*r)/360 where r=6371009 meters - the mean
    radius of the earth using the WGS84 ellipsoid. This conversion is adequate for horizontal data
@@ -1007,15 +1007,15 @@
    meters/degree"
   111195)
 
-(def kilometers->meters
+(def kilometers->meters-conversion-factor
   "Conversion factor from kilometers to meters"
   1000)
 
-(def statute-miles->meters
+(def statute-miles->meters-conversion-factor
   "Conversion factor from statue miles to meters"
   1609.344)
 
-(def nautical-miles->meters
+(def nautical-miles->meters-conversion-factor
   "Conversion factor from nautical miles to meters"
   1852.001)
 
@@ -1024,8 +1024,8 @@
   [value unit]
   (cond
     (nil? value) nil
-    (= "Decimal Degrees" unit) (* value decimal-degress->meters)
-    (= "Kilometers" unit) (* value kilometers->meters)
-    (= "Statute Miles" unit) (* value statute-miles->meters)
-    (= "Nautical Miles" unit) (* value nautical-miles->meters)
+    (= "Decimal Degrees" unit) (* value decimal-degress->meters-conversion-factor)
+    (= "Kilometers" unit) (* value kilometers->meters-conversion-factor)
+    (= "Statute Miles" unit) (* value statute-miles->meters-conversion-factor)
+    (= "Nautical Miles" unit) (* value nautical-miles->meters-conversion-factor)
     :else value))
