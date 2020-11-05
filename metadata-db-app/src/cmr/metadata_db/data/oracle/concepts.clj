@@ -589,9 +589,9 @@
          stmt [sql (cr/to-sql-time tombstone-cut-off-date)]
          result (su/query conn stmt)]
      ;; create tuples of concept-id/revision-id to remove
-     (map (fn [{:keys [concept_id revision_id]}]
-            [concept_id revision_id])
-          result))))
+     (doall (map (fn [{:keys [concept_id revision_id]}]
+                   [concept_id revision_id])
+                 result)))))
 
 (defn get-old-concept-revisions
   [this provider concept-type max-revisions limit]
