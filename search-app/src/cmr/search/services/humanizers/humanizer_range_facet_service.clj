@@ -101,9 +101,8 @@
    range facet humanizers, which keeps the search service fast."
   [context range-facets]
   (when range-facets
-    (let [cache (cache/context->cache context range-facet-cache-key)]
-      (when cache
-        (cache/set-value cache range-facet-data-key range-facets)))))
+    (when-let [cache (cache/context->cache context range-facet-cache-key)]
+      (cache/set-value cache range-facet-data-key range-facets))))
 
 (defn get-and-store-range-facets
   "Gets and stores into the range facet cache the range facets from the humanizers. All searches

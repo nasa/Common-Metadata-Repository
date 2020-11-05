@@ -862,6 +862,11 @@
     2
     "Nautical Miles"
 
+    "Test if the value is zero"
+    0
+    0
+    "Decimal Degrees"
+
     "Test if the unit is nil.
      Although since the unit is required and controlled this shouldn't happen."
     3
