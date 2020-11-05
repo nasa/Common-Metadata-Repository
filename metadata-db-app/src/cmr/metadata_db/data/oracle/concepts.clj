@@ -575,17 +575,15 @@
          ;; older than the tombstone - up to 'limit' concepts.
          sql (if small
                (format "select t1.concept_id, t1.revision_id from %s t1 inner join
-                         (select * from
                          (select concept_id, revision_id from %s
-                         where provider_id = '%s' and DELETED = 1 and REVISION_DATE < ?)
-                         where rownum < %d) t2
+                         where provider_id = '%s' and DELETED = 1 and REVISION_DATE < ?
+                         FETCH FIRST %d ROWS ONLY) t2
                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
                        table table provider-id limit)
                (format "select t1.concept_id, t1.revision_id from %s t1 inner join
-                         (select * from
                          (select concept_id, revision_id from %s
-                         where DELETED = 1 and REVISION_DATE < ?)
-                         where rownum < %d) t2
+                         where DELETED = 1 and REVISION_DATE < ?
+                         FETCH FIRST %d ROWS ONLY) t2
                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
                        table table limit))
          stmt [sql (cr/to-sql-time tombstone-cut-off-date)]
@@ -607,14 +605,14 @@
          ;; each returned concept-id.
          stmt (if small
                 [(format "select concept_id, revision_id from %s
-                           where concept_id in (select * from
+                           where concept_id in
                            (select concept_id from %s where provider_id = '%s' group by
-                           concept_id having count(*) > %d) where rownum <= %d)"
+                           concept_id having count(*) > %d FETCH FIRST %d ROWS ONLY)"
                          table table provider-id max-revisions limit)]
                 [(format "select concept_id, revision_id from %s
-                           where concept_id in (select * from
+                           where concept_id in
                            (select concept_id from %s group by
-                           concept_id having count(*) > %d) where rownum <= %d)"
+                           concept_id having count(*) > %d FETCH FIRST %d ROWS ONLY)"
                          table table max-revisions limit)])
          result (su/query conn stmt)
          ;; create a map of concept-ids to sequences of all returned revisions
