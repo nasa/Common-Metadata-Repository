@@ -12,7 +12,7 @@
   :description "Library containing code to handling cacheing with the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/redis-utils-lib"
   :dependencies [[com.github.kstyrc/embedded-redis "0.6"]
-                 [com.taoensso/carmine "2.19.1"]
+                 [com.taoensso/carmine "3.0.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]]
   :plugins [[lein-exec "0.3.7"]
