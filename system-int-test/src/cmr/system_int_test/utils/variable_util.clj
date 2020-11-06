@@ -121,7 +121,9 @@
   ([]
    (ingest-variable-with-association (make-variable-concept)))
   ([variable-concept]
-   (ingest-variable-with-association variable-concept default-opts))
+   (ingest-variable-with-association
+     variable-concept
+     (assoc default-opts :token "mock-echo-system-token")))
   ([variable-concept opts]
    (let [result (ingest-util/ingest-variable variable-concept opts)
          attrs (select-keys variable-concept

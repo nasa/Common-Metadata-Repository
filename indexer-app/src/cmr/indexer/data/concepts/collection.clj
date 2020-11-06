@@ -158,7 +158,7 @@
         service-docs (service/service-associations->elastic-doc context service-associations)
         tool-docs (tool/tool-associations->elastic-doc context tool-associations)
         has-variables (or (:has-variables variable-docs) (:has-variables service-docs))
-        has-formats (or (:has-formats service-docs) (:has-formats tool-docs))]
+        has-formats (:has-formats service-docs)]
     (merge variable-docs service-docs tool-docs
            {:has-variables has-variables} {:has-formats has-formats})))
 

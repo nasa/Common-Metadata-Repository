@@ -4,6 +4,7 @@
     [clojure.test :refer :all]
     [cmr.common.util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.data2.umm-spec-variable :as umm-spec-v]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -18,10 +19,17 @@
 (defn- ingest-variable-with-measurements
   "Ingest the variables with the given unique id and measurement identifiers"
   [id measurements]
-  (variables/ingest-variable-with-attrs {:native-id (str "Var" id)
-                                         :Name (str "Variable" id)
-                                         :LongName (str "Long" id)
-                                         :MeasurementIdentifiers measurements}))
+  (let [coll1-PROV1-1 (d/ingest-umm-spec-collection
+                        "PROV1"
+                        (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"}))
+        _ (index/wait-until-indexed)
+        variable (variables/make-variable-concept
+                   {:Name (str "Variable" id)
+                    :LongName (str "Long" id)
+                    :MeasurementIdentifiers measurements}
+                   {:native-id (str "Var" id)
+                    :coll-concept-id (:concept-id coll1-PROV1-1)})]
+    (variables/ingest-variable-with-association variable)))
 
 (deftest search-variable-measurement-identifiers-test
   (let [m1 (umm-spec-v/measurement-identifier {:context-medium "Atmosphere"
