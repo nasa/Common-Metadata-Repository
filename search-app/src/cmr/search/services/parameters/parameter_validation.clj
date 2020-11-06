@@ -40,7 +40,7 @@
                       :processing-level-id-h :sensor :data-center-h :measurement :variable-name
                       :variable-concept-id :variable-native-id :author :service-name :service-type
                       :service-concept-id :tool-name :tool-type :tool-concept-id :granule-data-format
-                      :granule-data-format-h}
+                      :granule-data-format-h :horizontal-data-resolution-range}
     :always-case-sensitive #{:echo-collection-id}
     :disallow-pattern #{:echo-collection-id}}))
 

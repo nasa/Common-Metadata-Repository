@@ -255,6 +255,11 @@
    :value-lowercase m/string-field-mapping
    :priority m/int-field-mapping})
 
+(defnestedmapping float-prioritized-mapping
+  "Defines a float value and priority for use in boosting facets."
+  {:value m/float-field-mapping
+   :priority m/int-field-mapping})
+
 (defnestedmapping temporal-mapping
   "Defines mappings for TemporalExtents."
   {:start-date m/date-field-mapping
@@ -512,7 +517,8 @@
           :associations-gzip-b64 m/binary-field-mapping
 
           ;; Relevancy score from community usage metrics
-          :usage-relevancy-score m/int-field-mapping}
+          :usage-relevancy-score m/int-field-mapping
+          :horizontal-data-resolutions float-prioritized-mapping}
          spatial-coverage-fields))
 
 (defmapping deleted-granule-mapping :deleted-granule

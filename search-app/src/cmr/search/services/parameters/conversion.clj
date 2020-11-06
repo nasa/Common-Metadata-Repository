@@ -40,6 +40,7 @@
    :exclude :exclude
    :granule-data-format :string
    :granule-data-format-h :humanizer
+   :horizontal-data-resolution-range :range-facet
    :has-granules :has-granules
    :has-granules-or-cwic :has-granules-or-cwic
    :has-granules-created-at :multi-date-range

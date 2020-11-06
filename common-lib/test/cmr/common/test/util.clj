@@ -829,3 +829,51 @@
                     {:c "description2"}
                     {:c "description3"}]}}
            (util/update-in-each-vector update-in-each-vector-test-data [:a :b] dissoc :d)))))
+
+(deftest convert-resolution-to-meters-test
+  "Test the conversion of resolution values to meters."
+
+  (util/are3 [expected test-value test-unit]
+    (is (= expected
+           (util/convert-to-meters test-value test-unit)))
+
+    "Test Meter conversion"
+    3
+    3
+    "Meters"
+
+    "Test Decimal Degree conversion"
+    111195
+    1
+    "Decimal Degrees"
+
+    "Test Kilometer conversion"
+    1000
+    1
+    "Kilometers"
+
+    "Test Statue Mile conversion"
+    3218.688
+    2
+    "Statute Miles"
+
+    "Test nautical Mile conversion"
+    3704.002
+    2
+    "Nautical Miles"
+
+    "Test if the value is zero"
+    0
+    0
+    "Decimal Degrees"
+
+    "Test if the unit is nil.
+     Although since the unit is required and controlled this shouldn't happen."
+    3
+    3
+    nil
+
+    "Test if the value is nil"
+    nil
+    nil
+    nil))

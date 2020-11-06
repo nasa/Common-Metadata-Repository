@@ -747,6 +747,150 @@
        `(cmr.search.services.query-execution.facets.collection-v2-facets/set-include-variable-facets!
          false)))))
 
+(def spatial
+  "This is spatial data to test the horizontal data resolutions range facets."
+  {:GranuleSpatialRepresentation "CARTESIAN"
+   :HorizontalSpatialDomain
+     {:Geometry {:CoordinateSystem "CARTESIAN"
+                 :Points [{:Longitude 0
+                           :Latitude 0}]}
+      :ResolutionAndCoordinateSystem
+        {:HorizontalDataResolution
+           {:VariesResolution "Varies"
+            :PointResolution "Point"
+            :NonGriddedResolutions [{:XDimension 1000
+                                     :YDimension 1000
+                                     :Unit "Meters"
+                                     :ViewingAngleType "At Nadir"
+                                     :ScanDirection "Cross Track"}
+                                    {:XDimension 0.007
+                                     :YDimension 0.008
+                                     :Unit "Kilometers"
+                                     :ViewingAngleType "At Nadir"
+                                     :ScanDirection "Cross Track"}]
+            :NonGriddedRangeResolutions [{:MinimumXDimension 0.2
+                                          :MinimumYDimension 0.2
+                                          :MaximumXDimension 0.9
+                                          :MaximumYDimension 0.9
+                                          :Unit "Meters"
+                                          :ViewingAngleType "At Nadir"
+                                          :ScanDirection "Cross Track"}]
+            :GriddedResolutions [{:XDimension 2
+                                  :YDimension 2
+                                  :Unit "Nautical Miles"}
+                                 {:XDimension 2.007
+                                  :YDimension 2.008
+                                  :Unit "Statute Miles"}]
+            :GriddedRangeResolutions [{:MinimumXDimension 2
+                                       :MinimumYDimension 2
+                                       :MaximumXDimension 4
+                                       :MaximumYDimension 4
+                                       :Unit "Meters"}]
+            :GenericResolutions [{:XDimension 20
+                                  :YDimension 20
+                                  :Unit "Nautical Miles"}
+                                 {:XDimension 0.007
+                                  :YDimension 0.008
+                                  :Unit "Statute Miles"}]}}}})
+
+(deftest horizontal-data-resolution-range-facet-v2-test
+  "Test the horizontal data resolution facets ingest, indexing, and search."
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll1"
+                                                       :ShortName "S1"
+                                                       :SpatialExtent spatial
+                                                       :Projects [{:ShortName "Proj4"
+                                                                   :LongName "Proj4 Long Name"}]})
+                                                    {:format :umm-json})
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll2"
+                                                       :ShortName "S2"
+                                                       :Projects [{:ShortName "Proj3"
+                                                                   :LongName "Proj3 Long Name"}]})
+                                                    {:format :umm-json})]
+
+    (testing "search by horizontal data resolution. Parameter filters the other facets, but not
+              this facet. This also tests the edge case where the record contains the value of
+              1000, which goes into 2 ranges: 500 to 1000 meters and 1 to 10 km."
+      (let [facets-result (search-and-return-v2-facets {:horizontal-data-resolution-range ["1 to 10 km"]})]
+        (assert-facet-field facets-result "Horizontal Data Resolution" "0 to 1 meter" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "1 to 30 meters" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "30 to 100 meters" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "100 to 250 meters" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "250 to 500 meters" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 meters" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "1 to 10 km" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "10 to 50 km" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "50 to 100 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "100 to 250 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "250 to 500 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "1000 km & above" 0)
+        (assert-facet-field-not-exist facets-result "Projects" "Proj3")
+        (assert-facet-field facets-result "Projects" "Proj4" 1)))
+
+    (testing "search by multiple horizontal data resolutions"
+      (let [facets-result (search-and-return-v2-facets {:horizontal-data-resolution-range ["500 to 1000 meters" "1 to 10 km"]})]
+        (assert-facet-field facets-result "Horizontal Data Resolution" "0 to 1 meter" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "1 to 30 meters" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "30 to 100 meters" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "100 to 250 meters" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "250 to 500 meters" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 meters" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "1 to 10 km" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "10 to 50 km" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "50 to 100 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "100 to 250 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "250 to 500 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "1000 km & above" 0)
+        (assert-facet-field-not-exist facets-result "Projects" "Proj3")
+        (assert-facet-field facets-result "Projects" "Proj4" 1)))
+
+    (testing "search by params other than horizontal data resolution"
+      (let [facets-result (search-and-return-v2-facets {:project-h ["Proj3"]})]
+        (assert-facet-field facets-result "Projects" "Proj3" 1)
+        (assert-facet-field facets-result "Projects" "Proj4" 1)
+        (assert-facet-field-not-exist facets-result "Horizontal Data Resolution" "0 to 1 meter")))
+
+    (testing "search by both facet field param and regular param"
+      (let [facets-result (search-and-return-v2-facets {:short-name "S1"
+                                                        :horizontal-data-resolution-range ["1 to 10 km"]})]
+        (assert-facet-field facets-result "Horizontal Data Resolution" "0 to 1 meter" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "1 to 30 meters" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "30 to 100 meters" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "100 to 250 meters" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "250 to 500 meters" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 meters" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "1 to 10 km" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "10 to 50 km" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "50 to 100 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "100 to 250 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "250 to 500 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "1000 km & above" 0)
+        (assert-facet-field-not-exist facets-result "Projects" "Proj3")
+        (assert-facet-field facets-result "Projects" "Proj4" 1)))
+
+    (testing "search by more than one facet field params"
+      (let [facets-result (search-and-return-v2-facets {:project-h ["Proj4"]
+                                                        :horizontal-data-resolution-range ["1 to 10 km"]})]
+        (assert-facet-field facets-result "Horizontal Data Resolution" "0 to 1 meter" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "1 to 30 meters" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "30 to 100 meters" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "100 to 250 meters" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "250 to 500 meters" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 meters" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "1 to 10 km" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "10 to 50 km" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "50 to 100 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "100 to 250 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "250 to 500 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 km" 0)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "1000 km & above" 0)
+        (assert-facet-field-not-exist facets-result "Projects" "Proj3")
+        (assert-facet-field facets-result "Projects" "Proj4" 1)))))
+
 (comment
  ;; Good for manually testing applying links
  (do

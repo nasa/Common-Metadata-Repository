@@ -11,3 +11,6 @@
 
 (def returning-empty-report
   "Returning empty report.")
+
+(def trouble-getting-humanizers
+  "Cannot get humanizers, default range facet humanizers will be used.")

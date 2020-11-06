@@ -45,6 +45,7 @@
                           :granule-end-date :granule-end-date-stored
                           :granule-start-date :granule-start-date-stored
                           :granule-data-format-h :granule-data-format-humanized
+                          :horizontal-data-resolution-range :horizontal-data-resolutions
                           :instrument :instrument-sn
                           :instrument-h :instrument-sn-humanized
                           :measurement :measurements
@@ -141,6 +142,7 @@
    :granule-end-date-stored :granule-end-date
    :granule-start-date-stored :granule-start-date
    :granule-data-format-humanized :granule-data-format-h
+   :horizontal-data-resolutions :horizontal-data-resolution-range
    :instrument-sn :instrument
    :instrument-sn-humanized :instrument-h
    :measurements :measurement

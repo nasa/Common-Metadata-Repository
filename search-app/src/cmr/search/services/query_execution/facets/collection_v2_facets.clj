@@ -23,7 +23,8 @@
    :processing-level-id :processing-level-id-humanized
    :variables :variables
    :granule-data-format :granule-data-format-humanized
-   :two-d-coordinate-system-name :two-d-coord-name})
+   :two-d-coordinate-system-name :two-d-coord-name
+   :horizontal-data-resolution-range :horizontal-data-resolutions})
 
 (defmethod v2-facets/facets-v2-params->elastic-fields :collection
   [_]
@@ -49,7 +50,10 @@
 (def collection-facet-fields->aggregation-fields
   "Defines the mapping between facet fields to aggregation fields."
   (into {}
-        (map (fn [field] [field (keyword (str (name field) "-h"))]) collection-facets-v2-params)))
+        (map (fn [field] [field (if (= field :horizontal-data-resolution-range)
+                                  field
+                                  (keyword (str (name field) "-h")))])
+             collection-facets-v2-params)))
 
 (defmethod v2-facets/facet-fields->aggregation-fields :collection
   [_]
@@ -58,7 +62,7 @@
 (defmethod v2-facets/v2-facets-result-field-in-order :collection
   [_]
   ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels"
-   "Measurements" "Output File Formats" "Reprojections" "Tiling System"])
+   "Measurements" "Output File Formats" "Reprojections" "Tiling System" "Horizontal Data Resolution"])
 
 (defmethod v2-facets/v2-facets-root :collection
   [_]
@@ -91,7 +95,9 @@
 
 (defmethod v2-facets/create-v2-facets-by-concept-type :collection
   [concept-type base-url query-params aggs facet-fields]
-  (let [flat-facet-fields (remove #{:science-keywords :variables} facet-fields)
+  (let [flat-facet-fields (remove #{:science-keywords
+                                    :variables
+                                    :horizontal-data-resolution-range} facet-fields)
         facet-fields-set (set facet-fields)
         ;; CMR-4682: Refactor out collection and granule specific logic
         science-keywords-facets (when (facet-fields-set :science-keywords)
@@ -103,9 +109,13 @@
         two-d-facets (when (facet-fields-set :two-d-coordinate-system-name)
                        (create-two-d-v2-facets
                          aggs base-url query-params :two-d-coordinate-system-name-h))
+        range-facets (when (facet-fields-set :horizontal-data-resolution-range)
+                       (v2-facets/create-prioritized-v2-facets
+                        :collection aggs [:horizontal-data-resolution-range] base-url query-params false))
         v2-facets (concat science-keywords-facets
                           (v2-facets/create-prioritized-v2-facets
                            :collection aggs flat-facet-fields base-url query-params)
                           variables-facets
-                          two-d-facets)]
+                          two-d-facets
+                          range-facets)]
     v2-facets))

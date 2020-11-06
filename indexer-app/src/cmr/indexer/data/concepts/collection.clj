@@ -28,6 +28,7 @@
    [cmr.indexer.data.concepts.collection.location-keyword :as clk]
    [cmr.indexer.data.concepts.collection.opendata :as opendata]
    [cmr.indexer.data.concepts.collection.platform :as platform]
+   [cmr.indexer.data.concepts.collection.resolution :as resolution]
    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.concepts.service :as service]
@@ -287,7 +288,13 @@
         has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))
         granule-data-format (get-granule-data-format
                              (get-in collection [:ArchiveAndDistributionInformation
-                                                 :FileDistributionInformation]))]
+                                                 :FileDistributionInformation]))
+        horizontal-data-resolutions (resolution/get-horizontal-data-resolutions
+                                      (get-in collection
+                                              [:SpatialExtent
+                                               :HorizontalSpatialDomain
+                                               :ResolutionAndCoordinateSystem
+                                               :HorizontalDataResolution]))]
 
     (merge {:concept-id concept-id
             :doi-stored doi
@@ -421,7 +428,9 @@
             :associations-gzip-b64
               (associations->gzip-base64-str
                 variable-associations service-associations tool-associations)
-            :usage-relevancy-score 0}
+            :usage-relevancy-score 0
+            :horizontal-data-resolutions {:value horizontal-data-resolutions
+                                          :priority 0}}
 
            (variable-service-tool-associations->elastic-docs
             context variable-associations service-associations tool-associations)
