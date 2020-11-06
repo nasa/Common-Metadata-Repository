@@ -93,3 +93,4 @@
 ;             {:key "500 to 1000 km", :from 500000.0, :to (+ 1000000.0 hrfs/addition-factor)}
 ;             {:key "1000 km & beyond", :from 1000000.0 :to (Float/MAX_VALUE)}]
 ;            (hrfs/get-range-facets context)))))
+ 
