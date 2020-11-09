@@ -123,23 +123,25 @@
        (search/find-concepts context :granule)
        :hits))
 
-(defn- get-services-for-collection
-  "Retrieve service association for the collection corresponding to concept-id."
-  [context concept-id]
+(defn- get-associations-for-collection
+  "Retrieve association for the collection corresponding to concept-id and assoc-type."
+  [context concept-id assoc-type]
   (let [collection-results (->> {:concept-id concept-id
                                  :result-format {:format :umm-json-results}}
                                 (params/parse-parameter-query context :collection)
                                 (search/find-concepts context :collection)
                                 :results)
         items (:items (json/parse-string collection-results true))
-        service-ids (get-in (first items) [:meta :associations :services])]
-    (for [service-id service-ids
-          :let [service-results (->> {:concept-id service-id
-                                      :result-format {:format :umm-json-results}}
-                                     (params/parse-parameter-query context :service)
-                                     (search/find-concepts context :service)
-                                     :results)
-                items (:items (json/parse-string service-results true))]]
+        assoc-types (keyword (str (name assoc-type) "s"))
+        ;; service or tool concept-ids associated to the collection.
+        assoc-ids (get-in (first items) [:meta :associations assoc-types])]
+    (for [assoc-id assoc-ids
+          :let [assoc-results (->> {:concept-id assoc-id
+                                    :result-format {:format :umm-json-results}}
+                                   (params/parse-parameter-query context assoc-type)
+                                   (search/find-concepts context assoc-type)
+                                   :results)
+                items (:items (json/parse-string assoc-results true))]]
       (first items))))
 
 (defn- get-additional-information
@@ -147,7 +149,10 @@
   [context concept-id]
   {"granule_count" (get-granule-count-for-collection context concept-id)
    "root_url" (config/application-public-root-url context)
-   "services" (map #(umm-json/umm->json %) (get-services-for-collection context concept-id))})
+   "services" (map #(umm-json/umm->json %)
+                   (get-associations-for-collection context concept-id :service))
+   "tools" (map #(umm-json/umm->json %)
+                (get-associations-for-collection context concept-id :tool))})
 
 (defn render-collection
   "Renders a UMM-C collection record and returns the HTML as a string."

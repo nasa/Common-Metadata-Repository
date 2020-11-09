@@ -16,7 +16,7 @@ require 'action_view'
 require 'action_dispatch'
 require 'geo_ruby'
 require 'app/helpers/cmr_metadata_preview/additional_information_fields_helper'
-require 'app/helpers/cmr_metadata_preview/associated_services_tab_helper.rb'
+require 'app/helpers/cmr_metadata_preview/associated_concepts_tab_helper.rb'
 require 'app/helpers/cmr_metadata_preview/citation_information_preview_helper'
 require 'app/helpers/cmr_metadata_preview/cmr_metadata_preview_helper'
 require 'app/helpers/cmr_metadata_preview/data_contacts_helper'
@@ -30,7 +30,7 @@ include ActionView::Helpers
 include ActionDispatch::Routing
 
 include CmrMetadataPreview::AdditionalInformationFieldsHelper
-include CmrMetadataPreview::AssociatedServicesTabHelper
+include CmrMetadataPreview::AssociatedConceptsTabHelper
 include CmrMetadataPreview::CitationInformationPreviewHelper
 include CmrMetadataPreview::CmrMetadataPreviewHelper
 include CmrMetadataPreview::DataContactsHelper
