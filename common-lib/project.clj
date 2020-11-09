@@ -19,7 +19,7 @@
                  [clojusc/ltest "0.3.0"]
                  [com.dadrox/quiet-slf4j "0.1"]
                  [com.gfredericks/test.chuck "0.2.9"]
-                 [com.taoensso/timbre "4.10.0"]
+                 [com.taoensso/timbre "5.1.0"]
                  [commons-codec/commons-codec "1.11"]
                  [compojure "1.6.1"]
                  [environ "1.1.0"]
