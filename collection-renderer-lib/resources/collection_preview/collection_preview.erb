@@ -12,7 +12,14 @@ services&.each do |service|
   services_array << JSON.parse(service)
 end
 
+tools = additional_information['tools']
+tools_array = []
+tools&.each do |tool|
+  tools_array << JSON.parse(tool)
+end
+
 additional_information_hash = { 'services' => services_array }
+additional_information_hash['tools'] = tools_array
 additional_information_hash['granule_count'] = additional_information['granule_count'] || 0
 additional_information_hash['root_url'] = additional_information['root_url']
 
