@@ -21,7 +21,7 @@
 (def default-partner-guide
   "Data for templates that display a link to Partner Guides. Clients should overrirde these keys
   in their own base static and base page maps if they need to use different values."
-  {:partner-url "https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide"
+  {:partner-url "https://wiki.earthdata.nasa.gov/display/ED/CMR+Client+Partner+User+Guide"
    :partner-text "Client Partner's Guide"})
 
 (defn base-static
