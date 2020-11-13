@@ -13,17 +13,18 @@
     [cmr.ingest.data.provider-acl-hash :as pah]
     [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
     [cmr.ingest.services.ingest-service.subscription :as sub]
+    [cmr.transmit.access-control :as access-control]
+    [cmr.transmit.config :as config]
     [cmr.transmit.echo.acls :as echo-acls]
     [cmr.transmit.metadata-db :as mdb]
     [cmr.transmit.search :as search]
     [markdown.core :as markdown]
     [postal.core :as postal-core]))
 
-;Call the following to trigger a job, example below will fire an email subscription
-;UPDATE QRTZ_TRIGGERS
-;SET NEXT_FIRE_TIME =(((cast (SYS_EXTRACT_UTC(SYSTIMESTAMP) as DATE) - DATE'1970-01-01')*86400 + 1200) * 1000)
-;WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
-
+;; Call the following to trigger a job, example below will fire an email subscription
+;; UPDATE QRTZ_TRIGGERS
+;; SET NEXT_FIRE_TIME =(((cast (SYS_EXTRACT_UTC(SYSTIMESTAMP) as DATE) - DATE'1970-01-01')*86400 + 1200) * 1000)
+;; WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
 
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
   "The number of seconds between jobs to check for ACL changes and reindex collections."
@@ -183,6 +184,7 @@
   "Number of seconds between jobs processing email subscriptions."
   {:default 3600
    :type Long})
+
 (defconfig email-subscription-processing-lookback
   "Number of seconds to look back for granual changes."
   {:default 3600
@@ -238,16 +240,15 @@
    :to to-email-address
    :subject "Email Subscription Notification"
    :body [{:type "text/html"
-    :content (markdown/md-to-html-string (str
-     "You have subscribed to receive notifications when data is added to the following query:\n\n"
-     "`" concept-id "`\n\n"
-     "`" meta-query "`\n\n"
-     "Since this query was last run at "
-     sub-start-time
-     ", the following granules have been added or updated:\n\n"
-     (email-granule-url-list gran-ref-location)
-     "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"
-     ))}]}))
+           :content (markdown/md-to-html-string (str))
+            "You have subscribed to receive notifications when data is added to the following query:\n\n"
+            "`" concept-id "`\n\n"
+            "`" meta-query "`\n\n"
+            "Since this query was last run at "
+            sub-start-time
+            ", the following granules have been added or updated:\n\n"
+            (email-granule-url-list gran-ref-location)
+            "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"}]}))
 
 (defn- add-updated-since
  "Pull out the start and end times from a time-constraint value and associate them to a map"
@@ -263,37 +264,49 @@
   (debug "send-update-subscription-notification-time with" data)
   (search/save-subscription-notification-time context data))
 
+(defn- filter-gran-refs-by-subscriber-id
+  "Takes a list of granule references and a subscriber id and removes any granule that the user does
+   not have read access to."
+  [context gran-refs subscriber-id]
+  (let [concept-ids (map :concept-id gran-refs)
+        permissions (json/parse-string
+                     (access-control/get-permissions context {:user_id subscriber-id
+                                                              :concept_id (map :concept-id gran-refs)}))]
+    (filter (fn [granule-reference]
+              (some #{"read"} (get permissions (:concept-id granule-reference))))
+            gran-refs)))
+
 (defn- process-subscriptions
   "Process each subscription in subscriptions."
   [context subscriptions time-constraint]
   (doseq [raw_subscription subscriptions
-         :let [subscription (add-updated-since raw_subscription time-constraint)
-               email-address (get-in subscription [:extra-fields :email-address])
-               sub-id (get subscription :concept-id)
-               coll-id (get-in subscription [:extra-fields :collection-concept-id])
-               query-string (-> (:metadata subscription)
-                                (json/decode true)
-                                :Query)
-               query-params (create-query-params query-string)
-               params1 (merge {:created-at time-constraint
-                               :collection-concept-id coll-id
-                               :token (cmr.transmit.config/echo-system-token)}
-                              query-params)
-               params2 (merge {:revision-date time-constraint
-                               :collection-concept-id coll-id
-                               :token (cmr.transmit.config/echo-system-token)}
-                              query-params)]]
+          :let [subscription (add-updated-since raw_subscription time-constraint)
+                subscriber-id (get-in subscription [:extra-fields :subscriber-id])
+                email-address (get-in subscription [:extra-fields :email-address])
+                sub-id (get subscription :concept-id)
+                coll-id (get-in subscription [:extra-fields :collection-concept-id])
+                query-string (-> (:metadata subscription)
+                                 (json/decode true)
+                                 :Query)
+                query-params (create-query-params query-string)
+                params1 (merge {:created-at time-constraint
+                                :collection-concept-id coll-id
+                                :token (config/echo-system-token)}
+                               query-params)
+                params2 (merge {:revision-date time-constraint
+                                :collection-concept-id coll-id
+                                :token (config/echo-system-token)}
+                               query-params)]]
       (debug "Processing subscription: " sub-id " with\n" (str subscription) ".")
       (try
-        ; TODO - a comment from CMR-6612's review is to not have 3 let statments, simplyfy the code after a merge
-        (let [gran-ref1 (search/find-granule-references context params1)
-              gran-ref2 (search/find-granule-references context params2)
-              gran-ref (distinct (concat gran-ref1 gran-ref2))
-              gran-ref-location (map :location gran-ref)]
-          (debug "gran-ref-locations for " sub-id ": " gran-ref-location)
-          (when (seq gran-ref)
-           (let [email-content (create-email-content (mail-sender) email-address gran-ref-location subscription)
-                email-settings {:host (email-server-host) :port (email-server-port)}]
+        (let [gran-refs1 (search/find-granule-references context params1)
+              gran-refs2 (search/find-granule-references context params2)
+              gran-refs (distinct (concat gran-refs1 gran-refs2))
+              subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]
+          (when (seq subscriber-filtered-gran-refs)
+           (let [gran-ref-locations (map :location subscriber-filtered-gran-refs)
+                 email-content (create-email-content (mail-sender) email-address gran-ref-locations subscription)
+                 email-settings {:host (email-server-host) :port (email-server-port)}]
             (postal-core/send-message email-settings email-content)))
           (send-update-subscription-notification-time context sub-id))
        (catch Exception e
@@ -307,10 +320,9 @@
   (let [end-time (t/now)
         start-time (t/minus end-time (t/seconds (email-subscription-processing-lookback)))
         time-constraint (str start-time "," end-time)
-        subscriptions
-         (->> (mdb/find-concepts context {:latest true} :subscription)
-              (filter #(not (:deleted %)))
-              (map #(select-keys % [:concept-id :extra-fields :metadata])))]
+        subscriptions (->> (mdb/find-concepts context {:latest true} :subscription)
+                           (filter #(not (:deleted %)))
+                           (map #(select-keys % [:concept-id :extra-fields :metadata])))]
     (process-subscriptions context subscriptions time-constraint)))
 
 (defn trigger-autocomplete-suggestions-reindex
