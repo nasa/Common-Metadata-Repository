@@ -418,7 +418,7 @@ __Example__
 <feed xmlns:os="http://a9.com/-/spec/opensearch/1.1/"
       xmlns:georss="http://www.georss.org/georss/10"
       xmlns="http://www.w3.org/2005/Atom"
-      xmlns:dc="http://purl.org/dc/terms/"
+      xmlns:dc="http://purl.org/dc/elements/"
       xmlns:echo="http://www.echo.nasa.gov/esip"
       xmlns:esipdiscovery="http://commons.esipfed.org/ns/discovery/1.2/"
       xmlns:gml="http://www.opengis.net/gml"
