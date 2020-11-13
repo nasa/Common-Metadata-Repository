@@ -142,11 +142,11 @@
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) (format "/concepts/search/%ss" (name concept-type)))]
     (client/post request-url (merge
-                              (config/conn-params conn)
-                              {:accept :json
-                               :form-params params
-                               :headers (ch/context->http-headers context)
-                               :throw-exceptions false}))))
+                               (config/conn-params conn)
+                               {:accept :json
+                                :form-params params
+                                :headers (ch/context->http-headers context)
+                                :throw-exceptions false}))))
 
 (defn find-concepts
   "Searches metadata db for concepts matching the given parameters."
@@ -159,6 +159,18 @@
       (errors/internal-error!
         (format "%s search failed. status: %s body: %s"
                 (str/capitalize (name concept-type)) status body)))))
+
+(defn find-subscriptions-with-last-notified-at
+  "Searches metadata db for concepts matching the given parameters."
+  [context params]
+  (let [{:keys [status body]} (find-concepts-raw context params :subscription)
+        status (int status)]
+    (case status
+      200 (map mdb2/finish-parse-concept (json/decode body true))
+      ;; default
+      (errors/internal-error!
+        (format "%s search failed. status: %s body: %s"
+                (str/capitalize (name :subscription)) status body)))))
 
 (defn find-latest-concept
   "Searches metadata db for the latest concept matching the given parameters. Do not throw serivce

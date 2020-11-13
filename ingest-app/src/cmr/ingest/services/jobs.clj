@@ -2,6 +2,8 @@
   "This contains the scheduled jobs for the ingest application."
   (:require
    [cheshire.core :as json]
+   [clj-time.core :as t]
+   [clojure.spec.alpha :as spec]
    [clojure.string :as string]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -17,11 +19,18 @@
    [markdown.core :as markdown]
    [postal.core :as postal-core]))
 
-;Call the following to trigger a job, example below will fire an email subscription
-;UPDATE QRTZ_TRIGGERS
-;SET NEXT_FIRE_TIME =(((cast (SYS_EXTRACT_UTC(SYSTIMESTAMP) as DATE) - DATE'1970-01-01')*86400 + 1200) * 1000)
-;WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
+;; Call the following to trigger a job, example below will fire an email subscription
+;; UPDATE QRTZ_TRIGGERS
+;; SET NEXT_FIRE_TIME =(((cast (SYS_EXTRACT_UTC(SYSTIMESTAMP) as DATE) - DATE'1970-01-01')*86400 + 1200) * 1000)
+;; WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
 
+(def date-rx "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z")
+
+(def time-constraint-pattern (re-pattern (str date-rx "," date-rx)))
+
+(spec/def ::time-constraint (spec/and
+                              string?
+                              #(re-matches time-constraint-pattern %)))
 
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
   "The number of seconds between jobs to check for ACL changes and reindex collections."
@@ -228,7 +237,6 @@
 (defn create-email-content
   "Create an email body for subscriptions"
   [from-email-address gran-ref-location subscription]
-
   (let [to-email-address (get-in subscription [:extra-fields :email-address])
         metadata (json/parse-string (:metadata subscription))
         concept-id (get-in subscription [:extra-fields :collection-concept-id])
@@ -238,24 +246,25 @@
      :to to-email-address
      :subject "Email Subscription Notification"
      :body [{:type "text/html"
-             :content (markdown/md-to-html-string (str
-                                                    "You have subscribed to receive notifications when data is added to the following query:\n\n"
-                                                    "`" concept-id "`\n\n"
-                                                    "`" meta-query "`\n\n"
-                                                    "Since this query was last run at "
-                                                    sub-start-time
-                                                    ", the following granules have been added or updated:\n\n"
-                                                    (email-granule-url-list gran-ref-location)
-                                                    "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"
-                                                    ))}]}))
+             :content (markdown/md-to-html-string
+                        (str
+                          "You have subscribed to receive notifications when data is added to the following query:\n\n"
+                          "`" concept-id "`\n\n"
+                          "`" meta-query "`\n\n"
+                          "Since this query was last run at "
+                          sub-start-time
+                          ", the following granules have been added or updated:\n\n"
+                          (email-granule-url-list gran-ref-location)
+                          "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"))}]}))
 
 (defn- add-updated-since
- "Pull out the start and end times from a time-constraint value and associate them to a map"
- [raw time-constraint]
- (let [parts (clojure.string/split time-constraint, #",")
-       start-time (first parts)
-       end-time (last parts)]
-  (assoc raw :start-time start-time :end-time end-time)))
+  "Pull out the start and end times from a time-constraint value and associate them to a map"
+  [raw time-constraint]
+  {:pre [(spec/valid? ::time-constraint time-constraint)]}
+  (let [parts (clojure.string/split time-constraint, #",")
+        start-time (first parts)
+        end-time (last parts)]
+    (assoc raw :start-time start-time :end-time end-time)))
 
 (defn- send-update-subscription-notification-time
   "handle any packaging of data here before sending it off to transmit package"
@@ -263,11 +272,21 @@
   (debug "send-update-subscription-notification-time with" data)
   (search/save-subscription-notification-time context data))
 
+(defn- subscription->time-constraint
+  "Create a time-constraint from a subscriptions last-notified-at value or amount-in-sec from the end."
+  [subscription end amount-in-sec]
+  {:post [(spec/valid? ::time-constraint %)]}
+  (let [begin (if-let [start (:last-notified-at subscription)]
+                start
+                (t/minus end (t/seconds amount-in-sec)))]
+    (str begin "," end)))
+
 (defn- process-subscriptions
   "Process each subscription in subscriptions."
-  [context subscriptions time-constraint]
-  (doseq [raw_subscription subscriptions
-          :let [subscription (add-updated-since raw_subscription time-constraint)
+  [context subscriptions]
+  (doseq [raw-subscription subscriptions
+          :let [time-constraint (subscription->time-constraint raw-subscription (t/now) (email-subscription-processing-lookback))
+                subscription (add-updated-since raw-subscription time-constraint)
 
                 sub-id (get subscription :concept-id)
                 coll-id (get-in subscription [:extra-fields :collection-concept-id])
@@ -307,10 +326,10 @@
   [context]
   (process-subscriptions
     context
-    (mdb/find-concepts context
-                       {:latest true
-                        :last_notified_at? true}
-                       :subscription)))
+    (mdb/find-subscriptions-with-last-notified-at
+      context
+      {:latest true
+       :last_notified_at? true})))
 
 (defn trigger-autocomplete-suggestions-reindex
   [context]
