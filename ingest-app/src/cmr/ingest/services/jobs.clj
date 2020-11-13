@@ -183,8 +183,9 @@
   "Number of seconds between jobs processing email subscriptions."
   {:default 3600
    :type Long})
+
 (defconfig email-subscription-processing-lookback
-  "Number of seconds to look back for granual changes."
+  "Number of seconds to look back for granule changes."
   {:default 3600
    :type Long})
 
