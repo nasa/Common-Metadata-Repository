@@ -275,27 +275,28 @@
                                  (json/decode true)
                                  :Query)
                 query-params (create-query-params query-string)
-                params1 (merge {:created-at time-constraint
-                                :collection-concept-id coll-id
-                                :token (transmit-cfg/echo-system-token)}
-                               query-params)
-                params2 (merge {:revision-date time-constraint
-                                :collection-concept-id coll-id
-                                :token (transmit-cfg/echo-system-token)}
-                               query-params)]]
+
+                created-since (merge {:created-at time-constraint
+                                      :collection-concept-id coll-id
+                                      :token (transmit-cfg/echo-system-token)}
+                                     query-params)
+                updated-since (merge {:revision-date time-constraint
+                                      :collection-concept-id coll-id
+                                      :token (transmit-cfg/echo-system-token)}
+                                     query-params)]
+          grans-created (search/find-granule-references context created-since)
+          grans-updated (search/find-granule-references context updated-since)
+          gran-ref (distinct (concat grans-created grans-updated))
+          gran-ref-location (map :location gran-ref)
+
+          email-content (create-email-content (mail-sender) gran-ref-location subscription)
+          email-settings {:host (email-server-host) :port (email-server-port)}]
     (debug "Processing subscription: " sub-id " with\n" (str subscription) ".")
     (try
-      ;; TODO - a comment from CMR-6612's review is to not have 3 let statments, simplyfy the code after a merge
-      (let [gran-ref1 (search/find-granule-references context params1)
-            gran-ref2 (search/find-granule-references context params2)
-            gran-ref (distinct (concat gran-ref1 gran-ref2))
-            gran-ref-location (map :location gran-ref)]
-        (debug "gran-ref-locations for " sub-id ": " gran-ref-location)
-        (when (seq gran-ref)
-          (let [email-content (create-email-content (mail-sender) gran-ref-location subscription)
-                email-settings {:host (email-server-host) :port (email-server-port)}]
-            (postal-core/send-message email-settings email-content)))
-        (send-update-subscription-notification-time context sub-id))
+      (debug "gran-ref-locations for " sub-id ": " gran-ref-location)
+      (when (seq gran-ref)
+        (postal-core/send-message email-settings email-content))
+      (send-update-subscription-notification-time context sub-id)
       (catch Exception e
         (error "Exception caught in email subscription: " sub-id "\n\n"
                (.getMessage e) "\n\n" e)))))
