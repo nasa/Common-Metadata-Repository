@@ -226,27 +226,28 @@
  (string/join "\n" (map #(str "* [" % "](" % ")") gran-ref-location)))
 
 (defn create-email-content
- "Create an email body for subscriptions"
- [from-email-address to-email-address gran-ref-location subscription]
+  "Create an email body for subscriptions"
+  [from-email-address gran-ref-location subscription]
 
- (let [metadata (json/parse-string (:metadata subscription))
-       concept-id (get-in subscription [:extra-fields :collection-concept-id])
-       meta-query (get metadata "Query")
-       sub-start-time (:start-time subscription)]
-  {:from from-email-address
-   :to to-email-address
-   :subject "Email Subscription Notification"
-   :body [{:type "text/html"
-    :content (markdown/md-to-html-string (str
-     "You have subscribed to receive notifications when data is added to the following query:\n\n"
-     "`" concept-id "`\n\n"
-     "`" meta-query "`\n\n"
-     "Since this query was last run at "
-     sub-start-time
-     ", the following granules have been added or updated:\n\n"
-     (email-granule-url-list gran-ref-location)
-     "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"
-     ))}]}))
+  (let [to-email-address (get-in subscription [:extra-fields :email-address])
+        metadata (json/parse-string (:metadata subscription))
+        concept-id (get-in subscription [:extra-fields :collection-concept-id])
+        meta-query (get metadata "Query")
+        sub-start-time (:start-time subscription)]
+    {:from from-email-address
+     :to to-email-address
+     :subject "Email Subscription Notification"
+     :body [{:type "text/html"
+             :content (markdown/md-to-html-string (str
+                                                    "You have subscribed to receive notifications when data is added to the following query:\n\n"
+                                                    "`" concept-id "`\n\n"
+                                                    "`" meta-query "`\n\n"
+                                                    "Since this query was last run at "
+                                                    sub-start-time
+                                                    ", the following granules have been added or updated:\n\n"
+                                                    (email-granule-url-list gran-ref-location)
+                                                    "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"
+                                                    ))}]}))
 
 (defn- add-updated-since
  "Pull out the start and end times from a time-constraint value and associate them to a map"
@@ -267,7 +268,7 @@
   [context subscriptions time-constraint]
   (doseq [raw_subscription subscriptions
           :let [subscription (add-updated-since raw_subscription time-constraint)
-                email-address (get-in subscription [:extra-fields :email-address])
+
                 sub-id (get subscription :concept-id)
                 coll-id (get-in subscription [:extra-fields :collection-concept-id])
                 query-string (-> (:metadata subscription)
@@ -291,7 +292,7 @@
             gran-ref-location (map :location gran-ref)]
         (debug "gran-ref-locations for " sub-id ": " gran-ref-location)
         (when (seq gran-ref)
-          (let [email-content (create-email-content (mail-sender) email-address gran-ref-location subscription)
+          (let [email-content (create-email-content (mail-sender) gran-ref-location subscription)
                 email-settings {:host (email-server-host) :port (email-server-port)}]
             (postal-core/send-message email-settings email-content)))
         (send-update-subscription-notification-time context sub-id))
