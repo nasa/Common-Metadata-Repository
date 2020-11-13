@@ -325,8 +325,7 @@
     context
     (mdb/find-subscriptions-with-last-notified-at
       context
-      {:latest true
-       :last_notified_at? true})))
+      {:latest true})))
 
 (defn trigger-autocomplete-suggestions-reindex
   [context]

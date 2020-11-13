@@ -163,7 +163,11 @@
 (defn find-subscriptions-with-last-notified-at
   "Searches metadata db for subscriptions matching the given parameters."
   [context params]
-  (let [{:keys [status body]} (find-concepts-raw context params :subscription)
+  (let [{:keys [status body]} (find-concepts-raw context
+                                                 (merge
+                                                   {:include_last_notified_at true}
+                                                   params)
+                                                 :subscription)
         status (int status)]
     (case status
       200 (map mdb2/finish-parse-concept (json/decode body true))
