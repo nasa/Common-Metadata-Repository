@@ -19,11 +19,7 @@
    [markdown.core :as markdown]
    [postal.core :as postal-core]))
 
-;; Call the following to trigger a job, example below will fire an email subscription
-;; UPDATE QRTZ_TRIGGERS
-;; SET NEXT_FIRE_TIME =(((cast (SYS_EXTRACT_UTC(SYSTIMESTAMP) as DATE) - DATE'1970-01-01')*86400 + 1200) * 1000)
-;; WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
-
+;; Specs =============================================================
 (def date-rx "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z")
 
 (def time-constraint-pattern (re-pattern (str date-rx "," date-rx)))
@@ -32,6 +28,7 @@
                               string?
                               #(re-matches time-constraint-pattern %)))
 
+;; Code ===============================================================
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
   "The number of seconds between jobs to check for ACL changes and reindex collections."
   3600)
@@ -193,7 +190,7 @@
 
 (defconfig email-subscription-processing-lookback
   "Number of seconds to look back for granule changes."
-  {:default 3600
+  {:default 86400
    :type Long})
 
 (defn trigger-full-refresh-collection-granule-aggregation-cache
@@ -386,3 +383,10 @@
    {:job-type ReindexAutocompleteSuggestions
     ;; Run everyday at 13:20. Chosen to be offset from the last job
     :daily-at-hour-and-minute [13 20]}])
+
+(comment
+  ;; Call the following to trigger a job, example below will fire an email subscription
+  ;; UPDATE QRTZ_TRIGGERS
+  ;; SET NEXT_FIRE_TIME =(((cast (SYS_EXTRACT_UTC(SYSTIMESTAMP) as DATE) - DATE'1970-01-01')*86400 + 1200) * 1000)
+  ;; WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
+  )

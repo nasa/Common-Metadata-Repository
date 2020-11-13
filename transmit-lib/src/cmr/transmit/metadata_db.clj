@@ -161,7 +161,7 @@
                 (str/capitalize (name concept-type)) status body)))))
 
 (defn find-subscriptions-with-last-notified-at
-  "Searches metadata db for concepts matching the given parameters."
+  "Searches metadata db for subscriptions matching the given parameters."
   [context params]
   (let [{:keys [status body]} (find-concepts-raw context params :subscription)
         status (int status)]
