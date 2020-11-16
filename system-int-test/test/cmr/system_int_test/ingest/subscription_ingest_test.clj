@@ -399,30 +399,30 @@
                          :SubscriberId "user1"
                          :native-id "Atlantic-1"})]
 
-  ;1 test against guest token - no subscription (nil?)
+  ;; caes 1 test against guest token - no subscription
   (testing "guest token - guests can not create subscriptions - passes"
     (let [{:keys [status errors]} (ingest/ingest-concept concept)]
       (is (= 401 status))
       (is (= ["You do not have permission to perform that action."] errors))))
-  ;2 test on system token (ECHO token) - should pass
+  ;; case 2 test on system token (ECHO token) - should pass
   (testing "system token - admins can create subscriptions - passes"
     (let [{:keys [status errors]} (ingest/ingest-concept concept {:token (transmit-config/echo-system-token)})]
       (is (= 201 status))
       (is (nil? errors))))
-  ;3 test account 1 which matches metadata data user - should pass
+  ;; case 3 test account 1 which matches metadata data user - should pass
   (testing "use an account which matches the metadata and does not have ACL - passes"
     (let [{:keys [status errors]} (ingest/ingest-concept concept {:token user1-token})]
       (is (= 200 status))
       (is (nil? errors))))
-  ;4 test account 3 which does NOT match metadata user and account does not have prems
+  ;; case 4 test account 3 which does NOT match metadata user and account does not have prems
   (testing "use an account which does not matches the metadata and does not have ACL - fails"
     (let [user3-token (echo-util/login (system/context) "user3")
           {:keys [status errors]} (ingest/ingest-concept concept {:token user3-token})]
       (is (= 401 status))
       (is (= ["You do not have permission to perform that action."] errors))))))
 
-;5 test account 2 which does NOT match metadata user and account has prems ; this should be MMT's use case
-(deftest roll-your-own-subscription-tests-with-acls
+;; case 5 test account 2 which does NOT match metadata user and account has prems ; this should be MMT's use case
+(deftest roll-your-own-subscription-and-have-acls-tests-with-acls
   (testing "Use an account which does not match matches the metadata and DOES have an ACL"
     (let [user2-token (echo-util/login (system/context) "user2")
           supplied-concept-id "SUB1000-PROV1"
