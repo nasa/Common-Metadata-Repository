@@ -10,6 +10,7 @@
    [cmr.metadata-db.data.oracle.concept-tables :as tables]
    [cmr.metadata-db.data.oracle.concepts :as oc]
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
+   [cmr.metadata-db.data.oracle.sub-notifications :as notifications]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import
    (cmr.oracle.connection OracleStore)))
@@ -71,8 +72,14 @@
   If :include-all is true, all revisions of the concepts will be returned. This is needed for the
   find-latest-concepts function to later filter out the latest concepts that satisfy the search in memory."
   (fn [concept-type table fields params]
-    (when (= :granule concept-type)
-      :granule-search)))
+    (case concept-type
+      :granule :granule-search
+      concept-type)))
+
+(defmethod gen-find-concepts-in-table-sql :subscription
+  [_concept-type table fields params]
+  (let [filtered-params (dissoc params :include_last_notified_at)]
+    (gen-find-concepts-in-table-sql :dummy table fields filtered-params)))
 
 ;; special case added to address OB_DAAC granule search not using existing index problem
 ;; where the native id or granule ur index is not being used by Oracle optimizer
@@ -142,25 +149,51 @@
   "Retrieve concept maps from the given table, handling small providers separately from
   normal providers."
   (fn [db table concept-type providers params]
-    (or (:small (first providers))
-        (= :variable concept-type)
-        (= :service concept-type)
-        (= :tool concept-type)
-        (= :subscription concept-type))))
+    (case concept-type
+      :subscription :subscription
+      (or (:small (first providers))
+          (= :variable concept-type)
+          (= :service concept-type)
+          (= :tool concept-type)))))
 
 ;; Execute a query against a single table where provider_id is a column
 (defmethod find-concepts-in-table true
   [db table concept-type providers params]
   (let [fields (columns-for-find-concept concept-type params)
-        params (params->sql-params concept-type
-                                   providers
-                                   (assoc params :provider-id (map :provider-id providers)))
-        stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
+        sql-params (params->sql-params concept-type
+                                       providers
+                                       (assoc params :provider-id (map :provider-id providers)))
+        stmt (gen-find-concepts-in-table-sql concept-type table fields sql-params)]
     (j/with-db-transaction
-     [conn db]
-     (doall
-      (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
-            (su/query conn stmt))))))
+      [conn db]
+      (doall
+        (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
+              (su/query conn stmt))))))
+
+(defn- add-subscription-last-notified-at
+  [db subscription]
+  (let [concept-id (:concept-id subscription)]
+    (if (notifications/sub-notification-exists? db concept-id)
+      (assoc subscription :last-notified-at (notifications/get-sub-notification db concept-id))
+      subscription)))
+
+(defmethod find-concepts-in-table :subscription
+  [db table concept-type providers params]
+  (let [fields (columns-for-find-concept concept-type (dissoc params :include_last_notified_at))
+        sql-params (params->sql-params concept-type
+                                       providers
+                                       (assoc params :provider-id (map :provider-id providers)))
+        stmt (gen-find-concepts-in-table-sql concept-type table fields sql-params)]
+    (j/with-db-transaction
+      [conn db]
+      (doall
+        (mapv
+          #(if (:include_last_notified_at params)
+             (add-subscription-last-notified-at db %)
+             %)
+          (map
+            #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
+            (su/query conn stmt)))))))
 
 ;; Execute a query against a normal (not small) provider table
 (defmethod find-concepts-in-table :default
@@ -176,10 +209,10 @@
       ;; doall is necessary to force result retrieval while inside transaction - otherwise
       ;; connection closed errors will occur
       (doall (mapv (fn [result]
-                    (oc/db-result->concept-map concept-type conn
-                                               (or (:provider_id result)
-                                                   (:provider-id (first providers)))
-                                               result))
+                     (oc/db-result->concept-map concept-type conn
+                                                (or (:provider_id result)
+                                                    (:provider-id (first providers)))
+                                                result))
                    (su/query conn stmt))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -278,7 +311,6 @@
 
 (defn find-latest-concepts
   [db provider params]
-  {:pre [(:concept-type params)]}
   ;; First we find all revisions of the concepts that have at least one revision that matches the
   ;; search parameters. Then we find the latest revisions of those concepts and match with the
   ;; search parameters again in memory to find what we are looking for.
@@ -288,7 +320,7 @@
                                                   (assoc params :include-all true))
         latest-concepts (->> revision-concepts
                              (group-by :concept-id)
-                             (map (fn [[concept-id concepts]]
+                             (map (fn [[_concept-id concepts]]
                                     (->> concepts (sort-by :revision-id) reverse first))))]
     (c/search-with-params latest-concepts params)))
 

@@ -19,10 +19,9 @@
    (errors/throw-service-error :not-found (msg/subscription-not-found subscription-id))))
 
 (defn update-subscription-notification
-  "update a subscription notification record, creating one if needed, complain
+  "Update a subscription notification record, creating one if needed, complain
   if subscription id is not valid or not found"
   [context subscription-id]
-  (def context context)
   (let [errors (common-concepts/concept-id-validation subscription-id)
         db (mdb-util/context->db context)]
     (if (nil? errors)

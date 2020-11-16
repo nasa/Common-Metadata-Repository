@@ -296,20 +296,19 @@
                                       :collection-concept-id coll-id
                                       :token (transmit-cfg/echo-system-token)}
                                      query-params)
+
                 updated-since (merge {:revision-date time-constraint
                                       :collection-concept-id coll-id
                                       :token (transmit-cfg/echo-system-token)}
-                                     query-params)]
-          grans-created (search/find-granule-references context created-since)
-          grans-updated (search/find-granule-references context updated-since)
-          gran-ref (distinct (concat grans-created grans-updated))
-          gran-ref-location (map :location gran-ref)
+                                     query-params)
+                grans-created (search/find-granule-references context created-since)
+                grans-updated (search/find-granule-references context updated-since)
+                gran-ref (distinct (concat grans-created grans-updated))
+                gran-ref-location (map :location gran-ref)
 
-          email-content (create-email-content (mail-sender) gran-ref-location subscription)
-          email-settings {:host (email-server-host) :port (email-server-port)}]
-    (debug "Processing subscription: " sub-id " with\n" (str subscription) ".")
+                email-content (create-email-content (mail-sender) gran-ref-location subscription)
+                email-settings {:host (email-server-host) :port (email-server-port)}]]
     (try
-      (debug "gran-ref-locations for " sub-id ": " gran-ref-location)
       (when (seq gran-ref)
         (postal-core/send-message email-settings email-content))
       (send-update-subscription-notification-time context sub-id)
@@ -321,11 +320,10 @@
   "Process email subscriptions and send email when found granules matching the collection and queries
   in the subscription and were created/updated during the last processing interval."
   [context]
-  (process-subscriptions
-    context
-    (mdb/find-subscriptions-with-last-notified-at
-      context
-      {:latest true})))
+  (let [subs (mdb/find-subscriptions-with-last-notified-at
+               context
+               {:latest true})]
+    (process-subscriptions context subs)))
 
 (defn trigger-autocomplete-suggestions-reindex
   [context]
