@@ -19,10 +19,9 @@
    (errors/throw-service-error :not-found (msg/subscription-not-found subscription-id))))
 
 (defn update-subscription-notification
-  "update a subscription notification record, creating one if needed, complain
+  "Update a subscription notification record, creating one if needed, complain
   if subscription id is not valid or not found"
   [context subscription-id]
-  (def context context)
   (let [errors (common-concepts/concept-id-validation subscription-id)
         db (mdb-util/context->db context)]
     (if (nil? errors)
@@ -31,12 +30,9 @@
         :not-found
         (msg/subscription-not-found subscription-id)))))
 
-; TODO will be adding an interface for doing a get, this will be used for testing.
-
 (comment
-(sub-note/subscription-exists? db "SUB1200000024-TCHERRY")
-(sub-note/sub-notification-exists? db "SUB1200000024-TCHERRY")
-(sub-note/get-sub-notification db "SUB1200000024-TCHERRY")
-(update-subscription-notification context "SUB1200000024-TCHERRY")
-(nil? (common-concepts/concept-id-validation "foobar"))
-)
+  (sub-note/subscription-exists? db "SUB1200000024-TCHERRY")
+  (sub-note/sub-notification-exists? db "SUB1200000024-TCHERRY")
+  (sub-note/get-sub-notification db "SUB1200000024-TCHERRY")
+  (update-subscription-notification context "SUB1200000024-TCHERRY")
+  (nil? (common-concepts/concept-id-validation "foobar")))

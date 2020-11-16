@@ -1065,7 +1065,6 @@
                            (remove :deleted))])
                    (provider-db/get-providers db)))))
 
-;; There's not sufficient integration tests for this. Filed CMR-1579
 (defn get-provider-holdings
   "Gets provider holdings within Metadata DB"
   [context]

@@ -110,7 +110,7 @@
   [concepts params]
   (let [{:keys [provider-id concept-type concept-id native-id]} params
         extra-field-params (dissoc params :concept-type :provider-id :native-id
-                                   :concept-id :exclude-metadata)
+                                   :concept-id :exclude-metadata :include_last_notified_at)
         query-map (util/remove-nil-keys {:concept-id concept-id
                                          :concept-type concept-type
                                          :provider-id provider-id

@@ -26,12 +26,12 @@
    :access-group default-supported-find-parameters
    :acl default-supported-find-parameters
    :humanizer #{:concept-id :native-id}
-   :subscription #{:provider-id :concept-id :native-id}
+   :subscription #{:provider-id :concept-id :native-id :include_last_notified_at}
    :variable #{:provider-id :concept-id :native-id}
    :variable-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
                            :variable-concept-id}
    :service-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
-                           :service-concept-id}
+                          :service-concept-id}
    :tool-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
                        :tool-concept-id}})
 
@@ -43,7 +43,10 @@
 
 (def find-concepts-flags
   "Flags that affect find concepts but aren't part of the actual search parameters."
-  #{:exclude-metadata :latest})
+  #{:exclude-metadata :latest
+
+    ;; subscription flags
+    :include_last_notified_at})
 
 (defmulti supported-parameter-combinations-validation
   "Validates the find parameters for a concept type."
@@ -133,8 +136,8 @@
 
     (= :access-group (:concept-type params))
     (concat
-     (find-cmr-concepts context params)
-     (find-provider-concepts context params))
+      (find-cmr-concepts context params)
+      (find-provider-concepts context params))
 
     :else
     (find-provider-concepts context params)))

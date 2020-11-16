@@ -1,30 +1,34 @@
 (ns cmr.ingest.services.jobs
   "This contains the scheduled jobs for the ingest application."
   (:require
-    [cheshire.core :as json]
-    [clj-time.core :as t]
-    [clojure.string :as string]
-    [cmr.acl.acl-fetcher :as acl-fetcher]
-    [cmr.common.config :as cfg :refer [defconfig]]
-    [cmr.common.jobs :as jobs :refer [def-stateful-job defjob]]
-    [cmr.common.log :refer (debug info warn error)]
-    [cmr.ingest.data.bulk-update :as bulk-update]
-    [cmr.ingest.data.ingest-events :as ingest-events]
-    [cmr.ingest.data.provider-acl-hash :as pah]
-    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
-    [cmr.ingest.services.ingest-service.subscription :as sub]
-    [cmr.transmit.echo.acls :as echo-acls]
-    [cmr.transmit.metadata-db :as mdb]
-    [cmr.transmit.search :as search]
-    [markdown.core :as markdown]
-    [postal.core :as postal-core]))
+   [cheshire.core :as json]
+   [clj-time.core :as t]
+   [clojure.spec.alpha :as spec]
+   [clojure.string :as string]
+   [cmr.acl.acl-fetcher :as acl-fetcher]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.jobs :as jobs :refer [def-stateful-job defjob]]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.ingest.data.bulk-update :as bulk-update]
+   [cmr.ingest.data.ingest-events :as ingest-events]
+   [cmr.ingest.data.provider-acl-hash :as pah]
+   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
+   [cmr.transmit.config :as transmit-cfg]
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.transmit.search :as search]
+   [markdown.core :as markdown]
+   [postal.core :as postal-core]))
 
-;Call the following to trigger a job, example below will fire an email subscription
-;UPDATE QRTZ_TRIGGERS
-;SET NEXT_FIRE_TIME =(((cast (SYS_EXTRACT_UTC(SYSTIMESTAMP) as DATE) - DATE'1970-01-01')*86400 + 1200) * 1000)
-;WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
+;; Specs =============================================================
+(def date-rx "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z")
 
+(def time-constraint-pattern (re-pattern (str date-rx "," date-rx)))
 
+(spec/def ::time-constraint (spec/and
+                              string?
+                              #(re-matches time-constraint-pattern %)))
+
+;; Code ===============================================================
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
   "The number of seconds between jobs to check for ACL changes and reindex collections."
   3600)
@@ -183,9 +187,10 @@
   "Number of seconds between jobs processing email subscriptions."
   {:default 3600
    :type Long})
+
 (defconfig email-subscription-processing-lookback
-  "Number of seconds to look back for granual changes."
-  {:default 3600
+  "Number of seconds to look back for granule changes."
+  {:default 86400
    :type Long})
 
 (defn trigger-full-refresh-collection-granule-aggregation-cache
@@ -227,35 +232,36 @@
  (string/join "\n" (map #(str "* [" % "](" % ")") gran-ref-location)))
 
 (defn create-email-content
- "Create an email body for subscriptions"
- [from-email-address to-email-address gran-ref-location subscription]
-
- (let [metadata (json/parse-string (:metadata subscription))
-       concept-id (get-in subscription [:extra-fields :collection-concept-id])
-       meta-query (get metadata "Query")
-       sub-start-time (:start-time subscription)]
-  {:from from-email-address
-   :to to-email-address
-   :subject "Email Subscription Notification"
-   :body [{:type "text/html"
-    :content (markdown/md-to-html-string (str
-     "You have subscribed to receive notifications when data is added to the following query:\n\n"
-     "`" concept-id "`\n\n"
-     "`" meta-query "`\n\n"
-     "Since this query was last run at "
-     sub-start-time
-     ", the following granules have been added or updated:\n\n"
-     (email-granule-url-list gran-ref-location)
-     "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"
-     ))}]}))
+  "Create an email body for subscriptions"
+  [from-email-address gran-ref-location subscription]
+  (let [to-email-address (get-in subscription [:extra-fields :email-address])
+        metadata (json/parse-string (:metadata subscription))
+        concept-id (get-in subscription [:extra-fields :collection-concept-id])
+        meta-query (get metadata "Query")
+        sub-start-time (:start-time subscription)]
+    {:from from-email-address
+     :to to-email-address
+     :subject "Email Subscription Notification"
+     :body [{:type "text/html"
+             :content (markdown/md-to-html-string
+                        (str
+                          "You have subscribed to receive notifications when data is added to the following query:\n\n"
+                          "`" concept-id "`\n\n"
+                          "`" meta-query "`\n\n"
+                          "Since this query was last run at "
+                          sub-start-time
+                          ", the following granules have been added or updated:\n\n"
+                          (email-granule-url-list gran-ref-location)
+                          "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"))}]}))
 
 (defn- add-updated-since
- "Pull out the start and end times from a time-constraint value and associate them to a map"
- [raw time-constraint]
- (let [parts (clojure.string/split time-constraint, #",")
-       start-time (first parts)
-       end-time (last parts)]
-  (assoc raw :start-time start-time :end-time end-time)))
+  "Pull out the start and end times from a time-constraint value and associate them to a map"
+  [raw time-constraint]
+  {:pre [(spec/valid? ::time-constraint time-constraint)]}
+  (let [parts (clojure.string/split time-constraint, #",")
+        start-time (first parts)
+        end-time (last parts)]
+    (assoc raw :start-time start-time :end-time end-time)))
 
 (defn- send-update-subscription-notification-time
   "handle any packaging of data here before sending it off to transmit package"
@@ -263,55 +269,64 @@
   (debug "send-update-subscription-notification-time with" data)
   (search/save-subscription-notification-time context data))
 
+(defn- subscription->time-constraint
+  "Create a time-constraint from a subscriptions last-notified-at value or amount-in-sec from the end."
+  [subscription end amount-in-sec]
+  {:post [(spec/valid? ::time-constraint %)]}
+  (let [begin (if-let [start (:last-notified-at subscription)]
+                start
+                (t/minus end (t/seconds amount-in-sec)))]
+    (str begin "," end)))
+
 (defn- process-subscriptions
   "Process each subscription in subscriptions."
-  [context subscriptions time-constraint]
-  (doseq [raw_subscription subscriptions
-         :let [subscription (add-updated-since raw_subscription time-constraint)
-               email-address (get-in subscription [:extra-fields :email-address])
-               sub-id (get subscription :concept-id)
-               coll-id (get-in subscription [:extra-fields :collection-concept-id])
-               query-string (-> (:metadata subscription)
-                                (json/decode true)
-                                :Query)
-               query-params (create-query-params query-string)
-               params1 (merge {:created-at time-constraint
-                               :collection-concept-id coll-id
-                               :token (cmr.transmit.config/echo-system-token)}
-                              query-params)
-               params2 (merge {:revision-date time-constraint
-                               :collection-concept-id coll-id
-                               :token (cmr.transmit.config/echo-system-token)}
-                              query-params)]]
-      (debug "Processing subscription: " sub-id " with\n" (str subscription) ".")
-      (try
-        ; TODO - a comment from CMR-6612's review is to not have 3 let statments, simplyfy the code after a merge
-        (let [gran-ref1 (search/find-granule-references context params1)
-              gran-ref2 (search/find-granule-references context params2)
-              gran-ref (distinct (concat gran-ref1 gran-ref2))
-              gran-ref-location (map :location gran-ref)]
-          (debug "gran-ref-locations for " sub-id ": " gran-ref-location)
-          (when (seq gran-ref)
-           (let [email-content (create-email-content (mail-sender) email-address gran-ref-location subscription)
-                email-settings {:host (email-server-host) :port (email-server-port)}]
-            (postal-core/send-message email-settings email-content)))
-          (send-update-subscription-notification-time context sub-id))
-       (catch Exception e
-         (error "Exception caught in email subscription: " sub-id "\n\n"
-          (.getMessage e) "\n\n" e)))))
+  [context subscriptions]
+  (doseq [raw-subscription subscriptions
+          :let [time-constraint (subscription->time-constraint
+                                  raw-subscription
+                                  (t/now)
+                                  (email-subscription-processing-lookback))
+                subscription (add-updated-since raw-subscription time-constraint)
+
+                sub-id (get subscription :concept-id)
+                coll-id (get-in subscription [:extra-fields :collection-concept-id])
+                query-string (-> (:metadata subscription)
+                                 (json/decode true)
+                                 :Query)
+                query-params (create-query-params query-string)
+
+                created-since (merge {:created-at time-constraint
+                                      :collection-concept-id coll-id
+                                      :token (transmit-cfg/echo-system-token)}
+                                     query-params)
+
+                updated-since (merge {:revision-date time-constraint
+                                      :collection-concept-id coll-id
+                                      :token (transmit-cfg/echo-system-token)}
+                                     query-params)
+                grans-created (search/find-granule-references context created-since)
+                grans-updated (search/find-granule-references context updated-since)
+                gran-ref (distinct (concat grans-created grans-updated))
+                gran-ref-location (map :location gran-ref)
+
+                email-content (create-email-content (mail-sender) gran-ref-location subscription)
+                email-settings {:host (email-server-host) :port (email-server-port)}]]
+    (try
+      (when (seq gran-ref)
+        (postal-core/send-message email-settings email-content))
+      (send-update-subscription-notification-time context sub-id)
+      (catch Exception e
+        (error "Exception caught in email subscription: " sub-id "\n\n"
+               (.getMessage e) "\n\n" e)))))
 
 (defn- email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
   in the subscription and were created/updated during the last processing interval."
   [context]
-  (let [end-time (t/now)
-        start-time (t/minus end-time (t/seconds (email-subscription-processing-lookback)))
-        time-constraint (str start-time "," end-time)
-        subscriptions
-         (->> (mdb/find-concepts context {:latest true} :subscription)
-              (filter #(not (:deleted %)))
-              (map #(select-keys % [:concept-id :extra-fields :metadata])))]
-    (process-subscriptions context subscriptions time-constraint)))
+  (let [subs (mdb/find-subscriptions-with-last-notified-at
+               context
+               {:latest true})]
+    (process-subscriptions context subs)))
 
 (defn trigger-autocomplete-suggestions-reindex
   [context]
@@ -368,3 +383,10 @@
    {:job-type ReindexAutocompleteSuggestions
     ;; Run everyday at 13:20. Chosen to be offset from the last job
     :daily-at-hour-and-minute [13 20]}])
+
+(comment
+  ;; Call the following to trigger a job, example below will fire an email subscription
+  ;; UPDATE QRTZ_TRIGGERS
+  ;; SET NEXT_FIRE_TIME =(((cast (SYS_EXTRACT_UTC(SYSTIMESTAMP) as DATE) - DATE'1970-01-01')*86400 + 1200) * 1000)
+  ;; WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
+  )
