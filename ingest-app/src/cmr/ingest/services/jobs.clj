@@ -282,7 +282,10 @@
   "Process each subscription in subscriptions."
   [context subscriptions]
   (doseq [raw-subscription subscriptions
-          :let [time-constraint (subscription->time-constraint raw-subscription (t/now) (email-subscription-processing-lookback))
+          :let [time-constraint (subscription->time-constraint
+                                  raw-subscription
+                                  (t/now)
+                                  (email-subscription-processing-lookback))
                 subscription (add-updated-since raw-subscription time-constraint)
 
                 sub-id (get subscription :concept-id)

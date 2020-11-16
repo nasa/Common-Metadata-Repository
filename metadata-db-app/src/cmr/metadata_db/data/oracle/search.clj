@@ -174,7 +174,7 @@
   [db subscription]
   (let [concept-id (:concept-id subscription)]
     (if (notifications/sub-notification-exists? db concept-id)
-      (assoc subscription :last-notified-at (notifications/get-sub-notification db concept-id))
+      (assoc subscription :last-notified-at (:last-notified-at (notifications/get-sub-notification db concept-id)))
       subscription)))
 
 (defmethod find-concepts-in-table :subscription
