@@ -106,10 +106,6 @@
 (defn- find-provider-concepts
   "Find concepts with specific parameters"
   [context params]
-  {:pre [(do (println "find-provider-concepts") true)]
-   :post [(do
-            (clojure.pprint/pprint %)
-            %)]}
   (let [db (db-util/context->db context)
         latest-only? (or (true? (:latest params))
                          (= "true" (:latest params)))
