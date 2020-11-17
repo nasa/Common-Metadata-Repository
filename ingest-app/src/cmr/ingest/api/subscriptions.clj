@@ -39,10 +39,24 @@
 
 (defn- check-subscription-ingest-permission
   "All the checks needed before starting to process an ingest of subscriptions"
-  [request-context provider-id]
-  (common-enabled/validate-write-enabled request-context "ingest")
-  (lt-validation/validate-launchpad-token request-context)
-  (api-core/verify-provider-exists request-context provider-id))
+  [concept request-context headers provider-id]
+  (let [subscription-user (:SubscriberId (json/decode (:metadata concept) true))
+        token-user (api-core/get-user-id request-context headers)]
+    (if (= token-user subscription-user)
+      (warn (format (str "ACLs were bypassed because the token account '%s' "
+                         "matched the subscription user '%s' in the metadata.")
+                    token-user
+                    subscription-user))
+      (do
+        (info (format (str "ACLs were checked because the token user %s is "
+                           "not the same as the subscription user %s in the "
+                           "metadata.")
+                      token-user
+                      subscription-user))
+        (acl/verify-ingest-management-permission
+          request-context :update :provider-object provider-id)
+        (acl/verify-subscription-management-permission
+          request-context :update :provider-object provider-id)))))
 
 (defn ingest-subscription
   "Processes a request to create or update a subscription. Note, this will allow
@@ -50,33 +64,12 @@
   Becomes a problem"
   [provider-id native-id request]
   (let [{:keys [body content-type headers request-context]} request]
-    (check-subscription-ingest-permission request-context provider-id)
-    (let [concept (api-core/body->concept! :subscription provider-id native-id
-                                           body
-                                           content-type
-                                           headers)
-          subscription-user (:SubscriberId (json/decode (:metadata concept) true))
-          token-user (api-core/get-user-id request-context headers)]
-      (if (and token-user ; don't allow a bypass of ACLs just because of nil values
-               (= token-user subscription-user))
-        (warn (format (str "ACLs were bypassed because the token account '%s' "
-                      "matched the subscription user '%s' in the metadata.")
-                      token-user
-                      subscription-user))
-        (do
-          (info (format (str "ACLs were checked because the token user %s is "
-                        "not the same as the subscription user %s in the "
-                        "metadata.")
-                        token-user
-                        subscription-user))
-          (acl/verify-ingest-management-permission request-context
-                                                   :update
-                                                   :provider-object
-                                                   provider-id)
-          (acl/verify-subscription-management-permission request-context
-                                                         :update
-                                                         :provider-object
-                                                         provider-id)))
+    (common-enabled/validate-write-enabled request-context "ingest")
+    (lt-validation/validate-launchpad-token request-context)
+    (api-core/verify-provider-exists request-context provider-id)
+    (let [concept (api-core/body->concept!
+                    :subscription provider-id native-id body content-type headers)]
+      (check-subscription-ingest-permission concept request-context headers provider-id)
       (perform-subscription-ingest concept request-context headers))))
 
 (defn delete-subscription
