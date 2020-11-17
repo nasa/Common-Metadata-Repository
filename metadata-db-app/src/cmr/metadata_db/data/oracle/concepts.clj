@@ -376,7 +376,7 @@
               stmt (string/replace-first stmt-partial
                                          #"WHERE"
                                          (str " LEFT JOIN cmr_sub_notifications"
-                                              " ON " table ".concept_id = cmr_sub_notifications.subscription_concept_id"
+                                              " ON cmr_subscriptions.concept_id = cmr_sub_notifications.subscription_concept_id"
                                               " WHERE"))
 
               result (doall (map (partial db-result->concept-map concept-type conn provider-id)

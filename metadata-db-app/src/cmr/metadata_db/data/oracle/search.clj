@@ -102,8 +102,8 @@
         updated-query (string/replace-first
                         (first root-query)
                         #"WHERE"
-                        (str " LEFT JOIN cmr_sub_notifications b"
-                             " ON cmr_subscriptions.concept_id = b.subscription_concept_id"
+                        (str " LEFT JOIN cmr_sub_notifications"
+                             " ON cmr_subscriptions.concept_id = cmr_sub_notifications.subscription_concept_id"
                              " WHERE"))]
     (cons updated-query (rest root-query))))
 
