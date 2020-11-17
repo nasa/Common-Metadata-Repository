@@ -407,7 +407,7 @@
   ;; case 2 test on system token (ECHO token) - should pass
   (testing "system token - admins can create subscriptions - passes"
     (let [{:keys [status errors]} (ingest/ingest-concept concept {:token (transmit-config/echo-system-token)})]
-      (is (= 201 status))
+      (is (or (= 200 status) (= 201 status)))
       (is (nil? errors))))
   ;; case 3 test account 1 which matches metadata data user - should pass
   (testing "use an account which matches the metadata and does not have ACL - passes"

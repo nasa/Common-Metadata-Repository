@@ -50,11 +50,12 @@
                                            body
                                            content-type
                                            headers)
-          subscription-user (:SubscriberId (json/decode (:medata concept) true))
+          subscription-user (:SubscriberId (json/decode (:metadata concept) true))
           token-user (api-core/get-user-id request-context headers)]
-      (if (= token-user subscription-user)
-        (warn (format (str "ACLs were bypassed because the token account %s "
-                      "matched the subscription user %s in the metadata.")
+      (if (and token-user ;; don't allow a bypass of ACLs just because of nil values
+               (= token-user subscription-user))
+        (warn (format (str "ACLs were bypassed because the token account '%s' "
+                      "matched the subscription user '%s' in the metadata.")
                       token-user
                       subscription-user))
         (do
