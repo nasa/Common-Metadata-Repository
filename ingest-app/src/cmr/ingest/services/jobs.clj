@@ -277,13 +277,14 @@
   "Takes a list of granule references and a subscriber id and removes any granule that the user does
    not have read access to."
   [context gran-refs subscriber-id]
-  (let [concept-ids (map :concept-id gran-refs)
-        permissions (json/parse-string
-                      (access-control/get-permissions context {:user_id subscriber-id
-                                                               :concept_id (map :concept-id gran-refs)}))]
-    (filter (fn [granule-reference]
-              (some #{"read"} (get permissions (:concept-id granule-reference))))
-            gran-refs)))
+  (when (seq gran-refs)
+    (let [concept-ids (map :concept-id gran-refs)
+          permissions (json/parse-string
+                        (access-control/get-permissions context {:user_id subscriber-id
+                                                                 :concept_id (map :concept-id gran-refs)}))]
+      (filter (fn [granule-reference]
+                (some #{"read"} (get permissions (:concept-id granule-reference))))
+              gran-refs))))
 
 (defn- subscription->time-constraint
   "Create a time-constraint from a subscriptions last-notified-at value or amount-in-sec from the end."

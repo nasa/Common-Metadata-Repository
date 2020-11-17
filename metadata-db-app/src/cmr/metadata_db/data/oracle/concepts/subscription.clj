@@ -6,9 +6,6 @@
 
 (defmethod concepts/db-result->concept-map :subscription
   [concept-type db provider-id result]
-  {:post [(do
-            (clojure.pprint/pprint %)
-            %)]}
   (some-> (concepts/db-result->concept-map :default db provider-id result)
           (assoc :concept-type :subscription)
           (assoc :provider-id (:provider_id result))
