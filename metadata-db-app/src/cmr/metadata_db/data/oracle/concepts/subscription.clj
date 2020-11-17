@@ -1,9 +1,14 @@
 (ns cmr.metadata-db.data.oracle.concepts.subscription
   "Implements multi-method variations for subscriptions"
-  (:require [cmr.metadata-db.data.oracle.concepts :as concepts]))
+  (:require
+   [cmr.metadata-db.data.oracle.concepts :as concepts]
+   [cmr.oracle.connection :as oracle]))
 
 (defmethod concepts/db-result->concept-map :subscription
   [concept-type db provider-id result]
+  {:post [(do
+            (clojure.pprint/pprint %)
+            %)]}
   (some-> (concepts/db-result->concept-map :default db provider-id result)
           (assoc :concept-type :subscription)
           (assoc :provider-id (:provider_id result))
@@ -11,6 +16,8 @@
           (assoc-in [:extra-fields :subscription-name] (:subscription_name result))
           (assoc-in [:extra-fields :subscriber-id] (:subscriber_id result))
           (assoc-in [:extra-fields :email-address] (:email_address result))
+          (assoc-in [:extra-fields :last-notified-at] (when-let [last-notified (:last_notified_at result)]
+                                                        (oracle/oracle-timestamp->str-time db last-notified)))
           (assoc-in [:extra-fields :collection-concept-id]
                     (:collection_concept_id result))))
 

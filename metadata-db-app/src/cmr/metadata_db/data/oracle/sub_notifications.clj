@@ -29,16 +29,16 @@
   (let [{:keys [id subscription_concept_id last_notified_at]} data]
     (j/with-db-transaction [conn db]
       {;:id id ; explicitly dropping id as DB specific need not be public
-        :subscription-concept-id subscription_concept_id
-        :last-notified-at (oracle/oracle-timestamp->str-time conn last_notified_at)
-        })))
+       :subscription-concept-id subscription_concept_id
+       :last-notified-at (oracle/oracle-timestamp->str-time conn last_notified_at)})))
 
 (defn subscription-exists?
   "Check to see if the subscription exists"
   [db subscription-id]
   (let [sql (str "SELECT concept_id FROM cmr_subscriptions WHERE concept_id = ?")
         result (j/query db [sql subscription-id])]
-    (= (count result) 1)))
+    ;; pos? will account for multiple revisions with the same concept_id
+    (pos? (count result))))
 
 (defn sub-notification-exists?
  "Check to see if the subscription notification record exists"
@@ -50,16 +50,16 @@
    (= (count result) 1)))
 
 (defn get-sub-notification
-  "Read in CRUD"
+  "Get subscription notification from Oracle."
   [db subscription-id]
-    (let [sql (str "SELECT id, subscription_concept_id, last_notified_at "
-                   "FROM cmr_sub_notifications "
-                   "WHERE subscription_concept_id = ?")
-          results (first (j/query db [sql subscription-id]))]
-          (dbresult->sub-notification db results)))
+  (let [sql (str "SELECT id, subscription_concept_id, last_notified_at "
+                 "FROM cmr_sub_notifications "
+                 "WHERE subscription_concept_id = ?")
+        results (first (j/query db [sql subscription-id]))]
+    (dbresult->sub-notification db results)))
 
 (defn save-sub-notification
-  "Create in CRUD"
+  "Create subscription notification record in Oracle."
   [db subscription-id]
   (let [sql (str "INSERT INTO cmr_sub_notifications"
                  "(id, subscription_concept_id)"
@@ -67,7 +67,7 @@
   (j/db-do-prepared db sql [subscription-id])))
 
 (defn update-sub-notification
-  "Update in CRUD - return same results as get-sub-notification"
+  "Update a subscription notification in Oracle."
   [db subscription-id]
   (let [sql (str "UPDATE cmr_sub_notifications "
                  "SET last_notified_at = ? "
@@ -76,11 +76,11 @@
     (j/db-do-prepared db sql [(cr/to-sql-time now) subscription-id])))
 
 (defn delete-sub-notification
-  "Delete in CRUD"
+  "Delete a subscription notification record by id"
   [db subscription-id]
   (j/delete! db
-   "cmr_sub_notifications"
-   ["subscription_concept_id = ?" subscription-id]))
+             "cmr_sub_notifications"
+             ["subscription_concept_id = ?" subscription-id]))
 
 (comment
   (def db (get-in user/system [:apps :metadata-db :db]))
