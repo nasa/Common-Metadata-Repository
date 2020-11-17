@@ -40,13 +40,10 @@
 (defn- process-subscriptions
   "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
   []
-  (let [end-time (t/now)
-        start-time (t/minus end-time (t/seconds 10))
-        time-constraint (str start-time "," end-time)
-        subscriptions (->> (mdb2/find-concepts (system/context) {:latest true} :subscription)
-                           (filter #(not (:deleted %)))
+  (let [subscriptions (->> (mdb2/find-concepts (system/context) {:latest true} :subscription)
+                           (remove :deleted)
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
-    (#'jobs/process-subscriptions (system/context) subscriptions time-constraint)))
+    (#'jobs/process-subscriptions (system/context) subscriptions)))
 
 (deftest subscription-ingest-on-prov3-test
   (testing "ingest on PROV3, guest is not granted ingest permission for SUBSCRIPTION_MANAGEMENT ACL"
@@ -378,3 +375,87 @@
                        flatten
                        (map :concept-id))]
        (is (= expected actual))))))
+
+(deftest ^:oracle subscription-email-processing-time-constraint-test
+  (system/only-with-real-database
+   (let [user1-group-id (echo-util/get-or-create-group (system/context) "group1")
+         _user1-token (echo-util/login (system/context) "user1" [user1-group-id])
+         _ (echo-util/ungrant (system/context)
+                              (-> (access-control/search-for-acls (system/context)
+                                                                  {:provider "PROV1"
+                                                                   :identity-type "catalog_item"}
+                                                                  {:token "mock-echo-system-token"})
+                                  :items
+                                  first
+                                  :concept_id))
+
+         _ (echo-util/grant (system/context)
+                            [{:group_id user1-group-id
+                              :permissions [:read]}]
+                            :catalog_item_identity
+                            {:provider_id "PROV1"
+                             :name "Provider collection/granule ACL"
+                             :collection_applicable true
+                             :granule_applicable true
+                             :granule_identifier {:access_value {:include_undefined_value true
+                                                                 :min_value 1 :max_value 50}}})
+         _ (echo-util/grant (system/context)
+                            [{:user_type :registered
+                              :permissions [:read]}]
+                            :catalog_item_identity
+                            {:provider_id "PROV2"
+                             :name "Provider collection/granule ACL registered users"
+                             :collection_applicable true
+                             :granule_applicable true
+                             :granule_identifier {:access_value {:include_undefined_value true
+                                                                 :min_value 100 :max_value 200}}})
+         ;; Setup collection
+         coll1 (data-core/ingest-umm-spec-collection "PROV1"
+                                                     (data-umm-c/collection {:ShortName "coll1"
+                                                                             :EntryTitle "entry-title1"})
+                                                     {:token "mock-echo-system-token"})
+
+         _ (index/wait-until-indexed)
+         ;; Setup subscriptions
+         _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
+                                                   {:Name "test_sub_prov1"
+                                                    :SubscriberId "user1"
+                                                    :EmailAddress "user1@nasa.gov"
+                                                    :CollectionConceptId (:concept-id coll1)
+                                                    :Query " "})
+                                                  {:token "mock-echo-system-token"})]
+
+     (index/wait-until-indexed)
+
+     (testing "First query executed does not have a last-notified-at and looks back 24 hours"
+       (let [gran1 (data-core/ingest "PROV1"
+                                     (data-granule/granule-with-umm-spec-collection coll1
+                                                                                    (:concept-id coll1)
+                                                                                    {:granule-ur "Granule1"
+                                                                                     :access-value 1})
+                                     {:token "mock-echo-system-token"})
+             _ (index/wait-until-indexed)
+             results (->> (process-subscriptions)
+                          (map #(nth % 1))
+                          flatten
+                          (map :concept-id))]
+         (is (= (:concept-id gran1)
+                (first results)))))
+
+     (Thread/sleep 1000)
+     (testing "Second run finds only collections created since the last notification"
+       (let [gran2 (data-core/ingest "PROV1"
+                                     (data-granule/granule-with-umm-spec-collection coll1
+                                                                                    (:concept-id coll1)
+                                                                                    {:granule-ur "Granule2"
+                                                                                     :access-value 1})
+                                     {:token "mock-echo-system-token"})
+             _ (index/wait-until-indexed)
+             response (->> (process-subscriptions)
+                           (map #(nth % 1))
+                           flatten
+                           (map :concept-id))]
+
+         (is (= 1 (count response)))
+         (is (= (:concept-id gran2)
+                (first response))))))))

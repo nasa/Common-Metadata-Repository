@@ -290,7 +290,7 @@
   "Create a time-constraint from a subscriptions last-notified-at value or amount-in-sec from the end."
   [subscription end amount-in-sec]
   {:post [(spec/valid? ::time-constraint %)]}
-  (let [begin (if-let [start (:last-notified-at subscription)]
+  (let [begin (if-let [start (get-in subscription [:extra-fields :last-notified-at])]
                 start
                 (t/minus end (t/seconds amount-in-sec)))]
     (str begin "," end)))
