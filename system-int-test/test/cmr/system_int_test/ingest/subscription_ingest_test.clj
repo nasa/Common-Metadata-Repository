@@ -386,18 +386,16 @@
   Use cases coming from EarthData Search wanting to allow their users to create
   subscriptions without the need to have any acls
   """
-  (let [acls (ac-util/search-for-acls
-                (transmit-config/echo-system-token)
-                {:identity-type "provider"
-                 :provider "PROV1"
-                 :target "INGEST_MANAGEMENT_ACL"})
+  (let [acls (ac-util/search-for-acls (transmit-config/echo-system-token)
+                                      {:identity-type "provider"
+                                       :provider "PROV1"
+                                       :target "INGEST_MANAGEMENT_ACL"})
         _ (echo-util/ungrant (system/context) (:concept_id (first (:items acls))))
         supplied-concept-id "SUB1000-PROV1"
         user1-token (echo-util/login (system/context) "user1")
-        concept (subscription-util/make-subscription-concept
-                        {:concept-id supplied-concept-id
-                         :SubscriberId "user1"
-                         :native-id "Atlantic-1"})]
+        concept (subscription-util/make-subscription-concept {:concept-id supplied-concept-id
+                                                              :SubscriberId "user1"
+                                                              :native-id "Atlantic-1"})]
 
   ;; caes 1 test against guest token - no subscription
   (testing "guest token - guests can not create subscriptions - passes"
@@ -427,10 +425,9 @@
     (let [user2-token (echo-util/login (system/context) "user2")
           supplied-concept-id "SUB1000-PROV1"
           user1-token (echo-util/login (system/context) "user2")
-          concept (subscription-util/make-subscription-concept
-                    {:concept-id supplied-concept-id
-                     :SubscriberId "user1"
-                     :native-id "Atlantic-1"})
+          concept (subscription-util/make-subscription-concept {:concept-id supplied-concept-id
+                                                                :SubscriberId "user1"
+                                                                :native-id "Atlantic-1"})
           {:keys [status errors]} (ingest/ingest-concept concept {:token user2-token})]
       (is (= 201 status))
       (is (nil? errors)))))
