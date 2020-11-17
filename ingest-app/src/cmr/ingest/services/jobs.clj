@@ -227,15 +227,14 @@
   (bulk-update/cleanup-old-bulk-update-status context))
 
 (defn email-granule-url-list
- "take a list of URLs and format them for an email"
- [gran-ref-location]
- (string/join "\n" (map #(str "* [" % "](" % ")") gran-ref-location)))
+  "take a list of URLs and format them for an email"
+  [gran-ref-location]
+  (string/join "\n" (map #(str "* [" % "](" % ")") gran-ref-location)))
 
 (defn create-email-content
   "Create an email body for subscriptions"
-  [from-email-address gran-ref-location subscription]
-  (let [to-email-address (get-in subscription [:extra-fields :email-address])
-        metadata (json/parse-string (:metadata subscription))
+  [from-email-address to-email-address  gran-ref-location subscription]
+  (let [metadata (json/parse-string (:metadata subscription))
         concept-id (get-in subscription [:extra-fields :collection-concept-id])
         meta-query (get metadata "Query")
         sub-start-time (:start-time subscription)]
@@ -309,7 +308,8 @@
                 gran-ref (distinct (concat grans-created grans-updated))
                 gran-ref-location (map :location gran-ref)
 
-                email-content (create-email-content (mail-sender) gran-ref-location subscription)
+                to-email-address (get-in subscription [:extra-fields :email-address])
+                email-content (create-email-content (mail-sender) to-email-address gran-ref-location subscription)
                 email-settings {:host (email-server-host) :port (email-server-port)}]]
     (try
       (when (seq gran-ref)

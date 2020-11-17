@@ -1,8 +1,26 @@
 (ns cmr.ingest.test.services.jobs
   "This tests some of the more complicated functions of cmr.ingest.services.jobs"
   (:require
+   [clojure.spec.alpha :as spec]
    [clojure.test :refer :all]
+   [cmr.common.util :as u :refer [are3]]
    [cmr.ingest.services.jobs :as jobs]))
+
+(deftest time-constraint-spec-test
+  (are3 [input valid?]
+        (is (= valid? (spec/valid? ::jobs/time-constraint input)))
+
+        "Properly formed time constraint"
+        "2020-11-01T12:00:00.000Z,2020-11-05T12:00:00.000Z" true
+
+        "Invalid year format"
+        "20-11-01T12:00:00.000Z,2020-11-05T12:00:00.000Z" false
+
+        "Nil"
+        nil false
+
+        "Collection"
+        {:date "20-11-01T12:00:00.000Z"} false))
 
 (deftest create-query-params
   (is (= {"polygon" "-78,-18,-77,-22,-73,-16,-74,-13,-78,-18"
@@ -21,9 +39,11 @@
 (deftest create-email-test
   (let [actual (jobs/create-email-content
                  "cmr-support@earthdata.nasa.gov"
+                 "someone@gmail.com"
                  '("https://cmr.link/g1" "https://cmr.link/g2" "https://cmr.link/g3")
-                 {:extra-fields {:collection-concept-id "C1200370131-EDF_DEV06"}
-                  :metadata "{\"Name\": \"valid1\",
+                 {:extra-fields
+                  {:collection-concept-id "C1200370131-EDF_DEV06"}
+                  :metadata"{\"Name\": \"valid1\",
      \"CollectionConceptId\": \"C1200370131-EDF_DEV06\",
      \"Query\": \"updated_since[]=2020-05-04T12:51:36Z\",
      \"SubscriberId\": \"someone1\",
@@ -45,3 +65,12 @@
                 "<p>To unsubscribe from these notifications, or if you have any questions, "
                 "please contact us at <a href='mailto:cmr-support@earthdata.nasa.gov'>"
                 "cmr-support@earthdata.nasa.gov</a>.</p>")))))
+
+
+
+(deftest acls->provider-id-hashes-test
+  (is (= {"prov1" -1703312353
+          "prov2" -644139301}
+         (jobs/acls->provider-id-hashes
+           [{:catalog-item-identity {:provider-id "prov1"}}
+            {:catalog-item-identity {:provider-id "prov2"}}]))))
