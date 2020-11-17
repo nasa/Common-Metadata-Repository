@@ -82,7 +82,7 @@
   (let [providers (map :provider-id (mdb/get-providers context))
         provider-id-acl-hashes (or (pah/get-provider-id-acl-hashes context) {})
         current-provider-id-acl-hashes (acls->provider-id-hashes
-                                         (acl-fetcher/get-acls context [:catalog-item]))
+                                        (acl-fetcher/get-acls context [:catalog-item]))
         providers-requiring-reindex (filter (fn [provider-id]
                                               (not= (get current-provider-id-acl-hashes provider-id)
                                                     (get provider-id-acl-hashes provider-id)))
@@ -186,7 +186,7 @@
    :type Long})
 
 (defconfig email-subscription-processing-lookback
-  "Number of seconds to look back for granual changes."
+  "Number of seconds to look back for granule changes."
   {:default 3600
    :type Long})
 
@@ -277,41 +277,48 @@
             gran-refs)))
 
 (defn- process-subscriptions
-  "Process each subscription in subscriptions."
+  "Process each subscription in subscriptions into tuple for testing purposes and to use as
+   the input when sending the subscription emails."
   [context subscriptions time-constraint]
-  (doseq [raw_subscription subscriptions
-          :let [subscription (add-updated-since raw_subscription time-constraint)
-                subscriber-id (get-in subscription [:extra-fields :subscriber-id])
-                email-address (get-in subscription [:extra-fields :email-address])
-                sub-id (get subscription :concept-id)
-                coll-id (get-in subscription [:extra-fields :collection-concept-id])
-                query-string (-> (:metadata subscription)
-                                 (json/decode true)
-                                 :Query)
-                query-params (create-query-params query-string)
-                params1 (merge {:created-at time-constraint
-                                :collection-concept-id coll-id
-                                :token (config/echo-system-token)}
-                               query-params)
-                params2 (merge {:revision-date time-constraint
-                                :collection-concept-id coll-id
-                                :token (config/echo-system-token)}
-                               query-params)]]
-      (debug "Processing subscription: " sub-id " with\n" (str subscription) ".")
-      (try
-        (let [gran-refs1 (search/find-granule-references context params1)
+  (for [raw_subscription subscriptions
+        :let [subscription (add-updated-since raw_subscription time-constraint)
+              subscriber-id (get-in subscription [:extra-fields :subscriber-id])
+              email-address (get-in subscription [:extra-fields :email-address])
+              sub-id (get subscription :concept-id)
+              coll-id (get-in subscription [:extra-fields :collection-concept-id])
+              query-string (-> (:metadata subscription)
+                               (json/decode true)
+                               :Query)
+              query-params (create-query-params query-string)
+              params1 (merge {:created-at time-constraint
+                              :collection-concept-id coll-id
+                              :token (config/echo-system-token)}
+                             query-params)
+              params2 (merge {:revision-date time-constraint
+                              :collection-concept-id coll-id
+                              :token (config/echo-system-token)}
+                             query-params)
+              gran-refs1 (search/find-granule-references context params1)
               gran-refs2 (search/find-granule-references context params2)
               gran-refs (distinct (concat gran-refs1 gran-refs2))
-              subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]
-          (when (seq subscriber-filtered-gran-refs)
-           (let [gran-ref-locations (map :location subscriber-filtered-gran-refs)
-                 email-content (create-email-content (mail-sender) email-address gran-ref-locations subscription)
-                 email-settings {:host (email-server-host) :port (email-server-port)}]
-            (postal-core/send-message email-settings email-content)))
-          (send-update-subscription-notification-time context sub-id))
+              subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)
+              _ (send-update-subscription-notification-time context sub-id)]]
+    [sub-id subscriber-filtered-gran-refs email-address subscription]))
+
+(defn- send-subscription-emails
+  "Takes processed processed subscription tuples and sends out emails if applicable."
+  [context subscriber-filtered-gran-refs-list]
+  (doseq [subscriber-filtered-gran-refs-tuple subscriber-filtered-gran-refs-list
+          :let [[sub-id subscriber-filtered-gran-refs email-address subscription] subscriber-filtered-gran-refs-tuple]]
+    (when (seq subscriber-filtered-gran-refs)
+     (let [gran-ref-locations (map :location subscriber-filtered-gran-refs)
+           email-content (create-email-content (mail-sender) email-address gran-ref-locations subscription)
+           email-settings {:host (email-server-host) :port (email-server-port)}]
+      (try
+       (postal-core/send-message email-settings email-content)
        (catch Exception e
          (error "Exception caught in email subscription: " sub-id "\n\n"
-          (.getMessage e) "\n\n" e)))))
+          (.getMessage e) "\n\n" e)))))))
 
 (defn- email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
@@ -323,7 +330,7 @@
         subscriptions (->> (mdb/find-concepts context {:latest true} :subscription)
                            (filter #(not (:deleted %)))
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
-    (process-subscriptions context subscriptions time-constraint)))
+    (send-subscription-emails context (process-subscriptions context subscriptions time-constraint))))
 
 (defn trigger-autocomplete-suggestions-reindex
   [context]

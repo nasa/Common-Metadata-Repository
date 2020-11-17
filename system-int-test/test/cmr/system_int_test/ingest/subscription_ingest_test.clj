@@ -5,12 +5,20 @@
    [clojure.test :refer :all]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :refer [are3]]
+   [cmr.ingest.services.jobs :as jobs]
    [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.core :as data-core]
+   [cmr.system-int-test.data2.granule :as data-granule]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
-   [cmr.system-int-test.utils.subscription-util :as subscription-util]))
+   [cmr.system-int-test.utils.subscription-util :as subscription-util]
+   [cmr.transmit.access-control :as access-control]
+   [clj-time.core :as t]
+   [cmr.transmit.metadata-db :as mdb2]))
 
 (use-fixtures :each
               (join-fixtures
@@ -28,6 +36,17 @@
 (defn- current-time
   []
   (str (first (clojure.string/split (str (java.time.LocalDateTime/now)) #"\.")) "Z"))
+
+(defn- process-subscriptions
+  "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
+  []
+  (let [end-time (t/now)
+        start-time (t/minus end-time (t/seconds 10))
+        time-constraint (str start-time "," end-time)
+        subscriptions (->> (mdb2/find-concepts (system/context) {:latest true} :subscription)
+                           (filter #(not (:deleted %)))
+                           (map #(select-keys % [:concept-id :extra-fields :metadata])))]
+    (#'jobs/process-subscriptions (system/context) subscriptions time-constraint)))
 
 (deftest subscription-ingest-on-prov3-test
   (testing "ingest on PROV3, guest is not granted ingest permission for SUBSCRIPTION_MANAGEMENT ACL"
@@ -262,3 +281,88 @@
               {:keys [status concept-id revision-id]} response]
           (is (= 200 status))
           (is (= 3 revision-id)))))))
+
+(deftest subscription-email-processing
+  (testing "Tests subscriber-id filtering in subscription email processing job"
+    (system/only-with-real-database
+     (let [user1-group-id (echo-util/get-or-create-group (system/context) "group1")
+           admin-group1 (echo-util/get-or-create-group (system/context) "admin-group1")
+           user1-token (echo-util/login (system/context) "user1" [user1-group-id])
+           _ (echo-util/ungrant (system/context)
+                                (-> (access-control/search-for-acls (system/context)
+                                                                    {:provider "PROV1"
+                                                                     :target "INGEST_MANAGEMENT_ACL"}
+                                                                    {:token "mock-echo-system-token"})
+                                    :items
+                                    first
+                                    :concept_id))
+           _ (echo-util/ungrant (system/context)
+                                (-> (access-control/search-for-acls (system/context)
+                                                                    {:provider "PROV1"
+                                                                     :identity-type "catalog_item"}
+                                                                    {:token "mock-echo-system-token"})
+                                    :items
+                                    first
+                                    :concept_id))
+           _ (echo-util/ungrant (system/context)
+                                (-> (access-control/search-for-acls (system/context)
+                                                                    {:provider "PROV1"
+                                                                     :target "SUBSCRIPTION_MANAGEMENT"}
+                                                                    {:token "mock-echo-system-token"})
+                                    :items
+                                    first
+                                    :concept_id))
+           _ (echo-util/grant (system/context)
+                              [{:group_id user1-group-id
+                                :permissions [:read]}]
+                              :catalog_item_identity
+                              {:provider_id "PROV1"
+                               :name "Provider collection/granule ACL"
+                               :collection_applicable true
+                               :granule_applicable true
+                               :granule_identifier {:access_value {:include_undefined_value true
+                                                                   :min_value 1 :max_value 50}}})
+           _ (echo-util/grant (system/context)
+                              [{:group_id admin-group1
+                                :permissions [:read :update]}]
+                              :provider_identity
+                              {:provider_id "PROV1"
+                               :target "SUBSCRIPTION_MANAGEMENT"})
+           _ (echo-util/grant (system/context)
+                              [{:group_id admin-group1
+                                :permissions [:read :update]}]
+                              :provider_identity
+                              {:provider_id "PROV1"
+                               :target "INGEST_MANAGEMENT_ACL"})
+           coll1 (data-core/ingest-umm-spec-collection "PROV1"
+                                                       (data-umm-c/collection {:ShortName "coll1"
+                                                                               :EntryTitle "entry-title1"})
+                                                       {:token "mock-echo-system-token"})
+           _ (index/wait-until-indexed)
+           _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
+                                                     {:Name "test_sub_prov1"
+                                                      :SubscriberId "user1"
+                                                      :EmailAddress "user1@nasa.gov"
+                                                      :CollectionConceptId (:concept-id coll1)
+                                                      :Query " "})
+                                                    {:token "mock-echo-system-token"})
+           _ (index/wait-until-indexed)
+           gran1 (data-core/ingest "PROV1"
+                                   (data-granule/granule-with-umm-spec-collection coll1
+                                                                                  (:concept-id coll1)
+                                                                                  {:granule-ur "Granule1"
+                                                                                   :access-value 33})
+                                   {:token "mock-echo-system-token"})
+           gran2 (data-core/ingest "PROV1"
+                                   (data-granule/granule-with-umm-spec-collection coll1
+                                                                                  (:concept-id coll1)
+                                                                                  {:granule-ur "Granule2"
+                                                                                   :access-value 66})
+                                   {:token "mock-echo-system-token"})
+           _ (index/wait-until-indexed)
+           expected [(:concept-id gran1)]
+           actual (->> (process-subscriptions)
+                       (map #(nth % 1))
+                       flatten
+                       (map :concept-id))]
+       (is (= expected actual))))))
