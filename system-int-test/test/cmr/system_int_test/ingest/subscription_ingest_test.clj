@@ -286,43 +286,11 @@
   (testing "Tests subscriber-id filtering in subscription email processing job"
     (system/only-with-real-database
      (let [user1-group-id (echo-util/get-or-create-group (system/context) "group1")
-           admin-group1 (echo-util/get-or-create-group (system/context) "admin-group1")
+           ;; User 1 is in group1
            user1-token (echo-util/login (system/context) "user1" [user1-group-id])
            _ (echo-util/ungrant (system/context)
                                 (-> (access-control/search-for-acls (system/context)
                                                                     {:provider "PROV1"
-                                                                     :target "INGEST_MANAGEMENT_ACL"}
-                                                                    {:token "mock-echo-system-token"})
-                                    :items
-                                    first
-                                    :concept_id))
-           _ (echo-util/ungrant (system/context)
-                                (-> (access-control/search-for-acls (system/context)
-                                                                    {:provider "PROV1"
-                                                                     :identity-type "catalog_item"}
-                                                                    {:token "mock-echo-system-token"})
-                                    :items
-                                    first
-                                    :concept_id))
-           _ (echo-util/ungrant (system/context)
-                                (-> (access-control/search-for-acls (system/context)
-                                                                    {:provider "PROV1"
-                                                                     :target "SUBSCRIPTION_MANAGEMENT"}
-                                                                    {:token "mock-echo-system-token"})
-                                    :items
-                                    first
-                                    :concept_id))
-           _ (echo-util/ungrant (system/context)
-                                (-> (access-control/search-for-acls (system/context)
-                                                                    {:provider "PROV2"
-                                                                     :target "INGEST_MANAGEMENT_ACL"}
-                                                                    {:token "mock-echo-system-token"})
-                                    :items
-                                    first
-                                    :concept_id))
-           _ (echo-util/ungrant (system/context)
-                                (-> (access-control/search-for-acls (system/context)
-                                                                    {:provider "PROV2"
                                                                      :identity-type "catalog_item"}
                                                                     {:token "mock-echo-system-token"})
                                     :items
@@ -331,7 +299,7 @@
            _ (echo-util/ungrant (system/context)
                                 (-> (access-control/search-for-acls (system/context)
                                                                     {:provider "PROV2"
-                                                                     :target "SUBSCRIPTION_MANAGEMENT"}
+                                                                     :identity-type "catalog_item"}
                                                                     {:token "mock-echo-system-token"})
                                     :items
                                     first
@@ -356,30 +324,7 @@
                                :granule_applicable true
                                :granule_identifier {:access_value {:include_undefined_value true
                                                                    :min_value 100 :max_value 200}}})
-           _ (echo-util/grant (system/context)
-                              [{:group_id admin-group1
-                                :permissions [:read :update]}]
-                              :provider_identity
-                              {:provider_id "PROV1"
-                               :target "SUBSCRIPTION_MANAGEMENT"})
-           _ (echo-util/grant (system/context)
-                              [{:group_id admin-group1
-                                :permissions [:read :update]}]
-                              :provider_identity
-                              {:provider_id "PROV1"
-                               :target "INGEST_MANAGEMENT_ACL"})
-           _ (echo-util/grant (system/context)
-                              [{:group_id admin-group1
-                                :permissions [:read :update]}]
-                              :provider_identity
-                              {:provider_id "PROV2"
-                               :target "SUBSCRIPTION_MANAGEMENT"})
-           _ (echo-util/grant (system/context)
-                              [{:group_id admin-group1
-                                :permissions [:read :update]}]
-                              :provider_identity
-                              {:provider_id "PROV2"
-                               :target "INGEST_MANAGEMENT_ACL"})
+           ;; Setup collections
            coll1 (data-core/ingest-umm-spec-collection "PROV1"
                                                        (data-umm-c/collection {:ShortName "coll1"
                                                                                :EntryTitle "entry-title1"})
@@ -389,6 +334,7 @@
                                                                                :EntryTitle "entry-title2"})
                                                        {:token "mock-echo-system-token"})
            _ (index/wait-until-indexed)
+           ;; Setup subscriptions for each collection, for user1
            _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
                                                      {:Name "test_sub_prov1"
                                                       :SubscriberId "user1"
@@ -405,6 +351,8 @@
                                                       :Query " "})
                                                     {:token "mock-echo-system-token"})
            _ (index/wait-until-indexed)
+           ;; Setup granules, gran1 and gran3 with acl matched access-value
+           ;; gran 2 does not match, and should not be readable by user1
            gran1 (data-core/ingest "PROV1"
                                    (data-granule/granule-with-umm-spec-collection coll1
                                                                                   (:concept-id coll1)
@@ -424,7 +372,7 @@
                                                                                    :access-value 133})
                                    {:token "mock-echo-system-token"})
            _ (index/wait-until-indexed)
-           expected [(:concept-id gran1) (:concept-id gran3)]
+           expected [(:concept-id gran1 (:concept-id gran3))]
            actual (->> (process-subscriptions)
                        (map #(nth % 1))
                        flatten
