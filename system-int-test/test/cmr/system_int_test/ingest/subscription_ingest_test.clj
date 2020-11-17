@@ -4,7 +4,7 @@
   (:require
    [clojure.test :refer :all]
    [clj-time.core :as t]
-   [cmr.access-control.test.util :as ac-util]))
+   [cmr.access-control.test.util :as ac-util]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :refer [are3]]
    [cmr.ingest.services.jobs :as jobs]
