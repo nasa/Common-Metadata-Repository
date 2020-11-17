@@ -85,7 +85,8 @@
 
 (defmethod gen-find-concepts-in-table-sql :subscription
   [concept-type table fields params]
-  (let [root-query (if (:include-all params)
+  (let [fields (cons :last_notified_at fields)
+        root-query (if (:include-all params)
                      (let [params (dissoc params :include-all)]
                        (su/build (select (vec fields)
                                          (from table)
@@ -97,13 +98,14 @@
                      (su/build (select (vec fields)
                                        (from table)
                                        (when-not (empty? params)
-                                         (where (sh/find-params->sql-clause params))))))]
-    (string/replace-first
-      root-query
-      #"WHERE"
-      (str " LEFT JOIN " table
-           " ON " table ".concept_id = cmr_sub_notifications.subscription_concept_id"
-           " WHERE"))))
+                                         (where (sh/find-params->sql-clause params))))))
+        updated-query (string/replace-first
+                        (first root-query)
+                        #"WHERE"
+                        (str " LEFT JOIN cmr_sub_notifications b"
+                             " ON cmr_subscriptions.concept_id = b.subscription_concept_id"
+                             " WHERE"))]
+    (cons updated-query (rest root-query))))
 
 (defmethod gen-find-concepts-in-table-sql :default
   [concept-type table fields params]
@@ -180,10 +182,10 @@
                                    (assoc params :provider-id (map :provider-id providers)))
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
     (j/with-db-transaction
-     [conn db]
-     (doall
-      (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
-            (su/query conn stmt))))))
+      [conn db]
+      (doall
+        (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
+              (su/query conn stmt))))))
 
 ;; Execute a query against a normal (not small) provider table
 (defmethod find-concepts-in-table :default

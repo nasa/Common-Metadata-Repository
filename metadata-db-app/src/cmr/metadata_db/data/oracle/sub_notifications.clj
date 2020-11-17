@@ -3,21 +3,8 @@
   (:require
    [clj-time.coerce :as cr]
    [clojure.java.jdbc :as j]
-   [clojure.string :as string]
-   [cmr.common.concepts :as common-concepts]
-   [cmr.common.date-time-parser :as p]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.time-keeper :as t] ; don't use clj-time
-   [cmr.common.util :as util]
-   [cmr.metadata-db.data.concepts :as concepts]
-   [cmr.metadata-db.data.oracle.concept-tables :as tables]
-   [cmr.metadata-db.data.oracle.sql-helper :as sh]
-   [cmr.metadata-db.data.util :as db-util :refer [EXPIRED_CONCEPTS_BATCH_SIZE INITIAL_CONCEPT_NUM]]
-   [cmr.metadata-db.services.provider-service :as provider-service]
-   [cmr.oracle.connection :as oracle]
-   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
-  (:import
-   (cmr.oracle.connection OracleStore)))
+   [cmr.common.time-keeper :as t] ;; don't use clj-time
+   [cmr.oracle.connection :as oracle]))
 
 ; A note about prepared statments, with j/query using ? and [] is the same as
 ; j/db-do-prepared. Do not use the string format function with %s as this could
@@ -26,10 +13,9 @@
 (defn dbresult->sub-notification
   "Converts a map result from the database to a provider map"
   [db data]
-  (let [{:keys [id subscription_concept_id last_notified_at]} data]
+  (let [{:keys [subscription_concept_id last_notified_at]} data]
     (j/with-db-transaction [conn db]
-      {;:id id ; explicitly dropping id as DB specific need not be public
-       :subscription-concept-id subscription_concept_id
+      {:subscription-concept-id subscription_concept_id
        :last-notified-at (oracle/oracle-timestamp->str-time conn last_notified_at)})))
 
 (defn subscription-exists?

@@ -375,7 +375,7 @@
                                                           (= :c.revision-id :t.revision-id)))))
               stmt (string/replace-first stmt-partial
                                          #"WHERE"
-                                         (str " LEFT JOIN " table
+                                         (str " LEFT JOIN cmr_sub_notifications"
                                               " ON " table ".concept_id = cmr_sub_notifications.subscription_concept_id"
                                               " WHERE"))
 
