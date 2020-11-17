@@ -312,6 +312,30 @@
                                     :items
                                     first
                                     :concept_id))
+           _ (echo-util/ungrant (system/context)
+                                (-> (access-control/search-for-acls (system/context)
+                                                                    {:provider "PROV2"
+                                                                     :target "INGEST_MANAGEMENT_ACL"}
+                                                                    {:token "mock-echo-system-token"})
+                                    :items
+                                    first
+                                    :concept_id))
+           _ (echo-util/ungrant (system/context)
+                                (-> (access-control/search-for-acls (system/context)
+                                                                    {:provider "PROV2"
+                                                                     :identity-type "catalog_item"}
+                                                                    {:token "mock-echo-system-token"})
+                                    :items
+                                    first
+                                    :concept_id))
+           _ (echo-util/ungrant (system/context)
+                                (-> (access-control/search-for-acls (system/context)
+                                                                    {:provider "PROV2"
+                                                                     :target "SUBSCRIPTION_MANAGEMENT"}
+                                                                    {:token "mock-echo-system-token"})
+                                    :items
+                                    first
+                                    :concept_id))
            _ (echo-util/grant (system/context)
                               [{:group_id user1-group-id
                                 :permissions [:read]}]
@@ -322,6 +346,16 @@
                                :granule_applicable true
                                :granule_identifier {:access_value {:include_undefined_value true
                                                                    :min_value 1 :max_value 50}}})
+           _ (echo-util/grant (system/context)
+                              [{:user_type :registered
+                                :permissions [:read]}]
+                              :catalog_item_identity
+                              {:provider_id "PROV2"
+                               :name "Provider collection/granule ACL registered users"
+                               :collection_applicable true
+                               :granule_applicable true
+                               :granule_identifier {:access_value {:include_undefined_value true
+                                                                   :min_value 100 :max_value 200}}})
            _ (echo-util/grant (system/context)
                               [{:group_id admin-group1
                                 :permissions [:read :update]}]
@@ -334,9 +368,25 @@
                               :provider_identity
                               {:provider_id "PROV1"
                                :target "INGEST_MANAGEMENT_ACL"})
+           _ (echo-util/grant (system/context)
+                              [{:group_id admin-group1
+                                :permissions [:read :update]}]
+                              :provider_identity
+                              {:provider_id "PROV2"
+                               :target "SUBSCRIPTION_MANAGEMENT"})
+           _ (echo-util/grant (system/context)
+                              [{:group_id admin-group1
+                                :permissions [:read :update]}]
+                              :provider_identity
+                              {:provider_id "PROV2"
+                               :target "INGEST_MANAGEMENT_ACL"})
            coll1 (data-core/ingest-umm-spec-collection "PROV1"
                                                        (data-umm-c/collection {:ShortName "coll1"
                                                                                :EntryTitle "entry-title1"})
+                                                       {:token "mock-echo-system-token"})
+           coll2 (data-core/ingest-umm-spec-collection "PROV2"
+                                                       (data-umm-c/collection {:ShortName "coll2"
+                                                                               :EntryTitle "entry-title2"})
                                                        {:token "mock-echo-system-token"})
            _ (index/wait-until-indexed)
            _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
@@ -344,6 +394,14 @@
                                                       :SubscriberId "user1"
                                                       :EmailAddress "user1@nasa.gov"
                                                       :CollectionConceptId (:concept-id coll1)
+                                                      :Query " "})
+                                                    {:token "mock-echo-system-token"})
+           _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
+                                                     {:provider-id "PROV2"
+                                                      :Name "test_sub_prov1"
+                                                      :SubscriberId "user1"
+                                                      :EmailAddress "user1@nasa.gov"
+                                                      :CollectionConceptId (:concept-id coll2)
                                                       :Query " "})
                                                     {:token "mock-echo-system-token"})
            _ (index/wait-until-indexed)
@@ -359,8 +417,14 @@
                                                                                   {:granule-ur "Granule2"
                                                                                    :access-value 66})
                                    {:token "mock-echo-system-token"})
+           gran3 (data-core/ingest "PROV2"
+                                   (data-granule/granule-with-umm-spec-collection coll2
+                                                                                  (:concept-id coll2)
+                                                                                  {:granule-ur "Granule3"
+                                                                                   :access-value 133})
+                                   {:token "mock-echo-system-token"})
            _ (index/wait-until-indexed)
-           expected [(:concept-id gran1)]
+           expected [(:concept-id gran1) (:concept-id gran3)]
            actual (->> (process-subscriptions)
                        (map #(nth % 1))
                        flatten
