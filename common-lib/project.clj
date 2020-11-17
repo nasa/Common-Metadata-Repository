@@ -15,7 +15,7 @@
                  [cheshire "5.8.1"]
                  [clj-time "0.15.1"]
                  [clojail "1.0.6"]
-                 [clojurewerkz/quartzite "2.1.0"]
+                 [gov.nasa.earthdata/quartzite "2.2.1-SNAPSHOT"]
                  [clojusc/ltest "0.3.0"]
                  [com.dadrox/quiet-slf4j "0.1"]
                  [com.gfredericks/test.chuck "0.2.9"]

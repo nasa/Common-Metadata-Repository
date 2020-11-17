@@ -418,7 +418,7 @@ applications, as well as several libraries and support applications.
 
 ## Further Reading
 
-- CMR Client Partner User Guide: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide
+- CMR Client Partner User Guide: https://wiki.earthdata.nasa.gov/display/ED/CMR+Client+Partner+User+Guide
 - CMR Data Partner User Guide: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide
 - CMR Client Developer Forum: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum
 
