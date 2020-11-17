@@ -372,7 +372,7 @@
                                                                                    :access-value 133})
                                    {:token "mock-echo-system-token"})
            _ (index/wait-until-indexed)
-           expected [(:concept-id gran1 (:concept-id gran3))]
+           expected [(:concept-id gran1) (:concept-id gran3)]
            actual (->> (process-subscriptions)
                        (map #(nth % 1))
                        flatten
