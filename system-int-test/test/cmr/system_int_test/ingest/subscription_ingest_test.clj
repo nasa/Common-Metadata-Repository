@@ -423,7 +423,6 @@
   (testing "Use an account which does not match matches the metadata and DOES have an ACL"
     (let [user2-token (echo-util/login (system/context) "user2")
           supplied-concept-id "SUB1000-PROV1"
-          user1-token (echo-util/login (system/context) "user2")
           concept (subscription-util/make-subscription-concept {:concept-id supplied-concept-id
                                                                 :SubscriberId "user1"
                                                                 :native-id "Atlantic-1"})
