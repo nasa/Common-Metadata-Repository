@@ -332,55 +332,90 @@
 (defn get-concept
   ([db concept-type provider concept-id]
    (j/with-db-transaction
-    [conn db]
-    (let [table (tables/get-table-name provider concept-type)]
-      (db-result->concept-map concept-type conn (:provider-id provider)
-                              (su/find-one conn (select '[*]
-                                                        (from table)
-                                                        (where `(= :concept-id ~concept-id))
-                                                        (order-by (desc :revision-id))))))))
+     [conn db]
+     (let [table (tables/get-table-name provider concept-type)]
+       (db-result->concept-map concept-type conn (:provider-id provider)
+                               (su/find-one conn (select '[*]
+                                                         (from table)
+                                                         (where `(= :concept-id ~concept-id))
+                                                         (order-by (desc :revision-id))))))))
   ([db concept-type provider concept-id revision-id]
    (if revision-id
      (let [table (tables/get-table-name provider concept-type)]
        (j/with-db-transaction
-        [conn db]
-        (db-result->concept-map concept-type conn (:provider-id provider)
-                                (su/find-one conn (select '[*]
-                                                          (from table)
-                                                          (where `(and (= :concept-id ~concept-id)
-                                                                       (= :revision-id ~revision-id))))))))
+         [conn db]
+         (db-result->concept-map concept-type conn (:provider-id provider)
+                                 (su/find-one conn (select '[*]
+                                                           (from table)
+                                                           (where `(and (= :concept-id ~concept-id)
+                                                                        (= :revision-id ~revision-id))))))))
      (get-concept db concept-type provider concept-id))))
 
-(defn get-concepts
+(defmulti get-concepts
+  (fn [db concept-type provider concept-id-revision-id-tuples]
+    concept-type))
+
+(defmethod get-concepts :subscription
   [db concept-type provider concept-id-revision-id-tuples]
   (if (> (count concept-id-revision-id-tuples) 0)
     (let [start (System/currentTimeMillis)]
       (j/with-db-transaction
-       [conn db]
-       ;; use a temporary table to insert our values so we can use a join to
-       ;; pull everything in one select
-       (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+        [conn db]
+        ;; use a temporary table to insert our values so we can use a join to
+        ;; pull everything in one select
 
-       (let [provider-id (:provider-id provider)
-             table (tables/get-table-name provider concept-type)
-             stmt (su/build (select [:c.*]
-                                    (from (as (keyword table) :c)
-                                          (as :get-concepts-work-area :t))
-                                    (where `(and (= :c.concept-id :t.concept-id)
-                                                 (= :c.revision-id :t.revision-id)))))
+        (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
 
-             result (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                                (su/query conn stmt)))
-             millis (- (System/currentTimeMillis) start)]
-         (debug (format "Getting [%d] concepts took [%d] ms" (count result) millis))
-         result)))
+        (let [provider-id (:provider-id provider)
+              table (tables/get-table-name provider concept-type)
+              stmt-partial (su/build (select [:c.* ",last_notified_at"]
+                                             (from (as (keyword table) :c)
+                                                   (as :get-concepts-work-area :t))
+                                             (where `(and (= :c.concept-id :t.concept-id)
+                                                          (= :c.revision-id :t.revision-id)))))
+              stmt (string/replace-first stmt-partial
+                                         #"WHERE"
+                                         (str " LEFT JOIN cmr_sub_notifications"
+                                              " ON cmr_subscriptions.concept_id = cmr_sub_notifications.subscription_concept_id"
+                                              " WHERE"))
+
+              result (doall (map (partial db-result->concept-map concept-type conn provider-id)
+                                 (su/query conn stmt)))
+              millis (- (System/currentTimeMillis) start)]
+          (debug (format "Getting [%d] concepts took [%d] ms" (count result) millis))
+          result)))
+    []))
+
+(defmethod get-concepts :default
+  [db concept-type provider concept-id-revision-id-tuples]
+  (if (> (count concept-id-revision-id-tuples) 0)
+    (let [start (System/currentTimeMillis)]
+      (j/with-db-transaction
+        [conn db]
+        ;; use a temporary table to insert our values so we can use a join to
+        ;; pull everything in one select
+        (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+
+        (let [provider-id (:provider-id provider)
+              table (tables/get-table-name provider concept-type)
+              stmt (su/build (select [:c.*]
+                                     (from (as (keyword table) :c)
+                                           (as :get-concepts-work-area :t))
+                                     (where `(and (= :c.concept-id :t.concept-id)
+                                                  (= :c.revision-id :t.revision-id)))))
+
+              result (doall (map (partial db-result->concept-map concept-type conn provider-id)
+                                 (su/query conn stmt)))
+              millis (- (System/currentTimeMillis) start)]
+          (debug (format "Getting [%d] concepts took [%d] ms" (count result) millis))
+          result)))
     []))
 
 (defn get-latest-concepts
   [db concept-type provider concept-ids]
   (get-concepts
-   db concept-type provider
-   (get-latest-concept-id-revision-id-tuples db concept-type provider concept-ids)))
+    db concept-type provider
+    (get-latest-concept-id-revision-id-tuples db concept-type provider concept-ids)))
 
 (defn get-transactions-for-concept
   [db provider concept-id]

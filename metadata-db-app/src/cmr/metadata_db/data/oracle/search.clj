@@ -71,8 +71,9 @@
   If :include-all is true, all revisions of the concepts will be returned. This is needed for the
   find-latest-concepts function to later filter out the latest concepts that satisfy the search in memory."
   (fn [concept-type table fields params]
-    (when (= :granule concept-type)
-      :granule-search)))
+    (condp = concept-type
+      :granule :granule-search
+      concept-type)))
 
 ;; special case added to address OB_DAAC granule search not using existing index problem
 ;; where the native id or granule ur index is not being used by Oracle optimizer
@@ -81,6 +82,30 @@
   (let [stmt (gen-find-concepts-in-table-sql :dummy table fields params)]
     ;; add index hint to the generated sql statement
     (update-in stmt [0] #(string/replace % #"SELECT" (format "SELECT /*+ INDEX(%s) */" table)))))
+
+(defmethod gen-find-concepts-in-table-sql :subscription
+  [concept-type table fields params]
+  (let [fields (cons :last_notified_at fields)
+        root-query (if (:include-all params)
+                     (let [params (dissoc params :include-all)]
+                       (su/build (select (vec fields)
+                                         (from table)
+                                         (where `(in :concept_id
+                                                     ~(select [:concept_id]
+                                                              (from table)
+                                                              (when-not (empty? params)
+                                                                (where (sh/find-params->sql-clause params)))))))))
+                     (su/build (select (vec fields)
+                                       (from table)
+                                       (when-not (empty? params)
+                                         (where (sh/find-params->sql-clause params))))))
+        updated-query (string/replace-first
+                        (first root-query)
+                        #"WHERE"
+                        (str " LEFT JOIN cmr_sub_notifications"
+                             " ON cmr_subscriptions.concept_id = cmr_sub_notifications.subscription_concept_id"
+                             " WHERE"))]
+    (cons updated-query (rest root-query))))
 
 (defmethod gen-find-concepts-in-table-sql :default
   [concept-type table fields params]
@@ -157,10 +182,10 @@
                                    (assoc params :provider-id (map :provider-id providers)))
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
     (j/with-db-transaction
-     [conn db]
-     (doall
-      (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
-            (su/query conn stmt))))))
+      [conn db]
+      (doall
+        (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
+              (su/query conn stmt))))))
 
 ;; Execute a query against a normal (not small) provider table
 (defmethod find-concepts-in-table :default

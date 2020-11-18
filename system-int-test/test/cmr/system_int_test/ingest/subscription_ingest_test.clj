@@ -3,9 +3,7 @@
   For subscription permissions tests, see `provider-ingest-permissions-test`."
   (:require
    [clojure.test :refer :all]
-   [clj-time.core :as t]
    [cmr.access-control.test.util :as ac-util]
-   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :refer [are3]]
    [cmr.ingest.services.jobs :as jobs]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -23,32 +21,25 @@
    [cmr.transmit.metadata-db :as mdb2]))
 
 (use-fixtures :each
-              (join-fixtures
-               [(ingest/reset-fixture
-                  {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"})
-                (subscription-util/grant-all-subscription-fixture
-                  {"provguid1" "PROV1" "provguid2" "PROV2"}
-                  [:read :update]
-                  [:read :update])
-                (dev-sys-util/freeze-resume-time-fixture)
-                (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV3"}
-                                                                  [:read]
-                                                                  [:read :update])]))
-
-(defn- current-time
-  []
-  (str (first (clojure.string/split (str (java.time.LocalDateTime/now)) #"\.")) "Z"))
+  (join-fixtures
+   [(ingest/reset-fixture
+     {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"})
+    (subscription-util/grant-all-subscription-fixture
+     {"provguid1" "PROV1" "provguid2" "PROV2"}
+     [:read :update]
+     [:read :update])
+    (dev-sys-util/freeze-resume-time-fixture)
+    (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV3"}
+                                                      [:read]
+                                                      [:read :update])]))
 
 (defn- process-subscriptions
   "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
   []
-  (let [end-time (t/now)
-        start-time (t/minus end-time (t/seconds 10))
-        time-constraint (str start-time "," end-time)
-        subscriptions (->> (mdb2/find-concepts (system/context) {:latest true} :subscription)
-                           (filter #(not (:deleted %)))
+  (let [subscriptions (->> (mdb2/find-concepts (system/context) {:latest true} :subscription)
+                           (remove :deleted)
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
-    (#'jobs/process-subscriptions (system/context) subscriptions time-constraint)))
+    (#'jobs/process-subscriptions (system/context) subscriptions)))
 
 (deftest subscription-ingest-on-prov3-test
   (testing "ingest on PROV3, guest is not granted ingest permission for SUBSCRIPTION_MANAGEMENT ACL"
@@ -382,10 +373,8 @@
        (is (= expected actual))))))
 
 (deftest roll-your-own-subscription-tests
-  """
-  Use cases coming from EarthData Search wanting to allow their users to create
-  subscriptions without the need to have any acls
-  """
+  ;; Use cases coming from EarthData Search wanting to allow their users to create
+  ;; subscriptions without the need to have any acls
   (let [acls (ac-util/search-for-acls (transmit-config/echo-system-token)
                                       {:identity-type "provider"
                                        :provider "PROV1"

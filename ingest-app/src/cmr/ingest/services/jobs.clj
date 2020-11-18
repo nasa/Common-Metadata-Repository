@@ -1,25 +1,35 @@
 (ns cmr.ingest.services.jobs
   "This contains the scheduled jobs for the ingest application."
   (:require
-    [cheshire.core :as json]
-    [clj-time.core :as t]
-    [clojure.string :as string]
-    [cmr.acl.acl-fetcher :as acl-fetcher]
-    [cmr.common.config :as cfg :refer [defconfig]]
-    [cmr.common.jobs :as jobs :refer [def-stateful-job defjob]]
-    [cmr.common.log :refer (debug info warn error)]
-    [cmr.ingest.data.bulk-update :as bulk-update]
-    [cmr.ingest.data.ingest-events :as ingest-events]
-    [cmr.ingest.data.provider-acl-hash :as pah]
-    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
-    [cmr.ingest.services.ingest-service.subscription :as sub]
-    [cmr.transmit.access-control :as access-control]
-    [cmr.transmit.config :as config]
-    [cmr.transmit.echo.acls :as echo-acls]
-    [cmr.transmit.metadata-db :as mdb]
-    [cmr.transmit.search :as search]
-    [markdown.core :as markdown]
-    [postal.core :as postal-core]))
+   [cheshire.core :as json]
+   [clj-time.core :as t]
+   [clojure.spec.alpha :as spec]
+   [clojure.string :as string]
+   [cmr.acl.acl-fetcher :as acl-fetcher]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.jobs :as jobs :refer [def-stateful-job defjob]]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.ingest.data.bulk-update :as bulk-update]
+   [cmr.ingest.data.ingest-events :as ingest-events]
+   [cmr.ingest.data.provider-acl-hash :as pah]
+   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
+   [cmr.ingest.services.ingest-service.subscription :as sub]
+   [cmr.transmit.access-control :as access-control]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.echo.acls :as echo-acls]
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.transmit.search :as search]
+   [markdown.core :as markdown]
+   [postal.core :as postal-core]))
+
+;; Specs =============================================================
+(def date-rx "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z")
+
+(def time-constraint-pattern (re-pattern (str date-rx "," date-rx)))
+
+(spec/def ::time-constraint (spec/and
+                              string?
+                              #(re-matches time-constraint-pattern %)))
 
 ;; Call the following to trigger a job, example below will fire an email subscription
 ;; UPDATE QRTZ_TRIGGERS
@@ -250,14 +260,14 @@
                            "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"))}]}))
 
 (defn- add-updated-since
- "Pull out the start and end times from a time-constraint value and associate them to a map"
- [raw time-constraint]
- (let [parts (clojure.string/split time-constraint, #",")
-       start-time (first parts)
-       end-time (last parts)]
-  (assoc raw :start-time start-time :end-time end-time)))
+  "Pull out the start and end times from a time-constraint value and associate them to a map"
+  [raw time-constraint]
+  (let [parts (clojure.string/split time-constraint, #",")
+        start-time (first parts)
+        end-time (last parts)]
+    (assoc raw :start-time start-time :end-time end-time)))
 
-(defn- send-update-subscription-notification-time
+(defn- send-update-subscription-notification-time!
   "handle any packaging of data here before sending it off to transmit package"
   [context data]
   (debug "send-update-subscription-notification-time with" data)
@@ -268,20 +278,32 @@
    not have read access to."
   [context gran-refs subscriber-id]
   (when (seq gran-refs)
-    (let [concept-ids (map :concept-id gran-refs)
-          permissions (json/parse-string
+    (let [permissions (json/parse-string
                        (access-control/get-permissions context {:user_id subscriber-id
                                                                 :concept_id (map :concept-id gran-refs)}))]
       (filter (fn [granule-reference]
                 (some #{"read"} (get permissions (:concept-id granule-reference))))
               gran-refs))))
 
+(defn- subscription->time-constraint
+  "Create a time-constraint from a subscriptions last-notified-at value or amount-in-sec from the end."
+  [subscription end amount-in-sec]
+  {:post [(spec/valid? ::time-constraint %)]}
+  (let [begin (if-let [start (get-in subscription [:extra-fields :last-notified-at])]
+                start
+                (t/minus end (t/seconds amount-in-sec)))]
+    (str begin "," end)))
+
 (defn- process-subscriptions
   "Process each subscription in subscriptions into tuple for testing purposes and to use as
    the input when sending the subscription emails."
-  [context subscriptions time-constraint]
-  (for [raw_subscription subscriptions
-        :let [subscription (add-updated-since raw_subscription time-constraint)
+  [context subscriptions]
+  (for [raw-subscription subscriptions
+        :let [time-constraint (subscription->time-constraint
+                               raw-subscription
+                               (t/now)
+                               (email-subscription-processing-lookback))
+              subscription (add-updated-since raw-subscription time-constraint)
               subscriber-id (get-in subscription [:extra-fields :subscriber-id])
               email-address (get-in subscription [:extra-fields :email-address])
               sub-id (get subscription :concept-id)
@@ -290,20 +312,22 @@
                                (json/decode true)
                                :Query)
               query-params (create-query-params query-string)
-              params1 (merge {:created-at time-constraint
-                              :collection-concept-id coll-id
-                              :token (config/echo-system-token)}
-                             query-params)
-              params2 (merge {:revision-date time-constraint
-                              :collection-concept-id coll-id
-                              :token (config/echo-system-token)}
-                             query-params)
-              gran-refs1 (search/find-granule-references context params1)
-              gran-refs2 (search/find-granule-references context params2)
-              gran-refs (distinct (concat gran-refs1 gran-refs2))
-              subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)
-              _ (send-update-subscription-notification-time context sub-id)]]
-    [sub-id subscriber-filtered-gran-refs email-address subscription]))
+              created-since (merge {:created-at time-constraint
+                                    :collection-concept-id coll-id
+                                    :token (config/echo-system-token)}
+                                   query-params)
+              updated-since (merge {:revision-date time-constraint
+                                    :collection-concept-id coll-id
+                                    :token (config/echo-system-token)}
+                                   query-params)
+              grans-created (search/find-granule-references context created-since)
+              grans-updated (search/find-granule-references context updated-since)
+              gran-refs (distinct (concat grans-created grans-updated))
+
+              subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
+    (do
+      (send-update-subscription-notification-time! context sub-id)
+      [sub-id subscriber-filtered-gran-refs email-address subscription])))
 
 (defn- send-subscription-emails
   "Takes processed processed subscription tuples and sends out emails if applicable."
@@ -311,26 +335,23 @@
   (doseq [subscriber-filtered-gran-refs-tuple subscriber-filtered-gran-refs-list
           :let [[sub-id subscriber-filtered-gran-refs email-address subscription] subscriber-filtered-gran-refs-tuple]]
     (when (seq subscriber-filtered-gran-refs)
-     (let [gran-ref-locations (map :location subscriber-filtered-gran-refs)
-           email-content (create-email-content (mail-sender) email-address gran-ref-locations subscription)
-           email-settings {:host (email-server-host) :port (email-server-port)}]
-      (try
-       (postal-core/send-message email-settings email-content)
-       (catch Exception e
-         (error "Exception caught in email subscription: " sub-id "\n\n"
-          (.getMessage e) "\n\n" e)))))))
+      (let [gran-ref-locations (map :location subscriber-filtered-gran-refs)
+            email-content (create-email-content (mail-sender) email-address gran-ref-locations subscription)
+            email-settings {:host (email-server-host) :port (email-server-port)}]
+        (try
+          (postal-core/send-message email-settings email-content)
+          (catch Exception e
+            (error "Exception caught in email subscription: " sub-id "\n\n"
+                   (.getMessage e) "\n\n" e)))))))
 
 (defn- email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
   in the subscription and were created/updated during the last processing interval."
   [context]
-  (let [end-time (t/now)
-        start-time (t/minus end-time (t/seconds (email-subscription-processing-lookback)))
-        time-constraint (str start-time "," end-time)
-        subscriptions (->> (mdb/find-concepts context {:latest true} :subscription)
-                           (filter #(not (:deleted %)))
+  (let [subscriptions (->> (mdb/find-concepts context {:latest true} :subscription)
+                           (remove :deleted)
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
-    (send-subscription-emails context (process-subscriptions context subscriptions time-constraint))))
+    (send-subscription-emails context (process-subscriptions context subscriptions))))
 
 (defn trigger-autocomplete-suggestions-reindex
   [context]
@@ -338,8 +359,8 @@
     (info "Sending events to reindex autocomplete suggestions in all providers:" (pr-str providers))
     (doseq [provider providers]
       (ingest-events/publish-provider-event
-        context
-        (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
+       context
+       (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
 
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
