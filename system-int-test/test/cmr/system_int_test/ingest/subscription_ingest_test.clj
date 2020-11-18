@@ -429,3 +429,56 @@
           {:keys [status errors]} (ingest/ingest-concept concept {:token user2-token})]
       (is (= 201 status))
       (is (nil? errors)))))
+
+(deftest ingest-update-and-delete-subscription-as-subscriber
+  (testing "Tests updating and deleting subscriptions as subscriber"
+    (doseq [acl (:items
+                 (ac-util/search-for-acls (system/context)
+                                          {:provider "PROV1"
+                                           :target ["SUBSCRIPTION_MANAGEMENT" "INGEST_MANAGEMENT_ACL"]}
+                                          {:token "mock-echo-system-token"}))
+            :let [concept-id (:concept_id acl)]]
+      (echo-util/ungrant (system/context) concept-id))
+    (index/wait-until-indexed)
+    (let [admin-group (echo-util/get-or-create-group (system/context) "admin-group")
+          admin-user-token (echo-util/login (system/context) "admin-user" [admin-group])]
+      (echo-util/grant-all-subscription-group-sm (system/context)
+                                                 "PROV1"
+                                                 admin-group
+                                                 [:read :update])
+      (echo-util/grant-groups-ingest (system/context)
+                                     "PROV1"
+                                     [admin-group])
+      (index/wait-until-indexed)
+      (let [user1-token (echo-util/login (system/context) "user1")
+            user2-token (echo-util/login (system/context) "user2")
+            concept (subscription-util/make-subscription-concept {:SubscriberId "user1"})
+            concept2 (subscription-util/make-subscription-concept {:SubscriberId "user1" :native-id "new-concept"})
+            {:keys [concept-id revision-id status]} (ingest/ingest-concept concept {:token user1-token})
+            concept (merge {:concept-id concept-id} concept)]
+        (is (= 201 status))
+        (are3 [ingest-api-call args expected-status expected-errors]
+          (let [{:keys [status errors]} (apply ingest-api-call args)]
+            (is (= expected-status status))
+            (is (= expected-errors errors)))
+
+          "Attempt to update subscription as user2"
+          ingest/ingest-concept [concept {:token user2-token}] 401 ["You do not have permission to perform that action."]
+
+          "Attempt to delete subscription as user2"
+          ingest/delete-concept [concept {:token user2-token}] 401 ["You do not have permission to perform that action."]
+
+          "Update subscription as user1"
+          ingest/ingest-concept [concept {:token user1-token}] 200 nil
+
+          "Delete subscription as user1"
+          ingest/delete-concept [concept {:token user1-token}] 200 nil
+
+          "Ingest subscription as admin"
+          ingest/ingest-concept [concept2 {:token admin-user-token}] 201 nil
+
+          "Update subscription as admin"
+          ingest/ingest-concept [concept2 {:token admin-user-token}] 200 nil
+
+          "Delete subscription as admin"
+          ingest/delete-concept [concept2 {:token admin-user-token}] 200 nil)))))
