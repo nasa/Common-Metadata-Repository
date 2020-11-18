@@ -8,7 +8,8 @@
    [cmr.common.log :refer [debug info warn error]]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]
-   [cmr.ingest.validation.validation :as v]))
+   [cmr.ingest.validation.validation :as v]
+   [cmr.transmit.metadata-db :as mdb]))
 
 (defn- validate-and-prepare-subscription-concept
   "Validate subscription concept, set the concept format and returns the concept;
@@ -37,6 +38,13 @@
     (api-core/log-concept-with-metadata-size concept-with-user-id request-context)
     (api-core/generate-ingest-response headers save-subscription-result)))
 
+(defn- common-ingest-checks
+  "Common checks needed before starting to process an ingest operation"
+  [request-context provider-id]
+  (common-enabled/validate-write-enabled request-context "ingest")
+  (lt-validation/validate-launchpad-token request-context)
+  (api-core/verify-provider-exists request-context provider-id))
+
 (defn- check-subscription-ingest-permission
   "All the checks needed before starting to process an ingest of subscriptions"
   [concept request-context headers provider-id]
@@ -64,9 +72,7 @@
   Becomes a problem"
   [provider-id native-id request]
   (let [{:keys [body content-type headers request-context]} request]
-    (common-enabled/validate-write-enabled request-context "ingest")
-    (lt-validation/validate-launchpad-token request-context)
-    (api-core/verify-provider-exists request-context provider-id)
+    (common-ingest-checks request-context provider-id)
     (let [concept (api-core/body->concept!
                     :subscription provider-id native-id body content-type headers)]
       (check-subscription-ingest-permission concept request-context headers provider-id)
@@ -75,6 +81,25 @@
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."
   [provider-id native-id request]
-  (acl/verify-subscription-management-permission
-    (:request-context request) :update :provider-object provider-id)
-  (api-core/delete-concept :subscription provider-id native-id request))
+  (let [{:keys [body content-type headers request-context]} request
+        _ (common-ingest-checks request-context provider-id)
+        concept-type :subscription
+        concept (first (mdb/find-concepts request-context
+                                          {:provider-id provider-id
+                                           :native-id native-id
+                                           :exclude-metadata false
+                                           :latest true}
+                                          concept-type))]
+    (check-subscription-ingest-permission concept request-context headers provider-id)
+    (let [concept-attribs (-> {:provider-id provider-id
+                               :native-id native-id
+                               :concept-type concept-type}
+                              (api-core/set-revision-id headers)
+                              (api-core/set-user-id request-context headers))]
+      (info (format "Deleting %s %s from client %s"
+                    (name concept-type) (pr-str concept-attribs) (:client-id request-context)))
+      (api-core/generate-ingest-response headers
+                                         (api-core/format-and-contextualize-warnings
+                                          (ingest/delete-concept
+                                           request-context
+                                           concept-attribs))))))
