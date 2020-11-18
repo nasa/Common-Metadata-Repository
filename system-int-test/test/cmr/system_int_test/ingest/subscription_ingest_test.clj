@@ -3,6 +3,8 @@
   For subscription permissions tests, see `provider-ingest-permissions-test`."
   (:require
    [clojure.test :refer :all]
+   [clj-time.core :as t]
+   [cmr.access-control.test.util :as ac-util]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :refer [are3]]
    [cmr.ingest.services.jobs :as jobs]
@@ -17,7 +19,7 @@
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
    [cmr.transmit.access-control :as access-control]
-   [clj-time.core :as t]
+   [cmr.transmit.config :as transmit-config]
    [cmr.transmit.metadata-db :as mdb2]))
 
 (use-fixtures :each
@@ -378,3 +380,52 @@
                        flatten
                        (map :concept-id))]
        (is (= expected actual))))))
+
+(deftest roll-your-own-subscription-tests
+  """
+  Use cases coming from EarthData Search wanting to allow their users to create
+  subscriptions without the need to have any acls
+  """
+  (let [acls (ac-util/search-for-acls (transmit-config/echo-system-token)
+                                      {:identity-type "provider"
+                                       :provider "PROV1"
+                                       :target "INGEST_MANAGEMENT_ACL"})
+        _ (echo-util/ungrant (system/context) (:concept_id (first (:items acls))))
+        supplied-concept-id "SUB1000-PROV1"
+        user1-token (echo-util/login (system/context) "user1")
+        concept (subscription-util/make-subscription-concept {:concept-id supplied-concept-id
+                                                              :SubscriberId "user1"
+                                                              :native-id "Atlantic-1"})]
+    ;; caes 1 test against guest token - no subscription
+    (testing "guest token - guests can not create subscriptions - passes"
+      (let [{:keys [status errors]} (ingest/ingest-concept concept)]
+        (is (= 401 status))
+        (is (= ["You do not have permission to perform that action."] errors))))
+    ;; case 2 test on system token (ECHO token) - should pass
+    (testing "system token - admins can create subscriptions - passes"
+      (let [{:keys [status errors]} (ingest/ingest-concept concept {:token (transmit-config/echo-system-token)})]
+        (is (or (= 200 status) (= 201 status)))
+        (is (nil? errors))))
+    ;; case 3 test account 1 which matches metadata data user - should pass
+    (testing "use an account which matches the metadata and does not have ACL - passes"
+      (let [{:keys [status errors]} (ingest/ingest-concept concept {:token user1-token})]
+        (is (= 200 status))
+        (is (nil? errors))))
+    ;; case 4 test account 3 which does NOT match metadata user and account does not have prems
+    (testing "use an account which does not matches the metadata and does not have ACL - fails"
+      (let [user3-token (echo-util/login (system/context) "user3")
+            {:keys [status errors]} (ingest/ingest-concept concept {:token user3-token})]
+        (is (= 401 status))
+        (is (= ["You do not have permission to perform that action."] errors))))))
+
+;; case 5 test account 2 which does NOT match metadata user and account has prems ; this should be MMT's use case
+(deftest roll-your-own-subscription-and-have-acls-tests-with-acls
+  (testing "Use an account which does not match matches the metadata and DOES have an ACL"
+    (let [user2-token (echo-util/login (system/context) "user2")
+          supplied-concept-id "SUB1000-PROV1"
+          concept (subscription-util/make-subscription-concept {:concept-id supplied-concept-id
+                                                                :SubscriberId "user1"
+                                                                :native-id "Atlantic-1"})
+          {:keys [status errors]} (ingest/ingest-concept concept {:token user2-token})]
+      (is (= 201 status))
+      (is (nil? errors)))))
