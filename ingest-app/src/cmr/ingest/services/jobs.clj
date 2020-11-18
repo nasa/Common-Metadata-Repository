@@ -260,14 +260,14 @@
                            "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"))}]}))
 
 (defn- add-updated-since
- "Pull out the start and end times from a time-constraint value and associate them to a map"
- [raw time-constraint]
- (let [parts (clojure.string/split time-constraint, #",")
-       start-time (first parts)
-       end-time (last parts)]
-  (assoc raw :start-time start-time :end-time end-time)))
+  "Pull out the start and end times from a time-constraint value and associate them to a map"
+  [raw time-constraint]
+  (let [parts (clojure.string/split time-constraint, #",")
+        start-time (first parts)
+        end-time (last parts)]
+    (assoc raw :start-time start-time :end-time end-time)))
 
-(defn- send-update-subscription-notification-time
+(defn- send-update-subscription-notification-time!
   "handle any packaging of data here before sending it off to transmit package"
   [context data]
   (debug "send-update-subscription-notification-time with" data)
@@ -278,10 +278,9 @@
    not have read access to."
   [context gran-refs subscriber-id]
   (when (seq gran-refs)
-    (let [concept-ids (map :concept-id gran-refs)
-          permissions (json/parse-string
-                        (access-control/get-permissions context {:user_id subscriber-id
-                                                                 :concept_id (map :concept-id gran-refs)}))]
+    (let [permissions (json/parse-string
+                       (access-control/get-permissions context {:user_id subscriber-id
+                                                                :concept_id (map :concept-id gran-refs)}))]
       (filter (fn [granule-reference]
                 (some #{"read"} (get permissions (:concept-id granule-reference))))
               gran-refs))))
@@ -324,9 +323,10 @@
               grans-updated (search/find-granule-references context updated-since)
               gran-refs (distinct (concat grans-created grans-updated))
 
-              subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)
-              _ (send-update-subscription-notification-time context sub-id)]]
-    [sub-id subscriber-filtered-gran-refs email-address subscription]))
+              subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
+    (do
+      (send-update-subscription-notification-time! context sub-id)
+      [sub-id subscriber-filtered-gran-refs email-address subscription])))
 
 (defn- send-subscription-emails
   "Takes processed processed subscription tuples and sends out emails if applicable."
