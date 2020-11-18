@@ -1106,7 +1106,7 @@
         (doseq [c expired-concepts]
           (let [tombstone (-> c
                               (update-in [:revision-id] inc)
-                              (assoc :deleted true :metadata ""))]
+                              (assoc :deleted true :metadata "" :revision-date (time-keeper/now)))]
             (try
               (try-to-save db provider context tombstone)
               (ingest-events/publish-event
