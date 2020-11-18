@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10
   "Defines mappings from a UMM record into ECHO10 XML"
   (:require
-   [clj-time.format :as f]
    [clojure.string :as string]
+   [cmr.common.date-time-parser :as p]
    [cmr.common.util :as util]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.date-util :as dates]
@@ -162,7 +162,7 @@
             [:Explanation (:Explanation doi)])]))
      [:CollectionDataType (:CollectionDataType c)]
      (when-let [revision-date (dates/metadata-update-date c)]
-       [:RevisionDate (f/unparse (f/formatters :date-time) revision-date)])
+       [:RevisionDate (p/clj-time->date-time-str revision-date)])
      [:SuggestedUsage (util/trunc (:Purpose c) 4000)]
      (dc/generate-processing-centers c)
      [:ProcessingLevelId (-> c :ProcessingLevel :Id)]

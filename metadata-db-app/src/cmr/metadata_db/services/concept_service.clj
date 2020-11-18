@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [cmr.common.concepts :as cu]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.date-time-parser :as p]
    [cmr.common.log :refer (debug error info warn trace)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -1106,7 +1107,9 @@
         (doseq [c expired-concepts]
           (let [tombstone (-> c
                               (update-in [:revision-id] inc)
-                              (assoc :deleted true :metadata "" :revision-date (time-keeper/now)))]
+                              (assoc :deleted true
+                                     :metadata ""
+                                     :revision-date (p/clj-time->date-time-str (time-keeper/now))))]
             (try
               (try-to-save db provider context tombstone)
               (ingest-events/publish-event
