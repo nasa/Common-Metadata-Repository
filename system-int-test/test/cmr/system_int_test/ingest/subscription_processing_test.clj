@@ -12,7 +12,6 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
    [cmr.transmit.access-control :as access-control]
-   [clj-time.core :as t]
    [cmr.transmit.metadata-db :as mdb2]))
 
 (use-fixtures :each
@@ -75,7 +74,6 @@
                                                   {:token "mock-echo-system-token"})]
 
      (index/wait-until-indexed)
-     (println "==================\n\n^^^" (.toString (t/now)) "gran1")
 
      (testing "First query executed does not have a last-notified-at and looks back 24 hours"
        (let [gran1 (data-core/ingest "PROV1"
@@ -95,7 +93,6 @@
      ;; force eval of lazy seq
      (is (not= nil (count (trigger-process-subscriptions))))
 
-     (println "vvv" (.toString (t/now)) "gran2")
      (testing "Second run finds only collections created since the last notification"
        (let [gran2 (data-core/ingest "PROV1"
                                      (data-granule/granule-with-umm-spec-collection coll1
@@ -104,7 +101,6 @@
                                                                                      :access-value 1})
                                      {:token "mock-echo-system-token"})
              _ (index/wait-until-indexed)
-             _ (println "^^^" (.toString (t/now)) "gran2")
              response (->> (trigger-process-subscriptions)
                            (map #(nth % 1))
                            flatten
