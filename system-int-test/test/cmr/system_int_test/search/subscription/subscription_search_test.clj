@@ -2,6 +2,7 @@
   "This tests searching subscriptions."
   (:require
    [clojure.test :refer :all]
+   [cmr.access-control.test.util :as ac-util]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -14,8 +15,8 @@
 
 (use-fixtures :each
               (join-fixtures
-               [(ingest/reset-fixture {"provguid1" "PROV1" 
-                                       "provguid2" "PROV2" 
+               [(ingest/reset-fixture {"provguid1" "PROV1"
+                                       "provguid2" "PROV2"
                                        "provguid3" "PROV3"
                                        "provguid4" "PROV4"})
                 (subscriptions/grant-all-subscription-fixture
@@ -26,6 +27,45 @@
                 ;; No read permission granted for any user_types for PROV4.
                 (subscriptions/grant-all-subscription-fixture
                   {"provguid4" "PROV4"} [:update] [:update])]))
+
+(deftest search-for-subscriptions-test-with-subscriber
+  (doseq [acl (:items
+               (ac-util/search-for-acls (system/context)
+                                        {:provider "PROV1"
+                                         :target ["SUBSCRIPTION_MANAGEMENT" "INGEST_MANAGEMENT_ACL"]}
+                                        {:token "mock-echo-system-token"}))
+          :let [concept-id (:concept_id acl)]]
+    (echo-util/ungrant (system/context) concept-id))
+  (index/wait-until-indexed)
+  (let [subscriber-token (echo-util/login (system/context) "subscriber")
+        guest-token (echo-util/login-guest (system/context))
+        subscription (subscriptions/ingest-subscription (subscriptions/make-subscription-concept
+                                                         {:Name "test subscription"
+                                                          :SubscriberId "subscriber"
+                                                          :native-id "test-subscription-native-id"})
+                                                        {:token "mock-echo-system-token"})]
+    (index/wait-until-indexed)
+    (is (= 201 (:status subscription)))
+    (are3 [expected-subscriptions query]
+      (do
+        (testing "XML references format"
+          (data2-core/assert-refs-match expected-subscriptions (subscriptions/search-refs query)))
+        (testing "JSON format"
+          (subscriptions/assert-subscription-search expected-subscriptions (subscriptions/search-json query))))
+
+      "Find all returns nothing for guest"
+      [] {:token guest-token}
+
+      "Find all returns all for subscriber"
+      [subscription] {:token subscriber-token}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; name Param
+      "By name case sensitive - exact match returns nothing for guest"
+      [] {:name "test subscription" :token guest-token}
+
+      "By name case sensitive - exact match returns the right subscription for registered user"
+      [subscription] {:name "test subscription" :token subscriber-token})))
 
 (deftest search-for-subscriptions-user-read-permission-test
   ;; SUBSCRIPTION_MANAGEMENT ACL grants only update permission for guest on PROV3,
@@ -59,7 +99,7 @@
       [] {:name "Subscription3" :token guest-token}
 
       "By name case sensitive - exact match returns the right subscription for registered user"
-      [subscription3] {:name "Subscription3" :token user1-token} )))
+      [subscription3] {:name "Subscription3" :token user1-token})))
 
 (deftest search-for-subscriptions-group-read-permission-test
   (let [subscription4 (subscriptions/ingest-subscription-with-attrs {:native-id "Sub4"
@@ -77,7 +117,7 @@
 
     ;; grant one group read permission
     (echo-util/grant-all-subscription-group-sm (system/context) "PROV4" group1-concept-id [:read])
-    
+
     (is (= 201 (:status subscription4)))
     (are3 [expected-subscriptions query]
       (do
@@ -98,7 +138,7 @@
       [] {:name "Subscription4" :token user2g-token}
 
       "By name case sensitive - exact match returns the right subscription for user1g"
-      [subscription4] {:name "Subscription4" :token user1g-token} )))
+      [subscription4] {:name "Subscription4" :token user1g-token})))
 
 (deftest search-for-subscriptions-validation-test
   (testing "Unrecognized parameters"

@@ -6,6 +6,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
+   [cmr.access-control.test.util :as ac-util]
    [cmr.common.mime-types :as mt]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
@@ -21,6 +22,17 @@
   [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
    (subscription/grant-all-subscription-fixture {"provguid1" "PROV1"} [:read :update] [:read :update])
    (subscription/grant-all-subscription-fixture {"provguid2" "PROV2"} [:update] [:read :update])]))
+
+(defn- assert-retrieved-concept-as-subscriber
+  "Verify the retrieved concept by checking against the expected subscription name,
+  which we have deliberately set to be different for each concept revision."
+  [concept-id revision-id accept-format expected-subscription-name token]
+  (let [{:keys [status body]} (search/retrieve-concept
+                               concept-id revision-id {:accept accept-format
+                                                       :query-params {:token token}})]
+    (is (= 200 status))
+    (is (= expected-subscription-name
+           (:Name (json/parse-string body true))))))
 
 (defn- assert-retrieved-concept
   "Verify the retrieved concept by checking against the expected subscription name,
@@ -68,6 +80,35 @@
   [concept-id revision-id accept-format err-code err-message]
   (let [{:keys [status errors]} (handle-retrieve-concept-error
                                  concept-id revision-id accept-format)]
+    (is (= err-code status))
+    (is (= [err-message] errors))))
+
+(defmulti handle-retrieve-concept-as-subscriber-error
+  "Execute the retrieve concept call with the given parameters and returns the status and errors
+  based on the result format."
+  (fn [concept-id revision-id accept-format token]
+    accept-format))
+
+(defmethod handle-retrieve-concept-as-subscriber-error mt/umm-json
+  [concept-id revision-id accept-format token]
+  (let [{:keys [status body]} (search/retrieve-concept concept-id revision-id
+                                                       {:accept accept-format
+                                                        :query-params {:token token}})
+        errors (:errors (json/parse-string body true))]
+    {:status status :errors errors}))
+
+(defmethod handle-retrieve-concept-as-subscriber-error :default
+  [concept-id revision-id accept-format token]
+  (search/get-search-failure-xml-data
+   (search/retrieve-concept concept-id revision-id {:accept accept-format
+                                                    :query-params {:token token}
+                                                    :throw-exceptions true})))
+
+(defn- assert-retrieved-concept-as-subscriber-recieved-error
+  "Verify the expected error code and error message are returned when retrieving the given concept."
+  [concept-id revision-id accept-format err-code token err-message]
+  (let [{:keys [status errors]} (handle-retrieve-concept-as-subscriber-error
+                                 concept-id revision-id accept-format token)]
     (is (= err-code status))
     (is (= [err-message] errors))))
 
@@ -178,3 +219,61 @@
       (assert-retrieved-concept-error "SUB1111-PROV1" nil unsupported-mt 400
         (format "The mime types specified in the accept header [%s] are not supported."
                 unsupported-mt)))))
+
+(deftest retrieve-subscription-by-concept-id-with-subscriber
+  (doseq [acl (:items
+               (ac-util/search-for-acls (s/context)
+                                        {:provider "PROV1"
+                                         :target ["SUBSCRIPTION_MANAGEMENT" "INGEST_MANAGEMENT_ACL"]}
+                                        {:token "mock-echo-system-token"}))
+          :let [concept-id (:concept_id acl)]]
+    (e/ungrant (s/context) concept-id))
+  (index/wait-until-indexed)
+  (doseq [accept-format [mt/umm-json]]
+    (let [suffix (if accept-format
+                   (mt/mime-type->format accept-format)
+                   "nil")
+          subscriber-token (e/login (s/context) "subscriber")
+          sub1-r1-name (str "s1-r1" suffix)
+          native-id (str "subscription1" suffix)
+          sub1-r1 (subscription/ingest-subscription (subscription/make-subscription-concept
+                                                      {:Name sub1-r1-name
+                                                       :SubscriberId "subscriber"
+                                                       :native-id native-id})
+                                                    {:token "mock-echo-system-token"})
+          concept-id (:concept-id sub1-r1)
+          sub1-concept (mdb/get-concept concept-id)]
+      (index/wait-until-indexed)
+
+      (testing "retrieval by subscription concept-id and revision id returns the specified revision"
+        (assert-retrieved-concept-as-subscriber concept-id 1 accept-format sub1-r1-name subscriber-token))
+
+      (testing "retrieval by only subscription concept-id returns the latest revision"
+        (assert-retrieved-concept-as-subscriber concept-id nil accept-format sub1-r1-name subscriber-token))
+
+      (testing "retrieval by non-existent revision returns error"
+        (assert-retrieved-concept-as-subscriber-recieved-error concept-id 3 accept-format 404 subscriber-token
+          (format "Concept with concept-id [%s] and revision-id [3] does not exist." concept-id)))
+
+      (testing "retrieval by non-existent concept-id returns error"
+        (assert-retrieved-concept-as-subscriber-recieved-error "SUB404404404-PROV1" nil accept-format 404 subscriber-token
+          "Concept with concept-id [SUB404404404-PROV1] could not be found."))
+
+      (testing "retrieval by non-existent concept-id and revision-id returns error"
+        (assert-retrieved-concept-as-subscriber-recieved-error "SUB404404404-PROV1" 1 accept-format 404 subscriber-token
+          "Concept with concept-id [SUB404404404-PROV1] and revision-id [1] does not exist."))
+
+      (testing "retrieval of deleted concept"
+        ;; delete the subscription concept
+        (ingest/delete-concept sub1-concept (subscription/token-opts "mock-echo-system-token"))
+        (index/wait-until-indexed)
+
+        (testing "retrieval of deleted concept without revision id results in error"
+          (assert-retrieved-concept-as-subscriber-recieved-error concept-id nil accept-format 404 subscriber-token
+            (format "Concept with concept-id [%s] could not be found." concept-id)))
+
+        (testing "retrieval of deleted concept with revision id returns a 400 error"
+          (assert-retrieved-concept-as-subscriber-recieved-error concept-id 2 accept-format 400 subscriber-token
+            (format (str "The revision [2] of concept [%s] represents "
+                         "a deleted concept and does not contain metadata.")
+                    concept-id)))))))
