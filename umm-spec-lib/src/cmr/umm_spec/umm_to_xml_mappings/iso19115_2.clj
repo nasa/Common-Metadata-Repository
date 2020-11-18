@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2
   "Defines mappings from UMM records into ISO19115-2 XML."
   (:require
-   [clj-time.format :as f]
    [clojure.string :as string]
+   [cmr.common.date-time-parser :as p]
    [cmr.common.util :as util]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.date-util :as date-util]
@@ -101,7 +101,7 @@
                           (date-util/metadata-create-date c)
                           date-util/parsed-default-date)]
   [:gmd:dateStamp
-   [:gco:DateTime (f/unparse (f/formatters :date-time) datestamp)]]))
+   [:gco:DateTime (p/clj-time->date-time-str datestamp)]]))
 
 (defn- generate-metadata-dates
   "Returns ISO datestamp and XML elements for Metadata Dates of the given UMM collection.
@@ -122,7 +122,7 @@
          {:codeList ""
           :codeListValue ""} "Date"]]
        [:gmd:domainValue
-        [:gco:CharacterString (f/unparse (f/formatters :date-time) (:Date date))]]
+        [:gco:CharacterString (p/clj-time->date-time-str (:Date date))]]
        [:gmd:parentEntity {:gco:nilReason "inapplicable"}]
        [:gmd:rule {:gco:nilReason "inapplicable"}]
        [:gmd:source {:gco:nilReason "inapplicable"}]]]]]))
