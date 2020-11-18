@@ -3,7 +3,7 @@
   For subscription permissions tests, see `provider-ingest-permissions-test`."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.access-control.test.util :as ac-util]
    [cmr.common.util :refer [are3]]
    [cmr.ingest.services.jobs :as jobs]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -17,25 +17,21 @@
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
    [cmr.transmit.access-control :as access-control]
-   [clj-time.core :as t]
+   [cmr.transmit.config :as transmit-config]
    [cmr.transmit.metadata-db :as mdb2]))
 
 (use-fixtures :each
-              (join-fixtures
-               [(ingest/reset-fixture
-                  {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"})
-                (subscription-util/grant-all-subscription-fixture
-                  {"provguid1" "PROV1" "provguid2" "PROV2"}
-                  [:read :update]
-                  [:read :update])
-                (dev-sys-util/freeze-resume-time-fixture)
-                (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV3"}
-                                                                  [:read]
-                                                                  [:read :update])]))
-
-(defn- current-time
-  []
-  (str (first (clojure.string/split (str (java.time.LocalDateTime/now)) #"\.")) "Z"))
+  (join-fixtures
+   [(ingest/reset-fixture
+     {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"})
+    (subscription-util/grant-all-subscription-fixture
+     {"provguid1" "PROV1" "provguid2" "PROV2"}
+     [:read :update]
+     [:read :update])
+    (dev-sys-util/freeze-resume-time-fixture)
+    (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV3"}
+                                                      [:read]
+                                                      [:read :update])]))
 
 (defn- process-subscriptions
   "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
@@ -376,86 +372,49 @@
                        (map :concept-id))]
        (is (= expected actual))))))
 
-(deftest ^:oracle subscription-email-processing-time-constraint-test
-  (system/only-with-real-database
-   (let [user1-group-id (echo-util/get-or-create-group (system/context) "group1")
-         _user1-token (echo-util/login (system/context) "user1" [user1-group-id])
-         _ (echo-util/ungrant (system/context)
-                              (-> (access-control/search-for-acls (system/context)
-                                                                  {:provider "PROV1"
-                                                                   :identity-type "catalog_item"}
-                                                                  {:token "mock-echo-system-token"})
-                                  :items
-                                  first
-                                  :concept_id))
+(deftest roll-your-own-subscription-tests
+  ;; Use cases coming from EarthData Search wanting to allow their users to create
+  ;; subscriptions without the need to have any acls
+  (let [acls (ac-util/search-for-acls (transmit-config/echo-system-token)
+                                      {:identity-type "provider"
+                                       :provider "PROV1"
+                                       :target "INGEST_MANAGEMENT_ACL"})
+        _ (echo-util/ungrant (system/context) (:concept_id (first (:items acls))))
+        supplied-concept-id "SUB1000-PROV1"
+        user1-token (echo-util/login (system/context) "user1")
+        concept (subscription-util/make-subscription-concept {:concept-id supplied-concept-id
+                                                              :SubscriberId "user1"
+                                                              :native-id "Atlantic-1"})]
+    ;; caes 1 test against guest token - no subscription
+    (testing "guest token - guests can not create subscriptions - passes"
+      (let [{:keys [status errors]} (ingest/ingest-concept concept)]
+        (is (= 401 status))
+        (is (= ["You do not have permission to perform that action."] errors))))
+    ;; case 2 test on system token (ECHO token) - should pass
+    (testing "system token - admins can create subscriptions - passes"
+      (let [{:keys [status errors]} (ingest/ingest-concept concept {:token (transmit-config/echo-system-token)})]
+        (is (or (= 200 status) (= 201 status)))
+        (is (nil? errors))))
+    ;; case 3 test account 1 which matches metadata data user - should pass
+    (testing "use an account which matches the metadata and does not have ACL - passes"
+      (let [{:keys [status errors]} (ingest/ingest-concept concept {:token user1-token})]
+        (is (= 200 status))
+        (is (nil? errors))))
+    ;; case 4 test account 3 which does NOT match metadata user and account does not have prems
+    (testing "use an account which does not matches the metadata and does not have ACL - fails"
+      (let [user3-token (echo-util/login (system/context) "user3")
+            {:keys [status errors]} (ingest/ingest-concept concept {:token user3-token})]
+        (is (= 401 status))
+        (is (= ["You do not have permission to perform that action."] errors))))))
 
-         _ (echo-util/grant (system/context)
-                            [{:group_id user1-group-id
-                              :permissions [:read]}]
-                            :catalog_item_identity
-                            {:provider_id "PROV1"
-                             :name "Provider collection/granule ACL"
-                             :collection_applicable true
-                             :granule_applicable true
-                             :granule_identifier {:access_value {:include_undefined_value true
-                                                                 :min_value 1 :max_value 50}}})
-         _ (echo-util/grant (system/context)
-                            [{:user_type :registered
-                              :permissions [:read]}]
-                            :catalog_item_identity
-                            {:provider_id "PROV2"
-                             :name "Provider collection/granule ACL registered users"
-                             :collection_applicable true
-                             :granule_applicable true
-                             :granule_identifier {:access_value {:include_undefined_value true
-                                                                 :min_value 100 :max_value 200}}})
-         ;; Setup collection
-         coll1 (data-core/ingest-umm-spec-collection "PROV1"
-                                                     (data-umm-c/collection {:ShortName "coll1"
-                                                                             :EntryTitle "entry-title1"})
-                                                     {:token "mock-echo-system-token"})
-
-         _ (index/wait-until-indexed)
-         ;; Setup subscriptions
-         _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
-                                                   {:Name "test_sub_prov1"
-                                                    :SubscriberId "user1"
-                                                    :EmailAddress "user1@nasa.gov"
-                                                    :CollectionConceptId (:concept-id coll1)
-                                                    :Query " "})
-                                                  {:token "mock-echo-system-token"})]
-
-     (index/wait-until-indexed)
-
-     (testing "First query executed does not have a last-notified-at and looks back 24 hours"
-       (let [gran1 (data-core/ingest "PROV1"
-                                     (data-granule/granule-with-umm-spec-collection coll1
-                                                                                    (:concept-id coll1)
-                                                                                    {:granule-ur "Granule1"
-                                                                                     :access-value 1})
-                                     {:token "mock-echo-system-token"})
-             _ (index/wait-until-indexed)
-             results (->> (process-subscriptions)
-                          (map #(nth % 1))
-                          flatten
-                          (map :concept-id))]
-         (is (= (:concept-id gran1)
-                (first results)))))
-
-     (Thread/sleep 1000)
-     (testing "Second run finds only collections created since the last notification"
-       (let [gran2 (data-core/ingest "PROV1"
-                                     (data-granule/granule-with-umm-spec-collection coll1
-                                                                                    (:concept-id coll1)
-                                                                                    {:granule-ur "Granule2"
-                                                                                     :access-value 1})
-                                     {:token "mock-echo-system-token"})
-             _ (index/wait-until-indexed)
-             response (->> (process-subscriptions)
-                           (map #(nth % 1))
-                           flatten
-                           (map :concept-id))]
-
-         (is (= 1 (count response)))
-         (is (= (:concept-id gran2)
-                (first response))))))))
+;; case 5 test account 2 which does NOT match metadata user and account has prems ; this should be MMT's use case
+(deftest roll-your-own-subscription-and-have-acls-tests-with-acls
+  (testing "Use an account which does not match matches the metadata and DOES have an ACL"
+    (let [user2-token (echo-util/login (system/context) "user2")
+          supplied-concept-id "SUB1000-PROV1"
+          concept (subscription-util/make-subscription-concept {:concept-id supplied-concept-id
+                                                                :SubscriberId "user1"
+                                                                :native-id "Atlantic-1"})
+          {:keys [status errors]} (ingest/ingest-concept concept {:token user2-token})]
+      (is (= 201 status))
+      (is (nil? errors)))))

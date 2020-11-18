@@ -334,14 +334,14 @@
   (doseq [subscriber-filtered-gran-refs-tuple subscriber-filtered-gran-refs-list
           :let [[sub-id subscriber-filtered-gran-refs email-address subscription] subscriber-filtered-gran-refs-tuple]]
     (when (seq subscriber-filtered-gran-refs)
-     (let [gran-ref-locations (map :location subscriber-filtered-gran-refs)
-           email-content (create-email-content (mail-sender) email-address gran-ref-locations subscription)
-           email-settings {:host (email-server-host) :port (email-server-port)}]
-      (try
-       (postal-core/send-message email-settings email-content)
-       (catch Exception e
-         (error "Exception caught in email subscription: " sub-id "\n\n"
-          (.getMessage e) "\n\n" e)))))))
+      (let [gran-ref-locations (map :location subscriber-filtered-gran-refs)
+            email-content (create-email-content (mail-sender) email-address gran-ref-locations subscription)
+            email-settings {:host (email-server-host) :port (email-server-port)}]
+        (try
+          (postal-core/send-message email-settings email-content)
+          (catch Exception e
+            (error "Exception caught in email subscription: " sub-id "\n\n"
+                   (.getMessage e) "\n\n" e)))))))
 
 (defn- email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
@@ -352,18 +352,14 @@
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
     (send-subscription-emails context (process-subscriptions context subscriptions))))
 
-(defn trigger-subscription-processing
-  [context]
-  (email-subscription-processing context))
-
 (defn trigger-autocomplete-suggestions-reindex
   [context]
   (let [providers (map :provider-id (mdb/get-providers context))]
     (info "Sending events to reindex autocomplete suggestions in all providers:" (pr-str providers))
     (doseq [provider providers]
       (ingest-events/publish-provider-event
-        context
-        (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
+       context
+       (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
 
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
