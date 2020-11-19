@@ -31,31 +31,33 @@
                                                   {:token token})))
         ;; index the collections so that they can be found during variable association
         _ (index/wait-until-indexed)
-        ;; create variables
-        {variable1-concept-id :concept-id} (vu/ingest-variable-with-attrs
-                                            {:native-id "var1"
-                                             :Name "Variable1"
-                                             :LongName "Measurement1"})
-        {variable2-concept-id :concept-id} (vu/ingest-variable-with-attrs
-                                            {:native-id "var2"
-                                             :Name "Variable2"
-                                             :LongName "Measurement2"})
-        {variable3-concept-id :concept-id} (vu/ingest-variable-with-attrs
-                                            {:native-id "somevar"
-                                             :Name "SomeVariable"
-                                             :LongName "Measurement2"})
-        {variable4-concept-id :concept-id} (vu/ingest-variable-with-attrs
-                                            {:native-id "v4"
-                                             :Name "Name4"
-                                             :LongName "Measurement4"})]
 
-    ;; create variable associations
-    ;; Variable1 is associated with coll1
-    (au/associate-by-concept-ids token variable1-concept-id [{:concept-id (:concept-id coll1)}])
-    ;; Variable2 is associated with coll2
-    (au/associate-by-concept-ids token variable2-concept-id [{:concept-id (:concept-id coll2)}])
-    ;; SomeVariable is associated with coll3
-    (au/associate-by-concept-ids token variable3-concept-id [{:concept-id (:concept-id coll3)}])
+        ;; create variables
+        var1-concept (vu/make-variable-concept
+                       {:Name "Variable1"
+                        :LongName "Measurement1"}
+                       {:native-id "var1"
+                        :coll-concept-id (:concept-id coll1)})
+        var2-concept (vu/make-variable-concept
+                       {:Name "Variable2"
+                        :LongName "Measurement2"}
+                       {:native-id "var2"
+                        :coll-concept-id (:concept-id coll2)})
+        var3-concept (vu/make-variable-concept
+                       {:Name "SomeVariable"
+                        :LongName "Measurement2"}
+                       {:native-id "somevar"
+                        :coll-concept-id (:concept-id coll3)})
+        var4-concept (vu/make-variable-concept
+                       {:Name "Name4"
+                        :LongName "Measurement4"}
+                       {:native-id "v4"
+                        :coll-concept-id (:concept-id coll4)})
+        {variable1-concept-id :concept-id} (vu/ingest-variable-with-association var1-concept)
+        {variable2-concept-id :concept-id} (vu/ingest-variable-with-association var2-concept)
+        {variable3-concept-id :concept-id} (vu/ingest-variable-with-association var3-concept)
+        {variable4-concept-id :concept-id} (vu/ingest-variable-with-association var4-concept)]
+
     (index/wait-until-indexed)
 
     (testing "search collections by variables"
@@ -108,8 +110,8 @@
         "variable concept id search is case sensitive"
         [] (string/lower-case variable1-concept-id) {}
 
-        "no matching variable"
-        [] variable4-concept-id {}
+        "another single variable search because every variable has to be associated."
+        [coll4] variable4-concept-id {}
 
         "multiple variables"
         [coll1 coll2] [variable1-concept-id variable2-concept-id] {}
@@ -180,7 +182,7 @@
         [] ["Measurement1" "Measurement2"] {:and true}
 
         "pattern true"
-        [coll1 coll2 coll3] "M*" {:pattern true}
+        [coll1 coll2 coll3 coll4] "M*" {:pattern true}
 
         "pattern false"
         [] "M*" {:pattern false}
@@ -342,10 +344,15 @@
         coll4 (d/ingest "PROV1" (dc/collection {:entry-title "ET4"
                                                 :short-name "S4"
                                                 :version-id "V4"}))
+        ;; index the collections so that they can be found during variable association
+        _ (index/wait-until-indexed)
+
         ;; create variable
-        var1-concept (vu/make-variable-concept {:native-id "var1"
-                                                :Name "Variable1"})
-        {variable1-concept-id :concept-id} (vu/ingest-variable var1-concept)
+        var1-concept (vu/make-variable-concept
+                       {:Name "Variable1"}
+                       {:native-id "var1"
+                        :coll-concept-id (:concept-id coll1)})
+        {variable1-concept-id :concept-id} (vu/ingest-variable-with-association var1-concept)
         ;; service with SubsetType of Variable, when associated with collection
         ;; will turn the has-variables flag on the collection to true
         {serv1-concept-id :concept-id} (service-util/ingest-service-with-attrs
@@ -359,9 +366,6 @@
     ;; index the collections so that they can be found during variable association
     (index/wait-until-indexed)
 
-    ;; create variable associations
-    ;; Variable1 is associated with coll1
-    (au/associate-by-concept-ids token variable1-concept-id [{:concept-id (:concept-id coll1)}])
     ;; associate coll3 with a service that has SubsetType that is Variable
     (au/associate-by-concept-ids token serv1-concept-id [{:concept-id (:concept-id coll3)}])
     ;; associate coll4 with a service that has SubsetType that is Temporal

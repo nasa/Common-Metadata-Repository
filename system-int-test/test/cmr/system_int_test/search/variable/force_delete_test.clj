@@ -32,34 +32,43 @@
         coll1 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection 1 {})
                                             {:token token})
-        var1-concept (variable/make-variable-concept {:native-id "var1"
-                                                      :Name "Variable1"
-                                                      :provider-id "PROV1"})
-        var1-1 (variable/ingest-variable var1-concept)
+        coll2 (d/ingest-umm-spec-collection "PROV2"
+                                            (data-umm-c/collection 1 {})
+                                            {:token token})
+        _ (index/wait-until-indexed)
+        var1-concept (variable/make-variable-concept
+                       {:Name "Variable1"}
+                       {:native-id "var1"
+                        :coll-concept-id (:concept-id coll1)})
+        var1-1 (variable/ingest-variable-with-association var1-concept)
         var1-2-tombstone (merge (ingest/delete-concept var1-concept {:token token})
                                 var1-concept
                                 {:deleted true
                                  :user-id "user1"})
-        var1-3 (variable/ingest-variable var1-concept)
+        var1-3 (variable/ingest-variable-with-association var1-concept)
 
-        var2-1-concept (variable/make-variable-concept {:native-id "var2"
-                                                        :Name "Variable2"
-                                                        :LongName "LongName2"
-                                                        :provider-id "PROV1"})
-        var2-1 (variable/ingest-variable var2-1-concept)
+        var2-1-concept (variable/make-variable-concept
+                         {:Name "Variable2"
+                          :LongName "LongName2"}
+                         {:native-id "var2"
+                          :coll-concept-id (:concept-id coll1)})
+        var2-1 (variable/ingest-variable-with-association var2-1-concept)
         var2-2-tombstone (merge (ingest/delete-concept var2-1-concept {:token token})
                                 var2-1-concept
                                 {:deleted true
                                  :user-id "user1"})
-        var2-3-concept (variable/make-variable-concept {:native-id "var2"
-                                                        :Name "Variable2-3"
-                                                        :LongName "LongName2-3"
-                                                        :provider-id "PROV1"})
-        var2-3 (variable/ingest-variable var2-3-concept)
-        var3 (variable/ingest-variable-with-attrs {:native-id "var3"
-                                                   :Name "Variable1"
-                                                   :LongName "LongName3"
-                                                   :provider-id "PROV2"})]
+        var2-3-concept (variable/make-variable-concept
+                         {:Name "Variable2-3"
+                          :LongName "LongName2-3"}
+                         {:native-id "var2"
+                          :coll-concept-id (:concept-id coll1)})
+        var2-3 (variable/ingest-variable-with-association var2-3-concept)
+        var3-concept (variable/make-variable-concept
+                       {:Name "Variable1"
+                        :LongName "LongName3"}
+                       {:native-id "var3"
+                        :coll-concept-id (:concept-id coll2)})
+        var3 (variable/ingest-variable-with-association var3-concept)]
     (index/wait-until-indexed)
 
     (testing "force delete variable revision"
@@ -78,10 +87,6 @@
       (variable/assert-variable-references-match
        [var1-2-tombstone var1-3 var2-1 var2-3 var3]
        (search/find-refs :variable {:all-revisions true}))
-      ;; Associate a collection and variable
-      (au/associate-by-concept-ids token
-                                   (:concept-id var1-3)
-                                   [{:concept-id (:concept-id coll1)}])
       (index/wait-until-indexed)
       (let [expected-associations {:collections [{:concept-id (:concept-id coll1)}]}]
         (testing "associations to collections are captured in the variables all revisions endpoint"

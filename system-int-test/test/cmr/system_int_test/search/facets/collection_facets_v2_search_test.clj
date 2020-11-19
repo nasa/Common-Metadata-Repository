@@ -103,19 +103,16 @@
                             {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]})
         _ (index/wait-until-indexed)
         ;; create variables
-        {variable1-concept-id :concept-id} (variable-util/ingest-variable-with-attrs
-                                            {:Name "Variable1"
-                                             :LongName "Measurement1"})
-        {variable2-concept-id :concept-id} (variable-util/ingest-variable-with-attrs
-                                            {:Name "Variable2"
-                                             :LongName "Measurement2"})]
-    ;; create variable associations
-    (au/associate-by-concept-ids token
-                                 variable1-concept-id
-                                 [{:concept-id (:concept-id coll1)}])
-    (au/associate-by-concept-ids token
-                                 variable2-concept-id
-                                 [{:concept-id (:concept-id coll2)}]))
+        var1-concept (variable-util/make-variable-concept
+                       {:Name "Variable1"
+                        :LongName "Measurement1"}
+                       {:coll-concept-id (:concept-id coll1)})
+        var2-concept (variable-util/make-variable-concept
+                       {:Name "Variable2"
+                        :LongName "Measurement2"}
+                       {:coll-concept-id (:concept-id coll2)})
+        {variable1-concept-id :concept-id} (variable-util/ingest-variable-with-association var1-concept)
+        {variable2-concept-id :concept-id} (variable-util/ingest-variable-with-association var2-concept)])
   (index/wait-until-indexed)
   (testing "No fields applied for facets"
     (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets))))
@@ -680,28 +677,21 @@
         ;; index the collections so that they can be found during variable association
         _ (index/wait-until-indexed)
         ;; create variables
-        {variable1-concept-id :concept-id} (variable-util/ingest-variable-with-attrs
-                                            {:Name "Variable1"
-                                             :LongName "Measurement1"})
-        {variable2-concept-id :concept-id}(variable-util/ingest-variable-with-attrs
-                                           {:Name "Variable2"
-                                            :LongName "Measurement2"})
-        {variable3-concept-id :concept-id}(variable-util/ingest-variable-with-attrs
-                                           {:Name "SomeVariable"
-                                            :LongName "Measurement2"})]
-    ;; create variable associations
-    ;; Variable1 is associated with coll1 and coll2
-    ;; Variable2 is associated with coll2 and coll3
-    ;; SomeVariable is associated with coll4
-    (au/associate-by-concept-ids token
-                                 variable1-concept-id
-                                 [{:concept-id (:concept-id coll1)}])
-    (au/associate-by-concept-ids token
-                                 variable2-concept-id
-                                 [{:concept-id (:concept-id coll2)}])
-    (au/associate-by-concept-ids token
-                                 variable3-concept-id
-                                 [{:concept-id (:concept-id coll4)}])
+        var1-concept (variable-util/make-variable-concept
+                       {:Name "Variable1"
+                        :LongName "Measurement1"}
+                       {:coll-concept-id (:concept-id coll1)})
+        var2-concept (variable-util/make-variable-concept
+                       {:Name "Variable2"
+                        :LongName "Measurement2"}
+                       {:coll-concept-id (:concept-id coll2)})
+        var3-concept (variable-util/make-variable-concept
+                       {:Name "SomeVariable"
+                        :LongName "Measurement2"}
+                       {:coll-concept-id (:concept-id coll4)})
+        {variable1-concept-id :concept-id} (variable-util/ingest-variable-with-association var1-concept)
+        {variable2-concept-id :concept-id} (variable-util/ingest-variable-with-association var2-concept)
+        {variable3-concept-id :concept-id} (variable-util/ingest-variable-with-association var3-concept)]
     (index/wait-until-indexed)
     (testing "variable facets are disabled by default"
       (let [facets-result (search-and-return-v2-facets
