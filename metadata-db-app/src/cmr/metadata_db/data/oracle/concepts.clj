@@ -7,13 +7,11 @@
    [cmr.common.concepts :as common-concepts]
    [cmr.common.date-time-parser :as p]
    [cmr.common.log :refer [debug error info trace warn]]
-   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.metadata-db.data.concepts :as concepts]
    [cmr.metadata-db.data.oracle.concept-tables :as tables]
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.metadata-db.data.util :as db-util :refer [EXPIRED_CONCEPTS_BATCH_SIZE INITIAL_CONCEPT_NUM]]
-   [cmr.metadata-db.services.provider-service :as provider-service]
    [cmr.oracle.connection :as oracle]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import
@@ -351,44 +349,9 @@
                                                                         (= :revision-id ~revision-id))))))))
      (get-concept db concept-type provider concept-id))))
 
-(defmulti get-concepts
-  (fn [db concept-type provider concept-id-revision-id-tuples]
-    concept-type))
-
-(defmethod get-concepts :subscription
+(defn get-concepts
   [db concept-type provider concept-id-revision-id-tuples]
-  (if (> (count concept-id-revision-id-tuples) 0)
-    (let [start (System/currentTimeMillis)]
-      (j/with-db-transaction
-        [conn db]
-        ;; use a temporary table to insert our values so we can use a join to
-        ;; pull everything in one select
-
-        (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
-
-        (let [provider-id (:provider-id provider)
-              table (tables/get-table-name provider concept-type)
-              stmt-partial (su/build (select [:c.* ",last_notified_at"]
-                                             (from (as (keyword table) :c)
-                                                   (as :get-concepts-work-area :t))
-                                             (where `(and (= :c.concept-id :t.concept-id)
-                                                          (= :c.revision-id :t.revision-id)))))
-              stmt (string/replace-first stmt-partial
-                                         #"WHERE"
-                                         (str " LEFT JOIN cmr_sub_notifications"
-                                              " ON cmr_subscriptions.concept_id = cmr_sub_notifications.subscription_concept_id"
-                                              " WHERE"))
-
-              result (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                                 (su/query conn stmt)))
-              millis (- (System/currentTimeMillis) start)]
-          (debug (format "Getting [%d] concepts took [%d] ms" (count result) millis))
-          result)))
-    []))
-
-(defmethod get-concepts :default
-  [db concept-type provider concept-id-revision-id-tuples]
-  (if (> (count concept-id-revision-id-tuples) 0)
+  (if (pos? (count concept-id-revision-id-tuples))
     (let [start (System/currentTimeMillis)]
       (j/with-db-transaction
         [conn db]
@@ -420,16 +383,15 @@
 (defn get-transactions-for-concept
   [db provider concept-id]
   (j/with-db-transaction
-   [conn db]
-   (let [provider-id (:provider-id provider)
-         concept-type (common-concepts/concept-id->type concept-id)
-         table (tables/get-table-name provider concept-type)
-         stmt (su/build (select [:c.revision-id :c.transaction-id]
-                                (from (as (keyword table) :c))
-                                (where `(= :c.concept-id ~concept-id))))]
-     (map (fn [result] {:revision-id (long (:revision_id result))
-                        :transaction-id (long (:transaction_id result))})
-          (su/query conn stmt)))))
+    [conn db]
+    (let [concept-type (common-concepts/concept-id->type concept-id)
+          table (tables/get-table-name provider concept-type)
+          stmt (su/build (select [:c.revision-id :c.transaction-id]
+                                 (from (as (keyword table) :c))
+                                 (where `(= :c.concept-id ~concept-id))))]
+      (map (fn [result] {:revision-id (long (:revision_id result))
+                         :transaction-id (long (:transaction_id result))})
+           (su/query conn stmt)))))
 
 (defn save-concept
   [db provider concept]

@@ -269,7 +269,7 @@
    (let [;; saved but not indexed
          coll1 (core/save-collection "PROV1" 1)
          coll2 (core/save-collection "PROV2" 2)
-         colls (map :concept-id [coll1 coll2])
+
          gran1 (core/save-granule "PROV1" 1 coll1)
          gran2 (core/save-granule "PROV1" 2 coll1)
          gran3 (core/save-granule "PROV2" 2 coll2)]
