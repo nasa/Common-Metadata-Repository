@@ -4,7 +4,7 @@
    [clojure.set :refer [union]]
    [cmr.common.log :refer [error info]]
    [cmr.redis-utils.config :as config]
-   [taoensso.carmine :as carmine :refer [wcar]]))
+   [taoensso.carmine :as carmine]))
 
 (defmacro wcar*
   "Safe call redis with conn opts and retries.

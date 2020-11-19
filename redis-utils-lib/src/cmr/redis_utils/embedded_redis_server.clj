@@ -1,61 +1,61 @@
 (ns cmr.redis-utils.embedded-redis-server
-  "Used to run an in memory redis server."
+  "Used to run a Redis server inside a docker container."
   (:require
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :refer [debug info]]
-   [cmr.redis-utils.config :as redis-config]
-   [taoensso.carmine :as carmine :refer [wcar]])
+   [cmr.common.log :as log :refer [debug error]])
   (:import
-   (redis.embedded RedisExecProvider
-                   RedisServer)
-   (redis.embedded.util OS)))
+   (org.testcontainers.containers FixedHostPortGenericContainer Network)))
 
-(def ^:private redis-server-executable-path
-  "redis/src/redis-server")
+(def REDIS_DEFAULT_PORT 6379)
 
-(defn- create-redis-server-with-settings
-  "Create a redis server."
-  [^RedisExecProvider exec-provider port]
-  (.. (RedisServer/builder)
-      (redisExecProvider exec-provider)
-      (port (int port))
-      (setting "bind 127.0.0.1")
-      (setting "appendonly no")
-      (setting "maxmemory-policy volatile-lru")
-      build))
+(def ^:private redis-image
+  "Official redis image."
+  "redis:6")
 
-(defn- create-redis-exec-provider
-  "Override default redis executable with one that was installed."
-  []
-  (.. (RedisExecProvider/defaultProvider)
-      (override (OS/UNIX) redis-server-executable-path)
-      (override (OS/MAC_OS_X) redis-server-executable-path)
-      (override (OS/WINDOWS) redis-server-executable-path)))
+(defn- build-redis
+  "Setup redis docker image"
+  [http-port network]
+  (doto (FixedHostPortGenericContainer. redis-image)
+    (.withFixedExposedPort (int http-port) REDIS_DEFAULT_PORT)
+    (.withNetwork network)))
 
-(defrecord Redis
-  [port]
+(defrecord RedisServer
+    [
+     http-port
+     opts]
 
   lifecycle/Lifecycle
 
   (start
     [this system]
-    (debug "Starting redis server on port" port)
-    (let [^RedisExecProvider redis-exec-provider (create-redis-exec-provider)
-          ^RedisServer redis-server (create-redis-server-with-settings redis-exec-provider port)
-          this (assoc this :redis-server redis-server)]
-      (.start redis-server)
-      this))
+    (debug "Starting Redis server on port" http-port)
+    (let [network (Network/newNetwork)
+          ^FixedHostPortGenericContainer redis (build-redis http-port network)]
+      (try
+        (.start redis)
+        (assoc this :redis redis)
+        (catch Exception e
+          (error "Redis failed to start.")
+          (debug "Dumping logs:\n" (.getLogs redis))
+          (throw (ex-info "Redis failure" {:exception e}))))))
 
   (stop
     [this system]
-    (when-let [^RedisServer redis-server (:redis-server this)]
-      (debug "Stopping redis server")
-      (.stop redis-server))
-    (assoc this :redis-server nil)))
+    (let [redis (:redis this)]
+      (.stop redis))))
 
 (defn create-redis-server
-  "Create a redis server."
   ([]
-   (create-redis-server (redis-config/redis-port)))
-  ([port]
-   (->Redis port)))
+   (create-redis-server REDIS_DEFAULT_PORT))
+  ([http-port]
+   (create-redis-server http-port {}))
+  ([http-port opts]
+   (->RedisServer http-port opts)))
+
+(comment
+
+  (def server (create-redis-server))
+
+  (def started-server (lifecycle/start server nil))
+
+  (def stopped-server (lifecycle/stop started-server nil)))

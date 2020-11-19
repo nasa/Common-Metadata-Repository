@@ -21,6 +21,7 @@
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :resource-paths ["resources"]
+  :global-vars {*warn-on-reflection* true}
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
