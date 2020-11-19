@@ -541,6 +541,7 @@
   (j/db-do-commands this "DELETE FROM cmr_acls")
   (j/db-do-commands this "DELETE FROM cmr_humanizers")
   (j/db-do-commands this "DELETE FROM cmr_subscriptions")
+  (j/db-do-commands this "DELETE FROM cmr_sub_notifications")
   (j/db-do-commands this "DELETE FROM cmr_services")
   (j/db-do-commands this "DELETE FROM cmr_tools")
   (j/db-do-commands this "DELETE FROM cmr_variables")
