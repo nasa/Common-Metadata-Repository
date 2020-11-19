@@ -228,7 +228,7 @@
                                         {:token "mock-echo-system-token"}))
           :let [concept-id (:concept_id acl)]]
     (e/ungrant (s/context) concept-id))
-  (index/wait-until-indexed)
+  (ac-util/wait-until-indexed)
   (doseq [accept-format [mt/umm-json]]
     (let [suffix (if accept-format
                    (mt/mime-type->format accept-format)
