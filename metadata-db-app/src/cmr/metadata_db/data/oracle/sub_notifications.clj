@@ -23,7 +23,6 @@
   [db subscription-id]
   (let [sql (str "SELECT concept_id FROM cmr_subscriptions WHERE concept_id = ? FETCH FIRST 1 ROWS ONLY")
         result (j/query db [sql subscription-id])]
-    ;; pos? will account for multiple revisions with the same concept_id
     (pos? (count result))))
 
 (defn sub-notification-exists?

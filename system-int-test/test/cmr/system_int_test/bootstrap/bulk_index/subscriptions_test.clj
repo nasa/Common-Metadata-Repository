@@ -13,6 +13,16 @@
    [cmr.system-int-test.utils.subscription-util :as subscription]
    [cmr.umm-spec.versioning :as umm-version]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Fixtures
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn auto-index-fixture
+  "Disable automatic indexing during tests."
+  [f]
+  (core/disable-automatic-indexing)
+  (f)
+  (core/reenable-automatic-indexing))
+
 (use-fixtures :each (join-fixtures
                      [(ingest/reset-fixture {"provguid1" "PROV1"
                                              "provguid2" "PROV2"
@@ -21,24 +31,26 @@
                                              :grant-all-search? true
                                              :grant-all-access-control? false})
                       (subscription/grant-all-subscription-fixture
-                        {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
-                        [:read :update]
-                        [:read :update])]))
+                       {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
+                       [:read :update]
+                       [:read :update])
+                      auto-index-fixture]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Tests
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest ^:oracle bulk-index-subscriptions-for-provider
   (testing "Bulk index subscriptions for a single provider"
     (system/only-with-real-database
-     ;; Disable message publishing so items are not indexed.
-     (core/disable-automatic-indexing)
      ;; The following is saved, but not indexed due to the above call
      (let [sub1 (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 1)
            ;; create a subscription on a different provider PROV2
            ;; and this subscription won't be indexed as a result of indexing subscriptions of PROV1
            sub2 (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"} {} 1)]
-     
-       ;; no index, no hits. 
-       (is (= 0 (:hits (search/find-refs :subscription {}))))       
- 
+
+       ;; no index, no hits.
+       (is (zero? (:hits (search/find-refs :subscription {}))))
+
        (bootstrap/bulk-index-subscriptions "PROV1")
        (index/wait-until-indexed)
 
@@ -54,25 +66,21 @@
          (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 2)
          (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 3)
          (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 4)
-         
-         ;; The above three new subscriptions are not indexed, only sub1 is indexed. 
+
+         ;; The above three new subscriptions are not indexed, only sub1 is indexed.
          (is (= 1 (:hits (search/find-refs :subscription {}))))
-    
-         ;; bulk index again, using system token, all the subscriptions in PROV1 should be indexed. 
+
+         ;; bulk index again, using system token, all the subscriptions in PROV1 should be indexed.
          (bootstrap/bulk-index-subscriptions "PROV1")
          (index/wait-until-indexed)
-     
+
          (let [{:keys [hits refs]} (search/find-refs :subscription {})]
            (is (= 4 hits))
-           (is (= 4 (count refs))))))
-     ;; Re-enable message publishing.
-     (core/reenable-automatic-indexing))))
+           (is (= 4 (count refs)))))))))
 
 (deftest ^:oracle bulk-index-subscriptions
   (testing "Bulk index subscriptions for multiple providers, explicitly"
     (system/only-with-real-database
-     ;; Disable message publishing so items are not indexed.
-     (core/disable-automatic-indexing)
      ;; The following are saved, but not indexed due to the above call
      (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 1)
      (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 2)
@@ -91,15 +99,11 @@
      (testing "Subscription concepts are indexed."
        (let [{:keys [hits refs] :as response} (search/find-refs :subscription {})]
          (is (= 6 hits))
-         (is (= 6 (count refs)))))
-     ;; Re-enable message publishing.
-     (core/reenable-automatic-indexing))))
+         (is (= 6 (count refs))))))))
 
 (deftest ^:oracle bulk-index-all-subscriptions
   (testing "Bulk index subscriptions for multiple providers, implicitly"
     (system/only-with-real-database
-     ;; Disable message publishing so items are not indexed.
-     (core/disable-automatic-indexing)
      ;; The following are saved, but not indexed due to the above call
      (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 1)
      (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"} {} 2)
@@ -113,15 +117,11 @@
      (testing "Subscription concepts are indexed."
        (let [{:keys [hits refs]} (search/find-refs :subscription {})]
          (is (= 3 hits))
-         (is (= 3 (count refs)))))
-     ;; Re-enable message publishing.
-     (core/reenable-automatic-indexing))))
+         (is (= 3 (count refs))))))))
 
 (deftest ^:oracle bulk-index-subscription-revisions
   (testing "Bulk index subscriptions index all revisions index as well"
     (system/only-with-real-database
-     ;; Disable message publishing so items are not indexed.
-     (core/disable-automatic-indexing)
      (let [token (echo-util/login (system/context) "user1")
            sub1-concept (subscription/make-subscription-concept {:native-id "SUB1"
                                                                  :Name "Sub1"
@@ -137,15 +137,16 @@
                                                                  :provider-id "PROV3"})
            sub1-1 (subscription/ingest-subscription sub1-concept)
            sub1-2-tombstone (merge (ingest/delete-concept
-                                     sub1-concept (subscription/token-opts token))
+                                    sub1-concept (subscription/token-opts token))
                                    sub1-concept
                                    {:deleted true
+                                    :last-notified-at "2020-01-01T00:00:00.000Z"
                                     :user-id "user1"})
            sub1-3 (subscription/ingest-subscription sub1-concept)
            sub2-1 (subscription/ingest-subscription sub2-concept)
            sub2-2 (subscription/ingest-subscription sub2-2-concept)
            sub2-3-tombstone (merge (ingest/delete-concept
-                                     sub2-2-concept (subscription/token-opts token))
+                                    sub2-2-concept (subscription/token-opts token))
                                    sub2-2-concept
                                    {:deleted true
                                     :user-id "user1"})
@@ -175,7 +176,4 @@
        (data-umm-json/assert-subscription-umm-jsons-match
         umm-version/current-subscription-version
         [sub1-1 sub1-2-tombstone sub1-3 sub2-1 sub2-2 sub2-3-tombstone sub3]
-        (search/find-concepts-umm-json :subscription {:all-revisions true}))
-
-       ;; Re-enable message publishing.
-       (core/reenable-automatic-indexing)))))
+        (search/find-concepts-umm-json :subscription {:all-revisions true}))))))
