@@ -36,7 +36,7 @@
 (defn subscription-exists?
   "Check to see if the subscription exists"
   [db subscription-id]
-  (let [sql (str "SELECT concept_id FROM cmr_subscriptions WHERE concept_id = ?")
+  (let [sql (str "SELECT concept_id FROM cmr_subscriptions WHERE concept_id = ? FETCH FIRST 1 ROWS ONLY")
         result (j/query db [sql subscription-id])]
     (= (count result) 1)))
 
@@ -45,7 +45,8 @@
   [db subscription-id]
   (let [sql (str "SELECT subscription_concept_id "
                        "FROM cmr_sub_notifications "
-                       "WHERE subscription_concept_id = ?")
+                       "WHERE subscription_concept_id = ?"
+                       "FETCH FIRST 1 ROWS ONLY")
         result (j/query db [sql subscription-id])]
    (= (count result) 1)))
 
