@@ -173,26 +173,11 @@
      (bootstrap/bulk-index-concepts "PROV1" :collection colls)
      (bootstrap/bulk-index-concepts "PROV1" :granule [(:concept-id gran2)])
      (bootstrap/bulk-index-concepts "PROV1" :tag [(:concept-id tag1)])
-     ;; Commented out until ACLs and groups are supported in the index by concept-id API
-                                        ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
-                                        ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
 
      (index/wait-until-indexed)
 
      (testing "Concepts are indexed."
        (verify-collections-granules-are-indexed [coll1 coll2] [gran2])
-
-                                        ; ;; ACLs
-                                        ; (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
-                                        ;       items (:items response)]
-                                        ;   (search-results-match? items [acl2]))
-
-       ;; Groups
-                                        ; (let [response (ac/search-for-groups (u/conn-context) {})
-                                        ;       ;; Need to filter out admin group created by fixture
-                                        ;       items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
-                                        ;   (search-results-match? items [group2]))
-
        (are3 [expected-tags]
              (let [result-tags (update
                                 (tags/search {})
