@@ -283,7 +283,6 @@
                 (some #{"read"} (get permissions (:concept-id granule-reference))))
               gran-refs))))
 
-<<<<<<< HEAD
 (defn- subscription->time-constraint
   "Create a time-constraint from a subscriptions last-notified-at value or amount-in-sec from the end."
   [subscription end amount-in-sec]
@@ -293,8 +292,6 @@
                 (t/minus end (t/seconds amount-in-sec)))]
     (str begin "," end)))
 
-=======
->>>>>>> upstream/master
 (defn- search-gran-refs-by-collection-id
   [context params1 params2 sub-id]
   (try
