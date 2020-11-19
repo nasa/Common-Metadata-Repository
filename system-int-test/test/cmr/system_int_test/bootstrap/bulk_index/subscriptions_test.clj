@@ -140,7 +140,6 @@
                                     sub1-concept (subscription/token-opts token))
                                    sub1-concept
                                    {:deleted true
-                                    :last-notified-at "2020-01-01T00:00:00.000Z"
                                     :user-id "user1"})
            sub1-3 (subscription/ingest-subscription sub1-concept)
            sub2-1 (subscription/ingest-subscription sub2-concept)
