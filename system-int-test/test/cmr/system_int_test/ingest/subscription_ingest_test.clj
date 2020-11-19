@@ -326,6 +326,7 @@
                                :granule_applicable true
                                :granule_identifier {:access_value {:include_undefined_value true
                                                                    :min_value 100 :max_value 200}}})
+           _ (ac-util/wait-until-indexed)
            ;; Setup collections
            coll1 (data-core/ingest-umm-spec-collection "PROV1"
                                                        (data-umm-c/collection {:ShortName "coll1"
@@ -439,7 +440,7 @@
                                           {:token "mock-echo-system-token"}))
             :let [concept-id (:concept_id acl)]]
       (echo-util/ungrant (system/context) concept-id))
-    (index/wait-until-indexed)
+    (ac-util/wait-until-indexed)
     (let [admin-group (echo-util/get-or-create-group (system/context) "admin-group")
           admin-user-token (echo-util/login (system/context) "admin-user" [admin-group])]
       (echo-util/grant-all-subscription-group-sm (system/context)
@@ -449,7 +450,7 @@
       (echo-util/grant-groups-ingest (system/context)
                                      "PROV1"
                                      [admin-group])
-      (index/wait-until-indexed)
+      (ac-util/wait-until-indexed)
       (let [user1-token (echo-util/login (system/context) "user1")
             user2-token (echo-util/login (system/context) "user2")
             concept (subscription-util/make-subscription-concept {:SubscriberId "user1"})

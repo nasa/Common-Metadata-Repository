@@ -36,7 +36,7 @@
                                         {:token "mock-echo-system-token"}))
           :let [concept-id (:concept_id acl)]]
     (echo-util/ungrant (system/context) concept-id))
-  (index/wait-until-indexed)
+  (ac-util/wait-until-indexed)
   (let [subscriber-token (echo-util/login (system/context) "subscriber")
         guest-token (echo-util/login-guest (system/context))
         subscription (subscriptions/ingest-subscription (subscriptions/make-subscription-concept
