@@ -83,30 +83,6 @@
     ;; add index hint to the generated sql statement
     (update-in stmt [0] #(string/replace % #"SELECT" (format "SELECT /*+ INDEX(%s) */" table)))))
 
-(defmethod gen-find-concepts-in-table-sql :subscription
-  [concept-type table fields params]
-  (let [fields (cons :last_notified_at fields)
-        root-query (if (:include-all params)
-                     (let [params (dissoc params :include-all)]
-                       (su/build (select (vec fields)
-                                         (from table)
-                                         (where `(in :concept_id
-                                                     ~(select [:concept_id]
-                                                              (from table)
-                                                              (when-not (empty? params)
-                                                                (where (sh/find-params->sql-clause params)))))))))
-                     (su/build (select (vec fields)
-                                       (from table)
-                                       (when-not (empty? params)
-                                         (where (sh/find-params->sql-clause params))))))
-        updated-query (string/replace-first
-                        (first root-query)
-                        #"WHERE"
-                        (str " LEFT JOIN cmr_sub_notifications"
-                             " ON cmr_subscriptions.concept_id = cmr_sub_notifications.subscription_concept_id"
-                             " WHERE"))]
-    (cons updated-query (rest root-query))))
-
 (defmethod gen-find-concepts-in-table-sql :default
   [concept-type table fields params]
   (if (:include-all params)
@@ -122,6 +98,18 @@
                       (from table)
                       (when-not (empty? params)
                         (where (sh/find-params->sql-clause params)))))))
+
+(defmethod gen-find-concepts-in-table-sql :subscription
+  [_concept-type table fields params]
+  (let [fields (cons :last_notified_at fields)
+        root-query (gen-find-concepts-in-table-sql :default table fields params)
+        updated-query (string/replace-first
+                       (first root-query)
+                       #"WHERE"
+                       (str " LEFT JOIN cmr_sub_notifications"
+                            " ON cmr_subscriptions.concept_id = cmr_sub_notifications.subscription_concept_id"
+                            " WHERE"))]
+    (cons updated-query (rest root-query))))
 
 (defn- find-batch-starting-id
   "Returns the first id that would be returned in a batch."
