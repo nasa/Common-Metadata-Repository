@@ -292,6 +292,17 @@
                 (t/minus end (t/seconds amount-in-sec)))]
     (str begin "," end)))
 
+(defn- search-gran-refs-by-collection-id
+  [context params1 params2 sub-id]
+  (try
+    (let [gran-refs1 (search/find-granule-references context params1)
+          gran-refs2 (search/find-granule-references context params2)]
+      (distinct (concat gran-refs1 gran-refs2)))
+    (catch Exception e
+      (error "Exception caught processing subscription" sub-id " searching with params "
+             (dissoc params1 :token) (dissoc params2 :token) "\n\n" (.getMessage e) "\n\n" e)
+      [])))
+
 (defn- process-subscriptions
   "Process each subscription in subscriptions into tuple for testing purposes and to use as
    the input when sending the subscription emails."
@@ -310,18 +321,15 @@
                                (json/decode true)
                                :Query)
               query-params (create-query-params query-string)
-              created-since (merge {:created-at time-constraint
-                                    :collection-concept-id coll-id
-                                    :token (config/echo-system-token)}
-                                   query-params)
-              updated-since (merge {:revision-date time-constraint
-                                    :collection-concept-id coll-id
-                                    :token (config/echo-system-token)}
-                                   query-params)
-              grans-created (search/find-granule-references context created-since)
-              grans-updated (search/find-granule-references context updated-since)
-              gran-refs (distinct (concat grans-created grans-updated))
-
+              params1 (merge {:created-at time-constraint
+                              :collection-concept-id coll-id
+                              :token (config/echo-system-token)}
+                             query-params)
+              params2 (merge {:revision-date time-constraint
+                              :collection-concept-id coll-id
+                              :token (config/echo-system-token)}
+                             query-params)
+              gran-refs (search-gran-refs-by-collection-id context params1 params2 sub-id)
               subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
     (do
       (send-update-subscription-notification-time! context sub-id)
