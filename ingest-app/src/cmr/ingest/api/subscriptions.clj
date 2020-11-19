@@ -48,9 +48,21 @@
 (defn- check-subscription-ingest-permission
   "All the checks needed before starting to process an ingest of subscriptions"
   [concept request-context headers provider-id]
-  (let [subscription-user (:SubscriberId (json/decode (:metadata concept) true))
+  (let [old-concept-subscriber (-> (mdb/find-concepts request-context
+                                                      {:provider-id provider-id
+                                                       :native-id (:native-id concept)
+                                                       :exclude-metadata false
+                                                       :latest true}
+                                                      :subscription)
+                                   first
+                                   :extra-fields
+                                   :subscriber-id)
+        subscription-user (if old-concept-subscriber
+                            old-concept-subscriber
+                            (:SubscriberId (json/decode (:metadata concept) true)))
         token-user (api-core/get-user-id request-context headers)]
-    (if (= token-user subscription-user)
+    (if (and token-user
+             (= token-user subscription-user))
       (warn (format (str "ACLs were bypassed because the token account '%s' "
                          "matched the subscription user '%s' in the metadata.")
                     token-user
