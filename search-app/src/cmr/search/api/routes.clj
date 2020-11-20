@@ -5,7 +5,6 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.cache :as cache]
-   [cmr.search.api.association :as association-api]
    [cmr.search.api.autocomplete :as autocomplete-api]
    [cmr.search.api.community-usage-metrics :as metrics-api]
    [cmr.search.api.concepts-lookup :as concepts-lookup-api]
@@ -16,7 +15,6 @@
    [cmr.search.api.services :as services-api]
    [cmr.search.api.tags :as tags-api]
    [cmr.search.api.tools :as tools-api]
-   [cmr.search.api.variables :as variables-api]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.health-service :as hs]
    [compojure.core :refer :all])
