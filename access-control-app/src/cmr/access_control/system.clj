@@ -15,14 +15,11 @@
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common.api.web-server :as web-server]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
-   [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
-   [cmr.message-queue.config :as queue-config]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.transmit.config :as transmit-config]))
 

@@ -1,6 +1,15 @@
 (ns cmr.metadata-db.data.oracle.concepts.subscription
   "Implements multi-method variations for subscriptions"
-  (:require [cmr.metadata-db.data.oracle.concepts :as concepts]))
+  (:require
+   [cmr.metadata-db.data.oracle.concepts :as concepts]
+   [cmr.oracle.connection :as oracle]))
+
+(defn add-last-notified-at-if-present
+  [subscription db-result db]
+  (if-let [last-notified (:last_notified_at db-result)]
+    (assoc-in subscription [:extra-fields :last-notified-at]
+              (oracle/oracle-timestamp->str-time db last-notified))
+    subscription))
 
 (defmethod concepts/db-result->concept-map :subscription
   [concept-type db provider-id result]
@@ -11,6 +20,7 @@
           (assoc-in [:extra-fields :subscription-name] (:subscription_name result))
           (assoc-in [:extra-fields :subscriber-id] (:subscriber_id result))
           (assoc-in [:extra-fields :email-address] (:email_address result))
+          (add-last-notified-at-if-present result db)
           (assoc-in [:extra-fields :collection-concept-id]
                     (:collection_concept_id result))))
 

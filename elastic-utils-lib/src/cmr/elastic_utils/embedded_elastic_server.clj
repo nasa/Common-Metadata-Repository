@@ -1,7 +1,6 @@
 (ns cmr.elastic-utils.embedded-elastic-server
   "Used to run an Elasticsearch server inside an embedded docker container."
   (:require
-   [clojure.java.io :as io]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.util :as util])
@@ -62,23 +61,23 @@
      (when log-level
        (.withEnv container "logger.level" (name log-level)))
      (doto container
-           (.withEnv "discovery.type" "single-node")
-           (.withEnv "indices.breaker.total.use_real_memory" "false")
-           (.withEnv "node.name" "embedded-elastic")
-           (.withNetwork network)
-           (.withNetworkAliases (into-array String ["elasticsearch"]))
-           (.withFixedExposedPort (int http-port) 9200)
-           (.withStartupTimeout (Duration/ofSeconds 120))
-           (.waitingFor
-            (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200)))
+       (.withEnv "discovery.type" "single-node")
+       (.withEnv "indices.breaker.total.use_real_memory" "false")
+       (.withEnv "node.name" "embedded-elastic")
+       (.withNetwork network)
+       (.withNetworkAliases (into-array String ["elasticsearch"]))
+       (.withFixedExposedPort (int http-port) 9200)
+       (.withStartupTimeout (Duration/ofSeconds 120))
+       (.waitingFor
+         (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200)))
      {:elasticsearch container
       :kibana kibana})))
 
 (defrecord ElasticServer
-  [
-   http-port
-   opts
-   node]
+    [
+     http-port
+     opts
+     node]
 
   lifecycle/Lifecycle
 
