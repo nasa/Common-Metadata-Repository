@@ -104,13 +104,13 @@
         _ (index/wait-until-indexed)
         ;; create variables
         var1-concept (variable-util/make-variable-concept
-                       {:Name "Variable1"
-                        :LongName "Measurement1"}
-                       {:coll-concept-id (:concept-id coll1)})
+                      {:Name "Variable1"
+                       :LongName "Measurement1"}
+                      {:coll-concept-id (:concept-id coll1)})
         var2-concept (variable-util/make-variable-concept
-                       {:Name "Variable2"
-                        :LongName "Measurement2"}
-                       {:coll-concept-id (:concept-id coll2)})
+                      {:Name "Variable2"
+                       :LongName "Measurement2"}
+                      {:coll-concept-id (:concept-id coll2)})
         {variable1-concept-id :concept-id} (variable-util/ingest-variable-with-association var1-concept)
         {variable2-concept-id :concept-id} (variable-util/ingest-variable-with-association var2-concept)])
   (index/wait-until-indexed)
@@ -427,26 +427,26 @@
                                                       :VersionId "V1"
                                                       :Platforms (data-umm-spec/platforms "P1")}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
-                                                      {:EntryTitle "coll2"
-                                                       :ShortName "S2"
-                                                       :VersionId "V2"
-                                                       :Platforms (data-umm-spec/platforms "P1" "P2")}))
+                                                     {:EntryTitle "coll2"
+                                                      :ShortName "S2"
+                                                      :VersionId "V2"
+                                                      :Platforms (data-umm-spec/platforms "P1" "P2")}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
-                                                      {:EntryTitle "coll3"
-                                                       :ShortName "S3"
-                                                       :VersionId "V3"
-                                                       :Platforms [(data-umm-spec/platform
-                                                                    {:ShortName "P2"
-                                                                     :Instruments [(data-umm-spec/instrument {:ShortName "I3"})]})]
-                                                       :Projects (umm-spec-common/projects "proj3")}))
+                                                     {:EntryTitle "coll3"
+                                                      :ShortName "S3"
+                                                      :VersionId "V3"
+                                                      :Platforms [(data-umm-spec/platform
+                                                                   {:ShortName "P2"
+                                                                    :Instruments [(data-umm-spec/instrument {:ShortName "I3"})]})]
+                                                      :Projects (umm-spec-common/projects "proj3")}))
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
-                                                      {:EntryTitle "coll4"
-                                                       :ShortName "S4"
-                                                       :VersionId "V4"
-                                                       :Platforms [(data-umm-spec/platform
-                                                                    {:ShortName "P4"
-                                                                     :Instruments [(data-umm-spec/instrument {:ShortName "I4"})]})]
-                                                       :Projects (umm-spec-common/projects "proj4")}))]
+                                                     {:EntryTitle "coll4"
+                                                      :ShortName "S4"
+                                                      :VersionId "V4"
+                                                      :Platforms [(data-umm-spec/platform
+                                                                   {:ShortName "P4"
+                                                                    :Instruments [(data-umm-spec/instrument {:ShortName "I4"})]})]
+                                                      :Projects (umm-spec-common/projects "proj4")}))]
     (testing "search by platform parameter filters the other facets, but not platforms facets"
       (let [facets-result (search-and-return-v2-facets {:platform-h ["P4"]})]
         (assert-facet-field facets-result "Platforms" "P1" 2)
@@ -591,22 +591,22 @@
                                                       :VersionId "V1"
                                                       :DataCenters [org1]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
-                                                      {:EntryTitle "coll2"
-                                                       :ShortName "S2"
-                                                       :VersionId "V2"
-                                                       :DataCenters [org2]}))
+                                                     {:EntryTitle "coll2"
+                                                      :ShortName "S2"
+                                                      :VersionId "V2"
+                                                      :DataCenters [org2]}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
-                                                      {:EntryTitle "coll3"
-                                                       :ShortName "S3"
-                                                       :VersionId "V3"
-                                                       :DataCenters [org1 org2]
-                                                       :Projects (data-umm-spec/projects "proj3")}))
+                                                     {:EntryTitle "coll3"
+                                                      :ShortName "S3"
+                                                      :VersionId "V3"
+                                                      :DataCenters [org1 org2]
+                                                      :Projects (data-umm-spec/projects "proj3")}))
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
-                                                      {:EntryTitle "coll4"
-                                                       :ShortName "S4"
-                                                       :VersionId "V4"
-                                                       :DataCenters [org3]
-                                                       :Projects (data-umm-spec/projects "proj4")}))]
+                                                     {:EntryTitle "coll4"
+                                                      :ShortName "S4"
+                                                      :VersionId "V4"
+                                                      :DataCenters [org3]
+                                                      :Projects (data-umm-spec/projects "proj4")}))]
     (testing "search by data-center parameter filters the other facets, but not Organizations facets"
       (let [facets-result (search-and-return-v2-facets
                            {:data-center-h ["NSIDC"]})]
@@ -678,17 +678,17 @@
         _ (index/wait-until-indexed)
         ;; create variables
         var1-concept (variable-util/make-variable-concept
-                       {:Name "Variable1"
-                        :LongName "Measurement1"}
-                       {:coll-concept-id (:concept-id coll1)})
+                      {:Name "Variable1"
+                       :LongName "Measurement1"}
+                      {:coll-concept-id (:concept-id coll1)})
         var2-concept (variable-util/make-variable-concept
-                       {:Name "Variable2"
-                        :LongName "Measurement2"}
-                       {:coll-concept-id (:concept-id coll2)})
+                      {:Name "Variable2"
+                       :LongName "Measurement2"}
+                      {:coll-concept-id (:concept-id coll2)})
         var3-concept (variable-util/make-variable-concept
-                       {:Name "SomeVariable"
-                        :LongName "Measurement2"}
-                       {:coll-concept-id (:concept-id coll4)})
+                      {:Name "SomeVariable"
+                       :LongName "Measurement2"}
+                      {:coll-concept-id (:concept-id coll4)})
         {variable1-concept-id :concept-id} (variable-util/ingest-variable-with-association var1-concept)
         {variable2-concept-id :concept-id} (variable-util/ingest-variable-with-association var2-concept)
         {variable3-concept-id :concept-id} (variable-util/ingest-variable-with-association var3-concept)]
@@ -786,17 +786,17 @@
 (deftest horizontal-data-resolution-range-facet-v2-test
   "Test the horizontal data resolution facets ingest, indexing, and search."
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
-                                                      {:EntryTitle "coll1"
-                                                       :ShortName "S1"
-                                                       :SpatialExtent spatial
-                                                       :Projects [{:ShortName "Proj4"
-                                                                   :LongName "Proj4 Long Name"}]})
+                                                     {:EntryTitle "coll1"
+                                                      :ShortName "S1"
+                                                      :SpatialExtent spatial
+                                                      :Projects [{:ShortName "Proj4"
+                                                                  :LongName "Proj4 Long Name"}]})
                                                     {:format :umm-json})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
-                                                      {:EntryTitle "coll2"
-                                                       :ShortName "S2"
-                                                       :Projects [{:ShortName "Proj3"
-                                                                   :LongName "Proj3 Long Name"}]})
+                                                     {:EntryTitle "coll2"
+                                                      :ShortName "S2"
+                                                      :Projects [{:ShortName "Proj3"
+                                                                  :LongName "Proj3 Long Name"}]})
                                                     {:format :umm-json})]
 
     (testing "search by horizontal data resolution. Parameter filters the other facets, but not

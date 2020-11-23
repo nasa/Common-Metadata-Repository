@@ -32,13 +32,13 @@
 (deftest retrieve-variable-by-concept-id-any-accept-header
   (testing "retrieval of a deleted variable results in a 404"
     (let [coll1 (data2-core/ingest "PROV1" (data2-coll/collection 
-                                             {:entry-title "ET1"
-                                              :short-name "S1"
-                                              :version-id "V1"}))
+                                            {:entry-title "ET1"
+                                             :short-name "S1"
+                                             :version-id "V1"}))
           _ (index/wait-until-indexed)
           var-concept (variable/make-variable-concept
-                        {:Name "var-to-be-deleted"}
-                        {:coll-concept-id (:concept-id coll1)})
+                       {:Name "var-to-be-deleted"}
+                       {:coll-concept-id (:concept-id coll1)})
           del-var (variable/ingest-variable-with-association var-concept)
           del-concept (mdb/get-concept (:concept-id del-var))
           _ (ingest/delete-concept del-concept
@@ -56,19 +56,19 @@
              errors))))
 
   (let [coll1 (data2-core/ingest "PROV1" (data2-coll/collection
-                                             {:entry-title "ET1"
-                                              :short-name "S1"
-                                              :version-id "V1"}))
+                                          {:entry-title "ET1"
+                                           :short-name "S1"
+                                           :version-id "V1"}))
         _ (index/wait-until-indexed)
         var1-name "variable1"
         var1-long-name "variable1-long-name"
         var1-long-name-new "variable1-long-name-new"
         var1-native-id "var1-native-id"
         var1-concept (variable/make-variable-concept
-                       {:Name var1-name
-                        :LongName var1-long-name}
-                       {:native-id var1-native-id
-                        :coll-concept-id (:concept-id coll1)})
+                      {:Name var1-name
+                       :LongName var1-long-name}
+                      {:native-id var1-native-id
+                       :coll-concept-id (:concept-id coll1)})
         var1-v1 (variable/ingest-variable-with-association var1-concept)
         var1-v2 (variable/ingest-variable-with-attrs {:Name var1-name
                                                       :LongName var1-long-name-new
@@ -134,17 +134,17 @@
 
 (deftest retrieve-variable-by-concept-id-umm-json-accept-header
   (let [coll1 (data2-core/ingest "PROV1" (data2-coll/collection
-                                             {:entry-title "ET1"
-                                              :short-name "S1"
-                                              :version-id "V1"}))
+                                          {:entry-title "ET1"
+                                           :short-name "S1"
+                                           :version-id "V1"}))
         _ (index/wait-until-indexed)
         var1-name "variable1"
         var1-long-name "var1-long-name"
         var1-long-name-new "variable1-new"
         var1-concept (variable/make-variable-concept
-                       {:Name var1-name
-                        :LongName var1-long-name}
-                       {:coll-concept-id (:concept-id coll1)})
+                      {:Name var1-name
+                       :LongName var1-long-name}
+                      {:coll-concept-id (:concept-id coll1)})
         var1-v1 (variable/ingest-variable-with-association var1-concept)
         var1-v2 (variable/ingest-variable-with-attrs {:Name var1-name
                                                       :LongName var1-long-name-new

@@ -34,25 +34,25 @@
 
         ;; create variables
         var1-concept (vu/make-variable-concept
-                       {:Name "Variable1"
-                        :LongName "Measurement1"}
-                       {:native-id "var1"
-                        :coll-concept-id (:concept-id coll1)})
+                      {:Name "Variable1"
+                       :LongName "Measurement1"}
+                      {:native-id "var1"
+                       :coll-concept-id (:concept-id coll1)})
         var2-concept (vu/make-variable-concept
-                       {:Name "Variable2"
-                        :LongName "Measurement2"}
-                       {:native-id "var2"
-                        :coll-concept-id (:concept-id coll2)})
+                      {:Name "Variable2"
+                       :LongName "Measurement2"}
+                      {:native-id "var2"
+                       :coll-concept-id (:concept-id coll2)})
         var3-concept (vu/make-variable-concept
-                       {:Name "SomeVariable"
-                        :LongName "Measurement2"}
-                       {:native-id "somevar"
-                        :coll-concept-id (:concept-id coll3)})
+                      {:Name "SomeVariable"
+                       :LongName "Measurement2"}
+                      {:native-id "somevar"
+                       :coll-concept-id (:concept-id coll3)})
         var4-concept (vu/make-variable-concept
-                       {:Name "Name4"
-                        :LongName "Measurement4"}
-                       {:native-id "v4"
-                        :coll-concept-id (:concept-id coll4)})
+                      {:Name "Name4"
+                       :LongName "Measurement4"}
+                      {:native-id "v4"
+                       :coll-concept-id (:concept-id coll4)})
         {variable1-concept-id :concept-id} (vu/ingest-variable-with-association var1-concept)
         {variable2-concept-id :concept-id} (vu/ingest-variable-with-association var2-concept)
         {variable3-concept-id :concept-id} (vu/ingest-variable-with-association var3-concept)
@@ -349,9 +349,9 @@
 
         ;; create variable
         var1-concept (vu/make-variable-concept
-                       {:Name "Variable1"}
-                       {:native-id "var1"
-                        :coll-concept-id (:concept-id coll1)})
+                      {:Name "Variable1"}
+                      {:native-id "var1"
+                       :coll-concept-id (:concept-id coll1)})
         {variable1-concept-id :concept-id} (vu/ingest-variable-with-association var1-concept)
         ;; service with SubsetType of Variable, when associated with collection
         ;; will turn the has-variables flag on the collection to true

@@ -143,9 +143,9 @@
 
     (testing "variable associations together with service associations"
       (let [var-concept (variable-util/make-variable-concept
-                          {:Name "Variable1"}
-                          {:native-id "var1"
-                           :coll-concept-id (:concept-id coll1)})
+                         {:Name "Variable1"}
+                         {:native-id "var1"
+                          :coll-concept-id (:concept-id coll1)})
             {var-concept-id :concept-id} (variable-util/ingest-variable-with-association var-concept)]
         (index/wait-until-indexed)
         ;; verify coll1 has-variables is true after associated with a variable,

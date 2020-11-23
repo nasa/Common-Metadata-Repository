@@ -84,33 +84,33 @@
                                       {:token token})))
         _ (index/wait-until-indexed)
         var1-concept (variables/make-variable-concept
-                       {:Name "Variable1"
-                        :LongName "Measurement1"
-                        :Sets [{:Name "TESTSETNAME"
-                                :Type "Science"
-                                :Size 2
-                                :Index 2}]}
-                       {:native-id "VAR1"
-                        :coll-concept-id (:concept-id coll1)})
+                      {:Name "Variable1"
+                       :LongName "Measurement1"
+                       :Sets [{:Name "TESTSETNAME"
+                               :Type "Science"
+                               :Size 2
+                               :Index 2}]}
+                      {:native-id "VAR1"
+                       :coll-concept-id (:concept-id coll1)})
         var2-concept (variables/make-variable-concept
-                       {:Name "Variable2"
-                        :LongName "Measurement2"}
-                       {:native-id "var2"
-                        :coll-concept-id (:concept-id coll2)})
+                      {:Name "Variable2"
+                       :LongName "Measurement2"}
+                      {:native-id "var2"
+                       :coll-concept-id (:concept-id coll2)})
         var3-concept (variables/make-variable-concept
-                       {:Name "a subsitute for variable2"
-                        :LongName "variable1"
-                        :Sets [{:Name "TESTSETNAME"
-                                :Type "Science"
-                                :Size 2
-                                :Index 2}]}
-                       {:native-id "var3"
-                        :coll-concept-id (:concept-id coll4)})
+                      {:Name "a subsitute for variable2"
+                       :LongName "variable1"
+                       :Sets [{:Name "TESTSETNAME"
+                               :Type "Science"
+                               :Size 2
+                               :Index 2}]}
+                      {:native-id "var3"
+                       :coll-concept-id (:concept-id coll4)})
         var4-concept (variables/make-variable-concept
-                       {:Name "v.other"
-                        :LongName "m.other"}
-                       {:native-id "special-variable"
-                        :coll-concept-id (:concept-id coll5)})
+                      {:Name "v.other"
+                       :LongName "m.other"}
+                      {:native-id "special-variable"
+                       :coll-concept-id (:concept-id coll5)})
         variable1 (variables/ingest-variable-with-association var1-concept)
         variable2 (variables/ingest-variable-with-association var2-concept)
         variable3 (variables/ingest-variable-with-association var3-concept)
@@ -381,22 +381,22 @@
                                       {:token token})))
         _ (index/wait-until-indexed)
         var1-concept (variables/make-variable-concept
-                       {:Name "Variable1"
-                        :LongName "Measurement1"
-                        :ScienceKeywords [sk1 sk2]}
-                       {:native-id "var1"
-                        :coll-concept-id (:concept-id coll1)})
+                      {:Name "Variable1"
+                       :LongName "Measurement1"
+                       :ScienceKeywords [sk1 sk2]}
+                      {:native-id "var1"
+                       :coll-concept-id (:concept-id coll1)})
         var2-concept (variables/make-variable-concept
-                       {:Name "Variable2"
-                        :LongName "Measurement2"
-                        :ScienceKeywords [sk3]}
-                       {:native-id "var2"
-                        :coll-concept-id (:concept-id coll2)})
+                      {:Name "Variable2"
+                       :LongName "Measurement2"
+                       :ScienceKeywords [sk3]}
+                      {:native-id "var2"
+                       :coll-concept-id (:concept-id coll2)})
         var3-concept (variables/make-variable-concept
-                       {:Name "a subsitute for variable2"
-                        :LongName "variable1"}
-                       {:native-id "var3"
-                        :coll-concept-id (:concept-id coll3)})
+                      {:Name "a subsitute for variable2"
+                       :LongName "variable1"}
+                      {:native-id "var3"
+                       :coll-concept-id (:concept-id coll3)})
         variable1 (variables/ingest-variable-with-association var1-concept)
         variable2 (variables/ingest-variable-with-association var2-concept)
         variable3 (variables/ingest-variable-with-association var3-concept)]
@@ -453,14 +453,14 @@
                                             {:token token})
         _ (index/wait-until-indexed)
         var1-concept (variables/make-variable-concept
-                       {:Name "Variable1"}
-                       {:native-id "var1"
-                        :coll-concept-id (:concept-id coll1)})
+                      {:Name "Variable1"}
+                      {:native-id "var1"
+                       :coll-concept-id (:concept-id coll1)})
         variable1 (variables/ingest-variable-with-association var1-concept {:token token})
         var2-concept (variables/make-variable-concept
-                       {:Name "Variable2"}
-                       {:native-id "var2"
-                        :coll-concept-id (:concept-id coll1)})
+                      {:Name "Variable2"}
+                      {:native-id "var2"
+                       :coll-concept-id (:concept-id coll1)})
         variable2 (variables/ingest-variable-with-association var2-concept {:token token})
         all-variables [variable1 variable2]]
     (index/wait-until-indexed)
@@ -492,18 +492,18 @@
           _ (index/wait-until-indexed)
           ;; create variables
           var1-concept (variables/make-variable-concept
-                         {:Name "Variable1"}
-                         {:native-id "var1"
-                          :coll-concept-id (:concept-id coll1)})
+                        {:Name "Variable1"}
+                        {:native-id "var1"
+                         :coll-concept-id (:concept-id coll1)})
           var2-concept (variables/make-variable-concept
-                         {:Name "Variable2"}
-                         {:native-id "var2"
-                          :coll-concept-id (:concept-id coll2)
-                          :coll-revision-id 1})
+                        {:Name "Variable2"}
+                        {:native-id "var2"
+                         :coll-concept-id (:concept-id coll2)
+                         :coll-revision-id 1})
           var3-concept (variables/make-variable-concept
-                         {:Name "Variable3"}
-                         {:native-id "var3"
-                          :coll-concept-id (:concept-id coll3)})
+                        {:Name "Variable3"}
+                        {:native-id "var3"
+                         :coll-concept-id (:concept-id coll3)})
           variable1 (variables/ingest-variable-with-association var1-concept)
           variable2 (variables/ingest-variable-with-association var2-concept)
           variable3 (variables/ingest-variable-with-association var3-concept)
@@ -538,10 +538,10 @@
            (search/find-concepts-umm-json :variable {:keyword updated-long-name}))
 
           (let [updated-variable1-concept (variables/make-variable-concept
-                                            {:Name "Variable1"
-                                             :LongName updated-long-name}
-                                            {:native-id "var1"
-                                             :coll-concept-id (:concept-id coll1)})
+                                           {:Name "Variable1"
+                                            :LongName updated-long-name}
+                                           {:native-id "var1"
+                                            :coll-concept-id (:concept-id coll1)})
                 updated-variable1 (variables/ingest-variable-with-association updated-variable1-concept)
                 expected-variable1 (merge updated-variable1-concept
                                           updated-variable1
@@ -565,37 +565,37 @@
 (deftest variable-search-sort
   (let [token (e/login (s/context) "user1")
         coll1 (d/ingest-umm-spec-collection
-                "PROV2"
-                (data-umm-c/collection {:EntryTitle "E1"
-                                        :ShortName "S1"})
-                {:token token})
+               "PROV2"
+               (data-umm-c/collection {:EntryTitle "E1"
+                                       :ShortName "S1"})
+               {:token token})
         [coll2 coll3 coll4] (doall (for [n (range 1 4)]
                                      (d/ingest-umm-spec-collection
-                                       "PROV1"
-                                       (data-umm-c/collection n {})
-                                       {:token token})))
+                                      "PROV1"
+                                      (data-umm-c/collection n {})
+                                      {:token token})))
         _ (index/wait-until-indexed)
         var1-concept (variables/make-variable-concept
-                       {:Name "variable"
-                        :LongName "Measurement1"
-                        :provider-id "PROV2"}
-                       {:native-id "var1"
-                        :coll-concept-id (:concept-id coll1)})
+                      {:Name "variable"
+                       :LongName "Measurement1"
+                       :provider-id "PROV2"}
+                      {:native-id "var1"
+                       :coll-concept-id (:concept-id coll1)})
         var2-concept (variables/make-variable-concept
-                       {:Name "Variable 2"
-                        :LongName "Measurement2"}
-                       {:native-id "var2"
-                        :coll-concept-id (:concept-id coll2)})
+                      {:Name "Variable 2"
+                       :LongName "Measurement2"}
+                      {:native-id "var2"
+                       :coll-concept-id (:concept-id coll2)})
         var3-concept (variables/make-variable-concept
-                       {:Name "a variable"
-                        :LongName "Long name"}
-                       {:native-id "var3"
-                        :coll-concept-id (:concept-id coll3)})
+                      {:Name "a variable"
+                       :LongName "Long name"}
+                      {:native-id "var3"
+                       :coll-concept-id (:concept-id coll3)})
         var4-concept (variables/make-variable-concept
-                       {:Name "variable"
-                        :LongName "m.other"}
-                       {:native-id "var4"
-                        :coll-concept-id (:concept-id coll4)})
+                      {:Name "variable"
+                       :LongName "m.other"}
+                      {:native-id "var4"
+                       :coll-concept-id (:concept-id coll4)})
         variable1 (variables/ingest-variable-with-association var1-concept)
         variable2 (variables/ingest-variable-with-association var2-concept)
         variable3 (variables/ingest-variable-with-association var3-concept)

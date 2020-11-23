@@ -29,68 +29,68 @@
 
     (testing "ingest of a new variable concept"
       (let [coll1-PROV1 (data-core/ingest-umm-spec-collection
-                          "PROV1"
-                          (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                          {:token token})
+                         "PROV1"
+                         (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                         {:token token})
             coll2-PROV2 (data-core/ingest-umm-spec-collection
-                          "PROV2"
-                          (data-umm-c/collection {:EntryTitle "E2" :ShortName "S2"})
-                          {:token token2})
+                         "PROV2"
+                         (data-umm-c/collection {:EntryTitle "E2" :ShortName "S2"})
+                         {:token token2})
             _ (index/wait-until-indexed)
             concept1 (variable-util/make-variable-concept
-                       {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
-                                                                :Size 3
-                                                                :Type "OTHER"})]}
-                       {:native-id "var1"
-                        :coll-concept-id (:concept-id coll1-PROV1)})
+                      {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
+                                                               :Size 3
+                                                               :Type "OTHER"})]}
+                      {:native-id "var1"
+                       :coll-concept-id (:concept-id coll1-PROV1)})
             ;; same variable concept associated with a collection on a different provider.
             concept2 (variable-util/make-variable-concept
-                       {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
-                                                                :Size 3
-                                                                :Type "OTHER"})]}
-                       {:native-id "var1"
-                        :coll-concept-id (:concept-id coll2-PROV2)})
+                      {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
+                                                               :Size 3
+                                                               :Type "OTHER"})]}
+                      {:native-id "var1"
+                       :coll-concept-id (:concept-id coll2-PROV2)})
             {:keys [concept-id revision-id]} (variable-util/ingest-variable-with-association
-                                               concept1
-                                               (variable-util/token-opts token))
+                                              concept1
+                                              (variable-util/token-opts token))
             var-concept-id concept-id]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= 1 revision-id))
 
         (testing "ingest the same concept on a different provider is OK"
           (let [{:keys [concept-id revision-id]} (variable-util/ingest-variable-with-association
-                                                   concept2
-                                                   (variable-util/token-opts token2))]
+                                                  concept2
+                                                  (variable-util/token-opts token2))]
             (is (mdb/concept-exists-in-mdb? concept-id revision-id))
             (is (= 1 revision-id))))
 
         (testing "ingest of the variable with negligible changes and the same native-id becomes an update"
           (let [concept (variable-util/make-variable-concept
-                          {:Dimensions [(umm-v/map->DimensionType {:Name " Solution_3_Land "
-                                                                   :Size 3
-                                                                   :Type "OTHER"})]}
-                          {:native-id "var1"
-                           :coll-concept-id (:concept-id coll1-PROV1)})
+                         {:Dimensions [(umm-v/map->DimensionType {:Name " Solution_3_Land "
+                                                                  :Size 3
+                                                                  :Type "OTHER"})]}
+                         {:native-id "var1"
+                          :coll-concept-id (:concept-id coll1-PROV1)})
                 {:keys [concept-id revision-id]} (variable-util/ingest-variable-with-association
-                                                   concept
-                                                   (variable-util/token-opts token))]
+                                                  concept
+                                                  (variable-util/token-opts token))]
             (is (mdb/concept-exists-in-mdb? concept-id revision-id))
             (is (= 2 revision-id))))))
 
     (testing "ingest of a variable concept with a revision id"
       (let [coll1-PROV1 (data-core/ingest-umm-spec-collection
-                          "PROV1"
-                          (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                          {:token token})
+                         "PROV1"
+                         (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                         {:token token})
             _ (index/wait-until-indexed)
             concept (variable-util/make-variable-concept
-                      {}
-                      {:native-id "var1"
-                       :coll-concept-id (:concept-id coll1-PROV1)
-                       :revision-id 5})
+                     {}
+                     {:native-id "var1"
+                      :coll-concept-id (:concept-id coll1-PROV1)
+                      :revision-id 5})
             {:keys [concept-id revision-id]} (variable-util/ingest-variable-with-association
-                                               concept
-                                               (variable-util/token-opts token))]
+                                              concept
+                                              (variable-util/token-opts token))]
         (is (= 5 revision-id))
         (is (mdb/concept-exists-in-mdb? concept-id 5))))))
 
@@ -100,49 +100,49 @@
     (let [{token :token} (variable-util/setup-update-acl
                           (s/context) "PROV1" "user1" "update-group")
           coll1-PROV1 (data-core/ingest-umm-spec-collection
-                          "PROV1"
-                          (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                          {:token token})
+                       "PROV1"
+                       (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                       {:token token})
           _ (index/wait-until-indexed)
           concept (variable-util/make-variable-concept
-                    {}
-                    {:coll-concept-id (:concept-id coll1-PROV1)})
+                   {}
+                   {:coll-concept-id (:concept-id coll1-PROV1)})
           opts (merge variable-util/default-opts {:token token})
           {:keys [concept-id revision-id]} (variable-util/ingest-variable-with-association
-                                             concept
-                                             opts)]
+                                            concept
+                                            opts)]
       (ingest/assert-user-id concept-id revision-id "user1")))
   (testing (str "both user-id and token in the header results in the revision "
                 "getting user id from user-id header")
     (variable-util/setup-update-acl (s/context) "PROV1" "user4" "update-group")
     (let [{token :token} (variable-util/setup-update-acl
-                           (s/context) "PROV1" "user5" "update-group")
+                          (s/context) "PROV1" "user5" "update-group")
           coll1-PROV1 (data-core/ingest-umm-spec-collection
-                          "PROV1"
-                          (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                          {:token token})
+                       "PROV1"
+                       (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                       {:token token})
           _ (index/wait-until-indexed)
           concept (variable-util/make-variable-concept
-                    {}
-                    {:coll-concept-id (:concept-id coll1-PROV1)})
+                   {}
+                   {:coll-concept-id (:concept-id coll1-PROV1)})
           opts (merge variable-util/default-opts {:user-id "user4"
                                                   :token token})
           {:keys [concept-id revision-id]} (variable-util/ingest-variable-with-association
-                                             concept
-                                             opts)]
+                                            concept
+                                            opts)]
       (ingest/assert-user-id concept-id revision-id "user4")))
   (testing "neither user-id nor token in the header when ingesting variable"
     (let [;; still need token to ingest collection.
           {token :token} (variable-util/setup-update-acl
-                           (s/context) "PROV1" "user1" "update-group")
+                          (s/context) "PROV1" "user1" "update-group")
           coll1-PROV1 (data-core/ingest-umm-spec-collection
-                        "PROV1"
-                        (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                        {:token token})
+                       "PROV1"
+                       (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                       {:token token})
           _ (index/wait-until-indexed)
           concept (variable-util/make-variable-concept
-                    {}
-                    {:coll-concept-id (:concept-id coll1-PROV1)})
+                   {}
+                   {:coll-concept-id (:concept-id coll1-PROV1)})
           opts variable-util/default-opts
           {status :status} (variable-util/ingest-variable-with-association concept opts)]
       (is (= 401 status)))))
@@ -153,17 +153,17 @@
          ingest-header3 expected-user-id3]
     (let [{token1 :token} ingest-header1
           coll1-PROV1 (data-core/ingest-umm-spec-collection
-                        "PROV1"
-                        (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                        {:token token1})
+                       "PROV1"
+                       (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                       {:token token1})
           _ (index/wait-until-indexed)
           concept (variable-util/make-variable-concept
-                    {}
-                    {:coll-concept-id (:concept-id coll1-PROV1)})
+                   {}
+                   {:coll-concept-id (:concept-id coll1-PROV1)})
           {:keys [concept-id revision-id]} (variable-util/ingest-variable-with-association
-                                             concept
-                                             (merge variable-util/default-opts
-                                                    ingest-header1))]
+                                            concept
+                                            (merge variable-util/default-opts
+                                                   ingest-header1))]
       (ingest/ingest-concept concept (merge variable-util/default-opts
                                             ingest-header2))
       (ingest/ingest-concept concept (merge variable-util/default-opts
@@ -191,9 +191,9 @@
   (let [{token :token} (variable-util/setup-update-acl
                         (s/context) "PROV1" "user1" "update-group")
         coll1-PROV1 (data-core/ingest-umm-spec-collection
-                      "PROV1"
-                      (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                      {:token token})
+                     "PROV1"
+                     (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                     {:token token})
         _ (index/wait-until-indexed)
         supplied-concept-id "V1000-PROV1"
         concept (variable-util/make-variable-concept
@@ -203,27 +203,27 @@
                   :coll-concept-id (:concept-id coll1-PROV1)})]
     (testing "ingest of a new variable concept with concept-id present"
       (let [{:keys [concept-id revision-id]} (variable-util/ingest-variable-with-association
-                                               concept
-                                               (variable-util/token-opts token))]
+                                              concept
+                                              (variable-util/token-opts token))]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= [supplied-concept-id 1] [concept-id revision-id]))))
 
     (testing "Update the concept with the concept-id"
       (let [{:keys [concept-id revision-id]} (variable-util/ingest-variable
-                                               concept
-                                               (variable-util/token-opts token))]
+                                              concept
+                                              (variable-util/token-opts token))]
         (is (= [supplied-concept-id 2] [concept-id revision-id]))))
 
     (testing "update the concept without the concept-id"
       (let [{:keys [concept-id revision-id]} (variable-util/ingest-variable
-                                               (dissoc concept :concept-id)
-                                               (variable-util/token-opts token))]
+                                              (dissoc concept :concept-id)
+                                              (variable-util/token-opts token))]
         (is (= [supplied-concept-id 3] [concept-id revision-id]))))
 
     (testing "update concept with a different concept-id is invalid"
       (let [{:keys [status errors]} (variable-util/ingest-variable-with-association
-                                      (assoc concept :concept-id "V1111-PROV1")
-                                      (variable-util/token-opts token))]
+                                     (assoc concept :concept-id "V1111-PROV1")
+                                     (variable-util/token-opts token))]
         (is (= [409 [(str "A concept with concept-id [V1000-PROV1] and "
                           "native-id [Atlantic-1] already exists for "
                           "concept-type [:variable] provider-id [PROV1]. "
@@ -236,19 +236,19 @@
   (let [{token :token} (variable-util/setup-update-acl
                         (s/context) "PROV1" "user1" "update-group")
         coll1-PROV1 (data-core/ingest-umm-spec-collection
-                      "PROV1"
-                      (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                      {:token token})
+                     "PROV1"
+                     (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                     {:token token})
         _ (index/wait-until-indexed)
         supplied-concept-id "V1000-PROV1"]
     (testing "json response"
       (let [response (variable-util/ingest-variable-with-association
-                       (variable-util/make-variable-concept
-                         {}
-                         {:concept-id supplied-concept-id
-                          :coll-concept-id (:concept-id coll1-PROV1)})
-                       (merge (variable-util/token-opts token)
-                              {:raw? true}))]
+                      (variable-util/make-variable-concept
+                       {}
+                       {:concept-id supplied-concept-id
+                        :coll-concept-id (:concept-id coll1-PROV1)})
+                      (merge (variable-util/token-opts token)
+                             {:raw? true}))]
         (is (= {:revision-id 1
                 :concept-id supplied-concept-id}
                (select-keys
@@ -257,13 +257,13 @@
 
     (testing "xml response"
       (let [response (variable-util/ingest-variable-with-association
-                       (variable-util/make-variable-concept
-                         {}
-                         {:concept-id supplied-concept-id
-                          :coll-concept-id (:concept-id coll1-PROV1)})
-                       (merge (variable-util/token-opts token)
-                              {:accept-format :xml
-                               :raw? true}))]
+                      (variable-util/make-variable-concept
+                       {}
+                       {:concept-id supplied-concept-id
+                        :coll-concept-id (:concept-id coll1-PROV1)})
+                      (merge (variable-util/token-opts token)
+                             {:accept-format :xml
+                              :raw? true}))]
         (is (= {:revision-id 2
                 :concept-id supplied-concept-id}
                (ingest/parse-ingest-body :xml response)))))))
@@ -273,25 +273,25 @@
   (let [{token :token} (variable-util/setup-update-acl
                         (s/context) "PROV1" "user1" "update-group")
         coll1-PROV1 (data-core/ingest-umm-spec-collection
-                      "PROV1"
-                      (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                      {:token token})
+                     "PROV1"
+                     (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                     {:token token})
         _ (index/wait-until-indexed)]
     (testing "json response"
       (let [concept-no-metadata (assoc (variable-util/make-variable-concept
-                                         {}
-                                         {:coll-concept-id (:concept-id coll1-PROV1)})
+                                        {}
+                                        {:coll-concept-id (:concept-id coll1-PROV1)})
                                        :metadata "")
             response (variable-util/ingest-variable-with-association
-                       concept-no-metadata
-                       (merge (variable-util/token-opts token)
-                              {:raw? true}))
+                      concept-no-metadata
+                      (merge (variable-util/token-opts token)
+                             {:raw? true}))
             {:keys [errors]} (ingest/parse-ingest-body :json response)]
         (is (re-find #"Request content is too short." (first errors)))))
     (testing "xml response"
       (let [concept-no-metadata (assoc (variable-util/make-variable-concept
-                                         {}
-                                         {:coll-concept-id (:concept-id coll1-PROV1)})
+                                        {}
+                                        {:coll-concept-id (:concept-id coll1-PROV1)})
                                        :metadata "")
             response (variable-util/ingest-variable-with-association
                       concept-no-metadata
@@ -308,15 +308,15 @@
     (let [{token :token} (variable-util/setup-update-acl
                           (s/context) "PROV1" "user1" "update-group")
           coll1-PROV1 (data-core/ingest-umm-spec-collection
-                        "PROV1"
-                        (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                        {:token token})
+                       "PROV1"
+                       (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                       {:token token})
         _ (index/wait-until-indexed)
           ingester #(variable-util/ingest-variable-with-association
-                      (variable-util/make-variable-concept
-                        {}
-                        {:coll-concept-id (:concept-id coll1-PROV1)})
-                      (variable-util/token-opts token))
+                     (variable-util/make-variable-concept
+                      {}
+                      {:coll-concept-id (:concept-id coll1-PROV1)})
+                     (variable-util/token-opts token))
           n 4
           created-concepts (take n (repeatedly n ingester))]
       (is (apply = (map :concept-id created-concepts)))
@@ -325,15 +325,15 @@
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
   (let [{token :token} (variable-util/setup-update-acl
-                          (s/context) "PROV1" "user1" "update-group")
+                        (s/context) "PROV1" "user1" "update-group")
         coll1-PROV1 (data-core/ingest-umm-spec-collection
-                      "PROV1"
-                      (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                      {:token token})
+                     "PROV1"
+                     (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                     {:token token})
         _ (index/wait-until-indexed)
         concept (assoc (variable-util/make-variable-concept
-                         {}
-                         {:coll-concept-id (:concept-id coll1-PROV1)})
+                        {}
+                        {:coll-concept-id (:concept-id coll1-PROV1)})
                        :format variable-util/utf-versioned-content-type)
         {:keys [status]} (variable-util/ingest-variable-with-association
                           concept
@@ -367,8 +367,8 @@
                       {:token token})
           _ (index/wait-until-indexed)
           concept (variable-util/make-variable-concept
-                    {}
-                    {:coll-concept-id (:concept-id coll1-PROV1)})
+                   {}
+                   {:coll-concept-id (:concept-id coll1-PROV1)})
           _ (variable-util/ingest-variable-with-association concept {:token token})
           {:keys [status concept-id revision-id]} (ingest/delete-concept concept {:token token})
           fetched (mdb/get-concept concept-id revision-id)]
@@ -392,19 +392,19 @@
   (let [{token :token} (variable-util/setup-update-acl
                         (s/context) "PROV1" "user1" "update-group")
         coll1-PROV1 (data-core/ingest-umm-spec-collection
-                      "PROV1"
-                      (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                      {:token token})
+                     "PROV1"
+                     (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                     {:token token})
         _ (index/wait-until-indexed) 
         concept (variable-util/make-variable-concept
-                  {:Name "var1"}
-                  {:native-id "var-to-be-updated"
-                   :coll-concept-id (:concept-id coll1-PROV1)})
+                 {:Name "var1"}
+                 {:native-id "var-to-be-updated"
+                  :coll-concept-id (:concept-id coll1-PROV1)})
         ;; ingest the variable with name var1
         {var-concept-id :concept-id
          initial-revision-id :revision-id} (variable-util/ingest-variable-with-association
-                                             concept
-                                             (variable-util/token-opts token))]
+                                            concept
+                                            (variable-util/token-opts token))]
     ;; sanity check
     (is (mdb/concept-exists-in-mdb? var-concept-id initial-revision-id))
     (is (= 1 initial-revision-id))))
@@ -422,11 +422,11 @@
       (side/eval-form `(ingest-config/set-validate-umm-var-keywords! true))
       (are3 [measurements expected-status expected-errors]
         (let [concept (variable-util/make-variable-concept
-                        {:MeasurementIdentifiers measurements}
-                        {:coll-concept-id (:concept-id coll1-PROV1)})
+                       {:MeasurementIdentifiers measurements}
+                       {:coll-concept-id (:concept-id coll1-PROV1)})
               {:keys [status errors]} (variable-util/ingest-variable-with-association
-                                        concept
-                                        (variable-util/token-opts token))]
+                                       concept
+                                       (variable-util/token-opts token))]
           (is (= expected-status status))
           (is (= expected-errors errors)))
 

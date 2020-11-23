@@ -31,10 +31,10 @@
                                             {:token token})
         _ (index/wait-until-indexed)
         var1-concept (variable/make-variable-concept
-                       {:Name "Variable1"
-                        :provider-id "PROV1"}
-                       {:native-id "var1"
-                        :coll-concept-id (:concept-id coll1)})
+                      {:Name "Variable1"
+                       :provider-id "PROV1"}
+                      {:native-id "var1"
+                       :coll-concept-id (:concept-id coll1)})
         var1-1 (variable/ingest-variable-with-association var1-concept)
         var1-2-tombstone (merge (ingest/delete-concept var1-concept {:token token})
                                 var1-concept
@@ -44,29 +44,29 @@
         var1-3 (variable/ingest-variable-with-association var1-concept)
 
         var2-1-concept (variable/make-variable-concept
-                         {:Name "Variable2"
-                          :LongName "LongName2"
-                          :provider-id "PROV1"}
-                         {:native-id "var2"
-                          :coll-concept-id (:concept-id coll1)})
+                        {:Name "Variable2"
+                         :LongName "LongName2"
+                         :provider-id "PROV1"}
+                        {:native-id "var2"
+                         :coll-concept-id (:concept-id coll1)})
         var2-1 (variable/ingest-variable-with-association var2-1-concept)
         var2-2-concept (variable/make-variable-concept
-                         {:Name "Variable2"
-                          :LongName "LongName2-2"
-                          :provider-id "PROV1"}
-                         {:native-id "var2"
-                          :coll-concept-id (:concept-id coll1)})
+                        {:Name "Variable2"
+                         :LongName "LongName2-2"
+                         :provider-id "PROV1"}
+                        {:native-id "var2"
+                         :coll-concept-id (:concept-id coll1)})
         var2-2 (variable/ingest-variable-with-association var2-2-concept)
         var2-3-tombstone (merge (ingest/delete-concept var2-2-concept {:token token})
                                 var2-2-concept
                                 {:deleted true
                                  :user-id "user1"})
         var3-concept (variable/make-variable-concept
-                       {:Name "Variable1"
-                        :LongName "LongName3"
-                        :provider-id "PROV2"}
-                       {:native-id "var3"
-                        :coll-concept-id (:concept-id coll2)})
+                      {:Name "Variable1"
+                       :LongName "LongName3"
+                       :provider-id "PROV2"}
+                      {:native-id "var3"
+                       :coll-concept-id (:concept-id coll2)})
         var3 (variable/ingest-variable-with-association var3-concept)]
     (index/wait-until-indexed)
     (testing "search variables for all revisions"
