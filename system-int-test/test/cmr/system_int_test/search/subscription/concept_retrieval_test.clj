@@ -221,13 +221,9 @@
                 unsupported-mt)))))
 
 (deftest retrieve-subscription-by-concept-id-with-subscriber
-  (doseq [acl (:items
-               (ac-util/search-for-acls (s/context)
-                                        {:provider "PROV1"
-                                         :target ["SUBSCRIPTION_MANAGEMENT" "INGEST_MANAGEMENT_ACL"]}
-                                        {:token "mock-echo-system-token"}))
-          :let [concept-id (:concept_id acl)]]
-    (e/ungrant (s/context) concept-id))
+  (e/ungrant-by-search (s/context)
+                       {:provider "PROV1"
+                        :target ["SUBSCRIPTION_MANAGEMENT" "INGEST_MANAGEMENT_ACL"]})
   (ac-util/wait-until-indexed)
   (doseq [accept-format [mt/umm-json]]
     (let [suffix (if accept-format
