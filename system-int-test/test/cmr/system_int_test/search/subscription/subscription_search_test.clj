@@ -29,13 +29,9 @@
                   {"provguid4" "PROV4"} [:update] [:update])]))
 
 (deftest search-for-subscriptions-test-with-subscriber
-  (doseq [acl (:items
-               (ac-util/search-for-acls (system/context)
-                                        {:provider "PROV1"
-                                         :target ["SUBSCRIPTION_MANAGEMENT" "INGEST_MANAGEMENT_ACL"]}
-                                        {:token "mock-echo-system-token"}))
-          :let [concept-id (:concept_id acl)]]
-    (echo-util/ungrant (system/context) concept-id))
+  (echo-util/ungrant-by-search (system/context)
+                               {:provider "PROV1"
+                                :target ["SUBSCRIPTION_MANAGEMENT" "INGEST_MANAGEMENT_ACL"]})
   (ac-util/wait-until-indexed)
   (let [subscriber-token (echo-util/login (system/context) "subscriber")
         guest-token (echo-util/login-guest (system/context))

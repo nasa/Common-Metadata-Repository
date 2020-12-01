@@ -423,13 +423,9 @@
 
 (deftest ingest-update-and-delete-subscription-as-subscriber
   (testing "Tests updating and deleting subscriptions as subscriber"
-    (doseq [acl (:items
-                 (ac-util/search-for-acls (system/context)
-                                          {:provider "PROV1"
-                                           :target ["SUBSCRIPTION_MANAGEMENT" "INGEST_MANAGEMENT_ACL"]}
-                                          {:token "mock-echo-system-token"}))
-            :let [concept-id (:concept_id acl)]]
-      (echo-util/ungrant (system/context) concept-id))
+    (echo-util/ungrant-by-search (system/context)
+                                 {:provider "PROV1"
+                                  :target ["SUBSCRIPTION_MANAGEMENT" "INGEST_MANAGEMENT_ACL"]})
     (ac-util/wait-until-indexed)
     (let [admin-group (echo-util/get-or-create-group (system/context) "admin-group")
           admin-user-token (echo-util/login (system/context) "admin-user" [admin-group])]
@@ -475,3 +471,73 @@
 
           "Delete subscription as admin"
           ingest/delete-concept [concept2 {:token admin-user-token}] 200 nil)))))
+
+(deftest subscription-ingest-subscriber-collection-permission-check-test
+  (testing "Tests that the subscriber has permission to view the collection before allowing ingest"
+    (let [admin-group (echo-util/get-or-create-group (system/context) "admin-group")
+          admin-user-token (echo-util/login (system/context) "admin-user" [admin-group])
+          user-token (echo-util/login (system/context) "user1")
+          coll1 (data-core/ingest-umm-spec-collection "PROV1"
+                                                      (data-umm-c/collection {:ShortName "coll1"
+                                                                              :EntryTitle "entry-title1"})
+                                                      {:token "mock-echo-system-token"})
+          concept (subscription-util/make-subscription-concept {:SubscriberId "user1"
+                                                                :CollectionConceptId (:concept-id coll1)})]
+      ;; adjust permissions
+      (echo-util/ungrant-by-search (system/context)
+                                   {:provider "PROV1"
+                                    :target ["SUBSCRIPTION_MANAGEMENT" "INGEST_MANAGEMENT_ACL"]})
+      (echo-util/ungrant-by-search (system/context)
+                                   {:provider "PROV1"
+                                    :identity-type "catalog_item"})
+      (echo-util/grant-all-subscription-group-sm (system/context)
+                                                 "PROV1"
+                                                 admin-group
+                                                 [:read :update])
+      (echo-util/grant-groups-ingest (system/context)
+                                     "PROV1"
+                                     [admin-group])
+      (ac-util/wait-until-indexed)
+
+      (are3 [ingest-api-call args expected-status expected-errors]
+            (let [{:keys [status errors]} (apply ingest-api-call args)]
+              (is (= expected-status status))
+              (is (= expected-errors errors)))
+
+            "Attempt to ingest subscription as user1"
+            ingest/ingest-concept [concept {:token user-token}] 403 [(format "Subscriber-id [user1] does not have permission to view collection [%s]." (:concept-id coll1))]
+
+            "Attempt to ingest subscription as admin-user"
+            ingest/ingest-concept [concept {:token admin-user-token}] 403 [(format "Subscriber-id [user1] does not have permission to view collection [%s]." (:concept-id coll1))])
+
+      (ac-util/create-acl "mock-echo-system-token"
+                          {:group_permissions [{:user_type "registered"
+                                                :permissions ["read" "order"]}]
+                           :catalog_item_identity {:name "coll1 ACL"
+                                                   :provider_id "PROV1"
+                                                   :collection_applicable true
+                                                   :collection_identifier {:entry_titles [(:EntryTitle coll1)]}}})
+      (ac-util/wait-until-indexed)
+
+      (are3 [ingest-api-call args expected-status expected-errors]
+        (let [{:keys [status errors]} (apply ingest-api-call args)]
+          (is (= expected-status status))
+          (is (= expected-errors errors)))
+
+        "Ingest subscription as admin"
+        ingest/ingest-concept [concept {:token admin-user-token}] 201 nil
+
+        "Update subscription as admin"
+        ingest/ingest-concept [concept {:token admin-user-token}] 200 nil
+
+        "Delete subscription as admin"
+        ingest/delete-concept [concept {:token admin-user-token}] 200 nil
+
+        "Ingest subscription as user1"
+        ingest/ingest-concept [concept {:token user-token}] 200 nil
+
+        "Update subscription as user1"
+        ingest/ingest-concept [concept {:token user-token}] 200 nil
+
+        "Delete subscription as user1"
+        ingest/delete-concept [concept {:token user-token}] 200 nil))))
