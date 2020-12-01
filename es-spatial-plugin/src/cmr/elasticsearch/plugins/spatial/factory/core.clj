@@ -14,6 +14,12 @@
 
 (import 'cmr.elasticsearch.plugins.SpatialScriptFactory)
 
+(defn -isResultDeterministic
+  "Implies the results are cacheable if true.
+   See [[https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-engine.html]]"
+  [& _args]
+  false)
+
 (defn -newFactory
   [^SpatialScriptFactory this ^Map params ^SearchLookup lookup]
   (new SpatialScriptLeafFactory params lookup))
