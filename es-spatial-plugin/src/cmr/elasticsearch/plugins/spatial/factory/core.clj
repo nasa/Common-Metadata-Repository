@@ -17,7 +17,7 @@
 (defn -isResultDeterministic
   "Implies the results are cacheable if true.
    See [[https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-engine.html]]"
-  [& _args]
+  [^SpatialScriptFactory this]
   false)
 
 (defn -newFactory
