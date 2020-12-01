@@ -11,6 +11,7 @@
 (def type->http-status-code
   {:bad-request 400
    :unauthorized 401
+   :forbidden 403
    :not-found 404
    :conflict 409
    :invalid-content-type 415

@@ -6,9 +6,11 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.services.errors :as errors]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.validation.validation :as v]
+   [cmr.transmit.access-control :as access-control]
    [cmr.transmit.metadata-db :as mdb]))
 
 (defn- validate-and-prepare-subscription-concept
@@ -23,7 +25,7 @@
 (defn- perform-subscription-ingest
   "This function assumes all checks have already taken place and that a
   subscription is ready to be saved"
-  [concept request-context headers]
+  [request-context concept headers]
   (let [validated-concept (validate-and-prepare-subscription-concept concept)
         concept-with-user-id (api-core/set-user-id validated-concept
                                                    request-context
@@ -44,6 +46,24 @@
   (common-enabled/validate-write-enabled request-context "ingest")
   (lt-validation/validate-launchpad-token request-context)
   (api-core/verify-provider-exists request-context provider-id))
+
+(defn- check-subscriber-collection-permission
+  [request-context concept]
+  (let [metadata (-> (:metadata concept)
+                     (json/decode true))
+        concept-id (:CollectionConceptId metadata)
+        subscriber-id (:SubscriberId metadata)
+        permissions (-> (access-control/get-permissions request-context
+                                                        {:concept_id concept-id
+                                                         :user_id subscriber-id})
+                        json/decode
+                        (get concept-id))]
+    (when-not (some #{"read"} permissions)
+      (errors/throw-service-error
+        :forbidden
+        (format "Subscriber-id [%s] does not have permission to view collection [%s]."
+                subscriber-id
+                concept-id)))))
 
 (defn- check-subscription-ingest-permission
   "All the checks needed before starting to process an ingest of subscriptions"
@@ -87,8 +107,9 @@
     (common-ingest-checks request-context provider-id)
     (let [concept (api-core/body->concept!
                     :subscription provider-id native-id body content-type headers)]
-      (check-subscription-ingest-permission concept request-context headers provider-id)
-      (perform-subscription-ingest concept request-context headers))))
+      (check-subscriber-collection-permission request-context concept)
+      (check-subscription-ingest-permission request-context concept headers provider-id)
+      (perform-subscription-ingest request-context concept headers))))
 
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."
@@ -102,7 +123,7 @@
                                            :exclude-metadata false
                                            :latest true}
                                           concept-type))]
-    (check-subscription-ingest-permission concept request-context headers provider-id)
+    (check-subscription-ingest-permission request-context concept headers provider-id)
     (let [concept-attribs (-> {:provider-id provider-id
                                :native-id native-id
                                :concept-type concept-type}
