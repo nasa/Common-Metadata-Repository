@@ -49,24 +49,6 @@
      :reportable false,
      :order 0}))
 
-(deftest get-range-facets-cache-empty-test
-  "Testing converting the humanizers to search facets when the cache is empty."
-  (let [context {:system {:caches  {hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)}}}]
-    (is (= [{:key "0 to 1 meter", :from 0.0, :to (+ 1.0 hrfs/addition-factor)}
-            {:key "1 to 30 meters", :from 1.0, :to (+ 30.0 hrfs/addition-factor)}
-            {:key "30 to 100 meters", :from 30.0, :to (+ 100.0 hrfs/addition-factor)}
-            {:key "100 to 250 meters", :from 100.0, :to (+ 250.0 hrfs/addition-factor)}
-            {:key "250 to 500 meters", :from 250.0, :to (+ 500.0 hrfs/addition-factor)}
-            {:key "500 to 1000 meters", :from 500.0, :to (+ 1000.0 hrfs/addition-factor)}
-            {:key "1 to 10 km", :from 1000.0, :to (+ 10000.0 hrfs/addition-factor)}
-            {:key "10 to 50 km", :from 10000.0, :to (+ 50000.0 hrfs/addition-factor)}
-            {:key "50 to 100 km", :from 50000.0, :to (+ 100000.0 hrfs/addition-factor)}
-            {:key "100 to 250 km", :from 100000.0, :to (+ 250000.0 hrfs/addition-factor)}
-            {:key "250 to 500 km", :from 250000.0, :to (+ 500000.0 hrfs/addition-factor)}
-            {:key "500 to 1000 km", :from 500000.0, :to (+ 1000000.0 hrfs/addition-factor)}
-            {:key "1000 km & beyond", :from 1000000.0 :to (Float/MAX_VALUE)}]
-           (hrfs/get-range-facets context)))))
-
 (defn- get-sample-range-facet-humanizers
   "Get the sample humanizers that work for range facets."
   []
