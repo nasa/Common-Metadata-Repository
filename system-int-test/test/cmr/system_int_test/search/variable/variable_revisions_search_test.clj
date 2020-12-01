@@ -1,4 +1,4 @@
-(/ns cmr.system-int-test.search.variable.variable-revisions-search-test
+(ns cmr.system-int-test.search.variable.variable-revisions-search-test
   "Integration test for variable all revisions search"
   (:require
    [clojure.test :refer :all]
