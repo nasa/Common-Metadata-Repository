@@ -250,7 +250,7 @@
                                     {:token token}))
            :let [concept-id (:concept_id acl)]
            :when concept-id]
-    (ungrant context concept-id))))
+     (ungrant context concept-id))))
 
 (defn get-acls-by-type-and-target
   "Get the GROUP ACLs set up for providers in fixtures.  Return in format used for test assertions"

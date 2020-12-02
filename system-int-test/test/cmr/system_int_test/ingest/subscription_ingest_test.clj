@@ -475,8 +475,9 @@
 (deftest subscription-ingest-subscriber-collection-permission-check-test
   (testing "Tests that the subscriber has permission to view the collection before allowing ingest"
     (let [admin-group (echo-util/get-or-create-group (system/context) "admin-group")
+          group1 (echo-util/get-or-create-group (system/context) "group1")
           admin-user-token (echo-util/login (system/context) "admin-user" [admin-group])
-          user-token (echo-util/login (system/context) "user1")
+          user-token (echo-util/login (system/context) "user1" [group1])
           coll1 (data-core/ingest-umm-spec-collection "PROV1"
                                                       (data-umm-c/collection {:ShortName "coll1"
                                                                               :EntryTitle "entry-title1"})
@@ -498,17 +499,52 @@
                                      "PROV1"
                                      [admin-group])
       (ac-util/wait-until-indexed)
+      (testing "user doesn't have permission to view collection"
+        (are3 [ingest-api-call args expected-status expected-errors]
+              (let [{:keys [status errors]} (apply ingest-api-call args)]
+                (is (= expected-status status))
+                (is (= expected-errors errors)))
 
-      (are3 [ingest-api-call args expected-status expected-errors]
-            (let [{:keys [status errors]} (apply ingest-api-call args)]
-              (is (= expected-status status))
-              (is (= expected-errors errors)))
+              "Attempt to ingest subscription as user1"
+              ingest/ingest-concept [concept {:token user-token}] 403 [(format "Subscriber-id [user1] does not have permission to view collection [%s]." (:concept-id coll1))]
 
-            "Attempt to ingest subscription as user1"
-            ingest/ingest-concept [concept {:token user-token}] 403 [(format "Subscriber-id [user1] does not have permission to view collection [%s]." (:concept-id coll1))]
+              "Attempt to ingest subscription as admin-user"
+              ingest/ingest-concept [concept {:token admin-user-token}] 403 [(format "Subscriber-id [user1] does not have permission to view collection [%s]." (:concept-id coll1))]))
 
-            "Attempt to ingest subscription as admin-user"
-            ingest/ingest-concept [concept {:token admin-user-token}] 403 [(format "Subscriber-id [user1] does not have permission to view collection [%s]." (:concept-id coll1))])
+      (echo-util/ungrant-by-search (system/context)
+                                   {:provider "PROV1"
+                                    :identity-type "catalog_item"})
+      (ac-util/create-acl "mock-echo-system-token"
+                          {:group_permissions [{:group_id group1
+                                                :permissions ["read" "order"]}]
+                           :catalog_item_identity {:name "coll1 ACL"
+                                                   :provider_id "PROV1"
+                                                   :collection_applicable true
+                                                   :collection_identifier {:entry_titles [(:EntryTitle coll1)]}}})
+      (ac-util/wait-until-indexed)
+      (testing "user now has permission to view collection - by group-id"
+        (are3 [ingest-api-call args expected-status expected-errors]
+              (let [{:keys [status errors]} (apply ingest-api-call args)]
+                (is (= expected-status status))
+                (is (= expected-errors errors)))
+
+              "Ingest subscription as admin"
+              ingest/ingest-concept [concept {:token admin-user-token}] 201 nil
+
+              "Update subscription as admin"
+              ingest/ingest-concept [concept {:token admin-user-token}] 200 nil
+
+              "Delete subscription as admin"
+              ingest/delete-concept [concept {:token admin-user-token}] 200 nil
+
+              "Ingest subscription as user1"
+              ingest/ingest-concept [concept {:token user-token}] 200 nil
+
+              "Update subscription as user1"
+              ingest/ingest-concept [concept {:token user-token}] 200 nil
+
+              "Delete subscription as user1"
+              ingest/delete-concept [concept {:token user-token}] 200 nil))
 
       (ac-util/create-acl "mock-echo-system-token"
                           {:group_permissions [{:user_type "registered"
@@ -518,26 +554,26 @@
                                                    :collection_applicable true
                                                    :collection_identifier {:entry_titles [(:EntryTitle coll1)]}}})
       (ac-util/wait-until-indexed)
+      (testing "user now has permission to view collection - by registered"
+        (are3 [ingest-api-call args expected-status expected-errors]
+              (let [{:keys [status errors]} (apply ingest-api-call args)]
+                (is (= expected-status status))
+                (is (= expected-errors errors)))
 
-      (are3 [ingest-api-call args expected-status expected-errors]
-        (let [{:keys [status errors]} (apply ingest-api-call args)]
-          (is (= expected-status status))
-          (is (= expected-errors errors)))
+              "Ingest subscription as admin"
+              ingest/ingest-concept [concept {:token admin-user-token}] 200 nil
 
-        "Ingest subscription as admin"
-        ingest/ingest-concept [concept {:token admin-user-token}] 201 nil
+              "Update subscription as admin"
+              ingest/ingest-concept [concept {:token admin-user-token}] 200 nil
 
-        "Update subscription as admin"
-        ingest/ingest-concept [concept {:token admin-user-token}] 200 nil
+              "Delete subscription as admin"
+              ingest/delete-concept [concept {:token admin-user-token}] 200 nil
 
-        "Delete subscription as admin"
-        ingest/delete-concept [concept {:token admin-user-token}] 200 nil
+              "Ingest subscription as user1"
+              ingest/ingest-concept [concept {:token user-token}] 200 nil
 
-        "Ingest subscription as user1"
-        ingest/ingest-concept [concept {:token user-token}] 200 nil
+              "Update subscription as user1"
+              ingest/ingest-concept [concept {:token user-token}] 200 nil
 
-        "Update subscription as user1"
-        ingest/ingest-concept [concept {:token user-token}] 200 nil
-
-        "Delete subscription as user1"
-        ingest/delete-concept [concept {:token user-token}] 200 nil))))
+              "Delete subscription as user1"
+              ingest/delete-concept [concept {:token user-token}] 200 nil)))))
