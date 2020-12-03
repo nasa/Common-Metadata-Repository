@@ -273,12 +273,6 @@
           existing-revision-id (:revision-id (or previous-revision
                                                  (c/get-concept db concept-type provider concept-id)))
           revision-id (if existing-revision-id (inc existing-revision-id) 1)]
-      ;; The first revision of a variable without collection info will be rejected.
-      ;; will do this later in CMR-6605t
-      ;;(when (and (= :variable (:concept-type concept))
-       ;;          (= 1 revision-id)
-        ;;         (nil? (:coll-concept-id concept)))
-        ;;(cmsg/data-error :invalid-data variable-missing-coll-info-msg (:native-id concept)))
       (assoc concept :revision-id revision-id))))
 
 (defn- check-concept-revision-id
@@ -313,21 +307,16 @@
                           (:expected result)
                           revision-id))))))
 
-(defn- invalid-variable-name-msg
-  "Returns the message for invalid variable name"
-  [new-name existing-name]
-  (format "Variable name [%s] does not match the existing variable name [%s]"
-          new-name existing-name))
-
-(defn- validate-variable-name-not-changed
-  "Validate that the concept variable name is the same as the previous concept's variable name."
+(defn- validate-new-variable-has-collection-info
+  "Validate when variable is created, it contains collection info to make association with."
   [concept previous-concept]
-  (let [new-name (get-in concept [:extra-fields :variable-name])
-        existing-name (get-in previous-concept [:extra-fields :variable-name])]
-    (when (and previous-concept
-               (not (util/is-tombstone? previous-concept))
-               (not= existing-name new-name))
-      (cmsg/data-error :invalid-data invalid-variable-name-msg new-name existing-name))))
+  ;; When the variable doesn't have previous revision or the previous revision is tombstoned,
+  ;; it indicates it's a new variale ingest. If it doesn't contain collection info to make association
+  ;; with, the ingest should be rejected.
+  (when (and (nil? (:coll-concept-id concept))
+             (or (nil? previous-concept)
+                 (util/is-tombstone? previous-concept)))
+   (cmsg/data-error :invalid-data variable-missing-coll-info-msg (:native-id concept))))
 
 ;;; this is abstracted here in case we switch to some other mechanism of
 ;;; marking tombstones
@@ -944,6 +933,10 @@
         {:keys [concept-type concept-id]} concept]
 
     (validate-concept-revision-id db provider concept)
+    ;; validate newly ingested variable contains collection info.
+    (when (= :variable concept-type)
+      (let [previous-concept (c/get-concept db concept-type provider concept-id)]
+        (validate-new-variable-has-collection-info concept previous-concept)))
 
     (let [concept (->> concept
                        (set-or-generate-revision-id db provider)
