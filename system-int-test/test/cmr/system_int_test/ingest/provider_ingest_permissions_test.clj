@@ -11,6 +11,7 @@
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-system]
+   [cmr.access-control.test.util :as ac-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -40,7 +41,7 @@
   "Succeeds if provided token has no permission to perform the given function."
   [response]
   (let [status (:status response)]
-    (is (= status 401))))
+    (is (= 401 status))))
 
 (deftest ingest-provider-management-permissions-test
   (let [prov-admin-read-group-concept-id (echo-util/get-or-create-group
@@ -154,7 +155,7 @@
                  (dg/granule-with-umm-spec-collection collection "C1-PROV1"))
         service (service-util/make-service-concept)
 
-        subscription (subscription-util/make-subscription-concept)
+        subscription (subscription-util/make-subscription-concept {:CollectionConceptId (:concept-id collection)})
         ;; create a subscription on PROV2, which doesn't have SUBSCRIPTION_MANAGEMENT permission
         ;; to ingest. So all the ingests should fail.
         subscription-np (subscription-util/make-subscription-concept {:provider-id "PROV2"})
@@ -171,8 +172,8 @@
 
       (are [token]
            (assert-ingest-no-permission
-                 (ingest/ingest-concept granule {:token token
-                                                 :allow-failure? true}))
+            (ingest/ingest-concept granule {:token token
+                                            :allow-failure? true}))
            guest-token
            user-token
            super-admin-token
@@ -189,8 +190,8 @@
            provider-admin-update-delete-token)
       (are [token]
            (assert-ingest-no-permission
-                 (ingest/delete-concept granule {:token token
-                                                 :allow-failure? true}))
+            (ingest/delete-concept granule {:token token
+                                            :allow-failure? true}))
            guest-token
            user-token
            super-admin-token
@@ -210,11 +211,11 @@
            provider-admin-update-delete-token)
       (are [token]
            (assert-ingest-no-permission
-                 (d/ingest-umm-spec-collection
-                  "PROV1"
-                  (data-umm-c/collection {})
-                  {:token token
-                   :allow-failure? true}))
+            (d/ingest-umm-spec-collection
+             "PROV1"
+             (data-umm-c/collection {})
+             {:token token
+              :allow-failure? true}))
            guest-token
            user-token
            super-admin-token
@@ -231,8 +232,8 @@
            provider-admin-update-delete-token)
       (are [token]
            (assert-ingest-no-permission
-                 (ingest/delete-concept ingested-concept {:token token
-                                                          :allow-failure? true}))
+            (ingest/delete-concept ingested-concept {:token token
+                                                     :allow-failure? true}))
            guest-token
            user-token
            super-admin-token
@@ -250,8 +251,8 @@
 
       (are [token]
            (assert-ingest-no-permission
-                 (ingest/ingest-concept service {:token token
-                                                 :allow-failure? true}))
+            (ingest/ingest-concept service {:token token
+                                            :allow-failure? true}))
            guest-token
            user-token
            super-admin-token
@@ -261,8 +262,8 @@
     (testing "ingest tool update permissions"
       (are3 [token]
             (assert-ingest-succeeded
-              (ingest/ingest-concept tool {:token token
-                                           :allow-failure? true}))
+             (ingest/ingest-concept tool {:token token
+                                          :allow-failure? true}))
             "provider-admin-update-token can ingest"
             provider-admin-update-token
             "provider-admin-read-update token can ingest"
@@ -272,8 +273,8 @@
 
       (are3 [token]
             (assert-ingest-no-permission
-                  (ingest/ingest-concept tool {:token token
-                                               :allow-failure? true}))
+             (ingest/ingest-concept tool {:token token
+                                          :allow-failure? true}))
             "gest-token can't ingest"
             guest-token
             "user-token can't ingest"
@@ -283,7 +284,7 @@
             "another-prov-admin-token can't ingest"
             another-prov-admin-token
             "provider-admin-read-token can't ingest"
-            provider-admin-read-token))
+            provider-admin-read-token)
 
      ;; Ingest and delete of subscriptions are controlled by both INGEST_MANAGEMENT_ACL and SUBSCRIPTION+MANAGEMENT ACLs.
      ;; subscriptoin-np is ingested on PROV2, which has no SUBSCRIPTION_MANAGEMENT permission to ingest. so, even though
@@ -291,8 +292,8 @@
      (testing "ingest subscription with INGEST_MANAGEMENT_ACL permission, but without SUBSCRIPTION_MANAGEMENT permission."
       (are3 [token]
             (assert-ingest-no-permission
-              (ingest/ingest-concept subscription-np {:token token
-                                                      :allow-failure? true}))
+             (ingest/ingest-concept subscription-np {:token token
+                                                     :allow-failure? true}))
             "provider-admin-update-token can not ingest"
             provider-admin-update-token
             "provider-admin-read-update token can not ingest"
@@ -302,23 +303,26 @@
 
       (are3 [token]
             (assert-ingest-no-permission
-              (ingest/delete-concept subscription-np {:token token
-                                                      :allow-failure? true}))
+             (ingest/delete-concept subscription-np {:token token
+                                                     :allow-failure? true}))
             "provider-admin-update-token can not delete"
             provider-admin-update-token
             "provider-admin-read-update token can not delete"
             provider-admin-read-update-token
             "provider-admin-update-delete token can not delete"
-            provider-admin-update-delete-token))
+            provider-admin-update-delete-token)))
 
     ;; The assert-ingest-succeeded tests below are identical to the tests above,
     ;; except that the subscription is on PROV1, which has both the INGEST and SUBSCRIPTION ACL permissions.
     ;; so both ingest-concept and delete-concept succeeded.
     (testing "ingest subscription update permissions"
+      (echo-util/grant-all (s/context)
+                           (echo-util/coll-catalog-item-id "PROV1"))
+      (ac-util/wait-until-indexed)
       (are3 [token]
             (assert-ingest-succeeded
-              (ingest/ingest-concept subscription {:token token
-                                                   :allow-failure? true}))
+             (ingest/ingest-concept subscription {:token token
+                                                  :allow-failure? true}))
             "provider-admin-update-token can ingest"
             provider-admin-update-token
             "provider-admin-read-update token can ingest"
@@ -328,8 +332,8 @@
 
       (are3 [token]
             (assert-ingest-succeeded
-              (ingest/delete-concept subscription {:token token
-                                                   :allow-failure? true}))
+             (ingest/delete-concept subscription {:token token
+                                                  :allow-failure? true}))
             "provider-admin-update-token can delete"
             provider-admin-update-token
             "provider-admin-read-update token can delete"
@@ -339,8 +343,8 @@
 
       (are3 [token]
             (assert-ingest-no-permission
-                  (ingest/ingest-concept subscription {:token token
-                                                       :allow-failure? true}))
+             (ingest/ingest-concept subscription {:token token
+                                                  :allow-failure? true}))
             "gest-token can't ingest"
             guest-token
             "user-token can't ingest"
@@ -354,8 +358,8 @@
 
       (are3 [token]
             (assert-ingest-no-permission
-                  (ingest/delete-concept subscription {:token token
-                                                       :allow-failure? true}))
+             (ingest/delete-concept subscription {:token token
+                                                  :allow-failure? true}))
             "gest-token can't delete"
             guest-token
             "user-token can't delete"
@@ -413,7 +417,7 @@
           "guest user denied"
           guest-token 401
           "regular user denied"
-          registered-token 401))
+          registered-token 401)
        (testing "disallowed delete responses:"
         (are3 [token expected]
           (let [response (ingest/delete-concept
@@ -428,7 +432,7 @@
           "guest user denied"
           guest-token 401
           "regular user denied"
-          registered-token 401))
+          registered-token 401)))
       (testing "allowed responses:"
         (let [create-response (variable-util/ingest-variable-with-association
                                 concept)

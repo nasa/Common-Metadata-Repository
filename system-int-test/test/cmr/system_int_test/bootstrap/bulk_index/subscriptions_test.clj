@@ -1,9 +1,11 @@
 (ns cmr.system-int-test.bootstrap.bulk-index.subscriptions-test
   "Integration test for CMR bulk index subscription operations."
   (:require
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.bootstrap.bulk-index.core :as core]
+   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-json :as data-umm-json]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
@@ -43,10 +45,17 @@
   (testing "Bulk index subscriptions for a single provider"
     (system/only-with-real-database
      ;; The following is saved, but not indexed due to the above call
-     (let [sub1 (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 1)
+     (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                                               :ShortName "S1"
+                                                                               :Version "V1"}))
+           sub1 (subscription/ingest-subscription-with-attrs {:provider-id "PROV1" :CollectionConceptId (:concept-id coll1)}
+                                                             {}
+                                                             1)
            ;; create a subscription on a different provider PROV2
            ;; and this subscription won't be indexed as a result of indexing subscriptions of PROV1
-           sub2 (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"} {} 1)]
+           sub2 (subscription/ingest-subscription-with-attrs {:provider-id "PROV2" :CollectionConceptId (:concept-id coll1)}
+                                                             {}
+                                                             1)]
 
        ;; no index, no hits.
        (is (zero? (:hits (search/find-refs :subscription {}))))
@@ -63,9 +72,15 @@
 
        (testing "Bulk index multilpe subscriptions for a single provider"
          ;; Ingest three more subscriptions
-         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 2)
-         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 3)
-         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 4)
+         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1" :CollectionConceptId (:concept-id coll1)}
+                                                      {}
+                                                      2)
+         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1" :CollectionConceptId (:concept-id coll1)}
+                                                      {}
+                                                      3)
+         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1" :CollectionConceptId (:concept-id coll1)}
+                                                      {}
+                                                      4)
 
          ;; The above three new subscriptions are not indexed, only sub1 is indexed.
          (is (= 1 (:hits (search/find-refs :subscription {}))))
@@ -81,59 +96,106 @@
 (deftest ^:oracle bulk-index-subscriptions
   (testing "Bulk index subscriptions for multiple providers, explicitly"
     (system/only-with-real-database
-     ;; The following are saved, but not indexed due to the above call
-     (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 1)
-     (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 2)
-     (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"} {} 3)
-     (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"} {} 4)
-     (subscription/ingest-subscription-with-attrs {:provider-id "PROV3"} {} 5)
-     (subscription/ingest-subscription-with-attrs {:provider-id "PROV3"} {} 6)
 
-     (is (= 0 (:hits (search/find-refs :subscription {}))))
+     (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                                               :ShortName "S1"
+                                                                               :Version "V1"}))]
+       ;; The following are saved, but not indexed due to the above call
 
-     (bootstrap/bulk-index-subscriptions "PROV1")
-     (bootstrap/bulk-index-subscriptions "PROV2")
-     (bootstrap/bulk-index-subscriptions "PROV3")
-     (index/wait-until-indexed)
+       (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                     :CollectionConceptId (:concept-id coll1)}
+                                                    {}
+                                                    1)
+       (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                     :CollectionConceptId (:concept-id coll1)}
+                                                    {}
+                                                    2)
+       (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
+                                                     :CollectionConceptId (:concept-id coll1)}
+                                                    {}
+                                                    3)
+       (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
+                                                     :CollectionConceptId (:concept-id coll1)}
+                                                    {}
+                                                    4)
+       (subscription/ingest-subscription-with-attrs {:provider-id "PROV3"
+                                                     :CollectionConceptId (:concept-id coll1)}
+                                                    {}
+                                                    5)
+       (subscription/ingest-subscription-with-attrs {:provider-id "PROV3"
+                                                     :CollectionConceptId (:concept-id coll1)}
+                                                    {}
+                                                    6)
 
-     (testing "Subscription concepts are indexed."
-       (let [{:keys [hits refs] :as response} (search/find-refs :subscription {})]
-         (is (= 6 hits))
-         (is (= 6 (count refs))))))))
+       (is (= 0 (:hits (search/find-refs :subscription {}))))
+
+       (bootstrap/bulk-index-subscriptions "PROV1")
+       (bootstrap/bulk-index-subscriptions "PROV2")
+       (bootstrap/bulk-index-subscriptions "PROV3")
+       (index/wait-until-indexed)
+
+       (testing "Subscription concepts are indexed."
+         (let [{:keys [hits refs] :as response} (search/find-refs :subscription {})]
+           (is (= 6 hits))
+           (is (= 6 (count refs)))))))))
 
 (deftest ^:oracle bulk-index-all-subscriptions
   (testing "Bulk index subscriptions for multiple providers, implicitly"
     (system/only-with-real-database
      ;; The following are saved, but not indexed due to the above call
-     (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"} {} 1)
-     (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"} {} 2)
-     (subscription/ingest-subscription-with-attrs {:provider-id "PROV3"} {} 3)
+     (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                                               :ShortName "S1"
+                                                                               :Version "V1"}))]
 
-     (is (= 0 (:hits (search/find-refs :subscription {}))))
+       (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                     :CollectionConceptId (:concept-id coll1)}
+                                                    {}
+                                                    1)
+       (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
+                                                     :CollectionConceptId (:concept-id coll1)}
+                                                    {}
+                                                    2)
+       (subscription/ingest-subscription-with-attrs {:provider-id "PROV3"
+                                                     :CollectionConceptId (:concept-id coll1)}
+                                                    {}
+                                                    3)
 
-     (bootstrap/bulk-index-subscriptions)
-     (index/wait-until-indexed)
+       (is (= 0 (:hits (search/find-refs :subscription {}))))
 
-     (testing "Subscription concepts are indexed."
-       (let [{:keys [hits refs]} (search/find-refs :subscription {})]
-         (is (= 3 hits))
-         (is (= 3 (count refs))))))))
+       (bootstrap/bulk-index-subscriptions)
+       (index/wait-until-indexed)
+
+       (testing "Subscription concepts are indexed."
+         (let [{:keys [hits refs]} (search/find-refs :subscription {})]
+           (is (= 3 hits))
+           (is (= 3 (count refs)))))))))
 
 (deftest ^:oracle bulk-index-subscription-revisions
   (testing "Bulk index subscriptions index all revisions index as well"
     (system/only-with-real-database
      (let [token (echo-util/login (system/context) "user1")
+           coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                                               :ShortName "S1"
+                                                                               :Version "V1"}))
            sub1-concept (subscription/make-subscription-concept {:native-id "SUB1"
                                                                  :Name "Sub1"
+                                                                 :SubscriberId "user1"
+                                                                 :CollectionConceptId (:concept-id coll1)
                                                                  :provider-id "PROV1"})
            sub2-concept (subscription/make-subscription-concept {:native-id "SUB2"
                                                                  :Name "Sub2"
+                                                                 :SubscriberId "user1"
+                                                                 :CollectionConceptId (:concept-id coll1)
                                                                  :provider-id "PROV2"})
            sub2-2-concept (subscription/make-subscription-concept {:native-id "SUB2"
                                                                    :Name "Sub2-2"
+                                                                   :SubscriberId "user1"
+                                                                   :CollectionConceptId (:concept-id coll1)
                                                                    :provider-id "PROV2"})
            sub3-concept (subscription/make-subscription-concept {:native-id "SUB3"
                                                                  :Name "Sub1"
+                                                                 :SubscriberId "user1"
+                                                                 :CollectionConceptId (:concept-id coll1)
                                                                  :provider-id "PROV3"})
            sub1-1 (subscription/ingest-subscription sub1-concept)
            sub1-2-tombstone (merge (ingest/delete-concept
