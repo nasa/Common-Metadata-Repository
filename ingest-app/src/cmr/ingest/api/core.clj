@@ -180,15 +180,20 @@
     {}
     {:threshold 1000}))
 
+(defn get-user-id-from-token
+  "Get user id based on token in request context"
+  [context]
+  (when-let [token (:token context)]
+    (cache/get-value (cache/context->cache context user-id-cache-key)
+                     token
+                     (partial tokens/get-user-id context token))))
+
 (defn get-user-id
   "Get user id based on context and headers"
   [context headers]
   (if-let [user-id (get headers transmit-config/user-id-header)]
     user-id
-    (when-let [token (:token context)]
-      (cache/get-value (cache/context->cache context user-id-cache-key)
-                       token
-                       (partial tokens/get-user-id context token)))))
+    (get-user-id-from-token context)))
 
 (defn set-user-id
   "Associate user id to concept."
