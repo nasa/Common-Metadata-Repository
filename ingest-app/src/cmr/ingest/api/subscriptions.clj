@@ -26,9 +26,9 @@
   [subscriber-id concept-id]
   (errors/throw-service-error
    :unauthorized
-   (format "Subscriber-id [%s] does not have permission to view collection [%s]."
-           subscriber-id
-           concept-id)))
+   (format "Collection with concept id [%s] does not exist or subscriber-id [%s] does not have permission to view the collection."
+           concept-id
+           subscriber-id)))
 
 (defn- check-subscriber-collection-permission
   "Checks that the subscriber-id can read the collection supplied in the subscription metadata"

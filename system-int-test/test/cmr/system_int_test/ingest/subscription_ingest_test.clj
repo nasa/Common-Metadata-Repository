@@ -596,7 +596,7 @@
       (testing "non-existent collection concept-id"
         (let [{:keys [status errors]} (ingest/ingest-concept fake-concept {:token "mock-echo-system-token"})]
           (is (= 401 status))
-          (is (= [(format "Subscriber-id [user1] does not have permission to view collection [FAKE].")]
+          (is (= [(format "Collection with concept id [FAKE] does not exist or subscriber-id [user1] does not have permission to view the collection.")]
                  errors))))
 
       (testing "user doesn't have permission to view collection"
@@ -606,10 +606,10 @@
                 (is (= expected-errors errors)))
 
               "Attempt to ingest subscription as user1"
-              ingest/ingest-concept [concept {:token user-token}] 401 [(format "Subscriber-id [user1] does not have permission to view collection [%s]." (:concept-id coll1))]
+              ingest/ingest-concept [concept {:token user-token}] 401 [(format "Collection with concept id [%s] does not exist or subscriber-id [user1] does not have permission to view the collection." (:concept-id coll1))]
 
               "Attempt to ingest subscription as admin-user"
-              ingest/ingest-concept [concept {:token admin-user-token}] 401 [(format "Subscriber-id [user1] does not have permission to view collection [%s]." (:concept-id coll1))]))
+              ingest/ingest-concept [concept {:token admin-user-token}] 401 [(format "Collection with concept id [%s] does not exist or subscriber-id [user1] does not have permission to view the collection." (:concept-id coll1))]))
 
       (echo-util/ungrant-by-search (system/context)
                                    {:provider "PROV1"
@@ -674,6 +674,6 @@
 
               "Update subscription as user1"
               ingest/ingest-concept [concept {:token user-token}] 200 nil
-      
+
               "Delete subscription as user1"
               ingest/delete-concept [concept {:token user-token}] 200 nil)))))
