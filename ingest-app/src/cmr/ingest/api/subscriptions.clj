@@ -22,23 +22,35 @@
     (v/validate-concept-metadata concept)
     concept))
 
+(defn- subscriber-collection-permission-error
+  [subscriber-id concept-id]
+  (errors/throw-service-error
+   :unauthorized
+   (format "Subscriber-id [%s] does not have permission to view collection [%s]."
+           subscriber-id
+           concept-id)))
+
 (defn- check-subscriber-collection-permission
+  "Checks that the subscriber-id can read the collection supplied in the subscription metadata"
   [request-context concept]
   (let [metadata (-> (:metadata concept)
                      (json/decode true))
         concept-id (:CollectionConceptId metadata)
-        subscriber-id (:SubscriberId metadata)
-        permissions (-> (access-control/get-permissions request-context
-                                                        {:concept_id concept-id
-                                                         :user_id subscriber-id})
-                        json/decode
-                        (get concept-id))]
-    (when-not (some #{"read"} permissions)
-      (errors/throw-service-error
-       :unauthorized
-       (format "Subscriber-id [%s] does not have permission to view collection [%s]."
-               subscriber-id
-               concept-id)))))
+        subscriber-id (:SubscriberId metadata)]
+      (try
+        (let [permissions (-> (access-control/get-permissions request-context
+                                                              {:concept_id concept-id
+                                                               :user_id subscriber-id})
+                              json/decode
+                              (get concept-id))]
+          (when-not (some #{"read"} permissions)
+            (subscriber-collection-permission-error
+             subscriber-id
+             concept-id)))
+        (catch Exception e
+          (subscriber-collection-permission-error
+           subscriber-id
+           concept-id)))))
 
 (defn- perform-subscription-ingest
   "This function assumes all checks have already taken place and that a

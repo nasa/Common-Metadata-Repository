@@ -573,6 +573,8 @@
                                                       (data-umm-c/collection {:ShortName "coll1"
                                                                               :EntryTitle "entry-title1"})
                                                       {:token "mock-echo-system-token"})
+          fake-concept (subscription-util/make-subscription-concept {:SubscriberId "user1"
+                                                                     :CollectionConceptId "FAKE"})
           concept (subscription-util/make-subscription-concept {:SubscriberId "user1"
                                                                 :CollectionConceptId (:concept-id coll1)})]
       ;; adjust permissions
@@ -590,6 +592,13 @@
                                      "PROV1"
                                      [admin-group])
       (ac-util/wait-until-indexed)
+
+      (testing "non-existent collection concept-id"
+        (let [{:keys [status errors]} (ingest/ingest-concept fake-concept {:token "mock-echo-system-token"})]
+          (is (= 401 status))
+          (is (= [(format "Subscriber-id [user1] does not have permission to view collection [FAKE].")]
+                 errors))))
+
       (testing "user doesn't have permission to view collection"
         (are3 [ingest-api-call args expected-status expected-errors]
               (let [{:keys [status errors]} (apply ingest-api-call args)]
@@ -665,6 +674,6 @@
 
               "Update subscription as user1"
               ingest/ingest-concept [concept {:token user-token}] 200 nil
-
+      
               "Delete subscription as user1"
               ingest/delete-concept [concept {:token user-token}] 200 nil)))))
