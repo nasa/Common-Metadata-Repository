@@ -48,7 +48,7 @@
   "Create nested elements for the nested maps."
   [m]
   (reduce-kv (fn [memo k v]
-                 (conj memo (xml/element (keyword k) {} (if (map? v) 
+                 (conj memo (xml/element (keyword k) {} (if (map? v)
                                                           (create-nested-elements v)
                                                           v))))
              []
@@ -185,7 +185,7 @@
   [context headers]
   (if-let [user-id (get headers transmit-config/user-id-header)]
     user-id
-    (when-let [token (get headers transmit-config/token-header)]
+    (when-let [token (:token context)]
       (cache/get-value (cache/context->cache context user-id-cache-key)
                        token
                        (partial tokens/get-user-id context token)))))
