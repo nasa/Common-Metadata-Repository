@@ -101,7 +101,7 @@
 
 (defmethod gen-find-concepts-in-table-sql :subscription
   [_concept-type table fields params]
-  (let [fields (cons :last_notified_at fields)
+  (let [fields (concat [:last_notified_at :permission_check_failed :permission_check_time] fields)
         root-query (gen-find-concepts-in-table-sql :default table fields params)
         updated-query (string/replace-first
                        (first root-query)

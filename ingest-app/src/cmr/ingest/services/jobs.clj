@@ -3,6 +3,8 @@
   (:require
    [cheshire.core :as json]
    [clj-time.core :as t]
+   [clj-time.coerce :as cr]
+   [cmr.common.time-keeper :as tk]
    [clojure.spec.alpha :as spec]
    [clojure.string :as string]
    [cmr.acl.acl-fetcher :as acl-fetcher]
@@ -13,6 +15,7 @@
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.data.provider-acl-hash :as pah]
    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
+   [cmr.ingest.services.ingest-service :as ingest]
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
@@ -198,6 +201,11 @@
   {:default 3600
    :type Long})
 
+(def subscription-permission-notification-expiration-days
+  "The number of days to wait before deleting subscription and notifying user that their permission
+   to view the collection was removed"
+   3)
+
 (defn trigger-full-refresh-collection-granule-aggregation-cache
   "Triggers a refresh of the collection granule aggregation cache in the Indexer."
   [context]
@@ -236,6 +244,19 @@
  [gran-ref-location]
  (string/join "\n" (map #(str "* [" % "](" % ")") gran-ref-location)))
 
+(defn failed-permission-content
+  "Create an email body for failed permission notifications."
+  [from-email-address to-email-address coll-id]
+  {:from from-email-address
+   :to to-email-address
+   :subject "You can no longer view this collection"
+   :body [{:type "text/html"
+           :content (markdown/md-to-html-string
+                     (str "You are currently subscribed to receive updates for new data added to " coll-id ".\n\n"
+                          "Because you no longer have access to view this collection, you will not receive notifications "
+                          "related to this collection.\n\n"
+                          "If you believe this subscription was deleted in error, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n\n"))}]})
+
 (defn create-email-content
  "Create an email body for subscriptions"
  [from-email-address to-email-address gran-ref-location subscription]
@@ -270,6 +291,18 @@
   [context data]
   (debug "send-update-subscription-notification-time with" data)
   (search/save-subscription-notification-time context data))
+
+(defn- check-collection-permissions
+  "Checks subscribered read permission for collection, we will send a notification if they lose visability."
+  [context coll-id subscriber-id permission-check-time permission-check-failed]
+  (let [permissions (json/parse-string
+                     (access-control/get-permissions context {:user_id subscriber-id
+                                                              :concept_id coll-id}))
+        has-permission (some #{"read"} (get permissions coll-id))]
+    (if (and (not has-permission)
+             permission-check-failed)
+      [permission-check-failed permission-check-time]
+      [(not has-permission) nil])))
 
 (defn- filter-gran-refs-by-subscriber-id
   "Takes a list of granule references and a subscriber id and removes any granule that the user does
@@ -310,13 +343,21 @@
   (for [raw-subscription subscriptions
         :let [time-constraint (subscription->time-constraint
                                raw-subscription
-                               (t/now)
+                               (tk/now)
                                (email-subscription-processing-lookback))
               subscription (add-updated-since raw-subscription time-constraint)
               subscriber-id (get-in subscription [:extra-fields :subscriber-id])
               email-address (get-in subscription [:extra-fields :email-address])
               sub-id (get subscription :concept-id)
               coll-id (get-in subscription [:extra-fields :collection-concept-id])
+              native-id (get subscription :native-id)
+              provider-id (get subscription :provider-id)
+              [permission-check-failed permission-check-time] (check-collection-permissions
+                                                               context
+                                                               coll-id
+                                                               subscriber-id
+                                                               (get-in subscription [:extra-fields :permission-check-time])
+                                                               (get-in subscription [:extra-fields :permission-check-failed]))
               query-string (-> (:metadata subscription)
                                (json/decode true)
                                :Query)
@@ -332,23 +373,46 @@
               gran-refs (search-gran-refs-by-collection-id context params1 params2 sub-id)
               subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
     (do
-      (send-update-subscription-notification-time! context sub-id)
-      [sub-id subscriber-filtered-gran-refs email-address subscription])))
+      (send-update-subscription-notification-time! context {:subscription-concept-id sub-id
+                                                            :permission-check-failed permission-check-failed
+                                                            :permission-check-time permission-check-time})
+      [sub-id coll-id native-id provider-id subscriber-filtered-gran-refs
+       email-address subscription permission-check-time
+       permission-check-failed])))
 
 (defn- send-subscription-emails
-  "Takes processed processed subscription tuples and sends out emails if applicable."
+  "Takes processed subscription tuples and sends out emails if applicable."
   [context subscriber-filtered-gran-refs-list]
   (doseq [subscriber-filtered-gran-refs-tuple subscriber-filtered-gran-refs-list
-          :let [[sub-id subscriber-filtered-gran-refs email-address subscription] subscriber-filtered-gran-refs-tuple]]
-    (when (seq subscriber-filtered-gran-refs)
-      (let [gran-ref-locations (map :location subscriber-filtered-gran-refs)
-            email-content (create-email-content (mail-sender) email-address gran-ref-locations subscription)
-            email-settings {:host (email-server-host) :port (email-server-port)}]
-        (try
-          (postal-core/send-message email-settings email-content)
-          (catch Exception e
-            (error "Exception caught in email subscription: " sub-id "\n\n"
-                   (.getMessage e) "\n\n" e)))))))
+          :let [[sub-id coll-id native-id provider-id subscriber-filtered-gran-refs
+                 email-address subscription permission-check-time
+                 permission-check-failed] subscriber-filtered-gran-refs-tuple
+                email-settings {:host (email-server-host) :port (email-server-port)}]]
+    (if (and (t/after? (t/minus (tk/now) (t/days subscription-permission-notification-expiration-days))
+                       (or (when permission-check-time
+                             (cr/from-string permission-check-time))
+                           (tk/now)))
+             permission-check-failed)
+      (try
+        (ingest/delete-concept
+         context
+         {:provider-id provider-id
+          :native-id native-id
+          :concept-type :subscription})
+        (postal-core/send-message email-settings (failed-permission-content (mail-sender)
+                                                                            email-address
+                                                                            coll-id))
+        (catch Exception e
+          (error "Exception caught in sending failed permissions email for subscription: " sub-id "\n\n"
+                 (.getMessage e) "\n\n" e)))
+      (when (seq subscriber-filtered-gran-refs)
+        (let [gran-ref-locations (map :location subscriber-filtered-gran-refs)
+              email-content (create-email-content (mail-sender) email-address gran-ref-locations subscription)]
+          (try
+            (postal-core/send-message email-settings email-content)
+            (catch Exception e
+              (error "Exception caught in email subscription: " sub-id "\n\n"
+                     (.getMessage e) "\n\n" e))))))))
 
 (defn- email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
@@ -356,7 +420,7 @@
   [context]
   (let [subscriptions (->> (mdb/find-concepts context {:latest true} :subscription)
                            (remove :deleted)
-                           (map #(select-keys % [:concept-id :extra-fields :metadata])))]
+                           (map #(select-keys % [:concept-id :extra-fields :metadata :provider-id :native-id])))]
     (send-subscription-emails context (process-subscriptions context subscriptions))))
 
 (defn trigger-autocomplete-suggestions-reindex
