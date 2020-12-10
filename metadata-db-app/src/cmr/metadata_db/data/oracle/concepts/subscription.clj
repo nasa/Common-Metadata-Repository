@@ -11,6 +11,20 @@
               (oracle/oracle-timestamp->str-time db last-notified))
     subscription))
 
+(defn add-permission-check-time-if-present
+  [subscription db-result db]
+  (let [permission-check-time (:permission_check_time db-result)
+        permission-check-failed (:permission_check_failed db-result)]
+    (as-> subscription subscription
+          (if permission-check-time
+            (assoc-in subscription [:extra-fields :permission-check-time]
+                      (oracle/oracle-timestamp->str-time db permission-check-time))
+            subscription)
+          (if permission-check-failed
+            (assoc-in subscription [:extra-fields :permission-check-failed]
+                      (not (zero? permission-check-failed)))
+            subscription))))
+
 (defmethod concepts/db-result->concept-map :subscription
   [concept-type db provider-id result]
   (some-> (concepts/db-result->concept-map :default db provider-id result)
@@ -21,6 +35,7 @@
           (assoc-in [:extra-fields :subscriber-id] (:subscriber_id result))
           (assoc-in [:extra-fields :email-address] (:email_address result))
           (add-last-notified-at-if-present result db)
+          (add-permission-check-time-if-present result db)
           (assoc-in [:extra-fields :collection-concept-id]
                     (:collection_concept_id result))))
 

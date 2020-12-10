@@ -13,10 +13,12 @@
 (defn dbresult->sub-notification
   "Converts a map result from the database to a provider map"
   [db data]
-  (let [{:keys [subscription_concept_id last_notified_at]} data]
+  (let [{:keys [subscription_concept_id last_notified_at permission_check_failed permission_check_time]} data]
     (j/with-db-transaction [conn db]
       {:subscription-concept-id subscription_concept_id
-       :last-notified-at (oracle/oracle-timestamp->str-time conn last_notified_at)})))
+       :last-notified-at (oracle/oracle-timestamp->str-time conn last_notified_at)
+       :permission-check-failed permission_check_failed
+       :permission-check-time (oracle/oracle-timestamp->str-time conn permission_check_time)})))
 
 (defn subscription-exists?
   "Check to see if the subscription exists"
@@ -29,16 +31,17 @@
  "Check to see if the subscription notification record exists"
   [db subscription-id]
   (let [sql (str "SELECT subscription_concept_id "
-                       "FROM cmr_sub_notifications "
-                       "WHERE subscription_concept_id = ?"
-                       "FETCH FIRST 1 ROWS ONLY")
+                 "FROM cmr_sub_notifications "
+                 "WHERE subscription_concept_id = ?"
+                 "FETCH FIRST 1 ROWS ONLY")
         result (j/query db [sql subscription-id])]
    (= (count result) 1)))
 
 (defn get-sub-notification
   "Get subscription notification from Oracle."
   [db subscription-id]
-  (let [sql (str "SELECT id, subscription_concept_id, last_notified_at "
+  (let [sql (str "SELECT id, subscription_concept_id, last_notified_at,"
+                 "permission_check_failed, permission_check_time"
                  "FROM cmr_sub_notifications "
                  "WHERE subscription_concept_id = ?")
         results (first (j/query db [sql subscription-id]))]
@@ -46,20 +49,37 @@
 
 (defn save-sub-notification
   "Create subscription notification record in Oracle."
-  [db subscription-id]
+  [db subscription-id permission-check-time permission-check-failed]
   (let [sql (str "INSERT INTO cmr_sub_notifications"
-                 "(id, subscription_concept_id)"
-                 "VALUES (cmr_sub_notifications_seq.nextval, ?)")]
-  (j/db-do-prepared db sql [subscription-id])))
+                 "(id, subscription_concept_id, permission_check_failed, permission_check_time)"
+                 "VALUES (cmr_sub_notifications_seq.nextval, ?, ?, ?)")
+        now (t/now)]
+    (j/db-do-prepared db sql [subscription-id
+                              (if permission-check-failed
+                                true
+                                false)
+                              (if permission-check-time
+                                (cr/to-sql-time permission-check-time)
+                                (cr/to-sql-time now))])))
+
 
 (defn update-sub-notification
   "Update a subscription notification in Oracle."
-  [db subscription-id]
+  [db subscription-id permission-check-time permission-check-failed]
   (let [sql (str "UPDATE cmr_sub_notifications "
-                 "SET last_notified_at = ? "
+                 "SET last_notified_at = ?,"
+                      "permission_check_failed = ?,"
+                      "permission_check_time = ?"
                  "WHERE subscription_concept_id = ?")
         now (t/now)]
-    (j/db-do-prepared db sql [(cr/to-sql-time now) subscription-id])))
+    (j/db-do-prepared db sql [(cr/to-sql-time now)
+                              (if permission-check-failed
+                                true
+                                false)
+                              (if permission-check-time
+                                (cr/to-sql-time permission-check-time)
+                                (cr/to-sql-time now))
+                              subscription-id])))
 
 (defn delete-sub-notification
   "Delete a subscription notification record by id"
@@ -67,16 +87,3 @@
   (j/delete! db
              "cmr_sub_notifications"
              ["subscription_concept_id = ?" subscription-id]))
-
-(comment
-  (def db (get-in user/system [:apps :metadata-db :db]))
-
-  (println (subscription-exists? db "SUB1234-test"))
-  (println (sub-notification-exists? db "SUB1234-test"))
-
-  ;crud tests
-  (println (save-sub-notification db "SUB1234-test"))
-  (println (sub-notification-exists? db "SUB1234-test"))
-  (println (get-sub-notification db "SUB1234-test"))
-  (println (update-sub-notification db "SUB1234-test"))
-  (println (delete-sub-notification db "SUB1234-test")) )
