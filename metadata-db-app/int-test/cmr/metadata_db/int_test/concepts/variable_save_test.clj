@@ -56,7 +56,13 @@
       (let [concept3 (assoc concept1 :provider-id "PROV2")
             {:keys [errors status concept-id revision-id]} (util/save-concept concept3)]
         (is (= status 409))
-        (is (= errors ["Variable [V1200000003-PROV2] and collection [C1200000000-PROV1] can not be associated because they do not belong to the same provider."])))
+        (is (re-matches
+             (re-pattern (str "Variable \\[V.*-PROV2\\] and collection \\["
+                              coll-concept-id
+                              "\\] can not be associated because they do not belong to the same provider."))
+             (first errors)))))
+
+    (testing "save variable with the same native-id, different variable name on the same provider"
       (let [concept4-var-name "different-variable-name"
             concept4 (update concept1 :extra-fields assoc :variable-name concept4-var-name)]
         (testing (str "save variable with the same native id, but a different variable name "
