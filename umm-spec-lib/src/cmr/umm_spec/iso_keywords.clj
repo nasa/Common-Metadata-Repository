@@ -126,8 +126,8 @@
     (for [sk science-keywords
           :let [[category topic term variable-level-1 variable-level-2 variable-level-3
                  detailed-variable] (->> (str/split sk iso/keyword-separator-split)
-                                         (map #(if (= nil-science-keyword-field %) nil %)))]]
-      (if (or (partial str/blank? category topic term))
+                                         (map #(when-not (= nil-science-keyword-field %) %)))]]
+      (if (partial str/blank? category topic term)
         (errors/throw-service-error
          :bad-request (format "Science Keyword string [%s] had empty values in Category, Topic, or Term"
                               sk))
