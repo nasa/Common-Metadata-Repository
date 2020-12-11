@@ -8,6 +8,7 @@
   (:require
    [clojure.data.xml :as x]
    [clojure.string :as str]
+   [cmr.common.services.errors :as errors]
    [cmr.common.xml :as cx]
    [cmr.common.xml.parse :refer :all]
    [cmr.umm-spec.iso19115-2-util :as iso]
@@ -124,15 +125,20 @@
   (if-let [science-keywords (seq (descriptive-keywords md-data-id-el science-keyword-type))]
     (for [sk science-keywords
           :let [[category topic term variable-level-1 variable-level-2 variable-level-3
-                 detailed-variable] (map #(if (= nil-science-keyword-field %) nil %)
-                                         (str/split sk iso/keyword-separator-split))]]
-      {:Category category
-       :Topic (su/with-default topic)
-       :Term (su/with-default term)
-       :VariableLevel1 variable-level-1
-       :VariableLevel2 variable-level-2
-       :VariableLevel3 variable-level-3
-       :DetailedVariable detailed-variable})
+                 detailed-variable] (->> (str/split sk iso/keyword-separator-split)
+                                         (map #(if (= nil-science-keyword-field %) nil %)))]]
+      (if (or (partial str/blank? category topic term))
+        (errors/throw-service-error
+         :bad-request (format "Science Keyword string [%s] had empty values in Category, Topic, or Term"
+                              sk))
+
+        {:Category category
+         :Topic (su/with-default topic)
+         :Term (su/with-default term)
+         :VariableLevel1 variable-level-1
+         :VariableLevel2 variable-level-2
+         :VariableLevel3 variable-level-3
+         :DetailedVariable detailed-variable}))
     (when sanitize?
       su/not-provided-science-keywords)))
 
