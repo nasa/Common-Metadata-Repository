@@ -56,6 +56,13 @@
   (format "Format [%s] was not a valid keyword."
           (:Format archive-and-distribution-information)))
 
+(defn getdata-format-not-matches-kms-keywords
+  "Error message when relatedurl-getdata-format is
+  not in the KMS."
+  [relatedurl-getdata-format]
+  (format "Format [%s] was not a valid keyword."
+          relatedurl-getdata-format))
+
 (defn directory-name-not-matches-kms-keywords
    "Error msg when DirectoryName's ShortName is not in the KMS."
    [directory-name]

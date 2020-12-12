@@ -21,6 +21,11 @@
   [attribs]
   (umm-c/map->FileDistributionInformationType attribs))
 
+(defn file-archive-information
+  "Returns a FileArchiveInformation based on given attributes"
+  [attribs]
+  (umm-c/map->FileArchiveInformationType attribs))
+
 (defn location-keyword
   "Return a location keyword based on the given attributes."
   [attribs]
