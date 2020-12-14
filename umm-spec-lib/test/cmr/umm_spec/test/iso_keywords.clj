@@ -7,7 +7,7 @@
 
 (deftest science-keyword-empty-value-test
   (testing "Empty Topic is rejected when `sanitize?` is false"
-    (let [cmr-6840-example-collection (-> "example-data/iso19115/CMR-6840-empty-facet-titles.xml"
+    (let [cmr-6840-example-collection (-> "example-data/special-case-files/CMR-6840-empty-facet-titles.xml"
                                           io/resource
                                           io/file
                                           slurp)]
