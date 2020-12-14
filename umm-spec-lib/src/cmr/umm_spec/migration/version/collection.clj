@@ -36,7 +36,7 @@
    "hdf5" "HDF5"
    "hdf-eos4" "HDF-EOS4"
    "hdf-eos5" "HDF-EOS5"
-   "jpeg" "jped"
+   "jpeg" "jpeg"
    "png" "png"
    "tiff" "tiff"
    "geotiff" "geotiff"
@@ -108,7 +108,7 @@
        seq))
 
 (defn- replace-invalid-format
-  "Replace all the GetData Format in RelatedUrls that doesn't exist in the 1.15.4 schema."
+  "Replace GetData Formats in RelatedUrls that are not present in the 1.15.4 schema."
   [getdata]
   (if (:Format getdata)
     (update getdata :Format #(get kms-format-lowercase-to-umm-c-enum-mapping
