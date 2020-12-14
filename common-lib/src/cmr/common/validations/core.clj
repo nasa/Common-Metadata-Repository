@@ -119,6 +119,12 @@
   (fn [field-path value]
     (validate validation field-path (prefn value))))
 
+(defn field-cannot-be-blank
+  "Validates that the value is not nil, whitespace, or an empty string"
+  [field-path value]
+  (when (str/blank? value)
+    {field-path [(msg/required)]}))
+
 (defn required
   "Validates that the value is not nil"
   [field-path value]
