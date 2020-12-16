@@ -495,16 +495,13 @@
       "-provider"
       [tool1 tool2 tool3 tool4]
 
-      ;;The following two tests failed when running test suite locally,
-      ;;but succeeded in bamboo and locally when running tool_search_test.clj by itself.
-      ;;Filed CMR-6444 to investigate.
-      ;;"Sort by revision-date"
-      ;;"revision_date"
-      ;;[tool1 tool2 tool3 tool4]
+      "Sort by revision-date"
+      "revision_date"
+      [tool1 tool2 tool3 tool4]
 
-      ;;"Sort by revision-date descending order"
-      ;;"-revision_date"
-      ;;[tool4 tool3 tool2 tool1]
+      "Sort by revision-date descending order"
+      "-revision_date"
+      [tool4 tool3 tool2 tool1]
 
       "Sort by long-name"
       "long_name"
