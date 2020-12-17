@@ -13,8 +13,8 @@
                  [commons-io "2.6"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
-                 [org.elasticsearch/elasticsearch "7.5.2"]
-                 [org.testcontainers/testcontainers "1.15.0-rc2"]
+                 [org.elasticsearch/elasticsearch "7.10.0"]
+                 [org.testcontainers/testcontainers "1.15.0"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
@@ -69,8 +69,8 @@
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Get kibana and elasticsearch images
             "pull-docker-images" ["do"
-                                  ["shell" "docker" "pull" "docker.elastic.co/elasticsearch/elasticsearch:7.5.2"]
-                                  ["shell" "docker" "pull" "docker.elastic.co/kibana/kibana:7.5.2"]]
+                                  ["shell" "docker" "pull" "docker.elastic.co/elasticsearch/elasticsearch:7.10.0"]
+                                  ["shell" "docker" "pull" "docker.elastic.co/kibana/kibana:7.10.0"]]
             "install" ["do" "pull-docker-images," "install"]
             "install!" "install"
             ;; Placeholder for future docs and enabler of top-level alias
