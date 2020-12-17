@@ -1,7 +1,6 @@
 (ns cmr.elastic-utils.embedded-elastic-server
   "Used to run an Elasticsearch server inside an embedded docker container."
   (:require
-   [clojure.java.io :as io]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.util :as util])
@@ -74,10 +73,10 @@
       :kibana kibana})))
 
 (defrecord ElasticServer
-  [
-   http-port
-   opts
-   node]
+    [
+     http-port
+     opts
+     node]
 
   lifecycle/Lifecycle
 

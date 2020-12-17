@@ -239,6 +239,19 @@
   (ac/delete-acl context acl {:raw? true :token (config/echo-system-token)})
   (echo-client/delete-acl context acl))
 
+(defn ungrant-by-search
+  "Takes acl search parameters and removes all acls found."
+  ([context params]
+   (ungrant-by-search context params (config/echo-system-token)))
+  ([context params token]
+   (doseq [acl (:items
+                (ac/search-for-acls context
+                                    params
+                                    {:token token}))
+           :let [concept-id (:concept_id acl)]
+           :when concept-id]
+     (ungrant context concept-id))))
+
 (defn get-acls-by-type-and-target
   "Get the GROUP ACLs set up for providers in fixtures.  Return in format used for test assertions"
   ([context type target]

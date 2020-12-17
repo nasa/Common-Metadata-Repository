@@ -1,10 +1,10 @@
 (ns cmr.common.date-time-parser
   "Contains helper to parse datetime string to clj-time"
-  (:require [clj-time.format :as f]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.services.messages :as msg])
+  (:require
+   [clj-time.format :as f]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.messages :as msg])
   (:import org.joda.time.IllegalFieldValueException))
-
 
 (def datetime-regex->formatter
   "A map of regular expressions matching a date time to the formatter to use"
@@ -72,3 +72,8 @@
     (parse-datetime s)
     (catch Exception _
       nil)))
+
+(defn clj-time->date-time-str
+  "Returns the string representation for the given joda datetime"
+  [dt]
+  (f/unparse (f/formatters :date-time) dt))

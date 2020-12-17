@@ -294,7 +294,7 @@
 (def ATOM_HEADER_ATTRIBUTES
   "The set of attributes that go on the ATOM root element"
   {:xmlns "http://www.w3.org/2005/Atom"
-   :xmlns:dc "http://purl.org/dc/terms/"
+   :xmlns:dc "http://purl.org/dc/elements/1.1/"
    :xmlns:georss "http://www.georss.org/georss/10"
    :xmlns:time "http://a9.com/-/opensearch/extensions/time/1.0/"
    :xmlns:echo "https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#atom"

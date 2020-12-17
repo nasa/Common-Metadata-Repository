@@ -43,9 +43,9 @@
 
 (def science-keyword-validations
   "Defines the science keyword validations for collections"
-  {:Category v/required
-   :Topic v/required
-   :Term v/required})
+  {:Category v/field-cannot-be-blank
+   :Topic v/field-cannot-be-blank
+   :Term v/field-cannot-be-blank})
 
 (def collection-validations
   "Defines validations for collections"

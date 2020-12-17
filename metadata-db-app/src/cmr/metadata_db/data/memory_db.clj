@@ -2,7 +2,6 @@
   "An in memory implementation of the metadata database."
   (:require
    [clj-time.core :as t]
-   [clj-time.format :as f]
    [clojure.string :as string]
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as p]
@@ -399,13 +398,13 @@
    (let [{:keys [concept-type provider-id concept-id revision-id]} concept
          concept (update-in concept
                             [:revision-date]
-                            #(or % (f/unparse (f/formatters :date-time) (tk/now))))
+                            #(or % (p/clj-time->date-time-str (tk/now))))
          ;; Set the created-at time to the current timekeeper time for concepts which have
          ;; the created-at field and do not already have a :created-at time set.
          concept (if (some #{concept-type} [:collection :granule :service :tool :variable :subscription])
                    (update-in concept
                               [:created-at]
-                              #(or % (f/unparse (f/formatters :date-time) (tk/now))))
+                              #(or % (p/clj-time->date-time-str (tk/now))))
                    concept)
          concept (assoc concept :transaction-id (swap! (:next-transaction-id-atom db) inc))
          concept (if (= concept-type :granule)

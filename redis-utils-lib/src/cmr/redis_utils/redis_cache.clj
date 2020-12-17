@@ -7,7 +7,6 @@
   (:require
    [clojure.edn :as edn]
    [cmr.common.cache :as cache]
-   [cmr.redis-utils.config :as config]
    [cmr.redis-utils.redis :as redis :refer [wcar*]]
    [taoensso.carmine :as carmine]))
 

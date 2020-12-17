@@ -57,7 +57,7 @@
           ["Provider with provider-id [REG_PROV1] does not exist."])))
 
 (deftest force-delete-subscription-test
-  "Testing physically removing a specific revision of a subscription from the database."
+  ;; Testing physically removing a specific revision of a subscription from the database.
   (cd-spec/general-force-delete-test :subscription ["PROV1"]))
 
 (deftest find-subscriptions

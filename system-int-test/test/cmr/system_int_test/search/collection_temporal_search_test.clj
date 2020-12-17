@@ -2,8 +2,8 @@
   "Integration test for CMR collection temporal search"
   (:require
     [clj-time.core :as t]
-    [clj-time.format :as f]
     [clojure.test :refer :all]
+    [cmr.common.date-time-parser :as p]
     [cmr.common.time-keeper :as tk]
     [cmr.common.util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
@@ -129,8 +129,8 @@
                    :TemporalExtents [(data-umm-cmn/temporal-extent
                                        {:beginning-date-time "2006-01-01T00:00:00Z"})]}))
 
-        dt-2-days-ago (f/unparse (f/formatters :date-time) (t/minus (t/now) (t/days 2)))
-        dt-1-day-ago (f/unparse (f/formatters :date-time) (t/minus (t/now) (t/days 1)))
+        dt-2-days-ago (p/clj-time->date-time-str (t/minus (t/now) (t/days 2)))
+        dt-1-day-ago (p/clj-time->date-time-str (t/minus (t/now) (t/days 1)))
 
         c6-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                   coll6

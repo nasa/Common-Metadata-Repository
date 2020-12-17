@@ -171,13 +171,15 @@
   "Returns the UMM JSON result of the given variable."
   [version variable]
   (if (:deleted variable)
-    {:meta (variable->umm-json-meta variable)
+    {:meta (merge {:user-id "ECHO_SYS"} (variable->umm-json-meta variable))
      :associations {:collections #{}}}
     (let [;; use the original metadata for now, add version migration when Variable versioning is added
-           {:keys [metadata associated-collections]} variable]
-      {:meta (variable->umm-json-meta variable)
+           {:keys [metadata associated-collections associated-item]} variable]
+      {:meta (merge {:user-id "ECHO_SYS"} (variable->umm-json-meta variable))
        :umm (json/decode metadata true)
-       :associations {:collections (set associated-collections)}})))
+       :associations (if (seq associated-collections)
+                       {:collections (set associated-collections)}
+                       {:collections (set [associated-item])})})))
 
 (defn- result-item-for-comparison
   "Returns the result item for comparison purpose,

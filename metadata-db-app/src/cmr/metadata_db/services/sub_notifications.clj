@@ -30,13 +30,3 @@
       (errors/throw-service-error
         :not-found
         (msg/subscription-not-found subscription-id)))))
-
-; TODO will be adding an interface for doing a get, this will be used for testing.
-
-(comment
-(sub-note/subscription-exists? db "SUB1200000024-TCHERRY")
-(sub-note/sub-notification-exists? db "SUB1200000024-TCHERRY")
-(sub-note/get-sub-notification db "SUB1200000024-TCHERRY")
-(update-subscription-notification context "SUB1200000024-TCHERRY")
-(nil? (common-concepts/concept-id-validation "foobar"))
-)

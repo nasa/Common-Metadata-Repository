@@ -51,8 +51,8 @@ Search API provides access to this metadata.
 - Maven (https://maven.apache.org/install.html)
     - Mac OS X devs can use `brew install maven`
     - Linux devs can use `sudo apt-get install maven`
-- GCC and libc (used for redis installation)
-- Docker (used for elasticsearch)
+- GCC and libc
+- Docker
 
 ## Obtaining the Code
 
@@ -418,10 +418,10 @@ applications, as well as several libraries and support applications.
 
 ## Further Reading
 
-- CMR Client Partner User Guide: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide
+- CMR Client Partner User Guide: https://wiki.earthdata.nasa.gov/display/ED/CMR+Client+Partner+User+Guide
 - CMR Data Partner User Guide: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide
 - CMR Client Developer Forum: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum
 
 ## License
 
-Copyright © 2014-2019 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
+Copyright © 2014-2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
