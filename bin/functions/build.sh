@@ -86,6 +86,7 @@ function build_all {
     cmr install coll-renderer-gems && \
     cmr install orbits-gems && \
     cmr install local spatial_plugin && \
+    mv ./es-spatial-plugin/target/cmr-es-spatial-plugin-*-SNAPSHOT.zip . && \
     if [ "$CMR_DEV_SYSTEM_DB_TYPE" = "external" ] ; then
         (cd $CMR_DIR && cmr setup db )
         if [ $? -ne 0 ] ; then
@@ -96,7 +97,8 @@ function build_all {
     if [ "$CMR_BUILD_UBERJARS" = "true" ] ; then
         build_uberjars
     fi
-    build_uberjar_proj dev-system
+    build_uberjar_proj dev-system && \
+    mv ./cmr-es-spatial-plugin-*-SNAPSHOT.zip ./es-spatial-plugin/target
 }
 
 function oracle_download_instructions () {
