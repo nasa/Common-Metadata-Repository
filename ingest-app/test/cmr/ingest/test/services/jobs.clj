@@ -3,16 +3,16 @@
   (:require
     [clojure.test :refer :all]
     [cmr.common.util :as u :refer [are3]]
-    [cmr.ingest.services.jobs :as jobs]))
+    [cmr.ingest.services.email-processing :as email-processing]))
 
 (deftest create-query-params
   (is (= {"polygon" "-78,-18,-77,-22,-73,-16,-74,-13,-78,-18"
           "concept-id" "G123-PROV1"}
-         (#'jobs/create-query-params "polygon=-78,-18,-77,-22,-73,-16,-74,-13,-78,-18&concept-id=G123-PROV1"))))
+         (#'email-processing/create-query-params "polygon=-78,-18,-77,-22,-73,-16,-74,-13,-78,-18&concept-id=G123-PROV1"))))
 
 (deftest email-granule-url-list-test
  "This tests the utility function that unpacts a list of urls and turns it into markdown"
- (let [actual (jobs/email-granule-url-list '("https://cmr.link/g1"
+ (let [actual (email-processing/email-granule-url-list '("https://cmr.link/g1"
                                              "https://cmr.link/g2"
                                              "https://cmr.link/g3"))
        expected (str "* [https://cmr.link/g1](https://cmr.link/g1)\n"
@@ -22,7 +22,7 @@
 
 (deftest create-email-test
   "This tests the HTML output of the email generation"
-  (let [actual (jobs/create-email-content
+  (let [actual (email-processing/create-email-content
                 "cmr-support@earthdata.nasa.gov"
                 "someone@gmail.com"
                 '("https://cmr.link/g1" "https://cmr.link/g2" "https://cmr.link/g3")
@@ -52,7 +52,7 @@
 
 (deftest create-permission-notification-email-test
   "This tests the HTML output of permission notification email generation"
-  (let [actual (jobs/failed-permission-content
+  (let [actual (email-processing/failed-permission-content
                 "cmr-support@earthdata.nasa.gov"
                 "someone@gmail.com"
                 "C1200370131-EDF_DEV06")]

@@ -2,7 +2,7 @@
   "CMR subscription processing tests."
   (:require
    [clojure.test :refer :all]
-   [cmr.ingest.services.jobs :as jobs]
+   [cmr.ingest.services.email-processing :as email-processing]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.access-control.test.util :as ac-util]
    [cmr.system-int-test.data2.core :as data-core]
@@ -33,9 +33,9 @@
   "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
   []
   (let [subscriptions (->> (mdb2/find-concepts (system/context) {:latest true} :subscription)
-                           (remove :deleted)
-                           (mapv #(select-keys % [:concept-id :extra-fields :metadata :provider-id :native-id])))]
-    (#'jobs/process-subscriptions (system/context) subscriptions)))
+                           (remove :deleted
+                                 (mapv #(select-keys % [:concept-id :extra-fields :metadata :provider-id :native-id]))))]
+    (#'email-processing/process-subscriptions (system/context) subscriptions)))
 
 (deftest ^:oracle subscription-email-processing-time-constraint-test
   (system/only-with-real-database
@@ -132,12 +132,12 @@
            (is (= (-> subscription
                       :items
                       :concept-id)
-                  nil)))) 
+                  nil))))
 
        (testing "3 days after permissions are removed"
          (dev-system/advance-time! (* 3 24 3610))
          (let [response (trigger-process-subscriptions)]
-           (#'jobs/send-subscription-emails (system/context) response)
+           (#'email-processing/send-subscription-emails (system/context) response)
            (is (= (-> response
                       first
                       (nth 0))

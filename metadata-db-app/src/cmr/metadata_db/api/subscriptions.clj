@@ -9,8 +9,7 @@
   "Update a subscription notification time"
   [request subscription-concept-id]
   (let [{:keys [body request-context]} request]
-    (sub-note/update-subscription-notification request-context subscription-concept-id (json/parse-string (slurp body) true))
-    {:status 204}))
+    (sub-note/update-subscription-notification request-context subscription-concept-id (json/parse-string (slurp body) true))))
 
 (def subscription-api-routes
   (context "/subscription" []

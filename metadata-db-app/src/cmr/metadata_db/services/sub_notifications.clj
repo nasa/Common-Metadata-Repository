@@ -1,6 +1,8 @@
 (ns cmr.metadata-db.services.sub-notifications
  "Buisness logic for subscription notifications"
   (:require
+   [clojure.string :as string]
+   [cmr.common-app.services.search.parameter-validation :as pv]
    [cmr.common.concepts :as common-concepts]
    [cmr.common.services.errors :as errors]
    [cmr.metadata-db.data.oracle.sub-notifications :as sub-note]
@@ -14,8 +16,12 @@
  [db subscription-id permission-check-time permission-check-failed]
  (if (sub-note/subscription-exists? db subscription-id)
    (if (sub-note/sub-notification-exists? db subscription-id)
-     (sub-note/update-sub-notification db subscription-id permission-check-time permission-check-failed)
-     (sub-note/save-sub-notification db subscription-id permission-check-time permission-check-failed))
+     (do
+       (sub-note/update-sub-notification db subscription-id permission-check-time permission-check-failed)
+       {:status 204})
+     (do
+       (sub-note/save-sub-notification db subscription-id permission-check-time permission-check-failed)
+       {:status 204}))
    (errors/throw-service-error :not-found (msg/subscription-not-found subscription-id))))
 
 (defn update-subscription-notification
@@ -23,13 +29,18 @@
   if subscription id is not valid or not found"
   [context subscription-concept-id body]
   (let [{:keys [permission-check-time permission-check-failed]} body
-        errors (common-concepts/concept-id-validation subscription-concept-id)
+        errors (concat
+                (common-concepts/concept-id-validation subscription-concept-id)
+                (pv/validate-date-time "permission-check-time" permission-check-time)
+                (when permission-check-failed
+                  (pv/validate-boolean-param :permission-check-failed nil body)))
+        errors (seq (remove nil? errors))
         db (mdb-util/context->db context)]
-    (if (nil? errors)
+    (if (empty? errors)
       (update-subscription-notification-time-in-database db
                                                          subscription-concept-id
                                                          permission-check-time
                                                          permission-check-failed)
       (errors/throw-service-error
-        :not-found
-        (msg/subscription-not-found subscription-concept-id)))))
+       :bad-request
+       (string/join " " errors)))))

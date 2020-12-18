@@ -2,10 +2,13 @@
   "CMR subscription ingest integration tests.
   For subscription permissions tests, see `provider-ingest-permissions-test`."
   (:require
+   [cheshire.core :as json]
+   [clj-time.coerce :as cr]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
+   [cmr.common.time-keeper :as tk]
    [cmr.common.util :refer [are3]]
-   [cmr.ingest.services.jobs :as jobs]
+   [cmr.ingest.services.email-processing :as email-processing]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as data-granule]
@@ -39,7 +42,7 @@
   (let [subscriptions (->> (mdb2/find-concepts (system/context) {:latest true} :subscription)
                            (remove :deleted)
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
-    (#'jobs/process-subscriptions (system/context) subscriptions)))
+    (#'email-processing/process-subscriptions (system/context) subscriptions)))
 
 (deftest subscription-ingest-on-prov3-test
   (let [coll1 (data-core/ingest-umm-spec-collection
@@ -257,15 +260,38 @@
           metadata {:concept-id supplied-concept-id
                     :CollectionConceptId (:concept-id coll1)
                     :native-id "Atlantic-1"}
-          concept (subscription-util/make-subscription-concept metadata)]
+          concept (subscription-util/make-subscription-concept metadata)
+          body {:permission-check-time (cr/to-sql-time (tk/now))
+                :permission-check-failed false}]
       (subscription-util/ingest-subscription concept)
       (testing "send an update event to an new subscription"
-        (let [resp (subscription-util/update-subscription-notification supplied-concept-id)]
+        (let [resp (subscription-util/update-subscription-notification supplied-concept-id body)]
           (is (= 204 (:status resp))))
-        (let [resp (subscription-util/update-subscription-notification "-Fake-Id-")]
+        (let [resp (subscription-util/update-subscription-notification "-Fake-Id-" body)
+              errors (:errors (json/parse-string (:body resp) true))]
+          (is (= ["Concept-id [-Fake-Id-] is not valid."]
+                 errors))
+          (is (= 400 (:status resp))))
+        (let [resp (subscription-util/update-subscription-notification "SUB8675309-foobar" body)
+              errors (:errors (json/parse-string (:body resp) true))]
+          (is (= ["Subscription concept [SUB8675309-foobar] not found."]
+                 errors))
           (is (= 404 (:status resp))))
-        (let [resp (subscription-util/update-subscription-notification "SUB8675309-foobar")]
-          (is (= 404 (:status resp))))))))
+        (let [resp (subscription-util/update-subscription-notification supplied-concept-id (assoc body :permission-check-time "WRONG"))
+              errors (:errors (json/parse-string (:body resp) true))]
+          (is (= ["permission-check-time datetime is invalid: [WRONG] is not a valid datetime."]
+                 errors))
+          (is (= 400 (:status resp))))
+        (let [resp (subscription-util/update-subscription-notification supplied-concept-id (assoc body :permission-check-failed "WRONG"))
+              errors (:errors (json/parse-string (:body resp) true))]
+          (is (= ["Parameter permission_check_failed must take value of true or false but was [WRONG]"]
+                 errors))
+          (is (= 400 (:status resp))))
+        (let [resp (subscription-util/update-subscription-notification "-Fake-Id-" (assoc body :permission-check-time "WRONG" :permission-check-faild "WRONG"))
+              errors (:errors (json/parse-string (:body resp) true))]
+          (is (= ["Concept-id [-Fake-Id-] is not valid. permission-check-time datetime is invalid: [WRONG] is not a valid datetime."]
+                 errors))
+          (is (= 400 (:status resp))))))))
 
 (deftest subscription-ingest-schema-validation-test
   (testing "ingest of subscription concept JSON schema validation missing field"
@@ -433,9 +459,10 @@
                                                                                    :access-value 133})
                                    {:token "mock-echo-system-token"})
            _ (index/wait-until-indexed)
+           _ (dev-sys-util/advance-time! 10)
            expected (set [(:concept-id gran1) (:concept-id gran3)])
            actual (->> (process-subscriptions)
-                       (map #(nth % 1))
+                       (map #(nth % 4))
                        flatten
                        (map :concept-id)
                        set)]

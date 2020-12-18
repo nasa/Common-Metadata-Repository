@@ -45,21 +45,22 @@
       (doseq [provider-map providers]
         ;; grant SUBSCRIPTION_MANAGEMENT permission for each provider.
         (echo-util/grant-all-subscription-sm (s/context)
-                                              (:provider-id provider-map)
-                                              guest-permissions
-                                              registered-permissions)))
+                                             (:provider-id provider-map)
+                                             guest-permissions
+                                             registered-permissions)))
     (f)))
 
 (defn update-subscription-notification
   "Ingest a concept and return a map with status, concept-id, and revision-id"
-  [concept]
-  (let [request-url (urls/mdb-subscription-notification-time concept)
+  [concept-id body]
+  (let [request-url (urls/mdb-subscription-notification-time concept-id)
         request (merge
-                  (config/conn-params (s/context))
-                  {:accept :xml :throw-exceptions false})
+                 (config/conn-params (s/context))
+                 {:accept :json
+                  :throw-exceptions false
+                  :body (json/generate-string body)})
         response (client/put request-url request)
-        {:keys [headers body]} response
-        status (int (:status response))]
+        {:keys [headers body]} response]
     response))
 
 (defn make-subscription-concept

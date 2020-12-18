@@ -35,7 +35,7 @@
                  "WHERE subscription_concept_id = ?"
                  "FETCH FIRST 1 ROWS ONLY")
         result (j/query db [sql subscription-id])]
-   (= (count result) 1)))
+    (= (count result) 1)))
 
 (defn get-sub-notification
   "Get subscription notification from Oracle."
@@ -61,7 +61,6 @@
                               (if permission-check-time
                                 (cr/to-sql-time permission-check-time)
                                 (cr/to-sql-time now))])))
-
 
 (defn update-sub-notification
   "Update a subscription notification in Oracle."
