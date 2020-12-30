@@ -21,11 +21,23 @@
      (or (get sub-type-titles sub-type)
          (get sub-type-titles "default")))))
 
+(defn service-url?
+  "Returns true if the related-url is a service url such as OPeNDAP"
+  [related-url]
+  (= "OPENDAP DATA" (:Subtype related-url)))
+
+(defn service-urls
+  "Returns all services urls:
+   - OPeNDAP"
+  [related-urls]
+  (filter service-url? related-urls))
+
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"
   [related-url]
   (and (= "DistributionURL" (:URLContentType related-url))
-       (= "GET DATA" (:Type related-url))))
+       (= "GET DATA" (:Type related-url))
+       (not= "OPENDAP DATA" (:SubType related-url))))
 
 (defn downloadable-urls
   "Returns the related-urls that are downloadable"
@@ -80,6 +92,7 @@
   "Returns the atom link type of the related url"
   [related-url]
   (cond
+    (service-url? related-url) "service"
     (downloadable-url? related-url) "data"
     (browse-url? related-url) "browse"
     (documentation-url? related-url) "documentation"
