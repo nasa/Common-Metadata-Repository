@@ -24,20 +24,15 @@
 (defn service-url?
   "Returns true if the related-url is a service url such as OPeNDAP"
   [related-url]
-  (= "OPENDAP DATA" (:Subtype related-url)))
-
-(defn service-urls
-  "Returns all services urls:
-   - OPeNDAP"
-  [related-urls]
-  (filter service-url? related-urls))
+  (and (not= "Text/csv" (:MimeType related-url))
+       (= "OPENDAP DATA" (:Subtype related-url))))
 
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"
   [related-url]
   (and (= "DistributionURL" (:URLContentType related-url))
        (= "GET DATA" (:Type related-url))
-       (not= "OPENDAP DATA" (:SubType related-url))))
+       (not (service-url? related-url))))
 
 (defn downloadable-urls
   "Returns the related-urls that are downloadable"
@@ -63,7 +58,8 @@
   "Returns true if the related-url is resource url"
   [related-url]
   (not (or (downloadable-url? related-url)
-           (browse-url? related-url))))
+           (browse-url? related-url)
+           (service-url? related-url))))
 
 (defn resource-urls
   "Returns the related-urls that are resource urls"
