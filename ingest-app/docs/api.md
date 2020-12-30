@@ -89,18 +89,18 @@ The concept id header allows specifying the [concept id](#concept-id) to use whe
 
 #### <a name="validate-keywords-header"></a> Cmr-Validate-Keywords Header
 
-If this header is set to true, ingest will validate that the collection keywords match known keywords from the GCMD KMS. The following fields are validated.
+If this header is set to true, ingest will validate that the UMM-C collection keywords match known keywords from the GCMD KMS. The following fields are validated.
 
-* [Platforms](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/platforms?format=csv) - short name, long name, and type
-* [Instruments](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/instruments?format=csv) - short name and long name
-* [Projects](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/projects?format=csv) - short name and long name
-* [Science Keywords](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords?format=csv) - category, topic, term, variable level 1, variable level 2, variable level 3.
-* [Location Keywords](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/locations?format=csv) - category, type, subregion 1, subregion 2, subregion 3.
-* [Data Centers](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/providers?format=csv) - short name
-* [Directory Names](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/idnnode?format=csv) - short name
-* [ISO Topic Categories](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/isotopiccategory?format=csv) - iso topic category
-* [Data Format](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/granuledataformat?format=csv) - data format
-* [Measurement Name](https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/MeasurementName?format=csv)
+* [Platforms](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/platforms?format=csv) - short name, long name, and type
+* [Instruments](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/instruments?format=csv) - short name and long name
+* [Projects](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/projects?format=csv) - short name and long name
+* [Science Keywords](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords?format=csv) - category, topic, term, variable level 1, variable level 2, variable level 3.
+* [Location Keywords](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/locations?format=csv) - category, type, subregion 1, subregion 2, subregion 3.
+* [Data Centers](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/providers?format=csv) - short name
+* [Directory Names](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/idnnode?format=csv) - short name
+* [ISO Topic Categories](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/isotopiccategory?format=csv) - iso topic category
+* [Data Format](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/granuledataformat?format=csv) - Archival and Distribution File Format, and GetData Format
+
 
 Note that when multiple fields are present the combination of keywords are validated to match a known combination.
 
@@ -443,8 +443,10 @@ A new variable ingest endpoint is provided to ensure that variable association i
 Variable concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/collections/<collection-concept-id>/<collection-revision-id>/variables/<native-id>`.  `<collection-revision-id>` is optional. The response will include the [concept id](#concept-id),[revision id](#revision-id), variable-association and associated-item.
 
 Note: 
+
 1. There is no more fingerprint check at variable's ingest/update time because the existing fingerprint is obsolete. The new variable uniqueness is defined by variable name and the collection it's associated with and is checked at variable association creation time.
 2. When using the new variable ingest endpoint to update a variable, the association will be updated too. There can be one and only one association for each variable, with or without collection revision info. This decision is based on the feedback from NSIDC that there is no need for a variable to be associated with multiple revisions of a collection. When a new association info is passed in, the old one will be replaced, when the exact same association info is passed in, a new revision of the old association is created.
+3. MeasurementNames must conform to values specified by the KMS list: [Measurement Names](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/MeasurementName?format=csv).
 
 ```
 curl -i -XPUT \
@@ -495,7 +497,7 @@ get a JSON response:
   "revision-id" : 1,
   "variable-association" : {
     "concept-id" : "VA1200000007-CMR",
-    "revision-id" : 1 
+    "revision-id" : 1
   },
   "associated-item" : {
     "concept-id" : "C1200000005-PROV1",
