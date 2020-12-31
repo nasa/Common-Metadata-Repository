@@ -12,7 +12,7 @@
   :dependencies [[cheshire "5.8.1"]
                  [clj-time "0.15.1"]
                  [com.fasterxml.jackson.core/jackson-core "2.9.8"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.9.10.6"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.10.5.1"]
                  [compojure "1.6.1"]
                  [drift "1.5.3"]
                  [inflections "0.13.0"]
