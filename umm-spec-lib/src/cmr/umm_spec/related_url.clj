@@ -2,6 +2,7 @@
   (:require
    [clojure.string :as str]
    [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.related-url-titles :as related-url-titles]))
 
 (def DOCUMENTATION_MIME_TYPES
@@ -80,6 +81,7 @@
   "Returns the atom link type of the related url"
   [related-url]
   (cond
+    (opendap-util/opendap-url? related-url) "service"
     (downloadable-url? related-url) "data"
     (browse-url? related-url) "browse"
     (documentation-url? related-url) "documentation"
