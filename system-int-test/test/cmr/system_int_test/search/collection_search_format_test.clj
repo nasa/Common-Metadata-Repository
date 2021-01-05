@@ -695,6 +695,59 @@
                                            {:url-extension "json"})
                 [:status :results])))))))
 
+(deftest atom-json-link-service-rel-types
+  (testing "Opendata search response"
+    (let [related-urls {:RelatedUrls [{:Description "A test related url description."
+                                       :URL "http://example.com/browse-image"
+                                       :Type "GET RELATED VISUALIZATION"
+                                       :URLContentType "VisualizationURL"
+                                       :GetData {:Format "png"
+                                                 :MimeType "image/png"
+                                                 :Size 10.0
+                                                 :Unit "KB"}}
+                                      {:Description "Download url and default title description"
+                                       :URL "http://example.com/download.png"
+                                       :URLContentType "DistributionURL"
+                                       :Type "GET DATA"
+                                       :GetData {:Format "png"
+                                                 :MimeType "image/png"
+                                                 :Size 10.0
+                                                 :Unit "KB"}}
+                                      {:Description "no mime type specified and GIOVANNI title"
+                                       :URL "http://example2.com/download.json"
+                                       :URLContentType "DistributionURL"
+                                       :Type "GET DATA"
+                                       :Subtype "GIOVANNI"
+                                       :GetData {:Format "png"
+                                                 :Size 10.0
+                                                 :Unit "KB"}}
+                                      {:URL "http://example.com/opendap"
+                                       :URLContentType "DistributionURL"
+                                       :Subtype "OPENDAP DATA"
+                                       :Type "GET DATA"}]}
+          data-centers {:DataCenters
+                        [(umm-spec-collection/data-center
+                          {:Roles ["ARCHIVER"]
+                           :ShortName "test-short-name"
+                           :ContactInformation {:ContactMechanisms
+                                                [{:Type "Email"
+                                                  :Value "test-address@example.com"}]}})]}
+          umm-attributes (merge related-urls data-centers)
+          concept-umm (-> (umm-spec-collection/collection 1 umm-attributes)
+                          (umm-spec-collection/collection-concept :umm-json)
+                          ingest/ingest-concept)
+          _ (index/wait-until-indexed)
+          atom-json-links (->> (search/find-concepts-json :collection {})
+                               :results
+                               :entries
+                               (map :links)
+                               first)]
+      (is (= 201 (:status concept-umm)))
+      ;; There should be at least one link of type `service`
+      (is (= true (some? (filter #(= "http://esipfed.org/ns/fedsearch/1.1/service#"
+                                    (:rel %))
+                                 atom-json-links)))))))
+
 (deftest opendata-search-result
   (testing "Opendata search response"
     (let [concept-5138-1
