@@ -37,7 +37,7 @@
                [ring/ring-codec]]
   :dependencies ~(concat '[[cheshire "5.8.1"]
                            [clj-time "0.15.1"]
-                           [com.fasterxml.jackson.core/jackson-core "2.9.8"]
+                           [com.fasterxml.jackson.core/jackson-core "2.12.0"]
                            [commons-codec/commons-codec "1.11"]
                            [commons-io "2.6"]
                            [compojure "1.6.1"]
