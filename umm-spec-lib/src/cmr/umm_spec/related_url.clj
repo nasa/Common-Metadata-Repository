@@ -2,6 +2,7 @@
   (:require
    [clojure.string :as str]
    [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.related-url-titles :as related-url-titles]))
 
 (def DOCUMENTATION_MIME_TYPES
@@ -21,18 +22,11 @@
      (or (get sub-type-titles sub-type)
          (get sub-type-titles "default")))))
 
-(defn service-url?
-  "Returns true if the related-url is a service url such as OPeNDAP"
-  [related-url]
-  (and (not= "Text/csv" (:MimeType related-url))
-       (= "OPENDAP DATA" (:Subtype related-url))))
-
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"
   [related-url]
   (and (= "DistributionURL" (:URLContentType related-url))
-       (= "GET DATA" (:Type related-url))
-       (not (service-url? related-url))))
+       (= "GET DATA" (:Type related-url))))
 
 (defn downloadable-urls
   "Returns the related-urls that are downloadable"
@@ -58,8 +52,7 @@
   "Returns true if the related-url is resource url"
   [related-url]
   (not (or (downloadable-url? related-url)
-           (browse-url? related-url)
-           (service-url? related-url))))
+           (browse-url? related-url))))
 
 (defn resource-urls
   "Returns the related-urls that are resource urls"
@@ -88,7 +81,7 @@
   "Returns the atom link type of the related url"
   [related-url]
   (cond
-    (service-url? related-url) "service"
+    (opendap-util/opendap-url? related-url) "service"
     (downloadable-url? related-url) "data"
     (browse-url? related-url) "browse"
     (documentation-url? related-url) "documentation"
