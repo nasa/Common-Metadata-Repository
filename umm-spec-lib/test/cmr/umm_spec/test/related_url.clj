@@ -68,5 +68,5 @@
       (is (= [r3 r4] (related-url/resource-urls urls))))
 
     (testing "Atom link types"
-      (is (= ["data" "browse" "documentation" "metadata" "browse"]
+      (is (= ["data" "browse" "documentation" "service" "browse"]
              (map :link-type (related-url/atom-links urls)))))))
