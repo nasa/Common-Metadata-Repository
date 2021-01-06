@@ -66,43 +66,22 @@
                                       "keyword.")]}]}
              response))))
 
- (testing "ArchiveAndDistributionInformation and RelatedUrls keyword validation"
+ (testing "ArchiveAndDistributionInformation keyword validation"
     (let [format (data-umm-c/collection-concept
                    {:ArchiveAndDistributionInformation
-                    {:FileDistributionInformation
-                     [(data-umm-c/file-distribution-information
-                       {:FormatType "Native"
-                        :AverageFileSize 50
-                        :AverageFileSizeUnit "MB"
-                        :Fees "None currently"
-                        :Format "8-track tape"})]
-                     :FileArchiveInformation
-                     [(data-umm-c/file-archive-information
-                       {:FormatType "Native"
-                        :AverageFileSize 50
-                        :AverageFileSizeUnit "MB"
-                        :Format "8-track tape"})]}
-                    :RelatedUrls
-                    [{:Description "Related url description"
-                      :URL "www.foobarbazquxquux.com"
-                      :URLContentType "DistributionURL"
-                      :Type "GET DATA"
-                      :GetData {:Format "8-track tape"
-                                :Size 10.0
-                                :Unit "MB"
-                                :Fees "fees"}}]}
+                      {:FileDistributionInformation
+                       [(data-umm-c/file-distribution-information
+                         {:FormatType "Native"
+                          :AverageFileSize 50
+                          :AverageFileSizeUnit "MB"
+                          :Fees "None currently"
+                          :Format "8-track tape"})]}}
                   :umm-json)
           response (ingest/validate-concept format {:validate-keywords true})]
 
       (is (= {:status 422
-              :errors [{:path ["RelatedUrls" 0 "GetData" "Format"]
-                        :errors [(str "Format [8-track tape] was not a valid keyword.")]}
-                       {:path ["ArchiveAndDistributionInformation"
+              :errors [{:path ["ArchiveAndDistributionInformation"
                                "FileDistributionInformation"
-                               0]
-                        :errors [(str "Format [8-track tape] was not a valid keyword.")]}
-                       {:path ["ArchiveAndDistributionInformation"
-                               "FileArchiveInformation"
                                0]
                         :errors [(str "Format [8-track tape] was not a valid keyword.")]}]}
              response)))
@@ -112,26 +91,12 @@
 
         "Valid Case Sensitive"
         {:ArchiveAndDistributionInformation
-         {:FileDistributionInformation
-          [{:FormatType "Native"
-            :AverageFileSize 50
-            :AverageFileSizeUnit "MB"
-            :Fees "None currently"
-            :Format "HDF5"}]
-          :FileArchiveInformation
-          [{:FormatType "Native"
-            :AverageFileSize 50
-            :AverageFileSizeUnit "MB"
-            :Format "HDF5"}]}
-         :RelatedUrls
-         [{:Description "Related url description"
-           :URL "www.foobarbazquxquux.com"
-           :URLContentType "DistributionURL"
-           :Type "GET DATA"
-           :GetData {:Format "HDF5"
-                     :Size 10.0
-                     :Unit "MB"
-                     :Fees "fees"}}]}
+          {:FileDistributionInformation
+           [{:FormatType "Native"
+               :AverageFileSize 50
+               :AverageFileSizeUnit "MB"
+               :Fees "None currently"
+               :Format "HDF5"}]}}
 
         "Valid Case Insensitive"
         {:ArchiveAndDistributionInformation
@@ -140,21 +105,7 @@
              :AverageFileSize 50
              :AverageFileSizeUnit "MB"
              :Fees "None currently"
-             :Format "hdf5"}]
-          :FileArchiveInformation
-          [{:FormatType "Native"
-             :AverageFileSize 50
-             :AverageFileSizeUnit "MB"
-             :Format "hdf5"}]}
-          :RelatedUrls
-          [{:Description "Related url description"
-            :URL "www.foobarbazquxquux.com"
-            :URLContentType "DistributionURL"
-            :Type "GET DATA"
-            :GetData {:Format "hdf5"
-                      :Size 10.0
-                      :Unit "MB"
-                      :Fees "fees"}}]}
+             :Format "hdf5"}]}}
 
         "Valid Case Sensitive"
         {:ArchiveAndDistributionInformation
@@ -163,21 +114,7 @@
             :AverageFileSize 50
             :AverageFileSizeUnit "MB"
             :Fees "None currently"
-            :Format "JPEG"}]
-          :FileArchiveInformation
-          [{:FormatType "Native"
-            :AverageFileSize 50
-            :AverageFileSizeUnit "MB"
-            :Format "JPEG"}]}
-          :RelatedUrls
-          [{:Description "Related url description"
-            :URL "www.foobarbazquxquux.com"
-            :URLContentType "DistributionURL"
-            :Type "GET DATA"
-            :GetData {:Format "JPEG"
-                      :Size 10.0
-                      :Unit "MB"
-                      :Fees "fees"}}]})
+            :Format "JPEG"}]}})
 
   (testing "Project keyword validation"
     (are2 [short-name long-name]

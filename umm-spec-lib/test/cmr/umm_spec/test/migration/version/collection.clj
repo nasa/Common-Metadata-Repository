@@ -2416,64 +2416,6 @@
         :MinimumValue 50,
         :MaximumValue 100}}]})
 
-(def sample-collection-1-15-5
-  {:RelatedUrls [{:Description "Related url description"
-                  :URL "www.foobarbazquxquux.com"
-                  :URLContentType "DistributionURL"
-                  :Type "GET DATA"
-                  :Subtype "ECHO"
-                  :GetData {:Format "ascii"
-                            :Size 10.0
-                            :Unit "MB"
-                            :Fees "fees"}}
-                 {:Description "Related url description"
-                  :URL "www.foobarbazquxquux.com"
-                  :URLContentType "DistributionURL"
-                  :Type "GET DATA"
-                  :Subtype "ECHO"
-                  :GetData {:Format "Binary"
-                            :Size 10.0
-                            :Unit "MB"
-                            :Fees "fees"}}
-                 {:Description "Related url description"
-                  :URL "www.foobarbazquxquux.com"
-                  :URLContentType "DistributionURL"
-                  :Type "GET DATA"
-                  :Subtype "ECHO"
-                  :GetData {:Format "GRIB1"
-                            :Size 10.0
-                            :Unit "MB"
-                            :Fees "fees"}}]})
-
-(def sample-collection-1-15-5-to-1-15-4
-  {:RelatedUrls [{:Description "Related url description"
-                  :URL "www.foobarbazquxquux.com"
-                  :URLContentType "DistributionURL"
-                  :Type "GET DATA"
-                  :Subtype "ECHO"
-                  :GetData {:Format "ascii"
-                            :Size 10.0
-                            :Unit "MB"
-                            :Fees "fees"}}
-                 {:Description "Related url description"
-                  :URL "www.foobarbazquxquux.com"
-                  :URLContentType "DistributionURL"
-                  :Type "GET DATA"
-                  :Subtype "ECHO"
-                  :GetData {:Format "binary"
-                            :Size 10.0
-                            :Unit "MB"
-                            :Fees "fees"}}
-                 {:Description "Related url description"
-                  :URL "www.foobarbazquxquux.com"
-                  :URLContentType "DistributionURL"
-                  :Type "GET DATA"
-                  :Subtype "ECHO"
-                  :GetData {:Format "Not provided"
-                            :Size 10.0
-                            :Unit "MB"
-                            :Fees "fees"}}]})
-
 (deftest migrate-1-15-4-to-1-15-3
   "Test the migration of collections from 1.15.4 to 1.15.3."
 
@@ -2488,12 +2430,4 @@
                :Coordinate2 {
                  :MinimumValue 50,
                  :MaximumValue 100}}]}
-             result)))))
-
-(deftest migrate-1-15-5-to-1-15-4
-  "Test the migration of collections from 1.15.5 to 1.15.4."
-
-  (testing "Removing the invalid GetData/Format"
-    (let [result (vm/migrate-umm {} :collection "1.15.5" "1.15.4" sample-collection-1-15-5)]
-      (is (= sample-collection-1-15-5-to-1-15-4
              result)))))
