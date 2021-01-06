@@ -7,7 +7,7 @@
                [org.elasticsearch/elasticsearch]
                [potemkin]]
   :dependencies [[cheshire "5.8.1"]
-                 [clj-http "2.3.0"]
+                 [clj-http "3.11.0"]
                  [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
