@@ -90,7 +90,11 @@
                       :GetData {:Format "8-track tape"
                                 :Size 10.0
                                 :Unit "MB"
-                                :Fees "fees"}}]}
+                                :Fees "fees"}}
+                     {:Description "Related url description"
+                      :URL "www.foobarbazquxquux.com"
+                      :URLContentType "DistributionURL"
+                      :Type "GET DATA"}]}
                   :umm-json)
           response (ingest/validate-concept format {:validate-keywords true})]
 

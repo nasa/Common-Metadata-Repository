@@ -86,8 +86,9 @@
   match."
   [kms-index msg-fn]
   (fn [field-path value]
-    (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index :granule-data-format value)
-      {field-path [(msg-fn value)]})))
+    (when value
+      (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index :granule-data-format value)
+        {field-path [(msg-fn value)]}))))
 
 (defn keyword-validations
   "Creates validations that check various collection fields to see if they match KMS keywords."
