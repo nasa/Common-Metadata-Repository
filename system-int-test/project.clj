@@ -19,7 +19,7 @@
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [clj-xml-validation "1.0.2"]
-                 [com.fasterxml.jackson.core/jackson-core "2.9.8"]
+                 [com.fasterxml.jackson.core/jackson-core "2.12.0"]
                  [com.google.code.findbugs/jsr305 "3.0.2"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
