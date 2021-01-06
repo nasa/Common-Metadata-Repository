@@ -21,8 +21,6 @@
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
-                 [com.fasterxml.jackson.core/jackson-core "2.12.0"]
-                 [com.fasterxml.jackson.core/jackson-annotations "2.12.0"]
                  [com.fasterxml.jackson.core/jackson-databind "2.12.0"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
