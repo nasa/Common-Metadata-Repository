@@ -1,7 +1,9 @@
 #kaocha/v1
-{:tests #profile {:default [{:id :integration}]
-                  :ci [{:id :integration
-                        :skip-meta [:in-memory-db]}]}
+{:tests #profile
+ {:default [{:id :integration}]
+  :ci [{:id :integration
+        :skip-meta [:in-memory-db]
+        :test-paths #include #or [#env CMR_TEST_GROUP "tests.all.edn"]}]}
 
  :plugins [:kaocha.plugin.alpha/info
            :kaocha.plugin/capture-output

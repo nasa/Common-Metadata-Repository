@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.health-test
+(ns cmr.system-int-test.misc.health-test
   "This tests the health api for CMR applications."
   (:require
    [cheshire.core :as json]

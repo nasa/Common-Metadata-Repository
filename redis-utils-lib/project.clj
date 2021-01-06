@@ -4,6 +4,8 @@
   {:version "3.2.10"
    :hash "411c604a716104f7f5a326abfad32de9cea10f15f987bec45cf86f315e9e63a0"})
 
+(def redis-version "6")
+
 (defproject nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handling cacheing with the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/redis-utils-lib"
@@ -42,16 +44,15 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
-                                     [lambdaisland/kaocha-cloverage "1.0.63"]
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {"bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
-            "pull-docker-images" ["shell" "docker" "pull" "redis:6"]
+            "pull-docker-images" ["shell" "docker" "pull" ~(str "redis:" redis-version)]
 
-            "install" ["do" "pull-docker-images," "install"]
             "install!" "install"
 
             ;; Placeholder for future docs and enabler of top-level alias
@@ -67,6 +68,8 @@
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
-            "itest" ["shell" "echo" "== No integration tests =="]
-            "utest" ["kaocha" "--focus" "unit"]
-            "ci-test" ["kaocha" "--profile" ":ci"]})
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]})

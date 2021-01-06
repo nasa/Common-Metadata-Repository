@@ -67,12 +67,16 @@
           nodoi-colls [c1-p1 c2-p1 c3-p1 c1-p2 c2-p2 c3-p2]
           doi-colls [c1-p3 c2-p3 c3-p3]
           all-colls (into nodoi-colls doi-colls)
-          tag-colls [c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3]
-          _tag (tags/save-tag
-                 user-token
-                 (tags/make-tag {:tag-key "gov.nasa.eosdis"})
-                 tag-colls)]
-      (index/wait-until-indexed)
+          tag-colls [c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3]]
+      (try
+        (tags/save-tag
+         user-token
+         (tags/make-tag {:tag-key "gov.nasa.eosdis"})
+         tag-colls)
+        (catch Exception e (is (nil? e) (.getMessage e)))
+        (finally
+          (index/wait-until-indexed)))
+
       ;; Sanity checks
       (assert (= (count notag-colls) 3))
       (assert (= (count nodoi-colls) 6))

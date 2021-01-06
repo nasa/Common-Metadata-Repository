@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.header_test
+(ns cmr.system-int-test.misc.header_test
   "Tests for headers in ingest and search responses"
   (:require
    [clj-http.client :as client]

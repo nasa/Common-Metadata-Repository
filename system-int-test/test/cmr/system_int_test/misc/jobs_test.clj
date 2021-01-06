@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.jobs-test
+(ns cmr.system-int-test.misc.jobs-test
   "This tests the jobs api."
   (:require
    [cheshire.core :as json]
