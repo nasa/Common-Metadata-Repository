@@ -38,7 +38,7 @@
     }
 ])
 
-(deftest make-sure-tag-api-response-error-400-test
+(deftest tag-api-response-status-code-test
   (testing "Making sure `tag-api-response` returns status code 400 when there's errors"
       (do
             (is
