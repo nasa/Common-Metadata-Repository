@@ -6,16 +6,6 @@
 
 (def dictionary-with-error [
     {
-        "tag_association" {
-            "concept_id" "TA1200000009-CMR"
-            "revision_id" 1
-        }
-        "tagged_item" {
-            "concept_id" "C1200000005-PROV1"
-        }
-    }
-
-    {
         "errors" [
         "Collection [C1200000006-PROV1] does not exist or is not visible."
         ]

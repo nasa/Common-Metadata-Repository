@@ -3212,19 +3212,11 @@ Content-Length: 168
     "tagged_item":{
       "concept_id":"C1200000005-PROV1"
     }
-  },
-  {
-    "errors":[
-      "Collection [C1200000006-PROV1] does not exist or is not visible."
-    ],
-    "tagged_item":{
-      "concept_id":"C1200000006-PROV1"
-    }
   }
 ]
 ```
 
-On occasions when tag association cannot be processed at all due to invalid input, tag association request will return a failure status code with the appropriate error message.
+On occasions when tag association cannot be processed at all due to invalid input, tag association request will return failure status code 400 with the appropriate error message.
 
 #### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
 
@@ -3296,15 +3288,6 @@ Content-Length: 168
       "concept_id":"C1200000006-PROV1",
       "revision_id":1
     }
-  },
-  {
-    "errors":[
-      "Collection with concept id [C1200000007-PROV1] revision id [1] does not exist or is not visible."
-    ],
-    "tagged_item":{
-      "concept_id":"C1200000007-PROV1",
-      "revision_id":1
-    }
   }
 ]
 ```
@@ -3319,7 +3302,7 @@ curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
 
-HTTP/1.1 200 OK
+HTTP/1.1 400 Bad Request
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 168
 
