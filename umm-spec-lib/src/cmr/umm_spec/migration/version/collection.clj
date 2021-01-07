@@ -2,6 +2,7 @@
   "Contains functions for migrating between versions of the UMM Collection schema."
   (:require
    [clojure.set :as set]
+   [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.location-keywords :as lk]
@@ -23,6 +24,23 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions
+
+(def kms-format-lowercase-to-umm-c-enum-mapping
+  "Mapping from lower-case of KMS granule-data-format short_name values to enum list of values
+  for RelatedUrls/GetData/Format in UMM-C 1.15.4 schema. For those values that don't exist in
+  the enum list, they will be mapped to \"Not provided\""
+  {"ascii" "ascii"
+   "binary" "binary"
+   "bufr" "BUFR"
+   "hdf4" "HDF4"
+   "hdf5" "HDF5"
+   "hdf-eos4" "HDF-EOS4"
+   "hdf-eos5" "HDF-EOS5"
+   "jpeg" "jpeg"
+   "png" "png"
+   "tiff" "tiff"
+   "geotiff" "geotiff"
+   "kml" "kml"})
 
 (def not-provided-organization
   "Place holder to use when an organization is not provided."
@@ -88,6 +106,15 @@
   (->> tiling-identification-systems
        (remove #(= "Military Grid Reference System" (:TilingIdentificationSystemName %)))
        seq))
+
+(defn- replace-invalid-format
+  "Replace GetData Formats in RelatedUrls that are not present in the 1.15.4 schema."
+  [getdata]
+  (if (:Format getdata)
+    (update getdata :Format #(get kms-format-lowercase-to-umm-c-enum-mapping
+                                  (string/lower-case %)
+                                  "Not provided"))
+    getdata))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collection Migration Implementations
@@ -336,3 +363,14 @@
 (defmethod interface/migrate-umm-version [:collection "1.15.4" "1.15.3"]
   [context c & _]
   (update c :TilingIdentificationSystems drop-military-grid-reference-system))
+
+(defmethod interface/migrate-umm-version [:collection "1.15.4" "1.15.5"]
+  [context c & _]
+  ;; No need to migrate
+  c)
+
+(defmethod interface/migrate-umm-version [:collection "1.15.5" "1.15.4"]
+  [context c & _]
+  ;; Need to replace the RelatedURLs/GetData/Format with "Not provided"
+  ;; if it's not part of the enum list in 1.15.4, case insensitive.
+  (util/update-in-all c [:RelatedUrls :GetData] replace-invalid-format))
