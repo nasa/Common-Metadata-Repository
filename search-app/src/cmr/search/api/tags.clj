@@ -23,7 +23,7 @@
 (defn- tag-api-response
   "Creates a successful tag response with the given data response"
   ([data]
-   (tag-api-response 200 data))
+    (if (has-error? data) (tag-api-response 400 data) (tag-api-response 200 data)))
   ([status-code data]
    {:status status-code
     :body (json/generate-string (util/snake-case-data data))
@@ -173,3 +173,9 @@
             (let [{:keys [request-context headers body]} request]
               (dissociate-tag-by-query
                request-context headers (slurp body) (string/lower-case tag-key)))))))))
+
+
+(defn has-error?
+  "Whether there's an error in [data]."
+	[data]
+  (some (fn [element] (contains? element "errors")) data))
