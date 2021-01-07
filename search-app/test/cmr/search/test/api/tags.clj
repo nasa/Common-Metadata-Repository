@@ -26,7 +26,23 @@
     }
 ])
 
+(def dictionary-with-no-error [
+    {
+        "tag_association" {
+            "concept_id" "TA1200000009-CMR"
+            "revision_id" 1
+        }
+        "tagged_item" {
+            "concept_id" "C1200000005-PROV1"
+        }
+    }
+])
+
 (deftest make-sure-tag-api-response-error-400-test
   (testing "Making sure `tag-api-response` returns status code 400 when there's errors"
-      (is
-        (= 400 (:status (tags/tag-api-response dictionary-with-error))))))
+      (do
+            (is
+                  (= 400 (:status (tags/tag-api-response dictionary-with-error))))
+            (is
+                  (= 200 (:status (tags/tag-api-response dictionary-with-no-error)))))))
+      
