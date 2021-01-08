@@ -189,7 +189,8 @@
              "Tags"
              [tag1])))))
 
-(deftest ^:oracle zzz_bulk-index-after-date-time
+(deftest ^{:kaocha/skip true
+           :oracle true} zzz_bulk-index-after-date-time
   ;; prefixed with zzz_ to ensure it runs last. There is a side-effect
   ;; where if this runs before bulk-index-all-providers, concepts are
   ;; not indexed correctly.
