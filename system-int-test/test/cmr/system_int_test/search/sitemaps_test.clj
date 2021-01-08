@@ -37,24 +37,24 @@
          c1-p2 c2-p2 c3-p2] (doall (for [p ["PROV1" "PROV2"]
                                          n (range 1 4)]
                                      (d/ingest-umm-spec-collection
-                                       p
-                                       (-> exp-conv/curr-ingest-ver-example-collection-record
-                                           (assoc :ShortName (str "s" n))
-                                           (assoc :EntryTitle (str "Collection Item " n)))
-                                       {:format :umm-json
-                                        :accept-format :json})))
+                                      p
+                                      (-> exp-conv/curr-ingest-ver-example-collection-record
+                                          (assoc :ShortName (str "s" n))
+                                          (assoc :EntryTitle (str "Collection Item " n)))
+                                      {:format :umm-json
+                                       :accept-format :json})))
         _ (index/wait-until-indexed)
         [c1-p3 c2-p3 c3-p3] (doall (for [n (range 4 7)]
                                      (d/ingest-umm-spec-collection
-                                       "PROV3"
-                                       (-> exp-conv/curr-ingest-ver-example-collection-record
-                                           (assoc :ShortName (str "s" n))
-                                           (assoc :EntryTitle (str "Collection Item " n))
-                                           (assoc :DOI (cm/map->DoiType
-                                                         {:DOI (str "doi" n)
-                                                          :Authority (str "auth" n)})))
-                                       {:format :umm-json
-                                        :accept-format :json})))]
+                                      "PROV3"
+                                      (-> exp-conv/curr-ingest-ver-example-collection-record
+                                          (assoc :ShortName (str "s" n))
+                                          (assoc :EntryTitle (str "Collection Item " n))
+                                          (assoc :DOI (cm/map->DoiType
+                                                       {:DOI (str "doi" n)
+                                                        :Authority (str "auth" n)})))
+                                      {:format :umm-json
+                                       :accept-format :json})))]
     (reset! test-collections
             {"PROV1" (map :concept-id [c1-p1 c2-p1 c3-p1])
              "PROV2" (map :concept-id [c1-p2 c2-p2 c3-p2])
@@ -68,14 +68,11 @@
           doi-colls [c1-p3 c2-p3 c3-p3]
           all-colls (into nodoi-colls doi-colls)
           tag-colls [c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3]]
-      (try
-        (tags/save-tag
-         user-token
-         (tags/make-tag {:tag-key "gov.nasa.eosdis"})
-         tag-colls)
-        (catch Exception e (is (nil? e) (.getMessage e)))
-        (finally
-          (index/wait-until-indexed)))
+      (tags/save-tag user-token
+                     (tags/make-tag {:tag-key "gov.nasa.eosdis"})
+                     tag-colls)
+
+      (index/wait-until-indexed)
 
       ;; Sanity checks
       (assert (= (count notag-colls) 3))
