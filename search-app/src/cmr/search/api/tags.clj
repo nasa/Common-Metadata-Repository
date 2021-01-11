@@ -23,14 +23,15 @@
 (defn- has-error?
   "Whether there's an error in [data]."
   [data]
-  (some (fn [element] (contains? element "errors")) data))
+  (some (fn [element] (contains? element :errors)) data))
 
 (defn tag-api-response
   "Creates a successful tag response with the given data response"
   ([data]
    (if (has-error? data)
      (tag-api-response 400 data)
-     (tag-api-response 200 data)))
+     (tag-api-response 200 data))
+   )
   ([status-code data]
    {:status status-code
     :body (json/generate-string (util/snake-case-data data))

@@ -231,9 +231,13 @@
    (let [{:keys [status body errors]} response
          expected-tas (map #(coll-tag-association->expected-tag-association % error?)
                            coll-tag-associations)]
-     (is (= [200
-             (set (comparable-tag-associations expected-tas))]
-            [status (set (comparable-tag-associations body))])))))
+     (if (some (fn [element] (contains? element :errors)) (vals coll-tag-associations))
+       (is (= [400
+               (set (comparable-tag-associations expected-tas))]
+              [status (set (comparable-tag-associations body))]))
+       (is (= [200
+               (set (comparable-tag-associations expected-tas))]
+              [status (set (comparable-tag-associations body))]))))))
 
 (defn assert-tag-dissociation-response-ok?
   "Assert the tag association response when status code is 200 is correct."

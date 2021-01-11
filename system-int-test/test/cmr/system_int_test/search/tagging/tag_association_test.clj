@@ -142,6 +142,11 @@
         (tags/assert-tag-association-response-ok?
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
          response)))
+    
+    (testing "Associate to non-existent collections should get status 400"
+      (let [response (tags/associate-by-concept-ids
+                      token tag-key [{:concept-id "C100-P5"}])]
+        (is (= 400 (:status response)))))
 
     (testing "Associate to deleted collections"
       (let [c1-p1-concept (mdb/get-concept c1-p1)
@@ -152,6 +157,11 @@
         (tags/assert-tag-association-response-ok?
          {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
          response)))
+    
+    (testing "Associate to non-existent collections should get status 400"
+      (let [response (tags/associate-by-concept-ids
+                      token tag-key [{:concept-id c1-p1}])]
+        (is (= 400 (:status response)))))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
@@ -159,6 +169,11 @@
         (tags/assert-tag-association-response-ok?
          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
          response)))
+    
+    (testing "Associate to non-existent collections should get status 400"
+      (let [response (tags/associate-by-concept-ids
+                      token tag-key [{:concept-id c4-p3}])]
+        (is (= 400 (:status response)))))
 
     (testing "Tag association mixed response"
       (let [response (tags/associate-by-concept-ids
@@ -168,7 +183,13 @@
          {["C1200000014-PROV1"] {:concept-id "TA1200000028-CMR"
                                  :revision-id 1}
           ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
-         response)))))
+         response)))
+    
+    (testing "Associate to non-existent collections should get status 400"
+      (let [response (tags/associate-by-concept-ids
+                      token tag-key [{:concept-id c2-p1}
+                                     {:concept-id "C100-P5"}])]
+        (is (= 400 (:status response)))))))
 
 (deftest associate-tag-failure-test
   (echo-util/grant-registered-users (system/context)
