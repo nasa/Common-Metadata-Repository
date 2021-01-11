@@ -158,7 +158,7 @@
          {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
          response)))
     
-    (testing "Associate to non-existent collections should get status 400"
+    (testing "Associate to deleted collections should get status 400"
       (let [response (tags/associate-by-concept-ids
                       token tag-key [{:concept-id c1-p1}])]
         (is (= 400 (:status response)))))
@@ -170,7 +170,7 @@
          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
          response)))
     
-    (testing "Associate to non-existent collections should get status 400"
+    (testing "Associate to invisible collections should get status 400"
       (let [response (tags/associate-by-concept-ids
                       token tag-key [{:concept-id c4-p3}])]
         (is (= 400 (:status response)))))
@@ -185,7 +185,7 @@
           ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
          response)))
     
-    (testing "Associate to non-existent collections should get status 400"
+    (testing "Association with mixed responses should get status 400"
       (let [response (tags/associate-by-concept-ids
                       token tag-key [{:concept-id c2-p1}
                                      {:concept-id "C100-P5"}])]
@@ -361,6 +361,11 @@
         (tags/assert-tag-dissociation-response-ok?
           {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
           response)))
+    
+    (testing "Dissociate to non-existent collections should get status 400"
+      (let [response (tags/dissociate-by-concept-ids
+                      token tag-key [{:concept-id "C100-P5"}])]
+        (is (= 400 (:status response)))))
 
     (testing "Dissociate to deleted collections"
       (let [c1-p2-concept-id (:concept-id c1-p2)
@@ -373,6 +378,12 @@
           {["C1200000019-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                    c1-p2-concept-id)]}}
           response)))
+    
+    (testing "Dissociate to deleted collections should get status 400"
+      (let [c1-p2-concept-id (:concept-id c1-p2)
+            response (tags/dissociate-by-concept-ids
+                      token tag-key [{:concept-id c1-p2-concept-id}])]
+        (is (= 400 (:status response)))))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
@@ -382,7 +393,13 @@
         (tags/assert-tag-dissociation-response-ok?
           {["C1200000026-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                    coll-concept-id)]}}
-          response)))))
+          response)))
+    
+    (testing "Dissociate to invisible collections should get status 400"
+      (let [coll-concept-id (:concept-id c4-p3)
+            response (tags/dissociate-by-concept-ids
+                      token tag-key [{:concept-id coll-concept-id}])]
+        (is (= 400 (:status response)))))))
 
 (deftest dissociate-tag-failure-test
   (echo-util/grant-registered-users (system/context)
