@@ -26,7 +26,7 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [net.sf.saxon/Saxon-HE "9.9.0-2"]
                  [commons-io/commons-io "2.6"]
-                 [org.apache.httpcomponents/httpclient "4.5.6"]
+                 [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/data.csv "0.1.4"]
                  [org.clojure/math.numeric-tower "0.0.4"]
