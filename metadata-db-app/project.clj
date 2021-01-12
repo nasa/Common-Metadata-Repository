@@ -3,15 +3,15 @@
                support for persisting metadata concepts."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/metadata-db-app"
   :exclusions [[cheshire]
-               [clj-time]
                [clj-http]
+               [clj-time]
                [com.fasterxml.jackson.core/jackson-core]
                [com.fasterxml.jackson.core/jackson-databind]
                [org.clojure/tools.reader]
                [org.slf4j/slf4j-api]]
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.9.0"]
+                 [clj-http "3.11.0"]
                  [clj-time "0.15.1"]
-                 [clj-http "2.3.0"]
                  [com.fasterxml.jackson.core/jackson-core "2.12.0"]
                  [compojure "1.6.1"]
                  [drift "1.5.3"]
@@ -39,8 +39,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[clj-http "2.3.0"]
-                                  [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
+             :dev {:dependencies [[nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [pjstadig/humane-test-output "0.9.0"]
@@ -49,8 +48,6 @@
                    :source-paths ["src" "dev" "test" "int-test"]
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]}
-             :integration-test {:test-paths ["int-test"]
-                                :dependencies [[clj-http "2.3.0"]]}
              :uberjar {:main cmr.metadata-db.runner
                        :aot :all}
              :static {}
