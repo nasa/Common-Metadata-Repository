@@ -20,10 +20,17 @@
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
-(defn- tag-api-response
+(defn- has-error?
+  "Whether there's an error in [data]."
+  [data]
+  (some (fn [element] (contains? element :errors)) data))
+
+(defn tag-api-response
   "Creates a successful tag response with the given data response"
   ([data]
-   (tag-api-response 200 data))
+   (if (has-error? data)
+     (tag-api-response 400 data)
+     (tag-api-response 200 data)))
   ([status-code data]
    {:status status-code
     :body (json/generate-string (util/snake-case-data data))
@@ -35,8 +42,8 @@
   (when-not (or (transmit-config/echo-system-token? context)
                 (seq (acl/get-permitting-acls context :system-object "TAG_GROUP" permission-type)))
     (errors/throw-service-error
-      :unauthorized
-      (format "You do not have permission to %s a tag." (name permission-type)))))
+     :unauthorized
+     (format "You do not have permission to %s a tag." (name permission-type)))))
 
 (defn create-tag
   "Processes a create tag request."

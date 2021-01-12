@@ -1,18 +1,18 @@
 (ns cmr.system-int-test.utils.tag-util
   "This contains utilities for testing tagging"
   (:require
-    [clojure.string :as str]
-    [clojure.test :refer [is]]
-    [cmr.common.mime-types :as mt]
-    [cmr.common.util :as util]
-    [cmr.mock-echo.client.echo-util :as e]
-    [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.system :as s]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.system-int-test.utils.metadata-db-util :as mdb]
-    [cmr.system-int-test.utils.search-util :as search]
-    [cmr.transmit.echo.tokens :as tokens]
-    [cmr.transmit.tag :as tt]))
+   [clojure.string :as str]
+   [clojure.test :refer [is]]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.tag :as tt]))
 
 (defn grant-all-tag-fixture
   "A test fixture that grants all users the ability to create and modify tags"
@@ -235,10 +235,27 @@
              (set (comparable-tag-associations expected-tas))]
             [status (set (comparable-tag-associations body))])))))
 
+(defn assert-tag-association-response-error?
+  "Assert the tag association response when status code is 400 is correct."
+  ([coll-tag-associations response]
+   (assert-tag-association-response-error? coll-tag-associations response true))
+  ([coll-tag-associations response error?]
+   (let [{:keys [status body errors]} response
+         expected-tas (map #(coll-tag-association->expected-tag-association % error?)
+                           coll-tag-associations)]
+     (is (= [400
+             (set (comparable-tag-associations expected-tas))]
+            [status (set (comparable-tag-associations body))])))))
+
 (defn assert-tag-dissociation-response-ok?
   "Assert the tag association response when status code is 200 is correct."
   [coll-tag-associations response]
   (assert-tag-association-response-ok? coll-tag-associations response false))
+
+(defn assert-tag-dissociation-response-error?
+  "Assert the tag association response when status code is 400 is correct."
+  [coll-tag-associations response]
+  (assert-tag-association-response-error? coll-tag-associations response false))
 
 (defn assert-invalid-data-error
   "Assert tag association response when status code is 422 is correct"
