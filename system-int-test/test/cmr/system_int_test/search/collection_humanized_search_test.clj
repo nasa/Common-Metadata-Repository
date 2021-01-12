@@ -129,8 +129,11 @@
                               coll-suffix (if (< coll-normalized 10)
                                             (str "0" coll-normalized)
                                             (str coll-normalized))]
-                          (is (= (format "PROV1,C12000000%s-PROV1,B,%d,AM-1,Terra" coll-suffix n)
-                                 actual-line))))
+                          (is (-> (format "PROV1,C12000000\\d+-PROV1,B,%d,AM-1,Terra" n)
+                                  re-pattern
+                                  (re-find actual-line)
+                                  nil?
+                                  false?))))
                       (rest report-lines)))))
     (side/eval-form `(hrs/set-humanizer-report-collection-batch-size! 500))))
 
