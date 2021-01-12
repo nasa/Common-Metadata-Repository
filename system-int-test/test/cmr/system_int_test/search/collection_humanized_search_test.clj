@@ -112,11 +112,13 @@
   (let [updated-batch-size (get-humanizer-report-batch-size)]
     ;; Insert more entries than the batch size to test batches
     (doseq [n (range (inc updated-batch-size))]
-      (d/ingest-umm-spec-collection "PROV1"
-                                    (data-umm-c/collection n
-                                                           {:ShortName "B"
-                                                            :Version n
-                                                            :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]})))
+      (d/ingest-umm-spec-collection
+       "PROV1"
+       (data-umm-c/collection
+        n
+        {:ShortName "B"
+         :Version n
+         :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]})))
     (index/wait-until-indexed)
     ;; Refresh the metadata cache
     (search/refresh-collection-metadata-cache)
