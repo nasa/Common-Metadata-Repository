@@ -3,7 +3,7 @@
           :ns-patterns ["cmr.access-control.test*" "-test$"]}
 
          {:id :integration
-          :ns-patterns ["cmr.access-control.int-test*" "-test$"]
+          :ns-patterns ["cmr.access-control.int-test*" "-test$" "-spec$"]
           :test-paths ["int-test"]}]
 
  :plugins [:kaocha.plugin.alpha/info

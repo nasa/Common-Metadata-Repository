@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.test.acl-matchers
+(ns cmr.umm-spec.test.acl-matchers-test
   (:require
    [clojure.test :refer :all]
    [cmr.common.test.time-util :as tu]
