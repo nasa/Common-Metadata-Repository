@@ -231,18 +231,31 @@
    (let [{:keys [status body errors]} response
          expected-tas (map #(coll-tag-association->expected-tag-association % error?)
                            coll-tag-associations)]
-     (if (some (fn [element] (contains? element :errors)) (vals coll-tag-associations))
-       (is (= [400
-               (set (comparable-tag-associations expected-tas))]
-              [status (set (comparable-tag-associations body))]))
-       (is (= [200
-               (set (comparable-tag-associations expected-tas))]
-              [status (set (comparable-tag-associations body))]))))))
+     (is (= [200
+             (set (comparable-tag-associations expected-tas))]
+            [status (set (comparable-tag-associations body))])))))
+
+(defn assert-tag-association-response-error?
+  "Assert the tag association response when status code is 400 is correct."
+  ([coll-tag-associations response]
+   (assert-tag-association-response-error? coll-tag-associations response true))
+  ([coll-tag-associations response error?]
+   (let [{:keys [status body errors]} response
+         expected-tas (map #(coll-tag-association->expected-tag-association % error?)
+                           coll-tag-associations)]
+     (is (= [400
+             (set (comparable-tag-associations expected-tas))]
+            [status (set (comparable-tag-associations body))])))))
 
 (defn assert-tag-dissociation-response-ok?
   "Assert the tag association response when status code is 200 is correct."
   [coll-tag-associations response]
   (assert-tag-association-response-ok? coll-tag-associations response false))
+
+(defn assert-tag-dissociation-response-error?
+  "Assert the tag association response when status code is 400 is correct."
+  [coll-tag-associations response]
+  (assert-tag-association-response-error? coll-tag-associations response false))
 
 (defn assert-invalid-data-error
   "Assert tag association response when status code is 422 is correct"

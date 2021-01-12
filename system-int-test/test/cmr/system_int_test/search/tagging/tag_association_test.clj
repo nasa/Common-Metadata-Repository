@@ -139,10 +139,9 @@
     (testing "Associate to non-existent collections"
       (let [response (tags/associate-by-concept-ids
                       token tag-key [{:concept-id "C100-P5"}])]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
-         response)
-        (is (= 400 (:status response)))))
+         response)))
 
     (testing "Associate to deleted collections"
       (let [c1-p1-concept (mdb/get-concept c1-p1)
@@ -150,29 +149,26 @@
             _ (index/wait-until-indexed)
             response (tags/associate-by-concept-ids
                       token tag-key [{:concept-id c1-p1}])]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
-         response)
-        (is (= 400 (:status response)))))
+         response)))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [response (tags/associate-by-concept-ids token tag-key [{:concept-id c4-p3}])]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
-         response)
-        (is (= 400 (:status response)))))
+         response)))
 
     (testing "Tag association mixed response"
       (let [response (tags/associate-by-concept-ids
                       token tag-key [{:concept-id c2-p1}
                                      {:concept-id "C100-P5"}])]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {["C1200000014-PROV1"] {:concept-id "TA1200000028-CMR"
                                  :revision-id 1}
           ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
-         response)
-        (is (= 400 (:status response)))))))
+         response)))))
 
 (deftest associate-tag-failure-test
   (echo-util/grant-registered-users (system/context)
@@ -341,10 +337,9 @@
     (testing "Dissociate non-existent collections"
       (let [response (tags/dissociate-by-concept-ids
                       token tag-key [{:concept-id "C100-P5"}])]
-        (tags/assert-tag-dissociation-response-ok?
+        (tags/assert-tag-dissociation-response-error?
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
-         response)
-        (is (= 400 (:status response)))))
+         response)))
 
     (testing "Dissociate to deleted collections"
       (let [c1-p2-concept-id (:concept-id c1-p2)
@@ -353,22 +348,20 @@
             _ (index/wait-until-indexed)
             response (tags/dissociate-by-concept-ids
                       token tag-key [{:concept-id c1-p2-concept-id}])]
-        (tags/assert-tag-dissociation-response-ok?
+        (tags/assert-tag-dissociation-response-error?
          {["C1200000019-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                   c1-p2-concept-id)]}}
-         response)
-        (is (= 400 (:status response)))))
+         response)))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [coll-concept-id (:concept-id c4-p3)
             response (tags/dissociate-by-concept-ids
                       token tag-key [{:concept-id coll-concept-id}])]
-        (tags/assert-tag-dissociation-response-ok?
+        (tags/assert-tag-dissociation-response-error?
          {["C1200000026-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                   coll-concept-id)]}}
-         response)
-        (is (= 400 (:status response)))))))
+         response)))))
 
 (deftest dissociate-tag-failure-test
   (echo-util/grant-registered-users (system/context)
@@ -458,14 +451,12 @@
                        {:concept-id (:concept-id coll1)} ;; success
                        {:concept-id (:concept-id coll2) :revision-id 1} ;; success
                        {:concept-id (:concept-id coll3)}])] ;; no tag association
-
-        (tags/assert-tag-dissociation-response-ok?
+        (tags/assert-tag-dissociation-response-error?
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
           ["C1200000012-PROV1"] {:concept-id "TA1200000016-CMR" :revision-id 2}
           ["C1200000013-PROV1" 1] {:concept-id "TA1200000017-CMR" :revision-id 2}
           ["C1200000014-PROV1"] {:warnings ["Tag [tag1] is not associated with collection [C1200000014-PROV1]."]}}
          response)
-        (is (= 400 (:status response)))
         (assert-tag-associated [])))))
 
 ;; This tests association retention when collections and tags are updated or deleted.
@@ -630,10 +621,9 @@
             response (tags/associate-by-concept-ids
                       token tag-key [{:concept-id coll-concept-id
                                       :data too-much-data}])]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {[coll-concept-id] {:errors [expected-msg]}}
-         response)
-        (is (= 400 (:status response)))))))
+         response)))))
 
 (deftest retrieve-concept-by-tag-association-concept-id-test
   (let [{:keys [status errors]} (search/get-search-failure-xml-data
