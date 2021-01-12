@@ -88,8 +88,6 @@
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
-            "_kaocha" ["test2junit"]
-            ;; disabled because of test failures
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["kaocha"]
             "utest" ["shell" "echo" "== No Unit Tests =="]
