@@ -30,8 +30,7 @@
   ([data]
    (if (has-error? data)
      (tag-api-response 400 data)
-     (tag-api-response 200 data))
-   )
+     (tag-api-response 200 data)))
   ([status-code data]
    {:status status-code
     :body (json/generate-string (util/snake-case-data data))
