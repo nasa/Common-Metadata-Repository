@@ -7,7 +7,6 @@
                [clj-http]
                [com.fasterxml.jackson.core/jackson-core]
                [com.fasterxml.jackson.core/jackson-databind]
-               [org.apache.httpcomponents/httpcore]
                [org.clojure/tools.reader]
                [org.slf4j/slf4j-api]]
   :dependencies [[cheshire "5.8.1"]
