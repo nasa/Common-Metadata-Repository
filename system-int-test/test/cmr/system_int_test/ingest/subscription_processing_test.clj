@@ -33,8 +33,8 @@
   "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
   []
   (let [subscriptions (->> (mdb2/find-concepts (system/context) {:latest true} :subscription)
-                           (remove :deleted
-                                 (mapv #(select-keys % [:concept-id :extra-fields :metadata :provider-id :native-id]))))]
+                           (remove :deleted)
+                                 (mapv #(select-keys % [:concept-id :extra-fields :metadata :provider-id :native-id])))]
     (#'email-processing/process-subscriptions (system/context) subscriptions)))
 
 (deftest ^:oracle subscription-email-processing-time-constraint-test

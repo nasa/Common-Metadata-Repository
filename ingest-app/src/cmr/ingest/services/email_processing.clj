@@ -125,11 +125,11 @@
   (let [permissions (json/parse-string
                      (access-control/get-permissions context {:user_id subscriber-id
                                                               :concept_id coll-id}))
-        has-permission (some #{"read"} (get permissions coll-id))]
-    (if (and (not has-permission)
+        has-read (some #{"read"} (get permissions coll-id))]
+    (if (and (not has-read)
              permission-check-failed)
       [permission-check-failed permission-check-time]
-      [(not has-permission) nil])))
+      [(not has-read) nil])))
 
 (defn- filter-gran-refs-by-subscriber-id
   "Takes a list of granule references and a subscriber id and removes any granule that the user does
@@ -201,7 +201,7 @@
               subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
     (do
       (send-update-subscription-notification-time! context {:subscription-concept-id sub-id
-                                                            :permission-check-failed permission-check-failed
+                                                            :permission-check-failed (str (true? permission-check-failed))
                                                             :permission-check-time permission-check-time})
       [sub-id coll-id native-id provider-id subscriber-filtered-gran-refs
        email-address subscription permission-check-time
