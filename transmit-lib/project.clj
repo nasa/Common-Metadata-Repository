@@ -6,7 +6,7 @@
                [commons-io]
                [org.apache.httpcomponents/httpcore]
                [potemkin]]
-  :dependencies [[clj-http "2.3.0"]
+  :dependencies [[clj-http "3.11.0"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
