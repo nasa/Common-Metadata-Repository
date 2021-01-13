@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.collection-relevancy.collection-temporal-relevancy
+(ns cmr.system-int-test.search.collection-relevancy.collection-temporal-relevancy-test
   "This tests the CMR Search API's temporal relevancy scoring and ranking
   capabilities"
   (:require

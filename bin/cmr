@@ -403,6 +403,12 @@ case "$COMMAND" in
             cicd)
                 test_cicd
                 ;;
+            ci-utest)
+                test_ci-utest
+                ;;
+            ci-itest)
+                test_ci-itest
+                ;;
             dep-tree)
                 PROJECT=$3
                 test_dep_tree_proj $PROJECT

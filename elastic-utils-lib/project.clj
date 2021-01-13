@@ -1,3 +1,5 @@
+(def elastic-version "7.10.0")
+
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/elastic-utils-lib"
@@ -13,7 +15,7 @@
                  [commons-io "2.6"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
-                 [org.elasticsearch/elasticsearch "7.10.0"]
+                 [org.elasticsearch/elasticsearch ~elastic-version]
                  [org.testcontainers/testcontainers "1.15.0"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]
@@ -45,18 +47,20 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
-                                     [lambdaisland/kaocha-cloverage "1.0.63"]
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
-  :aliases {;; Alias to test2junit for consistency with lein-test-out
+  :aliases { ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
-            "itest" ["shell" "echo" "== No integration tests =="]
-            "utest" ["kaocha" "--focus" "unit"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
             "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]
 
             ;; Linting aliases
             "kibit" ["do"
@@ -69,9 +73,8 @@
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Get kibana and elasticsearch images
             "pull-docker-images" ["do"
-                                  ["shell" "docker" "pull" "docker.elastic.co/elasticsearch/elasticsearch:7.10.0"]
-                                  ["shell" "docker" "pull" "docker.elastic.co/kibana/kibana:7.10.0"]]
-            "install" ["do" "pull-docker-images," "install"]
+                                  ["shell" "docker" "pull" ~(str "docker.elastic.co/elasticsearch/elasticsearch:" elastic-version)]
+                                  ["shell" "docker" "pull" ~(str "docker.elastic.co/kibana/kibana:" elastic-version)]]
             "install!" "install"
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]})

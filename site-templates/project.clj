@@ -11,11 +11,14 @@
              :test {:plugins [[lein-shell "0.5.0"]
                               [test2junit "1.4.0"]]}}
 
-  :aliases { ;; Kaocha aliases - not used but needed for lein-modules
-            "kaocha"["with-profile" "test" "shell" "echo" "== No tests =="]
-            "itest" ["with-profile" "test" "shell" "echo" "== No integration tests =="]
-            "utest" ["with-profile" "test" "shell" "echo" "== No unit tests =="]
-            "ci-test" ["kaocha" "--profile" ":ci"]
+  :aliases {;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["check"]
+            "itest" ["kaocha"]
+            "utest" ["kaocha"]
+            "ci-test" ["kaocha"]
+            "ci-itest" ["itest"]
+            "ci-utest" ["utest"]
 
             ;; The following aliases are needed for the CMR build process.
             "generate-static" ["with-profile" "+test" "shell" "echo" "NO OP"]

@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.common-app-cache-test
+(ns cmr.system-int-test.misc.common-app-cache-test
   "This tests the cache implementations in the common-app library. These caches require use of a
   running redis application."
   (:require
