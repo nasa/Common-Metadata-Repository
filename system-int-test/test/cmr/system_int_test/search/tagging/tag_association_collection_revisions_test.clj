@@ -83,7 +83,7 @@
                       token tag-key
                       [{:concept-id concept-id
                         :revision-id 5}])]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {[concept-id 5]
           {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
                             concept-id)]}}
@@ -96,7 +96,7 @@
                       token tag-key
                       [{:concept-id concept-id
                         :revision-id revision-id}])]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {[concept-id revision-id]
           {:errors [(format "Collection with concept id [%s] revision id [%s] does not exist or is not visible."
                             concept-id revision-id)]}}
@@ -113,7 +113,7 @@
                                       "tombstone. We don't allow tag association with individual "
                                       "collection revisions that are tombstones.")
                                  concept-id revision-id)]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {[concept-id revision-id] {:errors [expected-msg]}}
          response)))
 
@@ -125,7 +125,7 @@
                                "collection [%s] revision ids [%s], cannot create tag association "
                                "on the same collection without revision id.")
                           tag-key (:concept-id coll1-1) (:revision-id coll1-1))]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {[(:concept-id coll1-3)] {:errors [expected-msg]}}
          response)))
 
@@ -141,7 +141,7 @@
                                "collection [%s] without revision id, cannot create tag "
                                "association on the same collection with revision id [%s].")
                           tag-key concept-id revision-id)]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {[concept-id revision-id] {:errors [expected-msg]}}
          response)))
 
@@ -152,7 +152,7 @@
                       token tag-key
                       [{:concept-id concept-id :revision-id 5}
                        {:concept-id concept-id :revision-id revision-id}])]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {[concept-id 5]
           {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
                             concept-id)]}
@@ -226,7 +226,7 @@
                       token tag-key
                       [{:concept-id concept-id
                         :revision-id 5}])]
-        (tags/assert-tag-dissociation-response-ok?
+        (tags/assert-tag-dissociation-response-error?
          {[concept-id 5]
           {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
                             concept-id)]}}
@@ -239,7 +239,7 @@
                       token tag-key
                       [{:concept-id concept-id
                         :revision-id revision-id}])]
-        (tags/assert-tag-dissociation-response-ok?
+        (tags/assert-tag-dissociation-response-error?
          {[concept-id revision-id]
           {:errors [(format "Collection with concept id [%s] revision id [%s] does not exist or is not visible."
                             concept-id revision-id)]}}
@@ -256,7 +256,7 @@
                                       "tombstone. We don't allow tag association with individual "
                                       "collection revisions that are tombstones.")
                                  concept-id revision-id)]
-        (tags/assert-tag-dissociation-response-ok?
+        (tags/assert-tag-dissociation-response-error?
          {[concept-id revision-id] {:errors [expected-msg]}}
          response)))
 
@@ -290,7 +290,7 @@
                       token tag-key
                       [{:concept-id concept-id :revision-id 5}
                        {:concept-id concept-id :revision-id revision-id}])]
-        (tags/assert-tag-dissociation-response-ok?
+        (tags/assert-tag-dissociation-response-error?
          {[concept-id 5]
           {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
                             concept-id)]}

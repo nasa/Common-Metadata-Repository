@@ -23,7 +23,7 @@
 (defn- has-error?
   "Whether there's an error in [data]."
   [data]
-  (some (fn [element] (contains? element :errors)) data))
+  (some #(contains? % :errors) data))
 
 (defn tag-api-response
   "Creates a successful tag response with the given data response"
