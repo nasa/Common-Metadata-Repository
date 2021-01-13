@@ -91,8 +91,8 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
-                                     [lambdaisland/kaocha-cloverage "1.0.63"]
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {"generate-static" ["with-profile" "static"
                                "run" "-m" "cmr.access-control.site.static" "all"]
@@ -105,9 +105,17 @@
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
-            "itest" ["kaocha" "--focus" "integeration"]
-            "utest" ["kaocha" "--focus" "unit"]
-            "ci-test" ["kaocha" "--profile" ":ci"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["do"
+                       ["generate-static"]
+                       ["kaocha" "--profile" ":ci"]]
+            "ci-itest" ["do"
+                        ["generate-static"]
+                        ["itest" "--profile" ":ci"]]
+            "ci-utest" ["do"
+                        ["generate-static"]
+                        ["utest" "--profile" ":ci"]]
 
             ;; Linting aliases
             "kibit" ["do"

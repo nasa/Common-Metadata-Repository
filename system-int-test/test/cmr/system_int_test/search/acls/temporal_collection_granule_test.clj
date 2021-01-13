@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.acls.temporal-collection-granule
+(ns cmr.system-int-test.search.acls.temporal-collection-granule-test
   "Tests searching for collections and granules with temporal ACLs in place."
   (:require
    [clj-time.core :as t]

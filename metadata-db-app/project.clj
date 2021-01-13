@@ -68,8 +68,8 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
-                                     [lambdaisland/kaocha-cloverage "1.0.63"]
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   ;; Database migrations run by executing "lein migrate"
   :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
@@ -83,9 +83,11 @@
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
-            "itest" ["kaocha" "--focus" "integration"]
-            "utest" ["kaocha" "--focus" "unit"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
             "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]
 
             ;; Linting aliases
             "kibit" ["do"

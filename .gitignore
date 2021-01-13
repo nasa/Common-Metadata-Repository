@@ -12,6 +12,8 @@ browse-scaler/src/node_modules
 .tags
 .tags1
 .clj-kondo/
+.lsp
+.cider-repl-history
 
 ###############################
 ### Test Files

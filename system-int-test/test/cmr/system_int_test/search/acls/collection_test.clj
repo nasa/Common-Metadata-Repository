@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.acls.collection
+(ns cmr.system-int-test.search.acls.collection-test
   "Tests searching for collections with ACLs in place."
   (:require
    [clojure.string :as str]

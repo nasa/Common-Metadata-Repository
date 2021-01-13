@@ -1,4 +1,4 @@
-(ns cmr.access-control.test.data.access-control-index
+(ns cmr.access-control.test.data.access-control-index-test
   (:require
    [clojure.test :refer :all]
    [cmr.access-control.data.access-control-index :as a]))

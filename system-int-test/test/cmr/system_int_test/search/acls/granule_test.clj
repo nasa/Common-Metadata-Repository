@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.acls.granule
+(ns cmr.system-int-test.search.acls.granule-test
   "Tests searching for collections with ACLs in place."
   (:require
    [clojure.test :refer :all]
