@@ -6,7 +6,7 @@
    [compojure.core :refer :all]))
 
 (defn- update-subscription-notification-time
-  "Update a subscription notification time"
+  "Update a subscription notification time - there is no validation of the body here, this is an internal API"
   [request subscription-concept-id]
   (let [{:keys [body request-context]} request]
     (sub-note/update-subscription-notification request-context subscription-concept-id (json/parse-string (slurp body) true))))
