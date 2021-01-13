@@ -308,18 +308,19 @@ It will contain usage instructions
 
 Throughout the modules, in the `project.clj` files there are additional `lein` aliseses for 
 executing the tests in the CI/CD environment. They are 
-+ ci-itest
-+ ci-utest
+* ci-itest
+* ci-utest
 
-These run the integration and unit tests, respecitvely, in the CI environment. The difference
+These run the integration and unit tests, respectively, in the CI environment. The difference
 between `itest` and `ci-itest` or `utest` and `ci-utest` are the settings passed to the
 kaocha test runner.
 
 In the CI environment, color is omitted, and certain tests that require an internal memory
-database are excluded. The aliases may be used locally. 
+database are excluded. The aliases may be used locally as well. 
 
 To see the differnce in detail, inspect the `tests.edn` files for each module to see the
-profile in use in the CI environment.
+profile in use in the CI environment. Kaocha supports the use of profiles so more may 
+be added as necessary.
 
 ### Test Development
 
