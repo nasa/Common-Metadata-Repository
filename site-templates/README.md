@@ -14,6 +14,6 @@ version, see the project's entry on Clojars:
 
 ## License
 
-Copyright © 2018, NASA
+Copyright © 2021, NASA
 
 Distributed under the Apache License, Version 2.0.

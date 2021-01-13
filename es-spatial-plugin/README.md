@@ -29,4 +29,4 @@ This will create a zip in target/ ready for installation in elasticsearch.
 
 ## License
 
-Copyright © 2014 NASA
+Copyright © 2021 NASA
