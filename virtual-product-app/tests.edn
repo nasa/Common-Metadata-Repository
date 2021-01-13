@@ -9,7 +9,6 @@
            :kaocha.plugin/cloverage
            :capture-output
            :junit-xml
-           :notifier
            :print-invocations
            :profiling]
 

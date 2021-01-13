@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.collection-relevancy.collection-usage-relevancy
+(ns cmr.system-int-test.search.collection-relevancy.collection-usage-relevancy-test
   "This tests the CMR Search API's community usage relevancy scoring and ranking
   capabilities. Note binning of community usage scores are tested in the
   cmr.system-int-test.search.collection-relevancy.collection-relevancy namespace.

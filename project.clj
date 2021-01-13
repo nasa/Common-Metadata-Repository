@@ -23,7 +23,8 @@
                                         "metadata-db-app"
                                         "search-app"
                                         "virtual-product-app"
-                                        "es-spatial-plugin"]}}}
+                                        "es-spatial-plugin"
+                                        "dev-system"]}}}
   :aliases {"kibit"
             ["modules" "kibit"]
             "eastwood"

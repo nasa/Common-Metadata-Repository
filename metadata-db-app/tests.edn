@@ -3,14 +3,13 @@
           :ns-patterns ["cmr.metadata-db.test*" "-test$"]}
 
          {:id :integration
-          :ns-patterns ["cmr.metadata-db.int-test*" "-test$"]
+          :ns-patterns ["cmr.metadata-db.int-test*" "-test$" "-spec$"]
           :test-paths ["int-test"]}]
 
  :plugins [:kaocha.plugin.alpha/info
            :kaocha.plugin/cloverage
            :capture-output
            :junit-xml
-           :notifier
            :print-invocations
            :profiling]
 
