@@ -1,14 +1,16 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
-  :exclusions [[cheshire]
-               [clj-time]
-               [com.fasterxml.jackson.core/jackson-core]
-               [commons-codec/commons-codec]
-               [org.apache.httpcomponents/httpclient]
-               [org.clojure/clojure]
-               [org.clojure/tools.reader]
-               [ring/ring-codec]]
+  :exclusions [[org.clojure/clojure]
+               ring/ring-codec
+               cheshire
+               commons-codec
+               clj-time
+               org.eclipse.emf/org.eclipse.emf.common
+               org.apache.httpcomponents/httpclient
+               org.clojure/tools.reader
+               org.eclipse.emf/org.eclipse.emf.ecore
+               com.fasterxml.jackson.core/jackson-core]
   :dependencies [[cheshire "5.8.1"]
                  [clj-time "0.15.1"]
                  [com.fasterxml.jackson.core/jackson-core "2.12.0"]
