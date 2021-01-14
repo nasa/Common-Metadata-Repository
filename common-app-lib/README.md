@@ -4,4 +4,4 @@ Contains utilities used within multiple CMR applications.
 
 ## License
 
-Copyright © 2015 NASA
+Copyright © 2021 NASA

@@ -20,4 +20,4 @@ by data.nasa.gov can be retrieved with:
 
 ## License
 
-Copyright © 2014-2017 NASA
+Copyright © 2014-2021 NASA

@@ -287,4 +287,4 @@ The indexer has a background job that monitors the RabbitMQ message queue size a
 
 ## License
 
-Copyright © 2014-2015 NASA
+Copyright © 2014-2021 NASA

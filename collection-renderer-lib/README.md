@@ -4,5 +4,5 @@ A prototype renderer of collection metadata as HTML. This uses code from MMT tha
 
 ## License
 
-Copyright © 2016 NASA
+Copyright © 2021 NASA
 
