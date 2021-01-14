@@ -16,11 +16,9 @@
  :color? #profile {:default true
                    :ci false}
 
- :fail-fast? #profile {:default true
-                       :ci false}
+ :fail-fast? false
 
- :reporter #profile {:default kaocha.report.progress/report
-                     :ci kaocha.report/documentation}
+ :reporter kaocha.report/documentation
 
  :kaocha.plugin.randomize/randomize? false
  :kaocha.plugin.junit-xml/target-file "target/junit.xml"}
