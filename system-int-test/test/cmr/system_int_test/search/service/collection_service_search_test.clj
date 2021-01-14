@@ -407,7 +407,69 @@
         [coll1 coll2] "service1" {:ignore-case true}
 
         "ignore-case false"
-        [] "service1" {:ignore-case false}))
+        [] "service1" {:ignore-case false})
+
+      ;; update service1's Name. Make sure the collection is reindexed
+      ;; so that it can be searched using the new service Name.
+      (service-util/ingest-service-with-attrs
+       {:native-id "serv1"
+        :Name "Service1-New"})
+
+      (index/wait-until-indexed)
+
+      (are3 [items service options]
+        (let [params (merge {:service_name service}
+                            (when options
+                              {"options[service_name]" options}))]
+          (d/refs-match? items (search/find-refs :collection params)))
+
+        "single service search with old service1 name"
+        [] "service1" {}
+
+        "single service search with new service1 name"
+        [coll1 coll2] "service1-new" {}
+
+        "no matching service"
+        [] "service3" {}
+
+        "multiple services with old service1 name"
+        [coll2 coll3] ["service1" "service2"] {}
+
+        "multiple services with new service1 name"
+        [coll1 coll2 coll3] ["service1-new" "service2"] {}
+
+        "AND option false with old service1 name"
+        [coll2 coll3] ["service1" "service2"] {:and false}
+
+        "AND option false with new service1 name"
+        [coll1 coll2 coll3] ["service1-new" "service2"] {:and false}
+
+        "AND option true with old service1 name"
+        [] ["service1" "service2"] {:and true}
+
+        "AND option true with new service1 name"
+        [coll2] ["service1-new" "service2"] {:and true}
+
+        "pattern true"
+        [coll1 coll2 coll3] "Serv*" {:pattern true}
+
+        "pattern false"
+        [] "Serv*" {:pattern false}
+
+        "default pattern is false"
+        [] "Serv*" {}
+
+        "ignore-case true with old service1 name"
+        [] "service1" {:ignore-case true}
+
+        "ignore-case true with new service1 name"
+        [coll1 coll2] "service1-new" {:ignore-case true}
+
+        "ignore-case false with old service1 name"
+        [] "service1" {:ignore-case false}
+
+        "ignore-case false with new service1 name"
+        [] "service1-new" {:ignore-case false}))
 
     (testing "search collections by service concept-ids"
       (are3 [items service options]

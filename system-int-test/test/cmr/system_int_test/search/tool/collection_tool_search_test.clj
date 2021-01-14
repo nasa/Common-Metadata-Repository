@@ -90,7 +90,69 @@
         [coll1 coll2] "tool1" {:ignore-case true}
 
         "ignore-case false"
-        [] "tool1" {:ignore-case false}))
+        [] "tool1" {:ignore-case false})
+
+      ;; update tool1's Name. Make sure the collection is reindexed
+      ;; so that it can be searched using the new tool Name.
+      (tool-util/ingest-tool-with-attrs
+       {:native-id "tool1"
+        :Name "Tool1-New"})
+
+      (index/wait-until-indexed)
+
+      (are3 [items tool options]
+        (let [params (merge {:tool_name tool}
+                            (when options
+                              {"options[tool_name]" options}))]
+          (d/refs-match? items (search/find-refs :collection params)))
+
+        "single tool search with old tool1 name"
+        [] "tool1" {}
+
+        "single tool search with new tool1 name"
+        [coll1 coll2] "tool1-new" {}
+
+        "no matching tool"
+        [] "tool3" {}
+
+        "multiple tools with old tool1 name"
+        [coll2 coll3] ["tool1" "tool2"] {}
+
+        "multiple tools with new tool1 name"
+        [coll1 coll2 coll3] ["tool1-new" "tool2"] {}
+
+        "AND option false with old tool1 name"
+        [coll2 coll3] ["tool1" "tool2"] {:and false}
+
+        "AND option false with new tool1 name"
+        [coll1 coll2 coll3] ["tool1-new" "tool2"] {:and false}
+
+        "AND option true with old tool1 name"
+        [] ["tool1" "tool2"] {:and true}
+
+        "AND option true with new tool1 name"
+        [coll2] ["tool1-new" "tool2"] {:and true}
+
+        "pattern true"
+        [coll1 coll2 coll3] "Tool*" {:pattern true}
+
+        "pattern false"
+        [] "Tool*" {:pattern false}
+
+        "default pattern is false"
+        [] "Tool*" {}
+
+        "ignore-case true with old tool1 name"
+        [] "tool1" {:ignore-case true}
+
+        "ignore-case true with new tool1 name"
+        [coll1 coll2] "tool1-new" {:ignore-case true}
+
+        "ignore-case false with old tool1 name"
+        [] "tool1" {:ignore-case false}
+
+        "ignore-case false with new tool1 name"
+        [] "tool1-new" {:ignore-case false}))
 
     (testing "search collections by tool concept-ids"
       (are3 [items tool options]
