@@ -873,9 +873,11 @@
                          msg/concept-does-not-exist
                          concept-id)))))
 
-(defn- update-service-associations
-  "Create a new revision for the non-tombstoned service associations that is related to the
-  given concept; Does noting if the given concept is not a service concept."
+(defn- publish-service-association-update-events
+  "Publish a concept-update-event for each non-tombstoned service associations that is related to the
+  given concept; This is to trigger the reindexing of the associated collections in elastic
+  search when service is updated because service info is indexed into the associated collections.
+  Does noting if the given concept is not a service concept."
   [context concept-type concept-id]
   (when (= :service concept-type)
     (let [search-params (cutil/remove-nil-keys
@@ -886,16 +888,15 @@
           associations (filter #(= false (:deleted %))
                                (search/find-concepts context search-params))]
       (doseq [association associations]
-        (save-concept-revision
-         context
-         (-> association
-             (dissoc :revision-id :revision-date :transaction-id)
-             ;; set user-id to cmr to indicate the association is created by CMR
-             (assoc :user-id "cmr")))))))
+        (ingest-events/publish-event
+          context
+         (ingest-events/concept-update-event association))))))
 
-(defn- update-tool-associations
-  "Create a new revision for the non-tombstoned tool associations that is related to the
-  given concept; Does noting if the given concept is not a tool concept."
+(defn- publish-tool-association-update-events 
+  "Publish a concept-update-event for each non-tombstoned tool associations that is related to the
+  given concept; This is to trigger the reindexing of the associated collections in elastic
+  search when tool is updated because tool info is indexed into the associated collections.
+  Does noting if the given concept is not a tool concept."
   [context concept-type concept-id]
   (when (= :tool concept-type)
     (let [search-params (cutil/remove-nil-keys
@@ -906,12 +907,9 @@
           associations (filter #(= false (:deleted %))
                                (search/find-concepts context search-params))]
       (doseq [association associations]
-        (save-concept-revision
-         context
-         (-> association
-             (dissoc :revision-id :revision-date :transaction-id)
-             ;; set user-id to cmr to indicate the association is created by CMR
-             (assoc :user-id "cmr")))))))
+        (ingest-events/publish-event
+          context
+         (ingest-events/concept-update-event association))))))
 
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
@@ -951,10 +949,10 @@
             (ingest-events/publish-tombstone-delete-msg
              context concept-type concept-id revision-id))))
 
-      ;; update service/tool associations if applicable, i.e. when the concept is a service/tool,
+      ;; publish service/tool association update events if applicable, i.e. when the concept is a service/tool,
       ;; so that the collections can be updated in elasticsearch with the updated service/tool info
-      (update-service-associations context concept-type concept-id)
-      (update-tool-associations context concept-type concept-id)
+      (publish-service-association-update-events context concept-type concept-id)
+      (publish-tool-association-update-events context concept-type concept-id)
       (ingest-events/publish-event
        context
        (ingest-events/concept-update-event concept))
