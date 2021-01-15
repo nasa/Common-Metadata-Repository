@@ -26,7 +26,7 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [net.sf.saxon/Saxon-HE "9.9.0-2"]
                  [commons-io/commons-io "2.6"]
-                 [org.apache.httpcomponents/httpclient "4.5.6"]
+                 [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/data.csv "0.1.4"]
                  [org.clojure/math.numeric-tower "0.0.4"]
@@ -92,8 +92,8 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
-                                     [lambdaisland/kaocha-cloverage "1.0.63"]
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {"generate-static" ["with-profile" "static"
                                "run" "-m" "cmr.search.site.static" "all"]
@@ -105,9 +105,17 @@
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
-            "itest" ["shell" "echo" "== No integration tests =="]
-            "utest" ["kaocha" "--focus" "unit"]
-            "ci-test" ["kaocha" "--profile" ":ci"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["do"
+                       ["generate-static"]
+                       ["kaocha" "--profile" ":ci"]]
+            "ci-itest" ["do"
+                        ["generate-static"]
+                        ["itest" "--profile" ":ci"]]
+            "ci-utest" ["do"
+                        ["generate-static"]
+                        ["utest" "--profile" ":ci"]]
 
             ;; Linting aliases
             "kibit" ["do"

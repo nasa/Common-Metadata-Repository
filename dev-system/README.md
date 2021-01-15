@@ -87,4 +87,4 @@ Where `<IMAGE_ID>` is the ID returned from the `docker build` command.
 
 ## License
 
-Copyright © 2014-2018 NASA
+Copyright © 2014-2021 NASA

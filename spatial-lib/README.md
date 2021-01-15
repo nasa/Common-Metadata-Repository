@@ -4,4 +4,4 @@ A spatial library for the CMR.
 
 ## License
 
-Copyright © 2014 NASA
+Copyright © 2021 NASA

@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.acls.variable-association
+(ns cmr.system-int-test.search.acls.variable-association-test
   "Tests searching for variables associations with ACLs in place."
   (:require
    [clojure.string :as string]

@@ -3,13 +3,14 @@
                support for persisting metadata concepts."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/metadata-db-app"
   :exclusions [[cheshire]
+               [clj-http]
                [clj-time]
                [com.fasterxml.jackson.core/jackson-core]
                [com.fasterxml.jackson.core/jackson-databind]
-               [org.apache.httpcomponents/httpcore]
                [org.clojure/tools.reader]
                [org.slf4j/slf4j-api]]
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.9.0"]
+                 [clj-http "3.11.0"]
                  [clj-time "0.15.1"]
                  [com.fasterxml.jackson.core/jackson-core "2.12.0"]
                  [compojure "1.6.1"]
@@ -20,7 +21,6 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
-                 [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
@@ -39,8 +39,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[clj-http "2.3.0"]
-                                  [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
+             :dev {:dependencies [[nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [pjstadig/humane-test-output "0.9.0"]
@@ -49,8 +48,6 @@
                    :source-paths ["src" "dev" "test" "int-test"]
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]}
-             :integration-test {:test-paths ["int-test"]
-                                :dependencies [[clj-http "2.3.0"]]}
              :uberjar {:main cmr.metadata-db.runner
                        :aot :all}
              :static {}
@@ -67,8 +64,8 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
-                                     [lambdaisland/kaocha-cloverage "1.0.63"]
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   ;; Database migrations run by executing "lein migrate"
   :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
@@ -82,9 +79,11 @@
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
-            "itest" ["kaocha" "--focus" "integration"]
-            "utest" ["kaocha" "--focus" "unit"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
             "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]
 
             ;; Linting aliases
             "kibit" ["do"

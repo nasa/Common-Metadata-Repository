@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.collection-relevancy.collection-relevancy
+(ns cmr.system-int-test.search.collection-relevancy.collection-relevancy-test
   "Test the integration between different kinds of relevancy: Keyword, Temporal, and
    Community Usage."
   (:require

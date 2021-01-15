@@ -1,4 +1,4 @@
-(ns cmr.access-control.test.services.acl-search-service
+(ns cmr.access-control.test.services.acl-search-service-test
   "Contains tests for acl-search-service functions"
   (:require
     [clojure.test :refer :all]

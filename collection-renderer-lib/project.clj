@@ -63,8 +63,8 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
-                                     [lambdaisland/kaocha-cloverage "1.0.63"]
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {"install-gems" ["shell"
                             "support/install_gems.sh"
@@ -83,9 +83,20 @@
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
-            "itest" ["shell" "echo" "== No integration tests =="]
-            "utest" ["kaocha" "--focus" "unit"]
-            "ci-test" ["kaocha" "--profile" ":ci"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["do"
+                       ["clean-gems"]
+                       ["install-gems"]
+                       ["kaocha" "--profile" ":ci"]]
+            "ci-itest" ["do"
+                        ["clean-gems"]
+                        ["install-gems"]
+                        ["itest" "--profile" ":ci"]]
+            "ci-utest" ["do"
+                        ["clean-gems"]
+                        ["install-gems"]
+                        ["utest" "--profile" ":ci"]]
 
             ;; Linting aliases
             "kibit" ["do"

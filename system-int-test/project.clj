@@ -37,7 +37,7 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
-                 [org.apache.httpcomponents/httpclient "4.5.6"]
+                 [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/tools.logging "0.4.0"]
@@ -79,23 +79,21 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.700"]
-                                     [lambdaisland/kaocha-cloverage "1.0.63"]
-                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]
+                                     [org.apache.logging.log4j/log4j-core "2.14.0"]]}}
   :aliases {;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
-            ;; kaocha disabled for system-int-tests
-            "kaocha" ["do"
-                      ["shell" "echo" "kaocha is disabled\n\tinvoking test-out"]
-                      ["test2junit"]]
-            ;; re-enable when kaocha is stable
-            "_kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
-            "_itest" ["kaocha" "--focus" "integration"]
-            "_utest" ["shell" "echo" "== No unit tests - run \"lein itest\" or \"lein kaocha\" to run integration tests =="]
-            "ci-test" ["kaocha"]
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["kaocha"]
+            "utest" ["shell" "echo" "== No Unit Tests =="]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["kaocha" "--profile" ":ci"]
+            "ci-utest" ["utest"]
 
             ;; Linting aliases
             "kibit" ["do"
