@@ -4,6 +4,7 @@
 
  :plugins [:kaocha.plugin.alpha/info
            ;; TODO: modify testing to let cloverage work
+           ;; the primitive-math library interferes with cloverage
            ;; :kaocha.plugin/cloverage
            :capture-output
            :junit-xml

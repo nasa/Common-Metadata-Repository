@@ -23,4 +23,4 @@
 
  ;; 3 slowest tests shown
  :kaocha.plugin.profiling/count 3
- :kaocha.plugin.profiling/profiling? true }
+ :kaocha.plugin.profiling/profiling? true}
