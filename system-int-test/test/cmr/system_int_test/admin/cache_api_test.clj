@@ -28,7 +28,7 @@
         status (:status response)]
 
     ;; Make sure the status returned is success
-    (when (< status 200)
+    (when (not= status 200)
       (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
     (json/decode (:body response) true)))
 
@@ -43,7 +43,7 @@
                                   :throw-exceptions false})
         status (:status response)]
     ;; Make sure the status returned is success
-    (when (< status 200)
+    (when (not= status 200)
       (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
     (json/decode (:body response) true)))
 
@@ -58,7 +58,7 @@
                                   :throw-exceptions false})
         status (:status response)]
     ;; Make sure the status returned success
-    (when (< status 200)
+    (when (not= status 200)
       (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
     (json/decode (:body response) true)))
 
