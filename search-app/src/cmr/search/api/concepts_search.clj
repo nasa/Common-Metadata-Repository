@@ -167,9 +167,12 @@
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (block-excessive-queries ctx concept-type result-format params)
-        _ (info (format "Searching for %ss from client %s in format %s with params %s."
+        log-message (format "Searching for %ss from client %s in format %s with params %s"
                         (name concept-type) (:client-id ctx)
-                        (rfh/printable-result-format result-format) (pr-str params)))
+                        (rfh/printable-result-format result-format) (pr-str params))
+        _ (info (if (string/blank? short-scroll-id)
+                  (format "%s." log-message)
+                  (format "%s, scroll-id: %s." log-message short-scroll-id)))
         search-params (if cached-search-params
                         cached-search-params
                         (lp/process-legacy-psa params))
@@ -268,14 +271,16 @@
   (if-let [short-scroll-id (-> body
                                (json/parse-string true)
                                :scroll_id)]
-    ;; if the short scroll id is valid, retrieve the real scroll id
-    (if-let [scroll-id (->> short-scroll-id
-                            (core-api/get-scroll-id-and-search-params-from-cache context)
-                            :scroll-id)]
-      ;; clear the scroll session for the scroll id
-      (query-svc/clear-scroll context scroll-id)
-      (svc-errors/throw-service-error
-       :invalid-data (format "scroll_id [%s] not found." short-scroll-id)))
+    (do
+      (info (format "Clear scroll: %s" short-scroll-id))
+      ;; if the short scroll id is valid, retrieve the real scroll id
+      (if-let [scroll-id (->> short-scroll-id
+                              (core-api/get-scroll-id-and-search-params-from-cache context)
+                              :scroll-id)]
+        ;; clear the scroll session for the scroll id
+        (query-svc/clear-scroll context scroll-id)
+        (svc-errors/throw-service-error
+         :invalid-data (format "scroll_id [%s] not found." short-scroll-id))))
     (svc-errors/throw-service-error
      :invalid-data "scroll_id must be provided."))
   ;; no errors, return 204

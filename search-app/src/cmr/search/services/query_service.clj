@@ -205,10 +205,14 @@
         [find-concepts-time results] (u/time-execution
                                        (common-search/find-concepts
                                          context concept-type query))
-        total-took (+ query-creation-time find-concepts-time)]
-    (info (format "Found %d %ss in %d ms from client %s in format %s with params %s."
-                  (:hits results) (name concept-type) total-took (:client-id context)
-                  (rfh/printable-result-format (:result-format query)) (pr-str params)))
+        total-took (+ query-creation-time find-concepts-time)
+        short-scroll-id (str (hash (:scroll-id results)))
+        log-message (format "Found %d %ss in %d ms from client %s in format %s with params %s"
+                      (:hits results) (name concept-type) total-took (:client-id context)
+                      (rfh/printable-result-format (:result-format query)) (pr-str params))]
+    (info (if (string/blank? short-scroll-id)
+              (format "%s." log-message)
+              (format "%s, scroll-id: %s." log-message short-scroll-id)))
     (assoc results :took total-took)))
 
 (defn find-concepts-by-json-query
