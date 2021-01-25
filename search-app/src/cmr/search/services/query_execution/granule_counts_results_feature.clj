@@ -89,7 +89,7 @@
                                  (map keys)
                                  flatten
                                  (filter #(= % :shape))
-                                 seq?)
+                                 seq)
         parent-group-operator (get-in query [:condition :operation])]
     (when condition-is-shape?
       parent-group-operator)))
