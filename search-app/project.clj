@@ -1,22 +1,23 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
-  :exclusions [[org.clojure/clojure]
-               ring/ring-codec
-               cheshire
-               commons-codec
+  :exclusions [cheshire
                clj-time
-               org.eclipse.emf/org.eclipse.emf.common
+               com.fasterxml.jackson.core/jackson-core
+               commons-codec
                org.apache.httpcomponents/httpclient
+               org.clojure/clojure
                org.clojure/tools.reader
+               org.eclipse.emf/org.eclipse.emf.common
                org.eclipse.emf/org.eclipse.emf.ecore
-               com.fasterxml.jackson.core/jackson-core]
+               ring/ring-codec]
   :dependencies [[cheshire "5.8.1"]
                  [clj-time "0.15.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.12.0"]
                  [com.fasterxml.jackson.core/jackson-annotations "2.12.0"]
+                 [com.fasterxml.jackson.core/jackson-core "2.12.0"]
                  [com.fasterxml.jackson.core/jackson-databind "2.12.0"]
                  [commons-codec/commons-codec "1.11"]
+                 [commons-io/commons-io "2.6"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -29,7 +30,6 @@
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [net.sf.saxon/Saxon-HE "9.9.0-2"]
-                 [commons-io/commons-io "2.6"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/data.csv "0.1.4"]
@@ -37,13 +37,13 @@
                  [org.clojure/tools.reader "1.3.2"]
                  [org.eclipse.emf/org.eclipse.emf.ecore "2.23.0"]
                  [org.eclipse.emf/org.eclipse.emf.common "2.21.0"]
+                 [org.geotools/gt-shapefile "23-RC"]
+                 [org.geotools/gt-geojsondatastore "23-RC"]
+                 [org.geotools.xsd/gt-xsd-kml "23-RC"]
                  [ring/ring-codec "1.1.1"]
                  [ring/ring-core "1.7.1"]
                  [ring/ring-json "0.4.0"]
                  [selmer "1.12.5"]
-                 [org.geotools/gt-shapefile "23-RC"]
-                 [org.geotools/gt-geojsondatastore "23-RC"]
-                 [org.geotools.xsd/gt-xsd-kml "23-RC"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
                  [metosin/ring-swagger-ui "2.1.4-0"]
