@@ -246,17 +246,25 @@
 (deftest search-by-granule-data-format-humanized
   (let [aadi1 {:ArchiveAndDistributionInformation
                {:FileDistributionInformation
-                 [{:FormatType "Binary"
-                   :AverageFileSize 50
-                   :AverageFileSizeUnit "MB"
-                   :Fees "None currently"
-                   :Format "NetCDF-3"}]}}
+                [{:FormatType "Binary"
+                  :AverageFileSize 50
+                  :AverageFileSizeUnit "MB"
+                  :Fees "None currently"
+                  :Format "NetCDF-3"}]}}
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection aadi1))]
     (index/wait-until-indexed)
+
     (testing "search collections by humanized granule data format"
       (is (d/refs-match? [coll1]
                          (search/find-refs :collection {:granule-data-format-h "NetCDF"})))
       (is (d/refs-match? [coll1]
                          (search/find-refs :collection {:granule-data-format "NetCDF-3"})))
       (is (d/refs-match? [coll1]
-                         (search/find-refs :collection {:granule-data-format "netcdf-3"}))))))
+                         (search/find-refs :collection {:granule-data-format "netcdf-3"})))
+      (is (d/refs-match? [coll1]
+                         (search/find-refs :collection {"granule-data-format-h[]" "NetCDF"}))))
+
+    (testing "CMR-7112: search by humanized field and include_granule_counts does not result in exception"
+      (is (d/refs-match? [coll1]
+                         (search/find-refs :collection {"granule-data-format-h[]" "NetCDF"
+                                                        :include_granule_counts true}))))))
