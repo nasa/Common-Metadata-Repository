@@ -126,9 +126,6 @@
       (check-subscription-ingest-permission request-context concept provider-id)
       (perform-subscription-ingest request-context concept headers))))
 
-(defn ingest-subscription!
-  [provider-id opt-native-id request])
-
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."
   [provider-id native-id request]
