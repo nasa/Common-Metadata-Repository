@@ -686,7 +686,7 @@
               (data-umm-c/collection)
               {:token "mock-echo-system-token"})]
 
-    (testing "with native-id provided"
+    (testing "without native-id provided"
       (let [concept (dissoc (subscription-util/make-subscription-concept
                              {:SubscriberId "post-user"
                               :Name "no native-id"
@@ -701,7 +701,7 @@
 
         (is (not (nil? (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)})))))))))
 
-    (testing "without native-id provided"
+    (testing "with native-id provided"
       (let [concept (assoc (subscription-util/make-subscription-concept
                             {:SubscriberId "post-user"
                              :Name "a different subscription with native-id"
