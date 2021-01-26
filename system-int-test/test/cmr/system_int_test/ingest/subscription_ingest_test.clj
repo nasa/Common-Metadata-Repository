@@ -678,3 +678,20 @@
 
               "Delete subscription as user1"
               ingest/delete-concept [concept {:token user-token}] 200 nil)))))
+
+(deftest create-subscription-by-post
+  (let [token (echo-util/login (system/context) "post-user")
+        supplied-concept-id "SUB1000-PROV1"
+        coll (data-core/ingest-umm-spec-collection
+              "PROV1"
+              (data-umm-c/collection)
+              {:token "mock-echo-system-token"})
+        concept (dissoc (subscription-util/make-subscription-concept
+                         {:concept-id supplied-concept-id
+                          :SubscriberId "post-user"
+                          :CollectionConceptId (:concept-id coll)})
+                        :native-id)
+        {:keys [concept-id status]} (ingest/ingest-concept concept {:token token
+                                                                    :method :post})]
+    (is (= 201 status))
+    (is (not (nil? concept-id)))))
