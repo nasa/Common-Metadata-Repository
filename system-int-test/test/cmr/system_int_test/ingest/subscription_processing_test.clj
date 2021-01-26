@@ -158,7 +158,7 @@
              (is (= nil (-> subscription :items :concept-id))))))
 
        (testing
-        "Third: Test the outcome if the user losses access permissions and then
+        "Third: Test the outcome if the user loses access permissions and then
         are added back but within the 3 day window"
         ;; first assume access and then add a gran
          (dev-system/freeze-time!)
@@ -172,12 +172,14 @@
                            :granule_identifier {:access_value {:include_undefined_value true
                                                                :min_value 1 :max_value 50}}})
          (ac-util/wait-until-indexed)
-        ;; injest a collection, subscription and a granule
+         (dev-system/advance-time! 100)
+         ;; injest a collection, subscription and a granule
          (let [coll2 (data-core/ingest-umm-spec-collection "PROV1"
                                                            (data-umm-c/collection {:ShortName "coll2"
                                                                                    :EntryTitle "entry-title2"})
                                                            {:token "mock-echo-system-token"})
                _ (index/wait-until-indexed)
+               _ (dev-system/advance-time! 100)
                sub2 (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
                                                             {:Name "test_sub_prov_2"
                                                              :SubscriberId "user2"
@@ -185,19 +187,22 @@
                                                              :Query "provider=PROV1"}) ;&options[spatial][or]=true"
                                                            {:token "mock-echo-system-token"})
                _ (index/wait-until-indexed)
+               _ (dev-system/advance-time! 100)
                gran3 (data-core/ingest "PROV1"
                                        (data-granule/granule-with-umm-spec-collection coll2
                                                                                       (:concept-id coll2)
                                                                                       {:granule-ur "Granule3"
                                                                                        :access-value 2})
-                                       {:token "mock-echo-system-token"})
-               _ (index/wait-until-indexed)]
+                                       {:token "mock-echo-system-token"})]
+           (index/wait-until-indexed)
+           (dev-system/advance-time! 100)
           ;; have access to everything, so remove and then give back
            (echo-util/ungrant-by-search (system/context)
                                         {:provider "PROV1"
                                          :identity-type "catalog_item"}
                                         "mock-echo-system-token")
            (index/wait-until-indexed)
+           (dev-system/advance-time! 100)
           ;; give access back then move clock forward and test()
            (echo-util/grant (system/context)
                             [{:group_id user2-group-id :permissions [:read]}]
@@ -209,9 +214,11 @@
                              :granule_identifier {:access_value {:include_undefined_value true
                                                                  :min_value 1 :max_value 50}}}) ()
            (dev-system/advance-time! (* 50 60)) ;; just within one hour
-           (let [response (first (process-result->hash (trigger-process-subscriptions)))
-                 found-granule (first (:subscriber-filtered-gran-refs response))]
-             (is (= false (:permission-check-failed response)))
-             (is (= (:concept-id sub2) (:sub-id response)))
+           (let [response (trigger-process-subscriptions)
+                 result-as-hash (first (process-result->hash response))
+                 _ (#'email-processing/send-subscription-emails (system/context) response)
+                 found-granule (first (:subscriber-filtered-gran-refs result-as-hash))]
+             (is (= false (:permission-check-failed result-as-hash)))
+             (is (= (:concept-id sub2) (:sub-id result-as-hash)))
              (is (= (:concept-id gran3) (:concept-id found-granule))))
            (dev-system/clear-current-time!)))))))
