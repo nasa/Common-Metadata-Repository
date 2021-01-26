@@ -689,12 +689,17 @@
     (testing "with native-id provided"
       (let [concept (dissoc (subscription-util/make-subscription-concept
                              {:SubscriberId "post-user"
+                              :Name "no native-id"
                               :CollectionConceptId (:concept-id coll)})
                             :native-id)
             {:keys [concept-id status]} (ingest/ingest-concept concept {:token token
                                                                         :method :post})]
         (is (= 201 status))
-        (is (not (nil? concept-id)))))
+        (is (not (nil? concept-id)))
+
+        (index/wait-until-indexed)
+
+        (is (not (nil? (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)})))))))))
 
     (testing "without native-id provided"
       (let [concept (assoc (subscription-util/make-subscription-concept
@@ -705,4 +710,9 @@
             {:keys [concept-id status]} (ingest/ingest-concept concept {:token token
                                                                         :method :post})]
         (is (= 201 status))
-        (is (not (nil? concept-id)))))))
+        (is (not (nil? concept-id)))
+
+        (index/wait-until-indexed)
+
+        (is (= (:native-id concept)
+               (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))))
