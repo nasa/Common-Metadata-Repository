@@ -11,7 +11,9 @@
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.metadata-db :as mdb]))
+   [cmr.transmit.metadata-db :as mdb])
+  (:import
+   [java.util UUID]))
 
 (defn- validate-and-prepare-subscription-concept
   "Validate subscription concept, set the concept format and returns the concept;
@@ -107,21 +109,25 @@
                       token-user
                       subscription-user))
         (acl/verify-ingest-management-permission
-          request-context :update :provider-object provider-id)
+         request-context :update :provider-object provider-id)
         (acl/verify-subscription-management-permission
-          request-context :update :provider-object provider-id)))))
+         request-context :update :provider-object provider-id)))))
 
 (defn ingest-subscription
   "Processes a request to create or update a subscription. Note, this will allow
   unlimited subscriptions to be created by users for themselves. Revisit if this
   Becomes a problem"
-  [provider-id native-id request]
-  (let [{:keys [body content-type headers request-context]} request]
+  [provider-id opt-native-id request]
+  (let [{:keys [body content-type headers request-context]} request
+        native-id (or opt-native-id (.toString (UUID/randomUUID)))]
     (common-ingest-checks request-context provider-id)
     (let [concept (api-core/body->concept!
-                    :subscription provider-id native-id body content-type headers)]
+                   :subscription provider-id native-id body content-type headers)]
       (check-subscription-ingest-permission request-context concept provider-id)
       (perform-subscription-ingest request-context concept headers))))
+
+(defn ingest-subscription!
+  [provider-id opt-native-id request])
 
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."
