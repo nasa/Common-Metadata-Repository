@@ -293,17 +293,18 @@
   "Update online-resource-url of OMI/AURA source granule to use an OpenDAP url as an online-access-url.
   For example:
   http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5
-  of OnlineResourceURL that has type of 'OPENDAP DATA ACCESS' will be converted into
+  of OnlineResourceURL that has type of 'USE SERVICE API' will be converted into
   http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat
-  as an OnlineAccessURL in the virtual granule and the other OnlineResourceURLs or OnlineAccessURLs
+  as an OnlineResourceURL in the virtual granule and the other OnlineResourceURLs or OnlineAccessURLs
   in the source granule will be dropped."
   [related-urls src-granule-ur opendap-subset]
   (seq (for [related-url related-urls
              ;; only opendap OnlineResourceUrls in source granule should be present in the virtual granules
-             :when (= (:type related-url) "OPENDAP DATA ACCESS")]
-         ;; only URL is kept in virtual granule OnlineAccessURL
+             :when (= (:type related-url) "USE SERVICE API")]
+         ;; only URL is kept in virtual granule OnlineResourceURL
          (umm-c/map->RelatedURL
-           {:type "GET DATA"
+           {:type "USE SERVICE API"
+            :sub-type "OPENDAP DATA"
             :url (str (:url related-url) ".nc?" opendap-subset)}))))
 
 (defn- remove-granule-size
@@ -314,7 +315,7 @@
     virtual-umm))
 
 (defn- update-related-urls
-  "Generate the OpenDAP data access url for the virtual granule based on the OpenDAP link for the
+  "Generate the OpenDAP online resource url for the virtual granule based on the OpenDAP link for the
   source dataset. Remove the size of the data from data granule as it is no longer valid since it
   represents the size of the original granule, not the subset."
   [provider-id source-short-name virtual-short-name virtual-umm opendap-subset]

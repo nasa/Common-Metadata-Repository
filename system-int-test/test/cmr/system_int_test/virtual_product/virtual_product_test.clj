@@ -292,9 +292,11 @@
 
                "Related urls with only one access url which matches the pattern"
                granule-ur
-               [{:url opendap-file-path :type "OPENDAP DATA ACCESS"}]
+               [{:url opendap-file-path :type "USE SERVICE API" :sub-type "OPENDAP DATA"}]
                [{:url (str opendap-file-path ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
-                 :type "GET DATA"}]
+                 :type "USE SERVICE API"
+                 :sub-type "OPENDAP DATA"
+                 :title "(GET DATA : OPENDAP DATA)"}]
 
                "Related urls with only one access url which matches the pattern, but is not
                an online resource url"
@@ -305,10 +307,12 @@
 
                "Multiple related urls"
                granule-ur
-               [{:url opendap-file-path :type "OPENDAP DATA ACCESS" :mime-type "application/x-netcdf"}
+               [{:url opendap-file-path :type "USE SERVICE API" :sub-type "OPENDAP DATA" :mime-type "application/x-netcdf"}
                 {:url "http://www.foo.com" :type "VIEW RELATED INFORMATION"}]
                [{:url (str opendap-file-path ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
-                 :type "GET DATA"}])))
+                 :type "USE SERVICE API"
+                 :sub-type "OPENDAP DATA"
+                 :title "(GET DATA : OPENDAP DATA)"}])))
 
 (deftest ast-granule-umm-matchers-test
   (vp/assert-psa-granules-match index/wait-until-indexed))
