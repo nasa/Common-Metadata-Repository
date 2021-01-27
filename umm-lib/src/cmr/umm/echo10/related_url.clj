@@ -49,8 +49,8 @@
    "ALGORITHM INFORMATION" ["VIEW RELATED INFORMATION"]
    "DATA ACCESS" ["GET DATA"]
    "ALGORITHM INFO" ["VIEW RELATED INFORMATION"]
-   "GET DATA : OPENDAP DATA (DODS)" ["OPENDAP DATA ACCESS"]
-   "GET DATA : OPENDAP DATA" ["GET DATA" "OPENDAP DATA"]
+   "GET DATA : OPENDAP DATA (DODS)" ["USE SERVICE API" "OPENDAP DATA"]
+   "GET DATA : OPENDAP DATA" ["USE SERVICE API" "OPENDAP DATA"]
    "VIEW PROJECT HOME PAGE" ["VIEW PROJECT HOME PAGE"]})
 
 (def related-url-types->resource-types
@@ -60,7 +60,7 @@
    "GET SERVICE" "SOFTWARE"
    "GET RELATED VISUALIZATION" "BROWSE"
    "VIEW RELATED INFORMATION" "USER SUPPORT"
-   "OPENDAP DATA ACCESS" "GET DATA : OPENDAP DATA (DODS)"
+   "USE SERVICE API" "GET DATA : OPENDAP DATA"
    "VIEW PROJECT HOME PAGE" "VIEW PROJECT HOME PAGE"})
 
 (defn xml-elem->online-resource-url
@@ -73,16 +73,18 @@
         ;; Check for opendap (case-insensitive) in OnlineResource Type when no defined type is found.
         ;; This is due to GES_DISC OnlineResource opendap could use any string that contains opendap
         ;; See CMR-2555 for details
-        type (or type
-                 (when (and resource-type (re-find #"^.*OPENDAP.*$" (s/upper-case resource-type)))
-                   "OPENDAP DATA ACCESS"))]
+        [type sub-type] (if (and (nil? type)
+                                 resource-type
+                                 (re-find #"^.*OPENDAP.*$" (s/upper-case resource-type)))
+                          ["USE SERVICE API" "OPENDAP DATA"]
+                          [type sub-type])]
     (c/map->RelatedURL
-      {:url url
-       :description description
-       :title (s/trim (str description " (" resource-type ")"))
-       :type type
-       :sub-type sub-type
-       :mime-type mime-type})))
+     {:url url
+      :description description
+      :title (s/trim (str description " (" resource-type ")"))
+      :type type
+      :sub-type sub-type
+      :mime-type mime-type})))
 
 (defn- xml-elem->online-resource-urls
   "Returns online-resource-urls elements from a parsed XML structure"
