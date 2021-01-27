@@ -84,6 +84,12 @@
   [related-urls]
   (filter metadata-url? related-urls))
 
+(defn opendap-url?
+  "Returns true if the related-url is OPeNDAP url"
+  [related-url]
+  (and (= "USE SERVICE API" (:type related-url))
+       (= "OPENDAP DATA" (:sub-type related-url))))
+
 (defn resource-url?
   "Returns true if the related-url is resource url"
   [related-url]
@@ -100,6 +106,7 @@
   [related-url]
   (cond
     (downloadable-url? related-url) "data"
+    (opendap-url? related-url) "service"
     (browse-url? related-url) "browse"
     (documentation-url? related-url) "documentation"
     :else "metadata"))
