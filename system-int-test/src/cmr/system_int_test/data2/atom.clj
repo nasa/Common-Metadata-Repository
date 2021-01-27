@@ -247,7 +247,7 @@
         attribs (if (= :granule concept-type)
                   (add-attribs attribs
                                :title
-                               (if (=  "USE SERVICE API" type)
+                               (if (= "USE SERVICE API" type)
                                  (str title " (GET DATA : OPENDAP DATA)")
                                  title))
                   attribs)]
