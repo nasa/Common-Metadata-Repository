@@ -219,6 +219,7 @@
 
 (def resource-type->link-type-uri
   {"GET DATA" "http://esipfed.org/ns/fedsearch/1.1/data#"
+   "USE SERVICE API" "http://esipfed.org/ns/fedsearch/1.1/service#"
    "GET RELATED VISUALIZATION" "http://esipfed.org/ns/fedsearch/1.1/browse#"
    "ALGORITHM INFO" "http://esipfed.org/ns/fedsearch/1.1/documentation#"
    "VIEW PROJECT HOME PAGE" "http://esipfed.org/ns/fedsearch/1.1/metadata#"})
@@ -234,8 +235,8 @@
   [related-url concept-type]
   (let [{:keys [type url title mime-type size inherited]} related-url
         rel (if type
-             (resource-type->link-type-uri type "http://esipfed.org/ns/fedsearch/1.1/metadata#")
-             "http://esipfed.org/ns/fedsearch/1.1/documentation#") ; The UMM spec default is a doc URL
+              (resource-type->link-type-uri type "http://esipfed.org/ns/fedsearch/1.1/metadata#")
+              "http://esipfed.org/ns/fedsearch/1.1/documentation#") ; The UMM spec default is a doc URL
         attribs (-> {}
                     (add-attribs :inherited inherited)
                     (add-attribs :size size)
@@ -244,7 +245,11 @@
                     (add-attribs :hreflang "en-US")
                     (add-attribs :href url))
         attribs (if (= :granule concept-type)
-                  (add-attribs attribs :title title)
+                  (add-attribs attribs
+                               :title
+                               (if (=  "USE SERVICE API" type)
+                                 (str title " (GET DATA : OPENDAP DATA)")
+                                 title))
                   attribs)]
     attribs))
 
