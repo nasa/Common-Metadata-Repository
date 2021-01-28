@@ -122,6 +122,7 @@
                       {:accept-format :json
                        :raw? true})]
         (is (= {:revision-id 1
+                :native-id "Name 0"
                 :concept-id supplied-concept-id}
                (ingest/parse-ingest-body :json response)))))
 
@@ -133,6 +134,7 @@
                       {:accept-format :xml
                        :raw? true})]
         (is (= {:revision-id 2
+                :native-id "Name 0"
                 :concept-id supplied-concept-id}
                (ingest/parse-ingest-body :xml response)))))))
 
