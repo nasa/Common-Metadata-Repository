@@ -217,6 +217,7 @@
         (parse-xml-error-response-elem xml-elem)
         (util/remove-nil-keys
          {:concept-id (cx/string-at-path xml-elem [:concept-id])
+          :native-id (cx/string-at-path xml-elem [:native-id])
           :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))
           :warnings (cx/string-at-path xml-elem [:warnings])})))
 

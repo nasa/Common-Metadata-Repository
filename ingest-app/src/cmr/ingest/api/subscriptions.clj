@@ -119,7 +119,7 @@
   Becomes a problem"
   [provider-id opt-native-id request]
   (let [{:keys [body content-type headers request-context]} request
-        native-id (or opt-native-id (.toString (UUID/randomUUID)))]
+        native-id (or opt-native-id (str (UUID/randomUUID)))]
     (common-ingest-checks request-context provider-id)
     (let [concept (api-core/body->concept!
                    :subscription provider-id native-id body content-type headers)]

@@ -692,10 +692,11 @@
                               :Name "no native-id"
                               :CollectionConceptId (:concept-id coll)})
                             :native-id)
-            {:keys [concept-id status]} (ingest/ingest-concept concept {:token token
-                                                                        :method :post})]
+            {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
+                                                                                  :method :post})]
         (is (= 201 status))
         (is (not (nil? concept-id)))
+        (is (not (nil? native-id)))
 
         (index/wait-until-indexed)
 
@@ -707,10 +708,11 @@
                              :Name "a different subscription with native-id"
                              :CollectionConceptId (:concept-id coll)})
                            :native-id "another-native-id")
-            {:keys [concept-id status]} (ingest/ingest-concept concept {:token token
-                                                                        :method :post})]
+            {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
+                                                                                  :method :post})]
         (is (= 201 status))
         (is (not (nil? concept-id)))
+        (is (= "another-native-id" native-id))
 
         (index/wait-until-indexed)
 
