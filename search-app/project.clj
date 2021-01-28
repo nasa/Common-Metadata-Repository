@@ -4,6 +4,7 @@
   :exclusions [cheshire
                clj-time
                com.fasterxml.jackson.core/jackson-core
+               com.fasterxml.jackson.dataformat/jackson-dataformat-cbor
                commons-codec
                org.apache.httpcomponents/httpclient
                org.clojure/clojure
@@ -16,6 +17,7 @@
                  [com.fasterxml.jackson.core/jackson-annotations "2.12.0"]
                  [com.fasterxml.jackson.core/jackson-core "2.12.0"]
                  [com.fasterxml.jackson.core/jackson-databind "2.12.0"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]              
                  [commons-codec/commons-codec "1.11"]
                  [commons-io/commons-io "2.6"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
