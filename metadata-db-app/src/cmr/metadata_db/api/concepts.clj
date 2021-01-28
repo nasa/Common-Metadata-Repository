@@ -76,13 +76,12 @@
                     clojure.walk/keywordize-keys
                     (update-in [:concept-type] keyword))
         ;; get variable-association and associated-item when applicable.
-        {:keys [concept-id revision-id variable-association associated-item native-id]}
+        {:keys [concept-id revision-id variable-association associated-item]}
         (concept-service/save-concept-revision context concept)]
     {:status 201
      :body (json/generate-string (util/remove-nil-keys
                                   {:revision-id revision-id
                                    :concept-id concept-id
-                                   :native-id native-id
                                    :variable-association variable-association
                                    :associated-item associated-item}))
      :headers rh/json-header}))

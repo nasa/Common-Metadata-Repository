@@ -2,6 +2,7 @@
   "CMR subscription ingest integration tests.
   For subscription permissions tests, see `provider-ingest-permissions-test`."
   (:require
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
    [cmr.common.util :refer [are3]]
@@ -692,11 +693,14 @@
                               :Name "no native-id"
                               :CollectionConceptId (:concept-id coll)})
                             :native-id)
-            {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
-                                                                                  :method :post})]
+            {:keys [native-id concept-id status]} (ingest/ingest-concept
+                                                   concept
+                                                   {:token token
+                                                    :method :post})]
         (is (= 201 status))
         (is (not (nil? concept-id)))
         (is (not (nil? native-id)))
+        (is (string/starts-with? native-id "no_native_id"))
 
         (index/wait-until-indexed)
 
@@ -717,4 +721,21 @@
         (index/wait-until-indexed)
 
         (is (= (:native-id concept)
-               (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))))
+               (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))
+
+    (testing "without native-id provided with unicode in the name"
+      (let [concept (dissoc (subscription-util/make-subscription-concept
+                             {:SubscriberId "post-user"
+                              :Name "unicode-test Großartiger Scott!"
+                              :CollectionConceptId (:concept-id coll)})
+                            :native-id)
+            {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
+                                                                                  :method :post})]
+        (is (= 201 status))
+        (is (not (nil? concept-id)))
+        (is (not (nil? native-id)))
+        (is (string/starts-with? native-id "unicode_test_großartiger"))
+
+        (index/wait-until-indexed)
+
+        (is (not (nil? (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)})))))))))))
