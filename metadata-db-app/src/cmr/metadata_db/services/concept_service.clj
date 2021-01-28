@@ -873,11 +873,11 @@
                          msg/concept-does-not-exist
                          concept-id)))))
 
-(defn- publish-service-association-update-events
-  "Publish a concept-update-event for each non-tombstoned service associations that is related to the
-  given concept; This is to trigger the reindexing of the associated collections in elastic
+(defn- publish-service-associations-update-event
+  "Publish one concept-update-event for all non-tombstoned service associations for the
+  given service concept; This is to trigger the reindexing of the associated collections in elastic
   search when service is updated because service info is indexed into the associated collections.
-  Does noting if the given concept is not a service concept."
+  Does nothing if the given concept is not a service concept."
   [context concept-type concept-id]
   (when (= :service concept-type)
     (let [search-params (cutil/remove-nil-keys
@@ -887,16 +887,16 @@
                           :latest true})
           associations (filter #(= false (:deleted %))
                                (search/find-concepts context search-params))]
-      (doseq [association associations]
+      (when (> (count associations) 0)
         (ingest-events/publish-event
-          context
-         (ingest-events/concept-update-event association))))))
+         context
+         (ingest-events/associations-update-event associations))))))
 
-(defn- publish-tool-association-update-events 
-  "Publish a concept-update-event for each non-tombstoned tool associations that is related to the
-  given concept; This is to trigger the reindexing of the associated collections in elastic
+(defn- publish-tool-associations-update-event
+  "Publish one concept-update-event for all non-tombstoned tool associations for the
+  given tool concept; This is to trigger the reindexing of the associated collections in elastic
   search when tool is updated because tool info is indexed into the associated collections.
-  Does noting if the given concept is not a tool concept."
+  Does nothing if the given concept is not a tool concept."
   [context concept-type concept-id]
   (when (= :tool concept-type)
     (let [search-params (cutil/remove-nil-keys
@@ -906,10 +906,10 @@
                           :latest true})
           associations (filter #(= false (:deleted %))
                                (search/find-concepts context search-params))]
-      (doseq [association associations]
+      (when (> (count associations) 0)
         (ingest-events/publish-event
-          context
-         (ingest-events/concept-update-event association))))))
+         context
+         (ingest-events/associations-update-event associations))))))
 
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
@@ -949,10 +949,10 @@
             (ingest-events/publish-tombstone-delete-msg
              context concept-type concept-id revision-id))))
 
-      ;; publish service/tool association update events if applicable, i.e. when the concept is a service/tool,
+      ;; publish service/tool associations update event if applicable, i.e. when the concept is a service/tool,
       ;; so that the collections can be updated in elasticsearch with the updated service/tool info
-      (publish-service-association-update-events context concept-type concept-id)
-      (publish-tool-association-update-events context concept-type concept-id)
+      (publish-service-associations-update-event context concept-type concept-id)
+      (publish-tool-associations-update-event context concept-type concept-id)
       (ingest-events/publish-event
        context
        (ingest-events/concept-update-event concept))

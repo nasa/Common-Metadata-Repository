@@ -19,6 +19,17 @@
         (when queue-broker
           (queue/publish-message queue-broker (exchange-name-fn) msg))))))
 
+(defn associations-update-event
+  "Create an event representing a list of associations being updated or created."
+  [associations]
+  {:action :concept-update
+   :concept-id (:concept-id (first associations))
+   :revision-id (:revision-id (first associations))
+   :more-concepts (when (> (count associations) 1)
+                    (for [association (drop 1 associations)]
+                      {:concept-id (:concept-id association)
+                       :revision-id (:revision-id association)}))})
+
 (defmulti concept-update-event
   "Creates an event representing a concept being updated or created."
   (fn [concept]

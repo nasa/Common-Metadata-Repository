@@ -73,6 +73,7 @@
   (fn [concept-type table fields params]
     (condp = concept-type
       :granule :granule-search
+      :service-association :service-association-search
       concept-type)))
 
 ;; special case added to address OB_DAAC granule search not using existing index problem
@@ -82,6 +83,14 @@
   (let [stmt (gen-find-concepts-in-table-sql :dummy table fields params)]
     ;; add index hint to the generated sql statement
     (update-in stmt [0] #(string/replace % #"SELECT" (format "SELECT /*+ INDEX(%s) */" table)))))
+
+(defmethod gen-find-concepts-in-table-sql :service-association-search
+  [concept-type table fields params]
+  (let [params (dissoc params :include-all)]
+    (su/build (select (vec fields)
+                      (from table)
+                      (when-not (empty? params)
+                        (where (sh/find-params->sql-clause params)))))))
 
 (defmethod gen-find-concepts-in-table-sql :default
   [concept-type table fields params]
