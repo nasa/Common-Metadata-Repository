@@ -156,7 +156,16 @@
            (tools/delete-tool
             provider-id native-id request)))
        ;; Subscriptions
+       (context ["/subscriptions"] []
+         (POST "/"
+           request
+           (subscriptions/ingest-subscription
+            provider-id nil request)))
        (context ["/subscriptions/:native-id" :native-id #".*$"] [native-id]
+         (POST "/"
+           request
+           (subscriptions/ingest-subscription
+            provider-id native-id request))
          (PUT "/"
            request
            (subscriptions/ingest-subscription

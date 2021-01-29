@@ -2,6 +2,7 @@
   "CMR subscription ingest integration tests.
   For subscription permissions tests, see `provider-ingest-permissions-test`."
   (:require
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
    [cmr.common.util :refer [are3]]
@@ -121,6 +122,7 @@
                       {:accept-format :json
                        :raw? true})]
         (is (= {:revision-id 1
+                :native-id "Name 0"
                 :concept-id supplied-concept-id}
                (ingest/parse-ingest-body :json response)))))
 
@@ -132,6 +134,7 @@
                       {:accept-format :xml
                        :raw? true})]
         (is (= {:revision-id 2
+                :native-id "Name 0"
                 :concept-id supplied-concept-id}
                (ingest/parse-ingest-body :xml response)))))))
 
@@ -678,3 +681,63 @@
 
               "Delete subscription as user1"
               ingest/delete-concept [concept {:token user-token}] 200 nil)))))
+
+(deftest create-subscription-by-post
+  (let [token (echo-util/login (system/context) "post-user")
+        coll (data-core/ingest-umm-spec-collection
+              "PROV1"
+              (data-umm-c/collection)
+              {:token "mock-echo-system-token"})]
+
+    (testing "without native-id provided"
+      (let [concept (dissoc (subscription-util/make-subscription-concept
+                             {:SubscriberId "post-user"
+                              :Name "no native-id"
+                              :CollectionConceptId (:concept-id coll)})
+                            :native-id)
+            {:keys [native-id concept-id status]} (ingest/ingest-concept
+                                                   concept
+                                                   {:token token
+                                                    :method :post})]
+        (is (= 201 status))
+        (is (not (nil? concept-id)))
+        (is (not (nil? native-id)))
+        (is (string/starts-with? native-id "no_native_id"))
+
+        (index/wait-until-indexed)
+
+        (is (not (nil? (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)})))))))))
+
+    (testing "with native-id provided"
+      (let [concept (assoc (subscription-util/make-subscription-concept
+                            {:SubscriberId "post-user"
+                             :Name "a different subscription with native-id"
+                             :CollectionConceptId (:concept-id coll)})
+                           :native-id "another-native-id")
+            {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
+                                                                                  :method :post})]
+        (is (= 201 status))
+        (is (not (nil? concept-id)))
+        (is (= "another-native-id" native-id))
+
+        (index/wait-until-indexed)
+
+        (is (= (:native-id concept)
+               (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))
+
+    (testing "without native-id provided with unicode in the name"
+      (let [concept (dissoc (subscription-util/make-subscription-concept
+                             {:SubscriberId "post-user"
+                              :Name "unicode-test Großartiger Scott!"
+                              :CollectionConceptId (:concept-id coll)})
+                            :native-id)
+            {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
+                                                                                  :method :post})]
+        (is (= 201 status))
+        (is (not (nil? concept-id)))
+        (is (not (nil? native-id)))
+        (is (string/starts-with? native-id "unicode_test_großartiger"))
+
+        (index/wait-until-indexed)
+
+        (is (not (nil? (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)})))))))))))

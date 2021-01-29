@@ -1,4 +1,3 @@
 ["test/cmr/system_int_test/search"
  "test/cmr/system_int_test/site"
- "test/cmr/system_int_test/transmit"
- "test/cmr/system_int_test/virtual_product"]
+ "test/cmr/system_int_test/transmit"]

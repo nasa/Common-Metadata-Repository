@@ -27,7 +27,10 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /providers/\<provider-id>/tools/\<native-id>
     * [PUT - Create or update a tool.](#create-update-tool)
     * [DELETE - Delete a tool.](#delete-tool)
+  * /providers/\<provider-id>/subscriptions
+   *  [POST - Create a subscription without specifying a native-id.](#create-update-subscription)
   * /providers/\<provider-id>/subscriptions/\<native-id>
+    * [POST - Create a subscription.](#create-update-subscription)
     * [PUT - Create or update a subscription.](#create-update-subscription)
     * [DELETE - Delete a subscription.](#delete-subscription)
     * [Subscription Access Control](#subscription-access-control)
@@ -691,13 +694,23 @@ curl -i -X DELETE \
 
 ### <a name="create-update-subscription"></a> Create / Update a Subscription
 
-Subscription concept can be created or updated by sending an HTTP PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+Subscription concept can be created or updated by sending an HTTP PUT or POST with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+
+If `native-id` is not specified in the request it will be generated. This is only supported for POST requests.
 
 ```
 curl -i -XPUT \
 -H "Content-type: application/vnd.nasa.cmr.umm+json" \
 -H "Echo-Token: XXXX" \
 %CMR-ENDPOINT%/providers/PROV1/subscriptions/subscription123 -d \
+"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"EmailAddress\": \"someaddress@gmail.com\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
+```
+
+```
+curl -i -XPOST \
+-H "Content-type: application/vnd.nasa.cmr.umm+json" \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/subscriptions -d \
 "{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"EmailAddress\": \"someaddress@gmail.com\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
 ```
 

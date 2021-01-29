@@ -20,8 +20,10 @@
   (let [metadata (:metadata concept)
         subscription (spec/parse-metadata context :subscription (:format concept) metadata)
         concept (add-extra-fields-for-subscription context concept subscription)
-        {:keys [concept-id revision-id]} (mdb2/save-concept context
+        {:keys [concept-id revision-id]} (mdb2/save-concept
+                                          context
                                           (assoc concept :provider-id (:provider-id concept)
-                                                         :native-id (:native-id concept)))]
-      {:concept-id concept-id
-       :revision-id revision-id}))
+                                                 :native-id (:native-id concept)))]
+    {:concept-id concept-id
+     :native-id (:native-id concept)
+     :revision-id revision-id}))

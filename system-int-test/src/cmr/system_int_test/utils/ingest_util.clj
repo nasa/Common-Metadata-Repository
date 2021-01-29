@@ -217,6 +217,7 @@
         (parse-xml-error-response-elem xml-elem)
         (util/remove-nil-keys
          {:concept-id (cx/string-at-path xml-elem [:concept-id])
+          :native-id (cx/string-at-path xml-elem [:native-id])
           :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))
           :warnings (cx/string-at-path xml-elem [:warnings])})))
 
@@ -357,6 +358,7 @@
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
          {:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id]} options
          accept-format (:accept-format options)
+         method (get options :method :put)
          headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
                                         "Cmr-Revision-id" revision-id
                                         "Cmr-Validate-Keywords" validate-keywords
@@ -366,7 +368,7 @@
                                         "Client-Id" client-id
                                         "CMR-Request-Id" cmr-request-id
                                         "X-Request-Id" x-request-id})
-         params {:method :put
+         params {:method method
                  :url (url/ingest-url provider-id concept-type native-id)
                  :body  metadata
                  :content-type format

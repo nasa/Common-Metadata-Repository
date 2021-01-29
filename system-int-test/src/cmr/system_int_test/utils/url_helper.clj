@@ -193,12 +193,16 @@
 
 
 (defn ingest-url
-  [provider-id type native-id]
-  (format "http://localhost:%s/providers/%s/%ss/%s"
-          (transmit-config/ingest-port)
-          (codec/url-encode provider-id)
-          (name type)
-          (codec/url-encode native-id)))
+  ([provider-id concept-type]
+   (ingest-url provider-id concept-type nil))
+  ([provider-id concept-type native-id]
+   (let [url (format "http://localhost:%s/providers/%s/%ss"
+                     (transmit-config/ingest-port)
+                     (codec/url-encode provider-id)
+                     (name concept-type))]
+     (if native-id
+       (str url "/" (codec/url-encode native-id))
+       url))))
 
 (defn ingest-variable-url
   ([coll-id native-id]
@@ -211,9 +215,9 @@
              (codec/url-encode coll-revision-id)
              (codec/url-encode native-id))
      (format "http://localhost:%s/collections/%s/variables/%s"
-          (transmit-config/ingest-port)
-          (codec/url-encode coll-id)
-          (codec/url-encode native-id)))))
+             (transmit-config/ingest-port)
+             (codec/url-encode coll-id)
+             (codec/url-encode native-id)))))
 
 (defn validate-url
   [provider-id type native-id]

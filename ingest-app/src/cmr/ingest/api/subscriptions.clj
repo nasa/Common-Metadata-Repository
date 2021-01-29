@@ -1,6 +1,7 @@
 (ns cmr.ingest.api.subscriptions
   "Subscription ingest functions in support of the ingest API."
   (:require
+   [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
@@ -11,7 +12,9 @@
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.metadata-db :as mdb]))
+   [cmr.transmit.metadata-db :as mdb])
+  (:import
+   [java.util UUID]))
 
 (defn- validate-and-prepare-subscription-concept
   "Validate subscription concept, set the concept format and returns the concept;
@@ -107,19 +110,31 @@
                       token-user
                       subscription-user))
         (acl/verify-ingest-management-permission
-          request-context :update :provider-object provider-id)
+         request-context :update :provider-object provider-id)
         (acl/verify-subscription-management-permission
-          request-context :update :provider-object provider-id)))))
+         request-context :update :provider-object provider-id)))))
+
+(defn generate-native-id
+  "Generate a native-id for a subscription based on the name."
+  [subscription]
+  (-> subscription
+      :metadata
+      (json/parse-string true)
+      :Name
+      csk/->snake_case
+      (str "_" (UUID/randomUUID))))
 
 (defn ingest-subscription
   "Processes a request to create or update a subscription. Note, this will allow
   unlimited subscriptions to be created by users for themselves. Revisit if this
   Becomes a problem"
-  [provider-id native-id request]
+  [provider-id opt-native-id request]
   (let [{:keys [body content-type headers request-context]} request]
     (common-ingest-checks request-context provider-id)
-    (let [concept (api-core/body->concept!
-                    :subscription provider-id native-id body content-type headers)]
+    (let [tmp-concept (api-core/body->concept!
+                       :subscription provider-id (str (UUID/randomUUID)) body content-type headers)
+          native-id (or opt-native-id (generate-native-id tmp-concept))
+          concept (assoc tmp-concept :native-id native-id)]
       (check-subscription-ingest-permission request-context concept provider-id)
       (perform-subscription-ingest request-context concept headers))))
 
