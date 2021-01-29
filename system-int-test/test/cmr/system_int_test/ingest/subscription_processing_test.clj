@@ -1,10 +1,12 @@
 (ns cmr.system-int-test.ingest.subscription-processing-test
   "CMR subscription processing tests."
   (:require
+   [clj-time.core :as t]
    [clojure.test :refer :all]
    [cmr.ingest.services.email-processing :as email-processing]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.access-control.test.util :as ac-util]
+   [cmr.common.time-keeper :as tk]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as data-granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -14,6 +16,7 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
    [cmr.transmit.access-control :as access-control]
+
    [cmr.transmit.metadata-db :as mdb2]))
 
 (use-fixtures :each
@@ -103,7 +106,7 @@
                                                      {:token "mock-echo-system-token"})]
      (index/wait-until-indexed)
 
-     (testing "First query executed does not have a last-notified-at and looks back 24 hours"
+     (testing "First query executed does not have a last-notified-at and looks back 1 hours"
        (let [gran1 (data-core/ingest "PROV1"
                                      (data-granule/granule-with-umm-spec-collection coll1
                                                                                     (:concept-id coll1)
@@ -158,70 +161,15 @@
              (is (= nil (-> subscription :items :concept-id))))))
 
        (testing
-        "Third: Test the outcome if the user loses access permissions and then
-        are added back but within the 3 day window"
-        ;; first assume access and then add a gran
-         (dev-system/freeze-time!)
-         (echo-util/grant (system/context)
-                          [{:group_id user2-group-id :permissions [:read]}]
-                          :catalog_item_identity
-                          {:provider_id "PROV1"
-                           :name "Provider collection/granule ACL/ 3 day test - initial"
-                           :collection_applicable true
-                           :granule_applicable true
-                           :granule_identifier {:access_value {:include_undefined_value true
-                                                               :min_value 1 :max_value 50}}})
-         (ac-util/wait-until-indexed)
-         (dev-system/advance-time! 100)
-         ;; injest a collection, subscription and a granule
-         (let [coll2 (data-core/ingest-umm-spec-collection "PROV1"
-                                                           (data-umm-c/collection {:ShortName "coll2"
-                                                                                   :EntryTitle "entry-title2"})
-                                                           {:token "mock-echo-system-token"})
-               _ (index/wait-until-indexed)
-               _ (dev-system/advance-time! 100)
-               sub2 (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
-                                                            {:Name "test_sub_prov_2"
-                                                             :SubscriberId "user2"
-                                                             :CollectionConceptId (:concept-id coll2)
-                                                             :Query "provider=PROV1"}) ;&options[spatial][or]=true"
-                                                           {:token "mock-echo-system-token"})
-               _ (index/wait-until-indexed)
-               _ (dev-system/advance-time! 100)
-               gran3 (data-core/ingest "PROV1"
-                                       (data-granule/granule-with-umm-spec-collection coll2
-                                                                                      (:concept-id coll2)
-                                                                                      {:granule-ur "Granule3"
-                                                                                       :access-value 2})
-                                       {:token "mock-echo-system-token"})]
-           (index/wait-until-indexed)
-           (dev-system/advance-time! 100)
-          ;; have access to everything, so remove and then give back
-           (echo-util/ungrant-by-search (system/context)
-                                        {:provider "PROV1"
-                                         :identity-type "catalog_item"}
-                                        "mock-echo-system-token")
-           (index/wait-until-indexed)
-           (dev-system/advance-time! 100)
-          ;; give access back then move clock forward and test()
-           (echo-util/grant (system/context)
-                            [{:group_id user2-group-id :permissions [:read]}]
-                            :catalog_item_identity
-                            {:provider_id "PROV1"
-                             :name "Provider collection/granule ACL - Restored"
-                             :collection_applicable true
-                             :granule_applicable true
-                             :granule_identifier {:access_value {:include_undefined_value true
-                                                                 :min_value 1 :max_value 50}}}) ()
-           (index/wait-until-indexed)
-
-           (dev-system/advance-time! (* 35 60)) ;; not past an hour
-           (let [response (trigger-process-subscriptions)
-                 result-as-hash (first (process-result->hash response))
-                 _ (#'email-processing/send-subscription-emails (system/context) response)
-                 found-granule (first (:subscriber-filtered-gran-refs result-as-hash))]
-             (print "result-as-hash:" result-as-hash)
-             (is (= false (:permission-check-failed result-as-hash)))
-             (is (= (:concept-id sub2) (:sub-id result-as-hash)))
-             (is (= (:concept-id gran3) (:concept-id found-granule))))
-           (dev-system/clear-current-time!)))))))
+         "The subscription to time constraint function is critical for internal use
+          when debuging it became apparent that the proper operation of this function
+          made a big difference. Test the function's two uses cases, 1) no notified
+          date is specified, 2) one is specified"
+        (dev-system/freeze-time! "2012-01-19T18:00:00.00Z")
+        (let [empty-ish {:extra-fields {}}
+              populated {:extra-fields {:last-notified-at "2012-01-10T08:00:00.000Z"}}
+              time-constraint-empty (#'email-processing/subscription->time-constraint empty-ish (tk/now) 3600)
+              time-constraint-populated (#'email-processing/subscription->time-constraint populated (tk/now) 3600)]
+         (is (= "2012-01-19T17:00:00.000Z,2012-01-19T18:00:00.000Z" time-constraint-empty))
+         (is (= "2012-01-10T08:00:00.000Z,2012-01-19T18:00:00.000Z" time-constraint-populated))
+         (dev-system/clear-current-time!)))))))
