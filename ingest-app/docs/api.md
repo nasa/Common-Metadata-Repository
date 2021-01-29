@@ -30,7 +30,6 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /providers/\<provider-id>/subscriptions
    *  [POST - Create a subscription without specifying a native-id.](#create-update-subscription)
   * /providers/\<provider-id>/subscriptions/\<native-id>
-    * [POST - Create a subscription.](#create-update-subscription)
     * [PUT - Create or update a subscription.](#create-update-subscription)
     * [DELETE - Delete a subscription.](#delete-subscription)
     * [Subscription Access Control](#subscription-access-control)
@@ -696,7 +695,7 @@ curl -i -X DELETE \
 
 Subscription concept can be created or updated by sending an HTTP PUT or POST with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
-If `native-id` is not specified in the request it will be generated. This is only supported for POST requests.
+If `native-id` is not specified in the request it will be generated.
 
 ```
 curl -i -XPUT \

@@ -124,7 +124,26 @@
       csk/->snake_case
       (str "_" (UUID/randomUUID))))
 
-(defn ingest-subscription
+(defn get-unique-native-id
+  "Get a native-id that is unique by testing against the database."
+  [context subscription]
+  (let [native-id (generate-native-id subscription)
+        provider-id (:provider-id subscription)
+        collision? (first (mdb/find-concepts
+                           context
+                           {:provider-id provider-id
+                            :native-id native-id
+                            :exclude-metadata false
+                            :latest true}
+                           :subscription))]
+    (if collision?
+      (do
+        (warn (format "Collision detected while generated subscription native-id [%s] for provider [%s], retrying."
+                      native-id provider-id))
+        (get-unique-native-id context subscription))
+      native-id)))
+
+(defn update-subscription
   "Processes a request to create or update a subscription. Note, this will allow
   unlimited subscriptions to be created by users for themselves. Revisit if this
   Becomes a problem"
