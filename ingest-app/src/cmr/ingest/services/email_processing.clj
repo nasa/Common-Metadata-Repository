@@ -148,7 +148,7 @@
   [subscription end amount-in-sec]
   {:post [(spec/valid? ::time-constraint %)]}
   (let [begin (if-let [start (get-in subscription [:extra-fields :last-notified-at])]
-                start
+                (cr/from-string start)
                 (t/minus end (t/seconds amount-in-sec)))]
     (str begin "," end)))
 
