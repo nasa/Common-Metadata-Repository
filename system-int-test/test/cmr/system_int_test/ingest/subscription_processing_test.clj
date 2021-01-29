@@ -161,15 +161,19 @@
              (is (= nil (-> subscription :items :concept-id))))))
 
        (testing
-         "The subscription to time constraint function is critical for internal use
+         "The subscription->time-constraint function is critical for internal use,
           when debuging it became apparent that the proper operation of this function
           made a big difference. Test the function's two uses cases, 1) no notified
           date is specified, 2) one is specified"
-        (dev-system/freeze-time! "2012-01-19T18:00:00.00Z")
-        (let [empty-ish {:extra-fields {}}
-              populated {:extra-fields {:last-notified-at "2012-01-10T08:00:00.000Z"}}
-              time-constraint-empty (#'email-processing/subscription->time-constraint empty-ish (tk/now) 3600)
-              time-constraint-populated (#'email-processing/subscription->time-constraint populated (tk/now) 3600)]
-         (is (= "2012-01-19T17:00:00.000Z,2012-01-19T18:00:00.000Z" time-constraint-empty))
-         (is (= "2012-01-10T08:00:00.000Z,2012-01-19T18:00:00.000Z" time-constraint-populated))
-         (dev-system/clear-current-time!)))))))
+        (let [now (tk/now)
+              hour-back (t/minus now (t/seconds 3600))
+
+              empty-ish-data {:extra-fields {}}
+              expected-empty (str  hour-back "," now)
+              actual-empty (#'email-processing/subscription->time-constraint empty-ish-data (tk/now) 3600)
+
+              populated-data {:extra-fields {:last-notified-at "2012-01-10T08:00:00.000Z"}}
+              expected-populated (str "2012-01-10T08:00:00.000Z" "," now)
+              actual-populated (#'email-processing/subscription->time-constraint populated-data (tk/now) 3600)]
+         (is (= expected-empty actual-empty))
+         (is (= expected-populated actual-populated))))))))
