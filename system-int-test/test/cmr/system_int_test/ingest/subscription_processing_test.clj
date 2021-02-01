@@ -158,22 +158,4 @@
            (is (= (:concept-id sub1) (:sub-id (first result-as-hash))))
            (is (= true (:permission-check-failed (first result-as-hash))))
            (let [subscription (subscription-util/search-json {:token "mock-echo-system-token"})]
-             (is (= nil (-> subscription :items :concept-id))))))
-
-       (testing
-         "The subscription->time-constraint function is critical for internal use,
-          when debuging it became apparent that the proper operation of this function
-          made a big difference. Test the function's two uses cases, 1) no notified
-          date is specified, 2) one is specified"
-        (let [now (tk/now)
-              hour-back (t/minus now (t/seconds 3600))
-
-              empty-ish-data {:extra-fields {}}
-              expected-empty (str  hour-back "," now)
-              actual-empty (#'email-processing/subscription->time-constraint empty-ish-data (tk/now) 3600)
-
-              populated-data {:extra-fields {:last-notified-at "2012-01-10T08:00:00.000Z"}}
-              expected-populated (str "2012-01-10T08:00:00.000Z" "," now)
-              actual-populated (#'email-processing/subscription->time-constraint populated-data (tk/now) 3600)]
-         (is (= expected-empty actual-empty))
-         (is (= expected-populated actual-populated))))))))
+             (is (= nil (-> subscription :items :concept-id))))))))))
