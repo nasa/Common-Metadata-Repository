@@ -127,10 +127,10 @@
 (defn native-id-collision?
   "Queries metadata db for a matching provider-id and native-id pair."
   [context provider-id native-id]
-  (let [query{:provider-id provider-id
-              :native-id native-id
-              :exclude-metadata true
-              :latest true}]
+  (let [query {:provider-id provider-id
+               :native-id native-id
+               :exclude-metadata true
+               :latest true}]
     (-> context
         (mdb/find-concepts query :subscription)
         seq)))
