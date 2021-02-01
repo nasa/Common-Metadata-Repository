@@ -695,7 +695,7 @@ curl -i -X DELETE \
 
 Subscription concept can be created or updated by sending an HTTP PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
-Subscription creation is supported using POST at `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions>`
+Subscription creation is supported using POST at `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions`
 When using POST, a native-id will be generated based on the name of the subscription.
 
 ```
