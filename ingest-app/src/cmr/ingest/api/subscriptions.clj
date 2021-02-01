@@ -124,37 +124,54 @@
       csk/->snake_case
       (str "_" (UUID/randomUUID))))
 
+(defn native-id-collision?
+  "Queries metadata db for a matching provider-id and native-id pair."
+  [context provider-id native-id]
+  (let [query{:provider-id provider-id
+              :native-id native-id
+              :exclude-metadata true
+              :latest true}]
+    (-> context
+        (mdb/find-concepts query :subscription)
+        seq)))
+
 (defn get-unique-native-id
   "Get a native-id that is unique by testing against the database."
   [context subscription]
   (let [native-id (generate-native-id subscription)
-        provider-id (:provider-id subscription)
-        collision? (seq (first (mdb/find-concepts
-                                context
-                                {:provider-id provider-id
-                                 :native-id native-id
-                                 :exclude-metadata true
-                                 :latest true}
-                                :subscription)))]
-    (if collision?
+        provider-id (:provider-id subscription)]
+    (if (native-id-collision? context provider-id native-id)
       (do
         (warn (format "Collision detected while generating native-id [%s] for provider [%s], retrying."
                       native-id provider-id))
         (get-unique-native-id context subscription))
       native-id)))
 
-(defn ingest-subscription
-  "Processes a request to create or update a subscription. Note, this will allow
-  unlimited subscriptions to be created by users for themselves. Revisit if this
-  Becomes a problem"
+(defn create-subscription
+  "Processes a request to create a subscription. If a native-id is provided
+  it will be refused if a provider-id native-id collision is detected."
   [provider-id opt-native-id request]
   (let [{:keys [body content-type headers request-context]} request]
+    (when (and opt-native-id
+               (native-id-collision? request-context provider-id opt-native-id))
+      (errors/throw-service-error
+       :collision (format "Subscription with with provider-id [%s] and native-id [%s] already exists." provider-id native-id)))
     (common-ingest-checks request-context provider-id)
     (let [tmp-concept (api-core/body->concept!
                        :subscription provider-id (str (UUID/randomUUID)) body content-type headers)
           native-id (or opt-native-id
                         (get-unique-native-id request-context tmp-concept))
           concept (assoc tmp-concept :native-id native-id)]
+      (check-subscription-ingest-permission request-context concept provider-id)
+      (perform-subscription-ingest request-context concept headers))))
+
+(defn update-subscription
+  "Processes a request to update a subscription."
+  [provider-id native-id request]
+  (let [{:keys [body content-type headers request-context]} request]
+    (common-ingest-checks request-context provider-id)
+    (let [concept (api-core/body->concept!
+                   :subscription provider-id native-id body content-type headers)]
       (check-subscription-ingest-permission request-context concept provider-id)
       (perform-subscription-ingest request-context concept headers))))
 

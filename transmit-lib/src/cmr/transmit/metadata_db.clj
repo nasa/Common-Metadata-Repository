@@ -157,8 +157,20 @@
       200 (map mdb2/finish-parse-concept (json/decode body true))
       ;; default
       (errors/internal-error!
-        (format "%s search failed. status: %s body: %s"
-                (str/capitalize (name concept-type)) status body)))))
+       (format "%s search failed. status: %s body: %s"
+               (str/capitalize (name concept-type)) status body)))))
+
+(defn find-concepts
+  "Searches metadata db for concepts matching the given parameters."
+  [context params concept-type]
+  (let [{:keys [status body]} (find-concepts-raw context params concept-type)
+        status (int status)]
+    (case status
+      200 (map mdb2/finish-parse-concept (json/decode body true))
+      ;; default
+      (errors/internal-error!
+       (format "%s search failed. status: %s body: %s"
+               (str/capitalize (name concept-type)) status body)))))
 
 (defn find-latest-concept
   "Searches metadata db for the latest concept matching the given parameters. Do not throw serivce
@@ -171,8 +183,8 @@
       404 (errors/throw-service-error :not-found body)
       ;; default
       (errors/internal-error!
-        (format "%s search failed. status: %s body: %s"
-                (str/capitalize (name concept-type)) status body)))))
+       (format "%s search failed. status: %s body: %s"
+               (str/capitalize (name concept-type)) status body)))))
 
 (defn get-associations-by-collection-concept-id
   "Get all the associations of the given type (including tombstones) for a collection
