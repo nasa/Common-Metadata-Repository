@@ -12,8 +12,7 @@
       (testing "with native-id provided uses the native-id"
         (with-redefs-fn {#'subscriptions/perform-subscription-ingest (constantly nil)
                          #'subscriptions/common-ingest-checks (constantly nil)
-                         #'subscriptions/get-unique-native-id (fn [_context subscription]
-                                                                (subscriptions/generate-native-id subscription))
+                         #'mdb/find-concepts (constantly [])
                          #'api-core/body->concept! (constantly {:native-id "tmp"
 
                                                                 :metadata " {\"Name\": \"some name\"}"})
@@ -24,8 +23,7 @@
       (testing "with native-id not provided generates a native-id"
         (with-redefs-fn {#'subscriptions/perform-subscription-ingest (constantly nil)
                          #'subscriptions/common-ingest-checks (constantly nil)
-                         #'subscriptions/get-unique-native-id (fn [_context subscription]
-                                                                (subscriptions/generate-native-id subscription))
+                         #'mdb/find-concepts (constantly [])
                          #'api-core/body->concept! (constantly {:native-id "tmp"
                                                                 :metadata " {\"Name\": \"some name\"}"})
                          #'subscriptions/check-subscription-ingest-permission
