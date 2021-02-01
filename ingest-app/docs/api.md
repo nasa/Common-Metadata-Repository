@@ -693,9 +693,10 @@ curl -i -X DELETE \
 
 ### <a name="create-update-subscription"></a> Create / Update a Subscription
 
-Subscription concept can be created or updated by sending an HTTP PUT or POST with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+Subscription concept can be created or updated by sending an HTTP PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
-If `native-id` is not specified in the request it will be generated.
+Subscription creation is supported using POST at `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions>`
+When using POST, a native-id will be generated based on the name of the subscription.
 
 ```
 curl -i -XPUT \
@@ -720,6 +721,7 @@ curl -i -XPOST \
 <result>
   <concept-id>SUB1200000015-PROV1</concept-id>
   <revision-id>1</revision-id>
+  <native-id>subscription123</native-id>
 </result>
 ```
 #### Successful Response in JSON
@@ -728,7 +730,8 @@ By passing the option `-H "Accept: application/json"` to `curl`, one may
 get a JSON response:
 
 ```
-{"concept-id":"SUB1200000015-PROV1","revision-id":1}
+{"concept-id":"SUB1200000015-PROV1","revision-id":1,"native-id":"some_subscription_f4450ef5-e200-477f-a9b5-8c457fcf38d1
+"}
 ```
 
 ### <a name="delete-subscription"></a> Delete a Subscription

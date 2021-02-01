@@ -133,7 +133,7 @@
                                 context
                                 {:provider-id provider-id
                                  :native-id native-id
-                                 :exclude-metadata false
+                                 :exclude-metadata true
                                  :latest true}
                                 :subscription)))]
     (if collision?

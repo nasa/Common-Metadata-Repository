@@ -48,15 +48,16 @@
                  :native-id nil
                  :concept-type :subscription
                  :provider-id "PROV1"}
-        call-count (atom 0)]
+        retry-attempts 2
+        retry-count (atom 0)]
 
     (testing "will retry if a collision is detected"
       (with-redefs-fn {#'mdb/find-concepts (fn [context _concept _concept-type]
-                                             (if (> 2 @call-count)
+                                             (if (> retry-attempts @retry-count)
                                                (do
-                                                 (swap! call-count inc)
+                                                 (swap! retry-count inc)
                                                  (println "Mock collision occurred")
-                                                 [{:native-id (format "colliding-concept-%d" @call-count)}])
+                                                 [{:native-id (format "colliding-concept-%d" @retry-count)}])
                                                []))}
         #(do (is (string/starts-with? (subscriptions/get-unique-native-id nil concept) "collision_test"))
-             (is (= 2 @call-count)))))))
+             (is (= retry-attempts @retry-count)))))))
