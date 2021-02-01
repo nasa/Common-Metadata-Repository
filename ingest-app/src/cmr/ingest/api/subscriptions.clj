@@ -152,7 +152,8 @@
     (common-ingest-checks request-context provider-id)
     (let [tmp-concept (api-core/body->concept!
                        :subscription provider-id (str (UUID/randomUUID)) body content-type headers)
-          native-id (or opt-native-id (generate-native-id tmp-concept))
+          native-id (or opt-native-id
+                        (get-unique-native-id request-context tmp-concept))
           concept (assoc tmp-concept :native-id native-id)]
       (check-subscription-ingest-permission request-context concept provider-id)
       (perform-subscription-ingest request-context concept headers))))
