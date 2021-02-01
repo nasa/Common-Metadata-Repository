@@ -3,7 +3,8 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.ingest.api.core :as api-core]
-   [cmr.ingest.api.subscriptions :as subscriptions]))
+   [cmr.ingest.api.subscriptions :as subscriptions]
+   [cmr.transmit.metadata-db :as mdb]))
 
 (deftest ingest-subscription-test
   (testing "creating a subscription"
@@ -39,3 +40,23 @@
 
     (testing "name is used as the prefix"
       (is (string/starts-with? native-id "the_beginning")))))
+
+(deftest get-unique-native-id-test
+  (let [concept {:metadata
+                 "{\"Name\":\"collision_test\",\"SubscriberId\":\"post-user\",\"EmailAddress\":\"someEmail@gmail.com\",\"CollectionConceptId\":\"C1200000018-PROV1\",\"Query\":\"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.0"
+                 :native-id nil
+                 :concept-type :subscription
+                 :provider-id "PROV1"}
+        call-count (atom 0)]
+
+    (testing "will retry if a collision is detected"
+      (with-redefs-fn {#'mdb/find-concepts (fn [context _concept _concept-type]
+                                             (if (> 2 @call-count)
+                                               (do
+                                                 (swap! call-count inc)
+                                                 (println "Mock collision occurred")
+                                                 [{:native-id (format "colliding-concept-%d" @call-count)}])
+                                               []))}
+        #(do (is (string/starts-with? (subscriptions/get-unique-native-id nil concept) "collision_test"))
+             (is (= 2 @call-count)))))))
