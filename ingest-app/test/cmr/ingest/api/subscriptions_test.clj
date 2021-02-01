@@ -12,7 +12,10 @@
       (testing "with native-id provided uses the native-id"
         (with-redefs-fn {#'subscriptions/perform-subscription-ingest (constantly nil)
                          #'subscriptions/common-ingest-checks (constantly nil)
+                         #'subscriptions/get-unique-native-id (fn [_context subscription]
+                                                                (subscriptions/generate-native-id subscription))
                          #'api-core/body->concept! (constantly {:native-id "tmp"
+
                                                                 :metadata " {\"Name\": \"some name\"}"})
                          #'subscriptions/check-subscription-ingest-permission (fn [request-context concept provider-id]
                                                                                 (is (= "given-native-id" (:native-id concept))))}
@@ -21,6 +24,8 @@
       (testing "with native-id not provided generates a native-id"
         (with-redefs-fn {#'subscriptions/perform-subscription-ingest (constantly nil)
                          #'subscriptions/common-ingest-checks (constantly nil)
+                         #'subscriptions/get-unique-native-id (fn [_context subscription]
+                                                                (subscriptions/generate-native-id subscription))
                          #'api-core/body->concept! (constantly {:native-id "tmp"
                                                                 :metadata " {\"Name\": \"some name\"}"})
                          #'subscriptions/check-subscription-ingest-permission
@@ -54,10 +59,8 @@
     (testing "will retry if a collision is detected"
       (with-redefs-fn {#'mdb/find-concepts (fn [context _concept _concept-type]
                                              (if (> retry-attempts @retry-count)
-                                               (do
-                                                 (swap! retry-count inc)
-                                                 (println "Mock collision occurred")
-                                                 [{:native-id (format "colliding-concept-%d" @retry-count)}])
+                                               [{:native-id (format "colliding-concept-%d"
+                                                                    (swap! retry-count inc))}]
                                                []))}
         #(do (is (string/starts-with? (subscriptions/get-unique-native-id nil concept) "collision_test"))
              (is (= retry-attempts @retry-count)))))))
