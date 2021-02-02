@@ -32,6 +32,11 @@
 (defmethod handle-provider-event :default
   [_ _])
 
+(defn- handle-gran-bulk-update-event
+  [context msg]
+  ;; place holder function to be implemented later
+  )
+
 (defn subscribe-to-events
   "Subscribe to event messages on various queues"
   [context]
@@ -39,4 +44,8 @@
     (dotimes [n (config/ingest-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                                 (config/ingest-queue-name)
-                                #(handle-provider-event context %)))))
+                                #(handle-provider-event context %)))
+    (dotimes [n (config/bulk-update-queue-listener-count)]
+      (queue-protocol/subscribe queue-broker
+                                (config/bulk-update-queue-name)
+                                #(handle-gran-bulk-update-event context %)))))

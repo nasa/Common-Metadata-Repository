@@ -18,6 +18,13 @@
         exchange-name (config/ingest-exchange-name)]
     (queue/publish-message queue-broker exchange-name msg)))
 
+(defn publish-gran-bulk-update-event
+  "Put an granule bulk update event on the message queue"
+  [context msg]
+  (let [queue-broker (get-in context [:system :queue-broker])
+        exchange-name (config/bulk-update-exchange-name)]
+    (queue/publish-message queue-broker exchange-name msg)))
+
 (defn trigger-collection-granule-aggregation-cache-refresh
   "Sends a message to trigger a refresh of the collection granule aggregation cache.
    granules-updated-in-last-n indicates a number of seconds back to find granules that were updated.
