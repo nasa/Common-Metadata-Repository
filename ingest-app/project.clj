@@ -48,7 +48,7 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [ring-mock "0.1.5"]]
+                                  [ring/ring-mock "0.4.0"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              ;; This profile specifically here for generating documentation. It's faster than using the regular

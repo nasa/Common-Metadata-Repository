@@ -148,20 +148,34 @@
       native-id)))
 
 (defn create-subscription
-  "Processes a request to create a subscription. If a native-id is provided
-  it will be refused if a provider-id native-id collision is detected."
-  [provider-id opt-native-id request]
+  "Processes a request to create a subscription. A native id will be generated."
+  [provider-id request]
   (let [{:keys [body content-type headers request-context]} request]
-    (when (and opt-native-id
-               (native-id-collision? request-context provider-id opt-native-id))
-      (errors/throw-service-error
-       :collision (format "Subscription with with provider-id [%s] and native-id [%s] already exists." provider-id native-id)))
     (common-ingest-checks request-context provider-id)
     (let [tmp-concept (api-core/body->concept!
                        :subscription provider-id (str (UUID/randomUUID)) body content-type headers)
-          native-id (or opt-native-id
-                        (get-unique-native-id request-context tmp-concept))
+          native-id (get-unique-native-id request-context tmp-concept)
           concept (assoc tmp-concept :native-id native-id)]
+      (check-subscription-ingest-permission request-context concept provider-id)
+      (perform-subscription-ingest request-context concept headers))))
+
+(defn create-subscription-with-native-id
+  "Processes a request to create a subscription using the native-id provided."
+  [provider-id native-id request]
+  (let [{:keys [body content-type headers request-context]} request]
+    (when (native-id-collision? request-context provider-id native-id)
+      (errors/throw-service-error
+       :collision (format "Subscription with with provider-id [%s] and native-id [%s] already exists."
+                          provider-id
+                          native-id)))
+    (common-ingest-checks request-context provider-id)
+    (let [concept (api-core/body->concept!
+                   :subscription
+                   provider-id
+                   native-id
+                   body
+                   content-type
+                   headers)]
       (check-subscription-ingest-permission request-context concept provider-id)
       (perform-subscription-ingest request-context concept headers))))
 
@@ -169,6 +183,10 @@
   "Processes a request to update a subscription."
   [provider-id native-id request]
   (let [{:keys [body content-type headers request-context]} request]
+    (when-not (native-id-collision? request-context provider-id request)
+      (errors/throw-service-error
+       :not-found (format "No such subscription with native-id [%s] and provider-id [%s] found."
+                          native-id provider-id)))
     (common-ingest-checks request-context provider-id)
     (let [concept (api-core/body->concept!
                    :subscription provider-id native-id body content-type headers)]

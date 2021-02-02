@@ -1,35 +1,81 @@
 (ns cmr.ingest.api.subscriptions-test
   (:require
+   [cheshire.core :as json]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.api.subscriptions :as subscriptions]
-   [cmr.transmit.metadata-db :as mdb]))
+   [cmr.transmit.metadata-db :as mdb]
+   [ring.mock.request :as mock]))
 
-(deftest ingest-subscription-test
-  (testing "creating a subscription"
-    (let [subscription {}]
-      (testing "with native-id provided uses the native-id"
-        (with-redefs-fn {#'subscriptions/perform-subscription-ingest (constantly nil)
-                         #'subscriptions/common-ingest-checks (constantly nil)
-                         #'mdb/find-concepts (constantly [])
-                         #'api-core/body->concept! (constantly {:native-id "tmp"
+(deftest create-subscription-test
+  (testing "with native-id not provided generates a native-id"
+    (let [request (-> (mock/request :post
+                                    "/PROV1/subscriptions"
+                                    {:content-type "application/vnd.nasa.cmr.umm+json;version=1.0"})
+                      (mock/json-body {:Name "no native id"
+                                       :SubscriberId "post-user"
+                                       :EmailAddress "someone@speedy.com"
+                                       :CollectionConceptId "C1200000018-PROV1"
+                                       :Query "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78"}))]
+      (with-redefs-fn {#'subscriptions/common-ingest-checks (constantly nil)
+                       #'mdb/find-concepts (constantly [])
+                       #'subscriptions/check-subscription-ingest-permission (constantly nil)
+                       #'subscriptions/perform-subscription-ingest
+                       (fn [_context concept _headers]
+                         (is (string/starts-with? (:native-id concept) "no_native_id")))}
+        #(subscriptions/create-subscription "PROV1" request)))))
 
-                                                                :metadata " {\"Name\": \"some name\"}"})
-                         #'subscriptions/check-subscription-ingest-permission (fn [request-context concept provider-id]
-                                                                                (is (= "given-native-id" (:native-id concept))))}
-          #(subscriptions/ingest-subscription "test-provider" "given-native-id" subscription)))
+(deftest create-subscription-with-native-id-test
+  (let [request (-> (mock/request :post
+                                  "/PROV1/subscriptions/given-native-id"
+                                  {:content-type "application/vnd.nasa.cmr.umm+json;version=1.0"})
+                    (mock/json-body {:Name "with native id"
+                                     :SubscriberId "post-user"
+                                     :EmailAddress "someone@speedy.com"
+                                     :CollectionConceptId "C1200000019-PROV1"
+                                     :Query "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78"}))]
+    (testing "with native-id provided uses the native-id"
+      (with-redefs-fn {#'subscriptions/common-ingest-checks (constantly nil)
+                       #'mdb/find-concepts (constantly [])
+                       #'subscriptions/perform-subscription-ingest (constantly nil)
+                       #'subscriptions/check-subscription-ingest-permission
+                       (fn [_context concept _headers]
+                         (is (= "given-native-id" (:native-id concept))))}
+        #(subscriptions/create-subscription-with-native-id "test-provider" "given-native-id" request)))
 
-      (testing "with native-id not provided generates a native-id"
-        (with-redefs-fn {#'subscriptions/perform-subscription-ingest (constantly nil)
-                         #'subscriptions/common-ingest-checks (constantly nil)
-                         #'mdb/find-concepts (constantly [])
-                         #'api-core/body->concept! (constantly {:native-id "tmp"
-                                                                :metadata " {\"Name\": \"some name\"}"})
-                         #'subscriptions/check-subscription-ingest-permission
-                         (fn [request-context concept provider-id]
-                           (is (string/starts-with? (:native-id concept) "some_name")))}
-          #(subscriptions/ingest-subscription "test-provider" nil subscription))))))
+    (testing "create with a conflicting native-id is rejected"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"already exists"
+           (with-redefs-fn {#'mdb/find-concepts (constantly [{:native-id "collides"}])}
+             #(subscriptions/create-subscription-with-native-id "test-provider" "collides" request)))))))
+
+(deftest update-subscription-test
+  (let [request (-> (mock/request :post
+                                  "/PROV1/subscriptions/given-native-id"
+                                  {:content-type "application/vnd.nasa.cmr.umm+json;version=1.0"})
+                    (mock/json-body {:Name "subscription to update"
+                                     :SubscriberId "post-user"
+                                     :EmailAddress "someone@speedy.com"
+                                     :CollectionConceptId "C1200000019-PROV1"
+                                     :Query "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78"}))]
+    (testing "with existing native-id sends it to the database"
+      (with-redefs-fn {#'subscriptions/common-ingest-checks (constantly nil)
+                       #'mdb/find-concepts (constantly [{:native-id "existing-id"}])
+                       #'subscriptions/check-subscription-ingest-permission (constantly nil)
+                       #'subscriptions/perform-subscription-ingest
+                       (fn [_context concept _headers]
+                         (is (not (nil? concept))))}
+
+        #(subscriptions/update-subscription "test-provider" "existing-id" request)))
+
+    (testing "with native-id not found throws an exception"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"No such subscription"
+           (with-redefs-fn {#'mdb/find-concepts (constantly [])                            }
+             #(subscriptions/update-subscription "test-provider" "existing-id" request)))))))
 
 (deftest generate-native-id-test
   (let [concept {:metadata
