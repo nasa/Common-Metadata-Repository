@@ -179,14 +179,12 @@
       (check-subscription-ingest-permission request-context concept provider-id)
       (perform-subscription-ingest request-context concept headers))))
 
-(defn update-subscription
-  "Processes a request to update a subscription."
+(defn create-or-update-subscription-with-native-id
+  "Processes a request to create or update a subscription. This function
+  does NOT check for collisions. This is mapped to PUT methods to preserve
+  existing functionality."
   [provider-id native-id request]
   (let [{:keys [body content-type headers request-context]} request]
-    (when-not (native-id-collision? request-context provider-id request)
-      (errors/throw-service-error
-       :not-found (format "No such subscription with native-id [%s] and provider-id [%s] found."
-                          native-id provider-id)))
     (common-ingest-checks request-context provider-id)
     (let [concept (api-core/body->concept!
                    :subscription provider-id native-id body content-type headers)]

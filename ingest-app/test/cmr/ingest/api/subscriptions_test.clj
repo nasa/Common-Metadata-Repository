@@ -51,8 +51,8 @@
            (with-redefs-fn {#'mdb/find-concepts (constantly [{:native-id "collides"}])}
              #(subscriptions/create-subscription-with-native-id "test-provider" "collides" request)))))))
 
-(deftest update-subscription-test
-  (let [request (-> (mock/request :post
+(deftest create-or-update-subscription-test
+  (let [request (-> (mock/request :put
                                   "/PROV1/subscriptions/given-native-id"
                                   {:content-type "application/vnd.nasa.cmr.umm+json;version=1.0"})
                     (mock/json-body {:Name "subscription to update"
@@ -68,14 +68,14 @@
                        (fn [_context concept _headers]
                          (is (not (nil? concept))))}
 
-        #(subscriptions/update-subscription "test-provider" "existing-id" request)))
+        #(subscriptions/create-or-update-subscription-with-native-id "test-provider" "existing-id" request)))
 
     (testing "with native-id not found throws an exception"
       (is (thrown-with-msg?
            clojure.lang.ExceptionInfo
            #"No such subscription"
            (with-redefs-fn {#'mdb/find-concepts (constantly [])                            }
-             #(subscriptions/update-subscription "test-provider" "existing-id" request)))))))
+             #(subscriptions/create-or-update-subscription-with-native-id "test-provider" "existing-id" request)))))))
 
 (deftest generate-native-id-test
   (let [concept {:metadata

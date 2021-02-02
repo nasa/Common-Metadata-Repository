@@ -30,6 +30,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /providers/\<provider-id>/subscriptions
    *  [POST - Create a subscription without specifying a native-id.](#create-update-subscription)
   * /providers/\<provider-id>/subscriptions/\<native-id>
+    * [POST - Create a subscription.](#create-update-subscription)
     * [PUT - Create or update a subscription.](#create-update-subscription)
     * [DELETE - Delete a subscription.](#delete-subscription)
     * [Subscription Access Control](#subscription-access-control)
@@ -693,10 +694,12 @@ curl -i -X DELETE \
 
 ### <a name="create-update-subscription"></a> Create / Update a Subscription
 
-Subscription concept can be created or updated by sending an HTTP PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+Subscription concept can be created or updated by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
-Subscription creation is supported using POST at `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions`
-When using POST, a native-id will be generated based on the name of the subscription.
+If a native-id is not provided it will be generated. This is only supported for POST requests.
+POST requests may only be used for creating subscriptions.
+
+PUT requests should be used for updating subscriptions. Creation of subscriptions using PUT may be deprecated in the future. All PUT requests require a native-id to be part of the request URL.
 
 ```
 curl -i -XPUT \

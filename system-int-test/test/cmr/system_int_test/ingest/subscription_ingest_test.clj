@@ -731,13 +731,67 @@
                               :Name "unicode-test Großartiger Scott!"
                               :CollectionConceptId (:concept-id coll)})
                             :native-id)
-            {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
-                                                                                  :method :post})]
+            {:keys [status concept-id native-id revision-id]}
+            (ingest/ingest-concept concept
+                                   {:token token
+                                    :method :post})]
         (is (= 201 status))
         (is (not (nil? concept-id)))
-        (is (not (nil? native-id)))
         (is (string/starts-with? native-id "unicode_test_großartiger"))
+        (is (= 1 revision-id))
 
         (index/wait-until-indexed)
 
         (is (not (nil? (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)})))))))))))
+
+(deftest create-subscription-by-put
+  (let [token (echo-util/login (system/context) "put-user")
+        coll (data-core/ingest-umm-spec-collection
+              "PROV1"
+              (data-umm-c/collection)
+              {:token "mock-echo-system-token"})]
+
+    (testing "without native-id returns an error"
+      (let [concept (dissoc (subscription-util/make-subscription-concept
+                             {:SubscriberId "post-user"
+                              :Name "no native-id"
+                              :CollectionConceptId (:concept-id coll)})
+                            :native-id)
+            {:keys [status]} (ingest/ingest-concept concept
+                                                    {:token token
+                                                     :method :put
+                                                     :raw? true})]
+        ;; There is no PUT handler for subscriptions without a native-id
+        (is (= 404 status))))
+
+    (testing "subscription creation using PUT"
+      (let [concept (assoc (subscription-util/make-subscription-concept
+                            {:SubscriberId "post-user"
+                             :Name "a different subscription with native-id"
+                             :CollectionConceptId (:concept-id coll)})
+                           :native-id "another-native-id")
+            {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
+                                                                                  :method :put})]
+        (is (= 201 status))
+        (is (not (nil? concept-id)))
+        (is (= "another-native-id" native-id))
+
+        (index/wait-until-indexed)
+
+        (is (= (:native-id concept)
+               (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))
+
+    (testing "subscription update using PUT"
+      (let [concept (assoc (subscription-util/make-subscription-concept
+                            {:SubscriberId "post-user"
+                             :Name "a different subscription with native-id"
+                             :CollectionConceptId (:concept-id coll)})
+                           :native-id "another-native-id")
+            {:keys [status revision-id]} (ingest/ingest-concept concept {:token token})]
+        (is (= 200 status))
+        (is (= 2 revision-id))
+
+        (index/wait-until-indexed)
+
+        (is (= (:native-id concept)
+               (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))))

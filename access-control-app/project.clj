@@ -63,7 +63,7 @@
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]
-                                  [ring-mock "0.1.5"]]
+                                  [ring/ring-mock "0.4.0"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test" "int-test"]
                    :test-paths ["test" "int-test"]

@@ -86,7 +86,7 @@
                                                [proto-repl "0.3.1"]
                                                [proto-repl-charts "0.3.2"]
                                                [proto-repl-sayid "0.1.3"]
-                                               [ring-mock "0.1.5"]]
+                                               [ring/ring-mock "0.4.0"]]
                                 ;; XXX Note that profiling can be kept in a profile,
                                 ;;     with no need to comment/uncomment.
                                 ;; Use the following to enable JMX profiling with visualvm

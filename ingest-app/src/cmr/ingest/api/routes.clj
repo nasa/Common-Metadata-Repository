@@ -168,7 +168,7 @@
             provider-id native-id request))
          (PUT "/"
            request
-           (subscriptions/update-subscription
+           (subscriptions/create-or-update-subscription-with-native-id
             provider-id native-id request))
          (DELETE "/"
            request
