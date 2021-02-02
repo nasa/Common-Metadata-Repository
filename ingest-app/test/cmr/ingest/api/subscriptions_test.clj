@@ -60,22 +60,24 @@
                                      :EmailAddress "someone@speedy.com"
                                      :CollectionConceptId "C1200000019-PROV1"
                                      :Query "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78"}))]
-    (testing "with existing native-id sends it to the database"
+    (testing "creates a subscription if no matching subscription is found"
+      (with-redefs-fn {#'subscriptions/common-ingest-checks (constantly nil)
+                       #'mdb/find-concepts (constantly [])
+                       #'subscriptions/check-subscription-ingest-permission (constantly nil)
+                       #'subscriptions/perform-subscription-ingest
+                       (fn [_context concept _headers]
+                         (is (not (nil? concept))))}
+
+        #(subscriptions/create-or-update-subscription-with-native-id "test-provider" "new-native-id" request)))
+
+    (testing "updates a subscription when a match is found"
       (with-redefs-fn {#'subscriptions/common-ingest-checks (constantly nil)
                        #'mdb/find-concepts (constantly [{:native-id "existing-id"}])
                        #'subscriptions/check-subscription-ingest-permission (constantly nil)
                        #'subscriptions/perform-subscription-ingest
                        (fn [_context concept _headers]
                          (is (not (nil? concept))))}
-
-        #(subscriptions/create-or-update-subscription-with-native-id "test-provider" "existing-id" request)))
-
-    (testing "with native-id not found throws an exception"
-      (is (thrown-with-msg?
-           clojure.lang.ExceptionInfo
-           #"No such subscription"
-           (with-redefs-fn {#'mdb/find-concepts (constantly [])                            }
-             #(subscriptions/create-or-update-subscription-with-native-id "test-provider" "existing-id" request)))))))
+        #(subscriptions/create-or-update-subscription-with-native-id "test-provider" "existing-id" request)))))
 
 (deftest generate-native-id-test
   (let [concept {:metadata
