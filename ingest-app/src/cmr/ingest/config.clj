@@ -72,20 +72,33 @@
     (ingest-username)
     (ingest-password)))
 
-(defconfig provider-exchange-name
-   "The ingest exchange to which provider change messages are published."
-   {:default "cmr_ingest_provider.exchange"})
-
-(defconfig ingest-exchange-name
-  "The ingest exchange to which provider change messages are published."
-  {:default "cmr_ingest.exchange"})
-
 (defconfig ingest-queue-name
   "The queue containing provider events like 'index provider collections'."
   {:default "cmr_ingest.queue"})
 
+(defconfig bulk-update-queue-name
+  "The queue containing granule bulk update events."
+  {:default "cmr_ingest.bulk_update_queue"})
+
+(defconfig ingest-exchange-name
+  "The ingest exchange to which ingest event messages are published."
+  {:default "cmr_ingest.exchange"})
+
+(defconfig provider-exchange-name
+   "The ingest exchange to which provider change and non-ingest messages are published."
+   {:default "cmr_ingest_provider.exchange"})
+
+(defconfig bulk-update-exchange-name
+   "The ingest exchange to which granule bulk update messages are published."
+   {:default "cmr_ingest_bulk_update.exchange"})
+
 (defconfig ingest-queue-listener-count
   "Number of worker threads to use for the queue listener for the provider queue"
+  {:default 2
+   :type Long})
+
+(defconfig bulk-update-queue-listener-count
+  "Number of worker threads to use for the queue listener for the granule bulk update queue"
   {:default 2
    :type Long})
 
@@ -93,10 +106,14 @@
   "Returns the queue configuration for the ingest application."
   []
   (assoc (queue-config/default-config)
-         :queues [(ingest-queue-name)]
-         :exchanges [(ingest-exchange-name) (provider-exchange-name)]
+         :queues [(ingest-queue-name)
+                  (bulk-update-queue-name)]
+         :exchanges [(ingest-exchange-name)
+                     (provider-exchange-name)
+                     (bulk-update-exchange-name)]
          :queues-to-exchanges
-         {(ingest-queue-name) [(ingest-exchange-name)]}))
+         {(ingest-queue-name) [(ingest-exchange-name)]
+          (bulk-update-queue-name) [(bulk-update-exchange-name)]}))
 
 (defconfig ingest-nrepl-port
   "Port to listen for nREPL connections."
