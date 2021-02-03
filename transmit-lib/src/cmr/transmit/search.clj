@@ -19,24 +19,6 @@
  (assoc (ch/context->http-headers context)
    config/token-header (config/echo-system-token)))
 
-(defn-timed save-subscription-notification-time
-  "make an http call to the database application"
-  [context data]
-  (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) (format "/subscription/%s/notification-time" (:subscription-concept-id data)))
-        response (client/put request-url
-                             (merge
-                               (config/conn-params conn)
-                               {:accept :xml
-                                :body (json/generate-string data)
-                                :headers (token-header context)
-                                :throw-exceptions false}))
-        {:keys [headers body]} response
-        status (int (:status response))]
-    (when-not (= status 204)
-      (errors/internal-error!
-        (format "Subscription update failed. status: %s body: %s" status body)))))
-
 (defn-timed find-granule-hits
   "Returns granule hits that match the given search parameters."
   [context params]

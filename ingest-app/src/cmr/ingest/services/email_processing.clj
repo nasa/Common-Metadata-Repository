@@ -13,6 +13,7 @@
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
+   [cmr.transmit.metadata-db2 :as mdb2]
    [cmr.transmit.search :as search]
    [markdown.core :as markdown]
    [postal.core :as postal-core]))
@@ -28,33 +29,29 @@
 (def time-constraint-pattern (re-pattern (str date-rx "," date-rx)))
 
 (spec/def ::time-constraint (spec/and
-                              string?
-                              #(re-matches time-constraint-pattern %)))
+                             string?
+                             #(re-matches time-constraint-pattern %)))
 
 (defconfig email-subscription-processing-lookback
   "Number of seconds to look back for granule changes."
-  {:default 3600
-   :type Long})
+  {:default 3600 :type Long})
 
 (defconfig email-server-host
   "The host name for email server."
-  {:default ""
-   :type String})
+  {:default "" :type String})
 
 (defconfig email-server-port
   "The port number for email server."
-  {:default 25
-   :type Long})
+  {:default 25 :type Long})
 
 (defconfig mail-sender
   "The email sender's email address."
-  {:default ""
-   :type String})
+  {:default "" :type String})
 
 (def subscription-permission-notification-expiration-days
-  "The number of days to wait before deleting subscription and notifying user that their permission
-   to view the collection was removed"
-   3)
+  "The number of days to wait before deleting subscription and notifying user
+   that their permission to view the collection was removed"
+  3)
 
 (defn- create-query-params
   "Create query parameters using the query string like
@@ -63,13 +60,13 @@
   (let [query-string-list (string/split query-string #"&")
         query-map-list (map #(let [a (string/split % #"=")]
                                {(first a) (second a)})
-                             query-string-list)]
-     (apply merge query-map-list)))
+                            query-string-list)]
+    (apply merge query-map-list)))
 
 (defn email-granule-url-list
- "take a list of URLs and format them for an email"
- [gran-ref-location]
- (string/join "\n" (map #(str "* [" % "](" % ")") gran-ref-location)))
+  "take a list of URLs and format them for an email"
+  [gran-ref-location]
+  (string/join "\n" (map #(str "* [" % "](" % ")") gran-ref-location)))
 
 (defn failed-permission-content
   "Create an email body for failed permission notifications."
@@ -85,25 +82,25 @@
                           "If you believe this subscription was deleted in error, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n\n"))}]})
 
 (defn create-email-content
- "Create an email body for subscriptions"
- [from-email-address to-email-address gran-ref-location subscription]
- (let [metadata (json/parse-string (:metadata subscription))
-       concept-id (get-in subscription [:extra-fields :collection-concept-id])
-       meta-query (get metadata "Query")
-       sub-start-time (:start-time subscription)]
-   {:from from-email-address
-    :to to-email-address
-    :subject "Email Subscription Notification"
-    :body [{:type "text/html"
-            :content (markdown/md-to-html-string
-                      (str "You have subscribed to receive notifications when data is added to the following query:\n\n"
-                           "`" concept-id "`\n\n"
-                           "`" meta-query "`\n\n"
-                           "Since this query was last run at "
-                           sub-start-time
-                           ", the following granules have been added or updated:\n\n"
-                           (email-granule-url-list gran-ref-location)
-                           "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"))}]}))
+  "Create an email body for subscriptions"
+  [from-email-address to-email-address gran-ref-location subscription]
+  (let [metadata (json/parse-string (:metadata subscription))
+        concept-id (get-in subscription [:extra-fields :collection-concept-id])
+        meta-query (get metadata "Query")
+        sub-start-time (:start-time subscription)]
+    {:from from-email-address
+     :to to-email-address
+     :subject "Email Subscription Notification"
+     :body [{:type "text/html"
+             :content (markdown/md-to-html-string
+                       (str "You have subscribed to receive notifications when data is added to the following query:\n\n"
+                            "`" concept-id "`\n\n"
+                            "`" meta-query "`\n\n"
+                            "Since this query was last run at "
+                            sub-start-time
+                            ", the following granules have been added or updated:\n\n"
+                            (email-granule-url-list gran-ref-location)
+                            "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"))}]}))
 
 (defn- add-updated-since
   "Pull out the start and end times from a time-constraint value and associate them to a map"
@@ -117,17 +114,18 @@
   "handle any packaging of data here before sending it off to transmit package"
   [context data]
   (debug "send-update-subscription-notification-time with" data)
-  (search/save-subscription-notification-time context data))
+  (mdb2/put-subscription-notification-details context data))
 
 (defn- check-collection-permissions
-  "Checks subscribered read permission for collection, we will send a notification if they lose visability."
+  "Checks subscribered read permission for a collection. Return an array of the
+  two status values for if the permision check failed, and when the permission
+  was checked if we will send a notification if they lose visibility."
   [context coll-id subscriber-id permission-check-time permission-check-failed]
   (let [permissions (json/parse-string
                      (access-control/get-permissions context {:user_id subscriber-id
                                                               :concept_id coll-id}))
         has-read (some #{"read"} (get permissions coll-id))]
-    (if (and (not has-read)
-             permission-check-failed)
+    (if (and (not has-read) permission-check-failed)
       [permission-check-failed permission-check-time]
       [(not has-read) nil])))
 
@@ -221,6 +219,14 @@
                            (tk/now)))
              permission-check-failed)
       (try
+        "Business rule: In the rare event that a user has an ACL removed from
+         their account, if they are subscribed to a collection they can no longer
+         see for a period of three days, CMR should delete their subscription and
+         send an email to the email address on their EDL account."
+        (info (format (str "Deleting the subscription concept %s from provider "
+                           "%s because the user has not had access to the"
+                           "collection %s for at least 3 days.")
+                      sub-id-id, provider-id, coll-id))
         (ingest/delete-concept
          context
          {:provider-id provider-id

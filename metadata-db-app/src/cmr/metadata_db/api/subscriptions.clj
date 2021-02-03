@@ -12,8 +12,8 @@
     (sub-note/update-subscription-notification request-context subscription-concept-id (json/parse-string (slurp body) true))))
 
 (def subscription-api-routes
+  "Receive notification to update subscription time"
   (context "/subscription" []
-    ;; receive notification to update subscription time
     (context "/:subscription-concept-id" [subscription-concept-id]
       (PUT "/notification-time"
         request
