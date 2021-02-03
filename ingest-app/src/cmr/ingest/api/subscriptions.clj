@@ -93,9 +93,8 @@
                                    first
                                    :extra-fields
                                    :subscriber-id)
-        subscription-user (if old-concept-subscriber
-                            old-concept-subscriber
-                            (:SubscriberId (json/decode (:metadata concept) true)))
+        subscription-user (or old-concept-subscriber
+                              (:SubscriberId (json/decode (:metadata concept) true)))
         token-user (api-core/get-user-id-from-token request-context)]
     (if (and token-user
              (= token-user subscription-user))
@@ -163,12 +162,12 @@
   "Processes a request to create a subscription using the native-id provided."
   [provider-id native-id request]
   (let [{:keys [body content-type headers request-context]} request]
+    (common-ingest-checks request-context provider-id)
     (when (native-id-collision? request-context provider-id native-id)
       (errors/throw-service-error
        :collision (format "Subscription with with provider-id [%s] and native-id [%s] already exists."
                           provider-id
                           native-id)))
-    (common-ingest-checks request-context provider-id)
     (let [concept (api-core/body->concept!
                    :subscription
                    provider-id
@@ -203,6 +202,7 @@
                                            :exclude-metadata false
                                            :latest true}
                                           concept-type))]
+    (common-ingest-checks request-context provider-id)
     (check-subscription-ingest-permission request-context concept provider-id)
     (let [concept-attribs (-> {:provider-id provider-id
                                :native-id native-id
