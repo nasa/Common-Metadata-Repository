@@ -20,9 +20,12 @@
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[cheshire "5.8.1"]
+  :exclusions [[org.clojure/clojurescript]]
+  :dependencies [[cheshire "5.10.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
+                 [com.fasterxml.jackson.core/jackson-core "2.12.1"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]
                  [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-authz "0.1.2"]
@@ -41,6 +44,7 @@
                  [metosin/reitit-ring "0.3.9"]
                  [metosin/ring-http-response "0.9.1"]
                  [org.clojure/clojure "1.10.1"]
+                 [org.clojure/clojurescript "1.10.764"]
                  [org.clojure/core.async "0.4.500"]
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
