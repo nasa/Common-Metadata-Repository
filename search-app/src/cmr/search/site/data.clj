@@ -113,8 +113,8 @@
         {:keys [items granule-counts-map]} result]
     (sort-by :entry-title
             (map #(assoc % :granule-count 
-                         (let [count (get-granule-count context (:concept-id %) {:downloadable true})] 
-                           (if (= 0 count) nil count))) items))))
+                         (let [gran-count (get-granule-count context (:concept-id %) {:downloadable true})] 
+                           (if (= 0 gran-count) nil gran-count))) items))))
 
 (defmethod collection-data :default
   [context tag provider-id]
