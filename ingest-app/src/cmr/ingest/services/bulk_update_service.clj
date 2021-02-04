@@ -153,7 +153,7 @@
 
 (defn validate-and-save-bulk-update
   "Validate the bulk update POST parameters, save rows to the db for task
-  and collection statuses, and queueu bulk update. Return task id, which comes
+  and collection statuses, and queue bulk update. Return task id, which comes
   from the db save."
   [context provider-id json user-id]
   (validate-bulk-update-post-params json)

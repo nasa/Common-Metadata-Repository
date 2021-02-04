@@ -19,7 +19,7 @@
   "Bulk update collections. Validate provider exists, check ACLs, and validate
   POST body. Writes rows to tables and returns task id"
   [provider-id request]
-  (if-not (ingest-config/bulk-update-enabled)
+  (if-not (ingest-config/collection-bulk-update-enabled)
     (srvc-errors/throw-service-error
         :bad-request "Bulk update is disabled.")
     (let [{:keys [body headers request-context]} request
@@ -33,6 +33,22 @@
           headers
           {:status 200
            :task-id task-id})))))
+
+(defn bulk-update-granules
+  "Bulk update granules. Validatie prvider exists, check ACLs, and validate
+   POST body. Writes tasks to queue for worker to begin processing."
+  [provider-id request]
+  (if-not (ingest-config/granule-bulk-update-enabled)
+    (srvc-errors/throw-service-error :bad-request "Bulk update is disabled")
+    (let [{:keys [body headers request-context]} request
+          content (api-core/read-body! body)
+          user-id (api-core/get-user-id request-context headers)]
+      (lt-validation/validate-launchpad-token request-context)
+      (api-core/verify-provider-exists request-context provider-id)
+      (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+      (api-core/generate-ingest-response
+        headers
+        {:status 404}))))
 
 (defn- generate-xml-status-list
  "Generate XML for a status list with the format
