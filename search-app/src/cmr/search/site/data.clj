@@ -76,6 +76,19 @@
   [results]
   (map :concept-id (:items results)))
 
+(defn-timed get-granule-count
+  "Get the granule count of a collection concept id given some query parameters"
+  [context collection-concept-id query-params]
+  (let [query (query-model/query {:concept-type :granule
+                                  :condition (gc/and-conds (query-svc/generate-query-conditions-for-parameters
+                                                            context
+                                                            :granule
+                                                            (merge {:collection-concept-id collection-concept-id} query-params)))
+                                  :page-size :unlimited
+                                  :result-format :query-specified
+                                  :result-fields [:collection-concept-id]})]
+    (count (:items (query-exec/execute-query context query)))))
+
 (defn-timed get-collection-data
   "Get the collection data from elastic by provider id and tag. Sort results
   by entry title"
@@ -99,7 +112,9 @@
         result (query-exec/execute-query context query)
         {:keys [items granule-counts-map]} result]
     (sort-by :entry-title
-             (map #(assoc % :granule-count (get granule-counts-map (:concept-id %))) items))))
+            (map #(assoc % :granule-count 
+                         (let [count (get-granule-count context (:concept-id %) {:downloadable true})] 
+                           (if (= 0 count) nil count))) items))))
 
 (defmethod collection-data :default
   [context tag provider-id]

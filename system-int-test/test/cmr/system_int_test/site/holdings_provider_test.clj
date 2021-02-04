@@ -71,6 +71,18 @@
                                    {:granule-ur "Granule1"
                                     :beginning-date-time "1970-06-02T12:00:00Z"
                                     :ending-date-time "1975-02-02T12:00:00Z"}))
+        
+        _g1-online_1 (data/ingest "PROV1" (dg/granule-with-umm-spec-collection
+                                  coll1 (:concept-id coll1)
+                                  {:related-urls [(dg/related-url {:type "GET DATA"})]
+                                   :beginning-date-time "1970-06-02T12:00:00Z"
+                                   :ending-date-time "1975-02-02T12:00:00Z"}))
+        
+        _g1-online_2 (data/ingest "PROV1" (dg/granule-with-umm-spec-collection
+                                           coll1 (:concept-id coll1)
+                                           {:related-urls [(dg/related-url {:type "GET DATA"})]
+                                            :beginning-date-time "1970-06-02T12:00:00Z"
+                                            :ending-date-time "1975-02-02T12:00:00Z"}))
 
         _g2 (data/ingest "PROV1"
                          (dg/granule-with-umm-spec-collection
@@ -92,6 +104,19 @@
                             :beginning-date-time "2012-01-01T00:00:00.000Z"
                             :ending-date-time "2012-01-01T00:00:00.000Z"})
                          {:format :umm-json})
+        
+        _g3-online (data/ingest "PROV1"
+                         (dg/granule-with-umm-spec-collection
+                          coll2 (:concept-id coll2)
+                          {:spatial-coverage (dg/spatial-with-track
+                                              {:cycle 2
+                                               :passes [{:pass 3}
+                                                        {:pass 4}]})
+                           :related-urls [(dg/related-url {:type "GET DATA"})
+                                          (dg/related-url)]
+                           :beginning-date-time "2012-01-01T00:00:00.000Z"
+                           :ending-date-time "2012-01-01T00:00:00.000Z"})
+                         {:format :umm-json})
 
         _ (index/wait-until-indexed)
         user1-token (echo/login (system/context) "user1")
@@ -108,7 +133,7 @@
       (let [page-data (html/parse (format "%sPROV1/tag1"
                                           (url/search-site-providers-holdings-url)))]
         (is (not= nil page-data))
-        
+
         (testing "Virtual directory links exist for each collection."
           (is (= 2
                  (->> page-data
@@ -118,20 +143,20 @@
                       count))))
 
         (testing "Collection granule counts and pluralizations are correct."
-          (is (= "Browse 2 Granules"
+          (is (= "Browse 1 Granule"
                  (->> page-data
                       (find-element-by-id "C2-PROV1-virtual-directory-link")
                       :content
                       first
                       trim)))
-          
-          (is (= "Browse 1 Granule"
+
+          (is (= "Browse 2 Granules"
                  (->> page-data
                       (find-element-by-id "C1-PROV1-virtual-directory-link")
                       :content
                       first
                       trim))))
-        
+
         (testing "Collections with no granules do not have link"
           (is (= nil (find-element-by-id "C3-PROV1-virtual-directory-link" page-data)))
           (is (= "No Granules"
