@@ -84,7 +84,7 @@
                                                             context
                                                             :granule
                                                             (merge {:collection-concept-id collection-concept-id} query-params)))
-                                  :page-size :0
+                                  :page-size 0
                                   :result-format :query-specified
                                   :result-fields [:collection-concept-id]})]
     (count (:items (query-exec/execute-query context query)))))
@@ -114,7 +114,7 @@
     (sort-by :entry-title
             (map #(assoc % :granule-count 
                          (let [gran-count (get-granule-count context (:concept-id %) {:downloadable true})] 
-                           (if (= 0 gran-count) nil gran-count))) items))))
+                           (when-not (zero? gran-count) gran-count))) items))))
 
 (defmethod collection-data :default
   [context tag provider-id]
