@@ -84,7 +84,7 @@
                                                             context
                                                             :granule
                                                             (merge {:collection-concept-id collection-concept-id} query-params)))
-                                  :page-size 0
+                                  :page-size :unlimited
                                   :result-format :query-specified
                                   :result-fields [:collection-concept-id]})]
     (count (:items (query-exec/execute-query context query)))))
