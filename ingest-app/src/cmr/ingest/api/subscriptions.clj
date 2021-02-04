@@ -202,7 +202,6 @@
                                            :exclude-metadata false
                                            :latest true}
                                           concept-type))]
-    (common-ingest-checks request-context provider-id)
     (check-subscription-ingest-permission request-context concept provider-id)
     (let [concept-attribs (-> {:provider-id provider-id
                                :native-id native-id
