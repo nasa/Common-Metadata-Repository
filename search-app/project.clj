@@ -70,7 +70,7 @@
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [ring/ring-mock "0.4.0"]]
+                                  [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
                    :resource-paths ["resources" "test/resources"]
                    :source-paths ["src" "dev" "test"]
