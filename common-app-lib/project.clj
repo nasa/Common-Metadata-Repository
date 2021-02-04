@@ -3,8 +3,10 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-app-lib"
   :exclusions [[cheshire]
                [clj-time]]
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.10.0"]
                  [clj-time "0.15.1"]
+                 [com.fasterxml.jackson.core/jackson-core "2.12.1"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]
                  [compojure "1.6.1"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]

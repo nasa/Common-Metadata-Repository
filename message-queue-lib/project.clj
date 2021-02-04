@@ -15,7 +15,7 @@
                [org.apache.httpcomponents/httpcore]
                [org.clojure/tools.reader]
                [potemkin]]
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.10.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version
@@ -24,6 +24,7 @@
                  [com.fasterxml.jackson.core/jackson-core "2.12.0"]
                  [com.fasterxml.jackson.core/jackson-annotations "2.12.0"]
                  [com.fasterxml.jackson.core/jackson-databind "2.12.0"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [commons-logging "1.2"]
