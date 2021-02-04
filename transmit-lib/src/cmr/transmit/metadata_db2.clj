@@ -2,6 +2,11 @@
   "This contains functions for interacting with the metadata db API. It uses the newer transmit namespace
   style that concepts, and access control use"
   (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [cmr.common.api.context :as ch]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util :refer [defn-timed]]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
    [cmr.transmit.http-helper :as h]
@@ -132,6 +137,11 @@
 
 ;; Defines health check function
 (h/defhealther get-metadata-db-health :metadata-db {:timeout-secs 2})
+
+(defn token-header
+ [context]
+ (assoc (ch/context->http-headers context)
+   config/token-header (config/echo-system-token)))
 
 (defn-timed put-subscription-notification-details
   "make an http call to the database application"

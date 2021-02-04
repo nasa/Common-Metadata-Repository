@@ -226,7 +226,7 @@
         (info (format (str "Deleting the subscription concept %s from provider "
                            "%s because the user has not had access to the"
                            "collection %s for at least 3 days.")
-                      sub-id-id, provider-id, coll-id))
+                      sub-id, provider-id, coll-id))
         (ingest/delete-concept
          context
          {:provider-id provider-id
