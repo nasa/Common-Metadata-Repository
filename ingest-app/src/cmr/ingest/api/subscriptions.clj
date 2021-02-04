@@ -40,27 +40,30 @@
                      (json/decode true))
         concept-id (:CollectionConceptId metadata)
         subscriber-id (:SubscriberId metadata)]
-      (try
-        (let [permissions (-> (access-control/get-permissions request-context
-                                                              {:concept_id concept-id
-                                                               :user_id subscriber-id})
-                              json/decode
-                              (get concept-id))]
-          (when-not (some #{"read"} permissions)
-            (subscriber-collection-permission-error
-             subscriber-id
-             concept-id)))
-        (catch Exception e
+    (try
+      (let [permissions (-> (access-control/get-permissions request-context
+                                                            {:concept_id concept-id
+                                                             :user_id subscriber-id})
+                            json/decode
+                            (get concept-id))]
+        (when-not (some #{"read"} permissions)
           (subscriber-collection-permission-error
            subscriber-id
-           concept-id)))))
+           concept-id)))
+      (catch Exception e
+        (error (format "An error occurred while checking for permissions for subscriber-id [%s]:%s"
+                       subscriber-id
+                       (.getMessage e)))
+        (subscriber-collection-permission-error
+         subscriber-id
+         concept-id)))))
 
 (defn- perform-subscription-ingest
   "This function assumes all checks have already taken place and that a
   subscription is ready to be saved"
   [request-context concept headers]
+  (check-subscriber-collection-permission request-context concept)
   (let [validated-concept (validate-and-prepare-subscription-concept concept)
-        _ (check-subscriber-collection-permission request-context concept)
         concept-with-user-id (api-core/set-user-id validated-concept
                                                    request-context
                                                    headers)
@@ -155,7 +158,6 @@
                        :subscription provider-id (str (UUID/randomUUID)) body content-type headers)
           native-id (get-unique-native-id request-context tmp-concept)
           concept (assoc tmp-concept :native-id native-id)]
-      (check-subscription-ingest-permission request-context concept provider-id)
       (perform-subscription-ingest request-context concept headers))))
 
 (defn create-subscription-with-native-id
@@ -165,7 +167,8 @@
     (common-ingest-checks request-context provider-id)
     (when (native-id-collision? request-context provider-id native-id)
       (errors/throw-service-error
-       :collision (format "Subscription with with provider-id [%s] and native-id [%s] already exists."
+       :collision (format (str "Subscription with with provider-id [%s] "
+                               "and native-id [%s] already exists.")
                           provider-id
                           native-id)))
     (let [concept (api-core/body->concept!
@@ -175,7 +178,6 @@
                    body
                    content-type
                    headers)]
-      (check-subscription-ingest-permission request-context concept provider-id)
       (perform-subscription-ingest request-context concept headers))))
 
 (defn create-or-update-subscription-with-native-id
@@ -193,8 +195,7 @@
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."
   [provider-id native-id request]
-  (let [{:keys [body content-type headers request-context]} request
-        _ (common-ingest-checks request-context provider-id)
+  (let [{:keys [_body _content-type headers request-context]} request
         concept-type :subscription
         concept (first (mdb/find-concepts request-context
                                           {:provider-id provider-id
@@ -202,6 +203,7 @@
                                            :exclude-metadata false
                                            :latest true}
                                           concept-type))]
+    (common-ingest-checks request-context provider-id)
     (check-subscription-ingest-permission request-context concept provider-id)
     (let [concept-attribs (-> {:provider-id provider-id
                                :native-id native-id
