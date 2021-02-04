@@ -5,8 +5,7 @@
    [clojure.test :refer :all]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.api.subscriptions :as subscriptions]
-   [cmr.transmit.metadata-db :as mdb]
-   [ring.mock.request :as mock]))
+   [cmr.transmit.metadata-db :as mdb]))
 
 (deftest generate-native-id-test
   (let [concept {:metadata
