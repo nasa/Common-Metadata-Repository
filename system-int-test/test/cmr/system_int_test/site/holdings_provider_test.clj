@@ -5,7 +5,7 @@
    [clojure.string :refer [trim]]
    [cmr.mock-echo.client.echo-util :as echo]
    [cmr.system-int-test.data2.core :as data]
-   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.granule :as data-granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as system]
@@ -66,28 +66,28 @@
                            :ShortName "granule-less collection"}))
         _ (index/wait-until-indexed)
 
-        _g1 (data/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _g1 (data/ingest "PROV1" (data-granule/granule-with-umm-spec-collection
                                    coll1 (:concept-id coll1)
                                    {:granule-ur "Granule1"
                                     :beginning-date-time "1970-06-02T12:00:00Z"
                                     :ending-date-time "1975-02-02T12:00:00Z"}))
         
-        _g1-online-1 (data/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _g1-online-1 (data/ingest "PROV1" (data-granule/granule-with-umm-spec-collection
                                   coll1 (:concept-id coll1)
-                                  {:related-urls [(dg/related-url {:type "GET DATA"})]
+                                  {:related-urls [(data-granule/related-url {:type "GET DATA"})]
                                    :beginning-date-time "1970-06-02T12:00:00Z"
                                    :ending-date-time "1975-02-02T12:00:00Z"}))
         
-        _g1-online-2 (data/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _g1-online-2 (data/ingest "PROV1" (data-granule/granule-with-umm-spec-collection
                                            coll1 (:concept-id coll1)
-                                           {:related-urls [(dg/related-url {:type "GET DATA"})]
+                                           {:related-urls [(data-granule/related-url {:type "GET DATA"})]
                                             :beginning-date-time "1970-06-02T12:00:00Z"
                                             :ending-date-time "1975-02-02T12:00:00Z"}))
 
         _g2 (data/ingest "PROV1"
-                         (dg/granule-with-umm-spec-collection
+                         (data-granule/granule-with-umm-spec-collection
                            coll2 (:concept-id coll2)
-                           {:spatial-coverage (dg/spatial-with-track
+                           {:spatial-coverage (data-granule/spatial-with-track
                                                 {:cycle 1
                                                  :passes [{:pass 1}]})
                             :beginning-date-time "2012-01-01T00:00:00.000Z"
@@ -95,9 +95,9 @@
                          {:format :umm-json})
 
         _g3 (data/ingest "PROV1"
-                         (dg/granule-with-umm-spec-collection
+                         (data-granule/granule-with-umm-spec-collection
                            coll2 (:concept-id coll2)
-                           {:spatial-coverage (dg/spatial-with-track
+                           {:spatial-coverage (data-granule/spatial-with-track
                                                 {:cycle 2
                                                  :passes [{:pass 3}
                                                           {:pass 4}]})
@@ -106,14 +106,14 @@
                          {:format :umm-json})
         
         _g3-online (data/ingest "PROV1"
-                         (dg/granule-with-umm-spec-collection
+                         (data-granule/granule-with-umm-spec-collection
                           coll2 (:concept-id coll2)
-                          {:spatial-coverage (dg/spatial-with-track
+                          {:spatial-coverage (data-granule/spatial-with-track
                                               {:cycle 2
                                                :passes [{:pass 3}
                                                         {:pass 4}]})
-                           :related-urls [(dg/related-url {:type "GET DATA"})
-                                          (dg/related-url)]
+                           :related-urls [(data-granule/related-url {:type "GET DATA"})
+                                          (data-granule/related-url)]
                            :beginning-date-time "2012-01-01T00:00:00.000Z"
                            :ending-date-time "2012-01-01T00:00:00.000Z"})
                          {:format :umm-json})
