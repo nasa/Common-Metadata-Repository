@@ -100,7 +100,7 @@
                                                    :short-name
                                                    :version-id]})
          result (query-exec/execute-query context query)
-         collection-concept-ids (into [] (map (fn [item] (:concept-id item)) (:items result)))
+         collection-concept-ids (vec (map :concept-id (:items result)))
          my-condition (gc/and-conds (into [] (concat granule-conditions [(query-model/string-conditions :collection-concept-id collection-concept-ids true)])))
          granule-query (query-model/query {:concept-type :granule
                                            :condition my-condition
