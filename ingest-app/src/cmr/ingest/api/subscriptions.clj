@@ -12,7 +12,8 @@
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.metadata-db :as mdb])
+   [cmr.transmit.metadata-db :as mdb]
+   [ring.util.codec :as codec])
   (:import
    [java.util UUID]))
 
@@ -124,6 +125,17 @@
       csk/->snake_case
       (str "_" (UUID/randomUUID))))
 
+(defn- decode-query-in-concept
+        "Query can be URL encoded which will cause requests for provider=PROV1&options[spatial][or]=true
+         to fail. Extracts the Query, decodes it and then puts it back in."
+        [concept]
+        (let [metadata (json/parse-string (:metadata concept))
+              decoded-query (codec/form-decode-str (get metadata "Query"))
+              metadata-fixed (assoc metadata "Query" decoded-query)
+              metadata-as-str (json/generate-string metadata-fixed)
+              concept-fixed (assoc concept :metadata metadata-as-str)]
+          concept-fixed))
+
 (defn ingest-subscription
   "Processes a request to create or update a subscription. Note, this will allow
   unlimited subscriptions to be created by users for themselves. Revisit if this
@@ -134,7 +146,8 @@
     (let [tmp-concept (api-core/body->concept!
                        :subscription provider-id (str (UUID/randomUUID)) body content-type headers)
           native-id (or opt-native-id (generate-native-id tmp-concept))
-          concept (assoc tmp-concept :native-id native-id)]
+          concept-with-native (assoc tmp-concept :native-id native-id)
+          concept (decode-query-in-concept concept-with-native)]
       (check-subscription-ingest-permission request-context concept provider-id)
       (perform-subscription-ingest request-context concept headers))))
 
