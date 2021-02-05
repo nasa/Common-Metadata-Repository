@@ -215,7 +215,7 @@
           collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
       (is (= "COMPLETE" (:task-status collection-response)))
 
-      (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
+      (side/eval-form `(ingest-config/set-collection-bulk-update-enabled! false))
       ;; Kick off bulk update when bulk update is disabled is not allowed
       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
         (is (= 400 (:status response)))
@@ -232,7 +232,7 @@
         (is (= [(format "Bulk update task with task id [%s] could not be found for provider id [PROV2]."
                         task-id)]
                (:errors collection-response))))
-      (side/eval-form `(ingest-config/set-bulk-update-enabled! true)))
+      (side/eval-form `(ingest-config/set-collection-bulk-update-enabled! true)))
 
     ;; Kick off bulk update
     (let [response (ingest/bulk-update-collections

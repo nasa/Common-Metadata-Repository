@@ -19,7 +19,7 @@
   "Bulk update collections. Validate provider exists, check ACLs, and validate
   POST body. Writes rows to tables and returns task id"
   [provider-id request]
-  (if-not (ingest-config/collection-bulk-update-enabled?)
+  (if-not (ingest-config/collection-bulk-update-enabled)
     (srvc-errors/throw-service-error
         :bad-request "Bulk update is disabled.")
     (let [{:keys [body headers request-context]} request
@@ -38,7 +38,7 @@
   "Bulk update granules. Validate provider exists, check ACLs, and validate
    POST body. Writes tasks to queue for worker to begin processing."
   [provider-id request]
-  (if-not (ingest-config/granule-bulk-update-enabled?)
+  (if-not (ingest-config/granule-bulk-update-enabled)
     (srvc-errors/throw-service-error :bad-request "Bulk granule update is disabled")
     (let [{:keys [body headers request-context]} request
           content (api-core/read-body! body)
