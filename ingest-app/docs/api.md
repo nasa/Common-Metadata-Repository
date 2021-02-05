@@ -38,6 +38,10 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [POST - Translate collection metadata.](#translate-collection)
   * /translate/granule
     * [POST - Translate granule metadata.](#translate-granule)
+  * /providers/<provider-id>/bulk-update/collections
+    * [POST - Collection bulk update](#collection-bulk-update)
+  * /providers/<provider-id>/bulk-update/granules
+    * [POST - Granule bulk update](#granule-bulk-update)
 
 ***
 
@@ -445,7 +449,7 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 A new variable ingest endpoint is provided to ensure that variable association is created at variable ingest time.
 Variable concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/collections/<collection-concept-id>/<collection-revision-id>/variables/<native-id>`.  `<collection-revision-id>` is optional. The response will include the [concept id](#concept-id),[revision id](#revision-id), variable-association and associated-item.
 
-Note: 
+Note:
 
 1. There is no more fingerprint check at variable's ingest/update time because the existing fingerprint is obsolete. The new variable uniqueness is defined by variable name and the collection it's associated with and is checked at variable association creation time.
 2. When using the new variable ingest endpoint to update a variable, the association will be updated too. There can be one and only one association for each variable, with or without collection revision info. This decision is based on the feedback from NSIDC that there is no need for a variable to be associated with multiple revisions of a collection. When a new association info is passed in, the old one will be replaced, when the exact same association info is passed in, a new revision of the old association is created.
@@ -884,15 +888,15 @@ Example output:
   }
 }
 ```
-## <a name="bulk-update"></a> Collection Bulk Update
+## <a name="collection-bulk-update"></a> Collection Bulk Update
 
-The bulk update API is used perform the same collection update to multiple concepts in one call. Bulk update is currently for collections only, granules are not supported.
+The collection bulk update API is used perform the same collection update to multiple concepts in one call.
 
 Bulk update is initiated through an ingest POST endpoint with the concept ids to update, the update type, the update field, and update information. The metadata is converted to the latest version of UMM, if not the native format, updated according to the parameters, and saved as the latest version of UMM-JSON, **making the native format of the collection now UMM-JSON**. Previous revisions of the collection are retained in the original native format. In the UMM-JSON metadata, the Metadata Date of type "UPDATE" will be set to the current date. Please note that when we apply bulk update on a collection, regardless if there are actual changes, a new revision is created.
 
 Updated collections are validated using business rule validations.  Updates will not be saved if the business validations fail. The error will be recorded in the individual collection status, which can be queried via the status endpoint. Collection validation warnings will not prevent saving the updated collection and the warnings will be recorded in the individual collection status.
 
-Bulk update currently supports updating the following fields:
+Collection bulk update currently supports updating the following fields:
 
   * Science Keywords
   * Location Keywords
@@ -1043,3 +1047,24 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV
 </result>
 ```
 Bulk update status and results are available for 90 days.
+
+## <a name="granule-bulk-update"></a> Granule Bulk Update
+
+The granule bulk update API is used perform the same granule update to multiple concepts in one call.
+
+Bulk update is initiated through an ingest POST endpoint with the concept ids to update, the update type, the update field, and update information.
+
+Updated granules are validated using business rule validations.  Updates will not be saved if the business validations fail. The error will be recorded in the individual granule status, which can be queried via the status endpoint. Granule validation warnings will not prevent saving the updated granule and the warnings will be recorded in the individual granule status.
+
+Granule bulk update currently supports updating the following fields:
+
+  * Related URLs
+
+Bulk update post request takes a JSON file with the following parameters:
+
+  * Concept-ids (required) - a list of concept ids to update, which need to be associated with the provider the bulk update is initiated with. If it is equal to ["ALL"], case insensitive, all the collections for the provider will be updated.
+  * Name (optional) - a name used to identify a bulk update task. It needs to be unique within a provider. If no name is provided this will be defaulted to the task id that is created when a bulk update task is initiated.
+  * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`
+  * Update field (required) - choose from the enumeration: `RELATED URLS`
+  * Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.  
+  * Find value (required for `FIND_AND_REPLACE`, `FIND_AND_UPDATE` and `FIND_AND_REMOVE` update types) - UMM-JSON representation of the data to find

@@ -12,8 +12,12 @@
   {:default 90
    :type Long})
 
-(defconfig bulk-update-enabled
-  "Flag for whether or not bulk update is enabled."
+(defconfig collection-bulk-update-enabled
+  "Flag for whether or not bulk collection update is enabled."
+  {:default true :type Boolean})
+
+(defconfig granule-bulk-update-enabled
+  "Flag for whether or not bulk granule update is enabled."
   {:default true :type Boolean})
 
 (defconfig granule-umm-version
