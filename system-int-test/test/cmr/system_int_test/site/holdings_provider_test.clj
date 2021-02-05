@@ -72,13 +72,13 @@
                                     :beginning-date-time "1970-06-02T12:00:00Z"
                                     :ending-date-time "1975-02-02T12:00:00Z"}))
         
-        _g1-online_1 (data/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _g1-online-1 (data/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                   coll1 (:concept-id coll1)
                                   {:related-urls [(dg/related-url {:type "GET DATA"})]
                                    :beginning-date-time "1970-06-02T12:00:00Z"
                                    :ending-date-time "1975-02-02T12:00:00Z"}))
         
-        _g1-online_2 (data/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _g1-online-2 (data/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                            coll1 (:concept-id coll1)
                                            {:related-urls [(dg/related-url {:type "GET DATA"})]
                                             :beginning-date-time "1970-06-02T12:00:00Z"
