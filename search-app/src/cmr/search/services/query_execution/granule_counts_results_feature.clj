@@ -144,7 +144,7 @@
                                               :collection-concept-id :granule)
                                       :size (count collection-ids)}}}})))
 
-(defn- search-results->granule-counts
+(defn search-results->granule-counts
   "Extracts the granule counts per collection id in a map from the search results from ElasticSearch"
   [elastic-results]
   (let [aggs (get-in elastic-results [:aggregations :granule-counts-by-collection-id :buckets])]
