@@ -84,10 +84,10 @@
                                                             context
                                                             :granule
                                                             (merge {:collection-concept-id collection-concept-id} query-params)))
-                                  :page-size :unlimited
+                                  :page-size 0
                                   :result-format :query-specified
                                   :result-fields [:collection-concept-id]})]
-    (count (:items (query-exec/execute-query context query)))))
+    (:hits (query-exec/execute-query context query))))
 
 (defn-timed get-collection-data
   "Get the collection data from elastic by provider id and tag. Sort results
