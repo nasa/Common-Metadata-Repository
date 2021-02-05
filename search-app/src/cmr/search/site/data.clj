@@ -101,7 +101,7 @@
                                                    :version-id]})
          result (query-exec/execute-query context query)
          collection-concept-ids (vec (map :concept-id (:items result)))
-         my-condition (gc/and-conds (into [] (concat granule-conditions [(query-model/string-conditions :collection-concept-id collection-concept-ids true)])))
+         my-condition (gc/and-conds (concat granule-conditions [(query-model/string-conditions :collection-concept-id collection-concept-ids true)]))
          granule-query (query-model/query {:concept-type :granule
                                            :condition my-condition
                                            :page-size 0
@@ -120,7 +120,7 @@
 
 (defmethod collection-data :default
   ([context tag provider-id]
-   (get-collection-data context tag provider-id []))
+   (get-collection-data context tag provider-id))
   ([context tag provider-id granule-conditions]
    (get-collection-data context tag provider-id granule-conditions)))
 
