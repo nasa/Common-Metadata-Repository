@@ -41,20 +41,20 @@
                      (json/decode true))
         concept-id (:CollectionConceptId metadata)
         subscriber-id (:SubscriberId metadata)]
-      (try
-        (let [permissions (-> (access-control/get-permissions request-context
-                                                              {:concept_id concept-id
-                                                               :user_id subscriber-id})
-                              json/decode
-                              (get concept-id))]
-          (when-not (some #{"read"} permissions)
-            (subscriber-collection-permission-error
-             subscriber-id
-             concept-id)))
-        (catch Exception e
+    (try
+      (let [permissions (-> (access-control/get-permissions request-context
+                                                            {:concept_id concept-id
+                                                             :user_id subscriber-id})
+                            json/decode
+                            (get concept-id))]
+        (when-not (some #{"read"} permissions)
           (subscriber-collection-permission-error
            subscriber-id
-           concept-id)))))
+           concept-id)))
+      (catch Exception e
+        (subscriber-collection-permission-error
+         subscriber-id
+         concept-id)))))
 
 (defn- perform-subscription-ingest
   "This function assumes all checks have already taken place and that a
@@ -126,15 +126,16 @@
       (str "_" (UUID/randomUUID))))
 
 (defn- decode-query-in-concept
-        "Query can be URL encoded which will cause requests for provider=PROV1&options[spatial][or]=true
+  "Query can be URL encoded which will cause requests for provider=PROV1&options[spatial][or]=true
          to fail. Extracts the Query, decodes it and then puts it back in."
-        [concept]
-        (let [metadata (json/parse-string (:metadata concept))
-              decoded-query (codec/form-decode-str (get metadata "Query"))
-              metadata-fixed (assoc metadata "Query" decoded-query)
-              metadata-as-str (json/generate-string metadata-fixed)
-              concept-fixed (assoc concept :metadata metadata-as-str)]
-          concept-fixed))
+  [concept]
+  (if-let [metadata (json/parse-string (:metadata concept))]
+    (let [decoded-query (codec/form-decode-str (get metadata "Query"))
+          metadata-fixed (assoc metadata "Query" decoded-query)
+          metadata-as-str (json/generate-string metadata-fixed)
+          concept-fixed (assoc concept :metadata metadata-as-str)]
+      concept-fixed)
+    concept))
 
 (defn ingest-subscription
   "Processes a request to create or update a subscription. Note, this will allow
