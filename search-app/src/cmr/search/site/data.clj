@@ -80,45 +80,49 @@
 (defn-timed get-collection-data
   "Get the collection data from elastic by provider id and tag. Sort results
   by entry title"
-  [context tag provider-id]
-  (let [conditions (query-svc/generate-query-conditions-for-parameters
-                    context
-                    :collection
-                    {:tag-key tag
-                     :provider provider-id})
-        query (query-model/query {:concept-type :collection
-                                  :condition (gc/and-conds conditions)
-                                  :skip-acls? false
-                                  :page-size :unlimited
-                                  :result-format :query-specified
-                                  :result-features [:granule-counts]
-                                  :result-fields [:concept-id
-                                                  :doi
-                                                  :entry-title
-                                                  :short-name
-                                                  :version-id]})
-        result (query-exec/execute-query context query)
-        collection-concept-ids (into [] (map (fn [item] (:concept-id item)) (:items result)))
-        my-condition (gc/and-conds [(query-model/string-conditions :collection-concept-id collection-concept-ids true) (query-model/boolean-condition :downloadable true)])
-        granule-query (query-model/query {:concept-type :granule
-                                          :condition my-condition
-                                          :page-size 0
-                                          :result-format :query-specified
-                                          :result-fields []
-                                          :aggregations {:granule-counts-by-collection-id
-                                                         {:terms {:field (q2e/query-field->elastic-field
-                                                                          :collection-concept-id :granule)
-                                                                  :size (count collection-concept-ids)}}}})
-        elastic-result (query-exec/execute-query context granule-query)
-        collection-concept-id-to-count-map (gcrf/search-results->granule-counts elastic-result)
-        {:keys [items]} result]
-    (sort-by :entry-title
-            (map #(assoc % :granule-count
-                            (get collection-concept-id-to-count-map (:concept-id %))) items))))
+  ([context tag provider-id]
+   (get-collection-data context tag provider-id []))
+  ([context tag provider-id granule-conditions]
+   (let [conditions (query-svc/generate-query-conditions-for-parameters
+                     context
+                     :collection
+                     {:tag-key tag
+                      :provider provider-id})
+         query (query-model/query {:concept-type :collection
+                                   :condition (gc/and-conds conditions)
+                                   :skip-acls? false
+                                   :page-size :unlimited
+                                   :result-format :query-specified
+                                   :result-features [:granule-counts]
+                                   :result-fields [:concept-id
+                                                   :doi
+                                                   :entry-title
+                                                   :short-name
+                                                   :version-id]})
+         result (query-exec/execute-query context query)
+         collection-concept-ids (into [] (map (fn [item] (:concept-id item)) (:items result)))
+         my-condition (gc/and-conds (into [] (concat granule-conditions [(query-model/string-conditions :collection-concept-id collection-concept-ids true)])))
+         granule-query (query-model/query {:concept-type :granule
+                                           :condition my-condition
+                                           :page-size 0
+                                           :result-format :query-specified
+                                           :result-fields []
+                                           :aggregations {:granule-counts-by-collection-id
+                                                          {:terms {:field (q2e/query-field->elastic-field
+                                                                           :collection-concept-id :granule)
+                                                                   :size (count collection-concept-ids)}}}})
+         elastic-result (query-exec/execute-query context granule-query)
+         collection-concept-id-to-count-map (gcrf/search-results->granule-counts elastic-result)
+         {:keys [items]} result]
+     (sort-by :entry-title
+              (map #(assoc % :granule-count
+                           (get collection-concept-id-to-count-map (:concept-id %))) items)))))
 
 (defmethod collection-data :default
-  [context tag provider-id]
-  (get-collection-data context tag provider-id))
+  ([context tag provider-id]
+   (get-collection-data context tag provider-id []))
+  ([context tag provider-id granule-conditions]
+   (get-collection-data context tag provider-id granule-conditions)))
 
 (defn-timed provider-data
   "Create a provider data structure suitable for template iteration to
@@ -213,7 +217,7 @@
    (let [holdings (filter filter-fn
                         (make-holdings-data
                           (util/get-app-url context)
-                          (collection-data context tag provider-id)))
+                          (collection-data context tag provider-id [(query-model/boolean-condition :downloadable true)])))
          common-data (base-page context)
          virtual-directory-url (app-url->virtual-directory-url (get common-data :base-url))]
      (merge
