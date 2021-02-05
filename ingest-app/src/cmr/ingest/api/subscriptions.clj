@@ -114,27 +114,27 @@
       (str "_" (UUID/randomUUID))))
 
 (defn native-id-collision?
-"Queries metadata db for a matching provider-id and native-id pair."
-[context provider-id native-id]
-(let [query {:provider-id provider-id
-             :native-id native-id
-             :exclude-metadata true
-             :latest true}]
-(-> context
-    (mdb/find-concepts query :subscription)
-    seq)))
+  "Queries metadata db for a matching provider-id and native-id pair."
+  [context provider-id native-id]
+  (let [query {:provider-id provider-id
+               :native-id native-id
+               :exclude-metadata true
+               :latest true}]
+    (-> context
+        (mdb/find-concepts query :subscription)
+        seq)))
 
 (defn get-unique-native-id
-"Get a native-id that is unique by testing against the database."
-[context subscription]
-(let [native-id (generate-native-id subscription)
-      provider-id (:provider-id subscription)]
-(if (native-id-collision? context provider-id native-id)
-  (do
-    (warn (format "Collision detected while generating native-id [%s] for provider [%s], retrying."
-                  native-id provider-id))
-    (get-unique-native-id context subscription))
-  native-id)))
+  "Get a native-id that is unique by testing against the database."
+  [context subscription]
+  (let [native-id (generate-native-id subscription)
+        provider-id (:provider-id subscription)]
+    (if (native-id-collision? context provider-id native-id)
+      (do
+        (warn (format "Collision detected while generating native-id [%s] for provider [%s], retrying."
+                      native-id provider-id))
+        (get-unique-native-id context subscription))
+      native-id)))
 
 (defn create-subscription
   "Processes a request to create a subscription. A native id will be generated."
