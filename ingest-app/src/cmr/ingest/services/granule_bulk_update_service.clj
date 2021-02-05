@@ -21,7 +21,6 @@
  and granule statuses, and queue bulk granule update. Return task id, which comes
  from the db save."
  [context provider-id json user-id]
- ;; (validate-bulk-update-post-params json)
  (let [bulk-update-params (json/parse-string json true)
        {:keys [concept-ids]} bulk-update-params
        bulk-update-params (assoc bulk-update-params :concept-ids concept-ids)

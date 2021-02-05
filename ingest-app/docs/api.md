@@ -1059,3 +1059,12 @@ Updated granules are validated using business rule validations.  Updates will no
 Granule bulk update currently supports updating the following fields:
 
   * Related URLs
+
+Bulk update post request takes a JSON file with the following parameters:
+
+  * Concept-ids (required) - a list of concept ids to update, which need to be associated with the provider the bulk update is initiated with. If it is equal to ["ALL"], case insensitive, all the collections for the provider will be updated.
+  * Name (optional) - a name used to identify a bulk update task. It needs to be unique within a provider.
+  * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`
+  * Update field (required) - choose from the enumeration: `RELATED URLS`
+  * Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.  
+  * Find value (required for `FIND_AND_REPLACE`, `FIND_AND_UPDATE` and `FIND_AND_REMOVE` update types) - UMM-JSON representation of the data to find
