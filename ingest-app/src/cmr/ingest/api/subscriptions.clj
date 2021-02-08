@@ -81,38 +81,27 @@
   (lt-validation/validate-launchpad-token request-context)
   (api-core/verify-provider-exists request-context provider-id))
 
-(defn- check-subscription-ingest-permission
-  "All the checks needed before starting to process an ingest of subscriptions"
-  [request-context concept provider-id]
-  (let [old-concept-subscriber (-> (mdb/find-concepts request-context
-                                                      {:provider-id provider-id
-                                                       :native-id (:native-id concept)
-                                                       :exclude-metadata false
-                                                       :latest true}
-                                                      :subscription)
-                                   first
-                                   :extra-fields
-                                   :subscriber-id)
-        subscription-user (if old-concept-subscriber
-                            old-concept-subscriber
-                            (:SubscriberId (json/decode (:metadata concept) true)))
-        token-user (api-core/get-user-id-from-token request-context)]
+(defn- check-subscription-management-acls
+  "Check the user-id of the user submitting the request matches the
+   subscriber-id of the subscription being modified."
+  [context subscriber-id provider-id]
+  (let [token-user (api-core/get-user-id-from-token context)]
     (if (and token-user
-             (= token-user subscription-user))
+             (= token-user subscriber-id))
       (warn (format (str "ACLs were bypassed because the token account '%s' "
                          "matched the subscription user '%s' in the metadata.")
                     token-user
-                    subscription-user))
+                    subscriber-id))
       (do
         (info (format (str "ACLs were checked because the token user %s is "
                            "not the same as the subscription user %s in the "
                            "metadata.")
                       token-user
-                      subscription-user))
+                      subscriber-id))
         (acl/verify-ingest-management-permission
-         request-context :update :provider-object provider-id)
+         context :update :provider-object provider-id)
         (acl/verify-subscription-management-permission
-         request-context :update :provider-object provider-id)))))
+         context :update :provider-object provider-id)))))
 
 (defn generate-native-id
   "Generate a native-id for a subscription based on the name."
@@ -124,42 +113,119 @@
       csk/->snake_case
       (str "_" (UUID/randomUUID))))
 
-(defn ingest-subscription
-  "Processes a request to create or update a subscription. Note, this will allow
-  unlimited subscriptions to be created by users for themselves. Revisit if this
-  Becomes a problem"
-  [provider-id opt-native-id request]
+(defn native-id-collision?
+  "Queries metadata db for a matching provider-id and native-id pair."
+  [context provider-id native-id]
+  (let [query {:provider-id provider-id
+               :native-id native-id
+               :exclude-metadata true
+               :latest true}]
+    (-> context
+        (mdb/find-concepts query :subscription)
+        seq)))
+
+(defn get-unique-native-id
+  "Get a native-id that is unique by testing against the database."
+  [context subscription]
+  (let [native-id (generate-native-id subscription)
+        provider-id (:provider-id subscription)]
+    (if (native-id-collision? context provider-id native-id)
+      (do
+        (warn (format "Collision detected while generating native-id [%s] for provider [%s], retrying."
+                      native-id provider-id))
+        (get-unique-native-id context subscription))
+      native-id)))
+
+(defn create-subscription
+  "Processes a request to create a subscription. A native id will be generated."
+  [provider-id request]
   (let [{:keys [body content-type headers request-context]} request]
     (common-ingest-checks request-context provider-id)
-    (let [tmp-concept (api-core/body->concept!
-                       :subscription provider-id (str (UUID/randomUUID)) body content-type headers)
-          native-id (or opt-native-id (generate-native-id tmp-concept))
-          concept (assoc tmp-concept :native-id native-id)]
-      (check-subscription-ingest-permission request-context concept provider-id)
-      (perform-subscription-ingest request-context concept headers))))
+    (let [tmp-subscription (api-core/body->concept!
+                            :subscription
+                            provider-id
+                            (str (UUID/randomUUID))
+                            body
+                            content-type
+                            headers)
+          native-id (get-unique-native-id request-context tmp-subscription)
+          new-subscription (assoc tmp-subscription :native-id native-id)
+          subscriber-id (:SubscriberId (json/decode (:metadata new-subscription) true))]
+      (check-subscription-management-acls request-context subscriber-id provider-id)
+      (perform-subscription-ingest request-context new-subscription headers))))
+
+(defn create-subscription-with-native-id
+  "Processes a request to create a subscription using the native-id provided."
+  [provider-id native-id request]
+  (let [{:keys [body content-type headers request-context]} request]
+    (common-ingest-checks request-context provider-id)
+    (when (native-id-collision? request-context provider-id native-id)
+      (errors/throw-service-error
+       :collision (format "Subscription with with provider-id [%s] and native-id [%s] already exists."
+                          provider-id
+                          native-id)))
+    (let [new-subscription (api-core/body->concept!
+                            :subscription
+                            provider-id
+                            native-id
+                            body
+                            content-type
+                            headers)
+          subscriber-id (:SubscriberId (json/decode (:metadata new-subscription) true))]
+      (check-subscription-management-acls request-context subscriber-id provider-id)
+      (perform-subscription-ingest request-context new-subscription headers))))
+
+(defn create-or-update-subscription-with-native-id
+  "Processes a request to create or update a subscription. This function
+  does NOT fail on collisions. This is mapped to PUT methods to preserve
+  existing functionality."
+  [provider-id native-id request]
+  (let [{:keys [body content-type headers request-context]} request
+        _ (common-ingest-checks request-context provider-id)
+        new-subscription (api-core/body->concept! :subscription
+                                                  provider-id
+                                                  native-id
+                                                  body
+                                                  content-type
+                                                  headers)
+        original-subscriber (when-let [original-subscription
+                                       (first (mdb/find-concepts
+                                               request-context
+                                               {:provider-id provider-id
+                                                :native-id native-id
+                                                :exclude-metadata false
+                                                :latest true}
+                                               :subscription))]
+                              (get-in original-subscription [:extra-fields :subscriber-id]))
+        subscriber-id (or original-subscriber
+                          (:SubscriberId (json/decode (:metadata new-subscription) true)))]
+
+    (check-subscription-management-acls request-context subscriber-id provider-id)
+    (perform-subscription-ingest request-context new-subscription headers)))
 
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."
   [provider-id native-id request]
   (let [{:keys [body content-type headers request-context]} request
         _ (common-ingest-checks request-context provider-id)
-        concept-type :subscription
-        concept (first (mdb/find-concepts request-context
-                                          {:provider-id provider-id
-                                           :native-id native-id
-                                           :exclude-metadata false
-                                           :latest true}
-                                          concept-type))]
-    (check-subscription-ingest-permission request-context concept provider-id)
-    (let [concept-attribs (-> {:provider-id provider-id
-                               :native-id native-id
-                               :concept-type concept-type}
-                              (api-core/set-revision-id headers)
-                              (api-core/set-user-id request-context headers))]
-      (info (format "Deleting %s %s from client %s"
-                    (name concept-type) (pr-str concept-attribs) (:client-id request-context)))
-      (api-core/generate-ingest-response headers
-                                         (api-core/format-and-contextualize-warnings
-                                          (ingest/delete-concept
-                                           request-context
-                                           concept-attribs))))))
+        subscriber-id (when-let [subscription (first (mdb/find-concepts
+                                                      request-context
+                                                      {:provider-id provider-id
+                                                       :native-id native-id
+                                                       :exclude-metadata false
+                                                       :latest true}
+                                                      :subscription))]
+                        (get-in subscription [:extra-fields :subscriber-id]))
+        concept-attribs (-> {:provider-id provider-id
+                             :native-id native-id
+                             :concept-type :subscription}
+                            (api-core/set-revision-id headers)
+                            (api-core/set-user-id request-context headers))]
+    (check-subscription-management-acls request-context subscriber-id provider-id)
+    (info (format "Deleting subscription %s from client %s"
+                  (pr-str concept-attribs) (:client-id request-context)))
+    (api-core/generate-ingest-response headers
+                                       (api-core/format-and-contextualize-warnings
+                                        (ingest/delete-concept
+                                         request-context
+                                         concept-attribs)))))

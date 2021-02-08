@@ -28,10 +28,10 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [PUT - Create or update a tool.](#create-update-tool)
     * [DELETE - Delete a tool.](#delete-tool)
   * /providers/\<provider-id>/subscriptions
-   *  [POST - Create a subscription without specifying a native-id.](#create-update-subscription)
+   *  [POST - Create a subscription without specifying a native-id.](#create-subscription)
   * /providers/\<provider-id>/subscriptions/\<native-id>
-    * [POST - Create a subscription.](#create-update-subscription)
-    * [PUT - Create or update a subscription.](#create-update-subscription)
+    * [POST - Create a subscription with a provided native-id.](#create-subscription)
+    * [PUT - Create or Update a subscription.](#update-subscription)
     * [DELETE - Delete a subscription.](#delete-subscription)
     * [Subscription Access Control](#subscription-access-control)
   * /translate/collection
@@ -269,6 +269,10 @@ The format of the concept id is:
     <letter> <unique-number> "-" <provider-id>
 
 An example concept id is C179460405-LPDAAC_ECS. The letter identifies the concept type. G is for granule. C is for collection. The [provider id](#provider-id) is the upper case unique identifier for a provider.
+
+#### <a name="native-id"></a> CMR Native Id
+
+A native-id is an identifier, unique per provider, used to identify concepts within CMR. The native-id is a string with no specific pattern.
 
 ***
 
@@ -696,11 +700,26 @@ curl -i -X DELETE \
 {"concept-id":"TL1200000015-PROV1","revision-id":2}
 ```
 
-### <a name="create-update-subscription"></a> Create / Update a Subscription
+### <a name="create-subscription"></a> Create a Subscription
 
-Subscription concept can be created or updated by sending an HTTP PUT or POST with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+Subscription concepts can be created by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) ,the [revision id](#revision-id), and a [native-id](#native-id).
 
-If `native-id` is not specified in the request it will be generated. This is only supported for POST requests.
+If a native-id is not provided it will be generated. This is only supported for POST requests.
+POST requests may only be used for creating subscriptions.
+
+POST only may be used without a native-id at the following URL.
+`%CMR-ENDPOINT%/providers/<provider-id>/subscriptions`
+
+POST or PUT may be used with the following URL.
+`%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`
+
+### <a name="update-subscription"></a> Update a Subscription
+
+Subscription concept can be updated by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+
+If a native-id is provided in a POST, and a subscription already exists for that provider with the given native-id, the request will be rejected.
+
+PUT requests should be used for updating subscriptions. Creation of subscriptions using PUT may be deprecated in the future. All PUT requests require a native-id to be part of the request URL.
 
 ```
 curl -i -XPUT \
@@ -725,6 +744,7 @@ curl -i -XPOST \
 <result>
   <concept-id>SUB1200000015-PROV1</concept-id>
   <revision-id>1</revision-id>
+  <native-id>subscription123</native-id>
 </result>
 ```
 #### Successful Response in JSON
@@ -733,7 +753,7 @@ By passing the option `-H "Accept: application/json"` to `curl`, one may
 get a JSON response:
 
 ```
-{"concept-id":"SUB1200000015-PROV1","revision-id":1}
+{"concept-id":"SUB1200000015-PROV1","revision-id":1,"native-id":"subscription123"}
 ```
 
 ### <a name="delete-subscription"></a> Delete a Subscription

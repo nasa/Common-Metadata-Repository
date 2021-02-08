@@ -159,16 +159,16 @@
        (context ["/subscriptions"] []
          (POST "/"
            request
-           (subscriptions/ingest-subscription
-            provider-id nil request)))
+           (subscriptions/create-subscription
+            provider-id request)))
        (context ["/subscriptions/:native-id" :native-id #".*$"] [native-id]
          (POST "/"
            request
-           (subscriptions/ingest-subscription
+           (subscriptions/create-subscription-with-native-id
             provider-id native-id request))
          (PUT "/"
            request
-           (subscriptions/ingest-subscription
+           (subscriptions/create-or-update-subscription-with-native-id
             provider-id native-id request))
          (DELETE "/"
            request
