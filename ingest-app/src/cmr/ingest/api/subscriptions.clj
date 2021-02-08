@@ -180,8 +180,8 @@
   does NOT fail on collisions. This is mapped to PUT methods to preserve
   existing functionality."
   [provider-id native-id request]
-  (common-ingest-checks request-context provider-id)
   (let [{:keys [body content-type headers request-context]} request
+        _ (common-ingest-checks request-context provider-id)
         new-subscription (api-core/body->concept! :subscription
                                                   provider-id
                                                   native-id
@@ -206,8 +206,8 @@
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."
   [provider-id native-id request]
-  (common-ingest-checks request-context provider-id)
   (let [{:keys [body content-type headers request-context]} request
+        _ (common-ingest-checks request-context provider-id)
         subscriber-id (when-let [subscription (first (mdb/find-concepts
                                                       request-context
                                                       {:provider-id provider-id
