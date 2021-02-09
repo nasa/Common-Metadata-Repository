@@ -41,7 +41,7 @@
 (def token-header
   "echo-token")
 
-(def authorization-header 
+(def authorization-header
   "authorization")
 
 (def revision-id-header
@@ -130,6 +130,10 @@
 (defconfig mock-echo-port
   "The port to start mock echo and urs on"
   {:default 3008 :type Long})
+
+(defconfig mock-echo-relative-root-url
+  "The relative root url for connections to Mock ECHO."
+  {:default ""})
 
 (defconfig echo-rest-context
   "The root context for connections to ECHO Rest."

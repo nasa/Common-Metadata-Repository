@@ -27,7 +27,8 @@
                 :provider-db (provider-db/create-db)
                 :acl-db (acl-db/create-db)
                 :urs-db (urs-db/create-db)
-                :web (web/create-web-server (transmit-config/mock-echo-port) routes/make-api)}]
+                :web (web/create-web-server (transmit-config/mock-echo-port) routes/make-api)
+                :relative-root-url (transmit-config/mock-echo-relative-root-url)}]
     (transmit-config/system-with-connections system [:access-control])))
 
 (def start
