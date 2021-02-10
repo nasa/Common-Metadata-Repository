@@ -506,11 +506,11 @@
       (is (= 201 status))
       (is (nil? errors)))))
 
-(deftest ingest-update-and-delete-subscription-as-subscriber
+(deftest update-and-delete-subscription-as-subscriber-via-put
   (testing "Tests updating and deleting subscriptions as subscriber"
     (echo-util/ungrant-by-search (system/context)
                                  {:provider "PROV1"
-                                  :target ["SUBSCRIPTION_MANAGEMENT" "INGEST_MANAGEMENT_ACL"]})
+                                  :target ["SUBSCRIPTION_MANAGEMENT"]})
     (ac-util/wait-until-indexed)
     (let [admin-group (echo-util/get-or-create-group (system/context) "admin-group")
           admin-user-token (echo-util/login (system/context) "admin-user" [admin-group])]
@@ -530,42 +530,58 @@
                     {:ShortName "coll1"
                      :EntryTitle "entry-title1"})
                    {:token "mock-echo-system-token"})
-            concept1-user1 (subscription-util/make-subscription-concept {:SubscriberId "user1"
-                                                                         :CollectionConceptId (:concept-id coll1)})
-            concept1-user2 (subscription-util/make-subscription-concept {:SubscriberId "user2"
-                                                                         :CollectionConceptId (:concept-id coll1)})
-            concept2 (subscription-util/make-subscription-concept {:SubscriberId "user1"
-                                                                   :native-id "new-concept"
-                                                                   :CollectionConceptId (:concept-id coll1)})
-            {:keys [concept-id revision-id status]} (ingest/ingest-concept concept1-user1 {:token user1-token})
-            concept1-user1 (merge {:concept-id concept-id} concept1-user1)
-            concept1-user2 (merge {:concept-id concept-id} concept1-user2)]
+            sub1-user1 (subscription-util/make-subscription-concept
+                        {:SubscriberId "user1"
+                         :Name "sub-name1"
+                         :native-id "sub1"
+                         :CollectionConceptId (:concept-id coll1)})
+            sub1-user2 (subscription-util/make-subscription-concept
+                        {:SubscriberId "user2"
+                         :Name "sub-name1"
+                         :native-id "sub1"
+                         :CollectionConceptId (:concept-id coll1)})
+            sub2 (subscription-util/make-subscription-concept
+                  {:SubscriberId "user1"
+                   :Name "sub-name2"
+                   :native-id "sub2"
+                   :CollectionConceptId (:concept-id coll1)})
+            {:keys [concept-id revision-id status]} (ingest/ingest-concept
+                                                     sub1-user1 {:token user1-token})]
+
+        ;; verify subscription with user1 as subscriber is created successfully
         (is (= 201 status))
+
         (are3 [ingest-api-call args expected-status expected-errors]
           (let [{:keys [status errors]} (apply ingest-api-call args)]
             (is (= expected-status status))
             (is (= expected-errors errors)))
 
           "Attempt to update subscription as user2"
-          ingest/ingest-concept [concept1-user2 {:token user2-token}] 401 ["You do not have permission to perform that action."]
+          ingest/ingest-concept [sub1-user2 {:token user2-token}] 401 ["You do not have permission to perform that action."]
 
           "Attempt to delete subscription as user2"
-          ingest/delete-concept [concept1-user2 {:token user2-token}] 401 ["You do not have permission to perform that action."]
+          ingest/delete-concept [sub1-user2 {:token user2-token}] 401 ["You do not have permission to perform that action."]
 
           "Update subscription as user1"
-          ingest/ingest-concept [concept1-user1 {:token user1-token}] 200 nil
+          ingest/ingest-concept [sub1-user1 {:token user1-token}] 200 nil
 
           "Delete subscription as user1"
-          ingest/delete-concept [concept1-user1 {:token user1-token}] 200 nil
+          ingest/delete-concept [sub1-user1 {:token user1-token}] 200 nil
+
+          "Update subscription as user1 to change subscriber id to user2 is not allowed"
+          ingest/ingest-concept [sub1-user2 {:token user1-token}] 401 ["You do not have permission to perform that action."]
+
+          "Update subscription as admin-user to change subscriber id to user2 is allowed"
+          ingest/ingest-concept [sub1-user2 {:token admin-user-token}] 200 nil
 
           "Ingest subscription as admin"
-          ingest/ingest-concept [concept2 {:token admin-user-token}] 201 nil
+          ingest/ingest-concept [sub2 {:token admin-user-token}] 201 nil
 
           "Update subscription as admin"
-          ingest/ingest-concept [concept2 {:token admin-user-token}] 200 nil
+          ingest/ingest-concept [sub2 {:token admin-user-token}] 200 nil
 
           "Delete subscription as admin"
-          ingest/delete-concept [concept2 {:token admin-user-token}] 200 nil)))))
+          ingest/delete-concept [sub2 {:token admin-user-token}] 200 nil)))))
 
 (deftest subscription-ingest-subscriber-collection-permission-check-test
   (testing "Tests that the subscriber has permission to view the collection before allowing ingest"
@@ -584,7 +600,7 @@
       ;; adjust permissions
       (echo-util/ungrant-by-search (system/context)
                                    {:provider "PROV1"
-                                    :target ["SUBSCRIPTION_MANAGEMENT" "INGEST_MANAGEMENT_ACL"]})
+                                    :target ["SUBSCRIPTION_MANAGEMENT"]})
       (echo-util/ungrant-by-search (system/context)
                                    {:provider "PROV1"
                                     :identity-type "catalog_item"})
@@ -709,11 +725,11 @@
         (is (not (nil? (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)})))))))))
 
     (testing "with native-id provided"
-      (let [concept (assoc (subscription-util/make-subscription-concept
-                            {:SubscriberId "post-user"
-                             :Name "a different subscription with native-id"
-                             :CollectionConceptId (:concept-id coll)})
-                           :native-id "another-native-id")
+      (let [concept (subscription-util/make-subscription-concept
+                     {:SubscriberId "post-user"
+                      :Name "a different subscription with native-id"
+                      :native-id "another-native-id"
+                      :CollectionConceptId (:concept-id coll)})
             {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
                                                                                   :method :post})]
         (is (= 201 status))
@@ -723,7 +739,14 @@
         (index/wait-until-indexed)
 
         (is (= (:native-id concept)
-               (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))
+               (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))
+
+        (testing "update subscription with POST is not allowed"
+          (let [{:keys [status errors]} (ingest/ingest-concept concept {:token token
+                                                                        :method :post})]
+            (is (= 409 status))
+            (is (= ["Subscription with with provider-id [PROV1] and native-id [another-native-id] already exists."]
+                   errors))))))
 
     (testing "without native-id provided with unicode in the name"
       (let [concept (dissoc (subscription-util/make-subscription-concept

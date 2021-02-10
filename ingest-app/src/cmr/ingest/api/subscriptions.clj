@@ -55,6 +55,14 @@
            subscriber-id
            concept-id)))))
 
+(defn- get-subscriber-id
+  "Returns the subscriber id of the given subscription concept by parsing its metadata."
+  [sub-concept]
+  (-> sub-concept
+      :metadata
+      (json/decode true)
+      :SubscriberId))
+
 (defn- perform-subscription-ingest
   "This function assumes all checks have already taken place and that a
   subscription is ready to be saved"
@@ -81,27 +89,35 @@
   (lt-validation/validate-launchpad-token request-context)
   (api-core/verify-provider-exists request-context provider-id))
 
-(defn- check-subscription-management-acls
-  "Check the user-id of the user submitting the request matches the
-   subscriber-id of the subscription being modified."
-  [context subscriber-id provider-id]
-  (let [token-user (api-core/get-user-id-from-token context)]
-    (if (and token-user
-             (= token-user subscriber-id))
-      (warn (format (str "ACLs were bypassed because the token account '%s' "
-                         "matched the subscription user '%s' in the metadata.")
-                    token-user
-                    subscriber-id))
-      (do
-        (info (format (str "ACLs were checked because the token user %s is "
-                           "not the same as the subscription user %s in the "
-                           "metadata.")
-                      token-user
-                      subscriber-id))
-        (acl/verify-ingest-management-permission
-         context :update :provider-object provider-id)
-        (acl/verify-subscription-management-permission
-         context :update :provider-object provider-id)))))
+(defn- check-ingest-permission
+  "Raise error if the user in the given context does not have the necessary permission to
+   create/update/delete a subscription based on the new and old subscriber and existing ACLs."
+  ([context provider-id new-subscriber]
+   (check-ingest-permission context provider-id new-subscriber nil))
+  ([context provider-id new-subscriber old-subscriber]
+   (let [token-user (api-core/get-user-id-from-token context)]
+     (if (and token-user
+              (or (= token-user new-subscriber old-subscriber)
+                  (and (= token-user new-subscriber)
+                       (nil? old-subscriber))))
+       (info (format "ACLs were bypassed because token user matches the subscriber [%s]."
+                     new-subscriber))
+       (do
+         ;; log ACL checking message
+         (if (and old-subscriber
+                  (not= new-subscriber old-subscriber))
+           (info (format "ACLs were checked because subscription subscriber is changed from [%s] to [%s]."
+                         old-subscriber
+                         new-subscriber))
+           (info (format (str "ACLs were checked because token user [%s] is different from "
+                              "the subscriber [%s] in the metadata.")
+                         token-user
+                         new-subscriber)))
+
+         (acl/verify-ingest-management-permission
+           context :update :provider-object provider-id)
+         (acl/verify-subscription-management-permission
+           context :update :provider-object provider-id))))))
 
 (defn generate-native-id
   "Generate a native-id for a subscription based on the name."
@@ -150,8 +166,8 @@
                             headers)
           native-id (get-unique-native-id request-context tmp-subscription)
           new-subscription (assoc tmp-subscription :native-id native-id)
-          subscriber-id (:SubscriberId (json/decode (:metadata new-subscription) true))]
-      (check-subscription-management-acls request-context subscriber-id provider-id)
+          subscriber-id (get-subscriber-id new-subscription)]
+      (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context new-subscription headers))))
 
 (defn create-subscription-with-native-id
@@ -161,9 +177,10 @@
     (common-ingest-checks request-context provider-id)
     (when (native-id-collision? request-context provider-id native-id)
       (errors/throw-service-error
-       :collision (format "Subscription with with provider-id [%s] and native-id [%s] already exists."
-                          provider-id
-                          native-id)))
+       :conflict
+       (format "Subscription with with provider-id [%s] and native-id [%s] already exists."
+               provider-id
+               native-id)))
     (let [new-subscription (api-core/body->concept!
                             :subscription
                             provider-id
@@ -171,8 +188,8 @@
                             body
                             content-type
                             headers)
-          subscriber-id (:SubscriberId (json/decode (:metadata new-subscription) true))]
-      (check-subscription-management-acls request-context subscriber-id provider-id)
+          subscriber-id (get-subscriber-id new-subscription)]
+      (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context new-subscription headers))))
 
 (defn create-or-update-subscription-with-native-id
@@ -188,19 +205,18 @@
                                                   body
                                                   content-type
                                                   headers)
-        original-subscriber (when-let [original-subscription
-                                       (first (mdb/find-concepts
-                                               request-context
-                                               {:provider-id provider-id
-                                                :native-id native-id
-                                                :exclude-metadata false
-                                                :latest true}
-                                               :subscription))]
-                              (get-in original-subscription [:extra-fields :subscriber-id]))
-        subscriber-id (or original-subscriber
-                          (:SubscriberId (json/decode (:metadata new-subscription) true)))]
+        old-subscriber (when-let [original-subscription
+                                  (first (mdb/find-concepts
+                                          request-context
+                                          {:provider-id provider-id
+                                           :native-id native-id
+                                           :exclude-metadata false
+                                           :latest true}
+                                          :subscription))]
+                         (get-in original-subscription [:extra-fields :subscriber-id]))
+        new-subscriber (get-subscriber-id new-subscription)]
 
-    (check-subscription-management-acls request-context subscriber-id provider-id)
+    (check-ingest-permission request-context provider-id new-subscriber old-subscriber)
     (perform-subscription-ingest request-context new-subscription headers)))
 
 (defn delete-subscription
@@ -221,7 +237,7 @@
                              :concept-type :subscription}
                             (api-core/set-revision-id headers)
                             (api-core/set-user-id request-context headers))]
-    (check-subscription-management-acls request-context subscriber-id provider-id)
+    (check-ingest-permission request-context provider-id subscriber-id)
     (info (format "Deleting subscription %s from client %s"
                   (pr-str concept-attribs) (:client-id request-context)))
     (api-core/generate-ingest-response headers
