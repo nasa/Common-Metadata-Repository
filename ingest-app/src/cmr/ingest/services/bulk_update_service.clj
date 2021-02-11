@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [cmr.common-app.config :as common-config]
    [cmr.common.concepts :as concepts]
+   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.validations.json-schema :as js]
@@ -197,8 +198,10 @@
   from the db save."
   [context provider-id json user-id]
   (validate-bulk-update-post-params :granule json)
-  (clojure.pprint/pprint json)
-  )
+
+  (warn (format (str "Granule bulk update called for provider [%s] "
+                     "by user [%s] but it has not been implemented yet.")
+                provider-id user-id)))
 
 (defn handle-bulk-update-event
   "For each concept-id, queueu collection bulk update messages"
