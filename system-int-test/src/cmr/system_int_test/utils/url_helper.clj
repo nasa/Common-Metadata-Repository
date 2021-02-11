@@ -256,26 +256,33 @@
   (format "http://localhost:%s/caches/clear-cache" (transmit-config/ingest-port)))
 
 (defn ingest-collection-bulk-update-url
- "Bulk update collections"
- [provider-id]
- (format "http://localhost:%s/providers/%s/bulk-update/collections"
-  (transmit-config/ingest-port)
-  provider-id))
+  "Bulk update collections"
+  [provider-id]
+  (format "http://localhost:%s/providers/%s/bulk-update/collections"
+          (transmit-config/ingest-port)
+          provider-id))
 
 (defn ingest-collection-bulk-update-status-url
- "Get the tasks and statuses for collection bulk update by provider"
- [provider-id]
- (format "http://localhost:%s/providers/%s/bulk-update/collections/status"
-  (transmit-config/ingest-port)
-  provider-id))
+  "Get the tasks and statuses for collection bulk update by provider"
+  [provider-id]
+  (format "http://localhost:%s/providers/%s/bulk-update/collections/status"
+          (transmit-config/ingest-port)
+          provider-id))
 
 (defn ingest-collection-bulk-update-task-status-url
- "Get the task and collection statuses by provider and task"
- [provider-id task-id]
- (format "http://localhost:%s/providers/%s/bulk-update/collections/status/%s"
-  (transmit-config/ingest-port)
-  provider-id
-  task-id))
+  "Get the task and collection statuses by provider and task"
+  [provider-id task-id]
+  (format "http://localhost:%s/providers/%s/bulk-update/collections/status/%s"
+          (transmit-config/ingest-port)
+          provider-id
+          task-id))
+
+(defn ingest-collection-bulk-granule-update-url
+  "Bulk update collections"
+  [provider-id]
+  (format "http://localhost:%s/providers/%s/bulk-update/granules"
+          (transmit-config/ingest-port)
+          provider-id))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search URLs

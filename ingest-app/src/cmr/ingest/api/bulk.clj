@@ -21,18 +21,22 @@
   [provider-id request]
   (if-not (ingest-config/collection-bulk-update-enabled)
     (srvc-errors/throw-service-error
-        :bad-request "Bulk update is disabled.")
+     :bad-request "Bulk update is disabled.")
     (let [{:keys [body headers request-context]} request
           content (api-core/read-body! body)
           user-id (api-core/get-user-id request-context headers)]
       (lt-validation/validate-launchpad-token request-context)
       (api-core/verify-provider-exists request-context provider-id)
       (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-      (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id content user-id)]
+      (let [task-id (bulk-update/validate-and-save-bulk-update
+                     request-context
+                     provider-id
+                     content
+                     user-id)]
         (api-core/generate-ingest-response
-          headers
-          {:status 200
-           :task-id task-id})))))
+         headers
+         {:status 200
+          :task-id task-id})))))
 
 (defn bulk-update-granules
   "Bulk update granules. Validate provider exists, check ACLs, and validate
@@ -46,21 +50,31 @@
       (lt-validation/validate-launchpad-token request-context)
       (api-core/verify-provider-exists request-context provider-id)
       (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-      (api-core/generate-ingest-response
-        headers
-        {:status 404}))))
+      (let [_task-id (bulk-update/validate-and-save-bulk-granule-update
+                      request-context
+                      provider-id
+                      content
+                      user-id)]
+        (api-core/generate-ingest-response
+         ;; 501 => not-yet-implemented
+         headers
+         {:status 501
+          :message (str "The bulk granule update feature has not been completed yet. "
+                        "Please refer to "
+                        "https://cmr.earthdata.nasa.gov/search/site/docs/ingest/api.html "
+                        "or contact cmr@nasa.gov for information regarding bulk granule update.")})))))
 
 (defn- generate-xml-status-list
- "Generate XML for a status list with the format
- {:id :status :status-message}"
- [result status-list-key status-key id-key]
- (xml/element status-list-key {}
-   (for [status (get result status-list-key)
-         :let [message (:status-message status)]]
-    (xml/element status-key {}
-     (xml/element id-key {} (get status id-key))
-     (xml/element :status {} (:status status))
-     (xml/element :status-message {} message)))))
+  "Generate XML for a status list with the format
+  {:id :status :status-message}"
+  [result status-list-key status-key id-key]
+  (xml/element status-list-key {}
+               (for [status (get result status-list-key)
+                     :let [message (:status-message status)]]
+                 (xml/element status-key {}
+                              (xml/element id-key {} (get status id-key))
+                              (xml/element :status {} (:status status))
+                              (xml/element :status-message {} message)))))
 
 (defn- generate-xml-provider-tasks-list
  "Generate XML for a status list with the format
