@@ -4,8 +4,7 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.ingest.api.core :as api-core]
-   [cmr.ingest.api.subscriptions :as subscriptions]
-   [cmr.transmit.metadata-db :as mdb]))
+   [cmr.ingest.api.subscriptions :as subscriptions]))
 
 (deftest generate-native-id-test
   (let [concept {:metadata
