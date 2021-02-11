@@ -57,14 +57,14 @@ This defines common headers on the ingest API.
 
 Content-Type is a standard HTTP header that specifies the content type of the body of the request. Ingest supports the following content types for ingesting metadata.
 
-|       Content-Type       |    Description    |    Concept Types    |
-| ------------------------ | ----------------- | ------------------- |
-| application/dif10+xml    | DIF 10            | collection          |
-| application/dif+xml      | DIF 9             | collection          |
-| application/echo10+xml   | ECHO 10           | collection, granule |
-| application/iso19115+xml | ISO 19115 (MENDS) | collection          |
-| application/iso:smap+xml | ISO 19115 SMAP    | collection, granule |
-| application/vnd.nasa.cmr.umm+json| UMM JSON  | collection, granule, variable, service, subscription, tool |
+|       Content-Type                |    Description    |    Concept Types    |
+| --------------------------------- | ----------------- | ------------------- |
+| application/dif10+xml             | DIF 10            | collection          |
+| application/dif+xml               | DIF 9             | collection          |
+| application/echo10+xml            | ECHO 10           | collection, granule |
+| application/iso19115+xml          | ISO 19115 (MENDS) | collection          |
+| application/iso:smap+xml          | ISO 19115 SMAP    | collection, granule |
+| application/vnd.nasa.cmr.umm+json | UMM JSON          | collection, granule, variable, service, subscription, tool |
 
 Note: UMM JSON accepts an additional version parameter for both `Content-Type` and `Accept` headers. Like charset, it is appended with a semicolon (;). If no version is appended, the latest version is assumed.
 
@@ -73,6 +73,8 @@ For an example, the following means version 1.14 of the UMM JSON format:
 ```
 application/vnd.nasa.cmr.umm+json;version=1.14
 ```
+
+Note: For all values of `Content-Type`, data sent using POST or PUT should not be URL encoded.
 
 #### <a name="echo-token-header"></a> Echo-Token Header
 
@@ -713,6 +715,8 @@ POST only may be used without a native-id at the following URL.
 POST or PUT may be used with the following URL.
 `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`
 
+Query values should not be URL encoded.
+
 ### <a name="update-subscription"></a> Update a Subscription
 
 Subscription concept can be updated by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
@@ -720,6 +724,8 @@ Subscription concept can be updated by sending an HTTP POST or PUT with the meta
 If a native-id is provided in a POST, and a subscription already exists for that provider with the given native-id, the request will be rejected.
 
 PUT requests should be used for updating subscriptions. Creation of subscriptions using PUT may be deprecated in the future. All PUT requests require a native-id to be part of the request URL.
+
+Query values should not be URL encoded.
 
 ```
 curl -i -XPUT \
