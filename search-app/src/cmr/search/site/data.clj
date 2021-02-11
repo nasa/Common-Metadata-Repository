@@ -15,6 +15,7 @@
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as query-exec]
    [cmr.common-app.services.search.query-model :as query-model]
+   [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common-app.site.data :as common-data]
    [cmr.common.doi :as doi]
    [cmr.common.log :refer [debug error]]
@@ -79,31 +80,53 @@
 (defn-timed get-collection-data
   "Get the collection data from elastic by provider id and tag. Sort results
   by entry title"
-  [context tag provider-id]
-  (let [conditions (query-svc/generate-query-conditions-for-parameters
+  ([context tag provider-id]
+   (get-collection-data context tag provider-id []))
+  ([context tag provider-id granule-conditions]
+   (let [conditions (query-svc/generate-query-conditions-for-parameters
                      context
                      :collection
                      {:tag-key tag
                       :provider provider-id})
-        query (query-model/query {:concept-type :collection
-                                  :condition (gc/and-conds conditions)
-                                  :skip-acls? false
-                                  :page-size :unlimited
-                                  :result-format :query-specified
-                                  :result-features [:granule-counts]
-                                  :result-fields [:concept-id
-                                                  :doi
-                                                  :entry-title
-                                                  :short-name
-                                                  :version-id]})
-        result (query-exec/execute-query context query)
-        {:keys [items granule-counts-map]} result]
-    (sort-by :entry-title
-             (map #(assoc % :granule-count (get granule-counts-map (:concept-id %))) items))))
+         query (query-model/query {:concept-type :collection
+                                   :condition (gc/and-conds conditions)
+                                   :skip-acls? false
+                                   :page-size :unlimited
+                                   :result-format :query-specified
+                                   :result-features [:granule-counts]
+                                   :result-fields [:concept-id
+                                                   :doi
+                                                   :entry-title
+                                                   :short-name
+                                                   :version-id]})
+         result (query-exec/execute-query context query)
+         collection-concept-ids (remove nil? (mapv :concept-id (:items result)))]
+
+     (when (seq collection-concept-ids)
+       (let [gran-agg-condition (gc/and-conds
+                                 (concat granule-conditions
+                                         [(query-model/string-conditions :collection-concept-id collection-concept-ids true)]))
+             granule-query (query-model/query {:concept-type :granule
+                                               :condition gran-agg-condition
+                                               :page-size 0
+                                               :result-format :query-specified
+                                               :result-fields []
+                                               :aggregations {:granule-counts-by-collection-id
+                                                              {:terms {:field (q2e/query-field->elastic-field
+                                                                               :collection-concept-id :granule)
+                                                                       :size (count collection-concept-ids)}}}})
+             elastic-result (query-exec/execute-query context granule-query)
+             collection-concept-id-to-count-map (gcrf/search-results->granule-counts elastic-result)
+             {:keys [items]} result]
+         (sort-by :entry-title
+                  (map #(assoc % :granule-count
+                               (get collection-concept-id-to-count-map (:concept-id %))) items)))))))
 
 (defmethod collection-data :default
-  [context tag provider-id]
-  (get-collection-data context tag provider-id))
+  ([context tag provider-id]
+   (get-collection-data context tag provider-id))
+  ([context tag provider-id granule-conditions]
+   (get-collection-data context tag provider-id granule-conditions)))
 
 (defn-timed provider-data
   "Create a provider data structure suitable for template iteration to
@@ -114,10 +137,15 @@
   [context tag data]
   (let [provider-id (:provider-id data)
         collections (collection-data context tag provider-id)]
-    {:id provider-id
-     :tag tag
-     :collections collections
-     :collections-count (count collections)}))
+    (if (seq collections)
+      {:id provider-id
+       :tag tag
+       :collections collections
+       :collections-count (count collections)}
+      {:id provider-id
+       :tag tag
+       :collections []
+       :collection-count 0})))
 
 (defn-timed providers-data
   "Given a list of provider maps, create the nested data structure needed
@@ -161,12 +189,12 @@
 (defmethod base-page :cli
   [context]
   (assoc (common-data/base-static) :app-title "CMR Search"
-                                   :release-version (str "v " (common-config/release-version))))
+         :release-version (str "v " (common-config/release-version))))
 
 (defmethod base-page :default
   [context]
   (assoc (common-data/base-page context) :app-title "CMR Search"
-                                         :release-version (str "v " (common-config/release-version))))
+         :release-version (str "v " (common-config/release-version))))
 
 (defn get-directory-links
   "Provide the list of links that will be rendered on the top-level directory
@@ -196,17 +224,17 @@
    (get-provider-tag-landing-links context provider-id tag (constantly true)))
   ([context provider-id tag filter-fn]
    (let [holdings (filter filter-fn
-                        (make-holdings-data
-                          (util/get-app-url context)
-                          (collection-data context tag provider-id)))
+                          (make-holdings-data
+                           (util/get-app-url context)
+                           (collection-data context tag provider-id [(query-model/boolean-condition :downloadable true)])))
          common-data (base-page context)
          virtual-directory-url (app-url->virtual-directory-url (get common-data :base-url))]
      (merge
-       common-data
-       {:virtual-directory-url virtual-directory-url
-        :provider-id provider-id
-        :tag-name (util/supported-directory-tags tag)
-        :holdings holdings}))))
+      common-data
+      {:virtual-directory-url virtual-directory-url
+       :provider-id provider-id
+       :tag-name (util/supported-directory-tags tag)
+       :holdings holdings}))))
 
 (defn get-provider-tag-sitemap-landing-links
   "Generate the data necessary to render EOSDIS landing page links that will
