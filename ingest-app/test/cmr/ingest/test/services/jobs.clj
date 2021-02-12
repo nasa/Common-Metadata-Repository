@@ -12,7 +12,7 @@
          (#'jobs/create-query-params "polygon=-78,-18,-77,-22,-73,-16,-74,-13,-78,-18&concept-id=G123-PROV1"))))
 
 (deftest email-granule-url-list-test
-  "This tests the utility function that unpacts a list of urls and turns it into markdown"
+  "This tests the utility function that unpacks a list of urls and turns it into markdown"
   (let [actual (jobs/email-granule-url-list '("https://cmr.link/g1"
                                               "https://cmr.link/g2"
                                               "https://cmr.link/g3"))
@@ -52,9 +52,9 @@
            (:content (first (:body actual)))))))
 
 (deftest subscription->time-constraint-test
-  "Test the subscription->time-constraint function as it is criticle for internal
-                               use. Test for when there is and is not a last-notified-at date and when there
-                               is no date, test that the code will look back with a specified number of seconds"
+  "Test the subscription->time-constraint function as it is critical for internal
+   use. Test for when there is and is not a last-notified-at date and when there
+   is no date, test that the code will look back with a specified number of seconds"
   (let [now (t/now)
         one-hour-back (t/minus now (t/seconds 3600))
         two-hours-back (t/minus now (t/seconds 7200))]
@@ -66,14 +66,14 @@
         (is (= expected actual))))
     (testing
      "Usecase one: no last-notified-at date, it's explicitly set to nil, so
-                                  start an hour ago and end now"
+     start an hour ago and end now"
       (let [data {:extra-fields {:last-notified-at nil}}
             expected (str one-hour-back "," now)
             actual (#'jobs/subscription->time-constraint data now 3600)]
         (is (= expected actual))))
     (testing
      "Usecase one: no last-notified-at date, it's explicitly set to nil, so start
-                                  two hours ago and end now ; test that look back is not hardcoded"
+      two hours ago and end now ; test that look back is not hardcoded"
       (let [data {:extra-fields {:last-notified-at nil}}
             expected (str two-hours-back "," now)
             actual (#'jobs/subscription->time-constraint data now 7200)]
