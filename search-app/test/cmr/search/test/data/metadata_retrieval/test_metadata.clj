@@ -26,11 +26,5 @@
 (def echo10-concept
   (concept-in-format :echo10))
 
-(def iso19115-concept
-  (concept-in-format :iso19115))
-
 (def umm-json-1.3-concept
   (concept-in-format {:format :umm-json :version "1.3"}))
-
-(def umm-json-1.2-concept
-  (concept-in-format {:format :umm-json :version "1.2"}))
