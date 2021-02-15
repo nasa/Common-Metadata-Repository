@@ -23,6 +23,11 @@
    ;; date is the date that the metadata record is scheduled to be reviewed.
    MetadataDates
 
+   ;; This element allows end users to get direct access to data products that are stored in the
+   ;; Amazon Web Service (AWS) S3 buckets. The sub elements include S3 credentials end point and a
+   ;; documentation URL as well as bucket prefix names and an AWS region.
+   DirectDistributionInformation
+
    ;; The Version Description of the collection.
    VersionDescription
 
@@ -38,7 +43,8 @@
    ;; – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code List that pertain to
    ;; this collection, based on the Science Keywords associated with the collection. An ISO Topic
    ;; Category is a high-level thematic classification to assist in the grouping of and search for
-   ;; available collections.
+   ;; available collections. The controlled vocabulary for ISO topic categories is maintained in the
+   ;; Keyword Management System (KMS).
    ISOTopicCategories
 
    ;; The short name associated with the collection.
@@ -54,7 +60,8 @@
    ;; historically by the GCMD internally to identify association, responsibility and/or ownership
    ;; of the dataset, service or supplemental information. Note: This field only occurs in the DIF.
    ;; When a DIF record is retrieved in the ECHO10 or ISO 19115 formats, this element will not be
-   ;; translated.
+   ;; translated. The controlled vocabulary for directory names is maintained in the Keyword
+   ;; Management System (KMS).
    DirectoryNames
 
    ;; Suggested usage or purpose for the collection data or service.
@@ -175,9 +182,9 @@
    ;; The identifier for the processing level of the collection (e.g., Level0, Level1A).
    ProcessingLevel
 
-   ;; Information about the relevant platform(s) used to acquire the data in the collection.
-   ;; Platform types are controlled in the Keyword Management System (KMS), and include Spacecraft,
-   ;; Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.
+   ;; Information about the relevant platform(s) used to acquire the data in the collection. The
+   ;; controlled vocabulary for platform types is maintained in the Keyword Management System (KMS),
+   ;; and includes Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.
    Platforms
 
    ;; The name of the scientific program, field campaign, or project from which the data were
@@ -205,7 +212,7 @@
    ;; This usage should be reserved for instances where a group of metadata records are subsets that
    ;; can be better represented by one parent metadata record, which describes the entire set. In
    ;; some instances, a child may point to more than one parent. The EntryId is the same as the
-   ;; element described elsewhere in this document where it contains and ID, and Version.
+   ;; element described elsewhere in this document where it contains an ID and Version.
    MetadataAssociations
 
    ;; Describes the language used in the preparation, storage, and description of the collection. It
@@ -297,8 +304,9 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing SpatialExtentType)
 
-;; This element defines a mapping to the GCMD KMS hierarchical location list. It replaces
-;; SpatialKeywords. Each tier must have data in the tier above it.
+;; This element defines a hierarchical location list. It replaces SpatialKeywords. The controlled
+;; vocabulary for location keywords is maintained in the Keyword Management System (KMS). Each tier
+;; must have data in the tier above it.
 (defrecord LocationKeywordType
   [
    ;; Top-level controlled keyword hierarchical level that contains the largest general location
@@ -309,20 +317,20 @@
    ;; the collection data was taken from
    Type
 
-   ;; Third-tier controlled keyword heirarchical level that contains the regional sub-location where
+   ;; Third-tier controlled keyword hierarchical level that contains the regional sub-location where
    ;; the collection data was taken from
    Subregion1
 
-   ;; Fourth-tier controlled keyword heirarchical level that contains the regional sub-location
+   ;; Fourth-tier controlled keyword hierarchical level that contains the regional sub-location
    ;; where the collection data was taken from
    Subregion2
 
-   ;; Fifth-tier controlled keyword heirarchical level that contains the regional sub-location where
+   ;; Fifth-tier controlled keyword hierarchical level that contains the regional sub-location where
    ;; the collection data was taken from
    Subregion3
 
-   ;; Uncontrolled keyword heirarchical level that contains the specific location where the
-   ;; collection data was taken from. Exists outside the heirarchy.
+   ;; Uncontrolled keyword hierarchical level that contains the specific location where the
+   ;; collection data was taken from. Exists outside the hierarchy.
    DetailedLocation
   ])
 (record-pretty-printer/enable-record-pretty-printing LocationKeywordType)
@@ -395,7 +403,7 @@
 ;; instrument can see as distinct.
 (defrecord ResolutionAndCoordinateSystemType
   [
-   ;; This element holds a description about the resoultion and coordinate system for people to
+   ;; This element holds a description about the resolution and coordinate system for people to
    ;; read.
    Description
 
@@ -555,6 +563,27 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PointType)
 
+;; This element allows end users to get direct access to data products that are stored in the Amazon
+;; Web Service (AWS) S3 buckets. The sub elements include S3 credentials end point and a
+;; documentation URL as well as bucket prefix names and an AWS region.
+(defrecord DirectDistributionInformationType
+  [
+   ;; Defines the possible values for the Amazon Web Service US Regions where the data product
+   ;; resides.
+   Region
+
+   ;; Defines the possible values for the Amazon Web Service US S3 bucket and/or object prefix
+   ;; names.
+   S3BucketAndObjectPrefixNames
+
+   ;; Defines the URL where the credentials are stored.
+   S3CredentialsAPIEndpoint
+
+   ;; Defines the URL where the credential documentation are stored.
+   S3CredentialsAPIDocumentationURL
+  ])
+(record-pretty-printer/enable-record-pretty-printing DirectDistributionInformationType)
+
 ;; This element contains the Processing Level Id and the Processing Level Description
 (defrecord ProcessingLevelType
   [
@@ -688,7 +717,8 @@
    AverageFileSize
 
    ;; This element defines a single format for an archival artifact. Examples of format include:
-   ;; ascii, binary, GRIB, BUFR, HDF4, HDF5, HDF-EOS4, HDF-EOS5, jpeg, png, tiff, geotiff, kml.
+   ;; ascii, binary, GRIB, BUFR, HDF4, HDF5, HDF-EOS4, HDF-EOS5, jpeg, png, tiff, geotiff, kml. The
+   ;; controlled vocabulary for formats is maintained in the Keyword Management System (KMS).
    Format
 
    ;; An approximate total size of all of the archivable items within a collection. This gives an

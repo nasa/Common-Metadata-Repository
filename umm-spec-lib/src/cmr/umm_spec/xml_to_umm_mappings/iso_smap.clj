@@ -181,4 +181,6 @@
        :Projects (project/parse-projects doc projects-xpath sanitize?)
        :ArchiveAndDistributionInformation (archive-and-dist-info/parse-archive-dist-info doc
                                                                                          archive-info-xpath
-                                                                                         dist-info-xpath)}))))
+                                                                                         dist-info-xpath)
+       :DirectDistributionInformation (archive-and-dist-info/parse-direct-dist-info doc
+                                                                                    dist-info-xpath)}))))

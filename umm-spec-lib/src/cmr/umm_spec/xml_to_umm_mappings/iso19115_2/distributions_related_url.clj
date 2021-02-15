@@ -8,22 +8,22 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as sdru]))
 
 (def distributor-xpath
-  "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor")
+  "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor")
 
 (def distributor-fees-xpath
-  "gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess/gmd:fees/gco:CharacterString")
+  "gmd:MD_Distributor/gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess/gmd:fees/gco:CharacterString")
 
 (def distributor-format-xpath
-  "gmd:distributorFormat/gmd:MD_Format/gmd:name/gco:CharacterString")
+  "gmd:MD_Distributor/gmd:distributorFormat/gmd:MD_Format/gmd:name/gco:CharacterString")
 
 (def distributor-media-xpath
-  "gmd:distributorFormat/gmd:MD_Format/gmd:specification/gco:CharacterString")
+  "gmd:MD_Distributor/gmd:distributorFormat/gmd:MD_Format/gmd:specification/gco:CharacterString")
 
 (def distributor-transfer-options-xpath
-  "gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions")
+  "gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions")
 
 (def distributor-online-url-xpath
-  (str distributor-xpath "/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource"))
+  (str distributor-xpath "/gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource"))
 
 (def browse-graphic-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:graphicOverview/gmd:MD_BrowseGraphic")
@@ -46,22 +46,6 @@
    :Format distributor-format-xpath
    :TransferOptions distributor-transfer-options-xpath
    :URL "gmd:onLine/gmd:CI_OnlineResource/"})
-
-(defn parse-distributions
-  "Returns the distributions parsed from the given xml document."
-  [doc sanitize?]
-  (for [distributor-element (select doc distributor-xpath)
-        :when (not (value-of distributor-element (str "gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/"
-                                                      (get distributor-xpaths-map :URL)
-                                                      "gmd:linkage/gmd:URL")))]
-    {:DistributionMedia (value-of distributor-element distributor-media-xpath)
-     :Sizes (for [transfer-el (select distributor-element distributor-transfer-options-xpath)
-                  :let [size (value-of transfer-el "gmd:transferSize/gco:Real")]]
-              {:Size size
-               :Unit (or (value-of transfer-el "gmd:unitsOfDistribution/gco:CharacterString")
-                         (when (and sanitize? size) "MB"))})
-     :DistributionFormat (value-of distributor-element distributor-format-xpath)
-     :Fees (value-of distributor-element distributor-fees-xpath)}))
 
 (defn parse-related-urls
   "Parse related-urls present in the document"

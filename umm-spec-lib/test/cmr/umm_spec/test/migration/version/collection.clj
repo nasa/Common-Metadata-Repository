@@ -2497,3 +2497,19 @@
     (let [result (vm/migrate-umm {} :collection "1.15.5" "1.15.4" sample-collection-1-15-5)]
       (is (= sample-collection-1-15-5-to-1-15-4
              result)))))
+
+(def sample-collection-1-16
+  {:DirectDistributionInformation {
+     :Region "us-east-2"
+     :S3BucketAndObjectPrefixNames ["TestBucketOrObjectPrefix"]
+     :S3CredentialsAPIEndpoint "DAAC_Credential_Endpoint"
+     :S3CredentialsAPIDocumentationURL "DAAC_Credential_Documentation"
+  }})
+
+(deftest migrate-1-16-to-1-15-5
+  "Test the migration of collections from 1.16 to 1.15.5."
+
+  (testing "Removing the invalid DirectDistributionInformation element."
+    (let [result (vm/migrate-umm {} :collection "1.16" "1.15.5" sample-collection-1-16)]
+      (is (= {}
+             result)))))

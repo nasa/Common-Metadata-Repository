@@ -257,7 +257,16 @@
    :ContactPersons (dc/parse-data-contact-persons doc sanitize?)
    :CollectionCitations (when-let [collection-citations (value-of doc "/Collection/CitationForExternalPublication")]
                           [{:OtherCitationDetails collection-citations}])
-   :ArchiveAndDistributionInformation (parse-archive-dist-info doc)})
+   :ArchiveAndDistributionInformation (parse-archive-dist-info doc)
+   :DirectDistributionInformation (when-let [ddi (first
+                                                   (select doc "/Collection/DirectDistributionInformation"))]
+                                    {:Region (value-of ddi "Region")
+                                     :S3BucketAndObjectPrefixNames
+                                       (values-at ddi "S3BucketAndObjectPrefixName")
+                                     :S3CredentialsAPIEndpoint
+                                       (value-of ddi "S3CredentialsAPIEndpoint")
+                                     :S3CredentialsAPIDocumentationURL
+                                       (value-of ddi "S3CredentialsAPIDocumentationURL")})})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document. The :sanitize? option

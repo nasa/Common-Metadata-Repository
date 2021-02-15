@@ -63,7 +63,7 @@
   (->> (condp #(%1 %2) (customized-compare begin end)
          neg?  (sort-by count (versions concept-type))
          zero? nil
-         pos?  (reverse (sort-by count (versions concept-type))))
+         pos?  (reverse (versions concept-type)))
        (partition 2 1 nil)
        (drop-while #(not= (first %) begin))
        (take-while #(not= (first %) end))))

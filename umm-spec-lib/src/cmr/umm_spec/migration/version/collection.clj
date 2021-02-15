@@ -374,3 +374,12 @@
   ;; Need to replace the RelatedURLs/GetData/Format with "Not provided"
   ;; if it's not part of the enum list in 1.15.4, case insensitive.
   (util/update-in-all c [:RelatedUrls :GetData] replace-invalid-format))
+
+(defmethod interface/migrate-umm-version [:collection "1.15.5" "1.16"]
+  [context c & _]
+  ;; Nothing to migrate
+  c)
+
+(defmethod interface/migrate-umm-version [:collection "1.16" "1.15.5"]
+  [context c & _]
+  (dissoc c :DirectDistributionInformation))

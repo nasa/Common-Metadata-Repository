@@ -275,7 +275,9 @@
       :MetadataDates (parse-metadata-dates doc)
       :ArchiveAndDistributionInformation (archive-and-dist-info/parse-archive-dist-info doc
                                                                                         archive-info-xpath
-                                                                                        dist-info-xpath)})))
+                                                                                        dist-info-xpath)
+      :DirectDistributionInformation (archive-and-dist-info/parse-direct-dist-info doc
+                                                                                   dist-info-xpath)})))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document. The :sanitize? option

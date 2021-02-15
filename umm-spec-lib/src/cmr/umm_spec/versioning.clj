@@ -10,7 +10,7 @@
   "A map of concept type to a sequence of valid UMM Schema versions, with the newest one last.
   The sequence must be updated when new schema versions are added for the concept type."
   {:collection ["1.0" "1.1" "1.2" "1.3" "1.4" "1.5" "1.6" "1.7" "1.8" "1.9" "1.10" "1.11" "1.12"
-                "1.13" "1.14" "1.15" "1.15.1" "1.15.2" "1.15.3" "1.15.4" "1.15.5"]
+                "1.13" "1.14" "1.15" "1.15.1" "1.15.2" "1.15.3" "1.15.4" "1.15.5" "1.16"]
    :granule ["1.4" "1.5" "1.6" "1.6.1"]
    :variable ["1.0" "1.1" "1.2" "1.3" "1.4" "1.5" "1.6" "1.7"]
    :service ["1.0" "1.1" "1.2" "1.3" "1.3.1" "1.3.2" "1.3.3" "1.3.4"]

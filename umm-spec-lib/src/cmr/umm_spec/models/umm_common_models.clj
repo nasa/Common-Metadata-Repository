@@ -3,9 +3,8 @@
    "Defines UMM Common clojure records."
  (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
-;; Describes the relevant platforms used to acquire the data in the collection. Platform type
-;; vocabulary is controlled and includes Spacecraft, Aircraft, Vessel, Buoy, Platform, Station,
-;; Network, Human, etc.
+;; Describes the relevant platforms used to acquire the data in the collection. The controlled
+;; vocabularies for platform types and names are maintained in the Keyword Management System (KMS).
 (defrecord PlatformType
   [
    ;; The most relevant platform type.
@@ -26,10 +25,11 @@
 
 ;; Information describing the scientific endeavor(s) with which the collection is associated.
 ;; Scientific endeavors include campaigns, projects, interdisciplinary science investigations,
-;; missions, field experiments, etc.
+;; missions, field experiments, etc. The controlled vocabularies for project names are maintained in
+;; the Keyword Management System (KMS)
 (defrecord ProjectType
   [
-   ;; The unique identifier by which a project or campaign/experiment is known. The campain/project
+   ;; The unique identifier by which a project or campaign/experiment is known. The campaign/project
    ;; is the scientific endeavor associated with the acquisition of the collection. Collections may
    ;; be associated with multiple campaigns.
    ShortName
@@ -51,7 +51,8 @@
 ;; Information about the device used to measure or record data in this collection, including direct
 ;; human observation. In cases where instruments have a single child instrument or the instrument
 ;; and child instrument are used synonymously (e.g. AVHRR), both Instrument and ComposedOf should be
-;; recorded. The child instrument information is represented in a separate section.
+;; recorded. The child instrument information is represented in a separate section. The controlled
+;; vocabulary for instrument names is maintained in the Keyword Management System (KMS).
 (defrecord InstrumentType
   [
    ShortName
@@ -145,7 +146,8 @@
    ;; This is the roles of the data center.
    Roles
 
-   ;; This is the short name of the data center.
+   ;; This is the short name of the data center. The controlled vocabulary for data center short
+   ;; names is maintained in the Keyword Management System (KMS).
    ShortName
 
    ;; This is the long name of the data center.
@@ -258,9 +260,8 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ContactMechanismType)
 
-;; Enables specification of Earth science keywords related to the collection. The Earth Science
-;; keywords are chosen from a controlled keyword hierarchy maintained in the Keyword Management
-;; System (KMS).
+;; Enables specification of Earth science keywords related to the collection. The controlled
+;; vocabulary for Science Keywords is maintained in the Keyword Management System (KMS).
 (defrecord ScienceKeywordType
   [
    Category
@@ -349,7 +350,8 @@
 ;; Represents the information needed for a DistributionURL where data is retrieved.
 (defrecord GetDataType
   [
-   ;; The format of the data.
+   ;; The format of the data. The controlled vocabulary for formats is maintained in the Keyword
+   ;; Management System (KMS)
    Format
 
    ;; The mime type of the service.
@@ -414,14 +416,14 @@
    ;; The issue of the publication.
    Issue
 
-   ;; The pubication place of the publication.
+   ;; The publication place of the publication.
    PublicationPlace
   ])
 (record-pretty-printer/enable-record-pretty-printing PublicationReferenceType)
 
 ;; Used to identify other services, collections, visualizations, granules, and other metadata types
-;; and resources that are associated with or dependent on the this collection, including
-;; parent-child relationships.
+;; and resources that are associated with or dependent on this collection, including parent-child
+;; relationships.
 (defrecord MetadataAssociationType
   [
    ;; The type of association between this collection metadata record and the target metadata
@@ -432,7 +434,7 @@
    ;; metadata record.
    Description
 
-   ;; Shortname of the target metadata record that is associated with this collection record.
+   ;; ShortName of the target metadata record that is associated with this collection record.
    EntryId
 
    ;; The version of the target metadata record that is associated with this collection record.

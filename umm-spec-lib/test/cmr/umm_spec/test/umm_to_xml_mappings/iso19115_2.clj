@@ -3,6 +3,7 @@
   (:require [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as parser]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
+            [cmr.umm-spec.xml-to-umm-mappings.iso-shared.archive-and-dist-info :as dist-info]
             [cmr.umm-spec.models.umm-collection-models :as coll]
             [clojure.test :refer :all]
             [clojure.data.xml :as x]
@@ -293,19 +294,46 @@
      </gmd:identificationInfo>
      <gmd:distributionInfo>
         <gmd:MD_Distribution>
-           <gmd:distributor>
-              <gmd:MD_Distributor>
-                 <gmd:distributorContact gco:nilReason=\"missing\" />
-                 <gmd:distributionOrderProcess>
-                    <gmd:MD_StandardOrderProcess>
-                       <gmd:fees gco:nilReason=\"missing\" />
-                    </gmd:MD_StandardOrderProcess>
-                 </gmd:distributionOrderProcess>
-                 <gmd:distributorTransferOptions>
-                    <gmd:MD_DigitalTransferOptions />
-                 </gmd:distributorTransferOptions>
-              </gmd:MD_Distributor>
-           </gmd:distributor>
+            <gmd:distributor xlink:href=\"DirectDistributionInformation\">
+                <gmd:MD_Distributor>
+                    <gmd:distributorContact gco:nilReason=\"inapplicable\"/>
+                    <gmd:distributionOrderProcess>
+                        <gmd:MD_StandardOrderProcess>
+                            <gmd:orderingInstructions>
+                                <gco:CharacterString>Region: us-east-2 S3BucketAndObjectPrefixNames: HiHo Off to work we go </gco:CharacterString>
+                            </gmd:orderingInstructions>
+                        </gmd:MD_StandardOrderProcess>
+                    </gmd:distributionOrderProcess>
+                    <gmd:distributorTransferOptions xlink:href=\"DirectDistributionInformation_S3CredentialsAPIEndpoint\">
+                        <gmd:MD_DigitalTransferOptions>
+                            <gmd:onLine>
+                                <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                        <gmd:URL>https://find-a-good-s3-cred-api-endpoint.com</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:description>
+                                        <gco:CharacterString>The S3 credentials API endpoint.</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:CI_OnlineResource>
+                            </gmd:onLine>
+                        </gmd:MD_DigitalTransferOptions>
+                    </gmd:distributorTransferOptions>
+                    <gmd:distributorTransferOptions xlink:href=\"DirectDistributionInformation_S3CredentialsAPIDocumentationURL\">
+                        <gmd:MD_DigitalTransferOptions>
+                            <gmd:onLine>
+                                <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                        <gmd:URL>https://find-a-good-s3-cred-api-document.com</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:description>
+                                        <gco:CharacterString>The S3 credentials API Documentation URL.</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:CI_OnlineResource>
+                            </gmd:onLine>
+                        </gmd:MD_DigitalTransferOptions>
+                    </gmd:distributorTransferOptions>
+                </gmd:MD_Distributor>
+            </gmd:distributor>
         </gmd:MD_Distribution>
      </gmd:distributionInfo>
      <gmd:dataQualityInfo>
@@ -435,3 +463,19 @@
                                               iso-with-use-constraints u/default-parsing-options)
           gran-spatial-representation (get-in parsed [:SpatialExtent :GranuleSpatialRepresentation])]
       (is (= "CARTESIAN" gran-spatial-representation)))))
+
+(deftest direct-distribution-information-test
+  (testing "direct distribution information that should go to distribution section are
+            written out correctly."
+    (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test)
+                                              iso-with-use-constraints u/default-parsing-options)
+          ;; all the parsed additional attributes are from dataQualityInfo and we use it as the expected value
+          expected-direct-distribution (:DirectDistributionInformation parsed)
+          generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
+          ;; parse out the dataQualtiyInfo additional attributes
+          parsed-direct-distribution (dist-info/parse-direct-dist-info
+                                         generated-iso parser/dist-info-xpath)]
+      ;; validate against xml schema
+      (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
+      (is (not (empty? parsed-direct-distribution)))
+      (is (= expected-direct-distribution parsed-direct-distribution)))))

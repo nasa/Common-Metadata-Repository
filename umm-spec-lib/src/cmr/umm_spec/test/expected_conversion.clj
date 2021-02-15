@@ -5,7 +5,7 @@
   (:require
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.common-app.config :as common-config]
    [cmr.umm-spec.json-schema :as js]
@@ -689,4 +689,6 @@
    id=\"dd0b91b1b-da2d-4d8e-857e-0bb836ad2fbc\" is changed to id=\"placeholder\".
    This is used to strip the randomly generated id strings from the ISO19115 metadata during comparison."
   [x]
-  (str/replace x #"id=\".*?\">" "id=\"placeholder\""))
+  (-> x
+      (string/replace #"id=\".*?\"" "id=\"placeholder\"")
+      (string/replace #"xlink:href=\".*?\"" "id=\"placeholder\"")))

@@ -110,6 +110,10 @@
       "description": "This element and all of its sub elements exist for display purposes. It allows a data provider to provide archive and distribution information up front to an end user, to help them decide if they can use the product.",
       "$ref": "#/definitions/ArchiveAndDistributionInformationType"
     },
+    "DirectDistributionInformation": {
+      "description": "This element allows end users to get direct access to data products that are stored in the Amazon Web Service (AWS) S3 buckets. The sub elements include S3 credentials end point and a documentation URL as well as bucket prefix names and an AWS region.",
+      "$ref": "#/definitions/DirectDistributionInformationType"
+    },
     "PublicationReferences": {
       "description": "Describes key bibliographic citations pertaining to the collection.",
       "type": "array",
@@ -1406,6 +1410,48 @@
       }, {
         "required": ["FileDistributionInformation"]
       }]
+    },
+    "DirectDistributionInformationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This element allows end users to get direct access to data products that are stored in the Amazon Web Service (AWS) S3 buckets. The sub elements include S3 credentials end point and a documentation URL as well as bucket prefix names and an AWS region.",
+      "properties": {
+        "Region": {
+          "description": "Defines the possible values for the Amazon Web Service US Regions where the data product resides.",
+          "$ref": "#/definitions/DirectDistributionInformationRegionEnum"
+        },
+        "S3BucketAndObjectPrefixNames": {
+          "description": "Defines the possible values for the Amazon Web Service US S3 bucket and/or object prefix names.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": "[!-~]{1,1024}"
+          },
+          "minItems": 1
+        },
+        "S3CredentialsAPIEndpoint": {
+          "description": "Defines the URL where the credentials are stored.",
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "S3CredentialsAPIDocumentationURL": {
+          "description": "Defines the URL where the credential documentation are stored.",
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": ["Region", "S3CredentialsAPIEndpoint", "S3CredentialsAPIDocumentationURL"]
+    },
+    "DirectDistributionInformationRegionEnum": {
+      "description": "Defines the possible values for the Amazon Web Service US Regions where the data product resides.",
+      "type": "string",
+      "enum": ["us-east-1", "us-east-2", "us-west-1", "us-west-2"]
     }
   }
 }

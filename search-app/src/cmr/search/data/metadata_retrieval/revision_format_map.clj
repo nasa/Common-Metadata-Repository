@@ -128,6 +128,9 @@
 (defn add-additional-format
   "Adds an additional stored format to the revision format map."
   [context target-format revision-format-map]
+  (def context context)
+  (def target-format target-format)
+  (def revision-format-map revision-format-map)
   (let [concept (revision-format-map->concept :native revision-format-map)
         transformed (metadata-transformer/transform context concept target-format)]
     (if (:compressed? revision-format-map)

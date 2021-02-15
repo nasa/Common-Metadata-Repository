@@ -10,22 +10,22 @@
 
 (def distributor-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata"
-       "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor"))
+       "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor"))
 
 (def distributor-fees-xpath
-  "gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess/gmd:fees/gco:CharacterString")
+  "gmd:MD_Distributor/gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess/gmd:fees/gco:CharacterString")
 
 (def distributor-format-xpath
-  "gmd:distributorFormat/gmd:MD_Format/gmd:name/gco:CharacterString")
+  "gmd:MD_Distributor/gmd:distributorFormat/gmd:MD_Format/gmd:name/gco:CharacterString")
 
 (def distributor-media-xpath
-  "gmd:distributorFormat/gmd:MD_Format/gmd:specification/gco:CharacterString")
+  "gmd:MD_Distributor/gmd:distributorFormat/gmd:MD_Format/gmd:specification/gco:CharacterString")
 
 (def distributor-transfer-options-xpath
-  "gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions")
+  "gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions")
 
 (def distributor-online-url-xpath
-  (str distributor-xpath "/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource"))
+  (str distributor-xpath "/gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource"))
 
 (def browse-graphic-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata"
