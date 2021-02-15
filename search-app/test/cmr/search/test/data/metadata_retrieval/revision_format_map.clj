@@ -20,7 +20,7 @@
           #{:compressed :decompressed-length})))
 
 (deftest compression-test
-  (let [uncompressed (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)
+  (let [uncompressed (r/concept->revision-format-map nil tm/dif10-concept all-metadata-formats)
         compressed (r/compress uncompressed)
         decompressed (r/decompress compressed)]
     (testing "Compress"
@@ -103,7 +103,7 @@
 (defn test-rfm
   "Creates a revision format map with the specified formats."
   [concept-id revision-id formats]
-  (-> (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)
+  (-> (r/concept->revision-format-map nil tm/dif10-concept all-metadata-formats)
       (select-keys (concat formats [:native-format]))
       (assoc :concept-id concept-id
              :revision-id revision-id)))
