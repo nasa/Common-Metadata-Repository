@@ -14,7 +14,21 @@
    [cmr.ingest.services.ingest-service :as ingest-service]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
-   [cmr.umm-spec.field-update :as field-update]))
+   [cmr.umm-spec.field-update :as field-update])
+
+ (defn handle-bulk-update-event
+  "For each granule-ur, queue bulk update messages"
+  [context provider-id task-id bulk-update-params user-id]
+  (let [{:keys [concept-ids]} bulk-update-params]
+    (doseq [granule-ur concept-ids]
+     (ingest-events/publish-gran-bulk-update-event
+      context
+      (ingest-events/ingest-granule-bulk-update-event
+       provider-id
+       task-id
+       granule-ur
+       bulk-update-params
+       user-id))))))
 
 (defn validate-and-save-bulk-granule-update
  "Validate the bulk update POST parameters, save rows to the db for task
