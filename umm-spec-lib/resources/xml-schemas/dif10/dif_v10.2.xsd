@@ -1667,7 +1667,7 @@ History:
             <xs:documentation>Defines the URL where the credentials are stored.</xs:documentation>
           </xs:annotation>
           <xs:simpleType>
-            <xs:restriction base="xs:string">
+            <xs:restriction base="xs:anyURI">
               <xs:minLength value="1" />
               <xs:maxLength value="1024" />
             </xs:restriction>
@@ -1679,7 +1679,7 @@ History:
             </xs:documentation>
           </xs:annotation>
           <xs:simpleType>
-            <xs:restriction base="xs:string">
+            <xs:restriction base="xs:anyURI">
               <xs:minLength value="1" />
               <xs:maxLength value="1024" />
             </xs:restriction>
