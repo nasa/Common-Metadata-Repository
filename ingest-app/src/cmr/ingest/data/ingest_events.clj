@@ -82,3 +82,12 @@
    :concept-id concept-id
    :bulk-update-params bulk-update-params
    :user-id user-id})
+
+(defn ingest-granule-bulk-update-event
+  [provider-id task-id granule-url bulk-update-params user-id]
+  {:action :granule-bulk-update
+   :provider-id provider-id
+   :task-id task-id
+   :granule-ur granule-url
+   :bulk-update-params bulk-update-params
+   :user-id user-id})
