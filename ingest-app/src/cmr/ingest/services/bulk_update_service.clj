@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [cmr.common-app.config :as common-config]
    [cmr.common.concepts :as concepts]
+   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.validations.json-schema :as js]
@@ -18,6 +19,9 @@
 
 (def bulk-update-schema
   (js/json-string->json-schema (slurp (io/resource "bulk_update_schema.json"))))
+
+(def bulk-granule-update-schema
+  (js/json-string->json-schema (slurp (io/resource "granule_bulk_update_schema.json"))))
 
 (def default-exception-message
   "There was an error updating the concept.")
@@ -70,10 +74,14 @@
   "Represents DATA_CENTERS update field"
   "DATA_CENTERS")
 
-(defn validate-bulk-update-post-params
+(defmulti validate-bulk-update-post-params
   "Validate post body for bulk update. Validate against schema and validation
   rules."
-  [json]
+  (fn [concept-type json]
+    concept-type))
+
+(defmethod validate-bulk-update-post-params :collection
+  [_ json]
   (js/validate-json! bulk-update-schema json)
   (let [body (json/parse-string json true)
         {:keys [update-type update-value find-value update-field]} body]
@@ -105,6 +113,10 @@
       (errors/throw-service-errors :bad-request
                                    [(format "A find value must be supplied when the update is of type %s"
                                             update-type)]))))
+
+(defmethod validate-bulk-update-post-params :granule
+  [_ json]
+  (js/validate-json! bulk-granule-update-schema json))
 
 (defn- get-provider-collection-concept-ids
   "Returns a list of collection concept ids for a given provider-id.
@@ -156,7 +168,7 @@
   and collection statuses, and queue bulk update. Return task id, which comes
   from the db save."
   [context provider-id json user-id]
-  (validate-bulk-update-post-params json)
+  (validate-bulk-update-post-params :collection json)
   (let [bulk-update-params (json/parse-string json true)
         {:keys [concept-ids]} bulk-update-params
         _ (validate-concept-ids concept-ids)
@@ -165,34 +177,45 @@
         ;; Write db rows - one for overall status, one for each concept id
         task-id (try
                   (data-bulk-update/create-bulk-update-task
-                    context provider-id json concept-ids)
-                 (catch Exception e
-                   (let [msg (.getMessage e)
-                         msg (if (string/includes? msg "BULK_UPDATE_TASK_STATUS_UK")
-                               "Bulk update name needs to be unique within the provider."
-                               msg)]
-                     (errors/throw-service-errors
+                   context provider-id json concept-ids)
+                  (catch Exception e
+                    (let [msg (.getMessage e)
+                          msg (if (string/includes? msg "BULK_UPDATE_TASK_STATUS_UK")
+                                "Bulk update name needs to be unique within the provider."
+                                msg)]
+                      (errors/throw-service-errors
                        :invalid-data
                        [(str "Error creating bulk update task: " msg)]))))]
     ;; Queue the bulk update event
     (ingest-events/publish-ingest-event
-      context
-      (ingest-events/ingest-bulk-update-event provider-id task-id bulk-update-params user-id))
+     context
+     (ingest-events/ingest-bulk-update-event provider-id task-id bulk-update-params user-id))
     task-id))
+
+(defn validate-and-save-bulk-granule-update
+  "Validate the bulk granule update POST parameters, save rows to the db for task
+  and collection statuses, and queue bulk update. Return task id, which comes
+  from the db save."
+  [context provider-id json user-id]
+  (validate-bulk-update-post-params :granule json)
+
+  (warn (format (str "Granule bulk update called for provider [%s] "
+                     "by user [%s] but it has not been implemented yet.")
+                provider-id user-id)))
 
 (defn handle-bulk-update-event
   "For each concept-id, queueu collection bulk update messages"
   [context provider-id task-id bulk-update-params user-id]
   (let [{:keys [concept-ids]} bulk-update-params]
     (doseq [concept-id concept-ids]
-     (ingest-events/publish-ingest-event
-      context
-      (ingest-events/ingest-collection-bulk-update-event
-       provider-id
-       task-id
-       concept-id
-       bulk-update-params
-       user-id)))))
+      (ingest-events/publish-ingest-event
+       context
+       (ingest-events/ingest-collection-bulk-update-event
+        provider-id
+        task-id
+        concept-id
+        bulk-update-params
+        user-id)))))
 
 (defn- update-collection-concept
   "Perform the update on the collection and update the concept.

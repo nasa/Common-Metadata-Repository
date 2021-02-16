@@ -111,13 +111,15 @@
 (defmethod generate-ingest-response :json
   [headers result]
   ;; ring-json middleware will handle converting the body to json
-  {:status (ingest-status-code result)
+  {:status (or (:status result)
+               (ingest-status-code result))
    :headers {"Content-Type" (mt/format->mime-type :json)}
    :body result})
 
 (defmethod generate-ingest-response :xml
   [headers result]
-  {:status (ingest-status-code result)
+  {:status (or (:status result)
+               (ingest-status-code result))
    :headers {"Content-Type" (mt/format->mime-type :xml)}
    :body (result-map->xml result)})
 

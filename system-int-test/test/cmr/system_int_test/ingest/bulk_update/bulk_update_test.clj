@@ -1047,3 +1047,26 @@
       (is (= "COMPLETE" (:task-status collection-response)))
       (is (= "UPDATED" (:status collection-status)))
       (is (< 255 (count (:status-message collection-status)))))))
+
+(deftest bulk-granule-update-test
+  (testing "valid request is accepted "
+    (let [bulk-update {:name "bulk update prov1 granules"
+                       :update-field "foo"
+                       :operation "UPDATE_FIELD"
+                       :updates [["bar" "baz"]]}
+          response (ingest/bulk-update-granules "PROV1"
+                                                bulk-update
+                                                {:raw? true})]
+      ;; check it validates but gives a not-yet-implemented status
+      (is (= 501 (:status response)))))
+
+  (testing "invalid schema is rejected"
+    (let [bulk-update {:name "bulk update prov1 granules"
+                       :update-field "foo"
+                       :updates [["bar" "baz"]]}
+          {:keys [status body]} (ingest/bulk-update-granules "PROV1"
+                                                             bulk-update
+                                                             {:raw? true})]
+      ;; valdation error is returned
+      (is (= 400 status))
+      (is (re-find #"required key \[operation\] not found" body) body))))
