@@ -159,8 +159,7 @@
   [request-context concept provider-id token-user]
   (let [parsed-metadata (json/parse-string (:metadata concept) true)]
     (if (:SubscriberId parsed-metadata)
-      (let [_ (check-subscription-ingest-permission request-context concept provider-id token-user)]
-        concept)
+     concept
       (let [generated-metadata (json/generate-string (assoc parsed-metadata :SubscriberId token-user))]
         (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
 
@@ -191,10 +190,10 @@
           token-user (api-core/get-user-id-from-token request-context)
           new-subscription (assoc tmp-subscription :native-id native-id)
           subscriber-id (get-subscriber-id new-subscription)
-          concept-with-subscriber-id (check-subscriber-id
-                                      request-context concept provider-id token-user)
-          concept-with-id-and-email (check-subscriber-email
-                                     request-context concept-with-subscriber-id token-user)]
+          sub-with-subscriber-id (check-subscriber-id
+                                      request-context new-subscription provider-id token-user)
+          sub-with-id-and-email (check-subscriber-email
+                                     request-context sub-with-subscriber-id token-user)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context new-subscription headers))))
 
