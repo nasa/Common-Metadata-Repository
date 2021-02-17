@@ -12,7 +12,8 @@
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.metadata-db :as mdb])
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.transmit.urs :as urs])
   (:import
    [java.util UUID]))
 
@@ -83,7 +84,7 @@
 
 (defn- check-subscription-ingest-permission
   "All the checks needed before starting to process an ingest of subscriptions"
-  [request-context concept provider-id]
+  [request-context concept provider-id token-user]
   (let [old-concept-subscriber (-> (mdb/find-concepts request-context
                                                       {:provider-id provider-id
                                                        :native-id (:native-id concept)
@@ -95,8 +96,7 @@
                                    :subscriber-id)
         subscription-user (if old-concept-subscriber
                             old-concept-subscriber
-                            (:SubscriberId (json/decode (:metadata concept) true)))
-        token-user (api-core/get-user-id-from-token request-context)]
+                            (:SubscriberId (json/decode (:metadata concept) true)))]
     (if (and token-user
              (= token-user subscription-user))
       (warn (format (str "ACLs were bypassed because the token account '%s' "
@@ -124,6 +124,30 @@
       csk/->snake_case
       (str "_" (UUID/randomUUID))))
 
+(defn check-subscriber-id
+  "If subscriber id is provided, checks that token-user has appropriate ACLs.
+  If subscriber id is not provided, then the token-user themself is used"
+  [request-context concept provider-id token-user]
+  (let [parsed-metadata (json/parse-string (:metadata concept) true)]
+    (if (:SubscriberId parsed-metadata)
+      (let [_ (check-subscription-ingest-permission request-context concept provider-id token-user)]
+        concept)
+      (let [generated-metadata (json/generate-string (assoc parsed-metadata :SubscriberId token-user))]
+        (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
+
+(defn check-subscriber-email
+  "If subscriber email is provided, use it. Else, get it from EDL."
+  [request-context concept token-user]
+  (let [parsed-metadata (json/parse-string (:metadata concept) true)]
+    (if (:EmailAddress parsed-metadata)
+      concept
+      (let [token-user-info (urs/get-user-info request-context token-user)
+            generated-metadata (json/generate-string (assoc parsed-metadata :EmailAddress (:email_address token-user-info)))]
+        (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
+
+
+
+
 (defn ingest-subscription
   "Processes a request to create or update a subscription. Note, this will allow
   unlimited subscriptions to be created by users for themselves. Revisit if this
@@ -134,9 +158,14 @@
     (let [tmp-concept (api-core/body->concept!
                        :subscription provider-id (str (UUID/randomUUID)) body content-type headers)
           native-id (or opt-native-id (generate-native-id tmp-concept))
-          concept (assoc tmp-concept :native-id native-id)]
-      (check-subscription-ingest-permission request-context concept provider-id)
-      (perform-subscription-ingest request-context concept headers))))
+          token-user (api-core/get-user-id-from-token request-context)
+          concept (assoc tmp-concept :native-id native-id)
+          concept-with-subscriber-id (check-subscriber-id
+                                      request-context concept provider-id token-user)
+          concept-with-id-and-email (check-subscriber-email
+                                     request-context concept-with-subscriber-id token-user)]
+      (check-subscription-ingest-permission request-context concept-with-id-and-email provider-id token-user)
+      (perform-subscription-ingest request-context concept-with-id-and-email headers))))
 
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."
@@ -149,8 +178,9 @@
                                            :native-id native-id
                                            :exclude-metadata false
                                            :latest true}
-                                          concept-type))]
-    (check-subscription-ingest-permission request-context concept provider-id)
+                                          concept-type))
+        token-user (api-core/get-user-id-from-token request-context)]
+    (check-subscription-ingest-permission request-context concept provider-id token-user)
     (let [concept-attribs (-> {:provider-id provider-id
                                :native-id native-id
                                :concept-type concept-type}

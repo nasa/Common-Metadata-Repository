@@ -143,7 +143,11 @@
       (context "/api/users" []
         (GET "/verify_uid" {:keys [request-context params] :as request}
           (assert-bearer-token request)
-          (get-user request-context (:uid params))))
+          (get-user request-context (:uid params)))
+        ;; While a real URS connection would return more than just the email address,
+        ;; we only need the email address to fill in for the subscription concept.
+        (GET "/:user-id" {{:keys [user-id]} :params}
+          {:status 200 :body {:email_address (str user-id"@google.website")}}))
 
       (context "/users" []
         ;; Create a bunch of users all at once
