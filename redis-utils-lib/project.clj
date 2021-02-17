@@ -12,7 +12,7 @@
   :dependencies [[com.taoensso/carmine "3.0.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
-                 [org.testcontainers/testcontainers "1.15.0"]]
+                 [org.testcontainers/testcontainers "1.15.2"]]
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
