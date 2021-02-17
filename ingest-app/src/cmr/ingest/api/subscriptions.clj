@@ -171,30 +171,9 @@
     (if (:EmailAddress parsed-metadata)
       concept
       (let [token-user-info (urs/get-user-info request-context token-user)
-            generated-metadata (json/generate-string (assoc parsed-metadata :EmailAddress (:email_address token-user-info)))]
+            generated-metadata (json/generate-string (assoc parsed-metadata :EmailAddress
+                                                            (:email_address token-user-info)))]
         (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
-
-
-
-
-(defn ingest-subscription
-  "Processes a request to create or update a subscription. Note, this will allow
-  unlimited subscriptions to be created by users for themselves. Revisit if this
-  Becomes a problem"
-  [provider-id opt-native-id request]
-  (let [{:keys [body content-type headers request-context]} request]
-    (common-ingest-checks request-context provider-id)
-    (let [tmp-concept (api-core/body->concept!
-                       :subscription provider-id (str (UUID/randomUUID)) body content-type headers)
-          native-id (or opt-native-id (generate-native-id tmp-concept))
-          token-user (api-core/get-user-id-from-token request-context)
-          concept (assoc tmp-concept :native-id native-id)
-          concept-with-subscriber-id (check-subscriber-id
-                                      request-context concept provider-id token-user)
-          concept-with-id-and-email (check-subscriber-email
-                                     request-context concept-with-subscriber-id token-user)]
-      (check-subscription-ingest-permission request-context concept-with-id-and-email provider-id token-user)
-      (perform-subscription-ingest request-context concept-with-id-and-email headers))))
 
 (defn create-subscription
   "Processes a request to create a subscription. A native id will be generated."
