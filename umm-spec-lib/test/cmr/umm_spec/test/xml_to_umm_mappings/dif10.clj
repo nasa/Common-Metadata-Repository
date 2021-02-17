@@ -62,3 +62,29 @@
              :RangeDateTimes
              first
              :EndingDateTime))))
+
+(deftest dif10-direct-distribution-information-test
+  "Testing the direct distribution information translation from dif10 to UMM-C."
+  (is (= {:Region "us-west-1"
+          :S3BucketAndObjectPrefixNames ["bucket1" "bucket2"]
+          :S3CredentialsAPIEndpoint "https://www.credAPIURL.org"
+          :S3CredentialsAPIDocumentationURL "https://www.credAPIDocURL.org"}
+         (:DirectDistributionInformation
+           (parse/parse-dif10-xml "<DIF>
+                                     <DirectDistributionInformation>
+                                       <Region>us-west-1</Region>
+                                       <S3BucketAndObjectPrefixName>bucket1</S3BucketAndObjectPrefixName>
+                                       <S3BucketAndObjectPrefixName>bucket2</S3BucketAndObjectPrefixName>
+                                       <S3CredentialsAPIEndpoint>https://www.credAPIURL.org</S3CredentialsAPIEndpoint>
+                                       <S3CredentialsAPIDocumentationURL>https://www.credAPIDocURL.org</S3CredentialsAPIDocumentationURL>
+                                     </DirectDistributionInformation>
+                                   </DIF>"
+                                   true)))))
+
+(deftest dif10-direct-distribution-information-nil-test
+  "Testing the direct distribution information translation from dif10 to UMM-C when its nil."
+  (is (= nil
+         (:DirectDistributionInformation
+           (parse/parse-dif10-xml "<DIF>
+                                   </DIF>"
+                                   true)))))

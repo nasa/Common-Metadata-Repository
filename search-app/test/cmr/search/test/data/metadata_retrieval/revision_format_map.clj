@@ -20,7 +20,7 @@
           #{:compressed :decompressed-length})))
 
 (deftest compression-test
-  (let [uncompressed (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)
+  (let [uncompressed (r/concept->revision-format-map nil tm/dif10-concept all-metadata-formats)
         compressed (r/compress uncompressed)
         decompressed (r/decompress compressed)]
     (testing "Compress"
@@ -52,7 +52,7 @@
     (is (= expected actual))))
 
 (deftest revision-format-map-to-concept-test
-  (let [revision-format-map (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)]
+  (let [revision-format-map (r/concept->revision-format-map nil tm/dif10-concept all-metadata-formats)]
     (testing "With Decompressed revision format maps"
       (doseq [metadata-format all-metadata-formats]
         (testing (str "To " metadata-format)
@@ -65,45 +65,45 @@
               :echo10 (r/compress revision-format-map)))))
     (testing "With native target format"
       ;; DIF was the native format for sample revision format metadata
-      (is (= tm/dif-concept
+      (is (= tm/dif10-concept
              (r/revision-format-map->concept
               :native revision-format-map))))))
 
 (deftest concept-to-revision-format-map
   (testing "Convert with native"
-    (is (= {:concept-id (:concept-id tm/dif-concept)
-            :revision-id (:revision-id tm/dif-concept)
-            :native-format :dif
-            :dif (:metadata tm/dif-concept)}
-           (r/concept->revision-format-map nil tm/dif-concept #{:native}))))
+    (is (= {:concept-id (:concept-id tm/dif10-concept)
+            :revision-id (:revision-id tm/dif10-concept)
+            :native-format :dif10
+            :dif10 (:metadata tm/dif10-concept)}
+           (r/concept->revision-format-map nil tm/dif10-concept #{:native}))))
   (testing "Convert with multiple formats"
-    (is (= {:concept-id (:concept-id tm/dif-concept)
-            :revision-id (:revision-id tm/dif-concept)
-            :native-format :dif
-            :dif (:metadata tm/dif-concept)
+    (is (= {:concept-id (:concept-id tm/dif10-concept)
+            :revision-id (:revision-id tm/dif10-concept)
+            :native-format :dif10
+            :dif10 (:metadata tm/dif10-concept)
             :echo10 (:metadata (tm/concept-in-format :echo10))
             {:format :umm-json
              :version "1.3"} (:metadata tm/umm-json-1.3-concept)}
            (r/concept->revision-format-map
-            nil tm/dif-concept
+            nil tm/dif10-concept
             #{:echo10 {:format :umm-json
                        :version "1.3"}})))))
 
 (deftest ^:kaocha/pending add-additional-format-test
   (testing "Decompressed"
-    (let [rfm (r/concept->revision-format-map nil tm/dif-concept #{:native})]
+    (let [rfm (r/concept->revision-format-map nil tm/dif10-concept #{:native})]
       (is (= (assoc rfm :echo10 (:metadata tm/echo10-concept))
              (r/add-additional-format nil :echo10 rfm)))))
   (testing "Compressed"
     (let [rfm (r/compress
-                (r/concept->revision-format-map nil tm/dif-concept #{:native}))]
+                (r/concept->revision-format-map nil tm/dif10-concept #{:native}))]
       (is (= (assoc rfm :echo10 (util/string->lz4-bytes (:metadata tm/echo10-concept)))
              (r/add-additional-format nil :echo10 rfm))))))
 
 (defn test-rfm
   "Creates a revision format map with the specified formats."
   [concept-id revision-id formats]
-  (-> (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)
+  (-> (r/concept->revision-format-map nil tm/dif10-concept all-metadata-formats)
       (select-keys (concat formats [:native-format]))
       (assoc :concept-id concept-id
              :revision-id revision-id)))

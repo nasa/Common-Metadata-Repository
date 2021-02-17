@@ -81,6 +81,7 @@ History:
                 <xs:element name="Originating_Center"           type="OriginatingCenterType"        minOccurs="0"/>                         <!-- None-->
                 <xs:element name="Organization"                 type="OrganizationType"                             maxOccurs="unbounded"/> <!-- Renamed from Data_Center in dif_v9.8.3.xsd -->
                 <xs:element name="Distribution"                 type="DistributionType"             minOccurs="0"   maxOccurs="unbounded"/> <!-- None-->
+                <xs:element name="DirectDistributionInformation" type="DirectDistributionInformationType" minOccurs="0" />                  <!-- None-->
                 <xs:element name="Multimedia_Sample"            type="MultimediaSampleType"         minOccurs="0"   maxOccurs="unbounded"/> <!-- None-->
                 <xs:element name="Reference"                    type="ReferenceType"                minOccurs="0"   maxOccurs="unbounded"/> <!-- None-->
                 <xs:element name="Summary"                      type="SummaryType"/>                                                        <!-- None-->
@@ -1616,6 +1617,75 @@ History:
             <xs:element name="Distribution_Format"  type="xs:string" minOccurs="0"/>
             <xs:element name="Fees"                 type="xs:string" minOccurs="0"/>
         </xs:sequence>
+    </xs:complexType>
+
+    <!-- *********************************************************** -->
+    <!-- #mark DirectDistributionInformation -->
+
+    <xs:complexType name="DirectDistributionInformationType">
+      <xs:annotation>
+          <xs:appinfo><details></details></xs:appinfo>
+          <xs:appinfo><action>none</action></xs:appinfo>
+          <xs:documentation>
+              Field describes region S3 bucket or object prefix, S3 Credential API Endpoint,
+              S3 Credential API Documentation URL involved in distributing the data set through S3.
+
+            | ECHO 10                      | UMM                          | DIF 10                       | Notes      |
+            | ---------------------------- | ---------------------------- | ---------------------------- | ---------- |
+            | DirectDistributionInformation| DirectDistributionInformation| DirectDistributionInformation|            |
+          </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+        <xs:element name="Region">
+          <xs:simpleType>
+            <xs:annotation>
+              <xs:documentation>Defines the possible values for the Amazon Web Service US Regions
+                                where the data product resides.</xs:documentation>
+            </xs:annotation>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="us-east-1"></xs:enumeration>
+              <xs:enumeration value="us-east-2"></xs:enumeration>
+              <xs:enumeration value="us-west-1"></xs:enumeration>
+              <xs:enumeration value="us-west-2"></xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="S3BucketAndObjectPrefixName" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>Defines the possible values for the Amazon Web Service US S3 bucket
+                              and/or object prefix names.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1" />
+              <xs:maxLength value="1024" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="S3CredentialsAPIEndpoint">
+          <xs:annotation>
+            <xs:documentation>Defines the URL where the credentials are stored.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:anyURI">
+              <xs:minLength value="1" />
+              <xs:maxLength value="1024" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="S3CredentialsAPIDocumentationURL">
+          <xs:annotation>
+            <xs:documentation>Defines the URL where the credential documentation are stored.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:anyURI">
+              <xs:minLength value="1" />
+              <xs:maxLength value="1024" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+      </xs:sequence>
     </xs:complexType>
 
     <!-- *********************************************************** -->

@@ -339,7 +339,7 @@
         "DIF .native extension" [c3-dif c4-dif] :dif "native" nil
         "ISO MENDS .native extension" [c5-iso c6-iso] :iso19115 "native" nil
         "SMAP ISO .native extension" [c7-smap] :iso-smap "native" nil
-        "UMM JSON .native extension" [c10-umm-json] {:format :umm-json, :version "1.15.5"} "native" nil
+        "UMM JSON .native extension" [c10-umm-json] {:format :umm-json, :version accepted-version} "native" nil
         "ECHO10 accept application/metadata+xml" [c1-echo c2-echo] :echo10 nil "application/metadata+xml"
         "DIF accept application/metadata+xml" [c3-dif c4-dif] :dif nil "application/metadata+xml"
         "ISO MENDS accept application/metadata+xml" [c5-iso c6-iso] :iso19115 nil "application/metadata+xml"

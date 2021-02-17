@@ -144,3 +144,59 @@
                                file-archive-info)
      :FileDistributionInformation (when (seq file-dist-info)
                                     file-dist-info)}))
+
+(def direct-dist-info-instruction-pattern
+  (re-pattern "Region:|S3BucketAndObjectPrefixNames:"))
+
+(defn parse-direct-dist-info-instruction
+  "Parse all the Region and S3BucketAndObjectPrefixNames for DirectDistributionInformation out of
+   the instruction string."
+  [distributor]
+  (when-let [inst-string (char-string-value
+                           distributor
+                           (str "gmd:MD_Distributor/gmd:distributionOrderProcess/"
+                                "gmd:MD_StandardOrderProcess/gmd:orderingInstructions"))]
+    (let [distributor-map (parsing-util/convert-iso-description-string-to-map
+                            inst-string
+                            direct-dist-info-instruction-pattern)]
+      (when (or (:Region distributor-map)
+                (:S3BucketAndObjectPrefixNames distributor-map))
+        distributor-map))))
+
+(defn parse-direct-dist-info-transfer-options
+  "Parse the S3CredentialsAPIEndpoint and S3CredentialsAPIDocumentationURL out of the
+   transfer options."
+  [distributor]
+  (into {}
+    (for [transfer-option (select distributor "gmd:MD_Distributor/gmd:distributorTransferOptions")
+          :let [[href href-type] (re-matches #"(.*)$" (or (get-in transfer-option [:attrs :xlink/href] "")))]
+          :when (string/includes? href-type "DirectDistributionInformation_S3CredentialsAPI")]
+      (cond
+        (= href-type "DirectDistributionInformation_S3CredentialsAPIEndpoint")
+        {:S3CredentialsAPIEndpoint
+          (value-of transfer-option
+                    "gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL")}
+        (= href-type "DirectDistributionInformation_S3CredentialsAPIDocumentationURL")
+        {:S3CredentialsAPIDocumentationURL
+          (value-of transfer-option
+                    "gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL")}))))
+
+(defn parse-direct-dist-info
+  "Parses DirectDistributionInformation from ISO MENDS and SMAP XML."
+  [doc dist-info-xpath]
+  (first
+    (for [distributor (select doc (str dist-info-xpath "/gmd:distributor"))
+          :let [[href href-type] (re-matches #"(.*)$" (or (get-in distributor [:attrs :xlink/href]) ""))
+                {:keys [Region
+                        S3BucketAndObjectPrefixNames]}
+                (parse-direct-dist-info-instruction distributor)
+                {:keys [S3CredentialsAPIEndpoint
+                        S3CredentialsAPIDocumentationURL]}
+                (parse-direct-dist-info-transfer-options distributor)]
+          :when (and (seq href-type)
+                     (= href-type "DirectDistributionInformation"))]
+      {:Region Region
+       :S3BucketAndObjectPrefixNames (when S3BucketAndObjectPrefixNames
+                                       (string/split S3BucketAndObjectPrefixNames #" +"))
+       :S3CredentialsAPIEndpoint S3CredentialsAPIEndpoint
+       :S3CredentialsAPIDocumentationURL S3CredentialsAPIDocumentationURL})))

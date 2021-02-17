@@ -313,7 +313,16 @@
    :DataCenters (center/parse-data-centers doc sanitize?)
    :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel") sanitize?)
    :ContactGroups (contact/parse-contact-groups (select doc "DIF/Personnel"))
-   :ArchiveAndDistributionInformation (parse-archive-dist-info doc)})
+   :ArchiveAndDistributionInformation (parse-archive-dist-info doc)
+   :DirectDistributionInformation (when-let [ddi (first
+                                                   (select doc "/DIF/DirectDistributionInformation"))]
+                                    {:Region (value-of ddi "Region")
+                                     :S3BucketAndObjectPrefixNames
+                                       (values-at ddi "S3BucketAndObjectPrefixName")
+                                     :S3CredentialsAPIEndpoint
+                                       (value-of ddi "S3CredentialsAPIEndpoint")
+                                     :S3CredentialsAPIDocumentationURL
+                                       (value-of ddi "S3CredentialsAPIDocumentationURL")})})
 
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document. The :sanitize? option

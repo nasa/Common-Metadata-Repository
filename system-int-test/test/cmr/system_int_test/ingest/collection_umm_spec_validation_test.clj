@@ -2,6 +2,7 @@
   "CMR Ingest umm-spec validation integration tests"
   (:require
     [clj-time.core :as time]
+    [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.common-app.test.side-api :as side]
     [cmr.common.util :as u :refer [are3]]
@@ -450,3 +451,61 @@
 
             "ISO MENDS invalid character in SingleDateTimes"
             :iso19115 invalid-char-single-umm "[1993-07-29S] is not a valid datetime"))))
+
+
+(deftest umm-spec-direct-distribution-info-validation-tests
+  (testing "Invalid Direct Distribution Information "
+    (let [invalid-nil-region-umm (assoc (data-umm-c/collection)
+                                        :DirectDistributionInformation
+                                         {:Region nil
+                                          :S3BucketAndObjectPrefixNames ["one two"]
+                                          :S3CredentialsAPIEndpoint "hello"
+                                          :S3CredentialsAPIDocumentationURL "hello"})
+          invalid-region-umm (assoc (data-umm-c/collection)
+                                    :DirectDistributionInformation
+                                     {:Region "hello"
+                                      :S3BucketAndObjectPrefixNames ["one two"]
+                                      :S3CredentialsAPIEndpoint "hello"
+                                      :S3CredentialsAPIDocumentationURL "hello"})
+          invalid-url-umm (assoc (data-umm-c/collection)
+                                 :DirectDistributionInformation
+                                  {:Region "us-west-1"
+                                   :S3BucketAndObjectPrefixNames ["one two"]
+                                   :S3CredentialsAPIEndpoint "hello"
+                                   :S3CredentialsAPIDocumentationURL "hello"})]
+
+      (are3 [format error-code collection error-message]
+        (let [response (data-core/ingest-umm-spec-collection "PROV1"
+                                                             collection
+                                                             {:format format
+                                                              :allow-failure? true
+                                                              :validate-umm-c true})]
+          (is (= error-code (:status response)))
+          (is (string/includes? (first (:errors response))  error-message)))
+
+        "DIF10 nil Region is invalid"
+        :dif10 400 invalid-nil-region-umm "Invalid content was found starting with element 'S3BucketAndObjectPrefixName"
+
+        "ECHO10 nil Region is invalid"
+        :echo10 400 invalid-nil-region-umm "Invalid content was found starting with element 'S3BucketAndObjectPrefixName"
+
+        "ISO 19115 nil Region is invalid"
+        :iso19115 422 invalid-nil-region-umm "#/DirectDistributionInformation: required key [Region] not found"
+
+        "DIF10 bad Region is invalid"
+        :dif10 400 invalid-region-umm "Value 'hello' is not facet-valid with respect to enumeration"
+
+        "ECHO10 bad Region is invalid"
+        :echo10 400 invalid-region-umm "Value 'hello' is not facet-valid with respect to enumeration"
+
+        "ISO 19115 bad Region is invalid"
+        :iso19115 422 invalid-region-umm "DirectDistributionInformation/Region: hello is not a valid enum value"
+
+        "DIF10 bad URL is invalid"
+        :dif10 422 invalid-url-umm "[hello] is not a valid URL"
+
+        "ECHO10 bad URL is invalid"
+        :echo10 422 invalid-url-umm "[hello] is not a valid URL"
+
+        "ISO 19115 bad URL is invalid"
+        :iso19115 422 invalid-url-umm "[hello] is not a valid URL"))))

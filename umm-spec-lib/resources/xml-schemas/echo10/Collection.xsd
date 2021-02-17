@@ -543,6 +543,61 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:annotation>
         </xs:element>
       </xs:choice>
+      <xs:element minOccurs="0" name="DirectDistributionInformation"
+                  type="DirectDistributionInformationType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="DirectDistributionInformationType">
+    <xs:sequence>
+      <xs:element name="Region">
+        <xs:simpleType>
+          <xs:annotation>
+            <xs:documentation>Defines the possible values for the Amazon Web Service US Regions
+                              where the data product resides.</xs:documentation>
+          </xs:annotation>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="us-east-1"></xs:enumeration>
+            <xs:enumeration value="us-east-2"></xs:enumeration>
+            <xs:enumeration value="us-west-1"></xs:enumeration>
+            <xs:enumeration value="us-west-2"></xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="S3BucketAndObjectPrefixName" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Defines the possible values for the Amazon Web Service US S3 bucket
+                            and/or object prefix names.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="1024" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="S3CredentialsAPIEndpoint">
+        <xs:annotation>
+          <xs:documentation>Defines the URL where the credentials are stored.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:anyURI">
+            <xs:minLength value="1" />
+            <xs:maxLength value="1024" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="S3CredentialsAPIDocumentationURL">
+        <xs:annotation>
+          <xs:documentation>Defines the URL where the credential documentation are stored.
+          </xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:anyURI">
+            <xs:minLength value="1" />
+            <xs:maxLength value="1024" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="ListOfAlgorithmPackages">

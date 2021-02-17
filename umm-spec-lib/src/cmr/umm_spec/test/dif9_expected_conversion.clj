@@ -302,5 +302,6 @@
                                  (umm-c/map->UseConstraintsType
                                    {:Description description})))
         (assoc :ArchiveAndDistributionInformation nil)
+        (assoc :DirectDistributionInformation nil)
         (assoc-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem] nil)
         js/parse-umm-c)))

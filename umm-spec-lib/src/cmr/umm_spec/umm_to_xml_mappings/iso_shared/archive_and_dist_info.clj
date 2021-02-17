@@ -157,3 +157,42 @@
   [c]
   (map generate-distributor
        (map-indexed vector (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation]))))
+
+(defn generate-direct-dist-info-distributors
+  "Generate the direct distribution information for S3 data.
+   The xlink:href is used to associate DirectDistributionInformation."
+  [c]
+  (let [dist (get c :DirectDistributionInformation)
+        {:keys [Region
+                S3BucketAndObjectPrefixNames
+                S3CredentialsAPIEndpoint
+                S3CredentialsAPIDocumentationURL]} dist
+        bucket-names (when S3BucketAndObjectPrefixNames
+                       (string/join " " S3BucketAndObjectPrefixNames))
+        instruct-string (str "Region: " Region
+                             (when bucket-names
+                               (str " S3BucketAndObjectPrefixNames: " bucket-names)))]
+    (when dist
+      [:gmd:distributor {:xlink:href "DirectDistributionInformation"}
+       [:gmd:MD_Distributor
+        [:gmd:distributorContact {:gco:nilReason "inapplicable"}]
+        [:gmd:distributionOrderProcess
+         [:gmd:MD_StandardOrderProcess
+          [:gmd:orderingInstructions
+           (char-string instruct-string)]]]
+        [:gmd:distributorTransferOptions {:xlink:href "DirectDistributionInformation_S3CredentialsAPIEndpoint"}
+         [:gmd:MD_DigitalTransferOptions
+          [:gmd:onLine
+           [:gmd:CI_OnlineResource
+            [:gmd:linkage
+             [:gmd:URL S3CredentialsAPIEndpoint]]
+            [:gmd:description
+             (char-string "The S3 credentials API endpoint.")]]]]]
+        [:gmd:distributorTransferOptions {:xlink:href "DirectDistributionInformation_S3CredentialsAPIDocumentationURL"}
+         [:gmd:MD_DigitalTransferOptions
+          [:gmd:onLine
+           [:gmd:CI_OnlineResource
+            [:gmd:linkage
+             [:gmd:URL S3CredentialsAPIDocumentationURL]]
+            [:gmd:description
+             (char-string "The S3 credentials API Documentation URL.")]]]]]]])))

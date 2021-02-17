@@ -222,4 +222,11 @@
      (ru/generate-access-urls (:RelatedUrls c))
      (ru/generate-resource-urls (:RelatedUrls c))
      (spatial/spatial-element c)
-     (ru/generate-browse-urls (:RelatedUrls c))]))
+     (ru/generate-browse-urls (:RelatedUrls c))
+     (when-let [direct-dist-info (:DirectDistributionInformation c)]
+       [:DirectDistributionInformation
+         [:Region (:Region direct-dist-info)]
+         (for [prefix-name (:S3BucketAndObjectPrefixNames direct-dist-info)]
+           [:S3BucketAndObjectPrefixName prefix-name])
+         [:S3CredentialsAPIEndpoint (:S3CredentialsAPIEndpoint direct-dist-info)]
+         [:S3CredentialsAPIDocumentationURL (:S3CredentialsAPIDocumentationURL direct-dist-info)]])]))

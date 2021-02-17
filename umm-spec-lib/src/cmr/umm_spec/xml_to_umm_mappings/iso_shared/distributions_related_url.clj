@@ -176,7 +176,8 @@
   [doc sanitize? service-urls distributor-xpaths-map]
   (for [distributor (select doc (get distributor-xpaths-map :Root))
         :let [fees (util/trunc (value-of distributor (get distributor-xpaths-map :Fees)) size-of-related-url-fees)
-              format (parse-distributor-format distributor distributor-xpaths-map)]
+              format (parse-distributor-format distributor distributor-xpaths-map)
+              [href href-type] (re-matches #"(.*)$" (or (get-in distributor [:attrs :xlink/href]) ""))]
         transfer-option (select distributor (get distributor-xpaths-map :TransferOptions))
         :let [size (value-of transfer-option "gmd:transferSize")
               unit (value-of transfer-option "gmd:unitsOfDistribution/gco:CharacterString")]
@@ -191,7 +192,7 @@
                               (char-string-value url "gmd:description"))
               service-url (first (filter #(= url-link (:URL %)) service-urls))
               type (or opendap-type (:Type types-and-desc) (:Type service-url) "GET DATA")]
-        :when (seq type)]
+        :when (not (= href-type "DirectDistributionInformation"))]
     (merge
      {:URL url-link
       :URLContentType "DistributionURL"

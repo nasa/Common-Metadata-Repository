@@ -4,6 +4,7 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.util :as common-util :refer [are3]]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as contact]))
 
@@ -110,3 +111,31 @@
       "No Price and no DataFormats"
       nil
       actual-no-price-no-dataformat)))
+
+(deftest echo10-direct-distribution-information-test
+  "Testing the direct distribution information translation from echo10 to UMM-C."
+  (is (= {:Region "us-west-1"
+          :S3BucketAndObjectPrefixNames ["bucket1" "bucket2"]
+          :S3CredentialsAPIEndpoint "https://www.credAPIURL.org"
+          :S3CredentialsAPIDocumentationURL "https://www.credAPIDocURL.org"}
+         (:DirectDistributionInformation
+           (#'echo10/parse-echo10-xml (lkt/setup-context-for-test)
+                                      "<Collection>
+                                         <DirectDistributionInformation>
+                                           <Region>us-west-1</Region>
+                                           <S3BucketAndObjectPrefixName>bucket1</S3BucketAndObjectPrefixName>
+                                           <S3BucketAndObjectPrefixName>bucket2</S3BucketAndObjectPrefixName>
+                                           <S3CredentialsAPIEndpoint>https://www.credAPIURL.org</S3CredentialsAPIEndpoint>
+                                           <S3CredentialsAPIDocumentationURL>https://www.credAPIDocURL.org</S3CredentialsAPIDocumentationURL>
+                                         </DirectDistributionInformation>
+                                       </Collection>"
+                                      true)))))
+
+(deftest echo10-direct-distribution-information-nil-test
+  "Testing the direct distribution information translation from echo10 to UMM-C when its nil."
+  (is (= nil
+         (:DirectDistributionInformation
+           (#'echo10/parse-echo10-xml (lkt/setup-context-for-test)
+                                      "<Collection>
+                                       </Collection>"
+                                      true)))))

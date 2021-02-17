@@ -388,27 +388,30 @@
          [:gmd:attributeDescription ""]
          [:gmd:contentType ""]
          [:gmd:processingLevelCode
-           (proc-level/generate-iso-processing-level processing-level)]]]
-       (let [related-url-distributions (sdru/generate-distributions c)
-             file-dist-info-formats (archive-and-dist-info/generate-file-dist-info-formats c)
-             file-dist-info-medias (archive-and-dist-info/generate-file-dist-info-medias c)
-             file-dist-info-total-coll-sizes (archive-and-dist-info/generate-file-dist-info-total-coll-sizes c)
-             file-dist-info-average-sizes (archive-and-dist-info/generate-file-dist-info-average-file-sizes c)
-             file-dist-info-distributors (archive-and-dist-info/generate-file-dist-info-distributors c)]
-         (when (or file-dist-info-formats
-                   related-url-distributions
-                   file-dist-info-distributors
-                   file-dist-info-medias
-                   file-dist-info-total-coll-sizes
-                   file-dist-info-average-sizes)
-           [:gmd:distributionInfo
-            [:gmd:MD_Distribution
-             file-dist-info-formats
-             related-url-distributions
-             file-dist-info-distributors
-             file-dist-info-medias
-             file-dist-info-total-coll-sizes
-             file-dist-info-average-sizes]])))
+           (proc-level/generate-iso-processing-level processing-level)]]])
+      (let [related-url-distributions (sdru/generate-distributions c)
+            file-dist-info-formats (archive-and-dist-info/generate-file-dist-info-formats c)
+            file-dist-info-medias (archive-and-dist-info/generate-file-dist-info-medias c)
+            file-dist-info-total-coll-sizes (archive-and-dist-info/generate-file-dist-info-total-coll-sizes c)
+            file-dist-info-average-sizes (archive-and-dist-info/generate-file-dist-info-average-file-sizes c)
+            file-dist-info-distributors (archive-and-dist-info/generate-file-dist-info-distributors c)
+            direct-dist-info (archive-and-dist-info/generate-direct-dist-info-distributors c)]
+        (when (or file-dist-info-formats
+                  related-url-distributions
+                  file-dist-info-distributors
+                  file-dist-info-medias
+                  file-dist-info-total-coll-sizes
+                  file-dist-info-average-sizes
+                  direct-dist-info)
+          [:gmd:distributionInfo
+           [:gmd:MD_Distribution
+            file-dist-info-formats
+            related-url-distributions
+            file-dist-info-distributors
+            direct-dist-info
+            file-dist-info-medias
+            file-dist-info-total-coll-sizes
+            file-dist-info-average-sizes]]))
       [:gmd:dataQualityInfo
        [:gmd:DQ_DataQuality
         [:gmd:scope
