@@ -12,7 +12,8 @@
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.metadata-db :as mdb])
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.transmit.urs :as urs])
   (:import
    [java.util UUID]))
 
@@ -152,6 +153,49 @@
         (get-unique-native-id context subscription))
       native-id)))
 
+(defn check-subscriber-id
+  "If subscriber id is provided, checks that token-user has appropriate ACLs.
+  If subscriber id is not provided, then the token-user themself is used"
+  [request-context concept provider-id token-user]
+  (let [parsed-metadata (json/parse-string (:metadata concept) true)]
+    (if (:SubscriberId parsed-metadata)
+      (let [_ (check-subscription-ingest-permission request-context concept provider-id token-user)]
+        concept)
+      (let [generated-metadata (json/generate-string (assoc parsed-metadata :SubscriberId token-user))]
+        (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
+
+(defn check-subscriber-email
+  "If subscriber email is provided, use it. Else, get it from EDL."
+  [request-context concept token-user]
+  (let [parsed-metadata (json/parse-string (:metadata concept) true)]
+    (if (:EmailAddress parsed-metadata)
+      concept
+      (let [token-user-info (urs/get-user-info request-context token-user)
+            generated-metadata (json/generate-string (assoc parsed-metadata :EmailAddress (:email_address token-user-info)))]
+        (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
+
+
+
+
+(defn ingest-subscription
+  "Processes a request to create or update a subscription. Note, this will allow
+  unlimited subscriptions to be created by users for themselves. Revisit if this
+  Becomes a problem"
+  [provider-id opt-native-id request]
+  (let [{:keys [body content-type headers request-context]} request]
+    (common-ingest-checks request-context provider-id)
+    (let [tmp-concept (api-core/body->concept!
+                       :subscription provider-id (str (UUID/randomUUID)) body content-type headers)
+          native-id (or opt-native-id (generate-native-id tmp-concept))
+          token-user (api-core/get-user-id-from-token request-context)
+          concept (assoc tmp-concept :native-id native-id)
+          concept-with-subscriber-id (check-subscriber-id
+                                      request-context concept provider-id token-user)
+          concept-with-id-and-email (check-subscriber-email
+                                     request-context concept-with-subscriber-id token-user)]
+      (check-subscription-ingest-permission request-context concept-with-id-and-email provider-id token-user)
+      (perform-subscription-ingest request-context concept-with-id-and-email headers))))
+
 (defn create-subscription
   "Processes a request to create a subscription. A native id will be generated."
   [provider-id request]
@@ -165,10 +209,16 @@
                             content-type
                             headers)
           native-id (get-unique-native-id request-context tmp-subscription)
+          token-user (api-core/get-user-id-from-token request-context)
           new-subscription (assoc tmp-subscription :native-id native-id)
-          subscriber-id (get-subscriber-id new-subscription)]
+          subscriber-id (get-subscriber-id new-subscription)
+          concept-with-subscriber-id (check-subscriber-id
+                                      request-context concept provider-id token-user)
+          concept-with-id-and-email (check-subscriber-email
+                                     request-context concept-with-subscriber-id token-user)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context new-subscription headers))))
+
 
 (defn create-subscription-with-native-id
   "Processes a request to create a subscription using the native-id provided."

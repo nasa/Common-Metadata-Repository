@@ -17,6 +17,10 @@
   [conn]
   (format "%s/oauth/token?grant_type=client_credentials" (conn/root-url conn)))
 
+(defn- user-info-url
+  [conn username]
+  (format "%s/api/users/%s" (conn/root-url conn) username))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 
@@ -58,6 +62,19 @@
      (if raw?
        response
        (not (nil? response))))))
+
+(defn get-user-info
+  "Returns URS info associated with a username"
+  [context user]
+  (let [{:keys [status body]} (request-with-auth context {:url-fn #(user-info-url % user)
+                                                          :method :get
+                                                          :raw? true})]
+   (when-not (= 200 status)
+     (errors/internal-error!
+      (format "Cannot get info for username [%s] in EDL. Failed with status code [%d]."
+              user status)))
+   body))
+
 
 (comment
  ;; Use this code to test with URS. Replace XXXX with real values
