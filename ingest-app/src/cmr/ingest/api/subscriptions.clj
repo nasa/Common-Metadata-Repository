@@ -195,7 +195,7 @@
           sub-with-id-and-email (check-subscriber-email
                                      request-context sub-with-subscriber-id token-user)]
       (check-ingest-permission request-context provider-id subscriber-id)
-      (perform-subscription-ingest request-context new-subscription headers))))
+      (perform-subscription-ingest request-context sub-with-id-and-email headers))))
 
 
 (defn create-subscription-with-native-id
