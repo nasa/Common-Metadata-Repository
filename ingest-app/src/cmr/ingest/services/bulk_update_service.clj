@@ -20,9 +20,6 @@
 (def bulk-update-schema
   (js/json-string->json-schema (slurp (io/resource "bulk_update_schema.json"))))
 
-(def bulk-granule-update-schema
-  (js/json-string->json-schema (slurp (io/resource "granule_bulk_update_schema.json"))))
-
 (def default-exception-message
   "There was an error updating the concept.")
 
@@ -113,10 +110,6 @@
       (errors/throw-service-errors :bad-request
                                    [(format "A find value must be supplied when the update is of type %s"
                                             update-type)]))))
-
-(defmethod validate-bulk-update-post-params :granule
-  [_ json]
-  (js/validate-json! bulk-granule-update-schema json))
 
 (defn- get-provider-collection-concept-ids
   "Returns a list of collection concept ids for a given provider-id.
