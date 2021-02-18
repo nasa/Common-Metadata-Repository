@@ -163,27 +163,6 @@
       (let [generated-metadata (json/generate-string (assoc parsed-metadata :SubscriberId token-user))]
         (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
 
-(defn check-subscriber-id
-  "If subscriber id is provided, checks that token-user has appropriate ACLs.
-  If subscriber id is not provided, then the token-user themself is used"
-  [request-context concept provider-id token-user]
-  (let [parsed-metadata (json/parse-string (:metadata concept) true)]
-    (if (:SubscriberId parsed-metadata)
-      concept
-      (let [generated-metadata (json/generate-string (assoc parsed-metadata :SubscriberId token-user))]
-        (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
-
-(defn check-subscriber-email
-  "If subscriber email is provided, use it. Else, get it from EDL."
-  [request-context concept token-user]
-  (let [parsed-metadata (json/parse-string (:metadata concept) true)]
-    (if (:EmailAddress parsed-metadata)
-      concept
-      (let [token-user-info (urs/get-user-info request-context token-user)
-            generated-metadata (json/generate-string (assoc parsed-metadata :EmailAddress
-                                                            (:email_address token-user-info)))]
-        (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
-
 (defn add-if-missing
   [context subscription metadata user field value-fn]
   (if-let [old-value (field metadata)]
