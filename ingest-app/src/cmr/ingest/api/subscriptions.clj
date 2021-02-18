@@ -153,16 +153,6 @@
         (get-unique-native-id context subscription))
       native-id)))
 
-(defn check-subscriber-id
-  "If subscriber id is provided, checks that token-user has appropriate ACLs.
-  If subscriber id is not provided, then the token-user themself is used"
-  [request-context concept provider-id token-user]
-  (let [parsed-metadata (json/parse-string (:metadata concept) true)]
-    (if (:SubscriberId parsed-metadata)
-      concept
-      (let [generated-metadata (json/generate-string (assoc parsed-metadata :SubscriberId token-user))]
-        (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
-
 (defn add-if-missing
   [context subscription metadata user field value-fn]
   (if-let [old-value (field metadata)]
