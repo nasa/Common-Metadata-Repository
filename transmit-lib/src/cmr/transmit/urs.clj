@@ -75,6 +75,11 @@
               user status)))
    body))
 
+(defn get-user-email
+  "Returns URS email associated with a username"
+  [context user]
+  (:email_address (get-user-info context user)))
+
 
 (comment
  ;; Use this code to test with URS. Replace XXXX with real values

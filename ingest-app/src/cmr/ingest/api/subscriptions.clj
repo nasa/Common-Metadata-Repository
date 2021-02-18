@@ -163,6 +163,16 @@
       (let [generated-metadata (json/generate-string (assoc parsed-metadata :SubscriberId token-user))]
         (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
 
+(defn check-subscriber-id
+  "If subscriber id is provided, checks that token-user has appropriate ACLs.
+  If subscriber id is not provided, then the token-user themself is used"
+  [request-context concept provider-id token-user]
+  (let [parsed-metadata (json/parse-string (:metadata concept) true)]
+    (if (:SubscriberId parsed-metadata)
+      concept
+      (let [generated-metadata (json/generate-string (assoc parsed-metadata :SubscriberId token-user))]
+        (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
+
 (defn check-subscriber-email
   "If subscriber email is provided, use it. Else, get it from EDL."
   [request-context concept token-user]
@@ -173,6 +183,31 @@
             generated-metadata (json/generate-string (assoc parsed-metadata :EmailAddress
                                                             (:email_address token-user-info)))]
         (assoc (dissoc concept :metadata) :metadata generated-metadata)))))
+
+(defn add-if-missing
+  [context subscription metadata user field value-fn]
+  (if-let [old-value (field metadata)]
+    subscription
+    (do
+      (println (value-fn context user))
+      (assoc subscription :metadata
+             (json/generate-string
+              (assoc metadata field (value-fn context user)))))))
+
+(defn add-subscriber-id-if-missing
+  "If subscriber EmailAddress is provided, use it. Else, get it from EDL."
+  [context subscription token-user]
+  (let [metadata (json/parse-string (:metadata subscription) true)]
+    (add-if-missing context subscription metadata token-user :SubscriberId
+      (fn [ctx user] user))))
+
+(defn add-email-if-missing
+   "If SubscriberId is provided, use it. Else, get it from the token."
+  [context subscription]
+  (let [metadata (json/parse-string (:metadata subscription) true)
+        subscriberId (:SubscriberId metadata)]
+    (add-if-missing context subscription metadata subscriberId :EmailAddress
+      (fn [ctx user] (urs/get-user-email ctx user)))))
 
 (defn create-subscription
   "Processes a request to create a subscription. A native id will be generated."
@@ -190,10 +225,10 @@
           new-subscription (assoc tmp-subscription :native-id native-id)
           subscriber-id (get-subscriber-id new-subscription)
           token-user (api-core/get-user-id-from-token request-context)
-          sub-with-subscriber-id (check-subscriber-id
-                                      request-context new-subscription provider-id token-user)
-          sub-with-id-and-email (check-subscriber-email
-                                     request-context sub-with-subscriber-id token-user)]
+          sub-with-subscriber-id (add-subscriber-id-if-missing
+                                      request-context new-subscription token-user)
+          sub-with-id-and-email (add-email-if-missing
+                                     request-context sub-with-subscriber-id)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context sub-with-id-and-email headers))))
 
@@ -218,10 +253,10 @@
                             headers)
           subscriber-id (get-subscriber-id new-subscription)
           token-user (api-core/get-user-id-from-token request-context)
-          sub-with-subscriber-id (check-subscriber-id
-                                      request-context new-subscription provider-id token-user)
-          sub-with-id-and-email (check-subscriber-email
-                                     request-context sub-with-subscriber-id token-user)]
+          sub-with-subscriber-id (add-subscriber-id-if-missing
+                                      request-context new-subscription token-user)
+          sub-with-id-and-email (add-email-if-missing
+                                     request-context sub-with-subscriber-id)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context sub-with-id-and-email headers))))
 
@@ -249,10 +284,10 @@
                          (get-in original-subscription [:extra-fields :subscriber-id]))
         new-subscriber (get-subscriber-id new-subscription)
         token-user (api-core/get-user-id-from-token request-context)
-        sub-with-subscriber-id (check-subscriber-id
-                                    request-context new-subscription provider-id token-user)
-        sub-with-id-and-email (check-subscriber-email
-                                   request-context sub-with-subscriber-id token-user)]
+        sub-with-subscriber-id (add-subscriber-id-if-missing
+                                    request-context new-subscription token-user)
+        sub-with-id-and-email (add-email-if-missing
+                                   request-context sub-with-subscriber-id)]
     (check-ingest-permission request-context provider-id new-subscriber old-subscriber)
     (perform-subscription-ingest request-context sub-with-id-and-email headers)))
 
