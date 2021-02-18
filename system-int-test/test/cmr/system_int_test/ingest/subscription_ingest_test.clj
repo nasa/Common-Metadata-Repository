@@ -186,7 +186,7 @@
                     {:accept-format :json
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
-      (is (re-find #"Request content is too short." (first errors)))))
+      (is (re-find #"required key \[Name\] not found" (first errors)))))
   (testing "xml response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -195,7 +195,7 @@
                     {:accept-format :xml
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-      (is (re-find #"Request content is too short." (first errors))))))
+      (is (re-find #"required key \[Name\] not found" (first errors))))))
 
 ;; Verify that user-id is saved from User-Id or token header
 (deftest subscription-ingest-user-id-test
