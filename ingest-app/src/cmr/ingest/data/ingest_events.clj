@@ -19,7 +19,7 @@
     (queue/publish-message queue-broker exchange-name msg)))
 
 (defn publish-gran-bulk-update-event
-  "Put an granule bulk update event on the message queue"
+  "Put a granule bulk update event on the message queue"
   [context msg]
   (let [queue-broker (get-in context [:system :queue-broker])
         exchange-name (config/bulk-update-exchange-name)]
@@ -84,10 +84,9 @@
    :user-id user-id})
 
 (defn ingest-granule-bulk-update-event
-  [provider-id task-id granule-url bulk-update-params user-id]
+  [provider-id task-id bulk-update-params user-id]
   {:action :granule-bulk-update
    :provider-id provider-id
    :task-id task-id
-   :granule-ur granule-url
    :bulk-update-params bulk-update-params
    :user-id user-id})
