@@ -73,7 +73,7 @@
      (errors/internal-error!
       (format "Cannot get info for username [%s] in URS. Failed with status code [%d].
                EDL error message: [%s]"
-              user status (str body))))
+              user status (pr-str body))))
    body))
 
 (defn get-user-email

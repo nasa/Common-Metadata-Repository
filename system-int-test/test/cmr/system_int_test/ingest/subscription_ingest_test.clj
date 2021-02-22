@@ -54,7 +54,8 @@
     (testing "ingest on PROV1, with no subscriber-id supplied"
       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
                                                                   :CollectionConceptId (:concept-id coll1)
-                                                                  :SubscriberId nil})
+                                                                  :SubscriberId nil
+                                                                  :EmailAddress "foo"})
             user1-token (echo-util/login (system/context) "user1")
             response (ingest/ingest-concept concept {:token user1-token})
             ingested-concept (mdb/get-concept (:concept-id response))
