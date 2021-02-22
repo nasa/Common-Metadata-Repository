@@ -30,7 +30,6 @@
    (:user-id msg)))
 
 (defmethod handle-provider-event :granule-bulk-update
-  "Dispatch to the granule bulk update service to handle provider event"
   [context message]
   (granule-bulk-update-service/handle-granule-bulk-update-event
    context

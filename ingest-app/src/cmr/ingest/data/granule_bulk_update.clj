@@ -125,7 +125,7 @@
            values [task-id provider-id name (util/string->gzip-bytes json-body) "IN_PROGRESS"]]
        (jdbc/db-do-prepared db statement values)
        ;; Write a row to granule status for each concept id
-       (apply j/insert! conn
+       (apply jdbc/insert! conn
               "granule_bulk_update_tasks"
               ["task_id" "granule-ur" "status"]
               ;; set :transaction? false since we are already inside a transaction
