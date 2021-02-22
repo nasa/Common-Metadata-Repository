@@ -335,7 +335,7 @@
                                         "Cmr-Revision-id" revision-id
                                         "Cmr-Validate-Keywords" validate-keywords
                                         "Cmr-Validate-Umm-C" validate-umm-c
-                                        "Echo-Token" token 
+                                        "Echo-Token" token
                                         "User-Id" user-id
                                         "Client-Id" client-id
                                         "CMR-Request-Id" cmr-request-id
@@ -537,6 +537,28 @@
          params (merge params (when accept-format {:accept accept-format}))
          params (merge params (when headers {:headers headers}))
          response (client/request params)]
+     (parse-bulk-update-response response options))))
+
+(defn bulk-update-granules
+  "Call ingest granule bulk update by provider"
+  ([provider-id request-body]
+   (bulk-update-granules provider-id request-body nil))
+  ([provider-id request-body options]
+   (let [{:keys [token user-id]} options
+         accept-format (get options :accept-format :xml)
+         headers (when (or user-id token)
+                   (util/remove-nil-keys
+                    {transmit-config/token-header token
+                     "user-id" user-id}))
+         params {:method :post
+                 :url (url/ingest-granule-bulk-update-url provider-id)
+                 :body (json/generate-string request-body)
+                 :connection-manager (s/conn-mgr)
+                 :throw-exceptions false}
+         response (-> params
+                      (merge (when accept-format {:accept accept-format}))
+                      (merge params (when headers {:headers headers}))
+                      client/request)]
      (parse-bulk-update-response response options))))
 
 (defmulti parse-bulk-update-provider-status-body

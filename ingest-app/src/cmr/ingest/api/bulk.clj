@@ -13,6 +13,7 @@
    [cmr.ingest.config :as ingest-config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.services.bulk-update-service :as bulk-update]
+   [cmr.ingest.services.granule-bulk-update-service :as granule-bulk-update]
    [cmr.ingest.services.ingest-service :as ingest]))
 
 (defn bulk-update-collections
@@ -50,19 +51,15 @@
       (lt-validation/validate-launchpad-token request-context)
       (api-core/verify-provider-exists request-context provider-id)
       (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-      (let [_task-id (bulk-update/validate-and-save-bulk-granule-update
+      (let [task-id (granule-bulk-update/validate-and-save-bulk-granule-update
                       request-context
                       provider-id
                       content
                       user-id)]
         (api-core/generate-ingest-response
-         ;; 501 => not-yet-implemented
          headers
-         {:status 501
-          :message (str "The bulk granule update feature has not been completed yet. "
-                        "Please refer to "
-                        "https://cmr.earthdata.nasa.gov/search/site/docs/ingest/api.html "
-                        "or contact cmr@nasa.gov for information regarding bulk granule update.")})))))
+         {:status 200
+          :task-id task-id})))))
 
 (defn- generate-xml-status-list
   "Generate XML for a status list with the format
