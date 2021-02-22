@@ -165,14 +165,14 @@
             (assoc metadata field (value-fn context user))))))
 
 (defn add-subscriber-id-if-missing
-  "If subscriber EmailAddress is provided, use it. Else, use the value supplied by EDL for the user."
+  "If SubscriberId is provided, use it. Else, get it from the token."
   [subscription context token-user]
   (let [metadata (json/parse-string (:metadata subscription) true)]
     (add-subscription-field-if-missing context subscription metadata token-user :SubscriberId
       (constantly token-user))))
 
 (defn add-email-if-missing
-   "If SubscriberId is provided, use it. Else, get it from the token."
+  "If subscriber EmailAddress is provided, use it. Else, use the value supplied by EDL for the user."
   [subscription context]
   (let [metadata (json/parse-string (:metadata subscription) true)
         subscriberId (:SubscriberId metadata)]
