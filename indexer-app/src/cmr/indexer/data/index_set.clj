@@ -218,6 +218,13 @@
    :uuid m/string-field-mapping
    :uuid-lowercase m/string-field-mapping})
 
+(defnestedmapping direct-distribution-information-mapping
+  "Defines hierarchical mappings for Direct Distribution Information."
+  {:region m/string-field-mapping
+   :s3-bucket-and-object-prefix m/string-field-mapping
+   :s3-credentials-api-endpoint m/string-field-mapping
+   :s3-credentials-documentation-url m/string-field-mapping})
+
 (defnestedmapping location-keywords-hierarchical-mapping
   "Defines hierarchical mappings for location keywords."
   {:category m/string-field-mapping
@@ -518,7 +525,10 @@
 
           ;; Relevancy score from community usage metrics
           :usage-relevancy-score m/int-field-mapping
-          :horizontal-data-resolutions float-prioritized-mapping}
+          :horizontal-data-resolutions float-prioritized-mapping
+
+          ;; Direct Distribution Information
+          :direct-distribution-information direct-distribution-information-mapping}
          spatial-coverage-fields))
 
 (defmapping deleted-granule-mapping :deleted-granule
