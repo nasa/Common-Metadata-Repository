@@ -78,7 +78,18 @@
             response (ingest/ingest-concept concept {:token user1-token})
             ingested-concept (mdb/get-concept (:concept-id response))
             parsed-metadata (json/parse-string (:metadata ingested-concept) true)]
-       (is (= "user1@example.com" (:EmailAddress parsed-metadata)))))))
+       (is (= "user1@example.com" (:EmailAddress parsed-metadata)))))
+    (testing "ingest on PROV1, admin subscribes for a user with no email provided"
+      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
+                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                  :SubscriberId "mark"
+                                                                  :EmailAddress nil})
+
+            response (ingest/ingest-concept concept {:token "mock-echo-system-token"})
+            ingested-concept (mdb/get-concept (:concept-id response))
+            parsed-metadata (json/parse-string (:metadata ingested-concept) true)]
+       (is (= "mark@example.com" (:EmailAddress parsed-metadata)))))))
+
 
 (deftest subscription-ingest-on-prov3-test
   (let [coll1 (data-core/ingest-umm-spec-collection
@@ -783,7 +794,7 @@
           (let [{:keys [status errors]} (ingest/ingest-concept concept {:token token
                                                                         :method :post})]
             (is (= 409 status))
-            (is (= ["Subscription with with provider-id [PROV1] and native-id [another-native-id] already exists."]
+            (is (= ["Subscription with provider-id [PROV1] and native-id [another-native-id] already exists."]
                    errors))))))
 
     (testing "without native-id provided with unicode in the name"

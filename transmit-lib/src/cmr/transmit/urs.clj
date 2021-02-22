@@ -71,8 +71,9 @@
                                                           :raw? true})]
    (when-not (= 200 status)
      (errors/internal-error!
-      (format "Cannot get info for username [%s] in EDL. Failed with status code [%d]."
-              user status)))
+      (format "Cannot get info for username [%s] in URS. Failed with status code [%d].
+               EDL error message: [%s]"
+              user status (str body))))
    body))
 
 (defn get-user-email

@@ -3,6 +3,7 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
@@ -153,31 +154,27 @@
         (get-unique-native-id context subscription))
       native-id)))
 
-(defn add-subscription-field-if-missing
-  "Takes a subscription concept, it's parsed metadata, and a field to replace. If the old
-  subscription had that field missing from it's metadata, returns a new subcription where the
-  new value is for that field whatever the value-fn returns"
-  [context subscription metadata user field value-fn]
-  (if-let [old-value (field metadata)]
-    subscription
-    (assoc subscription :metadata
-           (json/generate-string
-            (assoc metadata field (value-fn context user))))))
+(defn add-id-and-email-to-metadata-if-missing
+   "If SubscriberId is provided, use it. Else, get it from the token.
+   If subscriber EmailAddress is provided, use it. Else, use the value supplied by EDL for the user."
+  [context metadata token-user]
+  (let [{subscriber :SubscriberId
+         email :EmailAddress} metadata
+        subscriber (if-not subscriber
+                     token-user
+                     subscriber)
+        email (if-not email
+                (urs/get-user-email context subscriber)
+                email)]
+    (assoc metadata :SubscriberId subscriber :EmailAddress email)))
 
-(defn add-subscriber-id-if-missing
-  "If SubscriberId is provided, use it. Else, get it from the token."
-  [subscription context token-user]
-  (let [metadata (json/parse-string (:metadata subscription) true)]
-    (add-subscription-field-if-missing context subscription metadata token-user :SubscriberId
-      (constantly token-user))))
-
-(defn add-email-if-missing
-  "If subscriber EmailAddress is provided, use it. Else, use the value supplied by EDL for the user."
-  [subscription context]
+(defn add-id-and-email-if-missing
+  "Parses and generates the metadata, such that add-id-and-email-to-metadata-if-missing
+  can focus on insertion logic."
+  [context subscription token-user]
   (let [metadata (json/parse-string (:metadata subscription) true)
-        subscriberId (:SubscriberId metadata)]
-    (add-subscription-field-if-missing context subscription metadata subscriberId :EmailAddress
-      (fn [ctx user] (urs/get-user-email ctx user)))))
+        new-metadata (add-id-and-email-to-metadata-if-missing context metadata token-user)]
+    (assoc subscription :metadata (json/generate-string new-metadata))))
 
 (defn create-subscription
   "Processes a request to create a subscription. A native id will be generated."
@@ -194,12 +191,10 @@
           native-id (get-unique-native-id request-context tmp-subscription)
           subscriber-id (get-subscriber-id tmp-subscription)
           token-user (api-core/get-user-id-from-token request-context)
-          new-subscription (-> tmp-subscription
-                               (assoc :native-id native-id)
-                               (add-subscriber-id-if-missing request-context token-user)
-                               (add-email-if-missing request-context))]
+          new-subscription (assoc  tmp-subscription :native-id native-id)
+          newer-subscription (add-id-and-email-if-missing request-context new-subscription token-user)]
       (check-ingest-permission request-context provider-id subscriber-id)
-      (perform-subscription-ingest request-context new-subscription headers))))
+      (perform-subscription-ingest request-context newer-subscription headers))))
 
 (defn create-subscription-with-native-id
   "Processes a request to create a subscription using the native-id provided."
@@ -209,7 +204,7 @@
     (when (native-id-collision? request-context provider-id native-id)
       (errors/throw-service-error
        :conflict
-       (format "Subscription with with provider-id [%s] and native-id [%s] already exists."
+       (format "Subscription with provider-id [%s] and native-id [%s] already exists."
                provider-id
                native-id)))
     (let [tmp-subscription (api-core/body->concept!
@@ -221,9 +216,7 @@
                             headers)
           subscriber-id (get-subscriber-id tmp-subscription)
           token-user (api-core/get-user-id-from-token request-context)
-          new-subscription (-> tmp-subscription
-                               (add-subscriber-id-if-missing request-context token-user)
-                               (add-email-if-missing request-context))]
+          new-subscription (add-id-and-email-if-missing request-context tmp-subscription token-user)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context new-subscription headers))))
 
@@ -251,9 +244,7 @@
                          (get-in original-subscription [:extra-fields :subscriber-id]))
         new-subscriber (get-subscriber-id tmp-subscription)
         token-user (api-core/get-user-id-from-token request-context)
-        new-subscription (-> tmp-subscription
-                             (add-subscriber-id-if-missing request-context token-user)
-                             (add-email-if-missing request-context))]
+        new-subscription (add-id-and-email-if-missing request-context tmp-subscription token-user)]
     (check-ingest-permission request-context provider-id new-subscriber old-subscriber)
     (perform-subscription-ingest request-context new-subscription headers)))
 
