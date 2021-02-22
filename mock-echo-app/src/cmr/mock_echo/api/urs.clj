@@ -147,7 +147,7 @@
         ;; While a real URS connection would return more than just the email address,
         ;; we only need the email address to fill in for the subscription concept.
         (GET "/:user-id" {{:keys [user-id]} :params}
-          {:status 200 :body {:email_address (str user-id"@google.website")}}))
+          {:status 200 :body {:email_address (str user-id"@example.com")}}))
 
       (context "/users" []
         ;; Create a bunch of users all at once

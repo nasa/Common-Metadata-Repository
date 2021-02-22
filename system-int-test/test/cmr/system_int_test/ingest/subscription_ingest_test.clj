@@ -78,7 +78,7 @@
             response (ingest/ingest-concept concept {:token user1-token})
             ingested-concept (mdb/get-concept (:concept-id response))
             parsed-metadata (json/parse-string (:metadata ingested-concept) true)]
-       (is (= "user1@google.website" (:EmailAddress parsed-metadata)))))))
+       (is (= "user1@example.com" (:EmailAddress parsed-metadata)))))))
 
 (deftest subscription-ingest-on-prov3-test
   (let [coll1 (data-core/ingest-umm-spec-collection
