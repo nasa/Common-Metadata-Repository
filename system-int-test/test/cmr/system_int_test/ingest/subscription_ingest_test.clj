@@ -55,7 +55,7 @@
       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
                                                                   :CollectionConceptId (:concept-id coll1)
                                                                   :SubscriberId nil
-                                                                  :EmailAddress "foo"})
+                                                                  :EmailAddress "foo@example.com"})
             user1-token (echo-util/login (system/context) "user1")
             response (ingest/ingest-concept concept {:token user1-token})
             ingested-concept (mdb/get-concept (:concept-id response))
