@@ -221,9 +221,9 @@
 (defnestedmapping direct-distribution-information-mapping
   "Defines hierarchical mappings for Direct Distribution Information."
   {:region m/string-field-mapping
-   :s3-bucket-and-object-prefix m/string-field-mapping
+   :s3-bucket-and-object-prefix-names m/string-field-mapping
    :s3-credentials-api-endpoint m/string-field-mapping
-   :s3-credentials-documentation-url m/string-field-mapping})
+   :s3-credentials-api-documentation-url m/string-field-mapping})
 
 (defnestedmapping location-keywords-hierarchical-mapping
   "Defines hierarchical mappings for location keywords."
@@ -528,7 +528,8 @@
           :horizontal-data-resolutions float-prioritized-mapping
 
           ;; Direct Distribution Information
-          :direct-distribution-information direct-distribution-information-mapping}
+          :direct-distribution-information direct-distribution-information-mapping
+          :s3-bucket-and-object-prefix-names m/string-field-mapping}
          spatial-coverage-fields))
 
 (defmapping deleted-granule-mapping :deleted-granule
