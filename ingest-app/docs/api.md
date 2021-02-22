@@ -709,6 +709,10 @@ Subscription concepts can be created by sending an HTTP POST or PUT with the met
 If a native-id is not provided it will be generated. This is only supported for POST requests.
 POST requests may only be used for creating subscriptions.
 
+If a SubscriberId is not provided, then the user ID associated with the token used to ingest the subscription will be used as the SubscriberId.
+
+If an EmailAddress is not provided, then the email address associated with the SubscriberId's Earthdata Login (URS) account will be used as the EmailAddress.
+
 POST only may be used without a native-id at the following URL.
 `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions`
 

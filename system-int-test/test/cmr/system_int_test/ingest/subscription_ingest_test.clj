@@ -2,6 +2,7 @@
   "CMR subscription ingest integration tests.
   For subscription permissions tests, see `provider-ingest-permissions-test`."
   (:require
+   [cheshire.core :as json]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
@@ -41,6 +42,55 @@
                            (remove :deleted)
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
     (#'jobs/process-subscriptions (system/context) subscriptions)))
+
+
+(deftest subscription-ingest-no-subscriber-id-test
+  (let [coll1 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "coll-no-id"
+                 :EntryTitle "entry-title-no-id"})
+               {:token "mock-echo-system-token"})]
+    (testing "ingest on PROV1, with no subscriber-id supplied"
+      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
+                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                  :SubscriberId nil
+                                                                  :EmailAddress "foo@example.com"})
+            user1-token (echo-util/login (system/context) "user1")
+            response (ingest/ingest-concept concept {:token user1-token})
+            ingested-concept (mdb/get-concept (:concept-id response))
+            parsed-metadata (json/parse-string (:metadata ingested-concept) true)]
+        (is (= 201 (:status response)))
+        (is (= "user1" (:SubscriberId parsed-metadata)))))))
+
+(deftest subscription-ingest-no-email-test
+  (let [coll1 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "coll-no-id"
+                 :EntryTitle "entry-title-no-id"})
+               {:token "mock-echo-system-token"})]
+    (testing "ingest on PROV1, with no email or subscriber id supplied"
+      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
+                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                  :SubscriberId nil
+                                                                  :EmailAddress nil})
+            user1-token (echo-util/login (system/context) "user1")
+            response (ingest/ingest-concept concept {:token user1-token})
+            ingested-concept (mdb/get-concept (:concept-id response))
+            parsed-metadata (json/parse-string (:metadata ingested-concept) true)]
+       (is (= "user1@example.com" (:EmailAddress parsed-metadata)))))
+    (testing "ingest on PROV1, admin subscribes for a user with no email provided"
+      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
+                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                  :SubscriberId "mark"
+                                                                  :EmailAddress nil})
+
+            response (ingest/ingest-concept concept {:token "mock-echo-system-token"})
+            ingested-concept (mdb/get-concept (:concept-id response))
+            parsed-metadata (json/parse-string (:metadata ingested-concept) true)]
+       (is (= "mark@example.com" (:EmailAddress parsed-metadata)))))))
+
 
 (deftest subscription-ingest-on-prov3-test
   (let [coll1 (data-core/ingest-umm-spec-collection
@@ -148,7 +198,7 @@
                     {:accept-format :json
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
-      (is (re-find #"Request content is too short." (first errors)))))
+      (is (re-find #"required key \[Name\] not found" (first errors)))))
   (testing "xml response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -157,7 +207,7 @@
                     {:accept-format :xml
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-      (is (re-find #"Request content is too short." (first errors))))))
+      (is (re-find #"required key \[Name\] not found" (first errors))))))
 
 ;; Verify that user-id is saved from User-Id or token header
 (deftest subscription-ingest-user-id-test
@@ -745,7 +795,7 @@
           (let [{:keys [status errors]} (ingest/ingest-concept concept {:token token
                                                                         :method :post})]
             (is (= 409 status))
-            (is (= ["Subscription with with provider-id [PROV1] and native-id [another-native-id] already exists."]
+            (is (= ["Subscription with provider-id [PROV1] and native-id [another-native-id] already exists."]
                    errors))))))
 
     (testing "without native-id provided with unicode in the name"
