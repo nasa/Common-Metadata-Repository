@@ -46,4 +46,9 @@
 
     (is (= 201 status))
     (is (and (string? concept-id)
-             (not (nil? concept-id))))))
+             (not (nil? concept-id))))
+
+    (testing "direct distribution information exist on returned value"
+      (let [{:keys [body]} (search/retrieve-concept concept-id)]
+        (is (re-find #"<S3BucketAndObjectPrefixName>s3.example.com</S3BucketAndObjectPrefixName>" body))
+        (is (re-find #"<S3BucketAndObjectPrefixName>ddi</S3BucketAndObjectPrefixName>" body))))))
