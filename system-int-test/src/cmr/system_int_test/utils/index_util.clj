@@ -168,6 +168,26 @@
   "Helper to delete granules from the small collections index for the given collection."
   [coll]
   (client/post (format "%s/1_small_collections/_delete_by_query" (url/elastic-root))
-                 {:connection-manager (s/conn-mgr)
-                  :body (query-for-granules-by-collection coll)
-                  :content-type "application/json"}))
+               {:connection-manager (s/conn-mgr)
+                :body (query-for-granules-by-collection coll)
+                :content-type "application/json"}))
+
+(defn get-collection-es-doc-by-concept-id
+  "Directly query elasticsearch for a collection."
+  [concept-id]
+  (let [query (json/generate-string {:query
+                                     {:bool
+                                      {:must
+                                       {:match_all {}}
+                                       :filter {:term {:concept-id concept-id}}}}})
+        url (format "%s/1_collections_v2/_search" (url/elastic-root))
+        opts {:connection-manager (s/conn-mgr)
+              :body query
+              :content-type "application/json"}
+        response (client/post url opts)]
+    (-> response
+        :body
+        (json/parse-string true)
+        :hits
+        :hits
+        first)))
