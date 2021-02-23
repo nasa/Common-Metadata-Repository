@@ -173,7 +173,8 @@
        distinct
        (remove nil?)))
 
-(defn- parse-direct-distribution-information
+(defn- umm-c-ddi->es-doc-ddi
+  "Convert umm-c named direct distribution information to ES compliant names."
   [ddi]
   (let [{:keys [Region
                 S3BucketAndObjectPrefixNames
@@ -198,7 +199,7 @@
          publication-references :PublicationReferences
          collection-citations :CollectionCitations} collection
         parsed-version-id (collection-util/parse-version-id version-id)
-        direct-distribution-information (parse-direct-distribution-information
+        direct-distribution-information (umm-c-ddi->es-doc-ddi
                                          (:DirectDistributionInformation collection))
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (util/safe-lowercase doi)
@@ -291,11 +292,11 @@
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
         granule-end-date (when-not (and granule-end-date
                                         (t/within? last-3-days granule-end-date))
-                                  ;; If the granule end date is within the last 3 days we indicate that
-                                  ;; the collection has no end date. This allows NRT collections to be
-                                  ;; found even if the collection has been reindexed recently.
-                                  ;; otherwise, use granule-end-date
-                                  granule-end-date)
+                           ;; If the granule end date is within the last 3 days we indicate that
+                           ;; the collection has no end date. This allows NRT collections to be
+                           ;; found even if the collection has been reindexed recently.
+                           ;; otherwise, use granule-end-date
+                           granule-end-date)
         humanized-values (humanizer/collection-humanizers-elastic context collection)
         tags (map tag/tag-association->elastic-doc tag-associations)
         has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))
@@ -303,11 +304,11 @@
                              (get-in collection [:ArchiveAndDistributionInformation
                                                  :FileDistributionInformation]))
         horizontal-data-resolutions (resolution/get-horizontal-data-resolutions
-                                      (get-in collection
-                                              [:SpatialExtent
-                                               :HorizontalSpatialDomain
-                                               :ResolutionAndCoordinateSystem
-                                               :HorizontalDataResolution]))]
+                                     (get-in collection
+                                             [:SpatialExtent
+                                              :HorizontalSpatialDomain
+                                              :ResolutionAndCoordinateSystem
+                                              :HorizontalDataResolution]))]
 
     (merge {:concept-id concept-id
             :doi-stored doi
@@ -439,8 +440,8 @@
                                                          first
                                                          :value-lowercase)
             :associations-gzip-b64
-              (associations->gzip-base64-str
-                variable-associations service-associations tool-associations)
+            (associations->gzip-base64-str
+             variable-associations service-associations tool-associations)
             :usage-relevancy-score 0
             :horizontal-data-resolutions {:value horizontal-data-resolutions
                                           :priority 0}

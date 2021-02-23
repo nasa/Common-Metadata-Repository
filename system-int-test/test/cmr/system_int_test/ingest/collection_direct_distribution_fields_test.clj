@@ -65,3 +65,22 @@
           (is (= ["s3.example.com" "ddi"]
                  (get-in es-source [:direct-distribution-information
                                     :s3-bucket-and-object-prefix-names]))))))))
+
+(deftest no-direct-distribution-information-fields-test
+  (let [raw-concept (data-umm-c/collection-concept {})
+        {:keys [concept-id status]} (ingest/ingest-concept raw-concept)]
+
+    (index/wait-until-indexed)
+
+    (is (= 201 status))
+    (is (and (string? concept-id)
+             (not (nil? concept-id))))
+
+    (testing "direct distribution information exists in elasticsearch"
+      (let [es-doc (index/get-collection-es-doc-by-concept-id concept-id)
+            es-source (:_source es-doc)]
+        (is (= concept-id (:concept-id es-source)))
+        (is (contains? es-source :s3-bucket-and-object-prefix-names))
+
+        (testing "ddi sub-document exists, even if empty"
+          (is (map? (get-in es-source [:direct-distribution-information]))))))))
