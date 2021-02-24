@@ -160,12 +160,19 @@
   [context metadata]
   (let [{subscriber :SubscriberId
          email :EmailAddress} metadata
-        subscriber (if-not subscriber
-                     (api-core/get-user-id-from-token context)
-                     subscriber)
-        email (if-not email
-                (urs/get-user-email context subscriber)
-                email)]
+        subscriber (if subscriber
+                     subscriber
+                     (api-core/get-user-id-from-token context))
+        email (if email
+                email
+                (if subscriber
+                  (urs/get-user-email context subscriber)
+                  ;; An error is thrown here to handle the case in which a subscription with no
+                  ;; subscriber-id is supplied, AND there is no token in the headers. We will never
+                  ;; allow a guest user to CRUD a subscription, so we return a 401 error here.
+                  (errors/throw-service-error
+                    :unauthorized
+                    "You do not have permission to perform that action.")))]
     (assoc metadata :SubscriberId subscriber :EmailAddress email)))
 
 (defn add-id-and-email-if-missing
@@ -189,9 +196,9 @@
                             content-type
                             headers)
           native-id (get-unique-native-id request-context tmp-subscription)
-          subscriber-id (get-subscriber-id tmp-subscription)
           new-subscription (assoc  tmp-subscription :native-id native-id)
-          newer-subscription (add-id-and-email-if-missing request-context new-subscription)]
+          newer-subscription (add-id-and-email-if-missing request-context new-subscription)
+          subscriber-id (get-subscriber-id newer-subscription)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context newer-subscription headers))))
 
@@ -213,8 +220,8 @@
                             body
                             content-type
                             headers)
-          subscriber-id (get-subscriber-id tmp-subscription)
-          new-subscription (add-id-and-email-if-missing request-context tmp-subscription)]
+          new-subscription (add-id-and-email-if-missing request-context tmp-subscription)
+          subscriber-id (get-subscriber-id new-subscription)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context new-subscription headers))))
 
@@ -240,8 +247,8 @@
                                            :latest true}
                                           :subscription))]
                          (get-in original-subscription [:extra-fields :subscriber-id]))
-        new-subscriber (get-subscriber-id tmp-subscription)
-        new-subscription (add-id-and-email-if-missing request-context tmp-subscription)]
+        new-subscription (add-id-and-email-if-missing request-context tmp-subscription)
+        new-subscriber (get-subscriber-id new-subscription)]
     (check-ingest-permission request-context provider-id new-subscriber old-subscriber)
     (perform-subscription-ingest request-context new-subscription headers)))
 
