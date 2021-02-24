@@ -61,7 +61,15 @@
             ingested-concept (mdb/get-concept (:concept-id response))
             parsed-metadata (json/parse-string (:metadata ingested-concept) true)]
         (is (= 201 (:status response)))
-        (is (= "user1" (:SubscriberId parsed-metadata)))))))
+        (is (= "user1" (:SubscriberId parsed-metadata)))))
+    (testing "ingest on PROV1, with no subscriber-id supplied and no token used to ingest"
+      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
+                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                  :SubscriberId nil
+                                                                  :EmailAddress "foo@example.com"})
+            response (ingest/ingest-concept concept)]
+        (is (= 401 (:status response)))
+        (is (= "You do not have permission to perform that action." (first (:errors response))))))))
 
 (deftest subscription-ingest-no-email-test
   (let [coll1 (data-core/ingest-umm-spec-collection
@@ -198,7 +206,7 @@
                     {:accept-format :json
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
-      (is (re-find #"required key \[Name\] not found" (first errors)))))
+      (is (re-find #"You do not have permission to perform that action." (first errors)))))
   (testing "xml response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -207,7 +215,7 @@
                     {:accept-format :xml
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-      (is (re-find #"required key \[Name\] not found" (first errors))))))
+      (is (re-find #"You do not have permission to perform that action." (first errors))))))
 
 ;; Verify that user-id is saved from User-Id or token header
 (deftest subscription-ingest-user-id-test
