@@ -46,6 +46,16 @@
        :headers {"content-type" mt/xml}})
     {:status 404 :body "Not found.\n"}))
 
+(defn get-user-info
+  "Returns mock URS info for a user"
+  [user-id]
+  (if-not (= "null" user-id)
+    {:status 200 :body {:first_name "mock"
+                        :last_name "name"
+                        :uid user-id
+                        :email_address (str user-id"@example.com")}}
+    {:status 500 :body "<html></Stub-HTML-Page></html>"}))
+
 (defn parse-create-user-xml
   "Parses a create user request into a map of user fields"
   [body]
@@ -147,7 +157,7 @@
         ;; While a real URS connection would return more than just the email address,
         ;; we only need the email address to fill in for the subscription concept.
         (GET "/:user-id" {{:keys [user-id]} :params}
-          {:status 200 :body {:email_address (str user-id"@example.com")}}))
+          (get-user-info user-id)))
 
       (context "/users" []
         ;; Create a bunch of users all at once
