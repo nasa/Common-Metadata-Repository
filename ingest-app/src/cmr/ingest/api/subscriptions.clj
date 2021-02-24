@@ -160,16 +160,19 @@
   [context metadata]
   (let [{subscriber :SubscriberId
          email :EmailAddress} metadata
-        subscriber (if-not subscriber
-                     (api-core/get-user-id-from-token context)
-                     subscriber)
-        email (if-not email
-                (if-not subscriber
+        subscriber (if subscriber
+                     subscriber
+                     (api-core/get-user-id-from-token context))
+        email (if email
+                email
+                (if subscriber
+                  (urs/get-user-email context subscriber)
+                  ;; An error is thrown here to handle the case in which a subscription with no
+                  ;; subscriber-id is supplied, AND there is no token in the headers. In that case,
+                  ;; subscriber would be nil, and we don't want to hit URS for info on username 'nil'
                   (errors/throw-service-error
                     :unauthorized
-                    "You do not have permission to perform that action.")
-                  (urs/get-user-email context subscriber))
-                email)]
+                    "You do not have permission to perform that action.")))]
     (assoc metadata :SubscriberId subscriber :EmailAddress email)))
 
 (defn add-id-and-email-if-missing
