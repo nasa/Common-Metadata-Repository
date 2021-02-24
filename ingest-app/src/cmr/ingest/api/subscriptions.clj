@@ -168,8 +168,8 @@
                 (if subscriber
                   (urs/get-user-email context subscriber)
                   ;; An error is thrown here to handle the case in which a subscription with no
-                  ;; subscriber-id is supplied, AND there is no token in the headers. In that case,
-                  ;; subscriber would be nil, and we don't want to hit URS for info on username 'nil'
+                  ;; subscriber-id is supplied, AND there is no token in the headers. We will never
+                  ;; allow a guest user to CRUD a subscription, so we return a 401 error here.
                   (errors/throw-service-error
                     :unauthorized
                     "You do not have permission to perform that action.")))]
