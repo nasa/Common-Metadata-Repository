@@ -54,7 +54,11 @@
                         :last_name "name"
                         :uid user-id
                         :email_address (str user-id"@example.com")}}
-    {:status 500 :body "<html></Stub-HTML-Page></html>"}))
+    {:status 500 :body "<!DOCTYPE html>
+                          <body>
+                            <p> There has been an error processing your request. </p>
+                          </body>
+                        </html>"}))
 
 (defn parse-create-user-xml
   "Parses a create user request into a map of user fields"
