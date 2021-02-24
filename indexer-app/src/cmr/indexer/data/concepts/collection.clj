@@ -446,7 +446,6 @@
             :horizontal-data-resolutions {:value horizontal-data-resolutions
                                           :priority 0}
 
-            :direct-distribution-information direct-distribution-information
             :s3-bucket-and-object-prefix-names (:s3-bucket-and-object-prefix-names direct-distribution-information)}
 
            (variable-service-tool-associations->elastic-docs
