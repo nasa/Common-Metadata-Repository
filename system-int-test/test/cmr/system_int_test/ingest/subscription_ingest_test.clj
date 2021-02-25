@@ -7,7 +7,7 @@
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
    [cmr.common.util :refer [are3]]
-   [cmr.ingest.services.jobs :as jobs]
+   [cmr.ingest.services.jobs-subscriptions :as jobsub]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as data-granule]
@@ -41,7 +41,7 @@
   (let [subscriptions (->> (mdb2/find-concepts (system/context) {:latest true} :subscription)
                            (remove :deleted)
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
-    (#'jobs/process-subscriptions (system/context) subscriptions)))
+    (#'jobsub/process-subscriptions (system/context) subscriptions)))
 
 
 (deftest subscription-ingest-no-subscriber-id-test

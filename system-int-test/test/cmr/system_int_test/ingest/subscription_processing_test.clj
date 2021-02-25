@@ -2,12 +2,13 @@
   "CMR subscription processing tests."
   (:require
    [clojure.test :refer :all]
-   [cmr.ingest.services.jobs :as jobs]
+   [cmr.ingest.services.jobs-subscriptions :as jobs]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as data-granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as system]
+   [cmr.system-int-test.utils.dev-system-util :as dev-system]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
@@ -24,7 +25,8 @@
      [:read :update])
     (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV3"}
                                                       [:read]
-                                                      [:read :update])]))
+                                                      [:read :update])
+    (dev-system/freeze-resume-time-fixture)]))
 
 (defn- trigger-process-subscriptions
   "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
@@ -90,8 +92,7 @@
          (is (= (:concept-id gran1)
                 (first results)))))
 
-     ;; force eval of lazy seq
-     (is (not= nil (count (trigger-process-subscriptions))))
+     (dev-system/advance-time! 10)
 
      (testing "Second run finds only collections created since the last notification"
        (let [gran2 (data-core/ingest "PROV1"
@@ -105,6 +106,5 @@
                            (map #(nth % 1))
                            flatten
                            (map :concept-id))]
-
          (is (= [(:concept-id gran2)]
                 response)))))))
