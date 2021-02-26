@@ -168,6 +168,6 @@
   "Helper to delete granules from the small collections index for the given collection."
   [coll]
   (client/post (format "%s/1_small_collections/_delete_by_query" (url/elastic-root))
-               {:connection-manager (s/conn-mgr)
-                :body (query-for-granules-by-collection coll)
-                :content-type "application/json"}))
+                 {:connection-manager (s/conn-mgr)
+                  :body (query-for-granules-by-collection coll)
+                  :content-type "application/json"}))
