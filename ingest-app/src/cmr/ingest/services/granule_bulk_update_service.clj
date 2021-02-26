@@ -51,8 +51,8 @@
                  (data-granule-bulk-update/create-bulk-update-task
                   context
                   provider-id
-                  json
-                  granule-urs)
+                  user-id
+                  json)
                  (catch Exception e
                    (let [message (.getMessage e)
                          user-facing-message (if (string/includes? message "BULK_UPDATE_TASK_STATUS_UK")

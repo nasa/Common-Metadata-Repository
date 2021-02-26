@@ -27,15 +27,12 @@
         (let [response (ingest/bulk-update-granules "PROV1" body {:token token})
               {:keys [status errors]} response]
           (is (= status-code status))
-          (is (= error-messages errors)))
+          (is (any? (map #(re-find error-messages %) errors))))
 
-        "Missing concept-ids"
-        {:name "TEST NAME 1"
-         :update-field "SCIENCE_KEYWORDS"
-         :update-type "ADD_TO_EXISTING"
-         :update-value {:Category "EARTH SCIENCE"
-                        :Topic "LAND SURFACE"
-                        :Term "SURFACE RADIATIVE PROPERTIES"
-                        :VariableLevel1 "REFLECTANCE"}}
-        400
-        ["#: required key [concept-ids] not found"]))))
+        "Invalid identifiers"
+        {:name "bulk update prov1 granules"
+         :update-field "foo"
+         :operation "UPDATE_FIELD"
+         :updates [["bar" "baz"]]}
+        422
+        #"invalid identifier"))))
