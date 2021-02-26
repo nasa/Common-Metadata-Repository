@@ -14,13 +14,13 @@
 (defn- generate-failed-msg
  "Generate the FAILED part of the status message."
  [num-failed-granules]
- (when (not (zero? num-failed-granules))
+ (when-not (zero? num-failed-granules)
    (str num-failed-granules " FAILED")))
 
 (defn- generate-skipped-msg
  "Generate the SKIPPED part of the status message."
  [num-failed-granules num-skipped-granules num-total-granules]
- (when (not (zero? num-skipped-granules))
+ (when-not (zero? num-skipped-granules)
    (if (not (zero? num-failed-granules))
      (if (not= num-total-granules (+ num-failed-granules num-skipped-granules))
        (str ", " num-skipped-granules " SKIPPED")
@@ -32,7 +32,7 @@
  [num-failed-granules num-skipped-granules num-total-granules]
  (let [num-updated-granules (- num-total-granules
                                   (+ num-failed-granules num-skipped-granules))]
-   (when (not (zero? num-updated-granules))
+   (when-not (zero? num-updated-granules)
      (if (or (not (zero? num-failed-granules)) (not (zero? num-skipped-granules)))
        (str " and " num-updated-granules " UPDATED")
        (str num-updated-granules " UPDATED")))))
@@ -42,10 +42,10 @@
  [num-failed-granules num-skipped-granules num-total-granules]
  (if (and (zero? num-failed-granules) (zero? num-skipped-granules))
    "All granule updates completed successfully."
-   (format "Task completed with %s%s%s out of %s total granule update(s)"
-           (generate-failed-msg num-failed-granules)
-           (generate-skipped-msg num-failed-granules num-skipped-granules num-total-granules)
-           (generate-updated-msg num-failed-granules num-skipped-granules num-total-granules)
+   (format "Task completed with %s out of %s total granule update(s)."
+           (str (generate-failed-msg num-failed-granules)
+                (generate-skipped-msg num-failed-granules num-skipped-granules num-total-granules)
+                (generate-updated-msg num-failed-granules num-skipped-granules num-total-granules))
            num-total-granules)))
 
 (defprotocol BulkUpdateStore
@@ -113,23 +113,29 @@
                                               (= :granule-ur ~granule-ur)))))
 
  (create-and-save-bulk-update-status
-   [db provider-id json-body granule-urs]
+   [db provider-id request-json-body user-id]
    ;; In a transaction, add one row to the task status table and for each concept
    (jdbc/with-db-transaction
      [conn db]
-     (let [task-id (:nextval (first (sql-utils/query db ["SELECT task_id_seq.NEXTVAL FROM DUAL"])))
-           statement (str "INSERT INTO bulk_update_task_status "
-                          "(task_id, provider_id, name, request_json_body, status)"
-                          "VALUES (?, ?, ?, ?, ?)")
-           name (get (json/parse-string json-body) "name" task-id)
-           values [task-id provider-id name (util/string->gzip-bytes json-body) "IN_PROGRESS"]]
+     (let [task-id (:nextval (first (sql-utils/query db ["SELECT GRAN_TASK_ID_SEQ.NEXTVAL FROM DUAL"])))
+           statement (str "INSERT INTO granule_bulk_update_tasks "
+                          "(task_id, provider_id, name, request_json_body, status, user_id)"
+                          "VALUES (?, ?, ?, ?, ?, ?)")
+           parsed-json (json/parse-string request-json-body)
+           instruction (get parsed-json "operation")
+           task-name (get parsed-json "name" task-id)
+           unique-task-name (format "%s: %s" task-name task-id)
+           values [task-id provider-id unique-task-name (util/string->gzip-bytes request-json-body) "IN_PROGRESS" user-id]
+           granule-urs (as-> parsed-json json
+                             (get json "updates")
+                             (map first json))]
        (jdbc/db-do-prepared db statement values)
-       ;; Write a row to granule status for each concept id
+       ;; Write a row to granule status for each granule-ur
        (apply jdbc/insert! conn
-              "granule_bulk_update_tasks"
-              ["task_id" "granule-ur" "status"]
+              "bulk_update_gran_status"
+              ["task_id" "granule_ur" "status" "provider_id" "instruction"]
               ;; set :transaction? false since we are already inside a transaction
-              (concat (map #(vector task-id % "PENDING") granule-urs) [:transaction? false]))
+              (concat (map #(vector task-id % provider-id "PENDING" instruction) granule-urs) [:transaction? false]))
        task-id)))
 
  (update-bulk-update-task-status
@@ -201,22 +207,22 @@
 (defn-timed create-bulk-update-task
  "Creates all the rows for bulk update status tables - task status and granule
  status. Returns task id"
- [context provider-id instruction granule-urs]
+ [context provider-id user-id request-json-body]
  (create-and-save-bulk-update-status
   (context->db context)
   provider-id
-  instruction
-  granule-urs))
+  request-json-body
+  user-id))
 
 (defn-timed create-granule-bulk-update-task
  "Create all rows for granule bulk update status tables - task status and granule status.
  Returns task id."
- [context provider-id instruction granule-urs]
+ [context provider-id instruction updates]
  (create-and-save-bulk-update-status
   (context->db context)
   provider-id
   instruction
-  granule-urs))
+  updates))
 
 
 (defn-timed update-bulk-update-task-granule-status
