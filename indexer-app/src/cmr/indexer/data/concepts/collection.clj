@@ -173,18 +173,6 @@
        distinct
        (remove nil?)))
 
-(defn- umm-c-ddi->es-doc-ddi
-  "Convert umm-c named direct distribution information to ES compliant names."
-  [ddi]
-  (let [{:keys [Region
-                S3BucketAndObjectPrefixNames
-                S3CredentialsAPIEndpoint
-                S3CredentialsAPIDocumentationURL]} ddi]
-    {:region Region
-     :s3-bucket-and-object-prefix-names S3BucketAndObjectPrefixNames
-     :s3-credentials-api-endpoint S3CredentialsAPIEndpoint
-     :s3-credentials-api-documentation-url S3CredentialsAPIDocumentationURL}))
-
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
@@ -199,8 +187,7 @@
          publication-references :PublicationReferences
          collection-citations :CollectionCitations} collection
         parsed-version-id (collection-util/parse-version-id version-id)
-        direct-distribution-information (umm-c-ddi->es-doc-ddi
-                                         (:DirectDistributionInformation collection))
+        s3-bucket-and-object-prefix-names (get-in collection [:DirectDistributionInformation :S3BucketAndObjectPrefixNames])
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (util/safe-lowercase doi)
         processing-level-id (get-in collection [:ProcessingLevel :Id])
@@ -446,7 +433,7 @@
             :horizontal-data-resolutions {:value horizontal-data-resolutions
                                           :priority 0}
 
-            :s3-bucket-and-object-prefix-names (:s3-bucket-and-object-prefix-names direct-distribution-information)}
+            :s3-bucket-and-object-prefix-names s3-bucket-and-object-prefix-names}
 
            (variable-service-tool-associations->elastic-docs
             context variable-associations service-associations tool-associations)
