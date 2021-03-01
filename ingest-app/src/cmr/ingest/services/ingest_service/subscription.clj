@@ -8,11 +8,11 @@
   "Returns subscription concept with fields necessary for ingest into metadata db
   under :extra-fields."
   [context concept subscription]
-  (assoc concept :extra-fields 
+  (assoc concept :extra-fields
                  {:subscription-name (:Name subscription)
                   :collection-concept-id (:CollectionConceptId subscription)
                   :subscriber-id (:SubscriberId subscription)
-                  :email-address (:EmailAddress subscription)})) 
+                  :email-address ""})); for now, just ignore the email address, will remove from schema latter
 
 (defn-timed save-subscription
   "Store a subscription concept in mdb and indexer."

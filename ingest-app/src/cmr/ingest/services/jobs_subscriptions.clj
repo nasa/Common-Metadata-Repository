@@ -11,6 +11,7 @@
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.search :as search]
+   [cmr.transmit.urs :as urs]
    [markdown.core :as markdown]
    [postal.core :as postal-core]))
 
@@ -152,7 +153,6 @@
                                (email-subscription-processing-lookback))
               subscription (add-updated-since raw-subscription time-constraint)
               subscriber-id (get-in subscription [:extra-fields :subscriber-id])
-              email-address (get-in subscription [:extra-fields :email-address])
               sub-id (get subscription :concept-id)
               coll-id (get-in subscription [:extra-fields :collection-concept-id])
               query-string (-> (:metadata subscription)
@@ -171,15 +171,16 @@
               subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
     (do
       (send-update-subscription-notification-time! context sub-id)
-      [sub-id subscriber-filtered-gran-refs email-address subscription])))
+      [sub-id subscriber-filtered-gran-refs subscriber-id subscription])))
 
 (defn- send-subscription-emails
   "Takes processed processed subscription tuples and sends out emails if applicable."
   [context subscriber-filtered-gran-refs-list]
   (doseq [subscriber-filtered-gran-refs-tuple subscriber-filtered-gran-refs-list
-          :let [[sub-id subscriber-filtered-gran-refs email-address subscription] subscriber-filtered-gran-refs-tuple]]
+          :let [[sub-id subscriber-filtered-gran-refs subscriber-id subscription] subscriber-filtered-gran-refs-tuple]]
     (when (seq subscriber-filtered-gran-refs)
       (let [gran-ref-locations (map :location subscriber-filtered-gran-refs)
+            email-address (urs/get-user-email context subscriber-id)
             email-content (create-email-content (mail-sender) email-address gran-ref-locations subscription)
             email-settings {:host (email-server-host) :port (email-server-port)}]
         (try
