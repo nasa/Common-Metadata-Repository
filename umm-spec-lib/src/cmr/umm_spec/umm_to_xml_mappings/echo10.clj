@@ -150,16 +150,24 @@
      [:Description (if-let [abstract (:Abstract c)]
                      (util/trunc abstract 12000)
                      spec-util/not-provided)]
-     (when-let [doi (:DOI c)]
+     (when-let [doi (get c :DOI)]
        (if (:DOI doi)
          [:DOI
           [:DOI (:DOI doi)]
           (when (:Authority doi)
             [:Authority (:Authority doi)])]
-         [:DOI
-          [:MissingReason (:MissingReason doi)]
-          (when (:Explanation doi)
-            [:Explanation (:Explanation doi)])]))
+         (when (:MissingReason doi)
+           [:DOI
+            [:MissingReason (:MissingReason doi)]
+            (when (:Explanation doi)
+              [:Explanation (:Explanation doi)])])))
+     (when-let [assoc-dois (get c :AssociatedDOIs)]
+       [:AssociatedDOIs
+         (for [assoc-doi assoc-dois]
+           [:AssociatedDOI
+             [:DOI (:DOI assoc-doi)]
+             [:Title (:Title assoc-doi)]
+             [:Authority (:Authority assoc-doi)]])])
      [:CollectionDataType (:CollectionDataType c)]
      (when-let [revision-date (dates/metadata-update-date c)]
        [:RevisionDate (p/clj-time->date-time-str revision-date)])

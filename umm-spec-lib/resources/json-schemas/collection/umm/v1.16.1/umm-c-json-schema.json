@@ -29,8 +29,16 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/EntryTitleType"
     },
     "DOI": {
-        "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections.",
+        "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. For those that want to specify that a DOI is not applicable or unknown use the second option.",
         "$ref": "umm-cmn-json-schema.json#/definitions/DoiType"
+    },
+    "AssociatedDOIs": {
+      "description": "This element stores DOIs that are associated with the collection such as from campaigns and other related sources. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/AssociatedDoiType"
+      },
+      "minItems": 1
     },
     "Abstract": {
       "description": "A brief description of the collection or service the metadata represents.",
@@ -255,7 +263,7 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/VersionDescriptionType"
     }
   },
-  "required": ["ShortName", "Version", "EntryTitle", "Abstract", "DataCenters", "ProcessingLevel", "ScienceKeywords", "TemporalExtents", "SpatialExtent", "Platforms", "CollectionProgress"],
+  "required": ["ShortName", "Version", "EntryTitle", "Abstract", "DOI", "DataCenters", "ProcessingLevel", "ScienceKeywords", "TemporalExtents", "SpatialExtent", "Platforms", "CollectionProgress"],
 
 
 
@@ -1452,6 +1460,28 @@
       "description": "Defines the possible values for the Amazon Web Service US Regions where the data product resides.",
       "type": "string",
       "enum": ["us-east-1", "us-east-2", "us-west-1", "us-west-2"]
+    },
+    "AssociatedDoiType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections using CollectionDOI property.",
+      "properties": {
+        "DOI": {
+          "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Title": {
+          "description": "The title of the DOI landing page. The title describes the DOI object to a user, so they don't have to look it up themselves to understand the association.",
+          "$ref": "umm-cmn-json-schema.json#/definitions/TitleType"
+        },
+        "Authority": {
+          "description": "The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used.",
+          "$ref": "umm-cmn-json-schema.json#/definitions/AuthorityType"
+        }
+      },
+      "required": ["DOI"]
     }
   }
 }

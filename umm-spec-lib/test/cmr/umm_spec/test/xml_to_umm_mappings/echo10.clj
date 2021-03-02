@@ -139,3 +139,103 @@
                                       "<Collection>
                                        </Collection>"
                                       true)))))
+
+(deftest echo10-doi-translation-test
+  "This tests the echo 10 DOI translation from echo10 to UMM-C."
+  (let [base-record (slurp (io/resource "example-data/echo10/artificial_test_data.xml"))]
+
+    (are3 [expected-doi-result expected-associated-doi-result test-string]
+      (let [result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) test-string true)]
+        (is (= expected-doi-result
+               (:DOI result))
+            (= expected-associated-doi-result
+               (:AssociatedDOIs result))))
+
+      "Test the nominal success case."
+      {:DOI "10.5067/IAGYM8Q26QRE"
+       :Authority "https://doi.org/"}
+      [{:DOI "10.5678/assoc-doi-1"
+        :Title "Title1"
+        :Authority "doi.org"}
+       {:DOI "10.5678/assoc-doi-2"
+        :Title "Title2"
+        :Authority "doi.org"}]
+      (-> base-record
+          (string/replace #"</DOI>"
+                          "</DOI>
+                           <AssociatedDOIs>
+                             <AssociatedDOI>
+                               <DOI>10.5678/assoc-doi-1</DOI>
+                               <Title>Title1</Title>
+                               <Authority>doi.org</Authority>
+                             </AssociatedDOI>
+                             <AssociatedDOI>
+                               <DOI>10.5678/assoc-doi-2</DOI>
+                               <Title>Title2</Title>
+                               <Authority>doi.org</Authority>
+                             </AssociatedDOI>
+                           </AssociatedDOIs>"))
+
+      "Test nominal Not Applicable collection DOI"
+      {:MissingReason "Not Applicable",
+       :Explanation (str "The collection is a near real time record "
+                         "and does not have a DOI.")}
+      [{:DOI "10.5678/assoc-doi-1", :Title "Title1", :Authority "doi.org"}
+       {:DOI "10.5678/assoc-doi-2", :Title "Title2", :Authority "doi.org"}]
+      (-> base-record
+          (string/replace #"<DOI>10.5067/IAGYM8Q26QRE</DOI>"
+                          "<MissingReason>Not Applicable</MissingReason>")
+          (string/replace #"<Authority>https://doi.org/</Authority>\s+</DOI>"
+                          (str "<Explanation>The collection is a near real time record and does not "
+                               "have a DOI.</Explanation>"
+                               "</DOI>
+                                <AssociatedDOIs>
+                                  <AssociatedDOI>
+                                    <DOI>10.5678/assoc-doi-1</DOI>
+                                    <Title>Title1</Title>
+                                    <Authority>doi.org</Authority>
+                                  </AssociatedDOI>
+                                  <AssociatedDOI>
+                                    <DOI>10.5678/assoc-doi-2</DOI>
+                                    <Title>Title2</Title>
+                                    <Authority>doi.org</Authority>
+                                  </AssociatedDOI>
+                                </AssociatedDOIs>")))
+
+      "Test missing Collection DOI."
+      {:MissingReason "Unknown",
+       :Explanation "It is unknown if this record has a DOI."}
+      [{:DOI "10.5678/assoc-doi-1", :Title "Title1", :Authority "doi.org"}
+       {:DOI "10.5678/assoc-doi-2", :Title "Title2", :Authority "doi.org"}]
+      (-> base-record
+          (string/replace #"<DOI>\s+<DOI>10.5067/IAGYM8Q26QRE</DOI>"
+                          "")
+          (string/replace #"<Authority>https://doi.org/</Authority>\s+</DOI>"
+                          "<AssociatedDOIs>
+                            <AssociatedDOI>
+                              <DOI>10.5678/assoc-doi-1</DOI>
+                              <Title>Title1</Title>
+                              <Authority>doi.org</Authority>
+                            </AssociatedDOI>
+                            <AssociatedDOI>
+                              <DOI>10.5678/assoc-doi-2</DOI>
+                              <Title>Title2</Title>
+                              <Authority>doi.org</Authority>
+                            </AssociatedDOI>
+                          </AssociatedDOIs>"))
+
+      "Test missing AssociatedDOIs."
+      {:DOI "10.5067/IAGYM8Q26QRE"
+       :Authority "https://doi.org/"}
+      nil
+      base-record
+
+      "Test missing both Collection DOI and AssociatedDOIs."
+      {:MissingReason "Unknown",
+       :Explanation "It is unknown if this record has a DOI."}
+      nil
+      (-> base-record
+          (string/replace #"<DOI>\s+<DOI>10.5067/IAGYM8Q26QRE</DOI>"
+                          "")
+          (string/replace #"<Authority>https://doi.org/</Authority>\s+</DOI>"
+                          "")))))

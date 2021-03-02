@@ -111,6 +111,9 @@
 (def dist-info-xpath
   "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution")
 
+(def associated-doi-xpath
+  (str md-data-id-base-xpath "/gmd:aggregationInfo/gmd:MD_AggregateInformation/"))
+
 (defn- descriptive-keywords-type-not-equal
   "Returns the descriptive keyword values for the given parent element for all keyword types excepting
   those given"
@@ -230,6 +233,7 @@
                      (gmx-anchor-value id-el "gmd:code"))
       :EntryTitle (char-string-value citation-el "gmd:title")
       :DOI (doi/parse-doi doc citation-base-xpath)
+      :AssociatedDOIs (doi/parse-associated-dois doc associated-doi-xpath)
       :Version (char-string-value citation-el "gmd:edition")
       :VersionDescription version-description
       :Abstract abstract

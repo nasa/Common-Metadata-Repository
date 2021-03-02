@@ -52,7 +52,8 @@
                (umm-cmn/map->DateType {:Date (time/date-time 2011)
                                        :Type "REVIEW"})]
    :Abstract "A very abstract collection"
-   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(time/date-time 2012)]})]})
+   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(time/date-time 2012)]})]
+   :DOI (umm-cmn/map->DoiType {:DOI "10.5678/TestDOI1"})})
 
 (defn collection-invalid-data-date-ranges
   "Returns a UmmCollection with invalid data date ranges"

@@ -28,3 +28,32 @@
                  {:DirectDistributionInformation nil})
         diff-result (first (select result "/DIF/DirectDistributionInformation"))]
     (is (= diff-result nil))))
+
+(deftest dif10-doi-and-associated-doi-test
+  "Testing the dif10 doi and associated doi translation from umm-c to dif10."
+  (let [result (dif10/umm-c-to-dif10-xml
+                 {:DOI {:DOI "10.5067/IAGYM8Q26QRE"
+                        :Authority "https://doi.org"}
+                  :AssociatedDOIs [{:DOI "10.5678/assoc-doi-1"
+                                    :Title "Title1"
+                                    :Authority "doi.org"}
+                                   {:DOI "10.5678/assoc-doi-2"
+                                    :Title "Title2"
+                                    :Authority "doi.org"}]})
+        doi (first (select result "/DIF/Dataset_Citation/Persistent_Identifier"))
+        assoc-dois (select result "/DIF/Associated_DOIs")]
+    (is (and
+          (= "10.5067/IAGYM8Q26QRE" (value-of doi "Identifier"))
+          (= "10.5678/assoc-doi-2" (value-of (second assoc-dois) "DOI"))
+          (= "Title2" (value-of (second assoc-dois) "Title"))
+          (= "doi.org" (value-of (second assoc-dois) "Authority"))))))
+
+(deftest dif10-doi-and-associated-nil-doi-test
+  "Testing the dif10 doi and associated doi translation from umm-c to dif10 when its nil."
+  (let [result (dif10/umm-c-to-dif10-xml
+                 {:DOI nil
+                  :AssoiatedDOIs nil})
+        doi (first (select result "/DIF/Dataset_Citation/Persistent_Identifier"))
+        assoc-dois (select result "/DIF/Associated_DOIs")]
+    (is (= doi nil)
+        (= assoc-dois nil))))

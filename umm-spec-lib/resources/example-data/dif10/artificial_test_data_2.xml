@@ -15,6 +15,10 @@
         <Dataset_Creator>JAXA</Dataset_Creator>
         <!--Dataset_Title was trimmed-->
         <Dataset_Title>Level 3 Soil moisture (AMSR2) product</Dataset_Title>
+        <Persistent_Identifier>
+          <Type>DOI</Type>
+          <Identifier>10.5678/DIF_Example_DOI</Identifier>
+        </Persistent_Identifier>
     </Dataset_Citation>
     <!--renamed from Parameters to Science_Keywords-->
     <Science_Keywords>

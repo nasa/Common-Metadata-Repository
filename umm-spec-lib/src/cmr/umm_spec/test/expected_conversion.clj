@@ -403,6 +403,12 @@
    :Quality "Pretty good quality"
    :DOI {:MissingReason "Not Applicable"
          :Explanation "This is an explanation."}
+   :AssociatedDOIs [{:DOI "10.4567/DOI1"
+                     :Title "Associated Test DOI 1"
+                     :Authority "https://doi.org"}
+                    {:DOI "10.4567/DOI2"
+                     :Title "Associated Test DOI 2"
+                     :Authority "https://doi.org"}]
    :PublicationReferences [{:PublicationDate (t/date-time 2015)
                             :OtherReferenceDetails "Other reference details"
                             :Series "series"

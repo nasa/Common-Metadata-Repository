@@ -509,32 +509,32 @@
       "oneOf": [{
         "type": "object",
         "additionalProperties": false,
-        "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections. For those that want to specify that a DOI is not applicable for their record use the second option.",
+        "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. For those that want to specify that a DOI is not applicable or unknown for their record, use the second option.",
         "properties": {
-          "Authority": {
-            "description": "The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used.",
-            "$ref": "#/definitions/AuthorityType"
-          },
           "DOI": {
             "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL.",
             "type": "string",
             "minLength": 1,
             "maxLength": 1024
+          },
+          "Authority": {
+            "description": "The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used.",
+            "$ref": "#/definitions/AuthorityType"
           }
         },
         "required": ["DOI"]
       }, {
         "type": "object",
         "additionalProperties": false,
-        "description": "This element stores the fact that the DOI (Digital Object Identifier) is not applicable.",
+        "description": "This element stores the fact that the DOI (Digital Object Identifier) is not applicable or is unknown.",
         "properties": {
           "MissingReason": {
-            "description": "This element stores the fact that a DOI (Digital Object Identifier) is not applicable for this record.",
+            "description": "This element stores the fact that a DOI (Digital Object Identifier) is not applicable or is unknown for this record.",
             "type": "string",
-            "enum": ["Not Applicable"]
+            "enum": ["Not Applicable", "Unknown"]
           },
           "Explanation": {
-            "description": "This element describes the reason the DOI is not applicable.",
+            "description": "This element describes the reason the DOI is not applicable or unknown.",
             "type": "string",
             "minLength": 1,
             "maxLength": 1024
@@ -542,6 +542,24 @@
         },
         "required": ["MissingReason"]
       }]
+    },
+    "DoiDoiType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections using CollectionDOI property.",
+      "properties": {
+        "DOI": {
+          "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Authority": {
+          "description": "The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used.",
+          "$ref": "#/definitions/AuthorityType"
+        }
+      },
+      "required": ["DOI"]
     },
     "AccessConstraintsType": {
       "type": "object",
@@ -608,7 +626,7 @@
         },
         "DOI": {
           "description": "The Digital Object Identifier (DOI) of the publication.",
-          "$ref": "#/definitions/DoiType"
+          "$ref": "#/definitions/DoiDoiType"
         },
         "Author": {
           "description": "The author of the publication.",
