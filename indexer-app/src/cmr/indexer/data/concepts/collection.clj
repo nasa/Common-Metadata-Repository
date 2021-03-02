@@ -172,6 +172,17 @@
        (mapcat dist-util/parse-distribution-formats)
        distinct
        (remove nil?)))
+(comment
+  (let [collection {:DOI {:DOI "1"}
+                    :AssociatedDOIs [{:DOI "2"}
+                                     {:DOI "3"}]}]
+   (mapv #(util/safe-lowercase %)
+    (into [(get-in collection [:DOI :DOI])]
+    ;(concat [(get-in collection [:DOI :DOI])]
+      (mapv :DOI (get collection :AssociatedDOIs))))))
+      ;(get-in collection [:DOI :DOI]))))
+      ;(mapcat :DOI (get collection :AssociatedDOIs)))))
+
 
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
@@ -187,8 +198,9 @@
          publication-references :PublicationReferences
          collection-citations :CollectionCitations} collection
         parsed-version-id (collection-util/parse-version-id version-id)
-        doi (get-in collection [:DOI :DOI])
-        doi-lowercase (util/safe-lowercase doi)
+        doi (into [(get-in collection [:DOI :DOI])]
+              (mapv :DOI (get collection :AssociatedDOIs)))
+        doi-lowercase (mapv #(util/safe-lowercase %) doi)
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         spatial-keywords (lk/location-keywords->spatial-keywords-for-indexing
                           (:LocationKeywords collection))
