@@ -51,14 +51,14 @@
 (defprotocol BulkUpdateStore
  "Defines a protocol for getting and storing the bulk update status and task-id
  information."
- (get-provider-bulk-update-status [db provider-id])
- (get-bulk-update-task-status [db task-id provider-id])
+ (get-provider-bulk-granule-update-status [db provider-id])
+ (get-bulk-granule-update-task-status [db task-id provider-id])
  (get-bulk-update-task-granule-status [db task-id])
  (get-bulk-update-granule-status [db task-id concept-id])
- (create-and-save-bulk-update-status [db provider-id json-body granule-urs])
- (update-bulk-update-task-status [db task-id status status-message])
+ (create-and-save-bulk-granule-update-status [db provider-id json-body granule-urs])
+ (update-bulk-granule-update-task-status [db task-id status status-message])
  (update-bulk-update-granule-status [db task-id concept-id status status-message])
- (reset-bulk-update [db]))
+ (reset-bulk-granule-update [db]))
 
 (def bulk_update_task_status
   "bulk_update_gran_status")
@@ -82,7 +82,7 @@
        (map #(update % :request-json-body util/gzip-blob->string)
             statuses))))
 
- (get-bulk-update-task-status
+ (get-bulk-granule-update-task-status
    [db task-id provider-id]
    (jdbc/with-db-transaction
      [conn db]
@@ -112,7 +112,7 @@
                               (sql-utils/where `(and (= :task-id ~task-id))
                                               (= :granule-ur ~granule-ur)))))
 
- (create-and-save-bulk-update-status
+ (create-and-save-bulk-granule-update-status
    [db provider-id request-json-body user-id]
    ;; In a transaction, add one row to the task status table and for each concept
    (jdbc/with-db-transaction
@@ -138,7 +138,7 @@
               (concat (map #(vector task-id % provider-id "PENDING" instruction) granule-urs) [:transaction? false]))
        task-id)))
 
- (update-bulk-update-task-status
+ (update-bulk-granule-update-task-status
    [db task-id status status-message]
    (try
      (let [statement (str "UPDATE bulk_update_gran_status "
@@ -169,7 +169,7 @@
               failed-granules (filter #(= "FAILED" (:status %)) task-granules)
               skipped-granules (filter #(= "SKIPPED" (:status %)) task-granules)]
           (when-not (seq pending-granules)
-            (update-bulk-update-task-status db task-id "COMPLETE"
+            (update-bulk-granule-update-task-status db task-id "COMPLETE"
                                             (generate-task-status-message
                                              (count failed-granules)
                                              (count skipped-granules)
@@ -194,11 +194,11 @@
 (defn-timed get-bulk-update-statuses-for-provider
  "Returns bulk update statuses with task ids by provider"
  [context provider-id]
- (get-provider-bulk-update-status (context->db context) provider-id))
+ (get-provider-bulk-granule-update-status (context->db context) provider-id))
 
 (defn-timed get-bulk-update-task-status-for-provider
  [context task-id provider-id]
- (get-bulk-update-task-status (context->db context) task-id provider-id))
+ (get-bulk-granule-update-task-status (context->db context) task-id provider-id))
 
 (defn-timed get-bulk-update-granule-statuses-for-task
  [context task-id]
@@ -208,7 +208,7 @@
  "Creates all the rows for bulk update status tables - task status and granule
  status. Returns task id"
  [context provider-id user-id request-json-body]
- (create-and-save-bulk-update-status
+ (create-and-save-bulk-granule-update-status
   (context->db context)
   provider-id
   request-json-body
@@ -218,7 +218,7 @@
  "Create all rows for granule bulk update status tables - task status and granule status.
  Returns task id."
  [context provider-id instruction updates]
- (create-and-save-bulk-update-status
+ (create-and-save-bulk-granule-update-status
   (context->db context)
   provider-id
   instruction
@@ -239,7 +239,7 @@
 (defn reset-db
  "Clear bulk update db"
  [context]
- (reset-bulk-update (context->db context)))
+ (reset-bulk-granule-update (context->db context)))
 
 (defn cleanup-old-bulk-update-status
  "Delete rows in the bulk_update_gran_status table that are older than the

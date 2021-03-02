@@ -27,17 +27,20 @@
 
 (defn handle-bulk-update-event
   "For each granule-ur, queue bulk update messages"
-  [context provider-id task-id bulk-update-params user-id]
-  (let [{:keys [granule-urs]} bulk-update-params]
-    (doseq [granule-ur granule-urs]
-     (ingest-events/publish-gran-bulk-update-event
-      context
-      (ingest-events/ingest-granule-bulk-update-event
-       provider-id
-       task-id
-       granule-ur
-       bulk-update-params
-       user-id)))))
+  [context provider-id task-id bulk-update-params]
+  (let [{:keys [updates operation update-field]} bulk-update-params]
+    (doseq [update updates]
+      (let [granule-ur (first update)
+            update-value (second update)
+            event-type (str operation ":" update-field)]
+       (ingest-events/publish-gran-bulk-update-event
+        context
+        (ingest-events/ingest-granule-bulk-update-event
+         provider-id
+         task-id
+         event-type
+         granule-ur
+         update-value))))))
 
 (defn validate-and-save-bulk-granule-update
  "Validate the bulk update POST parameters, save rows to the db for task
@@ -45,8 +48,6 @@
  from the db save."
  [context provider-id json user-id]
  (let [bulk-update-params (json/parse-string json true)
-       {:keys [granule-urs]} bulk-update-params
-       bulk-update-params (assoc bulk-update-params :concept-ids granule-urs)
        task-id (try
                  (data-granule-bulk-update/create-bulk-update-task
                   context
@@ -62,7 +63,7 @@
                       :invalid-data
                       [(str "error creating bulk update task: " user-facing-message)]))))]
    ;; Queue the bulk update event
-   (handle-bulk-update-event context provider-id task-id bulk-update-params user-id)
+   (handle-bulk-update-event context provider-id task-id bulk-update-params)
    task-id))
 
 (defn handle-granule-bulk-update-event
