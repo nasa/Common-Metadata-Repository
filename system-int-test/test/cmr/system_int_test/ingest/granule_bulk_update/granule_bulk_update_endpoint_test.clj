@@ -33,6 +33,7 @@
         {:name "bulk update prov1 granules"
          :update-field "foo"
          :operation "UPDATE_FIELD"
-         :updates [["bar" "baz"]]}
-        422
+         :ch-ch-ch-ch-chaaaaaanges [["Turn and face the strange" "ch-ch-changes"]
+                                    ["Time may change me" "But I can't change time"]]}
+        400
         #"invalid identifier"))))
