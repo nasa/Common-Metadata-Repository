@@ -173,13 +173,13 @@
        distinct
        (remove nil?)))
 (comment
-  (let [collection {:DOI {:DOI "1"}
-                    :AssociatedDOIs [{:DOI "2"}
-                                     {:DOI "3"}]}]
-   (mapv #(util/safe-lowercase %)
-    (into [(get-in collection [:DOI :DOI])]
+  (let [collection {:DOI {:DOI "A"}
+                    :AssociatedDOIs [{:DOI "b"}
+                                     {:DOI "C"}]}]
+   ;(mapv #(util/safe-lowercase %)
+    (into [(util/safe-lowercase (get-in collection [:DOI :DOI]))]
     ;(concat [(get-in collection [:DOI :DOI])]
-      (mapv :DOI (get collection :AssociatedDOIs))))))
+      (mapv #(util/safe-lowercase (:DOI %)) (get collection :AssociatedDOIs)))))
       ;(get-in collection [:DOI :DOI]))))
       ;(mapcat :DOI (get collection :AssociatedDOIs)))))
 
@@ -198,9 +198,9 @@
          publication-references :PublicationReferences
          collection-citations :CollectionCitations} collection
         parsed-version-id (collection-util/parse-version-id version-id)
-        doi (into [(get-in collection [:DOI :DOI])]
-              (mapv :DOI (get collection :AssociatedDOIs)))
-        doi-lowercase (mapv #(util/safe-lowercase %) doi)
+        doi (get-in collection [:DOI :DOI])
+        doi-lowercase (into [(util/safe-lowercase doi)]
+                        (mapv #(util/safe-lowercase (:DOI %)) (get collection :AssociatedDOIs)))
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         spatial-keywords (lk/location-keywords->spatial-keywords-for-indexing
                           (:LocationKeywords collection))
