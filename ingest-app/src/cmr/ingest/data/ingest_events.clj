@@ -85,9 +85,10 @@
 
 (defn ingest-granule-bulk-update-event
   "Creates an event representing a bulk granule update task"
-  [provider-id task-id bulk-update-params user-id]
+  [provider-id task-id event-type granule-ur value]
   {:action :granule-bulk-update
-   :provider-id provider-id
    :task-id task-id
-   :bulk-update-params bulk-update-params
-   :user-id user-id})
+   :event-type event-type
+   :provider-id provider-id
+   :granule-ur granule-ur
+   :value value})

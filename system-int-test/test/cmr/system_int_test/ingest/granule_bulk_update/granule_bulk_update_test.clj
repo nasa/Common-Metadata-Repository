@@ -7,6 +7,7 @@
    [cmr.system-int-test.data2.granule :as granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as system]
+   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))
 
@@ -25,7 +26,7 @@
    (echo-util/login (system/context) "prov-admin-read-update" [prov-admin-read-update-group-concept-id])))
 
 (deftest bulk-granule-update-test
- (testing "valid request is accepted "
+ (testing "valid request is accepted"
    (let [token (grant-permissions-create-token)
          coll1 (data-core/ingest-umm-spec-collection
                 "PROV1" (data-umm-c/collection {:EntryTitle "coll1"
@@ -55,18 +56,6 @@
                                                bulk-update
                                                {:raw? true
                                                 :token token})]
+     (index/wait-until-indexed)
      (is (= 200 (:status response)))
-     (is (not= nil? (:task-id response)))))
-
- (testing "invalid schema is rejected"
-   (let [token (grant-permissions-create-token)
-         bulk-update {:name "bad schema"
-                      :update-field "foo"
-                      :updates [["bar" "baz"]]}
-         {:keys [status body]} (ingest/bulk-update-granules "PROV1"
-                                                            bulk-update
-                                                            {:raw? true
-                                                             :token token})]
-     ;; valdation error is returned
-     (is (= 422 status))
-     (is (re-find #"\"REQUEST_JSON_BODY\": invalid identifier\n" body) body))))
+     (is (not= nil? (:task-id response))))))
