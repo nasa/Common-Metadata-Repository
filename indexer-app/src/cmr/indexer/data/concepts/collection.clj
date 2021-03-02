@@ -172,17 +172,6 @@
        (mapcat dist-util/parse-distribution-formats)
        distinct
        (remove nil?)))
-(comment
-  (let [collection {:DOI {:DOI "A"}
-                    :AssociatedDOIs [{:DOI "b"}
-                                     {:DOI "C"}]}]
-   ;(mapv #(util/safe-lowercase %)
-    (into [(util/safe-lowercase (get-in collection [:DOI :DOI]))]
-    ;(concat [(get-in collection [:DOI :DOI])]
-      (mapv #(util/safe-lowercase (:DOI %)) (get collection :AssociatedDOIs)))))
-      ;(get-in collection [:DOI :DOI]))))
-      ;(mapcat :DOI (get collection :AssociatedDOIs)))))
-
 
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
