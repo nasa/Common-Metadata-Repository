@@ -61,7 +61,7 @@
   "Returns a sequence of version steps between begin and end, inclusive."
   [concept-type begin end]
   (->> (condp #(%1 %2) (customized-compare begin end)
-         neg?  (versioning/versions concept-type)
+         neg?  (sort-by count (versioning/versions concept-type))
          zero? nil
          pos?  (reverse (versioning/versions concept-type)))
        (partition 2 1 nil)
