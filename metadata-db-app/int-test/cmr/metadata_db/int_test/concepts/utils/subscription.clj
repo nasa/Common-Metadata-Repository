@@ -23,7 +23,6 @@
   (let [native-id (str "sub-native" uniq-num)
         extra-fields (merge {:subscription-name (str "subname" uniq-num)
                              :subscriber-id (str "subid" uniq-num)
-                             :email-address (str uniq-num "@gmail.com")
                              :collection-concept-id "C1234-PROV1"}
                             (:extra-fields attributes))
         attributes (merge {:user-id (str "user" uniq-num)

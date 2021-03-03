@@ -19,7 +19,6 @@
           (assoc :user-id (:user_id result))
           (assoc-in [:extra-fields :subscription-name] (:subscription_name result))
           (assoc-in [:extra-fields :subscriber-id] (:subscriber_id result))
-          (assoc-in [:extra-fields :email-address] (:email_address result))
           (add-last-notified-at-if-present result db)
           (assoc-in [:extra-fields :collection-concept-id]
                     (:collection_concept_id result))))
@@ -28,15 +27,14 @@
   [concept]
   (let [{{:keys [subscription-name
                  subscriber-id
-                 email-address
                  collection-concept-id]} :extra-fields
          user-id :user-id
          provider-id :provider-id} concept
         [cols values] (concepts/concept->common-insert-args concept)]
     [(concat cols ["provider_id" "user_id" "subscription_name"
-                   "subscriber_id" "email_address" "collection_concept_id"])
+                   "subscriber_id" "collection_concept_id"])
      (concat values [provider-id user-id subscription-name
-                     subscriber-id email-address collection-concept-id])]))
+                     subscriber-id collection-concept-id])]))
 
 (defmethod concepts/concept->insert-args [:subscription false]
   [concept _]

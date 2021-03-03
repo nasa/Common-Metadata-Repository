@@ -158,15 +158,11 @@
    "If SubscriberId is provided, use it. Else, get it from the token.
    If subscriber EmailAddress is provided, use it. Else, use the value supplied by EDL for the user."
   [context metadata]
-  (let [{subscriber :SubscriberId
-         email :EmailAddress} metadata
+  (let [{subscriber :SubscriberId} metadata
         subscriber (if-not subscriber
                      (api-core/get-user-id-from-token context)
-                     subscriber)
-        email (if-not email
-                (urs/get-user-email context subscriber)
-                email)]
-    (assoc metadata :SubscriberId subscriber :EmailAddress email)))
+                     subscriber)]
+    (assoc metadata :SubscriberId subscriber)))
 
 (defn add-id-and-email-if-missing
   "Parses and generates the metadata, such that add-id-and-email-to-metadata-if-missing
