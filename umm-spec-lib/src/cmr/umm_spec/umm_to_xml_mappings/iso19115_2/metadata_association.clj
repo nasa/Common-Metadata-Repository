@@ -24,7 +24,7 @@
       [:gmd:date {:gco:nilReason "unknown"}]
       (output-character-string :gmd:edition (:Version ma))]]]])
 
-(def code-list-url (str "http://www.ngdc.noaa.gov/metadata/published/xsd/schema"
+(def code-list-url (str "https://cdn.earthdata.nasa.gov/iso"
                         "/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"))
 
 (defn generate-metatdata-association
@@ -59,4 +59,3 @@
   [umm]
   (for [ma (:MetadataAssociations umm) :when (not= "INPUT" (:Type ma))]
     (generate-metatdata-association ma)))
-

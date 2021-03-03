@@ -68,4 +68,42 @@
   (let [result (echo10/umm-c-to-echo10-xml
                  {:DirectDistributionInformation nil})
         echo-result (first (select result "/Collection/DirectDistributionInformation"))]
-    (is (= echo-result nil))))
+    (is (= nil echo-result))))
+
+(deftest echo10-doi-test
+  "Testing the echo10 DOI translation from umm-c to echo10."
+  (are3 [expected-doi-result expected-assoc-result actual-data]
+    (let [result (echo10/umm-c-to-echo10-xml actual-data)
+          echo-result (first (select result "/Collection/DOI"))
+          assoc-result (select result "/Collection/AssociatedDOIs/AssociatedDOI")]
+      (is (and
+            (= expected-doi-result (value-of echo-result "DOI"))
+            (= expected-assoc-result (value-of (second assoc-result) "DOI")))))
+
+    "Testing the nominal case with all data."
+    "10.5678/collectiondoi"
+    "10.5678/assoc-doi2"
+    {:DOI {:DOI "10.5678/collectiondoi"
+           :Authority "doi.org"}
+     :AssociatedDOIs [{:DOI "10.5678/assoc-doi1"
+                       :Title "Title1"
+                       :Authority "doi.org"}
+                      {:DOI "10.5678/assoc-doi2"
+                       :Authority "doi.org"}]}
+
+    "Testing the missing collection doi sub element of doi."
+    nil
+    "10.5678/assoc-doi2"
+    {:DOI {:Authority "doi.org"}
+     :AssociatedDOIs [{:DOI "10.5678/assoc-doi1"
+                       :Authority "doi.org"}
+                      {:DOI "10.5678/assoc-doi2"
+                       :Title "Title2"
+                       :Authority "doi.org"}]}
+
+    "Testing the missing associated dois."
+    "10.5678/collectiondoi"
+    nil
+    {:DOI {:DOI "10.5678/collectiondoi"
+           :Authority "doi.org"}
+     :AssociatedDOIs nil}))

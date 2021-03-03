@@ -249,7 +249,9 @@
    :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                        :Type "CREATE"})]
    :Abstract "A very abstract collection"
-   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]})
+   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]
+   :DOI {:DOI "10.5678/TestDOI"}})
+
 
 (defn collection-missing-properties
   "Returns a UmmCollection missing reqired properties"

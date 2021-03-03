@@ -60,6 +60,7 @@ History:
                 <xs:element name="Version_Description"          type="VersionDescriptionType"       minOccurs="0"/>                         <!-- Added from UMM (ECHO) -->
                 <xs:element name="Entry_Title"                  type="EntryTitleType"/>                                                     <!-- None -->
                 <xs:element name="Dataset_Citation"             type="DatasetCitationType"          minOccurs="0"   maxOccurs="unbounded"/> <!-- Renamed -->
+                <xs:element name="Associated_DOIs"              type="AssociatedDOIsType"           minOccurs="0"   maxOccurs="unbounded"/>
                 <xs:element name="Personnel"                    type="PersonnelType"                minOccurs="0"   maxOccurs="unbounded"/> <!-- None -->
                                                                                                                                             <!-- Removed Discipline, is in dif_v9.8.3.xsd -->
                 <xs:element name="Science_Keywords"             type="ScienceKeywordsType"                          maxOccurs="unbounded"/> <!-- Renamed from Keyword in dif_v9.8.3.xsd -->
@@ -254,6 +255,80 @@ History:
         </xs:sequence>
     </xs:complexType>
 
+    <!-- *********************************************************** -->
+    <!-- #mark Associated DOIs -->
+
+    <xs:complexType name="AssociatedDOIsType">
+        <xs:annotation>
+            <xs:appinfo><details><path>/DIF/Associated_DOIs</path></details></xs:appinfo>
+            <xs:appinfo><action>changed</action><src>UMM</src><since>16.1</since></xs:appinfo>
+            <xs:appinfo><action>added</action><src>UMM</src><since>1.16.1</since>
+                        <note>added Associated DOIs</note></xs:appinfo>
+            <xs:documentation>
+                This element stores DOIs that are associated with the collection
+                such as from campaigns and other related sources. Note: The values
+                should start with the directory indicator which in ESDIS' case is 10.
+                If the DOI was registered through ESDIS, the beginning of the string
+                should be 10.5067. The DOI URL is not stored here; it should be
+                stored as a RelatedURL. The DOI organization that is responsible
+                for creating the DOI is described in the Authority element. For
+                ESDIS records the value of https://doi.org/ should be used.
+
+                | ECHO 10        |UMM                 | DIF 10           |
+                | -------------- | ------------------ | ---------------- |
+                | AssociatedDOIs | DOI/AssociatedDOIs | Associated_DOIs  |
+                |        -       |            -       |         -        |
+
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+    			<xs:element name="DOI">
+    				<xs:annotation>
+    					<xs:documentation>This element stores the DOI (Digital Object Identifier) that
+    						identifies an associated collection. Note: The values should
+    						start with the directory indicator which in ESDIS' case is 10.
+    						If the DOI was registered through ESDIS, the beginning of the
+    						string should be 10.5067. The DOI URL is not stored here; it
+    						should be stored as an OnlineResource.
+    					</xs:documentation>
+    				</xs:annotation>
+    				<xs:simpleType>
+    					<xs:restriction base="xs:string">
+    						<xs:maxLength value="1024"/>
+    						<xs:minLength value="1"/>
+    					</xs:restriction>
+    				</xs:simpleType>
+    			</xs:element>
+          <xs:element name="Title" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>The title of the DOI landing page. The title describes the
+                DOI object to a user, so they don't have to look it up themselves to
+                understand the association.
+              </xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:maxLength value="1030"/>
+                <xs:minLength value="1"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+    			<xs:element name="Authority" minOccurs="0">
+    				<xs:annotation>
+    					<xs:documentation>The DOI organization that is responsible for creating the
+    						associated DOI is described in the Authority element.
+    						For ESDIS records the value of https://doi.org/ should be used.
+    					</xs:documentation>
+    				</xs:annotation>
+    				<xs:simpleType>
+    					<xs:restriction base="xs:string">
+    						<xs:maxLength value="80" />
+    						<xs:minLength value="1"/>
+    					</xs:restriction>
+    				</xs:simpleType>
+    			</xs:element>
+    		</xs:sequence>
+    </xs:complexType>
     <!-- *********************************************************** -->
     <!-- #mark Personnel -->
     <xs:complexType name="PersonnelType">

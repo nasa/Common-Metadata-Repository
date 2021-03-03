@@ -377,9 +377,19 @@
 
 (defmethod interface/migrate-umm-version [:collection "1.15.5" "1.16"]
   [context c & _]
-  ;; Nothing to migrate
+  ;; No need to migrate
   c)
 
 (defmethod interface/migrate-umm-version [:collection "1.16" "1.15.5"]
   [context c & _]
   (dissoc c :DirectDistributionInformation))
+
+(defmethod interface/migrate-umm-version [:collection "1.16" "1.16.1"]
+  [context c & _]
+  (update c :DOI doi/migrate-doi-up-to-1-16-1))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.1" "1.16"]
+  [context c & _]
+  (-> c
+      (update :DOI doi/migrate-doi-down-to-1-16)
+      (dissoc :AssociatedDOIs)))

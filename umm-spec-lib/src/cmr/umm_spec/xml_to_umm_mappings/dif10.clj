@@ -220,13 +220,35 @@
     (when (seq distributions)
       {:FileDistributionInformation distributions})))
 
+(defn- parse-doi
+  "Parse the DOI from the data citation section.  If the DOI does not exist then set the DOIs
+   MissingReason and Explanation since it is required as of UMM-C 1.16.1."
+  [doc]
+  (let [first-doi
+         (first (remove nil? (for [dsc (select doc "/DIF/Dataset_Citation")]
+                               (when (= (value-of dsc "Persistent_Identifier/Type") "DOI")
+                                 {:DOI (value-of dsc "Persistent_Identifier/Identifier")}))))]
+    (if first-doi
+      first-doi
+      {:MissingReason "Unknown"
+       :Explanation "It is unknown if this record has a DOI."})))
+
+(defn- parse-associated-dois
+  "Parse the associated DOIs."
+  [doc]
+  (if-let [assoc-dois (select doc "DIF/Associated_DOIs")]
+    (into []
+      (for [assoc-doi assoc-dois]
+        {:DOI (value-of assoc-doi "DOI")
+         :Title (value-of assoc-doi "Title")
+         :Authority (value-of assoc-doi "Authority")}))))
+
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
   [doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
-   :DOI (first (remove nil? (for [dsc (select doc "/DIF/Dataset_Citation")]
-                              (when (= (value-of dsc "Persistent_Identifier/Type") "DOI")
-                                {:DOI (value-of dsc "Persistent_Identifier/Identifier")}))))
+   :DOI (parse-doi doc)
+   :AssociatedDOIs (parse-associated-dois doc)
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
    :Version (value-of doc "/DIF/Entry_ID/Version")
    :VersionDescription (value-of doc "/DIF/Version_Description")

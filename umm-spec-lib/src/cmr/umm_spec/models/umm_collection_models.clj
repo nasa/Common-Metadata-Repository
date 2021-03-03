@@ -79,8 +79,8 @@
    ;; was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is
    ;; not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible
    ;; for creating the DOI is described in the Authority element. For ESDIS records the value of
-   ;; https://doi.org/ should be used. While this element is not required, NASA metadata providers
-   ;; are strongly encouraged to include DOI and DOI Authority for their collections.
+   ;; https://doi.org/ should be used. For those that want to specify that a DOI is not applicable
+   ;; or unknown use the second option.
    DOI
 
    ;; This element describes any data/service related URLs that include project home pages,
@@ -102,6 +102,14 @@
    ;; (http://en.wikipedia.org/wiki/Access_control_list)). For example it can be used to hide
    ;; metadata when it isn't ready for public consumption.
    AccessConstraints
+
+   ;; This element stores DOIs that are associated with the collection such as from campaigns and
+   ;; other related sources. Note: The values should start with the directory indicator which in
+   ;; ESDIS' case is 10. If the DOI was registered through ESDIS, the beginning of the string should
+   ;; be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI
+   ;; organization that is responsible for creating the DOI is described in the Authority element.
+   ;; For ESDIS records the value of https://doi.org/ should be used.
+   AssociatedDOIs
 
    SpatialExtent
 
@@ -623,6 +631,31 @@
    Points
   ])
 (record-pretty-printer/enable-record-pretty-printing BoundaryType)
+
+;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The
+;; values should start with the directory indicator which in ESDIS' case is 10. If the DOI was
+;; registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not
+;; stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for
+;; creating the DOI is described in the Authority element. For ESDIS records the value of
+;; https://doi.org/ should be used. NASA metadata providers are strongly encouraged to include DOI
+;; and DOI Authority for their collections using CollectionDOI property.
+(defrecord AssociatedDoiType
+  [
+   ;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note:
+   ;; The values should start with the directory indicator which in ESDIS' case is 10. If the DOI
+   ;; was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is
+   ;; not stored here; it should be stored as a RelatedURL.
+   DOI
+
+   ;; The title of the DOI landing page. The title describes the DOI object to a user, so they don't
+   ;; have to look it up themselves to understand the association.
+   Title
+
+   ;; The DOI organization that is responsible for creating the DOI is described in the Authority
+   ;; element. For ESDIS records the value of https://doi.org/ should be used.
+   Authority
+  ])
+(record-pretty-printer/enable-record-pretty-printing AssociatedDoiType)
 
 ;; This element describes the geodetic model for the data product.
 (defrecord GeodeticModelType

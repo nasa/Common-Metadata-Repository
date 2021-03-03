@@ -4,7 +4,7 @@
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
-   [cmr.common.util :as util :refer [remove-empty-maps]]
+   [cmr.common.util :as util :refer [remove-empty-maps are3]]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
@@ -1727,12 +1727,17 @@
            result))))
 
 (deftest migrate-1-11-to-1-10
-  (let [result (vm/migrate-umm {} :collection "1.11" "1.10" exp-conv/example-collection-record)]
+  (let [collection (assoc exp-conv/example-collection-record
+                          :DOI {:MissingReason "Not Applicable"
+                                :Explanation "This is an explanation."})
+        result (vm/migrate-umm {} :collection "1.11" "1.10" collection)]
     (is (= (dissoc related-urls-UMM-1-10-example :DOI)
            result))))
 
 (deftest migrate-1-11-down-to-1-10-no-related-urls
   (let [collection (dissoc exp-conv/example-collection-record :RelatedUrls)
+        collection (assoc collection :DOI {:MissingReason "Not Applicable"
+                                           :Explanation "This is an explanation."})
         result (vm/migrate-umm {} :collection "1.11" "1.10" collection)]
     (is (= (dissoc related-urls-UMM-1-10-example :DOI :RelatedUrls)
            result))))
@@ -2506,10 +2511,85 @@
      :S3CredentialsAPIDocumentationURL "DAAC_Credential_Documentation"
   }})
 
-(deftest migrate-1-16-to-1-15-5
+(deftest migrate-1-16-to-1-15-5-test
   "Test the migration of collections from 1.16 to 1.15.5."
 
   (testing "Removing the invalid DirectDistributionInformation element."
     (let [result (vm/migrate-umm {} :collection "1.16" "1.15.5" sample-collection-1-16)]
-      (is (= {}
-             result)))))
+      (is (= nil
+             (:DirectDistributionInformation result))))))
+
+(deftest migrate-1-16-to-1-16-1
+  "Test the migration of collections from 1.16 to 1.16.1."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16" "1.16.1" sample-collection)]
+      (is (= expected (:DOI result))))
+
+    "DOI doesn't exist"
+    {:MissingReason "Unknown"
+     :Explanation "Native record does not contain a DOI."}
+    sample-collection-1-15-5
+
+    "Migrating the DOI up."
+    {:DOI "10.5678/hello"
+     :Authority "doi.org"}
+    (assoc sample-collection-1-15-5 :DOI {:DOI "10.5678/hello"
+                                          :Authority "doi.org"})
+
+    "Moving the DOI up."
+    {:MissingReason "Not Applicable"
+     :Explanation "Explanation"}
+    (assoc sample-collection-1-15-5 :DOI {:MissingReason "Not Applicable"
+                                          :Explanation "Explanation"})))
+
+(deftest migrate-1-16-1-to-1-16-test
+  "Test the migration of collections from 1.16.1 to 1.16."
+
+  (are3 [expected-doi expected-associated-dois sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.1" "1.16" sample-collection)]
+      (is (= expected-doi (:DOI result))
+          (= expected-associated-dois (:AssociatedDOIs result))))
+
+    "DOI is unknown"
+    nil
+    {:AssociatedDOIs [{:DOI "10.5678/DOI1"
+                       :Title "Title1"
+                       :Authority "doi.org"}
+                      {:DOI "10.5678/DOI2"
+                       :Title "Title2"
+                       :Authority "doi.org"}]}
+    {:DOI {:MissingReason "Unknown"
+           :Explanation "Explanation"}
+     :AssociatedDOIs [{:DOI "10.5678/DOI1"
+                       :Title "Title1"
+                       :Authority "doi.org"}
+                      {:DOI "10.5678/DOI2"
+                       :Title "Title2"
+                       :Authority "doi.org"}]}
+
+      "DOI is Not Applicable"
+      {:MissingReason "Not Applicable"
+       :Explanation "Explanation"}
+      {:AssociatedDOIs [{:DOI "10.5678/DOI1"
+                         :Title "Title1"
+                         :Authority "doi.org"}
+                        {:DOI "10.5678/DOI2"
+                         :Title "Title2"
+                         :Authority "doi.org"}]}
+
+      {:DOI {:MissingReason "Not Applicable"
+             :Explanation "Explanation"}
+       :AssociatedDOIs [{:DOI "10.5678/DOI1"
+                         :Title "Title1"
+                         :Authority "doi.org"}
+                        {:DOI "10.5678/DOI2"
+                         :Title "Title2"
+                         :Authority "doi.org"}]}
+
+      "DOI is used, but the associated dois don't exist."
+      {:DOI "10.5668/IsInUse"
+       :Authority "doi.org"}
+      nil
+      {:DOI {:DOI "10.5668/IsInUse"
+             :Authority "doi.org"}}))
