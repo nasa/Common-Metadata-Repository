@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.subscription-processing-test
   "CMR subscription processing tests."
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.ingest.services.jobs-subscriptions :as jobs]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -81,7 +82,7 @@
 
          _ (index/wait-until-indexed)
          ;; Setup subscriptions
-         _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
+         sub1 (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
                                                    {:Name "test_sub_prov1"
                                                     :SubscriberId "user2"
                                                     :CollectionConceptId (:concept-id coll1)
@@ -89,6 +90,14 @@
                                                   {:token "mock-echo-system-token"})]
 
      (index/wait-until-indexed)
+
+     (testing "Check that the email address can be looked up from a subscription."
+       (let [email-address (as-> sub1 product
+                                 (:metadata product)
+                                 (json/parse-string product)
+                                 (get product "SubscriberId")
+                                 (urs/get-user-email (system/context) product))]
+         (is (= "user2@example.com" email-address))))
 
      (testing "First query executed does not have a last-notified-at and looks back 24 hours"
        (let [gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
@@ -106,14 +115,4 @@
                            (map #(nth % 1))
                            flatten
                            (map :concept-id))]
-         (is (= [(:concept-id gran2)] response))))
-
-     (dev-system/advance-time! 10)
-
-     (testing "Check that the email address can be looked up from the results."
-       (let [gran3 (create-granule-and-index "PROV1" coll1 "Granule3")
-             email-address (as-> (trigger-process-subscriptions) product
-                                 (first product) ; only look at the first one
-                                 (nth product 2) ; pull out the subscriber-id
-                                 (urs/get-user-email (system/context) product))]
-         (is (= "user2@example.com" email-address)))))))
+         (is (= [(:concept-id gran2)] response)))))))
