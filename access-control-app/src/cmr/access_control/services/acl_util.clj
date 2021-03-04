@@ -2,22 +2,23 @@
   "Contains functions needed to be called by group-serivce to avoid circular dependencies between
    group-service and acl-service."
   (:require
-    [clojure.edn :as edn]
-    [clojure.set :as set]
-    [clojure.string :as str]
-    [cmr.access-control.config :as config]
-    [cmr.access-control.data.access-control-index :as index]
-    [cmr.access-control.data.acls :as acls]
-    [cmr.common-app.services.search.group-query-conditions :as gc]
-    [cmr.common-app.services.search.query-execution :as qe]
-    [cmr.common-app.services.search.query-model :as qm]
-    [cmr.common.log :refer [info debug warn]]
-    [cmr.common.mime-types :as mt]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.util :refer [defn-timed] :as util]
-    [cmr.transmit.echo.tokens :as tokens]
-    [cmr.transmit.metadata-db :as mdb1]
-    [cmr.transmit.metadata-db2 :as mdb]))
+   [clojure.edn :as edn]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.access-control.config :as config]
+   [cmr.access-control.data.access-control-index :as index]
+   [cmr.access-control.data.acls :as acls]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common.log :refer [info debug warn error]]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :refer [defn-timed] :as util]
+   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.metadata-db :as mdb1]
+   [cmr.transmit.metadata-db2 :as mdb]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -150,3 +151,29 @@
                       (vec dropped-concept-ids))))
       (assoc-in acl [:catalog-item-identity :collection-identifier] collection-identifier))
     acl))
+
+(defn- s3-bucket-and-prefix-names-concept-id-map
+  "Return a map of concept-id to s3-bucket-and-object-prefix-names.
+  Example: {'C12340000-PROV1' ['s3.aws.com' 's3']}"
+  [context concept]
+  (let [metadata (umm-spec/parse-metadata (assoc context :ignore-kms-keywords true) concept)
+        s3-data (get-in metadata [:DirectDistributionInformation
+                                  :S3BucketAndObjectPrefixNames])]
+    {(:concept-id concept) s3-data}))
+
+(defn s3-bucket-and-prefixes-for-collection-ids
+  "Takes a list of collection IDs and returns a map of collection-id and
+   s3-bucket-and-object-prefix-names values."
+  [context coll-ids]
+  (let [concepts (pmap #(mdb/get-latest-concept context %) coll-ids)]
+    (into {} (map #(s3-bucket-and-prefix-names-concept-id-map context %)
+                  concepts))))
+
+(defn s3-bucket-and-prefixes-for-collections
+  "Takes a list of collections and returns a map of collection-id and
+   s3-bucket-and-object-prefix-names values."
+  [context colls]
+  (let [ids (->> colls
+                 (map :concept-id)
+                 (remove nil?))]
+    (s3-bucket-and-prefixes-for-collection-ids context ids)))
