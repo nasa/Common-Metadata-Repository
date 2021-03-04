@@ -91,14 +91,6 @@
 
      (index/wait-until-indexed)
 
-     (testing "Check that the email address can be looked up from a subscription."
-       (let [email-address (as-> sub1 product
-                                 (:metadata product)
-                                 (json/parse-string product)
-                                 (get product "SubscriberId")
-                                 (urs/get-user-email (system/context) product))]
-         (is (= "user2@example.com" email-address))))
-
      (testing "First query executed does not have a last-notified-at and looks back 24 hours"
        (let [gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
              results (->> (trigger-process-subscriptions)
