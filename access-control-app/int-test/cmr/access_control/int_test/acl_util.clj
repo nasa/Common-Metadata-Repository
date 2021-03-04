@@ -1,7 +1,6 @@
 (ns cmr.access-control.int-test.acl-util
   (:require
    [clojure.test :refer :all]
-   [cmr.elastic-utils.connect :as es-connect]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.services.acl-util :as acl-util]
    [cmr.access-control.test.util :as test-util]
