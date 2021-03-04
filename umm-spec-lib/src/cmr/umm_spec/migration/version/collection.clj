@@ -399,9 +399,9 @@
   ;; Can't use the same solution as used in 1.16.2 -> 1.16.1 using update because when :UseConstraints
   ;; is nil, it will be turned into (:Description nil :LIcenseUrl nil :LicenseText nil) which will
   ;; fail validation. This is the same issue going from 1.9 -> 1.10 above.
-  (let [use-constraints (:UseConstraints c)
-        use-constraints (-> use-constraints
-                            (assoc :Description (get-in use-constraints [:Description :Description]))
+  (let [use-constraints (-> c
+                            :UseConstraints
+                            (assoc :Description (get-in c [:UseConstraints :Description :Description]))
                             (set/rename-keys {:LicenseUrl :LicenseURL})
                             util/remove-nils-empty-maps-seqs)]
      (if use-constraints
@@ -410,7 +410,8 @@
 
 (defmethod interface/migrate-umm-version [:collection "1.16.2" "1.16.1"]
   [context c & _]
-  (update c :UseConstraints #(-> %
-                                 (assoc :Description {:Description (get % :Description)})
-                                 (set/rename-keys {:LicenseURL :LicenseUrl})
-                                 util/remove-nils-empty-maps-seqs)))
+  (update c :UseConstraints (fn [use-constraints]
+                              (-> use-constraints
+                                  (assoc :Description {:Description (get use-constraints :Description)})
+                                  (set/rename-keys {:LicenseURL :LicenseUrl})
+                                  util/remove-nils-empty-maps-seqs))))
