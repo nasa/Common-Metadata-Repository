@@ -281,32 +281,56 @@
         }
       }
     },
-    "UseConstraintsType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "This element defines how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes license text, license URL, or any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
-      "properties": {
-        "Description": {
-          "$ref": "#/definitions/UseConstraintsDescriptionType"
-        },
-        "LicenseUrl": {
-          "description": "This element holds the URL and associated information to access the License on the web. If this element is used the LicenseText element cannot be used.",
-          "$ref": "umm-cmn-json-schema.json#/definitions/OnlineResourceType"
-        },
-        "LicenseText": {
-          "description": "This element holds the actual license text. If this element is used the LicenseUrl element cannot be used.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 20000
-        }
-      },
-      "anyOf": [
-          {"required": ["Description"]},
-          {"required": ["LicenseUrl"]},
-          {"required": ["LicenseText"]}
-      ],
-      "not": {"required": ["LicenseUrl", "LicenseText"]}
+    "UseConstraintsDescType": {
+      "description": "This sub-element either contains a license summary or free-text description that details the permitted use or limitation of this collection.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
     },
+    "UseConstraintsType": {
+      "description": "This element defines how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes license text, license URL, or any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
+      "oneOf": [{
+        "type": "object",
+        "additionalProperties": false,
+        "description": "This element defines how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes license text, license URL, or any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
+        "properties": {
+          "Description": {
+            "$ref": "#/definitions/UseConstraintsDescType"
+          }
+        },
+        "required": ["Description"]
+      }, {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "This element defines how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes license text, license URL, or any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
+        "properties": {
+          "Description": {
+            "$ref": "#/definitions/UseConstraintsDescType"
+          },
+          "LicenseURL": {
+            "description": "This element holds the URL and associated information to access the License on the web. If this element is used the LicenseText element cannot be used.",
+            "$ref": "umm-cmn-json-schema.json#/definitions/OnlineResourceType"
+          }
+        },
+        "required": ["LicenseURL"]
+      }, {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "This element defines how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes license text, license URL, or any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
+        "properties": {
+          "Description": {
+            "$ref": "#/definitions/UseConstraintsDescType"
+          },
+          "LicenseText": {
+            "description": "This element holds the actual license text. If this element is used the LicenseUrl element cannot be used.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          }
+        },
+        "required": ["LicenseText"]
+      }
+     ]},
     "DirectoryNameType": {
       "type": "object",
       "additionalProperties": false,

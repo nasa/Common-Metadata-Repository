@@ -306,7 +306,7 @@
    when both LicenseUrl and LicenseText are present,
    somehow it still gets generated."
   [record]
-  (if (and (get-in record [:UseConstraints :LicenseUrl])
+  (if (and (get-in record [:UseConstraints :LicenseURL])
            (get-in record [:UseConstraints :LicenseText]))
     (assoc-in record [:UseConstraints :LicenseText] nil)
     record))

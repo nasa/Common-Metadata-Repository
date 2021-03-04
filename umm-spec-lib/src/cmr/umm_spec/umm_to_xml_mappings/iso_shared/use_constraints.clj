@@ -7,8 +7,8 @@
   (let [description (get-in c [:AccessConstraints :Description])
         value (get-in c [:AccessConstraints :Value])
         use-constraints (:UseConstraints c)
-        uc-description (:Description (:Description use-constraints))
-        license-url (:LicenseUrl use-constraints)
+        uc-description (:Description use-constraints)
+        license-url (:LicenseURL use-constraints)
         license-text (:LicenseText use-constraints)]
     [:gmd:resourceConstraints
      (when (or description value use-constraints)

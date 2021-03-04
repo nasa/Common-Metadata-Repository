@@ -333,7 +333,7 @@
     [:Quality (:Quality c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
     (when-let [description (get-in c [:UseConstraints :Description])]
-      [:Use_Constraints (:Description description)])
+      [:Use_Constraints description])
     (dif-util/generate-dataset-language :Dataset_Language (:DataLanguage c))
     (center/generate-organizations c)
     (for [dist (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])]
