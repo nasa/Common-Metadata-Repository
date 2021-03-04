@@ -284,17 +284,17 @@
     ;; the indexer when we run this test.
     (without-publishing-messages
      (:concept-id
-      (mdb/save-concept (conn-context)
-                        {:format (mt/format->mime-type format-key)
-                         :metadata (umm-spec/generate-metadata (conn-context) umm format-key)
-                         :concept-type :collection
-                         :provider-id provider-id
-                         :native-id native-id
-                         :revision-id 1
-                         :extra-fields {:short-name short-name
-                                        :entry-title entry-title
-                                        :entry-id short-name
-                                        :version-id "v1"}})))))
+       (mdb/save-concept (conn-context)
+                         {:format (mt/format->mime-type format-key)
+                          :metadata (umm-spec/generate-metadata (conn-context) umm format-key)
+                          :concept-type :collection
+                          :provider-id provider-id
+                          :native-id native-id
+                          :revision-id 1
+                          :extra-fields {:short-name short-name
+                                         :entry-title entry-title
+                                         :entry-id short-name
+                                         :version-id "v1"}})))))
 
 (defn assert-group-saved
   "Checks that a group was persisted correctly in metadata db. The user-id indicates which user

@@ -1,23 +1,19 @@
 (ns cmr.access-control.int-test.acl-util
   (:require
-   [cheshire.core :as json]
    [clojure.test :refer :all]
-   [clj-http.client :as client]
    [cmr.elastic-utils.connect :as es-connect]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.services.acl-util :as acl-util]
    [cmr.access-control.test.util :as test-util]
-   [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.transmit.config :as transmit-config]))
+   [cmr.mock-echo.client.echo-util :as echo-util]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
 (use-fixtures :each (fixtures/reset-fixture
                      {"prov1guid" "PROV1"}))
 
 (deftest acl-log-message
-  (let [token (e/login (test-util/conn-context) "admin")]
+  (let [token (echo-util/login (test-util/conn-context) "admin")]
     (testing "Create, update, and delete ACL log message function"
       (are3 [new-acl existing-acl action expected-message]
             (is (= expected-message
