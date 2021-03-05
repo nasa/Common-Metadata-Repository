@@ -63,39 +63,6 @@
         (is (= 201 (:status response)))
         (is (= "user1" (:SubscriberId parsed-metadata)))))))
 
-;; note, this test should be removed after email is removed from the schema and
-;;database. Until that time, test that the subscription no lonoger holds an email
-;;since it was removed from use as of CMR-7110 but not from the schema, to allow
-;;clients to continue to send it
-(deftest subscription-ingest-no-email-test
-  (let [coll1 (data-core/ingest-umm-spec-collection
-               "PROV1"
-               (data-umm-c/collection
-                {:ShortName "coll-no-id"
-                 :EntryTitle "entry-title-no-id"})
-               {:token "mock-echo-system-token"})]
-    (testing "ingest on PROV1, with no email or subscriber id supplied"
-      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
-                                                                  :CollectionConceptId (:concept-id coll1)
-                                                                  :SubscriberId nil
-                                                                  :EmailAddress nil})
-            user1-token (echo-util/login (system/context) "user1")
-            response (ingest/ingest-concept concept {:token user1-token})
-            ingested-concept (mdb/get-concept (:concept-id response))
-            parsed-metadata (json/parse-string (:metadata ingested-concept) true)]
-       (is (nil? (:EmailAddress parsed-metadata)))))
-    (testing "ingest on PROV1, admin subscribes for a user with no email provided"
-      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
-                                                                  :CollectionConceptId (:concept-id coll1)
-                                                                  :SubscriberId "mark"
-                                                                  :EmailAddress nil})
-
-            response (ingest/ingest-concept concept {:token "mock-echo-system-token"})
-            ingested-concept (mdb/get-concept (:concept-id response))
-            parsed-metadata (json/parse-string (:metadata ingested-concept) true)]
-       (is (nil? (:EmailAddress parsed-metadata)))))))
-
-
 (deftest subscription-ingest-on-prov3-test
   (let [coll1 (data-core/ingest-umm-spec-collection
                "PROV1"
