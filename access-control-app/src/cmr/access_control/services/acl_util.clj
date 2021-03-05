@@ -161,19 +161,16 @@
                                   :S3BucketAndObjectPrefixNames])]
     {(:concept-id concept) s3-data}))
 
-(defn s3-bucket-and-prefixes-for-collection-ids
+(def max-s3-bucket-query-size 2000)
+
+(defn-timed s3-bucket-and-prefixes-for-collection-ids
   "Takes a list of collection IDs and returns a map of collection-id and
    s3-bucket-and-object-prefix-names values."
   [context coll-ids]
+  (when (> (count coll-ids) max-s3-bucket-query-size)
+    (warn (format (str "%d concept IDs were submitted to query mdb. "
+                       "Consider breaking this call into smaller batches.")
+                  (count coll-ids))))
   (let [concepts (pmap #(mdb/get-latest-concept context %) coll-ids)]
     (into {} (map #(s3-bucket-and-prefix-names-concept-id-map context %)
                   concepts))))
-
-(defn s3-bucket-and-prefixes-for-collections
-  "Takes a list of collections and returns a map of collection-id and
-   s3-bucket-and-object-prefix-names values."
-  [context colls]
-  (let [ids (->> colls
-                 (map :concept-id)
-                 (remove nil?))]
-    (s3-bucket-and-prefixes-for-collection-ids context ids)))
