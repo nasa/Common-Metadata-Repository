@@ -68,10 +68,10 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 
 Note: UMM JSON accepts an additional version parameter for both `Content-Type` and `Accept` headers. Like charset, it is appended with a semicolon (;). If no version is appended, the latest version is assumed.
 
-For an example, the following means version 1.14 of the UMM JSON format:
+For an example, the following means version 1.16.2 of the UMM JSON format:
 
 ```
-application/vnd.nasa.cmr.umm+json;version=1.14
+application/vnd.nasa.cmr.umm+json;version=1.16.2
 ```
 
 Note: For all values of `Content-Type`, data sent using POST or PUT should not be URL encoded.
@@ -801,12 +801,12 @@ Collection metadata can be translated between metadata standards using the trans
 
 To disable validation of the parsed UMM metadata against the current UMM spec, pass `skip_umm_validation=true` as a query parameter.
 
-Example: Translate an ECHO10 metadata to UMM JSON version 1.14
+Example: Translate an ECHO10 metadata to UMM JSON version 1.16.2
 
 ```
 curl -i -XPOST \
   -H "Content-Type: application/echo10+xml" \
-  -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.14" \
+  -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.16.2" \
   %CMR-ENDPOINT%/translate/collection\?skip_umm_validation\=true \
   -d \
 "<Collection>
