@@ -113,8 +113,8 @@
          (is (= [(:concept-id gran2)] response))))
 
      (testing "Deleting the subscription purges the suscription notification entry"
-       ;;delete and reingest the subscription. If the sub-notification was purged, then it
-       ;;should look back 24 hours, as if the subscription were new
+       ;; Delete and reingest the subscription. If the sub-notification was purged, then it
+       ;; should look back 24 hours, as if the subscription were new.
        (ingest/delete-concept subscription-concept)
        (subscription-util/ingest-subscription subscription-concept
                                               {:token "mock-echo-system-token"})
@@ -123,4 +123,4 @@
                   (map #(nth % 1))
                   flatten
                   (map :concept-id)
-                  (count))))))))
+                  count)))))))

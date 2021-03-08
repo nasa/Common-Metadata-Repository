@@ -48,5 +48,7 @@
 (defmethod concepts/after-save :subscription
   [db provider sub]
   (when (:deleted sub)
-    ;; Cascade deletion to real deletes of granules
+    ;; Cascade deletion to real deletes of subscription notifications. The intended functionality
+    ;; since the subscription_notification row is purged is that, if this subscription were
+    ;; re-ingested (and un-tombstoned), we just look back 24 hours, as if the sub were brand new.
     (sub-notifs/delete-sub-notification db (:concept-id sub))))
