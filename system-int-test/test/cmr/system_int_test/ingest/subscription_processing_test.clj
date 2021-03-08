@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
-   [cmr.ingest.services.jobs-subscriptions :as jobs]
+   [cmr.ingest.services.subscriptions-helper :as jobs]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as data-granule]

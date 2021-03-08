@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.jobs-subscriptions
+(ns cmr.ingest.services.subscriptions-helper
   "This contains the code for the scheduled subscription job."
   (:require
    [cheshire.core :as json]

@@ -7,7 +7,7 @@
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
    [cmr.common.util :refer [are3]]
-   [cmr.ingest.services.jobs-subscriptions :as jobsub]
+   [cmr.ingest.services.subscriptions-helper :as jobsub]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as data-granule]

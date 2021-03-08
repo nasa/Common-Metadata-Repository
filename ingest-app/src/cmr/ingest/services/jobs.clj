@@ -13,7 +13,7 @@
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.data.provider-acl-hash :as pah]
    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
-   [cmr.ingest.services.jobs-subscriptions :as subscription]
+   [cmr.ingest.services.subscriptions-helper :as subscription]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
    [postal.core :as postal-core]))
