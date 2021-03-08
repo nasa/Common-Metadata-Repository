@@ -82,12 +82,15 @@
 
          _ (index/wait-until-indexed)
          ;; Setup subscriptions
-         sub1 (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
+
+
+         subscription-concept (subscription-util/make-subscription-concept
                                                    {:Name "test_sub_prov1"
                                                     :SubscriberId "user2"
                                                     :CollectionConceptId (:concept-id coll1)
                                                     :Query "provider=PROV1"})
-                                                  {:token "mock-echo-system-token"})]
+         sub1 (subscription-util/ingest-subscription subscription-concept
+                                                     {:token "mock-echo-system-token"})]
 
      (index/wait-until-indexed)
 
@@ -107,4 +110,18 @@
                            (map #(nth % 1))
                            flatten
                            (map :concept-id))]
-         (is (= [(:concept-id gran2)] response)))))))
+         (is (= [(:concept-id gran2)] response))))
+
+     (testing "Deleting the subscription purges the suscription notification entry"
+       ;;delete and reingest the subscription. If the sub-notification was purged, then it
+       ;;should look back 24 hours, as if the subscription were new
+       (ingest/delete-concept subscription-concept)
+       (subscription-util/ingest-subscription subscription-concept
+                                              {:token "mock-echo-system-token"})
+       
+       (is (= 2
+             (->> (trigger-process-subscriptions)
+                  (map #(nth % 1))
+                  flatten
+                  (map :concept-id)
+                  (count))))))))

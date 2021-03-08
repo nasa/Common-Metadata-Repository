@@ -2,6 +2,7 @@
   "Implements multi-method variations for subscriptions"
   (:require
    [cmr.metadata-db.data.oracle.concepts :as concepts]
+   [cmr.metadata-db.data.oracle.sub-notifications :as sub-notifs]
    [cmr.oracle.connection :as oracle]))
 
 (defn add-last-notified-at-if-present
@@ -43,3 +44,9 @@
 (defmethod concepts/concept->insert-args [:subscription true]
   [concept _]
   (subscription-concept->insert-args concept))
+
+(defmethod concepts/after-save :subscription
+  [db provider sub]
+  (when (:deleted sub)
+    ;; Cascade deletion to real deletes of granules
+    (sub-notifs/delete-sub-notification db (:concept-id sub))))
