@@ -71,14 +71,10 @@
   "Represents DATA_CENTERS update field"
   "DATA_CENTERS")
 
-(defmulti validate-bulk-update-post-params
+(defn validate-bulk-update-post-params
   "Validate post body for bulk update. Validate against schema and validation
   rules."
-  (fn [concept-type json]
-    concept-type))
-
-(defmethod validate-bulk-update-post-params :collection
-  [_ json]
+  [json]
   (js/validate-json! bulk-update-schema json)
   (let [body (json/parse-string json true)
         {:keys [update-type update-value find-value update-field]} body]
@@ -161,7 +157,7 @@
   and collection statuses, and queue bulk update. Return task id, which comes
   from the db save."
   [context provider-id json user-id]
-  (validate-bulk-update-post-params :collection json)
+  (validate-bulk-update-post-params json)
   (let [bulk-update-params (json/parse-string json true)
         {:keys [concept-ids]} bulk-update-params
         _ (validate-concept-ids concept-ids)
@@ -182,19 +178,8 @@
     ;; Queue the bulk update event
     (ingest-events/publish-ingest-event
      context
-     (ingest-events/ingest-bulk-update-event provider-id task-id bulk-update-params user-id))
+     (ingest-events/collections-bulk-event provider-id task-id bulk-update-params user-id))
     task-id))
-
-(defn validate-and-save-bulk-granule-update
-  "Validate the bulk granule update POST parameters, save rows to the db for task
-  and collection statuses, and queue bulk update. Return task id, which comes
-  from the db save."
-  [context provider-id json user-id]
-  (validate-bulk-update-post-params :granule json)
-
-  (warn (format (str "Granule bulk update called for provider [%s] "
-                     "by user [%s] but it has not been implemented yet.")
-                provider-id user-id)))
 
 (defn handle-bulk-update-event
   "For each concept-id, queueu collection bulk update messages"

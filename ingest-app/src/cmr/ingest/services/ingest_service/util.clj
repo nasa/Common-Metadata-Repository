@@ -8,6 +8,7 @@
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.ingest.config :as config]
    [cmr.ingest.data.bulk-update :as bulk-update]
+   [cmr.ingest.data.granule-bulk-update :as granule-bulk-update]
    [cmr.ingest.data.provider-acl-hash :as pah]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.oracle.connection :as conn]
@@ -32,6 +33,7 @@
   (let [queue-broker (get-in context [:system :queue-broker])]
     (queue-protocol/reset queue-broker))
   (bulk-update/reset-db context)
+  (granule-bulk-update/reset-db context)
   (cache/reset-caches context))
 
 (def health-check-fns
