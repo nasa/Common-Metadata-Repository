@@ -1,5 +1,5 @@
 (ns cmr.ingest.services.granule-bulk-update.echo10
-  "Contains functions to update ECHO10 granule xml for bulk update."
+  "Contains functions to update ECHO10 granule xml for OPeNDAP url bulk update."
   (:require
    [clojure.data.xml :as xml]
    [clojure.data.zip.xml :as zx]

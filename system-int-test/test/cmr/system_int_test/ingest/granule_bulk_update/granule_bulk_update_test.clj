@@ -10,8 +10,7 @@
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.metadata-db-util :as mdb]
-   [cmr.system-int-test.utils.search-util :as search]))
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 

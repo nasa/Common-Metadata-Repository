@@ -19,7 +19,7 @@
  (js/json-string->json-schema (slurp (io/resource "granule_bulk_update_schema.json"))))
 
 (defn- validate-granule-bulk-update
- [_ json]
+ [json]
  (js/validate-json! granule-bulk-update-schema json))
 
 (defn- update->instruction
@@ -42,7 +42,7 @@
   and granule statuses, and queue bulk granule update. Return task id, which comes
   from the db save."
   [context provider-id json-body user-id]
-  (validate-granule-bulk-update context json-body)
+  (validate-granule-bulk-update json-body)
   (let [instructions (-> json-body
                          (json/parse-string true)
                          request->instructions)
