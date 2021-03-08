@@ -56,3 +56,15 @@
   [doi]
   (when-not (= "Unknown" (get doi :MissingReason))
      doi))
+
+(defn migrate-pub-ref-up-to-1-16-1
+  "Migrate publication references from 1.16 to 1.16.1 because the missing reason was
+   removed from the Publication References DOI definition."
+  [pub-refs]
+  (util/remove-nils-empty-maps-seqs
+    (for [pub-ref pub-refs]
+      (if (get-in pub-ref [:DOI :MissingReason])
+        (-> pub-ref
+            (dissoc :DOI)
+            util/remove-nils-empty-maps-seqs)
+        pub-ref))))
