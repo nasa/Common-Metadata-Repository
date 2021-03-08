@@ -168,12 +168,3 @@
   (let [concepts (pmap #(mdb/get-latest-concept context %) coll-ids)]
     (into {} (map #(s3-bucket-and-prefix-names-concept-id-map context %)
                   concepts))))
-
-(defn s3-bucket-and-prefixes-for-collections
-  "Takes a list of collections and returns a map of collection-id and
-   s3-bucket-and-object-prefix-names values."
-  [context colls]
-  (let [ids (->> colls
-                 (map :concept-id)
-                 (remove nil?))]
-    (s3-bucket-and-prefixes-for-collection-ids context ids)))

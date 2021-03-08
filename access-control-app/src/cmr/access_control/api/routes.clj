@@ -7,6 +7,7 @@
    [cmr.access-control.data.group-schema :as group-schema]
    [cmr.access-control.services.acl-search-service :as acl-search]
    [cmr.access-control.services.acl-service :as acl-service]
+   [cmr.access-control.services.acl-util :as acl-util]
    [cmr.access-control.services.group-service :as group-service]
    [cmr.access-control.services.parameter-validation :as pv]
    [cmr.access-control.test.bootstrap :as bootstrap]
@@ -206,6 +207,23 @@
       (acl/verify-ingest-management-permission ctx :update)
       (index/create-index-or-update-mappings (-> ctx :system :search-index))
       {:status 204})))
+;;; Misc routes
+
+(defn- get-allowed-s3-buckets
+  "Returns a list of s3-buckets for the given collection-ids."
+  [context params]
+  (let [{concept-ids :concept_id provider :provider} params
+        permissions (acl-service/get-permissions context params)
+        s3-bucket-map (acl-util/s3-bucket-and-prefixes-for-collection-ids
+                       context
+                       concept-ids)
+        s3-list (-> s3-bucket-map
+                    vals
+                    flatten
+                    set
+                    sort)]
+    {:status 200
+     :body (json/generate-string s3-list)}))
 
 ;;; Handler
 
@@ -354,4 +372,11 @@
         (OPTIONS "/" [] common-routes/options-response)
 
         (GET "/" {:keys [request-context params]}
-          (get-current-sids request-context params))))))
+             (get-current-sids request-context params)))
+
+      (context "/s3-buckets" []
+        (OPTIONS "/" [] common-routes/options-response)
+
+        (GET "/"
+             {ctx :request-context params :params}
+             (get-allowed-s3-buckets ctx params))))))
