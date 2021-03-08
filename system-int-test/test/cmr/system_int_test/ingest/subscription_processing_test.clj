@@ -1,18 +1,21 @@
 (ns cmr.system-int-test.ingest.subscription-processing-test
   "CMR subscription processing tests."
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
-   [cmr.ingest.services.jobs :as jobs]
+   [cmr.ingest.services.subscriptions-helper :as jobs]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as data-granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as system]
+   [cmr.system-int-test.utils.dev-system-util :as dev-system]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
    [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.metadata-db :as mdb2]))
+   [cmr.transmit.metadata-db :as mdb2]
+   [cmr.transmit.urs :as urs]))
 
 (use-fixtures :each
   (join-fixtures
@@ -24,7 +27,8 @@
      [:read :update])
     (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV3"}
                                                       [:read]
-                                                      [:read :update])]))
+                                                      [:read :update])
+    (dev-system/freeze-resume-time-fixture)]))
 
 (defn- trigger-process-subscriptions
   "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
@@ -33,6 +37,18 @@
                            (remove :deleted)
                            (mapv #(select-keys % [:concept-id :extra-fields :metadata])))]
     (#'jobs/process-subscriptions (system/context) subscriptions)))
+
+(defn- create-granule-and-index
+  "A utility function to reduce common code in these tests, Create a test granule and then wait for it to be indexed."
+  [provider collection granule-ur]
+  (let [granule (data-core/ingest provider
+                    (data-granule/granule-with-umm-spec-collection collection
+                                                                   (:concept-id collection)
+                                                                   {:granule-ur granule-ur
+                                                                    :access-value 1})
+                    {:token "mock-echo-system-token"})]
+    (index/wait-until-indexed)
+    granule))
 
 (deftest ^:oracle subscription-email-processing-time-constraint-test
   (system/only-with-real-database
@@ -66,7 +82,7 @@
 
          _ (index/wait-until-indexed)
          ;; Setup subscriptions
-         _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
+         sub1 (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
                                                    {:Name "test_sub_prov1"
                                                     :SubscriberId "user2"
                                                     :CollectionConceptId (:concept-id coll1)
@@ -76,35 +92,19 @@
      (index/wait-until-indexed)
 
      (testing "First query executed does not have a last-notified-at and looks back 24 hours"
-       (let [gran1 (data-core/ingest "PROV1"
-                                     (data-granule/granule-with-umm-spec-collection coll1
-                                                                                    (:concept-id coll1)
-                                                                                    {:granule-ur "Granule1"
-                                                                                     :access-value 1})
-                                     {:token "mock-echo-system-token"})
-             _ (index/wait-until-indexed)
+       (let [gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
              results (->> (trigger-process-subscriptions)
                           (map #(nth % 1))
                           flatten
                           (map :concept-id))]
-         (is (= (:concept-id gran1)
-                (first results)))))
+         (is (= (:concept-id gran1) (first results)))))
 
-     ;; force eval of lazy seq
-     (is (not= nil (count (trigger-process-subscriptions))))
+     (dev-system/advance-time! 10)
 
      (testing "Second run finds only collections created since the last notification"
-       (let [gran2 (data-core/ingest "PROV1"
-                                     (data-granule/granule-with-umm-spec-collection coll1
-                                                                                    (:concept-id coll1)
-                                                                                    {:granule-ur "Granule2"
-                                                                                     :access-value 1})
-                                     {:token "mock-echo-system-token"})
-             _ (index/wait-until-indexed)
+       (let [gran2 (create-granule-and-index "PROV1" coll1 "Granule2")
              response (->> (trigger-process-subscriptions)
                            (map #(nth % 1))
                            flatten
                            (map :concept-id))]
-
-         (is (= [(:concept-id gran2)]
-                response)))))))
+         (is (= [(:concept-id gran2)] response)))))))

@@ -7,7 +7,7 @@
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
    [cmr.common.util :refer [are3]]
-   [cmr.ingest.services.jobs :as jobs]
+   [cmr.ingest.services.subscriptions-helper :as jobsub]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as data-granule]
@@ -41,7 +41,7 @@
   (let [subscriptions (->> (mdb2/find-concepts (system/context) {:latest true} :subscription)
                            (remove :deleted)
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
-    (#'jobs/process-subscriptions (system/context) subscriptions)))
+    (#'jobsub/process-subscriptions (system/context) subscriptions)))
 
 
 (deftest subscription-ingest-no-subscriber-id-test
@@ -70,35 +70,6 @@
             response (ingest/ingest-concept concept)]
         (is (= 401 (:status response)))
         (is (= "You do not have permission to perform that action." (first (:errors response))))))))
-
-(deftest subscription-ingest-no-email-test
-  (let [coll1 (data-core/ingest-umm-spec-collection
-               "PROV1"
-               (data-umm-c/collection
-                {:ShortName "coll-no-id"
-                 :EntryTitle "entry-title-no-id"})
-               {:token "mock-echo-system-token"})]
-    (testing "ingest on PROV1, with no email or subscriber id supplied"
-      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
-                                                                  :CollectionConceptId (:concept-id coll1)
-                                                                  :SubscriberId nil
-                                                                  :EmailAddress nil})
-            user1-token (echo-util/login (system/context) "user1")
-            response (ingest/ingest-concept concept {:token user1-token})
-            ingested-concept (mdb/get-concept (:concept-id response))
-            parsed-metadata (json/parse-string (:metadata ingested-concept) true)]
-       (is (= "user1@example.com" (:EmailAddress parsed-metadata)))))
-    (testing "ingest on PROV1, admin subscribes for a user with no email provided"
-      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
-                                                                  :CollectionConceptId (:concept-id coll1)
-                                                                  :SubscriberId "mark"
-                                                                  :EmailAddress nil})
-
-            response (ingest/ingest-concept concept {:token "mock-echo-system-token"})
-            ingested-concept (mdb/get-concept (:concept-id response))
-            parsed-metadata (json/parse-string (:metadata ingested-concept) true)]
-       (is (= "mark@example.com" (:EmailAddress parsed-metadata)))))))
-
 
 (deftest subscription-ingest-on-prov3-test
   (let [coll1 (data-core/ingest-umm-spec-collection

@@ -43,6 +43,9 @@
                                           "fake-user-2"
                                           true)))))
 
+  (testing "User info can get user-email"
+    (is (= "fake-user@example.com" (urs/get-user-email (urs-context) "fake-user"))))
+
   (testing "User exists without raw"
     (is (urs/user-exists? (urs-context)
                           "urs-user")))

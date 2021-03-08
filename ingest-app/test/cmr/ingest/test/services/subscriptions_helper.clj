@@ -1,10 +1,10 @@
-(ns cmr.ingest.test.services.jobs
+(ns cmr.ingest.test.services.subscriptions-helper
   "This tests some of the more complicated functions of cmr.ingest.services.jobs"
   (:require
    [clj-time.core :as t]
    [clojure.test :refer :all]
    [cmr.common.util :as u :refer [are3]]
-   [cmr.ingest.services.jobs :as jobs]))
+   [cmr.ingest.services.subscriptions-helper :as jobs]))
 
 (deftest create-query-params
   (is (= {"polygon" "-78,-18,-77,-22,-73,-16,-74,-13,-78,-18"

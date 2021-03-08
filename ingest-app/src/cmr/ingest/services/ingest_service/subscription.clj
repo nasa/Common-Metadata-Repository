@@ -8,11 +8,10 @@
   "Returns subscription concept with fields necessary for ingest into metadata db
   under :extra-fields."
   [context concept subscription]
-  (assoc concept :extra-fields 
+  (assoc concept :extra-fields
                  {:subscription-name (:Name subscription)
                   :collection-concept-id (:CollectionConceptId subscription)
-                  :subscriber-id (:SubscriberId subscription)
-                  :email-address (:EmailAddress subscription)})) 
+                  :subscriber-id (:SubscriberId subscription)}))
 
 (defn-timed save-subscription
   "Store a subscription concept in mdb and indexer."

@@ -47,7 +47,7 @@
    :tool {true #{}
           false #{:tool-name}}
    :subscription {true #{}
-                  false #{:subscription-name :subscriber-id :email-address :collection-concept-id}}
+                  false #{:subscription-name :subscriber-id :collection-concept-id}}
    :tag-association {true #{}
                      false #{:associated-concept-id :associated-revision-id}}
    :variable {true #{}
@@ -55,7 +55,7 @@
    :variable-association {true #{}
                           false #{:associated-concept-id :associated-revision-id}}
    :service-association {true #{}
-                          false #{:associated-concept-id :associated-revision-id}}
+                         false #{:associated-concept-id :associated-revision-id}}
    :tool-association {true #{}
                       false #{:associated-concept-id :associated-revision-id}}})
 

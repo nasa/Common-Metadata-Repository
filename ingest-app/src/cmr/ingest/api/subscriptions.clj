@@ -155,25 +155,14 @@
       native-id)))
 
 (defn- add-id-and-email-to-metadata-if-missing
-   "If SubscriberId is provided, use it. Else, get it from the token.
-   If subscriber EmailAddress is provided, use it. Else, use the value supplied by EDL for the user."
+   "If SubscriberId is provided, use it. Else, get it from the token."
   [context metadata]
-  (let [{subscriber :SubscriberId
-         email :EmailAddress} metadata
-        subscriber (if subscriber
-                     subscriber
-                     (api-core/get-user-id-from-token context))
-        email (if email
-                email
-                (if subscriber
-                  (urs/get-user-email context subscriber)
-                  ;; An error is thrown here to handle the case in which a subscription with no
-                  ;; subscriber-id is supplied, AND there is no token in the headers. We will never
-                  ;; allow a guest user to CRUD a subscription, so we return a 401 error here.
-                  (errors/throw-service-error
-                    :unauthorized
-                    "You do not have permission to perform that action.")))]
-    (assoc metadata :SubscriberId subscriber :EmailAddress email)))
+  (let [{subscriber :SubscriberId} metadata
+        subscriber (if-not subscriber
+                     (api-core/get-user-id-from-token context)
+                     subscriber)]
+    (assoc metadata :SubscriberId subscriber)))
+
 
 (defn add-id-and-email-if-missing
   "Parses and generates the metadata, such that add-id-and-email-to-metadata-if-missing
