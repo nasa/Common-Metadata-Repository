@@ -118,7 +118,6 @@
        (ingest/delete-concept subscription-concept)
        (subscription-util/ingest-subscription subscription-concept
                                               {:token "mock-echo-system-token"})
-       
        (is (= 2
              (->> (trigger-process-subscriptions)
                   (map #(nth % 1))
