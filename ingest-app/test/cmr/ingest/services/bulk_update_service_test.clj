@@ -9,7 +9,7 @@
 (def sample-message
   {:name "add opendap links"
    :operation :UPDATE_FIELD
-   :update-field "OPEnDAPLink"
+   :update-field "OPeNDAPLink"
    :updates [["SC:AE_5DSno.002:30500511" "url1234"]
              ["SC:AE_5DSno.002:30500512" "url3456"]
              ["SC:AE_5DSno.002:30500513" "url5678"]]})
@@ -23,7 +23,7 @@
                    clojure.lang.ExceptionInfo
                    #"required key"
                    (schema-validation/validate-json!
-                    granule-bulk-update/bulk-granule-update-schema
+                    granule-bulk-update/granule-bulk-update-schema
                     invalid-json))))
             "Missing :operation" :operation
             "Missing :update-field" :update-field

@@ -29,6 +29,15 @@
    (:bulk-update-params msg)
    (:user-id msg)))
 
+(defmethod handle-provider-event :granules-bulk
+  [context message]
+  (granule-bulk-update-service/handle-granules-bulk-event
+   context
+   (:provider-id message)
+   (:task-id message)
+   (:bulk-update-params message)
+   (:user-id message)))
+
 (defmethod handle-provider-event :granule-bulk-update
   [context message]
   (granule-bulk-update-service/handle-granule-bulk-update-event
