@@ -216,21 +216,21 @@
 
 (defrecord DoiType
   [
-   ;; The DOI organization that is responsible for creating the DOI is described in the Authority
-   ;; element. For ESDIS records the value of https://doi.org/ should be used.
-   Authority
-
    ;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note:
    ;; The values should start with the directory indicator which in ESDIS' case is 10. If the DOI
    ;; was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is
    ;; not stored here; it should be stored as a RelatedURL.
    DOI
 
-   ;; This element stores the fact that a DOI (Digital Object Identifier) is not applicable for this
-   ;; record.
+   ;; The DOI organization that is responsible for creating the DOI is described in the Authority
+   ;; element. For ESDIS records the value of https://doi.org/ should be used.
+   Authority
+
+   ;; This element stores the fact that a DOI (Digital Object Identifier) is not applicable or is
+   ;; unknown for this record.
    MissingReason
 
-   ;; This element describes the reason the DOI is not applicable.
+   ;; This element describes the reason the DOI is not applicable or unknown.
    Explanation
   ])
 (record-pretty-printer/enable-record-pretty-printing DoiType)
@@ -370,6 +370,27 @@
    Checksum
   ])
 (record-pretty-printer/enable-record-pretty-printing GetDataType)
+
+;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The
+;; values should start with the directory indicator which in ESDIS' case is 10. If the DOI was
+;; registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not
+;; stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for
+;; creating the DOI is described in the Authority element. For ESDIS records the value of
+;; https://doi.org/ should be used. NASA metadata providers are strongly encouraged to include DOI
+;; and DOI Authority for their collections using CollectionDOI property.
+(defrecord DoiDoiType
+  [
+   ;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note:
+   ;; The values should start with the directory indicator which in ESDIS' case is 10. If the DOI
+   ;; was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is
+   ;; not stored here; it should be stored as a RelatedURL.
+   DOI
+
+   ;; The DOI organization that is responsible for creating the DOI is described in the Authority
+   ;; element. For ESDIS records the value of https://doi.org/ should be used.
+   Authority
+  ])
+(record-pretty-printer/enable-record-pretty-printing DoiDoiType)
 
 ;; Describes key bibliographic citations pertaining to the data.
 (defrecord PublicationReferenceType

@@ -158,25 +158,36 @@
     (when (seq (util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(u/with-default % sanitize?)))))
 
-(defn- parse-doi
-  "There could be multiple DOIs under Collection, just take the first one for now."
+(defn- parse-collection-doi
+  "Parse the XML collection DOI into the UMM-C counterparts.
+   There could be multiple DOIs under Collection, just take the first one for now."
   [doc]
-  (when-let [doi (first (select doc "Collection/DOI"))]
+  (if-let [doi (first (select doc "Collection/DOI"))]
     (let [doi-value (value-of doi "DOI")
           authority (value-of doi "Authority")
           missing-reason (value-of doi "MissingReason")
           explanation (value-of doi "Explanation")]
       (if (or doi-value authority)
-        (util/remove-nil-keys
-         {:DOI (when doi-value
-                   doi-value)
-          :Authority (when authority
-                       authority)})
-        (util/remove-nil-keys
-         {:MissingReason (when missing-reason
-                           missing-reason)
-          :Explanation (when explanation
-                         explanation)})))))
+        {:DOI (when doi-value
+                doi-value)
+         :Authority (when authority
+                      authority)}
+        {:MissingReason (when missing-reason
+                          missing-reason)
+         :Explanation (when explanation
+                        explanation)}))
+    {:MissingReason "Unknown"
+     :Explanation "It is unknown if this record has a DOI."}))
+
+(defn- parse-associated-dois
+  "Parse the XML associated DOIs into the UMM-C counterparts."
+  [doc]
+  (when-let [assoc-dois (select doc "Collection/AssociatedDOIs/AssociatedDOI")]
+    (into []
+      (for [assoc-doi assoc-dois]
+        {:DOI (value-of assoc-doi "DOI")
+         :Title (value-of assoc-doi "Title")
+         :Authority (value-of assoc-doi "Authority")}))))
 
 (defn add-data-format
   "This function fills in the FileDistributionInformation
@@ -211,7 +222,8 @@
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [context doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
-   :DOI (parse-doi doc)
+   :DOI (parse-collection-doi doc)
+   :AssociatedDOIs (parse-associated-dois doc)
    :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (value-of doc "/Collection/VersionId")
    :VersionDescription (value-of doc "/Collection/VersionDescription")

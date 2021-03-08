@@ -203,6 +203,7 @@
 
   See `fields->fn-mapper`, below."
   {:DOI #(get-in % [:DOI :DOI])
+   :AssociatedDOIs #(mapv :DOI (:AssociatedDOIs %))
    :ProcessingLevel #(get-in % [:ProcessingLevel :Id])
    ;; Simple multi-values data
    :AdditionalAttributes #(mapcat additional-attribute->keywords (:AdditionalAttributes %))

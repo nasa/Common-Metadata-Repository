@@ -268,6 +268,7 @@
   (let [expected-contact-persons (expected-dif-contact-persons umm-coll)]
     (-> umm-coll
         (update :DOI conversion-util/expected-dif-doi)
+        (dissoc :AssociatedDOIs)
         ;; DIF 9 only supports entry-id in metadata associations
         (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
         ;; DIF 9 does not support tiling identification system

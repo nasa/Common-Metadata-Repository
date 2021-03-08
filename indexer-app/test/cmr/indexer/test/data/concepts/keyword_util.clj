@@ -21,6 +21,10 @@
                            :Value "aa-value-1"
                            :DataType "STRING"}]
    :AncillaryKeywords ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC"]
+   :AssociatedDOIs [{:DOI "Associated-DOI-1"
+                     :Title "Assoc Title 1"
+                     :Authority "https://doi.org"}
+                    {:DOI "Associated-DOI-2"}]
    :CollectionCitations [{:Creator "Bowen Island Forest and Water Management Society (BIFWMS)"
                           :OtherCitationDetails (str "U.S. Geological Survey, 1993, Digital Elevation"
                                                      " Models--data users guide 5:[Reston, Virginia],"
@@ -245,6 +249,10 @@
     "Abstract field"
     :Abstract
     "An abstract summary"
+
+    "Associated DOIs"
+    :AssociatedDOIs
+    ["Associated-DOI-1" "Associated-DOI-2"]
 
     "DOI field"
     :DOI

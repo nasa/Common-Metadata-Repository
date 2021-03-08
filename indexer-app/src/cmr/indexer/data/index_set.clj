@@ -518,7 +518,10 @@
 
           ;; Relevancy score from community usage metrics
           :usage-relevancy-score m/int-field-mapping
-          :horizontal-data-resolutions float-prioritized-mapping}
+          :horizontal-data-resolutions float-prioritized-mapping
+
+          ;; Direct Distribution Information
+          :s3-bucket-and-object-prefix-names m/string-field-mapping}
          spatial-coverage-fields))
 
 (defmapping deleted-granule-mapping :deleted-granule

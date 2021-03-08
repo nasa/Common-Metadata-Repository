@@ -155,14 +155,14 @@
       native-id)))
 
 (defn- add-id-and-email-to-metadata-if-missing
-   "If SubscriberId is provided, use it. Else, get it from the token.
-   If subscriber EmailAddress is provided, use it. Else, use the value supplied by EDL for the user."
+   "If SubscriberId is provided, use it. Else, get it from the token."
   [context metadata]
   (let [{subscriber :SubscriberId} metadata
         subscriber (if-not subscriber
                      (api-core/get-user-id-from-token context)
                      subscriber)]
     (assoc metadata :SubscriberId subscriber)))
+
 
 (defn add-id-and-email-if-missing
   "Parses and generates the metadata, such that add-id-and-email-to-metadata-if-missing
@@ -185,9 +185,9 @@
                             content-type
                             headers)
           native-id (get-unique-native-id request-context tmp-subscription)
-          subscriber-id (get-subscriber-id tmp-subscription)
           new-subscription (assoc  tmp-subscription :native-id native-id)
-          newer-subscription (add-id-and-email-if-missing request-context new-subscription)]
+          newer-subscription (add-id-and-email-if-missing request-context new-subscription)
+          subscriber-id (get-subscriber-id newer-subscription)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context newer-subscription headers))))
 
@@ -209,8 +209,8 @@
                             body
                             content-type
                             headers)
-          subscriber-id (get-subscriber-id tmp-subscription)
-          new-subscription (add-id-and-email-if-missing request-context tmp-subscription)]
+          new-subscription (add-id-and-email-if-missing request-context tmp-subscription)
+          subscriber-id (get-subscriber-id new-subscription)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context new-subscription headers))))
 
@@ -236,8 +236,8 @@
                                            :latest true}
                                           :subscription))]
                          (get-in original-subscription [:extra-fields :subscriber-id]))
-        new-subscriber (get-subscriber-id tmp-subscription)
-        new-subscription (add-id-and-email-if-missing request-context tmp-subscription)]
+        new-subscription (add-id-and-email-if-missing request-context tmp-subscription)
+        new-subscriber (get-subscriber-id new-subscription)]
     (check-ingest-permission request-context provider-id new-subscriber old-subscriber)
     (perform-subscription-ingest request-context new-subscription headers)))
 

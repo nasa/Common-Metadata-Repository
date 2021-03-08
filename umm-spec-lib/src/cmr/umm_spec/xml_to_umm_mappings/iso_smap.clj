@@ -111,6 +111,9 @@
 (def spatial-extent-xpath
   (str md-identification-base-xpath "/gmd:extent/gmd:EX_Extent"))
 
+(def associated-doi-xpath
+  (str md-identification-base-xpath "/gmd:aggregationInfo/gmd:MD_AggregateInformation/"))
+
 (defn- parse-science-keywords
   "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
   Category of each theme descriptive keyword to determine if it is a science keyword."
@@ -146,6 +149,7 @@
        :EntryTitle (value-of doc entry-title-xpath)
        :ISOTopicCategories (iso-topic-categories/parse-iso-topic-categories doc base-xpath)
        :DOI (doi/parse-doi doc citation-base-xpath)
+       :AssociatedDOIs (doi/parse-associated-dois doc associated-doi-xpath)
        :Version (value-of data-id-el version-xpath)
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
        :Purpose (u/truncate (value-of short-name-el "gmd:purpose/gco:CharacterString") u/PURPOSE_MAX sanitize?)

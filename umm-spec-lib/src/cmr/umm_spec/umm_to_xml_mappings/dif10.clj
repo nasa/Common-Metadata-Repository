@@ -246,6 +246,15 @@
          (when-let [online-resource (:OnlineResource collection-citation)]
            [:Online_Resource (:Linkage online-resource)])]))))
 
+(defn generate-associated-dois
+  "Returns the DIF 10 XML associated dois from a UMM-C collection record."
+  [c]
+  (for [assoc-doi (get c :AssociatedDOIs)]
+    [:Associated_DOIs
+     [:DOI (:DOI assoc-doi)]
+     [:Title (:Title assoc-doi)]
+     [:Authority (:Authority assoc-doi)]]))
+
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
@@ -258,6 +267,7 @@
     [:Version_Description (:VersionDescription c)]
     [:Entry_Title (or (:EntryTitle c) u/not-provided)]
     (generate-dataset-citation c)
+    (generate-associated-dois c)
     (contact/generate-collection-personnel c)
     (if-let [sks (:ScienceKeywords c)]
       ;; From UMM keywords

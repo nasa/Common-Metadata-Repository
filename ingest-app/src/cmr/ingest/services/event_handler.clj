@@ -2,6 +2,7 @@
  (:require
   [cmr.ingest.config :as config]
   [cmr.ingest.services.bulk-update-service :as bulk-update]
+  [cmr.ingest.services.granule-bulk-update-service :as granule-bulk-update-service]
   [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
 
 (defmulti handle-provider-event
@@ -28,14 +29,18 @@
    (:bulk-update-params msg)
    (:user-id msg)))
 
+(defmethod handle-provider-event :granule-bulk-update
+  [context message]
+  (granule-bulk-update-service/handle-granule-bulk-update-event
+   context
+   (:provider-id message)
+   (:task-id message)
+   (:bulk-update-params message)
+   (:user-id message)))
+
 ;; Default ignores the provider event. There may be provider events we don't care about.
 (defmethod handle-provider-event :default
   [_ _])
-
-(defn- handle-gran-bulk-update-event
-  [context msg]
-  ;; place holder function to be implemented later
-  )
 
 (defn subscribe-to-events
   "Subscribe to event messages on various queues"
@@ -48,4 +53,4 @@
     (dotimes [n (config/bulk-update-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                                 (config/bulk-update-queue-name)
-                                #(handle-gran-bulk-update-event context %)))))
+                                #(handle-provider-event context %)))))

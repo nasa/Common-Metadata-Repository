@@ -187,8 +187,10 @@
          publication-references :PublicationReferences
          collection-citations :CollectionCitations} collection
         parsed-version-id (collection-util/parse-version-id version-id)
+        s3-bucket-and-object-prefix-names (get-in collection [:DirectDistributionInformation :S3BucketAndObjectPrefixNames])
         doi (get-in collection [:DOI :DOI])
-        doi-lowercase (util/safe-lowercase doi)
+        doi-lowercase (into [(util/safe-lowercase doi)]
+                        (mapv #(util/safe-lowercase (:DOI %)) (get collection :AssociatedDOIs)))
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         spatial-keywords (lk/location-keywords->spatial-keywords-for-indexing
                           (:LocationKeywords collection))
@@ -278,11 +280,11 @@
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
         granule-end-date (when-not (and granule-end-date
                                         (t/within? last-3-days granule-end-date))
-                                  ;; If the granule end date is within the last 3 days we indicate that
-                                  ;; the collection has no end date. This allows NRT collections to be
-                                  ;; found even if the collection has been reindexed recently.
-                                  ;; otherwise, use granule-end-date
-                                  granule-end-date)
+                           ;; If the granule end date is within the last 3 days we indicate that
+                           ;; the collection has no end date. This allows NRT collections to be
+                           ;; found even if the collection has been reindexed recently.
+                           ;; otherwise, use granule-end-date
+                           granule-end-date)
         humanized-values (humanizer/collection-humanizers-elastic context collection)
         tags (map tag/tag-association->elastic-doc tag-associations)
         has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))
@@ -290,11 +292,11 @@
                              (get-in collection [:ArchiveAndDistributionInformation
                                                  :FileDistributionInformation]))
         horizontal-data-resolutions (resolution/get-horizontal-data-resolutions
-                                      (get-in collection
-                                              [:SpatialExtent
-                                               :HorizontalSpatialDomain
-                                               :ResolutionAndCoordinateSystem
-                                               :HorizontalDataResolution]))]
+                                     (get-in collection
+                                             [:SpatialExtent
+                                              :HorizontalSpatialDomain
+                                              :ResolutionAndCoordinateSystem
+                                              :HorizontalDataResolution]))]
 
     (merge {:concept-id concept-id
             :doi-stored doi
@@ -426,11 +428,13 @@
                                                          first
                                                          :value-lowercase)
             :associations-gzip-b64
-              (associations->gzip-base64-str
-                variable-associations service-associations tool-associations)
+            (associations->gzip-base64-str
+             variable-associations service-associations tool-associations)
             :usage-relevancy-score 0
             :horizontal-data-resolutions {:value horizontal-data-resolutions
-                                          :priority 0}}
+                                          :priority 0}
+
+            :s3-bucket-and-object-prefix-names s3-bucket-and-object-prefix-names}
 
            (variable-service-tool-associations->elastic-docs
             context variable-associations service-associations tool-associations)

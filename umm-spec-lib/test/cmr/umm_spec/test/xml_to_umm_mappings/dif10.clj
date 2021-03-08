@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.dif10
   (:require [clj-time.core :as t]
             [clojure.test :refer :all]
+            [cmr.common.util :as common-util :refer [are3]]
             [cmr.umm-spec.xml-to-umm-mappings.dif10 :as parse]))
 
 (deftest dif10-metadata-dates-test
@@ -88,3 +89,92 @@
            (parse/parse-dif10-xml "<DIF>
                                    </DIF>"
                                    true)))))
+
+(deftest dif10-doi-translation-test
+  "This tests the DIF 10 DOI translation from dif10 to UMM-C."
+
+  (are3 [expected-doi-result expected-associated-doi-result test-string]
+    (let [result (parse/parse-dif10-xml test-string true)]
+      (is (= expected-doi-result
+             (:DOI result))
+          (= expected-associated-doi-result
+             (:AssociatedDOIs result))))
+
+    "Test the nominal success case."
+    {:DOI "10.5067/IAGYM8Q26QRE"}
+    [{:DOI "10.5678/assoc-doi-1"
+      :Title "Title1"
+      :Authority "doi.org"}
+     {:DOI "10.5678/assoc-doi-2"
+      :Title "Title2"
+      :Authority "doi.org"}]
+    "<DIF>
+        <Dataset_Citation>
+            <Dataset_Creator>JAXA</Dataset_Creator>
+            <!--Dataset_Title was trimmed-->
+            <Dataset_Title>Level 3 Soil moisture (AMSR2) product</Dataset_Title>
+            <Persistent_Identifier>
+              <Type>DOI</Type>
+              <Identifier>10.5067/IAGYM8Q26QRE</Identifier>
+            </Persistent_Identifier>
+        </Dataset_Citation>
+        <AssociatedDOIs>
+          <AssociatedDOI>
+            <DOI>10.5678/assoc-doi-1</DOI>
+            <Title>Title1</Title>
+            <Authority>doi.org</Authority>
+          </AssociatedDOI>
+          <AssociatedDOI>
+            <DOI>10.5678/assoc-doi-2</DOI>
+            <Title>Title2</Title>
+            <Authority>doi.org</Authority>
+          </AssociatedDOI>
+        </AssociatedDOIs>
+     </DIF>"
+
+    "Test missing Collection DOI."
+    {:MissingReason "Unknown",
+     :Explanation "It is unknown if this record has a DOI."}
+    [{:DOI "10.5678/assoc-doi-1", :Title "Title1", :Authority "doi.org"}
+     {:DOI "10.5678/assoc-doi-2", :Title "Title2", :Authority "doi.org"}]
+    "<DIF>
+        <Dataset_Citation>
+            <Dataset_Creator>JAXA</Dataset_Creator>
+            <!--Dataset_Title was trimmed-->
+            <Dataset_Title>Level 3 Soil moisture (AMSR2) product</Dataset_Title>
+        </Dataset_Citation>
+        <AssociatedDOIs>
+          <AssociatedDOI>
+            <DOI>10.5678/assoc-doi-1</DOI>
+            <Title>Title1</Title>
+            <Authority>doi.org</Authority>
+          </AssociatedDOI>
+          <AssociatedDOI>
+            <DOI>10.5678/assoc-doi-2</DOI>
+            <Title>Title2</Title>
+            <Authority>doi.org</Authority>
+          </AssociatedDOI>
+        </AssociatedDOIs>
+     </DIF>"
+
+    "Test missing AssociatedDOIs."
+    {:DOI "10.5067/IAGYM8Q26QRE"}
+    nil
+    "<DIF>
+        <Dataset_Citation>
+            <Dataset_Creator>JAXA</Dataset_Creator>
+            <!--Dataset_Title was trimmed-->
+            <Dataset_Title>Level 3 Soil moisture (AMSR2) product</Dataset_Title>
+            <Persistent_Identifier>
+              <Type>DOI</Type>
+              <Identifier>10.5067/IAGYM8Q26QRE</Identifier>
+            </Persistent_Identifier>
+        </Dataset_Citation>
+     </DIF>"
+
+    "Test missing both Collection DOI and AssociatedDOIs."
+    {:MissingReason "Unknown",
+     :Explanation "It is unknown if this record has a DOI."}
+    nil
+    "<DIF>
+     </DIF>"))

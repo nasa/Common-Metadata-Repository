@@ -4,7 +4,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
    [cmr.common.validations.json-schema :as schema-validation]
-   [cmr.ingest.services.bulk-update-service :as bulk-update]))
+   [cmr.ingest.services.granule-bulk-update-service :as granule-bulk-update]))
 
 (def sample-message
   {:name "add opendap links"
@@ -23,7 +23,7 @@
                    clojure.lang.ExceptionInfo
                    #"required key"
                    (schema-validation/validate-json!
-                    bulk-update/bulk-granule-update-schema
+                    granule-bulk-update/bulk-granule-update-schema
                     invalid-json))))
             "Missing :operation" :operation
             "Missing :update-field" :update-field

@@ -106,9 +106,12 @@
   (let [explanation (when (:Explanation doi)
                       (string/trim (:Explanation doi)))
         updated-doi (util/remove-nil-keys (assoc doi :Explanation explanation))]
-    (if (seq updated-doi)
-      (cmn/map->DoiType updated-doi)
-      (cmn/map->DoiType {:MissingReason "Not Applicable"}))))
+    (cmn/map->DoiType
+      (if (or (:DOI updated-doi)
+              (:MissingReason updated-doi))
+        updated-doi
+        {:MissingReason "Unknown"
+         :Explanation "It is unknown if this record has a DOI."}))))
 
 (defn- expected-dist-media
   "Creates expected Media for FileDistributionInformation."

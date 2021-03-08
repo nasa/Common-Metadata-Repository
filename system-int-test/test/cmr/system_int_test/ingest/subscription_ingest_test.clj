@@ -61,7 +61,15 @@
             ingested-concept (mdb/get-concept (:concept-id response))
             parsed-metadata (json/parse-string (:metadata ingested-concept) true)]
         (is (= 201 (:status response)))
-        (is (= "user1" (:SubscriberId parsed-metadata)))))))
+        (is (= "user1" (:SubscriberId parsed-metadata)))))
+    (testing "ingest on PROV1, with no subscriber-id supplied and no token used to ingest"
+      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
+                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                  :SubscriberId nil
+                                                                  :EmailAddress "foo@example.com"})
+            response (ingest/ingest-concept concept)]
+        (is (= 401 (:status response)))
+        (is (= "You do not have permission to perform that action." (first (:errors response))))))))
 
 (deftest subscription-ingest-on-prov3-test
   (let [coll1 (data-core/ingest-umm-spec-collection
@@ -161,13 +169,32 @@
 
 ;; Verify that the accept header works with returned errors
 (deftest subscription-ingest-with-errors-accept-header-test
-  (testing "json response"
+  (testing "json response, with no token"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
           response (ingest/ingest-concept
                     concept-no-metadata
                     {:accept-format :json
                      :raw? true})
+          {:keys [errors]} (ingest/parse-ingest-body :json response)]
+      (is (re-find #"You do not have permission to perform that action." (first errors)))))
+  (testing "xml response, with no token"
+    (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
+                                     :metadata "")
+          response (ingest/ingest-concept
+                    concept-no-metadata
+                    {:accept-format :xml
+                     :raw? true})
+          {:keys [errors]} (ingest/parse-ingest-body :xml response)]
+      (is (re-find #"You do not have permission to perform that action." (first errors)))))
+  (testing "json response"
+    (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
+                                     :metadata "")
+          response (ingest/ingest-concept
+                    concept-no-metadata
+                    {:accept-format :json
+                     :raw? true
+                     :token "mock-echo-system-token"})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
       (is (re-find #"required key \[Name\] not found" (first errors)))))
   (testing "xml response"
@@ -176,7 +203,8 @@
           response (ingest/ingest-concept
                     concept-no-metadata
                     {:accept-format :xml
-                     :raw? true})
+                     :raw? true
+                     :token "mock-echo-system-token"})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
       (is (re-find #"required key \[Name\] not found" (first errors))))))
 

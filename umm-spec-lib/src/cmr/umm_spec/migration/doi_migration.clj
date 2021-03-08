@@ -42,3 +42,17 @@
           (get-in c [:DOI :MissingReason]))
     (dissoc c :DOI)
     c))
+
+(defn migrate-doi-up-to-1-16-1
+  "If earlier records do not have a DOI add one with a missing reason and an explanation."
+  [doi]
+  (if doi
+    doi
+    {:MissingReason "Unknown"
+     :Explanation "Native record does not contain a DOI."}))
+
+(defn migrate-doi-down-to-1-16
+  "Removes DOI if a MissingReason of Unknown is found"
+  [doi]
+  (when-not (= "Unknown" (get doi :MissingReason))
+     doi))

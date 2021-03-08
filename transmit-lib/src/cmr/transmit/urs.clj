@@ -1,5 +1,6 @@
 (ns cmr.transmit.urs
   (:require
+   [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
@@ -69,12 +70,15 @@
   (let [{:keys [status body]} (request-with-auth context {:url-fn #(user-info-url % user)
                                                           :method :get
                                                           :raw? true})]
-   (when-not (= 200 status)
-     (errors/internal-error!
-      (format "Cannot get info for username [%s] in URS. Failed with status code [%d].
-               EDL error message: [%s]"
-              user status (pr-str body))))
-   body))
+    (when-not (= 200 status)
+      (info (format "Cannot get info for username [%s] in URS. Failed with status code [%d].
+        EDL error message: [%s]" user status (pr-str body)))
+      (errors/throw-service-error
+        :unauthorized
+        (format "Cannot get info for username [%s] in URS. Failed with status code [%d]."
+                user status)))
+
+    body))
 
 (defn get-user-email
   "Returns URS email associated with a username"

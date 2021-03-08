@@ -14,6 +14,7 @@
         schema-keys [:Abstract
                      :AncillaryKeywords
                      :AdditionalAttributes
+                     :AssociatedDOIs
                      :CollectionCitations
                      :CollectionDataType
                      :ContactGroups

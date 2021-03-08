@@ -228,6 +228,19 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           <xs:documentation>This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as an OnlineResource. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections. For those that want to specify that a DOI is not applicable for their record use the second option.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="AssociatedDOIs" type="ListOfAssociatedDOIs" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>This element stores DOIs that are associated with the collection
+				    such as from campaigns and other related sources. Note: The values
+				    should start with the directory indicator which in ESDIS' case is 10.
+				    If the DOI was registered through ESDIS, the beginning of the string
+				    should be 10.5067. The DOI URL is not stored here; it should be
+				    stored as a RelatedURL. The DOI organization that is responsible
+				    for creating the DOI is described in the Authority element. For
+				    ESDIS records the value of https://doi.org/ should be used.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" name="CollectionDataType">
         <xs:annotation>
           <xs:documentation> An element to identify
@@ -598,6 +611,11 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfAssociatedDOIs">
+    <xs:sequence>
+      <xs:element name="AssociatedDOI" type="AssociatedDoiType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="ListOfAlgorithmPackages">

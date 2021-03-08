@@ -57,9 +57,9 @@
 (defn- expected-doi-in-publication-reference
   "Returns the expected DOI field in a publication reference."
   [doi]
-  (let [updated-doi (util/remove-nil-keys (dissoc doi :Authority :Explanation :MissingReason))]
+  (let [updated-doi (util/remove-nil-keys (dissoc doi :Authority))]
     (when (seq updated-doi)
-      (cmn/map->DoiType updated-doi))))
+      (cmn/map->DoiDoiType updated-doi))))
 
 (defn- iso-19115-2-publication-reference
   "Returns the expected value of a parsed ISO-19115-2 publication references"
