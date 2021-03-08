@@ -9,7 +9,6 @@
   (json/generate-string
    {"Name" "someSubscription"
     "SubscriberId" "someSubscriberId"
-    "EmailAddress" "someaddress@gmail.com"
     "CollectionConceptId" "C1234-PROV1"
     "Query" "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78"}))
 
