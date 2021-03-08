@@ -99,7 +99,7 @@
 (defn- add-updated-since
   "Pull out the start and end times from a time-constraint value and associate them to a map"
   [raw time-constraint]
-  (let [parts (clojure.string/split time-constraint, #",")
+  (let [parts (string/split time-constraint, #",")
         start-time (first parts)
         end-time (last parts)]
     (assoc raw :start-time start-time :end-time end-time)))
