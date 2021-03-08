@@ -59,16 +59,16 @@
    [:transaction? false]))
 
 (defprotocol GranBulkUpdateStore
- "Defines a protocol for getting and storing the granule bulk update status and task-id
- information."
- (get-provider-bulk-granule-update-status [db provider-id])
- (get-bulk-granule-update-task-status [db task-id provider-id])
- (get-bulk-update-task-granule-status [db task-id])
- (get-bulk-update-granule-status [db task-id concept-id])
- (create-and-save-bulk-granule-update-status [db provider-id user-id request-json-body instructions])
- (update-bulk-granule-update-task-status [db task-id status status-message])
- (update-bulk-update-granule-status [db task-id granule-ur status status-message])
- (reset-bulk-granule-update [db]))
+  "Defines a protocol for getting and storing the granule bulk update status and task-id
+  information."
+  (get-provider-bulk-granule-update-status [db provider-id])
+  (get-bulk-granule-update-task-status [db task-id provider-id])
+  (get-bulk-update-task-granule-status [db task-id])
+  (get-bulk-update-granule-status [db task-id concept-id])
+  (create-and-save-bulk-granule-update-status [db provider-id user-id request-json-body instructions])
+  (update-bulk-granule-update-task-status [db task-id status status-message])
+  (update-bulk-update-granule-status [db task-id granule-ur status status-message])
+  (reset-bulk-granule-update [db]))
 
 (def bulk_update_task_status
   "bulk_update_gran_status")
@@ -195,48 +195,50 @@
 
 (defn context->db
   "Return the path to the database from a given context"
- [context]
- (get-in context [:system :db]))
+  [context]
+  (get-in context [:system :db]))
 
 (defn-timed get-bulk-update-statuses-for-provider
- "Returns bulk update statuses with task ids by provider"
- [context provider-id]
- (get-provider-bulk-granule-update-status (context->db context) provider-id))
+  "Returns bulk update statuses with task ids by provider"
+  [context provider-id]
+  (get-provider-bulk-granule-update-status (context->db context) provider-id))
 
 (defn-timed get-bulk-update-task-status-for-provider
- [context task-id provider-id]
- (get-bulk-granule-update-task-status (context->db context) task-id provider-id))
+  [context task-id provider-id]
+  (get-bulk-granule-update-task-status (context->db context) task-id provider-id))
 
 (defn-timed get-bulk-update-granule-statuses-for-task
- [context task-id]
- (get-bulk-update-task-granule-status (context->db context) task-id))
+  [context task-id]
+  (get-bulk-update-task-granule-status (context->db context) task-id))
 
 (defn-timed create-granule-bulk-update-task
- "Create all rows for granule bulk update status tables - task status and granule status.
- Returns task id."
- [context provider-id user-id request-json-body instructions]
- (create-and-save-bulk-granule-update-status
-  (context->db context) provider-id user-id request-json-body instructions))
+  "Create all rows for granule bulk update status tables - task status and granule status.
+  Returns task id."
+  [context provider-id user-id request-json-body instructions]
+  (create-and-save-bulk-granule-update-status
+   (context->db context) provider-id user-id request-json-body instructions))
 
 (defn-timed update-bulk-update-task-granule-status
- "For the task and concept id, update the granule to the given status with the
- given status message"
- [context task-id granule-ur status status-message]
- (update-bulk-update-granule-status
-  (context->db context) task-id granule-ur status status-message))
+  "For the task and concept id, update the granule to the given status with the
+   given status message"
+  [context task-id granule-ur status status-message]
+  (when-not (= "UPDATED" status)
+    (info (format "Granule update %s with message: %s" status status-message)))
+  (update-bulk-update-granule-status
+   (context->db context) task-id granule-ur status status-message))
 
 (defn reset-db
- "Clear bulk update db"
- [context]
- (reset-bulk-granule-update (context->db context)))
+  "Clear bulk update db"
+  [context]
+  (reset-bulk-granule-update (context->db context)))
 
 (defn cleanup-old-bulk-update-status
- "Delete rows in the bulk_update_gran_status table that are older than the
- configured age"
- [context]
- (let [db (context->db context)
-       statement (str "delete from CMR_INGEST.bulk_update_gran_status "
-                      "where created_at < (current_timestamp - INTERVAL '"
-                      (config/bulk-update-cleanup-minimum-age)
-                      "' DAY)")]
-   (jdbc/db-do-prepared db statement)))
+  "Delete rows in the bulk_update_gran_status table that are older than the
+  configured age"
+  [context]
+  (let [db (context->db context)
+        statement (str "delete from CMR_INGEST.bulk_update_gran_status "
+                       "where created_at < (current_timestamp - INTERVAL '"
+                       (config/bulk-update-cleanup-minimum-age)
+                       "' DAY)")]
+    (jdbc/db-do-prepared db statement)))

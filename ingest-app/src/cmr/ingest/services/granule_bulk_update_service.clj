@@ -38,11 +38,11 @@
     (map (partial update->instruction event-type) updates)))
 
 (defn validate-and-save-bulk-granule-update
- "Validate the granule bulk update request, save rows to the db for task
- and granule statuses, and queue bulk granule update. Return task id, which comes
- from the db save."
- [context provider-id json-body user-id]
- (validate-granule-bulk-update context json-body)
+  "Validate the granule bulk update request, save rows to the db for task
+  and granule statuses, and queue bulk granule update. Return task id, which comes
+  from the db save."
+  [context provider-id json-body user-id]
+  (validate-granule-bulk-update context json-body)
   (let [instructions (-> json-body
                          (json/parse-string true)
                          request->instructions)
@@ -54,6 +54,7 @@
                    json-body
                    instructions)
                   (catch Exception e
+                    (error "validate-and-save-bulk-granule-update caught exception:" e)
                     (let [message (.getMessage e)
                           user-facing-message (if (string/includes? message "GBUT_PN_I")
                                                 "Granule bulk update task name needs to be unique within the provider."
@@ -121,8 +122,9 @@
        context task-id granule-ur bulk-update-service/updated-status ""))
     (data-granule-bulk-update/update-bulk-update-task-granule-status
      context task-id granule-ur bulk-update-service/skipped-status
-     (format "Granule with granule-ur [%s] is not updated because the metadata format [%s] is not supported."
-             granule-ur (:format concept)))))
+     (format (str "Granule with granule-ur [%s] in task-id [%s] is not updated "
+                  "because the metadata format [%s] is not supported.")
+             granule-ur task-id (:format concept)))))
 
 (defn handle-granule-bulk-update-event
   [context provider-id task-id bulk-update-params user-id]
@@ -133,15 +135,16 @@
         (if (:deleted concept)
           (data-granule-bulk-update/update-bulk-update-task-granule-status
            context task-id granule-ur bulk-update-service/failed-status
-           (format "Granule with granule-ur [%s] on provider [%s] is deleted. Can not be updated."
-                   granule-ur provider-id))
+           (format (str "Granule with granule-ur [%s] on provider [%s] in task-id [%s] "
+                        "is deleted. Can not be updated.")
+                   granule-ur provider-id task-id))
           ;; granule found and not deleted, update the granule
           (update-granule-concept-and-status
            context task-id concept granule-ur bulk-update-params user-id))
         ;; granule not found
         (data-granule-bulk-update/update-bulk-update-task-granule-status
          context task-id granule-ur bulk-update-service/failed-status
-         (format "Granule UR [%s] does not exist." granule-ur)))
+         (format "Granule UR [%s] in task-id [%s] does not exist." granule-ur task-id)))
       (catch clojure.lang.ExceptionInfo ex-info
         (error "handle-granule-bulk-update-event caught ExceptionInfo:" ex-info)
         (if (= :conflict (:type (.getData ex-info)))

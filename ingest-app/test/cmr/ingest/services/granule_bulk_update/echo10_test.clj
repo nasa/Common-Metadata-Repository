@@ -103,7 +103,7 @@
   </Granule>")
 
 (def ^:private add-with-no-match-gran-xml-result
-  "ECHO10 granule for testing adding OPeNDAP url to OnlineResources that has no OPeNDAP url.
+  "Result ECHO10 granule for testing adding OPeNDAP url to OnlineResources that has no OPeNDAP url.
    Do not format the following as whitespace matters in the string comparison in the test."
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
@@ -131,7 +131,7 @@
 </Granule>\n")
 
 (def ^:private update-opendap-url
-  "ECHO10 granule for testing updating OPeNDAP url at the first element of OnlineResources."
+  "ECHO10 granule for testing updating OPeNDAP url existing in OnlineResources."
   "<Granule>
     <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
     <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
@@ -157,7 +157,7 @@
   </Granule>")
 
 (def ^:private update-opendap-url-result
-  "ECHO10 granule for testing adding OPeNDAP url to OnlineResources that has no OPeNDAP url.
+  "Result ECHO10 granule for testing updating OPeNDAP url existing in OnlineResources.
    Do not format the following as whitespace matters in the string comparison in the test."
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
@@ -175,6 +175,61 @@
       <OnlineResource>
          <URL>http://example.com/foo</URL>
          <Type>GET DATA : OPENDAP DATA</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>http://example.com/Browse</URL>
+         <Type>Browse</Type>
+      </OnlineResource>
+   </OnlineResources>
+   <Orderable>false</Orderable>
+</Granule>\n")
+
+(def ^:private update-opendap-url-preserve-type
+  "ECHO10 granule for testing updating OPeNDAP url in OnlineResources, and it preserves the
+  existing resource type that is used."
+  "<Granule>
+    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+    <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+    <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+    <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+    </Collection>
+    <OnlineResources>
+       <OnlineResource>
+          <URL>http://example.com/doc</URL>
+          <Type>Documentation</Type>
+       </OnlineResource>
+       <OnlineResource>
+          <URL>http://example.com/to_be_updated</URL>
+          <Type>GET DATA : OPENDAP DATA (DODS)</Type>
+       </OnlineResource>
+       <OnlineResource>
+          <URL>http://example.com/Browse</URL>
+          <Type>Browse</Type>
+       </OnlineResource>
+    </OnlineResources>
+    <Orderable>false</Orderable>
+  </Granule>")
+
+(def ^:private update-opendap-url-preserve-type-result
+  "Result ECHO10 granule for testing updating OPeNDAP url in OnlineResources and preserve the type.
+   Do not format the following as whitespace matters in the string comparison in the test."
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<Granule>
+   <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+   <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+   <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+   <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+   </Collection>
+   <OnlineResources>
+      <OnlineResource>
+         <URL>http://example.com/doc</URL>
+         <Type>Documentation</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>http://example.com/foo</URL>
+         <Type>GET DATA : OPENDAP DATA (DODS)</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/Browse</URL>
@@ -208,4 +263,8 @@
 
       "update OnlineResources when OPeNDAP url is present"
       update-opendap-url
-      update-opendap-url-result)))
+      update-opendap-url-result
+
+      "update OnlineResources when OPeNDAP url is present and preserves the existing type"
+      update-opendap-url-preserve-type
+      update-opendap-url-preserve-type-result)))

@@ -1,21 +1,28 @@
 (ns cmr.ingest.services.granule-bulk-update.echo10
   "Contains functions to update ECHO10 granule xml for bulk update."
   (:require
-   [clojure.zip :as zip]
-   [clojure.data.zip.xml :as zx]
    [clojure.data.xml :as xml]
+   [clojure.data.zip.xml :as zx]
+   [clojure.string :as string]
+   [clojure.zip :as zip]
    [cmr.common.xml :as cx]))
 
-(def OPENDAP_RESOURCE_TYPE
+(def ^:private OPENDAP_RESOURCE_TYPE
   "OnlineResource Type of OPenDAP url in ECHO10 granule schema"
   "GET DATA : OPENDAP DATA")
 
-(def tags-after
+(def ^:private tags-after
   "Defines the element tags that come after OnlinResources in ECHO10 Granule xml schema"
   #{:Orderable :DataFormat :Visible :CloudCover :MetadataStandardName :MetadataStandardVersion
     :AssociatedBrowseImages :AssociatedBrowseImageUrls})
 
-(defn xml-elem->online-resource-url
+(defn- is-opendap?
+  "Returns true if the given online resource type is of OPeNDAP.
+   An online resource is of OPeNDAP type if the resource type contains OPENDAP (case sensitive)"
+  [resource-type]
+  (string/includes? resource-type "OPENDAP"))
+
+(defn- xml-elem->online-resource-url
   [elem]
   (let [url (cx/string-at-path elem [:URL])
         description (cx/string-at-path elem [:Description])
@@ -39,7 +46,7 @@
 (defn- validate-online-resources
   "Returns error if there are more than one online resources with type OPENDAP_RESOURCE_TYPE"
   [resources]
-  (let [opendap-resources (filter #(= OPENDAP_RESOURCE_TYPE (:type %)) resources)
+  (let [opendap-resources (filter #(is-opendap? (:type %)) resources)
         opendap-count (count opendap-resources)]
     (when (> opendap-count 1)
       {:errors [(format "There can be no more than one OPeNDAP resource URL in the metadata, but there are %d."
@@ -49,7 +56,7 @@
 (defn- update-opendap-resource
   "Returns the online resource with URL set to the given value if its type is OPENDAP_RESOURCE_TYPE"
   [online-resource url]
-  (if (= OPENDAP_RESOURCE_TYPE (:type online-resource))
+  (if (is-opendap? (:type online-resource))
     (assoc online-resource :url url)
     online-resource))
 
@@ -58,7 +65,7 @@
    with the given value or add an opendap resource if there is none. "
   [online-resources url]
   (let [updated (map #(update-opendap-resource % url) online-resources)]
-    (if (some #(= OPENDAP_RESOURCE_TYPE (:type %)) updated)
+    (if (some #(is-opendap? (:type %)) updated)
       updated
       (conj updated {:url url :type OPENDAP_RESOURCE_TYPE}))))
 
