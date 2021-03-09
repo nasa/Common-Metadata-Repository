@@ -2,7 +2,6 @@
   "Contains functions to update ECHO10 granule xml for OPeNDAP url bulk update."
   (:require
    [clojure.data.xml :as xml]
-   [clojure.data.zip.xml :as zx]
    [clojure.string :as string]
    [clojure.zip :as zip]
    [cmr.common.xml :as cx]))
