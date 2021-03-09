@@ -177,7 +177,8 @@
                     {:accept-format :json
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
-      (is (re-find #"You do not have permission to perform that action." (first errors)))))
+      (is (= 400 (:status response)))
+      (is (re-find #"required key \[\w+\] not found" (first errors)))))
   (testing "xml response, with no token"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -186,7 +187,8 @@
                     {:accept-format :xml
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-      (is (re-find #"You do not have permission to perform that action." (first errors)))))
+      (is (= 400 (:status response)))
+      (is (re-find #"required key \[\w+\] not found" (first errors)))))
   (testing "json response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -196,6 +198,7 @@
                      :raw? true
                      :token "mock-echo-system-token"})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
+      (is (= 400 (:status response)))
       (is (re-find #"required key \[Name\] not found" (first errors)))))
   (testing "xml response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
@@ -206,6 +209,7 @@
                      :raw? true
                      :token "mock-echo-system-token"})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
+      (is (= 400 (:status response)))
       (is (re-find #"required key \[Name\] not found" (first errors))))))
 
 ;; Verify that user-id is saved from User-Id or token header
