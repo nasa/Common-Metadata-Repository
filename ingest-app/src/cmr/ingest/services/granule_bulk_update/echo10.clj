@@ -12,7 +12,7 @@
   "GET DATA : OPENDAP DATA")
 
 (def ^:private tags-after
-  "Defines the element tags that come after OnlinResources in ECHO10 Granule xml schema"
+  "Defines the element tags that come after OnlineResources in ECHO10 Granule xml schema"
   #{:Orderable :DataFormat :Visible :CloudCover :MetadataStandardName :MetadataStandardVersion
     :AssociatedBrowseImages :AssociatedBrowseImageUrls})
 
@@ -29,17 +29,17 @@
         resource-type (cx/string-at-path elem [:Type])
         mime-type (cx/string-at-path elem [:MimeType])]
     {:url url
-      :description description
-      :type resource-type
-      :mime-type mime-type}))
+     :description description
+     :type resource-type
+     :mime-type mime-type}))
 
 (defn- xml-elem->online-resources
   "Returns online-resource-urls elements from a parsed XML structure"
   [xml-struct]
   (let [urls (map xml-elem->online-resource-url
                   (cx/elements-at-path
-                    xml-struct
-                    [:OnlineResources :OnlineResource]))]
+                   xml-struct
+                   [:OnlineResources :OnlineResource]))]
     (when (seq urls)
       urls)))
 
@@ -50,7 +50,7 @@
         opendap-count (count opendap-resources)]
     (when (> opendap-count 1)
       {:errors [(format "There can be no more than one OPeNDAP resource URL in the metadata, but there are %d."
-                      opendap-count)]})))
+                        opendap-count)]})))
 
 
 (defn- update-opendap-resource
@@ -79,17 +79,17 @@
      (for [r resources]
        (let [{:keys [url description type mime-type]} r]
          (xml/element :OnlineResource {}
-                    (xml/element :URL {} url)
-                    (when description (xml/element :Description {} description))
-                    (xml/element :Type {} type)
-                    (when mime-type (xml/element :MimeType {} mime-type))))))))
+                      (xml/element :URL {} url)
+                      (when description (xml/element :Description {} description))
+                      (xml/element :Type {} type)
+                      (when mime-type (xml/element :MimeType {} mime-type))))))))
 
 (defn- url->online-resource-elem
   "Returns the OnlineResource xml element for the given url"
   [url]
   (xml/element :OnlineResource {}
-              (xml/element :URL {} url)
-              (xml/element :Type {} OPENDAP_RESOURCE_TYPE)))
+               (xml/element :URL {} url)
+               (xml/element :Type {} OPENDAP_RESOURCE_TYPE)))
 
 (defn- add-online-resources
   "Takes in a zipper location, call the given insert function and url value to add OnlineResources"

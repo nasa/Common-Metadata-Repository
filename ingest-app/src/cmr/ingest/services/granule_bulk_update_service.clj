@@ -69,7 +69,7 @@
     task-id))
 
 (defn handle-granules-bulk-event
-  "For each granule-ur, queueu granule bulk update messages"
+  "For each granule-ur, queue a granule bulk update message"
   [context provider-id task-id bulk-update-params user-id]
   (doseq [instruction bulk-update-params]
     (ingest-events/publish-gran-bulk-update-event
