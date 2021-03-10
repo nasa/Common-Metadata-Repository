@@ -185,7 +185,7 @@
 
 (defn- science-keywords->elastic-docs
   "Convert hierarchical science-keywords to colon-separated elastic docs for indexing"
-  [science-keywords public-collection? permitted-group-ids]
+  [science-keywords public-collection? permitted-group-ids modified-date]
   (let [keyword-hierarchy [:topic :term :variable-level-1
                            :variable-level-2 :variable-level-3 :detailed-variable]
         sk-strings (->> keyword-hierarchy
@@ -202,7 +202,8 @@
      :fields keyword-string
      :_index "1_autocomplete"
      :contains-public-collections public-collection?
-     :permitted-group-ids permitted-group-ids}))
+     :permitted-group-ids permitted-group-ids
+     :modified modified-date}))
 
 (defn- suggestion-doc
   "Creates elasticsearch docs from a given humanized map"
@@ -217,9 +218,14 @@
         permitted-group-ids (->> permissions
                                  (remove #(= "guest" %))
                                  (s/join ",")
-                                 not-empty)]
+                                 not-empty)
+        modified-date (str (t/now))]
     (if (seq (re-find sk-matcher))
-     (science-keywords->elastic-docs value-map public-collection? permitted-group-ids)
+     (science-keywords->elastic-docs
+      value-map
+      public-collection?
+      permitted-group-ids
+      modified-date)
      (map (fn [value]
             (let [v (val value)
                   type (-> key-name
@@ -234,7 +240,8 @@
               :fields v
               :_index "1_autocomplete"
               :contains-public-collections public-collection?
-              :permitted-group-ids permitted-group-ids}))
+              :permitted-group-ids permitted-group-ids
+              :modified modified-date}))
          values))))
 
 (defn- get-suggestion-docs
@@ -319,6 +326,20 @@
                                        flatten)]
     (es/bulk-index-autocomplete-suggestions context latest-suggestion-batches)))
 
+(defn- prune-stale-autocomplete-suggestions
+  "Delete any autocomplete suggestions that were modified longer than a day ago"
+  [context]
+  (info "Pruning autocomplete suggestions")
+  (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
+        index (vals (:suggestion index-names))
+        concept-mapping-types (idx-set/get-concept-mapping-types context)
+        mapping-type (concept-mapping-types :collection)]
+    (es/delete-by-query
+     context
+     index
+     mapping-type
+     {:range {(query-field->elastic-field :modified :suggestion) {:lt "now-24h/h"}}})))
+
 (defn reindex-autocomplete-suggestions
   "Reindexes all autocomplete suggestions in the providers given."
   [context]
@@ -328,7 +349,12 @@
         (reindex-autocomplete-suggestions-for-provider context provider-id)
         (catch Exception e (error (format "An error occurred while reindexing autocomplete suggestions in provider [%s] : %s"
                                           provider-id
-                                          (.getMessage e))))))))
+                                          (.getMessage e))))))
+    (try
+      (prune-stale-autocomplete-suggestions context)
+      (catch Exception e
+        (error (format "An error occurred while cleaning up autocomplete suggesions %s"
+                       (.getMessage e)))))))
 
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.

@@ -704,7 +704,8 @@
    :fields (m/not-indexed m/string-field-mapping)
    :value m/search-as-you-type-field-mapping
    :contains-public-collections (m/doc-values m/bool-field-mapping)
-   :permitted-group-ids (m/doc-values m/string-field-mapping)})
+   :permitted-group-ids (m/doc-values m/string-field-mapping)
+   :modified (m/doc-values m/date-field-mapping)})
 
 (defmapping variable-mapping :variable
   "Defines the elasticsearch mapping for storing variables. These are the
