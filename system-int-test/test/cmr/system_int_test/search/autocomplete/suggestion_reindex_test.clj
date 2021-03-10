@@ -255,12 +255,13 @@
                     {:ShortName "Yesterday's news"
                      :EntryTitle "Also an Oldie"
                      :Platforms (:Platforms (fu/platforms "old AND stale" 2 1 1))}))
-           _(index/wait-until-indexed)
+           _ (index/wait-until-indexed)
            _ (dev-sys-util/clear-current-time!)
+           
            results (get-in (search/get-autocomplete-json (str "q=" query)) [:feed :entry])]
        (compare-autocomplete-results results expected))
      "None found"
      "stale" []
-     
+
      "Still none found"
      "old" [])))
