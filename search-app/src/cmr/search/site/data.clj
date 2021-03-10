@@ -197,7 +197,7 @@
         base-url (:base-url base-page)
         _ (println "base-url is: " base-url)
         stac-base-url (-> base-url
-                          (string/replace #"search/?" "")
+                          (string/replace #"gov.*" "gov")
                           (string/replace #"3003" "3000"))
         _ (println "stac-base-url is: " stac-base-url)]
     (assoc base-page :app-title "CMR Search"
