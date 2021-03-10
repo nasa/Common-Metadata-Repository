@@ -341,9 +341,8 @@
    :AccessConstraints {:Description "Restriction Comment: Access constraints"
                        :Value "0"}
    :UseConstraints (umm-coll-models/map->UseConstraintsType
-                     {:Description (umm-coll-models/map->UseConstraintsDescriptionType
-                                     {:Description "example-collection-record Description"})
-                      :LicenseUrl (cmn/map->OnlineResourceType
+                     {:Description "example-collection-record Description"
+                      :LicenseURL (cmn/map->OnlineResourceType
                                     {:Linkage "http://example-collection-record.com"})})
 
    :ArchiveAndDistributionInformation {:FileArchiveInformation

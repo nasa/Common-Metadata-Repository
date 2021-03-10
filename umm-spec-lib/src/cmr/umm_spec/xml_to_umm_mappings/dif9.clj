@@ -179,8 +179,7 @@
                                               su/USECONSTRAINTS_MAX
                                               sanitize?)]
                        (umm-coll-models/map->UseConstraintsType
-                         {:Description (umm-coll-models/map->UseConstraintsDescriptionType
-                                         {:Description description})}))
+                         {:Description description}))
      :Platforms (parse-platforms doc sanitize?)
      :TemporalExtents (parse-temporal-extents doc sanitize?)
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)

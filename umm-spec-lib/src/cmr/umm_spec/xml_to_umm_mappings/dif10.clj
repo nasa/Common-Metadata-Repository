@@ -282,8 +282,7 @@
                                             su/USECONSTRAINTS_MAX
                                             sanitize?)]
                      (umm-coll-models/map->UseConstraintsType
-                       {:Description (umm-coll-models/map->UseConstraintsDescriptionType
-                                       {:Description description})}))
+                       {:Description description}))
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
                  :LongName (value-of platform "Long_Name")

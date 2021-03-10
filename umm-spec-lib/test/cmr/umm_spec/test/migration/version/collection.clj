@@ -2621,3 +2621,61 @@
       nil
       {:DOI {:DOI "10.5668/IsInUse"
              :Authority "doi.org"}}))
+
+(deftest migrate-1-16-1-to-1-16-2
+  "Test the migration of collections from 1.16.1 to 1.16.2."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.1" "1.16.2" sample-collection)]
+      (is (= expected (:UseConstraints result))))
+
+    "Migrating license URL and description"
+    {:Description "desc"
+     :LicenseURL {:Linkage "https:some.com"}
+     :LicenseText "Text"}
+    {:UseConstraints {:Description {:Description "desc"}
+                      :LicenseUrl {:Linkage "https:some.com"}
+                      :LicenseText "Text"}}
+
+    "Testing migrating when LicenseURL doesn't exist"
+    {:Description "desc"
+     :LicenseText "Text"}
+    {:UseConstraints {:Description {:Description "desc"}
+                      :LicenseText "Text"}}
+
+    "Testing migrating when Description doesn't exist"
+    {:LicenseText "Text"}
+    {:UseConstraints {:LicenseText "Text"}}
+
+    "Testing migrating when UseConstraints doesn't exist"
+    nil
+    {:UseConstraints nil}))
+
+(deftest migrate-1-16-2-to-1-16-1-test
+  "Test the migration of collections from 1.16.2 to 1.16.1."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.2" "1.16.1" sample-collection)]
+      (is (= expected (:UseConstraints result))))
+
+    "Migrating license URL and description"
+    {:Description {:Description "desc"}
+     :LicenseUrl {:Linkage "https:some.com"}
+     :LicenseText "Text"}
+    {:UseConstraints {:Description "desc"
+                      :LicenseURL {:Linkage "https:some.com"}
+                      :LicenseText "Text"}}
+
+    "Testing migrating when LicenseURL doesn't exist"
+    {:Description {:Description "desc"}
+     :LicenseText "Text"}
+    {:UseConstraints {:Description "desc"
+                      :LicenseText "Text"}}
+
+    "Testing migrating when Description doesn't exist"
+    {:LicenseText "Text"}
+    {:UseConstraints {:LicenseText "Text"}}
+
+    "Testing migrating when UseConstraints doesn't exist"
+    nil
+    {:UseConstraints nil}))
