@@ -360,7 +360,7 @@
     (try
       (prune-stale-autocomplete-suggestions context)
       (catch Exception e
-        (error (format "An error occurred while cleaning up autocomplete suggesions %s"
+        (error (format "An error occurred while cleaning up autocomplete suggestions %s"
                        (.getMessage e)))))))
 
 (defn reindex-provider-collections
