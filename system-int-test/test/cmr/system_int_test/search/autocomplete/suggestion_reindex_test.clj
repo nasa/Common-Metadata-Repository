@@ -1,12 +1,14 @@
 (ns cmr.system-int-test.search.autocomplete.suggestion-reindex-test
   "This tests re-indexes autocomplete suggestions."
   (:require
+   [clj-time.core :as time]
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.data2.umm-spec-common :as umm-spec-common]
    [cmr.system-int-test.search.facets.facets-util :as fu]
    [cmr.system-int-test.system :as s]
@@ -232,3 +234,33 @@
 
       "does not filter 'not' prefixed values"
       "not" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}])))
+
+(deftest prune-stale-data-test
+  (testing "The suggestions from these old collections shouldn't be found"
+    (are3
+     [query expected]
+     (let [_ (dev-sys-util/freeze-time! "2020-01-01T10:00:00Z")
+           coll7 (d/ingest-umm-spec-collection
+                   "PROV1"
+                   (data-umm-spec/collection
+                    {:ShortName "This one is old and should be cleaned up"
+                     :EntryTitle "Oldie"
+                     :Projects (:Projects (fu/projects "OLD"))
+                     :Platforms (:Platforms (fu/platforms "STALE" 2 2 1))}))
+
+           _ (dev-sys-util/freeze-time! (time/yesterday))
+           coll8 (d/ingest-umm-spec-collection
+                   "PROV2"
+                   (data-umm-spec/collection
+                    {:ShortName "Yesterday's news"
+                     :EntryTitle "Also an Oldie"
+                     :Platforms (:Platforms (fu/platforms "old AND stale" 2 1 1))}))
+           _(index/wait-until-indexed)
+           _ (dev-sys-util/clear-current-time!)
+           results (get-in (search/get-autocomplete-json (str "q=" query)) [:feed :entry])]
+       (compare-autocomplete-results results expected))
+     "None found"
+     "stale" []
+     
+     "Still none found"
+     "old" [])))
