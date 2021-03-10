@@ -193,8 +193,14 @@
 
 (defmethod base-page :default
   [context]
-  (assoc (common-data/base-page context) :app-title "CMR Search"
-         :release-version (str "v " (common-config/release-version))))
+  (let [base-page (common-data/base-page context)
+        base-url (:base-url base-page)
+        stac-base-url (-> base-url
+                          (string/replace #"search\/?" "/")
+                          (string/replace #"3003" "3000"))]
+    (assoc base-page :app-title "CMR Search"
+                     :release-version (str "v " (common-config/release-version))
+                     :stac-base-url stac-base-url)))
 
 (defn get-directory-links
   "Provide the list of links that will be rendered on the top-level directory

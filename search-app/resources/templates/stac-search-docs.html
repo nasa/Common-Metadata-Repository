@@ -1,0 +1,14 @@
+{% extends "templates/search-base.html" %}
+
+{% block main-content %}
+<h2>CMR STAC Links</h2>
+<p class="lead">
+   CMR STAC Links contain four parts:
+</p>
+<ul>
+  <li><a href="{{ stac-base-url }}stac">CMR STAC</a> - CMR STAC Catalog End Point</li>
+  <li><a href="{{ stac-base-url }}stac/docs">CMR STAC Documentation</a> - CMR STAC Catalog Documentation</li>
+  <li><a href="{{ stac-base-url }}cloudstac">CMR Cloud STAC</a> - CMR STAC Catalog With Cloud Holdings Only End Point</li>
+  <li><a href="{{ stac-base-url }}static-cloudstac">CMR Cloud STAC Static</a> - CMR STAC Static Catalog With Cloud Holdings Only End Point</li>
+</ul>
+{% endblock %}
