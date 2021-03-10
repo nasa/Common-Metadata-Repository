@@ -386,7 +386,11 @@
 
 (defmethod interface/migrate-umm-version [:collection "1.16" "1.16.1"]
   [context c & _]
-  (update c :DOI doi/migrate-doi-up-to-1-16-1))
+  (-> c
+      (update :DOI doi/migrate-doi-up-to-1-16-1)
+      (update :PublicationReferences doi/migrate-pub-ref-up-to-1-16-1)
+      util/remove-nils-empty-maps-seqs))
+
 
 (defmethod interface/migrate-umm-version [:collection "1.16.1" "1.16"]
   [context c & _]
