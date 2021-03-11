@@ -1,11 +1,11 @@
 (ns cmr.transmit.access-control
   "This contains functions for interacting with the access control API."
   (:require
+   [cheshire.core :as json]
    [clojure.string :as string]
-   [cmr.transmit.connection :as conn]
    [cmr.transmit.config :as config]
-   [cmr.transmit.http-helper :as h]
-   [cheshire.core :as json]))
+   [cmr.transmit.connection :as conn]
+   [cmr.transmit.http-helper :as h]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
