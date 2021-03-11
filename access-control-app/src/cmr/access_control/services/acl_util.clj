@@ -151,20 +151,3 @@
                       (vec dropped-concept-ids))))
       (assoc-in acl [:catalog-item-identity :collection-identifier] collection-identifier))
     acl))
-
-(defn- s3-bucket-and-prefix-names-concept-id-map
-  "Return a map of concept-id to s3-bucket-and-object-prefix-names.
-  Example: {'C12340000-PROV1' ['s3.aws.com' 's3']}"
-  [context concept]
-  (let [metadata (umm-spec/parse-metadata (assoc context :ignore-kms-keywords true) concept)
-        s3-data (get-in metadata [:DirectDistributionInformation
-                                  :S3BucketAndObjectPrefixNames])]
-    {(:concept-id concept) s3-data}))
-
-(defn s3-bucket-and-prefixes-for-collection-ids
-  "Takes a list of collection IDs and returns a map of collection-id and
-   s3-bucket-and-object-prefix-names values."
-  [context coll-ids]
-  (let [concepts (pmap #(mdb/get-latest-concept context %) coll-ids)]
-    (into {} (map #(s3-bucket-and-prefix-names-concept-id-map context %)
-                  concepts))))

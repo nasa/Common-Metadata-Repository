@@ -36,32 +36,3 @@
             {:group-permissions [{:user-type "guest", :permissions ["create" "delete"]}], :system-identity {:target "TAG_GROUP"}}
             :delete
             "User: [admin] Deleted ACL [{:group-permissions [{:user-type \"guest\", :permissions [\"create\" \"delete\"]}], :system-identity {:target \"TAG_GROUP\"}}]"))))
-
-
-(deftest s3-bucket-and-prefixes-for-collection-ids-test
-  (let [coll1 (test-util/save-collection
-               {:native-id "coll-1"
-                :provider-id "PROV1"
-                :entry-title "E1"
-                :short-name "S1"
-                :direct-distribution-information
-                {:Region "us-east-1"
-                 :S3BucketAndObjectPrefixNames ["s3://aws.example-1.com" "s3-1"]
-                 :S3CredentialsAPIEndpoint "https://api.example.com"
-                 :S3CredentialsAPIDocumentationURL "https://docs.example.com"}})
-        coll2 (test-util/save-collection
-               {:native-id "coll-2"
-                :provider-id "PROV1"
-                :entry-title "E2"
-                :short-name "S2"
-                :direct-distribution-information
-                {:Region "us-east-1"
-                 :S3BucketAndObjectPrefixNames ["s3://aws.example-2.com" "s3-2"]
-                 :S3CredentialsAPIEndpoint "https://api.example.com"
-                 :S3CredentialsAPIDocumentationURL "https://docs.example.com"}})]
-
-    (is (= {coll1 ["s3://aws.example-1.com" "s3-1"]
-            coll2 ["s3://aws.example-2.com" "s3-2"]}
-           (acl-util/s3-bucket-and-prefixes-for-collection-ids
-            (test-util/conn-context)
-            [coll1 coll2])))))

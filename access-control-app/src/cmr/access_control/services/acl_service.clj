@@ -16,6 +16,8 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.services.search.params :as cp]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer [info debug]]
    [cmr.common.services.errors :as errors]
@@ -357,3 +359,35 @@
     (if (or (nil? user-token)(re-matches #"^[\s\t]*$" user-token))
       (auth-util/get-sids context :guest)
       (auth-util/get-sids context (tokens/get-user-id context user-token)))))
+
+(defn s3-buckets-by-provider
+  "Returns a list of s3 buckets and object prefix names by provider"
+  [context user provider-ids]
+  (let [selected-providers (if (empty? provider-ids)
+                             (map :provider-id (mdb/get-providers context))
+                             provider-ids)
+        providers (filter #(some #{:update}
+                                 (first (vals (get-permissions
+                                               context
+                                               {:user_id user
+                                                :target "INGEST_MANAGEMENT_ACL"
+                                                :provider %}))))
+                          selected-providers)]
+    (println (format "%s has access to the following providers:" user))
+    (clojure.pprint/pprint providers)
+    (if (empty? providers)
+      []
+      (let [condition (qm/string-conditions :provider-id providers)
+            query (qm/query {:concept-type :collection
+                             :condition condition
+                             :skip-acls? true
+                             :page-size :unlimited
+                             :result-format :query-specified
+                             :result-fields [:s3-bucket-and-object-prefix-names]})
+            es-results (qe/execute-query context query)]
+        (->> es-results
+             :items
+             (map :s3-bucket-and-object-prefix-names)
+             flatten
+             set
+             sort)))))

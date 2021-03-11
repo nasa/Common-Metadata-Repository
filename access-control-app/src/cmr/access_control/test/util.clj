@@ -457,10 +457,3 @@
   [options]
   (let [response (client/post (enable-access-control-writes-url) options)]
     (is (= 200 (:status response)))))
-
-(defn get-s3-buckets
-  "Retrieves a group by concept id"
-  ([token concept-id params]
-   (process-response (ac/get-s3-buckets (conn-context) concept-id {:raw? true :token token :http-options {:query-params params}})))
-  ([token concept-id]
-   (get-s3-buckets token concept-id nil)))
