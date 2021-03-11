@@ -22,25 +22,36 @@
                                            :grant-all-ingest? false}))
 
 (deftest s3-buckets-route-test
-  (let [all-prov-update-group-concept-id (echo-util/get-or-create-group
-                                          (system/context)
-                                          "prov1-admin-update-group")
+  (let [all-prov-update-group-id (echo-util/get-or-create-group
+                                  (system/context)
+                                  "all-prov-admin-update-group")
+
+        prov2-update-group-id (echo-util/get-or-create-group
+                               (system/context)
+                               "prov2-admin-update-group")
 
         user1-token (echo-util/login
                      (system/context) "user1"
-                     [all-prov-update-group-concept-id])
+                     [all-prov-update-group-id])
+
+        user2-token (echo-util/login
+                     (system/context) "user2"
+                     [prov2-update-group-id])
 
         _ (echo-util/grant-group-provider-admin
-           (system/context) all-prov-update-group-concept-id "PROV1" :update)
+           (system/context) all-prov-update-group-id "PROV1" :update)
 
         _ (echo-util/grant-group-provider-admin
-           (system/context) all-prov-update-group-concept-id "PROV2" :update)
+           (system/context) all-prov-update-group-id "PROV2" :update)
 
         _ (echo-util/grant-group-provider-admin
-           (system/context) all-prov-update-group-concept-id "PROV3" :update)
+           (system/context) prov2-update-group-id "PROV2" :update)
+
+        _ (echo-util/grant-group-provider-admin
+           (system/context) all-prov-update-group-id "PROV3" :update)
 
         _ (echo-util/add-user-to-group (system/context)
-                                       all-prov-update-group-concept-id
+                                       all-prov-update-group-id
                                        "user1"
                                        user1-token)
 
@@ -89,11 +100,7 @@
                                       {:group_permissions [{:user_type "guest"
                                                             :permissions [:read :update]}]
                                        :provider_identity {:provider_id "PROV3"
-                                                           :target "INGEST_MANAGEMENT_ACL"}})
-
-        admin-token transmit-config/mock-echo-system-token
-        guest-token (echo-util/login-guest (system/context))
-        user1-token (echo-util/login (system/context) "user1")]
+                                                           :target "INGEST_MANAGEMENT_ACL"}})]
 
     (index/wait-until-indexed)
 
@@ -104,12 +111,13 @@
                                     (url/access-control-s3-buckets-url)
                                     {:query-params query
                                      :multi-param-style :array
-                                     :headers {transmit-config/token-header admin-token}
+                                     :headers {transmit-config/token-header transmit-config/mock-echo-system-token}
                                      :accept :json})
              response (json/parse-string body true)]
          (is (= 200 status))
          (is (= buckets response)))
 
+       ;; Admin user cases
        "user with :update permission with all providers"
        {:user "user1"}
        ["s3"
@@ -131,6 +139,42 @@
         :provider ["PROV2" "PROV3"]}
        ["s3" "s3://aws.example-2.com" "s3://aws.example-3.com"]
 
+       ;; Limited user cases
+       "user with :update permission with all providers"
+       {:user "user2"}
+       ["s3"
+        "s3://aws.example-2.com"]
+
+       "non-existant provider"
+       {:user "user2"
+        :provider ["fake"]} []
+
+       "user without :update permission on a single provider"
+       {:user "user2"
+        :provider ["PROV1"]}
+       []
+
+       "user with :update permission on a single provider"
+       {:user "user2"
+        :provider ["PROV2"]}
+       ["s3" "s3://aws.example-2.com"]
+
+       "user with :update permission on multiple providers"
+       {:user "user2"
+        :provider ["PROV2" "PROV3"]}
+       ["s3" "s3://aws.example-2.com"]
+
+       ;; Guest user cases
        "user without :update permissions on all providers"
        {:user "guest"}
+       []
+
+       "user without :update permissions on single provider"
+       {:user "guest"
+        :provider ["PROV1"]}
+       []
+
+       "invalid user"
+       {:user "guoost"
+        :provider ["PROV1"]}
        []))))

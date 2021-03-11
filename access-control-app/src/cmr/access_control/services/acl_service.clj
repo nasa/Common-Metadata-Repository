@@ -360,34 +360,48 @@
       (auth-util/get-sids context :guest)
       (auth-util/get-sids context (tokens/get-user-id context user-token)))))
 
+(defn- providers-with-update-permission-for-user
+  "Returns a list of provider-ids where the given user has the INGEST_MANAGEMENT_ACL.
+  If no providers are given, it will assume all providers."
+  [context user-id provider-ids]
+  {:pre [(coll? provider-ids)]}
+  (let [providers (if (empty? provider-ids)
+                    (map :provider-id (mdb/get-providers context))
+                    provider-ids)]
+    (filter #(some #{:update}
+                   (first (vals (get-permissions
+                                 context
+                                 {:user_id user-id
+                                  :target "INGEST_MANAGEMENT_ACL"
+                                  :provider %}))))
+            providers)))
+
+(defn- fetch-s3-buckets-for-providers
+  "Search Elasticsearch for a list of S3 buckets by provider."
+  [context provider-ids]
+  (let [condition (qm/string-conditions :provider-id provider-ids)
+        query (qm/query {:concept-type :collection
+                         :condition condition
+                         :skip-acls? true
+                         :page-size :unlimited
+                         :result-format :query-specified
+                         :result-fields [:s3-bucket-and-object-prefix-names]})
+        es-results (qe/execute-query context query)]
+    (->> es-results
+         :items
+         (map :s3-bucket-and-object-prefix-names)
+         flatten
+         set
+         sort)))
+
 (defn s3-buckets-by-provider
-  "Returns a list of s3 buckets and object prefix names by provider"
+  "Returns a list of s3 buckets and object prefix names by provider.
+  Permission is determined by the INGEST_MANAMGEMENT_ACL."
   [context user provider-ids]
-  (let [selected-providers (if (empty? provider-ids)
-                             (map :provider-id (mdb/get-providers context))
-                             provider-ids)
-        providers (filter #(some #{:update}
-                                 (first (vals (get-permissions
-                                               context
-                                               {:user_id user
-                                                :target "INGEST_MANAGEMENT_ACL"
-                                                :provider %}))))
-                          selected-providers)]
-    (println (format "%s has access to the following providers:" user))
-    (clojure.pprint/pprint providers)
-    (if (empty? providers)
+  (let [available-providers (providers-with-update-permission-for-user
+                             context
+                             user
+                             provider-ids)]
+    (if (empty? available-providers)
       []
-      (let [condition (qm/string-conditions :provider-id providers)
-            query (qm/query {:concept-type :collection
-                             :condition condition
-                             :skip-acls? true
-                             :page-size :unlimited
-                             :result-format :query-specified
-                             :result-fields [:s3-bucket-and-object-prefix-names]})
-            es-results (qe/execute-query context query)]
-        (->> es-results
-             :items
-             (map :s3-bucket-and-object-prefix-names)
-             flatten
-             set
-             sort)))))
+      (fetch-s3-buckets-for-providers context available-providers))))
