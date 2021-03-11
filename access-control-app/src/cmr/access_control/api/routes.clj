@@ -225,153 +225,153 @@
 (defn build-routes [system]
   (routes
    (context (:relative-root-url system) []
-            admin-api-routes
+     admin-api-routes
 
-            ;; add routes for checking health of the application
-            (common-health/health-api-routes group-service/health)
+     ;; add routes for checking health of the application
+     (common-health/health-api-routes group-service/health)
 
-            ;; add routes for enabling/disabling writes
-            (common-enabled/write-enabled-api-routes
-             #(acl/verify-ingest-management-permission % :update))
+     ;; add routes for enabling/disabling writes
+     (common-enabled/write-enabled-api-routes
+      #(acl/verify-ingest-management-permission % :update))
 
-            ;; add routes for accessing caches
-            common-routes/cache-api-routes
+     ;; add routes for accessing caches
+     common-routes/cache-api-routes
 
-            ;; Reindex all groups
-            (POST "/reindex-groups"
-                  {ctx :request-context params :params}
-                  (acl/verify-ingest-management-permission ctx :update)
-                  (pv/validate-standard-params params)
-                  (reindex-groups ctx))
+     ;; Reindex all groups
+     (POST "/reindex-groups"
+           {ctx :request-context params :params}
+           (acl/verify-ingest-management-permission ctx :update)
+           (pv/validate-standard-params params)
+           (reindex-groups ctx))
 
-            ;; Reindex all acls
-            (POST "/reindex-acls"
-                  {ctx :request-context params :params}
-                  (acl/verify-ingest-management-permission ctx :update)
-                  (pv/validate-standard-params params)
-                  (reindex-acls ctx))
+     ;; Reindex all acls
+     (POST "/reindex-acls"
+           {ctx :request-context params :params}
+           (acl/verify-ingest-management-permission ctx :update)
+           (pv/validate-standard-params params)
+           (reindex-acls ctx))
 
-            (context "/groups" []
-                     (OPTIONS "/"
-                              {params :params}
-                              (pv/validate-standard-params params)
-                              common-routes/options-response)
+     (context "/groups" []
+              (OPTIONS "/"
+                       {params :params}
+                       (pv/validate-standard-params params)
+                       common-routes/options-response)
 
-                     ;; Search for groups
-                     (GET "/"
-                          {ctx :request-context params :params headers :headers}
-                          (search-for-groups ctx headers params))
+              ;; Search for groups
+              (GET "/"
+                   {ctx :request-context params :params headers :headers}
+                   (search-for-groups ctx headers params))
 
-                     ;; Create a group
-                     (POST "/"
-                           {ctx :request-context params :params headers :headers body :body}
-                           (lt-validation/validate-launchpad-token ctx)
-                           (pv/validate-create-group-route-params params)
-                           (create-group ctx
-                                         headers
-                                         (slurp body)
-                                         (or (:managing-group-id params)
-                                             (:managing_group_id params))))
+              ;; Create a group
+              (POST "/"
+                    {ctx :request-context params :params headers :headers body :body}
+                    (lt-validation/validate-launchpad-token ctx)
+                    (pv/validate-create-group-route-params params)
+                    (create-group ctx
+                                  headers
+                                  (slurp body)
+                                  (or (:managing-group-id params)
+                                      (:managing_group_id params))))
 
-                     (context "/:group-id" [group-id]
-                              (OPTIONS "/" req common-routes/options-response)
-                              ;; Get a group
-                              (GET "/"
-                                   {ctx :request-context params :params}
-                                   (pv/validate-group-route-params params)
-                                   (get-group ctx group-id))
+              (context "/:group-id" [group-id]
+                (OPTIONS "/" req common-routes/options-response)
+                ;; Get a group
+                (GET "/"
+                     {ctx :request-context params :params}
+                     (pv/validate-group-route-params params)
+                     (get-group ctx group-id))
 
-                              ;; Delete a group
-                              (DELETE "/"
-                                      {ctx :request-context params :params}
-                                      (lt-validation/validate-launchpad-token ctx)
-                                      (pv/validate-group-route-params params)
-                                      (delete-group ctx group-id))
+                ;; Delete a group
+                (DELETE "/"
+                        {ctx :request-context params :params}
+                        (lt-validation/validate-launchpad-token ctx)
+                        (pv/validate-group-route-params params)
+                        (delete-group ctx group-id))
 
-                              ;; Update a group
-                              (PUT "/"
-                                   {ctx :request-context params :params headers :headers body :body}
-                                   (lt-validation/validate-launchpad-token ctx)
-                                   (pv/validate-group-route-params params)
-                                   (update-group ctx headers (slurp body) group-id))
+                ;; Update a group
+                (PUT "/"
+                     {ctx :request-context params :params headers :headers body :body}
+                     (lt-validation/validate-launchpad-token ctx)
+                     (pv/validate-group-route-params params)
+                     (update-group ctx headers (slurp body) group-id))
 
-                              (context "/members" []
-                                       (OPTIONS "/" req common-routes/options-response)
-                                       (GET "/"
-                                            {ctx :request-context params :params}
-                                            (pv/validate-group-route-params params)
-                                            (get-members ctx group-id))
+                (context "/members" []
+                  (OPTIONS "/" req common-routes/options-response)
+                  (GET "/"
+                       {ctx :request-context params :params}
+                       (pv/validate-group-route-params params)
+                       (get-members ctx group-id))
 
-                                       (POST "/"
-                                             {ctx :request-context params :params headers :headers body :body}
-                                             (lt-validation/validate-launchpad-token ctx)
-                                             (pv/validate-group-route-params params)
-                                             (add-members ctx headers (slurp body) group-id))
+                  (POST "/"
+                        {ctx :request-context params :params headers :headers body :body}
+                        (lt-validation/validate-launchpad-token ctx)
+                        (pv/validate-group-route-params params)
+                        (add-members ctx headers (slurp body) group-id))
 
-                                       (DELETE "/"
-                                               {ctx :request-context params :params headers :headers body :body}
-                                               (lt-validation/validate-launchpad-token ctx)
-                                               (pv/validate-group-route-params params)
-                                               (remove-members ctx headers (slurp body) group-id)))))
+                  (DELETE "/"
+                          {ctx :request-context params :params headers :headers body :body}
+                          (lt-validation/validate-launchpad-token ctx)
+                          (pv/validate-group-route-params params)
+                          (remove-members ctx headers (slurp body) group-id)))))
 
             (context "/acls" []
-                     (OPTIONS "/"
-                              {params :params}
-                              (pv/validate-standard-params params)
-                              common-routes/options-response)
+              (OPTIONS "/"
+                       {params :params}
+                       (pv/validate-standard-params params)
+                       common-routes/options-response)
 
-                     ;; Search for ACLs with either GET or POST
-                     (GET "/"
-                          {ctx :request-context params :params headers :headers}
-                          (search-for-acls ctx headers params))
-                     ;; POST search is at a different route to avoid a collision with the ACL creation route
-                     (POST "/search"
-                           {ctx :request-context params :params headers :headers}
-                           (search-for-acls ctx headers params))
+              ;; Search for ACLs with either GET or POST
+              (GET "/"
+                   {ctx :request-context params :params headers :headers}
+                   (search-for-acls ctx headers params))
+              ;; POST search is at a different route to avoid a collision with the ACL creation route
+              (POST "/search"
+                    {ctx :request-context params :params headers :headers}
+                    (search-for-acls ctx headers params))
 
-                     ;; Create an ACL
-                     (POST "/"
-                           {ctx :request-context params :params headers :headers body :body}
-                           (lt-validation/validate-launchpad-token ctx)
-                           (pv/validate-standard-params params)
-                           (create-acl ctx headers (slurp body)))
+              ;; Create an ACL
+              (POST "/"
+                    {ctx :request-context params :params headers :headers body :body}
+                    (lt-validation/validate-launchpad-token ctx)
+                    (pv/validate-standard-params params)
+                    (create-acl ctx headers (slurp body)))
 
-                     (context "/:concept-id" [concept-id]
-                              (OPTIONS "/" req common-routes/options-response)
+              (context "/:concept-id" [concept-id]
+                (OPTIONS "/" req common-routes/options-response)
 
-                              ;; Update an ACL
-                              (PUT "/"
-                                   {ctx :request-context headers :headers body :body}
-                                   (lt-validation/validate-launchpad-token ctx)
-                                   (update-acl ctx concept-id headers (slurp body)))
+                ;; Update an ACL
+                (PUT "/"
+                     {ctx :request-context headers :headers body :body}
+                     (lt-validation/validate-launchpad-token ctx)
+                     (update-acl ctx concept-id headers (slurp body)))
 
-                              ;; Delete an ACL
-                              (DELETE "/"
-                                      {ctx :request-context headers :headers}
-                                      (lt-validation/validate-launchpad-token ctx)
-                                      (delete-acl ctx concept-id headers))
+                ;; Delete an ACL
+                (DELETE "/"
+                        {ctx :request-context headers :headers}
+                        (lt-validation/validate-launchpad-token ctx)
+                        (delete-acl ctx concept-id headers))
 
-                              ;; Retrieve an ACL
-                              (GET "/"
-                                   {ctx :request-context params :params headers :headers}
-                                   (get-acl ctx headers concept-id params))))
+                ;; Retrieve an ACL
+                (GET "/"
+                     {ctx :request-context params :params headers :headers}
+                     (get-acl ctx headers concept-id params))))
 
             (context "/permissions" []
-                     (OPTIONS "/" [] common-routes/options-response)
+              (OPTIONS "/" [] common-routes/options-response)
 
-                     (GET "/"
-                          {ctx :request-context params :params}
-                          (get-permissions ctx params)))
+              (GET "/"
+                   {ctx :request-context params :params}
+                   (get-permissions ctx params)))
 
             (context "/current-sids" []
-                     (OPTIONS "/" [] common-routes/options-response)
+              (OPTIONS "/" [] common-routes/options-response)
 
-                     (GET "/" {:keys [request-context params]}
-                          (get-current-sids request-context params)))
+              (GET "/" {:keys [request-context params]}
+                   (get-current-sids request-context params)))
 
             (context "/s3-buckets" []
-                     (OPTIONS "/" [] common-routes/options-response)
+              (OPTIONS "/" [] common-routes/options-response)
 
-                     (GET "/"
-                          {ctx :request-context params :params}
-                          (get-allowed-s3-buckets ctx params))))))
+              (GET "/"
+                   {ctx :request-context params :params}
+                   (get-allowed-s3-buckets ctx params))))))
