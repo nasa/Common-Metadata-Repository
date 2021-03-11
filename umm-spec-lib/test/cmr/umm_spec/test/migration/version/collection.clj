@@ -2543,6 +2543,34 @@
     (assoc sample-collection-1-15-5 :DOI {:MissingReason "Not Applicable"
                                           :Explanation "Explanation"})))
 
+(deftest migrate-1-16-to-1-16-1-publication-test
+  "Test the migration of publication doi collections from 1.16 to 1.16.1."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16" "1.16.1" sample-collection)]
+      (is (= expected (:PublicationReferences result))))
+
+    "Publication reference contains Missing reason which is no longer valid in 1.16.1"
+    [{:OtherReferenceDetails "Other details"}]
+    (assoc sample-collection-1-15-5
+           :PublicationReferences [{:DOI {:MissingReason "Not Applicable"
+                                          :Explanation "just not applicable"}
+                                    :OtherReferenceDetails "Other details"}])
+
+    "Publication reference contains Missing reason which is no longer valid in 1.16.1. Also doesn't
+     contain any other elements so it be nil."
+    nil
+    (assoc sample-collection-1-15-5
+           :PublicationReferences [{:DOI {:MissingReason "Not Applicable"
+                                          :Explanation "just not applicable"}}])
+
+    "Publication reference contains a DOI."
+    [{:DOI {:DOI "10.5678/Pub-DOI"
+            :Authority "https://doi.org"}}]
+    (assoc sample-collection-1-15-5
+           :PublicationReferences [{:DOI {:DOI "10.5678/Pub-DOI"
+                                          :Authority "https://doi.org"}}])))
+
 (deftest migrate-1-16-1-to-1-16-test
   "Test the migration of collections from 1.16.1 to 1.16."
 
@@ -2593,3 +2621,61 @@
       nil
       {:DOI {:DOI "10.5668/IsInUse"
              :Authority "doi.org"}}))
+
+(deftest migrate-1-16-1-to-1-16-2
+  "Test the migration of collections from 1.16.1 to 1.16.2."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.1" "1.16.2" sample-collection)]
+      (is (= expected (:UseConstraints result))))
+
+    "Migrating license URL and description"
+    {:Description "desc"
+     :LicenseURL {:Linkage "https:some.com"}
+     :LicenseText "Text"}
+    {:UseConstraints {:Description {:Description "desc"}
+                      :LicenseUrl {:Linkage "https:some.com"}
+                      :LicenseText "Text"}}
+
+    "Testing migrating when LicenseURL doesn't exist"
+    {:Description "desc"
+     :LicenseText "Text"}
+    {:UseConstraints {:Description {:Description "desc"}
+                      :LicenseText "Text"}}
+
+    "Testing migrating when Description doesn't exist"
+    {:LicenseText "Text"}
+    {:UseConstraints {:LicenseText "Text"}}
+
+    "Testing migrating when UseConstraints doesn't exist"
+    nil
+    {:UseConstraints nil}))
+
+(deftest migrate-1-16-2-to-1-16-1-test
+  "Test the migration of collections from 1.16.2 to 1.16.1."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.2" "1.16.1" sample-collection)]
+      (is (= expected (:UseConstraints result))))
+
+    "Migrating license URL and description"
+    {:Description {:Description "desc"}
+     :LicenseUrl {:Linkage "https:some.com"}
+     :LicenseText "Text"}
+    {:UseConstraints {:Description "desc"
+                      :LicenseURL {:Linkage "https:some.com"}
+                      :LicenseText "Text"}}
+
+    "Testing migrating when LicenseURL doesn't exist"
+    {:Description {:Description "desc"}
+     :LicenseText "Text"}
+    {:UseConstraints {:Description "desc"
+                      :LicenseText "Text"}}
+
+    "Testing migrating when Description doesn't exist"
+    {:LicenseText "Text"}
+    {:UseConstraints {:LicenseText "Text"}}
+
+    "Testing migrating when UseConstraints doesn't exist"
+    nil
+    {:UseConstraints nil}))

@@ -50,9 +50,8 @@
           use-constraints (when (or description linkage license-text)
                             [(umm-coll-models/map->UseConstraintsType
                                {:Description (when description
-                                               (umm-coll-models/map->UseConstraintsDescriptionType
-                                                 {:Description description}))
-                                :LicenseUrl (when linkage
+                                               description)
+                                :LicenseURL (when linkage
                                               (umm-cmn-models/map->OnlineResourceType
                                                 {:Linkage linkage}))
                                 :LicenseText license-text})])]
@@ -73,12 +72,12 @@
   (let [constraints-list (seq (select doc constraints-xpath))
         use-constraints-list (get-use-constraints constraints-list sanitize?)
         first-description (:Description (some #(when (:Description %) %) use-constraints-list))
-        first-license-url (:LicenseUrl (some #(when (:LicenseUrl %) %) use-constraints-list))
+        first-license-url (:LicenseURL (some #(when (:LicenseURL %) %) use-constraints-list))
         first-license-text (:LicenseText (some #(when (:LicenseText %) %) use-constraints-list))]
     (when (or first-description first-license-url first-license-text)
       (umm-coll-models/map->UseConstraintsType
         {:Description first-description
-         :LicenseUrl first-license-url
+         :LicenseURL first-license-url
          :LicenseText (when-not first-license-url
                         first-license-text)}))))
 

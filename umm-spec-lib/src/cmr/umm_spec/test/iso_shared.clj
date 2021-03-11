@@ -16,8 +16,8 @@
 (defn expected-use-constraints
   "Returns the expected UseConstraints."
   [use-constraints]
-  (if-let [linkage (get-in use-constraints [:LicenseUrl :Linkage])]
-    (assoc use-constraints :LicenseUrl (cmn/map->OnlineResourceType {:Linkage linkage}))
+  (if-let [linkage (get-in use-constraints [:LicenseURL :Linkage])]
+    (assoc use-constraints :LicenseURL (cmn/map->OnlineResourceType {:Linkage linkage}))
     use-constraints))
 
 (defn- create-contact-person

@@ -66,7 +66,8 @@
   {:action :provider-delete
    :provider-id provider-id})
 
-(defn ingest-bulk-update-event
+(defn collections-bulk-event
+  "Creates a collection bulk update event that is for multiple collections."
   [provider-id task-id bulk-update-params user-id]
   {:action :bulk-update
    :provider-id provider-id
@@ -75,6 +76,7 @@
    :user-id user-id})
 
 (defn ingest-collection-bulk-update-event
+  "Creates a single collection bulk update event. This is to update a single collection."
   [provider-id task-id concept-id bulk-update-params user-id]
   {:action :collection-bulk-update
    :provider-id provider-id
@@ -83,12 +85,21 @@
    :bulk-update-params bulk-update-params
    :user-id user-id})
 
-(defn ingest-granule-bulk-update-event
-  "Creates an event representing a bulk granule update task"
-  [provider-id task-id event-type granule-ur value]
-  {:action :granule-bulk-update
-   :task-id task-id
-   :event-type event-type
+(defn granules-bulk-event
+  "Creates a granule bulk update event that is for multiple granules."
+  [provider-id task-id user-id instructions]
+  {:action :granules-bulk
    :provider-id provider-id
-   :granule-ur granule-ur
-   :value value})
+   :task-id task-id
+   :bulk-update-params instructions
+   :user-id user-id})
+
+(defn ingest-granule-bulk-update-event
+  "Creates an event representing bulk update for a single granule.
+   bulk-update-params holds specific info for each update. e.g. event-type, granule-ur, url."
+  [provider-id task-id user-id instruction]
+  {:action :granule-bulk-update
+   :provider-id provider-id
+   :task-id task-id
+   :bulk-update-params instruction
+   :user-id user-id})

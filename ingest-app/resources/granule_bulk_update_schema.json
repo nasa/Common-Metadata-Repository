@@ -1,65 +1,67 @@
 {
-    "definitions": {
-	"OperationEnum": {
-	    "type": "string",
-	    "enum": ["UPDATE_FIELD"]
-	},
-	"UpdateArgumentsType": {
-	    "title": "Items",
-	    "type": "array",
-	    "minItems": 1,
-	    "items":{
-		"title": "Arguments",
-		"type": "string",
-		"default": "",
-		"examples": [
-		    "SL:AB_5DSno.008:30500511"
-		],
-		"pattern": "^.*$"
-	    }
-	}
+  "definitions": {
+    "OperationEnum": {
+      "type": "string",
+      "enum": [
+        "UPDATE_FIELD"
+      ]
     },
-    "$schema": "http://json-schema.org/draft-07/schema#", 
-    "$id": "https://example.com/object1612966828.json", 
-    "title": "Root", 
-    "type": "object",
-    "required": [
-	"operation",
-	"update-field",
-	"updates"
-    ],
-    "properties": {
-	"name": {
-	    "$id": "#root/name", 
-	    "title": "Name", 
-	    "type": "string",
-	    "default": "",
-	    "examples": [
-		"Add opendap links"
-	    ],
-	    "pattern": "^.*$"
-	},
-	"operation": {
-	    "$ref": "#/definitions/OperationEnum"
-	},
-	"update-field": {
-	    "$id": "#root/update-field", 
-	    "title": "Update-field", 
-	    "type": "string",
-	    "default": "",
-	    "examples": [
-		"OPEnDAPLink"
-	    ],
-	    "pattern": "^.*$"
-	},
-	"updates": {
-	    "$id": "#root/updates", 
-	    "title": "Updates", 
-	    "type": "array",
-	    "minItems": 1,
-	    "items":{
-		"$ref" : "#/definitions/UpdateArgumentsType"
-	    }
-	}
+    "UpdateArgumentsType": {
+      "title": "Items",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "title": "Arguments",
+        "type": "string",
+        "default": "",
+        "examples": [
+          "SL:AB_5DSno.008:30500511"
+        ],
+        "pattern": "^.*$"
+      }
     }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1612966828.json",
+  "title": "Root",
+  "type": "object",
+  "required": [
+    "operation",
+    "update-field",
+    "updates"
+  ],
+  "properties": {
+    "name": {
+      "$id": "#root/name",
+      "title": "Name",
+      "type": "string",
+      "default": "",
+      "examples": [
+        "Add opendap links"
+      ],
+      "pattern": "^.*$"
+    },
+    "operation": {
+      "$ref": "#/definitions/OperationEnum"
+    },
+    "update-field": {
+      "$id": "#root/update-field",
+      "title": "Update-field",
+      "type": "string",
+      "default": "",
+      "examples": [
+        "OPeNDAPLink"
+      ],
+      "pattern": "^.*$"
+    },
+    "updates": {
+      "$id": "#root/updates",
+      "title": "Updates",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/UpdateArgumentsType"
+      }
+    }
+  }
 }

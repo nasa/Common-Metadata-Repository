@@ -30,6 +30,7 @@
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.10.0"]
+                 [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.quartz-scheduler/quartz "2.3.1"]
                  [org.slf4j/slf4j-api "1.7.30"]

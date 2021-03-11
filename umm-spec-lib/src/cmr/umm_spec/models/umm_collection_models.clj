@@ -886,7 +886,7 @@
 
    ;; This element holds the URL and associated information to access the License on the web. If
    ;; this element is used the LicenseText element cannot be used.
-   LicenseUrl
+   LicenseURL
 
    ;; This element holds the actual license text. If this element is used the LicenseUrl element
    ;; cannot be used.
