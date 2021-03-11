@@ -176,6 +176,17 @@
 ;;; Page data functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn app-url->stac-urls
+  "Convert the search-app url into the stac related urls."
+  [base-url]
+  (let [stac-base-url (-> base-url
+                          (string/replace #"gov.*" "gov/")
+                          (string/replace #"3003/?" "3000/"))]
+    {:stac-url (str stac-base-url "stac")
+     :cloudstac-url (str stac-base-url "cloudstac")
+     :stac-docs-url (str stac-base-url "stac/docs")
+     :static-cloudstac-url (str stac-base-url "static-cloudstac")}))
+
 (defmulti base-page
   "Data that all app pages have in common.
 
@@ -198,10 +209,7 @@
         stac-base-url (-> base-url
                           (string/replace #"gov.*" "gov/")
                           (string/replace #"3003/?" "3000/"))
-        stac-url (str stac-base-url "stac")
-        cloudstac-url (str stac-base-url "cloudstac")
-        stac-docs-url (str stac-base-url "stac/docs")
-        static-cloudstac-url (str stac-base-url "static-cloudstac")]
+        {:keys [stac-url cloudstac-url stac-docs-url static-cloudstac-url]} (app-url->stac-urls stac-base-url)]
     (assoc base-page :app-title "CMR Search"
                      :release-version (str "v " (common-config/release-version))
                      :stac-url stac-url
