@@ -127,7 +127,7 @@
          (is (= buckets response)))
 
        ;; Admin user cases
-       "user with :update permission with all providers"
+       "user with access to all providers"
        {:user_id "user1"}
        ["s3"
         "s3://aws.example-1.com"
@@ -138,18 +138,18 @@
        {:user_id "user1"
         :provider ["fake"]} []
 
-       "user with :update permission on a single provider"
+       "single provider filtering"
        {:user_id "user1"
         :provider ["PROV1"]}
        ["s3" "s3://aws.example-1.com"]
 
-       "user with :update permission on multiple providers"
+       "multiple provider filtering"
        {:user_id "user1"
         :provider ["PROV2" "PROV3"]}
        ["s3" "s3://aws.example-2.com" "s3://aws.example-3.com"]
 
        ;; Limited user cases
-       "user with :update permission with all providers"
+       "user access to a single provider"
        {:user_id "user2"}
        ["s3"
         "s3://aws.example-2.com"]
@@ -158,25 +158,20 @@
        {:user_id "user2"
         :provider ["fake"]} []
 
-       "user without :update permission on a single provider"
+       "user filtering on provider they do not have access to"
        {:user_id "user2"
         :provider ["PROV1"]}
        []
 
-       "user with :update permission on a single provider"
+       "user filtering on provider they have access to"
        {:user_id "user2"
         :provider ["PROV2"]}
        ["s3" "s3://aws.example-2.com"]
 
-       "user with :update permission on multiple providers"
+       "user filtering on mixed access to providers"
        {:user_id "user2"
         :provider ["PROV2" "PROV3"]}
-       ["s3" "s3://aws.example-2.com"]
-
-       "invalid user"
-       {:user_id "invaliduser"
-        :provider ["PROV1"]}
-       []))
+       ["s3" "s3://aws.example-2.com"]))
 
     (testing "validation"
       (testing "missing user param"

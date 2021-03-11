@@ -387,8 +387,7 @@
          sort)))
 
 (defn s3-buckets-for-user
-  "Returns a list of s3 buckets and object prefix names by provider.
-  Permission is determined by the INGEST_MANAMGEMENT_ACL."
+  "Returns a list of s3 buckets and object prefix names by provider."
   [context user provider-ids]
   (let [groups (auth-util/get-sids context user)
         providers (if (empty? provider-ids)
