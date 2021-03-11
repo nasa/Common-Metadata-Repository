@@ -87,20 +87,7 @@
                       :S3BucketAndObjectPrefixNames ["s3://aws.example-3.com" "s3"]
                       :S3CredentialsAPIEndpoint "http://api.example.com"
                       :S3CredentialsAPIDocumentationURL "http://docs.example.com"}})
-                   {:token user1-token})
-
-        acl-user1-prov1 (ac-util/create-acl (transmit-config/echo-system-token)
-                                            {:group_permissions [{:permissions [:read :update]
-                                                                  :user_type "guest"}]
-                                             :provider_identity {:provider_id "PROV1"
-                                                                 :target "INGEST_MANAGEMENT_ACL"}})
-
-
-        acl-guest (ac-util/create-acl (transmit-config/echo-system-token)
-                                      {:group_permissions [{:user_type "guest"
-                                                            :permissions [:read :update]}]
-                                       :provider_identity {:provider_id "PROV3"
-                                                           :target "INGEST_MANAGEMENT_ACL"}})]
+                   {:token user1-token})]
 
     (index/wait-until-indexed)
 
