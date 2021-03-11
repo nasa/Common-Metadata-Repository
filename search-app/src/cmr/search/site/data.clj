@@ -197,10 +197,17 @@
         base-url (:base-url base-page)
         stac-base-url (-> base-url
                           (string/replace #"gov.*" "gov/")
-                          (string/replace #"3003" "3000"))]
+                          (string/replace #"3003/?" "3000/"))
+        stac-url (str stac-base-url "stac")
+        cloudstac-url (str stac-base-url "cloudstac")
+        stac-docs-url (str stac-base-url "stac/docs")
+        static-cloudstac-url (str stac-base-url "static-cloudstac")]
     (assoc base-page :app-title "CMR Search"
                      :release-version (str "v " (common-config/release-version))
-                     :stac-base-url stac-base-url)))
+                     :stac-url stac-url
+                     :cloudstac-url cloudstac-url
+                     :stac-docs-url stac-docs-url
+                     :static-cloudstac-url static-cloudstac-url)))
 
 (defn get-directory-links
   "Provide the list of links that will be rendered on the top-level directory
