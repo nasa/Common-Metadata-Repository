@@ -265,8 +265,7 @@
   "Test helper. Saves collection to Metadata DB and returns its concept id."
   [options]
   (let [{:keys [native-id entry-title short-name access-value provider-id
-                temporal-range no-temporal temporal-singles format-key
-                direct-distribution-information]} options
+                temporal-range no-temporal temporal-singles format-key]} options
         base-umm (-> example-collection-record
                      (assoc-in [:SpatialExtent :GranuleSpatialRepresentation] "NO_SPATIAL"))
         umm (cond-> base-umm
@@ -276,8 +275,7 @@
               no-temporal (assoc :TemporalExtents nil)
               temporal-singles (assoc-in [:TemporalExtents 0 :SingleDateTimes] temporal-singles)
               temporal-singles (assoc-in [:TemporalExtents 0 :RangeDateTimes] nil)
-              temporal-range (assoc-in [:TemporalExtents 0 :RangeDateTimes] [temporal-range])
-              direct-distribution-information (assoc :DirectDistributionInformation direct-distribution-information))
+              temporal-range (assoc-in [:TemporalExtents 0 :RangeDateTimes] [temporal-range]))
         format-key (or format-key :echo10)]
 
     ;; We don't want to publish messages in metadata db since different envs may or may not be running
