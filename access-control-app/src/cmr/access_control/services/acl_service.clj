@@ -363,11 +363,7 @@
 
 (defn- fetch-s3-buckets-by-groups
   [context groups providers]
-  (println "====================")
-  (clojure.pprint/pprint groups)
-  (clojure.pprint/pprint providers)
-  (let [;;base-query (qm/string-conditions :permitted-group-ids groups)
-        base-query (gc/or-conds (map #(qm/string-condition :permitted-group-ids
+  (let [base-query (gc/or-conds (map #(qm/string-condition :permitted-group-ids
                                                            (format "*%s*" %)
                                                            :false
                                                            :true) groups))
