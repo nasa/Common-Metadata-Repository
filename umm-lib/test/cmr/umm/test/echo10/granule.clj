@@ -194,6 +194,11 @@
         <URL>http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac</URL>
       </OnlineAccessURL>
     </OnlineAccessURLs>
+    <OnlineAccessURLs>
+      <OnlineAccessURL>
+        <URL>s3://aws.com/hydro/details</URL>
+      </OnlineAccessURL>
+    </OnlineAccessURLs>
     <OnlineResources>
       <OnlineResource>
         <URL>http://camex.nsstc.nasa.gov/camex3/</URL>
@@ -324,6 +329,9 @@
      :related-urls [(umm-c/map->RelatedURL
                       {:type "GET DATA"
                        :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})
+                    (umm-c/map->RelatedURL
+                      {:type "GET DATA VIA DIRECT ACCESS"
+                       :url "s3://aws.com/hydro/details"})
                     (umm-c/map->RelatedURL
                       {:type "GET DATA"
                        :title "(DATA ACCESS)"

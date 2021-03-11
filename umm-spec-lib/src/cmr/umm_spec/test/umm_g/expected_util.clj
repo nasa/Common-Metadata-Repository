@@ -191,4 +191,11 @@
                      :description "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
                      :mime-type "image/png"
                      :title "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
-                     :size 10})]}))
+                     :size 10})
+                   (umm-c/map->RelatedURL
+                    {:type "GET DATA VIA DIRECT ACCESS"
+                     :url "S3://aws.com/asdf/asdf/dataproduct.nc"
+                     :description "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
+                     :mime-type "application/x-netcdf"
+                     :title "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
+                     :size 1000})]}))

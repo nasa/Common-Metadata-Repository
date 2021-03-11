@@ -590,3 +590,78 @@
                                            {:granule-ur "Granule1"}
                                            {:url-extension "json"})
                 [:status :results])))))))
+
+(deftest search-granules-related-url-translation-and-atom-test
+  "Test the RelatedURLs of GET DATA VIA DIRECT ACCESS translations between ECHO10, ISO SMAP, UMM-G,
+   ISO 19115 MENDS and old cmr umm-g. Also test the atom link."
+  (let [ru1 (dc/related-url {:type "GET DATA" :url "http://example.com"})
+        ru2 (dc/related-url {:type "GET DATA VIA DIRECT ACCESS" :url "s3://aws.com"})
+        ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://example.com/browse"})
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
+                                                :beginning-date-time "1970-01-01T12:00:00Z"
+                                                :spatial-coverage (dc/spatial {:gsr :no-spatial})}))
+        make-gran (fn [coll attribs]
+                    (d/ingest "PROV1" (dg/granule coll attribs)))
+
+        gran-echo (make-gran coll1 {:granule-ur "Granule1"
+                                    :beginning-date-time "2010-01-01T12:00:00Z"
+                                    :ending-date-time "2010-01-11T12:00:00Z"
+                                    :producer-gran-id "Granule #1"
+                                    :day-night "DAY"
+                                    :size 100
+                                    :cloud-cover 50
+                                    :related-urls [ru1 ru2 ru3]})
+        gran-smap (d/ingest "PROV1"
+                            (dg/granule coll1 {:granule-ur "Granule2"
+                                               :related-urls [ru1 ru2 ru3]})
+                            {:format :iso-smap})
+        gran-umm  (d/ingest "PROV1"
+                            (dg/granule coll1 {:granule-ur "Granule3"
+                                               :related-urls [ru1 ru2 ru3]})
+                            {:format :umm-json})
+        gran-no-ru (d/ingest "PROV1"
+                             (dg/granule coll1 {:granule-ur "Granule4"})
+                             {:format :umm-json})]
+
+    (index/wait-until-indexed)
+
+    (util/are3 [granule number]
+      (let [gran-atom (da/granules->expected-atom [granule]
+                                                  [coll1]
+                                                  (str "granules.atom?granule_ur=Granule" number))
+            response (search/find-concepts-atom :granule {:granule-ur (str "Granule" number)})
+            links (get-in response [:results :links])]
+        (is (= 200 (:status response)))
+        (is (= (:links gran-atom) links))
+        (is (for [link links
+                  :when (= "http://esipfed.org/ns/fedsearch/1.1/cloud" (:rel link))]
+              true)))
+
+      "atom link and the translation from old cmr umm-g to echo10 and back to old cmr umm-g."
+      gran-echo
+      1
+
+      "the translation from old cmr umm-g to iso smap and back to old cmr umm-g."
+      gran-smap
+      2
+
+      "the translation from old cmr umm-g to UMM-G and back to old cmr umm-g."
+      gran-umm
+      3)
+
+    (testing "the translation from old cmr umm-g to UMM-G and back to old cmr umm-g without related URLs."
+      (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule4")
+            response (search/find-concepts-atom :granule {:granule-ur "Granule4"})
+            links (get-in response [:results :links])]
+        (def links links)
+        (is (= 200 (:status response)))
+        (is (= (:links gran-atom) links))
+        (is (= nil (seq
+                     (for [link links
+                           :when (= "http://esipfed.org/ns/fedsearch/1.1/cloud" (:rel link))]
+                       true))))))
+
+    (testing "the translation from old cmr umm-g to ISO 19115."
+      (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
+            response (search/find-metadata :granule :iso19115 {:granule-ur "Granule3"})]
+        (is (string/includes? response "s3://aws.com"))))))

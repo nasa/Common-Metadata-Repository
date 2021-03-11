@@ -120,6 +120,14 @@
   [list-of-maps]
   (seq (map #(downgrade-format-and-mimetype-to-1-6 %) list-of-maps)))
 
+(defn v1-6-2-related-url-type->1-6-1
+  "Migrate v1.6.2 related url Type to v1.6.1 related url Type"
+  [related-url]
+  (def related-url related-url)
+  (if (= "GET DATA VIA DIRECT ACCESS" (:Type related-url))
+    (assoc related-url :Type "GET DATA")
+    related-url))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Granule Migration Implementations
 
@@ -181,3 +189,18 @@
       (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.1"
                                      :Name "UMM-G"
                                      :Version "1.6.1"})))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.2" "1.6.1"]
+  [context g & _]
+  (-> g
+      (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.1"
+                                     :Name "UMM-G"
+                                     :Version "1.6.1"})
+      (util/update-in-each [:RelatedUrls] v1-6-2-related-url-type->1-6-1)))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.1" "1.6.2"]
+  [context g & _]
+  (-> g
+      (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.2"
+                                     :Name "UMM-G"
+                                     :Version "1.6.2"})))

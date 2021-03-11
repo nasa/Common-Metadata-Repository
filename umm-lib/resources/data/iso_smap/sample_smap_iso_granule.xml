@@ -519,6 +519,19 @@
                           </gmd:applicationProfile>
                         </gmd:CI_OnlineResource>
                       </gmd:onLine>
+                      <gmd:onLine>
+                        <gmd:CI_OnlineResource>
+                          <gmd:linkage>
+                            <gmd:URL>s3://aws.com/test1.hdf</gmd:URL>
+                          </gmd:linkage>
+                          <gmd:applicationProfile>
+                            <gco:CharacterString>application/x-hdf</gco:CharacterString>
+                          </gmd:applicationProfile>
+                          <gmd:name>
+                            <gco:CharacterString>GET DATA VIA DIRECT ACCESS</gco:CharacterString>
+                          </gmd:name>
+                        </gmd:CI_OnlineResource>
+                      </gmd:onLine>
                     </gmd:MD_DigitalTransferOptions>
                   </gmd:distributorTransferOptions>
                   <gmd:distributorTransferOptions>
