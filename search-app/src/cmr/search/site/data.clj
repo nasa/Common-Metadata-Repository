@@ -195,11 +195,9 @@
   [context]
   (let [base-page (common-data/base-page context)
         base-url (:base-url base-page)
-        _ (println "base-url is: " base-url)
         stac-base-url (-> base-url
-                          (string/replace #"gov.*" "gov")
-                          (string/replace #"3003" "3000"))
-        _ (println "stac-base-url is: " stac-base-url)]
+                          (string/replace #"gov.*" "gov/")
+                          (string/replace #"3003" "3000"))]
     (assoc base-page :app-title "CMR Search"
                      :release-version (str "v " (common-config/release-version))
                      :stac-base-url stac-base-url)))
