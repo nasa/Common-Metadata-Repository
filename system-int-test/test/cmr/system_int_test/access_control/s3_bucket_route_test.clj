@@ -91,14 +91,36 @@
 
     (index/wait-until-indexed)
 
-    (testing "s3 buckets list returned for admin user"
+    (echo-util/grant-registered-users (system/context)
+                                      (echo-util/coll-catalog-item-id
+                                       "PROV1"
+                                       (echo-util/coll-id ["s3-PROV1"])))
+
+    (echo-util/grant-registered-users (system/context)
+                                      (echo-util/coll-catalog-item-id
+                                       "PROV2"
+                                       (echo-util/coll-id ["s3-PROV2"])))
+
+    (doseq [prov ["PROV1" "PROV2" "PROV3"]]
+      (echo-util/grant-group (system/context)
+                             all-prov-update-group-id
+                             (echo-util/coll-catalog-item-id prov)))
+
+    (echo-util/grant-group (system/context)
+                           prov2-update-group-id
+                           (echo-util/coll-catalog-item-id "PROV2"))
+
+    (ingest/reindex-collection-permitted-groups (transmit-config/echo-system-token))
+    (index/wait-until-indexed)
+
+    (testing "s3 buckets list returned"
       (are3
        [query buckets]
        (let [{:keys [status body]} (client/get
                                     (url/access-control-s3-buckets-url)
                                     {:query-params query
                                      :multi-param-style :array
-                                     :headers {transmit-config/token-header transmit-config/mock-echo-system-token}
+                                     :headers {transmit-config/token-header transmit-config/echo-system-token}
                                      :accept :json})
              response (json/parse-string body true)]
          (is (= 200 status))
@@ -106,62 +128,75 @@
 
        ;; Admin user cases
        "user with :update permission with all providers"
-       {:user "user1"}
+       {:user_id "user1"}
        ["s3"
         "s3://aws.example-1.com"
         "s3://aws.example-2.com"
         "s3://aws.example-3.com"]
 
        "non-existant provider"
-       {:user "user1"
+       {:user_id "user1"
         :provider ["fake"]} []
 
        "user with :update permission on a single provider"
-       {:user "user1"
+       {:user_id "user1"
         :provider ["PROV1"]}
        ["s3" "s3://aws.example-1.com"]
 
        "user with :update permission on multiple providers"
-       {:user "user1"
+       {:user_id "user1"
         :provider ["PROV2" "PROV3"]}
        ["s3" "s3://aws.example-2.com" "s3://aws.example-3.com"]
 
        ;; Limited user cases
        "user with :update permission with all providers"
-       {:user "user2"}
+       {:user_id "user2"}
        ["s3"
         "s3://aws.example-2.com"]
 
        "non-existant provider"
-       {:user "user2"
+       {:user_id "user2"
         :provider ["fake"]} []
 
        "user without :update permission on a single provider"
-       {:user "user2"
+       {:user_id "user2"
         :provider ["PROV1"]}
        []
 
        "user with :update permission on a single provider"
-       {:user "user2"
+       {:user_id "user2"
         :provider ["PROV2"]}
        ["s3" "s3://aws.example-2.com"]
 
        "user with :update permission on multiple providers"
-       {:user "user2"
+       {:user_id "user2"
         :provider ["PROV2" "PROV3"]}
        ["s3" "s3://aws.example-2.com"]
 
-       ;; Guest user cases
-       "user without :update permissions on all providers"
-       {:user "guest"}
-       []
-
-       "user without :update permissions on single provider"
-       {:user "guest"
-        :provider ["PROV1"]}
-       []
-
        "invalid user"
-       {:user "guoost"
+       {:user_id "invaliduser"
         :provider ["PROV1"]}
-       []))))
+       []))
+
+    (testing "validation"
+      (testing "missing user param"
+        (let [{:keys [status body]} (client/get
+                                     (url/access-control-s3-buckets-url)
+                                     {:headers {transmit-config/token-header transmit-config/echo-system-token}
+                                      :accept :json
+                                      :throw-exceptions false})]
+          (is (= 400 status))
+          (is (= {:errors ["Parameter [user_id] is required."]}
+                 (json/parse-string body true)))))
+
+      (testing "unexpected param"
+        (let [{:keys [status body]} (client/get
+                                     (url/access-control-s3-buckets-url)
+                                     {:query-params {:user_id "user1"
+                                                     :unexpected "param"}
+                                      :headers {transmit-config/token-header transmit-config/echo-system-token}
+                                      :accept :json
+                                      :throw-exceptions false})]
+          (is (= 400 status))
+          (is (= {:errors ["Parameter [unexpected] was not recognized."]}
+                 (json/parse-string body true))))))))

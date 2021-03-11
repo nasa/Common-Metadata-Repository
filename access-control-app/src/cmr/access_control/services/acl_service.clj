@@ -16,6 +16,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.services.search.params :as cp]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.concepts :as concepts]
@@ -360,26 +361,21 @@
       (auth-util/get-sids context :guest)
       (auth-util/get-sids context (tokens/get-user-id context user-token)))))
 
-(defn- providers-with-update-permission-for-user
-  "Returns a list of provider-ids where the given user has the INGEST_MANAGEMENT_ACL.
-  If no providers are given, it will assume all providers."
-  [context user-id provider-ids]
-  {:pre [(coll? provider-ids)]}
-  (let [providers (if (empty? provider-ids)
-                    (map :provider-id (mdb/get-providers context))
-                    provider-ids)]
-    (filter #(some #{:update}
-                   (first (vals (get-permissions
-                                 context
-                                 {:user_id user-id
-                                  :target "INGEST_MANAGEMENT_ACL"
-                                  :provider %}))))
-            providers)))
-
-(defn- fetch-s3-buckets-for-providers
-  "Search Elasticsearch for a list of S3 buckets by provider."
-  [context provider-ids]
-  (let [condition (qm/string-conditions :provider-id provider-ids)
+(defn- fetch-s3-buckets-by-groups
+  [context groups providers]
+  (println "====================")
+  (clojure.pprint/pprint groups)
+  (clojure.pprint/pprint providers)
+  (let [;;base-query (qm/string-conditions :permitted-group-ids groups)
+        base-query (gc/or-conds (map #(qm/string-condition :permitted-group-ids
+                                                           (format "*%s*" %)
+                                                           :false
+                                                           :true) groups))
+        condition (if (empty? providers)
+                    base-query
+                    (gc/and
+                     base-query
+                     (gc/or-conds (map #(qm/string-condition :provider-id %) providers))))
         query (qm/query {:concept-type :collection
                          :condition condition
                          :skip-acls? true
@@ -394,14 +390,14 @@
          set
          sort)))
 
-(defn s3-buckets-by-provider
+(defn s3-buckets-for-user
   "Returns a list of s3 buckets and object prefix names by provider.
   Permission is determined by the INGEST_MANAMGEMENT_ACL."
   [context user provider-ids]
-  (let [available-providers (providers-with-update-permission-for-user
-                             context
-                             user
-                             provider-ids)]
-    (if (empty? available-providers)
+  (let [groups (auth-util/get-sids context user)
+        providers (if (empty? provider-ids)
+                    (map :provider-id (mdb/get-providers context))
+                    provider-ids)]
+    (if (empty? groups)
       []
-      (fetch-s3-buckets-for-providers context available-providers))))
+      (fetch-s3-buckets-by-groups context groups providers))))

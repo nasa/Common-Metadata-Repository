@@ -211,10 +211,11 @@
 ;;; Misc routes
 
 (defn- get-allowed-s3-buckets
-  "Returns a list of S3 buckets the given user has :update permission to."
+  "Returns a list of S3 buckets the given user_id has :update permission to."
   [context params]
-  (let [{user :user providers :provider} params
-        s3-list (acl-service/s3-buckets-by-provider
+  (pv/validate-s3-buckets-params params)
+  (let [{user :user_id providers :provider} params
+        s3-list (acl-service/s3-buckets-for-user
                  context
                  user
                  providers)]
