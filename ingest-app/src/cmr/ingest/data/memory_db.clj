@@ -138,7 +138,8 @@
    [this provider-id]
    (some->> @granule-task-status-atom
             (filter #(= provider-id (:provider-id %)))
-            (map #(select-keys % [:created-at :name :task-id :status :status-message :instruction]))))
+            (map #(select-keys
+                   % [:created-at :name :task-id :status :status-message :request-json-body]))))
 
   (get-bulk-granule-update-task-status
    [this task-id provider-id]

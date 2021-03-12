@@ -186,7 +186,7 @@
   [context]
   (get-in context [:system :db]))
 
-(defn-timed get-bulk-update-statuses-for-provider
+(defn-timed get-collection-tasks
   "Returns bulk update statuses with task ids by provider"
   [context provider-id]
   (get-provider-bulk-update-status (context->db context) provider-id))

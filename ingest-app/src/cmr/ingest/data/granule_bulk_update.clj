@@ -70,20 +70,17 @@
   (update-bulk-update-granule-status [db task-id granule-ur status status-message])
   (reset-bulk-granule-update [db]))
 
-(def bulk_update_task_status
-  "bulk_update_gran_status")
-
 ;; Extends the GranBulkUpdateStore to the oracle store so it will work with oracle.
 (extend-protocol GranBulkUpdateStore
   cmr.oracle.connection.OracleStore
 
-  (get-provider-bulk-update-status
+  (get-provider-bulk-granule-update-status
    [db provider-id]
    (jdbc/with-db-transaction
     [conn db]
     ;; Returns a list of bulk update statuses for the provider
-    (let [stmt (sql-utils/build (sql-utils/select [:created-at :name :task-id :status :status-message :instruction]
-                                                  (sql-utils/from bulk_update_task_status)
+    (let [stmt (sql-utils/build (sql-utils/select [:created-at :name :task-id :status :status-message :request-json-body]
+                                                  (sql-utils/from "granule_bulk_update_tasks")
                                                   (sql-utils/where `(= :provider-id ~provider-id))))
           ;; Note: the column selected out of the database is created_at, instead of created-at.
           statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
@@ -99,9 +96,8 @@
     ;; Returns a status for the particular task
     (some-> conn
             (sql-utils/find-one (sql-utils/select [:created-at :name :status :status-message :instruction]
-                                                  (sql-utils/from bulk_update_task_status)
-                                                  (sql-utils/where `(and (= :task-id ~task-id))
-                                                                   (= :provider-id ~provider-id))))
+                                                  (sql-utils/from "bulk_update_gran_status")
+                                                  (sql-utils/where `(= :task-id ~task-id))))
             util/map-keys->kebab-case
             (update :request-json-body util/gzip-blob->string)
             (update :created-at (partial oracle/oracle-timestamp->str-time conn)))))
@@ -198,8 +194,8 @@
   [context]
   (get-in context [:system :db]))
 
-(defn-timed get-bulk-update-statuses-for-provider
-  "Returns bulk update statuses with task ids by provider"
+(defn-timed get-granule-tasks
+  "Returns granule bulk update tasks by provider"
   [context provider-id]
   (get-provider-bulk-granule-update-status (context->db context) provider-id))
 
