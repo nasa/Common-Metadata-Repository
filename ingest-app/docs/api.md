@@ -1080,21 +1080,109 @@ Bulk update status and results are available for 90 days.
 
 ## <a name="granule-bulk-update"></a> Granule Bulk Update
 
-The granule bulk update API is used perform the same granule update to multiple concepts in one call.
+The granule bulk update API is used perform the same granule update to multiple granule concepts in one call.
 
-Bulk update is initiated through an ingest POST endpoint with the concept ids to update, the update type, the update field, and update information.
+Granule bulk update is initiated through an ingest POST endpoint with the bulk update operation, the update field, and the updates which is a list of granule urs and update values in the request body. See the [Granule Bulk Update JSON Schema](https://github.com/nasa/Common-Metadata-Repository/blob/master/ingest-app/resources/granule_bulk_update_schema.json) for the detailed format of granule bulk update request.
 
-Updated granules are validated using business rule validations.  Updates will not be saved if the business validations fail. The error will be recorded in the individual granule status, which can be queried via the status endpoint. Granule validation warnings will not prevent saving the updated granule and the warnings will be recorded in the individual granule status.
+Updated granules are validated using business rule validations.  Updates will not be saved if the business validations fail. The error will be recorded in the individual granule status, which can be queried via the status endpoint.
 
 Granule bulk update currently supports updating the following fields:
 
-  * Related URLs
+  * OPeNDAP url in OnlineResources for ECHO10 format
 
-Bulk update post request takes a JSON file with the following parameters:
+Example: Add/update OPeNDAP url for 3 granules under PROV1.
 
-  * Concept-ids (required) - a list of concept ids to update, which need to be associated with the provider the bulk update is initiated with. If it is equal to ["ALL"], case insensitive, all the collections for the provider will be updated.
-  * Name (optional) - a name used to identify a bulk update task. It needs to be unique within a provider. If no name is provided this will be defaulted to the task id that is created when a bulk update task is initiated.
-  * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`
-  * Update field (required) - choose from the enumeration: `RELATED URLS`
-  * Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.  
-  * Find value (required for `FIND_AND_REPLACE`, `FIND_AND_UPDATE` and `FIND_AND_REMOVE` update types) - UMM-JSON representation of the data to find
+```
+curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules -d
+'{ "name": "example of adding OPeNDAP links",
+	"operation": "UPDATE_FIELD",
+	"update-field":"OPEnDAPLink",
+	"updates":[
+             ["granule_ur1", "https://via.placeholder.com/150"],
+             ["granule_ur2", "https://via.placeholder.com/160"],
+             ["granule_ur3", "https://via.placeholder.com/170"]
+	]
+}'
+```
+
+Example granule bulk update response:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+    <status>200</status>
+    <task-id>5</task-id>
+</result>
+```
+
+### Query Granule Bulk Update Status
+
+The task information of all granule bulk update tasks that has been applied on a provider can be retrieved by sending an HTTP GET request to `%CMR-ENDPOINT%/providers/<provider-id>/bulk-update/granules/status`
+
+This returns a list of: name, task id, created-at, status (IN_PROGRESS or COMPLETE), a status message, and the original request JSON body.
+
+The supported response formats are application/xml and application/json. The default is application/xml.
+
+Example:
+```
+curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules/status
+
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+    <tasks>
+        <task>
+            <created-at>2021-03-12T20:38:53.415Z</created-at>
+            <name>add opendap links: 1</name>
+            <task-id>1</task-id>
+            <status>COMPLETE</status>
+            <status-message>All granule updates completed successfully.</status-message>
+            <request-json-body>{"name":"add opendap links","operation":"UPDATE_FIELD","update-field":"OPeNDAPLink","updates":[["SC:AE_5DSno.002:30500511","https://url30500511"],["SC:AE_5DSno.002:30500512","https://url30500512"]]}</request-json-body>
+        </task>
+        <task>
+            <created-at>2021-03-12T20:38:53.448Z</created-at>
+            <name>add opendap links: 2</name>
+            <task-id>2</task-id>
+            <status>COMPLETE</status>
+            <status-message>All granule updates completed successfully.</status-message>
+            <request-json-body>{"name":"add opendap links","operation":"UPDATE_FIELD","update-field":"OPeNDAPLink","updates":[["SC:AE_5DSno.002:30500518","https://url30500518"],["SC:coll2:30500519","https://url30500519"]]}</request-json-body>
+        </task>
+        <task>
+            <created-at>2021-03-12T20:38:53.473Z</created-at>
+            <name>3: 3</name>
+            <task-id>3</task-id>
+            <status>COMPLETE</status>
+            <status-message>Task completed with 1 FAILED and 1 UPDATED out of 2 total granule update(s).</status-message>
+            <request-json-body>{"operation":"UPDATE_FIELD","update-field":"OPeNDAPLink","updates":[["SC:coll3:30500514","https://url30500514"],["SC:non-existent","https://url30500515"]]}</request-json-body>
+        </task>
+    </tasks>
+</result>
+```
+
+To get a detailed task status for a given granule bulk update task, user can send an HTTP GET request to `%CMR-ENDPOINT%/granule-bulk-update/status/<task-id>`
+
+This returns the status of the bulk update task including the overall task status (IN_PROGRESS or COMPLETE), an overall task status message, the original request JSON body, and the status of each granule updated. The granule status includes the granule-ur, the granule update status (PENDING, UPDATED, SKIPPED, FAILED), and a status message. FAILED indicates an error occurred either updating the granule or during granule validation. SKIPPED indicates the update didn't happen because the update operation does not apply to the granule. The error will be reported in the granule status message.
+
+The only supported response format for granule bulk update task status is application/json.
+
+Example of granule bulk update task status:
+```
+curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/granule-bulk-update/status/3
+
+{
+  "status" : 200,
+  "created-at" : "2021-03-12T20:38:53.473Z",
+  "name" : "3: 3",
+  "task-status" : "COMPLETE",
+  "status-message" : "Task completed with 1 FAILED and 1 UPDATED out of 2 total granule update(s).",
+  "request-json-body" : "{\"operation\":\"UPDATE_FIELD\",\"update-field\":\"OPeNDAPLink\",\"updates\":[[\"SC:coll3:30500514\",\"https://url30500514\"],[\"SC:non-existent\",\"https://url30500515\"]]}",
+  "granule-statuses" : [ {
+    "granule-ur" : "SC:coll3:30500514",
+    "status" : "UPDATED",
+    "status-message" : null
+  }, {
+    "granule-ur" : "SC:non-existent",
+    "status" : "FAILED",
+    "status-message" : "Granule UR [SC:non-existent] in task-id [3] does not exist."
+  } ]
+}
+```
+Granule bulk update tasks and statuses are available for 90 days.
