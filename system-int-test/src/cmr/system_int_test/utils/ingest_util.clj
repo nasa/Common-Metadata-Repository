@@ -541,25 +541,23 @@
 
 (defn bulk-update-granules
   "Call ingest granule bulk update by provider"
-  ([provider-id request-body]
-   (bulk-update-granules provider-id request-body nil))
-  ([provider-id request-body options]
-   (let [{:keys [token user-id]} options
-         accept-format (get options :accept-format :xml)
-         headers (when (or user-id token)
-                   (util/remove-nil-keys
-                    {transmit-config/token-header token
-                     "user-id" user-id}))
-         params {:method :post
-                 :url (url/ingest-granule-bulk-update-url provider-id)
-                 :body (json/generate-string request-body)
-                 :connection-manager (s/conn-mgr)
-                 :throw-exceptions false}
-         response (-> params
-                      (merge (when accept-format {:accept accept-format}))
-                      (merge params (when headers {:headers headers}))
-                      client/request)]
-     (parse-bulk-update-response response options))))
+  [provider-id request-body options]
+  (let [{:keys [token user-id]} options
+        accept-format (get options :accept-format :xml)
+        headers (when (or user-id token)
+                  (util/remove-nil-keys
+                   {transmit-config/token-header token
+                    "user-id" user-id}))
+        params {:method :post
+                :url (url/ingest-granule-bulk-update-url provider-id)
+                :body (json/generate-string request-body)
+                :connection-manager (s/conn-mgr)
+                :throw-exceptions false}
+        response (-> params
+                     (merge (when accept-format {:accept accept-format}))
+                     (merge params (when headers {:headers headers}))
+                     client/request)]
+    (parse-bulk-update-response response options)))
 
 (defmulti parse-bulk-update-provider-status-body
   "Parse the bulk update provider status response body as a given format"
@@ -597,21 +595,36 @@
    (assoc (parse-bulk-update-provider-status-body (or (:accept-format options) :xml) response)
           :status (:status response))))
 
+(defn- bulk-update-provider-status*
+  "Get the tasks and statuses by provider"
+  [concept-type provider-id options]
+  (let [accept-format (get options :accept-format :xml)
+        token (:token options)
+        task-url (if (= :collection concept-type)
+                   (url/ingest-collection-bulk-update-status-url provider-id)
+                   (url/ingest-granule-bulk-update-status-url provider-id))
+        params {:method :get
+                :url task-url
+                :connection-manager (s/conn-mgr)
+                :throw-exceptions false}
+        params (merge params (when accept-format {:accept accept-format}))
+        params (merge params (when token {:headers {transmit-config/token-header token}}))
+        response (client/request params)]
+    (parse-bulk-update-provider-status-response response options)))
+
 (defn bulk-update-provider-status
   "Get the tasks and statuses by provider"
   ([provider-id]
    (bulk-update-provider-status provider-id nil))
   ([provider-id options]
-   (let [accept-format (get options :accept-format :xml)
-         token (:token options)
-         params {:method :get
-                 :url (url/ingest-collection-bulk-update-status-url provider-id)
-                 :connection-manager (s/conn-mgr)
-                 :throw-exceptions false}
-         params (merge params (when accept-format {:accept accept-format}))
-         params (merge params (when token {:headers {transmit-config/token-header token}}))
-         response (client/request params)]
-     (parse-bulk-update-provider-status-response response options))))
+   (bulk-update-provider-status* :collection provider-id options)))
+
+(defn granule-bulk-update-tasks
+  "Get the granule bulk update tasks by provider"
+  ([provider-id]
+   (granule-bulk-update-tasks provider-id nil))
+  ([provider-id options]
+   (bulk-update-provider-status* :granule provider-id options)))
 
 (defmulti parse-bulk-update-task-status-body
   "Parse the bulk update task status response body as a given format"
@@ -652,21 +665,36 @@
    (assoc (parse-bulk-update-task-status-body (or (:accept-format options) :xml) response)
           :status (:status response))))
 
-(defn bulk-update-task-status
- "Get the tasks and statuses by provider"
- ([provider-id task-id]
-  (bulk-update-task-status provider-id task-id nil))
- ([provider-id task-id options]
+(defn- bulk-update-task-status*
+  "Get the tasks and statuses by provider"
+  [concept-type provider-id task-id options]
   (let [accept-format (get options :accept-format :xml)
         token (:token options)
+        task-status-url (if (= :collection concept-type)
+                          (url/ingest-collection-bulk-update-task-status-url provider-id task-id)
+                          (url/ingest-granule-bulk-update-task-status-url task-id))
         params {:method :get
-                :url (url/ingest-collection-bulk-update-task-status-url provider-id task-id)
+                :url task-status-url
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}
         params (merge params (when accept-format {:accept accept-format}))
         params (merge params (when token {:headers {transmit-config/token-header token}}))
         response (client/request params)]
-   (parse-bulk-update-task-status-response response options))))
+    (parse-bulk-update-task-status-response response options)))
+
+(defn bulk-update-task-status
+ "Get the tasks and statuses by provider"
+ ([provider-id task-id]
+  (bulk-update-task-status provider-id task-id nil))
+ ([provider-id task-id options]
+  (bulk-update-task-status* :collection provider-id task-id options)))
+
+(defn granule-bulk-update-task-status
+ "Get the tasks and statuses by provider"
+ ([task-id]
+  (granule-bulk-update-task-status task-id nil))
+ ([task-id options]
+  (bulk-update-task-status* :granule nil task-id options)))
 
 (defn get-ingest-update-acls
   "Get a token's system ingest management update ACLs."
@@ -811,24 +839,3 @@
   (client/post (url/ingest-clear-cache-url)
                {:connection-manager (s/conn-mgr)
                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
-
-(defn bulk-update-granules
-  [provider-id request-body options]
-  (let [accept-format (get options :accept-format :xml)
-        token (:token options)
-        user-id (:user-id options)
-        headers (when (or user-id token)
-                  (util/remove-nil-keys
-                   {transmit-config/token-header token
-                    "user-id" user-id}))
-        params {:method :post
-                :url (url/ingest-collection-bulk-granule-update-url provider-id)
-                :body (json/generate-string request-body)
-                :connection-manager (s/conn-mgr)
-                :throw-exceptions false}
-        params (merge params (when accept-format {:accept accept-format}))
-        params (merge params (when headers {:headers headers}))
-        response (client/request params)]
-    (if (:raw? options)
-      response
-      (parse-bulk-update-response response options))))

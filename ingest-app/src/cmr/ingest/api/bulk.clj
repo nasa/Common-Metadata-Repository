@@ -12,8 +12,9 @@
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.config :as ingest-config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
+   [cmr.ingest.data.granule-bulk-update :as data-gran-bulk-update]
    [cmr.ingest.services.bulk-update-service :as bulk-update]
-   [cmr.ingest.services.granule-bulk-update-service :as granule-bulk-update]
+   [cmr.ingest.services.granule-bulk-update-service :as gran-bulk-update]
    [cmr.ingest.services.ingest-service :as ingest]))
 
 (defn bulk-update-collections
@@ -51,7 +52,7 @@
       (lt-validation/validate-launchpad-token request-context)
       (api-core/verify-provider-exists request-context provider-id)
       (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-      (let [task-id (granule-bulk-update/validate-and-save-bulk-granule-update
+      (let [task-id (gran-bulk-update/validate-and-save-bulk-granule-update
                       request-context
                       provider-id
                       content
@@ -110,16 +111,29 @@
                                                          :task-id :name :created-at
                                                          [:request-json-body])))})
 
+(defmulti get-provider-tasks*
+  "Get bulk update tasks status based on concept type"
+  (fn [context provider-id concept-type]
+    concept-type))
+
+(defmethod get-provider-tasks* :collection
+  [context provider-id _]
+  (data-bulk-update/get-collection-tasks context provider-id))
+
+(defmethod get-provider-tasks* :granule
+  [context provider-id _]
+  (data-gran-bulk-update/get-granule-tasks context provider-id))
+
 (defn get-provider-tasks
   "Get all tasks and task statuses for provider."
-  [provider-id request]
+  [concept-type provider-id request]
   (let [{:keys [headers request-context]} request]
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
     (generate-provider-tasks-response
      headers
      {:status 200
-      :tasks (data-bulk-update/get-bulk-update-statuses-for-provider request-context provider-id)})))
+      :tasks (get-provider-tasks* request-context provider-id concept-type)})))
 
 (defmulti generate-provider-task-status-response
   "Convert a result to a proper response format"
