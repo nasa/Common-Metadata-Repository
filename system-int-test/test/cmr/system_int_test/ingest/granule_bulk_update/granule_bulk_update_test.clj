@@ -35,6 +35,7 @@
                  (:concept-id coll1)
                  {:native-id "gran-native1-2"
                   :granule-ur "SC:AE_5DSno.002:30500512"})))
+        ;; this granule will fail bulk update as it is in ISO-SMAP format
         gran3 (ingest/ingest-concept
                (data-core/item->concept
                 (granule/granule-with-umm-spec-collection
@@ -42,43 +43,81 @@
                  (:concept-id coll1)
                  {:native-id "gran-native1-3"
                   :granule-ur "SC:AE_5DSno.002:30500513"})
-                :umm-json))]
+                :iso-smap))]
+
     (testing "successful granule bulk update"
       (let [bulk-update {:name "add opendap links"
                          :operation "UPDATE_FIELD"
                          :update-field "OPeNDAPLink"
                          :updates [["SC:AE_5DSno.002:30500511" "https://url30500511"]
                                    ["SC:AE_5DSno.002:30500512" "https://url30500512"]]}
-            response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)]
+            response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
+            {:keys [status task-id]} response]
         (index/wait-until-indexed)
-        (is (= 200 (:status response)))
-        (is (not (nil? (:task-id response))))
-        ;; TODO: detailed status check will be added in CMR-7092
-        ))
-    (testing "partial successful granule bulk update"
+
+        (is (= 200 status))
+        (is (some? task-id))
+        (let [status-response (ingest/granule-bulk-update-task-status task-id)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "All granule updates completed successfully." status-message))
+          (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
+                   :status "UPDATED"
+                   :status-message nil}
+                  {:granule-ur "SC:AE_5DSno.002:30500512"
+                   :status "UPDATED"
+                   :status-message nil}]
+                 granule-statuses)))))
+
+    (testing "failed granule bulk update"
       (let [bulk-update {:name "add opendap links"
                          :operation "UPDATE_FIELD"
                          :update-field "OPeNDAPLink"
                          :updates [["SC:AE_5DSno.002:30500513" "https://url30500513"]]}
-            response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)]
+            response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
+            {:keys [status task-id]} response]
         (index/wait-until-indexed)
-        (is (= 200 (:status response)))
-        (is (not (nil? (:task-id response))))
-        ;; TODO: detailed status check will be added in CMR-7092
-        ))
-    (testing "failed granule bulk update"
+
+        (is (= 200 status))
+        (is (some? task-id))
+        (let [status-response (ingest/granule-bulk-update-task-status task-id)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+          (is (= [{:granule-ur "SC:AE_5DSno.002:30500513"
+                   :status "FAILED"
+                   :status-message "Add OPeNDAP url is not supported for format [application/iso:smap+xml]"}]
+                 granule-statuses)))))
+
+    (testing "partial successful granule bulk update"
       (let [bulk-update {:name "add opendap links"
                          :operation "UPDATE_FIELD"
                          :update-field "OPeNDAPLink"
                          :updates [["SC:AE_5DSno.002:30500511" "https://url30500511"]
                                    ["SC:AE_5DSno.002:30500512" "https://url30500512"]
-                                   ["SC:AE_5DSno.002:30500513" "https://url30500513"]]}
-            response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)]
+                                   ["SC:non-existent-ur" "https://url30500513"]]}
+            response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
+            {:keys [status task-id]} response]
         (index/wait-until-indexed)
-        (is (= 200 (:status response)))
-        (is (not (nil? (:task-id response))))
-        ;; TODO: detailed status check will be added in CMR-7092
-        ))))
+
+        (is (= 200 status))
+        (is (some? task-id))
+        (let [status-response (ingest/granule-bulk-update-task-status task-id)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "Task completed with 1 FAILED and 2 UPDATED out of 3 total granule update(s)."
+                 status-message))
+          (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
+                   :status "UPDATED"
+                   :status-message nil}
+                  {:granule-ur "SC:AE_5DSno.002:30500512"
+                   :status "UPDATED"
+                   :status-message nil}
+                  {:granule-ur "SC:non-existent-ur"
+                   :status "FAILED"
+                   :status-message (format "Granule UR [SC:non-existent-ur] in task-id [%s] does not exist."
+                                           task-id)}]
+                 granule-statuses)))))))
 
 (deftest add-opendap-url
   "test adding OPeNDAP url with real granule file that is already in CMR code base"

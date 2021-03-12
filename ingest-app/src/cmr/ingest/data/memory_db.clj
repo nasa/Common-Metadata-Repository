@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.edn :as edn]
+   [clojure.string :as string]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.time-keeper :as time-keeper]
@@ -134,20 +135,20 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   granule-data-bulk-update/GranBulkUpdateStore
 
-  (get-provider-bulk-granule-update-status
+  (get-granule-tasks-by-provider-id
    [this provider-id]
    (some->> @granule-task-status-atom
             (filter #(= provider-id (:provider-id %)))
             (map #(select-keys
                    % [:created-at :name :task-id :status :status-message :request-json-body]))))
 
-  (get-bulk-granule-update-task-status
-   [this task-id provider-id]
+  (get-granule-task-by-task-id
+   [this task-id]
    (let [task-status (some->> @granule-task-status-atom
-                              (some #(when (and (= provider-id (str (:provider-id %)))
-                                                (= task-id (str (:task-id %))))
+                              (some #(when (= task-id (str (:task-id %)))
                                        %)))]
-     (select-keys task-status [:created-at :name :status :status-message :instruction])))
+     (select-keys task-status
+                  [:created-at :name :provider-id :status :status-message :request-json-body])))
 
   (get-bulk-update-task-granule-status
    [this task-id]
@@ -198,11 +199,12 @@
    (let [task-statuses @granule-task-status-atom
          index (first (keep-indexed #(when (= task-id (:task-id %2))
                                        %1)
-                                    task-statuses))]
+                                    task-statuses))
+         message (if (string/blank? status-message) nil status-message)]
      (swap! (:granule-task-status-atom this) (fn [task-statuses]
                                                (-> task-statuses
                                                    (assoc-in [index :status] status)
-                                                   (assoc-in [index :status-message] status-message))))))
+                                                   (assoc-in [index :status-message] message))))))
 
 
   (update-bulk-update-granule-status
@@ -212,11 +214,12 @@
          index (first (keep-indexed #(when (and (= granule-ur (:granule-ur %2))
                                                 (= task-id (:task-id %2)))
                                        %1)
-                                    gran-statuses))]
+                                    gran-statuses))
+         message (if (string/blank? status-message) nil status-message)]
      (swap! (:granule-status-atom this) (fn [gran-statuses]
                                           (-> (into [] gran-statuses)
                                               (assoc-in [index :status] status)
-                                              (assoc-in [index :status-message] status-message))))
+                                              (assoc-in [index :status-message] message))))
      (let [gran-statuses (into [] @granule-status-atom) ; Need to refresh after change
            task-granules (filter #(= task-id (:task-id %)) gran-statuses)
            pending-granules (filter #(= "PENDING" (:status %)) task-granules)

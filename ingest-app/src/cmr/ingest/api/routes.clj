@@ -93,6 +93,13 @@
            request
            (variables/ingest-variable
              nil native-id request coll-concept-id nil)))))
+    ;; granule bulk update status route
+    (api-core/set-default-error-format
+     :json
+     (context "/granule-bulk-update/status/:task-id" [task-id]
+       (GET "/"
+         request
+         (bulk/get-granule-task-status task-id request))))
     ;; Provider ingest routes
     (api-core/set-default-error-format
      :xml

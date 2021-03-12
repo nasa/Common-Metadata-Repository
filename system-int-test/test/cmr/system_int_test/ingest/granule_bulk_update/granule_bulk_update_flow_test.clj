@@ -1,16 +1,15 @@
 (ns cmr.system-int-test.ingest.granule-bulk-update.granule-bulk-update-flow-test
   "CMR granule bulk update work flow integration tests."
   (:require
-    [cmr.system-int-test.data2.granule :as granule]
    [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as data-core]
+   [cmr.system-int-test.data2.granule :as granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
@@ -104,6 +103,7 @@
             update3-response (ingest/bulk-update-granules "PROV2" update3 bulk-update-options)
             task3-id (str (:task-id update3-response))]
         (qb-side-api/wait-for-terminal-states)
+
         ;; verify granule bulk update status can be retrieved successfully
         ;; which implies the responses are returned in the desired formats
         (is (= 200 (:status update1-response)))
@@ -146,4 +146,56 @@
                             :request-json-body update3-json}])
                      (set (map #(dissoc % :created-at) tasks)))))
             "JSON" :json
-            "XML" :xml))))))
+            "XML" :xml)
+
+          (testing "Granule bulk update tasks invalid format"
+            (let [{:keys [status errors]} (ingest/granule-bulk-update-tasks
+                                           "PROV1"
+                                           {:accept-format :umm-json})]
+              (is (= 400 status))
+              (is (= ["The mime types specified in the accept header [application/umm-json] are not supported."]
+                     errors))))
+
+          (testing "Granule bulk update tasks non-existent provider"
+            (let [{:keys [status errors]} (ingest/granule-bulk-update-tasks "PROVX")]
+              (is (= 422 status))
+              (is (= ["Provider with provider-id [PROVX] does not exist."]
+                     errors)))))
+
+        (testing "Granule bulk update task status response"
+          (let [task3-expected {:status 200,
+                                :name (str task3-id ": " task3-id)
+                                :task-status "COMPLETE",
+                                :status-message "Task completed with 1 FAILED and 1 UPDATED out of 2 total granule update(s).",
+                                :request-json-body update3-json
+                                :granule-statuses
+                                [{:granule-ur "SC:coll3:30500514"
+                                  :status "UPDATED",
+                                  :status-message nil}
+                                 {:granule-ur "SC:non-existent"
+                                  :status "FAILED",
+                                  :status-message (format "Granule UR [SC:non-existent] in task-id [%s] does not exist."
+                                                          task3-id)}]}]
+            (testing "default result format"
+              (let [response (ingest/granule-bulk-update-task-status task3-id)]
+                (is (= task3-expected
+                       (dissoc response :created-at)))))
+
+            (testing "JSON result format"
+              (let [response (ingest/granule-bulk-update-task-status
+                              task3-id {:accept-format :json})]
+                (is (= task3-expected
+                       (dissoc response :created-at)))))
+
+            (testing "xml result format"
+              (let [{:keys [status errors]} (ingest/granule-bulk-update-task-status
+                                             task3-id {:accept-format :xml})]
+                (is (= 400 status))
+                (is (= ["Granule bulk update task status is only supported in JSON format."]
+                       errors))))
+
+            (testing "non-existent task id"
+              (let [{:keys [status errors]} (ingest/granule-bulk-update-task-status 12345)]
+                (is (= 404 status))
+                (is (= ["Granule bulk update task with task id [12345] could not be found."]
+                       errors))))))))))
