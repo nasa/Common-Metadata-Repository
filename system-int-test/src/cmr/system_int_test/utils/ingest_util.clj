@@ -564,7 +564,7 @@
   (fn [response-format body]
     response-format))
 
-(defmethod parse-bulk-update-provider-status-body :xml
+(defmethod parse-bulk-update-provider-status-body :default
   [response-format response]
   (try
     (let [xml-elem (x/parse-str (:body response))]
@@ -658,17 +658,21 @@
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response))) e)))))
 
 (defn parse-bulk-update-task-status-response
- "Parse an bulk update task status response and append a status"
- [response options]
- (if (get options :raw? false)
-   response
-   (assoc (parse-bulk-update-task-status-body (or (:accept-format options) :xml) response)
-          :status (:status response))))
+  "Parse bulk update task status response and append the response status"
+  ([response options]
+   (parse-bulk-update-task-status-response response options :xml))
+  ([response options default-result-format]
+   (if (get options :raw? false)
+     response
+     (assoc (parse-bulk-update-task-status-body
+             (or (:accept-format options) default-result-format)
+             response)
+            :status (:status response)))))
 
 (defn- bulk-update-task-status*
-  "Get the tasks and statuses by provider"
+  "Implementation function to get the bulk update task status for the given task id"
   [concept-type provider-id task-id options]
-  (let [accept-format (get options :accept-format :xml)
+  (let [accept-format (get options :accept-format)
         token (:token options)
         task-status-url (if (= :collection concept-type)
                           (url/ingest-collection-bulk-update-task-status-url provider-id task-id)
@@ -679,18 +683,19 @@
                 :throw-exceptions false}
         params (merge params (when accept-format {:accept accept-format}))
         params (merge params (when token {:headers {transmit-config/token-header token}}))
+        default-result-format (if (= :collection concept-type) :xml :json)
         response (client/request params)]
-    (parse-bulk-update-task-status-response response options)))
+    (parse-bulk-update-task-status-response response options default-result-format)))
 
 (defn bulk-update-task-status
- "Get the tasks and statuses by provider"
+ "Get collection bulk update task status for the given task id"
  ([provider-id task-id]
   (bulk-update-task-status provider-id task-id nil))
  ([provider-id task-id options]
   (bulk-update-task-status* :collection provider-id task-id options)))
 
 (defn granule-bulk-update-task-status
- "Get the tasks and statuses by provider"
+ "Get granule bulk update task status for the given task id"
  ([task-id]
   (granule-bulk-update-task-status task-id nil))
  ([task-id options]

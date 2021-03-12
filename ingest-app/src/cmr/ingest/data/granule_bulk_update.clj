@@ -61,8 +61,8 @@
 (defprotocol GranBulkUpdateStore
   "Defines a protocol for getting and storing the granule bulk update status and task-id
   information."
-  (get-provider-bulk-granule-update-status [db provider-id])
-  (get-bulk-granule-update-task-status [db task-id provider-id])
+  (get-granule-tasks-by-provider-id [db provider-id])
+  (get-granule-task-by-task-id [db task-id])
   (get-bulk-update-task-granule-status [db task-id])
   (get-bulk-update-granule-status [db task-id concept-id])
   (create-and-save-bulk-granule-update-status [db provider-id user-id request-json-body instructions])
@@ -74,14 +74,16 @@
 (extend-protocol GranBulkUpdateStore
   cmr.oracle.connection.OracleStore
 
-  (get-provider-bulk-granule-update-status
+  (get-granule-tasks-by-provider-id
    [db provider-id]
    (jdbc/with-db-transaction
     [conn db]
-    ;; Returns a list of bulk update statuses for the provider
-    (let [stmt (sql-utils/build (sql-utils/select [:created-at :name :task-id :status :status-message :request-json-body]
-                                                  (sql-utils/from "granule_bulk_update_tasks")
-                                                  (sql-utils/where `(= :provider-id ~provider-id))))
+    ;; Returns a list of bulk update tasks for the provider
+    (let [stmt (sql-utils/build
+                (sql-utils/select
+                 [:created-at :name :task-id :status :status-message :request-json-body]
+                 (sql-utils/from "granule_bulk_update_tasks")
+                 (sql-utils/where `(= :provider-id ~provider-id))))
           ;; Note: the column selected out of the database is created_at, instead of created-at.
           statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
                                (sql-utils/query conn stmt)))
@@ -89,15 +91,16 @@
       (map #(update % :request-json-body util/gzip-blob->string)
            statuses))))
 
-  (get-bulk-granule-update-task-status
-   [db task-id provider-id]
+  (get-granule-task-by-task-id
+   [db task-id]
    (jdbc/with-db-transaction
     [conn db]
-    ;; Returns a status for the particular task
     (some-> conn
-            (sql-utils/find-one (sql-utils/select [:created-at :name :status :status-message :instruction]
-                                                  (sql-utils/from "bulk_update_gran_status")
-                                                  (sql-utils/where `(= :task-id ~task-id))))
+            (sql-utils/find-one
+             (sql-utils/select
+              [:created-at :name :provider-id :status :status-message :request-json-body]
+              (sql-utils/from "granule_bulk_update_tasks")
+              (sql-utils/where `(= :task-id ~task-id))))
             util/map-keys->kebab-case
             (update :request-json-body util/gzip-blob->string)
             (update :created-at (partial oracle/oracle-timestamp->str-time conn)))))
@@ -106,9 +109,11 @@
    [db task-id]
    ;; Get statuses for all granules by task id
    (map util/map-keys->kebab-case
-        (sql-utils/query db (sql-utils/build (sql-utils/select [:granule-ur :status :status-message])
-                                             (sql-utils/from "bulk_update_gran_status")
-                                             (sql-utils/where `(= :task-id ~task-id))))))
+        (sql-utils/query db (sql-utils/build
+                             (sql-utils/select
+                              [:granule-ur :status :status-message]
+                              (sql-utils/from "bulk_update_gran_status")
+                              (sql-utils/where `(= :task-id ~task-id)))))))
 
   (get-bulk-update-granule-status
    [db task-id granule-ur]
@@ -194,14 +199,15 @@
   [context]
   (get-in context [:system :db]))
 
-(defn-timed get-granule-tasks
+(defn-timed get-granule-tasks-by-provider
   "Returns granule bulk update tasks by provider"
   [context provider-id]
-  (get-provider-bulk-granule-update-status (context->db context) provider-id))
+  (get-granule-tasks-by-provider-id (context->db context) provider-id))
 
-(defn-timed get-bulk-update-task-status-for-provider
-  [context task-id provider-id]
-  (get-bulk-granule-update-task-status (context->db context) task-id provider-id))
+(defn-timed get-granule-task-by-id
+  "Returns the granule bulk update task by id"
+  [context task-id]
+  (get-granule-task-by-task-id (context->db context) task-id))
 
 (defn-timed get-bulk-update-granule-statuses-for-task
   [context task-id]

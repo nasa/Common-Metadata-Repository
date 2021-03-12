@@ -122,7 +122,7 @@
 
 (defmethod get-provider-tasks* :granule
   [context provider-id _]
-  (data-gran-bulk-update/get-granule-tasks context provider-id))
+  (data-gran-bulk-update/get-granule-tasks-by-provider context provider-id))
 
 (defn get-provider-tasks
   "Get all tasks and task statuses for provider."
@@ -160,6 +160,13 @@
            (generate-xml-status-list result
             :collection-statuses :collection-status :concept-id)))})
 
+(defn- validate-granule-bulk-update-result-format
+  [headers]
+  (let [result-format (api-core/get-ingest-result-format headers :json)]
+    (when-not (= :json result-format)
+      (srvc-errors/throw-service-error
+       :bad-request "Granule bulk update task status is only supported in JSON format."))))
+
 (defn get-provider-task-status
   "Get the status for the given task for the provider including collection statuses"
   [provider-id task-id request]
@@ -180,3 +187,31 @@
         :status-message (:status-message task-status)
         :request-json-body (:request-json-body task-status)
         :collection-statuses collection-statuses}))))
+
+(defn get-granule-task-status
+  "Get the status for the given task for the provider including collection statuses"
+  [task-id request]
+  (let [{:keys [headers request-context]} request
+        _ (validate-granule-bulk-update-result-format headers)
+        gran-task (data-gran-bulk-update/get-granule-task-by-id request-context task-id)
+        provider-id (:provider-id gran-task)]
+    (when-not provider-id
+      (srvc-errors/throw-service-error
+       :not-found
+       (format "Granule bulk update task with task id [%s] could not be found." task-id)))
+
+    (api-core/verify-provider-exists request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
+
+    (let [{:keys [name created-at status status-message request-json-body]} gran-task
+          granule-statuses (data-gran-bulk-update/get-bulk-update-granule-statuses-for-task
+                            request-context task-id)]
+      (api-core/generate-ingest-response
+       (assoc headers "accept" mt/json)
+       {:status 200
+        :created-at created-at
+        :name name
+        :task-status status
+        :status-message status-message
+        :request-json-body request-json-body
+        :granule-statuses granule-statuses}))))

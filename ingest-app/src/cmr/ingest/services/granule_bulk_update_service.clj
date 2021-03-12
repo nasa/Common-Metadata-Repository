@@ -88,7 +88,7 @@
 (defmethod add-opendap-url :default
   [context concept url]
   (errors/throw-service-errors
-   :invalid-data (format "Add OPeNDAP url is not supported for format [%s]" (:format concept))))
+   :invalid-data [(format "Add OPeNDAP url is not supported for format [%s]" (:format concept))]))
 
 (defmulti update-granule-concept
   "Perform the update of the granule concept."
