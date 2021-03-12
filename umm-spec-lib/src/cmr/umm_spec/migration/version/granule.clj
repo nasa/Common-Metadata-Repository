@@ -123,7 +123,6 @@
 (defn v1-6-2-related-url-type->1-6-1
   "Migrate v1.6.2 related url Type to v1.6.1 related url Type"
   [related-url]
-  (def related-url related-url)
   (if (= "GET DATA VIA DIRECT ACCESS" (:Type related-url))
     (assoc related-url :Type "GET DATA")
     related-url))

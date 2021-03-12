@@ -625,43 +625,57 @@
 
     (index/wait-until-indexed)
 
-    (util/are3 [granule number]
+    (util/are3 [granule granule-ur]
       (let [gran-atom (da/granules->expected-atom [granule]
                                                   [coll1]
-                                                  (str "granules.atom?granule_ur=Granule" number))
-            response (search/find-concepts-atom :granule {:granule-ur (str "Granule" number)})
-            links (get-in response [:results :links])]
+                                                  (str "granules.atom?granule_ur=" granule-ur))
+            gran-atom-links (-> gran-atom
+                                (get :entries)
+                                (first)
+                                (get :links))
+            response (search/find-concepts-atom :granule {:granule-ur granule-ur})
+            response-links (-> response
+                               (get-in [:results :entries])
+                               (first)
+                               (get :links))]
         (is (= 200 (:status response)))
-        (is (= (:links gran-atom) links))
-        (is (for [link links
-                  :when (= "http://esipfed.org/ns/fedsearch/1.1/cloud" (:rel link))]
-              true)))
+        (is (= (:rel gran-atom-links) (:rel response-links)))
+        (is (= (:href gran-atom-links) (:href response-links)))
+        (is (some #(string/includes? % "cloud#") response-links)))
 
-      "atom link and the translation from old cmr umm-g to echo10 and back to old cmr umm-g."
+      "testing echo10"
       gran-echo
-      1
+      "Granule1"
 
-      "the translation from old cmr umm-g to iso smap and back to old cmr umm-g."
+      "testing iso smap"
       gran-smap
-      2
+      "Granule2"
 
-      "the translation from old cmr umm-g to UMM-G and back to old cmr umm-g."
+      "testing umm-g"
       gran-umm
-      3)
+      "Granule3")
 
-    (testing "the translation from old cmr umm-g to UMM-G and back to old cmr umm-g without related URLs."
-      (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule4")
+    (testing "testing without related URLs."
+      (let [gran-atom (da/granules->expected-atom [gran-no-ru] [coll1] "granules.atom?granule_ur=Granule4")
+            gran-atom-links (-> gran-atom
+                                (get :entries)
+                                (first)
+                                (get :links))
             response (search/find-concepts-atom :granule {:granule-ur "Granule4"})
-            links (get-in response [:results :links])]
-        (def links links)
+            response-links (-> response
+                               (get-in [:results :entries])
+                               (first)
+                               (get :links))]
         (is (= 200 (:status response)))
-        (is (= (:links gran-atom) links))
-        (is (= nil (seq
-                     (for [link links
-                           :when (= "http://esipfed.org/ns/fedsearch/1.1/cloud" (:rel link))]
-                       true))))))
+        (is (= gran-atom-links response-links))
+        (is (not-any? #(string/includes? % "cloud#") response-links))))
 
-    (testing "the translation from old cmr umm-g to ISO 19115."
+    (testing "testing to ISO 19115."
       (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
             response (search/find-metadata :granule :iso19115 {:granule-ur "Granule3"})]
+        (is (string/includes? response "s3://aws.com"))))
+
+    (testing "testing to ECHO 10"
+      (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
+            response (search/find-metadata :granule :echo10 {:granule-ur "Granule3"})]
         (is (string/includes? response "s3://aws.com"))))))
