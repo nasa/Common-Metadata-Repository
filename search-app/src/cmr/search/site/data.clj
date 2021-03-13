@@ -180,7 +180,8 @@
   "Convert the search-app url into the stac related urls.
   The reason is we need to access cmr-stac endpoints from CMR search landing page.
   For example, search base-url locally is localhost:3003, stac base-url is localhost:3000,
-  search base-url in sit is https://cmr.sit.nasa.gov:443/search, stac base-url is https://cmr.sit.nasa.gov/"
+  search base-url in sit is https://cmr.sit.earthdata.nasa.gov:443/search,
+  stac base-url is https://cmr.sit.earthdata.nasa.gov/"
   [base-url]
   (let [stac-base-url (-> base-url
                           (string/replace #"gov.*" "gov/")
