@@ -177,7 +177,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn app-url->stac-urls
-  "Convert the search-app url into the stac related urls."
+  "Convert the search-app url into the stac related urls.
+  The reason is we need to access cmr-stac endpoints from CMR search landing page.
+  For example, search base-url locally is localhost:3003, stac base-url is localhost:3000,
+  search base-url in sit is https://cmr.sit.nasa.gov:443/search, stac base-url is https://cmr.sit.nasa.gov/"
   [base-url]
   (let [stac-base-url (-> base-url
                           (string/replace #"gov.*" "gov/")
@@ -206,10 +209,7 @@
   [context]
   (let [base-page (common-data/base-page context)
         base-url (:base-url base-page)
-        stac-base-url (-> base-url
-                          (string/replace #"gov.*" "gov/")
-                          (string/replace #"3003/?" "3000/"))
-        {:keys [stac-url cloudstac-url stac-docs-url static-cloudstac-url]} (app-url->stac-urls stac-base-url)]
+        {:keys [stac-url cloudstac-url stac-docs-url static-cloudstac-url]} (app-url->stac-urls base-url)]
     (assoc base-page :app-title "CMR Search"
                      :release-version (str "v " (common-config/release-version))
                      :stac-url stac-url
