@@ -1,7 +1,7 @@
 (ns cmr.umm.echo10.related-url
   "Contains functions for parsing and generating the ECHO10 OnlineResources and OnlineAccessURLs
   into UMM related urls."
-  (:require [clojure.string :as s]
+  (:require [clojure.string :as string]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-collection :as c]
@@ -69,19 +69,19 @@
         description (cx/string-at-path elem [:Description])
         resource-type (cx/string-at-path elem [:Type])
         mime-type (cx/string-at-path elem [:MimeType])
-        [type sub-type] (resource-type->related-url-types (when resource-type (s/upper-case resource-type)))
+        [type sub-type] (resource-type->related-url-types (when resource-type (string/upper-case resource-type)))
         ;; Check for opendap (case-insensitive) in OnlineResource Type when no defined type is found.
         ;; This is due to GES_DISC OnlineResource opendap could use any string that contains opendap
         ;; See CMR-2555 for details
         [type sub-type] (if (and (nil? type)
                                  resource-type
-                                 (re-find #"^.*OPENDAP.*$" (s/upper-case resource-type)))
+                                 (re-find #"^.*OPENDAP.*$" (string/upper-case resource-type)))
                           ["USE SERVICE API" "OPENDAP DATA"]
                           [type sub-type])]
     (c/map->RelatedURL
      {:url url
       :description description
-      :title (s/trim (str description " (" resource-type ")"))
+      :title (string/trim (str description " (" resource-type ")"))
       :type type
       :sub-type sub-type
       :mime-type mime-type})))
@@ -100,13 +100,16 @@
   [elem]
   (let [url (cx/string-at-path elem [:URL])
         description (cx/string-at-path elem [:URLDescription])
-        mime-type (cx/string-at-path elem [:MimeType])]
+        mime-type (cx/string-at-path elem [:MimeType])
+        type (if (string/includes? (string/lower-case url) "s3://")
+               "GET DATA VIA DIRECT ACCESS"
+               "GET DATA")]
     (c/map->RelatedURL
       {:url url
        :description description
        :title description
        :mime-type mime-type
-       :type "GET DATA"})))
+       :type type})))
 
 (defn- xml-elem->online-access-urls
   "Returns online-access-urls elements from a parsed XML structure"
@@ -150,7 +153,9 @@
 (defn generate-access-urls
   "Generates the OnlineAccessURLs element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
-  (when-let [urls (seq (h/downloadable-urls related-urls))]
+  (when-let [urls (seq (concat
+                         (h/downloadable-urls related-urls)
+                         (h/cloud-urls related-urls)))]
     (x/element
       :OnlineAccessURLs {}
       (for [related-url urls]

@@ -315,7 +315,8 @@
    :browse "http://esipfed.org/ns/fedsearch/1.1/browse#"
    :documentation "http://esipfed.org/ns/fedsearch/1.1/documentation#"
    :metadata "http://esipfed.org/ns/fedsearch/1.1/metadata#"
-   :service "http://esipfed.org/ns/fedsearch/1.1/service#"})
+   :service "http://esipfed.org/ns/fedsearch/1.1/service#"
+   :cloud "http://esipfed.org/ns/fedsearch/1.1/cloud#"})
 
 (defn- add-attribs
   "Returns the attribs with the field-value pair added if there is a value"

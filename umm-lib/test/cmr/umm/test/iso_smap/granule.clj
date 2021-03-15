@@ -159,6 +159,10 @@
                        :url "http://example.com/test1.hdf"
                        :mime-type "application/x-hdf"})
                     (umm-c/map->RelatedURL
+                      {:type "GET DATA VIA DIRECT ACCESS"
+                       :url "s3://aws.com/test1.hdf"
+                       :mime-type "application/x-hdf"})
+                    (umm-c/map->RelatedURL
                       {:type "VIEW RELATED INFORMATION"
                        :mime-type "/text/xml"
                        :url "http://example.com/test2.xml"})
