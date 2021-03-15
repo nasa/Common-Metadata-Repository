@@ -1082,7 +1082,7 @@ Bulk update status and results are available for 90 days.
 
 The granule bulk update API is used perform the same granule update to multiple granule concepts in one call.
 
-Granule bulk update is initiated through a POST to the ingest endpoint with the bulk update operation, the update field, and the updates, which is a list of granule urs and update values in the request body. See the [Granule Bulk Update JSON Schema](https://github.com/nasa/Common-Metadata-Repository/blob/master/ingest-app/resources/granule_bulk_update_schema.json) for the detailed format of granule bulk update request.
+Granule bulk update is initiated through a POST to the ingest endpoint with the bulk update operation, the update field, and the updates, which is a list of granule URs and update values in the request body. See the [Granule Bulk Update JSON Schema](https://github.com/nasa/Common-Metadata-Repository/blob/master/ingest-app/resources/granule_bulk_update_schema.json) for the detailed format of granule bulk update request.
 
 Updated granules are validated using business rule validations.  Updates will not be saved if the business validations fail. The error will be recorded in the individual granule status, which can be queried via the status endpoint.
 
@@ -1094,7 +1094,7 @@ Example: Add/update OPeNDAP url for 3 granules under PROV1.
 
 ```
 curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules -d
-'{ "name": "example of adding OPeNDAP links",
+'{ "name": "example of adding OPeNDAP link",
 	"operation": "UPDATE_FIELD",
 	"update-field":"OPEnDAPLink",
 	"updates":[
