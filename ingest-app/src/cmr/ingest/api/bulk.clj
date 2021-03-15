@@ -167,8 +167,8 @@
       (srvc-errors/throw-service-error
        :bad-request "Granule bulk update task status is only supported in JSON format."))))
 
-(defn get-provider-task-status
-  "Get the status for the given task for the provider including collection statuses"
+(defn get-collection-task-status
+  "Get the status for the given task including collection statuses"
   [provider-id task-id request]
   (let [{:keys [headers request-context]} request]
     (api-core/verify-provider-exists request-context provider-id)
@@ -189,7 +189,7 @@
         :collection-statuses collection-statuses}))))
 
 (defn get-granule-task-status
-  "Get the status for the given task for the provider including collection statuses"
+  "Get the status for the given task including granule statuses"
   [task-id request]
   (let [{:keys [headers request-context]} request
         _ (validate-granule-bulk-update-result-format headers)

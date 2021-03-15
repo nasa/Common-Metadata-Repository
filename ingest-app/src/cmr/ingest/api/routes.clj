@@ -192,7 +192,7 @@
            (bulk/get-provider-tasks :collection provider-id request))
          (GET "/status/:task-id"
            [task-id :as request]
-           (bulk/get-provider-task-status provider-id task-id request)))
+           (bulk/get-collection-task-status provider-id task-id request)))
        (context "/bulk-update/granules" []
          (POST "/"
            request
