@@ -17,8 +17,7 @@
    [cmr.common.util :refer [defn-timed] :as util]
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.metadata-db :as mdb1]
-   [cmr.transmit.metadata-db2 :as mdb]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]))
+   [cmr.transmit.metadata-db2 :as mdb]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
