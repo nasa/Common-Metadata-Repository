@@ -54,17 +54,19 @@
                       :S3BucketAndObjectPrefixNames ["s3://aws.example-3.com" "s3"]
                       :S3CredentialsAPIEndpoint "http://api.example.com"
                       :S3CredentialsAPIDocumentationURL "http://docs.example.com"}}))
+        ;; create all access group
         all-prov-group-id (echo-util/get-or-create-group
                            (system/context)
                            "all-prov-group")
 
+        ;; create limited group
         prov2-group-id (echo-util/get-or-create-group
                         (system/context)
                         "prov2-group")]
 
     (index/wait-until-indexed)
 
-
+    ;; Setup group access to providers
     (echo-util/add-user-to-group (system/context)
                                  all-prov-group-id
                                  "user1"
@@ -75,6 +77,8 @@
                                  "user2"
                                  user2-token)
 
+
+    ;; Grant access to providers to groups
     (doseq [prov ["PROV1" "PROV2" "PROV3"]]
       (echo-util/grant-group (system/context)
                              all-prov-group-id
@@ -86,6 +90,7 @@
 
     (index/wait-until-indexed)
 
+    ;; Update permitted groups index value for all collections
     (ingest/reindex-collection-permitted-groups (transmit-config/echo-system-token))
     (index/wait-until-indexed)
 

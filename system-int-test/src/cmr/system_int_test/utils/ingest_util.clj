@@ -124,12 +124,12 @@
 (defn reindex-collection-permitted-groups
   "Tells ingest to run the reindex-collection-permitted-groups job"
   ([]
-   reindex-collection-permitted-groups nil)
+   (reindex-collection-permitted-groups nil))
   ([token]
    (let [response (client/post (url/reindex-collection-permitted-groups-url)
                                {:connection-manager (s/conn-mgr)
                                 :query-params {:token token}})]
-    (is (= 200 (:status response))))))
+     (is (= 200 (:status response))))))
 
 (defn reindex-all-collections
   "Tells ingest to run the reindex all collections job"
