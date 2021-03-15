@@ -113,5 +113,5 @@
   "Throws service errors if any invalid params or values are found."
   [params]
   (validate-params params :user_id :provider)
-  (when-not (contains? params :user_id)
+  (when (str/blank? (:user_id params))
     (errors/throw-service-errors :bad-request ["Parameter [user_id] is required."])))

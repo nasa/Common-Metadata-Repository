@@ -877,7 +877,7 @@ Content-Type: application/json;charset=ISO-8859-1
 
 ### <a name="get-s3-buckets"></a> User Access to S3 Buckets
 
-This endpoint will return a list of S3 buckets a user has access to. If a list of providers is included in the request, the list of S3 buckets will be filtered to only include S3 buckets contained by collections within those providers.
+This endpoint will return a JSON list of S3 buckets a user has access to. If a list of providers is included in the request, the list of S3 buckets will be filtered to only include S3 buckets contained by collections within those providers.
 
 #### Parameters
 
@@ -894,6 +894,7 @@ curl -i -H "Echo-Token: XXXX" "%CMR-ENDPOINT%/s3-buckets?user_id=user1
 
 HTTP/1.1 200 OK
 Content-Length: 81
+Content-Type: application/json
 
 ["s3","s3://aws.example-1.com","s3://aws.example-2.com","s3://aws.example-3.com"]
 ```
@@ -904,7 +905,8 @@ Example request with providers specified:
 curl -i -H "Echo-Token: XXXX" "%CMR-ENDPOINT%/s3-buckets?user_id=user1&provider[]=PROV2&provider[]=PROV3
 
 HTTP/1.1 200 OK
-Content-Length: 81
+Content-Length: 51
+Content-Type: application/json
 
 ["s3://aws.example-2.com","s3://aws.example-3.com"]
 ```

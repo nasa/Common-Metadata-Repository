@@ -18,42 +18,11 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"
                                            "provguid3" "PROV3"}
-                                          {:grant-all-search? false
-                                           :grant-all-ingest? false}))
+                                          {:grant-all-search? false}))
 
 (deftest s3-buckets-route-test
-  (let [all-prov-update-group-id (echo-util/get-or-create-group
-                                  (system/context)
-                                  "all-prov-admin-update-group")
-
-        prov2-update-group-id (echo-util/get-or-create-group
-                               (system/context)
-                               "prov2-admin-update-group")
-
-        user1-token (echo-util/login
-                     (system/context) "user1"
-                     [all-prov-update-group-id])
-
-        user2-token (echo-util/login
-                     (system/context) "user2"
-                     [prov2-update-group-id])
-
-        _ (echo-util/grant-group-provider-admin
-           (system/context) all-prov-update-group-id "PROV1" :update)
-
-        _ (echo-util/grant-group-provider-admin
-           (system/context) all-prov-update-group-id "PROV2" :update)
-
-        _ (echo-util/grant-group-provider-admin
-           (system/context) prov2-update-group-id "PROV2" :update)
-
-        _ (echo-util/grant-group-provider-admin
-           (system/context) all-prov-update-group-id "PROV3" :update)
-
-        _ (echo-util/add-user-to-group (system/context)
-                                       all-prov-update-group-id
-                                       "user1"
-                                       user1-token)
+  (let [[user1-token user2-token] (for [user ["user1" "user2"]]
+                                    (echo-util/login (system/context) user))
 
         concept-1 (data-core/ingest-umm-spec-collection
                    "PROV1"
@@ -64,8 +33,7 @@
                      {:Region "us-east-1"
                       :S3BucketAndObjectPrefixNames ["s3://aws.example-1.com" "s3"]
                       :S3CredentialsAPIEndpoint "http://api.example.com"
-                      :S3CredentialsAPIDocumentationURL "http://docs.example.com"}})
-                   {:token user1-token}                   )
+                      :S3CredentialsAPIDocumentationURL "http://docs.example.com"}}))
         concept-2 (data-core/ingest-umm-spec-collection
                    "PROV2"
                    (data-umm-c/collection
@@ -75,8 +43,7 @@
                      {:Region "us-east-1"
                       :S3BucketAndObjectPrefixNames ["s3://aws.example-2.com" "s3"]
                       :S3CredentialsAPIEndpoint "http://api.example.com"
-                      :S3CredentialsAPIDocumentationURL "http://docs.example.com"}})
-                   {:token user1-token})
+                      :S3CredentialsAPIDocumentationURL "http://docs.example.com"}}))
         concept-3 (data-core/ingest-umm-spec-collection
                    "PROV3"
                    (data-umm-c/collection
@@ -86,29 +53,38 @@
                      {:Region "us-east-1"
                       :S3BucketAndObjectPrefixNames ["s3://aws.example-3.com" "s3"]
                       :S3CredentialsAPIEndpoint "http://api.example.com"
-                      :S3CredentialsAPIDocumentationURL "http://docs.example.com"}})
-                   {:token user1-token})]
+                      :S3CredentialsAPIDocumentationURL "http://docs.example.com"}}))
+        all-prov-group-id (echo-util/get-or-create-group
+                           (system/context)
+                           "all-prov-group")
+
+        prov2-group-id (echo-util/get-or-create-group
+                        (system/context)
+                        "prov2-group")]
 
     (index/wait-until-indexed)
 
-    (echo-util/grant-registered-users (system/context)
-                                      (echo-util/coll-catalog-item-id
-                                       "PROV1"
-                                       (echo-util/coll-id ["s3-PROV1"])))
 
-    (echo-util/grant-registered-users (system/context)
-                                      (echo-util/coll-catalog-item-id
-                                       "PROV2"
-                                       (echo-util/coll-id ["s3-PROV2"])))
+    (echo-util/add-user-to-group (system/context)
+                                 all-prov-group-id
+                                 "user1"
+                                 user1-token)
+
+    (echo-util/add-user-to-group (system/context)
+                                 prov2-group-id
+                                 "user2"
+                                 user2-token)
 
     (doseq [prov ["PROV1" "PROV2" "PROV3"]]
       (echo-util/grant-group (system/context)
-                             all-prov-update-group-id
+                             all-prov-group-id
                              (echo-util/coll-catalog-item-id prov)))
 
     (echo-util/grant-group (system/context)
-                           prov2-update-group-id
+                           prov2-group-id
                            (echo-util/coll-catalog-item-id "PROV2"))
+
+    (index/wait-until-indexed)
 
     (ingest/reindex-collection-permitted-groups (transmit-config/echo-system-token))
     (index/wait-until-indexed)
@@ -122,21 +98,16 @@
                                      :multi-param-style :array
                                      :headers {transmit-config/token-header transmit-config/echo-system-token}
                                      :accept :json})
-             response (json/parse-string body true)]
+             response (sort (json/parse-string body true))]
          (is (= 200 status))
          (is (= buckets response)))
 
-       ;; Admin user cases
-       "user with access to all providers"
+       "User with access to all collections"
        {:user_id "user1"}
        ["s3"
         "s3://aws.example-1.com"
         "s3://aws.example-2.com"
         "s3://aws.example-3.com"]
-
-       "non-existant provider"
-       {:user_id "user1"
-        :provider ["fake"]} []
 
        "single provider filtering"
        {:user_id "user1"
@@ -148,50 +119,58 @@
         :provider ["PROV2" "PROV3"]}
        ["s3" "s3://aws.example-2.com" "s3://aws.example-3.com"]
 
-       ;; Limited user cases
-       "user access to a single provider"
+       "User with restricted access"
        {:user_id "user2"}
        ["s3"
         "s3://aws.example-2.com"]
 
-       "non-existant provider"
-       {:user_id "user2"
-        :provider ["fake"]} []
-
-       "user filtering on provider they do not have access to"
+       "user filtering by provider with no accessible collections"
        {:user_id "user2"
         :provider ["PROV1"]}
        []
 
-       "user filtering on provider they have access to"
+       "user filtering on provider they have access to collections"
        {:user_id "user2"
         :provider ["PROV2"]}
        ["s3" "s3://aws.example-2.com"]
 
-       "user filtering on mixed access to providers"
+       "user filtering on mixed access to provider collections"
        {:user_id "user2"
         :provider ["PROV2" "PROV3"]}
        ["s3" "s3://aws.example-2.com"]))
 
     (testing "validation"
-      (testing "missing user param"
-        (let [{:keys [status body]} (client/get
-                                     (url/access-control-s3-buckets-url)
-                                     {:headers {transmit-config/token-header transmit-config/echo-system-token}
-                                      :accept :json
-                                      :throw-exceptions false})]
-          (is (= 400 status))
-          (is (= {:errors ["Parameter [user_id] is required."]}
-                 (json/parse-string body true)))))
+      (are3
+       [query response]
+       (let [{:keys [status body]} (client/get
+                                    (url/access-control-s3-buckets-url)
+                                    {:query-params query
+                                     :multi-param-style :array
+                                     :headers {transmit-config/token-header transmit-config/echo-system-token}
+                                     :accept :json
+                                     :throw-exceptions false})]
+         (is (= 400 status))
+         (is (= response
+                (json/parse-string body true))))
 
-      (testing "unexpected param"
-        (let [{:keys [status body]} (client/get
-                                     (url/access-control-s3-buckets-url)
-                                     {:query-params {:user_id "user1"
-                                                     :unexpected "param"}
-                                      :headers {transmit-config/token-header transmit-config/echo-system-token}
-                                      :accept :json
-                                      :throw-exceptions false})]
-          (is (= 400 status))
-          (is (= {:errors ["Parameter [unexpected] was not recognized."]}
-                 (json/parse-string body true))))))))
+       "missing user_id"
+       nil
+       {:errors ["Parameter [user_id] is required."]}
+
+       "blank user_id"
+       {:user_id ""}
+       {:errors ["Parameter [user_id] is required."]}
+
+       "invalid user"
+       {:user_id "fakeuser"}
+       {:errors ["The following users do not exist [fakeuser]"]}
+
+       "invalid provider"
+       {:user_id "user1"
+        :provider ["PROV1" "PROV42"]}
+       {:errors ["Provider with provider-id [PROV42] does not exist."]}
+
+       "unsupported param"
+       {:user_id "user1"
+        :unexpected "param"}
+       {:errors ["Parameter [unexpected] was not recognized."]}))))
