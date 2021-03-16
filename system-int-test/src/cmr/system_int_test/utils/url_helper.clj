@@ -630,6 +630,11 @@
   []
   (format "http://localhost:%s/acls" (transmit-config/access-control-port)))
 
+(defn access-control-s3-buckets-url
+  "URL to search permitted s3-buckets"
+  []
+  (format "http://localhost:%s/s3-buckets" (transmit-config/access-control-port)))
+
 (defn indexer-url
   "URL to index a concept"
   []

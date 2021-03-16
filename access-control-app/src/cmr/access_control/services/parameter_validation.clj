@@ -108,3 +108,10 @@
   "Throws service errors if any invalid params or values are found."
   [params]
   (validate-params params :user-token))
+
+(defn validate-s3-buckets-params
+  "Throws service errors if any invalid params or values are found."
+  [params]
+  (validate-params params :user_id :provider)
+  (when (str/blank? (:user_id params))
+    (errors/throw-service-errors :bad-request ["Parameter [user_id] is required."])))
