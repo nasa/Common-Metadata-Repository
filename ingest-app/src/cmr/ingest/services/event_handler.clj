@@ -47,6 +47,12 @@
    (:bulk-update-params message)
    (:user-id message)))
 
+(defmethod handle-provider-event :provider-granule-bulk-update-task-cleanup
+  [context message]
+  (granule-bulk-update-service/cleanup-bulk-granule-task-table
+   context
+   (:provider-id message)))
+
 ;; Default ignores the provider event. There may be provider events we don't care about.
 (defmethod handle-provider-event :default
   [_ _])

@@ -161,6 +161,11 @@
   {:default 86400 ;;24 hours
    :type Long})
 
+(defconfig bulk-granule-task-table-cleanup-interval
+  "Number of seconds between runs of cleanup job"
+  {:default 86400 ;;24 hours
+   :type Long})
+
 (defn trigger-full-refresh-collection-granule-aggregation-cache
   "Triggers a refresh of the collection granule aggregation cache in the Indexer."
   [context]
@@ -203,9 +208,22 @@
        context
        (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
 
+(defn trigger-bulk-granule-task-cleanup-by-provider
+  [context]
+  (let [providers (map :provider-id (mdb/get-providers context))]
+    (info "Sending events to cleanup bulk granule update tasks in all providers:" (pr-str providers))
+    (doseq [provider providers]
+      (ingest-events/publish-provider-event
+       context
+       (ingest-events/provider-granule-bulk-update-task-cleanup-event provider)))))
+
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
   (bulk-update-status-table-cleanup {:system system}))
+
+(def-stateful-job BulkGranUpdateTaskCleanup
+  [_ system]
+  (trigger-bulk-granule-task-cleanup-by-provider context))
 
 (def-stateful-job EmailSubscriptionProcessing
   [_ system]
@@ -248,4 +266,7 @@
 
    {:job-type ReindexAutocompleteSuggestions
     ;; Run everyday at 13:20. Chosen to be offset from the last job
-    :daily-at-hour-and-minute [13 20]}])
+    :daily-at-hour-and-minute [13 20]}
+
+   {:job-type BulkGranUpdateTaskCleanup
+    :interval (bulk-granule-task-table-cleanup-interval)}])

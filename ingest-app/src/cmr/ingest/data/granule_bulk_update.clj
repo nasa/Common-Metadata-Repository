@@ -234,13 +234,15 @@
   [context]
   (reset-bulk-granule-update (context->db context)))
 
-(defn cleanup-old-bulk-update-status
-  "Delete rows in the bulk_update_gran_status table that are older than the
-  configured age"
-  [context]
+(defn cleanup-provider-granule-bulk-update-status
+  "Delete rows in the bulk_update_gran_status table for a given provider that
+  are older than the configured age"
+  [context provider-id]
   (let [db (context->db context)
-        statement (str "delete from CMR_INGEST.bulk_update_gran_status "
-                       "where created_at < (current_timestamp - INTERVAL '"
-                       (config/bulk-update-cleanup-minimum-age)
-                       "' DAY)")]
-    (jdbc/db-do-prepared db statement)))
+        status-cleanup-statement (str "delete from CMR_INGEST.bulk_update_gran_status "
+                                      "where created_at < (current_timestamp - INTERVAL '"
+                                      (config/granule-bulk-cleanup-minimum-age)
+                                      "' DAY) and status = COMPLETE "
+                                      "and provider_id = " provider-id)]
+    ; Deletes will cascade to granule_bulk_update_tasks
+    (jdbc/db-do-prepared db status-cleanup-statement)))
