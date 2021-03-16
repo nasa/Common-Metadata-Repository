@@ -32,6 +32,7 @@
    [cmr.search.services.humanizers.humanizer-range-facet-service :as hrfs]
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as hgocrf]
+   [cmr.search.services.query-execution.has-granules-or-opensearch-results-feature :as hgoorf]
    [cmr.transmit.config :as transmit-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
@@ -119,6 +120,7 @@
                       context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       :has-granules-or-cwic-map (hgocrf/create-has-granules-or-cwic-map-cache)
+                      :has-granules-or-opensearch-map (hgoorf/create-has-granules-or-opensearch-map-cache)
                       coll-cache/cache-key (coll-cache/create-cache)
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
@@ -143,6 +145,7 @@
                           idx/refresh-index-names-cache-job
                           hgrf/refresh-has-granules-map-job
                           hgocrf/refresh-has-granules-or-cwic-map-job
+                          hgoorf/refresh-has-granules-or-opensearch-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           coll-cache/refresh-collections-cache-for-granule-acls-job
                           jvm-info/log-jvm-statistics-job

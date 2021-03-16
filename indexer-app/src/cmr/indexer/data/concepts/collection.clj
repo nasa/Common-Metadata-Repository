@@ -314,6 +314,11 @@
                                    (some?
                                     (some #(= (common-config/cwic-tag) %)
                                           (map :tag-key-lowercase tags))))
+            :has-granules-or-opensearch (or
+                                         has-granules
+                                         (some?
+                                          (some #(= (common-config/opensearch-tag) %)
+                                                (map :tag-key-lowercase tags))))
             :granule-data-format granule-data-format
             :granule-data-format-lowercase (map str/lower-case granule-data-format)
             :entry-id entry-id

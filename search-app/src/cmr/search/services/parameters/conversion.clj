@@ -11,7 +11,7 @@
    [cmr.common.date-time-parser :as parser]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.search.models.query :as qm]
+   [cmr.search.models.query :as query]
    [cmr.search.services.parameters.legacy-parameters :as lp]))
 
 ;; Note: the suffix "-h" on parameters denotes the humanized version of a parameter
@@ -43,6 +43,7 @@
    :horizontal-data-resolution-range :range-facet
    :has-granules :has-granules
    :has-granules-or-cwic :has-granules-or-cwic
+   :has-granules-or-opensearch :has-granules-or-opensearch
    :has-granules-created-at :multi-date-range
    :has-granules-revised-at :multi-date-range
    :has-opendap-url :boolean
@@ -291,7 +292,7 @@
   (let [field-condition (common-params/parameter->condition context :collection param value options)
         exclude-collection (= "true" (get-in options [param :exclude-collection]))
         collection-cond (gc/and-conds
-                         [(qm/->CollectionQueryCondition field-condition)
+                         [(query/->CollectionQueryCondition field-condition)
                           (cqm/map->MissingCondition {:field param})])]
     (if exclude-collection
       field-condition
@@ -339,11 +340,15 @@
   [_ _ _ value _]
   (if (= "unset" value)
     cqm/match-all
-    (qm/->HasGranulesCondition (= "true" (str/lower-case value)))))
+    (query/->HasGranulesCondition (= "true" (str/lower-case value)))))
 
 (defmethod common-params/parameter->condition :has-granules-or-cwic
   [_ _ _ value _]
-  (qm/->HasGranulesOrCwicCondition (= "true" (str/lower-case value))))
+  (query/->HasGranulesOrCwicCondition (= "true" (str/lower-case value))))
+
+(defmethod common-params/parameter->condition :has-granules-or-opensearch
+  [_ _ _ value _]
+  (query/->HasGranulesOrOpenSearchCondition (= "true" (str/lower-case value))))
 
 (defn- collection-data-type-matches-science-quality?
   "Convert the collection-data-type parameter with wildcards to a regex. This function
@@ -407,7 +412,8 @@
           (fn [sort-keys]
             (seq (for [{:keys [field order] :as sort-key} sort-keys]
                    (if (or (= field :has-granules)
-                           (= field :has-granules-or-cwic))
+                           (= field :has-granules-or-cwic)
+                           (= field :has-granules-or-opensearch))
                      {:field field :order (if (= order :asc) :desc :asc)}
                      sort-key))))))
 
