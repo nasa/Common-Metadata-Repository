@@ -528,3 +528,119 @@
                                (search/find-refs :collection {:page-size 20
                                                               :sort-key ["-has_granules_or_cwic"
                                                                          "revision-date"]}))))))
+
+(deftest search-collections-has-granules-or-opensearch-test
+  (let [coll1 (make-coll 1 m/whole-world nil)
+        coll2 (make-coll 2 m/whole-world nil)
+        coll3 (make-coll 3 m/whole-world nil)
+        coll4 (make-coll 4 m/whole-world nil)
+        coll5 (make-coll 5 m/whole-world nil)
+        coll6 (make-coll 6 m/whole-world nil)
+
+        ;; Adding more collections to test internal query page size
+        coll7 (make-coll 7 m/whole-world nil)
+        coll8 (make-coll 8 m/whole-world nil)
+        coll9 (make-coll 9 m/whole-world nil)
+        coll10 (make-coll 10 m/whole-world nil)
+        coll11 (make-coll 11 m/whole-world nil)
+        coll12 (make-coll 12 m/whole-world nil)
+        coll13 (make-coll 13 m/whole-world nil)
+        coll14 (make-coll 14 m/whole-world nil)
+        coll15 (make-coll 15 m/whole-world nil)
+        coll16 (make-coll 16 m/whole-world nil)
+        coll17 (make-coll 17 m/whole-world nil)
+
+        _ (index/wait-until-indexed)
+        user1-token (e/login (s/context) "user1")
+        tag1 (tags/save-tag
+               user1-token
+               (tags/make-tag {:tag-key "NON-OPENSEARCH"})
+               [coll1 coll5])
+        tag2 (tags/save-tag
+               user1-token
+               (tags/make-tag {:tag-key (common-config/opensearch-tag)})
+               [coll2 coll6 coll7 coll8 coll9 coll10 coll11 coll12 coll13 coll14
+                coll15 coll16 coll17])]
+
+    (index/wait-until-indexed)
+
+    ;; coll1
+    ;; non-opensearch tagged with granule
+    (make-gran coll1 (p/point 0 0) nil)
+
+    ;; coll2
+    ;; opensearch tagged with granule
+    (make-gran coll2 (p/point 0 0) nil)
+
+    ;; coll 3
+    ;; no tag with granule
+    (make-gran coll3 (p/point 0 0) nil)
+
+    ;; coll 4
+    ;; no tag without granule
+
+    ;; coll 5
+    ;; non-opensearch tagged no granule
+
+    ;; coll 6
+    ;; opensearch tagged no granule
+
+    (index/wait-until-indexed)
+    (testing "Search with has-granules-or-opensearch feature true"
+      (d/refs-match? [coll1 coll3 coll6 coll2
+                      coll7 coll8 coll9 coll10
+                      coll11 coll12 coll13 coll14
+                      coll15 coll16 coll17]
+                     (search/find-refs :collection
+                                       {:has_granules_or_opensearch true
+                                        :page-size 20}
+                                       {:snake-kebab? false})))
+
+    (testing "Search with has-granules-or-opensearch feature false"
+      (d/refs-match? [coll4 coll5 coll6
+                      coll7 coll8 coll9 coll10
+                      coll11 coll12 coll13 coll14
+                      coll15 coll16 coll17]
+                     (search/find-refs :collection
+                                       {:has_granules_or_opensearch false
+                                        :page-size 20}
+                                       {:snake-kebab? false})))))
+
+(deftest search-collections-has-granules-or-opensearch-sort-test
+  (let [coll1 (make-coll 1 m/whole-world nil)
+        coll2 (make-coll 2 m/whole-world nil)
+        coll3 (make-coll 3 m/whole-world nil)
+        coll4 (make-coll 4 m/whole-world nil)
+        coll5 (make-coll 5 m/whole-world nil)
+        coll6 (make-coll 6 m/whole-world nil)
+
+        _ (index/wait-until-indexed)
+        user1-token (e/login (s/context) "user1")
+        tag1 (tags/save-tag
+              user1-token
+              (tags/make-tag {:tag-key "NON-OPENSARCH"})
+              [coll1 coll2])
+        tag2 (tags/save-tag
+              user1-token
+              (tags/make-tag {:tag-key (common-config/opensearch-tag)})
+              [coll3 coll4])]
+
+    (make-gran coll1 (p/point 0 0) nil)
+    (make-gran coll3 (p/point 0 0) nil)
+    (make-gran coll5 (p/point 0 0) nil)
+
+    (index/wait-until-indexed)
+    ;; Refresh the aggregate cache so that it includes all the granules that were added.
+    (index/full-refresh-collection-granule-aggregate-cache)
+    ;; Reindex all the collections to get the latest information.
+    (ingest/reindex-all-collections)
+    (index/wait-until-indexed)
+    (testing "Sorting by has-granules-or-opensearch"
+      (is (d/refs-match-order? [coll1 coll3 coll4 coll5 coll2 coll6]
+                               (search/find-refs :collection {:page-size 20
+                                                              :sort-key ["has_granules_or_opensearch"
+                                                                         "revision-date"]})))
+      (is (d/refs-match-order? [coll2 coll6 coll1 coll3 coll4 coll5]
+                               (search/find-refs :collection {:page-size 20
+                                                              :sort-key ["-has_granules_or_opensearch"
+                                                                         "revision-date"]}))))))
