@@ -105,6 +105,7 @@
          "acls"
          "group-ids-guids"
          "health"
+         "providers"
          "write-enabled"]
         (url/search-read-caches-url) [
          "acls"
