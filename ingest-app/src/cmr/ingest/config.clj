@@ -12,6 +12,12 @@
   {:default 90
    :type Long})
 
+(defconfig granule-bulk-cleanup-minimum-age
+  "The minimum age (in days) of the rows in granule_bulk_update_tasks and
+  bulk_update_gran_status that can be cleaned up"
+  {:default 90
+   :type Long})
+
 (defconfig collection-bulk-update-enabled
   "Flag for whether or not bulk collection update is enabled."
   {:default true :type Boolean})
