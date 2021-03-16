@@ -176,6 +176,21 @@
 ;;; Page data functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn app-url->stac-urls
+  "Convert the search-app url into the stac related urls.
+  The reason is we need to access cmr-stac endpoints from CMR search landing page.
+  For example, search base-url locally is localhost:3003, stac base-url is localhost:3000,
+  search base-url in sit is https://cmr.sit.earthdata.nasa.gov:443/search,
+  stac base-url is https://cmr.sit.earthdata.nasa.gov/"
+  [base-url]
+  (let [stac-base-url (-> base-url
+                          (string/replace #"gov.*" "gov/")
+                          (string/replace #"3003/?" "3000/"))]
+    {:stac-url (str stac-base-url "stac")
+     :cloudstac-url (str stac-base-url "cloudstac")
+     :stac-docs-url (str stac-base-url "stac/docs")
+     :static-cloudstac-url (str stac-base-url "static-cloudstac")}))
+
 (defmulti base-page
   "Data that all app pages have in common.
 
@@ -193,8 +208,15 @@
 
 (defmethod base-page :default
   [context]
-  (assoc (common-data/base-page context) :app-title "CMR Search"
-         :release-version (str "v " (common-config/release-version))))
+  (let [base-page (common-data/base-page context)
+        base-url (:base-url base-page)
+        {:keys [stac-url cloudstac-url stac-docs-url static-cloudstac-url]} (app-url->stac-urls base-url)]
+    (assoc base-page :app-title "CMR Search"
+                     :release-version (str "v " (common-config/release-version))
+                     :stac-url stac-url
+                     :cloudstac-url cloudstac-url
+                     :stac-docs-url stac-docs-url
+                     :static-cloudstac-url static-cloudstac-url)))
 
 (defn get-directory-links
   "Provide the list of links that will be rendered on the top-level directory
