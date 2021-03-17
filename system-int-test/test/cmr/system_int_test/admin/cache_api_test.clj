@@ -112,6 +112,7 @@
          "collections-for-gran-acls"
          "has-granules-map"
          "has-granules-or-cwic-map"
+         "has-granules-or-opensearch-map"
          "health"
          "humanizer-range-facet-cache"
          "humanizer-report-cache"
