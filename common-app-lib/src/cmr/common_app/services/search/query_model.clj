@@ -278,6 +278,11 @@
   (fn [concept-type]
     concept-type))
 
+(defmethod default-sort-keys :default
+  [_]
+  ;; No sorting by default
+  [])
+
 (defmulti concept-type->default-query-attribs
   "Multimethod for returning the default query attributes for a given concept type."
   (fn [concept-type]
