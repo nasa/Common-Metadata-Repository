@@ -9,7 +9,7 @@
   {:default "org.ceos.wgiss.cwic.granules.prod"})
 
 (defconfig opensearch-tag
-  "has-granules-or-cwic should also return any collection with configured cwic-tag"
+  "has-granules-or-opensearch should also return any collection with configured opensearch-tag"
   {:default "opensearch.granule.osdd"})
 
 (defconfig collection-umm-version
