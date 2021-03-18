@@ -82,7 +82,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Additional Attribute](#c-additional-attribute)
     * [Author](#c-author)
     * [With/without granules](#c-has-granules)
-    * [With/without granules Or Cwic](#c-has-granules-or-cwic)
+    * [With/without granules Or OpenSearch](#c-has-granules-or-opensearch)
     * [OPeNDAP service URL](#c-has-opendap-url)
   * [Sorting Collection Results](#sorting-collection-results)
   * [Retrieving all Revisions of a Collection](#retrieving-all-revisions-of-a-collection)
@@ -1859,11 +1859,11 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
     curl "%CMR-ENDPOINT%/collections?has_granules=true"
 
-#### <a name="c-has-granules-or-cwic"></a> Find collections with or without granules, or the collection is tagged with the configured CWIC tag.
+#### <a name="c-has-granules-or-opensearch"></a> Find collections with or without granules, or the collection is tagged with the configured OpenSearch tag.
 
-The `has_granules_or_cwic` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with the configured CWIC tag.  When false, results will be restricted to collections without granules.
+The `has_granules_or_opensearch` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with the configured OpenSearch tag (opensearch.granules.osdd).  When false, results will be restricted to collections without granules.
 
-    curl "%CMR-ENDPOINT%/collections?has_granules_or_cwic=true"
+    curl "%CMR-ENDPOINT%/collections?has_granules_or_opensearch=true"
 
 #### <a name="c-has-opendap-url"></a> Find collections with or without an OPeNDAP service RelatedURL.
 
