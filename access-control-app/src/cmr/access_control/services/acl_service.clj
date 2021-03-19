@@ -3,6 +3,7 @@
    [clojure.edn :as edn]
    [clojure.set :as set]
    [clojure.string :as str]
+
    [cmr.access-control.data.access-control-index :as index]
    [cmr.access-control.data.acl-json-results-handler :as result-handler]
    [cmr.access-control.data.acl-schema :as schema]
@@ -14,8 +15,9 @@
    [cmr.access-control.services.messages :as msg]
    [cmr.access-control.services.parameter-validation :as pv]
    [cmr.acl.core :as acl]
-   [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.cache :as cache]
+   [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.services.search.elastic-search-index :as common-esi]
    [cmr.common-app.services.search.params :as cp]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
@@ -417,6 +419,13 @@
      :bad-request
      (map msg/provider-does-not-exist invalid-providers)))
   providers)
+
+(defmethod common-esi/concept-type->index-info :collection
+  [context _ query]
+  {:index-name (if (:all-revisions? query)
+                 "1_all_collection_revisions"
+                 "collection_search_alias")
+   :type-name "collection"})
 
 (defn s3-buckets-for-user
   "Returns a list of s3 buckets and object prefix names by provider."
