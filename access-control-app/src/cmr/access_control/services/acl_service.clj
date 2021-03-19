@@ -391,7 +391,8 @@
          :items
          (map :s3-bucket-and-object-prefix-names)
          flatten
-         distinct)))
+         distinct
+         (remove nil?))))
 
 (defn- get-and-cache-providers
   "Retrieves and caches the current providers in the database."
