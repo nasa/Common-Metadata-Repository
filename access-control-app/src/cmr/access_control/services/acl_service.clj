@@ -3,7 +3,6 @@
    [clojure.edn :as edn]
    [clojure.set :as set]
    [clojure.string :as str]
-
    [cmr.access-control.data.access-control-index :as index]
    [cmr.access-control.data.acl-json-results-handler :as result-handler]
    [cmr.access-control.data.acl-schema :as schema]
