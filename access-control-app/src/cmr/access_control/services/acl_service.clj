@@ -437,8 +437,7 @@
      (msg/users-do-not-exist [user])))
 
   (let [sids (map name (auth-util/get-sids context user))
-        providers (if (empty? provider-ids)
-                    (map :provider-id (get-cached-providers context))
+        providers (when-not (empty? provider-ids)
                     (validate-providers-exist context provider-ids))]
     (if (empty? sids)
       []
