@@ -34,7 +34,7 @@
   "Returns granule bulk update instructions for the given request"
   [parsed-json]
   (let [{:keys [operation update-field updates]} parsed-json
-        event-type (str operation ":" update-field)]
+        event-type (string/lower-case (str operation ":" update-field))]
     (map (partial update->instruction event-type) updates)))
 
 (defn validate-and-save-bulk-granule-update
@@ -95,7 +95,7 @@
   (fn [context concept bulk-update-params user-id]
     (keyword (:event-type bulk-update-params))))
 
-(defmethod update-granule-concept :UPDATE_FIELD:OPeNDAPLink
+(defmethod update-granule-concept :update_field:opendaplink
   [context concept bulk-update-params user-id]
   (let [{:keys [format metadata]} concept
         {:keys [granule-ur url]} bulk-update-params
