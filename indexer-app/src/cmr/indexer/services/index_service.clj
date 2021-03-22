@@ -38,12 +38,6 @@
   {:type Boolean
    :default true})
 
-(defconfig autocomplete-suggestion-age-limit
-  "Age in hours that we allow autocomplete suggestions to persist to avoid stale
-  data."
-  {:type Long
-   :default 24})
-
 (def query-field->elastic-doc-values-fields
   "Maps the query-field names to the field names used in elasticsearch when using doc-values. Field
   names are excluded from this map if the query field name matches the field name in elastic search."
@@ -339,13 +333,12 @@
   (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
         index (vals (:suggestion index-names))
         concept-mapping-types (idx-set/get-concept-mapping-types context)
-        mapping-type (concept-mapping-types :collection)
-        document-age (format "now-%dh/h" autocomplete-suggestion-age-limit)]
+        mapping-type (concept-mapping-types :collection)]
     (es/delete-by-query
      context
      index
      mapping-type
-     {:range {(query-field->elastic-field :modified :suggestion) {:lt document-age}}})))
+     {:range {(query-field->elastic-field :modified :suggestion) {:lt "now-24h/h"}}})))
 
 (defn reindex-autocomplete-suggestions
   "Reindexes all autocomplete suggestions in the providers given."
