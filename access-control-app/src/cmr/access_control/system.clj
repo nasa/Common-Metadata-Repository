@@ -10,7 +10,6 @@
    [cmr.access-control.test.bootstrap :as bootstrap]
    [cmr.access-control.routes :as routes]
    [cmr.acl.acl-fetcher :as af]
-   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
@@ -80,8 +79,6 @@
   "Required for jobs"
   (atom nil))
 
-(def hours->ms "Convert hours to ms" (partial * 1000 3600))
-
 (defn create-system
   "Returns a new instance of the whole application."
   []
@@ -92,7 +89,6 @@
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
              :caches {af/acl-cache-key (af/create-acl-cache
                                         [:system-object :provider-object :single-instance-object])
-                      :providers (mem-cache/create-in-memory-cache :ttl {} {:ttl (hours->ms 12)})
                       gf/group-cache-key (gf/create-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}

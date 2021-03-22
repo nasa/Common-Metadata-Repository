@@ -7,7 +7,6 @@
    [cmr.access-control.data.group-schema :as group-schema]
    [cmr.access-control.services.acl-search-service :as acl-search]
    [cmr.access-control.services.acl-service :as acl-service]
-   [cmr.access-control.services.acl-util :as acl-util]
    [cmr.access-control.services.group-service :as group-service]
    [cmr.access-control.services.parameter-validation :as pv]
    [cmr.access-control.test.bootstrap :as bootstrap]
@@ -208,20 +207,6 @@
       (index/create-index-or-update-mappings (-> ctx :system :search-index))
       {:status 204})))
 
-;;; S3 routes
-
-(defn- get-allowed-s3-buckets
-  "Returns a list of S3 buckets the given user_id has access to."
-  [context params]
-  (pv/validate-s3-buckets-params params)
-  (let [{user :user_id providers :provider} params
-        s3-list (acl-service/s3-buckets-for-user
-                 context
-                 user
-                 providers)]
-    {:status 200
-     :body (json/generate-string s3-list)}))
-
 ;;; Handler
 
 (defn build-routes [system]
@@ -232,7 +217,7 @@
       ;; add routes for checking health of the application
       (common-health/health-api-routes group-service/health)
 
-      ;; add routes for enabling/disabling writes
+       ;; add routes for enabling/disabling writes
       (common-enabled/write-enabled-api-routes
        #(acl/verify-ingest-management-permission % :update))
 
@@ -369,11 +354,4 @@
         (OPTIONS "/" [] common-routes/options-response)
 
         (GET "/" {:keys [request-context params]}
-             (get-current-sids request-context params)))
-
-      (context "/s3-buckets" []
-        (OPTIONS "/" [] common-routes/options-response)
-
-        (GET "/"
-             {ctx :request-context params :params}
-             (get-allowed-s3-buckets ctx params))))))
+          (get-current-sids request-context params))))))

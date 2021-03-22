@@ -3,21 +3,19 @@
    [clojure.test :refer :all]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.services.acl-util :as acl-util]
-   [cmr.access-control.test.util :as test-util]
+   [cmr.access-control.test.util :as u]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.mock-echo.client.echo-util :as echo-util]))
+   [cmr.mock-echo.client.echo-util :as e]))
 
-(use-fixtures :once (fixtures/int-test-fixtures))
-(use-fixtures :each (fixtures/reset-fixture
-                     {"prov1guid" "PROV1"}))
+(use-fixtures :each (fixtures/reset-fixture))
 
 (deftest acl-log-message
-  (let [token (echo-util/login (test-util/conn-context) "admin")]
+  (let [token (e/login (u/conn-context) "admin")]
     (testing "Create, update, and delete ACL log message function"
       (are3 [new-acl existing-acl action expected-message]
             (is (= expected-message
                    (acl-util/acl-log-message
-                    (merge (test-util/conn-context) {:token token}) new-acl existing-acl action)))
+                     (merge (u/conn-context) {:token token}) new-acl existing-acl action)))
 
             "Create ACL log message"
             {:group-permissions [{:user-type "guest", :permissions ["create" "delete"]}], :system-identity {:target "TAG_GROUP"}}

@@ -15,11 +15,7 @@
    [cmr.access-control.services.parameter-validation :as pv]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
-   [cmr.common.cache :as cache]
    [cmr.common-app.services.search.params :as cp]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer [info debug]]
    [cmr.common.services.errors :as errors]
@@ -27,7 +23,6 @@
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.metadata-db :as mdb1]
    [cmr.transmit.metadata-db2 :as mdb]
-   [cmr.transmit.urs :as urs]
    [cmr.umm-spec.acl-matchers :as acl-matchers]))
 
 (defn- context->user-id
@@ -362,74 +357,3 @@
     (if (or (nil? user-token)(re-matches #"^[\s\t]*$" user-token))
       (auth-util/get-sids context :guest)
       (auth-util/get-sids context (tokens/get-user-id context user-token)))))
-
-(defn- fetch-s3-buckets-by-sids
-  "Fetch the list of S3 buckets available to the SIDs provided. Buckets
-  associated with the list of providers will be returned. If no providers
-  all buckets available to the SIDs will be returned."
-  [context sids providers]
-  (let [base-condition (->> sids
-                            (map #(qm/string-condition :permitted-group-ids % true false))
-                            gc/or-conds)
-        condition (if (empty? providers)
-                    base-condition
-                    (gc/and
-                     base-condition
-                     (->> providers
-                          (map #(qm/string-condition :provider-id %))
-                          gc/or-conds)))
-        query (qm/query {:concept-type :collection
-                         :condition condition
-                         :skip-acls? true
-                         :page-size :unlimited
-                         :result-format :query-specified
-                         :result-fields [:s3-bucket-and-object-prefix-names]})
-        es-results (qe/execute-query context query)]
-    (->> es-results
-         :items
-         (map :s3-bucket-and-object-prefix-names)
-         flatten
-         distinct)))
-
-(defn- get-and-cache-providers
-  "Retrieves and caches the current providers in the database."
-  [context providers-cache]
-  (let [db-provs (mdb/get-providers context)]
-    (cache/set-value providers-cache :providers db-provs)
-    db-provs))
-
-(defn- get-cached-providers
-  "Retrieve the list of all providers from the cache. Setting the value
-  if not present."
-  [context]
-  (let [providers-cache (cache/context->cache context :providers)]
-    (or (cache/get-value providers-cache :providers)
-        (get-and-cache-providers context providers-cache))))
-
-(defn- validate-providers-exist
-  "Throws an exception if the given provider-ids are invalid, otherwise returns the input."
-  [context providers]
-  (when-let [invalid-providers
-             (seq (set/difference
-                   (set providers)
-                   (set (map :provider-id (get-cached-providers context)))))]
-    (errors/throw-service-errors
-     :bad-request
-     (map msg/provider-does-not-exist invalid-providers)))
-  providers)
-
-(defn s3-buckets-for-user
-  "Returns a list of s3 buckets and object prefix names by provider."
-  [context user provider-ids]
-  (when-not (urs/user-exists? context user)
-    (errors/throw-service-error
-     :bad-request
-     (msg/users-do-not-exist [user])))
-
-  (let [sids (map name (auth-util/get-sids context user))
-        providers (if (empty? provider-ids)
-                    (map :provider-id (get-cached-providers context))
-                    (validate-providers-exist context provider-ids))]
-    (if (empty? sids)
-      []
-      (fetch-s3-buckets-by-sids context sids providers))))

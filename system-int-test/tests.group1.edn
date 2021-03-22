@@ -1,5 +1,4 @@
-["test/cmr/system_int_test/access_control"
- "test/cmr/system_int_test/admin"
+["test/cmr/system_int_test/admin"
  "test/cmr/system_int_test/bootstrap"
  "test/cmr/system_int_test/ingest"
  "test/cmr/system_int_test/misc"
