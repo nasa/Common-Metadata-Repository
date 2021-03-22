@@ -62,11 +62,9 @@
           (is (= "COMPLETE" task-status))
           (is (= "All granule updates completed successfully." status-message))
           (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
-                   :status "UPDATED"
-                   :status-message nil}
+                   :status "UPDATED"}
                   {:granule-ur "SC:AE_5DSno.002:30500512"
-                   :status "UPDATED"
-                   :status-message nil}]
+                   :status "UPDATED"}]
                  granule-statuses)))))
 
     (testing "failed granule bulk update"
@@ -108,11 +106,9 @@
           (is (= "Task completed with 1 FAILED and 2 UPDATED out of 3 total granule update(s)."
                  status-message))
           (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
-                   :status "UPDATED"
-                   :status-message nil}
+                   :status "UPDATED"}
                   {:granule-ur "SC:AE_5DSno.002:30500512"
-                   :status "UPDATED"
-                   :status-message nil}
+                   :status "UPDATED"}
                   {:granule-ur "SC:non-existent-ur"
                    :status "FAILED"
                    :status-message (format "Granule UR [SC:non-existent-ur] in task-id [%s] does not exist."

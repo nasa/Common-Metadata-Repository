@@ -58,6 +58,13 @@
    ;; set :transaction? false since we are already inside a transaction
    [:transaction? false]))
 
+(defn- normalize-gran-status
+  "Returns the normalized granule status"
+  [gran-status]
+  (-> gran-status
+      util/remove-nil-keys
+      util/map-keys->kebab-case))
+
 (defprotocol GranBulkUpdateStore
   "Defines a protocol for getting and storing the granule bulk update status and task-id
   information."
@@ -108,7 +115,7 @@
   (get-bulk-update-task-granule-status
    [db task-id]
    ;; Get statuses for all granules by task id
-   (map util/map-keys->kebab-case
+   (map normalize-gran-status
         (sql-utils/query db (sql-utils/build
                              (sql-utils/select
                               [:granule-ur :status :status-message]
