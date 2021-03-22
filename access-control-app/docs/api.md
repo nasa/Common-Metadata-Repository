@@ -867,13 +867,13 @@ Content-Type: application/json;charset=ISO-8859-1
 #### Parameters
 
 * One of:
-** `concept_id` - Must be a valid concept id, or else use `concept_id[]=...&concept_id[]=...` to specify multiple concepts.
-** `system_object` - A system object identity target, e.g. "GROUP"
-** `provider` AND `target` - A provider id and a provider object identity target, e.g. "PROVIDER_HOLDINGS"
-** `target_group_id` - A single instance object identity target id, i.e. group concept id
+  * `concept_id` - Must be a valid concept id, or else use `concept_id[]=...&concept_id[]=...` to specify multiple concepts.
+  * `system_object` - A system object identity target, e.g. "GROUP"
+  * `provider` AND `target` - A provider id and a provider object identity target, e.g. "PROVIDER_HOLDINGS"
+  * `target_group_id` - A single instance object identity target id, i.e. group concept id
 * And one of:
-** `user_id` - The user whose permissions will be computed.
-** `user_type` - Either "guest" or "registered".
+  * `user_id` - The user whose permissions will be computed.
+  * `user_type` - Either "guest" or "registered".
 
 ### <a name="get-s3-buckets"></a> User Access to S3 Buckets
 
@@ -882,10 +882,10 @@ This endpoint will return a JSON list of S3 buckets a user has access to. If a l
 #### Parameters
 
 * Required:
-** `user_id` - The user whose available S3 buckets and object prefix names will be determined for.
+  * `user_id` - The user whose available S3 buckets and object prefix names will be determined for.
 
 * Optional
-** `provider[]` - A list of provider ids to filter the S3 bucket and object prefix names by. If not specified, all providers will be included.
+  * `provider[]` - A list of provider ids to filter the S3 bucket and object prefix names by. If not specified, all providers will be included.
 
 
 Example request:

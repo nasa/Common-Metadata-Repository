@@ -436,7 +436,7 @@
      (msg/users-do-not-exist [user])))
 
   (let [sids (map name (auth-util/get-sids context user))
-        providers (when-not (empty? provider-ids)
+        providers (when (seq provider-ids)
                     (validate-providers-exist context provider-ids))]
     (if (empty? sids)
       []
