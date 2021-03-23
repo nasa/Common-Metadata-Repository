@@ -488,7 +488,29 @@
                      (search/find-refs :collection
                                        {:has_granules_or_cwic false
                                         :page-size 20}
+                                       {:snake-kebab? false})))
+
+;as an alias, has-granules-or-opensearch should return the same results.
+    (testing "Search with has-granules-or-opensearch feature true"
+      (d/refs-match? [coll1 coll3 coll6 coll2
+                      coll7 coll8 coll9 coll10
+                      coll11 coll12 coll13 coll14
+                      coll15 coll16 coll17]
+                     (search/find-refs :collection
+                                       {:has_granules_or_opensearch true
+                                        :page-size 20}
+                                       {:snake-kebab? false})))
+
+    (testing "Search with has-granules-or-opensearch feature false"
+      (d/refs-match? [coll4 coll5 coll6
+                      coll7 coll8 coll9 coll10
+                      coll11 coll12 coll13 coll14
+                      coll15 coll16 coll17]
+                     (search/find-refs :collection
+                                       {:has_granules_or_opensearch false
+                                        :page-size 20}
                                        {:snake-kebab? false})))))
+
 
 (deftest search-collections-has-granules-or-cwic-sort-test
   (let [coll1 (make-coll 1 m/whole-world nil)

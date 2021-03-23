@@ -43,6 +43,7 @@
    :horizontal-data-resolution-range :range-facet
    :has-granules :has-granules
    :has-granules-or-cwic :has-granules-or-cwic
+   :has-granules-or-opensearch :has-granules-or-cwic
    :has-granules-created-at :multi-date-range
    :has-granules-revised-at :multi-date-range
    :has-opendap-url :boolean

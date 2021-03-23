@@ -311,6 +311,7 @@
     :score
     :has-granules
     :has-granules-or-cwic
+    :has-granules-or-opensearch
     :usage-relevancy-score
     :ongoing})
 
