@@ -43,7 +43,14 @@
                  (:concept-id coll1)
                  {:native-id "gran-native1-3"
                   :granule-ur "SC:AE_5DSno.002:30500513"})
-                :iso-smap))]
+                :iso-smap))
+        gran4 (ingest/ingest-concept
+               (data-core/item->concept
+                (granule/granule-with-umm-spec-collection
+                 coll1
+                 (:concept-id coll1)
+                 {:native-id "gran-native1-4"
+                  :granule-ur "SC:AE_5DSno.002:30500514"})))]
 
     (testing "successful granule bulk update"
       (let [bulk-update {:name "add opendap links"
@@ -113,7 +120,35 @@
                    :status "FAILED"
                    :status-message (format "Granule UR [SC:non-existent-ur] in task-id [%s] does not exist."
                                            task-id)}]
-                 granule-statuses)))))))
+                 granule-statuses)))))
+    (testing "invalid url value in instruction")
+    (let [bulk-update {:name "add opendap links"
+                       :operation "UPDATE_FIELD"
+                       :update-field "OPeNDAPLink"
+                       :updates [["SC:AE_5DSno.002:30500511" "https://foo,https://bar,https://baz"]
+                                 ["SC:AE_5DSno.002:30500512" "https://foo, https://bar"]
+                                 ["SC:AE_5DSno.002:30500514" "https://opendap.sit.earthdata.nasa.gov/foo,https://opendap.earthdata.nasa.gov/bar"]]}
+          response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
+          {:keys [status task-id]} response]
+      (index/wait-until-indexed)
+
+      (is (= 200 status))
+      (is (some? task-id))
+      (let [status-response (ingest/granule-bulk-update-task-status task-id)
+            {:keys [task-status status-message granule-statuses]} status-response]
+        (is (= "COMPLETE" task-status))
+        (is (= "Task completed with 3 FAILED out of 3 total granule update(s)."
+               status-message))
+        (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
+                 :status "FAILED"
+                 :status-message "Invalid URL value, no more than two urls can be provided: https://foo,https://bar,https://baz"}
+                {:granule-ur "SC:AE_5DSno.002:30500512"
+                 :status "FAILED"
+                 :status-message "Invalid URL value, no more than one on-prem OPeNDAP url can be provided: https://foo, https://bar"}
+                {:granule-ur "SC:AE_5DSno.002:30500514"
+                 :status "FAILED"
+                 :status-message "Invalid URL value, no more than one Hyrax-in-the-cloud OPeNDAP url can be provided: https://opendap.sit.earthdata.nasa.gov/foo,https://opendap.earthdata.nasa.gov/bar"}]
+               granule-statuses))))))
 
 (deftest add-opendap-url
   "test adding OPeNDAP url with real granule file that is already in CMR code base"
