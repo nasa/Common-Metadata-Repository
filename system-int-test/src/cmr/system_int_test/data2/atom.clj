@@ -219,7 +219,7 @@
 
 (def resource-type->link-type-uri
   {"GET DATA" "http://esipfed.org/ns/fedsearch/1.1/data#"
-   "GET DATA VIA DIRECT ACCESS" "http://esipfed.org/ns/fedsearch/1.1/cloud#"
+   "GET DATA VIA DIRECT ACCESS" "http://esipfed.org/ns/fedsearch/1.1/s3#"
    "USE SERVICE API" "http://esipfed.org/ns/fedsearch/1.1/service#"
    "GET RELATED VISUALIZATION" "http://esipfed.org/ns/fedsearch/1.1/browse#"
    "ALGORITHM INFO" "http://esipfed.org/ns/fedsearch/1.1/documentation#"
