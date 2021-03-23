@@ -39,8 +39,7 @@
    :default true})
 
 (defconfig autocomplete-suggestion-age-limit
-  "Age in hours that we allow autocomplete suggestions to persist to avoid stale
-  data."
+  "Age in hours that we allow autocomplete suggestions to persist to avoid stale data."
   {:type Long
    :default 24})
 
@@ -191,9 +190,12 @@
 
 (defn- science-keywords->elastic-docs
   "Convert hierarchical science-keywords to colon-separated elastic docs for indexing"
-  [science-keywords public-collection? permitted-group-ids modified-date]
-  (let [keyword-hierarchy [:topic :term :variable-level-1
-                           :variable-level-2 :variable-level-3 :detailed-variable]
+  [index science-keywords public-collection? permitted-group-ids modified-date]
+  (let [keyword-hierarchy [:topic
+                           :term
+                           :variable-level-1
+                           :variable-level-2
+                           :variable-level-3]
         sk-strings (->> keyword-hierarchy
                         (map #(get science-keywords %))
                         (remove nil?))
@@ -206,54 +208,54 @@
      :type "science_keywords"
      :value keyword-value
      :fields keyword-string
-     :_index "1_autocomplete"
+     :_index index
      :contains-public-collections public-collection?
      :permitted-group-ids permitted-group-ids
      :modified modified-date}))
 
 (defn- suggestion-doc
   "Creates elasticsearch docs from a given humanized map"
-  [permissions key-name value-map]
+  [index permissions key-name value-map]
   (let [values (->> value-map
                     seq
                     (remove #(s/includes? (name (key %)) "-lowercase")))
         sk-matcher (re-matcher #"science-keywords" key-name)
         public-collection? (if (some #(= % "guest") permissions)
-                               true
-                               false)
+                             true
+                             false)
         permitted-group-ids (->> permissions
                                  (remove #(= "guest" %))
                                  (s/join ",")
                                  not-empty)
         modified-date (str (t/now))]
     (if (seq (re-find sk-matcher))
-     (science-keywords->elastic-docs
-      value-map
-      public-collection?
-      permitted-group-ids
-      modified-date)
-     (map (fn [value]
-            (let [v (val value)
-                  type (-> key-name
-                           camel-snake-kebab/->snake_case_keyword
-                           (s/replace #"_humanized|:" ""))
-                  id (-> (s/lower-case v)
-                         (str "_" type)
-                         hash)]
-             {:type type
-              :_id id
-              :value v
-              :fields v
-              :_index "1_autocomplete"
-              :contains-public-collections public-collection?
-              :permitted-group-ids permitted-group-ids
-              :modified modified-date}))
-         values))))
+      (science-keywords->elastic-docs index
+                                      value-map
+                                      public-collection?
+                                      permitted-group-ids
+                                      modified-date)
+      (map (fn [value]
+             (let [v (val value)
+                   type (-> key-name
+                            camel-snake-kebab/->snake_case_keyword
+                            (s/replace #"_humanized|:" ""))
+                   id (-> (s/lower-case v)
+                          (str "_" type)
+                          hash)]
+               {:type type
+                :_id id
+                :value v
+                :fields v
+                :_index index
+                :contains-public-collections public-collection?
+                :permitted-group-ids permitted-group-ids
+                :modified modified-date}))
+           values))))
 
 (defn- get-suggestion-docs
-  "Given the humanized fields from a collection, assemble elastic doc for each
+  "Given the humanized fields from a collection, assemble an elastic doc for each
   value available for indexing into elasticsearch"
-  [humanized-fields]
+  [index humanized-fields]
   (let [{:keys [permissions]} humanized-fields
         fields-without-permissions (dissoc humanized-fields :id :permissions)]
     (for [humanized-field fields-without-permissions
@@ -266,7 +268,7 @@
                                 (map util/remove-nil-keys h)
                                 (map #(dissoc % :priority) h))
                 suggestion-docs (->> value-map
-                                     (map #(suggestion-doc permissions key-name %))
+                                     (map #(suggestion-doc index permissions key-name %))
                                      (remove nil?))]]
       suggestion-docs)))
 
@@ -292,76 +294,64 @@
   (try
     (cp/parse-concept context collection)
     (catch Exception e
-      (error (format "An error occurred while parsing collection: %s"
-                     (.getMessage e)))
-      nil)))
+      (error (format "An error occurred while parsing collection for autocomplete with concept-id [%s]: %s"
+                     (:concept-id collection)
+                     (.getMessage e))))))
 
-(defn- collection->suggestion-doc
+(defn- collections->suggestion-docs
   "Convert collection concept metadata to UMM-C and pull facet fields
   to be indexed as autocomplete suggestion doc"
   [context collections provider-id]
-  (let [parse-coll (partial parse-collection context)
+  (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
+        index (get-in index-names [:autocomplete :autocomplete])
+        parse-coll-fn (partial parse-collection context)
+        humanize-fields-fn (partial humanizer/collection-humanizers-elastic context)
         parsed-concepts (->> collections
                              (remove :deleted)
-                             (map parse-coll)
+                             (map parse-coll-fn)
                              (remove nil?))
         collection-permissions (map (fn [collection]
                                       (let [permissions (collection-util/get-coll-permitted-group-ids context provider-id collection)]
                                         {:id (:concept-id collection)
                                          :permissions permissions}))
                                     collections)
-        humanized-fields  (map #(humanizer/collection-humanizers-elastic context %) parsed-concepts)
-        humanized-fields-with-permissions (map merge collection-permissions humanized-fields)
-        suggestion-docs (->> humanized-fields-with-permissions
-                             (map get-suggestion-docs)
-                             flatten
-                             (remove anti-value-suggestion?))]
-    suggestion-docs))
+        humanized-fields (map humanize-fields-fn parsed-concepts)
+        humanized-fields-with-permissions (map merge collection-permissions humanized-fields)]
+
+    (->> humanized-fields-with-permissions
+         (map #(get-suggestion-docs index %))
+         flatten
+         (remove anti-value-suggestion?))))
 
 (defn reindex-autocomplete-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
   [context provider-id]
   (info "Reindexing autocomplete suggestions for provider" provider-id)
   (let [latest-collection-batches (meta-db/find-in-batches
-                                    context
-                                    :collection
-                                    REINDEX_BATCH_SIZE
-                                    {:provider-id provider-id :latest true})
+                                   context
+                                   :collection
+                                   REINDEX_BATCH_SIZE
+                                   {:provider-id provider-id :latest true})
         latest-suggestion-batches (->> latest-collection-batches
-                                       (map #(collection->suggestion-doc context % provider-id))
+                                       (map #(collections->suggestion-docs context % provider-id))
                                        flatten)]
     (es/bulk-index-autocomplete-suggestions context latest-suggestion-batches)))
 
-(defn- prune-stale-autocomplete-suggestions
-  "Delete any autocomplete suggestions that were modified longer than a day ago"
+(defn prune-stale-autocomplete-suggestions
+  "Delete any autocomplete suggestions that were modified outside the retention period."
   [context]
-  (info "Pruning autocomplete suggestions")
+  (info (format "Pruning autocomplete suggestions older than %d hours."
+                (autocomplete-suggestion-age-limit)))
   (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
-        index (vals (:suggestion index-names))
+        index (get-in index-names [:autocomplete :autocomplete])
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         mapping-type (concept-mapping-types :collection)
-        document-age (format "now-%dh/h" autocomplete-suggestion-age-limit)]
+        document-age (format "now-%dh/h" (autocomplete-suggestion-age-limit))]
     (es/delete-by-query
      context
      index
      mapping-type
      {:range {(query-field->elastic-field :modified :suggestion) {:lt document-age}}})))
-
-(defn reindex-autocomplete-suggestions
-  "Reindexes all autocomplete suggestions in the providers given."
-  [context]
-  (let [provider-ids (map :provider-id (meta-db/get-providers context))]
-    (doseq [provider-id provider-ids]
-      (try
-        (reindex-autocomplete-suggestions-for-provider context provider-id)
-        (catch Exception e (error (format "An error occurred while reindexing autocomplete suggestions in provider [%s] : %s"
-                                          provider-id
-                                          (.getMessage e))))))
-    (try
-      (prune-stale-autocomplete-suggestions context)
-      (catch Exception e
-        (error (format "An error occurred while cleaning up autocomplete suggestions %s"
-                       (.getMessage e)))))))
 
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.

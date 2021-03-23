@@ -48,6 +48,11 @@
   {:action :provider-autocomplete-suggestion-reindexing
    :provider-id provider-id})
 
+(defn autocomplete-suggestion-prune-event
+  "Create an event representing an autocomplete suggestion prune command."
+  []
+  {:action :autocomplete-suggestion-prune})
+
 (defn provider-create-event
   "Creates an event representing a provider being created."
   [provider-id]

@@ -195,13 +195,18 @@
   (bulk-update/cleanup-old-bulk-update-status context))
 
 (defn trigger-autocomplete-suggestions-reindex
+  "Triggers an autocomplete reindex for all providers followed by a prune to remove stale suggestions."
   [context]
   (let [providers (map :provider-id (mdb/get-providers context))]
-    (info "Sending events to reindex autocomplete suggestions in all providers:" (pr-str providers))
+    (info "Sending events to reindex autocomplete suggestions in providers:" (pr-str providers))
     (doseq [provider providers]
       (ingest-events/publish-provider-event
        context
-       (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
+       (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))
+    (info "Sending event to prune stale autocomplete suggestions")
+    (ingest-events/publish-provider-event
+     context
+     (ingest-events/autocomplete-suggestion-prune-event))))
 
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
