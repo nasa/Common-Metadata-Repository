@@ -9,7 +9,6 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
    [cmr.common.xml.gen :refer :all]
-   [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.config :as ingest-config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
@@ -209,11 +208,10 @@
                             request-context task-id)]
       (api-core/generate-ingest-response
        (assoc headers "accept" mt/json)
-       (util/remove-nil-keys
-        {:status 200
-         :created-at created-at
-         :name name
-         :task-status status
-         :status-message status-message
-         :request-json-body request-json-body
-         :granule-statuses granule-statuses})))))
+       {:status 200
+        :created-at created-at
+        :name name
+        :task-status status
+        :status-message status-message
+        :request-json-body request-json-body
+        :granule-statuses granule-statuses}))))

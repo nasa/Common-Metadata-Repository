@@ -165,15 +165,14 @@
         (testing "Granule bulk update task status response"
           (let [task3-expected {:status 200,
                                 :name (str task3-id ": " task3-id)
-                                :task-status "COMPLETE",
+                                :task-status "COMPLETE"
                                 :status-message "Task completed with 1 FAILED and 1 UPDATED out of 2 total granule update(s).",
                                 :request-json-body update3-json
                                 :granule-statuses
                                 [{:granule-ur "SC:coll3:30500514"
-                                  :status "UPDATED",
-                                  :status-message nil}
+                                  :status "UPDATED"}
                                  {:granule-ur "SC:non-existent"
-                                  :status "FAILED",
+                                  :status "FAILED"
                                   :status-message (format "Granule UR [SC:non-existent] in task-id [%s] does not exist."
                                                           task3-id)}]}]
             (testing "default result format"
