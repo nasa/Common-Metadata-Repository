@@ -11,7 +11,7 @@
 ;; Note: Similar code exists at gov.nasa.echo.kernel.service.authentication
 (def URS_TOKEN_MAX_LENGTH 100)
 
-(defn remove-bearer
+(defn- remove-bearer
   "Remove the Bearer marker from the token"
   ([token] (remove-bearer token "Bearer "))
   ([token prefix]
@@ -19,7 +19,7 @@
      (subs token (count prefix))
      token)))
 
-(defn is-legacy-token?
+(defn- is-legacy-token?
   "There are two uses cases captured by this test, the Legacy token, the
    Heritage token (meaning a token made to behave like a legacy token but
    prefixed with EDL-).
@@ -28,7 +28,7 @@
   (or (string/starts-with? (remove-bearer token) "EDL-")
        (<= (count token) URS_TOKEN_MAX_LENGTH)))
 
-(defn is-jwt-token?
+(defn- is-jwt-token?
   "Check if a token matches the JWT pattern (Base64.Base64.Base64) and if it
    does, try to look inside the header section and verify that the token is JWT
    and it came from EarthDataLogin (EDL).
