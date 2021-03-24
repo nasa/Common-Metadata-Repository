@@ -11,19 +11,21 @@
 ;; Note: Similar code exists at gov.nasa.echo.kernel.service.authentication
 (def URS_TOKEN_MAX_LENGTH 100)
 
-(defn is-heritage-token?
-  "Heritage token, meaning not the original style legacy token, but a modern
-   token made to be identifiable but also comply with the legacy standard. These
-   tokens are prefixed with 'EDL+'.
-   Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
-  [token]
-  (string/starts-with? token "EDL+"))
+(defn remove-bearer
+  "Remove the Bearer marker from the token"
+  ([token] (remove-bearer token "Bearer "))
+  ([token prefix]
+   (if (string/starts-with? token prefix)
+     (subs token (count prefix))
+     token)))
 
 (defn is-legacy-token?
-  "A check of last resort, only used if all other checks have not passed.
+  "There are two uses cases captured by this test, the Legacy token, the
+   Heritage token (meaning a token made to behave like a legacy token but
+   prefixed with EDL-).
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
   [token]
-  (and (not (is-heritage-token? token))
+  (or (string/starts-with? (remove-bearer token) "EDL-")
        (<= (count token) URS_TOKEN_MAX_LENGTH)))
 
 (defn is-jwt-token?
@@ -32,8 +34,8 @@
    and it came from EarthDataLogin (EDL).
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
   [token]
-  (if (some? (re-find #"[A-Za-z0-9+/=_-]+\.[A-Za-z0-9+/=_-]+\.[A-Za-z0-9+/=_-]+" token))
-    (let [token-parts (string/split token #"\.")
+  (if (some? (re-find #"[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+" (remove-bearer token)))
+    (let [token-parts (string/split (remove-bearer token) #"\.")
           token-header (first token-parts)
           ;token-payload (second token-parts) ;;future work - look at experation date
           ;token-signiture (last token-parts) ;;future work - verify signature
@@ -58,8 +60,7 @@
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
   [token]
   ;; note: ordered from least expensive to most
-  (not (or (is-heritage-token? token)
-           (is-legacy-token? token)
+  (not (or (is-legacy-token? token)
            (is-jwt-token? token))))
 
 (defn validate-launchpad-token

@@ -19,29 +19,25 @@
   ;; Security Note, these are valid looking tokens but are not and never were
   ;; active tokens. Can be generated with something like SecureRandom.hex 32
   ;; under rails
-  (let [token-oauth "EDL+O84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
-        token-user "EDL+U84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
-        token-client "EDL+C84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
-        token-ropc "EDL+R84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
-        token-jwt (str "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0"
-                       "NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5M"
-                       "DIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")
-        token-jwt-actual (str "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9n"
-                              "aW4iLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiT0F1dGgiLCJ"
-                              "1aWQiOiJhZG1pbiIsImNsaWVudF9pZCI6Im9YQUhISmMyLTc"
-                              "wbndXb2w2T2VIUFEiLCJleHAiOjE2MTYwMTg5OTcsImlhdCI"
-                              "6MTYxNjAxNTM5NywiaXNzIjoiRWFydGhkYXRhIExvZ2luIn0"
-                              ".-e7GTS6PJYD1fAuCoseOj4PdV5iqd521dCM1Hc_XjqI")
+  (let [token-oauth "EDL-O84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
+        token-user "EDL-U84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
+        token-client "EDL-C84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
+        token-ropc "EDL-R84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
+        token-jwt (str "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9n"
+                       "aW4iLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiT0F1dGgiLCJ"
+                       "1aWQiOiJhZG1pbiIsImNsaWVudF9pZCI6Im9YQUhISmMyLTc"
+                       "wbndXb2w2T2VIUFEiLCJleHAiOjE2MTYwMTg5OTcsImlhdCI"
+                       "6MTYxNjAxNTM5NywiaXNzIjoiRWFydGhkYXRhIExvZ2luIn0"
+                       ".-e7GTS6PJYD1fAuCoseOj4PdV5iqd521dCM1Hc_XjqI")
+        token-jwt-bearer (str "Bearer " token-jwt)
         token-legacy "78221B66-EF2B-9283-19B5-295D446B065B"
-        tokenBearer "Bearer 78221B66-EF2B-9283-19B5-295D446B065B"
-        all-names ["OAuth", "User" "Client" "ROPC" "JWT" "Legacy", "Bearer"]
-        all-tokens [token-oauth token-user token-client token-ropc token-jwt-actual token-legacy]
+        token-bearer (str "Bearer " token-legacy)
+        all-names ["OAuth" "User" "Client" "ROPC" "JWT" "JWT-Bearer" "Generated" "Legacy" "Bearer"]
+        all-tokens [token-oauth token-user token-client token-ropc token-jwt token-jwt-bearer token-legacy token-bearer]
         test-group (partial test-matrix all-tokens all-names)]
     (testing "Is token a JWT token?"
-      (test-group [false false false false true false false] #'token/is-jwt-token?))
-    (testing "Is token a heritage token?"
-      (test-group [true true true true false false false] #'token/is-heritage-token?))
+      (test-group [false false false false true true false false] #'token/is-jwt-token?))
     (testing "Is token a legacy token?"
-      (test-group [false false false false false true true] #'token/is-legacy-token?))
+      (test-group [true true true true false false true true] #'token/is-legacy-token?))
     (testing "Is token a LaunchPad token?"
-      (test-group [false false false false false false false] #'token/is-launchpad-token?))))
+      (test-group [false false false false false false false false] #'token/is-launchpad-token?))))
