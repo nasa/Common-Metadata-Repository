@@ -43,16 +43,14 @@
                                            :Term "Term1"
                                            :VariableLevel1 "Level1-1"
                                            :VariableLevel2 "Level1-2"
-                                           :VariableLevel3 "Level1-3"
-                                           :DetailedVariable "Detail1"}))
+                                           :VariableLevel3 "Level1-3"}))
 
 (def sk2 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
                                            :Topic "Popular"
                                            :Term "Extreme"
                                            :VariableLevel1 "Level2-1"
                                            :VariableLevel2 "Level2-2"
-                                           :VariableLevel3 "Level2-3"
-                                           :DetailedVariable "UNIVERSAL"}))
+                                           :VariableLevel3 "Level2-3"}))
 
 (def sk3 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
                                            :Topic "Popular"
@@ -197,43 +195,51 @@
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
     (compare-autocomplete-results
-      (get-in (search/get-autocomplete-json "q=l") [:feed :entry])
-      [{:type "instrument" :value "lVIs" :fields "lVIs"}
-       {:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}]))
+     (get-in (search/get-autocomplete-json "q=l") [:feed :entry])
+     [{:type "instrument" :value "lVIs" :fields "lVIs"}          
+      {:type "science_keywords"
+       :value "Level1-3"
+       :fields "Topic1:Term1:Level1-1:Level1-2:Level1-3"}
+      {:type "science_keywords"
+       :value "Level2-3"
+       :fields "Popular:Extreme:Level2-1:Level2-2:Level2-3"}
+      {:type "organization"
+       :value "Langley DAAC User Services"
+       :fields "Langley DAAC User Services"}]))
 
   (testing "Ensure science keywords are being indexed properly"
     (are3
-      [query expected]
-      (let [actual (get-in (search/get-autocomplete-json query) [:feed :entry])]
-        (compare-autocomplete-results actual expected))
+     [query expected]
+     (let [actual (get-in (search/get-autocomplete-json query) [:feed :entry])]
+       (compare-autocomplete-results actual expected))
 
-      "shorter match"
-      "q=solar"
-      [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]
+     "shorter match"
+     "q=solar"
+     [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
+      {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]
 
-      "more complete match"
-      "q=solar irradiation"
-      [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]))
+     "more complete match"
+     "q=solar irradiation"
+     [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
+      {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]))
 
   (testing "Anti-value filtering"
     (are3
-      [query expected]
-      (let [results (get-in (search/get-autocomplete-json (str "q=" query)) [:feed :entry])]
-        (compare-autocomplete-results results expected))
+     [query expected]
+     (let [results (get-in (search/get-autocomplete-json (str "q=" query)) [:feed :entry])]
+       (compare-autocomplete-results results expected))
 
-      "excludes 'None'"
-      "none" []
+     "excludes 'None'"
+     "none" []
 
-      "excludes 'Not Applicable'"
-      "not applicable" []
+     "excludes 'Not Applicable'"
+     "not applicable" []
 
-      "excludes 'Not Provided'"
-      "not provided" []
+     "excludes 'Not Provided'"
+     "not provided" []
 
-      "does not filter 'not' prefixed values"
-      "not" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}])))
+     "does not filter 'not' prefixed values"
+     "not" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}])))
 
 (deftest prune-stale-data-test
   (testing "The suggestions from these old collections shouldn't be found"

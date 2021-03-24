@@ -13,7 +13,7 @@
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
-   [cmr.common.util :as util]
+   [cmr.common.util :as util :refer [defn-timed]]
    [cmr.elastic-utils.connect :as es-util]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.concept-parser :as cp]
@@ -323,7 +323,7 @@
          flatten
          (remove anti-value-suggestion?))))
 
-(defn reindex-autocomplete-suggestions-for-provider
+(defn-timed reindex-autocomplete-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
   [context provider-id]
   (info "Reindexing autocomplete suggestions for provider" provider-id)
@@ -331,11 +331,13 @@
                                    context
                                    :collection
                                    REINDEX_BATCH_SIZE
-                                   {:provider-id provider-id :latest true})
-        latest-suggestion-batches (->> latest-collection-batches
-                                       (map #(collections->suggestion-docs context % provider-id))
-                                       flatten)]
-    (es/bulk-index-autocomplete-suggestions context latest-suggestion-batches)))
+                                   {:provider-id provider-id :latest true})]
+    (reduce (fn [num-indexed coll-batch]
+              (let [batch (collections->suggestion-docs context coll-batch provider-id)]
+                (es/bulk-index-autocomplete-suggestions context batch)
+                (+ num-indexed (count coll-batch))))
+            0
+            latest-collection-batches)))
 
 (defn prune-stale-autocomplete-suggestions
   "Delete any autocomplete suggestions that were modified outside the retention period."
@@ -396,10 +398,10 @@
        ;; We will handle that with the index management epic.
        (info "Reindexing all collection revisions for provider" provider-id)
        (let [all-revisions-batches (meta-db/find-in-batches
-                                     context
-                                     :collection
-                                     REINDEX_BATCH_SIZE
-                                     {:provider-id provider-id})]
+                                    context
+                                    :collection
+                                    REINDEX_BATCH_SIZE
+                                    {:provider-id provider-id})]
          (bulk-index context all-revisions-batches {:all-revisions-index? true
                                                     :force-version? force-version?}))))))
 
@@ -669,8 +671,8 @@
   [context concept-id revision-id options]
   (when-not (and concept-id revision-id)
     (errors/throw-service-error
-      :bad-request
-      (format "Concept-id %s and revision-id %s cannot be null" concept-id revision-id)))
+     :bad-request
+     (format "Concept-id %s and revision-id %s cannot be null" concept-id revision-id)))
 
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)]
