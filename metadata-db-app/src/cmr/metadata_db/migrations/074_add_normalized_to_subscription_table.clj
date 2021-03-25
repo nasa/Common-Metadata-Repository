@@ -2,7 +2,8 @@
   (:require
    [cheshire.core :as json]
    [cmr.common.util :as util]
-   [cmr.ingest.services.subscriptions-helper :as jobs]
+   [cmr.common-app.services.ingest.subscription-common :as sub-common]
+   ;[cmr.ingest.services.subscriptions-helper :as jobs]
    [config.mdb-migrate-helper :as helper]))
 
 (defn result->query
@@ -14,7 +15,7 @@
         util/gzip-blob->string
         (as-> % (json/parse-string %, true))
         :Query
-        jobs/normalize-parameters-v1))
+        sub-common/normalize-parameters-v1))
 
 (defn populate-new-column
   "Pull out the requested query from the matadata, then normalize the data and
