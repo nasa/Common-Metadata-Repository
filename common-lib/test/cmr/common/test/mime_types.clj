@@ -106,4 +106,6 @@
 
 (deftest test-format->mime-type
   (is (= "application/json" (mt/format->mime-type :json)))
-  (is (= "application/vnd.nasa.cmr.umm+json" (mt/format->mime-type :umm-json))))
+  (is (= "application/vnd.nasa.cmr.umm+json" (mt/format->mime-type :umm-json)))
+  (is (= "application/vnd.nasa.cmr.umm+json" (mt/format->mime-type {:format :umm-json
+                                                                    :version "16.1.3"}))))

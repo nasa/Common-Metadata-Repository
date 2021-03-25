@@ -2,7 +2,8 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.ingest.services.granule-bulk-update.echo10 :as echo10]))
+   [cmr.ingest.services.granule-bulk-update.echo10 :as echo10]
+   [cmr.ingest.services.granule-bulk-update.opendap-util :as opendap-util]))
 
 (def ^:private add-at-the-end-gran-xml
   "ECHO10 granule for testing adding OPeNDAP url at the end of the xml."
@@ -421,8 +422,9 @@
 (deftest add-opendap-url
   (testing "add OnlineResources at various places in the xml"
     (are3 [url-value source result]
-      (is (= result
-             (echo10/add-opendap-url source url-value)))
+      (let [grouped-urls (opendap-util/validate-url url-value)]
+        (is (= result
+               (#'echo10/add-opendap-url-to-metadata source grouped-urls))))
 
       "add OnlineResources at the end of the xml"
       "http://example.com/foo"
@@ -493,21 +495,3 @@
       "https://opendap.earthdata.nasa.gov/foo, http://example.com/foo"
       update-both-opendap-url
       update-cloud-opendap-url-with-both-result)))
-
-(deftest add-opendap-url-errors
-  (testing "add OnlineResources error scenarios"
-    (are3 [url-value re]
-      (is (thrown-with-msg?
-           Exception re (echo10/add-opendap-url update-opendap-url url-value)))
-
-      "more than 2 urls provided"
-      "http://example.com/foo,http://example.com/bar,http://example.com/baz"
-      #"Invalid URL value, no more than two urls can be provided:"
-
-      "more than one on-prem url provided"
-      "http://example.com/foo,http://example.com/bar"
-      #"Invalid URL value, no more than one on-prem OPeNDAP url can be provided:"
-
-      "more than one Hyrax-in-the-cloud url provided"
-      "https://opendap.earthdata.nasa.gov/foo,https://opendap.uat.earthdata.nasa.gov/foo,"
-      #"Invalid URL value, no more than one Hyrax-in-the-cloud OPeNDAP url can be provided:")))

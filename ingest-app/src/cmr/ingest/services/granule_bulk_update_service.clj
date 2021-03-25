@@ -12,6 +12,8 @@
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.services.bulk-update-service :as bulk-update-service]
    [cmr.ingest.services.granule-bulk-update.echo10 :as echo10]
+   [cmr.ingest.services.granule-bulk-update.opendap-util :as opendap-util]
+   [cmr.ingest.services.granule-bulk-update.umm-g :as umm-g]
    [cmr.ingest.services.ingest-service :as ingest-service]
    [cmr.transmit.metadata-db :as mdb]))
 
@@ -78,15 +80,19 @@
 
 (defmulti add-opendap-url
   "Add OPeNDAP url to the given granule concept."
-  (fn [context concept url]
+  (fn [context concept grouped-urls]
     (mt/format-key (:format concept))))
 
 (defmethod add-opendap-url :echo10
-  [context concept url]
-  (echo10/add-opendap-url (:metadata concept) url))
+  [context concept grouped-urls]
+  (echo10/add-opendap-url concept grouped-urls))
+
+(defmethod add-opendap-url :umm-json
+  [context concept grouped-urls]
+  (umm-g/add-opendap-url concept grouped-urls))
 
 (defmethod add-opendap-url :default
-  [context concept url]
+  [context concept grouped-urls]
   (errors/throw-service-errors
    :invalid-data [(format "Add OPeNDAP url is not supported for format [%s]" (:format concept))]))
 
@@ -99,11 +105,14 @@
   [context concept bulk-update-params user-id]
   (let [{:keys [format metadata]} concept
         {:keys [granule-ur url]} bulk-update-params
-        updated-metadata (add-opendap-url context concept url)]
+        grouped-urls (opendap-util/validate-url url)
+        updated-concept (add-opendap-url context concept grouped-urls)
+        {updated-metadata :metadata updated-format :format} updated-concept]
     (if-let [err-messages (:errors updated-metadata)]
       (errors/throw-service-errors :invalid-data err-messages)
       (-> concept
           (assoc :metadata updated-metadata)
+          (assoc :format updated-format)
           (update :revision-id inc)
           (assoc :revision-date (time-keeper/now))
           (assoc :user-id user-id)))))
