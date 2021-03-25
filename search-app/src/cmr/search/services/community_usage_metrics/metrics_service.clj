@@ -45,7 +45,11 @@
                                        (last matches))]
       (let [condition (gc/or (qm/string-condition :entry-title parsed-product-id false false)
                              (qm/string-condition :short-name parsed-product-id false false)
-                             (qm/string-condition :short-name product-id false false))
+                             (qm/string-condition :short-name product-id false false)
+                             ;; Handle GHRSST case
+                             (qm/map->AttributeValueCondition {:name "Dataset Persistent ID"
+                                                               :type "STRING"
+                                                               :value product-id}))
             query (qm/query {:concept-type :collection
                              :condition condition
                              :page-size 1
