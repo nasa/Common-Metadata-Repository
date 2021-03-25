@@ -1086,9 +1086,12 @@ Granule bulk update is initiated through a POST to the ingest endpoint with the 
 
 Updated granules are validated using business rule validations.  Updates will not be saved if the business validations fail. The error will be recorded in the individual granule status, which can be queried via the status endpoint.
 
-Granule bulk update currently supports updating the following fields:
+Granule bulk update currently supports updating with the following operations, update fields and metadata formats:
 
-  * OPeNDAP url in OnlineResources for ECHO10 format
+**operation: "UPDATE_FIELD", update-field: "OPeNDAPLink"**
+supported metadata formats:
+  - OPeNDAP url in OnlineResources for ECHO10 format
+  - OPeNDAP url in RelatedUrls for UMM-G format
 
 Example: Add/update OPeNDAP url for 3 granules under PROV1.
 
@@ -1096,7 +1099,7 @@ Example: Add/update OPeNDAP url for 3 granules under PROV1.
 curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules -d
 '{ "name": "example of adding OPeNDAP link",
 	"operation": "UPDATE_FIELD",
-	"update-field":"OPEnDAPLink",
+	"update-field":"OPeNDAPLink",
 	"updates":[
              ["granule_ur1", "https://via.placeholder.com/150"],
              ["granule_ur2", "https://via.placeholder.com/160"],
