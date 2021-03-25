@@ -5,19 +5,12 @@
    [clojure.data.codec.base64 :as base64]
    [clojure.string :as string]
    [cmr.common-app.config :as config]
+   [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.transmit.config :as transmit-config]))
 
 ;; Note: Similar code exists at gov.nasa.echo.kernel.service.authentication
 (def URS_TOKEN_MAX_LENGTH 100)
-
-(defn- remove-bearer
-  "Remove the Bearer marker from the token"
-  ([token] (remove-bearer token "Bearer "))
-  ([token prefix]
-   (if (string/starts-with? token prefix)
-     (subs token (count prefix))
-     token)))
 
 (defn- is-legacy-token?
   "There are two uses cases captured by this test, the Legacy token, the
@@ -25,7 +18,7 @@
    prefixed with EDL-).
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
   [token]
-  (or (string/starts-with? (remove-bearer token) "EDL-")
+  (or (string/starts-with? token "EDL-")
        (<= (count token) URS_TOKEN_MAX_LENGTH)))
 
 (defn- is-jwt-token?
@@ -34,11 +27,10 @@
    and it came from EarthDataLogin (EDL).
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
   [token]
-  (if (some? (re-find #"[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+" (remove-bearer token)))
-    (let [token-parts (string/split (remove-bearer token) #"\.")
+  (info "JWT token test:" (subs token 0 (/ (count token) 2)))
+  (if (some? (re-find #"[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+" token))
+    (let [token-parts (string/split token #"\.")
           token-header (first token-parts)
-          ;token-payload (second token-parts) ;;future work - look at experation date
-          ;token-signiture (last token-parts) ;;future work - verify signature
           header-raw (String. (.decode (java.util.Base64/getDecoder) token-header))]
       ;; don't parse the data unless it is really needed to prevent unnecessary
       ;; processing. Check first to see if the data looks like JSON
