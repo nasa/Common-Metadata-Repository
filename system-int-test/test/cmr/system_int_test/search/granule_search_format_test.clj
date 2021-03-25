@@ -641,7 +641,7 @@
         (is (= 200 (:status response)))
         (is (= (:rel gran-atom-links) (:rel response-links)))
         (is (= (:href gran-atom-links) (:href response-links)))
-        (is (some #(string/includes? % "cloud#") response-links)))
+        (is (some #(string/includes? % "s3#") response-links)))
 
       "testing echo10"
       gran-echo
@@ -668,7 +668,7 @@
                                (get :links))]
         (is (= 200 (:status response)))
         (is (= gran-atom-links response-links))
-        (is (not-any? #(string/includes? % "cloud#") response-links))))
+        (is (not-any? #(string/includes? % "s3#") response-links))))
 
     (testing "testing to ISO 19115."
       (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")

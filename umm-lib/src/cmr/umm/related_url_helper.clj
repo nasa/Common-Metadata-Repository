@@ -51,15 +51,15 @@
   [related-urls]
   (filter downloadable-url? related-urls))
 
-(defn cloud-url?
-  "Returns true if the related-url is a cloud URL"
+(defn s3-url?
+  "Returns true if the related-url is a s3 URL"
   [related-url]
   (= "GET DATA VIA DIRECT ACCESS" (:type related-url)))
 
-(defn cloud-urls
-  "Returns the related-urls that are cloud URLs"
+(defn s3-urls
+  "Returns the related-urls that are s3 URLs"
   [related-urls]
-  (filter cloud-url? related-urls))
+  (filter s3-url? related-urls))
 
 (defn browse-url?
   "Returns true if the related-url is browse url"
@@ -86,7 +86,7 @@
   "Returns true if the related-url is metadata url"
   [related-url]
   (not (or (downloadable-url? related-url)
-           (cloud-url? related-url)
+           (s3-url? related-url)
            (browse-url? related-url)
            (documentation-url? related-url))))
 
@@ -105,7 +105,7 @@
   "Returns true if the related-url is resource url"
   [related-url]
   (not (or (downloadable-url? related-url)
-           (cloud-url? related-url)
+           (s3-url? related-url)
            (browse-url? related-url))))
 
 (defn resource-urls
@@ -118,7 +118,7 @@
   [related-url]
   (cond
     (downloadable-url? related-url) "data"
-    (cloud-url? related-url) "cloud"
+    (s3-url? related-url) "s3"
     (opendap-url? related-url) "service"
     (browse-url? related-url) "browse"
     (documentation-url? related-url) "documentation"
