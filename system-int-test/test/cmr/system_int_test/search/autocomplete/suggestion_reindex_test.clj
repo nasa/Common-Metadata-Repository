@@ -31,12 +31,12 @@
   [actual expected]
   ;; check score returns
   (when (seq actual)
-    (is (scores-descending? actual) actual))
+    (is (scores-descending? actual) (pr-str actual)))
 
   ;; compare values
   (let [expected (map #(dissoc % :score) expected)
         actual (map #(dissoc % :score) actual)]
-    (is (= expected actual))))
+    (is (= expected actual) (pr-str actual))))
 
 (def sk1 (umm-spec-common/science-keyword {:Category "Earth science"
                                            :Topic "Topic1"
@@ -175,8 +175,8 @@
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=From" {:headers {:echo-token user1-token}}) [:feed :entry])
        [{:type "project",
-          :value "From whence you came!",
-          :fields "From whence you came!"}]))
+         :value "From whence you came!",
+         :fields "From whence you came!"}]))
     (testing "Suggestions associated to collections with access constraints not returned without a token"
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=From") [:feed :entry])
@@ -184,19 +184,19 @@
     (testing "Suggestion associated to collections granted to registered users"
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=REGISTERED" {:headers {:echo-token user3-token}}) [:feed :entry])
-       [{:score 4.5634737 :type "project" :value "REGISTERED" :fields "REGISTERED"}
-        {:score 3.2571084 :type "instrument" :value "REGISTERED-p0-i0" :fields "REGISTERED-p0-i0"}
-        {:score 3.187054 :type "platform" :value "REGISTERED-p0" :fields "REGISTERED-p0"}
-        {:score 3.187054 :type "platform" :value "REGISTERED-p1" :fields "REGISTERED-p1"}
-        {:score 3.136525 :type "instrument" :value "REGISTERED-p0-i1" :fields "REGISTERED-p0-i1"}
-        {:score 3.136525 :type "instrument" :value "REGISTERED-p1-i0" :fields "REGISTERED-p1-i0"}
-        {:score 3.136525 :type "instrument" :value "REGISTERED-p1-i1" :fields "REGISTERED-p1-i1"}]))))
+       [{:type "project" :value "REGISTERED" :fields "REGISTERED"}
+        {:type "platform" :value "REGISTERED-p0" :fields "REGISTERED-p0"}
+        {:type "platform" :value "REGISTERED-p1" :fields "REGISTERED-p1"}
+        {:type "instrument" :value "REGISTERED-p0-i0" :fields "REGISTERED-p0-i0"}
+        {:type "instrument" :value "REGISTERED-p0-i1" :fields "REGISTERED-p0-i1"}
+        {:type "instrument" :value "REGISTERED-p1-i0" :fields "REGISTERED-p1-i0"}
+        {:type "instrument" :value "REGISTERED-p1-i1" :fields "REGISTERED-p1-i1"}]))))
 
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
     (compare-autocomplete-results
      (get-in (search/get-autocomplete-json "q=l") [:feed :entry])
-     [{:type "instrument" :value "lVIs" :fields "lVIs"}          
+     [{:type "instrument" :value "lVIs" :fields "lVIs"}
       {:type "science_keywords"
        :value "Level1-3"
        :fields "Topic1:Term1:Level1-1:Level1-2:Level1-3"}
@@ -247,23 +247,23 @@
      [query expected]
      (let [_ (dev-sys-util/freeze-time! "2020-01-01T10:00:00Z")
            coll7 (d/ingest-umm-spec-collection
-                   "PROV1"
-                   (data-umm-spec/collection
-                    {:ShortName "This one is old and should be cleaned up"
-                     :EntryTitle "Oldie"
-                     :Projects (:Projects (fu/projects "OLD"))
-                     :Platforms (:Platforms (fu/platforms "STALE" 2 2 1))}))
+                  "PROV1"
+                  (data-umm-spec/collection
+                   {:ShortName "This one is old and should be cleaned up"
+                    :EntryTitle "Oldie"
+                    :Projects (:Projects (fu/projects "OLD"))
+                    :Platforms (:Platforms (fu/platforms "STALE" 2 2 1))}))
 
            _ (dev-sys-util/freeze-time! (time/yesterday))
            coll8 (d/ingest-umm-spec-collection
-                   "PROV2"
-                   (data-umm-spec/collection
-                    {:ShortName "Yesterday's news"
-                     :EntryTitle "Also an Oldie"
-                     :Platforms (:Platforms (fu/platforms "old AND stale" 2 1 1))}))
+                  "PROV2"
+                  (data-umm-spec/collection
+                   {:ShortName "Yesterday's news"
+                    :EntryTitle "Also an Oldie"
+                    :Platforms (:Platforms (fu/platforms "old AND stale" 2 1 1))}))
            _ (index/wait-until-indexed)
            _ (dev-sys-util/clear-current-time!)
-           
+
            results (get-in (search/get-autocomplete-json (str "q=" query)) [:feed :entry])]
        (compare-autocomplete-results results expected))
      "None found"
