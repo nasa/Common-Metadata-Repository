@@ -3,7 +3,6 @@
    [cheshire.core :as json]
    [cmr.common.util :as util]
    [cmr.common-app.services.ingest.subscription-common :as sub-common]
-   ;[cmr.ingest.services.subscriptions-helper :as jobs]
    [config.mdb-migrate-helper :as helper]))
 
 (defn result->query
