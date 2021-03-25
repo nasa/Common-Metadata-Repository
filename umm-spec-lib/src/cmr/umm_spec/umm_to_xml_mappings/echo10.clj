@@ -181,6 +181,18 @@
      [:CollectionState (:CollectionProgress c)]
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
+     (when-let [use-constraints (get c :UseConstraints)]
+       [:UseConstraints
+         [:Description (:Description use-constraints)]
+         (when-let [url (get-in use-constraints [:LicenseURL :Linkage])]
+           [:LicenseURL
+             [:URL url]
+             [:Description (get-in use-constraints [:LicenseURL :Description])]
+             [:Type (or (get-in use-constraints [:LicenseURL :Name])
+                        "License URL")]
+             [:MimeType (get-in use-constraints [:LicenseURL :MimeType])]])
+         (when-let [license-text (:LicenseText use-constraints)]
+           [:LicenseText license-text])])
      [:Price (when-let [price-str (find-first-available-distribution-price c)]
                (try (format "%9.2f" (Double. price-str))
                  ;; If price is not a number string just ignore it. ECHO10

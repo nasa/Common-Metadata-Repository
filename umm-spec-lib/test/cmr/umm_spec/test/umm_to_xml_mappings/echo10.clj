@@ -107,3 +107,64 @@
     {:DOI {:DOI "10.5678/collectiondoi"
            :Authority "doi.org"}
      :AssociatedDOIs nil}))
+
+(deftest echo10-use-constraints-test
+  "Testing the echo10 use constraint translation from umm-c to echo10."
+
+  (testing "echo10 use constraints description test"
+    (let [actual-data {:UseConstraints {:Description "Description"}}
+          result (echo10/umm-c-to-echo10-xml actual-data)
+          echo-result (first (select result "/Collection/UseConstraints"))]
+      (is (= "Description" (value-of echo-result "Description")))))
+
+  (testing "echo10 use constraints LicenseURL test"
+    (let [actual-data {:UseConstraints {:LicenseURL {:Linkage "https://someurl.com"
+                                                     :Protocol "https"
+                                                     :ApplicationProfile "profile"
+                                                     :Name "License URL"
+                                                     :Description "License URL Description"
+                                                     :Function "information"
+                                                     :MimeType "text/html"}}}
+          result (echo10/umm-c-to-echo10-xml actual-data)
+          echo-result (first (select result "/Collection/UseConstraints"))]
+      (is (and (= "https://someurl.com" (value-of echo-result "LicenseURL/URL"))
+               (= "License URL" (value-of echo-result "LicenseURL/Type"))
+               (= "License URL Description" (value-of echo-result "LicenseURL/Description"))
+               (= "text/html" (value-of echo-result "LicenseURL/MimeType"))))))
+
+  (testing "echo10 use constraints License Text test"
+    (let [actual-data {:UseConstraints {:LicenseText "License Text"}}
+          result (echo10/umm-c-to-echo10-xml actual-data)
+          echo-result (first (select result "/Collection/UseConstraints"))]
+      (is (= "License Text" (value-of echo-result "LicenseText")))))
+
+  (testing "echo10 use constraints nil"
+    (let [actual-data {}
+          result (echo10/umm-c-to-echo10-xml actual-data)
+          echo-result (first (select result "/Collection/UseConstraints"))]
+      (is (= nil echo-result))))
+
+  (testing "echo10 use constraints Description and LicenseURL test"
+    (let [actual-data {:UseConstraints {:Description "Description"
+                                        :LicenseURL {:Linkage "https://someurl.com"
+                                                     :Protocol "https"
+                                                     :ApplicationProfile "profile"
+                                                     :Name "License URL"
+                                                     :Description "License URL Description"
+                                                     :Function "information"
+                                                     :MimeType "text/html"}}}
+          result (echo10/umm-c-to-echo10-xml actual-data)
+          echo-result (first (select result "/Collection/UseConstraints"))]
+      (is (and (= "Description" (value-of echo-result "Description"))
+               (= "https://someurl.com" (value-of echo-result "LicenseURL/URL"))
+               (= "License URL" (value-of echo-result "LicenseURL/Type"))
+               (= "License URL Description" (value-of echo-result "LicenseURL/Description"))
+               (= "text/html" (value-of echo-result "LicenseURL/MimeType"))))))
+
+ (testing "echo10 use constraints Description and LicenseText test"
+   (let [actual-data {:UseConstraints {:Description "Description"
+                                       :LicenseText "License Text"}}
+         result (echo10/umm-c-to-echo10-xml actual-data)
+         echo-result (first (select result "/Collection/UseConstraints"))]
+     (is (and (= "Description" (value-of echo-result "Description"))
+              (= "License Text" (value-of echo-result "LicenseText")))))))

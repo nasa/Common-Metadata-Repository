@@ -327,6 +327,25 @@
       [(cmn/map->ResourceCitationType
         {:OtherCitationDetails other-citation-details})])))
 
+(defn- expected-echo10-use-constraints-license-url-name
+  "Check to see if the LicenseURL has a Name. The UseConstraints/LicenseURL/Name is translated to
+   the ECHO 10 UseConstraints/LicenseURL/Type which is required."
+  [use-constraints]
+  (if (and (get-in use-constraints [:LicenseURL :Linkage])
+           (not (get-in use-constraints [:LicenseURL :Name])))
+    (assoc-in use-constraints [:LicenseURL :Name] "License URL")
+    use-constraints))
+
+(defn- expected-echo10-use-constraints
+  "Returns expected use constraints."
+  [use-constraints]
+  (let [use-const (expected-echo10-use-constraints-license-url-name use-constraints)]
+    (if (get-in use-const [:LicenseURL :Linkage])
+      (-> use-const
+          (assoc-in [:LicenseURL :Function] nil)
+          (assoc-in [:LicenseURL :ApplicationProfile] nil))
+      use-const)))
+
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
@@ -339,7 +358,7 @@
       (update :DataDates fixup-echo10-data-dates)
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
-      (assoc :UseConstraints nil)
+      (update :UseConstraints expected-echo10-use-constraints)
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
       (assoc :ISOTopicCategories nil)

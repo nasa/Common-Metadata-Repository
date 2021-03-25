@@ -158,6 +158,18 @@
     (when (seq (util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(u/with-default % sanitize?)))))
 
+(defn parse-use-constraints
+  "Parse the XML collection Use Constraints into the UMM-C counterparts."
+  [doc]
+  (when-let [use-constraints (first (select doc "Collection/UseConstraints"))]
+    {:Description (value-of use-constraints "Description")
+     :LicenseURL (when-let [url (value-of use-constraints "LicenseURL/URL")]
+                   {:Linkage url
+                    :Name (value-of use-constraints "LicenseURL/Type")
+                    :Description (value-of use-constraints "LicenseURL/Description")
+                    :MimeType (value-of use-constraints "LicenseURL/MimeType")})
+     :LicenseText (value-of use-constraints "LicenseText")}))
+
 (defn- parse-collection-doi
   "Parse the XML collection DOI into the UMM-C counterparts.
    There could be multiple DOIs under Collection, just take the first one for now."
@@ -238,6 +250,7 @@
                          "/Collection/CollectionState"
                          sanitize?)
    :AccessConstraints (parse-access-constraints doc sanitize?)
+   :UseConstraints (parse-use-constraints doc)
    :TemporalKeywords (values-at doc "/Collection/TemporalKeywords/Keyword")
    :LocationKeywords (lk/spatial-keywords->location-keywords
                       (kf/get-kms-index context)
