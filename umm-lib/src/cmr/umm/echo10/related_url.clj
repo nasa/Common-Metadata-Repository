@@ -155,7 +155,7 @@
   [related-urls]
   (when-let [urls (seq (concat
                          (h/downloadable-urls related-urls)
-                         (h/cloud-urls related-urls)))]
+                         (h/s3-urls related-urls)))]
     (x/element
       :OnlineAccessURLs {}
       (for [related-url urls]
