@@ -91,6 +91,10 @@
                                                                              :EntryTitle "entry-title1"})
                                                      {:token "mock-echo-system-token"})
 
+         coll2 (data-core/ingest-umm-spec-collection "PROV1"
+                                                     (data-umm-c/collection {:ShortName "coll2"
+                                                                             :EntryTitle "entry-title2"})
+                                                     {:token "mock-echo-system-token"})
          _ (index/wait-until-indexed)
          ;; Setup subscriptions
          sub1 (create-subscription-and-index coll1, "test_sub_prov1" "user2" "provider=PROV1")]
@@ -116,9 +120,9 @@
      (testing "Deleting the subscription purges the suscription notification entry"
        ;; Delete and reingest the subscription. If the sub-notification was purged, then it
        ;; should look back 24 hours, as if the subscription were new.
-       (ingest/delete-concept sub1)
-       (subscription-util/ingest-subscription sub1
-                                              {:token "mock-echo-system-token"})
+       (let [concept {:provider-id "PROV1" :concept-type :subscription :native-id "test_sub_prov1"}]
+         (ingest/delete-concept concept))
+       (create-subscription-and-index coll1, "test_sub_prov1" "user2" "provider=PROV1")
        (is (= 2
              (->> (trigger-process-subscriptions)
                   (map #(nth % 1))
@@ -127,10 +131,8 @@
                   count))))
 
      (testing "check that duplicate subscriptions fail"
-       (println "dup test!!!!!")
-       (try
-         (let [sub2 (create-subscription-and-index coll1 "test_sub1_prov1" "user2", "polygon=1,2,3&provider=PROV1")
-               sub3 (create-subscription-and-index coll1 "test_sub2_prov1" "user2", "provider=PROV1&polygon=1,2,3")]
-           (println "newly created subscription:\n****\n" sub2 "\n****\n" sub3))
-         (catch Exception e (println (str "caught exception: " (.getMessage e)))))
-       (println "done with dup test")))))
+       (let [sub2 (create-subscription-and-index coll1 "test_sub2_prov1" "user2", "polygon=1,2,3&provider=PROV1")
+             sub3 (create-subscription-and-index coll1 "test_sub3_prov1" "user2", "provider=PROV1&polygon=1,2,3")
+             sub4 (create-subscription-and-index coll2 "test_sub4_prov1" "user2", "provider=PROV1&polygon=1,2,3")]   
+         (is (not (nil? (:errors sub3))))
+         (is (not (:errors sub4))))))))

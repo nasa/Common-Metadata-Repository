@@ -18,7 +18,7 @@
           (assoc :concept-type :subscription)
           (assoc :provider-id (:provider_id result))
           (assoc :user-id (:user_id result))
-          (assoc :normalized-query (:normalized_query result))
+          (assoc-in [:extra-fields :normalized-query] (:normalized_query result))
           (assoc-in [:extra-fields :subscription-name] (:subscription_name result))
           (assoc-in [:extra-fields :subscriber-id] (:subscriber_id result))
           (add-last-notified-at-if-present result db)

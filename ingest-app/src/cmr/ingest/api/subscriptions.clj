@@ -83,17 +83,15 @@
         normalized-query (:normalized-query subscription)
         collection-id (:CollectionConceptId metadata)
         subscriber-id (:SubscriberId metadata)]
-    (println "looking for" normalized-query ", " collection-id ", " subscriber-id)
     ;; There should be no other subscriptions matching this query ; nil is good
     (when-not (nil? (mdb/find-latest-concept
-                       request-context
-                       {:collection-concept-id collection-id
-                        :normalized-query normalized-query
-                        :subscriber-id subscriber-id
-                        :exclude-metadata false}
-                       :subscription))
-      (subscription-duplicate-error subscriber-id collection-id normalized-query))
-    (println "So all is good, no duplicates")))
+                                        request-context
+                                        {:collection-concept-id collection-id
+                                         :normalized-query normalized-query
+                                         :subscriber-id subscriber-id
+                                         :exclude-metadata false}
+                                        :subscription))
+      (subscription-duplicate-error subscriber-id collection-id normalized-query))))
 
 (defn- get-subscriber-id
   "Returns the subscriber id of the given subscription concept by parsing its metadata."
@@ -192,7 +190,7 @@
         (get-unique-native-id context subscription))
       native-id)))
 
-(defn- add-id-and-email-to-metadata-if-missing
+(defn- add-id-to-metadata-if-missing
    "If SubscriberId is provided, use it. Else, get it from the token."
   [context metadata]
   (let [{subscriber :SubscriberId query :Query} metadata
@@ -208,9 +206,8 @@
   can focus on insertion logic."
   [context subscription]
   (let [metadata (json/parse-string (:metadata subscription) true)
-        new-metadata (add-id-and-email-to-metadata-if-missing context metadata)
-        query (:Query metadata)
-        normalized (jobs/normalize-parameters-v1 query)]
+        new-metadata (add-id-to-metadata-if-missing context metadata)
+        normalized (jobs/normalize-subscription-search subscription)]
     (assoc subscription
            :metadata (json/generate-string new-metadata)
            :normalized-query normalized)))
@@ -218,7 +215,6 @@
 (defn create-subscription
   "Processes a request to create a subscription. A native id will be generated."
   [provider-id request]
-  (println "creating subscription!!!!!")
   (let [{:keys [body content-type headers request-context]} request]
     (common-ingest-checks request-context provider-id)
     (let [tmp-subscription (api-core/body->concept!
@@ -233,13 +229,12 @@
           newer-subscription (add-id-if-missing request-context new-subscription)
           subscriber-id (get-subscriber-id newer-subscription)]
       (check-ingest-permission request-context provider-id subscriber-id)
-      (check-duplicate-subscription request-context tmp-subscription)
+      (check-duplicate-subscription request-context newer-subscription)
       (perform-subscription-ingest request-context newer-subscription headers))))
 
 (defn create-subscription-with-native-id
   "Processes a request to create a subscription using the native-id provided."
   [provider-id native-id request]
-  (println "creating subscription with native id!!!!!")
   (let [{:keys [body content-type headers request-context]} request]
     (common-ingest-checks request-context provider-id)
     (when (native-id-collision? request-context provider-id native-id)
@@ -258,7 +253,7 @@
           new-subscription (add-id-if-missing request-context tmp-subscription)
           subscriber-id (get-subscriber-id new-subscription)]
       (check-ingest-permission request-context provider-id subscriber-id)
-      (check-duplicate-subscription request-context tmp-subscription)
+      (check-duplicate-subscription request-context new-subscription)
       (perform-subscription-ingest request-context new-subscription headers))))
 
 (defn create-or-update-subscription-with-native-id
@@ -266,7 +261,6 @@
   does NOT fail on collisions. This is mapped to PUT methods to preserve
   existing functionality."
   [provider-id native-id request]
-  (println "creating or update subscription with native id!!!!!")
   (let [{:keys [body content-type headers request-context]} request
         _ (common-ingest-checks request-context provider-id)
         tmp-subscription (api-core/body->concept! :subscription
@@ -287,9 +281,7 @@
         new-subscription (add-id-if-missing request-context tmp-subscription)
         new-subscriber (get-subscriber-id new-subscription)]
     (check-ingest-permission request-context provider-id new-subscriber old-subscriber)
-    (try
     (check-duplicate-subscription request-context new-subscription)
-      (catch Exception e (println e)))
     (perform-subscription-ingest request-context new-subscription headers)))
 
 (defn delete-subscription
