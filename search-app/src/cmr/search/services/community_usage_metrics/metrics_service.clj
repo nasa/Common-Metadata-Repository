@@ -37,7 +37,7 @@
 
 (defn- get-collection-by-product-id
   "Query elastic for a collection with a given product-id, parses out the value before the last : and
-   checks that value against entry-title, short-name, and dataset ID attribute. Also checks the non-parsed value against
+   checks that value against entry-title, short-name, and Persistent ID attribute. Also checks the non-parsed value against
    short-name."
   [context product-id]
   (when (seq product-id)
