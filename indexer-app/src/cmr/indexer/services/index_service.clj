@@ -304,11 +304,10 @@
   [context collections provider-id]
   (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
         index (get-in index-names [:autocomplete :autocomplete])
-        parse-coll-fn (partial parse-collection context)
         humanize-fields-fn (partial humanizer/collection-humanizers-elastic context)
         parsed-concepts (->> collections
                              (remove :deleted)
-                             (map parse-coll-fn)
+                             (map #(parse-collection context %))
                              (remove nil?))
         collection-permissions (map (fn [collection]
                                       (let [permissions (collection-util/get-coll-permitted-group-ids context provider-id collection)]
