@@ -4,7 +4,7 @@
   cmr.system-int-test.search.collection-relevancy.collection-relevancy namespace.
   For all of the tests in this namespace we bin each integer value to its own bin."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as u]
    [cmr.common.config :as config]
@@ -22,11 +22,11 @@
    [cmr.system-int-test.utils.search-util :as search]))
 
 (def sample-usage-csv
-  (str "Product,Version,Hosts\n"
-       "AMSR-L1A,3,10\n"
-       "AG_VIRTUAL,1,100\n"
-       "AG_MAPSS,2,30\n"
-       "AST_05,B,8\n"))
+  (string/join "\n" ["Product,Version,Hosts"
+                     "AMSR-L1A,3,10"
+                     "AG_VIRTUAL,1,100"
+                     "AG_MAPSS,2,30"
+                     "AST_05,B,8"]))
 
 (defn- init-community-usage-fixture
   "Sets up the community usage config required for each test."
@@ -234,3 +234,40 @@
   (let [results (:refs (search/find-refs :collection {:keyword "AMSR-L1A"}))]
     (is (= ["AMSR-L1A 003" "AMSR-L1A 2" "AMSR-L1A 1"]
            (map :name results)))))
+
+(deftest sorting-handles-persistent-id-attribute-test
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "ABOM-AUS-RAMSSA_09km"
+                                                        :EntryTitle "PODAAC 1"
+                                                        :AdditionalAttributes
+                                                        [{:Name "Persistent ID"
+                                                          :Value "PODAAC-GHRAM-4FA01"
+                                                          :DataType "STRING"
+                                                          :Description "Dataset Persistent ID"}]
+                                                        :Version "1"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "L4HRfnd-AUS-RAMSSA_09km"
+                                                        :EntryTitle "PODAAC 2"
+                                                        :AdditionalAttributes
+                                                        [{:Name "Persistent ID"
+                                                          :Value "PODAAC-HHRAD-5FB11"
+                                                          :DataType "STRING"
+                                                          :Description "Dataset Persistent ID"}]
+                                                        :Version "1"}))
+
+  (index/wait-until-indexed)
+  (hu/ingest-community-usage-metrics (str "Product,Version,Hosts\n"
+                                          "PODAAC-GHRAM-4FA01,1,10\n"
+                                          "PODAAC-HHRAD-5FB11,1,50\n"))
+  (index/wait-until-indexed)
+  (are3
+   [sort-order expected]
+   (let [results (:refs (search/find-refs :collection {:keyword "PODAAC" :sort-key sort-order}))]
+     (is (= expected
+            (map :name results))))
+
+   "ascending usage"
+   "usage-score" ["PODAAC 1" "PODAAC 2"]
+
+   "descending usage"
+   "-usage-score" ["PODAAC 2" "PODAAC 1"]))
