@@ -19,31 +19,35 @@
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
   [token]
   (or (string/starts-with? token "EDL-")
-       (<= (count token) URS_TOKEN_MAX_LENGTH)))
+      (string/starts-with? token "Bearer EDL-")
+      (<= (count token) URS_TOKEN_MAX_LENGTH)))
 
 (defn- is-jwt-token?
   "Check if a token matches the JWT pattern (Base64.Base64.Base64) and if it
    does, try to look inside the header section and verify that the token is JWT
    and it came from EarthDataLogin (EDL).
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
-  [token]
-  (info "JWT token test:" (subs token 0 (/ (count token) 2)))
-  (if (some? (re-find #"[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+" token))
-    (let [token-parts (string/split token #"\.")
-          token-header (first token-parts)
-          header-raw (String. (.decode (java.util.Base64/getDecoder) token-header))]
-      ;; don't parse the data unless it is really needed to prevent unnecessary
-      ;; processing. Check first to see if the data looks like JSON
-      (if (and (string/starts-with? header-raw "{")
-               (string/ends-with? header-raw "}"))
-        (try
-          (if-let [header-data (json/parse-string header-raw true)]
-            (and (= "JWT" (:typ header-data))
-                 (= "Earthdata Login" (:origin header-data)))
-            false)
-          (catch com.fasterxml.jackson.core.JsonParseException e false))
-        false))
-    false))
+  [raw-token]
+  (warn "JWT token test:" (subs raw-token 0 (/ (count raw-token) 2)))
+  (let [token (if (string/starts-with? raw-token "Bearer ")
+                (subs raw-token 7)
+                raw-token)]
+    (if (some? (re-find #"[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+\.[:A-Za-z0-9=_-]+" token))
+      (let [token-parts (string/split token #"\.")
+            token-header (first token-parts)
+            header-raw (String. (.decode (java.util.Base64/getDecoder) token-header))]
+        ;; don't parse the data unless it is really needed to prevent unnecessary
+        ;; processing. Check first to see if the data looks like JSON
+        (if (and (string/starts-with? header-raw "{")
+                 (string/ends-with? header-raw "}"))
+          (try
+            (if-let [header-data (json/parse-string header-raw true)]
+              (and (= "JWT" (:typ header-data))
+                   (= "Earthdata Login" (:origin header-data)))
+              false)
+            (catch com.fasterxml.jackson.core.JsonParseException e false))
+          false))
+      false)))
 
 (defn is-launchpad-token?
   "Returns true if the given token is a launchpad token.
