@@ -127,10 +127,10 @@
                                                      :MimeType "text/html"}}}
           result (echo10/umm-c-to-echo10-xml actual-data)
           echo-result (first (select result "/Collection/UseConstraints"))]
-      (is (and (= "https://someurl.com" (value-of echo-result "LicenseURL/URL"))
-               (= "License URL" (value-of echo-result "LicenseURL/Type"))
-               (= "License URL Description" (value-of echo-result "LicenseURL/Description"))
-               (= "text/html" (value-of echo-result "LicenseURL/MimeType"))))))
+      (is (= "https://someurl.com" (value-of echo-result "LicenseURL/URL")))
+      (is (= "License URL" (value-of echo-result "LicenseURL/Type")))
+      (is (= "License URL Description" (value-of echo-result "LicenseURL/Description")))
+      (is (= "text/html" (value-of echo-result "LicenseURL/MimeType")))))
 
   (testing "echo10 use constraints License Text test"
     (let [actual-data {:UseConstraints {:LicenseText "License Text"}}
