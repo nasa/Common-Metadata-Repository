@@ -464,6 +464,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
+      <xs:element name="UseConstraints" type="UseConstraintsType" minOccurs="0"/>
       <xs:element minOccurs="0" name="Price" type="DollarAmount">
         <xs:annotation>
           <xs:documentation>The price for ordering the
@@ -616,6 +617,35 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:complexType name="ListOfAssociatedDOIs">
     <xs:sequence>
       <xs:element name="AssociatedDOI" type="AssociatedDoiType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="UseConstraintsType">
+    <xs:sequence>
+      <xs:element name="Description" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>This sub-element either contains a license summary or free-text description that details the permitted use or limitation of this collection.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="4000" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:choice minOccurs="0">
+        <xs:element name="LicenseURL" type="OnlineResource"/>
+        <xs:element name="LicenseText">
+          <xs:annotation>
+            <xs:documentation>This element holds the actual license text. If this element is used the LicenseUrl element cannot be used.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1" />
+              <xs:maxLength value="20000" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+      </xs:choice>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="ListOfAlgorithmPackages">
