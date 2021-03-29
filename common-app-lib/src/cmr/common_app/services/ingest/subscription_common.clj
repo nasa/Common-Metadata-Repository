@@ -5,7 +5,8 @@
    [clojure.string :as string]))
 
 (defn normalize-parameters-v1
-  "Take a list of URL parameters, and sort them."
+  "Returns a normalized url parameter string by splitting the string of parameters on '&' and
+   sorting them alphabetically"
   [parameter-string]
   (-> (if (string/starts-with? parameter-string "?")
         (subs parameter-string 1)

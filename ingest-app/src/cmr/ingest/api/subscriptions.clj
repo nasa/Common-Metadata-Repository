@@ -84,13 +84,13 @@
         collection-id (:CollectionConceptId metadata)
         subscriber-id (:SubscriberId metadata)]
     ;; There should be no other subscriptions matching this query ; nil is good
-    (when-not (nil? (mdb/find-latest-concept
-                                        request-context
-                                        {:collection-concept-id collection-id
-                                         :normalized-query normalized-query
-                                         :subscriber-id subscriber-id
-                                         :exclude-metadata false}
-                                        :subscription))
+    (when (mdb/find-latest-concept
+           request-context
+           {:collection-concept-id collection-id
+            :normalized-query normalized-query
+            :subscriber-id subscriber-id
+            :exclude-metadata false}
+           :subscription)
       (subscription-duplicate-error subscriber-id collection-id normalized-query))))
 
 (defn- get-subscriber-id
@@ -196,13 +196,11 @@
   (let [{subscriber :SubscriberId query :Query} metadata
         subscriber (if-not subscriber
                      (api-core/get-user-id-from-token context)
-                     subscriber)
-        query ()
-        normalized ()]
+                     subscriber)]
     (assoc metadata :SubscriberId subscriber)))
 
 (defn- add-id-if-missing
-  "Parses and generates the metadata, such that add-id-and-email-to-metadata-if-missing
+  "Parses and generates the metadata, such that add-id-to-metadata-if-missing
   can focus on insertion logic."
   [context subscription]
   (let [metadata (json/parse-string (:metadata subscription) true)
