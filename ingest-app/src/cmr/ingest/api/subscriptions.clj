@@ -200,7 +200,7 @@
                      subscriber)]
     (assoc metadata :SubscriberId subscriber)))
 
-(defn- add-id-if-missing
+(defn- add-fields-if-missing
   "Parses and generates the metadata, such that add-id-to-metadata-if-missing
   can focus on insertion logic. Also adds normalized-query to the concept."
   [context subscription]
