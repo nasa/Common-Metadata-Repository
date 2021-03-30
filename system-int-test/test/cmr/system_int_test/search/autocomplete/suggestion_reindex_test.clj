@@ -290,7 +290,7 @@
       (search/clear-caches)
 
       (compare-autocomplete-results
+       (get-in (search/get-autocomplete-json "q=ice") [:feed :entry])
        [{:value "Ice-Nine"
          :fields "Kurt:Vonnegut:Cats Cradle:::Ice-Nine"
-         :type "science_keywords"}]
-       (get-in (search/get-autocomplete-json "q=ice") [:feed :entry])))))
+         :type "science_keywords"}]))))
