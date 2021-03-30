@@ -188,17 +188,27 @@
 
 (def REINDEX_BATCH_SIZE 2000)
 
+(defn- remove-nil-tail
+  "Remove any nils from the end of a collection."
+  [coll]
+  (->> coll
+       reverse
+       (drop-while nil?)
+       reverse))
+
 (defn- science-keywords->elastic-docs
-  "Convert hierarchical science-keywords to colon-separated elastic docs for indexing"
+  "Convert hierarchical science-keywords to colon-separated elastic docs for indexing.
+  Below term, variables may not be hierarchical and may be nil."
   [index science-keywords public-collection? permitted-group-ids modified-date]
   (let [keyword-hierarchy [:topic
                            :term
                            :variable-level-1
                            :variable-level-2
-                           :variable-level-3]
+                           :variable-level-3
+                           :detailed-variable]
         sk-strings (->> keyword-hierarchy
                         (map #(get science-keywords %))
-                        (remove nil?))
+                        remove-nil-tail)
         keyword-string (s/join ":" sk-strings)
         keyword-value (last sk-strings)
         id (-> (s/lower-case keyword-string)
@@ -278,7 +288,7 @@
   [term]
   (let [rx (re-pattern #"(none|not (provided|applicable))")]
     (or (nil? term)
-        (= "" (s/trim term))
+        (empty? (s/trim term))
         (some? (re-find rx (s/lower-case term))))))
 
 (defn anti-value-suggestion?

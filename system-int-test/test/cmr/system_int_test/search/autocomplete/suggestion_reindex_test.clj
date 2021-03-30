@@ -43,14 +43,16 @@
                                            :Term "Term1"
                                            :VariableLevel1 "Level1-1"
                                            :VariableLevel2 "Level1-2"
-                                           :VariableLevel3 "Level1-3"}))
+                                           :VariableLevel3 "Level1-3"
+                                           :DetailedVariable "Detail1"}))
 
 (def sk2 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
                                            :Topic "Popular"
                                            :Term "Extreme"
                                            :VariableLevel1 "Level2-1"
                                            :VariableLevel2 "Level2-2"
-                                           :VariableLevel3 "Level2-3"}))
+                                           :VariableLevel3 "Level2-3"
+                                           :DetailedVariable "UNIVERSAL"}))
 
 (def sk3 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
                                            :Topic "Popular"
@@ -89,6 +91,7 @@
                                             :Term "Ocean Optics"
                                             :VariableLevel1 "Bioluminescence"}))
 
+
 (def gdf1 {:FileDistributionInformation
            [{:FormatType "Binary"
              :AverageFileSize 50
@@ -101,13 +104,13 @@
   (let [admin-read-group-concept-id (e/get-or-create-group (s/context) "admin-read-group")
         coll1 (d/ingest "PROV1"
                         (dc/collection
-                          {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
-                           :ArchiveAndDistributionInformation gdf1
-                           :SpatialKeywords ["DC" "Miami"]
-                           :ProcessingLevelId (:ProcessingLevelId (fu/processing-level-id "PL1"))
-                           :Projects [(:Projects (fu/projects "proj1" "PROJ2"))]
-                           :Platforms [(:Platforms (fu/platforms fu/FROM_KMS 2 2 1))]
-                           :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]}))
+                         {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
+                          :ArchiveAndDistributionInformation gdf1
+                          :SpatialKeywords ["DC" "Miami"]
+                          :ProcessingLevelId (:ProcessingLevelId (fu/processing-level-id "PL1"))
+                          :Projects [(:Projects (fu/projects "proj1" "PROJ2"))]
+                          :Platforms [(:Platforms (fu/platforms fu/FROM_KMS 2 2 1))]
+                          :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]}))
         coll2 (fu/make-coll 2 "PROV1"
                             (fu/science-keywords sk1 sk3)
                             (fu/projects "proj1" "PROJ2")
@@ -122,23 +125,23 @@
                                                     :format-key :echo10})
         coll4 (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7 sk8 sk9 sk11))
         coll5 (d/ingest-umm-spec-collection
-                "PROV2"
-                (data-umm-spec/collection
-                  {:EntryTitle "Secret Collection"
-                   :Projects (:Projects (fu/projects "From whence you came!"))
-                   :Platforms (:Platforms (fu/platforms "SECRET" 2 2 1))
-                   :ScienceKeywords (:ScienceKeywords (fu/science-keywords sk12))
-                   :AccessConstraints (data-umm-spec/access-constraints
-                                         {:Value 1 :Description "Those files are for British eyes only."})})
-                {:format :umm-json})
+               "PROV2"
+               (data-umm-spec/collection
+                {:EntryTitle "Secret Collection"
+                 :Projects (:Projects (fu/projects "From whence you came!"))
+                 :Platforms (:Platforms (fu/platforms "SECRET" 2 2 1))
+                 :ScienceKeywords (:ScienceKeywords (fu/science-keywords sk12))
+                 :AccessConstraints (data-umm-spec/access-constraints
+                                     {:Value 1 :Description "Those files are for British eyes only."})})
+               {:format :umm-json})
         coll6 (d/ingest-umm-spec-collection
-                "PROV2"
-                (data-umm-spec/collection
-                  {:ShortName "short but not so short that it's not unique"
-                   :EntryTitle "Registered Collection"
-                   :Projects (:Projects (fu/projects "REGISTERED"))
-                   :Platforms (:Platforms (fu/platforms "REGISTERED" 2 2 1))})
-                {:format :umm-json})
+               "PROV2"
+               (data-umm-spec/collection
+                {:ShortName "short but not so short that it's not unique"
+                 :EntryTitle "Registered Collection"
+                 :Projects (:Projects (fu/projects "REGISTERED"))
+                 :Platforms (:Platforms (fu/platforms "REGISTERED" 2 2 1))})
+               {:format :umm-json})
         c1-echo (d/ingest "PROV1"
                           (dc/collection {:entry-title "c1-echo" :access-value 1})
                           {:format :echo10})
@@ -185,9 +188,9 @@
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=REGISTERED" {:headers {:echo-token user3-token}}) [:feed :entry])
        [{:type "project" :value "REGISTERED" :fields "REGISTERED"}
+        {:type "instrument" :value "REGISTERED-p0-i0" :fields "REGISTERED-p0-i0"}
         {:type "platform" :value "REGISTERED-p0" :fields "REGISTERED-p0"}
         {:type "platform" :value "REGISTERED-p1" :fields "REGISTERED-p1"}
-        {:type "instrument" :value "REGISTERED-p0-i0" :fields "REGISTERED-p0-i0"}
         {:type "instrument" :value "REGISTERED-p0-i1" :fields "REGISTERED-p0-i1"}
         {:type "instrument" :value "REGISTERED-p1-i0" :fields "REGISTERED-p1-i0"}
         {:type "instrument" :value "REGISTERED-p1-i1" :fields "REGISTERED-p1-i1"}]))))
@@ -197,12 +200,6 @@
     (compare-autocomplete-results
      (get-in (search/get-autocomplete-json "q=l") [:feed :entry])
      [{:type "instrument" :value "lVIs" :fields "lVIs"}
-      {:type "science_keywords"
-       :value "Level1-3"
-       :fields "Topic1:Term1:Level1-1:Level1-2:Level1-3"}
-      {:type "science_keywords"
-       :value "Level2-3"
-       :fields "Popular:Extreme:Level2-1:Level2-2:Level2-3"}
       {:type "organization"
        :value "Langley DAAC User Services"
        :fields "Langley DAAC User Services"}]))
@@ -271,3 +268,29 @@
 
      "Still none found"
      "old" [])))
+
+(deftest semi-hierachical-keywords-test
+  (testing "science keywords with level-1 but no level-2 or level-3 but including detailed-variables"
+    (let [gap-sk (umm-spec-common/science-keyword {:Category "Fiction"
+                                                   :Topic "Kurt"
+                                                   :Term "Vonnegut"
+                                                   :VariableLevel1 "Cats Cradle"
+                                                   :DetailedVariable "ice-nine"})]
+      (d/ingest-umm-spec-collection
+       "PROV1"
+       (data-umm-spec/collection
+        {:EntryTitle "Secret Collection"
+         :ScienceKeywords (:ScienceKeywords (fu/science-keywords gap-sk))})
+       {:format :umm-json})
+
+      (index/wait-until-indexed)
+      (index/reindex-suggestions)
+      (index/wait-until-indexed)
+
+      (search/clear-caches)
+
+      (compare-autocomplete-results
+       [{:value "Ice-Nine"
+         :fields "Kurt:Vonnegut:Cats Cradle:::Ice-Nine"
+         :type "science_keywords"}]
+       (get-in (search/get-autocomplete-json "q=ice") [:feed :entry])))))
