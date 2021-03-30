@@ -189,12 +189,13 @@
 (def REINDEX_BATCH_SIZE 2000)
 
 (defn- remove-nil-tail
-  "Remove any nils from the end of a collection."
+  "Remove any nils from the end of a science-keyword hierarchy.
+  Nil values can exist in between the leaf keyword and Topic."
   [coll]
-  (->> coll
-       reverse
-       (drop-while nil?)
-       reverse))
+  (loop [x coll]
+    (if (last x)
+      x
+      (recur (drop-last x)))))
 
 (defn- science-keywords->elastic-docs
   "Convert hierarchical science-keywords to colon-separated elastic docs for indexing.
