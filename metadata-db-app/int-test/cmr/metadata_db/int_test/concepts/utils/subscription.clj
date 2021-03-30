@@ -22,7 +22,8 @@
   (let [native-id (str "sub-native" uniq-num)
         extra-fields (merge {:subscription-name (str "subname" uniq-num)
                              :subscriber-id (str "subid" uniq-num)
-                             :collection-concept-id "C1234-PROV1"}
+                             :collection-concept-id "C12345-PROV1"
+                             :normalized-query (str "polygon=1,2,3," uniq-num)}
                             (:extra-fields attributes))
         attributes (merge {:user-id (str "user" uniq-num)
                            :format "application/json"

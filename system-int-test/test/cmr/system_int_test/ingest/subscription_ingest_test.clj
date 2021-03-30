@@ -324,11 +324,17 @@
         concept (subscription-util/make-subscription-concept
                  {:concept-id supplied-concept-id
                   :CollectionConceptId (:concept-id coll1)
+                  :Query "limit=10"
                   :native-id "Atlantic-1"})
+        concept2 (subscription-util/make-subscription-concept
+                  {:concept-id supplied-concept-id
+                   :CollectionConceptId (:concept-id coll1)
+                   :Query "limit=12"
+                   :native-id "other"})
         _ (ingest/ingest-concept concept)]
     (testing "update concept with a different concept-id is invalid"
       (let [{:keys [status errors]} (ingest/ingest-concept
-                                     (assoc concept :concept-id "SUB1111-PROV1"))]
+                                     (assoc concept :Query "limit=11" :concept-id "SUB1111-PROV1"))]
         (is (= [409 [(str "A concept with concept-id [SUB1000-PROV1] and "
                           "native-id [Atlantic-1] already exists for "
                           "concept-type [:subscription] provider-id [PROV1]. "
@@ -336,8 +342,7 @@
                           "[Atlantic-1] would conflict with that one.")]]
                [status errors]))))
     (testing "update concept with a different native-id is invalid"
-      (let [{:keys [status errors]} (ingest/ingest-concept
-                                     (assoc concept :native-id "other"))]
+      (let [{:keys [status errors]} (ingest/ingest-concept concept2)]
         (is (= [409 [(str "A concept with concept-id [SUB1000-PROV1] and "
                           "native-id [Atlantic-1] already exists for "
                           "concept-type [:subscription] provider-id [PROV1]. "

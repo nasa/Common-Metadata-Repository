@@ -48,12 +48,16 @@
      (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                :ShortName "S1"
                                                                                :Version "V1"}))
-           sub1 (subscription/ingest-subscription-with-attrs {:provider-id "PROV1" :CollectionConceptId (:concept-id coll1)}
+           sub1 (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                              :Query "limit=1"
+                                                              :CollectionConceptId (:concept-id coll1)}
                                                              {}
                                                              1)
            ;; create a subscription on a different provider PROV2
            ;; and this subscription won't be indexed as a result of indexing subscriptions of PROV1
-           sub2 (subscription/ingest-subscription-with-attrs {:provider-id "PROV2" :CollectionConceptId (:concept-id coll1)}
+           sub2 (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
+                                                              :Query "limit=10"
+                                                              :CollectionConceptId (:concept-id coll1)}
                                                              {}
                                                              1)]
 
@@ -72,13 +76,19 @@
 
        (testing "Bulk index multilpe subscriptions for a single provider"
          ;; Ingest three more subscriptions
-         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1" :CollectionConceptId (:concept-id coll1)}
+         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                       :Query "limit=2"
+                                                       :CollectionConceptId (:concept-id coll1)}
                                                       {}
                                                       2)
-         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1" :CollectionConceptId (:concept-id coll1)}
+         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                       :Query "limit=3"
+                                                       :CollectionConceptId (:concept-id coll1)}
                                                       {}
                                                       3)
-         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1" :CollectionConceptId (:concept-id coll1)}
+         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                       :Query "limit=4"
+                                                       :CollectionConceptId (:concept-id coll1)}
                                                       {}
                                                       4)
 
@@ -103,26 +113,32 @@
        ;; The following are saved, but not indexed due to the above call
 
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                     :Query "limit=1"
                                                      :CollectionConceptId (:concept-id coll1)}
                                                     {}
                                                     1)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                     :Query "limit=2"
                                                      :CollectionConceptId (:concept-id coll1)}
                                                     {}
                                                     2)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
+                                                     :Query "limit=3"
                                                      :CollectionConceptId (:concept-id coll1)}
                                                     {}
                                                     3)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
+                                                     :Query "limit=4"
                                                      :CollectionConceptId (:concept-id coll1)}
                                                     {}
                                                     4)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV3"
+                                                     :Query "limit=5"
                                                      :CollectionConceptId (:concept-id coll1)}
                                                     {}
                                                     5)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV3"
+                                                     :Query "limit=6"
                                                      :CollectionConceptId (:concept-id coll1)}
                                                     {}
                                                     6)
@@ -148,15 +164,18 @@
                                                                                :Version "V1"}))]
 
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
-                                                     :CollectionConceptId (:concept-id coll1)}
+                                                     :CollectionConceptId (:concept-id coll1)
+                                                     :Query "polygon=1,2,3"}
                                                     {}
                                                     1)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
-                                                     :CollectionConceptId (:concept-id coll1)}
+                                                     :CollectionConceptId (:concept-id coll1)
+                                                     :Query "polygon=2,3,4"}
                                                     {}
                                                     2)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV3"
-                                                     :CollectionConceptId (:concept-id coll1)}
+                                                     :CollectionConceptId (:concept-id coll1)
+                                                     :Query "polygon=4,5,6"}
                                                     {}
                                                     3)
 
@@ -181,21 +200,25 @@
                                                                  :Name "Sub1"
                                                                  :SubscriberId "user1"
                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                 :Query "limit=1"
                                                                  :provider-id "PROV1"})
            sub2-concept (subscription/make-subscription-concept {:native-id "SUB2"
                                                                  :Name "Sub2"
                                                                  :SubscriberId "user1"
                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                 :Query "limit=2"
                                                                  :provider-id "PROV2"})
            sub2-2-concept (subscription/make-subscription-concept {:native-id "SUB2"
                                                                    :Name "Sub2-2"
                                                                    :SubscriberId "user1"
                                                                    :CollectionConceptId (:concept-id coll1)
+                                                                   :Query "limit=3"
                                                                    :provider-id "PROV2"})
            sub3-concept (subscription/make-subscription-concept {:native-id "SUB3"
                                                                  :Name "Sub1"
                                                                  :SubscriberId "user1"
                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                 :Query "limit=4"
                                                                  :provider-id "PROV3"})
            sub1-1 (subscription/ingest-subscription sub1-concept)
            sub1-2-tombstone (merge (ingest/delete-concept

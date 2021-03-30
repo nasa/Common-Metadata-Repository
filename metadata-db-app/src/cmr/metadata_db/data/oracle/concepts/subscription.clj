@@ -29,8 +29,8 @@
   [concept]
   (let [{{:keys [subscription-name
                  subscriber-id
-                 collection-concept-id]} :extra-fields
-         normalized-query :normalized-query
+                 collection-concept-id
+                 normalized-query]} :extra-fields
          user-id :user-id
          provider-id :provider-id} concept
         [cols values] (concepts/concept->common-insert-args concept)]

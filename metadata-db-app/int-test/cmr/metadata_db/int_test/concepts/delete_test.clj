@@ -21,9 +21,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest delete-concepts-test
-  (doseq [concept-type [:collection :granule :service
-                        :service-association :subscription :tool :tool-association]]
-    (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
+  ;(doseq [concept-type [:collection :granule :service
+                       ; :service-association :subscription :tool :tool-association
+    (cd-spec/general-delete-test :subscription ["REG_PROV" "SMAL_PROV"]))
 
 (deftest delete-variable-and-association-concepts-test
   (cd-spec/general-delete-variable-and-association-test ["REG_PROV" "SMAL_PROV"]))
