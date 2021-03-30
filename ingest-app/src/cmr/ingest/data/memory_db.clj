@@ -2,12 +2,15 @@
   "Stores and retrieves the hashes of the ACLs for a provider."
   (:require
    [cheshire.core :as json]
+   [clj-time.core :as time]
+   [cmr.common.date-time-parser :as date-time-parser]
    [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :refer [defn-timed] :as util]
+   [cmr.ingest.config :as config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.data.granule-bulk-update :as granule-data-bulk-update]
    [cmr.ingest.data.provider-acl-hash :as acl-hash]))
@@ -169,6 +172,13 @@
   (create-and-save-bulk-granule-update-status
    [this provider-id user-id request-json-body instructions]
    (swap! granule-task-id-atom inc)
+   ; (add-watch (:granule-task-status-atom this) :watcher
+   ;   (fn [key atom old-state new-state]
+   ;     (prn "-- Atom Changed --")
+   ;     (prn "key" key)
+   ;     (prn "atom" atom)
+   ;     (prn "old-state" old-state)
+   ;     (prn "new-state" new-state)))
    (let [task-id (str @granule-task-id-atom)
          parsed-json (json/parse-string request-json-body true)
          task-name (get parsed-json :name task-id)
@@ -239,6 +249,25 @@
                                                                     (count failed-granules)
                                                                     (count skipped-granules)
                                                                     (count task-granules)))))))))))
+  
+  (cleanup-bulk-granule-tasks-by-provider
+   [this provider-id]
+   (def this this)
+   (def provider-id provider-id)
+   (let [granule-task-statuses (into [] @(:granule-task-status-atom this))
+         granule-task-age (-> (config/granule-bulk-cleanup-minimum-age)
+                              time/days
+                              time/ago)
+         cleaned-tasks (remove #(and
+                                 (= (:status %) "COMPLETE")
+                                 (time/before? (date-time-parser/parse-datetime (:created-at %))
+                                               granule-task-age)
+                                 (= (:provider-id %) "PROV1"))
+                               granule-task-statuses)]
+     ; (println (filter #(time/before? (date-time-parser/parse-datetime (:created-at %) granule-task-age)
+     ;                                 granule-task-statuses)))
+     (reset! (:granule-task-status-atom this) cleaned-tasks)))
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   (reset-bulk-update

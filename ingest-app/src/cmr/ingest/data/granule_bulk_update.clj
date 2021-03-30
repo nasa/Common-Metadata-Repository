@@ -75,7 +75,8 @@
   (create-and-save-bulk-granule-update-status [db provider-id user-id request-json-body instructions])
   (update-bulk-granule-update-task-status [db task-id status status-message])
   (update-bulk-update-granule-status [db task-id granule-ur status status-message])
-  (reset-bulk-granule-update [db]))
+  (reset-bulk-granule-update [db])
+  (cleanup-bulk-granule-tasks-by-provider [db provider-id]))
 
 ;; Extends the GranBulkUpdateStore to the oracle store so it will work with oracle.
 (extend-protocol GranBulkUpdateStore
@@ -199,7 +200,23 @@
    [db]
    (sql-utils/run-sql db "DELETE FROM bulk_update_gran_status")
    (sql-utils/run-sql db "DELETE FROM granule_bulk_update_tasks")
-   (sql-utils/run-sql db "ALTER SEQUENCE gran_task_id_seq restart start with 1")))
+   (sql-utils/run-sql db "ALTER SEQUENCE gran_task_id_seq restart start with 1"))
+
+  (cleanup-bulk-granule-tasks-by-provider
+   [db provider-id]
+   (try
+       ; Deletes will cascade to granule_bulk_update_tasks
+      (jdbc/delete!
+       db
+       :bulk_update_gran_status
+       ["STATUS = 'COMPLETE' AND UPDATED_AT < SYSDATE - ? AND PROVIDER_ID = ?"
+        (config/granule-bulk-cleanup-minimum-age)
+        provider-id])
+     (catch Exception e
+       (error "Exception caught while attempting to clean up granule bulk update task table: " e)
+       (errors/throw-service-error :invalid-data
+                                   [(str "Error cleaning up bulk granule update task table "
+                                         (.getMessage e))])))))
 
 (defn context->db
   "Return the path to the database from a given context"
@@ -241,15 +258,8 @@
   [context]
   (reset-bulk-granule-update (context->db context)))
 
-(defn cleanup-provider-granule-bulk-update-status
+(defn-timed cleanup-provider-granule-bulk-update-status
   "Delete rows in the bulk_update_gran_status table for a given provider that
   are older than the configured age"
   [context provider-id]
-  (let [db (context->db context)
-        status-cleanup-statement (str "delete from CMR_INGEST.bulk_update_gran_status "
-                                      "where created_at < (current_timestamp - INTERVAL '"
-                                      (config/granule-bulk-cleanup-minimum-age)
-                                      "' DAY) and status = COMPLETE "
-                                      "and provider_id = " provider-id)]
-    ; Deletes will cascade to granule_bulk_update_tasks
-    (jdbc/db-do-prepared db status-cleanup-statement)))
+  (cleanup-bulk-granule-tasks-by-provider (context->db context) provider-id))

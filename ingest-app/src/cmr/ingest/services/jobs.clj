@@ -208,12 +208,12 @@
        context
        (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
 
-(defn trigger-bulk-granule-task-cleanup-by-provider
+(defn trigger-bulk-granule-task-cleanup
   [context]
   (let [providers (map :provider-id (mdb/get-providers context))]
     (info "Sending events to cleanup bulk granule update tasks in all providers:" (pr-str providers))
     (doseq [provider providers]
-      (ingest-events/publish-provider-event
+      (ingest-events/publish-gran-bulk-update-event
        context
        (ingest-events/provider-granule-bulk-update-task-cleanup-event provider)))))
 
@@ -223,7 +223,7 @@
 
 (def-stateful-job BulkGranUpdateTaskCleanup
   [_ system]
-  (trigger-bulk-granule-task-cleanup-by-provider context))
+  (trigger-bulk-granule-task-cleanup {:system system}))
 
 (def-stateful-job EmailSubscriptionProcessing
   [_ system]

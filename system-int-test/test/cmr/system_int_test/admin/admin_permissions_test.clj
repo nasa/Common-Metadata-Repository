@@ -108,5 +108,8 @@
         "cleanup-expired-collections"
         (url/cleanup-expired-collections-url) :post
 
+        "cleanup-granule-bulk-update-tasks"
+        (url/cleanup-granule-bulk-update-task-url) :post
+
         "access-control-reindex-acls"
         (url/access-control-reindex-acls-url) :post))))

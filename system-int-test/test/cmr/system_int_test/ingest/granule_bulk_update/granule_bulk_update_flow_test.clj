@@ -3,8 +3,10 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
+   [clojure.string :as string]
    [cmr.common.util :as util :refer [are3]]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as granule]
@@ -197,4 +199,25 @@
               (let [{:keys [status errors]} (ingest/granule-bulk-update-task-status 12345)]
                 (is (= 404 status))
                 (is (= ["Granule bulk update task with task id [12345] could not be found."]
-                       errors))))))))))
+                       errors))))))))
+    (testing "Granule bulk cleanup jobs deletes old tasks"
+      (let [bulk-update-options {:token (e/login (s/context) "user1")}
+            update1 {:name "an old update"
+                     :operation "UPDATE_FIELD"
+                     :update-field "OPeNDAPLink"
+                     :updates [["SC:AE_5DSno.002:30500511" "https://A-LONG-TIME-AGO"]
+                               ["SC:AE_5DSno.002:30500512" "https://IN-A-GALAXY-FAR-FAR-AWAY"]]}
+            ;; Intentionally made the following call verbose to make sure we are parsing xml.
+            ;; Freeze time so the update tasks will be old enough to be marked complete.
+            _ (dev-sys-util/freeze-time! "2019-01-01T10:00:00Z")
+            update1-response (ingest/parse-bulk-update-body
+                              :xml
+                              (ingest/bulk-update-granules
+                               "PROV1"
+                               update1
+                               (assoc bulk-update-options :accept-format :xml :raw? true)))
+            _ (ingest/cleanup-bulk-granule-update-tasks)
+            _ (qb-side-api/wait-for-terminal-states)
+            _ (dev-sys-util/clear-current-time!)
+            granule-tasks (:tasks (ingest/granule-bulk-update-tasks "PROV1" :json))]
+        (is (empty? (filter #(string/starts-with? (:name %) "an old update") granule-tasks)))))))

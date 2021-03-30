@@ -148,6 +148,13 @@
                               {:connection-manager (s/conn-mgr)})]
     (is (= 200 (:status response)))))
 
+(defn cleanup-bulk-granule-update-tasks
+  "Tells ingest to run the trigger-bulk-granule-task-cleanup job"
+  []
+  (let [response (client/post (url/cleanup-granule-bulk-update-task-url)
+                              {:connection-manager (s/conn-mgr)})]
+    (is (= 200 (:status response)))))
+
 (defn translate-metadata
   "Translates metadata using the ingest translation endpoint. Returns the response."
   ([concept-type input-format metadata output-format options]
