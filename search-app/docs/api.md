@@ -1196,7 +1196,6 @@ Example with detailed-variable as the base term, note the extra colons preservin
 }
 ```
 
-
 #### Autocomplete Parameters
   * `q` The string on which to search. The term is case insensitive.
   * `type[]` Optional list of types to include in the search. This may be any number of valid facet types.
