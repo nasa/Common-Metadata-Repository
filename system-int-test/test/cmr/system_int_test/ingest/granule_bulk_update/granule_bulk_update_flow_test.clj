@@ -216,8 +216,11 @@
                                "PROV1"
                                update1
                                (assoc bulk-update-options :accept-format :xml :raw? true)))
+            _ (qb-side-api/wait-for-terminal-states)
             _ (ingest/cleanup-bulk-granule-update-tasks)
             _ (qb-side-api/wait-for-terminal-states)
             _ (dev-sys-util/clear-current-time!)
             granule-tasks (:tasks (ingest/granule-bulk-update-tasks "PROV1" :json))]
-        (is (empty? (filter #(string/starts-with? (:name %) "an old update") granule-tasks)))))))
+        (is (empty? (filter #(and (string/starts-with? (:name %) "an old update")
+                                  (= (:status %) "COMPLETE"))
+                            granule-tasks)))))))

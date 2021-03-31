@@ -249,11 +249,9 @@
                                                                     (count failed-granules)
                                                                     (count skipped-granules)
                                                                     (count task-granules)))))))))))
-  
+
   (cleanup-bulk-granule-tasks-by-provider
    [this provider-id]
-   (def this this)
-   (def provider-id provider-id)
    (let [granule-task-statuses (into [] @(:granule-task-status-atom this))
          granule-task-age (-> (config/granule-bulk-cleanup-minimum-age)
                               time/days

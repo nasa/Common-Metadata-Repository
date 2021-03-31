@@ -1,6 +1,9 @@
 (ns cmr.ingest.data.granule-bulk-update
   "Stores and retrieves granule bulk update status and task information."
   (:require
+   [clj-time.core :as time]
+   [cmr.common.time-keeper :as time-keeper]
+   [clj-time.coerce :as time-coerce]
    [cheshire.core :as json]
    [clojure.java.jdbc :as jdbc]
    [cmr.common.log :refer (debug info warn error)]
@@ -138,13 +141,14 @@
     [conn db]
     (let [task-id (:nextval (first (sql-utils/query db ["SELECT GRAN_TASK_ID_SEQ.NEXTVAL FROM DUAL"])))
           statement (str "INSERT INTO granule_bulk_update_tasks "
-                         "(task_id, provider_id, name, request_json_body, status, user_id)"
-                         "VALUES (?, ?, ?, ?, ?, ?)")
+                         "(task_id, provider_id, name, request_json_body, status, user_id, created_at)"
+                         "VALUES (?, ?, ?, ?, ?, ?, ?)")
           parsed-json (json/parse-string request-json-body true)
           task-name (get parsed-json :name task-id)
           unique-task-name (format "%s: %s" task-name task-id)
+          created-at (time-coerce/to-sql-time (time-keeper/now))
           values [task-id provider-id unique-task-name (util/string->gzip-bytes request-json-body)
-                  "IN_PROGRESS" user-id]]
+                  "IN_PROGRESS" user-id created-at]]
       (jdbc/db-do-prepared db statement values)
       ;; Write a row to granule status for each granule-ur
       (apply jdbc/insert! conn
@@ -208,8 +212,8 @@
        ; Deletes will cascade to granule_bulk_update_tasks
       (jdbc/delete!
        db
-       :bulk_update_gran_status
-       ["STATUS = 'COMPLETE' AND UPDATED_AT < SYSDATE - ? AND PROVIDER_ID = ?"
+       :granule_bulk_update_tasks
+       ["STATUS = 'COMPLETE' AND CREATED_AT < SYSDATE - ? AND PROVIDER_ID = ?"
         (config/granule-bulk-cleanup-minimum-age)
         provider-id])
      (catch Exception e
