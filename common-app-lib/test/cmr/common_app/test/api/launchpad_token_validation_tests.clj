@@ -31,20 +31,22 @@
         token-user "EDL-U84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
         token-client "EDL-C84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
         token-ropc "EDL-R84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
-        token-jwt1 (str "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9n"
+        token-bearer (str "Bearer " token-user)
+        token-jwt (str "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9n"
                        "aW4iLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiT0F1dGgiLCJ"
                        "1aWQiOiJhZG1pbiIsImNsaWVudF9pZCI6Im9YQUhISmMyLTc"
                        "wbndXb2w2T2VIUFEiLCJleHAiOjE2MTYwMTg5OTcsImlhdCI"
                        "6MTYxNjAxNTM5NywiaXNzIjoiRWFydGhkYXRhIExvZ2luIn0"
                        ".-e7GTS6PJYD1fAuCoseOj4PdV5iqd521dCM1Hc_XjqI")
-        token-jwt (str "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiUmVmcmVzaCIsInVpZCI6ImNjdWFkcmFkbyIsImNsaWVudF9pZCI6Ikt4eDh5RGlRUEtjb2Mya3VKOGROOFEiLCJleHAiOjE2MTcxMjM0MDEsImlhdCI6MTYxNzExOTIwMSwiaXNzIjoiRWFydGhkYXRhIExvZ2luIn0.GEMVsVK62JWYvxYCGP1TEbcRYHKvRyWaJFQTy58uHRY")
+        token-jwt-bearer (str "Bearer " token-jwt)
+        token-jwt2 (str "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiUmVmcmVzaCIsInVpZCI6ImNjdWFkcmFkbyIsImNsaWVudF9pZCI6Ikt4eDh5RGlRUEtjb2Mya3VKOGROOFEiLCJleHAiOjE2MTcxMjM0MDEsImlhdCI6MTYxNzExOTIwMSwiaXNzIjoiRWFydGhkYXRhIExvZ2luIn0.GEMVsVK62JWYvxYCGP1TEbcRYHKvRyWaJFQTy58uHRY")
         token-launchpad (random-base64 4096)
         all-names ["Legacy" "OAuth" "User" "Client" "ROPC" "JWT" "LaunchPad"]
-        all-tokens [token-legacy token-oauth token-user token-client token-ropc token-jwt token-launchpad]
+        all-tokens [token-legacy token-oauth token-user token-client token-ropc token-bearer token-jwt token-jwt-bearer token-launchpad]
         test-group (partial test-matrix all-tokens all-names)]
     (testing "Is token a JWT token?"
-      (test-group [false false false false false true false] #'token/is-jwt-token?))
+      (test-group [false false false false false false true true false] #'token/is-jwt-token?))
     (testing "Is token a legacy token?"
-      (test-group [true true true true true false false] #'token/is-legacy-token?))
+      (test-group [true true true true true true false false false] #'token/is-legacy-token?))
     (testing "Is token a LaunchPad token?"
-      (test-group [false false false false false false true] #'token/is-launchpad-token?))))
+      (test-group [false false false false false false false false true] #'token/is-launchpad-token?))))
