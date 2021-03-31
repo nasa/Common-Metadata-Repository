@@ -1,10 +1,10 @@
-(ns cmr.ingest.services.granule-bulk-update.umm-g-test
+(ns cmr.ingest.services.granule-bulk-update.opendap.umm-g-test
   "Unit tests for UMM-G OPeNDAP url update"
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.ingest.services.granule-bulk-update.opendap-util :as opendap-util]
-   [cmr.ingest.services.granule-bulk-update.umm-g :as umm-g]))
+   [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]
+   [cmr.ingest.services.granule-bulk-update.opendap.umm-g :as umm-g]))
 
 (def ^:private doc-related-url
   "Sample document RelatedUrl"
@@ -32,7 +32,7 @@
     (are3 [url-value source result]
       (let [grouped-urls (opendap-util/validate-url url-value)]
         (is (= result
-               (#'umm-g/add-opendap-url* source grouped-urls))))
+               (umm-g/add-opendap-url source grouped-urls))))
 
       "no RelatedUrls in metadata, on-prem url update"
       "http://example.com/foo"

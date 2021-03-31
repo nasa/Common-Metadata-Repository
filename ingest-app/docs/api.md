@@ -1093,6 +1093,16 @@ supported metadata formats:
   - OPeNDAP url in OnlineResources for ECHO10 format
   - OPeNDAP url in RelatedUrls for UMM-G format
 
+There can only be ONE on-prem or/and ONE Hyrax-in-the-cloud OPeNDAP url in granule metadata. The rule to determine if an OPeNDAP url is an on-prem or Hyrax-in-the-cloud url is to match the URL against pattern: https://opendap.*.earthdata.nasa.gov/*. If it matches, it is a Hyrax-in-the-cloud OPeNDAP url; if it does not match, it is an on-prem OPeNDAP url.
+The OPeNDAP url value provided in the granule bulk update request can be comma-separated urls. But it can have at most two urls, one is on-prem url and the other is Hyrax-in-the-cloud url. The exact url type is determined by matching the url against the same pattern above. During update, the Hyrax-in-the-cloud url will overwrite any existing Hyrax-in-the-cloud OPeNDAP url in the granule metadata; the on-prem url will overwrite any existing on-prem OPeNDAP url in the granule metadata.
+
+**operation: "UPDATE_FIELD", update-field: "S3Link"**
+supported metadata formats:
+  - S3 url in OnlineAccessURLs for ECHO10 format
+  - S3 url in RelatedUrls for UMM-G format
+
+The S3 url value provided in the granule bulk update request can be comma-separated urls. Each url must start with s3:// (case-insensitive). During bulk update, the provided S3 urls in the request will overwrite any existing S3 links already in the granule metadata.
+
 Example: Add/update OPeNDAP url for 3 granules under PROV1.
 
 ```
@@ -1103,7 +1113,7 @@ curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo
 	"updates":[
              ["granule_ur1", "https://via.placeholder.com/150"],
              ["granule_ur2", "https://via.placeholder.com/160"],
-             ["granule_ur3", "https://via.placeholder.com/170"]
+             ["granule_ur3", "https://via.placeholder.com/170,https://opendap.earthdata.nasa.gov/foo"]
 	]
 }'
 ```
@@ -1179,8 +1189,7 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/granule-bulk-u
   "request-json-body" : "{\"operation\":\"UPDATE_FIELD\",\"update-field\":\"OPeNDAPLink\",\"updates\":[[\"SC:coll3:30500514\",\"https://url30500514\"],[\"SC:non-existent\",\"https://url30500515\"]]}",
   "granule-statuses" : [ {
     "granule-ur" : "SC:coll3:30500514",
-    "status" : "UPDATED",
-    "status-message" : null
+    "status" : "UPDATED"
   }, {
     "granule-ur" : "SC:non-existent",
     "status" : "FAILED",
