@@ -7,7 +7,7 @@
 
 (defn result->query
   "From a Database result, extract out the query and convert it to a usable string.
-   The algorithum on how to normalize the query may change over time, for this
+   The algorithm on how to normalize the query may change over time, for this
    migration version 1 will be used."
   [result]
   (-> (:metadata result)
