@@ -49,18 +49,6 @@
     (index/wait-until-indexed)
     result))
 
-(defn- create-subscription-and-index
-  [collection name user query]
-  (let [concept {:Name (or name "test_sub_prov1")
-                :SubscriberId (or user "user2")
-                :CollectionConceptId (:concept-id collection)
-                :Query (or query "provider=PROV1")}
-        subscription (subscription-util/make-subscription-concept concept)
-        options {:token "mock-echo-system-token"}
-        result (subscription-util/ingest-subscription subscription options)]
-    (index/wait-until-indexed)
-    result))
-
 (deftest ^:oracle subscription-email-processing-time-constraint-test
   (system/only-with-real-database
    (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
@@ -97,7 +85,7 @@
                                                      {:token "mock-echo-system-token"})
          _ (index/wait-until-indexed)
          ;; Setup subscriptions
-         sub1 (create-subscription-and-index coll1, "test_sub_prov1" "user2" "provider=PROV1")]
+         sub1 (subscription-util/create-subscription-and-index coll1, "test_sub_prov1" "user2" "provider=PROV1")]
 
      (testing "First query executed does not have a last-notified-at and looks back 24 hours"
        (let [gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
@@ -122,17 +110,10 @@
        ;; should look back 24 hours, as if the subscription were new.
        (let [concept {:provider-id "PROV1" :concept-type :subscription :native-id "test_sub_prov1"}]
          (ingest/delete-concept concept))
-       (create-subscription-and-index coll1, "test_sub_prov1" "user2" "provider=PROV1")
+       (subscription-util/create-subscription-and-index coll1, "test_sub_prov1" "user2" "provider=PROV1")
        (is (= 2
              (->> (trigger-process-subscriptions)
                   (map #(nth % 1))
                   flatten
                   (map :concept-id)
-                  count))))
-
-     (testing "check that duplicate subscriptions fail"
-       (let [sub2 (create-subscription-and-index coll1 "test_sub2_prov1" "user2", "polygon=1,2,3&provider=PROV1")
-             sub3 (create-subscription-and-index coll1 "test_sub3_prov1" "user2", "provider=PROV1&polygon=1,2,3")
-             sub4 (create-subscription-and-index coll2 "test_sub4_prov1" "user2", "provider=PROV1&polygon=1,2,3")]   
-         (is (not (nil? (:errors sub3))))
-         (is (not (:errors sub4))))))))
+                  count)))))))

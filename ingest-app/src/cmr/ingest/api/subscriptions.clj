@@ -82,17 +82,22 @@
         metadata (-> (:metadata subscription) (json/decode true))
         normalized-query (:normalized-query subscription)
         collection-id (:CollectionConceptId metadata)
-        subscriber-id (:SubscriberId metadata)]
-    ;; There should be no other subscriptions matching this query ; nil is good
-    (when-let [duplicate-query (mdb/find-latest-concept
-                                request-context
-                                {:collection-concept-id collection-id
-                                 :normalized-query normalized-query
-                                 :subscriber-id subscriber-id
-                                 :exclude-metadata false}
-                                :subscription)]
-      (when-not (= (:native-id duplicate-query) native-id)
-        (subscription-duplicate-error subscriber-id collection-id normalized-query)))))
+        subscriber-id (:SubscriberId metadata)
+        ;; Find concepts with matching collection-concept-id, normalized-query, and subscriber-id
+        duplicate-queries (mdb/find-latest-concepts
+                           request-context
+                           {:collection-concept-id collection-id
+                            :normalized-query normalized-query
+                            :subscriber-id subscriber-id
+                            :exclude-metadata false}
+                           :subscription)
+        ;;we only want to look at non-deleted subscriptions
+        active-duplicate-queries (remove :deleted duplicate-queries)]
+     ;;If there is at least one duplicate subscription,
+     ;;We need to make sure it has the same native-id, or else reject the ingest
+     (when (and (> (count active-duplicate-queries) 0)
+                (every? #(not= native-id (:native-id %)) active-duplicate-queries))
+       (subscription-duplicate-error subscriber-id collection-id normalized-query))))
 
 (defn- get-subscriber-id
   "Returns the subscriber id of the given subscription concept by parsing its metadata."

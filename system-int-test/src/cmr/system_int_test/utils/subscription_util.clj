@@ -9,6 +9,7 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-subscription :as data-umm-sub]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as urls]
@@ -182,3 +183,15 @@
   "Verifies the subscription references"
   [subscriptions response]
   (d/refs-match? subscriptions response))
+
+(defn create-subscription-and-index
+  [collection name user query]
+  (let [concept {:Name (or name "test_sub_prov1")
+                :SubscriberId (or user "user2")
+                :CollectionConceptId (:concept-id collection)
+                :Query (or query "provider=PROV1")}
+        subscription (make-subscription-concept concept)
+        options {:token "mock-echo-system-token"}
+        result (ingest-subscription subscription options)]
+    (index/wait-until-indexed)
+    result))
