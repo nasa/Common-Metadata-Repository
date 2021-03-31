@@ -763,6 +763,7 @@
                      {:SubscriberId "post-user"
                       :Name "a different subscription with native-id"
                       :native-id "another-native-id"
+                      :Query "polygon=1,2,3"
                       :CollectionConceptId (:concept-id coll)})
             {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
                                                                                   :method :post})]
@@ -786,6 +787,7 @@
       (let [concept (dissoc (subscription-util/make-subscription-concept
                              {:SubscriberId "post-user"
                               :Name "unicode-test Großartiger Scott!"
+                              :Query "polygon=2,3,4"
                               :CollectionConceptId (:concept-id coll)})
                             :native-id)
             {:keys [status concept-id native-id revision-id]}

@@ -32,15 +32,12 @@
 ;; WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
 
 (defn normalize-subscription-search
-  "pull out a subscription query and normalize it using the following process:
-   Take raw query, convert to JSON, then sort by keys, finally stringify"
-  [subscription]
-   (as-> subscription data
-          (:metadata data)
-          (json/parse-string data true)
-          (:Query data)
-          (sub-common/normalize-parameters-v1 data)
-          (string/trim data)))
+  "If the subscription has a query, return a normalized-query"
+  [subscription-metadata]
+  (when (:Query subscription-metadata)
+    (-> (:Query subscription-metadata)
+        (sub-common/normalize-parameters-v1)
+        (string/trim))))
 
 (defn- create-query-params
   "Create query parameters using the query string like

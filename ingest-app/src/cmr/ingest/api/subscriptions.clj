@@ -206,7 +206,7 @@
   [context subscription]
   (let [metadata (json/parse-string (:metadata subscription) true)
         new-metadata (add-id-to-metadata-if-missing context metadata)
-        normalized (jobs/normalize-subscription-search subscription)]
+        normalized (jobs/normalize-subscription-search metadata)]
     (assoc subscription
            :metadata (json/generate-string new-metadata)
            :normalized-query normalized)))
@@ -225,7 +225,7 @@
                             headers)
           native-id (get-unique-native-id request-context tmp-subscription)
           new-subscription (assoc  tmp-subscription :native-id native-id)
-          newer-subscription (add-id-if-missing request-context new-subscription)
+          newer-subscription (add-fields-if-missing request-context new-subscription)
           subscriber-id (get-subscriber-id newer-subscription)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (check-duplicate-subscription request-context newer-subscription)
@@ -249,7 +249,7 @@
                             body
                             content-type
                             headers)
-          new-subscription (add-id-if-missing request-context tmp-subscription)
+          new-subscription (add-fields-if-missing request-context tmp-subscription)
           subscriber-id (get-subscriber-id new-subscription)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (check-duplicate-subscription request-context new-subscription)
@@ -277,7 +277,7 @@
                                            :latest true}
                                           :subscription))]
                          (get-in original-subscription [:extra-fields :subscriber-id]))
-        new-subscription (add-id-if-missing request-context tmp-subscription)
+        new-subscription (add-fields-if-missing request-context tmp-subscription)
         new-subscriber (get-subscriber-id new-subscription)]
     (check-ingest-permission request-context provider-id new-subscriber old-subscriber)
     (check-duplicate-subscription request-context new-subscription)
