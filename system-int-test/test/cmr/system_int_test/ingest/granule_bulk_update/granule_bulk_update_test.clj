@@ -176,7 +176,7 @@
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500514"
                      :status "UPDATED"}]
                    granule-statuses)))))
-      
+
       (testing "invalid S3 url value in instruction"
         (let [bulk-update {:name "add S3 links"
                            :operation "UPDATE_FIELD"
@@ -196,10 +196,10 @@
                    status-message))
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
                      :status "FAILED"
-                     :status-message "Invalid URL value, each S3 url must start with s://, but was https://foo"}
+                     :status-message "Invalid URL value, each S3 url must start with s3://, but was https://foo"}
                     {:granule-ur "SC:AE_5DSno.002:30500512"
                      :status "FAILED"
-                     :status-message "Invalid URL value, each S3 url must start with s://, but was https://bar"}]
+                     :status-message "Invalid URL value, each S3 url must start with s3://, but was https://bar"}]
                    granule-statuses))))))))
 
 (deftest add-opendap-url
