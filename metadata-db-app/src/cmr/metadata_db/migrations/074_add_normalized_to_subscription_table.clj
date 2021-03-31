@@ -26,6 +26,11 @@
           sql-statment (format "UPDATE cmr_subscriptions SET normalized_query='%s' WHERE id=%s" query id)]
       (helper/sql sql-statment))))
 
+(defn- create-subscription-index
+  []
+  (helper/sql "CREATE INDEX cmr_subs_ccismq ON CMR_TOOL_ASSOCIATIONS
+              (collection_concept_id, normalized_query, subscriber_id)"))
+
 (defn up
     "Migrates the database up to version 74."
     []
@@ -37,7 +42,8 @@
     ;; in query order or other such nominal differences. Simple string compair
     ;; can be used on the normalized query.
     (helper/sql "alter table cmr_subscriptions add normalized_query VARCHAR2(4000)")
-    (populate-new-column))
+    (populate-new-column)
+    (create-subscription-index))
 
 (defn down
   "Migrates the database down from version 74."
