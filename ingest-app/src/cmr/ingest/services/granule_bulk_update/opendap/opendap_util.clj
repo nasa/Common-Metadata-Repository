@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.granule-bulk-update.opendap-util
+(ns cmr.ingest.services.granule-bulk-update.opendap.opendap-util
   "Contains functions to facilitate OPeNDAP url granule bulk update."
   (:require
    [clojure.string :as string]

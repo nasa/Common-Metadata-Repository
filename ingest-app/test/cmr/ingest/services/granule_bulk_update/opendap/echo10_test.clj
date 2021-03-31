@@ -1,9 +1,9 @@
-(ns cmr.ingest.services.granule-bulk-update.echo10-test
+(ns cmr.ingest.services.granule-bulk-update.opendap.echo10-test
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.ingest.services.granule-bulk-update.echo10 :as echo10]
-   [cmr.ingest.services.granule-bulk-update.opendap-util :as opendap-util]))
+   [cmr.ingest.services.granule-bulk-update.opendap.echo10 :as echo10]
+   [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]))
 
 (def ^:private add-at-the-end-gran-xml
   "ECHO10 granule for testing adding OPeNDAP url at the end of the xml."

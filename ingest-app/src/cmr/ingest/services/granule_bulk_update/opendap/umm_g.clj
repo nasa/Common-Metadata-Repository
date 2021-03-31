@@ -1,16 +1,7 @@
-(ns cmr.ingest.services.granule-bulk-update.umm-g
+(ns cmr.ingest.services.granule-bulk-update.opendap.umm-g
   "Contains functions to update UMM-G granule metadata for OPeNDAP url bulk update."
   (:require
-   [cheshire.core :as json]
-   [clojure.string :as string]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
-   [cmr.ingest.services.granule-bulk-update.opendap-util :as opendap-util]
-   [cmr.umm-spec.migration.version.core :as vm]
-   [cmr.umm-spec.umm-json :as umm-json]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
-   [cmr.umm-spec.versioning :as versioning]))
+   [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]))
 
 (def ^:private OPENDAP_RELATEDURL_TYPE
   "RelatedUrl Type of OPenDAP url in UMM-G granule schema"
@@ -54,7 +45,7 @@
         updated-urls (conj other-urls cloud-url on-prem-url)]
     (remove nil? updated-urls)))
 
-(defn- add-opendap-url*
+(defn add-opendap-url
   "Takes UMM-G record and grouped OPeNDAP urls in the format of
   {:cloud [<cloud_url>] :on-prem [<on_prem_url>]}.
   The cloud url will overwrite any existing Hyrax-in-the-cloud OPeNDAP url in the UMM-G record;
@@ -62,21 +53,3 @@
   Returns the updated UMM-G record."
   [umm-gran grouped-urls]
   (update umm-gran :RelatedUrls #(updated-related-urls % grouped-urls)))
-
-(defn add-opendap-url
-  "Takes the UMM-G granule concept and update OPeNDAP urls in the format of
-  {:cloud <cloud_url> :on-prem <on_prem_url>}. Update the UMM-G granule metadata with the
-  OPeNDAP urls in the latest UMM-G version.
-  Returns the granule concept with the updated metadata."
-  [concept grouped-urls]
-  (let [{:keys [format metadata]} concept
-        source-version (umm-spec/umm-json-version :granule format)
-        parsed-metadata (json/decode metadata true)
-        target-version (versioning/current-version :granule)
-        migrated-metadata (util/remove-nils-empty-maps-seqs
-                           (vm/migrate-umm
-                            nil :granule source-version target-version parsed-metadata))
-        updated-metadata (umm-json/umm->json (add-opendap-url* migrated-metadata grouped-urls))
-        updated-format (mt/format->mime-type {:format :umm-json
-                                              :version target-version})]
-    (assoc concept :metadata updated-metadata :format updated-format)))

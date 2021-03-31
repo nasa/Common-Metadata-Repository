@@ -1,8 +1,8 @@
-(ns cmr.ingest.services.granule-bulk-update.opendap-util-test
+(ns cmr.ingest.services.granule-bulk-update.opendap.opendap-util-test
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.ingest.services.granule-bulk-update.opendap-util :as opendap-util]))
+   [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]))
 
 (deftest validate-url-test
   (testing "validate url"

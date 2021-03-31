@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.granule-bulk-update.echo10
+(ns cmr.ingest.services.granule-bulk-update.opendap.echo10
   "Contains functions to update ECHO10 granule xml for OPeNDAP url bulk update."
   (:require
    [clojure.data.xml :as xml]
@@ -6,7 +6,7 @@
    [clojure.zip :as zip]
    [cmr.common.services.errors :as errors]
    [cmr.common.xml :as cx]
-   [cmr.ingest.services.granule-bulk-update.opendap-util :as opendap-util]))
+   [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]))
 
 (def ^:private OPENDAP_RESOURCE_TYPE
   "OnlineResource Type of OPenDAP url in ECHO10 granule schema"

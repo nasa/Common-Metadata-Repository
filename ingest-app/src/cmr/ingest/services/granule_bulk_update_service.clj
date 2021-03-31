@@ -7,15 +7,23 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
+   [cmr.common.util :as util]
    [cmr.common.validations.json-schema :as js]
    [cmr.ingest.data.granule-bulk-update :as data-granule-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.services.bulk-update-service :as bulk-update-service]
-   [cmr.ingest.services.granule-bulk-update.echo10 :as echo10]
-   [cmr.ingest.services.granule-bulk-update.opendap-util :as opendap-util]
-   [cmr.ingest.services.granule-bulk-update.umm-g :as umm-g]
+   [cmr.ingest.services.granule-bulk-update.opendap.echo10 :as opendap-echo10]
+   [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]
+   [cmr.ingest.services.granule-bulk-update.opendap.umm-g :as opendap-umm-g]
+   ; [cmr.ingest.services.granule-bulk-update.s3.echo10 :as s3-echo10]
+   [cmr.ingest.services.granule-bulk-update.s3.s3-util :as s3-util]
+   [cmr.ingest.services.granule-bulk-update.s3.umm-g :as s3-umm-g]
    [cmr.ingest.services.ingest-service :as ingest-service]
-   [cmr.transmit.metadata-db :as mdb]))
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.umm-spec.migration.version.core :as vc]
+   [cmr.umm-spec.umm-json :as umm-json]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.versioning :as versioning]))
 
 (def granule-bulk-update-schema
  (js/json-string->json-schema (slurp (io/resource "granule_bulk_update_schema.json"))))
@@ -78,6 +86,24 @@
      context
      (ingest-events/ingest-granule-bulk-update-event provider-id task-id user-id instruction))))
 
+(defn- update-umm-g-urls
+  "Takes the UMM-G granule concept and update s3 urls in the format of
+  {:cloud <cloud_url> :on-prem <on_prem_url>}. Update the UMM-G granule metadata with the
+  s3 urls in the latest UMM-G version.
+  Returns the granule concept with the updated metadata."
+  [concept urls update-umm-g-urls-fn]
+  (let [{:keys [format metadata]} concept
+        source-version (umm-spec/umm-json-version :granule format)
+        parsed-metadata (json/decode metadata true)
+        target-version (versioning/current-version :granule)
+        migrated-metadata (util/remove-nils-empty-maps-seqs
+                           (vc/migrate-umm
+                            nil :granule source-version target-version parsed-metadata))
+        updated-metadata (umm-json/umm->json (update-umm-g-urls-fn migrated-metadata urls))
+        updated-format (mt/format->mime-type {:format :umm-json
+                                              :version target-version})]
+    (assoc concept :metadata updated-metadata :format updated-format)))
+
 (defmulti add-opendap-url
   "Add OPeNDAP url to the given granule concept."
   (fn [context concept grouped-urls]
@@ -85,16 +111,34 @@
 
 (defmethod add-opendap-url :echo10
   [context concept grouped-urls]
-  (echo10/add-opendap-url concept grouped-urls))
+  (opendap-echo10/add-opendap-url concept grouped-urls))
 
 (defmethod add-opendap-url :umm-json
   [context concept grouped-urls]
-  (umm-g/add-opendap-url concept grouped-urls))
+  (update-umm-g-urls concept grouped-urls opendap-umm-g/add-opendap-url))
 
 (defmethod add-opendap-url :default
   [context concept grouped-urls]
   (errors/throw-service-errors
    :invalid-data [(format "Add OPeNDAP url is not supported for format [%s]" (:format concept))]))
+
+(defmulti add-s3-url
+  "Add s3 url to the given granule concept."
+  (fn [context concept urls]
+    (mt/format-key (:format concept))))
+
+(defmethod add-s3-url :echo10
+  [context concept urls]
+  #_(s3-echo10/add-s3-url concept urls))
+
+(defmethod add-s3-url :umm-json
+  [context concept urls]
+  (update-umm-g-urls concept urls s3-umm-g/add-s3-url))
+
+(defmethod add-s3-url :default
+  [context concept urls]
+  (errors/throw-service-errors
+   :invalid-data [(format "Add s3 url is not supported for format [%s]" (:format concept))]))
 
 (defmulti update-granule-concept
   "Perform the update of the granule concept."
@@ -107,6 +151,22 @@
         {:keys [granule-ur url]} bulk-update-params
         grouped-urls (opendap-util/validate-url url)
         updated-concept (add-opendap-url context concept grouped-urls)
+        {updated-metadata :metadata updated-format :format} updated-concept]
+    (if-let [err-messages (:errors updated-metadata)]
+      (errors/throw-service-errors :invalid-data err-messages)
+      (-> concept
+          (assoc :metadata updated-metadata)
+          (assoc :format updated-format)
+          (update :revision-id inc)
+          (assoc :revision-date (time-keeper/now))
+          (assoc :user-id user-id)))))
+
+(defmethod update-granule-concept :update_field:s3link
+  [context concept bulk-update-params user-id]
+  (let [{:keys [format metadata]} concept
+        {:keys [granule-ur url]} bulk-update-params
+        urls (s3-util/validate-url url)
+        updated-concept (add-s3-url context concept urls)
         {updated-metadata :metadata updated-format :format} updated-concept]
     (if-let [err-messages (:errors updated-metadata)]
       (errors/throw-service-errors :invalid-data err-messages)
