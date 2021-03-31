@@ -31,13 +31,13 @@
         token-user "EDL-U84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
         token-client "EDL-C84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
         token-ropc "EDL-R84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
-        token-jwt (str "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9n"
+        token-jwt1 (str "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9n"
                        "aW4iLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiT0F1dGgiLCJ"
                        "1aWQiOiJhZG1pbiIsImNsaWVudF9pZCI6Im9YQUhISmMyLTc"
                        "wbndXb2w2T2VIUFEiLCJleHAiOjE2MTYwMTg5OTcsImlhdCI"
                        "6MTYxNjAxNTM5NywiaXNzIjoiRWFydGhkYXRhIExvZ2luIn0"
                        ".-e7GTS6PJYD1fAuCoseOj4PdV5iqd521dCM1Hc_XjqI")
-        ;token-jwt-client (str token-jwt ":abcd0123ABCD")
+        token-jwt (str "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiUmVmcmVzaCIsInVpZCI6ImNjdWFkcmFkbyIsImNsaWVudF9pZCI6Ikt4eDh5RGlRUEtjb2Mya3VKOGROOFEiLCJleHAiOjE2MTcxMjM0MDEsImlhdCI6MTYxNzExOTIwMSwiaXNzIjoiRWFydGhkYXRhIExvZ2luIn0.GEMVsVK62JWYvxYCGP1TEbcRYHKvRyWaJFQTy58uHRY")
         token-launchpad (random-base64 4096)
         all-names ["Legacy" "OAuth" "User" "Client" "ROPC" "JWT" "LaunchPad"]
         all-tokens [token-legacy token-oauth token-user token-client token-ropc token-jwt token-launchpad]
