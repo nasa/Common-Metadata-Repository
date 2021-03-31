@@ -15,5 +15,5 @@
                     (string/starts-with? url "S3://"))
         (errors/throw-service-errors
          :invalid-data
-         [(str "Invalid URL value, each S3 url must start with s://, but was " url)])))
+         [(str "Invalid URL value, each S3 url must start with s3://, but was " url)])))
     urls))

@@ -16,8 +16,8 @@
 
       "invalid s3 link"
       "http://example.com/foo"
-      #"Invalid URL value, each S3 url must start with s://, but was http://example.com/foo"
+      #"Invalid URL value, each S3 url must start with s3://, but was http://example.com/foo"
       
       "nvalid s3 link in multiple urls"
       "s3://abc/foo,http://example.com/bar,s3://abc/baz"
-      #"Invalid URL value, each S3 url must start with s://, but was http://example.com/bar")))
+      #"Invalid URL value, each S3 url must start with s3://, but was http://example.com/bar")))
