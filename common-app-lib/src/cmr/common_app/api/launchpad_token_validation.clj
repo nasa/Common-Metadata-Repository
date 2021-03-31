@@ -5,7 +5,6 @@
    [clojure.data.codec.base64 :as base64]
    [clojure.string :as string]
    [cmr.common-app.config :as config]
-   [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.transmit.config :as transmit-config]))
 
@@ -28,7 +27,6 @@
    and it came from EarthDataLogin (EDL).
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
   [raw-token]
-  (warn "JWT token test:" (subs raw-token 0 (/ (count raw-token) 2)))
   (let [token (if (string/starts-with? raw-token "Bearer ")
                 (subs raw-token 7)
                 raw-token)]
