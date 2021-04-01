@@ -358,6 +358,16 @@
         (update :FileDistributionInformation expected-file-dist-info)
         umm-c/map->ArchiveAndDistributionInformationType)))
 
+(defn- expected-echo10-use-constraints
+  "Returns expected use constraints."
+  [use-constraints]
+  (if (get-in use-constraints [:LicenseURL :Linkage])
+    (-> use-constraints
+        (assoc-in [:LicenseURL :Protocol] nil)
+        (assoc-in [:LicenseURL :Function] nil)
+        (assoc-in [:LicenseURL :ApplicationProfile] nil))
+    use-constraints))
+
 (defn umm-expected-conversion-dif10
   [umm-coll]
   (-> umm-coll
@@ -390,9 +400,6 @@
       (update-in [:CollectionCitations] expected-collection-citations)
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:TemporalExtents] update :EndsAtPresentFlag #(if % % false)) ; true or false, not nil
-      (assoc :UseConstraints (when-let [description (get-in umm-coll [:UseConstraints :Description])]
-                               (umm-c/map->UseConstraintsType
-                                 ;; description from umm-coll is already an object.
-                                 {:Description description})))
+      (update :UseConstraints expected-echo10-use-constraints)
       (update :ArchiveAndDistributionInformation expected-archive-dist-info)
       js/parse-umm-c))

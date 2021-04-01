@@ -342,6 +342,7 @@
   (let [use-const (expected-echo10-use-constraints-license-url-name use-constraints)]
     (if (get-in use-const [:LicenseURL :Linkage])
       (-> use-const
+          (assoc-in [:LicenseURL :Protocol] nil)
           (assoc-in [:LicenseURL :Function] nil)
           (assoc-in [:LicenseURL :ApplicationProfile] nil))
       use-const)))

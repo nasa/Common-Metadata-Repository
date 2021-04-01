@@ -178,3 +178,92 @@
     nil
     "<DIF>
      </DIF>"))
+
+(deftest dif10-use-constraints-test
+  "Testing the dif10 use constraint translation from dif10 to umm-c."
+
+  (testing "dif10 use constraints description test"
+    (let [actual-data "<DIF>
+                         <Use_Constraints>
+                           <Description>Description</Description>
+                         </Use_Constraints>
+                       </DIF>"
+          result (parse/parse-dif10-xml actual-data true)
+          umm-result (:UseConstraints result)]
+      (is (= "Description" (:Description umm-result)))))
+
+  (testing "dif10 use constraints string test"
+    (let [actual-data "<DIF><Use_Constraints>Description</Use_Constraints></DIF>"
+          result (parse/parse-dif10-xml actual-data true)
+          umm-result (:UseConstraints result)]
+      (is (= "Description" (:Description umm-result)))))
+
+  (testing "dif10 use constraints LicenseURL test"
+    (let [actual-data "<DIF>
+                         <Use_Constraints>
+                           <License_URL>
+                             <URL>https://someurl.com</URL>
+                             <Title>License URL</Title>
+                             <Description>License URL Description</Description>
+                             <Mime_Type>text/html</Mime_Type>
+                           </License_URL>
+                         </Use_Constraints>
+                       </DIF>"
+          result (parse/parse-dif10-xml actual-data true)
+          umm-result (:UseConstraints result)]
+      (is (= "https://someurl.com" (get-in umm-result [:LicenseURL :Linkage])))
+      (is (= "License URL Description" (get-in umm-result [:LicenseURL :Description])))
+      (is (= "License URL" (get-in umm-result [:LicenseURL :Name])))
+      (is (= "text/html" (get-in umm-result [:LicenseURL :MimeType])))))
+
+  (testing "dif10 use constraints License Text test"
+    (let [actual-data "<DIF>
+                         <Use_Constraints>
+                           <License_Text>License Text</License_Text>
+                         </Use_Constraints>
+                       </DIF>"
+          result (parse/parse-dif10-xml actual-data true)
+          umm-result (:UseConstraints result)]
+      (is (= "License Text" (:LicenseText umm-result)))))
+
+  (testing "dif10 use constraints nil test"
+    (let [result (parse/parse-dif10-xml "<DIF></DIF>" true)
+          umm-result (:UseConstraints result)]
+      (is (= nil umm-result))))
+
+  (testing "dif10 use constraints is emtpy tag"
+    (let [result (parse/parse-dif10-xml "<DIF><Use_Constraints/></DIF>" true)
+          umm-result (:UseConstraints result)]
+      (is (= nil umm-result))))
+
+  (testing "dif10 use constraints Description and LicenseURL test"
+    (let [actual-data "<DIF>
+                         <Use_Constraints>
+                           <Description>Description</Description>
+                           <License_URL>
+                             <URL>https://someurl.com</URL>
+                             <Title>License URL</Title>
+                             <Description>License URL Description</Description>
+                             <Mime_Type>text/html</Mime_Type>
+                           </License_URL>
+                         </Use_Constraints>
+                       </DIF>"
+          result (parse/parse-dif10-xml actual-data true)
+          umm-result (:UseConstraints result)]
+      (is (= "Description" (:Description umm-result)))
+      (is (= "https://someurl.com" (get-in umm-result [:LicenseURL :Linkage])))
+      (is (= "License URL Description" (get-in umm-result [:LicenseURL :Description])))
+      (is (= "License URL" (get-in umm-result [:LicenseURL :Name])))
+      (is (= "text/html" (get-in umm-result [:LicenseURL :MimeType])))))
+
+  (testing "dif10 use constraints Description and License Text test"
+    (let [actual-data "<DIF>
+                         <Use_Constraints>
+                           <Description>Description</Description>
+                           <License_Text>License Text</License_Text>
+                         </Use_Constraints>
+                       </DIF>"
+          result (parse/parse-dif10-xml actual-data true)
+          umm-result (:UseConstraints result)]
+      (is (= "Description" (:Description umm-result)))
+      (is (= "License Text" (:LicenseText umm-result))))))

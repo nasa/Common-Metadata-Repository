@@ -1548,24 +1548,109 @@ History:
     <!-- *********************************************************** -->
     <!-- #mark Use_Constraints -->
 
-    <xs:complexType name="UseConstraintsType">
+    <xs:complexType name="UseConstraintsType" mixed="true">
          <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM (DIF)</src></xs:appinfo>
             <xs:documentation>
 
-            | DIF 9               | ECHO 10 | UMM               | DIF 10             | Notes          |
-            | ------------------- | ------- | ------------------| ------------------ | -------------  |
-            | Use_Constraints     |    -    | UseConstraints    | Use_Constraints    | No change      |
-
+    | ECHO 10                | UMM                    | DIF 10.2                | Notes          |
+    | ---------------------- | -----------------------| ----------------------- | -------------  |
+    |UseConstraints          |UseConstraints          |Use_Constraints          | No change      |
+    | /Description           | /Description           | /Description            |
+    | /LicenseURL/URL        | /LicenseURL/Linkage    | /License_URL/URL        |
+    | /LicenseURL/Type       | /LicenseURL/Name       | /License_URL/Title      |
+    | /LicenseURL/Description| /LicenseURL/Description| /License_URL/Description|
+    | /LicenseURL/MimeType   | /LicenseURL/MimeType   | /License_URL/Mime_Type  |
+    | /LicenseText           | /LicenseText           | /License_Text           |
             </xs:documentation>
-        </xs:annotation>
 
-        <xs:simpleContent>
-            <xs:extension base="DisplayableTextTypeBaseType">
-                <xs:attribute type="DisplayableTextEnum" name="mime_type" default="text/markdown"/>
-            </xs:extension>
-        </xs:simpleContent>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Description" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>This sub-element either contains a license summary or free-text description that details the permitted use or limitation of this collection.</xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="1" />
+                        <xs:maxLength value="4000" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:choice minOccurs="0">
+              <xs:element name="License_URL">
+                <xs:annotation>
+                  <xs:documentation>This entity records the documentation
+                    information of the collection including documentation type
+                    and documentation URL where apply etc.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="URL">
+                      <xs:annotation>
+                        <xs:documentation>The URL of the
+                          resource.</xs:documentation>
+                      </xs:annotation>
+                      <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                          <xs:maxLength value="1024" />
+                          <xs:minLength value="1"></xs:minLength>
+                        </xs:restriction>
+                      </xs:simpleType>
+                    </xs:element>
+                    <xs:element minOccurs="0" name="Title">
+                      <xs:annotation>
+                        <xs:documentation>The type of the resource such as
+                          'Collection Guide' or 'Campaign Guide'
+                          etc.</xs:documentation>
+                      </xs:annotation>
+                      <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                          <xs:maxLength value="100" />
+                          <xs:minLength value="1"></xs:minLength>
+                        </xs:restriction>
+                      </xs:simpleType>
+                    </xs:element>
+                    <xs:element minOccurs="0" name="Description">
+                      <xs:annotation>
+                        <xs:documentation>Comment about the online
+                          resource.</xs:documentation>
+                      </xs:annotation>
+                      <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                          <xs:maxLength value="4000" />
+                        </xs:restriction>
+                      </xs:simpleType>
+                    </xs:element>
+                    <xs:element minOccurs="0" name="Mime_Type">
+                      <xs:annotation>
+                        <xs:documentation>The mime type of the online
+                          resource.</xs:documentation>
+                      </xs:annotation>
+                      <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                          <xs:maxLength value="50" />
+                        </xs:restriction>
+                      </xs:simpleType>
+                    </xs:element>
+                  </xs:sequence>
+                 </xs:complexType>
+              </xs:element>
+              <xs:element name="License_Text" minOccurs="0">
+                  <xs:annotation>
+                      <xs:documentation>This element holds the actual license text. If this element is used the LicenseUrl element cannot be used.</xs:documentation>
+                  </xs:annotation>
+                  <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                          <xs:minLength value="1" />
+                          <xs:maxLength value="20000" />
+                      </xs:restriction>
+                  </xs:simpleType>
+              </xs:element>
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute type="DisplayableTextEnum" name="mime_type" default="text/markdown"/>
     </xs:complexType>
 
     <!-- *********************************************************** -->

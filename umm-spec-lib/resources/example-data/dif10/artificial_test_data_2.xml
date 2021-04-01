@@ -73,6 +73,15 @@
         <Short_Name>GCOM-W</Short_Name>
         <Long_Name>Global Change Observation Mission-Water</Long_Name>
     </Project>
+    <Use_Constraints>
+        <Description>Description</Description>
+        <License_URL>
+            <URL>https://someurl.com</URL>
+            <Title>License URL</Title>
+            <Description>License URL Description</Description>
+            <Mime_Type>text/html</Mime_Type>
+        </License_URL>
+    </Use_Constraints>
     <!--renamed from Data_Center to Organization-->
     <Organization>
         <!--added - assumption-->
