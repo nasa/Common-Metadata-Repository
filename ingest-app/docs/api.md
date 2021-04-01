@@ -1101,7 +1101,7 @@ supported metadata formats:
   - S3 url in OnlineAccessURLs for ECHO10 format
   - S3 url in RelatedUrls for UMM-G format
 
-The S3 url value provided in the granule bulk update request can be comma-separated urls. Each url must start with s3:// (case-insensitive). During bulk update, the provided S3 urls in the request will overwrite any existing S3 links already in the granule metadata.
+The S3 url value provided in the granule bulk update request can be comma-separated urls. Each url must start with s3:// (case-sensitive). This lowercase s3:// naming convention is to make the s3 links compatible with AWS S3 API. During bulk update, the provided S3 urls in the request will overwrite any existing S3 links already in the granule metadata.
 
 Example: Add/update OPeNDAP url for 3 granules under PROV1.
 

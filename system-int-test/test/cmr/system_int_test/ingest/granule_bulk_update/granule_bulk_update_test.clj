@@ -163,7 +163,7 @@
                            :operation "UPDATE_FIELD"
                            :update-field "S3Link"
                            :updates [["SC:AE_5DSno.002:30500511" "s3://url30500511"]
-                                     ["SC:AE_5DSno.002:30500512" "S3://url1, S3://url2,S3://url3"]
+                                     ["SC:AE_5DSno.002:30500512" "s3://url1, s3://url2,s3://url3"]
                                      ["SC:AE_5DSno.002:30500514" "s3://url30500514"]]}
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
@@ -207,7 +207,7 @@
         (let [bulk-update {:name "add s3 links"
                            :operation "UPDATE_FIELD"
                            :update-field "S3Link"
-                           :updates [["SC:AE_5DSno.002:30500511" "S3://url30500511"]
+                           :updates [["SC:AE_5DSno.002:30500511" "s3://url30500511"]
                                      ["SC:AE_5DSno.002:30500512" "s3://url30500512"]
                                      ["SC:non-existent-ur" "s3://url30500513"]]}
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
@@ -236,7 +236,7 @@
                            :operation "UPDATE_FIELD"
                            :update-field "S3Link"
                            :updates [["SC:AE_5DSno.002:30500511" "https://foo"]
-                                     ["SC:AE_5DSno.002:30500512" "s3://foo,https://bar"]]}
+                                     ["SC:AE_5DSno.002:30500512" "s3://foo,S3://bar"]]}
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
@@ -253,7 +253,7 @@
                      :status-message "Invalid URL value, each S3 url must start with s3://, but was https://foo"}
                     {:granule-ur "SC:AE_5DSno.002:30500512"
                      :status "FAILED"
-                     :status-message "Invalid URL value, each S3 url must start with s3://, but was https://bar"}]
+                     :status-message "Invalid URL value, each S3 url must start with s3://, but was S3://bar"}]
                    granule-statuses))))))))
 
 (deftest add-opendap-url
