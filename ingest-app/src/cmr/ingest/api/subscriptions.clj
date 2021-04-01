@@ -59,18 +59,6 @@
            subscriber-id
            concept-id)))))
 
-(defn- subscription-duplicate-error
-  "Will Throw an error explaining that subscriptions can not be duplicated"
-  [subscriber-id concept-id, query]
-  (errors/throw-service-error
-   :conflict
-   (format (str "The subscriber id [%s] has already subscribed to the "
-                "collection with concept id [%s] using the query [%s]. "
-                "Subscribers must use unique queries for each Collection.")
-           subscriber-id
-           concept-id
-           query)))
-
 (defn- check-duplicate-subscription
   "The query used by a subscriber for a collection should be unique to prevent
    redundent emails from being sent to them. This function will check that a
@@ -84,12 +72,13 @@
         collection-id (:CollectionConceptId metadata)
         subscriber-id (:SubscriberId metadata)
         ;; Find concepts with matching collection-concept-id, normalized-query, and subscriber-id
-        duplicate-queries (mdb/find-latest-concepts
+        duplicate-queries (mdb/find-concepts
                            request-context
                            {:collection-concept-id collection-id
                             :normalized-query normalized-query
                             :subscriber-id subscriber-id
-                            :exclude-metadata false}
+                            :exclude-metadata true
+                            :latest true}
                            :subscription)
         ;;we only want to look at non-deleted subscriptions
         active-duplicate-queries (remove :deleted duplicate-queries)]
@@ -97,7 +86,12 @@
      ;;We need to make sure it has the same native-id, or else reject the ingest
      (when (and (> (count active-duplicate-queries) 0)
                 (every? #(not= native-id (:native-id %)) active-duplicate-queries))
-       (subscription-duplicate-error subscriber-id collection-id normalized-query))))
+       (errors/throw-service-error
+        :conflict
+        (format (str "The subscriber-id [%s] has already subscribed to the "
+                     "collection with concept-id [%s] using the query [%s]. "
+                     "Subscribers must use unique queries for each Collection.")
+                subscriber-id collection-id  normalized-query)))))
 
 (defn- get-subscriber-id
   "Returns the subscriber id of the given subscription concept by parsing its metadata."
@@ -199,10 +193,10 @@
 (defn- add-id-to-metadata-if-missing
    "If SubscriberId is provided, use it. Else, get it from the token."
   [context metadata]
-  (let [{subscriber :SubscriberId query :Query} metadata
-        subscriber (if-not subscriber
+  (let [subscriber-id (:SubscriberId metadata)
+        subscriber (if-not subscriber-id
                      (api-core/get-user-id-from-token context)
-                     subscriber)]
+                     subscriber-id)]
     (assoc metadata :SubscriberId subscriber)))
 
 (defn- add-fields-if-missing

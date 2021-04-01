@@ -85,7 +85,7 @@
                                                      {:token "mock-echo-system-token"})
          _ (index/wait-until-indexed)
          ;; Setup subscriptions
-         sub1 (subscription-util/create-subscription-and-index coll1, "test_sub_prov1" "user2" "provider=PROV1")]
+         sub1 (subscription-util/create-subscription-and-index coll1, "test_sub_prov1" "user2" "platform=NOAA-7")]
 
      (testing "First query executed does not have a last-notified-at and looks back 24 hours"
        (let [gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
@@ -110,7 +110,7 @@
        ;; should look back 24 hours, as if the subscription were new.
        (let [concept {:provider-id "PROV1" :concept-type :subscription :native-id "test_sub_prov1"}]
          (ingest/delete-concept concept))
-       (subscription-util/create-subscription-and-index coll1, "test_sub_prov1" "user2" "provider=PROV1")
+       (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "platform=NOAA-7")
        (is (= 2
              (->> (trigger-process-subscriptions)
                   (map #(nth % 1))

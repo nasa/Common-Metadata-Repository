@@ -163,24 +163,16 @@
 (defn find-latest-concept
   "Searches metadata db for the latest concept matching the given parameters. Do not throw serivce
   exception, returns the status and error message in a map in case of error."
-  ([context params concept-type]
-   (find-latest-concept context params concept-type first))
-  ;"Allow for custom filtration of the results, instead of the default (first)"
-  ([context params concept-type filter-fn]
-   (let [{:keys [status body]} (find-concepts-raw context (assoc params :latest true) concept-type)
-         status (int status)]
-     (case status
-       200 (filter-fn (map mdb2/finish-parse-concept (json/decode body true)))
-       404 (errors/throw-service-error :not-found body)
-       ;; default
-       (errors/internal-error!
-         (format "%s search failed. status: %s body: %s"
-                 (str/capitalize (name concept-type)) status body))))))
-
-(defn find-latest-concepts
-  "Pass-through function to return latest revision of all concepts, instead of the default"
   [context params concept-type]
-  (find-latest-concept context params concept-type (fn [item] item)))
+  (let [{:keys [status body]} (find-concepts-raw context (assoc params :latest true) concept-type)
+        status (int status)]
+    (case status
+      200 (first (map mdb2/finish-parse-concept (json/decode body true)))
+      404 (errors/throw-service-error :not-found body)
+      ;; default
+      (errors/internal-error!
+        (format "%s search failed. status: %s body: %s"
+                (str/capitalize (name concept-type)) status body)))))
 
 (defn get-associations-by-collection-concept-id
   "Get all the associations of the given type (including tombstones) for a collection

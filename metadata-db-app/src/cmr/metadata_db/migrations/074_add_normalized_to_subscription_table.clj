@@ -28,8 +28,8 @@
 
 (defn- create-subscription-index
   []
-  (helper/sql "CREATE INDEX cmr_subs_ccinqsi ON CMR_SUBSCRIPTIONS
-              (collection_concept_id, normalized_query, subscriber_id)"))
+  (helper/sql "CREATE INDEX cmr_subs_ccisinq ON CMR_SUBSCRIPTIONS
+              (collection_concept_id, subscriber_id, normalized_query)"))
 
 (defn up
     "Migrates the database up to version 74."
@@ -49,4 +49,5 @@
   "Migrates the database down from version 74."
   []
   (println "cmr.metadata-db.migrations.074-update-subscription-table down.")
+  (helper/sql "DROP INDEX cmr_subs_ccisinq")
   (helper/sql "alter table cmr_subscriptions drop column normalized_query"))

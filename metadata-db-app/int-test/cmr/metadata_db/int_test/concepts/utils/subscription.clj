@@ -23,7 +23,7 @@
         extra-fields (merge {:subscription-name (str "subname" uniq-num)
                              :subscriber-id (str "subid" uniq-num)
                              :collection-concept-id "C12345-PROV1"
-                             :normalized-query (str "polygon=1,2,3," uniq-num)}
+                             :normalized-query (str "instrument=" uniq-num "B")}
                             (:extra-fields attributes))
         attributes (merge {:user-id (str "user" uniq-num)
                            :format "application/json"

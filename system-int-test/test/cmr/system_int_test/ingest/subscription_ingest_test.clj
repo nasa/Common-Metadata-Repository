@@ -324,17 +324,17 @@
         concept (subscription-util/make-subscription-concept
                  {:concept-id supplied-concept-id
                   :CollectionConceptId (:concept-id coll1)
-                  :Query "limit=10"
+                  :Query "platform=NOAA-7"
                   :native-id "Atlantic-1"})
         concept2 (subscription-util/make-subscription-concept
                   {:concept-id supplied-concept-id
                    :CollectionConceptId (:concept-id coll1)
-                   :Query "limit=12"
+                   :Query "platform=NOAA-9"
                    :native-id "other"})
         _ (ingest/ingest-concept concept)]
     (testing "update concept with a different concept-id is invalid"
       (let [{:keys [status errors]} (ingest/ingest-concept
-                                     (assoc concept :Query "limit=11" :concept-id "SUB1111-PROV1"))]
+                                     (assoc concept :Query "platform=NOAA-10" :concept-id "SUB1111-PROV1"))]
         (is (= [409 [(str "A concept with concept-id [SUB1000-PROV1] and "
                           "native-id [Atlantic-1] already exists for "
                           "concept-type [:subscription] provider-id [PROV1]. "
@@ -763,7 +763,7 @@
                      {:SubscriberId "post-user"
                       :Name "a different subscription with native-id"
                       :native-id "another-native-id"
-                      :Query "polygon=1,2,3"
+                      :Query "instrument=POSEIDON-2"
                       :CollectionConceptId (:concept-id coll)})
             {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
                                                                                   :method :post})]
@@ -787,7 +787,7 @@
       (let [concept (dissoc (subscription-util/make-subscription-concept
                              {:SubscriberId "post-user"
                               :Name "unicode-test Großartiger Scott!"
-                              :Query "polygon=2,3,4"
+                              :Query "instrument=POSEIDON-2B"
                               :CollectionConceptId (:concept-id coll)})
                             :native-id)
             {:keys [status concept-id native-id revision-id]}
@@ -868,16 +868,16 @@
                                                     {:token "mock-echo-system-token"})
 
         sub1 (subscription-util/create-subscription-and-index
-              coll1 "test_sub1_prov1" "sub-user", "polygon=1,2,3&provider=PROV1")
+              coll1 "test_sub1_prov1" "sub-user" "instrument=POSEIDON-2&platform=NOAA-7")
         ;;should fail, since normalized-query will be identical to sub1
         sub2 (subscription-util/create-subscription-and-index
-              coll1 "test_sub2_prov1" "sub-user", "provider=PROV1&polygon=1,2,3")
+              coll1 "test_sub2_prov1" "sub-user" "platform=NOAA-7&instrument=POSEIDON-2")
         ;;should succeed - query the same, but different collection
         sub3 (subscription-util/create-subscription-and-index
-              coll2 "test_sub3_prov1" "sub-user", "provider=PROV1&polygon=1,2,3")
+              coll2 "test_sub3_prov1" "sub-user" "platform=NOAA-7&instrument=POSEIDON-2")
         ;;Later on, we will delete this sub and supersede it
         sub4 (subscription-util/create-subscription-and-index
-              coll2 "test_sub4_prov1" "sub-user", "polygon=2,4,6")
+              coll2 "test_sub4_prov1" "sub-user" "platform=NOAA-11")
         sub4-concept {:provider-id "PROV1" :concept-type :subscription :native-id "test_sub4_prov1"}]
 
     (testing "check that only actual duplicate subscriptions failed"
@@ -888,16 +888,16 @@
             ;;delete sub3, and reingest it as-is.
             _ (ingest/delete-concept sub3-concept)
             sub3-2 (subscription-util/create-subscription-and-index
-                    coll2 "test_sub3_prov1" "sub-user", "provider=PROV1&polygon=1,2,3")]
+                    coll2 "test_sub3_prov1" "sub-user" "platform=NOAA-7&instrument=POSEIDON-2")]
         (is (not (:errors sub3)))))
     (testing "should be possible to replace a tombstoned concept with a new concept, with new native-id"
       (ingest/delete-concept sub4-concept)
       (let [;;We ingest sub5, which is identical to sub4 with a different native-id.
             ;;Since sub4 is deleted, we should be able to ingest this without error.
             sub5 (subscription-util/create-subscription-and-index
-                  coll2 "test_sub5_prov1" "sub-user", "polygon=2,4,6")
+                  coll2 "test_sub5_prov1" "sub-user" "platform=NOAA-11")
             ;;attempt to un-tombstone should fail, since this unique combo has been taken sub5
             sub4-2 (subscription-util/create-subscription-and-index
-                    coll2 "test_sub4_prov1" "sub-user", "polygon=2,4,6")]
+                    coll2 "test_sub4_prov1" "sub-user" "platform=NOAA-11")]
         (is (not (:errors sub5)))
         (is (:errors sub4-2))))))

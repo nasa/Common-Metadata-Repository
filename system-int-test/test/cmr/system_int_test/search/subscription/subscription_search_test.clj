@@ -46,7 +46,7 @@
         subscription (subscriptions/ingest-subscription (subscriptions/make-subscription-concept
                                                          {:Name "test subscription"
                                                           :SubscriberId "subscriber"
-                                                          :Query "polygon=1,2,3"
+                                                          :Query "platform=NOAA-7"
                                                           :CollectionConceptId (:concept-id coll1)
                                                           :native-id "test-subscription-native-id"})
                                                         {:token "mock-echo-system-token"})]
@@ -85,7 +85,7 @@
         subscription3 (subscriptions/ingest-subscription-with-attrs {:native-id "Sub3"
                                                                      :Name "Subscription3"
                                                                      :SubscriberId "SubId3"
-                                                                     :Query "polygon=1,2,4"
+                                                                     :Query "platform=NOAA-4"
                                                                      :CollectionConceptId (:concept-id coll1)
                                                                      :provider-id "PROV3"})
         guest-token (echo-util/login-guest (system/context))
@@ -122,7 +122,7 @@
         subscription4 (subscriptions/ingest-subscription-with-attrs {:native-id "Sub4"
                                                                      :Name "Subscription4"
                                                                      :SubscriberId "SubId4"
-                                                                     :Query "polygon=1,2,5"
+                                                                     :Query "platform=NOAA-5"
                                                                      :CollectionConceptId (:concept-id coll1)
                                                                      :provider-id "PROV4"})
         ;; create two groups
@@ -221,24 +221,24 @@
         subscription1 (subscriptions/ingest-subscription-with-attrs {:native-id "Sub1"
                                                                      :Name "Subscription1"
                                                                      :SubscriberId "SubId1"
-                                                                     :Query "polygon=1,2,6"
+                                                                     :Query "platform=NOAA-6"
                                                                      :CollectionConceptId (:concept-id coll1)
                                                                      :provider-id "PROV1"})
         subscription2 (subscriptions/ingest-subscription-with-attrs {:native-id "sub2"
                                                                      :Name "Subscription2"
                                                                      :SubscriberId "SubId2"
-                                                                     :Query "polygon=1,2,7"
+                                                                     :Query "platform=NOAA-7"
                                                                      :CollectionConceptId (:concept-id coll2)
                                                                      :provider-id "PROV1"})
         subscription3 (subscriptions/ingest-subscription-with-attrs {:native-id "sub3"
                                                                      :Name "Subscrition3"
-                                                                     :Query "polygon=1,2,8"
+                                                                     :Query "platform=NOAA-8"
                                                                      :CollectionConceptId (:concept-id coll1)
                                                                      :SubscriberId "SubId3"
                                                                      :provider-id "PROV2"})
         subscription4 (subscriptions/ingest-subscription-with-attrs {:native-id "sb4"
                                                                      :Name "Subother"
-                                                                     :Query "polygon=1,2,9"
+                                                                     :Query "platform=NOAA-9"
                                                                      :SubscriberId "SubId4"
                                                                      :CollectionConceptId (:concept-id coll3)
                                                                      :provider-id "PROV2"})
@@ -471,22 +471,22 @@
                {:token "mock-echo-system-token"})
         subscription1 (subscriptions/ingest-subscription-with-attrs {:native-id "sub1"
                                                                      :Name "subscription"
-                                                                     :Query "polygon=1,2,3"
+                                                                     :Query "platform=NOAA-7"
                                                                      :CollectionConceptId (:concept-id coll1)
                                                                      :provider-id "PROV2"})
         subscription2 (subscriptions/ingest-subscription-with-attrs {:native-id "sub2"
                                                                      :Name "Subscription 2"
-                                                                     :Query "polygon=1,2,4"
+                                                                     :Query "platform=NOAA-4"
                                                                      :CollectionConceptId (:concept-id coll1)
                                                                      :provider-id "PROV1"})
         subscription3 (subscriptions/ingest-subscription-with-attrs {:native-id "sub3"
                                                                      :Name "a subscription"
-                                                                     :Query "polygon=1,2,5"
+                                                                     :Query "platform=NOAA-5"
                                                                      :CollectionConceptId (:concept-id coll1)
                                                                      :provider-id "PROV1"})
         subscription4 (subscriptions/ingest-subscription-with-attrs {:native-id "sub4"
                                                                      :Name "subscription"
-                                                                     :Query "polygon=1,2,6"
+                                                                     :Query "platform=NOAA-6"
                                                                      :CollectionConceptId (:concept-id coll1)
                                                                      :provider-id "PROV1"})]
     (index/wait-until-indexed)

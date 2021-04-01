@@ -189,7 +189,7 @@
   (let [concept {:Name (or name "test_sub_prov1")
                 :SubscriberId (or user "user2")
                 :CollectionConceptId (:concept-id collection)
-                :Query (or query "provider=PROV1")}
+                :Query (or query "instrument=1B")}
         subscription (make-subscription-concept concept)
         options {:token "mock-echo-system-token"}
         result (ingest-subscription subscription options)]

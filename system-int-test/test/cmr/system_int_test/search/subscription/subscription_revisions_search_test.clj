@@ -30,11 +30,11 @@
                {:token "mock-echo-system-token"})
         subscription1 {:native-id "SUB1"
                        :Name "Sub1"
-                       :Query "polygon=1,2,3"
+                       :Query "platform=NOAA-7"
                        :CollectionConceptId (:concept-id coll1)
                        :provider-id "PROV1"}
         subscription2 {:native-id "SUB2"
-                       :Query "polygon=1,2,4"
+                       :Query "platform=NOAA-9"
                        :CollectionConceptId (:concept-id coll1)
                        :Name "Sub2"
                        :provider-id "PROV2"}
@@ -70,22 +70,22 @@
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})
         sub1-concept (subscription/make-subscription-concept {:native-id "SUB1"
-                                                              :Query "polygon=1,2,3"
+                                                              :Query "platform=NOAA-7"
                                                               :CollectionConceptId (:concept-id coll1)
                                                               :Name "Subscription1"
                                                               :provider-id "PROV1"})
         sub2-concept (subscription/make-subscription-concept {:native-id "SUB2"
-                                                              :Query "polygon=1,2,4"
+                                                              :Query "platform=NOAA-9"
                                                               :CollectionConceptId (:concept-id coll1)
                                                               :Name "Subscription2"
                                                               :provider-id "PROV1"})
         sub2-2-concept (subscription/make-subscription-concept {:native-id "SUB2"
-                                                                :Query "polygon=1,2,5"
+                                                                :Query "platform=NOAA-10"
                                                                 :CollectionConceptId (:concept-id coll1)
                                                                 :Name "Subscription2-2"
                                                                 :provider-id "PROV1"})
         sub3-concept (subscription/make-subscription-concept {:native-id "SUB3"
-                                                              :Query "polygon=1,2,6"
+                                                              :Query "platform=NOAA-11"
                                                               :CollectionConceptId (:concept-id coll1)
                                                               :Name "Subscription1"
                                                               :provider-id "PROV2"})
