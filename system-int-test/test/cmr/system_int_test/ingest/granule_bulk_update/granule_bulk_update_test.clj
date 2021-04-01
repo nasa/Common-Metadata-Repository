@@ -162,7 +162,9 @@
         (let [bulk-update {:name "add S3 links"
                            :operation "UPDATE_FIELD"
                            :update-field "S3Link"
-                           :updates [["SC:AE_5DSno.002:30500514" "s3://url30500511"]]}
+                           :updates [["SC:AE_5DSno.002:30500511" "s3://url30500511"]
+                                     ["SC:AE_5DSno.002:30500512" "S3://url1, S3://url2,S3://url3"]
+                                     ["SC:AE_5DSno.002:30500514" "s3://url30500514"]]}
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
@@ -173,8 +175,60 @@
                 {:keys [task-status status-message granule-statuses]} status-response]
             (is (= "COMPLETE" task-status))
             (is (= "All granule updates completed successfully." status-message))
-            (is (= [{:granule-ur "SC:AE_5DSno.002:30500514"
+            (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
+                     :status "UPDATED"}
+                    {:granule-ur "SC:AE_5DSno.002:30500512"
+                     :status "UPDATED"}
+                    {:granule-ur "SC:AE_5DSno.002:30500514"
                      :status "UPDATED"}]
+                   granule-statuses)))))
+
+      (testing "failed S3 link granule bulk update"
+        (let [bulk-update {:name "add s3 links"
+                           :operation "UPDATE_FIELD"
+                           :update-field "S3Link"
+                           :updates [["SC:AE_5DSno.002:30500513" "s3://url30500513"]]}
+              response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
+              {:keys [status task-id]} response]
+          (index/wait-until-indexed)
+
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+                {:keys [task-status status-message granule-statuses]} status-response]
+            (is (= "COMPLETE" task-status))
+            (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+            (is (= [{:granule-ur "SC:AE_5DSno.002:30500513"
+                     :status "FAILED"
+                     :status-message "Add s3 url is not supported for format [application/iso:smap+xml]"}]
+                   granule-statuses)))))
+
+      (testing "partial successful S3 link granule bulk update"
+        (let [bulk-update {:name "add s3 links"
+                           :operation "UPDATE_FIELD"
+                           :update-field "S3Link"
+                           :updates [["SC:AE_5DSno.002:30500511" "S3://url30500511"]
+                                     ["SC:AE_5DSno.002:30500512" "s3://url30500512"]
+                                     ["SC:non-existent-ur" "s3://url30500513"]]}
+              response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
+              {:keys [status task-id]} response]
+          (index/wait-until-indexed)
+
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+                {:keys [task-status status-message granule-statuses]} status-response]
+            (is (= "COMPLETE" task-status))
+            (is (= "Task completed with 1 FAILED and 2 UPDATED out of 3 total granule update(s)."
+                   status-message))
+            (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
+                     :status "UPDATED"}
+                    {:granule-ur "SC:AE_5DSno.002:30500512"
+                     :status "UPDATED"}
+                    {:granule-ur "SC:non-existent-ur"
+                     :status "FAILED"
+                     :status-message (format "Granule UR [SC:non-existent-ur] in task-id [%s] does not exist."
+                                             task-id)}]
                    granule-statuses)))))
 
       (testing "invalid S3 url value in instruction"
@@ -281,6 +335,31 @@
 
 (deftest add-s3-url
   "test adding S3 url with real granule file that is already in CMR code base"
+  (testing "ECHO10 granule"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
+                                                            {:provider-id "PROV1"
+                                                             :concept-type :collection
+                                                             :native-id "OMSO2-collection"
+                                                             :format-key :dif10})
+          granule (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-granule.xml"
+                                                               {:provider-id "PROV1"
+                                                                :concept-type :granule
+                                                                :native-id "OMSO2-granule"
+                                                                :format-key :echo10})
+          {:keys [concept-id revision-id]} granule
+          target-metadata (-> "CMR-4722/OMSO2.003-granule-s3-url.xml" io/resource slurp)
+          bulk-update {:operation "UPDATE_FIELD"
+                       :update-field "S3Link"
+                       :updates [["OMSO2.003:OMI-Aura_L2-OMSO2_2004m1001t2307-o01146_v003-2016m0615t191523.he5"
+                                  "s3://abcdefg/2016m0615t191523"]]}
+          {:keys [status] :as response} (ingest/bulk-update-granules
+                                         "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (is (= 200 status))
+      (is (= target-metadata
+             (:metadata (mdb/get-concept concept-id (inc revision-id)))))))
+
   (testing "UMM-G granule"
     (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
           coll (data-core/ingest-concept-with-metadata-file
