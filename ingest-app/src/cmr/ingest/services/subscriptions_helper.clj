@@ -32,7 +32,7 @@
 ;; WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
 
 (defn normalize-subscription-search
-  "If the subscription has a query, return a normalized-query"
+  "If the subscription metadata has a query, return a normalized-query"
   [subscription-metadata]
   (when (:Query subscription-metadata)
     (-> (:Query subscription-metadata)

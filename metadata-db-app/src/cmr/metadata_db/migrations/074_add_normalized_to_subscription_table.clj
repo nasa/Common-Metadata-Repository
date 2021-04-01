@@ -28,7 +28,7 @@
 
 (defn- create-subscription-index
   []
-  (helper/sql "CREATE INDEX cmr_subs_ccismq ON CMR_TOOL_ASSOCIATIONS
+  (helper/sql "CREATE INDEX cmr_subs_ccinqsi ON CMR_SUBSCRIPTIONS
               (collection_concept_id, normalized_query, subscriber_id)"))
 
 (defn up
