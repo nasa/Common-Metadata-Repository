@@ -31,7 +31,10 @@
         token-user "EDL-U84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
         token-client "EDL-C84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
         token-ropc "EDL-R84a9c44c0ad2c628300477aa2568ba39e2fa47190f5dc16f95fb24086f7"
+
         token-bearer (str "Bearer " token-user)
+        token-client-id (str token-user ":" (random-base64 22))
+
         token-jwt (str "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9n"
                        "aW4iLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiT0F1dGgiLCJ"
                        "1aWQiOiJhZG1pbiIsImNsaWVudF9pZCI6Im9YQUhISmMyLTc"
@@ -39,14 +42,36 @@
                        "6MTYxNjAxNTM5NywiaXNzIjoiRWFydGhkYXRhIExvZ2luIn0"
                        ".-e7GTS6PJYD1fAuCoseOj4PdV5iqd521dCM1Hc_XjqI")
         token-jwt-bearer (str "Bearer " token-jwt)
-        token-jwt2 (str "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiUmVmcmVzaCIsInVpZCI6ImNjdWFkcmFkbyIsImNsaWVudF9pZCI6Ikt4eDh5RGlRUEtjb2Mya3VKOGROOFEiLCJleHAiOjE2MTcxMjM0MDEsImlhdCI6MTYxNzExOTIwMSwiaXNzIjoiRWFydGhkYXRhIExvZ2luIn0.GEMVsVK62JWYvxYCGP1TEbcRYHKvRyWaJFQTy58uHRY")
+        token-jwt-client-id (str token-jwt ":" (random-base64 22))
+
         token-launchpad (random-base64 4096)
-        all-names ["Legacy" "OAuth" "User" "Client" "ROPC" "JWT" "LaunchPad"]
-        all-tokens [token-legacy token-oauth token-user token-client token-ropc token-bearer token-jwt token-jwt-bearer token-launchpad]
+        ; all-names, all-tokens, and test-group are all spaced by groups
+        all-names ["Legacy"                             ; Legacy token
+                   "OAuth" "User" "Client" "ROPC"       ; EDL tokens
+                   "EDL Bearer" "EDL Client-Id"         ; Decorated EDL tokens
+                   "JWT" "JWT Bearer" "JWT Client-Id"   ; JWT tokens
+                   "LaunchPad"]                         ; Launchpad token
+        all-tokens [token-legacy
+                    token-oauth token-user token-client token-ropc
+                    token-bearer token-client-id
+                    token-jwt token-jwt-bearer token-jwt-client-id
+                    token-launchpad]
         test-group (partial test-matrix all-tokens all-names)]
     (testing "Is token a JWT token?"
-      (test-group [false false false false false false true true false] #'token/is-jwt-token?))
+      (test-group [false
+                   false false false false
+                   false false
+                   true true true
+                   false] #'token/is-jwt-token?))
     (testing "Is token a legacy token?"
-      (test-group [true true true true true true false false false] #'token/is-legacy-token?))
+      (test-group [true
+                   true true true true
+                   true true
+                   false false false
+                   false] #'token/is-legacy-token?))
     (testing "Is token a LaunchPad token?"
-      (test-group [false false false false false false false false true] #'token/is-launchpad-token?))))
+      (test-group [false
+                   false false false false
+                   false false
+                   false false false
+                   true] #'token/is-launchpad-token?))))
