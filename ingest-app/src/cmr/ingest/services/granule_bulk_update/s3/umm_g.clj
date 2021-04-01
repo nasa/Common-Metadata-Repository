@@ -1,13 +1,11 @@
 (ns cmr.ingest.services.granule-bulk-update.s3.umm-g
-  "Contains functions to update UMM-G granule metadata for s3 url bulk update.")
+  "Contains functions to update UMM-G granule metadata for s3 url bulk update."
+  (:require
+   [cmr.ingest.services.granule-bulk-update.s3.s3-util :as s3-util]))
 
 (def ^:private S3_RELATEDURL_TYPE
   "RelatedUrl Type of s3 url in UMM-G granule schema"
   "GET DATA VIA DIRECT ACCESS")
-
-(def ^:private S3_RELATEDURL_DESCRIPTION
-  "RelatedUrl description of s3 url in UMM-G granule schema"
-  "This link provides direct download access via S3 to the granule.")
 
 (defn- is-s3?
   "Returns true if the given related-url is an s3 url.
@@ -19,10 +17,10 @@
   "Returns the RelatedUrls for the given s3 urls."
   [urls]
   (for [url urls]
-    {:URL url :Type S3_RELATEDURL_TYPE :Description S3_RELATEDURL_DESCRIPTION}))
+    {:URL url :Type S3_RELATEDURL_TYPE :Description s3-util/S3_RELATEDURL_DESCRIPTION}))
 
 (defn- updated-related-urls
-  "Take the RelatedUrls, update any existing s3 url with the given url-map."
+  "Take the RelatedUrls, replace any existing s3 urls with the given urls."
   [related-urls urls]
   (let [other-urls (remove is-s3? related-urls)
         s3-urls (urls->s3-urls urls)]

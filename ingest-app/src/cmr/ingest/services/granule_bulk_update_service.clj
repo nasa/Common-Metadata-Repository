@@ -15,7 +15,7 @@
    [cmr.ingest.services.granule-bulk-update.opendap.echo10 :as opendap-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]
    [cmr.ingest.services.granule-bulk-update.opendap.umm-g :as opendap-umm-g]
-   ; [cmr.ingest.services.granule-bulk-update.s3.echo10 :as s3-echo10]
+   [cmr.ingest.services.granule-bulk-update.s3.echo10 :as s3-echo10]
    [cmr.ingest.services.granule-bulk-update.s3.s3-util :as s3-util]
    [cmr.ingest.services.granule-bulk-update.s3.umm-g :as s3-umm-g]
    [cmr.ingest.services.ingest-service :as ingest-service]
@@ -129,7 +129,7 @@
 
 (defmethod add-s3-url :echo10
   [context concept urls]
-  #_(s3-echo10/add-s3-url concept urls))
+  (s3-echo10/add-s3-url concept urls))
 
 (defmethod add-s3-url :umm-json
   [context concept urls]

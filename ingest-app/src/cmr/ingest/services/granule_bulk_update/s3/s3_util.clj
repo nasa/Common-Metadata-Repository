@@ -4,6 +4,10 @@
    [clojure.string :as string]
    [cmr.common.services.errors :as errors]))
 
+(def S3_RELATEDURL_DESCRIPTION
+  "RelatedUrl description of s3 url in UMM-G granule schema"
+  "This link provides direct download access via S3 to the granule.")
+
 (defn validate-url
   "Validate the given S3 url for granule bulk update. It can be multiple urls
   separated by comma, and each url must be started with s3:// (case insensitive).

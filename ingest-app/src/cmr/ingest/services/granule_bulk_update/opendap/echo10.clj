@@ -4,7 +4,6 @@
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [clojure.zip :as zip]
-   [cmr.common.services.errors :as errors]
    [cmr.common.xml :as cx]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]))
 
@@ -74,8 +73,8 @@
     (remove nil? updated-resources)))
 
 (defn- updated-zipper-resources
-  "Take the parsed online resources in the original metadata and the desired OPeNDAP url,
-   returns the updated online resources xml element that can be used by zipper to update the xml. "
+  "Take the parsed online resources in the original metadata and the desired OPeNDAP urls,
+   return the updated online resources xml element that can be used by zipper to update the xml."
   [online-resources url-map]
   (let [resources (updated-online-resources online-resources url-map)]
     (xml/element
