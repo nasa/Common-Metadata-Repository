@@ -15,12 +15,11 @@
                     :S3CredentialsAPIEndpoint "https://www.credAPIURL.org"
                     :S3CredentialsAPIDocumentationURL "https://www.credAPIDocURL.org"}})
         diff-result (first (select result "/DIF/DirectDistributionInformation"))]
-    (is (and
-          (= "us-west-1" (value-of diff-result "Region"))
-          (= "bucket1" (first (values-at diff-result "S3BucketAndObjectPrefixName")))
-          (= "bucket2" (second (values-at diff-result "S3BucketAndObjectPrefixName")))
-          (= "https://www.credAPIURL.org" (value-of diff-result "S3CredentialsAPIEndpoint"))
-          (= "https://www.credAPIDocURL.org" (value-of diff-result "S3CredentialsAPIDocumentationURL"))))))
+    (is (= "us-west-1" (value-of diff-result "Region")))
+    (is (= "bucket1" (first (values-at diff-result "S3BucketAndObjectPrefixName"))))
+    (is (= "bucket2" (second (values-at diff-result "S3BucketAndObjectPrefixName"))))
+    (is (= "https://www.credAPIURL.org" (value-of diff-result "S3CredentialsAPIEndpoint")))
+    (is (= "https://www.credAPIDocURL.org" (value-of diff-result "S3CredentialsAPIDocumentationURL")))))
 
 (deftest dif10-direct-distribution-information-nil-test
   "Testing the dif10 direct distribution information translation from umm-c to dif10 when its nil."
@@ -42,11 +41,10 @@
                                     :Authority "doi.org"}]})
         doi (first (select result "/DIF/Dataset_Citation/Persistent_Identifier"))
         assoc-dois (select result "/DIF/Associated_DOIs")]
-    (is (and
-          (= "10.5067/IAGYM8Q26QRE" (value-of doi "Identifier"))
-          (= "10.5678/assoc-doi-2" (value-of (second assoc-dois) "DOI"))
-          (= "Title2" (value-of (second assoc-dois) "Title"))
-          (= "doi.org" (value-of (second assoc-dois) "Authority"))))))
+    (is (= "10.5067/IAGYM8Q26QRE" (value-of doi "Identifier")))
+    (is (= "10.5678/assoc-doi-2" (value-of (second assoc-dois) "DOI")))
+    (is (= "Title2" (value-of (second assoc-dois) "Title")))
+    (is (= "doi.org" (value-of (second assoc-dois) "Authority")))))
 
 (deftest dif10-doi-and-associated-nil-doi-test
   "Testing the dif10 doi and associated doi translation from umm-c to dif10 when its nil."
@@ -55,5 +53,66 @@
                   :AssoiatedDOIs nil})
         doi (first (select result "/DIF/Dataset_Citation/Persistent_Identifier"))
         assoc-dois (select result "/DIF/Associated_DOIs")]
-    (is (= doi nil)
-        (= assoc-dois nil))))
+    (is (= doi nil))
+    (is (= assoc-dois nil))))
+
+(deftest dif10-use-constraints-test
+  "Testing the dif10 use constraint translation from umm-c to dif10."
+
+  (testing "dif10 use constraints description test"
+    (let [actual-data {:UseConstraints {:Description "Description"}}
+          result (dif10/umm-c-to-dif10-xml actual-data)
+          use-constraints (first (select result "/DIF/Use_Constraints"))]
+      (is (= "Description" (value-of use-constraints "Description")))))
+
+  (testing "dif10 use constraints LicenseURL test"
+    (let [actual-data {:UseConstraints {:LicenseURL {:Linkage "https://someurl.com"
+                                                     :Protocol "https"
+                                                     :ApplicationProfile "profile"
+                                                     :Name "License URL"
+                                                     :Description "License URL Description"
+                                                     :Function "information"
+                                                     :MimeType "text/html"}}}
+          result (dif10/umm-c-to-dif10-xml actual-data)
+          use-constraints (first (select result "/DIF/Use_Constraints"))]
+      (is (= "https://someurl.com" (value-of use-constraints "License_URL/URL")))
+      (is (= "License URL" (value-of use-constraints "License_URL/Title")))
+      (is (= "License URL Description" (value-of use-constraints "License_URL/Description")))
+      (is (= "text/html" (value-of use-constraints "License_URL/Mime_Type")))))
+
+  (testing "dif10 use constraints License Text test"
+    (let [actual-data {:UseConstraints {:LicenseText "License Text"}}
+          result (dif10/umm-c-to-dif10-xml actual-data)
+          use-constraints (first (select result "/DIF/Use_Constraints"))]
+      (is (= "License Text" (value-of use-constraints "License_Text")))))
+
+  (testing "dif10 use constraints nil"
+    (let [actual-data {}
+          result (dif10/umm-c-to-dif10-xml actual-data)
+          use-constraints (first (select result "/DIF/Use_Constraints"))]
+      (is (= nil use-constraints))))
+
+  (testing "dif10 use constraints Description and LicenseURL test"
+    (let [actual-data {:UseConstraints {:Description "Description"
+                                        :LicenseURL {:Linkage "https://someurl.com"
+                                                     :Protocol "https"
+                                                     :ApplicationProfile "profile"
+                                                     :Name "License URL"
+                                                     :Description "License URL Description"
+                                                     :Function "information"
+                                                     :MimeType "text/html"}}}
+          result (dif10/umm-c-to-dif10-xml actual-data)
+          use-constraints (first (select result "/DIF/Use_Constraints"))]
+      (is (= "Description" (value-of use-constraints "Description")))
+      (is (= "https://someurl.com" (value-of use-constraints "License_URL/URL")))
+      (is (= "License URL" (value-of use-constraints "License_URL/Title")))
+      (is (= "License URL Description" (value-of use-constraints "License_URL/Description")))
+      (is (= "text/html" (value-of use-constraints "License_URL/Mime_Type")))))
+
+ (testing "dif10 use constraints Description and LicenseText test"
+   (let [actual-data {:UseConstraints {:Description "Description"
+                                       :LicenseText "License Text"}}
+         result (dif10/umm-c-to-dif10-xml actual-data)
+         use-constraints (first (select result "/DIF/Use_Constraints"))]
+     (is (= "Description" (value-of use-constraints "Description")))
+     (is (= "License Text" (value-of use-constraints "License_Text"))))))
