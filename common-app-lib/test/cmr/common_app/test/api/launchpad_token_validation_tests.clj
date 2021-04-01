@@ -17,7 +17,8 @@
     (is (= expected (tester input)) (str "Failed: " message " not " expected))))
 
 
-(defn random-base64
+(defn- random-base64
+  "Create a random string of base64 chars suitable to mimic a token"
   [len]
   (let [junk (apply str (take len (repeatedly #(char (+ (rand 26) 65)))))]
     (String. (base64/encode (.getBytes junk)) "UTF-8")))

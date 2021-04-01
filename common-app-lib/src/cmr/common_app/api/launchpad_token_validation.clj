@@ -10,25 +10,28 @@
 
 ;; Note: Similar code exists at gov.nasa.echo.kernel.service.authentication
 (def URS_TOKEN_MAX_LENGTH 100)
+(def BEARER "Bearer ")
 
 (defn- is-legacy-token?
-  "There are two uses cases captured by this test, the Legacy token, the
-   Heritage token (meaning a token made to behave like a legacy token but
-   prefixed with EDL-).
+  "There are two uses cases captured by this test, the Legacy token and the
+   new style legacy token made to behave like a legacy token but are prefixed
+   with EDL- to aid in indentification. This function will not match very short
+   JWT tokens.
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
   [token]
-  (or (string/starts-with? token "EDL-")
-      (string/starts-with? token "Bearer EDL-")
-      (<= (count token) URS_TOKEN_MAX_LENGTH)))
+  (or (<= (count token) URS_TOKEN_MAX_LENGTH)
+      (string/starts-with? token "EDL-")
+      (string/starts-with? token (str BEARER "EDL-"))))
 
 (defn- is-jwt-token?
   "Check if a token matches the JWT pattern (Base64.Base64.Base64) and if it
    does, try to look inside the header section and verify that the token is JWT
-   and it came from EarthDataLogin (EDL).
+   and it came from EarthDataLogin (EDL). Tokens may start with Bearer and end
+   with with a client-id section.
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
   [raw-token]
-  (let [token (if (string/starts-with? raw-token "Bearer ")
-                (subs raw-token 7)
+  (let [token (if (string/starts-with? raw-token BEARER)
+                (subs raw-token (count BEARER))
                 raw-token)]
     (if (some? (re-find #"[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+\.[:A-Za-z0-9=_-]+" token))
       (let [token-parts (string/split token #"\.")
