@@ -201,26 +201,41 @@
                 (is (= ["Granule bulk update task with task id [12345] could not be found."]
                        errors))))))))
     (testing "Granule bulk cleanup jobs deletes old tasks"
-      (let [bulk-update-options {:token (e/login (s/context) "user1")}
-            update1 {:name "an old update"
-                     :operation "UPDATE_FIELD"
-                     :update-field "OPeNDAPLink"
-                     :updates [["SC:AE_5DSno.002:30500511" "https://A-LONG-TIME-AGO"]
-                               ["SC:AE_5DSno.002:30500512" "https://IN-A-GALAXY-FAR-FAR-AWAY"]]}
-            ;; Intentionally made the following call verbose to make sure we are parsing xml.
-            ;; Freeze time so the update tasks will be old enough to be marked complete.
-            _ (dev-sys-util/freeze-time! "2019-01-01T10:00:00Z")
-            update1-response (ingest/parse-bulk-update-body
-                              :xml
-                              (ingest/bulk-update-granules
-                               "PROV1"
-                               update1
-                               (assoc bulk-update-options :accept-format :xml :raw? true)))
-            _ (qb-side-api/wait-for-terminal-states)
-            _ (ingest/cleanup-bulk-granule-update-tasks)
-            _ (qb-side-api/wait-for-terminal-states)
-            _ (dev-sys-util/clear-current-time!)
-            granule-tasks (:tasks (ingest/granule-bulk-update-tasks "PROV1" :json))]
-        (is (empty? (filter #(and (string/starts-with? (:name %) "an old update")
-                                  (= (:status %) "COMPLETE"))
-                            granule-tasks)))))))
+      (s/only-with-real-database
+        (let [bulk-update-options {:token (e/login (s/context) "user1")}
+              update1 {:name "an old update"
+                       :operation "UPDATE_FIELD"
+                       :update-field "OPeNDAPLink"
+                       :updates [["SC:AE_5DSno.002:30500511" "https://A-LONG-TIME-AGO"]
+                                 ["SC:AE_5DSno.002:30500512" "https://IN-A-GALAXY-FAR-FAR-AWAY"]]}
+              update2 {:name "a much newer update"
+                       :operation "UPDATE_FIELD"
+                       :update-field "OPeNDAPLink"
+                       :updates [["SC:coll2:30500513" "https://please-do-not-delete-me"]]}
+              ;; Intentionally made the following call verbose to make sure we are parsing xml.
+              ;; Freeze time so the update tasks will be old enough to be marked complete.
+              _ (dev-sys-util/freeze-time! "2019-01-01T10:00:00Z")
+              update1-response (ingest/parse-bulk-update-body
+                                :xml
+                                (ingest/bulk-update-granules
+                                 "PROV1"
+                                 update1
+                                 (assoc bulk-update-options :accept-format :xml :raw? true)))
+              _ (qb-side-api/wait-for-terminal-states)
+              _ (ingest/cleanup-bulk-granule-update-tasks)
+              _ (qb-side-api/wait-for-terminal-states)
+              _ (dev-sys-util/clear-current-time!)
+              update2-response (ingest/parse-bulk-update-body
+                                :xml
+                                (ingest/bulk-update-granules
+                                 "PROV1"
+                                 update2
+                                 (assoc bulk-update-options :accept-format :xml :raw? true)))
+              granule-tasks (:tasks (ingest/granule-bulk-update-tasks "PROV1" :json))]
+          (qb-side-api/wait-for-terminal-states)
+          (is (empty? (filter #(and (string/starts-with? (:name %) "an old update")
+                                    (= (:status %) "COMPLETE"))
+                              granule-tasks)))
+          (is (some? (filter #(and (string/starts-with? (:name %) "a much newer update")
+                                   (= (:status %) "COMPLETE"))
+                             granule-tasks))))))))

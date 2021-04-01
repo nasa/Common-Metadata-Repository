@@ -172,12 +172,10 @@
 
 (defn cleanup-bulk-granule-task-table
   "Delete and export all granule bulk update tasks marked ready for deletion"
-  [context provider-id]
+  [context]
   (try
-   (data-granule-bulk-update/cleanup-provider-granule-bulk-update-status context provider-id)
+   (data-granule-bulk-update/cleanup-bulk-granule-tasks context)
    (catch Exception e
      (errors/throw-service-error
       :error
-      [(format "Exception caught while attempting to cleanup granule bulk update tasks for provider [%s]: %s"
-               provider-id
-               e)]))))
+      [(format "Exception caught while attempting to cleanup granule bulk update tasks: %s" e)]))))

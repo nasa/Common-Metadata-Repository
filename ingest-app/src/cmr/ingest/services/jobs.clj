@@ -10,6 +10,7 @@
    [cmr.common.jobs :as jobs :refer [def-stateful-job]]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.ingest.data.bulk-update :as bulk-update]
+   [cmr.ingest.data.granule-bulk-update :as granule-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.data.provider-acl-hash :as pah]
    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
@@ -208,14 +209,10 @@
        context
        (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
 
-(defn trigger-bulk-granule-task-cleanup
+(defn bulk-granule-update-task-table-cleanup
+  "Clean up completed bulk granule update tasks that are older than the configured age"
   [context]
-  (let [providers (map :provider-id (mdb/get-providers context))]
-    (info "Sending events to cleanup bulk granule update tasks in all providers:" (pr-str providers))
-    (doseq [provider providers]
-      (ingest-events/publish-gran-bulk-update-event
-       context
-       (ingest-events/provider-granule-bulk-update-task-cleanup-event provider)))))
+  (granule-bulk-update/cleanup-bulk-granule-tasks context))
 
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
@@ -223,7 +220,7 @@
 
 (def-stateful-job BulkGranUpdateTaskCleanup
   [_ system]
-  (trigger-bulk-granule-task-cleanup {:system system}))
+  (bulk-granule-update-task-table-cleanup {:system system}))
 
 (def-stateful-job EmailSubscriptionProcessing
   [_ system]

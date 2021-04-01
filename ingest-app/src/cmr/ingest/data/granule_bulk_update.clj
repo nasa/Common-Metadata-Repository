@@ -1,7 +1,6 @@
 (ns cmr.ingest.data.granule-bulk-update
   "Stores and retrieves granule bulk update status and task information."
   (:require
-   [clj-time.core :as time]
    [cmr.common.time-keeper :as time-keeper]
    [clj-time.coerce :as time-coerce]
    [cheshire.core :as json]
@@ -78,8 +77,7 @@
   (create-and-save-bulk-granule-update-status [db provider-id user-id request-json-body instructions])
   (update-bulk-granule-update-task-status [db task-id status status-message])
   (update-bulk-update-granule-status [db task-id granule-ur status status-message])
-  (reset-bulk-granule-update [db])
-  (cleanup-bulk-granule-tasks-by-provider [db provider-id]))
+  (reset-bulk-granule-update [db]))
 
 ;; Extends the GranBulkUpdateStore to the oracle store so it will work with oracle.
 (extend-protocol GranBulkUpdateStore
@@ -204,28 +202,27 @@
    [db]
    (sql-utils/run-sql db "DELETE FROM bulk_update_gran_status")
    (sql-utils/run-sql db "DELETE FROM granule_bulk_update_tasks")
-   (sql-utils/run-sql db "ALTER SEQUENCE gran_task_id_seq restart start with 1"))
-
-  (cleanup-bulk-granule-tasks-by-provider
-   [db provider-id]
-   (try
-       ; Deletes will cascade to granule_bulk_update_tasks
-      (jdbc/delete!
-       db
-       :granule_bulk_update_tasks
-       ["STATUS = 'COMPLETE' AND CREATED_AT < SYSDATE - ? AND PROVIDER_ID = ?"
-        (config/granule-bulk-cleanup-minimum-age)
-        provider-id])
-     (catch Exception e
-       (error "Exception caught while attempting to clean up granule bulk update task table: " e)
-       (errors/throw-service-error :invalid-data
-                                   [(str "Error cleaning up bulk granule update task table "
-                                         (.getMessage e))])))))
+   (sql-utils/run-sql db "ALTER SEQUENCE gran_task_id_seq restart start with 1")))
 
 (defn context->db
-  "Return the path to the database from a given context"
-  [context]
-  (get-in context [:system :db]))
+ "Return the path to the database from a given context"
+ [context]
+ (get-in context [:system :db]))
+
+(defn-timed cleanup-bulk-granule-tasks
+ [context]
+ (try
+     ; Deletes will cascade to granule_bulk_update_tasks
+    (jdbc/delete!
+     (context->db context)
+     :granule_bulk_update_tasks
+     ["STATUS = 'COMPLETE' AND CREATED_AT < SYSDATE - ?"
+      (config/granule-bulk-cleanup-minimum-age)])
+   (catch Exception e
+     (error "Exception caught while attempting to clean up granule bulk update task table: " e)
+     (errors/throw-service-error :invalid-data
+                                 [(str "Error cleaning up bulk granule update task table "
+                                       (.getMessage e))]))))
 
 (defn-timed get-granule-tasks-by-provider
   "Returns granule bulk update tasks by provider"
@@ -261,9 +258,3 @@
   "Clear bulk update db"
   [context]
   (reset-bulk-granule-update (context->db context)))
-
-(defn-timed cleanup-provider-granule-bulk-update-status
-  "Delete rows in the bulk_update_gran_status table for a given provider that
-  are older than the configured age"
-  [context provider-id]
-  (cleanup-bulk-granule-tasks-by-provider (context->db context) provider-id))

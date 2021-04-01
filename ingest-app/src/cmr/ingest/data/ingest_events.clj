@@ -103,9 +103,3 @@
    :task-id task-id
    :bulk-update-params instruction
    :user-id user-id})
-
-(defn provider-granule-bulk-update-task-cleanup-event
- "Create an event representing a granule bulk update cleanup event"
- [provider-id]
- {:action :provider-granule-bulk-update-task-cleanup
-  :provider-id provider-id})
