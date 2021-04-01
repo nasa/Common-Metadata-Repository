@@ -595,7 +595,7 @@
                    :Type "GET DATA"
                    :Subtype "OPENDAP DATA"
                    :MimeType "application/x-hdf5"}
-                  {:URL "S3://amazon.something.com/get-data"
+                  {:URL "s3://amazon.something.com/get-data"
                    :Type "GET DATA"
                    :Format "NETCDF-4"
                    :MimeType "application/x-netcdf"}]})
@@ -616,7 +616,7 @@
                    :Type "GET DATA"
                    :Subtype "OPENDAP DATA"
                    :MimeType "application/x-hdf5"}
-                  {:URL "S3://amazon.something.com/get-data"
+                  {:URL "s3://amazon.something.com/get-data"
                    :Type "GET DATA VIA DIRECT ACCESS"
                    :Format "NETCDF-4"
                    :MimeType "application/x-netcdf"}]})

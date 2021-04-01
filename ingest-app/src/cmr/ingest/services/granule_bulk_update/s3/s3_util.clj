@@ -10,13 +10,12 @@
 
 (defn validate-url
   "Validate the given S3 url for granule bulk update. It can be multiple urls
-  separated by comma, and each url must be started with s3:// (case insensitive).
+  separated by comma, and each url must be started with s3:// (case sensitive).
   Returns the parsed urls in a list."
   [input-url]
   (let [urls (map string/trim (string/split input-url #","))]
     (doseq [url urls]
-      (when-not (or (string/starts-with? url "s3://")
-                    (string/starts-with? url "S3://"))
+      (when-not (string/starts-with? url "s3://")
         (errors/throw-service-errors
          :invalid-data
          [(str "Invalid URL value, each S3 url must start with s3://, but was " url)])))
