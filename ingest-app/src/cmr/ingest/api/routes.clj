@@ -78,7 +78,7 @@
      (POST "/trigger-granule-task-cleanup-job"
            {ctx :request-context}
            (acl/verify-ingest-management-permission ctx :update)
-           (jobs/bulk-granule-update-task-table-cleanup ctx)
+           (jobs/trigger-bulk-granule-update-task-table-cleanup ctx)
            {:status 200}))))
 
 (def ingest-routes

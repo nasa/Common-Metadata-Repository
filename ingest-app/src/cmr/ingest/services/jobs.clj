@@ -200,6 +200,13 @@
   [context]
   (bulk-update/cleanup-old-bulk-update-status context))
 
+(defn trigger-bulk-granule-update-task-table-cleanup
+  "Trigger cleanup of completed bulk granule update tasks that are older than the configured age"
+  [context]
+  (ingest-events/publish-gran-bulk-update-event
+   context
+   (ingest-events/granule-bulk-update-task-cleanup-event)))
+
 (defn trigger-autocomplete-suggestions-reindex
   [context]
   (let [providers (map :provider-id (mdb/get-providers context))]
@@ -209,18 +216,13 @@
        context
        (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
 
-(defn bulk-granule-update-task-table-cleanup
-  "Clean up completed bulk granule update tasks that are older than the configured age"
-  [context]
-  (granule-bulk-update/cleanup-bulk-granule-tasks context))
-
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
   (bulk-update-status-table-cleanup {:system system}))
 
 (def-stateful-job BulkGranUpdateTaskCleanup
   [_ system]
-  (bulk-granule-update-task-table-cleanup {:system system}))
+  (granule-bulk-update/cleanup-bulk-granule-tasks {:system system}))
 
 (def-stateful-job EmailSubscriptionProcessing
   [_ system]
