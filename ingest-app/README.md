@@ -79,6 +79,7 @@ This could happen because queueing the message times out, RabbitMQ has surpassed
     * [POST /jobs/reindex-all-collections - Runs to job to reindex all collections.](#reindex-all-collections)
     * [POST /jobs/reindex-autocomplete-suggestions - Runs to job to reindex all autocomplete suggestions.](#reindex-all-suggestions)
     * [POST /jobs/cleanup-expired-collections - Runs the job to remove expired collections.](#cleanup-expired-collections)
+    * [POST /jobs/trigger-granule-task-cleanup-job - Start cleanup of old granule bulk update tasks](#trigger-granule-task-cleanup-job)
   * /caches
     * [GET /caches - Gets a list of the caches in ingest.](#get-caches)
     * [GET /caches/\<cache-name> - Gets a list of the keys stored in the specific cache.](#get-cache-keys)
@@ -309,6 +310,13 @@ Looks for collections that have a delete date in the past and removes them.
 
 ```bash
 curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/cleanup-expired-collections
+```
+
+### <a name="trigger-granule-task-cleanup-job"></a> Run Bulk Granule Update Task Cleanup Job
+
+Removes bulk granule update tasks that are in COMPLETE state, and are at least 90 days old
+```bash
+curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/trigger-granule-task-cleanup-job
 ```
 
 ### Refresh Collection Granule Aggregate Cache

@@ -229,3 +229,13 @@
         (let [message (or (.getMessage e) bulk-update-service/default-exception-message)]
           (data-granule-bulk-update/update-bulk-update-task-granule-status
            context task-id granule-ur bulk-update-service/failed-status message))))))
+
+(defn cleanup-bulk-granule-task-table
+  "Delete and export all granule bulk update tasks marked ready for deletion"
+  [context]
+  (try
+   (data-granule-bulk-update/cleanup-bulk-granule-tasks context)
+   (catch Exception e
+     (errors/throw-service-error
+      :error
+      [(format "Exception caught while attempting to cleanup granule bulk update tasks: %s" e)]))))

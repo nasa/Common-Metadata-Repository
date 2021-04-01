@@ -185,6 +185,11 @@
   (format "http://localhost:%s/jobs/cleanup-expired-collections"
           (transmit-config/ingest-port)))
 
+(defn cleanup-granule-bulk-update-task-url
+  []
+  (format "http://localhost:%s/jobs/trigger-granule-task-cleanup-job"
+          (transmit-config/ingest-port)))
+
 (defn translate-metadata-url
   [concept-type]
   (format "http://localhost:%s/translate/%s"

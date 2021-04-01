@@ -239,6 +239,7 @@
                                                                     (count failed-granules)
                                                                     (count skipped-granules)
                                                                     (count task-granules)))))))))))
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   (reset-bulk-update

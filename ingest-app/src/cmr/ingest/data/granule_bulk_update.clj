@@ -1,6 +1,8 @@
 (ns cmr.ingest.data.granule-bulk-update
   "Stores and retrieves granule bulk update status and task information."
   (:require
+   [cmr.common.time-keeper :as time-keeper]
+   [clj-time.coerce :as time-coerce]
    [cheshire.core :as json]
    [clojure.java.jdbc :as jdbc]
    [cmr.common.log :refer (debug info warn error)]
@@ -137,13 +139,14 @@
     [conn db]
     (let [task-id (:nextval (first (sql-utils/query db ["SELECT GRAN_TASK_ID_SEQ.NEXTVAL FROM DUAL"])))
           statement (str "INSERT INTO granule_bulk_update_tasks "
-                         "(task_id, provider_id, name, request_json_body, status, user_id)"
-                         "VALUES (?, ?, ?, ?, ?, ?)")
+                         "(task_id, provider_id, name, request_json_body, status, user_id, created_at)"
+                         "VALUES (?, ?, ?, ?, ?, ?, ?)")
           parsed-json (json/parse-string request-json-body true)
           task-name (get parsed-json :name task-id)
           unique-task-name (format "%s: %s" task-name task-id)
+          created-at (time-coerce/to-sql-time (time-keeper/now))
           values [task-id provider-id unique-task-name (util/string->gzip-bytes request-json-body)
-                  "IN_PROGRESS" user-id]]
+                  "IN_PROGRESS" user-id created-at]]
       (jdbc/db-do-prepared db statement values)
       ;; Write a row to granule status for each granule-ur
       (apply jdbc/insert! conn
@@ -202,9 +205,24 @@
    (sql-utils/run-sql db "ALTER SEQUENCE gran_task_id_seq restart start with 1")))
 
 (defn context->db
-  "Return the path to the database from a given context"
-  [context]
-  (get-in context [:system :db]))
+ "Return the path to the database from a given context"
+ [context]
+ (get-in context [:system :db]))
+
+(defn-timed cleanup-bulk-granule-tasks
+ [context]
+ (try
+     ; Deletes will cascade to granule_bulk_update_tasks
+    (jdbc/delete!
+     (context->db context)
+     :granule_bulk_update_tasks
+     ["STATUS = 'COMPLETE' AND CREATED_AT < SYSDATE - ?"
+      (config/granule-bulk-cleanup-minimum-age)])
+   (catch Exception e
+     (error "Exception caught while attempting to clean up granule bulk update task table: " e)
+     (errors/throw-service-error :invalid-data
+                                 [(str "Error cleaning up bulk granule update task table "
+                                       (.getMessage e))]))))
 
 (defn-timed get-granule-tasks-by-provider
   "Returns granule bulk update tasks by provider"
@@ -240,14 +258,3 @@
   "Clear bulk update db"
   [context]
   (reset-bulk-granule-update (context->db context)))
-
-(defn cleanup-old-bulk-update-status
-  "Delete rows in the bulk_update_gran_status table that are older than the
-  configured age"
-  [context]
-  (let [db (context->db context)
-        statement (str "delete from CMR_INGEST.bulk_update_gran_status "
-                       "where created_at < (current_timestamp - INTERVAL '"
-                       (config/bulk-update-cleanup-minimum-age)
-                       "' DAY)")]
-    (jdbc/db-do-prepared db statement)))
