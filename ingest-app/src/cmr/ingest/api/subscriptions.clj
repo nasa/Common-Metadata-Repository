@@ -7,6 +7,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
+   [cmr.common-app.services.ingest.subscription-common :as sub-common]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.ingest.api.core :as api-core]
@@ -205,7 +206,7 @@
   [context subscription]
   (let [metadata (json/parse-string (:metadata subscription) true)
         new-metadata (add-id-to-metadata-if-missing context metadata)
-        normalized (jobs/normalize-subscription-search metadata)]
+        normalized (sub-common/normalize-parameters (:Query metadata))]
     (assoc subscription
            :metadata (json/generate-string new-metadata)
            :normalized-query normalized)))

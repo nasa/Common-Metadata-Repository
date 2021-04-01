@@ -14,7 +14,7 @@
         util/gzip-blob->string
         (as-> % (json/parse-string %, true))
         :Query
-        sub-common/normalize-parameters-v1))
+        sub-common/normalize-parameters))
 
 (defn populate-new-column
   "Pull out the requested query from the matadata, then normalize the data and

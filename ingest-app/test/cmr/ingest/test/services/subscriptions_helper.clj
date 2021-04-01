@@ -94,16 +94,3 @@
             expected (str start "," now)
             actual (#'jobs/subscription->time-constraint data now -1234)]
         (is (= expected actual))))))
-
-(deftest normalize-subscription-search-test
-  "Query normalization, should be sorted parameters"
-  (testing "With a leading question mark"
-   (let [metadata {:Query "provider=PROV1&instrument=1B&instrument=2B"}
-         expected "instrument=1B&instrument=2B&provider=PROV1"
-         actual (jobs/normalize-subscription-search metadata)]
-     (is (= expected actual))))
-  (testing "Without a leading question mark"
-   (let [metadata {:Query "provider=PROV1&instrument=1B&instrument=2B"}
-         expected "instrument=1B&instrument=2B&provider=PROV1"
-         actual (jobs/normalize-subscription-search metadata)]
-     (is (= expected actual)))))
