@@ -47,6 +47,13 @@
         event-type (string/lower-case (str operation ":" update-field))]
     (map (partial update->instruction event-type) updates)))
 
+(defn- duplicates
+  "Return duplicates in a collection."
+  [coll]
+  (for [[id freq] (frequencies coll)
+        :when (> freq 1)]
+    id))
+
 (defn validate-and-save-bulk-granule-update
   "Validate the granule bulk update request, save rows to the db for task
   and granule statuses, and queue bulk granule update. Return task id, which comes
@@ -66,9 +73,20 @@
                   (catch Exception e
                     (error "validate-and-save-bulk-granule-update caught exception:" e)
                     (let [message (.getMessage e)
-                          user-facing-message (if (string/includes? message "GBUT_PN_I")
-                                                "Granule bulk update task name needs to be unique within the provider."
-                                                message)]
+                          user-facing-message
+                          (condp #(string/includes? %2 %1) message
+                            "GBUT_PN_I"
+                            "Granule bulk update task name needs to be unique within the provider."
+
+                            "ORA-00001: unique constraint (CMR_INGEST.BUGS_PK)"
+                            (format (str "Duplicate granule URs are not allowed in bulk update requests. "
+                                         "Detected the following duplicates [%s]")
+                                    (->> instructions
+                                         (pmap :granule-ur)
+                                         duplicates
+                                         (string/join ",")))
+                            ;; default
+                            message)]
                       (errors/throw-service-errors
                        :invalid-data
                        [(str "error creating granule bulk update task: " user-facing-message)]))))]
