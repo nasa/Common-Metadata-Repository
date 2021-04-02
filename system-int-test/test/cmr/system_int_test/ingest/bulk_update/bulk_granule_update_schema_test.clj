@@ -32,9 +32,8 @@
                                                      bulk-update-options)
          response (json/parse-string body true)]
 
-     (is (seq (:errors response)))
      (is (seq (filter #(= err-msg %) (:errors response)))
-         (format "Error message containing [\"%s\"] was not found in %s"
+         (format "Error message containing [%s] was not found in [%s]"
                  err-msg
                  (pr-str response))))
 
