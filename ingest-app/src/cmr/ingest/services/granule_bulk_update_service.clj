@@ -88,7 +88,7 @@
                             ;; default
                             message)]
                       (errors/throw-service-errors
-                       :invalid-data
+                       :bad-request
                        [(str "error creating granule bulk update task: " user-facing-message)]))))]
     ;; Queue the granules bulk update event
     (ingest-events/publish-gran-bulk-update-event

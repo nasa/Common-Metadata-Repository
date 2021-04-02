@@ -27,11 +27,12 @@
                               :accept-format :json
                               :raw? true}
          request (update-fn base-request)
-         {:keys [body]} (ingest/bulk-update-granules "PROV1"
-                                                     request
-                                                     bulk-update-options)
+         {:keys [body status]} (ingest/bulk-update-granules "PROV1"
+                                                            request
+                                                            bulk-update-options)
          response (json/parse-string body true)]
 
+     (is (= 400 status))
      (is (seq (filter #(= err-msg %) (:errors response)))
          (format "Error message containing [%s] was not found in [%s]"
                  err-msg
