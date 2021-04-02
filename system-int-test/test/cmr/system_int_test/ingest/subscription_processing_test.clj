@@ -41,14 +41,13 @@
 (defn- create-granule-and-index
   "A utility function to reduce common code in these tests, Create a test granule and then wait for it to be indexed."
   [provider collection granule-ur]
-  (let [granule (data-core/ingest provider
-                    (data-granule/granule-with-umm-spec-collection collection
-                                                                   (:concept-id collection)
-                                                                   {:granule-ur granule-ur
-                                                                    :access-value 1})
-                    {:token "mock-echo-system-token"})]
+  (let [concept-id (:concept-id collection)
+        attribs {:granule-ur granule-ur :access-value 1}
+        gran (data-granule/granule-with-umm-spec-collection collection concept-id attribs)
+        options {:token "mock-echo-system-token"}
+        result (data-core/ingest provider gran options)]
     (index/wait-until-indexed)
-    granule))
+    result))
 
 (deftest ^:oracle subscription-email-processing-time-constraint-test
   (system/only-with-real-database
@@ -80,19 +79,13 @@
                                                                              :EntryTitle "entry-title1"})
                                                      {:token "mock-echo-system-token"})
 
+         coll2 (data-core/ingest-umm-spec-collection "PROV1"
+                                                     (data-umm-c/collection {:ShortName "coll2"
+                                                                             :EntryTitle "entry-title2"})
+                                                     {:token "mock-echo-system-token"})
          _ (index/wait-until-indexed)
          ;; Setup subscriptions
-
-
-         subscription-concept (subscription-util/make-subscription-concept
-                                                   {:Name "test_sub_prov1"
-                                                    :SubscriberId "user2"
-                                                    :CollectionConceptId (:concept-id coll1)
-                                                    :Query "provider=PROV1"})
-         sub1 (subscription-util/ingest-subscription subscription-concept
-                                                     {:token "mock-echo-system-token"})]
-
-     (index/wait-until-indexed)
+         sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")]
 
      (testing "First query executed does not have a last-notified-at and looks back 24 hours"
        (let [gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
@@ -115,9 +108,9 @@
      (testing "Deleting the subscription purges the suscription notification entry"
        ;; Delete and reingest the subscription. If the sub-notification was purged, then it
        ;; should look back 24 hours, as if the subscription were new.
-       (ingest/delete-concept subscription-concept)
-       (subscription-util/ingest-subscription subscription-concept
-                                              {:token "mock-echo-system-token"})
+       (let [concept {:provider-id "PROV1" :concept-type :subscription :native-id "test_sub_prov1"}]
+         (ingest/delete-concept concept))
+       (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")
        (is (= 2
              (->> (trigger-process-subscriptions)
                   (map #(nth % 1))

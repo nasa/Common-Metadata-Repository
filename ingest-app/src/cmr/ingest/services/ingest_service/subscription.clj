@@ -11,7 +11,8 @@
   (assoc concept :extra-fields
                  {:subscription-name (:Name subscription)
                   :collection-concept-id (:CollectionConceptId subscription)
-                  :subscriber-id (:SubscriberId subscription)}))
+                  :subscriber-id (:SubscriberId subscription)
+                  :normalized-query (:normalized-query concept)}))
 
 (defn-timed save-subscription
   "Store a subscription concept in mdb and indexer."

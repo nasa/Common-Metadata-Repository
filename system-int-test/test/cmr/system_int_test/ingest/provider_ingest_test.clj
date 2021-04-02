@@ -178,10 +178,12 @@
           sub1 (subscriptions/ingest-subscription-with-attrs {:native-id "sub1"
                                                               :Name "sub1"
                                                               :SubscriberId "user1"
+                                                              :Query "platform=NOAA-7"
                                                               :CollectionConceptId (:concept-id coll1)})
           sub2 (subscriptions/ingest-subscription-with-attrs {:native-id "sub2"
                                                               :Name "sub2"
                                                               :SubscriberId "user1"
+                                                              :Query "platform=NOAA-9"
                                                               :CollectionConceptId (:concept-id coll1)
                                                               :provider-id "PROV2"})
           _ (index/wait-until-indexed)

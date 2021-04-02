@@ -7,13 +7,16 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
+   [cmr.common-app.services.ingest.subscription-common :as sub-common]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]
+   [cmr.ingest.services.subscriptions-helper :as jobs]
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.metadata-db :as mdb]
+   [cmr.transmit.metadata-db2 :as mdb2]
    [cmr.transmit.urs :as urs])
   (:import
    [java.util UUID]))
@@ -56,6 +59,40 @@
           (subscriber-collection-permission-error
            subscriber-id
            concept-id)))))
+
+(defn- check-duplicate-subscription
+  "The query used by a subscriber for a collection should be unique to prevent
+   redundent emails from being sent to them. This function will check that a
+   subscription is unique for the following conditions: native-id, collection-id,
+   subscriber-id, normalized-query."
+  [request-context subscription]
+  (let [native-id (:native-id subscription)
+        provider-id (:provider-id subscription)
+        metadata (-> (:metadata subscription) (json/decode true))
+        normalized-query (:normalized-query subscription)
+        collection-id (:CollectionConceptId metadata)
+        subscriber-id (:SubscriberId metadata)
+        ;; Find concepts with matching collection-concept-id, normalized-query, and subscriber-id
+        duplicate-queries (mdb/find-concepts
+                           request-context
+                           {:collection-concept-id collection-id
+                            :normalized-query normalized-query
+                            :subscriber-id subscriber-id
+                            :exclude-metadata true
+                            :latest true}
+                           :subscription)
+        ;;we only want to look at non-deleted subscriptions
+        active-duplicate-queries (remove :deleted duplicate-queries)]
+     ;;If there is at least one duplicate subscription,
+     ;;We need to make sure it has the same native-id, or else reject the ingest
+     (when (and (> (count active-duplicate-queries) 0)
+                (every? #(not= native-id (:native-id %)) active-duplicate-queries))
+       (errors/throw-service-error
+        :conflict
+        (format (str "The subscriber-id [%s] has already subscribed to the "
+                     "collection with concept-id [%s] using the query [%s]. "
+                     "Subscribers must use unique queries for each Collection.")
+                subscriber-id collection-id  normalized-query)))))
 
 (defn- get-subscriber-id
   "Returns the subscriber id of the given subscription concept by parsing its metadata."
@@ -154,23 +191,25 @@
         (get-unique-native-id context subscription))
       native-id)))
 
-(defn- add-id-and-email-to-metadata-if-missing
+(defn- add-id-to-metadata-if-missing
    "If SubscriberId is provided, use it. Else, get it from the token."
   [context metadata]
-  (let [{subscriber :SubscriberId} metadata
-        subscriber (if-not subscriber
+  (let [subscriber-id (:SubscriberId metadata)
+        subscriber (if-not subscriber-id
                      (api-core/get-user-id-from-token context)
-                     subscriber)]
+                     subscriber-id)]
     (assoc metadata :SubscriberId subscriber)))
 
-
-(defn add-id-and-email-if-missing
-  "Parses and generates the metadata, such that add-id-and-email-to-metadata-if-missing
-  can focus on insertion logic."
+(defn- add-fields-if-missing
+  "Parses and generates the metadata, such that add-id-to-metadata-if-missing
+  can focus on insertion logic. Also adds normalized-query to the concept."
   [context subscription]
   (let [metadata (json/parse-string (:metadata subscription) true)
-        new-metadata (add-id-and-email-to-metadata-if-missing context metadata)]
-    (assoc subscription :metadata (json/generate-string new-metadata))))
+        new-metadata (add-id-to-metadata-if-missing context metadata)
+        normalized (sub-common/normalize-parameters (:Query metadata))]
+    (assoc subscription
+           :metadata (json/generate-string new-metadata)
+           :normalized-query normalized)))
 
 (defn create-subscription
   "Processes a request to create a subscription. A native id will be generated."
@@ -186,9 +225,10 @@
                             headers)
           native-id (get-unique-native-id request-context tmp-subscription)
           new-subscription (assoc  tmp-subscription :native-id native-id)
-          newer-subscription (add-id-and-email-if-missing request-context new-subscription)
+          newer-subscription (add-fields-if-missing request-context new-subscription)
           subscriber-id (get-subscriber-id newer-subscription)]
       (check-ingest-permission request-context provider-id subscriber-id)
+      (check-duplicate-subscription request-context newer-subscription)
       (perform-subscription-ingest request-context newer-subscription headers))))
 
 (defn create-subscription-with-native-id
@@ -209,9 +249,10 @@
                             body
                             content-type
                             headers)
-          new-subscription (add-id-and-email-if-missing request-context tmp-subscription)
+          new-subscription (add-fields-if-missing request-context tmp-subscription)
           subscriber-id (get-subscriber-id new-subscription)]
       (check-ingest-permission request-context provider-id subscriber-id)
+      (check-duplicate-subscription request-context new-subscription)
       (perform-subscription-ingest request-context new-subscription headers))))
 
 (defn create-or-update-subscription-with-native-id
@@ -236,9 +277,10 @@
                                            :latest true}
                                           :subscription))]
                          (get-in original-subscription [:extra-fields :subscriber-id]))
-        new-subscription (add-id-and-email-if-missing request-context tmp-subscription)
+        new-subscription (add-fields-if-missing request-context tmp-subscription)
         new-subscriber (get-subscriber-id new-subscription)]
     (check-ingest-permission request-context provider-id new-subscriber old-subscriber)
+    (check-duplicate-subscription request-context new-subscription)
     (perform-subscription-ingest request-context new-subscription headers)))
 
 (defn delete-subscription

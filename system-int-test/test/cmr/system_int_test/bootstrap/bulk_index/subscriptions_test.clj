@@ -48,12 +48,16 @@
      (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                :ShortName "S1"
                                                                                :Version "V1"}))
-           sub1 (subscription/ingest-subscription-with-attrs {:provider-id "PROV1" :CollectionConceptId (:concept-id coll1)}
+           sub1 (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                              :Query "instrument=POSEIDON-2"
+                                                              :CollectionConceptId (:concept-id coll1)}
                                                              {}
                                                              1)
            ;; create a subscription on a different provider PROV2
            ;; and this subscription won't be indexed as a result of indexing subscriptions of PROV1
-           sub2 (subscription/ingest-subscription-with-attrs {:provider-id "PROV2" :CollectionConceptId (:concept-id coll1)}
+           sub2 (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
+                                                              :Query "instrument=POSEIDON-3"
+                                                              :CollectionConceptId (:concept-id coll1)}
                                                              {}
                                                              1)]
 
@@ -72,13 +76,19 @@
 
        (testing "Bulk index multilpe subscriptions for a single provider"
          ;; Ingest three more subscriptions
-         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1" :CollectionConceptId (:concept-id coll1)}
+         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                       :Query "instrument=POSEIDON-3B"
+                                                       :CollectionConceptId (:concept-id coll1)}
                                                       {}
                                                       2)
-         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1" :CollectionConceptId (:concept-id coll1)}
+         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                       :Query "instrument=POSEIDON-4"
+                                                       :CollectionConceptId (:concept-id coll1)}
                                                       {}
                                                       3)
-         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1" :CollectionConceptId (:concept-id coll1)}
+         (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                       :Query "instrument=POSEIDON-4B"
+                                                       :CollectionConceptId (:concept-id coll1)}
                                                       {}
                                                       4)
 
@@ -103,26 +113,32 @@
        ;; The following are saved, but not indexed due to the above call
 
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                     :Query "instrument=AVHRR"
                                                      :CollectionConceptId (:concept-id coll1)}
                                                     {}
                                                     1)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
+                                                     :Query "instrument=AVHRR-2"
                                                      :CollectionConceptId (:concept-id coll1)}
                                                     {}
                                                     2)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
+                                                     :Query "instrument=AVHRR-3"
                                                      :CollectionConceptId (:concept-id coll1)}
                                                     {}
                                                     3)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
+                                                     :Query "instrument=AVHRR-4"
                                                      :CollectionConceptId (:concept-id coll1)}
                                                     {}
                                                     4)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV3"
+                                                     :Query "instrument=AVHRR-5"
                                                      :CollectionConceptId (:concept-id coll1)}
                                                     {}
                                                     5)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV3"
+                                                     :Query "instrument=AVHRR-6"
                                                      :CollectionConceptId (:concept-id coll1)}
                                                     {}
                                                     6)
@@ -148,15 +164,18 @@
                                                                                :Version "V1"}))]
 
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV1"
-                                                     :CollectionConceptId (:concept-id coll1)}
+                                                     :CollectionConceptId (:concept-id coll1)
+                                                     :Query "platform=NOAA-7"}
                                                     {}
                                                     1)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
-                                                     :CollectionConceptId (:concept-id coll1)}
+                                                     :CollectionConceptId (:concept-id coll1)
+                                                     :Query "platform=NOAA-9"}
                                                     {}
                                                     2)
        (subscription/ingest-subscription-with-attrs {:provider-id "PROV3"
-                                                     :CollectionConceptId (:concept-id coll1)}
+                                                     :CollectionConceptId (:concept-id coll1)
+                                                     :Query "platform=NOAA-10"}
                                                     {}
                                                     3)
 
@@ -181,21 +200,25 @@
                                                                  :Name "Sub1"
                                                                  :SubscriberId "user1"
                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                 :Query "platform=NOAA-7"
                                                                  :provider-id "PROV1"})
            sub2-concept (subscription/make-subscription-concept {:native-id "SUB2"
                                                                  :Name "Sub2"
                                                                  :SubscriberId "user1"
                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                 :Query "platform=NOAA-9"
                                                                  :provider-id "PROV2"})
            sub2-2-concept (subscription/make-subscription-concept {:native-id "SUB2"
                                                                    :Name "Sub2-2"
                                                                    :SubscriberId "user1"
                                                                    :CollectionConceptId (:concept-id coll1)
+                                                                   :Query "platform=NOAA-10"
                                                                    :provider-id "PROV2"})
            sub3-concept (subscription/make-subscription-concept {:native-id "SUB3"
                                                                  :Name "Sub1"
                                                                  :SubscriberId "user1"
                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                 :Query "platform=NOAA-11"
                                                                  :provider-id "PROV3"})
            sub1-1 (subscription/ingest-subscription sub1-concept)
            sub1-2-tombstone (merge (ingest/delete-concept

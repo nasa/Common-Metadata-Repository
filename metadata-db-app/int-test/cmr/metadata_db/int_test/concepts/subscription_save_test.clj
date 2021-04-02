@@ -36,14 +36,6 @@
   (let [concept (concepts/create-concept :subscription "PROV1" 2)]
     (util/concept-created-at-assertions "subscription" concept)))
 
-(deftest save-subscription-with-conflicting-native-id
-  (let [concept (concepts/create-concept :subscription "PROV1" 1)]
-    (util/concept-with-conflicting-native-id-assertions
-     "subscription"
-     :subscription-name
-     concept
-     "sub-native-different")))
-
 (deftest save-subscription-failures-test
   (testing "saving invalid subscription"
     (are3 [subscription exp-status exp-errors]

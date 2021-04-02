@@ -162,7 +162,7 @@
 
 (defn find-latest-concept
   "Searches metadata db for the latest concept matching the given parameters. Do not throw serivce
-  excpetion, returns the status and error message in a map in case of error."
+  exception, returns the status and error message in a map in case of error."
   [context params concept-type]
   (let [{:keys [status body]} (find-concepts-raw context (assoc params :latest true) concept-type)
         status (int status)]
