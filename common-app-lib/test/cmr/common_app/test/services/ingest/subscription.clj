@@ -3,7 +3,6 @@
    [clojure.test :refer :all]
    [cmr.common-app.services.ingest.subscription-common :as sub-common]))
 
-
 (deftest normalize-parameters-test
   "Query normalization, should be sorted parameters"
   (testing "With a leading question mark"
