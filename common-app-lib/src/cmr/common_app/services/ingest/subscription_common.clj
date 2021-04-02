@@ -2,7 +2,8 @@
   "This contains the code for the scheduled subscription code to be shared
    between metadata-db and ingest."
   (:require
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [digest :as digest]))
 
 (defn normalize-parameters
   "Returns a normalized url parameter string by splitting the string of parameters on '&' and
@@ -15,4 +16,5 @@
         (string/split #"&")
         sort
         (as-> $ (string/join "&" $))
-        (string/trim))))
+        string/trim
+        digest/md5)))

@@ -8,6 +8,7 @@
                  [com.fasterxml.jackson.core/jackson-core "2.12.1"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]
                  [compojure "1.6.1"]
+                 [digest "1.4.8"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]

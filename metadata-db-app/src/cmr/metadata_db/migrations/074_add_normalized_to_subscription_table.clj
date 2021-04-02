@@ -41,7 +41,7 @@
     ;; applications can assume the normalized query is the same despite changes
     ;; in query order or other such nominal differences. Simple string compair
     ;; can be used on the normalized query.
-    (helper/sql "alter table cmr_subscriptions add normalized_query VARCHAR2(4000)")
+    (helper/sql "alter table cmr_subscriptions add normalized_query VARCHAR2(64)")
     (populate-new-column)
     (create-subscription-index))
 
