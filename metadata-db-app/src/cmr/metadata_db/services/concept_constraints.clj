@@ -158,8 +158,7 @@
    :granule (when (enforce-granule-ur-constraint) [granule-ur-unique-constraint])
    :acl [(unique-field-constraint :acl-identity)]
    :service [(partial pfn-constraint :service-name)]
-   :tool [(partial pfn-constraint :tool-name)]
-   :subscription [(partial pfn-constraint :subscription-name)]})
+   :tool [(partial pfn-constraint :tool-name)]})
 
 (defn perform-post-commit-constraint-checks
   "Perform the post commit constraint checks aggregating any constraint
