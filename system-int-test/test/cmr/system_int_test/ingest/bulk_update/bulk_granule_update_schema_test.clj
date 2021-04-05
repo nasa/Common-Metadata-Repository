@@ -22,11 +22,11 @@
 
 (deftest bulk-granule-schema-validation-test
   (are3
-   [update-fn err-msg]
+   [mutate err-msg]
    (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
                               :accept-format :json
                               :raw? true}
-         request (update-fn base-request)
+         request (mutate base-request)
          {:keys [body status]} (ingest/bulk-update-granules "PROV1"
                                                             request
                                                             bulk-update-options)
@@ -38,24 +38,26 @@
                  err-msg
                  (pr-str response))))
 
+   ;; Pass a mutate function to modify the base-request for the input
+
    "insufficient bulk operation targets"
-   (fn [m] (assoc m :updates []))
+   (fn [req] (assoc req :updates []))
    "#/updates: expected minimum item count: 1, found: 0"
 
    "update entries: more than 2"
-   (fn [m] (update m :updates conj ["ur_3" "s3://aws.example.fiz" "s3://aws.example.baz"]))
+   (fn [req] (update req :updates conj ["ur_3" "s3://aws.example.fiz" "s3://aws.example.baz"]))
    "#/updates/2: expected maximum item count: 2, found: 3"
 
    "update entries: fewer than 2 (1)"
-   (fn [m] (update m :updates conj ["ur_3"]))
+   (fn [req] (update req :updates conj ["ur_3"]))
    "#/updates/2: expected minimum item count: 2, found: 1"
 
    "update entries: fewer than 2 (0)"
-   (fn [m] (update m :updates conj []))
+   (fn [req] (update req :updates conj []))
    "#/updates/2: expected minimum item count: 2, found: 0"
 
    "duplicate granule_ur in request"
-   (fn [m] (update m
+   (fn [req] (update req
                   :updates
                   conj
                   ["ur_1" "s3://aws.buz.com"]
@@ -66,9 +68,9 @@
         "Detected the following duplicates [ur_1,ur_2]")
 
    "invalid operation"
-   (fn [m] (assoc m :operation "CROMULANT_OPERATION"))
+   (fn [req] (assoc req :operation "CROMULANT_OPERATION"))
    "#/operation: CROMULANT_OPERATION is not a valid enum value"
 
    "invalid update-field"
-   (fn [m] (assoc m :update-field "CROMULANT_FIELD"))
+   (fn [req] (assoc req :update-field "CROMULANT_FIELD"))
    "#/update-field: CROMULANT_FIELD is not a valid enum value"))
