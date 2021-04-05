@@ -96,7 +96,7 @@
                       (errors/throw-service-errors
                        :internal-error
                        [(str "There was a problem saving a bulk granule update request."
-                             "Please try again, if the problem persists please contact cmr@nasa.gov.")]))))]
+                             "Please try again, if the problem persists please contact cmr-support@earthdata.nasa.gov.")]))))]
     ;; Queue the granules bulk update event
     (ingest-events/publish-gran-bulk-update-event
      context
