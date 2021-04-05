@@ -21,7 +21,7 @@
         "type": "string"
       },
       "examples": [
-        ["SL:AB_5DSno.008:30500511", "s3://aws.example.com"]
+        ["SL:AB_5DSno.008:30500511", "https://example.com/opendap/30500511"]
       ]
     },
     "UpdateArgumentsType": {
