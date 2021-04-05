@@ -77,7 +77,7 @@
   [request]
   (when-let [duplicate-urs (->> request
                                 request->instructions
-                                (pmap :granule-ur)
+                                (map :granule-ur)
                                 duplicates)]
     (errors/throw-service-errors
      :bad-request
