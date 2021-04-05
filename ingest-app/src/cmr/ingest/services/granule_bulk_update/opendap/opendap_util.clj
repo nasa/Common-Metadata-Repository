@@ -23,6 +23,11 @@
   Returns the parsed urls in a map under keys :cloud and :on-prem with the corresponding urls."
   [url]
   (let [urls (map string/trim (string/split url #","))]
+    (doseq [url urls]
+      (when (string/starts-with? url "s3://")
+        (errors/throw-service-errors
+         :invalid-data
+         [(str "OPeNDAP URL value cannot start with s3://, but was " url)])))
     (if (> (count urls) 2)
       (errors/throw-service-errors
        :invalid-data [(str "Invalid URL value, no more than two urls can be provided: " url)])

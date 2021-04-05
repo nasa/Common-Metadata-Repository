@@ -53,11 +53,18 @@
                  (:concept-id coll1)
                  {:native-id "gran-native1-4"
                   :granule-ur "SC:AE_5DSno.002:30500514"})
-                :umm-json))]
+                :umm-json))
+        gran5 (ingest/ingest-concept
+               (data-core/item->concept
+                (granule/granule-with-umm-spec-collection
+                 coll1
+                 (:concept-id coll1)
+                 {:native-id "gran-native1-5"
+                  :granule-ur "SC:AE_5DSno.002:30500515"})))]
 
     (testing "OPeNDAP url granule bulk update"
       (testing "successful OPeNDAP url granule bulk update"
-        (let [bulk-update {:name "add opendap links"
+        (let [bulk-update {:name "add opendap links 1"
                            :operation "UPDATE_FIELD"
                            :update-field "OPeNDAPLink"
                            :updates [["SC:AE_5DSno.002:30500511" "https://url30500511"]
@@ -82,7 +89,7 @@
                    granule-statuses)))))
 
       (testing "failed OPeNDAP url granule bulk update"
-        (let [bulk-update {:name "add opendap links"
+        (let [bulk-update {:name "add opendap links 2"
                            :operation "UPDATE_FIELD"
                            :update-field "OPeNDAPLink"
                            :updates [["SC:AE_5DSno.002:30500513" "https://url30500513"]]}
@@ -102,7 +109,7 @@
                    granule-statuses)))))
 
       (testing "partial successful OPeNDAP url granule bulk update"
-        (let [bulk-update {:name "add opendap links"
+        (let [bulk-update {:name "add opendap links 3"
                            :operation "UPDATE_FIELD"
                            :update-field "OPeNDAPLink"
                            :updates [["SC:AE_5DSno.002:30500511" "https://url30500511"]
@@ -129,12 +136,13 @@
                                              task-id)}]
                    granule-statuses)))))
       (testing "invalid OPeNDAP url value in instruction"
-        (let [bulk-update {:name "add opendap links"
+        (let [bulk-update {:name "add opendap links 4"
                            :operation "UPDATE_FIELD"
                            :update-field "OPeNDAPLink"
                            :updates [["SC:AE_5DSno.002:30500511" "https://foo,https://bar,https://baz"]
                                      ["SC:AE_5DSno.002:30500512" "https://foo, https://bar"]
-                                     ["SC:AE_5DSno.002:30500514" "https://opendap.sit.earthdata.nasa.gov/foo,https://opendap.earthdata.nasa.gov/bar"]]}
+                                     ["SC:AE_5DSno.002:30500514" "https://opendap.sit.earthdata.nasa.gov/foo,https://opendap.earthdata.nasa.gov/bar"]
+                                     ["SC:AE_5DSno.002:30500515" "s3://opendap.sit.earthdata.nasa.gov/foo"]]}
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
@@ -144,7 +152,7 @@
           (let [status-response (ingest/granule-bulk-update-task-status task-id)
                 {:keys [task-status status-message granule-statuses]} status-response]
             (is (= "COMPLETE" task-status))
-            (is (= "Task completed with 3 FAILED out of 3 total granule update(s)."
+            (is (= "Task completed with 4 FAILED out of 4 total granule update(s)."
                    status-message))
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
                      :status "FAILED"
@@ -154,12 +162,15 @@
                      :status-message "Invalid URL value, no more than one on-prem OPeNDAP url can be provided: https://foo, https://bar"}
                     {:granule-ur "SC:AE_5DSno.002:30500514"
                      :status "FAILED"
-                     :status-message "Invalid URL value, no more than one Hyrax-in-the-cloud OPeNDAP url can be provided: https://opendap.sit.earthdata.nasa.gov/foo,https://opendap.earthdata.nasa.gov/bar"}]
+                     :status-message "Invalid URL value, no more than one Hyrax-in-the-cloud OPeNDAP url can be provided: https://opendap.sit.earthdata.nasa.gov/foo,https://opendap.earthdata.nasa.gov/bar"}
+                    {:granule-ur "SC:AE_5DSno.002:30500515"
+                     :status "FAILED"
+                     :status-message "OPeNDAP URL value cannot start with s3://, but was s3://opendap.sit.earthdata.nasa.gov/foo"}]
                    granule-statuses))))))
 
     (testing "S3 url granule bulk update"
       (testing "successful S3 url granule bulk update"
-        (let [bulk-update {:name "add S3 links"
+        (let [bulk-update {:name "add S3 links 1"
                            :operation "UPDATE_FIELD"
                            :update-field "S3Link"
                            :updates [["SC:AE_5DSno.002:30500511" "s3://url30500511"]
@@ -184,7 +195,7 @@
                    granule-statuses)))))
 
       (testing "failed S3 link granule bulk update"
-        (let [bulk-update {:name "add s3 links"
+        (let [bulk-update {:name "add s3 links 2"
                            :operation "UPDATE_FIELD"
                            :update-field "S3Link"
                            :updates [["SC:AE_5DSno.002:30500513" "s3://url30500513"]]}
@@ -204,7 +215,7 @@
                    granule-statuses)))))
 
       (testing "partial successful S3 link granule bulk update"
-        (let [bulk-update {:name "add s3 links"
+        (let [bulk-update {:name "add s3 links 3"
                            :operation "UPDATE_FIELD"
                            :update-field "S3Link"
                            :updates [["SC:AE_5DSno.002:30500511" "s3://url30500511"]
@@ -232,7 +243,7 @@
                    granule-statuses)))))
 
       (testing "invalid S3 url value in instruction"
-        (let [bulk-update {:name "add S3 links"
+        (let [bulk-update {:name "add S3 links 4"
                            :operation "UPDATE_FIELD"
                            :update-field "S3Link"
                            :updates [["SC:AE_5DSno.002:30500511" "https://foo"]

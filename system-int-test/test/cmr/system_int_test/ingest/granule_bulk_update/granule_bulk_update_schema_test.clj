@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.ingest.bulk-update.bulk-granule-update-schema-test
+(ns cmr.system-int-test.ingest.granule-bulk-update.granule-bulk-update-schema-test
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
@@ -39,6 +39,7 @@
 
    ;; Pass a mutate function to modify the base-request for the input
 
+   ;; Schema validations
    "insufficient bulk operation targets"
    (fn [req] (assoc req :updates []))
    "#/updates: expected minimum item count: 1, found: 0"
@@ -55,6 +56,16 @@
    (fn [req] (update req :updates conj []))
    "#/updates/2: expected minimum item count: 2, found: 0"
 
+   "invalid operation"
+   (fn [req] (assoc req :operation "CROMULANT_OPERATION"))
+   "#/operation: CROMULANT_OPERATION is not a valid enum value"
+
+   "invalid update-field"
+   (fn [req] (assoc req :update-field "CROMULANT_FIELD"))
+   "#/update-field: CROMULANT_FIELD is not a valid enum value"
+
+   ;; Business rules validation
+
    "duplicate granule_ur in request"
    (fn [req] (update req
                     :updates
@@ -65,15 +76,7 @@
                     ["ur_5" "https://aws.buz.com"]
                     ["ur_5" "https://aws.baz.com"]))
    (str "Duplicate granule URs are not allowed in bulk update requests. "
-        "Detected the following duplicates [ur_4,ur_5]")
-
-   "invalid operation"
-   (fn [req] (assoc req :operation "CROMULANT_OPERATION"))
-   "#/operation: CROMULANT_OPERATION is not a valid enum value"
-
-   "invalid update-field"
-   (fn [req] (assoc req :update-field "CROMULANT_FIELD"))
-   "#/update-field: CROMULANT_FIELD is not a valid enum value"))
+        "Detected the following duplicates [ur_4,ur_5]")))
 
 (deftest duplicate-job-name-per-provider-validation-test
   (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
