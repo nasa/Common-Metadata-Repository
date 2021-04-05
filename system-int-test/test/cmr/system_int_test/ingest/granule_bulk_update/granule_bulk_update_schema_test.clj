@@ -77,27 +77,3 @@
                     ["ur_5" "https://aws.baz.com"]))
    (str "Duplicate granule URs are not allowed in bulk update requests. "
         "Detected the following duplicates [ur_4,ur_5]")))
-
-(deftest duplicate-job-name-per-provider-validation-test
-  (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
-                             :accept-format :json
-                             :raw? true}
-        original (ingest/bulk-update-granules "PROV1"
-                                              (assoc base-request :name "sample")
-                                              bulk-update-options)
-
-        duplicate (ingest/bulk-update-granules "PROV1"
-                                               (assoc base-request :name "sample")
-                                               bulk-update-options)
-        duplicate-msg (-> duplicate
-                          :body
-                          (json/parse-string true)
-                          :errors
-                          first)]
-
-    (is (= 200 (:status original)) (:body original))
-
-    (is (= 400 (:status duplicate)))
-    (is (= (str "Granule bulk update task name needs to be unique within the provider. "
-                "A granule bulk update job with the name [sample] already exist for provider [PROV1].")
-           duplicate-msg))))

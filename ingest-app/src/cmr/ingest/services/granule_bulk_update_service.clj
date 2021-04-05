@@ -33,23 +33,6 @@
   [json]
   (js/validate-json! granule-bulk-update-schema json))
 
-(defn- validate-granule-bulk-update-job-name
-  "Validates that if a name is provided for a job, it is unique to the provider."
-  [context request provider-id]
-  (when-let [job-name (:name request)]
-    (let [tasks (seq (data-granule-bulk-update/get-granule-tasks-by-provider context provider-id))
-          task-names (->> tasks
-                          (map :name)
-                          (map #(string/split % #":"))
-                          first)]
-      (when (some? (some #{job-name} task-names))
-        (errors/throw-service-errors
-         :bad-request
-         [(format (str "Granule bulk update task name needs to be unique within the provider. "
-                       "A granule bulk update job with the name [%s] already exist for provider [%s].")
-                  job-name
-                  provider-id)])))))
-
 (defn- duplicates
   "Return any non-unique entries in a collection or nil if none are found."
   [coll]
@@ -91,7 +74,6 @@
   (validate-granule-bulk-update-json json-body)
   (let [request (json/parse-string json-body true)]
     (validate-granule-bulk-update-no-duplicates request)
-    (validate-granule-bulk-update-job-name context request provider-id)
     request))
 
 (defn validate-and-save-bulk-granule-update
