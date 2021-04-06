@@ -2,7 +2,6 @@
   "The functions of this namespace are specifically responsible for returning
   ready-to-serve pages."
   (:require
-   [clojure.string :as string]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.static :as static]
    [cmr.ingest.config :as ingest-config]
