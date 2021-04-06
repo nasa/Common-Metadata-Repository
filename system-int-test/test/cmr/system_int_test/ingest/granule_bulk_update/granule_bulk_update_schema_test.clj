@@ -15,17 +15,16 @@
 
 (def base-request {:operation "UPDATE_FIELD"
                    :update-field "OPeNDAPLink"
-                   :updates
-                   [["ur_1" "https://aws.foo.com"]
-                    ["ur_2" "https://aws.bar.com"]]})
+                   :updates [["ur_1" "https://aws.foo.com"]
+                             ["ur_2" "https://aws.bar.com"]]})
 
 (deftest bulk-granule-schema-validation-test
   (are3
-   [mutate err-msg]
+   [updates err-msg]
    (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
                               :accept-format :json
                               :raw? true}
-         request (mutate base-request)
+         request (assoc base-request :updates updates)
          {:keys [body status]} (ingest/bulk-update-granules "PROV1"
                                                             request
                                                             bulk-update-options)
@@ -37,43 +36,57 @@
                  err-msg
                  (pr-str response))))
 
-   ;; Pass a mutate function to modify the base-request for the input
-
-   ;; Schema validations
    "insufficient bulk operation targets"
-   (fn [req] (assoc req :updates []))
+   []
    "#/updates: expected minimum item count: 1, found: 0"
 
    "update entries: more than 2"
-   (fn [req] (update req :updates conj ["ur_3" "https://aws.example.fiz" "https://aws.example.baz"]))
+   ["ur_1" "https://aws.example.fiz" "https://aws.example.baz"]
    "#/updates/2: expected maximum item count: 2, found: 3"
 
    "update entries: fewer than 2 (1)"
-   (fn [req] (update req :updates conj ["ur_3"]))
+   ["ur_1"]
    "#/updates/2: expected minimum item count: 2, found: 1"
 
    "update entries: fewer than 2 (0)"
-   (fn [req] (update req :updates conj []))
+   []
    "#/updates/2: expected minimum item count: 2, found: 0"
-
-   "invalid operation"
-   (fn [req] (assoc req :operation "CROMULANT_OPERATION"))
-   "#/operation: CROMULANT_OPERATION is not a valid enum value"
-
-   "invalid update-field"
-   (fn [req] (assoc req :update-field "CROMULANT_FIELD"))
-   "#/update-field: CROMULANT_FIELD is not a valid enum value"
 
    ;; Business rules validation
 
    "duplicate granule_ur in request"
-   (fn [req] (update req
-                    :updates
-                    conj
-                    ["ur_4" "https://aws.fiz.com"]
-                    ["ur_4" "https://aws.ban.com"]
-                    ["ur_4" "https://aws.bat.com"]
-                    ["ur_5" "https://aws.buz.com"]
-                    ["ur_5" "https://aws.baz.com"]))
+   [["ur_1" "https://aws.foo.com"]
+    ["ur_2" "https://aws.bar.com"]
+    ["ur_3" "https://aws.ban.com"]
+    ["ur_3" "https://aws.bat.com"]
+    ["ur_4" "https://aws.buz.com"]
+    ["ur_4" "https://aws.baz.com"]
+    ["ur_5" "https://aws.biz.com"]]
    (str "Duplicate granule URs are not allowed in bulk update requests. "
-        "Detected the following duplicates [ur_4,ur_5]")))
+        "Detected the following duplicates [ur_3,ur_4]")))
+
+(deftest operation-validation-test
+  (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
+                             :accept-format :json
+                             :raw? true}
+        request (assoc base-request :operation "CROMULENT_OPERATION")
+        {:keys [body status]} (ingest/bulk-update-granules "PROV1"
+                                                           request
+                                                           bulk-update-options)
+        response (json/parse-string body true)]
+    (is (= 400 status))
+    (is (= "#/operation: CROMULANT_OPERATION is not a valid enum value"
+           (first (:errors body))))))
+
+(deftest update-field-validation-test
+  (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
+                             :accept-format :json
+                             :raw? true}
+        request (assoc base-request :update-field "CROMULANT_FIELD")
+        {:keys [body status]} (ingest/bulk-update-granules "PROV1"
+                                                           request
+                                                           bulk-update-options)
+        response (json/parse-string body true)]
+    (is (= 400 status))
+    (is (= "#/update-field: CROMULANT_FIELD is not a valid enum value"
+           (first (:errors body))))))
