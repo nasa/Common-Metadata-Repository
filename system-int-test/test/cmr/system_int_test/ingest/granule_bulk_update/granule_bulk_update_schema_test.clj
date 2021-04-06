@@ -42,15 +42,15 @@
 
    "update entries: more than 2"
    [["ur_1" "https://aws.example.fiz" "https://aws.example.baz"]]
-   "#/updates/2: expected maximum item count: 2, found: 3"
+   "#/updates/0: expected maximum item count: 2, found: 3"
 
    "update entries: fewer than 2 (1)"
    [["ur_1"]]
-   "#/updates/2: expected minimum item count: 2, found: 1"
+   "#/updates/0: expected minimum item count: 2, found: 1"
 
    "update entries: fewer than 2 (0)"
    [[]]
-   "#/updates/2: expected minimum item count: 2, found: 0"
+   "#/updates/0: expected minimum item count: 2, found: 0"
 
    ;; Business rules validation
 
@@ -75,7 +75,7 @@
                                                            bulk-update-options)
         response (json/parse-string body true)]
     (is (= 400 status))
-    (is (= "#/operation: CROMULANT_OPERATION is not a valid enum value"
+    (is (= "#/operation: CROMULENT_OPERATION is not a valid enum value"
            (first (:errors response))))))
 
 (deftest update-field-validation-test
