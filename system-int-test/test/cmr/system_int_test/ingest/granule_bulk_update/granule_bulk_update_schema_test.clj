@@ -41,15 +41,15 @@
    "#/updates: expected minimum item count: 1, found: 0"
 
    "update entries: more than 2"
-   ["ur_1" "https://aws.example.fiz" "https://aws.example.baz"]
+   [["ur_1" "https://aws.example.fiz" "https://aws.example.baz"]]
    "#/updates/2: expected maximum item count: 2, found: 3"
 
    "update entries: fewer than 2 (1)"
-   ["ur_1"]
+   [["ur_1"]]
    "#/updates/2: expected minimum item count: 2, found: 1"
 
    "update entries: fewer than 2 (0)"
-   []
+   [[]]
    "#/updates/2: expected minimum item count: 2, found: 0"
 
    ;; Business rules validation
@@ -76,7 +76,7 @@
         response (json/parse-string body true)]
     (is (= 400 status))
     (is (= "#/operation: CROMULANT_OPERATION is not a valid enum value"
-           (first (:errors body))))))
+           (first (:errors response))))))
 
 (deftest update-field-validation-test
   (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
@@ -89,4 +89,4 @@
         response (json/parse-string body true)]
     (is (= 400 status))
     (is (= "#/update-field: CROMULANT_FIELD is not a valid enum value"
-           (first (:errors body))))))
+           (first (:errors response))))))
