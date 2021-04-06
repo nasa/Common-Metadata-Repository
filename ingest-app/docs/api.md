@@ -4,6 +4,10 @@ See the [CMR Data Partner User Guide](https://wiki.earthdata.nasa.gov/display/CM
 See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide) for a general guide to developing a CMR client.
 Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) to ask questions, make suggestions and discuss topics like future CMR capabilities.
 
+### Latest UMM Schema Versions
+
+  * [Latest UMM schema versions](#latest-umm-versions)
+
 ### Metadata Ingest API Overview
 
   * /providers/\<provider-id>/validate/collection/\<native-id>
@@ -279,6 +283,13 @@ A native-id is an identifier, unique per provider, used to identify concepts wit
 ***
 
 ## <a name="metadata-ingest"></a> Metadata Ingest
+
+### <a name="latest-umm-versions"></a> Latest UMM Schema Versions
+
+The following are the latest acceptable UMM schema versions for metadata ingest:
+
+<p>UMM-C: {{ umm-c }}<br/>UMM-G: {{ umm-g }}<br/>UMM-S: {{ umm-s }}<br/>UMM-T: {{ umm-t }}<br/>UMM-SUB: {{ umm-sub }}<br/>UMM-VAR: {{ umm-var }}</p>
+[//]: # (Note: The above version variables will be rendered at html generation time.)
 
 ### <a name="validate-collection"></a> Validate Collection
 
