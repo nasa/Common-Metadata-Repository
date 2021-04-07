@@ -28,9 +28,17 @@
 (def granule-bulk-update-schema
  (js/json-string->json-schema (slurp (io/resource "granule_bulk_update_schema.json"))))
 
-(defn- validate-granule-bulk-update
- [json]
- (js/validate-json! granule-bulk-update-schema json))
+(defn- validate-granule-bulk-update-json
+  "Validate the request against the schema and return the parsed request."
+  [json]
+  (js/validate-json! granule-bulk-update-schema json))
+
+(defn- duplicates
+  "Return any non-unique entries in a collection or nil if none are found."
+  [coll]
+  (seq (for [[id freq] (frequencies coll)
+             :when (> freq 1)]
+         id)))
 
 (defn- update->instruction
   "Returns the granule bulk update instruction for a single update item"
@@ -47,15 +55,34 @@
         event-type (string/lower-case (str operation ":" update-field))]
     (map (partial update->instruction event-type) updates)))
 
+(defn- validate-granule-bulk-update-no-duplicates
+  "Validate no duplicate URs exist within the list of instructions"
+  [request]
+  (when-let [duplicate-urs (->> request
+                                request->instructions
+                                (map :granule-ur)
+                                duplicates)]
+    (errors/throw-service-errors
+     :bad-request
+     [(format (str "Duplicate granule URs are not allowed in bulk update requests. "
+                   "Detected the following duplicates [%s]")
+              (string/join "," duplicate-urs))])))
+
+(defn- validate-and-parse-bulk-granule-update
+  "Perform validation operations on bulk granule update requests."
+  [context json-body provider-id]
+  (validate-granule-bulk-update-json json-body)
+  (let [request (json/parse-string json-body true)]
+    (validate-granule-bulk-update-no-duplicates request)
+    request))
+
 (defn validate-and-save-bulk-granule-update
   "Validate the granule bulk update request, save rows to the db for task
   and granule statuses, and queue bulk granule update. Return task id, which comes
   from the db save."
   [context provider-id json-body user-id]
-  (validate-granule-bulk-update json-body)
-  (let [instructions (-> json-body
-                         (json/parse-string true)
-                         request->instructions)
+  (let [request (validate-and-parse-bulk-granule-update context json-body provider-id)
+        instructions (request->instructions request)
         task-id (try
                   (data-granule-bulk-update/create-granule-bulk-update-task
                    context
@@ -64,14 +91,12 @@
                    json-body
                    instructions)
                   (catch Exception e
-                    (error "validate-and-save-bulk-granule-update caught exception:" e)
-                    (let [message (.getMessage e)
-                          user-facing-message (if (string/includes? message "GBUT_PN_I")
-                                                "Granule bulk update task name needs to be unique within the provider."
-                                                message)]
+                    (error "An exception occurred saving a bulk granule update request:" e)
+                    (let [message (.getMessage e)]
                       (errors/throw-service-errors
-                       :invalid-data
-                       [(str "error creating granule bulk update task: " user-facing-message)]))))]
+                       :internal-error
+                       [(str "There was a problem saving a bulk granule update request."
+                             "Please try again, if the problem persists please contact cmr-support@earthdata.nasa.gov.")]))))]
     ;; Queue the granules bulk update event
     (ingest-events/publish-gran-bulk-update-event
      context
