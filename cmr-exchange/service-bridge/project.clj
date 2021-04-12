@@ -102,6 +102,9 @@
                                      :integration :integration
                                      :system :system
                                      :default (complement :system)}}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}
              :docs {:dependencies [[gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
                     :plugins [[lein-codox "0.10.7"]
                               [lein-marginalia "0.9.1"]]
@@ -158,11 +161,22 @@
             "yagni" ["with-profile" "+lint" "yagni"]
             "lint" ["do"
                     ["kibit"]]
-                    ;["eastwood"]
             "ltest" ["with-profile" "+test,+system,+local" "ltest"]
             "junit" ["with-profile" "+test,+system,+local" "test2junit"]
             "ltest-with-geo" ["with-profile" "+test,+system,+geo,+local" "ltest"]
             "junit-with-geo" ["with-profile" "+test,+system,+geo,+local" "test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "stest" ["kaocha" "--focus" ":system"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-stest" ["stest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]
+
             ;; Security
             "check-sec" ["with-profile" "+system,+geo,+local,+security" "do"
                          ["clean"]
