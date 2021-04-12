@@ -192,7 +192,8 @@
   "Convert hierarchical science-keywords to colon-separated elastic docs for indexing.
   Below 'term', variables may not be hierarchical and may be nil."
   [index science-keywords public-collection? permitted-group-ids modified-date]
-  (when (seq science-keywords)
+  (when (and (map? science-keywords)
+             (pos? (count science-keywords)))
     (let [keyword-hierarchy [:topic
                              :term
                              :variable-level-1
