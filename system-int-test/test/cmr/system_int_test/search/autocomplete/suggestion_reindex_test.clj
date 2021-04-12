@@ -294,3 +294,20 @@
        [{:value "Ice-Nine"
          :fields "Kurt:Vonnegut:Cats Cradle:::Ice-Nine"
          :type "science_keywords"}]))))
+
+(deftest nil-handling-test
+  (testing "nils can be passed through the suggestion indexing"
+    (d/ingest-umm-spec-collection
+     "PROV1"
+     (data-umm-spec/collection
+      {:EntryTitle "A boring collection"})
+     {:format :umm-json})
+
+    (index/wait-until-indexed)
+    (try
+      (index/reindex-suggestions)
+      ;; redudant `is` for testing
+      (is (true? true))
+      (catch NullPointerException e
+        ;; This should never be caught
+        (is (nil? e) (.getMessage e))))))

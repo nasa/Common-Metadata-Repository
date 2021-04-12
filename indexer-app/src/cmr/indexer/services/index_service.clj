@@ -188,15 +188,6 @@
 
 (def REINDEX_BATCH_SIZE 2000)
 
-(defn- remove-nil-tail
-  "Remove any nils from the end of a science-keyword hierarchy.
-  Nil values can exist in between the leaf keyword and Topic."
-  [coll]
-  (loop [x coll]
-    (if (last x)
-      x
-      (recur (drop-last x)))))
-
 (defn- science-keywords->elastic-docs
   "Convert hierarchical science-keywords to colon-separated elastic docs for indexing.
   Below term, variables may not be hierarchical and may be nil."
@@ -209,7 +200,7 @@
                            :detailed-variable]
         sk-strings (->> keyword-hierarchy
                         (map #(get science-keywords %))
-                        remove-nil-tail)
+                        util/remove-nil-tail)
         keyword-string (s/join ":" sk-strings)
         keyword-value (last sk-strings)
         id (-> (s/lower-case keyword-string)
