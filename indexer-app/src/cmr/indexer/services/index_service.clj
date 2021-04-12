@@ -190,30 +190,31 @@
 
 (defn- science-keywords->elastic-docs
   "Convert hierarchical science-keywords to colon-separated elastic docs for indexing.
-  Below term, variables may not be hierarchical and may be nil."
+  Below 'term', variables may not be hierarchical and may be nil."
   [index science-keywords public-collection? permitted-group-ids modified-date]
-  (let [keyword-hierarchy [:topic
-                           :term
-                           :variable-level-1
-                           :variable-level-2
-                           :variable-level-3
-                           :detailed-variable]
-        sk-strings (->> keyword-hierarchy
-                        (map #(get science-keywords %))
-                        util/remove-nil-tail)
-        keyword-string (s/join ":" sk-strings)
-        keyword-value (last sk-strings)
-        id (-> (s/lower-case keyword-string)
-               (str "_science_keywords")
-               hash)]
-    {:_id id
-     :type "science_keywords"
-     :value keyword-value
-     :fields keyword-string
-     :_index index
-     :contains-public-collections public-collection?
-     :permitted-group-ids permitted-group-ids
-     :modified modified-date}))
+  (when (seq science-keywords)
+    (let [keyword-hierarchy [:topic
+                             :term
+                             :variable-level-1
+                             :variable-level-2
+                             :variable-level-3
+                             :detailed-variable]
+          sk-strings (->> keyword-hierarchy
+                          (map #(get science-keywords %))
+                          util/remove-nil-tail)
+          keyword-string (s/join ":" sk-strings)
+          keyword-value (last sk-strings)
+          id (-> (s/lower-case keyword-string)
+                 (str "_science_keywords")
+                 hash)]
+      {:_id id
+       :type "science_keywords"
+       :value keyword-value
+       :fields keyword-string
+       :_index index
+       :contains-public-collections public-collection?
+       :permitted-group-ids permitted-group-ids
+       :modified modified-date})))
 
 (defn- suggestion-doc
   "Creates elasticsearch docs from a given humanized map"

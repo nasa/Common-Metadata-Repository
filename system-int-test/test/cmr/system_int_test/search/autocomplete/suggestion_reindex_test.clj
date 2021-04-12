@@ -272,9 +272,9 @@
 (deftest semi-hierachical-keywords-test
   (testing "science keywords with level-1 but no level-2 or level-3 but including detailed-variables"
     (let [gap-sk (umm-spec-common/science-keyword {:Category "Fiction"
-                                                   :Topic "Kurt"
-                                                   :Term "Vonnegut"
-                                                   :VariableLevel1 "Cats Cradle"
+                                                   :Topic "Kurt Vonnegut"
+                                                   :Term "Cat's Cradle"
+                                                   :VariableLevel1 "Ice"
                                                    :DetailedVariable "ice-nine"})]
       (d/ingest-umm-spec-collection
        "PROV1"
@@ -292,7 +292,7 @@
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=ice") [:feed :entry])
        [{:value "Ice-Nine"
-         :fields "Kurt:Vonnegut:Cats Cradle:::Ice-Nine"
+         :fields "Kurt Vonnegut:Cat'S Cradle:Ice:::Ice-Nine"
          :type "science_keywords"}]))))
 
 (deftest nil-handling-test
@@ -308,6 +308,6 @@
       (index/reindex-suggestions)
       ;; redudant `is` for testing
       (is (true? true))
-      (catch NullPointerException e
+      (catch java.lang.NullPointerException e
         ;; This should never be caught
         (is (nil? e) (.getMessage e))))))
