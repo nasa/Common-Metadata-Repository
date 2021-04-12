@@ -891,7 +891,7 @@
     "Mixed nils"
     [:a nil :b nil :c nil nil nil] [:a nil :b nil :c]
 
-    "Leainding nils"
+    "Leading nils"
     [nil :a :b] [nil :a :b]
 
     "All nils"
