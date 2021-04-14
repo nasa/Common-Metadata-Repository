@@ -175,6 +175,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Page data functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn- get-stac-docs-url
+  "Returns stac docs url based on the stac-base-url."
+  [stac-base-url]
+  (cond
+    (string/includes? stac-base-url "3000") (str stac-base-url "stac/docs")
+    (string/includes? stac-base-url "sit") "https://d3se4zjsrvasc2.cloudfront.net/docs/index.html"
+    (string/includes? stac-base-url "uat") "https://d346wn5qqiom8e.cloudfront.net/docs/index.html"
+    :else "https://d3hqnx562z478b.cloudfront.net/docs/index.html"))
 
 (defn app-url->stac-urls
   "Convert the search-app url into the stac related urls.
@@ -188,7 +196,7 @@
                           (string/replace #"3003/?" "3000/"))]
     {:stac-url (str stac-base-url "stac")
      :cloudstac-url (str stac-base-url "cloudstac")
-     :stac-docs-url (str stac-base-url "stac/docs")
+     :stac-docs-url (get-stac-docs-url stac-base-url)
      :static-cloudstac-url (str stac-base-url "static-cloudstac")}))
 
 (defmulti base-page
