@@ -624,20 +624,6 @@
         (let [results (search/find-concepts-kml :collection {:concept-id (:concept-id coll1)})]
           (dk/assert-collection-kml-results-match [coll1] results))))
 
-    (testing "csv"
-      (let [response (search/find-concepts-csv :collection {})]
-        (is (= (:status response) 200))
-        (is (string/starts-with?
-             (:body response)
-             "Data Provider,Short Name,Version,Entry Title,Processing Level,Platform,Start Time\n")))
-
-      (testing "as csv extension"
-        (let [response (search/find-concepts-csv :collection {} {:url-extension "csv"})]
-          (is (= (:status response) 200))
-          (is (string/starts-with?
-               (:body response)
-               "Data Provider,Short Name,Version,Entry Title,Processing Level,Platform,Start Time\n")))))
-
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
         (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll5-opendata coll6 coll7 coll8 coll9] results))
@@ -700,6 +686,41 @@
                                            {:dataset-id "Dataset1"}
                                            {:url-extension "json"})
                 [:status :results])))))))
+
+(deftest search-collection-csv
+  (d/ingest "PROV1" (dc/collection {:short-name "shortie number 1"
+                                    :version-id "V1"
+                                    :long-name "lng nme"
+                                    :processing-level-id "L1"
+                                    :entry-title "I am #1"
+                                    :beginning-date-time "1970-01-01T12:00:00Z"
+                                    :platforms [{:short-name "platform #1"
+                                                 :long-name "platform #1"
+                                                 :type "t"}]}))
+  (d/ingest "PROV2" (dc/collection {:short-name "world's shortest name: so short you won't believe your eyes!"
+                                    :version-id "V2"
+                                    :long-name "world's longest name"
+                                    :processing-level-id "L2"
+                                    :entry-title "lorem ipsum"
+                                    :beginning-date-time "2000-01-01T12:00:00Z"
+                                    :platforms [{:short-name "platform #21"
+                                                 :long-name "platform #21"
+                                                 :type "good platform"}
+                                                {:short-name "platform #32"
+                                                 :long-name "platform #32"
+                                                 :type "very good platform"}]}))
+  (index/wait-until-indexed)
+
+  (let [response (search/find-concepts-csv :collection {})]
+    (is (= 200 (:status response)))
+    (is (= (str "Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Start Time\n"
+                "PROV1,,V1,I am #1,L1,platform #1,1970-01-01T12:00:00.000Z\nPROV2,,V2,lorem ipsum,L2,\"platform #21,platform #32\",2000-01-01T12:00:00.000Z\n")
+           (:body response))))
+  (let [response (search/find-concepts-csv :collection {} {:url-extension "csv"})]
+    (is (= 200 (:status response)))
+    (is (= (str "Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Start Time\n"
+                "PROV1,,V1,I am #1,L1,platform #1,1970-01-01T12:00:00.000Z\nPROV2,,V2,lorem ipsum,L2,\"platform #21,platform #32\",2000-01-01T12:00:00.000Z\n")
+           (:body response)))))
 
 (deftest atom-json-link-service-rel-types
   (testing "Opendata search response"

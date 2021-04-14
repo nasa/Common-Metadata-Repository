@@ -458,10 +458,18 @@ __Example__
 
 #### <a name="csv"></a> CSV
 
-The comma separated value (CSV) format is only supported for granules.
+The comma separated value (CSV) format is supported for collections and granules.
 
-__Example__
+__Examples__
 
+Collection response
+```csv
+Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Start Time
+PROV1,short,v2,dataset-id,V2,platform-1,2015-06-05T20:10:39.166Z
+PROV2,very-short,v1,data-id,V1,platform2,2019-08-03T20:11:59.143Z
+```
+
+Granule response
 ```csv
 Granule UR,Producer Granule ID,Start Time,End Time,Online Access URLs,Browse URLs,Cloud Cover,Day/Night,Size
 SC:SPL1AA.001:12345,SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5,,,,,,,

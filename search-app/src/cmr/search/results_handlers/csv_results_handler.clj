@@ -18,16 +18,19 @@
    "Version"
    "Entry Title"
    "Processing Level"
-   "Platform"
+   "Platforms"
    "Start Time"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :csv]
  [concept-type query]
- (->> COLLECTION_CSV_HEADER
-      (remove #(= "Data Provider" %))
-      (map csk/->kebab-case)
-      (concat acl-rhh/collection-elastic-fields)
-      distinct))
+ (let [csv-fields ["provider-id"
+                   "short-name"
+                   "version-id"
+                   "entry-title"
+                   "processing-level-id"
+                   "platforms"
+                   "start-time"]]
+   (distinct (concat csv-fields acl-rhh/collection-elastic-fields))))
 
 (defmethod elastic-results/elastic-result->query-result-item [:collection :csv]
   [context query elastic-result]
@@ -35,11 +38,14 @@
          provider-id :provider-id
          processing-level :processing-level-id
          entry-title :entry-title
-         platforms :platform
+         platforms :platforms
          version :version-id
          short-name :collection-short-name} (:_source elastic-result)
-        start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))]
-    (merge {:row [provider-id short-name version entry-title processing-level (first platforms) start-date]}
+        start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
+        platform-short-names (->> platforms
+                                  (map :short-name)
+                                  (str/join ","))]
+    (merge {:row [provider-id short-name version entry-title processing-level platform-short-names start-date]}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defmethod qs/search-results->response [:collection :csv]
