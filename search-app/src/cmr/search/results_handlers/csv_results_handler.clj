@@ -7,6 +7,7 @@
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.common.services.errors :as svc-errors]
    [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf])
   (:import
@@ -19,7 +20,6 @@
    "Entry Title"
    "Processing Level"
    "Platforms"
-   "Granule Count"
    "Start Time"
    "End Time"])
 
@@ -31,7 +31,6 @@
                    "entry-title"
                    "processing-level-id"
                    "platforms"
-                   "granule-count"
                    "start-time"
                    "end-time"]]
    (distinct (concat csv-fields acl-rhh/collection-elastic-fields))))
@@ -45,21 +44,19 @@
          entry-title :entry-title
          platforms :platforms
          version :version-id
-         short-name :collection-short-name} (:_source elastic-result)
+         short-name :short-name} (:_source elastic-result)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         platform-short-names (->> platforms
                                   (map :short-name)
                                   (str/join ","))
-        collection-id (:_id elastic-result)
-        granule-count-placeholder nil]
+        collection-id (:_id elastic-result)]
     (merge {:row [provider-id
                   short-name
                   (str version)
                   entry-title
                   (str processing-level)
                   platform-short-names
-                  granule-count-placeholder
                   start-date
                   end-date]
             :id collection-id}
@@ -67,9 +64,9 @@
 
 (defmethod gcrf/query-results->concept-ids :csv
  [results]
- (->> results
-      :items
-      (map :id)))
+ (svc-errors/throw-service-error
+   :bad-request
+   "Collections search in csv format is not supported with include_granule_counts option"))
 
 (defmethod qs/search-results->response [:collection :csv]
   [context query results]
