@@ -459,14 +459,15 @@ __Example__
 #### <a name="csv"></a> CSV
 
 The comma separated value (CSV) format is supported for collections and granules.
+Version and Processing Level are strings. When importing into the spreadsheet, please specify text as their column types. This will prevent version "004" to be displayed as "4" in the spreadsheet.
 
 __Examples__
 
 Collection response
 ```csv
-Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Start Time
-PROV1,short,v2,dataset-id,V2,platform-1,2015-06-05T20:10:39.166Z
-PROV2,very-short,v1,data-id,V1,platform2,2019-08-03T20:11:59.143Z
+Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Granule Count,Start Time,End Time
+PROV1,short-name,V1,dataset-id,L1,platform #1,1,1970-01-01T12:00:00.000Z,
+PROV2,very-short,v1,data-id,L3,platform2,,2019-08-03T20:11:59.143Z
 ```
 
 Granule response
