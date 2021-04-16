@@ -712,16 +712,20 @@
         g1 (d/ingest "PROV1" (dg/granule c1))])
   (index/wait-until-indexed)
 
-  (let [response (search/find-concepts-csv :collection {:include-granule-counts "true"})]
+  (let [response (search/find-concepts-csv :collection {})]
     (is (= 200 (:status response)))
-    (is (= (str "Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Granule Count,Start Time,End Time\n"
-                "PROV1,,V1,I am #1,L1,platform #1,1,1970-01-01T12:00:00.000Z,\nPROV2,,V2,lorem ipsum,L2,\"platform #21,platform #32\",,2000-01-01T12:00:00.000Z,\n")
+    (is (= (str "Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Start Time,End Time\n"
+                "PROV1,shortie number 1,V1,I am #1,L1,platform #1,1970-01-01T12:00:00.000Z,\nPROV2,world's shortest name: so short you won't believe your eyes!,V2,lorem ipsum,L2,\"platform #21,platform #32\",2000-01-01T12:00:00.000Z,\n")
            (:body response))))
   (let [response (search/find-concepts-csv :collection {} {:url-extension "csv"})]
     (is (= 200 (:status response)))
-    (is (= (str "Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Granule Count,Start Time,End Time\n"
-                "PROV1,,V1,I am #1,L1,platform #1,,1970-01-01T12:00:00.000Z,\nPROV2,,V2,lorem ipsum,L2,\"platform #21,platform #32\",,2000-01-01T12:00:00.000Z,\n")
-           (:body response)))))
+    (is (= (str "Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Start Time,End Time\n"
+                "PROV1,shortie number 1,V1,I am #1,L1,platform #1,1970-01-01T12:00:00.000Z,\nPROV2,world's shortest name: so short you won't believe your eyes!,V2,lorem ipsum,L2,\"platform #21,platform #32\",2000-01-01T12:00:00.000Z,\n")
+           (:body response))))
+  (let [response (search/find-concepts-csv :collection {:include-granule-counts "true"})]
+    (is (= 400 (:status response)))
+    (is (= ["Collections search in csv format is not supported with include_granule_counts option"]
+           (:errors response)))))
 
 (deftest atom-json-link-service-rel-types
   (testing "Opendata search response"

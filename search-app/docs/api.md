@@ -465,9 +465,9 @@ __Examples__
 
 Collection response
 ```csv
-Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Granule Count,Start Time,End Time
-PROV1,short-name,V1,dataset-id,L1,platform #1,1,1970-01-01T12:00:00.000Z,
-PROV2,very-short,v1,data-id,L3,platform2,,2019-08-03T20:11:59.143Z
+Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Start Time,End Time
+PROV1,short-name,V1,dataset-id,L1,platform #1,1970-01-01T12:00:00.000Z,
+PROV2,very-short,v1,data-id,L3,platform2,2019-08-03T20:11:59.143Z,
 ```
 
 Granule response

@@ -34,7 +34,7 @@
          [] :collection :atom
          [] :collection :iso19115
          [] :collection :opendata
-         ["The mime type [text/csv] is not supported for collections."] :collection :csv
+         [] :collection :csv
          [] :collection :kml
          [] :granule :xml
          [] :granule :json

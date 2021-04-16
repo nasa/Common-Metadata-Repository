@@ -6,7 +6,6 @@
   (:require
    [clojure.data :as data]
    [clojure.string :as string]
-   [cmr.common.util :as common-util]
    [cmr.common-app.services.search.complex-to-simple :as c2s]
    [cmr.common-app.services.search.elastic-search-index :as idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -152,26 +151,6 @@
     (into {} (for [{collection-id :key num-granules :doc_count} aggs]
                [collection-id num-granules]))))
 
-(defn update-csv-result-granule-counts
- "Update any :row items in the CSV response to have the correct granule-count value"
- [items granule-counts-map]
- (for [item items]
-   (let [{:keys [id]} item
-         ; granule-count-placeholder is always in the same index
-         granule-count-index 6
-         granule-count (get granule-counts-map id)]
-     (update item :row #(assoc % granule-count-index granule-count)))))
-
-
-(defn- assoc-granule-counts
-  "Helper function to add granule counts search results"
-  [query-results granule-counts-map]
-  (let [query-results (assoc query-results :granule-counts-map granule-counts-map)]
-   (if (= :csv (:result-format query-results))
-     (update query-results :items #(update-csv-result-granule-counts % granule-counts-map))
-     query-results)))
-
-
 ;; This find granule counts per collection.
 (defmethod query-execution/post-process-query-result-feature :granule-counts
   [context query elastic-results query-results feature]
@@ -181,4 +160,4 @@
          (extract-granule-count-query query)
          (query-execution/execute-query context)
          search-results->granule-counts
-         (assoc-granule-counts query-results))))
+         (assoc query-results :granule-counts-map))))
