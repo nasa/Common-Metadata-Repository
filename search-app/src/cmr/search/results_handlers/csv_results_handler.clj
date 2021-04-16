@@ -3,12 +3,12 @@
   (:require
    [cheshire.core :as json]
    [clojure.data.csv :as csv]
-   [camel-snake-kebab.core :as csk]
    [clojure.string :as str]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh])
+   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf])
   (:import
     [java.io StringWriter]))
 
@@ -19,7 +19,9 @@
    "Entry Title"
    "Processing Level"
    "Platforms"
-   "Start Time"])
+   "Granule Count"
+   "Start Time"
+   "End Time"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :csv]
  [concept-type query]
@@ -29,12 +31,15 @@
                    "entry-title"
                    "processing-level-id"
                    "platforms"
-                   "start-time"]]
+                   "granule-count"
+                   "start-time"
+                   "end-time"]]
    (distinct (concat csv-fields acl-rhh/collection-elastic-fields))))
 
 (defmethod elastic-results/elastic-result->query-result-item [:collection :csv]
   [context query elastic-result]
   (let [{start-date :start-date
+         end-date :end-date
          provider-id :provider-id
          processing-level :processing-level-id
          entry-title :entry-title
@@ -42,11 +47,29 @@
          version :version-id
          short-name :collection-short-name} (:_source elastic-result)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
+        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         platform-short-names (->> platforms
                                   (map :short-name)
-                                  (str/join ","))]
-    (merge {:row [provider-id short-name version entry-title processing-level platform-short-names start-date]}
+                                  (str/join ","))
+        collection-id (:_id elastic-result)
+        granule-count-placeholder nil]
+    (merge {:row [provider-id
+                  short-name
+                  (str version)
+                  entry-title
+                  (str processing-level)
+                  platform-short-names
+                  granule-count-placeholder
+                  start-date
+                  end-date]
+            :id collection-id}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
+
+(defmethod gcrf/query-results->concept-ids :csv
+ [results]
+ (->> results
+      :items
+      (map :id)))
 
 (defmethod qs/search-results->response [:collection :csv]
   [context query results]
