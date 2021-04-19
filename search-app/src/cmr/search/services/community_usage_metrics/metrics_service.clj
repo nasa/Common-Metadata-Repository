@@ -12,7 +12,6 @@
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.search.models.query :as advanced-query]
    [cmr.search.services.community-usage-metrics.metrics-json-schema-validation :as metrics-json]
    [cmr.search.services.humanizers.humanizer-service :as humanizer-service]))
 
@@ -37,7 +36,7 @@
 
 (defn- get-collection-by-product-id
   "Query elastic for a collection with a given product-id, parses out the value before the last : and
-   checks that value against entry-title, short-name, and Persistent ID attribute. Also checks the non-parsed value against
+   checks that value against both entry-title or short-name. Also checks the non-parsed value against
    short-name."
   [context product-id]
   (when (seq product-id)
@@ -46,12 +45,7 @@
                                        (last matches))]
       (let [condition (gc/or (qm/string-condition :entry-title parsed-product-id false false)
                              (qm/string-condition :short-name parsed-product-id false false)
-                             (qm/string-condition :short-name product-id false false)
-                             ;; Handle PODAAC case
-                             (advanced-query/map->AttributeValueCondition
-                              {:name "Persistent ID"
-                               :type :string
-                               :value product-id}))
+                             (qm/string-condition :short-name product-id false false))
             query (qm/query {:concept-type :collection
                              :condition condition
                              :page-size 1
