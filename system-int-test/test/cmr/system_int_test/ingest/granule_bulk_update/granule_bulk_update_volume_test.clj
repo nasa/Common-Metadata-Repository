@@ -26,8 +26,7 @@
   [ur (str "https://file.example.nasa.gov/" ur)])
 
 ;; This test is potentially unstable on systems with smaller amounts of
-;; memory and can multiple minutes to complete. Test with caution
-
+;; memory and can take multiple minutes to complete. Test with caution
 (deftest ^:oracle bulk-granule-update-volume-test
   (system/only-with-real-database
    (let [coll1 (data-core/ingest-umm-spec-collection
@@ -68,6 +67,6 @@
            ;; Use external SQS for the following
            ;;; dev-system#> lein start-sqs-sns
            ;;; repl> (reset :db :external :messaging :aws)
-
-           ;; "large request" 10000
+           ;; "large request" 1e5
+           ;; "huge request" 1e7
            ))))
