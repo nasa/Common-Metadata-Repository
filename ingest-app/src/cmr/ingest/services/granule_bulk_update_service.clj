@@ -3,6 +3,7 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
+   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -26,7 +27,12 @@
    [cmr.umm-spec.versioning :as versioning]))
 
 (def granule-bulk-update-schema
- (js/json-string->json-schema (slurp (io/resource "granule_bulk_update_schema.json"))))
+  (js/json-string->json-schema (slurp (io/resource "granule_bulk_update_schema.json"))))
+
+(defconfig granule-bulk-update-chunk-size
+  "Default size to partition granule-bulk-update instructions into."
+  {:default 500
+   :type Long})
 
 (defn- validate-granule-bulk-update-json
   "Validate the request against the schema and return the parsed request."
@@ -76,6 +82,28 @@
     (validate-granule-bulk-update-no-duplicates request)
     request))
 
+(defn- publish-instructions-partitioned
+  "Publish bulk granule update events in partitioned amounts."
+  [context provider-id user-id task-id instructions partition-size]
+  (let [chunked-instructions (partition-all partition-size instructions)]
+    (info (format
+           (str "Bulk granule update request [%s] by user [%s] "
+                "preparing [%d] updates in [%d] jobs "
+                "with job size of [%d].")
+           task-id
+           user-id
+           (count instructions)
+           (count chunked-instructions)
+           (granule-bulk-update-chunk-size)))
+
+    (doseq [ins-list chunked-instructions]
+      (ingest-events/publish-gran-bulk-update-event
+       context
+       (ingest-events/granules-bulk-event provider-id
+                                          task-id
+                                          user-id
+                                          ins-list)))))
+
 (defn validate-and-save-bulk-granule-update
   "Validate the granule bulk update request, save rows to the db for task
   and granule statuses, and queue bulk granule update. Return task id, which comes
@@ -97,10 +125,15 @@
                        :internal-error
                        [(str "There was a problem saving a bulk granule update request."
                              "Please try again, if the problem persists please contact cmr-support@earthdata.nasa.gov.")]))))]
-    ;; Queue the granules bulk update event
-    (ingest-events/publish-gran-bulk-update-event
+
+    ;; Queue the granules bulk update events
+    (publish-instructions-partitioned
      context
-     (ingest-events/granules-bulk-event provider-id task-id user-id instructions))
+     provider-id
+     user-id
+     task-id
+     instructions
+     (granule-bulk-update-chunk-size))
     task-id))
 
 (defn handle-granules-bulk-event
