@@ -460,7 +460,16 @@
                   :URL "http://www.foo.com"
                   :URLContentType "VisualizationURL"
                   :Type "GET RELATED VISUALIZATION"
-                  :Subtype "WORLDVIEW"}]
+                  :Subtype "WORLDVIEW"}
+                 {:Description "Related url 4 description"
+                  :URL "http://www.foo.com"
+                  :URLContentType "DistributionURL"
+                  :Type "GET CAPABILITIES"
+                  :Subtype "OpenSearch"
+                  :GetData {:Format "Not provided"
+                            :Size 0.0,
+                            :Unit "KB"
+                            :MimeType "application/opensearchdescription+xml"}}]
    :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
                            :Description "Associated with a collection"
                            :EntryId "AssocEntryId"

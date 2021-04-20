@@ -8,67 +8,17 @@
    [cmr.umm-spec.iso19115-2-util :refer :all]
    [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.url :as url]
-   [cmr.umm-spec.util :as su]))
+   [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as iso-parsing-util]))
 
 (def size-of-related-url-fees
   "This constant is the size of the fees element in the RelatedURL main element for UMM-C. It is
    needed to be able to truncate strings that are too long."
   80)
 
-(defn get-substring
-  "Get a substring from the input string. Use start as the starting index. All of the rest
-   of the input parameters are stop indexes in numerical order or nil i.e. (34 nil 50). The
-   function uses the first non nil value as the stop value. The function returns the
-   substring with trimmed whitespace before and after the string."
-  [str start & args]
-  (let [value (subs str start (some #(when % %) args))]
-    (str/trim (subs value (inc (.indexOf value ":"))))))
-
 (def description-string-field-re-pattern
   "Returns the pattern that matches all the related fields in description-string"
   (re-pattern "URLContentType:|Description:|Type:|Subtype:|Checksum:"))
-
-(def key-split-string
-  "Special string to help separate keys from values in ISO strings"
-  "HSTRING")
-
-(def value-split-string
-  "Special string to help separate keys from values in ISO strings"
-  "TSTRING")
-
-(defn convert-iso-description-string-to-map
-  "Convert Description string to a map, removing fields that are empty or nil.
-  Description string: \"URLContentType: DistributionURL
-                        Description: A very nice URL
-                        Type: GET DATA Subtype: Subscribe\"
-  Description map: {\"URLContentType\" \"DistributionURL\"
-                    \"Description\" \"A very nice URL\"
-                    \"Type\" \"GET DATA\"
-                    \"Subtype\" \"Subscribe\"}"
-  [description-string description-regex]
-  (let [description-string (-> description-string
-                               (str/replace description-regex
-                                            #(str key-split-string
-                                                  %1
-                                                  value-split-string))
-                               str/trim
-                               (str/replace #"\s+HSTRING" key-split-string)
-                               (str/replace #":TSTRING\s+" (str ":" value-split-string)))
-        description-string-list (str/split description-string (re-pattern key-split-string))]
-    (->> description-string-list
-         ;; split each string in the description-str-list
-         (map #(str/split % #":TSTRING"))
-         ;; keep the ones with values.
-         (filter #(= 2 (count %)))
-         (into {})
-         ;; remove "nil" valued keys
-         (util/remove-map-keys #(= "nil" %)))))
-
-(defn convert-key-strings-to-keywords
-  [map]
-  (into {}
-    (for [[k v] map]
-      [(keyword k) v])))
 
 (defn parse-url-types-from-description
  "In ISO, since there are not separate fields for the types, they are put in the
@@ -76,47 +26,20 @@
  Parse all available elements out from the description string."
  [description]
  (when description
-  (let [description-index (util/get-index-or-nil description "Description:")
-        url-content-type-index (util/get-index-or-nil description "URLContentType:")
-        type-index (util/get-index-or-nil description "Type:")
-        subtype-index (util/get-index-or-nil description "Subtype:")
-        checksum-index (util/get-index-or-nil description "Checksum:")]
-   (if (and (nil? description-index)
-            (nil? url-content-type-index)
-            (nil? type-index)
-            (nil? subtype-index)
-            (nil? checksum-index))
-    {:Description description} ; Description not formatted like above, so just description
-    (convert-key-strings-to-keywords
-     (convert-iso-description-string-to-map description description-string-field-re-pattern))))))
+   (let [description-map
+          (iso-parsing-util/convert-iso-description-string-to-map description
+                                                                  description-string-field-re-pattern)]
+    (if (empty? description-map)
+      {:Description description} ;;Description not formatted like above, so just description
+      description-map))))
 
 (defn- parse-operation-description
   "Parses operationDescription string, returns MimeType, DataID, and DataType"
   [operation-description]
   (when operation-description
-    (let [mime-type-index (util/get-index-or-nil operation-description "MimeType:")
-          data-id-index (util/get-index-or-nil operation-description "DataID:")
-          data-type-index (util/get-index-or-nil operation-description "DataType:")
-          format-index (util/get-index-or-nil operation-description "Format:")]
-      {:MimeType (when mime-type-index
-                   (let [mime-type (subs operation-description
-                                    mime-type-index
-                                    (or data-id-index data-type-index
-                                        format-index (count operation-description)))]
-                     (str/trim (subs mime-type (inc (.indexOf mime-type ":"))))))
-       :DataID (when data-id-index
-                 (let [data-id (subs operation-description
-                                     data-id-index
-                                     (or data-type-index format-index (count operation-description)))]
-                   (str/trim (subs data-id (inc (.indexOf data-id ":"))))))
-       :DataType (when data-type-index
-                   (let [data-type (subs operation-description
-                                         data-type-index
-                                         (or format-index (count operation-description)))]
-                     (str/trim (subs data-type (inc (.indexOf data-type ":"))))))
-       :Format (when format-index
-                 (let [format (subs operation-description format-index)]
-                   (str/trim (subs format (inc (.indexOf format ":"))))))})))
+    (iso-parsing-util/convert-iso-description-string-to-map
+      operation-description
+      (re-pattern "MimeType:|DataID:|DataType:|Format:"))))
 
 (defn parse-service-urls
   "Parse service URLs from service location. These are most likely dups of the
@@ -159,16 +82,8 @@
   "Parses distributor format string, returns MimeType and Format"
   [distributor distributor-xpaths-map]
   (when-let [format-name (value-of distributor (get distributor-xpaths-map :Format))]
-    (let [mime-type-index (util/get-index-or-nil format-name "MimeType:")
-          format-index (util/get-index-or-nil format-name "Format:")]
-      {:Format (when format-index
-                 (let [format (subs format-name
-                                    format-index
-                                    (or mime-type-index (count format-name)))]
-                   (str/trim (subs format (inc (.indexOf format ":"))))))
-       :MimeType (when mime-type-index
-                   (let [mime-type (subs format-name mime-type-index)]
-                     (str/trim (subs mime-type (inc (.indexOf mime-type ":"))))))})))
+    (iso-parsing-util/convert-iso-description-string-to-map format-name
+                                                            (re-pattern "MimeType:|Format:"))))
 
 (defn parse-online-urls
   "Parse ISO online resource urls. There are several places in ISO that allow for multiples of'
@@ -202,16 +117,17 @@
                 (or (:Subtype types-and-desc) (:Subtype service-url)))
       :Description (:Description types-and-desc)}
      (case type
-       "GET DATA" {:GetData {:Format (su/with-default (:Format format) sanitize?)
-                             :Size (if sanitize?
-                                     (or size 0.0)
-                                     size)
-                             :Unit (if sanitize?
-                                     (or unit "KB")
-                                     unit)
-                             :Fees fees
-                             :Checksum (:Checksum types-and-desc)
-                             :MimeType (:MimeType format)}}
+       (or "GET DATA"
+           "GET CAPABILITIES") {:GetData {:Format (su/with-default (:Format format) sanitize?)
+                                          :Size (if sanitize?
+                                                  (or size 0.0)
+                                                  size)
+                                          :Unit (if sanitize?
+                                                  (or unit "KB")
+                                                  unit)
+                                          :Fees fees
+                                          :Checksum (:Checksum types-and-desc)
+                                          :MimeType (:MimeType format)}}
        nil))))
 
 (defn parse-online-and-service-urls

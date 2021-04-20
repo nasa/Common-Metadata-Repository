@@ -1065,6 +1065,34 @@
                                     </gmd:role>
                                 </gmd:CI_ResponsibleParty>
                             </gmd:distributorContact>
+                            <gmd:distributorFormat>
+                                <gmd:MD_Format>
+                                    <gmd:name>
+                                        <gco:CharacterString>Format: text/xml MimeType: application/opensearchdescription+xml</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:version/>
+                                </gmd:MD_Format>
+                            </gmd:distributorFormat>
+                            <gmd:distributorTransferOptions>
+                                <gmd:MD_DigitalTransferOptions>
+                                  <gmd:onLine>
+                                      <gmd:CI_OnlineResource>
+                                          <gmd:linkage>
+                                              <gmd:URL>http://nsidc.org/data/docs/measures/nsidc-0547/</gmd:URL>
+                                          </gmd:linkage>
+                                          <gmd:name>
+                                              <gco:CharacterString>GET CAPABILITIES</gco:CharacterString>
+                                          </gmd:name>
+                                          <gmd:description>
+                                              <gco:CharacterString>URLContentType: DistributionURL Type: GET CAPABILITIES Subtype: OpenSearch</gco:CharacterString>
+                                          </gmd:description>
+                                          <gmd:function>
+                                              <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">information</gmd:CI_OnLineFunctionCode>
+                                          </gmd:function>
+                                      </gmd:CI_OnlineResource>
+                                  </gmd:onLine>
+                                </gmd:MD_DigitalTransferOptions>
+                            </gmd:distributorTransferOptions>
                         </gmd:MD_Distributor>
                     </gmd:distributor>
                     <gmd:transferOptions>
@@ -1127,6 +1155,22 @@
                                     </gmd:name>
                                     <gmd:description>
                                         <gco:CharacterString>DistributionURL USE SERVICE API </gco:CharacterString>
+                                    </gmd:description>
+                                    <gmd:function>
+                                        <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">information</gmd:CI_OnLineFunctionCode>
+                                    </gmd:function>
+                                </gmd:CI_OnlineResource>
+                            </gmd:onLine>
+                            <gmd:onLine>
+                                <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                        <gmd:URL>http://nsidc.org/data/docs/measures/nsidc-0547/</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name>
+                                        <gco:CharacterString>GET CAPABILITIES</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:description>
+                                        <gco:CharacterString>URLContentType: DistributionURL Type: GET CAPABILITIES Subtype: OpenSearch</gco:CharacterString>
                                     </gmd:description>
                                     <gmd:function>
                                         <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">information</gmd:CI_OnLineFunctionCode>

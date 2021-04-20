@@ -960,15 +960,6 @@
           #(string/replace % #"^CMR_" ""))
     #(string/starts-with? %1 "CMR_")))
 
-(defn get-index-or-nil
- "Get the index of the substring in the string. Return nil if the substring does not
- exist in the string"
- [^String s ^String substring]
- (when s
-  (let [index (.indexOf s substring)]
-   (when (>= index 0)
-    index))))
-
 (defn scrub-token
   "Scrub token:
   1. When at least 15 chars long keep the first and the last 5 chars.

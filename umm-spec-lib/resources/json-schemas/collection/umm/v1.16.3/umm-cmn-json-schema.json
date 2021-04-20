@@ -1228,13 +1228,13 @@
     },
     "RelatedUrlTypeEnum": {
       "type": "string",
-      "enum": ["DATA SET LANDING PAGE", "DOWNLOAD SOFTWARE", "EXTENDED METADATA", "GET DATA", "GET RELATED VISUALIZATION",
+      "enum": ["DATA SET LANDING PAGE", "DOWNLOAD SOFTWARE", "EXTENDED METADATA", "GET CAPABILITIES", "GET DATA", "GET RELATED VISUALIZATION",
                "GOTO WEB TOOL", "PROFESSIONAL HOME PAGE", "PROJECT HOME PAGE", "USE SERVICE API", "VIEW RELATED INFORMATION", "HOME PAGE"]
     },
     "RelatedURLSubTypeEnum": {
       "type": "string",
       "enum": ["MOBILE APP", "APPEEARS", "DATA COLLECTION BUNDLE", "DATA TREE", "DATACAST URL", "DIRECT DOWNLOAD", "EOSDIS DATA POOL",
-               "Earthdata Search", "GIOVANNI", "GoLIVE Portal", "IceBridge Portal", "LAADS", "LANCE", "MIRADOR", "MODAPS", "NOAA CLASS", "NOMADS",
+               "Earthdata Search", "GIBS", "GIOVANNI", "GoLIVE Portal", "IceBridge Portal", "LAADS", "LANCE", "MIRADOR", "MODAPS", "NOAA CLASS", "NOMADS",
                "Order", "PORTAL", "Subscribe", "USGS EARTH EXPLORER", "VERTEX", "VIRTUAL COLLECTION", "MAP", "WORLDVIEW", "LIVE ACCESS SERVER (LAS)",
                "MAP VIEWER", "SIMPLE SUBSET WIZARD (SSW)", "SUBSETTER", "GRADS DATA SERVER (GDS)", "MAP SERVICE", "OPENDAP DATA", "OpenSearch",
                "SERVICE CHAINING", "TABULAR DATA STREAM (TDS)", "THREDDS DATA", "WEB COVERAGE SERVICE (WCS)", "WEB FEATURE SERVICE (WFS)",
@@ -1247,7 +1247,7 @@
     },
     "URLMimeTypeEnum": {
       "type": "string",
-      "enum": ["application/json", "application/xml", "application/x-netcdf", "application/gml+xml",
+      "enum": ["application/json", "application/xml", "application/x-netcdf", "application/gml+xml", "application/opensearchdescription+xml",
                "application/vnd.google-earth.kml+xml", "image/gif", "image/tiff", "image/bmp", "text/csv",
                "text/xml", "application/pdf", "application/x-hdf", "application/xhdf5",
                "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",

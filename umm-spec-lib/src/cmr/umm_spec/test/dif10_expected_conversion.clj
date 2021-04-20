@@ -301,7 +301,8 @@
   [related-url]
   (case (:Type related-url)
     "USE SERVICE API" (expected-related-url-get-service related-url)
-    "GET DATA" (expected-related-url-get-data related-url)
+    (or "GET DATA"
+        "GET CAPABILITIES") (expected-related-url-get-data related-url)
     related-url))
 
 (defn expected-related-urls-for-dif10

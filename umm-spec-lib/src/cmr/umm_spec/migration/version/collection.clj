@@ -419,3 +419,19 @@
                                   (assoc :Description {:Description (get use-constraints :Description)})
                                   (set/rename-keys {:LicenseURL :LicenseUrl})
                                   util/remove-nils-empty-maps-seqs))))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.2" "1.16.3"]
+  [context c & _]
+  ;; No need to migrate
+  c)
+
+(defmethod interface/migrate-umm-version [:collection "1.16.3" "1.16.2"]
+  [context c & _]
+  ;; Remove the related urls that contain GET CAPABILITIES as the type as it is not valid in the
+  ;; lower versions.
+  (-> c
+      (util/update-in-all [:RelatedUrls] (fn [related-url]
+                                           (if (= "GET CAPABILITIES" (:Type related-url))
+                                             nil
+                                             related-url)))
+      util/remove-nils-empty-maps-seqs))

@@ -88,8 +88,8 @@
                           (assoc :Type "GET RELATED VISUALIZATION")
                           (dissoc :Subtype))
    (if Subtype
-    (merge related-url (get-url-type-by-type Type Subtype))
-    related-url))))
+     (merge related-url (get-url-type-by-type Type Subtype))
+     related-url))))
 
 (defn- expected-related-url-get-service
   "Returns related-url with the expected GetService"
@@ -124,10 +124,11 @@
     (dissoc related-url :GetData)))
 
 (defn- expected-related-url
-  "Returns related-url with the expected GetService"
+  "Returns related-url with the expected GetData or GetService"
   [related-url]
   (case (:Type related-url)
-    "GET DATA" (expected-related-url-get-data related-url)
+    (or "GET DATA"
+        "GET CAPABILITIES") (expected-related-url-get-data related-url)
     (expected-related-url-get-service related-url)))
 
 (defn- expected-echo10-related-urls

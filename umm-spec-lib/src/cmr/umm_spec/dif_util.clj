@@ -37,6 +37,9 @@
   ["DOWNLOAD SOFTWARE" nil] {:URLContentType "DistributionURL" :Type "DOWNLOAD SOFTWARE"}
   ["DOWNLOAD SOFTWARE" "MOBILE APP"] {:URLContentType "DistributionURL" :Type "DOWNLOAD SOFTWARE" :Subtype "MOBILE APP"}
   ["EXTENDED METADATA" nil] {:URLContentType "CollectionURL" :Type "EXTENDED METADATA"}
+  ["GET CAPABILITIES" nil] {:URLContentType "DistributionURL" :Type "GET CAPABILITIES"}
+  ["GET CAPABILITIES" "OpenSearch"] {:URLContentType "DistributionURL" :Type "GET CAPABILITIES" :Subtype "OpenSearch"}
+  ["GET CAPABILITIES" "GIBS"] {:URLContentType "DistributionURL" :Type "GET CAPABILITIES" :Subtype "GIBS"}
   ["GET DATA" nil] {:URLContentType "DistributionURL" :Type "GET DATA"}
   ["GET DATA" "ALTERNATE ACCESS"] {:URLContentType "DistributionURL" :Type "GET DATA"}
   ["GET DATA" "APPEEARS"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "APPEEARS"}
@@ -159,6 +162,9 @@
   {:URLContentType "CollectionURL" :Type "PROJECT HOME PAGE"} ["PROJECT HOME PAGE" nil]
   {:URLContentType "DistributionURL" :Type "DOWNLOAD SOFTWARE"} ["DOWNLOAD SOFTWARE" nil]
   {:URLContentType "DistributionURL" :Type "DOWNLOAD SOFTWARE" :Subtype "MOBILE APP"} ["DOWNLOAD SOFTWARE" "MOBILE APP"]
+  {:URLContentType "DistributionURL" :Type "GET CAPABILITIES"} ["GET CAPABILITIES" nil]
+  {:URLContentType "DistributionURL" :Type "GET CAPABILITIES" :Subtype "OpenSearch"} ["GET CAPABILITIES" "OpenSearch"]
+  {:URLContentType "DistributionURL" :Type "GET CAPABILITIES" :Subtype "GIBS"} ["GET CAPABILITIES" "GIBS"]
   {:URLContentType "DistributionURL" :Type "GET DATA"} ["GET DATA" nil]
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "APPEEARS"} ["GET DATA" "APPEEARS"]
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "DATA COLLECTION BUNDLE"} ["GET DATA" "DATA COLLECTION BUNDLE"]

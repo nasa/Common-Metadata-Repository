@@ -1,46 +1,46 @@
 
 <Collection>
-			<ShortName>CIESIN_SEDAC_EPI_2008</ShortName> 
-			<VersionId>2008.00</VersionId> 
-			<InsertTime>2013-02-07T00:00:00Z</InsertTime>  
+			<ShortName>CIESIN_SEDAC_EPI_2008</ShortName>
+			<VersionId>2008.00</VersionId>
+			<InsertTime>2013-02-07T00:00:00Z</InsertTime>
 			<LastUpdate>2015-08-04T00:00:00Z</LastUpdate>
-			<LongName>2008 Environmental Performance Index (EPI)</LongName> 
-			<DataSetId>2008 Environmental Performance Index (EPI)</DataSetId> 
-			<Description>The 2008 Environmental Performance Index (EPI) centers on two broad environmental protection objectives: (1) reducing environmental stresses on human 
+			<LongName>2008 Environmental Performance Index (EPI)</LongName>
+			<DataSetId>2008 Environmental Performance Index (EPI)</DataSetId>
+			<Description>The 2008 Environmental Performance Index (EPI) centers on two broad environmental protection objectives: (1) reducing environmental stresses on human
 
-health, and (2) promoting ecosystem vitality and sound natural resource management. Derived from a careful review of the environmental literature, these twin goals mirror the priorities 
+health, and (2) promoting ecosystem vitality and sound natural resource management. Derived from a careful review of the environmental literature, these twin goals mirror the priorities
 
-expressed by policymakers. Environmental health and ecosystem vitality are gauged using 25 indicators tracked in six well-established policy categories: Environmental Health 
+expressed by policymakers. Environmental health and ecosystem vitality are gauged using 25 indicators tracked in six well-established policy categories: Environmental Health
 
-(Environmental Burden of Disease, Water, and Air Pollution), Air Pollution (effects on ecosystems), Water (effects on ecosystems), Biodiversity and Habitat, Productive Natural Resources 
+(Environmental Burden of Disease, Water, and Air Pollution), Air Pollution (effects on ecosystems), Water (effects on ecosystems), Biodiversity and Habitat, Productive Natural Resources
 
-(Forestry, Fisheries, and Agriculture), and Climate Change. The 2008 EPI utilizes a proximity-to-target methodology in which performance on each indicator is rated on a 0 to 100 scale 
+(Forestry, Fisheries, and Agriculture), and Climate Change. The 2008 EPI utilizes a proximity-to-target methodology in which performance on each indicator is rated on a 0 to 100 scale
 
-(100 represents at target). By identifying specific targets and measuring how close each country comes to them, the EPI provides a foundation for policy analysis and a context for 
+(100 represents at target). By identifying specific targets and measuring how close each country comes to them, the EPI provides a foundation for policy analysis and a context for
 
-evaluating performance. Issue-by-issue and aggregate rankings facilitate cross-country comparisons both globally and within relevant peer groups. The 2008 EPI is the result of 
+evaluating performance. Issue-by-issue and aggregate rankings facilitate cross-country comparisons both globally and within relevant peer groups. The 2008 EPI is the result of
 
-collaboration among the Yale Center for Environmental Law and Policy (YCELP), Columbia University Center for International Earth Science Information Network (CIESIN), World Economic 
+collaboration among the Yale Center for Environmental Law and Policy (YCELP), Columbia University Center for International Earth Science Information Network (CIESIN), World Economic
 
-Forum (WEF), and the Joint Research Centre (JRC), European Commission.</Description> 
-			<Orderable>false</Orderable> 
+Forum (WEF), and the Joint Research Centre (JRC), European Commission.</Description>
+			<Orderable>false</Orderable>
 			<Visible>true</Visible>
-			<SuggestedUsage>To provide quantitative metrics for evaluating a country's environmental performance in different policy categories relative to clearly defined 
+			<SuggestedUsage>To provide quantitative metrics for evaluating a country's environmental performance in different policy categories relative to clearly defined
 
-targets.</SuggestedUsage>		
-<ProcessingCenter>SEDAC</ProcessingCenter> 
-			<ProcessingLevelId>Level 2</ProcessingLevelId> 
-			 
-			<ArchiveCenter>SEDAC</ArchiveCenter> 
-			 
-			<CitationForExternalPublication>Yale Center for Environmental Law and Policy - YCELP - Yale University, Center for International Earth Science Information Network - CIESIN - Columbia University, World Economic Forum - WEF, and Joint Research Centre - JRC - European Commission. 2008. 2008 Environmental Performance Index (EPI). Palisades, NY:NASA 
+targets.</SuggestedUsage>
+<ProcessingCenter>SEDAC</ProcessingCenter>
+			<ProcessingLevelId>Level 2</ProcessingLevelId>
 
-Socioeconomic Data and Applications Center (SEDAC). http://dx.doi.org/10.7927/H4HT2M77</CitationForExternalPublication> 
-			<CollectionState>Final</CollectionState> 
-			<MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency> 
+			<ArchiveCenter>SEDAC</ArchiveCenter>
+
+			<CitationForExternalPublication>Yale Center for Environmental Law and Policy - YCELP - Yale University, Center for International Earth Science Information Network - CIESIN - Columbia University, World Economic Forum - WEF, and Joint Research Centre - JRC - European Commission. 2008. 2008 Environmental Performance Index (EPI). Palisades, NY:NASA
+
+Socioeconomic Data and Applications Center (SEDAC). http://dx.doi.org/10.7927/H4HT2M77</CitationForExternalPublication>
+			<CollectionState>Final</CollectionState>
+			<MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
 			<RestrictionComment>Users are free to use, copy, distribute, transmit, and adapt the work for commercial and non-commercial purposes, without restriction, as long as clear attribution of the source is provided.</RestrictionComment>
-			<Price>0</Price> 
-			<DataFormat>XLS, PDF, PNG</DataFormat> 
+			<Price>0</Price>
+			<DataFormat>XLS, PDF, PNG</DataFormat>
 			<SpatialKeywords>
 				<Keyword>Africa</Keyword>
 				<Keyword>Asia</Keyword>
@@ -215,11 +215,11 @@ Socioeconomic Data and Applications Center (SEDAC). http://dx.doi.org/10.7927/H4
 				<TimeType>Universal Time</TimeType>
 				<DateType>Eastern Daylight</DateType>
 				<TemporalRangeType>Long Range</TemporalRangeType>
-				<PrecisionOfSeconds>1</PrecisionOfSeconds>	
+				<PrecisionOfSeconds>1</PrecisionOfSeconds>
 				<EndsAtPresentFlag>true</EndsAtPresentFlag>
-				<RangeDateTime>	
+				<RangeDateTime>
 				<BeginningDateTime>1994-01-01T00:00:00Z</BeginningDateTime>
-                                                        <EndingDateTime>2007-12-31T00:00:00Z</EndingDateTime>											
+                                                        <EndingDateTime>2007-12-31T00:00:00Z</EndingDateTime>
 				</RangeDateTime>
 			</Temporal>
 			<Contacts>
@@ -291,7 +291,7 @@ Socioeconomic Data and Applications Center (SEDAC). http://dx.doi.org/10.7927/H4
 				</ScienceKeyword>
 <ScienceKeyword>
 <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
-<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
 <TermKeyword>ENVIRONMENTAL GOVERNANCE/MANAGEMENT</TermKeyword>
 <VariableLevel1Keyword>
 <Value>WATER MANAGEMENT</Value>
@@ -299,32 +299,32 @@ Socioeconomic Data and Applications Center (SEDAC). http://dx.doi.org/10.7927/H4
 </ScienceKeyword>
 <ScienceKeyword>
 <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
-<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
-<TermKeyword>ENVIRONMENTAL IMPACTS</TermKeyword> 
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+<TermKeyword>ENVIRONMENTAL IMPACTS</TermKeyword>
 <VariableLevel1Keyword>
 <Value>CONSERVATION</Value>
 </VariableLevel1Keyword>
 </ScienceKeyword>
 <ScienceKeyword>
 <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
-<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
-<TermKeyword>HUMAN SETTLEMENTS</TermKeyword> 
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+<TermKeyword>HUMAN SETTLEMENTS</TermKeyword>
 <VariableLevel1Keyword>
 <Value>COASTAL AREAS</Value>
 </VariableLevel1Keyword>
 </ScienceKeyword>
 <ScienceKeyword>
 <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
-<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
-<TermKeyword>PUBLIC HEALTH</TermKeyword> 
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+<TermKeyword>PUBLIC HEALTH</TermKeyword>
 <VariableLevel1Keyword>
 <Value>ENVIRONMENTAL HEALTH FACTORS</Value>
 </VariableLevel1Keyword>
 </ScienceKeyword>
 <ScienceKeyword>
 <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
-<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
-<TermKeyword>SUSTAINABILITY</TermKeyword> 
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+<TermKeyword>SUSTAINABILITY</TermKeyword>
 <VariableLevel1Keyword>
 <Value>ENVIRONMENTAL SUSTAINABILITY</Value>
 </VariableLevel1Keyword>
@@ -332,28 +332,34 @@ Socioeconomic Data and Applications Center (SEDAC). http://dx.doi.org/10.7927/H4
 			</ScienceKeywords>
 			<Campaigns>
 				<Campaign>
-				<ShortName>EPI</ShortName> 
-				<LongName>Environmental Performance Index</LongName> 
+				<ShortName>EPI</ShortName>
+				<LongName>Environmental Performance Index</LongName>
 				</Campaign>
 				</Campaigns>
 				<SpatialInfo>
-				<SpatialCoverageType>Horizontal</SpatialCoverageType> 
+				<SpatialCoverageType>Horizontal</SpatialCoverageType>
 			</SpatialInfo>
 			<OnlineAccessURLs>
 				<OnlineAccessURL>
-					<URL>http://sedac.ciesin.columbia.edu/data/set/epi-environmental-performance-index-2008/data-download</URL> 
+					<URL>http://sedac.ciesin.columbia.edu/data/set/epi-environmental-performance-index-2008/data-download</URL>
 					<URLDescription>data download page</URLDescription>
 				</OnlineAccessURL>
 				<OnlineAccessURL>
-					<URL>http://sedac.ciesin.columbia.edu/data/set/epi-environmental-performance-index-2008/maps</URL> 
+					<URL>http://sedac.ciesin.columbia.edu/data/set/epi-environmental-performance-index-2008/maps</URL>
 					<URLDescription>maps download page</URLDescription>
 				</OnlineAccessURL>
 			</OnlineAccessURLs>
 			<OnlineResources>
 				<OnlineResource>
-					<URL>http://dx.doi.org/10.7927/H4HT2M77</URL> 
-					<Description>data set DOI and homepage</Description> 
+					<URL>http://dx.doi.org/10.7927/H4HT2M77</URL>
+					<Description>data set DOI and homepage</Description>
 					<Type>DOI URL</Type>
+				</OnlineResource>
+				<OnlineResource>
+					<URL>http://opensearch.com</URL>
+					<Description>open search get capabilities</Description>
+					<Type>GET CAPABILITIES : OpenSearch</Type>
+					<MimeType>application/opensearchdescription+xml</MimeType>
 				</OnlineResource>
 			</OnlineResources>
 			<AssociatedDIFs>
@@ -362,15 +368,15 @@ Socioeconomic Data and Applications Center (SEDAC). http://dx.doi.org/10.7927/H4
 				</DIF>
 			</AssociatedDIFs>
 			<Spatial>
-				<SpatialCoverageType>Horizontal</SpatialCoverageType> 
+				<SpatialCoverageType>Horizontal</SpatialCoverageType>
 				<HorizontalSpatialDomain>
 					<Geometry>
 						<CoordinateSystem>CARTESIAN</CoordinateSystem>
 						<BoundingRectangle>
-							<WestBoundingCoordinate>-180</WestBoundingCoordinate> 
-							<NorthBoundingCoordinate>90</NorthBoundingCoordinate> 
-							<EastBoundingCoordinate>180</EastBoundingCoordinate> 
-							<SouthBoundingCoordinate>-55</SouthBoundingCoordinate> 
+							<WestBoundingCoordinate>-180</WestBoundingCoordinate>
+							<NorthBoundingCoordinate>90</NorthBoundingCoordinate>
+							<EastBoundingCoordinate>180</EastBoundingCoordinate>
+							<SouthBoundingCoordinate>-55</SouthBoundingCoordinate>
 						</BoundingRectangle>
 					</Geometry>
 				</HorizontalSpatialDomain>

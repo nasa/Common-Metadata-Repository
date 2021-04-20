@@ -154,3 +154,36 @@
       (update :FileDistributionInformation expected-file-dist-info)
       (update :FileArchiveInformation expected-file-archive-info)
       umm-c/map->ArchiveAndDistributionInformationType))
+
+(defn expected-related-url-get-data
+  "Returns related-url with the expected GetData"
+  [related-url]
+  (if (and (= "DistributionURL" (:URLContentType related-url))
+           (or (= "GET DATA" (:Type related-url))
+               (= "GET CAPABILITIES" (:Type related-url))))
+    (if (nil? (:GetData related-url))
+      (assoc related-url :GetData (cmn/map->GetDataType
+                                   {:Format su/not-provided
+                                    :Size 0.0
+                                    :Unit "KB"}))
+      related-url)
+    related-url))
+
+(defn expected-related-url-get-service
+  "Returns related-url with the expected GetService"
+  [related-url]
+  (let [URI (if (empty? (get-in related-url [:GetService :URI]))
+              [(:URL related-url)]
+              (get-in related-url [:GetService :URI]))]
+      (if (and (= "DistributionURL" (:URLContentType related-url))
+               (= "USE SERVICE API" (:Type related-url)))
+          (if (nil? (:GetService related-url))
+            (assoc related-url :GetService (cmn/map->GetServiceType
+                                              {:MimeType su/not-provided
+                                               :Protocol su/not-provided
+                                               :FullName su/not-provided
+                                               :DataID su/not-provided
+                                               :DataType su/not-provided
+                                               :URI URI}))
+            (assoc-in related-url [:GetService :URI] URI))
+          (dissoc related-url :GetService))))
