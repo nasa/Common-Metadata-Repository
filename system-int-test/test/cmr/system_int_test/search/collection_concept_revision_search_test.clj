@@ -193,6 +193,5 @@
     (testing "csv"
       (let [{:keys [status errors]} (search/get-search-failure-data
                                       (search/find-concepts-in-format mt/csv :collection {:all-revisions true}))]
-        (is (= [400 ["The mime type [text/csv] is not supported for collections."
-                     "The mime type [text/csv] is not supported when all_revisions = true."]]
+        (is (= [400 ["The mime type [text/csv] is not supported when all_revisions = true."]]
                [status errors]))))))
