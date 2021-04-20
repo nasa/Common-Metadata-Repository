@@ -42,9 +42,9 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [POST - Translate collection metadata.](#translate-collection)
   * /translate/granule
     * [POST - Translate granule metadata.](#translate-granule)
-  * /providers/<provider-id>/bulk-update/collections
+  * /providers/\<provider-id\>/bulk-update/collections
     * [POST - Collection bulk update](#collection-bulk-update)
-  * /providers/<provider-id>/bulk-update/granules
+  * /providers/\<provider-id\>/bulk-update/granules
     * [POST - Granule bulk update](#granule-bulk-update)
 
 ***
