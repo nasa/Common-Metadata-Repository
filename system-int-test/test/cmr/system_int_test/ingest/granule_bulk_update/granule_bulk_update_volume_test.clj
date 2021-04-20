@@ -62,7 +62,7 @@
              (is (= 200 status)))
 
            "tiny request" 2
-           "small request" 1500
+           "small request" 501
 
            ;; Use external SQS for the following
            ;;; dev-system#> lein start-sqs-sns
