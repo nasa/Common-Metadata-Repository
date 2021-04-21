@@ -20,7 +20,7 @@
                            :Description "The map projection of the granule"
                            :Value "aa-value-1"
                            :DataType "STRING"}]
-   :AncillaryKeywords ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC"]
+   :AncillaryKeywords ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC" "(TMPA-RT)" "(USGS_EROS)"]
    :AssociatedDOIs [{:DOI "Associated-DOI-1"
                      :Title "Assoc Title 1"
                      :Authority "https://doi.org"}
@@ -289,7 +289,7 @@
 
     "AncillaryKeywords field"
     :AncillaryKeywords
-    ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC"]
+    ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC" "(TMPA-RT)" "(USGS_EROS)"]
 
     "CollectionCitations field"
     :CollectionCitations
@@ -415,7 +415,7 @@
                      :RelatedUrls
                      :ScienceKeywords
                      :DataCenters]]
-    (is (= ["001" "A test related url." "ATMOSPHERE" "ATMOSPHERIC WINDS" "AUTHOR" "Alice" "Bob"
+    (is (= ["(TMPA-RT)" "(USGS_EROS)" "001" "A test related url." "ATMOSPHERE" "ATMOSPHERIC WINDS" "AUTHOR" "Alice" "Bob"
             "DATA ANALYSIS AND VISUALIZATION" "Data Center Contact" "DataCenterURL" "Doe"
             "EARTH SCIENCE SERVICES" "EDG" "EOSDIS" "ESIP" "GENERAL DOCUMENTATION"
             "GEOGRAPHIC INFORMATION SYSTEMS" "GET SERVICE" "HOME PAGE" "IRIS/PASSCAL" "John"
@@ -453,18 +453,19 @@
                      :RelatedUrls
                      :ScienceKeywords
                      :DataCenters]]
-    (is (= (str "001 3 a a test related url. alice analysis and atmosphere atmospheric atmospheric "
-                "winds author bob cat center com contact daac data data analysis and visualization "
-                "data center contact datacenterurl description documentation doe earth earth science "
-                "services edg engineering eosdis eros esip example general general documentation "
-                "geographic geographic information systems get get service health home home page imagery "
-                "imaging information infrared institute iris iris/passcal john lp lp daac lpdaac marsh "
-                "microwave microwave imagery of page passcal publicationurl radar radiometer related "
-                "related-url description. related-url-example-two.com related-url-example.com science "
-                "science cat 3 science contact science term 3 science topic 3 service services spectral "
-                "spectral/engineering spock suite surface surface winds systems team team spock "
-                "technical technical contact term test topic two url usgs usgs/eros viirs visible "
-                "visible infrared imaging radiometer suite. visualization white white marsh institute "
-                "of health winds")
+    (is (= (str "(tmpa-rt) (usgs_eros) 001 3 a a test related url. alice analysis and atmosphere "
+                "atmospheric atmospheric winds author bob cat center com contact daac data data "
+                "analysis and visualization data center contact datacenterurl description "
+                "documentation doe earth earth science services edg engineering eosdis eros esip "
+                "example general general documentation geographic geographic information systems "
+                "get get service health home home page imagery imaging information infrared "
+                "institute iris iris/passcal john lp lp daac lpdaac marsh microwave microwave "
+                "imagery of page passcal publicationurl radar radiometer related related-url "
+                "description. related-url-example-two.com related-url-example.com rt science "
+                "science cat 3 science contact science term 3 science topic 3 service services "
+                "spectral spectral/engineering spock suite surface surface winds systems team team "
+                "spock technical technical contact term test tmpa tmpa-rt topic two url usgs "
+                "usgs/eros usgs_eros viirs visible visible infrared imaging radiometer suite. "
+                "visualization white white marsh institute of health winds")
            (keyword-util/concept-keys->keyword-text
             sample-umm-collection-concept schema-keys)))))
