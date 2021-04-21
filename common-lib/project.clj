@@ -36,6 +36,7 @@
                  [org.clojure/test.check "0.9.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
+                 ;;these dependencies should be updated in tandem with the ring dependiences below
                  [org.eclipse.jetty/jetty-http "9.4.39.v20210325"]
                  [org.eclipse.jetty/jetty-io "9.4.39.v20210325"]
                  [org.eclipse.jetty/jetty-servlets "9.4.39.v20210325"]
@@ -47,7 +48,7 @@
                  [potemkin "0.4.5"]
                  [ring/ring-core "1.9.2"]
                  [ring/ring-jetty-adapter "1.9.2"]
-                 [ring/ring-json "0.4.0"]]
+                 [ring/ring-json "0.5.1"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]
