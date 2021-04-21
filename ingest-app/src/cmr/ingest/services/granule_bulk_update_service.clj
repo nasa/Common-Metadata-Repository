@@ -61,25 +61,40 @@
         event-type (string/lower-case (str operation ":" update-field))]
     (map (partial update->instruction event-type) updates)))
 
-(defn- validate-granule-bulk-update-no-duplicates
+(defn- validate-granule-bulk-update-no-duplicate-urs
   "Validate no duplicate URs exist within the list of instructions"
-  [request]
-  (when-let [duplicate-urs (->> request
-                                request->instructions
-                                (map :granule-ur)
-                                duplicates)]
+  [urs]
+  (when-let [duplicate-urs (duplicates urs)]
     (errors/throw-service-errors
      :bad-request
      [(format (str "Duplicate granule URs are not allowed in bulk update requests. "
                    "Detected the following duplicates [%s]")
-              (string/join "," duplicate-urs))])))
+              (string/join "," duplicate-urs))]))
+  urs)
+
+(defn- validate-granule-bulk-update-no-blank-urs
+  "Validate no blank URs exist in the list."
+  [urs]
+  (when-let [blank-urs (filter string/blank? urs)]
+    (errors/throw-service-errors
+     :bad-request
+     [(format (str "Empty granule URs are not allowed in bulk update requests. "
+                   "Found [%d] blank updates with empty values")
+              (count blank-urs))]))
+  urs)
 
 (defn- validate-and-parse-bulk-granule-update
   "Perform validation operations on bulk granule update requests."
   [context json-body provider-id]
+  ;; validate request against schema
   (validate-granule-bulk-update-json json-body)
   (let [request (json/parse-string json-body true)]
-    (validate-granule-bulk-update-no-duplicates request)
+    ;; validate granule UR
+    (->> request
+         request->instructions
+         (map :granule-ur)
+         validate-granule-bulk-update-no-blank-urs
+         validate-granule-bulk-update-no-duplicate-urs)
     request))
 
 (defn- publish-instructions-partitioned
