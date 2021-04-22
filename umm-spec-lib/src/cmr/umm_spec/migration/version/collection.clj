@@ -430,8 +430,7 @@
   ;; Remove the related urls that contain GET CAPABILITIES as the type as it is not valid in the
   ;; lower versions.
   (-> c
-      (util/update-in-all [:RelatedUrls] (fn [related-url]
-                                           (if (= "GET CAPABILITIES" (:Type related-url))
-                                             nil
-                                             related-url)))
+      (update :RelatedUrls (fn [related-urls]
+                             (into []
+                               (remove #(= "GET CAPABILITIES" (:Type %)) related-urls))))
       util/remove-nils-empty-maps-seqs))

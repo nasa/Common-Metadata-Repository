@@ -23,8 +23,8 @@
    GET CAPABILITIES type."
   [url-types mime-type]
   (let [subtype (:Subtype url-types)]
-    (def subtype subtype)
-    (and (and subtype mime-type)
+    (and subtype
+         mime-type
          (= "opensearch" (string/lower-case subtype))
          (= "application/opensearchdescription+xml" mime-type))))
 
