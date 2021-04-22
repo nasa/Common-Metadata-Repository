@@ -26,13 +26,17 @@
           md-data-id-el (first (select cmr-7250-coll md-data-id-base-xpath))
           keyword-type iso-keywords/science-keyword-type
           keyword-title iso-keywords/science-keyword-title
+          ;; Verify skw-nottheme-oceanography not included(right title, wrong type.);
+          ;;        wkw-oceanography not included(right type, wrong title - WMO keyword);
+          ;;        EARTH SCIENCE gmxAnchor and skw-oceanography are included (gmx:Anchor cases)
+          ;;        Six other EARTH SCIENCE are included (gco:CharacterString cases).
           expected-skw ["EARTH SCIENCE > BIOLOGICAL CLASSIFICATION > ANIMALS/VERTEBRATES > BIRDS > NONE > NONE > NONE"
                         "EARTH SCIENCE > BIOSPHERE > AQUATIC ECOSYSTEMS > LAKES > NONE > NONE > NONE"
                         "EARTH SCIENCE > BIOSPHERE > AQUATIC ECOSYSTEMS > LAKES > SALINE LAKES > NONE > NONE"
                         "EARTH SCIENCE > BIOSPHERE > AQUATIC ECOSYSTEMS > MARINE HABITAT > NONE > NONE > NONE"
                         "EARTH SCIENCE > BIOSPHERE > ECOLOGICAL DYNAMICS > SPECIES/POPULATION INTERACTIONS > MIGRATORY RATES/ROUTES > NONE > NONE"
                         "EARTH SCIENCE > BIOSPHERE > ECOLOGICAL DYNAMICS > SPECIES/POPULATION INTERACTIONS > POPULATION DYNAMICS > NONE > NONE"
-                        "EARTH SCIENCE > BIOSPHERE > ECOLOGICAL DYNAMICS > ECOTOXICOLOGY > TOXICITY LEVELS > NONE > NONE"
+                        "EARTH SCIENCE gmxAnchor > BIOSPHERE > ECOLOGICAL DYNAMICS > ECOTOXICOLOGY > TOXICITY LEVELS > NONE > NONE"
                         "skw-oceanography"]]
       ;; descriptive-keywords-with-title function should return the right number of ScienceKeywords 
       (is (= expected-skw (iso-keywords/descriptive-keywords-with-title md-data-id-el keyword-type keyword-title))))))
