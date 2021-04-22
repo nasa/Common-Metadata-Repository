@@ -64,7 +64,7 @@
 (defn- validate-granule-bulk-update-no-duplicate-urs
   "Validate no duplicate URs exist within the list of instructions"
   [urs]
-  (when-let [duplicate-urs (duplicates urs)]
+  (when-let [duplicate-urs (seq (duplicates urs))]
     (errors/throw-service-errors
      :bad-request
      [(format (str "Duplicate granule URs are not allowed in bulk update requests. "
@@ -75,11 +75,11 @@
 (defn- validate-granule-bulk-update-no-blank-urs
   "Validate no blank URs exist in the list."
   [urs]
-  (when-let [blank-urs (filter string/blank? urs)]
+  (when-let [blank-urs (seq (filter string/blank? urs))]
     (errors/throw-service-errors
      :bad-request
      [(format (str "Empty granule URs are not allowed in bulk update requests. "
-                   "Found [%d] blank updates with empty values")
+                   "Found [%d] updates with empty granule UR values.")
               (count blank-urs))]))
   urs)
 

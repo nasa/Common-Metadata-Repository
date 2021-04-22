@@ -13,16 +13,12 @@
         "S3Link"
       ]
     },
-    "NonEmptyString": {
-      "type" : "string",
-      "minLength": 1
-    },
     "UpdateTupleType": {
       "type": "array",
       "minItems": 2,
       "maxItems": 2,
       "items": {
-        "ref": "#/definitions/NonEmptystring"
+        "type": "string"
       },
       "examples": [
         ["SL:AB_5DSno.008:30500511", "https://example.com/opendap/30500511"]
