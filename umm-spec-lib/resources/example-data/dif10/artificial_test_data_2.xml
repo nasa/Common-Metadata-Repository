@@ -127,6 +127,22 @@
         </URL_Content_Type>
         <URL>http://suzaku.eorc.jaxa.jp/GCOM/index.html</URL>
     </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>USE SERVICE API</Type>
+            <Subtype>OpenSearch</Subtype>
+        </URL_Content_Type>
+        <URL>http://suzaku.eorc.jaxa.jp/GCOM/index.html</URL>
+        <Mime_Type>application/opensearchdescription+xml</Mime_Type>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>USE SERVICE API</Type>
+            <Subtype>OpenSearch</Subtype>
+        </URL_Content_Type>
+        <URL>http://suzaku.eorc.jaxa.jp/GCOM/index.html</URL>
+        <Mime_Type>text/html</Mime_Type>
+    </Related_URL>
     <!--Moved IDN_Node=JAPAN/JAXA to name-value.-->
     <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
     <Metadata_Name>CEOS IDN DIF</Metadata_Name>

@@ -5,7 +5,8 @@
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
-   [cmr.umm-spec.iso19115-2-util :as iso-util]))
+   [cmr.umm-spec.iso19115-2-util :as iso-util]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as iso-xml-parsing-util]))
 
 (def doi-namespace
   "DOI namespace."
@@ -27,9 +28,10 @@
   "Parses explanation for missing reason out of description."
   [description]
   (when description
-    (when-let [explanation-index (util/get-index-or-nil description "Explanation:")]
-      (let [explanation (subs description explanation-index)]
-        (string/trim (subs explanation (inc (.indexOf explanation ":"))))))))
+    (when-let [explanation-map (iso-xml-parsing-util/convert-iso-description-string-to-map
+                                 description
+                                 (re-pattern "Explanation:"))]
+      (string/trim (:Explanation explanation-map)))))
 
 (defn parse-doi
   "There could be multiple CI_Citations. Each CI_Citation could contain multiple gmd:identifiers.

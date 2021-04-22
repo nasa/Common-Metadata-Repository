@@ -48,6 +48,17 @@
   [related-url]
   (= "PublicationURL" (:URLContentType related-url)))
 
+(defn search-url?
+  "Returns true if the related-url is search url"
+  [related-url]
+  (and (= "GET CAPABILITIES" (:Type related-url))
+       (= "OpenSearch" (:Subtype related-url))))
+
+(defn search-urls
+  "Returns the related-urls that are search urls"
+  [related-urls]
+  (filter search-url? related-urls))
+
 (defn resource-url?
   "Returns true if the related-url is resource url"
   [related-url]
@@ -85,6 +96,7 @@
     (downloadable-url? related-url) "data"
     (browse-url? related-url) "browse"
     (documentation-url? related-url) "documentation"
+    (search-url? related-url) "search"
     :else "metadata"))
 
 (defn- related-url->atom-link

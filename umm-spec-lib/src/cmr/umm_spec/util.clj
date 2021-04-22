@@ -32,6 +32,7 @@
 
 (def valid-url-content-types-map
   {"DistributionURL" {"DOWNLOAD SOFTWARE" ["MOBILE APP"]
+                      "GET CAPABILITIES" ["OpenSearch" "GIBS"]
                       "GET DATA" ["APPEEARS"
                                   "DATA COLLECTION BUNDLE"
                                   "DATA TREE"
