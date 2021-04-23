@@ -132,20 +132,20 @@
      :value value
      :sub-str? true}))
 
-(defn- create-elem-val-include-selector
+(defn- create-elem-val-substring-selector
   "Creates a selector that selects elements which have a child element with a
   value that includes a substring."
   [selector-str]
-  (let [[_ xpath value] (re-matches #"includes\((.+), *'(.+)'\)" selector-str)
+  (let [[_ xpath element-value] (re-matches #"contains\((.+), *'(.+)'\)" selector-str)
         parsed-xpath (parse-xpath xpath)]
     (when (not= (:source parsed-xpath) :from-context)
       (throw
         (Exception.
           (str "Nested XPath selectors can not be from the root. XPath: "
                xpath))))
-    {:type :element-value-include-selector
+    {:type :element-value-selector
      :selectors (:selectors parsed-xpath)
-     :element-value value
+     :element-value element-value
      :sub-str? true}))
 
 (defn- create-elem-val-equality-selector
@@ -239,11 +239,11 @@
     (re-matches #".+='.+'" selector-str)
     (create-elem-val-equality-selector selector-str)
 
-    (re-matches #".*contains\(.*" selector-str)
+    (re-matches #".*contains\(.*@.+" selector-str)
     (create-attrib-val-substring-selector selector-str)
 
-    (re-matches #".*includes\(.*" selector-str)
-    (create-elem-val-include-selector selector-str)
+    (re-matches #".*contains\(.+" selector-str)
+    (create-elem-val-substring-selector selector-str)
 
     :else
     (throw
@@ -385,24 +385,14 @@
                  (= selected-value value))))
            elements))
 
-(defmethod process-xml-selector :element-value-include-selector
-  [elements {:keys [selectors element-value sub-str?]}]
-  (filterv (fn [element]
-             (some (fn [selected-element]
-                     (if sub-str?
-                       (str/includes? (-> selected-element :content first) element-value)
-                       (= (-> selected-element :content first) element-value)))
-                   (process-selectors
-                     [element] selectors process-xml-selector)))
-           elements))
-
 (defmethod process-xml-selector :element-value-selector
-  [elements {:keys [selectors element-value not-equal?]}]
+  [elements {:keys [selectors element-value not-equal? sub-str?]}]
   (filterv (fn [element]
              (some (fn [selected-element]
-                     (if not-equal?
-                       (not= (-> selected-element :content first) element-value)
-                       (= (-> selected-element :content first) element-value)))
+                     (cond
+                       not-equal? (not= (-> selected-element :content first) element-value) 
+                       sub-str? (str/includes? (-> selected-element :content first) element-value)
+                       :else (= (-> selected-element :content first) element-value)))
                    (process-selectors
                      [element] selectors process-xml-selector)))
            elements))

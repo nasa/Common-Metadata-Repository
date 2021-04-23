@@ -127,14 +127,14 @@
          (for [desc-kw desc-kws-with-kw-type]
            (values-at desc-kw
                       (str "gmd:MD_Keywords"
-                           "[includes(gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString, '"
+                           "[contains(gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString, '"
                            keyword-title "')]"
                            "/gmd:keyword/gco:CharacterString")))
         gmx-values
          (for [desc-kw desc-kws-with-kw-type]
            (values-at desc-kw
                       (str "gmd:MD_Keywords"
-                           "[includes(gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString, '"
+                           "[contains(gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString, '"
                            keyword-title "')]"
                            "/gmd:keyword/gmx:Anchor")))
         keyword-values (concat gco-values gmx-values)]
