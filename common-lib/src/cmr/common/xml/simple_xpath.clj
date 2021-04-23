@@ -133,8 +133,8 @@
      :sub-str? true}))
 
 (defn- create-elem-val-include-selector
-  "Creates a selector that selects elements with an attribute with a given
-  value that matches by substring."
+  "Creates a selector that selects elements which have a child element with a
+  value that includes a substring."
   [selector-str]
   (let [[_ xpath value] (re-matches #"includes\((.+), *'(.+)'\)" selector-str)
         parsed-xpath (parse-xpath xpath)]
