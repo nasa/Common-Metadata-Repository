@@ -57,7 +57,7 @@
 
 (def science-keyword-title
   "String used to define the keyword title for science keywords."
-  "Global Change Master Directory (GCMD) Science Keywords")
+  "GCMD")
 
 (defn parse-keyword-str
   "Returns a seq of individual components of an ISO-19115-2 or SMAP keyword string."
@@ -122,20 +122,20 @@
                       keyword-type "']"))
 
         ;;for each descriptiveKeyword with the keyword-type, get /gmd:keyword/gco:CharacterString
-        ;;and /gmd:keyword/gmx:Anchor that satisfy the keyword-title condition.
+        ;;and /gmd:keyword/gmx:Anchor that includes the keyword-title.
         gco-values
          (for [desc-kw desc-kws-with-kw-type]
            (values-at desc-kw
                       (str "gmd:MD_Keywords"
-                           "[gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString='"
-                           keyword-title "']"
+                           "[includes(gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString, '"
+                           keyword-title "')]"
                            "/gmd:keyword/gco:CharacterString")))
         gmx-values
          (for [desc-kw desc-kws-with-kw-type]
            (values-at desc-kw
                       (str "gmd:MD_Keywords"
-                           "[gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString='"
-                           keyword-title "']"
+                           "[includes(gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString, '"
+                           keyword-title "')]"
                            "/gmd:keyword/gmx:Anchor")))
         keyword-values (concat gco-values gmx-values)]
     (flatten keyword-values)))
