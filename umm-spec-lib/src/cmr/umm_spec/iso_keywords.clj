@@ -122,7 +122,7 @@
                       keyword-type "']"))
 
         ;;for each descriptiveKeyword with the keyword-type, get /gmd:keyword/gco:CharacterString
-        ;;and /gmd:keyword/gmx:Anchor that includes the keyword-title.
+        ;;and /gmd:keyword/gmx:Anchor with the title that includes the substring keyword-title.
         gco-values
          (for [desc-kw desc-kws-with-kw-type]
            (values-at desc-kw
@@ -157,24 +157,29 @@
 
 (defn parse-science-keywords
   "Returns the science keywords parsed from the given xml document."
-  [md-data-id-el sanitize?]
-  (if-let [science-keywords (seq (descriptive-keywords-with-title md-data-id-el
-                                                                  science-keyword-type
-                                                                  science-keyword-title))]
-    (for [sk science-keywords
-          :let [[category topic term variable-level-1 variable-level-2 variable-level-3
-                 detailed-variable] (->> (str/split sk iso/keyword-separator-split)
-                                         (map #(when-not (= nil-science-keyword-field %)  %)))]]
-
-        {:Category category
-         :Topic (su/with-default topic)
-         :Term (su/with-default term)
-         :VariableLevel1 variable-level-1
-         :VariableLevel2 variable-level-2
-         :VariableLevel3 variable-level-3
-         :DetailedVariable detailed-variable})
-    (when sanitize?
-      su/not-provided-science-keywords)))
+  ([md-data-id-el sanitize?]
+   (parse-science-keywords md-data-id-el sanitize? false))
+  ([md-data-id-el sanitize? smap?]
+   (if-let [science-keywords (if smap?
+                               ;; smap keeps the current behavior. 
+                               (seq (descriptive-keywords md-data-id-el science-keyword-type)) 
+                               (seq (descriptive-keywords-with-title md-data-id-el
+                                                                     science-keyword-type
+                                                                     science-keyword-title)))]
+     (for [sk science-keywords
+           :let [[category topic term variable-level-1 variable-level-2 variable-level-3
+                  detailed-variable] (->> (str/split sk iso/keyword-separator-split)
+                                          (map #(when-not (= nil-science-keyword-field %)  %)))]]
+ 
+         {:Category category
+          :Topic (su/with-default topic)
+          :Term (su/with-default term)
+          :VariableLevel1 variable-level-1
+          :VariableLevel2 variable-level-2
+          :VariableLevel3 variable-level-3
+          :DetailedVariable detailed-variable})
+     (when sanitize?
+       su/not-provided-science-keywords))))
 
 (defmulti smap-keyword-str
   "Returns a SMAP keyword string for a given UMM record."
