@@ -30,8 +30,8 @@
              (= \] last-char)))))
 
 (defn- prepare-keyword-field
-  [field-value]
   "Convert a string to lowercase then separate it into keywords"
+  [field-value]
   (when field-value
     (let [field-value (string/lower-case field-value)]
       (if (wrapped-keyword? field-value)
