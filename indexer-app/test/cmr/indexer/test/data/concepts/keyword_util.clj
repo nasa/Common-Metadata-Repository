@@ -433,12 +433,12 @@
   (let [schema-keys [:LongName
                      :ShortName
                      :Version]]
-    (is (= "001 imaging infrared radiometer suite viirs visible visible infrared imaging radiometer suite."
+    (is (= "001 imaging infrared radiometer suite suite. viirs visible"
            (keyword-util/concept-keys->keyword-text
             sample-umm-collection-concept schema-keys))))
   (let [schema-keys [:ShortName
                      :ContactGroups]]
-    (is (= "contact science science contact spock team team spock viirs"
+    (is (= "contact science spock team viirs"
            (keyword-util/concept-keys->keyword-text
             sample-umm-collection-concept schema-keys))))
   (let [schema-keys [:ContactPersons]]
@@ -454,19 +454,14 @@
                      :RelatedUrls
                      :ScienceKeywords
                      :DataCenters]]
-    (is (= (str "(tmpa-rt) (tmpa-rt-multi-term) (usgs_eros) 001 3 a a test related url. alice analysis "
-                "and atmosphere atmospheric atmospheric winds author bob cat center com contact daac "
-                "data data analysis and visualization data center contact datacenterurl description "
-                "documentation doe earth earth science services edg engineering eosdis eros esip "
-                "example general general documentation geographic geographic information systems "
-                "get get service health home home page imagery imaging information infrared "
-                "institute iris iris/passcal john lp lp daac lpdaac marsh microwave microwave "
-                "imagery multi of page passcal publicationurl radar radiometer related related-url "
-                "description. related-url-example-two.com related-url-example.com rt science "
-                "science cat 3 science contact science term 3 science topic 3 service services "
-                "spectral spectral/engineering spock suite surface surface winds systems team team "
-                "spock technical technical contact term test tmpa tmpa-rt tmpa-rt-multi-term topic "
-                "two url usgs usgs/eros usgs_eros viirs visible visible infrared imaging radiometer "
-                "suite. visualization white white marsh institute of health winds")
+    (is (= (str "(tmpa-rt) (tmpa-rt-multi-term) (usgs_eros) 001 3 a alice analysis and atmosphere "
+                "atmospheric author bob cat center com contact daac data datacenterurl description "
+                "description. documentation doe earth edg engineering eosdis eros esip example "
+                "general geographic get health home imagery imaging information infrared institute "
+                "iris iris/passcal john lp lpdaac marsh microwave multi of page passcal publicationurl "
+                "radar radiometer related related-url related-url-example-two.com related-url-example.com "
+                "rt science service services spectral spectral/engineering spock suite suite. "
+                "surface systems team technical term test tmpa tmpa-rt tmpa-rt-multi-term topic two "
+                "url url. usgs usgs/eros usgs_eros viirs visible visualization white winds")
            (keyword-util/concept-keys->keyword-text
             sample-umm-collection-concept schema-keys)))))
