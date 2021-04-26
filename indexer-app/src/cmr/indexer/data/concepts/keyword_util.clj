@@ -20,8 +20,8 @@
   "Checks if the field-value about to be processed is a term surrounded by parens or brackets.
    If it is, we want to add the usual keywords, but also add the unwrapped field-value on its own."
   [field-value]
-  (let [first-char (first field-value)]
-       [last-char (last field-value)]
+  (let [first-char (first field-value)
+        last-char (last field-value)]
     (and (or (= \( first-char)
              (= \{ first-char)
              (= \[ first-char))
