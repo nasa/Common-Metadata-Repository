@@ -382,19 +382,14 @@
            sample-umm-collection-concept :ScienceKeywords)))))
 
 (deftest concept-key->keyword-text
-  (is (= (str "a a test related url. com datacenterurl description documentation edg example "
-              "general general documentation get get service home home page page publicationurl "
-              "related related-url description. related-url-example-two.com related-url-example.com "
-              "service test two url")
+  (is (= (str "a com datacenterurl description description. documentation edg example general get "
+              "home page publicationurl related related-url related-url-example-two.com "
+              "related-url-example.com service test two url url.")
         (keyword-util/concept-key->keyword-text
          sample-umm-collection-concept :RelatedUrls)))
-  (is (= (str "3 analysis and atmosphere atmospheric atmospheric winds cat "
-              "data data analysis and visualization earth earth science "
-              "services engineering geographic geographic information systems "
-              "imagery information microwave microwave imagery radar science "
-              "science cat 3 science term 3 science topic 3 services spectral "
-              "spectral/engineering surface surface winds systems term topic "
-              "visualization winds")
+  (is (= (str "3 analysis and atmosphere atmospheric cat data earth engineering geographic imagery "
+              "information microwave radar science services spectral spectral/engineering surface "
+              "systems term topic visualization winds")
         (keyword-util/concept-key->keyword-text
          sample-umm-collection-concept :ScienceKeywords))))
 
