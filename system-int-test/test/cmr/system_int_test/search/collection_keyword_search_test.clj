@@ -112,7 +112,8 @@
                                       :Description "Home page of National Snow and Ice Data Center"})
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll1" :ShortName "S1"
                                                                             :VersionDescription "VersionDescription"}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll2" :ShortName "ABC!XYZ" :Version "V001"}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Mitch made a (merry-go-round)"
+                                                                            :ShortName "ABC!XYZ" :Version "V001"}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll3" :ShortName "S3" :CollectionDataType "OTHER"}))
         coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll4" :ShortName "S4" :CollectionDataType "OTHER"}))
         coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll5" :ShortName "Space!Laser"}))
@@ -204,6 +205,12 @@
 
         ;; entry title
         "coll1" [coll1]
+        "Mitch made a (merry-go-round)" [coll2]
+        "(merry-go-round)" [coll2]
+        "merry-go-round" [coll2]
+        "merry" [coll2]
+        "merry go round" [coll2]
+        "merry-go" []
 
         ;; entry id
         "ABC!XYZ_V001" [coll2]

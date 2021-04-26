@@ -43,6 +43,7 @@
   "Returns the keyword text for the given list of field values."
   [field-values]
   (->> field-values
+       (mapcat #(string/split % #" "))
        (mapcat prepare-keyword-field)
        (keep not-empty)
        (apply sorted-set)
