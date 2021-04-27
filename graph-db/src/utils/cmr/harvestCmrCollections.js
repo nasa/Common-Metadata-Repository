@@ -6,26 +6,40 @@ const { clearScrollSession } = require('./clearScrollSession');
  * @returns {JSON} partitioned array of CMR collection search results
  */
 exports.harvestCmrCollections = async () => {
-    const response = await fetchPageFromCMR();
-    const results = (await response.json()).items
-    const scrollId = response.headers.get("CMR-Scroll-Id");
-    let partitionedSearchResults = [];
-    let continueScroll = true;
-    
-    partitionedSearchResults.push(results);
-    while (continueScroll) {
-        const scrolledResults = await fetchPageFromCMR(scrollId).then(results => results.json())
-        partitionedSearchResults.push(scrolledResults.items);
+  const response = await fetchPageFromCMR();
+  const results = (await response.json()).items;
+  const scrollId = response.headers.get('CMR-Scroll-Id');
+  const partitionedSearchResults = [];
+  let continueScroll = true;
 
-        console.log(`Got [${scrolledResults.items.length}] items from the CMR`)
-        if (scrolledResults.items.length < process.env.PAGE_SIZE) {
-            continueScroll = false;
+  partitionedSearchResults.push(results);
+  while (continueScroll) {
+    // eslint-disable-next-line no-await-in-loop
+    const scrolledResults = await fetchPageFromCMR(scrollId)
+      .then((scrollResponse) => scrollResponse.json())
+      .then((json) => {
+        if (json.errors) {
+          throw new Error(`The following errors ocurred: ${json.errors}`);
+        } else {
+          return json.items;
         }
+      })
+      .catch((error) => {
+        console.log(`Could not complete request due to error: ${error}`);
+        return null;
+      });
+
+    partitionedSearchResults.push(scrolledResults);
+
+    console.log(`Got [${scrolledResults.length}] items from the CMR`);
+    if (scrolledResults.length < process.env.PAGE_SIZE) {
+      continueScroll = false;
     }
+  }
 
-    console.log(`Got scroll-id: [${scrollId}]. Clearing session...`);
-    await clearScrollSession(scrollId);
+  console.log(`Got scroll-id: [${scrollId}]. Clearing session...`);
+  await clearScrollSession(scrollId);
 
-    console.log(`Partitions: ${partitionedSearchResults.length}`);
-    return partitionedSearchResults;
-}
+  console.log(`Partitions: ${partitionedSearchResults.length}`);
+  return partitionedSearchResults;
+};

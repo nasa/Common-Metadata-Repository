@@ -7,11 +7,11 @@ const ssm = new AWS.SSM();
  * @param {String} param name of parameter to fetch
  * @returns {JSON} server response object from Parameter Store
  */
-exports.getSecureParam = async param => {
+exports.getSecureParam = async (param) => {
   const request = await ssm
     .getParameter({
       Name: param,
-      WithDecryption: true
+      WithDecryption: true,
     })
     .promise();
   return request.Parameter.Value;

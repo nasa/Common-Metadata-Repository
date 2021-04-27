@@ -9,11 +9,16 @@
   "author": "Mark Schmele",
   "license": "ISC",
   "dependencies": {
+    "array-foreach-async": "^1.0.1",
     "aws-sdk": "^2.891.0",
-    "eslint": "^7.25.0",
     "gremlin": "^3.4.10",
     "node-fetch": "^2.6.1",
     "serverless": "^2.38.0",
     "serverless-offline": "^6.9.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.25.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1"
   }
 }
