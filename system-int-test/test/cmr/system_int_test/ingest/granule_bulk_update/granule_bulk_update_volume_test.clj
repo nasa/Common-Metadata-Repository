@@ -33,14 +33,12 @@
      (let [bulk-update-options {:token (echo-util/login (system/context) "user1")
                                 :accept-format :json
                                 :raw? true}
-
            coll1 (data-core/ingest-umm-spec-collection
                   "PROV1" (data-umm-c/collection {:EntryTitle "coll1"
                                                   :ShortName "short1"
                                                   :Version "V1"
                                                   :native-id "native1"}))
            _ (index/wait-until-indexed)
-
            grans (for [ur ["g1" "g2" "g3"]]
                    (ingest/ingest-concept
                     (data-core/item->concept
@@ -48,17 +46,16 @@
                       coll1
                       (:concept-id coll1)
                       {:granule-ur ur}))))]
-
        (index/wait-until-indexed)
 
        (are3 [urs]
              (let [request (->> urs
                                 (map update-instruction)
                                 (assoc base-request :updates))
-
-                   {:keys [body status]} (ingest/bulk-update-granules "PROV1"
-                                                                      request
-                                                                      bulk-update-options)
+                   {:keys [body status]} (ingest/bulk-update-granules
+                                          "PROV1"
+                                          request
+                                          bulk-update-options)
                    response (json/parse-string body true)]
                (is (= 200 status)))
 
