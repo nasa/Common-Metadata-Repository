@@ -1,9 +1,9 @@
-const { process, driver } = require('gremlin');
+const { process: p, driver } = require('gremlin');
 
 exports.initializeGremlinConnection = () => {
-    const traversal = process.AnonymousTraversalSource.traversal;
+    const traversal = p.AnonymousTraversalSource.traversal;
     const DriverRemoteConnection = driver.DriverRemoteConnection;
-    const gremlinUrl = process.env.GREMLIN_URL || 'ws://localhost:8182/gremlin';
+    const gremlinUrl = process.env.GREMLIN_URL;
 
     return traversal().withRemote(new DriverRemoteConnection(gremlinUrl));
 }

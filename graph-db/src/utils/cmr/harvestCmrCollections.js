@@ -6,23 +6,25 @@ const { clearScrollSession } = require('./clearScrollSession');
  * @returns {JSON} partitioned array of CMR collection search results
  */
 exports.harvestCmrCollections = async () => {
-    let { scrollId, response } = await fetchPageFromCMR();
+    const response = await fetchPageFromCMR();
+    const results = (await response.json()).items
+    const scrollId = response.headers.get("CMR-Scroll-Id");
     let partitionedSearchResults = [];
     let continueScroll = true;
-
-    partitionedSearchResults.push(response);
+    
+    partitionedSearchResults.push(results);
     while (continueScroll) {
-        let scrolledResults = (await fetchPageFromCMR(scrollId)).response;
-        partitionedSearchResults.push(scrolledResults);
+        const scrolledResults = await fetchPageFromCMR(scrollId).then(results => results.json())
+        partitionedSearchResults.push(scrolledResults.items);
 
-        console.log(`Got [${scrolledResults.length}] items from the CMR`)
-        if (scrolledResults.length < process.env.PAGE_SIZE) {
+        console.log(`Got [${scrolledResults.items.length}] items from the CMR`)
+        if (scrolledResults.items.length < process.env.PAGE_SIZE) {
             continueScroll = false;
         }
     }
 
     console.log(`Got scroll-id: [${scrollId}]. Clearing session...`);
-    clearScrollSession(scrollId);
+    await clearScrollSession(scrollId);
 
     console.log(`Partitions: ${partitionedSearchResults.length}`);
     return partitionedSearchResults;

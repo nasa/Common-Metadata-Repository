@@ -4,7 +4,7 @@
   "description": "",
   "main": "handler.js",
   "scripts": {
-    "bootstrap": "serverless invoke local -f bootstrapGremlinServer -e CMR_ROOT=\"http://cmr.uat.earthdata.nasa.gov\" -e PAGE_SIZE=2000"
+    "bootstrap": "serverless invoke local -f bootstrapGremlinServer -e CMR_ROOT=\"http://cmr.uat.earthdata.nasa.gov\" -e PAGE_SIZE=2000 -e GREMLIN_URL=\"ws://localhost:8182/gremlin\""
   },
   "author": "Mark Schmele",
   "license": "ISC",

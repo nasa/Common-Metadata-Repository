@@ -3,13 +3,13 @@ const { indexRelatedUrl } = require('./indexRelatedUrl');
 exports.indexCmrCollection = async (collection, gremlin) => {
     const { meta, umm } = collection;
     const conceptId = meta['concept-id'];
-    const { EntryTitle, DOI, RelatedUrls } = umm;
-    const hasDOI = !!DOI.DOI;
+    const { EntryTitle: entryTitle, DOI: doi, RelatedUrls: relatedUrls } = umm;
+    const hasDOI = !!doi.DOI;
     let doiUrl = "Not supplied";
     let datasetName = `${process.env.CMR_ROOT}/concepts/${conceptId}.html`;
 
     if (hasDOI) {
-        const doiAddress = DOI.DOI.split(':').pop();
+        const doiAddress = doi.DOI.split(':').pop();
         doiUrl = `http://doi.org/${doiAddress}`;
         datasetName = doiAddress;
     }
@@ -20,17 +20,17 @@ exports.indexCmrCollection = async (collection, gremlin) => {
         dataset = await gremlin
         .addV("dataset")
         .property("name", datasetName)
-        .property("title", EntryTitle)
+        .property("title", entryTitle)
         .property("concept-id", conceptId)
-        .property("doi", DOI.DOI || "Not supplied")
+        .property("doi", doi.DOI || "Not supplied")
         .next();
     }
     else {
         dataset = await gremlin.V().hasLabel("dataset").has("name", datasetName).next();                              
     }
     
-    if (RelatedUrls && RelatedUrls.length >= 1) {
-        RelatedUrls.map(relatedUrl => {
+    if (relatedUrls && relatedUrls.length >= 1) {
+        relatedUrls.map(relatedUrl => {
             indexRelatedUrl(relatedUrl, gremlin, dataset);
         })
     }

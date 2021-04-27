@@ -7,15 +7,20 @@ const { getSecureParam } = require('../getSecureParam');
  * if no token is supplied.
  */
  exports.getEchoToken = async () => {
-    console.log(process.env.CMR_ENVIRONMENT);
-    const response = getSecureParam(
-      `/${process.env.CMR_ENVIRONMENT}/graph-db/CMR_ECHO_SYSTEM_TOKEN`
-    );
+  const IS_LOCAL = process.env.IS_LOCAL;
   
-    if (!response) {
-      throw new Error('ECHO Token not found. Please update config!');
-    }
+  if (IS_LOCAL) {
+    return null;
+  }
+  
+  const response = getSecureParam(
+    `/${process.env.CMR_ENVIRONMENT}/graph-db/CMR_ECHO_SYSTEM_TOKEN`
+  );
 
-    console.log('Retrieved ECHO TOKEN');
-    return response;
-  };
+  if (!IS_LOCAL && !response) {
+    throw new Error('ECHO Token not found. Please update config!');
+  }
+
+  console.log('Retrieved ECHO TOKEN');
+  return response;
+};
