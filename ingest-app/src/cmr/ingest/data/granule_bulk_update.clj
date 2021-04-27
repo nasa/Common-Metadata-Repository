@@ -297,7 +297,7 @@
                                    (= :task-id ~task-id))))))))
 
 (defn-timed mark-task-complete
-  "Marks a granule bulk task as COMPELTE and sets the status message.
+  "Marks a granule bulk task as COMPLETE and sets the status message.
   It will throw an exception if there still granules marked as PENDING."
   [context task-id]
   (validate-task-exists context task-id)
