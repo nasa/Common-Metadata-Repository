@@ -27,3 +27,13 @@
      :originator-id-lowercase  (util/safe-lowercase originator-id)
      :tag-value-lowercase (when (string? data)
                             (str/lower-case data))}))
+
+(def earthdata-cloud-s3-tag
+  "The Earthdata cloud tag for s3 resources"
+  "gov.nasa.earthdata.cloud.s3")
+
+(defn has-cloud-s3-tag
+  "Looks through a list of tags and returns true if one of them is the
+  gov.nasa.earthdata.cloud.s3 tag"
+  [tags]
+  (some? (some #(= (:tag-key-lowercase %) earthdata-cloud-s3-tag) tags)))

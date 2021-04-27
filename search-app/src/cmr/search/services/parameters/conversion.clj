@@ -47,6 +47,7 @@
    :has-granules-created-at :multi-date-range
    :has-granules-revised-at :multi-date-range
    :has-opendap-url :boolean
+   :cloud-hosted :boolean
    :instrument :string
    :instrument-h :humanizer
    :keyword :keyword
