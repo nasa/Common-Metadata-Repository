@@ -267,7 +267,6 @@
        ;; purposely not using `not=` since sqlingvo doesn't understand it
        (sql-utils/where `(not (= :status "COMPLETE"))))))))
 
-
 (defn validate-task-exists
   "Validates the task exists in the database."
   [context task-id]
