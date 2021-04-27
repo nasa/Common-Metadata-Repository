@@ -23,19 +23,16 @@ const { getEchoToken } = require('./getEchoToken');
     const response = await fetch(`${process.env.CMR_ROOT}/search/collections.umm_json?page_size=${process.env.PAGE_SIZE}&scroll=true`, {
       method: 'GET',
       headers: requestHeaders
-    })
-      .then(response => {
+    }).then(response => {
         scrollSession = response.headers.get("CMR-Scroll-Id");
         return response.json();
-      })
-      .then(json => {
+      }).then(json => {
         if (json.errors) {
           throw new Error(`The following errors ocurred: ${json.errors}`);
         } else {
           return json.items;
         }
-      })
-      .catch(error => {
+      }).catch(error => {
         console.log(`Could not complete request due to error: ${error}`);
         return null;
       });

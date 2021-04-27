@@ -9,14 +9,13 @@ const { getSecureParam } = require('../getSecureParam');
  exports.getEchoToken = async () => {
     console.log(process.env.CMR_ENVIRONMENT);
     const response = getSecureParam(
-      `/${process.env.CMR_ENVIRONMENT}/browse-scaler/CMR_ECHO_SYSTEM_TOKEN`
+      `/${process.env.CMR_ENVIRONMENT}/graph-db/CMR_ECHO_SYSTEM_TOKEN`
     );
   
-    if (response === undefined) {
+    if (!response) {
       throw new Error('ECHO Token not found. Please update config!');
-    } else {
-      console.log('Retrieved ECHO TOKEN');
     }
-  
+
+    console.log('Retrieved ECHO TOKEN');
     return response;
   };

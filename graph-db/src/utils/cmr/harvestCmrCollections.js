@@ -1,13 +1,17 @@
 const { fetchPageFromCMR } = require('./fetchPageFromCmr');
 const { clearScrollSession } = require('./clearScrollSession');
 
+/**
+ * Harvest UMM JSON collection metadata from CMR environment set in env variable
+ * @returns {JSON} partitioned array of CMR collection search results
+ */
 exports.harvestCmrCollections = async () => {
     let { scrollId, response } = await fetchPageFromCMR();
     let partitionedSearchResults = [];
     let continueScroll = true;
 
     partitionedSearchResults.push(response);
-    while (continueScroll){
+    while (continueScroll) {
         let scrolledResults = (await fetchPageFromCMR(scrollId)).response;
         partitionedSearchResults.push(scrolledResults);
 
