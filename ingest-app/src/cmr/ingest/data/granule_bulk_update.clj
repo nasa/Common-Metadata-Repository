@@ -267,21 +267,27 @@
        ;; purposely not using `not=` since sqlingvo doesn't understand it
        (sql-utils/where `(not (= :status "COMPLETE"))))))))
 
-(defn-timed task-completed?
-  "Returns true if there are any granule updates marked 'PENDING'."
+
+(defn validate-task-exists
+  "Validates the task exists in the database."
   [context task-id]
+  (when-not (sql-utils/find-one
+             (context->db context)
+             (sql-utils/build
+              (sql-utils/select
+               [:task-id]
+               (sql-utils/from "granule_bulk_update_tasks")
+               (sql-utils/where `(= :task-id ~task-id)))))
+    (errors/throw-service-errors
+     :not-found
+     [(format "No granule bulk granule update task with ID [%s] found."
+              task-id)])))
+
+(defn-timed task-completed?
+  "Returns false if there are any granule updates marked PENDING."
+  [context task-id]
+  (validate-task-exists context task-id)
   (let [db (context->db context)]
-    (when-not (sql-utils/find-one
-               db
-               (sql-utils/build
-                (sql-utils/select
-                 [:task-id]
-                 (sql-utils/from "granule_bulk_update_tasks")
-                 (sql-utils/where `(= :task-id ~task-id)))))
-      (errors/throw-service-errors
-       :not-found
-       [(format "No granule bulk granule update task with id [%s] exists."
-                task-id)]))
     (nil? (sql-utils/find-one
            db
            (sql-utils/select
@@ -294,6 +300,7 @@
   "Marks a granule bulk task as COMPELTE and sets the status message.
   It will throw an exception if there still granules marked as PENDING."
   [context task-id]
+  (validate-task-exists context task-id)
   (let [db (context->db context)
         task-granules (sql-utils/query
                        db
