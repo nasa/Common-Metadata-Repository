@@ -1,0 +1,12 @@
+service: graph-db
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+
+plugins:
+  - serverless-offline
+
+functions:
+  bootstrapGremlinServer:
+    handler: src/bootstrapGremlinServer/handler.bootstrap

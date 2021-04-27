@@ -25,6 +25,12 @@ npm is a separate project from Node.js, and tends to update more frequently. As 
 npm install -g npm@latest
 ```
 
+### Serverless
+This project uses the Serverless framework, which can be installed globally like so:
+```
+npm install -g serverless
+```
+
 ### Docker
 Download docker on https://docs.docker.com/get-docker/
 
@@ -43,9 +49,16 @@ docker run -it -p 8182:8182 --network host tinkerpop/gremlin-console
 ```
 
 ### Graphexp
-Graphexp is a lightweight web interface to explore and display a graph stored in a Gremlin graph database, via the Gremlin server.
+Graphexp is a lightweight web interface to explore and display a graph stored in a Gremlin graph database, via the Gremlin server. This is an easy way to visualize nodes and edges in the graph database.
 Clone the graphexp repository at https://github.com/bricaud/graphexp
 
 ## Build
+```
+npm install
+```
 
 ## Run
+To invoke the bootstrap function and load data into your Gremlin server run the following command:
+```
+npm run bootstrap
+```

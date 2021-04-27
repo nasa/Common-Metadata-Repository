@@ -1,0 +1,18 @@
+{
+  "name": "indexer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "scripts": {
+    "bootstrap": "serverless invoke local -f bootstrapGremlinServer -e CMR_ROOT=\"http://cmr.uat.earthdata.nasa.gov\" -e PAGE_SIZE=2000"
+  },
+  "author": "Mark Schmele",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.891.0",
+    "gremlin": "^3.4.10",
+    "node-fetch": "^2.6.1",
+    "serverless": "^2.38.0",
+    "serverless-offline": "^6.9.0"
+  }
+}
