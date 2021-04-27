@@ -254,6 +254,72 @@
   (update-bulk-update-granule-status
    (context->db context) task-id granule-ur status status-message))
 
+(defn-timed get-incomplete-granule-tasks
+  "Returns a list of granule bulk update tasks where the status is not COMPELTE."
+  [context]
+  (let [db (context->db context)]
+    (sql-utils/query
+     db
+     (sql-utils/build
+      (sql-utils/select
+       [:task-id :status]
+       (sql-utils/from "granule_bulk_update_tasks")
+       ;; purposely not using `not=` since sqlingvo doesn't understand it
+       (sql-utils/where `(not (= :status "COMPLETE"))))))))
+
+(defn-timed task-completed?
+  "Returns true if there are any granule updates marked 'PENDING'."
+  [context task-id]
+  (let [db (context->db context)]
+    (when-not (sql-utils/find-one
+               db
+               (sql-utils/build
+                (sql-utils/select
+                 [:task-id]
+                 (sql-utils/from "granule_bulk_update_tasks")
+                 (sql-utils/where `(= :task-id ~task-id)))))
+      (errors/throw-service-errors
+       :not-found
+       [(format "No granule bulk granule update task with id [%s] exists."
+                task-id)]))
+    (nil? (sql-utils/find-one
+           db
+           (sql-utils/select
+            [:granule-ur :status]
+            (sql-utils/from "bulk_update_gran_status")
+            (sql-utils/where `(and (= :status "PENDING")
+                                   (= :task-id ~task-id))))))))
+
+(defn-timed mark-task-complete
+  "Marks a granule bulk task as COMPELTE and sets the status message.
+  It will throw an exception if there still granules marked as PENDING."
+  [context task-id]
+  (let [db (context->db context)
+        task-granules (sql-utils/query
+                       db
+                       (sql-utils/build
+                        (sql-utils/select
+                         [:granule-ur :status]
+                         (sql-utils/from "bulk_update_gran_status")
+                         (sql-utils/where `(= :task-id ~task-id)))))
+        pending-granules (filter #(= "PENDING" (:status %)) task-granules)
+        failed-granules (filter #(= "FAILED" (:status %)) task-granules)
+        skipped-granules (filter #(= "SKIPPED" (:status %)) task-granules)]
+    (if (zero? (count pending-granules))
+      (update-bulk-granule-update-task-status db task-id "COMPLETE"
+                                              (generate-task-status-message
+                                               (count failed-granules)
+                                               (count skipped-granules)
+                                               (count task-granules)))
+      (throw (ex-info
+              (format
+               (str "Tried to mark bulk-granule-update-task as complete "
+                    "when there are still granules marked as PENDING.")
+               task-id
+               (count pending-granules))
+              {:task-id task-id
+               :pending-granule pending-granules})))))
+
 (defn reset-db
   "Clear bulk update db"
   [context]

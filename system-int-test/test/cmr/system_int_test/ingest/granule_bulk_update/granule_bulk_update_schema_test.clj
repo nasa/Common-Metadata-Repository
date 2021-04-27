@@ -52,13 +52,14 @@
    [[]]
    "#/updates/0: expected minimum item count: 2, found: 0"
 
-   "update entries: blank granule ur"
+   ;; Business rules validation
+
+   "blank granule ur"
    [["" "https://example.com/oops-no-ur-empty"]
     ["  " "https://example.com/oops-no-ur-spaces"]
     ["\t" "https://example.com/oops-no-ur-tab"]]
-   "Empty granule URs are not allowed in bulk update requests. Found [3] updates with empty granule UR values."
-
-   ;; Business rules validation
+   (str "Empty granule URs are not allowed in bulk update requests. "
+        "Found [3] updates with empty granule UR values.")
 
    "duplicate granule_ur in request"
    [["ur_1" "https://aws.foo.com"]

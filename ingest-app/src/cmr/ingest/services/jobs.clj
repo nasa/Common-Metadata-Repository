@@ -167,12 +167,17 @@
   {:default 86400 ;;24 hours
    :type Long})
 
+(defconfig bulk-update-task-status-update-poll-interval
+  "Number of seconds between runs bulk granule task status update jobs."
+  {:default 300 ;; 5 minutes
+   :type Long})
+
 (defn trigger-full-refresh-collection-granule-aggregation-cache
   "Triggers a refresh of the collection granule aggregation cache in the Indexer."
   [context]
   (ingest-events/publish-provider-event
-    context
-    (ingest-events/trigger-collection-granule-aggregation-cache-refresh nil)))
+   context
+   (ingest-events/trigger-collection-granule-aggregation-cache-refresh nil)))
 
 (defn trigger-partial-refresh-collection-granule-aggregation-cache
   "Triggers a partial refresh of the collection granule aggregation cache in the Indexer."
@@ -216,6 +221,16 @@
        context
        (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
 
+(defn trigger-bulk-granule-task-status-updates
+  [context]
+  (when-let [incomplete-tasks (seq (granule-bulk-update/get-incomplete-granule-tasks context))]
+    (info "Sendings events to check status of in-progress granule bulk update tasks: "
+          (pr-str incomplete-tasks))
+    (doseq [task-id incomplete-tasks]
+      (ingest-events/publish-provider-event
+       context
+       (ingest-events/granule-bulk-update-task-status-update-event task-id)))))
+
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
   (bulk-update-status-table-cleanup {:system system}))
@@ -231,6 +246,10 @@
 (def-stateful-job ReindexAutocompleteSuggestions
   [_ system]
   (trigger-autocomplete-suggestions-reindex {:system system}))
+
+(def-stateful-job BulkGranTaskStatusUpdatePoll
+  [_ system]
+  (trigger-bulk-granule-task-status-updates {:system system}))
 
 (defn jobs
   "A list of jobs for ingest"
@@ -268,4 +287,7 @@
     :daily-at-hour-and-minute [13 20]}
 
    {:job-type BulkGranUpdateTaskCleanup
-    :interval (bulk-granule-task-table-cleanup-interval)}])
+    :interval (bulk-granule-task-table-cleanup-interval)}
+
+   {:job-type BulkGranTaskStatusUpdatePoll
+    :interval (bulk-update-task-status-update-poll-interval)}])

@@ -3,7 +3,7 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -40,7 +40,7 @@
   (js/validate-json! granule-bulk-update-schema json))
 
 (defn- duplicates
-  "Return any non-unique entries in a collection or nil if none are found."
+  "Return a seq of any non-unique entries in a collection or nil."
   [coll]
   (seq (for [[id freq] (frequencies coll)
              :when (> freq 1)]
@@ -64,7 +64,7 @@
 (defn- validate-granule-bulk-update-no-duplicate-urs
   "Validate no duplicate URs exist within the list of instructions"
   [urs]
-  (when-let [duplicate-urs (seq (duplicates urs))]
+  (when-let [duplicate-urs (duplicates urs)]
     (errors/throw-service-errors
      :bad-request
      [(format (str "Duplicate granule URs are not allowed in bulk update requests. "
@@ -109,7 +109,7 @@
            user-id
            (count instructions)
            (count chunked-instructions)
-           (granule-bulk-update-chunk-size)))
+           partition-size))
 
     (doseq [ins-list chunked-instructions]
       (ingest-events/publish-gran-bulk-update-event
@@ -251,8 +251,8 @@
           (assoc :user-id user-id)))))
 
 (defmethod update-granule-concept :default
-[context concept bulk-update-params user-id]
-)
+  [context concept bulk-update-params user-id]
+  (warn "No default implementation for update-granule-concept"))
 
 (defn- update-granule-concept-and-status
   "Perform update for the granule concept and granule bulk update status."
@@ -307,8 +307,20 @@
   "Delete and export all granule bulk update tasks marked ready for deletion"
   [context]
   (try
-   (data-granule-bulk-update/cleanup-bulk-granule-tasks context)
-   (catch Exception e
-     (errors/throw-service-error
-      :error
-      [(format "Exception caught while attempting to cleanup granule bulk update tasks: %s" e)]))))
+    (data-granule-bulk-update/cleanup-bulk-granule-tasks context)
+    (catch Exception e
+      (errors/throw-service-error
+       :error
+       [(format "Exception caught while attempting to cleanup granule bulk update tasks: %s" e)]))))
+
+(defn update-bulk-granule-task-status
+  [context task-id]
+  (try
+    (when (data-granule-bulk-update/task-completed? context task-id)
+      (data-granule-bulk-update/mark-task-complete context task-id))
+    (catch Exception e
+      (errors/throw-service-error
+       :error
+       [(format (str "Exception caught while attempting to update "
+                     "granule bulk update task status: %s")
+                e)]))))
