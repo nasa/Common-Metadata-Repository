@@ -20,7 +20,6 @@
   "Create a Direct Distribution"
   []
   {:DirectDistributionInformation {:Region "us-east-1"
-                                   :S3BucketAndObjectPrefixNames ["Bucket"]
                                    :S3CredentialsAPIEndpoint "https://example.org"
                                    :S3CredentialsAPIDocumentationURL "https://example.org"}})
 

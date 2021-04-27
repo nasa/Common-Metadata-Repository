@@ -388,7 +388,7 @@
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
             :has-opendap-url (not (empty? (filter opendap-util/opendap-url? related-urls)))
-            :cloud-hosted (or (not (empty? s3-bucket-and-object-prefix-names))
+            :cloud-hosted (or (not (empty? (:DirectDistributionInformation collection)))
                                (tag/has-cloud-s3-tag tags))
             :publication-references opendata-references
             :collection-citations (map json/generate-string opendata-citations)
