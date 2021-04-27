@@ -42,39 +42,39 @@
     "https://cmr.earthdata.nasa.gov:443/search"
     {:stac-url "https://cmr.earthdata.nasa.gov/stac"
      :cloudstac-url "https://cmr.earthdata.nasa.gov/cloudstac"
-     :stac-docs-url "https://cmr.earthdata.nasa.gov/stac/docs"
+     :stac-docs-url "https://cmr.earthdata.nasa.gov/stac/docs/index.html"
      :static-cloudstac-url "https://cmr.earthdata.nasa.gov/static-cloudstac"}
 
     "https://cmr.earthdata.nasa.gov:443/search/"
     {:stac-url "https://cmr.earthdata.nasa.gov/stac"
      :cloudstac-url "https://cmr.earthdata.nasa.gov/cloudstac"
-     :stac-docs-url "https://cmr.earthdata.nasa.gov/stac/docs"
+     :stac-docs-url "https://cmr.earthdata.nasa.gov/stac/docs/index.html"
      :static-cloudstac-url "https://cmr.earthdata.nasa.gov/static-cloudstac"} 
 
     ;; SIT
     "https://cmr.sit.earthdata.nasa.gov:443/search"
     {:stac-url "https://cmr.sit.earthdata.nasa.gov/stac"
      :cloudstac-url "https://cmr.sit.earthdata.nasa.gov/cloudstac"
-     :stac-docs-url "https://cmr.sit.earthdata.nasa.gov/stac/docs"
+     :stac-docs-url "https://cmr.sit.earthdata.nasa.gov/stac/docs/index.html"
      :static-cloudstac-url "https://cmr.sit.earthdata.nasa.gov/static-cloudstac"} 
 
     "https://cmr.sit.earthdata.nasa.gov:443/search/"
     {:stac-url "https://cmr.sit.earthdata.nasa.gov/stac"
      :cloudstac-url "https://cmr.sit.earthdata.nasa.gov/cloudstac"
-     :stac-docs-url "https://cmr.sit.earthdata.nasa.gov/stac/docs"
+     :stac-docs-url "https://cmr.sit.earthdata.nasa.gov/stac/docs/index.html"
      :static-cloudstac-url "https://cmr.sit.earthdata.nasa.gov/static-cloudstac"}
 
     ;; UAT
     "https://cmr.uat.earthdata.nasa.gov:443/search"
     {:stac-url "https://cmr.uat.earthdata.nasa.gov/stac"
      :cloudstac-url "https://cmr.uat.earthdata.nasa.gov/cloudstac"
-     :stac-docs-url "https://cmr.uat.earthdata.nasa.gov/stac/docs"
+     :stac-docs-url "https://cmr.uat.earthdata.nasa.gov/stac/docs/index.html"
      :static-cloudstac-url "https://cmr.uat.earthdata.nasa.gov/static-cloudstac"}
 
     "https://cmr.uat.earthdata.nasa.gov:443/search/"
     {:stac-url "https://cmr.uat.earthdata.nasa.gov/stac"
      :cloudstac-url "https://cmr.uat.earthdata.nasa.gov/cloudstac"
-     :stac-docs-url "https://cmr.uat.earthdata.nasa.gov/stac/docs"
+     :stac-docs-url "https://cmr.uat.earthdata.nasa.gov/stac/docs/index.html"
      :static-cloudstac-url "https://cmr.uat.earthdata.nasa.gov/static-cloudstac"}
 
     ;; localhost 
