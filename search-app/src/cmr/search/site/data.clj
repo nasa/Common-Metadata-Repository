@@ -175,7 +175,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Page data functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn app-url->stac-urls
   "Convert the search-app url into the stac related urls.
   The reason is we need to access cmr-stac endpoints from CMR search landing page.
@@ -188,7 +187,9 @@
                           (string/replace #"3003/?" "3000/"))]
     {:stac-url (str stac-base-url "stac")
      :cloudstac-url (str stac-base-url "cloudstac")
-     :stac-docs-url (str stac-base-url "stac/docs")
+     :stac-docs-url (if (string/includes? stac-base-url "3000")
+                      (str stac-base-url "stac/docs")
+                      (str stac-base-url "stac/docs/index.html"))
      :static-cloudstac-url (str stac-base-url "static-cloudstac")}))
 
 (defmulti base-page
