@@ -224,7 +224,7 @@
 (defn trigger-bulk-granule-task-status-updates
   [context]
   (when-let [incomplete-tasks (seq (granule-bulk-update/get-incomplete-granule-task-ids context))]
-    (info "Sendings events to check status of in-progress granule bulk update tasks: "
+    (info "Sending events to check status of in-progress granule bulk update tasks: "
           (pr-str incomplete-tasks))
     (doseq [task-id incomplete-tasks]
       (ingest-events/publish-provider-event

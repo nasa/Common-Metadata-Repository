@@ -254,7 +254,9 @@
                 ;; purposely not using `not=` since sqlingvo doesn't understand it
                 (sql-utils/where `(not (= :status "COMPLETE"))))))]
     ;; sql returns with underscores, not dash
-    (map :task_id vals)))
+    (->> vals
+         (map :task_id)
+         (map int))))
 
 (defn validate-task-exists
   "Validates the task exists in the database."
