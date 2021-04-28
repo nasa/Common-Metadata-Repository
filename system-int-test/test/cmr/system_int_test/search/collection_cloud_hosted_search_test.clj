@@ -2,6 +2,7 @@
   "Integration tests for searching for records that are cloud hosted"
   (:require
    [clojure.test :refer :all]
+   [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo]
    [cmr.indexer.data.concepts.tag :as itag]
    [cmr.system-int-test.data2.core :as data2]
@@ -29,20 +30,21 @@
         coll3 (data2/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 (create-direct-dist-info)))]
     (index/wait-until-indexed)
 
-    (testing "Search by the cloud_hosted flag"
-      (are [items value]
-           (data2/refs-match? items (search/find-refs :collection {:cloud-hosted value}))
-           [coll3] true
-           [coll1 coll2] false
-           [coll1 coll2 coll3] "unset"))
+    (testing "Search by the cloud_hosted flag only"
+      (util/are3
+       [expected items]
+       (data2/refs-match? items (search/find-refs :collection {:cloud-hosted expected}))
+       "Found using metadata" true [coll3]
+       "Not found" false [coll1 coll2]))
 
     (testing "Search for collections tagged as cloud hosted"
       (let [user1-token (echo/login (system/context) "user1")
             tag1 (tags/make-tag {:tag-key itag/earthdata-cloud-s3-tag})
             tag_record (tags/save-tag user1-token tag1 [coll1])]
         (index/wait-until-indexed)
-        (are [items value]
-             (data2/refs-match? items (search/find-refs :collection {:cloud-hosted value}))
-             [coll1 coll3] true
-             [coll2] false
-             [coll1 coll2 coll3] "unset")))))
+
+        (util/are3
+         [expected items]
+         (is (data2/refs-match? items (search/find-refs :collection {:cloud-hosted expected})))
+         "Found using metadata or tags" true [coll1 coll3]
+         "Not found" false [coll2])))))
