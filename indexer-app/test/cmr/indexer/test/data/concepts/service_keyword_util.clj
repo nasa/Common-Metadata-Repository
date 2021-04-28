@@ -146,12 +146,12 @@
   (let [schema-keys [:LongName
                      :Name
                      :Version]]
-    (is (= "1 1.9 3 9 airs airx3std for level opendap opendap service for airs level-3 retrieval products products retrieval service"
+    (is (= "1 1.9 3 9 airs airx3std for level level-3 opendap products retrieval service"
            (service-keyword-util/concept-keys->keyword-text
             sample-umm-service-concept schema-keys))))
   (let [schema-keys [:Name
                      :ContactGroups]]
-    (is (= "airx3std contact science science contact spock team team spock"
+    (is (= "airx3std contact science spock team"
            (service-keyword-util/concept-keys->keyword-text
             sample-umm-service-concept schema-keys))))
   (let [schema-keys [:ContactPersons]]
@@ -159,7 +159,7 @@
            (service-keyword-util/concept-keys->keyword-text
             sample-umm-service-concept schema-keys))))
   (let [schema-keys [:ServiceOrganizations]]
-    (is (= "and customer earth eros geological landsat ldpaac observation provider resource science service service provider services survey us us geological survey earth resource observation and science (eros) landsat customer services usgs usgs/eros"
+    (is (= "(eros) and customer earth eros geological landsat ldpaac observation provider resource science service services survey us usgs usgs/eros"
            (service-keyword-util/concept-keys->keyword-text
             sample-umm-service-concept schema-keys))))
   (let [schema-keys [:LongName
@@ -171,6 +171,6 @@
                      :URL
                      :ServiceKeywords
                      :ServiceOrganizations]]
-    (is (= "006 1 1.9 3 9 acdisc airs airx3std alice analysis and applications aqua author bob contact customer data data analysis and visualization data discovery data visualization discovery earth eosdis eros for geological gesdisc gov https https://acdisc.gesdisc.eosdis.nasa.gov/opendap/aqua_airs_level3/airx3std.006/ image landsat ldpaac level level3 nasa observation opendap opendap service opendap service for airs level-3 retrieval products processing products provider resource retrieval science science contact service service provider services spock statistical statistical applications survey team team spock us us geological survey earth resource observation and science (eros) landsat customer services usgs usgs/eros visualization visualization/image processing"
+    (is (= "(eros) 006 1 1.9 3 9 acdisc airs airx3std alice analysis and applications aqua author bob contact customer data discovery earth eosdis eros for geological gesdisc gov https https://acdisc.gesdisc.eosdis.nasa.gov/opendap/aqua_airs_level3/airx3std.006/ image landsat ldpaac level level-3 level3 nasa observation opendap processing products provider resource retrieval science service services spock statistical survey team us usgs usgs/eros visualization visualization/image"
            (service-keyword-util/concept-keys->keyword-text
             sample-umm-service-concept schema-keys)))))

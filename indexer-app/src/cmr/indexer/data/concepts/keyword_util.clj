@@ -16,17 +16,34 @@
   "Defines Regex to split strings with special characters into multiple words for keyword searches."
   #"[!@#$%^&()\-=_+{}\[\]|;'.,\\\"/:<>?`~* ]")
 
-(defn- prepare-keyword-field
+(defn- wrapped-keyword?
+  "Checks if the field-value about to be processed is a term surrounded by parens or brackets.
+   If it is, we want to add the usual keywords, but also add the unwrapped field-value on its own."
   [field-value]
+  (let [first-char (first field-value)
+        last-char (last field-value)]
+    (and (or (= \( first-char)
+             (= \{ first-char)
+             (= \[ first-char))
+         (or (= \) last-char)
+             (= \} last-char)
+             (= \] last-char)))))
+
+(defn- prepare-keyword-field
   "Convert a string to lowercase then separate it into keywords"
+  [field-value]
   (when field-value
     (let [field-value (string/lower-case field-value)]
-      (into [field-value] (string/split field-value keywords-separator-regex)))))
+      (if (wrapped-keyword? field-value)
+        (as-> (subs field-value 1 (dec (.length field-value))) trimmed-value
+              (into [field-value trimmed-value] (string/split field-value keywords-separator-regex)))
+        (into [field-value] (string/split field-value keywords-separator-regex))))))
 
 (defn field-values->keyword-text
   "Returns the keyword text for the given list of field values."
   [field-values]
   (->> field-values
+       (mapcat #(string/split % #" "))
        (mapcat prepare-keyword-field)
        (keep not-empty)
        (apply sorted-set)
