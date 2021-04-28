@@ -84,145 +84,130 @@
   cmr.oracle.connection.OracleStore
 
   (get-granule-tasks-by-provider-id
-   [db provider-id]
-   (jdbc/with-db-transaction
-    [conn db]
-    ;; Returns a list of bulk update tasks for the provider
-    (let [stmt (sql-utils/build
-                (sql-utils/select
-                 [:created-at :name :task-id :status :status-message :request-json-body]
-                 (sql-utils/from "granule_bulk_update_tasks")
-                 (sql-utils/where `(= :provider-id ~provider-id))))
-          ;; Note: the column selected out of the database is created_at, instead of created-at.
-          statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
-                               (sql-utils/query conn stmt)))
-          statuses (map util/map-keys->kebab-case statuses)]
-      (map #(update % :request-json-body util/gzip-blob->string)
-           statuses))))
+    [db provider-id]
+    (jdbc/with-db-transaction
+      [conn db]
+      ;; Returns a list of bulk update tasks for the provider
+      (let [stmt (sql-utils/build
+                  (sql-utils/select
+                   [:created-at :name :task-id :status :status-message :request-json-body]
+                   (sql-utils/from "granule_bulk_update_tasks")
+                   (sql-utils/where `(= :provider-id ~provider-id))))
+            ;; Note: the column selected out of the database is created_at, instead of created-at.
+            statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
+                                 (sql-utils/query conn stmt)))
+            statuses (map util/map-keys->kebab-case statuses)]
+        (map #(update % :request-json-body util/gzip-blob->string)
+             statuses))))
 
   (get-granule-task-by-task-id
-   [db task-id]
-   (jdbc/with-db-transaction
-    [conn db]
-    (some-> conn
-            (sql-utils/find-one
-             (sql-utils/select
-              [:created-at :name :provider-id :status :status-message :request-json-body]
-              (sql-utils/from "granule_bulk_update_tasks")
-              (sql-utils/where `(= :task-id ~task-id))))
-            util/map-keys->kebab-case
-            (update :request-json-body util/gzip-blob->string)
-            (update :created-at (partial oracle/oracle-timestamp->str-time conn)))))
+    [db task-id]
+    (jdbc/with-db-transaction
+      [conn db]
+      (some-> conn
+              (sql-utils/find-one
+               (sql-utils/select
+                [:created-at :name :provider-id :status :status-message :request-json-body]
+                (sql-utils/from "granule_bulk_update_tasks")
+                (sql-utils/where `(= :task-id ~task-id))))
+              util/map-keys->kebab-case
+              (update :request-json-body util/gzip-blob->string)
+              (update :created-at (partial oracle/oracle-timestamp->str-time conn)))))
 
   (get-bulk-update-task-granule-status
-   [db task-id]
-   ;; Get statuses for all granules by task id
-   (map normalize-gran-status
-        (sql-utils/query db (sql-utils/build
-                             (sql-utils/select
-                              [:granule-ur :status :status-message]
-                              (sql-utils/from "bulk_update_gran_status")
-                              (sql-utils/where `(= :task-id ~task-id)))))))
+    [db task-id]
+    ;; Get statuses for all granules by task id
+    (map normalize-gran-status
+         (sql-utils/query db (sql-utils/build
+                              (sql-utils/select
+                               [:granule-ur :status :status-message]
+                               (sql-utils/from "bulk_update_gran_status")
+                               (sql-utils/where `(= :task-id ~task-id)))))))
 
   (get-bulk-update-granule-status
-   [db task-id granule-ur]
-   ;; Get the status for a particular granule
-   (sql-utils/find-one db (sql-utils/select [:status :status-message]
-                                            (sql-utils/from "granule_bulk_update_tasks")
-                                            (sql-utils/where `(and (= :task-id ~task-id))
-                                                             (= :granule-ur ~granule-ur)))))
+    [db task-id granule-ur]
+    ;; Get the status for a particular granule
+    (sql-utils/find-one db (sql-utils/select [:status :status-message]
+                                             (sql-utils/from "granule_bulk_update_tasks")
+                                             (sql-utils/where `(and (= :task-id ~task-id))
+                                                              (= :granule-ur ~granule-ur)))))
 
   (create-and-save-bulk-granule-update-status
-   [db provider-id user-id request-json-body instructions]
-   ;; In a transaction, add one row to the task status table and for each concept
-   (jdbc/with-db-transaction
-    [conn db]
-    (let [task-id (:nextval (first (sql-utils/query db ["SELECT GRAN_TASK_ID_SEQ.NEXTVAL FROM DUAL"])))
-          statement (str "INSERT INTO granule_bulk_update_tasks "
-                         "(task_id, provider_id, name, request_json_body, status, user_id, created_at)"
-                         "VALUES (?, ?, ?, ?, ?, ?, ?)")
-          parsed-json (json/parse-string request-json-body true)
-          task-name (get parsed-json :name task-id)
-          unique-task-name (format "%s: %s" task-name task-id)
-          created-at (time-coerce/to-sql-time (time-keeper/now))
-          values [task-id provider-id unique-task-name (util/string->gzip-bytes request-json-body)
-                  "IN_PROGRESS" user-id created-at]]
-      (jdbc/db-do-prepared db statement values)
-      ;; Write a row to granule status for each granule-ur
-      (apply jdbc/insert! conn
-             "bulk_update_gran_status"
-             ["task_id" "provider_id" "granule_ur" "instruction" "status"]
-             (instructions->gran-stats task-id provider-id instructions))
-      task-id)))
+    [db provider-id user-id request-json-body instructions]
+    ;; In a transaction, add one row to the task status table and for each concept
+    (jdbc/with-db-transaction
+      [conn db]
+      (let [task-id (:nextval (first (sql-utils/query db ["SELECT GRAN_TASK_ID_SEQ.NEXTVAL FROM DUAL"])))
+            statement (str "INSERT INTO granule_bulk_update_tasks "
+                           "(task_id, provider_id, name, request_json_body, status, user_id, created_at)"
+                           "VALUES (?, ?, ?, ?, ?, ?, ?)")
+            parsed-json (json/parse-string request-json-body true)
+            task-name (get parsed-json :name task-id)
+            unique-task-name (format "%s: %s" task-name task-id)
+            created-at (time-coerce/to-sql-time (time-keeper/now))
+            values [task-id provider-id unique-task-name (util/string->gzip-bytes request-json-body)
+                    "IN_PROGRESS" user-id created-at]]
+        (jdbc/db-do-prepared db statement values)
+        ;; Write a row to granule status for each granule-ur
+        (apply jdbc/insert! conn
+               "bulk_update_gran_status"
+               ["task_id" "provider_id" "granule_ur" "instruction" "status"]
+               (instructions->gran-stats task-id provider-id instructions))
+        task-id)))
 
   (update-bulk-granule-update-task-status
-   [db task-id status status-message]
-   (try
-     (let [statement (str "UPDATE granule_bulk_update_tasks "
-                          "SET status = ?, status_message = ?"
-                          "WHERE task_id = ?")]
-       (jdbc/db-do-prepared db statement [status status-message task-id]))
-     (catch Exception e
-       (errors/throw-service-error :invalid-data
-                                   [(str "Error updating bulk update task status "
-                                         (.getMessage e))]))))
+    [db task-id status status-message]
+    (try
+      (let [statement (str "UPDATE granule_bulk_update_tasks "
+                           "SET status = ?, status_message = ?"
+                           "WHERE task_id = ?")]
+        (jdbc/db-do-prepared db statement [status status-message task-id]))
+      (catch Exception e
+        (errors/throw-service-error :invalid-data
+                                    [(str "Error updating bulk update task status "
+                                          (.getMessage e))]))))
 
   (update-bulk-update-granule-status
-   [db task-id granule-ur status status-message]
-   (try
-     (jdbc/with-db-transaction
-      [conn db]
-      (let [statement (str "UPDATE bulk_update_gran_status "
-                           "SET status = ?, status_message = ?"
-                           "WHERE task_id = ? AND granule_ur = ?")
-            status-message (util/trunc status-message 4000)]
-        (jdbc/db-do-prepared db statement [status status-message task-id granule-ur])
-        (let [task-granules (sql-utils/query
-                             db
-                             (sql-utils/build (sql-utils/select
-                                               [:granule-ur :status]
-                                               (sql-utils/from "bulk_update_gran_status")
-                                               (sql-utils/where `(= :task-id ~task-id)))))
-              pending-granules (filter #(= "PENDING" (:status %)) task-granules)]
-          (when-not (seq pending-granules)
-            (let [failed-granules (filter #(= "FAILED" (:status %)) task-granules)
-                  skipped-granules (filter #(= "SKIPPED" (:status %)) task-granules)]
-              (update-bulk-granule-update-task-status db task-id "COMPLETE"
-                                                      (generate-task-status-message
-                                                       (count failed-granules)
-                                                       (count skipped-granules)
-                                                       (count task-granules))))))))
-     (catch Exception e
-       (error "Exception caught in update bulk update granule status: " e)
-       (errors/throw-service-error :invalid-data
-                                   [(str "Error updating bulk update granule status "
-                                         (.getMessage e))]))))
+    [db task-id granule-ur status status-message]
+    (try
+      (jdbc/with-db-transaction
+        [conn db]
+        (let [statement (str "UPDATE bulk_update_gran_status "
+                             "SET status = ?, status_message = ?"
+                             "WHERE task_id = ? AND granule_ur = ?")
+              status-message (util/trunc status-message 4000)]
+          (jdbc/db-do-prepared db statement [status status-message task-id granule-ur])))
+      (catch Exception e
+        (error "Exception caught in update bulk update granule status: " e)
+        (errors/throw-service-error :invalid-data
+                                    [(str "Error updating bulk update granule status "
+                                          (.getMessage e))]))))
 
   (reset-bulk-granule-update
-   [db]
-   (sql-utils/run-sql db "DELETE FROM bulk_update_gran_status")
-   (sql-utils/run-sql db "DELETE FROM granule_bulk_update_tasks")
-   (sql-utils/run-sql db "ALTER SEQUENCE gran_task_id_seq restart start with 1")))
+    [db]
+    (sql-utils/run-sql db "DELETE FROM bulk_update_gran_status")
+    (sql-utils/run-sql db "DELETE FROM granule_bulk_update_tasks")
+    (sql-utils/run-sql db "ALTER SEQUENCE gran_task_id_seq restart start with 1")))
 
 (defn context->db
- "Return the path to the database from a given context"
- [context]
- (get-in context [:system :db]))
+  "Return the path to the database from a given context"
+  [context]
+  (get-in context [:system :db]))
 
 (defn-timed cleanup-bulk-granule-tasks
- [context]
- (try
-     ; Deletes will cascade to granule_bulk_update_tasks
+  [context]
+  (try
+                                        ; Deletes will cascade to granule_bulk_update_tasks
     (jdbc/delete!
      (context->db context)
      :granule_bulk_update_tasks
      ["STATUS = 'COMPLETE' AND CREATED_AT < SYSDATE - ?"
       (config/granule-bulk-cleanup-minimum-age)])
-   (catch Exception e
-     (error "Exception caught while attempting to clean up granule bulk update task table: " e)
-     (errors/throw-service-error :invalid-data
-                                 [(str "Error cleaning up bulk granule update task table "
-                                       (.getMessage e))]))))
+    (catch Exception e
+      (error "Exception caught while attempting to clean up granule bulk update task table: " e)
+      (errors/throw-service-error :invalid-data
+                                  [(str "Error cleaning up bulk granule update task table "
+                                        (.getMessage e))]))))
 
 (defn-timed get-granule-tasks-by-provider
   "Returns granule bulk update tasks by provider"
