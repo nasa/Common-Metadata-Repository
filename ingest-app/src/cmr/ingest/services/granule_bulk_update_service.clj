@@ -316,6 +316,7 @@
 (defn update-bulk-granule-task-status
   [context task-id]
   (try
+    (info (format "Checking to see if granule update task [%s] is complete." task-id))
     (when (data-granule-bulk-update/task-completed? context task-id)
       (data-granule-bulk-update/mark-task-complete context task-id))
     (catch Exception e

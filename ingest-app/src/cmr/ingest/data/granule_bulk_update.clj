@@ -19,14 +19,14 @@
    (str num-failed-granules " FAILED")))
 
 (defn- generate-skipped-msg
- "Generate the SKIPPED part of the status message."
- [num-failed-granules num-skipped-granules num-total-granules]
- (when-not (zero? num-skipped-granules)
-   (if (not (zero? num-failed-granules))
-     (if (not= num-total-granules (+ num-failed-granules num-skipped-granules))
-       (str ", " num-skipped-granules " SKIPPED")
-       (str " and " num-skipped-granules " SKIPPED"))
-     (str num-skipped-granules " SKIPPED"))))
+  "Generate the SKIPPED part of the status message."
+  [num-failed-granules num-skipped-granules num-total-granules]
+  (when-not (zero? num-skipped-granules)
+    (if-not (zero? num-failed-granules)
+      (if (not= num-total-granules (+ num-failed-granules num-skipped-granules))
+        (str ", " num-skipped-granules " SKIPPED")
+        (str " and " num-skipped-granules " SKIPPED"))
+      (str num-skipped-granules " SKIPPED"))))
 
 (defn- generate-updated-msg
  "Generate the UPDATED part of the status message."
@@ -39,15 +39,15 @@
        (str num-updated-granules " UPDATED")))))
 
 (defn generate-task-status-message
- "Generate overall status message based on number of granule failures and skips."
- [num-failed-granules num-skipped-granules num-total-granules]
- (if (and (zero? num-failed-granules) (zero? num-skipped-granules))
-   "All granule updates completed successfully."
-   (format "Task completed with %s out of %s total granule update(s)."
-           (str (generate-failed-msg num-failed-granules)
-                (generate-skipped-msg num-failed-granules num-skipped-granules num-total-granules)
-                (generate-updated-msg num-failed-granules num-skipped-granules num-total-granules))
-           num-total-granules)))
+  "Generate overall status message based on number of granule failures and skips."
+  [num-failed-granules num-skipped-granules num-total-granules]
+  (if (and (zero? num-failed-granules) (zero? num-skipped-granules))
+    "All granule updates completed successfully."
+    (format "Task completed with %s out of %s total granule update(s)."
+            (str (generate-failed-msg num-failed-granules)
+                 (generate-skipped-msg num-failed-granules num-skipped-granules num-total-granules)
+                 (generate-updated-msg num-failed-granules num-skipped-granules num-total-granules))
+            num-total-granules)))
 
 (defn- instructions->gran-stats
   "Return the bulk_update_gran_status insert values in the form of
@@ -158,6 +158,8 @@
   (update-bulk-granule-update-task-status
     [db task-id status status-message]
     (try
+      (info (format"Updating bulk granule update task [%s] to [%s]"
+                   task-id status))
       (let [statement (str "UPDATE granule_bulk_update_tasks "
                            "SET status = ?, status_message = ?"
                            "WHERE task_id = ?")]
