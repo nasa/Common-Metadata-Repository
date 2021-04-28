@@ -223,13 +223,13 @@
 
 (defn trigger-bulk-granule-task-status-updates
   [context]
-  (when-let [incomplete-tasks (seq (granule-bulk-update/get-incomplete-granule-tasks context))]
+  (when-let [incomplete-tasks (seq (granule-bulk-update/get-incomplete-granule-task-ids context))]
     (info "Sendings events to check status of in-progress granule bulk update tasks: "
           (pr-str incomplete-tasks))
-    (doseq [task incomplete-tasks]
+    (doseq [task-id incomplete-tasks]
       (ingest-events/publish-provider-event
        context
-       (ingest-events/granule-bulk-update-task-status-update-event (:task_id task))))))
+       (ingest-events/granule-bulk-update-task-status-update-event task-id)))))
 
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]

@@ -241,18 +241,20 @@
   (update-bulk-update-granule-status
    (context->db context) task-id granule-ur status status-message))
 
-(defn-timed get-incomplete-granule-tasks
-  "Returns a list of granule bulk update tasks where the status is not COMPELTE."
+(defn-timed get-incomplete-granule-task-ids
+  "Returns a list of granule bulk update task ids where the status is not COMPELTE."
   [context]
-  (let [db (context->db context)]
-    (sql-utils/query
-     db
-     (sql-utils/build
-      (sql-utils/select
-       [:task-id :status]
-       (sql-utils/from "granule_bulk_update_tasks")
-       ;; purposely not using `not=` since sqlingvo doesn't understand it
-       (sql-utils/where `(not (= :status "COMPLETE"))))))))
+  (let [db (context->db context)
+        vals (sql-utils/query
+              db
+              (sql-utils/build
+               (sql-utils/select
+                [:task-id]
+                (sql-utils/from "granule_bulk_update_tasks")
+                ;; purposely not using `not=` since sqlingvo doesn't understand it
+                (sql-utils/where `(not (= :status "COMPLETE"))))))]
+    ;; sql returns with underscores, not dash
+    (map :task_id vals)))
 
 (defn validate-task-exists
   "Validates the task exists in the database."
