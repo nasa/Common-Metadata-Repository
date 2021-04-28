@@ -158,8 +158,8 @@
   (update-bulk-granule-update-task-status
     [db task-id status status-message]
     (try
-      (info (format"Updating bulk granule update task [%s] to [%s]"
-                   task-id status))
+      (info (format "Updating bulk granule update task [%s] status to [%s]"
+                    task-id status))
       (let [statement (str "UPDATE granule_bulk_update_tasks "
                            "SET status = ?, status_message = ?"
                            "WHERE task_id = ?")]
