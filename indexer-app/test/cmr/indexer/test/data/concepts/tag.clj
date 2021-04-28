@@ -24,7 +24,7 @@
         these-will-not-be-found [bad1 bad2]
         will-be-found [good]
         one-will-be-found [bad1 bad2 good]]
-    (is (false? (tag/has-cloud-s3-tag will-not-be-found)))
-    (is (false? (tag/has-cloud-s3-tag these-will-not-be-found)))
-    (is (true? (tag/has-cloud-s3-tag will-be-found)))
-    (is (true? (tag/has-cloud-s3-tag one-will-be-found)))))
+    (is (false? (tag/has-cloud-s3-tag? will-not-be-found)))
+    (is (false? (tag/has-cloud-s3-tag? these-will-not-be-found)))
+    (is (true? (tag/has-cloud-s3-tag? will-be-found)))
+    (is (true? (tag/has-cloud-s3-tag? one-will-be-found)))))

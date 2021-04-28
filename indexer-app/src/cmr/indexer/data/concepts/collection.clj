@@ -177,7 +177,7 @@
   "Test if the collection meets the criteria for being cloud hosted"
   [collection tags]
   (or (not (empty? (:DirectDistributionInformation collection)))
-      (tag/has-cloud-s3-tag tags)))
+      (tag/has-cloud-s3-tag? tags)))
 
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
