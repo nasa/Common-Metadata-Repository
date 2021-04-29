@@ -116,40 +116,40 @@
         (testing "Granule bulk update tasks response"
           ;; PROV1
           (are3 [accept-format]
-                (let [response (ingest/granule-bulk-update-tasks
-                                "PROV1"
-                                {:accept-format accept-format})
-                      {:keys [status tasks]} response]
-                  (is (= 200 status))
-                  (is (= (set [{:task-id task1-id,
-                                :name (str "add opendap links: " task1-id)
-                                :status-message "All granule updates completed successfully.",
-                                :status "COMPLETE",
-                                :request-json-body update1-json}
-                               {:task-id task2-id,
-                                :name (str "add opendap links: " task2-id)
-                                :status-message "All granule updates completed successfully.",
-                                :status "COMPLETE",
-                                :request-json-body update2-json}])
-                         (set (map #(dissoc % :created-at) tasks)))))
-                "JSON" :json
-                "XML" :xml)
+            (let [response (ingest/granule-bulk-update-tasks
+                            "PROV1"
+                            {:accept-format accept-format})
+                  {:keys [status tasks]} response]
+              (is (= 200 status))
+              (is (= (set [{:task-id task1-id,
+                            :name (str "add opendap links: " task1-id)
+                            :status-message "All granule updates completed successfully.",
+                            :status "COMPLETE",
+                            :request-json-body update1-json}
+                           {:task-id task2-id,
+                            :name (str "add opendap links: " task2-id)
+                            :status-message "All granule updates completed successfully.",
+                            :status "COMPLETE",
+                            :request-json-body update2-json}])
+                     (set (map #(dissoc % :created-at) tasks)))))
+            "JSON" :json
+            "XML" :xml)
 
           ;; PROV2, also with failing granule
           (are3 [accept-format]
-                (let [response (ingest/granule-bulk-update-tasks
-                                "PROV2"
-                                {:accept-format accept-format})
-                      {:keys [status tasks]} response]
-                  (is (= 200 status))
-                  (is (= (set [{:task-id task3-id,
-                                :name (str task3-id ": " task3-id)
-                                :status-message "Task completed with 1 FAILED and 1 UPDATED out of 2 total granule update(s).",
-                                :status "COMPLETE",
-                                :request-json-body update3-json}])
-                         (set (map #(dissoc % :created-at) tasks)))))
-                "JSON" :json
-                "XML" :xml)
+            (let [response (ingest/granule-bulk-update-tasks
+                            "PROV2"
+                            {:accept-format accept-format})
+                  {:keys [status tasks]} response]
+              (is (= 200 status))
+              (is (= (set [{:task-id task3-id,
+                            :name (str task3-id ": " task3-id)
+                            :status-message "Task completed with 1 FAILED and 1 UPDATED out of 2 total granule update(s).",
+                            :status "COMPLETE",
+                            :request-json-body update3-json}])
+                     (set (map #(dissoc % :created-at) tasks)))))
+            "JSON" :json
+            "XML" :xml)
 
           (testing "Granule bulk update tasks invalid format"
             (let [{:keys [status errors]} (ingest/granule-bulk-update-tasks

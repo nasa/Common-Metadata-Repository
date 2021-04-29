@@ -210,8 +210,7 @@
          (context "/status" []
            (GET "/"
              request
-             (bulk/get-provider-tasks :granule provider-id request))
-           ))))))
+             (bulk/get-provider-tasks :granule provider-id request))))))))
 
 (defn build-routes [system]
   (routes
