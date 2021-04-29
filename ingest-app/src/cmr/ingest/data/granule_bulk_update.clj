@@ -305,11 +305,8 @@
                                                (count skipped-granules)
                                                (count task-granules)))
       (throw (ex-info
-              (format
-               (str "Tried to mark bulk-granule-update-task as complete "
-                    "when there are still granules marked as PENDING.")
-               task-id
-               (count pending-granules))
+              (str "Tried to mark bulk-granule-update-task as complete "
+                   "when there are still granules marked as PENDING.")
               {:task-id task-id
                :pending-granule pending-granules})))))
 
