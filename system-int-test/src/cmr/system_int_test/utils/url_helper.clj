@@ -298,10 +298,13 @@
 
 (defn ingest-granule-bulk-update-task-status-url
   "Get the task and collection statuses by provider and task"
-  [task-id]
-  (format "http://localhost:%s/granule-bulk-update/status/%s"
-          (transmit-config/ingest-port)
-          task-id))
+  ([]
+   (format "http://localhost:%s/granule-bulk-update/status"
+           (transmit-config/ingest-port)))
+  ([task-id]
+   (format "http://localhost:%s/granule-bulk-update/status/%s"
+           (transmit-config/ingest-port)
+           task-id)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search URLs

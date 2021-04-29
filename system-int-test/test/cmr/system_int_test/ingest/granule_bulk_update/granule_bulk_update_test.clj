@@ -73,13 +73,14 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
+          (ingest/update-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
           (let [status-response (ingest/granule-bulk-update-task-status task-id)
                 {:keys [task-status status-message granule-statuses]} status-response]
-            #_(is (= "COMPLETE" task-status))
-            #_(is (= "All granule updates completed successfully." status-message))
+            (is (= "COMPLETE" task-status))
+            (is (= "All granule updates completed successfully." status-message))
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
                      :status "UPDATED"}
                     {:granule-ur "SC:AE_5DSno.002:30500512"
@@ -96,13 +97,14 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
+          (ingest/update-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
           (let [status-response (ingest/granule-bulk-update-task-status task-id)
                 {:keys [task-status status-message granule-statuses]} status-response]
-            #_(is (= "COMPLETE" task-status))
-            #_(is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+            (is (= "COMPLETE" task-status))
+            (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500513"
                      :status "FAILED"
                      :status-message "Add OPeNDAP url is not supported for format [application/iso:smap+xml]"}]
@@ -118,14 +120,15 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
+          (ingest/update-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
           (let [status-response (ingest/granule-bulk-update-task-status task-id)
                 {:keys [task-status status-message granule-statuses]} status-response]
-            #_(is (= "COMPLETE" task-status))
-            #_(is (= "Task completed with 1 FAILED and 2 UPDATED out of 3 total granule update(s)."
-                     status-message))
+            (is (= "COMPLETE" task-status))
+            (is (= "Task completed with 1 FAILED and 2 UPDATED out of 3 total granule update(s)."
+                   status-message))
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
                      :status "UPDATED"}
                     {:granule-ur "SC:AE_5DSno.002:30500512"
@@ -146,14 +149,15 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
+          (ingest/update-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
           (let [status-response (ingest/granule-bulk-update-task-status task-id)
                 {:keys [task-status status-message granule-statuses]} status-response]
-            #_(is (= "COMPLETE" task-status))
-            #_(is (= "Task completed with 4 FAILED out of 4 total granule update(s)."
-                     status-message))
+            (is (= "COMPLETE" task-status))
+            (is (= "Task completed with 4 FAILED out of 4 total granule update(s)."
+                   status-message))
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
                      :status "FAILED"
                      :status-message "Invalid URL value, no more than two urls can be provided: https://foo,https://bar,https://baz"}
@@ -179,13 +183,14 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
+          (ingest/update-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
           (let [status-response (ingest/granule-bulk-update-task-status task-id)
                 {:keys [task-status status-message granule-statuses]} status-response]
-            #_(is (= "COMPLETE" task-status))
-            #_(is (= "All granule updates completed successfully." status-message))
+            (is (= "COMPLETE" task-status))
+            (is (= "All granule updates completed successfully." status-message))
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
                      :status "UPDATED"}
                     {:granule-ur "SC:AE_5DSno.002:30500512"
@@ -202,13 +207,14 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
+          (ingest/update-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
           (let [status-response (ingest/granule-bulk-update-task-status task-id)
                 {:keys [task-status status-message granule-statuses]} status-response]
-            #_(is (= "COMPLETE" task-status))
-            #_(is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+            (is (= "COMPLETE" task-status))
+            (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500513"
                      :status "FAILED"
                      :status-message "Add s3 url is not supported for format [application/iso:smap+xml]"}]
@@ -224,14 +230,15 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
+          (ingest/update-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
           (let [status-response (ingest/granule-bulk-update-task-status task-id)
                 {:keys [task-status status-message granule-statuses]} status-response]
-            #_(is (= "COMPLETE" task-status))
-            #_(is (= "Task completed with 1 FAILED and 2 UPDATED out of 3 total granule update(s)."
-                     status-message))
+            (is (= "COMPLETE" task-status))
+            (is (= "Task completed with 1 FAILED and 2 UPDATED out of 3 total granule update(s)."
+                   status-message))
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
                      :status "UPDATED"}
                     {:granule-ur "SC:AE_5DSno.002:30500512"
@@ -251,14 +258,15 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
+          (ingest/update-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
           (let [status-response (ingest/granule-bulk-update-task-status task-id)
                 {:keys [task-status status-message granule-statuses]} status-response]
-            #_(is (= "COMPLETE" task-status))
-            #_(is (= "Task completed with 2 FAILED out of 2 total granule update(s)."
-                     status-message))
+            (is (= "COMPLETE" task-status))
+            (is (= "Task completed with 2 FAILED out of 2 total granule update(s)."
+                   status-message))
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
                      :status "FAILED"
                      :status-message "Invalid URL value, each S3 url must start with s3://, but was https://foo"}
@@ -316,14 +324,15 @@
           {:keys [status task-id] :as response} (ingest/bulk-update-granules
                                                  "PROV1" bulk-update bulk-update-options)]
       (index/wait-until-indexed)
+      (ingest/update-bulk-update-task-statuses)
 
       ;; verify the granule status is UPDATED
       (is (= 200 status))
       (is (some? task-id))
       (let [status-response (ingest/granule-bulk-update-task-status task-id)
             {:keys [task-status status-message granule-statuses]} status-response]
-        #_(is (= "COMPLETE" task-status))
-        #_(is (= "All granule updates completed successfully." status-message))
+        (is (= "COMPLETE" task-status))
+        (is (= "All granule updates completed successfully." status-message))
         (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
                  :status "UPDATED"}]
                granule-statuses)))
@@ -393,14 +402,15 @@
           {:keys [status task-id] :as response} (ingest/bulk-update-granules
                                                  "PROV1" bulk-update bulk-update-options)]
       (index/wait-until-indexed)
+      (ingest/update-bulk-update-task-statuses)
 
       ;; verify the granule status is UPDATED
       (is (= 200 status))
       (is (some? task-id))
       (let [status-response (ingest/granule-bulk-update-task-status task-id)
             {:keys [task-status status-message granule-statuses]} status-response]
-        #_(is (= "COMPLETE" task-status))
-        #_(is (= "All granule updates completed successfully." status-message))
+        (is (= "COMPLETE" task-status))
+        (is (= "All granule updates completed successfully." status-message))
         (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
                  :status "UPDATED"}]
                granule-statuses)))

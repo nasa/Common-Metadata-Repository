@@ -619,6 +619,17 @@
         response (client/request params)]
     (parse-bulk-update-provider-status-response response options)))
 
+(defn update-bulk-update-task-statuses
+  "Update the statuses."
+  []
+  (let [params {:method :post
+                :url (url/ingest-granule-bulk-update-task-status-url)
+                :connection-manager (s/conn-mgr)
+                :throw-exceptions false
+                :headers {transmit-config/token-header
+                                        (transmit-config/echo-system-token)}}]
+    (client/request params)))
+
 (defn bulk-update-provider-status
   "Get the tasks and statuses by provider"
   ([provider-id]
@@ -632,6 +643,11 @@
    (granule-bulk-update-tasks provider-id nil))
   ([provider-id options]
    (bulk-update-provider-status* :granule provider-id options)))
+
+(defn update-granule-bulk-update-tasks
+  "Updates the granule bulk update tasks by provider"
+  [provider-id options]
+  (bulk-update-provider-status* :granule provider-id options))
 
 (defmulti parse-bulk-update-task-status-body
   "Parse the bulk update task status response body as a given format"

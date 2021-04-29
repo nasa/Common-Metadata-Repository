@@ -215,3 +215,14 @@
         :status-message status-message
         :request-json-body request-json-body
         :granule-statuses granule-statuses}))))
+
+(defn update-granule-task-statuses
+  "On demand capability to update granule task statuses. Marks bulk granule
+   update tasks as complete when there are no granules marked as PENDING."
+  [request]
+  (let [{:keys [request-context]} request
+        _ (acl/verify-ingest-management-permission request-context)
+        incomplete-tasks (data-gran-bulk-update/get-incomplete-granule-task-ids request-context)]
+    (doseq [task incomplete-tasks]
+      (when (data-gran-bulk-update/task-completed? request-context task)
+        (data-gran-bulk-update/mark-task-complete request-context task)))))
