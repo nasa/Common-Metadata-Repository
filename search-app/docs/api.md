@@ -85,6 +85,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [With/without granules Or Cwic](#c-has-granules-or-cwic)
     * [With/without granules Or OpenSearch](#c-has-granules-or-opensearch)
     * [OPeNDAP service URL](#c-has-opendap-url)
+    * [Cloud Hosted](#c-cloud-hosted)
   * [Sorting Collection Results](#sorting-collection-results)
   * [Retrieving all Revisions of a Collection](#retrieving-all-revisions-of-a-collection)
   * [Granule Search By Parameters](#granule-search-by-parameters)
@@ -1886,6 +1887,10 @@ The `has_granules_or_opensearch` parameter can be set to "true" or "false". When
 #### <a name="c-has-opendap-url"></a> Find collections with or without an OPeNDAP service RelatedURL.
 
     curl "%CMR-ENDPOINT%/collections?has_opendap_url=true"
+
+#### <a name="c-cloud-hosted"></a> Find collections that have a `DirectDistributionInformation` element or have been tagged with `gov.nasa.earthdata.cloud.s3`.
+
+    curl "%CMR-ENDPOINT%/collections?cloud_hosted=true"
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
