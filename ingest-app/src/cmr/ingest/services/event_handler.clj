@@ -53,7 +53,6 @@
 
 (defmethod handle-provider-event :granule-bulk-update-task-status-update
   [context message]
-  (info (str "Received message to update granule bulk update task status" message))
   (let [{task-id :task-id} message]
     (granule-bulk-update-service/update-bulk-granule-task-status
      context
