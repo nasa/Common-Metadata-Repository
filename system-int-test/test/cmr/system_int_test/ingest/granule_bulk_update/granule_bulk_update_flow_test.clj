@@ -112,7 +112,7 @@
         (is (= 200 (:status update2-response)))
         (is (= 200 (:status update3-response)))
 
-        (ingest/update-bulk-update-task-statuses)
+        (ingest/update-granule-bulk-update-task-statuses)
         (testing "Granule bulk update tasks response"
           ;; PROV1
           (are3 [accept-format]

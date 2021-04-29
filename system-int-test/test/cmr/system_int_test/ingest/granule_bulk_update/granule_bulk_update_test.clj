@@ -73,7 +73,7 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
-          (ingest/update-bulk-update-task-statuses)
+          (ingest/update-granule-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
@@ -97,7 +97,7 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
-          (ingest/update-bulk-update-task-statuses)
+          (ingest/update-granule-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
@@ -120,7 +120,7 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
-          (ingest/update-bulk-update-task-statuses)
+          (ingest/update-granule-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
@@ -149,7 +149,7 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
-          (ingest/update-bulk-update-task-statuses)
+          (ingest/update-granule-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
@@ -183,7 +183,7 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
-          (ingest/update-bulk-update-task-statuses)
+          (ingest/update-granule-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
@@ -207,7 +207,7 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
-          (ingest/update-bulk-update-task-statuses)
+          (ingest/update-granule-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
@@ -230,7 +230,7 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
-          (ingest/update-bulk-update-task-statuses)
+          (ingest/update-granule-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
@@ -258,7 +258,7 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
-          (ingest/update-bulk-update-task-statuses)
+          (ingest/update-granule-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
@@ -324,7 +324,7 @@
           {:keys [status task-id] :as response} (ingest/bulk-update-granules
                                                  "PROV1" bulk-update bulk-update-options)]
       (index/wait-until-indexed)
-      (ingest/update-bulk-update-task-statuses)
+      (ingest/update-granule-bulk-update-task-statuses)
 
       ;; verify the granule status is UPDATED
       (is (= 200 status))
@@ -402,7 +402,7 @@
           {:keys [status task-id] :as response} (ingest/bulk-update-granules
                                                  "PROV1" bulk-update bulk-update-options)]
       (index/wait-until-indexed)
-      (ingest/update-bulk-update-task-statuses)
+      (ingest/update-granule-bulk-update-task-statuses)
 
       ;; verify the granule status is UPDATED
       (is (= 200 status))

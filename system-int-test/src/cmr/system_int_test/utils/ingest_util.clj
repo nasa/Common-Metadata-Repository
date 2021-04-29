@@ -619,15 +619,15 @@
         response (client/request params)]
     (parse-bulk-update-provider-status-response response options)))
 
-(defn update-bulk-update-task-statuses
-  "Update the statuses."
+(defn update-granule-bulk-update-task-statuses
+  "Force an unscheduled update of granule bulk update task status."
   []
   (let [params {:method :post
                 :url (url/ingest-granule-bulk-update-task-status-url)
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false
                 :headers {transmit-config/token-header
-                                        (transmit-config/echo-system-token)}}]
+                          (transmit-config/echo-system-token)}}]
     (client/request params)))
 
 (defn bulk-update-provider-status
