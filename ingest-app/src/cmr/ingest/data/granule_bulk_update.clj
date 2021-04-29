@@ -254,24 +254,22 @@
                 ;; purposely not using `not=` since sqlingvo doesn't understand it
                 (sql-utils/where `(not (= :status "COMPLETE"))))))]
     ;; sql returns with underscores, not dash
-    (->> vals
-         (map :task_id)
-         (map int))))
+    (map :task_id vals)))
 
 (defn validate-task-exists
   "Validates the task exists in the database."
   [context task-id]
   (when-not (sql-utils/find-one
              (context->db context)
-             (sql-utils/build
-              (sql-utils/select
-               [:task-id]
-               (sql-utils/from "granule_bulk_update_tasks")
-               (sql-utils/where `(= :task-id ~task-id)))))
+             (sql-utils/select
+              [:task-id]
+              (sql-utils/from "granule_bulk_update_tasks")
+              (sql-utils/where `(= :task-id ~task-id))))
     (errors/throw-service-errors
      :not-found
      [(format "No granule bulk granule update task with ID [%s] found."
-              task-id)])))
+              task-id)]))
+  task-id)
 
 (defn-timed task-completed?
   "Returns false if there are any granule updates marked PENDING."
