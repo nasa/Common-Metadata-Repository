@@ -1,9 +1,10 @@
 (ns cmr.ingest.services.event-handler
- (:require
-  [cmr.ingest.config :as config]
-  [cmr.ingest.services.bulk-update-service :as bulk-update]
-  [cmr.ingest.services.granule-bulk-update-service :as granule-bulk-update-service]
-  [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
+  (:require
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.ingest.config :as config]
+   [cmr.ingest.services.bulk-update-service :as bulk-update]
+   [cmr.ingest.services.granule-bulk-update-service :as granule-bulk-update-service]
+   [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
 
 (defmulti handle-provider-event
   "Handle the various actions that can be requested for a provider via the provider-queue"
@@ -53,6 +54,7 @@
 
 (defmethod handle-provider-event :granule-bulk-update-task-status-update
   [context message]
+  (info "Received message to update granule-bulk-update-task status" message)
   (let [{task-id :task-id} message]
     (granule-bulk-update-service/update-bulk-granule-task-status
      context
