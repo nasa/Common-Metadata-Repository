@@ -136,36 +136,36 @@
    [db provider-id user-id request-json-body instructions]
    ;; In a transaction, add one row to the task status table and for each concept
    (jdbc/with-db-transaction
-     [conn db]
-     (let [task-id (:nextval (first (sql-utils/query db ["SELECT GRAN_TASK_ID_SEQ.NEXTVAL FROM DUAL"])))
-           statement (str "INSERT INTO granule_bulk_update_tasks "
-                          "(task_id, provider_id, name, request_json_body, status, user_id, created_at)"
-                          "VALUES (?, ?, ?, ?, ?, ?, ?)")
-           parsed-json (json/parse-string request-json-body true)
-           task-name (get parsed-json :name task-id)
-           unique-task-name (format "%s: %s" task-name task-id)
-           created-at (time-coerce/to-sql-time (time-keeper/now))
-           values [task-id provider-id unique-task-name (util/string->gzip-bytes request-json-body)
-                   "IN_PROGRESS" user-id created-at]]
-       (jdbc/db-do-prepared db statement values)
-       ;; Write a row to granule status for each granule-ur
-       (apply jdbc/insert! conn
-              "bulk_update_gran_status"
-              ["task_id" "provider_id" "granule_ur" "instruction" "status"]
-              (instructions->gran-stats task-id provider-id instructions))
-       task-id)))
+    [conn db]
+    (let [task-id (:nextval (first (sql-utils/query db ["SELECT GRAN_TASK_ID_SEQ.NEXTVAL FROM DUAL"])))
+          statement (str "INSERT INTO granule_bulk_update_tasks "
+                         "(task_id, provider_id, name, request_json_body, status, user_id, created_at)"
+                         "VALUES (?, ?, ?, ?, ?, ?, ?)")
+          parsed-json (json/parse-string request-json-body true)
+          task-name (get parsed-json :name task-id)
+          unique-task-name (format "%s: %s" task-name task-id)
+          created-at (time-coerce/to-sql-time (time-keeper/now))
+          values [task-id provider-id unique-task-name (util/string->gzip-bytes request-json-body)
+                  "IN_PROGRESS" user-id created-at]]
+      (jdbc/db-do-prepared db statement values)
+      ;; Write a row to granule status for each granule-ur
+      (apply jdbc/insert! conn
+             "bulk_update_gran_status"
+             ["task_id" "provider_id" "granule_ur" "instruction" "status"]
+             (instructions->gran-stats task-id provider-id instructions))
+      task-id)))
 
   (update-bulk-granule-update-task-status
-    [db task-id status status-message]
-    (try
-      (let [statement (str "UPDATE granule_bulk_update_tasks "
-                           "SET status = ?, status_message = ?"
-                           "WHERE task_id = ?")]
-        (jdbc/db-do-prepared db statement [status status-message task-id]))
-      (catch Exception e
-        (errors/throw-service-error :invalid-data
-                                    [(str "Error updating bulk update task status "
-                                          (.getMessage e))]))))
+   [db task-id status status-message]
+   (try
+     (let [statement (str "UPDATE granule_bulk_update_tasks "
+                          "SET status = ?, status_message = ?"
+                          "WHERE task_id = ?")]
+       (jdbc/db-do-prepared db statement [status status-message task-id]))
+     (catch Exception e
+       (errors/throw-service-error :invalid-data
+                                   [(str "Error updating bulk update task status "
+                                         (.getMessage e))]))))
 
   (update-bulk-update-granule-status
     [db task-id granule-ur status status-message]
@@ -184,15 +184,15 @@
                                           (.getMessage e))]))))
 
   (reset-bulk-granule-update
-    [db]
-    (sql-utils/run-sql db "DELETE FROM bulk_update_gran_status")
-    (sql-utils/run-sql db "DELETE FROM granule_bulk_update_tasks")
-    (sql-utils/run-sql db "ALTER SEQUENCE gran_task_id_seq restart start with 1")))
+   [db]
+   (sql-utils/run-sql db "DELETE FROM bulk_update_gran_status")
+   (sql-utils/run-sql db "DELETE FROM granule_bulk_update_tasks")
+   (sql-utils/run-sql db "ALTER SEQUENCE gran_task_id_seq restart start with 1")))
 
 (defn context->db
-  "Return the path to the database from a given context"
-  [context]
-  (get-in context [:system :db]))
+ "Return the path to the database from a given context"
+ [context]
+ (get-in context [:system :db]))
 
 (defn-timed cleanup-bulk-granule-tasks
   [context]
