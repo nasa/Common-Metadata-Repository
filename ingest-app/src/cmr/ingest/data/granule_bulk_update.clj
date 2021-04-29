@@ -86,19 +86,19 @@
   (get-granule-tasks-by-provider-id
    [db provider-id]
    (jdbc/with-db-transaction
-     [conn db]
-     ;; Returns a list of bulk update tasks for the provider
-     (let [stmt (sql-utils/build
-                 (sql-utils/select
-                  [:created-at :name :task-id :status :status-message :request-json-body]
-                  (sql-utils/from "granule_bulk_update_tasks")
-                  (sql-utils/where `(= :provider-id ~provider-id))))
-           ;; Note: the column selected out of the database is created_at, instead of created-at.
-           statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
-                                (sql-utils/query conn stmt)))
-           statuses (map util/map-keys->kebab-case statuses)]
-       (map #(update % :request-json-body util/gzip-blob->string)
-            statuses))))
+    [conn db]
+    ;; Returns a list of bulk update tasks for the provider
+    (let [stmt (sql-utils/build
+                (sql-utils/select
+                 [:created-at :name :task-id :status :status-message :request-json-body]
+                 (sql-utils/from "granule_bulk_update_tasks")
+                 (sql-utils/where `(= :provider-id ~provider-id))))
+          ;; Note: the column selected out of the database is created_at, instead of created-at.
+          statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
+                               (sql-utils/query conn stmt)))
+          statuses (map util/map-keys->kebab-case statuses)]
+      (map #(update % :request-json-body util/gzip-blob->string)
+           statuses))))
 
   (get-granule-task-by-task-id
    [db task-id]

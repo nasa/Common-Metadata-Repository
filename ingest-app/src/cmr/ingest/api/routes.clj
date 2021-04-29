@@ -207,10 +207,9 @@
            request
            (bulk/bulk-update-granules
             provider-id request))
-         (context "/status" []
-           (GET "/"
-             request
-             (bulk/get-provider-tasks :granule provider-id request))))))))
+         (GET "/status" ; Gets all tasks for provider
+           request
+           (bulk/get-provider-tasks :granule provider-id request)))))))
 
 (defn build-routes [system]
   (routes
