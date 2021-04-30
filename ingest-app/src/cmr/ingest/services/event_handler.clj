@@ -1,6 +1,5 @@
 (ns cmr.ingest.services.event-handler
   (:require
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.ingest.config :as config]
    [cmr.ingest.services.bulk-update-service :as bulk-update]
    [cmr.ingest.services.granule-bulk-update-service :as granule-bulk-update-service]
