@@ -16,7 +16,7 @@
 
 (deftest does-has-cloud-s3-tag-work
   "The function has-cloud-s3-tag should only return true if there is a
-   gov.nasa.earthdata.cloud.s3 tag in the list"
+   earthdata-cloud-s3-tag in the list"
   (let [bad1 (create-tag "This-Is-Not-The-Tag-Your-Looking-For" "My-Id" "Value")
         bad2 (create-tag "This-Is-Also-Not-The-Tag-Your-Looking-For" "My-Id" "Value")
         good (create-tag tag/earthdata-cloud-s3-tag "My-Id" "Value")

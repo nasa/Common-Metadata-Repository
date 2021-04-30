@@ -1888,7 +1888,9 @@ The `has_granules_or_opensearch` parameter can be set to "true" or "false". When
 
     curl "%CMR-ENDPOINT%/collections?has_opendap_url=true"
 
-#### <a name="c-cloud-hosted"></a> Find collections that have a `DirectDistributionInformation` element or have been tagged with `gov.nasa.earthdata.cloud.s3`.
+#### <a name="c-cloud-hosted"></a> Find collections with data that is hosted in the cloud.
+
+The `cloud_hosted` parameter can be set to "true" or "false". When true, the results will be restricted to collections that have a `DirectDistributionInformation` element or have been tagged with `gov.nasa.earthdatacloud.s3`.
 
     curl "%CMR-ENDPOINT%/collections?cloud_hosted=true"
 
