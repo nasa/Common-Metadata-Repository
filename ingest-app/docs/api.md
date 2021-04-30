@@ -1215,7 +1215,8 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/granule-bulk-u
 Granule bulk update tasks and statuses are available for 90 days.
 
 ### Refresh Granule Bulk Update Status
-Granule bulk update task statuses can be refreshed manually, provided the user has the appropriate permissions, with the following command.
+
+By default the bulk granule update jobs are checked for completion every 5 minutes. However granule bulk update task statuses can be refreshed manually, provided the user has the ingest-management permission, with the following command.
 
 ```
 curl -XPOST -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/granule-bulk-update/status
