@@ -312,15 +312,3 @@
       (errors/throw-service-error
        :error
        [(format "Exception caught while attempting to cleanup granule bulk update tasks: %s" e)]))))
-
-(defn update-bulk-granule-task-status
-  [context task-id]
-  (try
-    (when (data-granule-bulk-update/task-completed? context task-id)
-      (data-granule-bulk-update/mark-task-complete context task-id))
-    (catch Exception e
-      (errors/throw-service-error
-       :error
-       [(format (str "Exception caught while attempting to update "
-                     "granule bulk update task status: %s")
-                e)]))))
