@@ -31,7 +31,7 @@
 
 (defconfig granule-bulk-update-chunk-size
   "Default size to partition granule-bulk-update instructions into."
-  {:default 500
+  {:default 100
    :type Long})
 
 (defn- validate-granule-bulk-update-json
