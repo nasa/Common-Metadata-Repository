@@ -52,14 +52,6 @@
   [context message]
   (granule-bulk-update-service/cleanup-bulk-granule-task-table context))
 
-(defmethod handle-provider-event :granule-bulk-update-task-status-update
-  [context message]
-  (info "Received message to update granule-bulk-update-task status" message)
-  (let [{task-id :task-id} message]
-    (granule-bulk-update-service/update-bulk-granule-task-status
-     context
-     task-id)))
-
 ;; Default ignores the provider event. There may be provider events we don't care about.
 (defmethod handle-provider-event :default
   [_ _])

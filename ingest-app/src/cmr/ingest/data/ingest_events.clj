@@ -108,9 +108,3 @@
   "Create an event representing a granule bulk update cleanup event"
   []
   {:action :granule-bulk-update-task-cleanup})
-
-(defn granule-bulk-update-task-status-update-event
-  "Create an event to trigger a granule bulk update task status event."
-  [task-id]
-  {:action :granule-bulk-update-task-status-update
-   :task-id task-id})

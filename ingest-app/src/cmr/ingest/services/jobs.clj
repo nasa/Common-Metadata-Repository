@@ -221,13 +221,13 @@
        context
        (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
 
-(defn trigger-bulk-granule-task-status-updates
+(defn update-completed-bulk-granule-task-statuses
+  "Update completed granule update jobs status. "
   [context]
   (when-let [incomplete-tasks (seq (granule-bulk-update/get-incomplete-granule-task-ids context))]
     (doseq [task-id incomplete-tasks]
-      (ingest-events/publish-gran-bulk-update-event
-       context
-       (ingest-events/granule-bulk-update-task-status-update-event task-id)))))
+      (when (granule-bulk-update/task-completed? context task-id)
+        (granule-bulk-update/mark-task-complete context task-id)))))
 
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
@@ -247,7 +247,7 @@
 
 (def-stateful-job BulkGranTaskStatusUpdatePoll
   [_ system]
-  (trigger-bulk-granule-task-status-updates {:system system}))
+  (update-completed-bulk-granule-task-statuses {:system system}))
 
 (defn jobs
   "A list of jobs for ingest"

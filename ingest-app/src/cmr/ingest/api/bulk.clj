@@ -216,7 +216,7 @@
         :request-json-body request-json-body
         :granule-statuses granule-statuses}))))
 
-(defn update-granule-task-statuses
+(defn update-completed-granule-task-statuses
   "On demand capability to update granule task statuses. Marks bulk granule
    update tasks as complete when there are no granules marked as PENDING."
   [request]

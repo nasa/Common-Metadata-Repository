@@ -46,6 +46,10 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [POST - Collection bulk update](#collection-bulk-update)
   * /providers/\<provider-id\>/bulk-update/granules
     * [POST - Granule bulk update](#granule-bulk-update)
+  * /granule-bulk-update/status
+    * [POST - Granule bulk update](#granule-bulk-update)
+  * /granule-bulk-update/status/\<task-id\>
+    * [GET - Granule bulk update status](#granule-bulk-update)
 
 ***
 
@@ -1209,3 +1213,11 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/granule-bulk-u
 }
 ```
 Granule bulk update tasks and statuses are available for 90 days.
+
+### Refresh Granule Bulk Update Status
+Granule bulk update task statuses can be refreshed manually, provided the user has the appropriate permissions, with the following command.
+
+```
+curl -XPOST -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/granule-bulk-update/status
+```
+
