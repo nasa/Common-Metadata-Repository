@@ -167,6 +167,25 @@
                 :concept-id supplied-concept-id}
                (ingest/parse-ingest-body :xml response)))))))
 
+(deftest subscription-ingest-with-bad-query-error-test
+  (testing "ingest of a new subscription concept"
+    (let [coll1 (data-core/ingest-umm-spec-collection
+                  "PROV1"
+                  (data-umm-c/collection
+                   {:ShortName "coll1"
+                    :EntryTitle "entry-title1"})
+                  {:token "mock-echo-system-token"})
+          metadata {:CollectionConceptId (:concept-id coll1)
+                    :Query "options%5Bspatial%5D%5Bor%5D=true"}
+          concept (subscription-util/make-subscription-concept metadata)
+          response (ingest/ingest-concept
+                    concept
+                    {:accept-format :json
+                     :raw? true})
+          {:keys [errors]} (ingest/parse-ingest-body :json response)]
+      (is (re-find #"Error ingesting subscription: invalid query parameters" (first errors))))))
+
+
 ;; Verify that the accept header works with returned errors
 (deftest subscription-ingest-with-errors-accept-header-test
   (testing "json response"

@@ -5,6 +5,7 @@
    [clj-time.core :as t]
    [clojure.spec.alpha :as spec]
    [clojure.string :as string]
+   [cmr.common-app.services.ingest.subscription-common :as sub-common]
    [cmr.common-app.services.search.params :as params]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.log :refer (debug info warn error)]
@@ -29,16 +30,6 @@
 ;; UPDATE QRTZ_TRIGGERS
 ;; SET NEXT_FIRE_TIME =(((cast (SYS_EXTRACT_UTC(SYSTIMESTAMP) as DATE) - DATE'1970-01-01')*86400 + 1200) * 1000)
 ;; WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
-
-(defn- create-query-params
-  "Create query parameters using the query string like
-  \"polygon=1,2,3&concept-id=G1-PROV1\""
-  [query-string]
-  (let [query-string-list (string/split query-string #"&")
-        query-map-list (map #(let [a (string/split % #"=")]
-                               {(first a) (second a)})
-                             query-string-list)]
-     (apply merge query-map-list)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Jobs for refreshing the collection granule aggregation cache in the indexer. This is a singleton job
@@ -157,7 +148,7 @@
               query-string (-> (:metadata subscription)
                                (json/decode true)
                                :Query)
-              query-params (create-query-params query-string)
+              query-params (sub-common/create-query-params query-string)
               search-by-revision (merge {:revision-date time-constraint
                               :collection-concept-id coll-id
                               :token (config/echo-system-token)}
