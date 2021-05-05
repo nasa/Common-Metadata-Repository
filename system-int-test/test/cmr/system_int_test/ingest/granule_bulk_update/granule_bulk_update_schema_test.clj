@@ -88,9 +88,6 @@
         "valid"
         "UPDATE_FIELD" 200
 
-        "valid"
-        "APPEND_TO_FIELD" 200
-
         "invalid"
         "CROMULENT_OPERATION" 400))
 
