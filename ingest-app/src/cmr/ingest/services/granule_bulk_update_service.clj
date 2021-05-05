@@ -312,3 +312,12 @@
       (errors/throw-service-error
        :error
        [(format "Exception caught while attempting to cleanup granule bulk update tasks: %s" e)]))))
+
+(defn update-completed-task-status!
+  "Finds incomplete bulk granule update tasks and marks them as complete if
+  no granules remain to be processed."
+  [context]
+  (when-let [incomplete-tasks (data-granule-bulk-update/get-incomplete-granule-task-ids context)]
+    (doseq [task incomplete-tasks]
+      (when (data-granule-bulk-update/task-completed? context task)
+        (data-granule-bulk-update/mark-task-complete context task)))))

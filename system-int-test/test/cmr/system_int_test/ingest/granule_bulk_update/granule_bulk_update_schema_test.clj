@@ -4,7 +4,6 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as sys]

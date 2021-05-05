@@ -13,6 +13,7 @@
    [cmr.ingest.data.granule-bulk-update :as granule-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.data.provider-acl-hash :as pah]
+   [cmr.ingest.services.granule-bulk-update-service :as gran-bulk-update-svc]
    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
    [cmr.ingest.services.subscriptions-helper :as subscription]
    [cmr.transmit.config :as config]
@@ -221,14 +222,6 @@
        context
        (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
 
-(defn update-completed-bulk-granule-task-statuses
-  "Update completed granule update jobs status. "
-  [context]
-  (when-let [incomplete-tasks (seq (granule-bulk-update/get-incomplete-granule-task-ids context))]
-    (doseq [task-id incomplete-tasks]
-      (when (granule-bulk-update/task-completed? context task-id)
-        (granule-bulk-update/mark-task-complete context task-id)))))
-
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
   (bulk-update-status-table-cleanup {:system system}))
@@ -247,7 +240,7 @@
 
 (def-stateful-job BulkGranTaskStatusUpdatePoll
   [_ system]
-  (update-completed-bulk-granule-task-statuses {:system system}))
+  (gran-bulk-update-svc/update-completed-task-status! {:system system}))
 
 (defn jobs
   "A list of jobs for ingest"
