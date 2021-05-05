@@ -30,7 +30,7 @@
   [ur identifier]
   [ur (str "https://file.example.nasa.gov/" ur "/" identifier)])
 
-(deftest ^:oracle bulk-granule-update-parition-test
+(deftest ^:oracle bulk-granule-update-partition-test
   (testing "messages will be partitioned into smaller sizes to allow queueing in SQS"
     (system/only-with-real-database
      (try
