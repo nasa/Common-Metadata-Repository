@@ -23,8 +23,9 @@
   "Create query parameters using the query string like
   \"polygon=1,2,3&concept-id=G1-PROV1\""
   [query-string]
-  (let [query-string-list (string/split query-string #"&")
-        query-map-list (map #(let [a (string/split % #"=")]
-                               {(first a) (second a)})
-                             query-string-list)]
-     (apply merge query-map-list)))
+  (when query-string
+    (let [query-string-list (string/split query-string #"&")
+          query-map-list (map #(let [a (string/split % #"=")]
+                                 {(first a) (second a)})
+                               query-string-list)]
+       (apply merge query-map-list))))

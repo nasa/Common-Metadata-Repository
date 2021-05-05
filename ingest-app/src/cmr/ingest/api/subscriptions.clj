@@ -68,8 +68,7 @@
     (search/find-granule-references context params)
     (catch Exception e
       (errors/throw-service-error :bad-request
-       (str "Error ingesting subscription: invalid query parameters ["
-            (dissoc params :token) "]\n\n" (.getMessage e))))))
+       (str "Error ingesting subscription: invalid query parameters [" (dissoc params :token) "]")))))
 
 (defn- validate-query
   "Checks that the subscription query returns a valid response"
