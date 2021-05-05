@@ -11,5 +11,13 @@
         "ecmaVersion": 12
     },
     "rules": {
-    }
+        "prettier/prettier": ["error"],
+        // Disallow all semicolons on line endings
+        "semi": ["error", "never"],
+        // Allow console log messages
+        "no-console": "off",
+        // Disallow dangling commas
+        "comma-dangle": ["error", "never"]
+      },
+    "plugins": ["prettier"]
 }

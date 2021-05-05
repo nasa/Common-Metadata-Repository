@@ -1,6 +1,6 @@
-const AWS = require('aws-sdk');
+const AWS = require('aws-sdk')
 
-const ssm = new AWS.SSM();
+let ssm
 
 /**
  * getParam: Given token name, retrieve it from Parameter Store
@@ -8,11 +8,15 @@ const ssm = new AWS.SSM();
  * @returns {JSON} server response object from Parameter Store
  */
 exports.getSecureParam = async (param) => {
+  if (ssm == null) {
+    ssm = new AWS.SSM()
+  }
+
   const request = await ssm
     .getParameter({
       Name: param,
       WithDecryption: true,
     })
-    .promise();
+    .promise()
   return request.Parameter.Value;
 };

@@ -37,7 +37,7 @@ exports.indexCmrCollection = async (collection, gremlin) => {
   }
 
   if (relatedUrls && relatedUrls.length > 0) {
-    relatedUrls.forEachAsync((relatedUrl) => {
+    relatedUrls.forEach((relatedUrl) => {
       indexRelatedUrl(relatedUrl, gremlin, dataset);
     });
   }
