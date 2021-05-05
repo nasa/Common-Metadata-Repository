@@ -3,8 +3,7 @@
     "OperationEnum": {
       "type": "string",
       "enum": [
-        "UPDATE_FIELD",
-        "APPEND_TO_FIELD"
+        "UPDATE_FIELD"
       ]
     },
     "UpdateFieldEnum": {
