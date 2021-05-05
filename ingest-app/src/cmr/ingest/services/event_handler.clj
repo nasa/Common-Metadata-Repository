@@ -1,9 +1,9 @@
 (ns cmr.ingest.services.event-handler
-  (:require
-   [cmr.ingest.config :as config]
-   [cmr.ingest.services.bulk-update-service :as bulk-update]
-   [cmr.ingest.services.granule-bulk-update-service :as granule-bulk-update-service]
-   [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
+ (:require
+  [cmr.ingest.config :as config]
+  [cmr.ingest.services.bulk-update-service :as bulk-update]
+  [cmr.ingest.services.granule-bulk-update-service :as granule-bulk-update-service]
+  [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
 
 (defmulti handle-provider-event
   "Handle the various actions that can be requested for a provider via the provider-queue"
