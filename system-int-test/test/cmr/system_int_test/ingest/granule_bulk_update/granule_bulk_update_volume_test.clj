@@ -90,26 +90,22 @@
 
             (testing "The data is reflected in the updated values in search"
               (index/refresh-elastic-index)
-              (is (= (map #(second (update-instruction % identifier)) urs)
-                     (->> (-> (search/find-concepts-umm-json :granule {:granule-ur urs})
-                              :body
-                              (json/parse-string true)
-                              :items)
-                          (map :umm)
-                          (map :RelatedUrls)
-                          (map first)
-                          (map :URL))))))
+              (let [next-granules (-> (search/find-concepts-umm-json :granule {:granule-ur urs})
+                                      :body
+                                      (json/parse-string true)
+                                      :items)
+                    next-urls (->> next-granules
+                                   (map :umm)
+                                   (map :RelatedUrls)
+                                   (map first)
+                                   (map :URL))]
+                (is (= (map #(second (update-instruction % identifier)) urs)
+                       next-urls)))))
 
           "unsplit request"
           ["g1"] "unsplit"
 
           "split request"
-          ["g1" "g2" "g3"] "split")
-
-
-         #_(testing "values are updated and reflected in search results"
-             (is (pos? (:hits (search/find-refs
-                               :granule
-                               {:granule-ur "g1"}))))))
+          ["g1" "g2" "g3"] "split"))
        (finally (dev-sys-util/eval-in-dev-sys
                  `(cmr.ingest.services.granule-bulk-update-service/set-granule-bulk-update-chunk-size! 100)))))))
