@@ -168,35 +168,20 @@
                                          (.getMessage e))]))))
 
   (update-bulk-update-granule-status
-   [db task-id granule-ur status status-message]
-   (try
-     (jdbc/with-db-transaction
-      [conn db]
-      (let [statement (str "UPDATE bulk_update_gran_status "
-                           "SET status = ?, status_message = ?"
-                           "WHERE task_id = ? AND granule_ur = ?")
-            status-message (util/trunc status-message 4000)]
-        (jdbc/db-do-prepared db statement [status status-message task-id granule-ur])
-        (let [task-granules (sql-utils/query
-                             db
-                             (sql-utils/build (sql-utils/select
-                                               [:granule-ur :status]
-                                               (sql-utils/from "bulk_update_gran_status")
-                                               (sql-utils/where `(= :task-id ~task-id)))))
-              pending-granules (filter #(= "PENDING" (:status %)) task-granules)]
-          (when-not (seq pending-granules)
-            (let [failed-granules (filter #(= "FAILED" (:status %)) task-granules)
-                  skipped-granules (filter #(= "SKIPPED" (:status %)) task-granules)]
-              (update-bulk-granule-update-task-status db task-id "COMPLETE"
-                                                      (generate-task-status-message
-                                                       (count failed-granules)
-                                                       (count skipped-granules)
-                                                       (count task-granules))))))))
-     (catch Exception e
-       (error "Exception caught in update bulk update granule status: " e)
-       (errors/throw-service-error :invalid-data
-                                   [(str "Error updating bulk update granule status "
-                                         (.getMessage e))]))))
+    [db task-id granule-ur status status-message]
+    (try
+      (jdbc/with-db-transaction
+        [conn db]
+        (let [statement (str "UPDATE bulk_update_gran_status "
+                             "SET status = ?, status_message = ?"
+                             "WHERE task_id = ? AND granule_ur = ?")
+              status-message (util/trunc status-message 4000)]
+          (jdbc/db-do-prepared db statement [status status-message task-id granule-ur])))
+      (catch Exception e
+        (error "Exception caught in update bulk update granule status: " e)
+        (errors/throw-service-error :invalid-data
+                                    [(str "Error updating bulk update granule status "
+                                          (.getMessage e))]))))
 
   (reset-bulk-granule-update
    [db]
@@ -210,19 +195,21 @@
  (get-in context [:system :db]))
 
 (defn-timed cleanup-bulk-granule-tasks
- [context]
- (try
-     ; Deletes will cascade to granule_bulk_update_tasks
+  "Run a delete operation in the database to delete bulk granule update
+  tasks older than the retention period."
+  [context]
+  (try
+    ;; Deletes will cascade to granule_bulk_update_tasks
     (jdbc/delete!
      (context->db context)
      :granule_bulk_update_tasks
      ["STATUS = 'COMPLETE' AND CREATED_AT < SYSDATE - ?"
       (config/granule-bulk-cleanup-minimum-age)])
-   (catch Exception e
-     (error "Exception caught while attempting to clean up granule bulk update task table: " e)
-     (errors/throw-service-error :invalid-data
-                                 [(str "Error cleaning up bulk granule update task table "
-                                       (.getMessage e))]))))
+    (catch Exception e
+      (error "Exception caught while attempting to clean up granule bulk update task table: " e)
+      (errors/throw-service-error :invalid-data
+                                  [(str "Error cleaning up bulk granule update task table "
+                                        (.getMessage e))]))))
 
 (defn-timed get-granule-tasks-by-provider
   "Returns granule bulk update tasks by provider"
@@ -253,6 +240,76 @@
     (info (format "Granule update %s with message: %s" status status-message)))
   (update-bulk-update-granule-status
    (context->db context) task-id granule-ur status status-message))
+
+(defn-timed get-incomplete-granule-task-ids
+  "Returns a list of granule bulk update task ids where the status is not COMPELTE."
+  [context]
+  (let [db (context->db context)
+        vals (sql-utils/query
+              db
+              (sql-utils/build
+               (sql-utils/select
+                [:task-id]
+                (sql-utils/from "granule_bulk_update_tasks")
+                ;; purposely not using `not=` since sqlingvo doesn't understand it
+                (sql-utils/where `(not (= :status "COMPLETE"))))))]
+    ;; sql returns with underscores, not dash
+    (map :task_id vals)))
+
+(defn validate-task-exists
+  "Validates the task exists in the database."
+  [context task-id]
+  (when-not (sql-utils/find-one
+             (context->db context)
+             (sql-utils/select
+              [:task-id]
+              (sql-utils/from "granule_bulk_update_tasks")
+              (sql-utils/where `(= :task-id ~task-id))))
+    (errors/throw-service-errors
+     :not-found
+     [(format "No granule bulk granule update task with ID [%s] found."
+              task-id)]))
+  task-id)
+
+(defn-timed task-completed?
+  "Returns false if there are any granule updates marked PENDING."
+  [context task-id]
+  (validate-task-exists context task-id)
+  (let [db (context->db context)]
+    (nil? (sql-utils/find-one
+           db
+           (sql-utils/select
+            [:granule-ur :status]
+            (sql-utils/from "bulk_update_gran_status")
+            (sql-utils/where `(and (= :status "PENDING")
+                                   (= :task-id ~task-id))))))))
+
+(defn-timed mark-task-complete
+  "Marks a granule bulk task as COMPLETE and sets the status message.
+  It will throw an exception if there still granules marked as PENDING."
+  [context task-id]
+  (let [db (context->db context)
+        task-granules (sql-utils/query
+                       db
+                       (sql-utils/build
+                        (sql-utils/select
+                         [:granule-ur :status]
+                         (sql-utils/from "bulk_update_gran_status")
+                         (sql-utils/where `(= :task-id ~task-id)))))
+        pending-granules (filter #(= "PENDING" (:status %)) task-granules)
+        failed-granules (filter #(= "FAILED" (:status %)) task-granules)
+        skipped-granules (filter #(= "SKIPPED" (:status %)) task-granules)]
+    (if (zero? (count pending-granules))
+      (update-bulk-granule-update-task-status db task-id "COMPLETE"
+                                              (generate-task-status-message
+                                               (count failed-granules)
+                                               (count skipped-granules)
+                                               (count task-granules)))
+      (throw (ex-info
+              (str "Tried to mark bulk-granule-update-task as complete "
+                   "when there are still granules marked as PENDING.")
+              {:task-id task-id
+               :pending-granule pending-granules})))))
 
 (defn reset-db
   "Clear bulk update db"

@@ -101,10 +101,14 @@
     ;; granule bulk update status route
     (api-core/set-default-error-format
      :json
-     (context "/granule-bulk-update/status/:task-id" [task-id]
-       (GET "/"
+     (context "/granule-bulk-update/status" []
+       (POST "/"
          request
-         (bulk/get-granule-task-status task-id request))))
+         (bulk/update-completed-granule-task-statuses request))
+       (context "/:task-id" [task-id]
+         (GET "/"
+           request
+           (bulk/get-granule-task-status task-id request)))))
     ;; Provider ingest routes
     (api-core/set-default-error-format
      :xml

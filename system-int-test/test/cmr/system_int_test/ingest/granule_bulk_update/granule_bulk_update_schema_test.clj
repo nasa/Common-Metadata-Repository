@@ -4,7 +4,6 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as sys]
@@ -54,6 +53,13 @@
 
    ;; Business rules validation
 
+   "blank granule ur"
+   [["" "https://example.com/oops-no-ur-empty"]
+    ["  " "https://example.com/oops-no-ur-spaces"]
+    ["\t" "https://example.com/oops-no-ur-tab"]]
+   (str "Empty granule URs are not allowed in bulk update requests. "
+        "Found [3] updates with empty granule UR values.")
+
    "duplicate granule_ur in request"
    [["ur_1" "https://aws.foo.com"]
     ["ur_2" "https://aws.bar.com"]
@@ -66,17 +72,24 @@
         "Detected the following duplicates [ur_3,ur_4]")))
 
 (deftest operation-validation-test
-  (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
-                             :accept-format :json
-                             :raw? true}
-        request (assoc base-request :operation "CROMULENT_OPERATION")
-        {:keys [body status]} (ingest/bulk-update-granules "PROV1"
-                                                           request
-                                                           bulk-update-options)
-        response (json/parse-string body true)]
-    (is (= 400 status))
-    (is (= "#/operation: CROMULENT_OPERATION is not a valid enum value"
-           (first (:errors response))))))
+  (are3 [operation expected-status]
+        (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
+                                   :accept-format :json
+                                   :raw? true}
+              request (assoc base-request :operation operation)
+              {:keys [body status]} (ingest/bulk-update-granules "PROV1"
+                                                                 request
+                                                                 bulk-update-options)
+              response (json/parse-string body true)]
+          (is (= status expected-status))
+          (when-not (= 200 expected-status)
+            (is (= (format "#/operation: %s is not a valid enum value" operation)
+                   (first (:errors response))))))
+        "valid"
+        "UPDATE_FIELD" 200
+
+        "invalid"
+        "CROMULENT_OPERATION" 400))
 
 (deftest update-field-validation-test
   (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")

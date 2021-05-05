@@ -3,6 +3,7 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -26,7 +27,12 @@
    [cmr.umm-spec.versioning :as versioning]))
 
 (def granule-bulk-update-schema
- (js/json-string->json-schema (slurp (io/resource "granule_bulk_update_schema.json"))))
+  (js/json-string->json-schema (slurp (io/resource "granule_bulk_update_schema.json"))))
+
+(defconfig granule-bulk-update-chunk-size
+  "Default size to partition granule-bulk-update instructions into."
+  {:default 100
+   :type Long})
 
 (defn- validate-granule-bulk-update-json
   "Validate the request against the schema and return the parsed request."
@@ -34,7 +40,7 @@
   (js/validate-json! granule-bulk-update-schema json))
 
 (defn- duplicates
-  "Return any non-unique entries in a collection or nil if none are found."
+  "Return a seq of any non-unique entries in a collection or nil."
   [coll]
   (seq (for [[id freq] (frequencies coll)
              :when (> freq 1)]
@@ -55,26 +61,63 @@
         event-type (string/lower-case (str operation ":" update-field))]
     (map (partial update->instruction event-type) updates)))
 
-(defn- validate-granule-bulk-update-no-duplicates
+(defn- validate-granule-bulk-update-no-duplicate-urs
   "Validate no duplicate URs exist within the list of instructions"
-  [request]
-  (when-let [duplicate-urs (->> request
-                                request->instructions
-                                (map :granule-ur)
-                                duplicates)]
+  [urs]
+  (when-let [duplicate-urs (duplicates urs)]
     (errors/throw-service-errors
      :bad-request
      [(format (str "Duplicate granule URs are not allowed in bulk update requests. "
                    "Detected the following duplicates [%s]")
-              (string/join "," duplicate-urs))])))
+              (string/join "," duplicate-urs))]))
+  urs)
+
+(defn- validate-granule-bulk-update-no-blank-urs
+  "Validate no blank URs exist in the list."
+  [urs]
+  (when-let [blank-urs (seq (filter string/blank? urs))]
+    (errors/throw-service-errors
+     :bad-request
+     [(format (str "Empty granule URs are not allowed in bulk update requests. "
+                   "Found [%d] updates with empty granule UR values.")
+              (count blank-urs))]))
+  urs)
 
 (defn- validate-and-parse-bulk-granule-update
   "Perform validation operations on bulk granule update requests."
   [context json-body provider-id]
+  ;; validate request against schema
   (validate-granule-bulk-update-json json-body)
   (let [request (json/parse-string json-body true)]
-    (validate-granule-bulk-update-no-duplicates request)
+    ;; validate granule UR
+    (->> request
+         request->instructions
+         (map :granule-ur)
+         validate-granule-bulk-update-no-blank-urs
+         validate-granule-bulk-update-no-duplicate-urs)
     request))
+
+(defn- publish-instructions-partitioned
+  "Publish bulk granule update events in partitioned amounts."
+  [context provider-id user-id task-id instructions partition-size]
+  (let [chunked-instructions (partition-all partition-size instructions)]
+    (info (format
+           (str "Bulk granule update request [%s] by user [%s] "
+                "preparing [%d] updates in [%d] jobs "
+                "with job size of [%d].")
+           task-id
+           user-id
+           (count instructions)
+           (count chunked-instructions)
+           partition-size))
+
+    (doseq [ins-list chunked-instructions]
+      (ingest-events/publish-gran-bulk-update-event
+       context
+       (ingest-events/granules-bulk-event provider-id
+                                          task-id
+                                          user-id
+                                          ins-list)))))
 
 (defn validate-and-save-bulk-granule-update
   "Validate the granule bulk update request, save rows to the db for task
@@ -97,10 +140,15 @@
                        :internal-error
                        [(str "There was a problem saving a bulk granule update request."
                              "Please try again, if the problem persists please contact cmr-support@earthdata.nasa.gov.")]))))]
-    ;; Queue the granules bulk update event
-    (ingest-events/publish-gran-bulk-update-event
+
+    ;; Queue the granules bulk update events
+    (publish-instructions-partitioned
      context
-     (ingest-events/granules-bulk-event provider-id task-id user-id instructions))
+     provider-id
+     user-id
+     task-id
+     instructions
+     (granule-bulk-update-chunk-size))
     task-id))
 
 (defn handle-granules-bulk-event
@@ -203,8 +251,8 @@
           (assoc :user-id user-id)))))
 
 (defmethod update-granule-concept :default
-[context concept bulk-update-params user-id]
-)
+  [context concept bulk-update-params user-id]
+  (warn "No default implementation for update-granule-concept"))
 
 (defn- update-granule-concept-and-status
   "Perform update for the granule concept and granule bulk update status."
@@ -259,8 +307,17 @@
   "Delete and export all granule bulk update tasks marked ready for deletion"
   [context]
   (try
-   (data-granule-bulk-update/cleanup-bulk-granule-tasks context)
-   (catch Exception e
-     (errors/throw-service-error
-      :error
-      [(format "Exception caught while attempting to cleanup granule bulk update tasks: %s" e)]))))
+    (data-granule-bulk-update/cleanup-bulk-granule-tasks context)
+    (catch Exception e
+      (errors/throw-service-error
+       :error
+       [(format "Exception caught while attempting to cleanup granule bulk update tasks: %s" e)]))))
+
+(defn update-completed-task-status!
+  "Finds incomplete bulk granule update tasks and marks them as complete if
+  no granules remain to be processed."
+  [context]
+  (when-let [incomplete-tasks (data-granule-bulk-update/get-incomplete-granule-task-ids context)]
+    (doseq [task incomplete-tasks]
+      (when (data-granule-bulk-update/task-completed? context task)
+        (data-granule-bulk-update/mark-task-complete context task)))))
