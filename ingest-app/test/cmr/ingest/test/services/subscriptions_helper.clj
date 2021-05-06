@@ -4,6 +4,7 @@
    [clj-time.core :as t]
    [clojure.test :refer :all]
    [cmr.common.util :as u :refer [are3]]
+   [cmr.ingest.config :as ingest-config]
    [cmr.ingest.services.subscriptions-helper :as jobs]))
 
 (deftest create-query-params
@@ -24,7 +25,7 @@
 (deftest create-email-test
   "This tests the HTML output of the email generation"
   (let [actual (jobs/create-email-content
-                "cmr-support@earthdata.nasa.gov"
+                (ingest-config/cmr-support-email) 
                 "someone@gmail.com"
                 '("https://cmr.link/g1" "https://cmr.link/g2" "https://cmr.link/g3")
                 {:extra-fields {:collection-concept-id "C1200370131-EDF_DEV06"}
@@ -47,8 +48,11 @@
                 "<a href='https://cmr.link/g2'>https://cmr.link/g2</a></li><li>"
                 "<a href='https://cmr.link/g3'>https://cmr.link/g3</a></li></ul>"
                 "<p>To unsubscribe from these notifications, or if you have any questions, "
-                "please contact us at <a href='mailto:cmr-support@earthdata.nasa.gov'>"
-                "cmr-support@earthdata.nasa.gov</a>.</p>")
+                "please contact us at <a href='mailto:"
+                (ingest-config/cmr-support-email) 
+                "'>"
+                (ingest-config/cmr-support-email) 
+                "</a>.</p>")
            (:content (first (:body actual)))))))
 
 (deftest subscription->time-constraint-test

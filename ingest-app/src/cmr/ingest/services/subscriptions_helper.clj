@@ -8,6 +8,7 @@
    [cmr.common-app.services.search.params :as params]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.log :refer (debug info warn error)]
+   [cmr.ingest.config :as ingest-config]
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
@@ -95,7 +96,11 @@
                            sub-start-time
                            ", the following granules have been added or updated:\n\n"
                            (email-granule-url-list gran-ref-location)
-                           "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"))}]}))
+                           "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at ["
+                           (ingest-config/cmr-support-email) 
+                           "](mailto:"
+                           (ingest-config/cmr-support-email) 
+                           ").\n"))}]}))
 
 (defn- add-updated-since
   "Pull out the start and end times from a time-constraint value and associate them to a map"
