@@ -20,9 +20,9 @@
 
 (defn-timed save-subscription-notification-time
  "make an http call to the database application"
- [context data]
+ [context sub-id]
  (let [conn (config/context->app-connection context :metadata-db)
-       request-url (str (conn/root-url conn) (format "/subscription/%s/notification-time" data))
+       request-url (str (conn/root-url conn) (format "/subscription/%s/notification-time" sub-id))
        response (client/put request-url
                             (merge
                               (config/conn-params conn)

@@ -98,9 +98,9 @@
 
 (defn- send-update-subscription-notification-time!
   "handle any packaging of data here before sending it off to transmit package"
-  [context data]
-  (debug "send-update-subscription-notification-time with" data)
-  (search/save-subscription-notification-time context data))
+  [context sub-id]
+  (debug "send-update-subscription-notification-time with" sub-id)
+  (search/save-subscription-notification-time context sub-id))
 
 (defn- filter-gran-refs-by-subscriber-id
   "Takes a list of granule references and a subscriber id and removes any granule that the user does
@@ -149,15 +149,13 @@
                                (json/decode true)
                                :Query)
               query-params (sub-common/create-query-params query-string)
-              search-by-revision (merge {:revision-date time-constraint
+              search-by-revision (merge {:revision-date time-constraint})
                               :collection-concept-id coll-id
-                              :token (config/echo-system-token)}
-                             query-params)
+                              :token (config/echo-system-token)
+                             query-params
               gran-refs (search-gran-refs-by-collection-id context search-by-revision sub-id)
               subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
-    (do
-      (send-update-subscription-notification-time! context sub-id)
-      [sub-id subscriber-filtered-gran-refs subscriber-id subscription])))
+    [sub-id subscriber-filtered-gran-refs subscriber-id subscription]))
 
 (defn- send-subscription-emails
   "Takes processed processed subscription tuples and sends out emails if applicable."
@@ -173,7 +171,12 @@
           (postal-core/send-message email-settings email-content)
           (catch Exception e
             (error "Exception caught in email subscription: " sub-id "\n\n"
-                   (.getMessage e) "\n\n" e)))))))
+                   (.getMessage e) "\n\n" e))
+          (finally
+            (send-update-subscription-notification-time! context sub-id)
+            (info (str "Successfully processed subscription [" sub-id "].
+                        Sent subscription email to [" email-address "]."))))))))
+
 
 (defn email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
