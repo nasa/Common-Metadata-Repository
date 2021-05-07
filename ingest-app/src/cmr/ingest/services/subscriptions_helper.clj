@@ -149,10 +149,10 @@
                                (json/decode true)
                                :Query)
               query-params (sub-common/create-query-params query-string)
-              search-by-revision (merge {:revision-date time-constraint})
-                              :collection-concept-id coll-id
-                              :token (config/echo-system-token)
-                             query-params
+              search-by-revision (merge {:revision-date time-constraint
+                                         :collection-concept-id coll-id
+                                         :token (config/echo-system-token)}
+                                        query-params)
               gran-refs (search-gran-refs-by-collection-id context search-by-revision sub-id)
               subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
     [sub-id subscriber-filtered-gran-refs subscriber-id subscription]))
