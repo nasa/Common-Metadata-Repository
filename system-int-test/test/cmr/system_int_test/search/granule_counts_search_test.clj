@@ -268,7 +268,7 @@
 
       (testing "JSON results with granule counts"
         (let [results (search/find-concepts-json :collection {:include-granule-counts true})]
-          (is (gran-counts/granule-counts-match? :atom {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3
+          (is (gran-counts/granule-counts-match? :json {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3
                                                         coll6 3 orbit-coll 1}
                                                  results)))))
 

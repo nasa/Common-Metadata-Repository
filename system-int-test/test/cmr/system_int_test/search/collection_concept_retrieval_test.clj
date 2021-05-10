@@ -338,7 +338,7 @@
 
       (testing "json"
         (are [concept options]
-             (= (da/collection->expected-atom concept)
+             (= (da/collection->expected-json concept)
                 (dj/parse-json-collection (get-concept-by-id-helper concept options)))
              c1-echo {:url-extension "json"}
              c1-echo {:accept        "application/json"}

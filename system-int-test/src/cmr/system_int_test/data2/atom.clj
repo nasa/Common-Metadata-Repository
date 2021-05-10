@@ -374,6 +374,13 @@
        (set (map #(dissoc % :granule-count)
                  (get-in atom-results [:results :entries]))))))
 
+(defn json-collection-results-match?
+  [expected-items json-results]
+  (let [expected-entries (map collection->expected-json expected-items)]
+    (= (set expected-entries)
+       (set (map #(dissoc % :granule-count)
+                 (get-in json-results [:results :entries]))))))
+
 (defn granule->expected-atom
   "Returns the atom map of the granule"
   [granule coll]

@@ -402,7 +402,7 @@
       (are3 [coll expected-fields]
         (let [coll-with-extra-fields (merge coll expected-fields)
               {:keys [entry-title]} coll
-              coll-json (atom/collections->expected-atom
+              coll-json (atom/collections->expected-json
                          [coll-with-extra-fields]
                          (format "collections.json?entry_title=%s" entry-title))
               {:keys [status results]} (search/find-concepts-json
@@ -419,7 +419,7 @@
 
     (testing "delete variable affect collection search has-variables field"
       (let [{:keys [entry-title]} coll1
-            expected-json (atom/collections->expected-atom
+            expected-json (atom/collections->expected-json
                            [(assoc coll1 :has-variables true :variables [variable1-concept-id])]
                            (format "collections.json?entry_title=%s" entry-title))
             {:keys [results]} (search/find-concepts-json
@@ -431,7 +431,7 @@
         (ingest/delete-concept var1-concept {:token token})
         (index/wait-until-indexed)
         (let [{:keys [entry-title]} coll1
-              expected-json (atom/collections->expected-atom
+              expected-json (atom/collections->expected-json
                              [(assoc coll1 :has-variables false)]
                              (format "collections.json?entry_title=%s" entry-title))
               {:keys [results]} (search/find-concepts-json

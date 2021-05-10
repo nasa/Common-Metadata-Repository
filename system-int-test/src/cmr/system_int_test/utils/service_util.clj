@@ -269,7 +269,7 @@
                                       {:services serv-concept-ids
                                        :variables var-concept-ids})
         {:keys [entry-title]} coll
-        coll-json (atom/collections->expected-atom
+        coll-json (atom/collections->expected-json
                    [coll-with-extra-fields]
                    (format "collections.json?entry_title=%s" entry-title))
         {:keys [status results]} (search/find-concepts-json
