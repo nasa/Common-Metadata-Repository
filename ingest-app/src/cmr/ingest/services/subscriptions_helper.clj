@@ -169,13 +169,13 @@
             email-settings {:host (email-server-host) :port (email-server-port)}]
         (try
           (postal-core/send-message email-settings email-content)
+          (send-update-subscription-notification-time! context sub-id)
+          (info (str "Successfully processed subscription [" sub-id "].
+                      Sent subscription email to [" email-address "]."))
           (catch Exception e
             (error "Exception caught in email subscription: " sub-id "\n\n"
-                   (.getMessage e) "\n\n" e))
-          (finally
-            (send-update-subscription-notification-time! context sub-id)
-            (info (str "Successfully processed subscription [" sub-id "].
-                        Sent subscription email to [" email-address "]."))))))))
+                   (.getMessage e) "\n\n" e))))
+      [sub-id subscriber-filtered-gran-refs subscriber-id subscription])))
 
 
 (defn email-subscription-processing

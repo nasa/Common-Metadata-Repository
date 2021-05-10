@@ -33,10 +33,7 @@
 (defn- trigger-process-subscriptions
   "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
   []
-  (let [subscriptions (->> (mdb2/find-concepts (system/context) {:latest true} :subscription)
-                           (remove :deleted)
-                           (mapv #(select-keys % [:concept-id :extra-fields :metadata])))]
-    (#'jobs/process-subscriptions (system/context) subscriptions)))
+  (email-subscription-processing (system/context)))
 
 (defn- create-granule-and-index
   "A utility function to reduce common code in these tests, Create a test granule and then wait for it to be indexed."
