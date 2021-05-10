@@ -244,12 +244,15 @@
         [include-tags dataset-id-tags]
         (let [expected-result
               (fn [response-format]
-                (let [feed-id (->> (-> include-tags
+                (let [expected-fn (if (= :atom response-format)
+                                    atom/collections->expected-atom
+                                    atom/collections->expected-json)
+                      feed-id (->> (-> include-tags
                                        (str/replace "?" "%3F")
                                        (str/replace "," "%2C"))
                                    (format "collections.%s?provider=PROV1&include_tags=%s"
                                            (name response-format)))]
-                  (-> (atom/collections->expected-atom all-prov1-colls feed-id)
+                  (-> (expected-fn all-prov1-colls feed-id)
                       (update-in [:entries] add-tags-to-collections dataset-id-tags))))
 
               {json-status :status json-results :results}
@@ -293,70 +296,70 @@
 
     (testing "include-tags in supported metadata format has proper tags added to the response."
       (are [metadata-format]
-           (assert-metadata-results-tags-match
-             {coll1 {"tag1" {"data" "snow"} "tag2" {}}
-              coll2 {"tag2" {}}
-              coll3 {"cmr.other" {}}
-              coll4 nil
-              coll5 {"tag1" {"data" "<cloud>"}}}
-             (search/find-metadata-tags :collection metadata-format {:include-tags "*"}))
+        (assert-metadata-results-tags-match
+         {coll1 {"tag1" {"data" "snow"} "tag2" {}}
+          coll2 {"tag2" {}}
+          coll3 {"cmr.other" {}}
+          coll4 nil
+          coll5 {"tag1" {"data" "<cloud>"}}}
+         (search/find-metadata-tags :collection metadata-format {:include-tags "*"}))
 
-           :dif
-           :dif10
-           :echo10
-           :native
-           :iso19115)
+        :dif
+        :dif10
+        :echo10
+        :native
+        :iso19115)
 
       (are [metadata-format]
-           (assert-metadata-results-tags-match
-             {coll1 {"tag1" {"data" "snow"}}
-              coll2 nil
-              coll3 nil
-              coll4 nil}
-             (search/find-metadata-tags
-               :collection metadata-format {:provider "PROV1" :include-tags "tag1"}))
+        (assert-metadata-results-tags-match
+         {coll1 {"tag1" {"data" "snow"}}
+          coll2 nil
+          coll3 nil
+          coll4 nil}
+         (search/find-metadata-tags
+          :collection metadata-format {:provider "PROV1" :include-tags "tag1"}))
 
-           :dif
-           :dif10
-           :echo10
-           :native
-           :iso19115)
+        :dif
+        :dif10
+        :echo10
+        :native
+        :iso19115)
 
       ;; direct transformer query special case
       (are [metadata-format]
-           (assert-metadata-results-tags-match
-             {coll1 {"tag1" {"data" "snow"} "tag2" {}}}
-             (search/find-metadata-tags
-               :collection metadata-format {:concept-id (:concept-id coll1) :include-tags "*"}))
+        (assert-metadata-results-tags-match
+         {coll1 {"tag1" {"data" "snow"} "tag2" {}}}
+         (search/find-metadata-tags
+          :collection metadata-format {:concept-id (:concept-id coll1) :include-tags "*"}))
 
-           :dif
-           :dif10
-           :echo10
-           :native
-           :iso19115))
+        :dif
+        :dif10
+        :echo10
+        :native
+        :iso19115))
 
     (testing "Invalid include-tags params"
       (testing "include-tags in collection search with result formats orther than JSON is invalid."
         (are2 [search-fn format-type]
-              (= {:status 400
-                  :errors [(format "Parameter [include_tags] is not supported for %s format search."
-                                   (name format-type))]}
-                 (search-fn :collection {:include-tags "*"}))
+          (= {:status 400
+              :errors [(format "Parameter [include_tags] is not supported for %s format search."
+                               (name format-type))]}
+             (search-fn :collection {:include-tags "*"}))
 
-              "search in xml reference"
-              search/find-refs :xml
+          "search in xml reference"
+          search/find-refs :xml
 
-              "search in kml format"
-              search/find-concepts-kml :kml
+          "search in kml format"
+          search/find-concepts-kml :kml
 
-              "search in csv format"
-              search/find-concepts-csv :csv
+          "search in csv format"
+          search/find-concepts-csv :csv
 
-              "search in opendata format"
-              search/find-concepts-opendata :opendata
+          "search in opendata format"
+          search/find-concepts-opendata :opendata
 
-              "search in umm-json format"
-              search/find-concepts-umm-json :umm-json-results))
+          "search in umm-json format"
+          search/find-concepts-umm-json :umm-json-results))
 
       (testing "include-tags is not supported on granule searches."
         (is (= {:status 400
@@ -404,9 +407,12 @@
                                     "tag3" {"data" "tag 3 rocks"}}}
           expected-result
           (fn [response-format]
-            (let [feed-id (format "collections.%s?provider=PROV1&include_tags=*"
+            (let [expected-fn (if (= :atom response-format)
+                                atom/collections->expected-atom
+                                atom/collections->expected-json)
+                  feed-id (format "collections.%s?provider=PROV1&include_tags=*"
                                   (name response-format))]
-              (-> (atom/collections->expected-atom all-prov1-colls feed-id)
+              (-> (expected-fn all-prov1-colls feed-id)
                   (update-in [:entries] add-tags-to-collections dataset-id-tags))))
 
           {json-status :status json-results :results}

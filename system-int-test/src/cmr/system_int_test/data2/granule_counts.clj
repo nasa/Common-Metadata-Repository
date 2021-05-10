@@ -43,15 +43,15 @@
       (println "Actual:" (pr-str actual-count-map)))
     (and results-match? counts-match?)))
 
-(defmethod granule-counts-match? :atom
-  [result-format expected-counts atom-results]
+(defn- atom-json-collection-results-match?
+  [coll-match-fn expected-counts atom-results]
   (let [entries (get-in atom-results [:results :entries])
         count-map (into {} (for [[coll granule-count] expected-counts]
                              [(:entry-title coll) granule-count]))
         actual-count-map (into {} (for [{:keys [dataset-id granule-count]} entries]
                                     [dataset-id granule-count]))
-        results-match? (da/atom-collection-results-match?
-                         (keys expected-counts) atom-results)
+        results-match? (coll-match-fn
+                        (keys expected-counts) atom-results)
         counts-match? (= count-map actual-count-map)]
     (when-not results-match?
       (println "Expected:" (pr-str (map :entry-title (keys expected-counts))))
@@ -61,6 +61,15 @@
       (println "Actual:" (pr-str actual-count-map)))
     (and results-match? counts-match?)))
 
+(defmethod granule-counts-match? :atom
+  [result-format expected-counts atom-results]
+  (atom-json-collection-results-match?
+   da/atom-collection-results-match? expected-counts atom-results))
+
+(defmethod granule-counts-match? :json
+  [result-format expected-counts atom-results]
+  (atom-json-collection-results-match?
+   da/json-collection-results-match? expected-counts atom-results))
 
 (defmulti results->actual-has-granules
   "Converts the results into a map of collection ids to the has-granules value"

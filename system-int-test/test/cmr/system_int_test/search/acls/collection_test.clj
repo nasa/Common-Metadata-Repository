@@ -287,7 +287,7 @@
 
     (testing "JSON ACL enforcement"
       (testing "all items"
-        (let [coll-json (da/collections->expected-atom
+        (let [coll-json (da/collections->expected-json
                          guest-permitted-collections
                          (format "collections.json?token=%s&page_size=100" guest-token))]
           (is (= coll-json (:results (search/find-concepts-json :collection {:token guest-token
@@ -295,7 +295,7 @@
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-colls)
-              coll-json (da/collections->expected-atom
+              coll-json (da/collections->expected-json
                          guest-permitted-collections
                          (str "collections.json?token=" guest-token
                               "&page_size=100&concept_id="
