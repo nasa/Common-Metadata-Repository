@@ -647,7 +647,7 @@
                                                                               :EntryTitle "entry-title1"})
                                                       {:token "mock-echo-system-token"})
           fake-concept (subscription-util/make-subscription-concept {:SubscriberId "user1"
-                                                                     :CollectionConceptId "FAKE"})
+                                                                     :CollectionConceptId "C1234-PROV1"})
           concept (subscription-util/make-subscription-concept {:SubscriberId "user1"
                                                                 :CollectionConceptId (:concept-id coll1)})]
       ;; adjust permissions
@@ -669,7 +669,7 @@
       (testing "non-existent collection concept-id"
         (let [{:keys [status errors]} (ingest/ingest-concept fake-concept {:token "mock-echo-system-token"})]
           (is (= 401 status))
-          (is (= [(format "Collection with concept id [FAKE] does not exist or subscriber-id [user1] does not have permission to view the collection.")]
+          (is (= [(format "Collection with concept id [C1234-PROV1] does not exist or subscriber-id [user1] does not have permission to view the collection.")]
                  errors))))
 
       (testing "user doesn't have permission to view collection"
