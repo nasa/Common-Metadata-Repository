@@ -835,7 +835,10 @@ __Example__
 
 #### <a name="json"></a> JSON
 
-The JSON response contains all the fields in the ATOM response, plus the associations field, which contains the concept ids of variables and services that are associated with the collection.
+The JSON response contains all the fields in the ATOM response, plus the the following fields:
+
+* associations - a map of the concept ids of variables and services that are associated with the collection.
+* platforms - a list of platform short names of the collection.
 
 __Example__
 
@@ -863,6 +866,7 @@ __Example__
       "has_spatial_subsetting" : false,
       "has_temporal_subsetting" : false,
       "online_access_flag" : false,
+      "platforms" : [ "Platform1" ],
       "tags" : {"tag1": {"data": {"score": 85, "status": "reviewed"}},
                 "tag2": {"data" : "cloud cover > 80"}},
       "associations" : {
