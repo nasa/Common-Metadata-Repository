@@ -51,7 +51,7 @@
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters highlighted-summary-snippets tags organizations
                 has-variables has-formats has-transforms has-spatial-subsetting has-temporal-subsetting
-                associations]} reference
+                platforms associations]} reference
         shape-result (atom-spatial/shapes->json shapes)
         granule-count (get granule-counts-map id 0)
         result (merge {:id id
@@ -67,6 +67,7 @@
                        :data_center data-center
                        :archive_center archive-center
                        :organizations organizations
+                       :platforms platforms
                        :processing_level_id processing-level-id
                        :time_start start-date
                        :time_end end-date

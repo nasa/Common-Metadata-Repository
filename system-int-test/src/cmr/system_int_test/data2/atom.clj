@@ -280,7 +280,8 @@
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
          :keys [concept-id format-key has-variables has-formats has-transforms
-                has-spatial-subsetting has-temporal-subsetting services variables tools]} collection
+                has-spatial-subsetting has-temporal-subsetting
+                services variables tools platforms]} collection
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
         ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
@@ -343,6 +344,13 @@
       :has-temporal-subsetting (boolean has-temporal-subsetting)
       :associations associations})))
 
+(defn collection->expected-json
+  "Returns the JSON map of the collection"
+  [collection]
+  (assoc (collection->expected-atom collection)
+         :platforms
+         (map :short-name (:platforms collection))))
+
 (defn collections->expected-atom
   "Returns the atom map of the collections"
   [collections atom-path]
@@ -350,6 +358,14 @@
     {:id (str (url/search-root) atom-path)
      :title "ECHO dataset metadata"
      :entries (seq (map collection->expected-atom collections))}))
+
+(defn collections->expected-json
+  "Returns the JSON map of the collections"
+  [collections url-path]
+  (util/remove-nil-keys
+    {:id (str (url/search-root) url-path)
+     :title "ECHO dataset metadata"
+     :entries (seq (map collection->expected-json collections))}))
 
 (defn atom-collection-results-match?
   [expected-items atom-results]

@@ -545,6 +545,12 @@
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :related-urls [ru3]
                                         :science-keywords [sk1 sk2]
+                                        :platforms [{:short-name "platform #1"
+                                                     :long-name "long platform #1"
+                                                     :type "good platform"}
+                                                    {:short-name "platform #2"
+                                                     :long-name "long platform #2"
+                                                     :type "very good platform"}]
                                         :spatial-coverage
                                         (dc/spatial {:sr :cartesian
                                                      :gsr :cartesian
@@ -666,12 +672,12 @@
                 [:status :results])))))
 
     (testing "JSON"
-      (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset_id=Dataset1")
+      (let [coll-json (da/collections->expected-json [coll1] "collections.json?dataset_id=Dataset1")
             response (search/find-concepts-json :collection {:dataset-id "Dataset1"})
             {:keys [status results]} response]
         (is (= [200 coll-json] [status results])))
 
-      (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll5 coll6 coll7
+      (let [coll-json (da/collections->expected-json [coll1 coll2 coll3 coll5 coll6 coll7
                                                       coll8 coll9] "collections.json")
             response (search/find-concepts-json :collection {})
             {:keys [status results]} response]
