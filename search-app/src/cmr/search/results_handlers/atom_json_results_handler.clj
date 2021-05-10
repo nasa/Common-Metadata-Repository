@@ -51,7 +51,7 @@
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters highlighted-summary-snippets tags organizations
                 has-variables has-formats has-transforms has-spatial-subsetting has-temporal-subsetting
-                platforms associations]} reference
+                platforms service-features associations]} reference
         shape-result (atom-spatial/shapes->json shapes)
         granule-count (get granule-counts-map id 0)
         result (merge {:id id
@@ -88,6 +88,7 @@
                                            (fix-map-for-echo-json orbit-parameters))
                        :highlighted-summary-snippets highlighted-summary-snippets
                        :tags tags
+                       :service-features service-features
                        :associations associations}
                       shape-result)]
     ;; remove entries with nil value
