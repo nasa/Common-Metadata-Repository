@@ -88,7 +88,7 @@
                                            (fix-map-for-echo-json orbit-parameters))
                        :highlighted-summary-snippets highlighted-summary-snippets
                        :tags tags
-                       :service-features service-features
+                       :service_features service-features
                        :associations associations}
                       shape-result)]
     ;; remove entries with nil value

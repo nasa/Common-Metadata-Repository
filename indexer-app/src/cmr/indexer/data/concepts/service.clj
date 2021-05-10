@@ -152,5 +152,8 @@
        :service-names-lowercase (map string/lower-case service-names)
        :service-concept-ids service-concept-ids
        :service-types-lowercase (map string/lower-case service-types)
-       :service-features-gzip-b64 (util/string->gzip-base64 (pr-str service-features))}
+       :service-features-gzip-b64 (-> service-features
+                                      util/map-keys->snake_case
+                                      pr-str
+                                      util/string->gzip-base64)}
       (get-has-features parsed-services))))
