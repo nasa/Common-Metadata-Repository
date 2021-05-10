@@ -349,7 +349,9 @@
   [collection]
   (assoc (collection->expected-atom collection)
          :platforms
-         (map :short-name (:platforms collection))))
+         (map :short-name (:platforms collection))
+         :service-features
+         (:service-features collection)))
 
 (defn collections->expected-atom
   "Returns the atom map of the collections"

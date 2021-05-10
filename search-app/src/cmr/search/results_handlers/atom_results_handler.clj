@@ -67,6 +67,7 @@
                      "has-spatial-subsetting"
                      "has-temporal-subsetting"
                      "platforms"
+                     "service-features-gzip-b64"
                      "associations-gzip-b64"
                      "_score"]
         atom-fields (if (contains? (set (:result-features query)) :tags)
@@ -141,6 +142,7 @@
           has-spatial-subsetting :has-spatial-subsetting
           has-temporal-subsetting :has-temporal-subsetting
           platforms :platforms
+          service-features-gzip-b64 :service-features-gzip-b64
           associations-gzip-b64 :associations-gzip-b64} :_source} elastic-result
         start-date (acl-rhh/parse-elastic-datetime start-date)
         end-date (acl-rhh/parse-elastic-datetime end-date)
@@ -191,6 +193,9 @@
             :has-transforms has-transforms
             :has-spatial-subsetting has-spatial-subsetting
             :has-temporal-subsetting has-temporal-subsetting
+            :service-features (some-> service-features-gzip-b64
+                                      util/gzip-base64->string
+                                      edn/read-string)
             :associations (some-> associations-gzip-b64
                                   util/gzip-base64->string
                                   edn/read-string)}
