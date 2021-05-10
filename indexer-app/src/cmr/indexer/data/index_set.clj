@@ -514,6 +514,9 @@
           :tool-types-lowercase (m/doc-values m/string-field-mapping)
           :tool-concept-ids (m/doc-values m/string-field-mapping)
 
+          ;; service features stored as EDN gzipped and base64 encoded for retrieving purpose
+          :service-features-gzip-b64 m/binary-field-mapping
+
           ;; associations with the collection stored as EDN gzipped and base64 encoded for retrieving purpose
           :associations-gzip-b64 m/binary-field-mapping
 
