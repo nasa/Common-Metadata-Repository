@@ -117,13 +117,16 @@
 (defn- gzip-b64-str->service-features
   "Returns the service features in JSON format from the gzipped base64 string"
   [service-features-gzip-b64]
-  (-> service-features-gzip-b64
-      util/gzip-base64->string
-      edn/read-string
-      (update :opendap #(merge base-has-features %))
-      (update :esi #(merge base-has-features %))
-      (update :harmony #(merge base-has-features %))
-      util/map-keys->snake_case))
+  (let [service-features (if service-features-gzip-b64
+                           (-> service-features-gzip-b64
+                               util/gzip-base64->string
+                               edn/read-string)
+                           {})]
+    (-> service-features
+        (update :opendap #(merge base-has-features %))
+        (update :esi #(merge base-has-features %))
+        (update :harmony #(merge base-has-features %))
+        util/map-keys->snake_case)))
 
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
