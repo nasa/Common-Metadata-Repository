@@ -128,15 +128,24 @@
    :has-spatial-subsetting (boolean (some has-spatial-subsetting? services))
    :has-temporal-subsetting (boolean (some has-temporal-subsetting? services))})
 
+(defn- get-trimmed-has-features
+  "Returns the has features for the given services with false features trimmed off"
+  [services]
+  (->> services
+       get-has-features
+       (util/remove-map-keys false?)))
+
 (defn- get-service-features
   "Returns the service features for the list of services"
   [services]
   (let [opendap-services (filter #(= "OPeNDAP" (:Type %)) services)
         esi-services (filter #(= "ESI" (:Type %)) services)
         harmony-services (filter #(= "Harmony" (:Type %)) services)]
-    {:opendap (get-has-features opendap-services)
-     :esi (get-has-features esi-services)
-     :harmony (get-has-features harmony-services)}))
+    (util/remove-map-keys
+      empty?
+      {:opendap (get-trimmed-has-features opendap-services )
+       :esi (get-trimmed-has-features esi-services)
+       :harmony (get-trimmed-has-features harmony-services)})))
 
 (defn service-associations->elastic-doc
   "Converts the service association into the portion going in the collection elastic document."
@@ -153,7 +162,6 @@
        :service-concept-ids service-concept-ids
        :service-types-lowercase (map string/lower-case service-types)
        :service-features-gzip-b64 (-> service-features
-                                      util/map-keys->snake_case
                                       pr-str
                                       util/string->gzip-base64)}
       (get-has-features parsed-services))))

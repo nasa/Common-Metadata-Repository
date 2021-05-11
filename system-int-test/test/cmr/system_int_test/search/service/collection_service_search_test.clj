@@ -159,7 +159,6 @@
         (index/wait-until-indexed)
         ;; verify coll1 has-variables is true after associated with a variable,
         ;; coll2 has-variables is still false
-        ;; service level has-variables is not affected by variable association
         (service-util/assert-collection-search-result
          coll1
          {:has-formats true :has-transforms true :has-spatial-subsetting false
@@ -168,6 +167,7 @@
                              {:has-formats true
                               :has-transforms true
                               :has-temporal-subsetting true
+                              ;; service level has-variables is not affected by variable association
                               :has-variables false}}}
          [serv1-concept-id serv3-concept-id] [var-concept-id])
         (service-util/assert-collection-search-result
