@@ -157,11 +157,12 @@
         service-types (map :Type parsed-services)
         service-features (get-service-features parsed-services)]
     (merge
-      {:service-names service-names
-       :service-names-lowercase (map string/lower-case service-names)
-       :service-concept-ids service-concept-ids
-       :service-types-lowercase (map string/lower-case service-types)
-       :service-features-gzip-b64 (-> service-features
-                                      pr-str
-                                      util/string->gzip-base64)}
-      (get-has-features parsed-services))))
+     {:service-names service-names
+      :service-names-lowercase (map string/lower-case service-names)
+      :service-concept-ids service-concept-ids
+      :service-types-lowercase (map string/lower-case service-types)
+      :service-features-gzip-b64 (when (seq service-features)
+                                   (-> service-features
+                                       pr-str
+                                       util/string->gzip-base64))}
+     (get-has-features parsed-services))))
