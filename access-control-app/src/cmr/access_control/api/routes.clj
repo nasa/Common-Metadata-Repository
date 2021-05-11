@@ -119,12 +119,15 @@
   "Returns a Ring response with the result of trying to create the ACL with the given request body."
   [request-ctx headers body]
   (validate-content-type headers)
-  (acl-schema/validate-acl-json body)
-  (->> (json/parse-string body)
-       util/map-keys->kebab-case
-       (acl-service/create-acl request-ctx)
-       util/map-keys->snake_case
-       api-response))
+  (try
+    (acl-schema/validate-acl-json body)
+    (->> (json/parse-string body)
+         util/map-keys->kebab-case
+         (acl-service/create-acl request-ctx)
+         util/map-keys->snake_case
+         api-response)
+    (catch Exception e
+      (errors/throw-service-error :bad-request (str "Schema validation error: " (.getMessage e))))))
 
 (defn- update-acl
   "Returns a Ring response with the result of trying to update the ACL with the given concept id
