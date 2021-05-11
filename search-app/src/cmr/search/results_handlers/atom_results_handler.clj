@@ -106,6 +106,25 @@
                    orbit-swath-helper/orbit-elastic-fields
                    acl-rhh/granule-elastic-fields)))))
 
+(def base-has-features
+  "default has_* features in JSON format"
+  {:has-formats false
+   :has-variables false
+   :has-transforms false
+   :has-spatial-subsetting false
+   :has-temporal-subsetting false})
+
+(defn- gzip-b64-str->service-features
+  "Returns the service features in JSON format from the gzipped base64 string"
+  [service-features-gzip-b64]
+  (-> service-features-gzip-b64
+      util/gzip-base64->string
+      edn/read-string
+      (update :opendap #(merge base-has-features %))
+      (update :esi #(merge base-has-features %))
+      (update :harmony #(merge base-has-features %))
+      util/map-keys->snake_case))
+
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
   (let [{concept-id :_id
@@ -193,9 +212,7 @@
             :has-transforms has-transforms
             :has-spatial-subsetting has-spatial-subsetting
             :has-temporal-subsetting has-temporal-subsetting
-            :service-features (some-> service-features-gzip-b64
-                                      util/gzip-base64->string
-                                      edn/read-string)
+            :service-features (gzip-b64-str->service-features service-features-gzip-b64)
             :associations (some-> associations-gzip-b64
                                   util/gzip-base64->string
                                   edn/read-string)}

@@ -8,6 +8,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.search.results-handlers.atom-results-handler :as handler]
    [cmr.system-int-test.data2.atom :as atom]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-json :as du]
@@ -192,25 +193,17 @@
     (is (= [200 coll-json]
            [status results]))))
 
-(def ^:private base-has-features
-  "default has_* features in JSON format"
-  {:has-formats false
-   :has-variables false
-   :has-transforms false
-   :has-spatial-subsetting false
-   :has-temporal-subsetting false})
-
 (defn- assert-collection-atom-json-result
   "Verify collection in ATOM and JSON response has-formats, has-variables, has-transforms,
   has-spatial-subsetting, has-temporal-subsetting and associations fields"
   [coll expected-fields tool-concept-ids var-concept-ids]
-  (let [service-features {:opendap (merge base-has-features
+  (let [service-features {:opendap (merge handler/base-has-features
                                           (get-in expected-fields [:service-features :opendap]))
-                          :esi (merge base-has-features
+                          :esi (merge handler/base-has-features
                                       (get-in expected-fields [:service-features :esi]))
-                          :harmony (merge base-has-features
+                          :harmony (merge handler/base-has-features
                                           (get-in expected-fields [:service-features :harmony]))}
-        expected-fields (-> (merge base-has-features
+        expected-fields (-> (merge handler/base-has-features
                                    {:has-variables (some? (seq var-concept-ids))}
                                    expected-fields)
                             (assoc :service-features service-features))]
@@ -221,7 +214,7 @@
   "Verify collection in UMM JSON response has-formats, has-variables, has-transforms,
   has-spatial-subsetting, has-temporal-subsetting and associations fields"
   [coll expected-fields tool-concept-ids var-concept-ids]
-  (let [expected-fields (merge base-has-features
+  (let [expected-fields (merge handler/base-has-features
                                {:has-variables (some? (seq var-concept-ids))}
                                expected-fields)
         coll-with-extra-fields (merge coll
