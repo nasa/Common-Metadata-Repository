@@ -155,7 +155,10 @@
                                         query-params)
               gran-refs (search-gran-refs-by-collection-id context search-by-revision sub-id)
               subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
-    [sub-id subscriber-filtered-gran-refs subscriber-id subscription]))
+    (do
+      (when-not (empty? subscriber-filtered-gran-refs)
+        (send-update-subscription-notification-time! context sub-id))
+      [sub-id subscriber-filtered-gran-refs subscriber-id subscription])))
 
 (defn- send-subscription-emails
   "Takes processed processed subscription tuples and sends out emails if applicable."
@@ -169,14 +172,11 @@
             email-settings {:host (email-server-host) :port (email-server-port)}]
         (try
           (postal-core/send-message email-settings email-content)
-          (send-update-subscription-notification-time! context sub-id)
           (info (str "Successfully processed subscription [" sub-id "].
                       Sent subscription email to [" email-address "]."))
           (catch Exception e
             (error "Exception caught in email subscription: " sub-id "\n\n"
-                   (.getMessage e) "\n\n" e))))
-      [sub-id subscriber-filtered-gran-refs subscriber-id subscription])))
-
+                   (.getMessage e) "\n\n" e)))))))
 
 (defn email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
