@@ -37,7 +37,7 @@
                                          {:native-id "serv3"
                                           :Name "service3"
                                           :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "TIFF"
-                                                                                    :SupportedOutputFormats ["TIFF"]}]}})
+                                                                                     :SupportedOutputFormats ["TIFF"]}]}})
         serv4-concept (service-util/make-service-concept
                         {:native-id "serv4"
                          :Name "Service4"

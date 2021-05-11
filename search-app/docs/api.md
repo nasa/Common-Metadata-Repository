@@ -904,7 +904,7 @@ __Example__
       },
       "associations": {
         "variables": ["V1200000007-PROV1"],
-        "services": ["S1200000008-PROV1", "S1200000009-PROV1", "S1200000010-PROV1"]
+        "services": ["S1200000008-PROV1", "S1200000009-PROV1", "S1200000010-PROV1"],
         "tools": ["TL1200000011-PROV1", "TL1200000012-PROV1", "TL1200000013-PROV1"]
       }
     }]
