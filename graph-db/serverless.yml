@@ -3,6 +3,12 @@ service: graph-db
 provider:
   name: aws
   runtime: nodejs12.x
+  region: us-east-1
+  stage: ${opt:stage, ''}
+  deploymentBucket: graphdb-driver-deployment-bucket-${self.stage}
+
+deploymentBucket:
+  skipPolicySetup: true
 
 plugins:
   - serverless-offline
@@ -10,3 +16,7 @@ plugins:
 functions:
   bootstrapGremlinServer:
     handler: src/bootstrapGremlinServer/handler.bootstrap
+    environment:
+      CMR_ROOT: ${cf:${opt:stage}.servicesDnsName}
+      GREMLIN_URL: ${cf:${opt:stage}.gremlinUrl}
+      PAGE_SIZE: 2000

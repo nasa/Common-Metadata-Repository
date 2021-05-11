@@ -23,8 +23,6 @@ describe('fetchPageFromCMR', () => {
         expect(response).toEqual(mockedBody)
     })
 
-    test('Mocked Echo Token and scroll ID', async () => {})
-
     test('Single result', async () => {
         process.env.PAGE_SIZE = 1
         const mockedBody = {
@@ -59,8 +57,4 @@ describe('fetchPageFromCMR', () => {
         const response = await fetchPageFromCMR().then(res => res.json())
         expect(response).toEqual(mockedBody)
     })
-
-    test('Multiple results', async () => {})
-
-    test('CMR error response', async () => {})
 })

@@ -1,16 +1,16 @@
-const { fetchPageFromCMR } = require('./fetchPageFromCmr');
-const { clearScrollSession } = require('./clearScrollSession');
+const { fetchPageFromCMR } = require('./fetchPageFromCmr')
+const { clearScrollSession } = require('./clearScrollSession')
 
 /**
  * Harvest UMM JSON collection metadata from CMR environment set in env variable
  * @returns {JSON} partitioned array of CMR collection search results
  */
 exports.harvestCmrCollections = async () => {
-  const response = await fetchPageFromCMR();
-  const results = (await response.json()).items;
-  const scrollId = response.headers.get('CMR-Scroll-Id');
-  const partitionedSearchResults = [];
-  let continueScroll = true;
+  const response = await fetchPageFromCMR()
+  const results = (await response.json()).items
+  const scrollId = response.headers.get('CMR-Scroll-Id')
+  const partitionedSearchResults = []
+  let continueScroll = true
 
   partitionedSearchResults.push(results);
   while (continueScroll) {
@@ -19,27 +19,26 @@ exports.harvestCmrCollections = async () => {
       .then((scrollResponse) => scrollResponse.json())
       .then((json) => {
         if (json.errors) {
-          throw new Error(`The following errors ocurred: ${json.errors}`);
+          throw new Error(`The following errors ocurred: ${json.errors}`)
         } else {
-          return json.items;
+          return json.items
         }
       })
       .catch((error) => {
-        console.log(`Could not complete request due to error: ${error}`);
-        return null;
-      });
+        console.log(`Could not complete request due to error: ${error}`)
+        return null
+      })
 
     partitionedSearchResults.push(scrolledResults);
 
-    console.log(`Got [${scrolledResults.length}] items from the CMR`);
-    if (scrolledResults.length < process.env.PAGE_SIZE) {
-      continueScroll = false;
+    if (!scrolledResults || scrolledResults.length < process.env.PAGE_SIZE) {
+      continueScroll = false
     }
   }
 
-  console.log(`Got scroll-id: [${scrollId}]. Clearing session...`);
-  await clearScrollSession(scrollId);
+  console.log(`Got scroll-id: [${scrollId}]. Clearing session...`)
+  await clearScrollSession(scrollId)
 
-  console.log(`Partitions: ${partitionedSearchResults.length}`);
-  return partitionedSearchResults;
+  console.log(`Partitions: ${partitionedSearchResults.length}`)
+  return partitionedSearchResults
 };
