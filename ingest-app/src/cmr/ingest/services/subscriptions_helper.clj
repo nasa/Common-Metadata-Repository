@@ -97,7 +97,7 @@
     (assoc raw :start-time start-time :end-time end-time)))
 
 (defn- send-update-subscription-notification-time!
-  "handle any packaging of data here before sending it off to transmit package"
+  "Fires off an http call to update the time which the subscription last was processed"
   [context sub-id]
   (debug "send-update-subscription-notification-time with" sub-id)
   (search/save-subscription-notification-time context sub-id))
