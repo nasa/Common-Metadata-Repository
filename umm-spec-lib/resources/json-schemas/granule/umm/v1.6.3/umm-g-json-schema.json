@@ -1264,7 +1264,8 @@
                "WEB MAP TILE SERVICE (WMTS)", "ALGORITHM DOCUMENTATION", "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)", "ANOMALIES", "CASE STUDY", "DATA CITATION POLICY", "DATA QUALITY",
                "DATA RECIPE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION", "HOW-TO", "IMPORTANT NOTICE","INSTRUMENT/SENSOR CALIBRATION DOCUMENTATION", "MICRO ARTICLE",
                "PI DOCUMENTATION", "PROCESSING HISTORY", "PRODUCT HISTORY", "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE", "PRODUCTION HISTORY", "PUBLICATIONS", "READ-ME",
-               "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION", "SCIENCE DATA PRODUCT VALIDATION", "USER FEEDBACK PAGE", "USER'S GUIDE"]
+               "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION", "SCIENCE DATA PRODUCT VALIDATION", "USER FEEDBACK PAGE", "USER'S GUIDE",
+                "DMR++", "DMR++ MISSING DATA"]
     },
     "MimeTypeEnum": {
       "type": "string",
@@ -1288,7 +1289,7 @@
         "URL": {
           "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
           "type": "string",
-          "enum": ["https://cdn.earthdata.nasa.gov/umm/granule/v1.6.2"]
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/granule/v1.6.3"]
         },
         "Name": {
           "description": "This element represents the name of the schema.",
@@ -1298,7 +1299,7 @@
         "Version": {
           "description": "This element represents the version of the schema.",
           "type": "string",
-          "enum": ["1.6.2"]
+          "enum": ["1.6.3"]
         }
       },
       "required": ["URL", "Name", "Version"]

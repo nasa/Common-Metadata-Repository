@@ -14,12 +14,14 @@
    [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
 (deftest test-version-steps
-  (with-bindings {#'cmr.umm-spec.versioning/versions {:granule ["1.4" "1.5" "1.6" "1.6.1"]}}
+  (with-bindings {#'cmr.umm-spec.versioning/versions
+                  {:granule ["1.4" "1.5" "1.6" "1.6.1" "1.6.2" "1.6.3"]}}
     (is (= [] (#'vm/version-steps :granule "1.5" "1.5")))
     (is (= [["1.4" "1.5"]] (#'vm/version-steps :granule "1.4" "1.5")))
     (is (= [["1.5" "1.4"]] (#'vm/version-steps :granule "1.5" "1.4")))
     (is (= [["1.4" "1.5"] ["1.5" "1.6"]] (#'vm/version-steps :granule "1.4" "1.6")))
-    (is (= [["1.4" "1.5"] ["1.5" "1.6"] ["1.6" "1.6.1"]] (#'vm/version-steps :granule "1.4" "1.6.1")))))
+    (is (= [["1.4" "1.5"] ["1.5" "1.6"] ["1.6" "1.6.1"]] (#'vm/version-steps :granule "1.4" "1.6.1")))
+    (is (= [["1.6.1" "1.6.2"] ["1.6.2" "1.6.3"]] (#'vm/version-steps :granule "1.6.1" "1.6.3")))))
 
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-g-generator)
@@ -630,3 +632,14 @@
           :Name "UMM-G"
           :Version "1.6.2"}
          (:MetadataSpecification (vm/migrate-umm {} :granule "1.6.1" "1.6.2" expected-granule-1-6-1)))))
+
+;
+(deftest migrate-1-6-1-up-to-1-6-3
+  (is (= {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.3"
+          :Name "UMM-G"
+          :Version "1.6.3"}
+         (:MetadataSpecification (vm/migrate-umm {}
+                                                 :granule
+                                                 "1.6.1"
+                                                 "1.6.3"
+                                                 expected-granule-1-6-1)))))

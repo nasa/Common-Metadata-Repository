@@ -9,7 +9,8 @@
 
 (def resource-type->related-url-types
   "A mapping of ECHO10 OnlineResource's type to UMM RelatedURL's type and sub-type.
-  This came from a list provided by Katie on ECHO10 collections, more may need to be added for granules."
+   This came from a list provided by Katie on ECHO10 collections, more may need to
+   be added for granules."
   {"STATIC URL" ["VIEW RELATED INFORMATION"]
    "GUIDE" ["VIEW RELATED INFORMATION" "USER'S GUIDE"]
    "HOMEPAGE" ["VIEW PROJECT HOME PAGE"]
@@ -51,7 +52,11 @@
    "ALGORITHM INFO" ["VIEW RELATED INFORMATION"]
    "GET DATA : OPENDAP DATA (DODS)" ["USE SERVICE API" "OPENDAP DATA"]
    "GET DATA : OPENDAP DATA" ["USE SERVICE API" "OPENDAP DATA"]
-   "VIEW PROJECT HOME PAGE" ["VIEW PROJECT HOME PAGE"]})
+   "VIEW PROJECT HOME PAGE" ["VIEW PROJECT HOME PAGE"]
+   "DMR++" ["EXTENDED METADATA" "DMR++"]
+   "EXTENDED METADATA : DMR++" ["EXTENDED METADATA" "DMR++"]
+   "DMR++ MISSING DATA" ["EXTENDED METADATA" "DMR++ MISSING DATA"]
+   "EXTENDED METADATA : DMR++ MISSING DATA" ["EXTENDED METADATA" "DMR++ MISSING DATA"]})
 
 (def related-url-types->resource-types
   "A mapping of UMM RelatedURL's type to ECHO10 OnlineResource's type.
@@ -165,6 +170,18 @@
                      (when description (x/element :URLDescription {} description))
                      (when mime-type (x/element :MimeType {} mime-type))))))))
 
+(defn- related-url->online-resource
+  "Related-url-types->resource-types does not handle the use case for matching a
+   subtype, if the type and subtype are extended metadata DMR values, then
+   encode them in colon format"
+  [related-url]
+  (let [url-type (:type related-url)
+        url-subtype (:sub-type related-url)]
+    (if (and (= "EXTENDED METADATA" url-type)
+             (some #{url-subtype} ["DMR++" "DMR++ MISSING DATA"]))
+      (str url-type " : " url-subtype)
+      (get related-url-types->resource-types url-type "USER SUPPORT"))))
+
 (defn generate-resource-urls
   "Generates the OnlineResources element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
@@ -178,7 +195,7 @@
                      (when description (x/element :Description {} description))
                      ;; There is not a well defined one to one mapping between related url type and resource type.
                      ;; This default value of "USER SUPPORT" is to get us by the xml schema validation.
-                     (x/element :Type {} (get related-url-types->resource-types type "USER SUPPORT"))
+                     (x/element :Type {} (related-url->online-resource related-url))
                      (when mime-type (x/element :MimeType {} mime-type))))))))
 
 (defn generate-browse-urls
