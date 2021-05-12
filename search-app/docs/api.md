@@ -1667,11 +1667,11 @@ Find collections matching the given 'short\_name' and any of the 'version' param
 Collections can be found by searching for associated tags. The following tag parameters are supported.
 
 * tag_key
-  * options: pattern
+  supports options: `pattern`
 * tag_originator_id
-  * options: pattern
+  supports options: `pattern`
 * tag_data
-  * options: pattern
+  supports options: `pattern`
 
 `exclude` parameter can be used with tag_key to exclude any collections that are associated with the specified tag key from the search result.
 
@@ -1692,11 +1692,11 @@ Find collections with tag_data in the form of tag_data[tag_key]=tag_value. It fi
 Collections can be found by searching for associated variables. The following variable parameters are supported.
 
 * variable_name
-  * supports `pattern`, `ignore_case` and option `and`
+  supports options: `pattern`, `ignore_case` and `and`
 * variable_native_id
-  * supports `pattern`, `ignore_case` and option `and`
+  supports options: `pattern`, `ignore_case` and `and`
 * variable_concept_id
-  * supports option `and`
+  supports options: `and`
 
 Find collections matching variable name.
 
@@ -1727,19 +1727,19 @@ Find collections matching multiple 'variables-h' param values, default is :and
 Collections can be found by searching for associated services. The following service parameters are supported.
 
 * service_name
-  * supports `pattern`, `ignore_case` and option `and`
+  supports options: `pattern`, `ignore_case` and `and`
 * service_type
-  * supports `pattern` and `ignore_case`
+  supports options: `pattern` and `ignore_case`
 * service_concept_id
-  * supports option `and`
+  supports options: `and`
 
 Find collections matching service name.
 
     curl "%CMR-ENDPOINT%/collections?service_name=AtlasNorth"
 
-Find collections matching service type. In this example find all collections matching both service types of Harmony or OPeNDAP.
+Find collections matching service type. In this example, find all collections matching service type of Harmony or OPeNDAP.
 
-    curl "%CMR-ENDPOINT%/collections?service_type=Harmony&service_type=OPeNDAP"
+    curl "%CMR-ENDPOINT%/collections?service_type\[\]=Harmony&service_type\[\]=OPeNDAP"
 
 Find collections matching service concept id.
 
@@ -1750,19 +1750,19 @@ Find collections matching service concept id.
 Collections can be found by searching for associated tools. The following tool parameters are supported.
 
 * tool_name
-  * supports `pattern`, `ignore_case` and option `and`
+  supports options: `pattern`, `ignore_case` and `and`
 * tool_type
-  * supports `pattern` and `ignore_case`
+  supports options: `pattern` and `ignore_case`
 * tool_concept_id
-  * supports option `and`
+  supports options: `and`
 
 Find collections matching tool name.
 
     curl "%CMR-ENDPOINT%/collections?tool_name=NASA_GISS_Panoply"
 
-Find collections matching tool type. In this example find all collections matching both tool types of Downloadable Tool or Web User Interface.
+Find collections matching tool type. In this example, find all collections matching tool type of Downloadable Tool or Web User Interface.
 
-    curl "%CMR-ENDPOINT%/collections?tool_type=Downloadable%20Tool&tool_type=Web%20User%20Interface"
+    curl "%CMR-ENDPOINT%/collections?tool_type\[\]=Downloadable%20Tool&tool_type\[\]=Web%20User%20Interface"
 
 Find collections matching tool concept id.
 
