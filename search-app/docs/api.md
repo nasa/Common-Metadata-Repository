@@ -1229,6 +1229,7 @@ __Example Query__
      curl "%CMR-ENDPOINT%/autocomplete?q=ice&type[]=platform&type[]=project"
 
 __Example Result with Type Filter__
+
 ```
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
@@ -1795,17 +1796,17 @@ Shapefile upload is only supported using POST with `multipart/form-data` and the
 
 Examples:
 
-  **ESRI Shapefile**
+**ESRI Shapefile**
 
-  curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
+    curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
-  **GeoJSON**
+**GeoJSON**
 
-  curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.geojson;type=application/geo+json" -F "provider=PROV1"
+    curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.geojson;type=application/geo+json" -F "provider=PROV1"
 
-  **KML**
+**KML**
 
-  curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.kml;type=application/vnd.google-earth.kml+xml" -F "provider=PROV1"
+    curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.kml;type=application/vnd.google-earth.kml+xml" -F "provider=PROV1"
 
 Internally a WGS 84 Coordinate Reference System (CRS) is used. The system will attempt to transform shapefile geometry that uses a different CRS, but this is not guaranteed to work and the request will be rejected if a suitable transformation is not found.
 
@@ -1816,7 +1817,7 @@ Shapefiles are limited to 5000 points by default. A user using a shapefile with 
 
 Example:
 
-  curl -XPOST "%CMR-ENDPOINT%/collections" -F "simplify-shapefile=true"  -F "shapefile=@africa.zip;type=application/shapefile+zip" -F "provider=PROV1"
+    curl -XPOST "%CMR-ENDPOINT%/collections" -F "simplify-shapefile=true"  -F "shapefile=@africa.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
 Note that the simplification process attempts to preserve topology, i.e., the relationship between polygon outer boundaries and holes. The process uses the [Douglas-Peucker algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm) and as such may result in geometries with less coverage than the original shapefile and potentially a loss of matching results.
 
@@ -2069,7 +2070,7 @@ The parameters used for searching granules by spatial are the same as the spatia
 
 As with collections, a shapefile can be uploaded to find granules that overlap the shapefile's geometry. See [Find collections by shapefile](#c-shapefile) for more details.
 
-  curl -XPOST "%CMR-ENDPOINT%/granules" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
+    curl -XPOST "%CMR-ENDPOINT%/granules" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
 **NOTE**: This is an experimental feature and may not be enabled in all environments.
 
@@ -2077,7 +2078,7 @@ As with collections, a shapefile can be uploaded to find granules that overlap t
 
 As with collections, an uplodaed shapefile can be simplified by setting the `simplfiy-shapefile` parameter to `true`. See [Simplifying shapefiles during collection search](#c-shapefile-simplification) for more details.
 
-  curl -XPOST "%CMR-ENDPOINT%/granules" -F "simplify-shapefile=true" -F "shapefile=@africa.zip;type=application/shapefile+zip" -F "provider=PROV1"
+    curl -XPOST "%CMR-ENDPOINT%/granules" -F "simplify-shapefile=true" -F "shapefile=@africa.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
 #### <a name="g-orbit-number"></a> Find granules by orbit number
 
@@ -2132,7 +2133,7 @@ Find granules which have revision date within the ranges of datetimes. The datet
 
  Find granules which were created within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
-   curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="g-production-date"></a> Find granules by production_date
 
@@ -2949,9 +2950,7 @@ Content-Type: application/json; charset=UTF-8
 
 The humanizers report provides a list of fields that have been humanized in CSV format. The report format is: provider, concept id, product short name, product version, original field value, humanized field value.
 
-```
-curl "%CMR-ENDPOINT%/humanizers/report"
-```
+    curl "%CMR-ENDPOINT%/humanizers/report"
 
 Note that this report is currently generated every 24 hours with the expectation that this more than satisfies weekly usage needs.
 
@@ -3530,7 +3529,10 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: ignore_case, or
 measurement_identifiers parameter is a nested parameter with subfields: contextmedium, object and quantity. Multiple measurement_identifiers can be specified via different indexes to search variables. The following example searches for variables that have at least one measurement_identifier with contextmedium of Med1, object of Object1 and quantity of Q1, and another measurement_identifier with contextmedium of Med2 and object of Obj2.
 
-    curl -g "%CMR-ENDPOINT%/variables?measurement_identifiers\[0\]\[contextmedium\]=Med1&measurement_identifiers\[0\]\[object\]=Object1&measurement_identifiers\[0\]\[quantity\]=Q1&measurement_identifiers\[1\]\[contextmedium\]=med2&measurement_identifiers\[2\]\[object\]=Obj2"
+    
+````
+curl -g "%CMR-ENDPOINT%/variables?measurement_identifiers\[0\]\[contextmedium\]=Med1&measurement_identifiers\[0\]\[object\]=Object1&measurement_identifiers\[0\]\[quantity\]=Q1&measurement_identifiers\[1\]\[contextmedium\]=med2&measurement_identifiers\[2\]\[object\]=Obj2"
+````
 
 The multiple measurement_identifiers are ANDed by default. User can specify `options[measurement-identifiers][or]=true` to make the measurement_identifiers ORed together.
 
@@ -3566,6 +3568,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 | revision-id | the internal CMR version number for the result                                                                  |
 
 __Example__
+
 ```
 curl -i "%CMR-ENDPOINT%/variables?pretty=true&name=Variable1"
 
@@ -3601,6 +3604,7 @@ The JSON response includes the following fields.
   * long_name
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/variables.json?pretty=true&name=Var*&options[name][pattern]=true"
 
@@ -3632,6 +3636,7 @@ Content-Length: 292
 The UMM JSON response contains meta-metadata of the variable, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the variable and will list the collections that are associated with the variable.
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/variables.umm_json?name=Variable1234&pretty=true"
 HTTP/1.1 200 OK
@@ -3816,6 +3821,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 | revision-id | the internal CMR version number for the result                                                                  |
 
 __Example__
+
 ```
 curl -i "%CMR-ENDPOINT%/services?name=Service1&pretty=true"
 
@@ -3851,6 +3857,7 @@ The JSON response includes the following fields.
   * long_name
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/services.json?pretty=true"
 
@@ -3896,6 +3903,7 @@ Content-Length: 944
 The UMM JSON response contains meta-metadata of the service and the UMM fields.
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/services.umm_json?name=NSIDC_AtlasNorth&pretty=true"
 HTTP/1.1 200 OK
@@ -4170,6 +4178,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 | revision-id | the internal CMR version number for the result                                                                  |
 
 __Example__
+
 ```
 curl -i "%CMR-ENDPOINT%/tools?name=someTool1&pretty=true"
 
@@ -4205,6 +4214,7 @@ The JSON response includes the following fields.
   * long_name
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/tools.json?pretty=true"
 
@@ -4236,6 +4246,7 @@ Content-Length: 944
 The UMM JSON response contains meta-metadata of the tool and the UMM fields.
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/tools.umm_json?name=NSIDC_AtlasNorth&pretty=true"
 HTTP/1.1 200 OK
@@ -4521,6 +4532,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 | revision-id | the internal CMR version number for the result                                                                  |
 
 __Example__
+
 ```
 curl -i "%CMR-ENDPOINT%/subscriptions?name=someSub1&pretty=true"
 
@@ -4557,6 +4569,7 @@ The JSON response includes the following fields.
   * collection_concept_id
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/subscriptions.json?pretty=true"
 
@@ -4590,6 +4603,7 @@ Content-Length: 944
 The UMM JSON response contains meta-metadata of the subscription and the UMM fields.
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/subscriptions.umm_json?name=NSIDC_AtlasNorth&pretty=true"
 HTTP/1.1 200 OK
