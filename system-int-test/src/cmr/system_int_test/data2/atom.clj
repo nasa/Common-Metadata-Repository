@@ -344,6 +344,14 @@
       :has-temporal-subsetting (boolean has-temporal-subsetting)
       :associations associations})))
 
+(defn- get-coll-service-features
+  "Returns the service features in JSON format for the given collection"
+  [collection]
+  (let [{:keys [opendap esi harmony]} (:service-features collection)]
+    {:opendap (merge atom-results-handler/base-has-features opendap)
+     :esi (merge atom-results-handler/base-has-features esi)
+     :harmony (merge atom-results-handler/base-has-features harmony)}))
+
 (defn collection->expected-json
   "Returns the JSON map of the collection"
   [collection]
@@ -351,7 +359,7 @@
          :platforms
          (map :short-name (:platforms collection))
          :service-features
-         (:service-features collection)))
+         (get-coll-service-features collection)))
 
 (defn collections->expected-atom
   "Returns the atom map of the collections"
