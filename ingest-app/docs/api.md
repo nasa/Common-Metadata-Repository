@@ -722,7 +722,7 @@ POST requests may only be used for creating subscriptions.
 
 If a SubscriberId is not provided, then the user ID associated with the token used to ingest the subscription will be used as the SubscriberId.
 
-EmailAddress was previously a required field, but this field is now deprecated. Instead, the email address associated with the SubscriberId's Earthdata Login (URS) account will be used as the EmailAddress. If an EmailAddress is specified at subscription creation, it will simply be ignored.
+EmailAddress was previously a required field, but this field is now deprecated. Instead, the email address associated with the SubscriberId's Earthdata Login (URS) account will be used as the EmailAddress. If an EmailAddress is specified at subscription creation it will be ignored.
 
 POST only may be used without a native-id at the following URL.
 `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions`

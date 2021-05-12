@@ -156,7 +156,7 @@
               gran-refs (search-gran-refs-by-collection-id context search-by-revision sub-id)
               subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
     (do
-      (when-not (empty? subscriber-filtered-gran-refs)
+      (when (seq subscriber-filtered-gran-refs)
         (send-update-subscription-notification-time! context sub-id))
       [sub-id subscriber-filtered-gran-refs subscriber-id subscription])))
 
