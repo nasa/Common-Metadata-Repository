@@ -1,4 +1,4 @@
-const { getSecureParam } = require('../getSecureParam');
+const { getSecureParam } = require('../getSecureParam')
 
 /**
  * Fetch token for CMR requests
@@ -7,10 +7,10 @@ const { getSecureParam } = require('../getSecureParam');
  * if no token is supplied.
  */
 exports.getEchoToken = async () => {
-  const { IS_LOCAL } = process.env;
+  const { IS_LOCAL } = process.env
 
   if (IS_LOCAL) {
-    return null;
+    return null
   }
 
   const response = await getSecureParam(
@@ -18,9 +18,9 @@ exports.getEchoToken = async () => {
   );
 
   if (!response) {
-    throw new Error('ECHO Token not found. Please update config!');
+    throw new Error('ECHO Token not found. Please update config!')
   }
 
-  console.log('Retrieved ECHO TOKEN');
-  return response;
-};
+  console.log('Retrieved ECHO TOKEN')
+  return response
+}

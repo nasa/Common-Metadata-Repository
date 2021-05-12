@@ -1,9 +1,9 @@
-const { bootstrapGremilinServer } = require('../utils/bootstrapGremlinServer');
+const { bootstrapGremilinServer } = require('../utils/bootstrapGremlinServer')
 
 module.exports.bootstrap = async () => {
-  await bootstrapGremilinServer();
+  await bootstrapGremilinServer()
   return {
     statusCode: 200,
     body: 'Indexing completed',
-  };
-};
+  }
+}

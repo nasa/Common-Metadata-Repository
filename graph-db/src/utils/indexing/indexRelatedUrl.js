@@ -14,24 +14,24 @@ exports.indexRelatedUrl = (relatedUrl, gremlin, dataset) => {
     SubType: subType,
     URL: url,
     Description: description,
-  } = relatedUrl;
+  } = relatedUrl
   if (!!type
         || !!subType
         || type !== 'VIEW RELATED INFORMATION'
         || subType !== 'GENERAL DOCUMENTATION') {
     // We only care about documentation at the moment.
     // Return early
-    return;
+    return
   }
 
-  const documentationVertexExists = gremlin.V().hasLabel('documentation').has('name', url).hasNext();
-  let docVertex;
+  const documentationVertexExists = gremlin.V().hasLabel('documentation').has('name', url).hasNext()
+  let docVertex
 
   if (documentationVertexExists) {
-    docVertex = gremlin.addV('documentation').property('name', URL).property('title', description).next();
+    docVertex = gremlin.addV('documentation').property('name', URL).property('title', description).next()
   } else {
-    docVertex = gremlin.V().hasLabel('documentation').has('name', URL).next();
+    docVertex = gremlin.V().hasLabel('documentation').has('name', URL).next()
   }
 
-  gremlin.addE('documents').from(gremlin.V(docVertex.id())).to(gremlin.V(dataset.id())).next();
+  gremlin.addE('documents').from(gremlin.V(docVertex.id())).to(gremlin.V(dataset.id())).next()
 };

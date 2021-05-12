@@ -1,5 +1,5 @@
-require('array-foreach-async');
-const { indexRelatedUrl } = require('./indexRelatedUrl');
+require('array-foreach-async')
+const { indexRelatedUrl } = require('./indexRelatedUrl')
 
 /**
  * Given a collection from the CMR, index it into Gremlin
@@ -8,22 +8,22 @@ const { indexRelatedUrl } = require('./indexRelatedUrl');
  * @returns
  */
 exports.indexCmrCollection = async (collection, gremlin) => {
-  const { meta, umm } = collection;
-  const { 'concept-id': conceptId } = meta;
-  const { EntryTitle: entryTitle, DOI: doi, RelatedUrls: relatedUrls } = umm;
-  const { DOI: doiDescription } = doi;
-  let doiUrl = 'Not provided';
-  let datasetName = `${process.env.CMR_ROOT}/concepts/${conceptId}.html`;
+  const { meta, umm } = collection
+  const { 'concept-id': conceptId } = meta
+  const { EntryTitle: entryTitle, DOI: doi, RelatedUrls: relatedUrls } = umm
+  const { DOI: doiDescription } = doi
+  let doiUrl = 'Not provided'
+  let datasetName = `${process.env.CMR_ROOT}/concepts/${conceptId}.html`
 
   if (doiDescription) {
     // Take the second element from the split method
-    const [, doiAddress] = doiUrl.split(':');
-    doiUrl = `http://doi.org/${doiAddress}`;
-    datasetName = doiUrl;
+    const [, doiAddress] = doiUrl.split(':')
+    doiUrl = `http://doi.org/${doiAddress}`
+    datasetName = doiUrl
   }
 
-  const exists = await gremlin.V().hasLabel('dataset').has('concept-id', conceptId).hasNext();
-  let dataset = null;
+  const exists = await gremlin.V().hasLabel('dataset').has('concept-id', conceptId).hasNext()
+  let dataset = null
   if (!exists) {
     dataset = await gremlin
       .addV('dataset')
@@ -31,16 +31,16 @@ exports.indexCmrCollection = async (collection, gremlin) => {
       .property('title', entryTitle)
       .property('concept-id', conceptId)
       .property('doi', doi.DOI || 'Not provided')
-      .next();
+      .next()
   } else {
-    dataset = await gremlin.V().hasLabel('dataset').has('name', datasetName).next();
+    dataset = await gremlin.V().hasLabel('dataset').has('name', datasetName).next()
   }
 
   if (relatedUrls && relatedUrls.length > 0) {
     relatedUrls.forEach((relatedUrl) => {
-      indexRelatedUrl(relatedUrl, gremlin, dataset);
-    });
+      indexRelatedUrl(relatedUrl, gremlin, dataset)
+    })
   }
 
-  return 200;
-};
+  return 200
+}

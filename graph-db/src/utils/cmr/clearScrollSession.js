@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+const fetch = require('node-fetch')
 
 /**
  * Given a CMR Scroll Session ID, clear that session from
