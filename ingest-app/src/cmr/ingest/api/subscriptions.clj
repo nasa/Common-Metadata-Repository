@@ -70,7 +70,8 @@
     (search/find-granule-references context params)
     (catch Exception e
       (errors/throw-service-error :bad-request
-       (str "Error ingesting subscription: invalid query parameters [" (dissoc params :token) "]")))))
+       (str "Error ingesting subscription: invalid query parameters [" (dissoc params :token) "]\n\n"
+              (.getMessage e))))))
 
 (defn- validate-query
   "Performs a granule search using subscription query parameters for purposes of validation"
@@ -80,6 +81,7 @@
         query-string (:Query metadata)
         query-params (sub-common/create-query-params query-string)
         search-params (merge {:collection-concept-id collection-id
+                              :page-size 0
                               :token (config/echo-system-token)}
                              query-params)
         gran-refs (search-gran-refs-with-sub-params request-context search-params)]))
@@ -248,11 +250,11 @@
                             content-type
                             headers)
           native-id (get-unique-native-id request-context tmp-subscription)
-          sub-with-native-id (assoc  tmp-subscription :native-id native-id)
+          sub-with-native-id (assoc tmp-subscription :native-id native-id)
           final-sub (add-fields-if-missing request-context sub-with-native-id)
           subscriber-id (get-subscriber-id final-sub)]
-      (validate-query request-context final-sub)
       (check-ingest-permission request-context provider-id subscriber-id)
+      (validate-query request-context final-sub)
       (check-duplicate-subscription request-context final-sub)
       (perform-subscription-ingest request-context final-sub headers))))
 
@@ -276,8 +278,8 @@
                             headers)
           final-sub (add-fields-if-missing request-context tmp-subscription)
           subscriber-id (get-subscriber-id final-sub)]
-      (validate-query request-context final-sub)
       (check-ingest-permission request-context provider-id subscriber-id)
+      (validate-query request-context final-sub)
       (check-duplicate-subscription request-context final-sub)
       (perform-subscription-ingest request-context final-sub headers))))
 
@@ -305,8 +307,8 @@
                          (get-in original-subscription [:extra-fields :subscriber-id]))
         final-sub (add-fields-if-missing request-context tmp-subscription)
         new-subscriber (get-subscriber-id final-sub)]
-    (validate-query request-context final-sub)
     (check-ingest-permission request-context provider-id new-subscriber old-subscriber)
+    (validate-query request-context final-sub)
     (check-duplicate-subscription request-context final-sub)
     (perform-subscription-ingest request-context final-sub headers)))
 

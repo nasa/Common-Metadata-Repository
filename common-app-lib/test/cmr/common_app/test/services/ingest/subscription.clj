@@ -24,4 +24,4 @@
 (deftest create-query-params
   (is (= {"polygon" "-78,-18,-77,-22,-73,-16,-74,-13,-78,-18"
           "concept-id" "G123-PROV1"}
-         (#'sub-common/create-query-params "polygon=-78,-18,-77,-22,-73,-16,-74,-13,-78,-18&concept-id=G123-PROV1"))))
+         (sub-common/create-query-params "polygon=-78,-18,-77,-22,-73,-16,-74,-13,-78,-18&concept-id=G123-PROV1"))))
