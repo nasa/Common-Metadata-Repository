@@ -114,7 +114,7 @@
   (filter resource-url? related-urls))
 
 (defn- related-url->link-type
-  "Returns the atom link type of the related url"
+  "Returns the atom link type of the related url - used for granules"
   [related-url]
   (cond
     (downloadable-url? related-url) "data"
