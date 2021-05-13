@@ -176,16 +176,16 @@
                     :EntryTitle "entry-title1"})
                   {:token "mock-echo-system-token"})
           metadata {:CollectionConceptId (:concept-id coll1)
-                    :Query "options%5Bspatial%5D%5Bor%5D=true"}
+                    :Query "options%5Bspatial%5D%5Bor%5D=true&platform=MODIS"}
           concept (subscription-util/make-subscription-concept metadata)
           response (ingest/ingest-concept
                     concept
                     {:accept-format :json
                      :raw? true})
-          {:keys [errors]} (ingest/parse-ingest-body :json response)]
-      (is (re-find #"Error ingesting subscription with query parameters" (first errors)))
-      (is (re-find #"Granule search failed. status: 400 body:" (first errors))))))
-
+          {:keys [errors]} (ingest/parse-ingest-body :json response)
+          error (first errors)]
+      (is (re-find #"Subscription query validation failed with the following error" error))
+      (is (re-find #"Parameter \[options%_5_bspatial%_5_d%_5_bor%_5_d\] was not recognized." error)))))
 
 ;; Verify that the accept header works with returned errors
 (deftest subscription-ingest-with-errors-accept-header-test

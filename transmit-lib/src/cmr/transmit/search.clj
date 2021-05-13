@@ -94,7 +94,7 @@
   status and body."
   [context params]
   (let [conn (config/context->app-connection context :search)
-        request-url (str (conn/root-url conn) "/granules.xml")
+        request-url (str (conn/root-url conn) "/granules.json")
         request-body (-> params
                          (dissoc :token)
                          (assoc :page_size 0))
@@ -108,9 +108,8 @@
                                  :throw-exceptions false
                                  :headers (if token (assoc header config/token-header token) header)}))
         {:keys [status body]} response]
-    (if (= status 400)
-      (format "Granule search failed. status: %s body: %s" status body
-       nil))))
+    (when-not (= status 200)
+      response)))
 
 (h/defsearcher search-for-collections :search
   (fn [conn]
