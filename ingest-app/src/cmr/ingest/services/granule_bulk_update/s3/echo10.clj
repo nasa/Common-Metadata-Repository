@@ -144,8 +144,9 @@
     (assoc concept :metadata updated-metadata)))
 
 (defn append-s3-url
-  "Takes the ECHO10 granule concept and a list of S3 urls.
-  Update the ECHO10 granule metadata with the S3 urls.
+  "Append the ECHO10 granule metadata with the S3 urls.
+  Existing URLs will be preserved. If an existing URL is included in
+  the list of updates, it will be updated.
   Returns the granule concept with the updated metadata."
   [concept urls]
   (let [updated-metadata (add-s3-url-to-metadata (:metadata concept) urls :append)]

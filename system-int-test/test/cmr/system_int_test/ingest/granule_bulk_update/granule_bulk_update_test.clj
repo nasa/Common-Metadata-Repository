@@ -428,3 +428,95 @@
         (is (string/includes? updated-metadata "s3://abcdefg/test-gran1"))
         (is (string/includes? updated-metadata "GET DATA VIA DIRECT ACCESS"))
         (is (string/includes? updated-metadata "This link provides direct download access via S3 to the granule."))))))
+
+(deftest append-s3-url
+  "test appending S3 url with real granule file that is already in CMR code base"
+  (testing "ECHO10 granule"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
+                                                            {:provider-id "PROV1"
+                                                             :concept-type :collection
+                                                             :native-id "OMSO2-collection"
+                                                             :format-key :dif10})
+          granule (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-granule.xml"
+                                                               {:provider-id "PROV1"
+                                                                :concept-type :granule
+                                                                :native-id "OMSO2-granule"
+                                                                :format-key :echo10})
+          {:keys [concept-id revision-id]} granule
+          target-metadata (-> "CMR-4722/OMSO2.003-granule-s3-url.xml" io/resource slurp)
+          bulk-update {:operation "APPEND_TO_FIELD"
+                       :update-field "S3Link"
+                       :updates [["OMSO2.003:OMI-Aura_L2-OMSO2_2004m1001t2307-o01146_v003-2016m0615t191523.he5"
+                                  "s3://abcdefg/2016m0615t191523"]]}
+          {:keys [status] :as response} (ingest/bulk-update-granules
+                                         "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (is (= 200 status))
+      (is (= target-metadata
+             (:metadata (mdb/get-concept concept-id (inc revision-id)))))))
+
+  (testing "UMM-G granule"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          {:keys [concept-id revision-id]} granule
+          bulk-update {:operation "APPEND_TO_FIELD"
+                       :update-field "S3Link"
+                       :updates [["Unique_Granule_UR_v1.6"
+                                  "s3://abcdefg/test-gran1"]]}
+          {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                 "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 200 status))
+      (is (some? task-id))
+      (let [status-response (ingest/granule-bulk-update-task-status task-id)
+            {:keys [task-status status-message granule-statuses]} status-response]
+        (is (= "COMPLETE" task-status))
+        (is (= "All granule updates completed successfully." status-message))
+        (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                 :status "UPDATED"}]
+               granule-statuses)))
+      ;; verify the granule metadata is updated as expected
+      (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
+            updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
+        ;; since the metadata will be returned in the latest UMM-G format,
+        ;; we can't compare the whole metadata to an expected string.
+        ;; We just verify the updated S3 url, type and description exists in the metadata.
+        ;; The different scenarios of the RelatedUrls update are covered in unit tests.
+        (is (not (string/includes? original-metadata "s3://abcdefg/test-gran1")))
+        (is (not (string/includes? original-metadata "GET DATA VIA DIRECT ACCESS")))
+        (is (not (string/includes? original-metadata "This link provides direct download access via S3 to the granule.")))
+
+        (is (string/includes? updated-metadata "s3://abcdefg/test-gran1"))
+        (is (string/includes? updated-metadata "GET DATA VIA DIRECT ACCESS"))
+        (is (string/includes? updated-metadata "This link provides direct download access via S3 to the granule.")))
+
+      (testing "append preserves existing S3 urls"
+        (let [bulk-update {:operation "APPEND_TO_FIELD"
+                           :update-field "S3Link"
+                           :updates [["Unique_Granule_UR_v1.6"
+                                      "s3://zyxwvut/test-gran1"]]}
+              {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                     "PROV1" bulk-update bulk-update-options)]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          (let [latest-metadata (:metadata (mdb/get-concept concept-id))]
+            (is (string/includes? latest-metadata "s3://abcdefg/test-gran1"))
+            (is (string/includes? latest-metadata "s3://zyxwvut/test-gran1"))
+            (is (string/includes? latest-metadata "GET DATA VIA DIRECT ACCESS"))
+            (is (string/includes? latest-metadata "This link provides direct download access via S3 to the granule."))))))))
