@@ -454,7 +454,22 @@
       (index/wait-until-indexed)
       (is (= 200 status))
       (is (= target-metadata
-             (:metadata (mdb/get-concept concept-id (inc revision-id)))))))
+             (:metadata (mdb/get-concept concept-id (inc revision-id)))))
+
+      (testing "append preserves existing S3 urls"
+        (let [bulk-update {:operation "APPEND_TO_FIELD"
+                           :update-field "S3Link"
+                           :updates [["OMSO2.003:OMI-Aura_L2-OMSO2_2004m1001t2307-o01146_v003-2016m0615t191523.he5"
+                                      "s3://zyxwvut/2016m0615t191523"]]}
+              {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                     "PROV1" bulk-update bulk-update-options)]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          (let [latest-metadata (:metadata (mdb/get-concept concept-id))]
+            (is (string/includes? latest-metadata "s3://abcdefg/2016m0615t191523"))
+            (is (string/includes? latest-metadata "s3://zyxwvut/2016m0615t191523"))
+            (is (string/includes? latest-metadata "This link provides direct download access via S3 to the granule.")))))))
 
   (testing "UMM-G granule"
     (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}

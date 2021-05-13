@@ -238,7 +238,7 @@
 
 (defn- update-granule-opendap-fields
   "For OPeNDAP links, there may be at most 2 urls, 1 cloud, 1 on-prem.
-  therefor update and append bulk granule operations are identical."
+  therefore update and append bulk granule operations are identical."
   [context concept bulk-update-params user-id]
   (let [{:keys [format metadata]} concept
         {:keys [granule-ur url]} bulk-update-params
