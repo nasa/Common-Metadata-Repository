@@ -90,8 +90,7 @@
         (format "Granule search failed. status: %s body: %s" status body)))))
 
 (defn-timed find-granule-references-return-errors
-  "Find granules by parameters in a post request. If the search fails, returns the failure
-  status and body."
+  "Find granules by parameters in a post request. If the search fails, returns the response body."
   [context params]
   (let [conn (config/context->app-connection context :search)
         request-url (str (conn/root-url conn) "/granules.json")
@@ -109,7 +108,7 @@
                                  :headers (if token (assoc header config/token-header token) header)}))
         {:keys [status body]} response]
     (when-not (= status 200)
-      response)))
+      (:body response))))
 
 (h/defsearcher search-for-collections :search
   (fn [conn]

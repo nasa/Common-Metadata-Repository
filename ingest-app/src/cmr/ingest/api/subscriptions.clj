@@ -68,7 +68,7 @@
   [context params]
   (when-let [errors (search/find-granule-references-return-errors context params)]
     (errors/throw-service-error :bad-request
-      (str "Subscription query validation failed with the following error(s): " (:body errors)))))
+      (str "Subscription query validation failed with the following error(s): " errors))))
 
 (defn- validate-query
   "Performs a granule search using subscription query parameters for purposes of validation"
