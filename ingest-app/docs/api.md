@@ -1103,6 +1103,39 @@ Updated granules are validated using business rule validations.  Updates will no
 
 Granule bulk update currently supports updating with the following operations, update fields and metadata formats:
 
+**operation: "APPEND_TO_FIELD", update-field: "OPENDAPLink"**
+Operationally identical to UPDATE_FIELD for OPeNDAPLink, see below.
+
+**operation: "APPEND_TO_FIELD", update-field: "S3Link"**
+supported metadata formats:
+  - S3Link url in OnlineResources for ECHO10 format
+  - S3Link url in RelatedUrls for UMM-G format
+
+The S3 url value provided in the granule bulk update request can be comma-separated urls. Each url must start with s3:// (case-sensitive). This lowercase s3:// naming convention is to make the s3 links compatible with AWS S3 API. During bulk update, the provided S3 urls in the request will be updated by appending the new S3 links. Existing S3 links will be preserved. 
+
+If a URL is passed to the update is already associated with the granule, the URL will not be duplicated.
+
+``` bash
+curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules -d
+'{ "name": "example of appending S3 links",
+	"operation": "APPEND_TO_FIELD",
+	"update-field":"S3Link",
+	"updates":[
+             ["granule_ur1", "s3://example.com/bucket1"],
+             ["granule_ur2", "s3://example.com/bucket2"],
+             ["granule_ur3", "s3://example.com/bucket3-east,s3://example.com/bucket3-west"]
+	]
+}'
+```
+
+Example granule bulk update response:
+```
+{
+ "status" : 200,
+ "task-id": 4
+}
+```
+
 **operation: "UPDATE_FIELD", update-field: "OPeNDAPLink"**
 supported metadata formats:
   - OPeNDAP url in OnlineResources for ECHO10 format
