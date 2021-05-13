@@ -50,11 +50,22 @@
         s3-urls (urls->s3-urls urls)]
     (concat s3-urls other-urls)))
 
+(defn- appended-online-accesses
+  "Take the parsed OnlineAccessURLs in the original metadata,
+  update the existing s3 urls if any with the given list of urls."
+  [online-accesses urls]
+  (let [other-urls (remove #(and (is-s3? (:url %))
+                                 (contains? (set urls) (:url %))) online-accesses)
+        s3-urls (urls->s3-urls urls)]
+    (concat s3-urls other-urls)))
+
 (defn- updated-zipper-node
   "Take the parsed OnlineAccessURLs in the original metadata and the desired S3 url,
    return the updated OnlineAccessURLs xml element that can be used by zipper to update the xml."
-  [online-accesses urls]
-  (let [accesses (updated-online-accesses online-accesses urls)]
+  [online-accesses urls op]
+  (let [accesses (if (= :replace op)
+                   (updated-online-accesses online-accesses urls)
+                   (appended-online-accesses online-accesses urls))]
     (xml/element
      :OnlineAccessURLs {}
      (for [a accesses]
@@ -81,8 +92,12 @@
 
 (defn- add-s3-url*
   "Take a parsed granule xml, add an OnlineAccessURLs node with the given parsed S3 urls.
-  Returns the zipper representation of the updated xml."
-  [parsed online-accesses urls]
+  Returns the zipper representation of the updated xml.
+
+  Valid operations
+  :replace
+  :append"
+  [parsed online-accesses urls op]
   (let [zipper (zip/xml-zip parsed)
         start-loc (-> zipper zip/down)]
     (loop [loc start-loc done false]
@@ -96,7 +111,7 @@
 
             ;; at an OnlineAccessURLs element, replace the node with updated value
             (= :OnlineAccessURLs (-> right-loc zip/node :tag))
-            (recur (zip/replace right-loc (updated-zipper-node online-accesses urls))
+            (recur (zip/replace right-loc (updated-zipper-node online-accesses urls op))
                    true)
 
             ;; at an element after OnlineAccessURLs, add to the left
@@ -110,16 +125,28 @@
 (defn- add-s3-url-to-metadata
   "Takes the granule ECHO10 xml and a list of S3 urls.
   Update the ECHO10 granule metadata with the S3 urls.
-  Returns the updated metadata."
-  [gran-xml urls]
+  Returns the updated metadata.
+
+  Valid operators are
+  :replace
+  :append"
+  [gran-xml urls op]
   (let [parsed (xml/parse-str gran-xml)
         online-accesses (xml-elem->online-access-urls parsed)]
-    (xml/indent-str (add-s3-url* parsed online-accesses urls))))
+    (xml/indent-str (add-s3-url* parsed online-accesses urls op))))
 
 (defn add-s3-url
   "Takes the ECHO10 granule concept and a list of S3 urls.
   Update the ECHO10 granule metadata with the S3 urls.
   Returns the granule concept with the updated metadata."
   [concept urls]
-  (let [updated-metadata (add-s3-url-to-metadata (:metadata concept) urls)]
+  (let [updated-metadata (add-s3-url-to-metadata (:metadata concept) urls :replace)]
+    (assoc concept :metadata updated-metadata)))
+
+(defn append-s3-url
+  "Takes the ECHO10 granule concept and a list of S3 urls.
+  Update the ECHO10 granule metadata with the S3 urls.
+  Returns the granule concept with the updated metadata."
+  [concept urls]
+  (let [updated-metadata (add-s3-url-to-metadata (:metadata concept) urls :append)]
     (assoc concept :metadata updated-metadata)))

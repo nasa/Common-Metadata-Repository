@@ -26,8 +26,20 @@
         s3-urls (urls->s3-urls urls)]
     (concat s3-urls other-urls)))
 
+(defn- appended-related-urls
+  "Take the RelatedUrls, add any unique s3 urls, updating already existing urls"
+  [related-urls urls]
+  (let [s3-urls (urls->s3-urls urls)]
+    (concat related-urls s3-urls)))
+
 (defn add-s3-url
   "Takes UMM-G record and a list of S3 urls to update.
   Returns the updated UMM-G record."
   [umm-gran urls]
   (update umm-gran :RelatedUrls #(updated-related-urls % urls)))
+
+(defn append-s3-url
+  "Takes UMM-G record and a list of S3 urls to update.
+  Returns the updated UMM-G record."
+  [umm-gran urls]
+  (update umm-gran :RelatedUrls #(appended-related-urls % urls)))
