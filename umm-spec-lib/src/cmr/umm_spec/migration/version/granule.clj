@@ -127,14 +127,6 @@
     (assoc related-url :Type "GET DATA")
     related-url))
 
-(comment defn v1-6-3-related-url-type->1-6-2
-  "Migrate v1.6.3 related url type down to v1.6.2 related url type"
-  [related-url]
-  (if (and (= "EXTENDED METADATA" (:Type related-url))
-           (some #{(:SubType related-url)} ["DMR++" "DMR++ MISSING DATA"]))
-    nil
-    related-url))
-
 (defn- specify-metadata
   "At the very least, all metadaa records need to update the metadata
    specification."
@@ -228,7 +220,8 @@
               (fn [related-url]
                 (into []
                       (remove #(and (= "EXTENDED METADATA" (:Type %))
-                                    (some #{(:SubType related-url)} ["DMR++" "DMR++ MISSING DATA"]))
+                                    (some #{(:Subtype %)}
+                                          ["DMR++" "DMR++ MISSING DATA"]))
                               related-url))))))
 
 (defmethod interface/migrate-umm-version [:granule "1.6.2" "1.6.3"]
