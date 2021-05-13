@@ -90,8 +90,8 @@
         (format "Granule search failed. status: %s body: %s" status body)))))
 
 (defn-timed find-granule-references-return-errors
-  "Find granules by parameters in a post request. The function returns an array of granule
-  references, each reference being a map having concept-id and granule-ur as the fields"
+  "Find granules by parameters in a post request. If the search fails, returns the failure
+  status and body."
   [context params]
   (let [conn (config/context->app-connection context :search)
         request-url (str (conn/root-url conn) "/granules.xml")
