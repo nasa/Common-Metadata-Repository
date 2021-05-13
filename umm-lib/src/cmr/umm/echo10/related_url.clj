@@ -172,8 +172,8 @@
 
 (defn- related-url->online-resource
   "Related-url-types->resource-types does not handle the use case for matching a
-   subtype, if the type and subtype are extended metadata DMR values, then
-   encode them in colon format"
+  subtype, if the type and subtype are extended metadata DMR values, then encode
+  them in colon format"
   [related-url]
   (let [url-type (:type related-url)
         url-subtype (:sub-type related-url)]

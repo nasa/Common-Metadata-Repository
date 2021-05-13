@@ -20,7 +20,8 @@
       :size Size})))
 
 (defn umm-g-related-urls->RelatedURLs
-  "Returns the umm-lib granule model RelatedURLs from the given UMM-G RelatedUrls. note: this is new->old"
+  "Returns the umm-lib granule model RelatedURLs from the given UMM-G RelatedUrls.
+  NOTE: this is converts from the new style of urls to the old style."
   [related-urls]
   (seq (map umm-g-related-url->RelatedURL related-urls)))
 
