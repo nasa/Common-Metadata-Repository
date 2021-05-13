@@ -236,7 +236,9 @@
   (fn [context concept bulk-update-params user-id]
     (keyword (:event-type bulk-update-params))))
 
-(defmethod update-granule-concept :update_field:opendaplink
+(defn- update-granule-opendap-fields
+  "For OPeNDAP links, there may be at most 2 urls, 1 cloud, 1 on-prem.
+  therefor update and append bulk granule operations are identical."
   [context concept bulk-update-params user-id]
   (let [{:keys [format metadata]} concept
         {:keys [granule-ur url]} bulk-update-params
@@ -252,22 +254,13 @@
           (assoc :revision-date (time-keeper/now))
           (assoc :user-id user-id)))))
 
-;; TODO implement append-opendap-url
+(defmethod update-granule-concept :update_field:opendaplink
+  [context concept bulk-update-params user-id]
+  (update-granule-opendap-fields context concept bulk-update-params user-id))
+
 (defmethod update-granule-concept :append_to_field:opendaplink
   [context concept bulk-update-params user-id]
-  (let [{:keys [format metadata]} concept
-        {:keys [granule-ur url]} bulk-update-params
-        grouped-urls (opendap-util/validate-url url)
-        updated-concept (add-opendap-url context concept grouped-urls)
-        {updated-metadata :metadata updated-format :format} updated-concept]
-    (if-let [err-messages (:errors updated-metadata)]
-      (errors/throw-service-errors :invalid-data err-messages)
-      (-> concept
-          (assoc :metadata updated-metadata)
-          (assoc :format updated-format)
-          (update :revision-id inc)
-          (assoc :revision-date (time-keeper/now))
-          (assoc :user-id user-id)))))
+  (update-granule-opendap-fields context concept bulk-update-params user-id))
 
 (defmethod update-granule-concept :update_field:s3link
   [context concept bulk-update-params user-id]
