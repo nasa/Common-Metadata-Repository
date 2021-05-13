@@ -735,6 +735,8 @@ Query values should not be URL encoded. Instead, the query should consist of sta
 instrument=MODIS&sensor=1B&polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78
 ```
 
+If the query provided is invalid for granule searching, subscription creation will fail with HTTP status response of 400, and an error message detailing which query parameters were invalid.
+
 ### <a name="update-subscription"></a> Update a Subscription
 
 Subscription concept can be updated by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).

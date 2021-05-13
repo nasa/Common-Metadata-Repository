@@ -66,12 +66,10 @@
   "Performs a granule search using the provided query parameters. If the query is no good,
    we throw a service error."
   [context params]
-  (try
-    (search/find-granule-references context params)
-    (catch Exception e
-      (errors/throw-service-error :bad-request
-       (str "Error ingesting subscription: invalid query parameters [" (dissoc params :token) "]\n\n"
-              (.getMessage e))))))
+  (if-let [errors (search/find-granule-references-return-errors context params)]
+    (errors/throw-service-error :bad-request
+      (str "Error ingesting subscription with query parameters [" (dissoc params :token) "]: " errors))))
+
 
 (defn- validate-query
   "Performs a granule search using subscription query parameters for purposes of validation"
@@ -79,9 +77,8 @@
   (let [metadata (-> (:metadata subscription) (json/decode true))
         collection-id (:CollectionConceptId metadata)
         query-string (:Query metadata)
-        query-params (sub-common/create-query-params query-string)
+        query-params (jobs/create-query-params query-string)
         search-params (merge {:collection-concept-id collection-id
-                              :page-size 0
                               :token (config/echo-system-token)}
                              query-params)
         gran-refs (search-gran-refs-with-sub-params request-context search-params)]))

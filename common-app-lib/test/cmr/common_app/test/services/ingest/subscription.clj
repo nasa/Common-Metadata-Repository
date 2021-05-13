@@ -20,8 +20,3 @@
          expected "d41d8cd98f00b204e9800998ecf8427e"
          actual (sub-common/normalize-parameters query)]
      (is (= expected actual)))))
-
-(deftest create-query-params
-  (is (= {"polygon" "-78,-18,-77,-22,-73,-16,-74,-13,-78,-18"
-          "concept-id" "G123-PROV1"}
-         (sub-common/create-query-params "polygon=-78,-18,-77,-22,-73,-16,-74,-13,-78,-18&concept-id=G123-PROV1"))))

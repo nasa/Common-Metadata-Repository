@@ -89,6 +89,29 @@
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s" status body)))))
 
+(defn-timed find-granule-references-return-errors
+  "Find granules by parameters in a post request. The function returns an array of granule
+  references, each reference being a map having concept-id and granule-ur as the fields"
+  [context params]
+  (let [conn (config/context->app-connection context :search)
+        request-url (str (conn/root-url conn) "/granules.xml")
+        request-body (-> params
+                         (dissoc :token)
+                         (assoc :page_size 0))
+        token (:token params)
+        header (ch/context->http-headers context)
+        response (client/post request-url
+                              (merge
+                                (config/conn-params conn)
+                                {:body (codec/form-encode request-body)
+                                 :content-type mt/form-url-encoded
+                                 :throw-exceptions false
+                                 :headers (if token (assoc header config/token-header token) header)}))
+        {:keys [status body]} response]
+    (if (= status 400)
+      (format "Granule search failed. status: %s body: %s" status body
+       nil))))
+
 (h/defsearcher search-for-collections :search
   (fn [conn]
     (format "%s/collections" (conn/root-url conn))))

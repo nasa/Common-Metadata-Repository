@@ -183,7 +183,8 @@
                     {:accept-format :json
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
-      (is (re-find #"Error ingesting subscription: invalid query parameters" (first errors))))))
+      (is (re-find #"Error ingesting subscription with query parameters" (first errors)))
+      (is (re-find #"Granule search failed. status: 400 body:" (first errors))))))
 
 
 ;; Verify that the accept header works with returned errors
