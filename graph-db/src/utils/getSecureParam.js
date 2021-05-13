@@ -15,8 +15,8 @@ exports.getSecureParam = async (param) => {
   const request = await ssm
     .getParameter({
       Name: param,
-      WithDecryption: true,
+      WithDecryption: true
     })
     .promise()
-  return request.Parameter.Value;
-};
+  return request.Parameter.Value
+}

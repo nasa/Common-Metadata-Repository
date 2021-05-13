@@ -4,7 +4,7 @@ provider:
   name: aws
   runtime: nodejs12.x
   region: us-east-1
-  stage: ${opt:stage, ''}
+  stage: ${opt:stage, 'dev'}
   deploymentBucket: graphdb-driver-deployment-bucket-${self.stage}
 
 deploymentBucket:

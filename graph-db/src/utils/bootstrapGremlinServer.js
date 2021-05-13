@@ -12,16 +12,16 @@ exports.bootstrapGremilinServer = async () => {
   const gremlin = initializeGremlinConnection()
   const indexingStatuses = []
 
-  for (const partition of partitionedSearchResults) {
+  for await (const partition of partitionedSearchResults) {
     console.log(`Indexing [${partition.length}] items into graph db`)
     const indexingStatus = partition.map(
       async (result) => {
         const indexedCollection = await indexCmrCollection(result, gremlin)
-        return indexedCollection;
-      },
+        return indexedCollection
+      }
     )
     indexingStatuses.push(indexingStatus)
   }
 
   return indexingStatuses
-};
+}

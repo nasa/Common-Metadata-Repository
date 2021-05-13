@@ -18,6 +18,5 @@
         "no-console": "off",
         // Disallow dangling commas
         "comma-dangle": ["error", "never"]
-      },
-    "plugins": ["prettier"]
+      }
 }

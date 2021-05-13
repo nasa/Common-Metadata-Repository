@@ -25,12 +25,6 @@ npm is a separate project from Node.js, and tends to update more frequently. As 
 npm install -g npm@latest
 ```
 
-### Serverless
-This project uses the Serverless framework, which can be installed globally like so:
-```
-npm install -g serverless
-```
-
 ### Docker
 Download docker on https://docs.docker.com/get-docker/
 
@@ -61,4 +55,15 @@ npm install
 To invoke the bootstrap function and load data into your Gremlin server run the following command:
 ```
 npm run bootstrap
+```
+
+# Test
+To run the test suite one time run
+```
+npm run test
+```
+
+To run the test suite in watch mode, run
+```
+npm run test -- --watch
 ```

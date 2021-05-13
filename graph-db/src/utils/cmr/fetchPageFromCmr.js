@@ -21,7 +21,7 @@ exports.fetchPageFromCMR = async (scrollId) => {
 
   const response = await fetch(`${process.env.CMR_ROOT}/search/collections.umm_json?page_size=${process.env.PAGE_SIZE}&scroll=true`, {
     method: 'GET',
-    headers: requestHeaders,
+    headers: requestHeaders
   }).catch((error) => {
     console.log(`Could not complete request due to error: ${error}`)
     return null

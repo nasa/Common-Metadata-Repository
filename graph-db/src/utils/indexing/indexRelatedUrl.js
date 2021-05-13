@@ -13,7 +13,7 @@ exports.indexRelatedUrl = (relatedUrl, gremlin, dataset) => {
     Type: type,
     SubType: subType,
     URL: url,
-    Description: description,
+    Description: description
   } = relatedUrl
   if (!!type
         || !!subType
@@ -34,4 +34,4 @@ exports.indexRelatedUrl = (relatedUrl, gremlin, dataset) => {
   }
 
   gremlin.addE('documents').from(gremlin.V(docVertex.id())).to(gremlin.V(dataset.id())).next()
-};
+}

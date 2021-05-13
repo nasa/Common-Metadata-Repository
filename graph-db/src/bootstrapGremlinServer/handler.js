@@ -4,6 +4,6 @@ module.exports.bootstrap = async () => {
   await bootstrapGremilinServer()
   return {
     statusCode: 200,
-    body: 'Indexing completed',
+    body: 'Indexing completed'
   }
 }

@@ -12,7 +12,7 @@ exports.harvestCmrCollections = async () => {
   const partitionedSearchResults = []
   let continueScroll = true
 
-  partitionedSearchResults.push(results);
+  partitionedSearchResults.push(results)
   while (continueScroll) {
     // eslint-disable-next-line no-await-in-loop
     const scrolledResults = await fetchPageFromCMR(scrollId)
@@ -25,11 +25,11 @@ exports.harvestCmrCollections = async () => {
         }
       })
       .catch((error) => {
-        console.log(`Could not complete request due to error: ${error}`)
+        console.warn(`Could not complete request due to error: ${error}`)
         return null
       })
 
-    partitionedSearchResults.push(scrolledResults);
+    partitionedSearchResults.push(scrolledResults)
 
     if (!scrolledResults || scrolledResults.length < process.env.PAGE_SIZE) {
       continueScroll = false
@@ -39,6 +39,5 @@ exports.harvestCmrCollections = async () => {
   console.log(`Got scroll-id: [${scrollId}]. Clearing session...`)
   await clearScrollSession(scrollId)
 
-  console.log(`Partitions: ${partitionedSearchResults.length}`)
   return partitionedSearchResults
-};
+}

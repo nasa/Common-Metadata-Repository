@@ -26,7 +26,7 @@ describe('getEchoToken', () => {
   })
   test('IS_LOCAL = true', async () => {
     process.env.IS_LOCAL = true
-    
+
     const token = await getEchoToken()
     expect(token).toEqual(null)
   })
