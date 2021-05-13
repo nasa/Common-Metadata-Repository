@@ -184,14 +184,14 @@
       (let [granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection)))
             response (ingest/ingest-concept granule {:accept-format :json :raw? true})]
         (index/wait-until-indexed)
-        (is (= {:revision-id 1}
-               (select-keys (ingest/parse-ingest-body :json response) [:revision-id])))))
+        (is (= {:concept-id "G1200000006-PROV1" :revision-id 1}
+               (select-keys (ingest/parse-ingest-body :json response) [:concept-id :revision-id])))))
     (testing "xml response"
       (let [granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection)))
             response (ingest/ingest-concept granule {:accept-format :xml :raw? true})]
         (index/wait-until-indexed)
-        (is (= {:revision-id 1}
-               (select-keys (ingest/parse-ingest-body :xml response) [:revision-id])))))))
+        (is (= {:concept-id "G1200000007-PROV1" :revision-id 1}
+               (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))))
 
 ;; Verify that the accept header works with returned errors
 (deftest granule-ingest-with-errors-accept-header-test
