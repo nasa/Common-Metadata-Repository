@@ -66,7 +66,7 @@
   "Performs a granule search using the provided query parameters. If the query is no good,
    we throw a service error."
   [context params]
-  (when-let [errors (search/find-granule-references-return-errors context params)]
+  (when-let [errors (search/validate-granule-search-params context params)]
     (errors/throw-service-error :bad-request
       (str "Subscription query validation failed with the following error(s): " errors))))
 
