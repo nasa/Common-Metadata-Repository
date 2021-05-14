@@ -6,6 +6,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
    [cmr.umm-spec.migration.version.core :as vm]
+   [cmr.umm-spec.migration.version.granule :as granule]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.test.umm-generators :as umm-gen]
    [cmr.umm-spec.umm-spec-core :as core]
@@ -14,12 +15,14 @@
    [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
 (deftest test-version-steps
-  (with-bindings {#'cmr.umm-spec.versioning/versions {:granule ["1.4" "1.5" "1.6" "1.6.1"]}}
+  (with-bindings {#'cmr.umm-spec.versioning/versions
+                  {:granule ["1.4" "1.5" "1.6" "1.6.1" "1.6.2" "1.6.3"]}}
     (is (= [] (#'vm/version-steps :granule "1.5" "1.5")))
     (is (= [["1.4" "1.5"]] (#'vm/version-steps :granule "1.4" "1.5")))
     (is (= [["1.5" "1.4"]] (#'vm/version-steps :granule "1.5" "1.4")))
     (is (= [["1.4" "1.5"] ["1.5" "1.6"]] (#'vm/version-steps :granule "1.4" "1.6")))
-    (is (= [["1.4" "1.5"] ["1.5" "1.6"] ["1.6" "1.6.1"]] (#'vm/version-steps :granule "1.4" "1.6.1")))))
+    (is (= [["1.4" "1.5"] ["1.5" "1.6"] ["1.6" "1.6.1"]] (#'vm/version-steps :granule "1.4" "1.6.1")))
+    (is (= [["1.6.1" "1.6.2"] ["1.6.2" "1.6.3"]] (#'vm/version-steps :granule "1.6.1" "1.6.3")))))
 
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-g-generator)
@@ -630,3 +633,68 @@
           :Name "UMM-G"
           :Version "1.6.2"}
          (:MetadataSpecification (vm/migrate-umm {} :granule "1.6.1" "1.6.2" expected-granule-1-6-1)))))
+
+(deftest verify-update-version
+  "Check that the specify-metadata function returns the correct structure"
+  (let [expected {:OtherMetadata :content-to-ignore
+                  :MetadataSpecification
+                  {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v0.0.0"
+                   :Name "UMM-G"
+                   :Version "0.0.0"}}
+        base-granule {:OtherMetadata :content-to-ignore
+                      :MetadataSpecification {:Name :none}}
+        actual (#'granule/update-version base-granule "0.0.0")]
+    (is (= expected actual))))
+
+(def sample-granule-1-6-3
+  {:MetadataSpecification
+    {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.3"
+     :Name "UMM-G"
+     :Version "1.6.3"}
+    :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                   :Type "GET SERVICE"
+                   :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+                   :MimeType "APPEARS"}
+                  {:URL "https://example-1"
+                   :Type "GET DATA"
+                   :Subtype "USER FEEDBACK PAGE"}
+                  {:URL "https://example-2.hdf"
+                   :Type "GET DATA"
+                   :Subtype "OPENDAP DATA"
+                   :MimeType "application/x-hdf5"}
+                  {:URL "s3://amazon.something.com/get-data"
+                   :Type "GET DATA VIA DIRECT ACCESS"
+                   :Format "NETCDF-4"
+                   :MimeType "application/x-netcdf"}
+                  {:URL "s3://amazon.example.org/dmr-plus-plus"
+                   :Type "EXTENDED METADATA"
+                   :Subtype "DMR++"}
+                  {:URL "s3://amazon.example.org/dmr-plus-plus-missing-data"
+                   :Type "EXTENDED METADATA"
+                   :Subtype "DMR++ MISSING DATA"}]})
+
+(deftest migrate-1-6-2-up-to-1-6-3
+  (is (= {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.3"
+          :Name "UMM-G"
+          :Version "1.6.3"}
+         (:MetadataSpecification (vm/migrate-umm {}
+                                                 :granule
+                                                 "1.6.2"
+                                                 "1.6.3"
+                                                 sample-granule-1-6-2)))))
+
+(deftest migrate-1-6-3-down-to-1-6-2
+  "Make sure the unwanted url type is gone"
+  (let [converted (vm/migrate-umm {}
+                                  :granule
+                                  "1.6.3"
+                                  "1.6.2"
+                                  sample-granule-1-6-3)
+        specification (:MetadataSpecification converted)
+        urls (:RelatedUrls converted)]
+    (is (= {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.2"
+            :Name "UMM-G"
+            :Version "1.6.2"}
+           specification))
+    (is (= 4 (count urls)))
+    (is (= [] (filter #(= "EXTENDED METADATA" (:Type %)) urls)))))

@@ -20,7 +20,8 @@
       :size Size})))
 
 (defn umm-g-related-urls->RelatedURLs
-  "Returns the umm-lib granule model RelatedURLs from the given UMM-G RelatedUrls."
+  "Returns the umm-lib granule model RelatedURLs from the given UMM-G RelatedUrls.
+  NOTE: this is converts from the new style of urls to the old style."
   [related-urls]
   (seq (map umm-g-related-url->RelatedURL related-urls)))
 
@@ -47,10 +48,10 @@
     "MICRO ARTICLE" "PI DOCUMENTATION" "PROCESSING HISTORY" "PRODUCT HISTORY"
     "PRODUCT QUALITY ASSESSMENT" "PRODUCT USAGE" "PRODUCTION HISTORY" "PUBLICATIONS" "READ-ME"
     "REQUIREMENTS AND DESIGN" "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION"
-    "SCIENCE DATA PRODUCT VALIDATION" "USER FEEDBACK" "USER'S GUIDE"})
+    "SCIENCE DATA PRODUCT VALIDATION" "USER FEEDBACK" "USER'S GUIDE" "DMR++" "DMR++ MISSING DATA"})
 
 (defn RelatedURLs->umm-g-related-urls
-  "Returns the UMM-G RelatedUrls from the given umm-lib granule model RelatedURLs."
+  "Returns the UMM-G RelatedUrls from the given umm-lib granule model RelatedURLs. note, this is old->new"
   [related-urls]
   (when (seq related-urls)
     (for [related-url related-urls]

@@ -89,7 +89,7 @@
     (str URLContentType " : " Type))))
 
 (defn- related-url->link-type
-  "Returns the atom link type of the related url"
+  "Returns the atom link type of the related url - used for collections"
   [related-url]
   (cond
     (opendap-util/opendap-url? related-url) "service"

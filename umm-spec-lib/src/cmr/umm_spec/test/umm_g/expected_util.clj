@@ -198,4 +198,12 @@
                      :description "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
                      :mime-type "application/x-netcdf"
                      :title "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
+                     :size 1000})
+                   (umm-c/map->RelatedURL
+                    {:type "EXTENDED METADATA"
+                     :sub-type "DMR++"
+                     :url "s3://aws.com/bucket-name/dataproduct.data"
+                     :description "DMR++ Description"
+                     :mime-type "application/x-netcdf"
+                     :title "DMR++ Description"
                      :size 1000})]}))

@@ -127,6 +127,14 @@
     (assoc related-url :Type "GET DATA")
     related-url))
 
+(defn- update-version
+  "At the very least, all metadaa records need to update the metadata
+   specification."
+  [umm-g version]
+  (assoc umm-g :MetadataSpecification {:URL (str "https://cdn.earthdata.nasa.gov/umm/granule/v" version)
+                                       :Name "UMM-G"
+                                       :Version version}))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Granule Migration Implementations
 
@@ -203,3 +211,21 @@
       (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.2"
                                      :Name "UMM-G"
                                      :Version "1.6.2"})))
+
+(defn- drop-1-6-3-related-urls
+  "Drop the urls specific to v1.6.3"
+  [related-urls]
+  (remove #(and (= "EXTENDED METADATA" (:Type %))
+                (some #{(:Subtype %)} ["DMR++" "DMR++ MISSING DATA"]))
+          related-urls))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.3" "1.6.2"]
+  [context g & _]
+  (-> g
+      (update-version "1.6.2")
+      (update :RelatedUrls drop-1-6-3-related-urls)))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.2" "1.6.3"]
+  [context g & _]
+  (-> g
+      (update-version "1.6.3")))
