@@ -52,6 +52,8 @@
 (defn- extract-keywords-seq-from-value
   "Converts value to lower case and splits on whitespace to create a list of keywords"
   [value]
+  (println "keyword value is: " value)
+  (println "keyword value value contains quotes: " (clojure.string/includes? value "\""))
   (-> value str/lower-case (str/split #"\s+")))
 
 (extend-protocol ExtractKeywords
