@@ -72,11 +72,46 @@
         updated-resources (conj other-resources cloud-resource on-prem-resource)]
     (remove nil? updated-resources)))
 
+(defn- cloud-url?
+  "Returns true if the URL given matches a Hyrax-in-the-cloud (:cloud) URL pattern "
+  [url]
+  (= :cloud (opendap-util/url->opendap-type url)))
+
+(def ^:private on-prem-url?
+  "Returns true if the URL given matches :on-prem URL patterns"
+  (complement cloud-url?))
+
+(defn- appended-online-resources
+  "Append urls only if there are no conflicting URLs."
+  [online-resources url-map]
+  (let [opendap-resources (filter #(is-opendap? (:type %)) online-resources)
+        other-resources (remove #(is-opendap? (:type %)) online-resources)
+        current-urls (map :url opendap-resources)
+
+        _ (when (and (seq (filter cloud-url? current-urls))
+                     (first (get-in url-map [:cloud])))
+            (throw (ex-info "Update contains conflict, cannot append Hyrax-in-the-cloud OPeNDAP urls when there is one already present."
+                            {:current current-urls
+                             :conflict url-map})))
+
+        _ (when (and (seq (filter on-prem-url? current-urls))
+                     (first (get-in url-map [:on-prem])))
+            (throw (ex-info "Update contains conflict, cannot append on-prem OPeNDAP urls when there is one already present."
+                            {:current current-urls
+                             :conflict url-map})))
+
+        cloud-resource (resources->updated-resource :cloud opendap-resources url-map)
+        on-prem-resource (resources->updated-resource :on-prem opendap-resources url-map)
+        updated-resources (conj other-resources cloud-resource on-prem-resource)]
+    (remove nil? updated-resources)))
+
 (defn- updated-zipper-resources
   "Take the parsed online resources in the original metadata and the desired OPeNDAP urls,
    return the updated online resources xml element that can be used by zipper to update the xml."
-  [online-resources url-map]
-  (let [resources (updated-online-resources online-resources url-map)]
+  [online-resources url-map operation]
+  (let [resources (if (= :replace operation)
+                    (updated-online-resources online-resources url-map)
+                    (appended-online-resources online-resources url-map))]
     (xml/element
      :OnlineResources {}
      (for [r resources]
@@ -108,7 +143,7 @@
   the granule metadata; the on-prem url will overwrite any existing on-prem OPeNDAP url in
   the granule metadata.
   Returns the zipper representation of the updated xml."
-  [parsed online-resources grouped-urls]
+  [parsed online-resources grouped-urls operation]
   (let [zipper (zip/xml-zip parsed)
         start-loc (-> zipper zip/down)]
     (loop [loc start-loc done false]
@@ -122,7 +157,7 @@
 
             ;; at an OnlineResources element, replace the node with updated value
             (= :OnlineResources (-> right-loc zip/node :tag))
-            (recur (zip/replace right-loc (updated-zipper-resources online-resources grouped-urls))
+            (recur (zip/replace right-loc (updated-zipper-resources online-resources grouped-urls operation))
                    true)
 
             ;; at an element after OnlineResources, add to the left
@@ -138,10 +173,10 @@
   {:cloud [<cloud_url>] :on-prem [<on_prem_url>]}.
   Update the ECHO10 granule metadata with the OPeNDAP urls.
   Returns the updated metadata."
-  [gran-xml grouped-urls]
+  [gran-xml grouped-urls operation]
   (let [parsed (xml/parse-str gran-xml)
         online-resources (xml-elem->online-resources parsed)]
-    (xml/indent-str (add-opendap-url* parsed online-resources grouped-urls))))
+    (xml/indent-str (add-opendap-url* parsed online-resources grouped-urls operation))))
 
 (defn add-opendap-url
   "Takes the ECHO10 granule concept and grouped OPeNDAP urls in the format of
@@ -149,5 +184,14 @@
   Update the ECHO10 granule metadata with the OPeNDAP urls.
   Returns the granule concept with the updated metadata."
   [concept grouped-urls]
-  (let [updated-metadata (add-opendap-url-to-metadata (:metadata concept) grouped-urls)]
+  (let [updated-metadata (add-opendap-url-to-metadata (:metadata concept) grouped-urls :replace)]
+    (assoc concept :metadata updated-metadata)))
+
+(defn append-opendap-url
+  "Takes the ECHO10 granule concept and grouped OPeNDAP urls in the format of
+  {:cloud [<cloud_url>] :on-prem [<on_prem_url>]}.
+  Update the ECHO10 granule metadata with the OPeNDAP urls.
+  Returns the granule concept with the updated metadata."
+  [concept grouped-urls]
+  (let [updated-metadata (add-opendap-url-to-metadata (:metadata concept) grouped-urls :append)]
     (assoc concept :metadata updated-metadata)))

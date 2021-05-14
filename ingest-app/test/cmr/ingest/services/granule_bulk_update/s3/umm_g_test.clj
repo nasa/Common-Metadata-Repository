@@ -128,4 +128,15 @@
                  :Description "This link provides direct download access via S3 to the granule."}
                 {:URL "s3://abc/bar"
                  :Type "GET DATA VIA DIRECT ACCESS"
+                 :Description "This link provides direct download access via S3 to the granule."})
+
+          "duplicates are handled"
+          "s3://abc/foo, s3://abc/bar, s3://abc/bar, s3://abc/bar"
+          {:RelatedUrls sample-urls}
+          (conj sample-urls
+                {:URL "s3://abc/foo"
+                 :Type "GET DATA VIA DIRECT ACCESS"
+                 :Description "This link provides direct download access via S3 to the granule."}
+                {:URL "s3://abc/bar"
+                 :Type "GET DATA VIA DIRECT ACCESS"
                  :Description "This link provides direct download access via S3 to the granule."}))))
