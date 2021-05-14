@@ -726,7 +726,7 @@ POST requests may only be used for creating subscriptions.
 
 If a SubscriberId is not provided, then the user ID associated with the token used to ingest the subscription will be used as the SubscriberId.
 
-If an EmailAddress is not provided, then the email address associated with the SubscriberId's Earthdata Login (URS) account will be used as the EmailAddress.
+EmailAddress was previously a required field, but this field is now deprecated. Instead, the email address associated with the SubscriberId's Earthdata Login (URS) account will be used as the EmailAddress. If an EmailAddress is specified at subscription creation it will be ignored.
 
 POST only may be used without a native-id at the following URL.
 `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions`
@@ -734,7 +734,12 @@ POST only may be used without a native-id at the following URL.
 POST or PUT may be used with the following URL.
 `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`
 
-Query values should not be URL encoded.
+Query values should not be URL encoded. Instead, the query should consist of standard granule search parameters, separated by '&'. For example, a valid query string might look like:
+```
+instrument=MODIS&sensor=1B&polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78
+```
+
+If the query provided is invalid for granule searching, subscription creation will fail with HTTP status response of 400, and an error message detailing which query parameters were invalid.
 
 ### <a name="update-subscription"></a> Update a Subscription
 
@@ -743,8 +748,6 @@ Subscription concept can be updated by sending an HTTP POST or PUT with the meta
 If a native-id is provided in a POST, and a subscription already exists for that provider with the given native-id, the request will be rejected.
 
 PUT requests should be used for updating subscriptions. Creation of subscriptions using PUT may be deprecated in the future. All PUT requests require a native-id to be part of the request URL.
-
-Query values should not be URL encoded.
 
 ```
 curl -i -XPUT \

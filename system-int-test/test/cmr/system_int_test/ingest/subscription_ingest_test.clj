@@ -167,6 +167,26 @@
                 :concept-id supplied-concept-id}
                (ingest/parse-ingest-body :xml response)))))))
 
+(deftest subscription-ingest-with-bad-query-error-test
+  (testing "ingest of a new subscription concept"
+    (let [coll1 (data-core/ingest-umm-spec-collection
+                  "PROV1"
+                  (data-umm-c/collection
+                   {:ShortName "coll1"
+                    :EntryTitle "entry-title1"})
+                  {:token "mock-echo-system-token"})
+          metadata {:CollectionConceptId (:concept-id coll1)
+                    :Query "options%5Bspatial%5D%5Bor%5D=true&platform=MODIS"}
+          concept (subscription-util/make-subscription-concept metadata)
+          response (ingest/ingest-concept
+                    concept
+                    {:accept-format :json
+                     :raw? true})
+          {:keys [errors]} (ingest/parse-ingest-body :json response)
+          error (first errors)]
+      (is (re-find #"Subscription query validation failed with the following error" error))
+      (is (re-find #"Parameter \[options%_5_bspatial%_5_d%_5_bor%_5_d\] was not recognized." error)))))
+
 ;; Verify that the accept header works with returned errors
 (deftest subscription-ingest-with-errors-accept-header-test
   (testing "json response"
@@ -628,7 +648,7 @@
                                                                               :EntryTitle "entry-title1"})
                                                       {:token "mock-echo-system-token"})
           fake-concept (subscription-util/make-subscription-concept {:SubscriberId "user1"
-                                                                     :CollectionConceptId "FAKE"})
+                                                                     :CollectionConceptId "C1234-PROV1"})
           concept (subscription-util/make-subscription-concept {:SubscriberId "user1"
                                                                 :CollectionConceptId (:concept-id coll1)})]
       ;; adjust permissions
@@ -650,7 +670,7 @@
       (testing "non-existent collection concept-id"
         (let [{:keys [status errors]} (ingest/ingest-concept fake-concept {:token "mock-echo-system-token"})]
           (is (= 401 status))
-          (is (= [(format "Collection with concept id [FAKE] does not exist or subscriber-id [user1] does not have permission to view the collection.")]
+          (is (= [(format "Collection with concept id [C1234-PROV1] does not exist or subscriber-id [user1] does not have permission to view the collection.")]
                  errors))))
 
       (testing "user doesn't have permission to view collection"

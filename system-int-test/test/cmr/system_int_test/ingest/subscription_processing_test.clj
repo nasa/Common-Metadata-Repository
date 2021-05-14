@@ -105,7 +105,7 @@
                            (map :concept-id))]
          (is (= [(:concept-id gran2)] response))))
 
-     (testing "Deleting the subscription purges the suscription notification entry"
+     (testing "Deleting the subscription purges the subscription notification entry"
        ;; Delete and reingest the subscription. If the sub-notification was purged, then it
        ;; should look back 24 hours, as if the subscription were new.
        (let [concept {:provider-id "PROV1" :concept-type :subscription :native-id "test_sub_prov1"}]

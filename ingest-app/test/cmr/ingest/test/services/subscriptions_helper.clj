@@ -10,7 +10,7 @@
 (deftest create-query-params
   (is (= {"polygon" "-78,-18,-77,-22,-73,-16,-74,-13,-78,-18"
           "concept-id" "G123-PROV1"}
-         (#'jobs/create-query-params "polygon=-78,-18,-77,-22,-73,-16,-74,-13,-78,-18&concept-id=G123-PROV1"))))
+         (jobs/create-query-params "polygon=-78,-18,-77,-22,-73,-16,-74,-13,-78,-18&concept-id=G123-PROV1"))))
 
 (deftest email-granule-url-list-test
   "This tests the utility function that unpacks a list of urls and turns it into markdown"

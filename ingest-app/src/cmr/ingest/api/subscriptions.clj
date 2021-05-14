@@ -15,8 +15,10 @@
    [cmr.ingest.services.subscriptions-helper :as jobs]
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.access-control :as access-control]
+   [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
+   [cmr.transmit.search :as search]
    [cmr.transmit.urs :as urs])
   (:import
    [java.util UUID]))
@@ -59,6 +61,26 @@
           (subscriber-collection-permission-error
            subscriber-id
            concept-id)))))
+
+(defn- search-gran-refs-with-sub-params
+  "Performs a granule search using the provided query parameters. If the query is no good,
+   we throw a service error."
+  [context params]
+  (when-let [errors (search/validate-granule-search-params context params)]
+    (errors/throw-service-error :bad-request
+      (str "Subscription query validation failed with the following error(s): " errors))))
+
+(defn- validate-query
+  "Performs a granule search using subscription query parameters for purposes of validation"
+  [request-context subscription]
+  (let [metadata (-> (:metadata subscription) (json/decode true))
+        collection-id (:CollectionConceptId metadata)
+        query-string (:Query metadata)
+        query-params (jobs/create-query-params query-string)
+        search-params (merge {:collection-concept-id collection-id
+                              :token (config/echo-system-token)}
+                             query-params)
+        gran-refs (search-gran-refs-with-sub-params request-context search-params)]))
 
 (defn- check-duplicate-subscription
   "The query used by a subscriber for a collection should be unique to prevent
@@ -224,12 +246,13 @@
                             content-type
                             headers)
           native-id (get-unique-native-id request-context tmp-subscription)
-          new-subscription (assoc  tmp-subscription :native-id native-id)
-          newer-subscription (add-fields-if-missing request-context new-subscription)
-          subscriber-id (get-subscriber-id newer-subscription)]
+          sub-with-native-id (assoc tmp-subscription :native-id native-id)
+          final-sub (add-fields-if-missing request-context sub-with-native-id)
+          subscriber-id (get-subscriber-id final-sub)]
       (check-ingest-permission request-context provider-id subscriber-id)
-      (check-duplicate-subscription request-context newer-subscription)
-      (perform-subscription-ingest request-context newer-subscription headers))))
+      (validate-query request-context final-sub)
+      (check-duplicate-subscription request-context final-sub)
+      (perform-subscription-ingest request-context final-sub headers))))
 
 (defn create-subscription-with-native-id
   "Processes a request to create a subscription using the native-id provided."
@@ -249,11 +272,12 @@
                             body
                             content-type
                             headers)
-          new-subscription (add-fields-if-missing request-context tmp-subscription)
-          subscriber-id (get-subscriber-id new-subscription)]
+          final-sub (add-fields-if-missing request-context tmp-subscription)
+          subscriber-id (get-subscriber-id final-sub)]
       (check-ingest-permission request-context provider-id subscriber-id)
-      (check-duplicate-subscription request-context new-subscription)
-      (perform-subscription-ingest request-context new-subscription headers))))
+      (validate-query request-context final-sub)
+      (check-duplicate-subscription request-context final-sub)
+      (perform-subscription-ingest request-context final-sub headers))))
 
 (defn create-or-update-subscription-with-native-id
   "Processes a request to create or update a subscription. This function
@@ -277,11 +301,12 @@
                                            :latest true}
                                           :subscription))]
                          (get-in original-subscription [:extra-fields :subscriber-id]))
-        new-subscription (add-fields-if-missing request-context tmp-subscription)
-        new-subscriber (get-subscriber-id new-subscription)]
+        final-sub (add-fields-if-missing request-context tmp-subscription)
+        new-subscriber (get-subscriber-id final-sub)]
     (check-ingest-permission request-context provider-id new-subscriber old-subscriber)
-    (check-duplicate-subscription request-context new-subscription)
-    (perform-subscription-ingest request-context new-subscription headers)))
+    (validate-query request-context final-sub)
+    (check-duplicate-subscription request-context final-sub)
+    (perform-subscription-ingest request-context final-sub headers)))
 
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."
