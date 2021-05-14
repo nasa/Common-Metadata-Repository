@@ -634,7 +634,7 @@
           :Version "1.6.2"}
          (:MetadataSpecification (vm/migrate-umm {} :granule "1.6.1" "1.6.2" expected-granule-1-6-1)))))
 
-(deftest verify-specify-metadata
+(deftest verify-update-version
   "Check that the specify-metadata function returns the correct structure"
   (let [expected {:OtherMetadata :content-to-ignore
                   :MetadataSpecification
@@ -643,7 +643,7 @@
                    :Version "0.0.0"}}
         base-granule {:OtherMetadata :content-to-ignore
                       :MetadataSpecification {:Name :none}}
-        actual (#'granule/specify-metadata base-granule "0.0.0")]
+        actual (#'granule/update-version base-granule "0.0.0")]
     (is (= expected actual))))
 
 (def sample-granule-1-6-3
@@ -697,4 +697,4 @@
             :Version "1.6.2"}
            specification))
     (is (= 4 (count urls)))
-    (is (not (= "EXTENDED METADATA" (:Type (last urls)))))))
+    (is (= [] (filter #(= "EXTENDED METADATA" (:Type %)) urls)))))

@@ -90,11 +90,6 @@
             #{:echo10 {:format :umm-json
                        :version "1.3"}})))))
 
-(defn- drop-in
- "Drop a value from a nested structure"
- [data path keys]
- (update-in data path (fn [nested] (apply dissoc nested keys )) ))
-
 (deftest ^:kaocha/pending add-additional-format-test
   (testing "Decompressed"
     (let [rfm (r/concept->revision-format-map nil tm/dif10-concept #{:native})]
@@ -112,8 +107,8 @@
       ; compressed segment (byte array) which fails and tests that data sepratly
       ; by doing a comparison on the md5 values
 
-      (is (= (drop-in expected [:echo10] [:compressed])
-             (drop-in actual [:echo10] [:compressed])))
+      (is (= (util/dissoc-in expected [:echo10 :compressed])
+             (util/dissoc-in actual [:echo10 :compressed])))
       (is (= (digest/md5 (String. (get-in expected [:echo10 :compressed]) "UTF-8"))
              (digest/md5 (String. (get-in actual [:echo10 :compressed] )"UTF-8")))))))
 
