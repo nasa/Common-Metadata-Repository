@@ -294,7 +294,8 @@ The following are the latest acceptable UMM schema versions for metadata ingest:
 * UMM-T: {{ umm-t }}
 * UMM-SUB: {{ umm-sub }}
 * UMM-VAR: {{ umm-var }}
-[//]: # (Note: The above version variables will be rendered at html generation time.)
+
+[//]: # "Note: The above version variables will be rendered at html generation time."
 
 ### <a name="validate-collection"></a> Validate Collection
 
@@ -1018,7 +1019,7 @@ Example: Initiate a bulk update of 3 collections. Find platforms that have Type 
 ```
 curl -i -XPOST \
   -H "Cmr-Pretty:true" \
-  -H "Content-Type: application/json" 
+  -H "Content-Type: application/json"
   -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections \
   -d
 '{"concept-ids": ["C1200000005-PROV1","C1200000006-PROV1","C1200000007-PROV1"],
@@ -1163,7 +1164,7 @@ Example: Add/update OPeNDAP url for 3 granules under PROV1.
 ```
 curl -i -XPOST \
   -H "Cmr-Pretty:true" \
-  -H "Content-Type: application/json" 
+  -H "Content-Type: application/json"
   -H "Echo-Token: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
