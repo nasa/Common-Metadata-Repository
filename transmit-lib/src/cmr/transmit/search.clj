@@ -94,7 +94,7 @@
   non-200 http code, returns the response body."
   [context params]
   (let [conn (config/context->app-connection context :search)
-        request-url (str (conn/root-url conn) "/granules")
+        request-url (str (conn/root-url conn) "/granules.json")
         request-body (-> params
                          (dissoc :token)
                          (assoc :page_size 0))
