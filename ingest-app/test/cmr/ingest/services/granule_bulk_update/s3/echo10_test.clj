@@ -444,11 +444,11 @@
    </Collection>
    <OnlineAccessURLs>
       <OnlineAccessURL>
-         <URL>s3://abcd/to_remain</URL>
+         <URL>s3://abcd/bar</URL>
          <URLDescription>This link provides direct download access via S3 to the granule.</URLDescription>
       </OnlineAccessURL>
       <OnlineAccessURL>
-         <URL>s3://abcd/bar</URL>
+         <URL>s3://abcd/to_remain</URL>
          <URLDescription>This link provides direct download access via S3 to the granule.</URLDescription>
       </OnlineAccessURL>
       <OnlineAccessURL>

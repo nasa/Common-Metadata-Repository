@@ -180,43 +180,23 @@
                      {:URL "https://opendap.earthdata.nasa.gov/foo"
                       :Type "USE SERVICE API"
                       :Subtype "OPENDAP DATA"}
-                     doc-related-url]}
+                     doc-related-url]}))
 
+  (testing "throws when appropriate"
+    (are3 [url-value source]
+      (let [grouped-urls (opendap-util/validate-url url-value)]
+        (is (thrown-with-msg?
+             clojure.lang.ExceptionInfo
+             #"Update contains conflict"
+             (umm-g/append-opendap-url source grouped-urls))))
       "matching RelatedUrls in metadata, on-prem url update"
       "http://example.com/foo"
       {:RelatedUrls sample-urls}
-      {:RelatedUrls [{:URL "http://example.com/foo"
-                      :Type "USE SERVICE API"
-                      :Subtype "OPENDAP DATA"
-                      :Description "on-prem OPeNDAP Documentation"}
-                     {:URL "https://opendap.uat.earthdata.nasa.gov/to_be_updated"
-                      :Type "GET DATA"
-                      :Subtype "OPENDAP DATA"
-                      :Description "cloud OPeNDAP Documentation"}
-                     doc-related-url]}
-
-      "matching RelatedUrls in metadata, cloud url update"
-      "https://opendap.earthdata.nasa.gov/foo"
-      {:RelatedUrls sample-urls}
-      {:RelatedUrls [{:URL "http://example.com/to_be_updated"
-                      :Type "GET DATA"
-                      :Subtype "OPENDAP DATA"
-                      :Description "on-prem OPeNDAP Documentation"}
-                     {:URL "https://opendap.earthdata.nasa.gov/foo"
-                      :Type "USE SERVICE API"
-                      :Subtype "OPENDAP DATA"
-                      :Description "cloud OPeNDAP Documentation"}
-                     doc-related-url]}
 
       "matching RelatedUrls in metadata, cloud url and on-prem url update"
       "http://example.com/foo, https://opendap.earthdata.nasa.gov/foo"
       {:RelatedUrls sample-urls}
-      {:RelatedUrls [{:URL "http://example.com/foo"
-                      :Type "USE SERVICE API"
-                      :Subtype "OPENDAP DATA"
-                      :Description "on-prem OPeNDAP Documentation"}
-                     {:URL "https://opendap.earthdata.nasa.gov/foo"
-                      :Type "USE SERVICE API"
-                      :Subtype "OPENDAP DATA"
-                      :Description "cloud OPeNDAP Documentation"}
-                     doc-related-url]})))
+
+      "matching RelatedUrls in metadata, cloud url update"
+      "https://opendap.earthdata.nasa.gov/foo"
+      {:RelatedUrls sample-urls})))

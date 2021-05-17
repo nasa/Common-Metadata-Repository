@@ -157,4 +157,5 @@
                  :Description "This link provides direct download access via S3 to the granule."}
                 {:URL "s3://abc/bar"
                  :Type "GET DATA VIA DIRECT ACCESS"
-                 :Description "This link provides direct download access via S3 to the granule."}))))
+                 :Description "This link provides direct download access via S3 to the granule."})
+          )))
