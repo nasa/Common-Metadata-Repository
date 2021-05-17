@@ -1,7 +1,5 @@
 const nock = require('nock')
-const AWS = require('aws-sdk')
-// eslint-disable-next-line no-unused-vars
-let { getEchoToken } = require('../getEchoToken')
+
 const { fetchPageFromCMR } = require('../fetchPageFromCmr')
 
 const OLD_ENV = process.env
@@ -33,7 +31,7 @@ describe('fetchPageFromCMR', () => {
 
     nock(/localhost/).get(/search/).reply(200, mockedBody)
 
-    const response = await fetchPageFromCMR().then((res) => res.json())
+    const response = await fetchPageFromCMR(null, null).then((res) => res.json())
     expect(response).toEqual(mockedBody)
   })
 
@@ -69,24 +67,13 @@ describe('fetchPageFromCMR', () => {
 
     nock(/localhost/).get(/search/).reply(200, mockedBody)
 
-    const response = await fetchPageFromCMR().then((res) => res.json())
+    const response = await fetchPageFromCMR(null, null).then((res) => res.json())
     expect(response).toEqual(mockedBody)
   })
 
   test('Single result with mocked ECHO token', async () => {
     process.env.IS_LOCAL = false
     process.env.CMR_ROOT = 'http://localhost'
-
-    const secretsManagerData = {
-      promise: jest.fn().mockResolvedValue({
-        Parameter: { Value: 'SUPER-SECRET-TOKEN' }
-      })
-    }
-
-    AWS.SSM = jest.fn(() => ({
-      getParameter: jest.fn().mockImplementationOnce(() => (secretsManagerData))
-    }))
-    getEchoToken = jest.fn(() => 'SUPER-SECRET-TOKEN')
 
     process.env.PAGE_SIZE = 1
     const mockedBody = {
@@ -117,7 +104,7 @@ describe('fetchPageFromCMR', () => {
 
     nock(/localhost/).get(/search/).reply(200, mockedBody)
 
-    const response = await fetchPageFromCMR('fake-scroll-id').then((res) => res.json())
+    const response = await fetchPageFromCMR('fake-scroll-id', 'SUPER-SECRET-TOKEN').then((res) => res.json())
     expect(response).toEqual(mockedBody)
   })
 
@@ -131,7 +118,7 @@ describe('fetchPageFromCMR', () => {
 
     nock(/localhost/).get(/search/).reply(400, mockedBody)
 
-    const response = await fetchPageFromCMR().then((res) => res.json())
+    const response = await fetchPageFromCMR(null, null).then((res) => res.json())
     expect(response).toEqual(mockedBody)
   })
 })

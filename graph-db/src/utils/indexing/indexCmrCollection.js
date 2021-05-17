@@ -1,4 +1,3 @@
-require('array-foreach-async')
 const { indexRelatedUrl } = require('./indexRelatedUrl')
 
 /**

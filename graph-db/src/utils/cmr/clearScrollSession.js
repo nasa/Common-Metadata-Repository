@@ -16,7 +16,7 @@ exports.clearScrollSession = async (scrollId) => {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ scroll_id: scrollId })
-  }).then((response) => response.status)
+  }).then((res) => res.status)
     .catch((error) => {
       console.warn(`Could not clear scroll session [${scrollId}] due to error: ${error}`)
       return null

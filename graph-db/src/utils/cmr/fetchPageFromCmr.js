@@ -1,14 +1,13 @@
 const fetch = require('node-fetch')
-const { getEchoToken } = require('./getEchoToken')
 
 /**
  * fetchPageFromCMR: Fetch a page of collections from CMR
  * search endpoint and initiate or continue scroll request
  * @param scrollId {String} An optional scroll-id given from the CMR
+ * @param token {String} An optional Echo Token
  * @returns [{JSON}] An array of UMM JSON collection results
  */
-exports.fetchPageFromCMR = async (scrollId) => {
-  const token = await getEchoToken()
+exports.fetchPageFromCMR = async (scrollId, token) => {
   const requestHeaders = {}
 
   if (token) {

@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk')
+const getSecureParam = require('../../getSecureParam')
 const { getEchoToken } = require('../getEchoToken')
-let { getSecureParam } = require('../../getSecureParam')
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -17,7 +17,7 @@ describe('getEchoToken', () => {
     AWS.SSM = jest.fn(() => ({
       getParameter: jest.fn().mockImplementationOnce(() => (secretsManagerData))
     }))
-    getSecureParam = jest.fn(() => 'SUPER-SECRET-TOKEN')
+    jest.spyOn(getSecureParam, 'getSecureParam').mockImplementation(() => 'SUPER-SECRET-TOKEN')
 
     const response = await getEchoToken()
 
