@@ -31,7 +31,7 @@
   returning a new list of related-urls."
   [related-urls urls]
   (let [s3-resources (filter is-s3? related-urls)
-        new-s3-urls (clojure.set/difference (set urls) (map :URL s3-resources))
+        new-s3-urls (clojure.set/difference (set urls) (set (map :URL s3-resources)))
         new-s3-resources (urls->s3-urls new-s3-urls)]
     (concat related-urls new-s3-resources)))
 

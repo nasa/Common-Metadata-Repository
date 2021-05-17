@@ -92,8 +92,8 @@
   (testing "append s3 url to UMM-G"
     (are3 [url-value source result]
           (let [urls (s3-util/validate-url url-value)]
-            (is (= (set result)
-                   (set (:RelatedUrls (umm-g/append-s3-url source urls))))))
+            (is (= result
+                   (:RelatedUrls (umm-g/append-s3-url source urls)))))
 
           "no RelatedUrls in metadata"
           "s3://abc/foo"
@@ -105,21 +105,21 @@
           "non-matching S3 RelatedUrls in metadata"
           "s3://abc/foo"
           {:RelatedUrls [doc-related-url]}
-          [{:URL "s3://abc/foo"
+          [doc-related-url
+           {:URL "s3://abc/foo"
             :Type "GET DATA VIA DIRECT ACCESS"
-            :Description "This link provides direct download access via S3 to the granule."}
-           doc-related-url]
+            :Description "This link provides direct download access via S3 to the granule."}]
 
           "non-matching S3 RelatedUrls in metadata, multiple s3 urls update"
           "s3://abc/foo, s3://abc/bar"
           {:RelatedUrls [doc-related-url]}
-          [{:URL "s3://abc/foo"
+          [doc-related-url
+           {:URL "s3://abc/foo"
             :Type "GET DATA VIA DIRECT ACCESS"
             :Description "This link provides direct download access via S3 to the granule."}
            {:URL "s3://abc/bar"
             :Type "GET DATA VIA DIRECT ACCESS"
-            :Description "This link provides direct download access via S3 to the granule."}
-           doc-related-url]
+            :Description "This link provides direct download access via S3 to the granule."}]
 
           "existing S3 RelatedUrls in metadata remain with new appended"
           "s3://abc/foo"
