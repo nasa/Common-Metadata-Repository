@@ -16,6 +16,15 @@
       :cloud
       :on-prem)))
 
+(defn cloud-url?
+  "Returns true if the URL given matches a Hyrax-in-the-cloud (:cloud) URL pattern "
+  [url]
+  (= :cloud (url->opendap-type url)))
+
+(def on-prem-url?
+  "Returns true if the URL given matches :on-prem URL patterns"
+  (complement cloud-url?))
+
 (defn validate-url
   "Validate the given OPeNDAP url for granule bulk update. It can be no more than two urls
   separated by comma, and no more than one url matches the pattern

@@ -177,23 +177,41 @@
                                               :version target-version})]
     (assoc concept :metadata updated-metadata :format updated-format)))
 
-(defmulti add-opendap-url
+(defmulti update-opendap-url
   "Add OPeNDAP url to the given granule concept."
   (fn [context concept grouped-urls]
     (mt/format-key (:format concept))))
 
-(defmethod add-opendap-url :echo10
+(defmethod update-opendap-url :echo10
   [context concept grouped-urls]
-  (opendap-echo10/add-opendap-url concept grouped-urls))
+  (opendap-echo10/update-opendap-url concept grouped-urls))
 
-(defmethod add-opendap-url :umm-json
+(defmethod update-opendap-url :umm-json
   [context concept grouped-urls]
-  (update-umm-g-urls concept grouped-urls opendap-umm-g/add-opendap-url))
+  (update-umm-g-urls concept grouped-urls opendap-umm-g/update-opendap-url))
 
-(defmethod add-opendap-url :default
+(defmethod update-opendap-url :default
   [context concept grouped-urls]
   (errors/throw-service-errors
-   :invalid-data [(format "Add OPeNDAP url is not supported for format [%s]" (:format concept))]))
+   :invalid-data [(format "Adding OPeNDAP url is not supported for format [%s]" (:format concept))]))
+
+(defmulti append-opendap-url
+  "Append OPeNDAP url to the given granule concept."
+  (fn [context concept grouped-urls]
+    (mt/format-key (:format concept))))
+
+(defmethod append-opendap-url :echo10
+  [context concept grouped-urls]
+  (opendap-echo10/append-opendap-url concept grouped-urls))
+
+(defmethod append-opendap-url :umm-json
+  [context concept grouped-urls]
+  (update-umm-g-urls concept grouped-urls opendap-umm-g/append-opendap-url))
+
+(defmethod append-opendap-url :default
+  [context concept grouped-urls]
+  (errors/throw-service-errors
+   :invalid-data [(format "Append OPeNDAP url is not supported for format [%s]" (:format concept))]))
 
 (defmulti add-s3-url
   "Add s3 url to the given granule concept."
@@ -202,11 +220,11 @@
 
 (defmethod add-s3-url :echo10
   [context concept urls]
-  (s3-echo10/add-s3-url concept urls))
+  (s3-echo10/update-s3-url concept urls))
 
 (defmethod add-s3-url :umm-json
   [context concept urls]
-  (update-umm-g-urls concept urls s3-umm-g/add-s3-url))
+  (update-umm-g-urls concept urls s3-umm-g/update-s3-url))
 
 (defmethod add-s3-url :default
   [context concept urls]
@@ -236,14 +254,14 @@
   (fn [context concept bulk-update-params user-id]
     (keyword (:event-type bulk-update-params))))
 
-(defn- update-granule-opendap-fields
+(defn- modify-opendap-link*
   "For OPeNDAP links, there may be at most 2 urls, 1 cloud, 1 on-prem.
   therefore update and append bulk granule operations are identical."
-  [context concept bulk-update-params user-id]
+  [context concept bulk-update-params user-id xf]
   (let [{:keys [format metadata]} concept
         {:keys [granule-ur url]} bulk-update-params
         grouped-urls (opendap-util/validate-url url)
-        updated-concept (add-opendap-url context concept grouped-urls)
+        updated-concept (xf context concept grouped-urls)
         {updated-metadata :metadata updated-format :format} updated-concept]
     (if-let [err-messages (:errors updated-metadata)]
       (errors/throw-service-errors :invalid-data err-messages)
@@ -256,43 +274,42 @@
 
 (defmethod update-granule-concept :update_field:opendaplink
   [context concept bulk-update-params user-id]
-  (update-granule-opendap-fields context concept bulk-update-params user-id))
+  (modify-opendap-link*
+   context concept bulk-update-params user-id update-opendap-url))
 
 (defmethod update-granule-concept :append_to_field:opendaplink
   [context concept bulk-update-params user-id]
-  (update-granule-opendap-fields context concept bulk-update-params user-id))
+  (modify-opendap-link*
+   context concept bulk-update-params user-id append-opendap-url))
+
+(defn- modify-s3-link*
+  "Modify the S3Link data for the given concept with the provided URLs
+  using the provided transform function."
+  [context concept bulk-update-params user-id xf]
+  (let [{:keys [format metadata]} concept
+        {:keys [granule-ur url]} bulk-update-params
+        urls (s3-util/validate-url url)
+        ;; invoke the appropriate transform
+        updated-concept (xf context concept urls)
+        {updated-metadata :metadata updated-format :format} updated-concept]
+    (if-let [err-messages (:errors updated-metadata)]
+      (errors/throw-service-errors :invalid-data err-messages)
+      (-> concept
+          (assoc :metadata updated-metadata)
+          (assoc :format updated-format)
+          (update :revision-id inc)
+          (assoc :revision-date (time-keeper/now))
+          (assoc :user-id user-id)))))
 
 (defmethod update-granule-concept :update_field:s3link
   [context concept bulk-update-params user-id]
-  (let [{:keys [format metadata]} concept
-        {:keys [granule-ur url]} bulk-update-params
-        urls (s3-util/validate-url url)
-        updated-concept (add-s3-url context concept urls)
-        {updated-metadata :metadata updated-format :format} updated-concept]
-    (if-let [err-messages (:errors updated-metadata)]
-      (errors/throw-service-errors :invalid-data err-messages)
-      (-> concept
-          (assoc :metadata updated-metadata)
-          (assoc :format updated-format)
-          (update :revision-id inc)
-          (assoc :revision-date (time-keeper/now))
-          (assoc :user-id user-id)))))
+  (modify-s3-link*
+   context concept bulk-update-params user-id add-s3-url))
 
 (defmethod update-granule-concept :append_to_field:s3link
   [context concept bulk-update-params user-id]
-  (let [{:keys [format metadata]} concept
-        {:keys [granule-ur url]} bulk-update-params
-        urls (s3-util/validate-url url)
-        updated-concept (append-s3-url context concept urls)
-        {updated-metadata :metadata updated-format :format} updated-concept]
-    (if-let [err-messages (:errors updated-metadata)]
-      (errors/throw-service-errors :invalid-data err-messages)
-      (-> concept
-          (assoc :metadata updated-metadata)
-          (assoc :format updated-format)
-          (update :revision-id inc)
-          (assoc :revision-date (time-keeper/now))
-          (assoc :user-id user-id)))))
+  (modify-s3-link*
+   context concept bulk-update-params user-id append-s3-url))
 
 (defmethod update-granule-concept :default
   [context concept bulk-update-params user-id]

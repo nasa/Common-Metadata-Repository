@@ -4,6 +4,7 @@
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [clojure.zip :as zip]
+   [cmr.common.services.errors :as errors]
    [cmr.common.xml :as cx]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]))
 
@@ -72,15 +73,6 @@
         updated-resources (conj other-resources cloud-resource on-prem-resource)]
     (remove nil? updated-resources)))
 
-(defn- cloud-url?
-  "Returns true if the URL given matches a Hyrax-in-the-cloud (:cloud) URL pattern "
-  [url]
-  (= :cloud (opendap-util/url->opendap-type url)))
-
-(def ^:private on-prem-url?
-  "Returns true if the URL given matches :on-prem URL patterns"
-  (complement cloud-url?))
-
 (defn- appended-online-resources
   "Append urls only if there are no conflicting URLs."
   [online-resources url-map]
@@ -88,17 +80,17 @@
         other-resources (remove #(is-opendap? (:type %)) online-resources)
         current-urls (map :url opendap-resources)
 
-        _ (when (and (seq (filter cloud-url? current-urls))
-                     (first (get-in url-map [:cloud])))
-            (throw (ex-info "Update contains conflict, cannot append Hyrax-in-the-cloud OPeNDAP urls when there is one already present."
-                            {:current current-urls
-                             :conflict url-map})))
+        _ (when-let [cloud-url (get url-map :cloud)]
+            (when (= cloud-url (first (filter opendap-util/cloud-url? current-urls)))
+              (errors/throw-service-errors
+               :invalid-data
+               [(str "Update contains conflict, cannot append Hyrax-in-the-cloud OPeNDAP urls when there is one already present:" cloud-url)])))
 
-        _ (when (and (seq (filter on-prem-url? current-urls))
-                     (first (get-in url-map [:on-prem])))
-            (throw (ex-info "Update contains conflict, cannot append on-prem OPeNDAP urls when there is one already present."
-                            {:current current-urls
-                             :conflict url-map})))
+        _ (when-let [on-prem-url (get url-map :on-prem)]
+            (when (= on-prem-url (first (filter opendap-util/on-prem-url? current-urls)))
+              (errors/throw-service-errors
+               :invalid-data
+               [(str "Update contains conflict, cannot append on-prem OPeNDAP urls when there is one already present:" on-prem-url)])))
 
         cloud-resource (resources->updated-resource :cloud opendap-resources url-map)
         on-prem-resource (resources->updated-resource :on-prem opendap-resources url-map)
@@ -168,7 +160,7 @@
             :else
             (recur right-loc false)))))))
 
-(defn- add-opendap-url-to-metadata
+(defn- update-opendap-url-metadata
   "Takes the granule ECHO10 xml and grouped OPeNDAP urls in the format of
   {:cloud [<cloud_url>] :on-prem [<on_prem_url>]}.
   Update the ECHO10 granule metadata with the OPeNDAP urls.
@@ -178,20 +170,24 @@
         online-resources (xml-elem->online-resources parsed)]
     (xml/indent-str (add-opendap-url* parsed online-resources grouped-urls operation))))
 
-(defn add-opendap-url
+(defn update-opendap-url
   "Takes the ECHO10 granule concept and grouped OPeNDAP urls in the format of
   {:cloud [<cloud_url>] :on-prem [<on_prem_url>]}.
   Update the ECHO10 granule metadata with the OPeNDAP urls.
   Returns the granule concept with the updated metadata."
   [concept grouped-urls]
-  (let [updated-metadata (add-opendap-url-to-metadata (:metadata concept) grouped-urls :replace)]
+  (let [updated-metadata (update-opendap-url-metadata (:metadata concept) grouped-urls :replace)]
     (assoc concept :metadata updated-metadata)))
 
 (defn append-opendap-url
   "Takes the ECHO10 granule concept and grouped OPeNDAP urls in the format of
   {:cloud [<cloud_url>] :on-prem [<on_prem_url>]}.
-  Update the ECHO10 granule metadata with the OPeNDAP urls.
+  Appends the ECHO10 granule metadata with the OPeNDAP urls.
+
+  This will fail if there is already a URL present for a given type (:cloud or :on-prep)
+  as there may only be a single value for each type and a maximum of two URLS.
+
   Returns the granule concept with the updated metadata."
   [concept grouped-urls]
-  (let [updated-metadata (add-opendap-url-to-metadata (:metadata concept) grouped-urls :append)]
+  (let [updated-metadata (update-opendap-url-metadata (:metadata concept) grouped-urls :append)]
     (assoc concept :metadata updated-metadata)))

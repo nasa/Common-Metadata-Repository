@@ -424,7 +424,7 @@
     (are3 [url-value source result]
       (let [grouped-urls (opendap-util/validate-url url-value)]
         (is (= result
-               (#'echo10/add-opendap-url-to-metadata source grouped-urls :replace))))
+               (#'echo10/update-opendap-url-metadata source grouped-urls :replace))))
 
       "add OnlineResources at the end of the xml"
       "http://example.com/foo"
@@ -501,7 +501,7 @@
     (are3 [url-value source result]
           (let [grouped-urls (opendap-util/validate-url url-value)]
             (is (= result
-                   (#'echo10/add-opendap-url-to-metadata source grouped-urls :append))))
+                   (#'echo10/update-opendap-url-metadata source grouped-urls :append))))
 
           "add OnlineResources at the end of the xml"
           "http://example.com/foo"
@@ -539,7 +539,7 @@
         (is (thrown-with-msg?
              clojure.lang.ExceptionInfo
              #"Update contains conflict"
-             (#'echo10/add-opendap-url-to-metadata source grouped-urls :append))))
+             (#'echo10/update-opendap-url-metadata source grouped-urls :append))))
 
       "throws during append OnlineResources when OPeNDAP url is present"
       "http://example.com/foo"

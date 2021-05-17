@@ -30,8 +30,7 @@
   (testing "add or update s3 url to UMM-G"
     (are3 [url-value source result]
       (let [urls (s3-util/validate-url url-value)]
-        (is (= result
-               (umm-g/add-s3-url source urls))))
+        (is (= result (umm-g/update-s3-url source urls))))
 
       "no RelatedUrls in metadata"
       "s3://abc/foo"
@@ -76,6 +75,17 @@
                      {:URL "s3://abc/bar"
                       :Type "GET DATA VIA DIRECT ACCESS"
                       :Description "This link provides direct download access via S3 to the granule."}
+                     doc-related-url]}
+
+      "duplicates in request"
+      "s3://abc/foo, s3://abc/bar, s3://abc/bar"
+      {:RelatedUrls sample-urls}
+      {:RelatedUrls [{:URL "s3://abc/foo"
+                      :Type "GET DATA VIA DIRECT ACCESS"
+                      :Description "This link provides direct download access via S3 to the granule."}
+                     {:URL "s3://abc/bar"
+                      :Type "GET DATA VIA DIRECT ACCESS"
+                      :Description "This link provides direct download access via S3 to the granule."}
                      doc-related-url]})))
 
 (deftest append-s3-url
@@ -113,6 +123,14 @@
 
           "existing S3 RelatedUrls in metadata remain with new appended"
           "s3://abc/foo"
+          {:RelatedUrls sample-urls}
+          (conj sample-urls
+                {:URL "s3://abc/foo"
+                 :Type "GET DATA VIA DIRECT ACCESS"
+                 :Description "This link provides direct download access via S3 to the granule."})
+
+          "existing S3 RelatedUrls in metadata remain with new appended and no duplicate"
+          "s3://abc/foo,s3://abc/to_be_updated"
           {:RelatedUrls sample-urls}
           (conj sample-urls
                 {:URL "s3://abc/foo"

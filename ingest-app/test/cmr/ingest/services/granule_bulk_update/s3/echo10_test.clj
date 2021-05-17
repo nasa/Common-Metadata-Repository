@@ -475,7 +475,7 @@
     (are3 [url-value source result]
           (let [urls (s3-util/validate-url url-value)]
             (is (= result
-                   (#'echo10/add-s3-url-to-metadata source urls :replace))))
+                   (#'echo10/update-s3-url-metadata source urls :replace))))
 
           "add OnlineAccessURLs at the end of the xml"
           "s3://abcd/foo"
@@ -502,7 +502,7 @@
           update-s3-url
           update-s3-url-result
 
-          "update OnlineAccessURLs when multiple S3 urls are present in xml"
+          "Update OnlineAccessURLs when multiple S3 urls are present in xml"
           "s3://abcd/foo"
           update-multiple-s3-url
           update-s3-url-result
@@ -517,7 +517,7 @@
     (are3 [url-value source result]
           (let [urls (s3-util/validate-url url-value)]
             (is (= result
-                   (#'echo10/add-s3-url-to-metadata source urls :append))))
+                   (#'echo10/update-s3-url-metadata source urls :append))))
 
           "append OnlineAccessURLs at the end of the xml"
           "s3://abcd/foo"

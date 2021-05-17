@@ -89,7 +89,7 @@
                      :status "UPDATED"}]
                    granule-statuses)))))
 
-      (testing "failed OPeNDAP url granule bulk update"
+      (testing "failed OPeNDAP url granule bulk update : UPDATE_FIELD"
         (let [bulk-update {:name "add opendap links 2"
                            :operation "UPDATE_FIELD"
                            :update-field "OPeNDAPLink"
@@ -107,7 +107,7 @@
             (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500513"
                      :status "FAILED"
-                     :status-message "Add OPeNDAP url is not supported for format [application/iso:smap+xml]"}]
+                     :status-message "Adding OPeNDAP url is not supported for format [application/iso:smap+xml]"}]
                    granule-statuses)))))
 
       (testing "partial successful OPeNDAP url granule bulk update"
@@ -217,7 +217,7 @@
             (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
             (is (= [{:granule-ur "SC:AE_5DSno.002:30500513"
                      :status "FAILED"
-                     :status-message "Add s3 url is not supported for format [application/iso:smap+xml]"}]
+                     :status-message "Adding s3 urls is not supported for format [application/iso:smap+xml]"}]
                    granule-statuses)))))
 
       (testing "partial successful S3 link granule bulk update"
@@ -482,7 +482,7 @@
           (ingest/update-granule-bulk-update-task-statuses)
 
           (let [latest-metadata (:metadata (mdb/get-concept concept-id))]
-            (is (= 1 (count (re-find #"s3://zyxwvut/2016m0615t191523" latest-metadata)))))))))
+            (is (= 1 (count (re-seq #"s3://zyxwvut/2016m0615t191523" latest-metadata)))))))))
 
   (testing "UMM-G granule"
     (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
@@ -560,4 +560,4 @@
           (ingest/update-granule-bulk-update-task-statuses)
 
           (let [latest-metadata (:metadata (mdb/get-concept concept-id))]
-            (is (= 1 (count (re-find #"s3://zyxwvut/test-gran1" latest-metadata))))))))))
+            (is (= 1 (count (re-seq #"s3://zyxwvut/test-gran1" latest-metadata))))))))))
