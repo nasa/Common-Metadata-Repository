@@ -17,7 +17,7 @@ exports.indexCmrCollection = async (collection, gremlin) => {
   if (doiDescription) {
     // Take the second element from the split method
     const [, doiAddress] = doiUrl.split(':')
-    doiUrl = `http://doi.org/${doiAddress}`
+    doiUrl = `https://dx.doi.org/${doiAddress}`
     datasetName = doiUrl
   }
 

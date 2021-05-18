@@ -10,28 +10,28 @@
  */
 exports.indexRelatedUrl = (relatedUrl, gremlin, dataset) => {
   const {
-    Type: type,
-    SubType: subType,
+    Subtype: subType,
     URL: url,
-    Description: description
+    Description: description,
+    URLContentType: urlContentType
   } = relatedUrl
-  if (!!type
-        || !!subType
-        || type !== 'VIEW RELATED INFORMATION'
-        || subType !== 'GENERAL DOCUMENTATION') {
+  if (urlContentType !== 'PublicationURL') {
     // We only care about documentation at the moment.
-    // Return early
+    // Checking the URLContentType is the most efficient way to find its type.
+    // Return early if it isn't some kind of documentation.
     return
   }
 
-  const documentationVertexExists = gremlin.V().hasLabel('documentation').has('name', url).hasNext()
+  const documentationVertexExists = gremlin.V().hasLabel(`related-information:${subType}`).has('name', url).hasNext()
   let docVertex
 
   if (documentationVertexExists) {
-    docVertex = gremlin.addV('documentation').property('name', URL).property('title', description).next()
+    docVertex = gremlin.addV(`related-information:${subType}`).property('name', url).property('title', description).next()
   } else {
-    docVertex = gremlin.V().hasLabel('documentation').has('name', URL).next()
+    docVertex = gremlin.V().hasLabel(`related-information:${subType}`).has('name', url).next()
   }
 
-  gremlin.addE('documents').from(gremlin.V(docVertex.id())).to(gremlin.V(dataset.id())).next()
+  const { id: subTypeVertexId } = docVertex
+  const datasetId = dataset.id
+  gremlin.addE(`related-information:${subType}`).from(gremlin.V(subTypeVertexId)).to(gremlin.V(datasetId)).next()
 }
