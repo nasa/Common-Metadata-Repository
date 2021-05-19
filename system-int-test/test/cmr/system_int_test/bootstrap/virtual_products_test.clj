@@ -139,9 +139,11 @@
         (doseq [vp-coll vp-colls
                 :let [{:keys [provider-id source-collection]} vp-coll
                       source-short-name (get-in source-collection [:product :short-name])
-                      vp-short-name (get-in vp-coll [:product :short-name])]]
+                      vp-short-name (get-in vp-coll [:product :short-name])
+                      vp-version-id (get-in vp-coll [:product :version-id])]]
           (vp/assert-matching-granule-urs
-            (map #(svm/generate-granule-ur provider-id source-short-name vp-short-name %)
+            (map #(svm/generate-granule-ur provider-id source-short-name {:short-name vp-short-name
+                                                                          :version-id vp-version-id}  %)
                  (svm/sample-source-granule-urs
                    [provider-id (:entry-title source-collection)]))
             (search/find-refs :granule {:entry-title (:entry-title vp-coll)
