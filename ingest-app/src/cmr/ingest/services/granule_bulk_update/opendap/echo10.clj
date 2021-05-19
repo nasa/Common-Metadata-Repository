@@ -84,13 +84,13 @@
             (when (get url-map :cloud)
               (errors/throw-service-errors
                :invalid-data
-               [(str "Update contains conflict, cannot append Hyrax-in-the-cloud OPeNDAP urls when there is one already present:" cloud-url)])))
+               [(str "Update contains conflict, cannot append Hyrax-in-the-cloud OPeNDAP urls when there is one already present: " cloud-url)])))
 
         _ (when-let [on-prem-url (first (filter opendap-util/on-prem-url? current-opendap-urls))]
             (when (get url-map :on-prem)
               (errors/throw-service-errors
                :invalid-data
-               [(str "Update contains conflict, cannot append on-prem OPeNDAP urls when there is one already present:" on-prem-url)])))
+               [(str "Update contains conflict, cannot append on-prem OPeNDAP urls when there is one already present: " on-prem-url)])))
 
         cloud-resource (resources->updated-resource :cloud opendap-resources url-map)
         on-prem-resource (resources->updated-resource :on-prem opendap-resources url-map)

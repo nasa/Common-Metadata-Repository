@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.granule-bulk-update.granule-bulk-update-test
   "CMR bulk update. Test the actual update "
   (:require
+   [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
@@ -561,3 +562,108 @@
 
           (let [latest-metadata (:metadata (mdb/get-concept concept-id))]
             (is (= 1 (count (re-seq #"s3://zyxwvut/test-gran1" latest-metadata))))))))))
+
+(deftest append-opendap-link
+  #_(testing "ECHO10 granule"
+      (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+            coll (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
+                                                              {:provider-id "PROV1"
+                                                               :concept-type :collection
+                                                               :native-id "OMSO2-collection"
+                                                               :format-key :dif10})
+            granule (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-granule.xml"
+                                                                 {:provider-id "PROV1"
+                                                                  :concept-type :granule
+                                                                  :native-id "OMSO2-granule"
+                                                                  :format-key :echo10})
+            {:keys [concept-id revision-id]} granule
+            target-metadata (-> "CMR-4722/OMSO2.003-granule-opendap-url.xml" io/resource slurp)
+            bulk-update {:operation "APPEND_TO_FIELD"
+                         :update-field "OPeNDAPLink"
+                         :updates [["OMSO2.003:OMI-Aura_L2-OMSO2_2004m1001t2307-o01146_v003-2016m0615t191523.he5"
+                                    "http://opendap-url.example.com"]]}
+            {:keys [status] :as response} (ingest/bulk-update-granules
+                                           "PROV1" bulk-update bulk-update-options)]
+        (index/wait-until-indexed)
+        (is (= 200 status))
+        (is (= target-metadata
+               (:metadata (mdb/get-concept concept-id (inc revision-id)))))
+
+        (testing "append will not overwrite existing opendap links when one is already present"
+          (let [bulk-update {:operation "APPEND_TO_FIELD"
+                             :update-field "OPeNDAPLink"
+                             :updates [["OMSO2.003:OMI-Aura_L2-OMSO2_2004m1001t2307-o01146_v003-2016m0615t191523.he5"
+                                        "http://opendap-url.example.com2"]]}
+                {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                       "PROV1" bulk-update bulk-update-options)]
+            (index/wait-until-indexed)
+            (ingest/update-granule-bulk-update-task-statuses)
+
+            (let [status-response (ingest/granule-bulk-update-task-status task-id)
+                  {:keys [task-status status-message granule-statuses]} status-response]
+              (is (= "COMPLETE" task-status))
+              (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message)))
+
+            (testing "verify the metadata was not altered"
+              (let [latest-metadata (:metadata (mdb/get-concept concept-id))]
+                (is (= target-metadata
+                       (:metadata (mdb/get-concept concept-id (inc revision-id)))))))))))
+
+  (testing "UMM-G granule"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          {:keys [concept-id revision-id]} granule
+          bulk-update {:operation "APPEND_TO_FIELD"
+                       :update-field "OPeNDAPLink"
+                       :updates [["Unique_Granule_UR_v1.6"
+                                  "http://opendap.earthdata.nasa.gov/test1"]]}
+          {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                 "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 200 status))
+      (is (some? task-id))
+      (let [status-response (ingest/granule-bulk-update-task-status task-id)
+            {:keys [task-status status-message granule-statuses]} status-response]
+        (is (= "COMPLETE" task-status))
+        (is (= "All granule updates completed successfully." status-message))
+        (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                 :status "UPDATED"}]
+               granule-statuses)))
+      ;; verify the granule metadata is updated as expected
+      (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
+            updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
+        ;; since the metadata will be returned in the latest UMM-G format,
+        ;; we can't compare the whole metadata to an expected string.
+        ;; We just verify the updated OPeNDAP url, type and description exists in the metadata.
+        ;; The different scenarios of the RelatedUrls update are covered in unit tests.
+        (is (= 1 (count (filter #(= "http://opendap.earthdata.nasa.gov/test1" (:URL %))
+                                (:RelatedUrls (json/parse-string updated-metadata true))))))
+        (is (not (string/includes? original-metadata "GET DATA VIA DIRECT ACCESS"))))
+
+      (testing "append will not duplicate OPeNDAP urls"
+        (let [bulk-update {:operation "APPEND_TO_FIELD"
+                           :update-field "OPeNDAPLink"
+                           :updates [["Unique_Granule_UR_v1.6"
+                                      "http://opendap.earthdata.nasa.gov/test1"]]}
+              {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                     "PROV1" bulk-update bulk-update-options)]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          (let [latest-metadata (:metadata (mdb/get-concept concept-id))]
+            (is (= 1 (count (filter #(= "http://opendap.earthdata.nasa.gov/test1" (:URL %))
+                                    (:RelatedUrls (json/parse-string latest-metadata true))))))))))))
