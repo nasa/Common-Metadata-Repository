@@ -256,7 +256,9 @@
 
 (defn- modify-opendap-link*
   "For OPeNDAP links, there may be at most 2 urls, 1 cloud, 1 on-prem.
-  therefore update and append bulk granule operations are identical."
+  Updates containing a url type that is already present on the concept
+  will fail with an exception.
+  Successful updates will return the updated concept."
   [context concept bulk-update-params user-id xf]
   (let [{:keys [format metadata]} concept
         {:keys [granule-ur url]} bulk-update-params
@@ -284,7 +286,9 @@
 
 (defn- modify-s3-link*
   "Modify the S3Link data for the given concept with the provided URLs
-  using the provided transform function."
+  using the provided transform function.
+  S3 links will be added to the existing concept. If a duplicate S3 link
+  is provided it will be ignored."
   [context concept bulk-update-params user-id xf]
   (let [{:keys [format metadata]} concept
         {:keys [granule-ur url]} bulk-update-params

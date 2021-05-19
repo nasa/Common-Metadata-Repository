@@ -72,9 +72,9 @@
 
 (defn append-opendap-url
   "Takes UMM-G record and grouped OPeNDAP urls in the format of
-  {:cloud [<cloud_url>] :on-prem [<on_prem_url>]}.
-  The cloud url will overwrite any existing Hyrax-in-the-cloud OPeNDAP url in the UMM-G record;
-  the on-prem url will overwrite any existing on-prem OPeNDAP url in the UMM-G record.
-  Returns the updated UMM-G record."
+  {:cloud [<cloud_url>] :on-prem [<on_prem_url>]} and appends data.
+  If the UMM-G record already contains a url for a type specified in
+  the update, cloud or on-prem, the update will fail and an exception will be thrown.
+  Returns the updated UMM-G record on success."
   [umm-gran grouped-urls]
   (update umm-gran :RelatedUrls #(appended-related-urls % grouped-urls)))

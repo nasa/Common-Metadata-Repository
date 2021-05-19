@@ -91,9 +91,9 @@
   "Take the parsed online resources in the original metadata and the desired OPeNDAP urls,
    return the updated online resources xml element that can be used by zipper to update the xml."
   [online-resources url-map operation]
-  (let [resources (if (= :replace operation)
-                    (updated-online-resources online-resources url-map)
-                    (appended-online-resources online-resources url-map))]
+  (let [resources (case operation
+                    :replace (updated-online-resources online-resources url-map)
+                    :append (appended-online-resources online-resources url-map))]
     (xml/element
      :OnlineResources {}
      (for [r resources]
