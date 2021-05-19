@@ -80,17 +80,7 @@
         other-resources (remove #(is-opendap? (:type %)) online-resources)
         current-opendap-urls (map :url opendap-resources)
 
-        _ (when-let [cloud-url (first (filter opendap-util/cloud-url? current-opendap-urls))]
-            (when (get url-map :cloud)
-              (errors/throw-service-errors
-               :invalid-data
-               [(str "Update contains conflict, cannot append Hyrax-in-the-cloud OPeNDAP urls when there is one already present: " cloud-url)])))
-
-        _ (when-let [on-prem-url (first (filter opendap-util/on-prem-url? current-opendap-urls))]
-            (when (get url-map :on-prem)
-              (errors/throw-service-errors
-               :invalid-data
-               [(str "Update contains conflict, cannot append on-prem OPeNDAP urls when there is one already present: " on-prem-url)])))
+        _ (opendap-util/validate-append-no-conflicts current-opendap-urls url-map)
 
         cloud-resource (resources->updated-resource :cloud opendap-resources url-map)
         on-prem-resource (resources->updated-resource :on-prem opendap-resources url-map)

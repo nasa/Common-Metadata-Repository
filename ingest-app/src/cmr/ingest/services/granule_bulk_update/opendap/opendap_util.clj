@@ -52,3 +52,33 @@
            [(str "Invalid URL value, no more than one on-prem OPeNDAP url can be provided: "
                  url)]))
         grouped-urls))))
+
+(defn- validate-append-no-conflicting-on-prem
+  "Validate there is no on-prem url already present when appending a new on-prem-url
+  See also [[validate-append-no-conflicting-cloud]]"
+  [current-urls url-map]
+  (when-let [on-prem-url (first (filter on-prem-url? current-urls))]
+    (when (get url-map :on-prem)
+      (errors/throw-service-errors
+       :invalid-data
+       [(str "Update contains conflict, cannot append on-prem OPeNDAP urls when there is one already present: " on-prem-url)]))))
+
+(defn- validate-append-no-conflicting-cloud
+  "Validate there is no cloud url already present when appending a new cloud-url
+  See also [[validate-append-no-conflicting-on-prem]]"
+  [current-urls url-map]
+  (when-let [cloud-url (first (filter cloud-url? current-urls))]
+    (when (get url-map :cloud)
+      (errors/throw-service-errors
+       :invalid-data
+       [(str "Update contains conflict, cannot append Hyrax-in-the-cloud OPeNDAP urls when there is one already present: " cloud-url)]))))
+
+(defn validate-append-no-conflicts
+  "Takes the current OPeNDAP urls and the map produced by [[validate-url]]
+  and checks whether there are any conflicts when appending.
+
+  * current-urls is expected to be a collection
+  * urls-map is expected to be in the form of {:on-prem [<url>] :cloud [<url>]}"
+  [current-urls urls-map]
+  (validate-append-no-conflicting-on-prem current-urls urls-map)
+  (validate-append-no-conflicting-cloud current-urls urls-map))
