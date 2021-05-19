@@ -1109,10 +1109,34 @@ supported metadata formats:
   - S3Link url in RelatedUrls for UMM-G format
 
 Append operations on OPeNDAPLink will behave as follows
+ - OPeNDAP updates may contain a maximum of two URLs, separated by comma
+   - At most, only one of each OPeNDAP URL type may be included (on-prem or Hyrax-in-the-cloud)
+ - If the granule contains no OPeNDAP urls the new URLs will be added
  - If the granule does not contain a conflicting URL for the type (on-prem or Hyrax-in-the-cloud), the new value will be added.
  - If the granule already contains URLs for both on-prem and cloud, the granule update will fail.
 
 URLs matching the pattern: https://opendap.*.earthdata.nasa.gov/* will be determined to be Hyrax-in-the-cloud, otherwise it will be on-prem.
+
+``` bash
+curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules -d
+'{ "name": "example of appending OPeNDAP links",
+	"operation": "APPEND_TO_FIELD",
+	"update-field":"OPeNDAPLink",
+	"updates":[
+             ["granule_ur1", "https://opendap.earthdata.nasa.gov/example"],
+             ["granule_ur2", "https://on-prem.example.com"],
+             ["granule_ur3", "https://opendap.earthdata.nasa.gov/example-2,https://on-prem.example-2.com"]
+	]
+}'
+```
+
+Example granule bulk update response:
+```
+{
+ "status" : 200,
+ "task-id": 6
+}
+```
 
 **operation: "APPEND_TO_FIELD", update-field: "S3Link"**
 supported metadata formats:
