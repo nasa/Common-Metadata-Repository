@@ -473,83 +473,83 @@
 (deftest add-s3-url
   (testing "add OnlineAccessURLs at various places in the xml"
     (are3 [url-value source result]
-          (let [urls (s3-util/validate-url url-value)]
-            (is (= result
-                   (#'echo10/update-s3-url-metadata source urls :replace))))
+      (let [urls (s3-util/validate-url url-value)]
+        (is (= result
+               (#'echo10/update-s3-url-metadata source urls :replace))))
 
-          "add OnlineAccessURLs at the end of the xml"
-          "s3://abcd/foo"
-          add-at-the-end-gran-xml
-          add-at-the-end-gran-xml-result
+      "add OnlineAccessURLs at the end of the xml"
+      "s3://abcd/foo"
+      add-at-the-end-gran-xml
+      add-at-the-end-gran-xml-result
 
-          "add OnlineAccessURLs before an element in the xml"
-          "s3://abcd/foo"
-          add-before-element-gran-xml
-          add-before-element-gran-xml-result
+      "add OnlineAccessURLs before an element in the xml"
+      "s3://abcd/foo"
+      add-before-element-gran-xml
+      add-before-element-gran-xml-result
 
-          "add OnlineAccessURLs to empty OnlineAccessURLs in the xml"
-          "s3://abcd/foo"
-          add-with-empty-gran-xml
-          add-with-empty-gran-xml-result
+      "add OnlineAccessURLs to empty OnlineAccessURLs in the xml"
+      "s3://abcd/foo"
+      add-with-empty-gran-xml
+      add-with-empty-gran-xml-result
 
-          "add OnlineAccessURLs to OnlineAccessURLs without S3 url in the xml"
-          "s3://abcd/foo"
-          add-with-no-match-gran-xml
-          add-with-no-match-gran-xml-result
+      "add OnlineAccessURLs to OnlineAccessURLs without S3 url in the xml"
+      "s3://abcd/foo"
+      add-with-no-match-gran-xml
+      add-with-no-match-gran-xml-result
 
-          "update OnlineAccessURLs when single S3 url is present in xml"
-          "s3://abcd/foo"
-          update-s3-url
-          update-s3-url-result
+      "update OnlineAccessURLs when single S3 url is present in xml"
+      "s3://abcd/foo"
+      update-s3-url
+      update-s3-url-result
 
-          "Update OnlineAccessURLs when multiple S3 urls are present in xml"
-          "s3://abcd/foo"
-          update-multiple-s3-url
-          update-s3-url-result
-          
-          "update OnlineAccessURLs with multiple S3 urls in input"
-          "s3://abcd/foo,s3://abcd/bar"
-          update-s3-url
-          update-with-multiple-s3-url-result)))
+      "Update OnlineAccessURLs when multiple S3 urls are present in xml"
+      "s3://abcd/foo"
+      update-multiple-s3-url
+      update-s3-url-result
+      
+      "update OnlineAccessURLs with multiple S3 urls in input"
+      "s3://abcd/foo,s3://abcd/bar"
+      update-s3-url
+      update-with-multiple-s3-url-result)))
 
 (deftest append-s3-url
   (testing "append OnlineAccessURLs at various places in the xml"
     (are3 [url-value source result]
-          (let [urls (s3-util/validate-url url-value)]
-            (is (= result
-                   (#'echo10/update-s3-url-metadata source urls :append))))
+      (let [urls (s3-util/validate-url url-value)]
+        (is (= result
+               (#'echo10/update-s3-url-metadata source urls :append))))
 
-          "append OnlineAccessURLs at the end of the xml"
-          "s3://abcd/foo"
-          add-at-the-end-gran-xml
-          add-at-the-end-gran-xml-result
+      "append OnlineAccessURLs at the end of the xml"
+      "s3://abcd/foo"
+      add-at-the-end-gran-xml
+      add-at-the-end-gran-xml-result
 
-          "prepend OnlineAccessURLs before an element in the xml"
-          "s3://abcd/foo"
-          add-before-element-gran-xml
-          add-before-element-gran-xml-result
+      "prepend OnlineAccessURLs before an element in the xml"
+      "s3://abcd/foo"
+      add-before-element-gran-xml
+      add-before-element-gran-xml-result
 
-          "append OnlineAccessURLs to empty OnlineAccessURLs in the xml"
-          "s3://abcd/foo"
-          add-with-empty-gran-xml
-          add-with-empty-gran-xml-result
+      "append OnlineAccessURLs to empty OnlineAccessURLs in the xml"
+      "s3://abcd/foo"
+      add-with-empty-gran-xml
+      add-with-empty-gran-xml-result
 
-          "add OnlineAccessURLs to OnlineAccessURLs without S3 url in the xml"
-          "s3://abcd/foo"
-          add-with-no-match-gran-xml
-          add-with-no-match-gran-xml-result
+      "add OnlineAccessURLs to OnlineAccessURLs without S3 url in the xml"
+      "s3://abcd/foo"
+      add-with-no-match-gran-xml
+      add-with-no-match-gran-xml-result
 
-          "append OnlineAccessURLs when single S3 url is present in xml"
-          "s3://abcd/foo"
-          appended-s3-url
-          appended-s3-url-result
+      "append OnlineAccessURLs when single S3 url is present in xml"
+      "s3://abcd/foo"
+      appended-s3-url
+      appended-s3-url-result
 
-          "update OnlineAccessURLs when multiple S3 urls are present in xml"
-          "s3://abcd/foo,s3://abcd/bar"
-          appended-multiple-s3-url 
-          appended-multiple-s3-url-result
-          
-          "update OnlineAccessURLs with multiple S3 urls in input"
-          "s3://abcd/to_remain,s3://abcd/bar"
-          appended-multiple-s3-url
-          appended-updated-multiple-s3-url-result)))
+      "update OnlineAccessURLs when multiple S3 urls are present in xml"
+      "s3://abcd/foo,s3://abcd/bar"
+      appended-multiple-s3-url 
+      appended-multiple-s3-url-result
+      
+      "update OnlineAccessURLs with multiple S3 urls in input"
+      "s3://abcd/to_remain,s3://abcd/bar"
+      appended-multiple-s3-url
+      appended-updated-multiple-s3-url-result)))

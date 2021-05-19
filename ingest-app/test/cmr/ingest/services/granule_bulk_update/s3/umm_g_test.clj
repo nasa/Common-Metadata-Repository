@@ -91,71 +91,70 @@
 (deftest append-s3-url
   (testing "append s3 url to UMM-G"
     (are3 [url-value source result]
-          (let [urls (s3-util/validate-url url-value)]
-            (is (= result
-                   (:RelatedUrls (umm-g/append-s3-url source urls)))))
+      (let [urls (s3-util/validate-url url-value)]
+        (is (= result
+               (:RelatedUrls (umm-g/append-s3-url source urls)))))
 
-          "no RelatedUrls in metadata"
-          "s3://abc/foo"
-          {}
-          [{:URL "s3://abc/foo"
-            :Type "GET DATA VIA DIRECT ACCESS"
-            :Description "This link provides direct download access via S3 to the granule."}]
+      "no RelatedUrls in metadata"
+      "s3://abc/foo"
+      {}
+      [{:URL "s3://abc/foo"
+        :Type "GET DATA VIA DIRECT ACCESS"
+        :Description "This link provides direct download access via S3 to the granule."}]
 
-          "non-matching S3 RelatedUrls in metadata"
-          "s3://abc/foo"
-          {:RelatedUrls [doc-related-url]}
-          [doc-related-url
-           {:URL "s3://abc/foo"
-            :Type "GET DATA VIA DIRECT ACCESS"
-            :Description "This link provides direct download access via S3 to the granule."}]
+      "non-matching S3 RelatedUrls in metadata"
+      "s3://abc/foo"
+      {:RelatedUrls [doc-related-url]}
+      [doc-related-url
+       {:URL "s3://abc/foo"
+        :Type "GET DATA VIA DIRECT ACCESS"
+        :Description "This link provides direct download access via S3 to the granule."}]
 
-          "non-matching S3 RelatedUrls in metadata, multiple s3 urls update"
-          "s3://abc/foo, s3://abc/bar"
-          {:RelatedUrls [doc-related-url]}
-          [doc-related-url
-           {:URL "s3://abc/foo"
-            :Type "GET DATA VIA DIRECT ACCESS"
-            :Description "This link provides direct download access via S3 to the granule."}
-           {:URL "s3://abc/bar"
-            :Type "GET DATA VIA DIRECT ACCESS"
-            :Description "This link provides direct download access via S3 to the granule."}]
+      "non-matching S3 RelatedUrls in metadata, multiple s3 urls update"
+      "s3://abc/foo, s3://abc/bar"
+      {:RelatedUrls [doc-related-url]}
+      [doc-related-url
+       {:URL "s3://abc/foo"
+        :Type "GET DATA VIA DIRECT ACCESS"
+        :Description "This link provides direct download access via S3 to the granule."}
+       {:URL "s3://abc/bar"
+        :Type "GET DATA VIA DIRECT ACCESS"
+        :Description "This link provides direct download access via S3 to the granule."}]
 
-          "existing S3 RelatedUrls in metadata remain with new appended"
-          "s3://abc/foo"
-          {:RelatedUrls sample-urls}
-          (conj sample-urls
-                {:URL "s3://abc/foo"
-                 :Type "GET DATA VIA DIRECT ACCESS"
-                 :Description "This link provides direct download access via S3 to the granule."})
+      "existing S3 RelatedUrls in metadata remain with new appended"
+      "s3://abc/foo"
+      {:RelatedUrls sample-urls}
+      (conj sample-urls
+            {:URL "s3://abc/foo"
+             :Type "GET DATA VIA DIRECT ACCESS"
+             :Description "This link provides direct download access via S3 to the granule."})
 
-          "existing S3 RelatedUrls in metadata remain with new appended and no duplicate"
-          "s3://abc/foo,s3://abc/to_be_updated"
-          {:RelatedUrls sample-urls}
-          (conj sample-urls
-                {:URL "s3://abc/foo"
-                 :Type "GET DATA VIA DIRECT ACCESS"
-                 :Description "This link provides direct download access via S3 to the granule."})
+      "existing S3 RelatedUrls in metadata remain with new appended and no duplicate"
+      "s3://abc/foo,s3://abc/to_be_updated"
+      {:RelatedUrls sample-urls}
+      (conj sample-urls
+            {:URL "s3://abc/foo"
+             :Type "GET DATA VIA DIRECT ACCESS"
+             :Description "This link provides direct download access via S3 to the granule."})
 
-          "existing S3 RelatedUrls in metadata, multiple S3 urls update"
-          "s3://abc/foo, s3://abc/bar"
-          {:RelatedUrls sample-urls}
-          (conj sample-urls
-                {:URL "s3://abc/foo"
-                 :Type "GET DATA VIA DIRECT ACCESS"
-                 :Description "This link provides direct download access via S3 to the granule."}
-                {:URL "s3://abc/bar"
-                 :Type "GET DATA VIA DIRECT ACCESS"
-                 :Description "This link provides direct download access via S3 to the granule."})
+      "existing S3 RelatedUrls in metadata, multiple S3 urls update"
+      "s3://abc/foo, s3://abc/bar"
+      {:RelatedUrls sample-urls}
+      (conj sample-urls
+            {:URL "s3://abc/foo"
+             :Type "GET DATA VIA DIRECT ACCESS"
+             :Description "This link provides direct download access via S3 to the granule."}
+            {:URL "s3://abc/bar"
+             :Type "GET DATA VIA DIRECT ACCESS"
+             :Description "This link provides direct download access via S3 to the granule."})
 
-          "duplicates are handled"
-          "s3://abc/foo, s3://abc/bar, s3://abc/bar, s3://abc/bar"
-          {:RelatedUrls sample-urls}
-          (conj sample-urls
-                {:URL "s3://abc/foo"
-                 :Type "GET DATA VIA DIRECT ACCESS"
-                 :Description "This link provides direct download access via S3 to the granule."}
-                {:URL "s3://abc/bar"
-                 :Type "GET DATA VIA DIRECT ACCESS"
-                 :Description "This link provides direct download access via S3 to the granule."})
-          )))
+      "duplicates are handled"
+      "s3://abc/foo, s3://abc/bar, s3://abc/bar, s3://abc/bar"
+      {:RelatedUrls sample-urls}
+      (conj sample-urls
+            {:URL "s3://abc/foo"
+             :Type "GET DATA VIA DIRECT ACCESS"
+             :Description "This link provides direct download access via S3 to the granule."}
+            {:URL "s3://abc/bar"
+             :Type "GET DATA VIA DIRECT ACCESS"
+             :Description "This link provides direct download access via S3 to the granule."}))))
