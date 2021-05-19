@@ -1105,8 +1105,8 @@ Granule bulk update currently supports updating with the following operations, u
 
 **operation: "APPEND_TO_FIELD", update-field: "OPeNDAPLink"**
 supported metadata formats:
-  - S3Link url in OnlineResources for ECHO10 format
-  - S3Link url in RelatedUrls for UMM-G format
+  - OPeNDAPLink url in OnlineResources for ECHO10 format
+  - OPeNDAPLink url in RelatedUrls for UMM-G format
 
 Append operations on OPeNDAPLink will behave as follows
  - OPeNDAP updates may contain a maximum of two URLs, separated by comma
