@@ -1,13 +1,11 @@
 const { indexCmrCollection } = require('./indexCmrCollection')
-const { initializeGremlinConnection } = require('../gremlin/initializeGremlinConnection')
 
 /**
  * Helper function to iterate through CMR search results and index into
  * a Graph database
  * @param {JSON} results
  */
-exports.indexPageOfCmrResults = async (results) => {
-  const gremlin = initializeGremlinConnection()
+exports.indexPageOfCmrResults = async (results, gremlin) => {
   results.map(async (result) => {
     try {
       await indexCmrCollection(result, gremlin)
@@ -18,4 +16,6 @@ exports.indexPageOfCmrResults = async (results) => {
       console.warn(`Could not index concept [${conceptId}] into Graph database due to error: ${error}`)
     }
   })
+
+  return true
 }

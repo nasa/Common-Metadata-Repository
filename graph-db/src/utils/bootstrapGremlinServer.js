@@ -1,6 +1,8 @@
+/* eslint-disable no-await-in-loop */
+const { initializeGremlinConnection } = require('./gremlin/initializeGremlinConnection')
 const { indexPageOfCmrResults } = require('./indexing/indexPageOfCmrResults')
-const { fetchPageFromCMR } = require('./cmr/fetchPageFromCmr')
 const { clearScrollSession } = require('./cmr/clearScrollSession')
+const { fetchPageFromCMR } = require('./cmr/fetchPageFromCmr')
 const { getEchoToken } = require('./cmr/getEchoToken')
 
 /**
@@ -9,6 +11,7 @@ const { getEchoToken } = require('./cmr/getEchoToken')
  */
 exports.bootstrapGremilinServer = async () => {
   const echoToken = await getEchoToken()
+  const gremlin = initializeGremlinConnection()
 
   // Get the first page of collections from the CMR to initiate the scroll
   // session. Parse the JSON results, annd pull the scroll id from the headers
@@ -18,10 +21,9 @@ exports.bootstrapGremilinServer = async () => {
   let continueScroll = true
 
   // Index first page of CMR results before scrolling and indexing the rest
-  indexPageOfCmrResults(results)
+  indexPageOfCmrResults(results, gremlin)
 
   while (continueScroll) {
-    // eslint-disable-next-line no-await-in-loop
     const scrolledResults = await fetchPageFromCMR(scrollId, echoToken)
       .then((scrollResponse) => scrollResponse.json())
       .then((json) => {
@@ -41,7 +43,7 @@ exports.bootstrapGremilinServer = async () => {
       continueScroll = false
     }
 
-    indexPageOfCmrResults(scrolledResults)
+    await indexPageOfCmrResults(scrolledResults, gremlin)
   }
 
   console.log(`Got scroll-id: [${scrollId}]. Clearing session...`)

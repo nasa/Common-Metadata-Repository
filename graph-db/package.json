@@ -20,6 +20,7 @@
   "dependencies": {
     "aws-sdk": "^2.891.0",
     "gremlin": "^3.4.10",
+    "lodash": "^4.17.21",
     "node-fetch": "^2.6.1",
     "serverless": "^2.38.0",
     "serverless-offline": "^6.9.0"

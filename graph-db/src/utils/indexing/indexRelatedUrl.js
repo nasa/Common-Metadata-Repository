@@ -8,30 +8,36 @@
  * @param {Graph Node} dataset the parent collection vertex in the gremlin server
  * @returns null
  */
-exports.indexRelatedUrl = (relatedUrl, gremlin, dataset) => {
+exports.indexRelatedUrl = async (relatedUrl, gremlin, dataset) => {
   const {
     Subtype: subType,
     URL: url,
     Description: description,
     URLContentType: urlContentType
   } = relatedUrl
-  if (urlContentType !== 'PublicationURL') {
+  if (!!subType
+    || urlContentType !== 'PublicationURL') {
     // We only care about documentation at the moment.
     // Checking the URLContentType is the most efficient way to find its type.
     // Return early if it isn't some kind of documentation.
     return
   }
 
-  const documentationVertexExists = gremlin.V().hasLabel(`related-information:${subType}`).has('name', url).hasNext()
-  let docVertex
+  const documentationVertexExists = await gremlin.V().hasLabel('documentation').has('name', url).hasNext()
+  let documentationVertex
 
   if (documentationVertexExists) {
-    docVertex = gremlin.addV(`related-information:${subType}`).property('name', url).property('title', description).next()
+    documentationVertex = await gremlin.V().hasLabel('documentation').has('name', url).next()
   } else {
-    docVertex = gremlin.V().hasLabel(`related-information:${subType}`).has('name', url).next()
+    documentationVertex = await gremlin.addV('documentation').property('name', url).property('title', description).next()
   }
 
-  const { id: subTypeVertexId } = docVertex
-  const datasetId = dataset.id
-  gremlin.addE(`related-information:${subType}`).from(gremlin.V(subTypeVertexId)).to(gremlin.V(datasetId)).next()
+  const { value: documentationValue } = documentationVertex
+  const { id: documentationId } = documentationValue
+  const documentationElement = gremlin.V(documentationId)
+  try {
+    documentationElement.addE('documents').to(gremlin.V(dataset)).next()
+  } catch (error) {
+    console.log(`ERROR indexing RelatedUrl ${JSON.stringify(relatedUrl)}: \n Error: ${error}`)
+  }
 }
