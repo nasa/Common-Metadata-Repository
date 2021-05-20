@@ -1143,9 +1143,9 @@ supported metadata formats:
   - S3Link url in OnlineResources for ECHO10 format
   - S3Link url in RelatedUrls for UMM-G format
 
-The S3 url value provided in the granule bulk update request can be comma-separated urls. Each url must start with s3:// (case-sensitive). This lowercase s3:// naming convention is to make the s3 links compatible with AWS S3 API. During bulk update, the provided S3 urls in the request will be updated by appending the new S3 links. Existing S3 links will be preserved. 
+The S3 url value provided in the granule bulk update request can be comma-separated urls. Each url must start with s3:// (case-sensitive). This lowercase s3:// naming convention is to make the s3 links compatible with AWS S3 API. During bulk update, the provided S3 urls in the request will be updated by appending the new S3 links. Existing S3 links will be preserved.
 
-If the URL passed to the update is already associated with the granule, the URL will not be duplicated.
+If the URL passed to the update is already associated with the granule, the URL will not be duplicated or updated.
 
 ``` bash
 curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules -d
