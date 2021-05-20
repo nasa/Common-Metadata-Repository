@@ -1,4 +1,3 @@
-/* eslint-disable no-await-in-loop */
 const { initializeGremlinConnection } = require('./gremlin/initializeGremlinConnection')
 const { indexPageOfCmrResults } = require('./indexing/indexPageOfCmrResults')
 const { clearScrollSession } = require('./cmr/clearScrollSession')
@@ -24,14 +23,15 @@ exports.bootstrapGremilinServer = async () => {
   indexPageOfCmrResults(results, gremlin)
 
   while (continueScroll) {
+    // eslint-disable-next-line no-await-in-loop
     const scrolledResults = await fetchPageFromCMR(scrollId, echoToken)
       .then((scrollResponse) => scrollResponse.json())
       .then((json) => {
         if (json.errors) {
           throw new Error(`The following errors ocurred: ${json.errors}`)
-        } else {
-          return json.items
         }
+
+        return json.items
       })
       .catch((error) => {
         console.warn(`Could not complete request due to error: ${error}`)
@@ -43,6 +43,7 @@ exports.bootstrapGremilinServer = async () => {
       continueScroll = false
     }
 
+    // eslint-disable-next-line no-await-in-loop
     await indexPageOfCmrResults(scrolledResults, gremlin)
   }
 

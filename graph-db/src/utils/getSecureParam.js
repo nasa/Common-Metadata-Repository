@@ -8,7 +8,7 @@ let ssm
  * @returns {JSON} server response object from Parameter Store
  */
 exports.getSecureParam = async (param) => {
-  if (ssm == null) {
+  if (!ssm) {
     ssm = new AWS.SSM()
   }
 

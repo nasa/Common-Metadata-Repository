@@ -8,14 +8,15 @@
  * @param {Graph Node} dataset the parent collection vertex in the gremlin server
  * @returns null
  */
-exports.indexRelatedUrl = async (relatedUrl, gremlin, dataset) => {
+exports.indexRelatedUrl = async (relatedUrl, gremlin, dataset, conceptId) => {
   const {
     Subtype: subType,
     URL: url,
     Description: description,
     URLContentType: urlContentType
   } = relatedUrl
-  if (!!subType
+  if (!subType
+    || !url
     || urlContentType !== 'PublicationURL') {
     // We only care about documentation at the moment.
     // Checking the URLContentType is the most efficient way to find its type.
@@ -23,21 +24,19 @@ exports.indexRelatedUrl = async (relatedUrl, gremlin, dataset) => {
     return
   }
 
-  const documentationVertexExists = await gremlin.V().hasLabel('documentation').has('name', url).hasNext()
-  let documentationVertex
-
-  if (documentationVertexExists) {
-    documentationVertex = await gremlin.V().hasLabel('documentation').has('name', url).next()
-  } else {
-    documentationVertex = await gremlin.addV('documentation').property('name', url).property('title', description).next()
-  }
-
-  const { value: documentationValue } = documentationVertex
-  const { id: documentationId } = documentationValue
-  const documentationElement = gremlin.V(documentationId)
   try {
-    documentationElement.addE('documents').to(gremlin.V(dataset)).next()
+    const documentationVertexExists = await gremlin.V().hasLabel('documentation').has('name', url).hasNext()
+    let documentationVertex
+
+    if (documentationVertexExists) {
+      documentationVertex = await gremlin.V().hasLabel('documentation').has('name', url)
+    } else {
+      documentationVertex = await gremlin.addV('documentation').property('name', url).property('title', description)
+    }
+
+    const documentationElement = gremlin.V(documentationVertex)
+    documentationElement.addE('documents').to(gremlin.V(dataset))
   } catch (error) {
-    console.log(`ERROR indexing RelatedUrl ${JSON.stringify(relatedUrl)}: \n Error: ${error}`)
+    console.log(`ERROR indexing RelatedUrl for concept [${conceptId}] ${JSON.stringify(relatedUrl)}: \n Error: ${error}`)
   }
 }
