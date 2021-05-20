@@ -448,10 +448,6 @@
          <URLDescription>This link provides direct download access via S3 to the granule.</URLDescription>
       </OnlineAccessURL>
       <OnlineAccessURL>
-         <URL>s3://abcd/to_remain</URL>
-         <URLDescription>This link provides direct download access via S3 to the granule.</URLDescription>
-      </OnlineAccessURL>
-      <OnlineAccessURL>
          <URL>http://example.com/doc</URL>
          <URLDescription>Files may be downloaded directly to your workstation from this link</URLDescription>
          <MimeType>text/html</MimeType>
@@ -459,6 +455,11 @@
       <OnlineAccessURL>
          <URL>https://oceandata.sci.gsfc.nasa.gov/MODIS-Terra/L3BIN/</URL>
          <URLDescription>OB.DAAC Data Distribution Website for MODIS-Terra L3B Sea Surface Temperature (SST) Product</URLDescription>
+         <MimeType>GET DATA</MimeType>
+      </OnlineAccessURL>
+      <OnlineAccessURL>
+         <URL>s3://abcd/to_remain</URL>
+         <URLDescription>Files may be downloaded directly to your workstation from this link</URLDescription>
          <MimeType>GET DATA</MimeType>
       </OnlineAccessURL>
       <OnlineAccessURL>

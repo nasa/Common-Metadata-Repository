@@ -54,18 +54,18 @@
   "Takes a list of online-accesses, creates new urls, transforming them
   into online-accesses and appends them."
   [online-accesses urls]
-  (let [other-urls (remove #(and (is-s3? (:url %))
-                                 (contains? (set urls) (:url %))) online-accesses)
-        s3-urls (urls->s3-urls (set urls))]
-    (concat s3-urls other-urls)))
+  (let [s3-resources (filter #(is-s3? (:url %)) online-accesses)
+        new-s3-urls (clojure.set/difference (set urls) (set (map :url s3-resources)))
+        new-s3-resources (urls->s3-urls (set new-s3-urls))]
+    (concat new-s3-resources online-accesses)))
 
 (defn- updated-zipper-node
   "Take the parsed OnlineAccessURLs in the original metadata and the desired S3 url,
    return the updated OnlineAccessURLs xml element that can be used by zipper to update the xml."
   [online-accesses urls operation]
-  (let [accesses (if (= :replace operation)
-                   (updated-online-accesses online-accesses urls)
-                   (appended-online-accesses online-accesses urls))]
+  (let [accesses (case operation
+                   :replace (updated-online-accesses online-accesses urls)
+                   :append (appended-online-accesses online-accesses urls))]
     (xml/element
      :OnlineAccessURLs {}
      (for [a accesses]
