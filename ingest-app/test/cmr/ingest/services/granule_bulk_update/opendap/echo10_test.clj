@@ -424,7 +424,7 @@
     (are3 [url-value source result]
       (let [grouped-urls (opendap-util/validate-url url-value)]
         (is (= result
-               (#'echo10/add-opendap-url-to-metadata source grouped-urls))))
+               (#'echo10/update-opendap-url-metadata source grouped-urls :replace))))
 
       "add OnlineResources at the end of the xml"
       "http://example.com/foo"
@@ -495,3 +495,80 @@
       "https://opendap.earthdata.nasa.gov/foo, http://example.com/foo"
       update-both-opendap-url
       update-cloud-opendap-url-with-both-result)))
+
+(deftest append-opendap-url
+  (testing "append OnlineResources at various places in the xml"
+    (are3 [url-value source result]
+      (let [grouped-urls (opendap-util/validate-url url-value)]
+        (is (= result
+               (#'echo10/update-opendap-url-metadata source grouped-urls :append))))
+
+      "add OnlineResources at the end of the xml"
+      "http://example.com/foo"
+      add-at-the-end-gran-xml
+      add-at-the-end-gran-xml-result
+
+      "add OnlineResources before an element in the xml"
+      "http://example.com/foo"
+      add-before-element-gran-xml
+      add-before-element-gran-xml-result
+
+      "add OnlineResources to empty OnlineResources in the xml"
+      "http://example.com/foo"
+      add-with-empty-gran-xml
+      add-before-element-gran-xml-result
+
+      "add OnlineResources to OnlineResources without OPeNDAP url in the xml"
+      "http://example.com/foo"
+      add-with-no-match-gran-xml
+      add-with-no-match-gran-xml-result
+
+      "update with on-prem in metadata, Hyrax-in-the-cloud in update"
+      "https://opendap.earthdata.nasa.gov/foo"
+      update-opendap-url
+      update-opendap-with-cloud-url-result
+
+      "update with Hyrax-in-the-cloud in metadata, on-prem in update"
+      "http://example.com/foo"
+      update-cloud-opendap-url
+      update-cloud-opendap-url-with-on-prem-result))
+
+  (testing "throws appropriate error messages"
+    (are3 [url-value source]
+      (let [grouped-urls (opendap-util/validate-url url-value)]
+        (is (thrown-with-msg?
+             clojure.lang.ExceptionInfo
+             #"Update contains conflict"
+             (#'echo10/update-opendap-url-metadata source grouped-urls :append))))
+
+      "throws during append OnlineResources when OPeNDAP url is present"
+      "http://example.com/foo"
+      update-opendap-url
+
+      "OnlineResources when OPeNDAP url is present"
+      "http://example.com/foo"
+      update-opendap-url-preserve-type
+
+      "update with Hyrax-in-the-cloud in metadata, Hyrax-in-the-cloud in update"
+      "https://opendap.earthdata.nasa.gov/foo"
+      update-cloud-opendap-url
+
+      "update with both in metadata and on-prem in update"
+      "http://example.com/foo"
+      update-both-opendap-url
+
+      "update with both in metadata and Hyrax-in-the-cloud in update"
+      "https://opendap.earthdata.nasa.gov/foo"
+      update-both-opendap-url
+
+      "update with multiple urls, Hyrax-in-the-cloud in metadata"
+      "https://opendap.earthdata.nasa.gov/foo, http://example.com/foo"
+      update-cloud-opendap-url
+
+      "update with multiple urls, on-prem in metadata"
+      "https://opendap.earthdata.nasa.gov/foo, http://example.com/foo"
+      update-opendap-url
+
+      "update with multiple urls, both Hyrax-in-the-cloud and on-prem in metadata"
+      "https://opendap.earthdata.nasa.gov/foo, http://example.com/foo"
+      update-both-opendap-url)))

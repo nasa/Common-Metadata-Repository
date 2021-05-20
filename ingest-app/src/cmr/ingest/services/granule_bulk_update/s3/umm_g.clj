@@ -23,11 +23,26 @@
   "Take the RelatedUrls, replace any existing s3 urls with the given urls."
   [related-urls urls]
   (let [other-urls (remove is-s3? related-urls)
-        s3-urls (urls->s3-urls urls)]
+        s3-urls (urls->s3-urls (distinct urls))]
     (concat s3-urls other-urls)))
 
-(defn add-s3-url
+(defn- appended-related-urls
+  "Take the RelatedUrls, add any unique s3 urls, ignoring already present s3 urls
+  returning a new list of related-urls."
+  [related-urls urls]
+  (let [s3-resources (filter is-s3? related-urls)
+        new-s3-urls (clojure.set/difference (set urls) (set (map :URL s3-resources)))
+        new-s3-resources (urls->s3-urls new-s3-urls)]
+    (concat related-urls new-s3-resources)))
+
+(defn update-s3-url
   "Takes UMM-G record and a list of S3 urls to update.
   Returns the updated UMM-G record."
   [umm-gran urls]
   (update umm-gran :RelatedUrls #(updated-related-urls % urls)))
+
+(defn append-s3-url
+  "Takes UMM-G record and a list of S3 urls to append.
+  Returns the updated UMM-G record."
+  [umm-gran urls]
+  (update umm-gran :RelatedUrls #(appended-related-urls % urls)))

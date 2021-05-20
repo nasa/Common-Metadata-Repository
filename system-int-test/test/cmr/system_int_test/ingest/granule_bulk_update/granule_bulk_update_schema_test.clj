@@ -73,33 +73,47 @@
 
 (deftest operation-validation-test
   (are3 [operation expected-status]
-        (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
-                                   :accept-format :json
-                                   :raw? true}
-              request (assoc base-request :operation operation)
-              {:keys [body status]} (ingest/bulk-update-granules "PROV1"
-                                                                 request
-                                                                 bulk-update-options)
-              response (json/parse-string body true)]
-          (is (= status expected-status))
-          (when-not (= 200 expected-status)
-            (is (= (format "#/operation: %s is not a valid enum value" operation)
-                   (first (:errors response))))))
-        "valid"
-        "UPDATE_FIELD" 200
+   (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
+                              :accept-format :json
+                              :raw? true}
+         request (assoc base-request :operation operation)
+         {:keys [body status]} (ingest/bulk-update-granules "PROV1"
+                                                            request
+                                                            bulk-update-options)
+         response (json/parse-string body true)]
+     (is (= status expected-status))
+     (when-not (= 200 expected-status)
+       (is (= (format "#/operation: %s is not a valid enum value" operation)
+              (first (:errors response))))))
+   "valid"
+   "UPDATE_FIELD" 200
 
-        "invalid"
-        "CROMULENT_OPERATION" 400))
+   "valid"
+   "APPEND_TO_FIELD" 200
+
+   "invalid"
+   "CROMULENT_OPERATION" 400))
 
 (deftest update-field-validation-test
-  (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
-                             :accept-format :json
-                             :raw? true}
-        request (assoc base-request :update-field "CROMULANT_FIELD")
-        {:keys [body status]} (ingest/bulk-update-granules "PROV1"
-                                                           request
-                                                           bulk-update-options)
-        response (json/parse-string body true)]
-    (is (= 400 status))
-    (is (= "#/update-field: CROMULANT_FIELD is not a valid enum value"
-           (first (:errors response))))))
+  (are3 [field expected-status]
+   (let [bulk-update-options {:token (echo-util/login (sys/context) "user1")
+                              :accept-format :json
+                              :raw? true}
+         request (assoc base-request :update-field field)
+         {:keys [body status]} (ingest/bulk-update-granules "PROV1"
+                                                            request
+                                                            bulk-update-options)
+         response (json/parse-string body true)]
+     (is (= status expected-status))
+     (when-not (= 200 expected-status)
+       (is (= (format "#/update-field: %s is not a valid enum value" field)
+              (first (:errors response))))))
+
+   "valid"
+   "OPeNDAPLink" 200
+
+   "valid"
+   "S3Link" 200
+
+   "invalid"
+   "CROMULENT_FIELD" 400))

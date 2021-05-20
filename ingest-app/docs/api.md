@@ -1151,6 +1151,71 @@ Updated granules are validated using business rule validations.  Updates will no
 
 Granule bulk update currently supports updating with the following operations, update fields and metadata formats:
 
+**operation: "APPEND_TO_FIELD", update-field: "OPeNDAPLink"**
+supported metadata formats:
+  - OPeNDAPLink url in OnlineResources for ECHO10 format
+  - OPeNDAPLink url in RelatedUrls for UMM-G format
+
+Append operations on OPeNDAPLink will behave as follows
+ - OPeNDAP updates may contain a maximum of two URLs, separated by comma
+   - At most, only one of each OPeNDAP URL type may be included (on-prem or Hyrax-in-the-cloud)
+ - If the granule contains no OPeNDAP urls the new URLs will be added
+ - If the granule does not contain a conflicting URL for the type (on-prem or Hyrax-in-the-cloud), the new value will be added.
+ - If the granule already contains URLs for both on-prem and cloud, the granule update will fail.
+
+URLs matching the pattern: https://opendap.*.earthdata.nasa.gov/* will be determined to be Hyrax-in-the-cloud, otherwise it will be on-prem.
+
+``` bash
+curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules -d
+'{ "name": "example of appending OPeNDAP links",
+	"operation": "APPEND_TO_FIELD",
+	"update-field":"OPeNDAPLink",
+	"updates":[
+             ["granule_ur1", "https://opendap.earthdata.nasa.gov/example"],
+             ["granule_ur2", "https://on-prem.example.com"],
+             ["granule_ur3", "https://opendap.earthdata.nasa.gov/example-2,https://on-prem.example-2.com"]
+	]
+}'
+```
+
+Example granule bulk update response:
+```
+{
+ "status" : 200,
+ "task-id": 6
+}
+```
+
+**operation: "APPEND_TO_FIELD", update-field: "S3Link"**
+supported metadata formats:
+  - S3Link url in OnlineResources for ECHO10 format
+  - S3Link url in RelatedUrls for UMM-G format
+
+The S3 url value provided in the granule bulk update request can be comma-separated urls. Each url must start with s3:// (case-sensitive). This lowercase s3:// naming convention is to make the s3 links compatible with AWS S3 API. During bulk update, the provided S3 urls in the request will be updated by appending the new S3 links. Existing S3 links will be preserved.
+
+If the URL passed to the update is already associated with the granule, the URL will not be duplicated or updated.
+
+``` bash
+curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules -d
+'{ "name": "example of appending S3 links",
+	"operation": "APPEND_TO_FIELD",
+	"update-field":"S3Link",
+	"updates":[
+             ["granule_ur1", "s3://example.com/bucket1"],
+             ["granule_ur2", "s3://example.com/bucket2"],
+             ["granule_ur3", "s3://example.com/bucket3-east,s3://example.com/bucket3-west"]
+	]
+}'
+```
+
+Example granule bulk update response:
+```
+{
+ "status" : 200,
+ "task-id": 4
+}
+```
+
 **operation: "UPDATE_FIELD", update-field: "OPeNDAPLink"**
 supported metadata formats:
   - OPeNDAP url in OnlineResources for ECHO10 format
