@@ -158,29 +158,29 @@
       "non-matching RelatedUrls in metadata, on-prem url update"
       "http://example.com/foo"
       {:RelatedUrls [doc-related-url]}
-      {:RelatedUrls [{:URL "http://example.com/foo"
+      {:RelatedUrls [doc-related-url
+                     {:URL "http://example.com/foo"
                       :Type "USE SERVICE API"
-                      :Subtype "OPENDAP DATA"}
-                     doc-related-url]}
+                      :Subtype "OPENDAP DATA"}]}
 
       "non-matching RelatedUrls in metadata, cloud url update"
       "https://opendap.earthdata.nasa.gov/foo"
       {:RelatedUrls [doc-related-url]}
-      {:RelatedUrls [{:URL "https://opendap.earthdata.nasa.gov/foo"
+      {:RelatedUrls [doc-related-url
+                     {:URL "https://opendap.earthdata.nasa.gov/foo"
                       :Type "USE SERVICE API"
-                      :Subtype "OPENDAP DATA"}
-                     doc-related-url]}
+                      :Subtype "OPENDAP DATA"}]}
 
       "non-matching RelatedUrls in metadata, cloud url and on-prem url update"
       "http://example.com/foo, https://opendap.earthdata.nasa.gov/foo"
       {:RelatedUrls [doc-related-url]}
-      {:RelatedUrls [{:URL "http://example.com/foo"
-                      :Type "USE SERVICE API"
-                      :Subtype "OPENDAP DATA"}
+      {:RelatedUrls [doc-related-url
                      {:URL "https://opendap.earthdata.nasa.gov/foo"
                       :Type "USE SERVICE API"
                       :Subtype "OPENDAP DATA"}
-                     doc-related-url]}))
+                     {:URL "http://example.com/foo"
+                      :Type "USE SERVICE API"
+                      :Subtype "OPENDAP DATA"}]}))
 
   (testing "throws when appropriate"
     (are3 [url-value source]
