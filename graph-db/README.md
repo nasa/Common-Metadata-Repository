@@ -46,24 +46,13 @@ docker run -it -p 8182:8182 --network host tinkerpop/gremlin-console
 Graphexp is a lightweight web interface to explore and display a graph stored in a Gremlin graph database, via the Gremlin server. This is an easy way to visualize nodes and edges in the graph database.
 Clone the graphexp repository at https://github.com/bricaud/graphexp
 
-## Build
-```
-npm install
-```
+## Serverless Applications
+There are two serverless applications that interact with the graph database:
 
-## Run
-To invoke the bootstrap function and load data into your Gremlin server from the CMR run the following command:
-```
-npm run bootstrap
-```
+- Bootstrap
 
-# Test
-To run the test suite one time run
-```
-npm run test
-```
+  Bootstrap is a serverless application that load all collections from a CMR environment (SIT, UAT, PROD) into the graph database.
 
-To run the test suite in watch mode, run
-```
-npm run test -- --watch
-```
+- Indexer
+
+  Indexer is a serverless application that is connected to a SQS queue that is associated with the live CMR collection ingest/update events. It will index new CMR collection ingest/update into the graph database.
