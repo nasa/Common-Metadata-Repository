@@ -1,4 +1,4 @@
-service: graph-db
+service: graphdb-bootstrap
 
 provider:
   name: aws
