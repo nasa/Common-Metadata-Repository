@@ -49,10 +49,10 @@ Clone the graphexp repository at https://github.com/bricaud/graphexp
 ## Serverless Applications
 There are two serverless applications that interact with the graph database:
 
-- Bootstrap
+* Bootstrap
 
   Bootstrap is a serverless application that load all collections from a CMR environment (SIT, UAT, PROD) into the graph database.
 
-- Indexer
+* Indexer
 
   Indexer is a serverless application that is connected to a SQS queue that is associated with the live CMR collection ingest/update events. It will index new CMR collection ingest/update into the graph database.
