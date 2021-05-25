@@ -1,4 +1,4 @@
-service: graph-indexer
+service: graphdb-indexer
 
 provider:
   name: aws
