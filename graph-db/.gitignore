@@ -1,4 +1,5 @@
 # package directories
+coverage
 node_modules
 jspm_packages
 

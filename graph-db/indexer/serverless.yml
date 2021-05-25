@@ -16,8 +16,8 @@ plugins:
   - serverless-pseudo-parameters
 
 functions:
-  index:
-    handler: handler.index
+  indexCmrCollection:
+    handler: src/indexCmrCollection/handler.indexCmrCollection
     environment:
       ENVIRONMENT: ${opt:stage}
     events:
