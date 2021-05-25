@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "serverless": "^2.43.0"
+  },
+  "name": "graph-lambda",
+  "scripts": {
+    "deploy": "./node_modules/.bin/sls deploy --config serverless.yml"
+  },
+  "devDependencies": {
+    "serverless-offline": "^7.0.0",
+    "serverless-pseudo-parameters": "^2.5.0"
+  }
+}
