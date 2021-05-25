@@ -72,4 +72,11 @@
             "internal-install-with-content-no-clean!"
             ["modules" "with-profile" "+internal-repos" "do" "clean," "generate-static," "install,"]
             "internal-install-with-content!"
-            ["modules" "with-profile" "+internal-repos" "do" "clean," "generate-static," "install," "clean"]})
+            ["modules" "with-profile" "+internal-repos" "do" "clean," "generate-static," "install," "clean"]
+
+            ;; Run DB migrations via `lein
+            "migrate"
+            ["do"
+             ["shell" "echo" "== Bootstrapping Databases for CMR =="]
+             ["modules" ":dirs" "metadata-db-app:bootstrap-app:ingest-app" "create-user"]
+             ["modules" ":dirs" "ingest-app:bootstrap-app:metadata-db-app" "migrate"]]})

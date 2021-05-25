@@ -284,6 +284,11 @@ lein modules itest --skip-meta :in-memory-db
 If you want to run tests against Oracle, bring up the Oracle VM and execute
 the following to create the users and run the migrations:
 
+```sh
+lein migrate
+```
+
+Deprecated commmand
 ``` sh
 cmr setup db
 ```
