@@ -403,11 +403,19 @@
             :created-at created-at
             :coordinate-system coordinate-system
 
-            ;; fields added to support keyword searches
+            ;; fields added to support keyword searches.
             :keyword (k/create-keywords-field concept-id collection
                                               {:platform-long-names platform-long-names
                                                :instrument-long-names instrument-long-names
-                                               :entry-id entry-id})
+                                               :entry-id entry-id}
+                                              true)
+            ;; fields added to support keyword searches when the search string is a quoted string.
+            ;; We want to index each individual field value in the keyword field.
+            :keyword-phrase (k/create-keywords-field concept-id collection
+                                                     {:platform-long-names platform-long-names
+                                                      :instrument-long-names instrument-long-names
+                                                      :entry-id entry-id}
+                                                     false)
             :platform-ln-lowercase (map str/lower-case platform-long-names)
             :instrument-ln-lowercase (map str/lower-case instrument-long-names)
             :sensor-ln-lowercase (map str/lower-case sensor-long-names)

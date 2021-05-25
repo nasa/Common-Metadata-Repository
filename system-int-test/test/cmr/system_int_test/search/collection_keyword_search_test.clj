@@ -161,6 +161,8 @@
 
         coll26 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection {:EntryTitle "coll26" :ShortName "S26"
                                                                              :ContactPersons [personnel1]}) {:format :dif10})
+        coll26-1 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection {:EntryTitle "coll26 one" :ShortName "S26 one"
+                                                                               :ContactPersons [personnel1]}) {:format :dif10})
         coll27 (d/ingest-umm-spec-collection "PROV5" (data-umm-c/collection {:EntryTitle "coll27" :ShortName "S27" :ContactPersons [personnel2]}) {:format :dif10})]
 
 
@@ -183,8 +185,10 @@
           (and parameter-matches? json-matches?))
 
         ;; search by contact persons
-        "Bob Hope" [coll26]
-        "bob.hope@nasa.gov" [coll26]
+        "Bob Hope" [coll26 coll26-1]
+        "\"Bob Hope\"" []
+        "bob.hope@nasa.gov" [coll26 coll26-1]
+        "\"bob.hope@nasa.gov\"" [coll26 coll26-1]
         "Victor" [coll27]
         "victor.fries@nsidc.gov" [coll27]
 
@@ -205,12 +209,21 @@
 
         ;; entry title
         "coll1" [coll1]
+        "\"coll1\"" [coll1]
+        "coll26" [coll26 coll26-1]
+         "\"coll26\"" [coll26]
         "Mitch made a (merry-go-round)" [coll2]
+        "\"Mitch made a (merry-go-round)\"" [coll2]
         "(merry-go-round)" [coll2]
+        "\"(merry-go-round)\"" []
         "merry-go-round" [coll2]
+        "\"merry-go-round\"" []
         "merry" [coll2]
+        "\"merry\"" []
         "merry go round" [coll2]
+        "\"merry go round\"" []
         "merry-go" []
+        "\"merry-go\"" []
 
         ;; entry id
         "ABC!XYZ_V001" [coll2]
@@ -913,17 +926,31 @@
              (println "Actual:" (map :name (:refs refs))))
            matches?)
          "begin!end" [1]
+         "\"begin!end\"" [1]
          "begin\\end" [19]
+         "\"begin\\end\"" [19]
+         "begin\"end" [26]
+         "\"begin\"end\"" [26]
          "begin<end" [27]
+         "\"begin<end\"" [27]
          "begin\\?end" [29]
+         "\"begin\\?end\"" [29]
          "begin~end" [31]
+         "\"begin~end\"" [31]
          "begin\\*end" [50]
+         "\"begin\\*end\"" [50]
          "begin" [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 50]
+         "\"begin\"" []
          "end" [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 50]
+         "\"end\"" []
          "&&" [0]
+         "\"&&\"" []
          "||" [0]
+         "\"||\"" []
          "48AND" [48]
-         "OR" [49])))
+         "\"48AND\"" [] 
+         "OR" [49]
+         "\"OR\"" [])))
 
 ;; Test that the same collection short-name with different versions comes back
 ;; in descending order by version, even if the versions are in different formats

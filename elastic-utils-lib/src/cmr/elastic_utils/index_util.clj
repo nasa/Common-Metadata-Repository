@@ -40,6 +40,18 @@
    ; Don't bother storing term positions or term frequencies in this field
    :index_options "docs"})
 
+(def text-field-keyword-mapping
+  "Used for analyzed text fields"
+  {:type "text"
+   ; Norms are metrics about fields that elastic can use to weigh certian fields more than
+   ; others when computing a document relevance. A typical example is field length - short
+   ; fields are weighted more heavily than long feilds. We don't need them for scoring.
+   :norms false
+   ; split the text on whitespace, but don't do any stemmming, etc.
+   :analyzer "keyword"
+   ; Don't bother storing term positions or term frequencies in this field
+   :index_options "docs"})
+
 (def binary-field-mapping
   {:type "binary"})
 

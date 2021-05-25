@@ -24,10 +24,10 @@
    The format is {:keywords [...] :field-keywords [...]}"
   [c]
   (let [keywords (extract-keywords-seq c)]
-   (when (or (seq (:keywords keywords)) (seq (:field-keywords keywords)))
-    (-> keywords
-        (update :keywords #(seq (distinct %)))
-        (update :field-keywords #(seq (distinct %)))))))
+    (when (or (seq (:keywords keywords)) (seq (:field-keywords keywords)))
+      (-> keywords
+          (update :keywords #(seq (distinct %)))
+          (update :field-keywords #(seq (distinct %)))))))
 
 (def ^:private keyword-string-fields
   "This defines the set of string condition fields that we will extract keyword terms from. Any condition
@@ -52,9 +52,16 @@
 (defn- extract-keywords-seq-from-value
   "Converts value to lower case and splits on whitespace to create a list of keywords"
   [value]
-  (println "keyword value is: " value)
-  (println "keyword value value contains quotes: " (clojure.string/includes? value "\""))
   (-> value str/lower-case (str/split #"\s+")))
+
+(defn- extract-keywords-seq-from-keyword-value
+  "Converts keyword value to lower case and splits on whitespace to create a list of keywords.
+  Or if the value is a double quoted string, do not split on whitespace."
+  [value]
+  (let [t-value (str/trim value)]
+    (if (and (str/starts-with? t-value "\"") (str/ends-with? t-value "\""))
+      (-> t-value str/lower-case (str/replace #"^\"|\"$" "") vector)
+      (-> value str/lower-case (str/split #"\s+")))))
 
 (extend-protocol ExtractKeywords
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -93,7 +100,7 @@
   (extract-keywords-seq
    [{:keys [field query-str]}]
    (when (= field :keyword)
-     {:keywords (extract-keywords-seq-from-value query-str)}))
+     {:keywords (extract-keywords-seq-from-keyword-value query-str)}))
   (contains-keyword-condition?
    [{:keys [field]}]
    (= field :keyword))

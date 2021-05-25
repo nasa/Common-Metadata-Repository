@@ -201,10 +201,13 @@
   cmr.common_app.services.search.query_model.TextCondition
   (condition->elastic
    [{:keys [field query-str]} concept-type]
-   (let [field (query-field->elastic-field field concept-type)]
+   (let [field (query-field->elastic-field field concept-type)
+         analyzer (if (= :keyword-phrase field)
+                    :keyword
+                    :whitespace)]
      {:query_string {:query (escape-query-string query-str)
-                     :analyzer :whitespace
-                     :default_field field
+                     :analyzer analyzer 
+                     :default_field field 
                      :default_operator :and}}))
 
   cmr.common_app.services.search.query_model.StringCondition
