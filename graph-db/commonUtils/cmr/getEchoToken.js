@@ -7,9 +7,10 @@ const { getSecureParam } = require('./getSecureParam')
  * if no token is supplied.
  */
 exports.getEchoToken = async () => {
-  const { process: IS_LOCAL } = env
+  const { env: { IS_LOCAL } } = process
 
-  if (IS_LOCAL) {
+  console.log(`IS_LOCAL: ${IS_LOCAL}`)
+  if (IS_LOCAL === true) {
     return null
   }
 
@@ -20,6 +21,7 @@ exports.getEchoToken = async () => {
   if (!response) {
     throw new Error('ECHO Token not found. Please update config!')
   }
+  console.log(`RESPONSE: ${response}`)
 
   return response
 }

@@ -49,10 +49,50 @@ Clone the graphexp repository at https://github.com/bricaud/graphexp
 ## Serverless Applications
 There are two serverless applications that interact with the graph database:
 
-* Bootstrap
+## Bootstrap
 
   Bootstrap is a serverless application that load all collections from a CMR environment (SIT, UAT, PROD) into the graph database.
 
-* Indexer
+### Build
+```
+npm install
+```
+
+### Run
+To invoke the bootstrap function and load data into your Gremlin server from the CMR run the following command:
+```
+npm run bootstrap
+```
+
+### Test
+To run the test suite one time run
+```
+npm run test
+```
+
+To run the test suite in watch mode, run
+```
+npm run test -- --watch
+```
+
+## Indexer
 
   Indexer is a serverless application that is connected to a SQS queue that is associated with the live CMR collection ingest/update events. It will index new CMR collection ingest/update into the graph database.
+### Build
+```
+npm install
+```
+
+### Deploy
+To deploy the graph indexer application into a CMR environment, run the following command (e.g. in SIT environment):
+```
+export AWS_PROFILE=cmr-sit
+npm run deploy -- --stage sit
+```
+
+### Rollback
+To roll back the deployed graph indexer application in a CMR environment, run the following command (e.g. in SIT environment):
+```
+export AWS_PROFILE=cmr-sit
+serverless remove -v --stage sit
+```

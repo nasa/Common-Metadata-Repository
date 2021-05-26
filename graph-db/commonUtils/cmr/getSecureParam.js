@@ -18,10 +18,8 @@ exports.getSecureParam = async (param) => {
       WithDecryption: true
     })
     .promise()
-  
-  const {
-    Parameter: Value
-  } = request
-  
-  return Value
+
+  const { Parameter: { Value: value } } = request
+
+  return value
 }

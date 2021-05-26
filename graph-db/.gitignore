@@ -1,7 +1,16 @@
-# package directories
-coverage
-node_modules
-jspm_packages
+# OS Files
+.DS_Store
 
-# Serverless directories
+# Project Build Files
 .serverless
+coverage
+dist
+node_modules
+tmp
+doc
+
+# VSCode Settings
+.vscode
+
+# CI Outputs
+junit.xml

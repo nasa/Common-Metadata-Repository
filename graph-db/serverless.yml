@@ -16,6 +16,10 @@ plugins:
   - serverless-pseudo-parameters
 
 functions:
+  bootstrapGremlinServer:
+    handler: serverless/src/bootstrapGremlinServer/handler.bootstrap
+    environment:
+      ENVIRONMENT: ${opt:stage}
   indexCmrCollection:
     handler: src/indexCmrCollection/handler.indexCmrCollection
     environment:

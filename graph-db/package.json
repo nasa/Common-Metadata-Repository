@@ -1,5 +1,5 @@
 {
-  "name": "graph-db-indexer",
+  "name": "graph-db",
   "version": "1.0.0",
   "description": "",
   "main": "handler.js",
@@ -8,7 +8,8 @@
     "test": "jest --config jest.config.js",
     "test-coverage": "jest --coverage",
     "ci-test": "jest --coverage --config jest.config.junit_output.js",
-    "bootstrap": "serverless invoke local -f bootstrapGremlinServer -e CMR_ROOT=\"http://cmr.uat.earthdata.nasa.gov\" -e PAGE_SIZE=2000 -e GREMLIN_URL=\"ws://localhost:8182/gremlin\""
+    "bootstrap": "serverless invoke local -f bootstrapGremlinServer -e CMR_ROOT=\"http://cmr.uat.earthdata.nasa.gov\" -e PAGE_SIZE=2000 -e GREMLIN_URL=\"ws://localhost:8182/gremlin\"",
+    "deploy": "./node_modules/.bin/sls deploy --config serverless.yml"
   },
   "maintainers": [
     {
@@ -22,14 +23,15 @@
     "gremlin": "^3.4.10",
     "lodash": "^4.17.21",
     "node-fetch": "^2.6.1",
-    "serverless": "^2.38.0",
-    "serverless-offline": "^6.9.0"
+    "serverless": "^2.38.0"
   },
   "devDependencies": {
     "eslint": "^7.26.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
     "jest": "^26.6.3",
-    "nock": "^13.0.11"
+    "nock": "^13.0.11",
+    "serverless-offline": "^6.9.0",
+    "serverless-pseudo-parameters": "^2.5.0"
   }
 }
