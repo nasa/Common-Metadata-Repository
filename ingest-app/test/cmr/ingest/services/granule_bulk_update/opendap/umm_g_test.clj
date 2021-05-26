@@ -180,7 +180,38 @@
                       :Subtype "OPENDAP DATA"}
                      {:URL "http://example.com/foo"
                       :Type "USE SERVICE API"
-                      :Subtype "OPENDAP DATA"}]}))
+                      :Subtype "OPENDAP DATA"}]}
+
+      "existing cloud, appending on-prem"
+      "https://example.com/addr"
+      {:RelatedUrls
+       [{:URL "https://opendap.uat.earthdata.nasa.gov/to_be_updated"
+         :Type "GET DATA"
+         :Subtype "OPENDAP DATA"
+         :Description "cloud OPeNDAP Documentation"}]}
+      {:RelatedUrls
+       [{:URL "https://opendap.uat.earthdata.nasa.gov/to_be_updated"
+         :Type "GET DATA"
+         :Subtype "OPENDAP DATA"
+         :Description "cloud OPeNDAP Documentation"}
+        {:URL "https://example.com/addr"
+         :Type "USE SERVICE API"
+         :Subtype "OPENDAP DATA"}]}
+
+      "existing on-prem, appending cloud"
+      "https://opendap.uat.earthdata.nasa.gov/new"
+      {:RelatedUrls
+       [{:URL "https://example.com/addr"
+         :Type "GET DATA"
+         :Subtype "OPENDAP DATA"}]}
+      {:RelatedUrls
+       [{:URL "https://example.com/addr"
+         :Type "GET DATA"
+         :Subtype "OPENDAP DATA"}
+        {:URL "https://opendap.uat.earthdata.nasa.gov/new"
+         :Type "USE SERVICE API"
+         :Subtype "OPENDAP DATA"}]}
+))
 
   (testing "throws when appropriate"
     (are3 [url-value source]
