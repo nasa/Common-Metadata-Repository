@@ -107,8 +107,8 @@
   [system source-collection source-granule virtual-collection]
   (let [virtual-granule-ur (svm/generate-granule-ur (:provider-id source-collection)
                                                     (:short-name source-collection)
-                                                    {:short-name (-> virtual-collection :extra-fields :short-name)
-                                                     :version-id (-> virtual-collection :extra-fields :version-id)}
+                                                    {:short-name (get-in virtual-collection [:extra-fields :short-name])
+                                                     :version-id (get-in virtual-collection [:extra-fields :version-id])}
                                                     (:native-id source-granule))
         existing-virtual-granule (find-concept
                                    system
