@@ -1,7 +1,7 @@
-const { indexCmrCollection } = require('../utils/indexing/indexCmrCollection')
-const { initilizeGremlinConnection } = require('../utils/gremlin/initializeGremlinConnection')
-const { fetchCmrCollection } = require('../utils/cmr/fetchCmrCollection')
-const { getEchoToken } = require('../utils/cmr/getEchoToken')
+const { indexCmrCollection } = require('../../../commonUtils/indexing/indexCmrCollection')
+const { initilizeGremlinConnection } = require('../../../commonUtils/gremlin/initializeGremlinConnection')
+const { fetchCmrCollection } = require('../../../commonUtils/cmr/fetchCmrCollection')
+const { getEchoToken } = require('../../../commonUtils/cmr/getEchoToken')
 
 module.exports.indexCmrCollection = async (event) => {
   const {

@@ -1,4 +1,4 @@
-const { getSecureParam } = require('../getSecureParam')
+const { getSecureParam } = require('./getSecureParam')
 
 /**
  * Fetch token for CMR requests
@@ -7,7 +7,7 @@ const { getSecureParam } = require('../getSecureParam')
  * if no token is supplied.
  */
 exports.getEchoToken = async () => {
-  const { IS_LOCAL } = process.env
+  const { process: IS_LOCAL } = env
 
   if (IS_LOCAL) {
     return null

@@ -1,8 +1,8 @@
-const { initializeGremlinConnection } = require('./gremlin/initializeGremlinConnection')
-const { indexPageOfCmrResults } = require('./indexing/indexPageOfCmrResults')
-const { clearScrollSession } = require('./cmr/clearScrollSession')
-const { fetchPageFromCMR } = require('./cmr/fetchPageFromCmr')
-const { getEchoToken } = require('./cmr/getEchoToken')
+const { initializeGremlinConnection } = require('../../../commonUtils/gremlin/initializeGremlinConnection')
+const { indexPageOfCmrResults } = require('../../../commonUtils/indexing/indexPageOfCmrResults')
+const { clearScrollSession } = require('../../../commonUtils/cmr/clearScrollSession')
+const { fetchPageFromCMR } = require('../../../commonUtils/cmr/fetchPageFromCmr')
+const { getEchoToken } = require('../../../commonUtils/cmr/getEchoToken')
 
 /**
  * Harvests collections from CMR and loads them into graph db
