@@ -158,29 +158,59 @@
       "non-matching RelatedUrls in metadata, on-prem url update"
       "http://example.com/foo"
       {:RelatedUrls [doc-related-url]}
-      {:RelatedUrls [{:URL "http://example.com/foo"
+      {:RelatedUrls [doc-related-url
+                     {:URL "http://example.com/foo"
                       :Type "USE SERVICE API"
-                      :Subtype "OPENDAP DATA"}
-                     doc-related-url]}
+                      :Subtype "OPENDAP DATA"}]}
 
       "non-matching RelatedUrls in metadata, cloud url update"
       "https://opendap.earthdata.nasa.gov/foo"
       {:RelatedUrls [doc-related-url]}
-      {:RelatedUrls [{:URL "https://opendap.earthdata.nasa.gov/foo"
+      {:RelatedUrls [doc-related-url
+                     {:URL "https://opendap.earthdata.nasa.gov/foo"
                       :Type "USE SERVICE API"
-                      :Subtype "OPENDAP DATA"}
-                     doc-related-url]}
+                      :Subtype "OPENDAP DATA"}]}
 
       "non-matching RelatedUrls in metadata, cloud url and on-prem url update"
       "http://example.com/foo, https://opendap.earthdata.nasa.gov/foo"
       {:RelatedUrls [doc-related-url]}
-      {:RelatedUrls [{:URL "http://example.com/foo"
-                      :Type "USE SERVICE API"
-                      :Subtype "OPENDAP DATA"}
+      {:RelatedUrls [doc-related-url
                      {:URL "https://opendap.earthdata.nasa.gov/foo"
                       :Type "USE SERVICE API"
                       :Subtype "OPENDAP DATA"}
-                     doc-related-url]}))
+                     {:URL "http://example.com/foo"
+                      :Type "USE SERVICE API"
+                      :Subtype "OPENDAP DATA"}]}
+
+      "existing cloud, appending on-prem"
+      "https://example.com/addr"
+      {:RelatedUrls
+       [{:URL "https://opendap.uat.earthdata.nasa.gov/to_be_updated"
+         :Type "GET DATA"
+         :Subtype "OPENDAP DATA"
+         :Description "cloud OPeNDAP Documentation"}]}
+      {:RelatedUrls
+       [{:URL "https://opendap.uat.earthdata.nasa.gov/to_be_updated"
+         :Type "GET DATA"
+         :Subtype "OPENDAP DATA"
+         :Description "cloud OPeNDAP Documentation"}
+        {:URL "https://example.com/addr"
+         :Type "USE SERVICE API"
+         :Subtype "OPENDAP DATA"}]}
+
+      "existing on-prem, appending cloud"
+      "https://opendap.uat.earthdata.nasa.gov/new"
+      {:RelatedUrls
+       [{:URL "https://example.com/addr"
+         :Type "GET DATA"
+         :Subtype "OPENDAP DATA"}]}
+      {:RelatedUrls
+       [{:URL "https://example.com/addr"
+         :Type "GET DATA"
+         :Subtype "OPENDAP DATA"}
+        {:URL "https://opendap.uat.earthdata.nasa.gov/new"
+         :Type "USE SERVICE API"
+         :Subtype "OPENDAP DATA"}]}))
 
   (testing "throws when appropriate"
     (are3 [url-value source]

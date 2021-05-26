@@ -55,10 +55,9 @@
 
         _ (opendap-util/validate-append-no-conflicts opendap-urls url-map)
 
-        other-urls (remove is-opendap? related-urls)
         cloud-url (urls->updated-url :cloud opendap-urls url-map)
         on-prem-url (urls->updated-url :on-prem opendap-urls url-map)
-        updated-urls (conj other-urls cloud-url on-prem-url)]
+        updated-urls (conj related-urls cloud-url on-prem-url)]
     (remove nil? updated-urls)))
 
 (defn update-opendap-url
