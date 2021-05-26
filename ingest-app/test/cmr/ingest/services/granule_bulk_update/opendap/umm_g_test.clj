@@ -210,8 +210,7 @@
          :Subtype "OPENDAP DATA"}
         {:URL "https://opendap.uat.earthdata.nasa.gov/new"
          :Type "USE SERVICE API"
-         :Subtype "OPENDAP DATA"}]}
-))
+         :Subtype "OPENDAP DATA"}]}))
 
   (testing "throws when appropriate"
     (are3 [url-value source]
