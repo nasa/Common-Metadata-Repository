@@ -239,7 +239,7 @@
                                  (let [new-granule-ur (svm/generate-granule-ur
                                                         provider-id
                                                         (:short-name vp-config)
-                                                        (:short-name virtual-coll)
+                                                        virtual-coll
                                                         granule-ur)
                                        resp (ingest/delete-concept
                                               context
