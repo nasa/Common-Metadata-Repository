@@ -29,9 +29,9 @@ exports.indexRelatedUrl = async (relatedUrl, gremlin, dataset, conceptId) => {
     let documentationVertex
 
     if (documentationVertexExists) {
-      documentationVertex = await gremlin.V().hasLabel('documentation').has('name', url)
+      documentationVertex = await gremlin.V().hasLabel('documentation').has('name', url).next()
     } else {
-      documentationVertex = await gremlin.addV('documentation').property('name', url).property('title', description)
+      documentationVertex = await gremlin.addV('documentation').property('name', url).property('title', description || subType).next()
     }
 
     const documentationElement = gremlin.V(documentationVertex)
