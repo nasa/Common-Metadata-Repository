@@ -1,5 +1,5 @@
 const { indexCmrCollection } = require('../../../commonUtils/indexing/indexCmrCollection')
-const { initilizeGremlinConnection } = require('../../../commonUtils/gremlin/initializeGremlinConnection')
+const { initializeGremlinConnection } = require('../../../commonUtils/gremlin/initializeGremlinConnection')
 const { fetchCmrCollection } = require('../../../commonUtils/cmr/fetchCmrCollection')
 const { getEchoToken } = require('../../../commonUtils/cmr/getEchoToken')
 
@@ -11,7 +11,7 @@ module.exports.indexCmrCollection = async (event) => {
   } = event
   const token = await getEchoToken()
   const collection = await fetchCmrCollection(conceptId, token)
-  const gremlin = initilizeGremlinConnection()
+  const gremlin = initializeGremlinConnection()
 
   const indexedSucessfully = await indexCmrCollection(collection, gremlin)
 

@@ -1,5 +1,6 @@
+jest.mock('../../utils/bootstrapGremlinServer')
+
 const { bootstrap } = require('../handler')
-const bootstrapGremilinServer = require('../../utils/bootstrapGremlinServer')
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -7,9 +8,10 @@ beforeEach(() => {
 
 describe('bootstrapGremlinServer handler', () => {
   test('test service response', async () => {
-    jest.spyOn(bootstrapGremilinServer, 'bootstrapGremilinServer').mockImplementation(() => true)
-
     const response = await bootstrap()
-    expect(response).toEqual({ statusCode: 200, body: 'Indexing completed' })
+
+    const { body, statusCode } = response
+    expect(body).toBe('Indexing completed')
+    expect(statusCode).toBe(200)
   })
 })
