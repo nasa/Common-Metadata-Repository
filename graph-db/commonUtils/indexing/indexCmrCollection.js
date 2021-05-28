@@ -30,22 +30,23 @@ exports.indexCmrCollection = async (collection, gremlin) => {
     const exists = await gremlin.V().hasLabel('dataset').has('concept-id', conceptId).hasNext()
 
     if (exists) {
-      dataset = await gremlin.V().hasLabel('dataset').has('name', datasetName).iterate()
+      dataset = await gremlin.V().hasLabel('dataset').has('name', datasetName).next()
     } else {
       dataset = await gremlin.addV('dataset')
         .property('name', datasetName)
         .property('title', entryTitle)
         .property('concept-id', conceptId)
         .property('doi', doiDescription || 'Not provided')
-        .iterate()
+        .next()
     }
   } catch (error) {
     console.log(`Error indexing collection [${conceptId}]: ${error}`)
   }
+  const { value: { id: datasetId } } = dataset
 
   if (relatedUrls && relatedUrls.length > 0) {
     relatedUrls.forEach((relatedUrl) => {
-      indexRelatedUrl(relatedUrl, gremlin, dataset, conceptId)
+      indexRelatedUrl(relatedUrl, gremlin, datasetId, conceptId)
     })
   }
 

@@ -34,8 +34,8 @@ exports.indexRelatedUrl = async (relatedUrl, gremlin, dataset, conceptId) => {
       documentationVertex = await gremlin.addV('documentation').property('name', url).property('title', description || subType).next()
     }
 
-    const documentationElement = gremlin.V(documentationVertex)
-    documentationElement.addE('documents').to(gremlin.V(dataset))
+    const { value: { id: documentationId } } = documentationVertex
+    gremlin.V(documentationId).addE('documents').to(gremlin.V(dataset)).iterate()
   } catch (error) {
     console.log(`ERROR indexing RelatedUrl for concept [${conceptId}] ${JSON.stringify(relatedUrl)}: \n Error: ${error}`)
   }
