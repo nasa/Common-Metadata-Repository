@@ -46,6 +46,20 @@
     (some #(and (= (:name %) psa-name) (some #{value} (:values %)))
           (:product-specific-attributes granule))))
 
+(defn- sanitize-version-id
+  "When version-id is nil, return nil
+   When version-id is a number, return string version with preceeding zeros
+   When version-id is a string, parse into number, then return as string with preceeding zeros.
+   When version-id is a string without a number, return 001. (This should never be the case)"
+  [version-id]
+  (when-not (empty? version-id)
+    (if (number? version-id)
+      (format "%03d" version-id)
+      (as-> (re-find #"\d+" version-id) version-id
+            (or version-id "1")
+            (Integer/parseInt version-id)
+            (format "%03d" version-id)))))
+
 (def day-granule? (matches-value [:data-granule :day-night] "DAY"))
 (def tir-mode? (matches-on-psa "TIR_ObservationMode" "ON"))
 (def swir-mode? (matches-on-psa "SWIR_ObservationMode" "ON"))
@@ -99,7 +113,10 @@
                            :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER L1B Registered Radiance at the Sensor V003"
                            :short-name "AST_L1B"
-                           :version-id "003"}]}
+                           :version-id "003"}
+                          {:entry-title "ASTER Level 1 Precision Terrain Corrected Registered At-Sensor Radiance V031"
+                           :short-name "AST_L1T"
+                           :version-id "031"}]}
    ["GES_DISC" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"]
    {:short-name "OMUVBd"
     :virtual-collections [
@@ -231,12 +248,20 @@
 
 (defmulti generate-granule-ur
   "Generates a new granule ur for the virtual collection"
-  (fn [provider-id source-short-name virtual-short-name granule-ur]
-    [provider-id source-short-name]))
+  (fn [provider-id source-short-name virtual-granule granule-ur]
+    source-short-name))
 
 (defmethod generate-granule-ur :default
-  [provider-id source-short-name virtual-short-name granule-ur]
-  (str/replace-first granule-ur source-short-name virtual-short-name))
+  [provider-id source-short-name virtual-granule granule-ur]
+  (str/replace-first granule-ur source-short-name (:short-name virtual-granule)))
+
+(defmethod generate-granule-ur "AST_L1A"
+  [provider-id source-short-name virtual-granule granule-ur]
+  (let [virtual-version-id (sanitize-version-id (:version-id virtual-granule))]
+    (as-> (str/replace-first granule-ur source-short-name (:short-name virtual-granule)) granule-ur
+          (if virtual-version-id
+            (str/replace-first granule-ur #"\.\d\d\d" (str "." virtual-version-id))
+            granule-ur))))
 
 ;; The granule urs of granules in the virtual collection based on AST_L1A is a simple
 ;; transformation of the granule urs of the corresponding source granules and its inverse is trivial.
@@ -436,7 +461,7 @@
         virtual-granule-ur (generate-granule-ur
                              provider-id
                              source-short-name
-                             virtual-short-name
+                             virtual-coll
                              (:granule-ur source-umm))]
     (-> source-umm
         ;; Remove measured parameters from virtual granules

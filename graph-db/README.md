@@ -78,6 +78,7 @@ npm run test -- --watch
 ## Indexer
 
   Indexer is a serverless application that is connected to a SQS queue that is associated with the live CMR collection ingest/update events. It will index new CMR collection ingest/update into the graph database.
+  
 ### Build
 ```
 npm install
@@ -96,3 +97,63 @@ To roll back the deployed graph indexer application in a CMR environment, run th
 export AWS_PROFILE=cmr-sit
 serverless remove -v --stage sit
 ```
+
+## Explore Indexed Data
+CMR graph database is a Neptune database hosted on AWS. Currently, we only index collections and their documentation related urls as vertices in the graph database with edges (named `documents`) from the related url vertices to the collection vertices that reference them.
+
+The collection vertex has the following properties:
+
+* concept-id - Collection concept id
+* name - Url to the collection landing page
+* title - Entry title of the collection
+* doi - DOI link of the collection
+
+The documentation vertex has the following properties:
+
+* name - documentation url
+* title - description of the documentation url
+
+### Access via CMR graphdb endpoint
+
+CMR graphdb access endpoint is at: https://cmr.sit.earthdata.nasa.gov/graphdb. Users can use the [Gremlin API](https://tinkerpop.apache.org/gremlin.html) to explore the relationships that are indexed in the graph database. Here are some examples:
+
+To see the total number of vertices in the graph db:
+```
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().count()"}'
+```
+
+To see the content of the first 10 vertices in the graph db:
+```
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().limit(10)"}'
+```
+
+To see all collections that share the same documentation URL with the collection (C1233352242-GHRC):
+```
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"dataset\").has(\"concept-id\", \"C1233352242-GHRC\").inE(\"documents\").outV().hasLabel(\"documentation\").outE(\"documents\").inV().hasLabel(\"dataset\").valueMap()"}'
+```
+
+For users have write access to graphdb, they can also add vertices and edges between vertices. For example:
+
+To create a collection vertex:
+```
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.addV(\"dataset\").property(\"name\", \"https://dx.doi.org/undefined\").property(\"title\", \"GPM Ground Validation Precipitation Imaging Package (PIP) ICE POP V1\").property(\"concept-id\", \"C1233352242-GHRC\").property(\"doi\", \"10.5067/GPMGV/ICEPOP/PIP/DATA101\")"}'
+```
+
+To create a documentation vertex:
+```
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.addV(\"documentation\").property(\"name\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\").property(\"title\", \"NASA Participation in the International Collaborative Experiments for Pyeongchang 2018 Olympic and Paralympic Winter Games (ICE-POP 2018)\")"}'
+```
+
+To create an edge from the above documentation vertex to the collection vertex:
+```
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"documentation\").has(\"name\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\").addE(\"documents\").to(g.V().hasLabel(\"dataset\").has(\"concept-id\", \"C1233352242-GHRC\"))"}'
+```
+
+### Access via SSH tunnel and Gremlin Console locally
+For users who have access to AWS Neptune endpoint via an internal jumpbox, they can set up SSH tunnel to the Neptune endpoint and start Gremlin Console locally to connect to the Neptune endpoint. Then, they can use Gremlin console to explore the graph database as if it is local.
+
+Prerequisites: User must have ssh access to the internal jumpbox that has access to Neptune endpoint.
+
+See [this AWS document](https://docs.aws.amazon.com/neptune/latest/userguide/access-graph-gremlin-console.html) on how to set up the Gremlin Console to connect to a Neptune DB instance.
+
+Happy exploring!
