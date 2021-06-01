@@ -5,19 +5,16 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
-   [cmr.ingest.config :as config]
    [cmr.umm-spec.versioning :as ver]
    [cmr.umm-spec.metadata-specification :as m-spec]))
 
 (deftest spec-content-test
   (testing
-    "Test the utility function that builds the MetadataSpecification structure
-    using the default version"
-    (let [expected {:URL (str "https://cdn.earthdata.nasa.gov/umm/granule/v"
-                              (config/granule-umm-version)),
+    "Test the utility function that builds the MetadataSpecification structure"
+    (let [expected {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.2.3",
                     :Name "UMM-G",
-                    :Version (config/granule-umm-version)}
-          actual (m-spec/metadata-spec-content :granule)]
+                    :Version "1.2.3"}
+          actual (m-spec/metadata-spec-content :granule "1.2.3")]
       (is (= expected actual))))
   (testing
     "Test all the supported formats"
