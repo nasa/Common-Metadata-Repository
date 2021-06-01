@@ -49,8 +49,8 @@
    :norms false
    ; split the text on whitespace, but don't do any stemmming, etc.
    :analyzer "keyword"
-   ; Don't bother storing term positions or term frequencies in this field
-   :index_options "docs"})
+   ; Storing term positions in order to run span phrase query with wildcard in this field
+   :index_options "offsets"})
 
 (def binary-field-mapping
   {:type "binary"})

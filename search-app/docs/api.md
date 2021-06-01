@@ -1578,11 +1578,20 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
 #### <a name="c-keyword"></a> Find collections by keyword (free text) search
 
-Keyword searches are case insensitive and support wild cards ? and *.
-There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword
+Keyword searches are case insensitive and support wild cards ? and *, in which '\*' matches zero or more characters and '?' matches any single character. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword
 string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
 
+The following searches on "alpha", "beta" and "g?mma" individually and returns the collections that contain all these individual words
+in the keyword fields that are indexed. Note: these words don't have to exist in the same keyword field, but they have to exsit as a
+space(or one of special character delimiter CMR uses) delimited word.
+
     curl "%CMR-ENDPOINT%/collections?keyword=alpha%20beta%20g?mma"
+
+We also support keyword phrase search. The following searches on "*alpha beta g?mma*" as a phrase and returns the collections with
+one or more indexed keyword field values that contain the phrase.
+
+    curl "%CMR-ENDPOINT%/collections?keyword=\"alpha%20beta%20g?mma\""
+
 
 The following fields are indexed for keyword search:
 

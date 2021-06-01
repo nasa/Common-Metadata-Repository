@@ -49,6 +49,15 @@
        (apply sorted-set)
        (string/join \space)))
 
+(defn field-values->individual-words
+  "Return a list of individual keyword words for the given list of field values."
+  [field-values]
+  (->> field-values
+       (mapcat #(string/split % #" "))
+       (mapcat prepare-keyword-field)
+       (keep not-empty)
+       (apply sorted-set)))
+
 (defn contact-group->keywords
   "Converts a contact group into a vector of terms for keyword searches."
   [contact-group]
