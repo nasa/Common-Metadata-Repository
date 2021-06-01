@@ -2,6 +2,7 @@
   "CMR service ingest integration tests.
   For service permissions tests, see `provider-ingest-permissions-test`."
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :refer [are3]]
@@ -206,3 +207,32 @@
               {:keys [status concept-id revision-id]} response]
           (is (= 200 status))
           (is (= 3 revision-id)))))))
+
+(deftest related-url-type-and-subtype-check
+  (testing
+    "Check valid and invalid related type and subtypes. The first URL is good
+    while the second is bad. The error response should represent this showing
+    the second URL type failed to match a valid keyword."
+    (let [related-urls [{"URL" "https://example.gov"
+                         "URLContentType" "PublicationURL"
+                         "Type" "USE SERVICE API"
+                         "Subtype" "OpenSearch"}  ;this is the valid Related URL
+                        {"URL" "https://example.gov"
+                         "URLContentType" "PublicationURL"
+                         "Type" "USE SERVICE APIs"
+                         "Subtype" "Closed Search"}]
+          concept-src (service-util/make-service-concept)
+          concept-result (as-> concept-src intermediate
+                               (json/parse-string (:metadata intermediate))
+                               (assoc intermediate "RelatedURLs" related-urls)
+                               (json/generate-string intermediate)
+                               (assoc concept-src :metadata intermediate)
+                               (ingest/ingest-concept intermediate))
+          {:keys [status errors]} concept-result
+          first-error (first errors)]
+      (is (= 400 status))
+      (is (= 1 (count errors)))
+      (is (= "Related URL Type and Subtype pair [USE SERVICE APIs>Closed Search] are not valid keywords"
+             (first (:errors first-error))))
+      (is (= "relatedurls" (clojure.string/lower-case (first (:path first-error)))))
+      (is (= 1 (second (:path first-error)))))))

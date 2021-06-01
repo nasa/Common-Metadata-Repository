@@ -515,97 +515,6 @@
               slurp)
           true))
 
-(defn- test-migration-from-to
-  [message from source-file to expected-file]
-  (let [source-file (load-service-file source-file)
-        expected (load-service-file expected-file)
-        actual (vm/migrate-umm {} :service from to source-file)]
-    (is (= expected actual message))))
-
-;; ---- 1.3 tests ----
-
-(comment deftest migrate-main-fields-1-2->1-3
-  "Test the full migration of UMM-S from version 1.2 to version 1.3 using predefined example files."
-  (let [s1-2 (load-service-file "v1.2/Service_v1.2->v1.3.json")
-        s1-3 (load-service-file "v1.3/Service_v1.3-from-v1.2.json")]
-    (is (= s1-3
-           (vm/migrate-umm
-             {} :service "1.2" "1.3" s1-2)))))
-
-(comment deftest migrate-main-fields-1-3->1-2
-  "Test the full migration of UMM-S from version 1.3 to version 1.2 using predefined example files."
-  (let [s1-2 (load-service-file "v1.2/Service_v1.2-from-v1.3.json")
-        s1-3 (load-service-file "v1.3/Service_v1.3->v1.2.json")]
-   (is (= s1-2
-          (vm/migrate-umm
-            {} :service "1.3" "1.2" s1-3)))))
-
-;; ---- 1.3.1 tests ----
-
-(comment deftest migrate-main-fields-1-3->1-3-1
-  "Test the full migration of UMM-S from version 1.3 to version 1.3.1 using predefined example files."
-  (let [s1-3 (load-service-file "v1.3/Service_v1.3-to-v1.3.1.json")
-        s1-3-1 (load-service-file "v1.3.1/Service_v1.3.1-from-v1.3.json")]
-    (is (= s1-3-1
-           (vm/migrate-umm
-             {} :service "1.3" "1.3.1" s1-3)))))
-
-(comment deftest migrate-main-fields-1-3-1->1-3
-  "Test the full migration of UMM-S from version 1.3.1 to version 1.3 using predefined example files."
-  (let [s1-3 (load-service-file "v1.3/Service_v1.3-from-v1.3.1.json")
-        s1-3-1 (load-service-file "v1.3.1/Service_v1.3.1-to-v1.3.json")]
-   (is (= s1-3
-          (vm/migrate-umm
-            {} :service "1.3.1" "1.3" s1-3-1)))))
-
-;; ---- 1.3.2 tests ----
-
-(comment deftest migrate-main-fields-1-3-1->1-3-2
-  "Test the full migration of UMM-S from version 1.3.1 to version 1.3.2 using predefined example files."
-  (let [s1-3-1 (load-service-file "v1.3.1/Service_v1.3.1-to-v1.3.2.json")
-        s1-3-2 (load-service-file "v1.3.2/Service_v1.3.2-from-v1.3.1.json")]
-    (is (= s1-3-2
-           (vm/migrate-umm
-             {} :service "1.3.1" "1.3.2" s1-3-1)))))
-
-(comment deftest migrate-main-fields-1-3-2->1-3-1
-  "Test the full migration of UMM-S from version 1.3.2 to version 1.3.1 using predefined example files."
-  (let [s1-3-1 (load-service-file "v1.3.1/Service_v1.3.1-from-v1.3.2.json")
-        s1-3-2 (load-service-file "v1.3.2/Service_v1.3.2-to-v1.3.1.json")]
-   (is (= s1-3-1
-          (vm/migrate-umm
-            {} :service "1.3.2" "1.3.1" s1-3-2)))))
-
-;; ---- a 1.3.3 test ----
-
-(comment deftest migrate-main-fields-1-3-3->1-3-2
-  "Test the full migration of UMM-S from version 1.3.3 to version 1.3.2 using predefined example files."
-  (let [s1-3-2 (load-service-file "v1.3.2/Service_v1.3.2-from-v1.3.3.json")
-        s1-3-3 (load-service-file "v1.3.3/Service_v1.3.3-to-v1.3.2.json")]
-   (is (= s1-3-2
-          (vm/migrate-umm
-            {} :service "1.3.3" "1.3.2" s1-3-3)))))
-
-;; ---- 1.3.4 tests ----
-
-(comment deftest migrate-main-fields-1-3-3->1-3-4
-  "Test the full migration of UMM-S from version 1.3.3 to version 1.3.4 using predefined example files."
-  ;; Service_v1.3.3-from-v1.3.4.json is used correctly here.
-  (let [s1-3-3 (load-service-file "v1.3.3/Service_v1.3.3-to-v1.3.4.json")
-        s1-3-4 (load-service-file "v1.3.4/Service_v1.3.4-from-v1.3.3.json")]
-    (is (= s1-3-4
-           (vm/migrate-umm
-             {} :service "1.3.3" "1.3.4" s1-3-3)))))
-
-(comment deftest migrate-main-fields-1-3-4->1-3-3
-  "Test the full migration of UMM-S from version 1.3.4 to version 1.3.3 using predefined example files."
-  (let [s1-3-3 (load-service-file "v1.3.3/Service_v1.3.3-from-v1.3.4.json")
-        s1-3-4 (load-service-file "v1.3.4/Service_v1.3.4-to-v1.3.3.json")]
-   (is (= s1-3-3
-          (vm/migrate-umm
-            {} :service "1.3.4" "1.3.3" s1-3-4)))))
-
-
 (deftest migrations-up-and-down
   ""
   (are3
@@ -666,7 +575,6 @@
    "migration up from 1.3.4 to 1.4"
    "1.3.4" "v1.3.4/Service_v1.3.4-from-v1.3.3.json"
    "1.4" "v1.4/Service_v1.4-from-v1.3.4.json"))
-
 
 (comment
 

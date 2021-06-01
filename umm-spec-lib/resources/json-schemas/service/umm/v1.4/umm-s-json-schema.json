@@ -41,6 +41,14 @@
       "description": "This element contains important information about the universal resource locator (URL) for the service.",
       "$ref": "#/definitions/URLType"
     },
+    "RelatedURLs": {
+      "description": "Web addresses used to get supported documentation or other related information link to the service.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/RelatedURLType"
+      },
+      "minItems": 1
+    },
     "Description": {
       "description": "A brief description of the service.",
       "type": "string",
@@ -108,6 +116,10 @@
           "$ref": "#/definitions/OperationMetadataType"
               },
       "minItems": 0
+    },
+    "MetadataSpecification": {
+      "description": "Requires the user to add in schema information into every service record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "$ref": "#/definitions/MetadataSpecificationType"
     }
   },
   "required": [
@@ -118,9 +130,10 @@
     "URL",
     "Description",
     "ServiceKeywords",
-    "ServiceOrganizations"
+    "ServiceOrganizations",
+    "MetadataSpecification"
   ],
-  
+
   "definitions": {
     "ServiceOptionsType": {
       "type": "object",
@@ -206,7 +219,7 @@
     "SpatialSubsetType": {
       "description": "This element describes what kind of spatial subsetting the service provides. The sub elements provide the details.",
       "type": "object",
-      "additionalProperties": false,   
+      "additionalProperties": false,
       "properties": {
         "Point": {
           "description": "This element describes that the service provides a point spatial subsetting capability.",
@@ -243,14 +256,14 @@
         "required": ["BoundingBox"]
       }, {
         "required": ["Polygon"]
-      }, {        
+      }, {
         "required": ["Shapefile"]
       }]
     },
     "SpatialSubsetPointType": {
       "description": "The described service provides a point spatial subsetting capability.",
       "type": "object",
-      "additionalProperties": false,   
+      "additionalProperties": false,
       "properties": {
         "AllowMultipleValues": {
           "description": "The described service will accept a list of values, such as an array of multiple points, if this element is true. A value of false or the element is not used means the service only accepts a single point.",
@@ -262,7 +275,7 @@
     "SpatialSubsetCircleType": {
       "description": "The described service provides a point and radius spatial subsetting capability where the point and radius describe a spatial circle.",
       "type": "object",
-      "additionalProperties": false,   
+      "additionalProperties": false,
       "properties": {
         "AllowMultipleValues": {
           "description": "The described service will accept a list of values, such as an array of multiple circles, if this element is true. A value of false or the element is not used means the service only accepts a single circle (point and radius).",
@@ -274,7 +287,7 @@
     "SpatialSubsetLineType": {
       "description": "The described service provides a line spatial subsetting capability.",
       "type": "object",
-      "additionalProperties": false,   
+      "additionalProperties": false,
       "properties": {
         "MaximumNumberOfPoints": {
           "description": "The maximum number of points that can be used can be specified.",
@@ -290,7 +303,7 @@
     "SpatialSubsetBoundingBoxType": {
       "description": "The described service provides a bounding box spatial subsetting capability.",
       "type": "object",
-      "additionalProperties": false,   
+      "additionalProperties": false,
       "properties": {
         "AllowMultipleValues": {
           "description": "The described service will accept a list of values, such as an array of multiple bounding boxes, if this element is true. A value of false or the element is not used means the service only accepts a single bounding box.",
@@ -302,7 +315,7 @@
     "SpatialSubsetPolygonType": {
       "description": "The described service provides a polygon spatial subsetting capability.",
       "type": "object",
-      "additionalProperties": false,   
+      "additionalProperties": false,
       "properties": {
         "MaximumNumberOfPoints": {
           "description": "The maximum number of points that can be specified.",
@@ -314,7 +327,7 @@
         }
       },
       "required": ["AllowMultipleValues"]
-    },    
+    },
     "SpatialSubsetShapefileType": {
       "description": "The described service provides a shapefile spatial subsetting capability. Additional information should be provided for this type of subsetter which includes the shapefile format, maximum number of points and the maximum file size in bytes.",
       "type": "array",
@@ -324,7 +337,7 @@
     "SpatialSubsetShapefileInformationType": {
       "description": "Additional information should be provided for this type of subsetter which includes the shapefile format, maximum number of points and the maximum file size in bytes.",
       "type": "object",
-      "additionalProperties": false,   
+      "additionalProperties": false,
       "properties": {
         "Format": {
           "description": "This element is used to identify the file format used in the shapefile.",
@@ -345,7 +358,7 @@
     "TemporalSubsetType": {
       "description": "This element describes that the service provides temporal subsetting.",
       "type": "object",
-      "additionalProperties": false,   
+      "additionalProperties": false,
       "properties": {
         "AllowMultipleValues": {
           "description": "The described service will accept a list of values, such as an array of temporal values, if this element is true. A value of false or the element is not used means the service only accepts a temporal value.",
@@ -357,7 +370,7 @@
     "VariableSubsetType": {
       "description": "This element describes that the service provides variable subsetting.",
       "type": "object",
-      "additionalProperties": false,   
+      "additionalProperties": false,
       "properties": {
         "AllowMultipleValues": {
           "description": "The described service will accept a list of values, such as an array of variables, if this element is true. A value of false or the element is not used means the service only accepts a variable.",
@@ -462,6 +475,46 @@
         }
       },
       "required": ["URLValue"]
+    },
+    "RelatedURLType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Web addresses used to get supported documentation or other related information link to the service. Examples include project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data, other supporting documentation.",
+      "properties": {
+        "Description": {
+          "description": "A Description meant for the end user of the web page at this URL.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "URLContentType": {
+          "description": "A keyword describing the distinct group of web addresses e.g., 'PublicationURL'.",
+          "$ref": "#/definitions/RelatedURLContentTypeEnum"
+        },
+        "Type": {
+          "description": "A keyword describing the type of the online resource to this resource. This helps software present the information to the user. The valid values are contained in the KMS System: https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096?gtm_keyword=Related%20URL%20Content%20Types&gtm_scheme=rucontenttype.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Subtype": {
+          "description": "A keyword describing the subtype of the online resource to this resource. This helps software present the information to the user. The valid values are contained in the KMS System: https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096?gtm_keyword=Related%20URL%20Content%20Types&gtm_scheme=rucontenttype",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "URL": {
+          "description": "The web address for the relevant web page.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": ["URL", "URLContentType", "Type"]
+    },
+    "RelatedURLContentTypeEnum": {
+      "type": "string",
+      "enum": ["CollectionURL", "PublicationURL", "VisualizationURL"]
     },
     "OnlineResourceType": {
       "type": "object",
@@ -1263,6 +1316,29 @@
       "description": "This element contains the distributed computing platform (protocol) for the operation(s) made possible via this service.",
       "type": "string",
       "enum": ["XML", "CORBA", "JAVA", "COM", "SQL", "SOAP", "Z3950", "HTTP", "HTTPS", "FTP", "WEBSERVICES"]
+    },
+    "MetadataSpecificationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+      "properties": {
+        "URL": {
+          "description": "The web address of the metadata schema used to validate the service record.",
+          "type": "string",
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/service/v1.4"]
+        },
+        "Name": {
+          "description": "The name of the metadata schema.",
+          "type": "string",
+          "enum": ["UMM-S"]
+        },
+        "Version": {
+          "description": "The version of the metadata schema.",
+          "type": "string",
+          "enum": ["1.4"]
+        }
+      },
+      "required": ["URL", "Name", "Version"]
     }
   }
 }

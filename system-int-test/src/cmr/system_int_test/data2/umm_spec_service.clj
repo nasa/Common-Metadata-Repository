@@ -5,7 +5,8 @@
    [cmr.common.mime-types :as mime-types]
    [cmr.umm-spec.models.umm-service-models :as umm-s]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]))
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.metadata-specification :as m-spec]))
 
 (def context (lkt/setup-context-for-test))
 
@@ -22,7 +23,8 @@
        :ServiceTopic "VISUALIZATION/IMAGE PROCESSING"}]
    :ServiceOrganizations [
       {:Roles ["SERVICE PROVIDER"]
-       :ShortName "LDPAAC"}]})
+       :ShortName "LDPAAC"}]
+   :MetadataSpecification (m-spec/metadata-spec-content :service)})
 
 (defn- service
   "Returns a UMM-S record from the given attribute map."

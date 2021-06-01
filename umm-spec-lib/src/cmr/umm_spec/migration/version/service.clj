@@ -4,6 +4,7 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.util :as util]
+   [cmr.umm-spec.metadata-specification :as m-spec]
    [cmr.umm-spec.migration.service-service-options :as service-options]
    [cmr.umm-spec.migration.version.interface :as interface]))
 
@@ -447,3 +448,13 @@
       (update-in [:ServiceOptions] dissoc :Subset)
       (update-in [:ServiceOptions :SupportedReformattings]
                  service-options/remove-reformattings-non-valid-formats-1_3_4-to-1_3_3)))
+
+(defmethod interface/migrate-umm-version [:service "1.3.4" "1.4"]
+  [context umm-s & _]
+  (-> umm-s
+      (m-spec/update-version :service "1.4")))
+
+(defmethod interface/migrate-umm-version [:service "1.4" "1.3.4"]
+  [context umm-s & _]
+  (-> umm-s
+      (dissoc :MetadataSpecification :RelatedURLs)))
