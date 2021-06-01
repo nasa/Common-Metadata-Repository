@@ -14,9 +14,9 @@
     "Test the utility function that builds the MetadataSpecification structure
     using the default version"
     (let [expected {:URL (str "https://cdn.earthdata.nasa.gov/umm/granule/v"
-                              (config granule-umm-version)),
+                              (config/granule-umm-version)),
                     :Name "UMM-G",
-                    :Version (config granule-umm-version)}
+                    :Version (config/granule-umm-version)}
           actual (m-spec/metadata-spec-content :granule)]
       (is (= expected actual))))
   (testing
