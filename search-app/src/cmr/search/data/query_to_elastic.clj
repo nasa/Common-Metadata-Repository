@@ -303,9 +303,9 @@
     (errors/throw-service-errors :bad-request (vector msg))))
 
 (defn- remove-quotes-from-keyword-query-string
-  "When keyword query string is double quoted string in a condition, we want remove the quotes,
-  add wildcard and change the field from :keyword to :keyword-phrase so that the search can be
-  against :keyword-phrase index."
+  "When keyword query string is double quoted string in a condition, we want to remove the quotes,
+  add wildcard and change the field from :keyword to :keyword-phrase. Both :keyword and :keyword-phrase
+  search against the same index, but through different query types."
   [condition]
   (let [query-str (:query-str condition)
         trimmed-query-str (when query-str
@@ -327,7 +327,6 @@
         boosts (:boosts unquoted-query)
         {:keys [concept-type condition]} (query-expense/order-conditions unquoted-query)
         core-query (q2e/condition->elastic condition concept-type)]
-        ;;_ (println "core-query: " core-query)]
     ;;Need the original query here because when the query-str is quoted, it's processed differently.
     (let [keywords (keywords-in-query query)]
       (if-let [all-keywords (seq (concat (:keywords keywords) (:field-keywords keywords)))]

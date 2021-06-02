@@ -203,18 +203,20 @@
    [{:keys [field query-str]} concept-type]
    (let [field (query-field->elastic-field field concept-type)]
      (cond
-       (= :keyword-phrase field)
+       ;; for collection keyword search, we are using the new keyword2 index
+       ;; because we can not modify the existing index mapping.
+       (and (= :keyword-phrase field) (= :collection concept-type))
          {:span_near
            {:clauses [{:span_multi
                         {:match
                           {:wildcard
-                            {:keyword-phrase (escape-query-string query-str)}}}}]
+                            {:keyword2 (escape-query-string query-str)}}}}]
             :slop 0
             :in_order true}}
-       (and (= :keyword field) (:collection concept-type))
+       (and (= :keyword field) (= :collection concept-type))
          {:query_string {:query (escape-query-string query-str)
                          :analyzer :whitespace
-                         :default_field :keyword-phrase 
+                         :default_field :keyword2
                          :default_operator :and}}
        :else
         {:query_string {:query (escape-query-string query-str)
