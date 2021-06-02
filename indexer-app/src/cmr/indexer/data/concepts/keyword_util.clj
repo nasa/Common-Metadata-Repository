@@ -16,6 +16,10 @@
   "Defines Regex to split strings with special characters into multiple words for keyword searches."
   #"[!@#$%^&()\-=_+{}\[\]|;'.,\\\"/:<>?`~* ]")
 
+(def keyword-phrase-separator-regex
+  "Defines Regex to split strings with special characters into multiple phrases for keyword phrase searches."
+  #"[!@#$%^&()\-=_+{}\[\]|;'.,\\\"/:<>?`~*]")
+
 (defn- wrapped-keyword?
   "Checks if the field-value about to be processed is a term surrounded by parens or brackets.
    If it is, we want to add the usual keywords, but also add the unwrapped field-value on its own."

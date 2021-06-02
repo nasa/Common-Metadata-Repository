@@ -161,7 +161,7 @@
 
         coll26 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection {:EntryTitle "coll26" :ShortName "S26"
                                                                              :ContactPersons [personnel1]}) {:format :dif10})
-        coll26-1 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection {:EntryTitle "coll26 one" :ShortName "S26 one"
+        coll26-1 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection {:EntryTitle "coll26 one" :ShortName "S26 (sname one)"
                                                                                :ContactPersons [personnel1]}) {:format :dif10})
         coll27 (d/ingest-umm-spec-collection "PROV5" (data-umm-c/collection {:EntryTitle "coll27" :ShortName "S27" :ContactPersons [personnel2]}) {:format :dif10})]
 
@@ -230,6 +230,11 @@
 
         ;; short name
         "XYZ" [coll2]
+        "\"XYZ\"" [coll2]
+        "sname one" [coll26-1]
+        "\"sname one\"" [coll26-1]
+        "(sname one)" [coll26-1]
+        "\"(sname one)\"" [coll26-1]
 
         ;; version id
         "V001" [coll2]
