@@ -522,7 +522,7 @@
    (let [expected (load-service-file destination-file)
          source (load-service-file source-file)
          actual (vm/migrate-umm {} :service source-version destination-version source)]
-     (= expected actual))
+     (is (= expected actual)))
 
    ;; ---- 1.3 tests ----
    "Test the full migration of UMM-S from version 1.2 to version 1.3 using predefined example files."
@@ -530,8 +530,8 @@
    "1.3" "v1.3/Service_v1.3-from-v1.2.json"
 
    "Test the full migration of UMM-S from version 1.3 to version 1.2 using predefined example files."
-   "1.2" "v1.2/Service_v1.2-from-v1.3.json"
    "1.3" "v1.3/Service_v1.3->v1.2.json"
+   "1.2" "v1.2/Service_v1.2-from-v1.3.json"
 
    ;; ---- 1.3.1 tests ----
    "Test the full migration of UMM-S from version 1.3 to version 1.3.1 using predefined example files."
@@ -553,26 +553,24 @@
 
    ;; ---- a 1.3.3 test ----
    "Test the full migration of UMM-S from version 1.3.3 to version 1.3.2 using predefined example files."
-   "1.3.3"
-   "v1.3.3/Service_v1.3.3-to-v1.3.2.json"
-   "1.3.2"
-   "v1.3.2/Service_v1.3.2-from-v1.3.3.json"
+   "1.3.3" "v1.3.3/Service_v1.3.3-to-v1.3.2.json"
+   "1.3.2" "v1.3.2/Service_v1.3.2-from-v1.3.3.json"
 
    ;; ---- 1.3.4 tests ----
    "Test the full migration of UMM-S from version 1.3.3 to version 1.3.4 using predefined example files."
-   "1.3.3" "v1.3.3/Service_v1.3.3-from-v1.3.4.json"
-   "1.3.4" "v1.3.4/Service_v1.3.4-to-v1.3.3.json"
+   "1.3.3" "v1.3.3/Service_v1.3.3-to-v1.3.4.json"
+   "1.3.4" "v1.3.4/Service_v1.3.4-from-v1.3.3.json"
 
    "Test the full migration of UMM-S from version 1.3.4 to version 1.3.3 using predefined example files."
    "1.3.4" "v1.3.4/Service_v1.3.4-to-v1.3.3.json"
    "1.3.3" "v1.3.3/Service_v1.3.3-from-v1.3.4.json"
 
    ;; ---- 1.4 tests ----
-   "migrating down from 1.4 to 1.3.4"
+   "Migrating down from 1.4 to 1.3.4"
    "1.4" "v1.4/Service_v1.4-to-v1.3.4.json"
    "1.3.4" "v1.3.4/Service_v1.3.4-from-v1.3.3.json"
 
-   "migration up from 1.3.4 to 1.4"
+   "Migration up from 1.3.4 to 1.4"
    "1.3.4" "v1.3.4/Service_v1.3.4-from-v1.3.3.json"
    "1.4" "v1.4/Service_v1.4-from-v1.3.4.json"))
 
