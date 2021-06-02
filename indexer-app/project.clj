@@ -14,8 +14,8 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [ring/ring-core "1.7.1"]
-                 [ring/ring-json "0.4.0"]]
+                 [ring/ring-core "1.9.2"]
+                 [ring/ring-json "0.5.1"]]
   :plugins [[lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
   :repl-options {:init-ns user}
@@ -45,15 +45,29 @@
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
-             :internal-repos {}}
+             :internal-repos {}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]
+
             "int-test-out" ["with-profile" "+integration-tests" "test2junit"]
             ;; Linting aliases
-            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
-                          ["with-profile" "lint" "kibit"]]
+            "kibit" ["do"
+                     ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+                     ["with-profile" "lint" "kibit"]]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]

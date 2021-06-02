@@ -22,7 +22,7 @@
                       tags/grant-all-tag-fixture]))
 
 ;; This test is to verify that bulk index works with tombstoned tag associations
-(deftest bulk-index-collections-with-tag-association-test
+(deftest ^:oracle bulk-index-collections-with-tag-association-test
   (s/only-with-real-database
     (let [[coll1 coll2] (for [n (range 1 3)]
                           (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n)})))

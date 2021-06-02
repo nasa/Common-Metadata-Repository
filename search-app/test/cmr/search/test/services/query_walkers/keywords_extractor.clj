@@ -13,27 +13,27 @@
   [condition]
   (qm/query {:condition condition}))
 
-(deftest extract-keywords-test
+(deftest ^:kaocha/pending extract-keywords-test
   (let [query (query
-               (and-conds
-                (keyword-cond "foo bar")
-                (other 1)
                 (and-conds
-                 (qm/string-condition :platform "platform1 platform2")
-                 (qm/string-condition :project "project")
-                 (qm/string-condition :instrument "instrument")
-                 (qm/string-condition :sensor "sensor")
-                 (qm/string-condition :science-keywords.category "category")
-                 (qm/string-condition :science-keywords.topic "topic")
-                 (qm/string-condition :science-keywords.term "term")
-                 (qm/string-condition :science-keywords.variable-level-1 "variable-level-1")
-                 (qm/string-condition :science-keywords.variable-level-2 "variable-level-2")
-                 (qm/string-condition :science-keywords.variable-level-3 "variable-level-3")
-                 (qm/string-condition :science-keywords.any "any")
-                 (qm/string-condition :two-d-coordinate-system-name "two-d-coordinate-system-name")
-                 (qm/string-condition :processing-level-id "processing-level-id")
-                 (qm/string-condition :data-center "data-center")
-                 (qm/string-condition :archive-center "archive-center"))))
+                  (keyword-cond "foo bar")
+                  (other 1)
+                  (and-conds
+                    (qm/string-condition :platform "platform1 platform2")
+                    (qm/string-condition :project "project")
+                    (qm/string-condition :instrument "instrument")
+                    (qm/string-condition :sensor "sensor")
+                    (qm/string-condition :science-keywords.category "category")
+                    (qm/string-condition :science-keywords.topic "topic")
+                    (qm/string-condition :science-keywords.term "term")
+                    (qm/string-condition :science-keywords.variable-level-1 "variable-level-1")
+                    (qm/string-condition :science-keywords.variable-level-2 "variable-level-2")
+                    (qm/string-condition :science-keywords.variable-level-3 "variable-level-3")
+                    (qm/string-condition :science-keywords.any "any")
+                    (qm/string-condition :two-d-coordinate-system-name "two-d-coordinate-system-name")
+                    (qm/string-condition :processing-level-id "processing-level-id")
+                    (qm/string-condition :data-center "data-center")
+                    (qm/string-condition :archive-center "archive-center"))))
         expected-keywords {:keywords ["foo" "bar"]
                            :field-keywords ["platform1" "platform2" "project" "instrument" "sensor"
                                             "category" "topic" "term" "variable-level-1" "variable-level-2"

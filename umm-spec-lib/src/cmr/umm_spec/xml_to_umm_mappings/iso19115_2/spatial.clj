@@ -11,7 +11,6 @@
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :refer [generate-horizontal-resolution-code-name-map]]
    [cmr.umm-spec.util :as umm-spec-util]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as iso-shared-distrib]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as iso-xml-parsing-util]))
 
 (def coordinate-system-xpath
@@ -112,16 +111,12 @@
   (when-let [vertical-domains (select doc vertical-string-xpath)]
     (for [vertical-domain vertical-domains
           :let [vertical-string (value-of (clojure.data.xml/emit-str vertical-domain) "CharacterString")
-                type-index (util/get-index-or-nil vertical-string "Type:")
-                value-index (util/get-index-or-nil vertical-string "Value:")
-                end-index (count vertical-string)
-                type (when type-index
-                       (iso-shared-distrib/get-substring vertical-string type-index value-index end-index))
-                value (when value-index
-                       (iso-shared-distrib/get-substring vertical-string value-index end-index))]
-          :when (or type value)]
-      {:Type type
-       :Value value})))
+                vertical-map
+                  (iso-xml-parsing-util/convert-iso-description-string-to-map
+                    vertical-string
+                    (re-pattern "Type:|Value:"))]
+          :when (not-empty vertical-map)]
+      vertical-map)))
 
 (def geodetic-model-xpath
   (let [id-xpath "gmd:EX_GeographicDescription/gmd:geographicIdentifier/gmd:MD_Identifier"]

@@ -194,6 +194,11 @@
         <URL>http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac</URL>
       </OnlineAccessURL>
     </OnlineAccessURLs>
+    <OnlineAccessURLs>
+      <OnlineAccessURL>
+        <URL>s3://aws.com/hydro/details</URL>
+      </OnlineAccessURL>
+    </OnlineAccessURLs>
     <OnlineResources>
       <OnlineResource>
         <URL>http://camex.nsstc.nasa.gov/camex3/</URL>
@@ -208,6 +213,11 @@
         <URL>ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/</URL>
         <Description>Some description.</Description>
         <Type>Browse</Type>
+      </OnlineResource>
+      <OnlineResource>
+        <URL>https://dmr.s3.bucket.example.org</URL>
+        <Description>Some description about DMR buckets</Description>
+        <Type>EXTENDED METADATA : DMR++</Type>
       </OnlineResource>
     </OnlineResources>
     <CloudCover>0.8</CloudCover>
@@ -325,6 +335,9 @@
                       {:type "GET DATA"
                        :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})
                     (umm-c/map->RelatedURL
+                      {:type "GET DATA VIA DIRECT ACCESS"
+                       :url "s3://aws.com/hydro/details"})
+                    (umm-c/map->RelatedURL
                       {:type "GET DATA"
                        :title "(DATA ACCESS)"
                        :url "http://camex.nsstc.nasa.gov/camex3/"})
@@ -339,6 +352,12 @@
                        :url "ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/"
                        :description "Some description."
                        :title "Some description. (Browse)"})
+                    (umm-c/map->RelatedURL
+                      {:type "EXTENDED METADATA"
+                       :sub-type "DMR++"
+                       :url "https://dmr.s3.bucket.example.org"
+                       :title "Some description about DMR buckets (EXTENDED METADATA : DMR++)"
+                       :description "Some description about DMR buckets"})
                     (umm-c/map->RelatedURL
                       {:type "GET RELATED VISUALIZATION"
                        :url "http://nasa.gov/1"

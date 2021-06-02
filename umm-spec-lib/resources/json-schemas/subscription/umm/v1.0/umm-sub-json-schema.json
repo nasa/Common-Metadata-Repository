@@ -26,20 +26,18 @@
       "description": "The collection concept id of the granules subscribed.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 255 
+      "maxLength": 255
     },
     "Query": {
       "description": "The search query for the granules that matches the subscription.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 40000 
+      "maxLength": 40000
     }
   },
   "required": [
     "Name",
-    "SubscriberId",
-    "EmailAddress",
     "CollectionConceptId",
-    "Query" 
+    "Query"
   ]
 }

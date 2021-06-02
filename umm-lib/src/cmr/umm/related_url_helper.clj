@@ -51,6 +51,16 @@
   [related-urls]
   (filter downloadable-url? related-urls))
 
+(defn s3-url?
+  "Returns true if the related-url is a s3 URL"
+  [related-url]
+  (= "GET DATA VIA DIRECT ACCESS" (:type related-url)))
+
+(defn s3-urls
+  "Returns the related-urls that are s3 URLs"
+  [related-urls]
+  (filter s3-url? related-urls))
+
 (defn browse-url?
   "Returns true if the related-url is browse url"
   [related-url]
@@ -76,6 +86,7 @@
   "Returns true if the related-url is metadata url"
   [related-url]
   (not (or (downloadable-url? related-url)
+           (s3-url? related-url)
            (browse-url? related-url)
            (documentation-url? related-url))))
 
@@ -84,10 +95,17 @@
   [related-urls]
   (filter metadata-url? related-urls))
 
+(defn opendap-url?
+  "Returns true if the related-url is OPeNDAP url"
+  [related-url]
+  (and (= "USE SERVICE API" (:type related-url))
+       (= "OPENDAP DATA" (:sub-type related-url))))
+
 (defn resource-url?
   "Returns true if the related-url is resource url"
   [related-url]
   (not (or (downloadable-url? related-url)
+           (s3-url? related-url)
            (browse-url? related-url))))
 
 (defn resource-urls
@@ -96,10 +114,12 @@
   (filter resource-url? related-urls))
 
 (defn- related-url->link-type
-  "Returns the atom link type of the related url"
+  "Returns the atom link type of the related url - used for granules"
   [related-url]
   (cond
     (downloadable-url? related-url) "data"
+    (s3-url? related-url) "s3"
+    (opendap-url? related-url) "service"
     (browse-url? related-url) "browse"
     (documentation-url? related-url) "documentation"
     :else "metadata"))

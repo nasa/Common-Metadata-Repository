@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association
   "Functions for parsing UMM metadata association records out of ISO 19115-2 XML elemuments."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
    [cmr.umm-spec.iso19115-2-util :as iso]
@@ -26,9 +26,15 @@
   [elem]
   (concat
     (for [ma (select elem non-source-ma-xpath)
-          :let [assoc-type (value-of ma "gmd:associationType/gmd:DS_AssociationTypeCode")]
+          :let [assoc-type (value-of ma "gmd:associationType/gmd:DS_AssociationTypeCode")
+                assoc-type (when assoc-type
+                             (string/trim assoc-type))]
           ;; crossReference type is used by publications
-          :when (not= "crossReference" assoc-type)]
+          ;; associatedDOIs is used by associatedDOIs
+          :when (or (nil? assoc-type)
+                    (and assoc-type
+                         (not= "crossReference" assoc-type)
+                         (not= "associatedDOI" assoc-type)))]
       {:EntryId (iso/char-string-value
                   ma (str citation-prefix "/gmd:title"))
        :Version (iso/char-string-value
@@ -36,7 +42,7 @@
        :Description (iso/char-string-value
                       ma (str citation-prefix "/gmd:otherCitationDetails"))
        :Type (some-> assoc-type
-                     str/upper-case)})
+                     string/upper-case)})
     (for [ma (select elem source-ma-xpath)]
       {:EntryId (iso/char-string-value ma "gmd:sourceCitation/gmd:CI_Citation/gmd:title")
        :Version (iso/char-string-value ma "gmd:sourceCitation/gmd:CI_Citation/gmd:edition")

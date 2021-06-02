@@ -77,6 +77,19 @@
       (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index keyword-scheme value)
         {field-path [(msg-fn value)]}))))
 
+(defn match-getdata-format-kms-keywords-validation
+  "A validation that checks that the format matches granule-data-format  KMS field.
+  Takes the following arguments:
+
+  * kms-index - The keywords map as returned by kms-fetcher/get-kms-index
+  * msg-fn - A function taking the value and returning the error to return to the user if it doesn't
+  match."
+  [kms-index msg-fn]
+  (fn [field-path value]
+    (when value
+      (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index :granule-data-format value)
+        {field-path [(msg-fn value)]}))))
+
 (defn keyword-validations
   "Creates validations that check various collection fields to see if they match KMS keywords."
   [context]
@@ -101,7 +114,14 @@
      :ArchiveAndDistributionInformation
       {:FileDistributionInformation
        (match-kms-keywords-validation
-        kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}}))
+        kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)
+       :FileArchiveInformation
+       (match-kms-keywords-validation
+        kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}
+     :RelatedUrls
+      (v/every  {:GetData {:Format (match-getdata-format-kms-keywords-validation
+                                    kms-index
+                                    msg/getdata-format-not-matches-kms-keywords)}})}))
 
 (defn- pad-zeros-to-version
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"

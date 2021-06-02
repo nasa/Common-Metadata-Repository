@@ -2,6 +2,8 @@
   "Integration test for CMR fingerprint operations."
   (:require
    [clojure.test :refer :all]
+   [cmr.system-int-test.data2.collection :as data2-collection]
+   [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.index-util :as index]
@@ -16,15 +18,27 @@
                                              :grant-all-search? true
                                              :grant-all-access-control? false})]))
 
-(deftest fingerprint-variable-by-concept-id
+(deftest ^:oracle fingerprint-variable-by-concept-id
   (testing "Update fingerprint of variable by concept-id"
     (s/only-with-real-database
-     (let [var1 (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)
-           var2 (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 2)
-           var1-concept-id (:concept-id var1)
+     (let [coll1 (data2-core/ingest
+                  "PROV1"
+                  (data2-collection/collection {:entry-title "ET1"
+                                                :short-name "S1"
+                                                :version-id "V1"}))
+           _ (index/wait-until-indexed)
+           var1 (variable/make-variable-concept
+                 {:Name "Variable1"}
+                 {:native-id "var1"
+                  :coll-concept-id (:concept-id coll1)})
+           var2 (variable/make-variable-concept
+                 {:Name "Variable2"}
+                 {:native-id "var2"
+                  :coll-concept-id (:concept-id coll1)})
+           {var1-concept-id :concept-id} (variable/ingest-variable-with-association var1)
+           {var2-concept-id :concept-id} (variable/ingest-variable-with-association var2)
            var1-concept (mdb/get-concept var1-concept-id)
            var1-fingerprint (get-in var1-concept [:extra-fields :fingerprint])
-           var2-concept-id (:concept-id var2)
            var2-concept (mdb/get-concept var2-concept-id)
            var2-fingerprint (get-in var2-concept [:extra-fields :fingerprint])]
        ;; Sanity check variable concept retrieved from metadata-db
@@ -89,19 +103,39 @@
            (is (= [422 ["Variable with concept-id [V1000-PROV1] does not exist"]]
                   [status errors]))))))))
 
-(deftest fingerprint-variables-for-provider
+(deftest ^:oracle fingerprint-variables-for-provider
   (testing "Update fingerprint of variables for a single provider"
     (s/only-with-real-database
-     (let [var1 (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)
-           var2 (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 2)
-           var3 (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 1)
-           var1-concept-id (:concept-id var1)
+     (let [coll1 (data2-core/ingest
+                  "PROV1"
+                  (data2-collection/collection {:entry-title "ET1"
+                                                :short-name "S1"
+                                                :version-id "V1"}))
+           coll2 (data2-core/ingest
+                  "PROV2"
+                  (data2-collection/collection {:entry-title "ET2"
+                                                :short-name "S2"
+                                                :version-id "V2"}))
+           _ (index/wait-until-indexed)
+           var1 (variable/make-variable-concept
+                 {:Name "Variable1"}
+                 {:native-id "var1"
+                  :coll-concept-id (:concept-id coll1)})
+           var2 (variable/make-variable-concept
+                 {:Name "Variable2"}
+                 {:native-id "var2"
+                  :coll-concept-id (:concept-id coll1)})
+           var3 (variable/make-variable-concept
+                 {:Name "Variable1"}
+                 {:native-id "var1"
+                  :coll-concept-id (:concept-id coll2)})
+           {var1-concept-id :concept-id} (variable/ingest-variable-with-association var1)
+           {var2-concept-id :concept-id} (variable/ingest-variable-with-association var2)
+           {var3-concept-id :concept-id} (variable/ingest-variable-with-association var3)
            var1-concept (mdb/get-concept var1-concept-id)
            var1-fingerprint (get-in var1-concept [:extra-fields :fingerprint])
-           var2-concept-id (:concept-id var2)
            var2-concept (mdb/get-concept var2-concept-id)
            var2-fingerprint (get-in var2-concept [:extra-fields :fingerprint])
-           var3-concept-id (:concept-id var3)
            var3-concept (mdb/get-concept var3-concept-id)
            var3-fingerprint (get-in var3-concept [:extra-fields :fingerprint])
            ;; now change the fingerprint of var1 and var3 to a different vaule
@@ -161,19 +195,39 @@
            (is (= 422 status))
            (is (= ["Provider [PROVX] does not exist"] errors))))))))
 
-(deftest fingerprint-all-variables
+(deftest ^:oracle fingerprint-all-variables
   (testing "Update fingerprint of all variables"
     (s/only-with-real-database
-     (let [var1 (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)
-           var2 (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 2)
-           var3 (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 1)
-           var1-concept-id (:concept-id var1)
+     (let [coll1 (data2-core/ingest
+                  "PROV1"
+                  (data2-collection/collection {:entry-title "ET1"
+                                                :short-name "S1"
+                                                :version-id "V1"}))
+           coll2 (data2-core/ingest
+                  "PROV2"
+                  (data2-collection/collection {:entry-title "ET2"
+                                                :short-name "S2"
+                                                :version-id "V2"}))
+           _ (index/wait-until-indexed)
+           var1 (variable/make-variable-concept
+                 {:Name "Variable1"}
+                 {:native-id "var1"
+                  :coll-concept-id (:concept-id coll1)})
+           var2 (variable/make-variable-concept
+                 {:Name "Variable2"}
+                 {:native-id "var2"
+                  :coll-concept-id (:concept-id coll1)})
+           var3 (variable/make-variable-concept
+                 {:Name "Variable1"}
+                 {:native-id "var1"
+                  :coll-concept-id (:concept-id coll2)})
+           {var1-concept-id :concept-id} (variable/ingest-variable-with-association var1)
+           {var2-concept-id :concept-id} (variable/ingest-variable-with-association var2)
+           {var3-concept-id :concept-id} (variable/ingest-variable-with-association var3)
            var1-concept (mdb/get-concept var1-concept-id)
            var1-fingerprint (get-in var1-concept [:extra-fields :fingerprint])
-           var2-concept-id (:concept-id var2)
            var2-concept (mdb/get-concept var2-concept-id)
            var2-fingerprint (get-in var2-concept [:extra-fields :fingerprint])
-           var3-concept-id (:concept-id var3)
            var3-concept (mdb/get-concept var3-concept-id)
            var3-fingerprint (get-in var3-concept [:extra-fields :fingerprint])
            ;; now change the fingerprint of var1 and var3 to a different vaule

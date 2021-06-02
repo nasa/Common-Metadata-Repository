@@ -40,11 +40,14 @@
    :exclude :exclude
    :granule-data-format :string
    :granule-data-format-h :humanizer
+   :horizontal-data-resolution-range :range-facet
    :has-granules :has-granules
    :has-granules-or-cwic :has-granules-or-cwic
+   :has-granules-or-opensearch :has-granules-or-cwic
    :has-granules-created-at :multi-date-range
    :has-granules-revised-at :multi-date-range
    :has-opendap-url :boolean
+   :cloud-hosted :boolean
    :instrument :string
    :instrument-h :humanizer
    :keyword :keyword
@@ -90,7 +93,12 @@
    ;; service parameters
    :service-name :string
    :service-type :string
-   :service-concept-id :string})
+   :service-concept-id :string
+
+   ;; tool parameters
+   :tool-name :string
+   :tool-type :string
+   :tool-concept-id :string})
 
 (defmethod common-params/param-mappings :granule
   [_]
@@ -185,7 +193,7 @@
 
 (defmethod common-params/always-case-sensitive-fields :collection
   [_]
-  #{:concept-id :variable-concept-id :service-concept-id})
+  #{:concept-id :variable-concept-id :service-concept-id :tool-concept-id})
 
 (defmethod common-params/always-case-sensitive-fields :granule
   [_]

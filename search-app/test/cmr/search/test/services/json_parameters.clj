@@ -1,6 +1,7 @@
 (ns cmr.search.test.services.json-parameters
   "Testing functions used for parsing and generating query conditions for JSON queries."
   (:require [clojure.test :refer :all]
+            [cmr.common.util :refer [are3]]
             [cmr.common-app.services.search.query-model :as q]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.search.services.json-parameters.conversion :as jp]
@@ -82,3 +83,17 @@
     (is (= (q/string-condition :entry-title "bar*" false true)
            (jp/parse-json-condition :collection :entry-title {:value "bar*" :ignore-case true
                                                               :pattern true})))))
+
+(deftest parse-json-condition-range-facet->condition-test
+  "Tests converting a range-facet string to an elastic query using conversions."
+  (are3 [expected-min expected-max range-string]
+    (is (= (q/nested-condition
+             :horizontal-data-resolutions
+             (q/numeric-range-condition
+               :horizontal-data-resolutions.value expected-min expected-max))
+           (jp/parse-json-condition :collection :horizontal-data-resolution-range range-string)))
+
+    "Testing range-facet->condition using a string."
+    1.0
+    30.0
+    "1 to 30 meters"))

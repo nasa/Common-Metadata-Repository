@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [cmr.common-app.config :as common-config]
    [cmr.common.concepts :as concepts]
+   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.validations.json-schema :as js]
@@ -153,7 +154,7 @@
 
 (defn validate-and-save-bulk-update
   "Validate the bulk update POST parameters, save rows to the db for task
-  and collection statuses, and queueu bulk update. Return task id, which comes
+  and collection statuses, and queue bulk update. Return task id, which comes
   from the db save."
   [context provider-id json user-id]
   (validate-bulk-update-post-params json)
@@ -165,19 +166,19 @@
         ;; Write db rows - one for overall status, one for each concept id
         task-id (try
                   (data-bulk-update/create-bulk-update-task
-                    context provider-id json concept-ids)
-                 (catch Exception e
-                   (let [msg (.getMessage e)
-                         msg (if (string/includes? msg "BULK_UPDATE_TASK_STATUS_UK")
-                               "Bulk update name needs to be unique within the provider."
-                               msg)]
-                     (errors/throw-service-errors
+                   context provider-id json concept-ids)
+                  (catch Exception e
+                    (let [msg (.getMessage e)
+                          msg (if (string/includes? msg "BULK_UPDATE_TASK_STATUS_UK")
+                                "Bulk update name needs to be unique within the provider."
+                                msg)]
+                      (errors/throw-service-errors
                        :invalid-data
                        [(str "Error creating bulk update task: " msg)]))))]
     ;; Queue the bulk update event
     (ingest-events/publish-ingest-event
-      context
-      (ingest-events/ingest-bulk-update-event provider-id task-id bulk-update-params user-id))
+     context
+     (ingest-events/collections-bulk-event provider-id task-id bulk-update-params user-id))
     task-id))
 
 (defn handle-bulk-update-event
@@ -185,14 +186,14 @@
   [context provider-id task-id bulk-update-params user-id]
   (let [{:keys [concept-ids]} bulk-update-params]
     (doseq [concept-id concept-ids]
-     (ingest-events/publish-ingest-event
-      context
-      (ingest-events/ingest-collection-bulk-update-event
-       provider-id
-       task-id
-       concept-id
-       bulk-update-params
-       user-id)))))
+      (ingest-events/publish-ingest-event
+       context
+       (ingest-events/ingest-collection-bulk-update-event
+        provider-id
+        task-id
+        concept-id
+        bulk-update-params
+        user-id)))))
 
 (defn- update-collection-concept
   "Perform the update on the collection and update the concept.

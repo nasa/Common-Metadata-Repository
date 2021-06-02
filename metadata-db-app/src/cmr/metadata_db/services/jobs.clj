@@ -33,6 +33,7 @@
   (concept-service/delete-old-revisions context pv/cmr-provider :tag)
   (concept-service/delete-old-revisions context pv/cmr-provider :variable-association)
   (concept-service/delete-old-revisions context pv/cmr-provider :service-association)
+  (concept-service/delete-old-revisions context pv/cmr-provider :tool-association)
   ;; cleanup provider specific tables
   (doseq [provider (provider-service/get-providers context)]
     (concept-service/delete-old-revisions context provider :collection)

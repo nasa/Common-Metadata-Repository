@@ -11,6 +11,10 @@ browse-scaler/src/node_modules
 *.eastwood
 .tags
 .tags1
+.clj-kondo/
+.lsp
+.cider-repl-history
+**/ignore.*
 
 ###############################
 ### Test Files

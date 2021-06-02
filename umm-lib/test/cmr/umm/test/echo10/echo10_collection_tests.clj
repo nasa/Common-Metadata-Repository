@@ -512,7 +512,8 @@
          :title "(DATA ACCESS)"
          :url "http://camex.nsstc.nasa.gov/camex3/"})
       (umm-c/map->RelatedURL
-        {:type "OPENDAP DATA ACCESS"
+        {:type "USE SERVICE API"
+         :sub-type "OPENDAP DATA"
          :title "(some Opendap type)"
          :url "http://opendap.nasa.gov/example"})
       (umm-c/map->RelatedURL

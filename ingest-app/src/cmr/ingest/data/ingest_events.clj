@@ -18,6 +18,13 @@
         exchange-name (config/ingest-exchange-name)]
     (queue/publish-message queue-broker exchange-name msg)))
 
+(defn publish-gran-bulk-update-event
+  "Put a granule bulk update event on the message queue"
+  [context msg]
+  (let [queue-broker (get-in context [:system :queue-broker])
+        exchange-name (config/bulk-update-exchange-name)]
+    (queue/publish-message queue-broker exchange-name msg)))
+
 (defn trigger-collection-granule-aggregation-cache-refresh
   "Sends a message to trigger a refresh of the collection granule aggregation cache.
    granules-updated-in-last-n indicates a number of seconds back to find granules that were updated.
@@ -59,7 +66,8 @@
   {:action :provider-delete
    :provider-id provider-id})
 
-(defn ingest-bulk-update-event
+(defn collections-bulk-event
+  "Creates a collection bulk update event that is for multiple collections."
   [provider-id task-id bulk-update-params user-id]
   {:action :bulk-update
    :provider-id provider-id
@@ -68,6 +76,7 @@
    :user-id user-id})
 
 (defn ingest-collection-bulk-update-event
+  "Creates a single collection bulk update event. This is to update a single collection."
   [provider-id task-id concept-id bulk-update-params user-id]
   {:action :collection-bulk-update
    :provider-id provider-id
@@ -75,3 +84,27 @@
    :concept-id concept-id
    :bulk-update-params bulk-update-params
    :user-id user-id})
+
+(defn granules-bulk-event
+  "Creates a granule bulk update event that is for multiple granules."
+  [provider-id task-id user-id instructions]
+  {:action :granules-bulk
+   :provider-id provider-id
+   :task-id task-id
+   :bulk-update-params instructions
+   :user-id user-id})
+
+(defn ingest-granule-bulk-update-event
+  "Creates an event representing bulk update for a single granule.
+   bulk-update-params holds specific info for each update. e.g. event-type, granule-ur, url."
+  [provider-id task-id user-id instruction]
+  {:action :granule-bulk-update
+   :provider-id provider-id
+   :task-id task-id
+   :bulk-update-params instruction
+   :user-id user-id})
+
+(defn granule-bulk-update-task-cleanup-event
+ "Create an event representing a granule bulk update cleanup event"
+ []
+ {:action :granule-bulk-update-task-cleanup})

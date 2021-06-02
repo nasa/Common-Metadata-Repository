@@ -960,15 +960,6 @@
           #(string/replace % #"^CMR_" ""))
     #(string/starts-with? %1 "CMR_")))
 
-(defn get-index-or-nil
- "Get the index of the substring in the string. Return nil if the substring does not
- exist in the string"
- [^String s ^String substring]
- (when s
-  (let [index (.indexOf s substring)]
-   (when (>= index 0)
-    index))))
-
 (defn scrub-token
   "Scrub token:
   1. When at least 15 chars long keep the first and the last 5 chars.
@@ -996,3 +987,36 @@
       (let [front (string/join spaced-sep (subvec coll 0 (- (count coll) 1)))
             back (format "%s %s %s" separator final-separator (last coll))]
         (str front back)))))
+
+;; The next set of declarations and a function is to convert numbers of specific units to meters.
+;; It is used to convert
+(def decimal-degress->meters-conversion-factor
+  "We are using the great circle algorithm https://en.wikipedia.org/wiki/Great-circle_distance
+   as the conversion from Decimal Degrees to meters. (2*pi*r)/360 where r=6371009 meters - the mean
+   radius of the earth using the WGS84 ellipsoid. This conversion is adequate for horizontal data
+   resolution range facets for which this conversion is being used. 2*3.14159*6371009/360=111195
+   meters/degree"
+  111195)
+
+(def kilometers->meters-conversion-factor
+  "Conversion factor from kilometers to meters"
+  1000)
+
+(def statute-miles->meters-conversion-factor
+  "Conversion factor from statue miles to meters"
+  1609.344)
+
+(def nautical-miles->meters-conversion-factor
+  "Conversion factor from nautical miles to meters"
+  1852.001)
+
+(defn convert-to-meters
+  "Converts the value of the specific unit to meters. If the value is nil then return nil."
+  [value unit]
+  (cond
+    (nil? value) nil
+    (= "Decimal Degrees" unit) (* value decimal-degress->meters-conversion-factor)
+    (= "Kilometers" unit) (* value kilometers->meters-conversion-factor)
+    (= "Statute Miles" unit) (* value statute-miles->meters-conversion-factor)
+    (= "Nautical Miles" unit) (* value nautical-miles->meters-conversion-factor)
+    :else value))

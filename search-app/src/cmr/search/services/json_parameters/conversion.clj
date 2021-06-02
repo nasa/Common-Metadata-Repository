@@ -1,23 +1,24 @@
 (ns cmr.search.services.json-parameters.conversion
   "Contains functions for parsing and converting JSON queries into query conditions"
-  (:require [clojure.string :as str]
+  (:require [cheshire.core :as json]
+            [clojure.string :as str]
             [clojure.set :as set]
             [clojure.java.io :as io]
-            [cheshire.core :as json]
             [cmr.common.services.errors :as errors]
             [cmr.common.util :as util]
             [cmr.common.concepts :as cc]
             [cmr.common.date-time-parser :as parser]
             [cmr.common.validations.json-schema :as js]
-            [cmr.search.models.query :as qm]
             [cmr.common-app.services.search.query-model :as cqm]
             [cmr.common-app.services.search.group-query-conditions :as gc]
+            [cmr.common-app.services.search.params :as common-params]
+            [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
+            [cmr.search.models.query :as qm]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.conversion :as pc]
-            [cmr.common-app.services.search.params :as common-params]
+            [cmr.search.services.parameters.converters.range-facet :as range-facet]
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.messages.common-messages :as msg]
-            [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.validation :as sv]
             [inflections.core :as inf]))
@@ -47,6 +48,7 @@
    :spatial-keyword :string
    :location-keyword :nested-condition
    :two-d-coordinate-system-name :string
+   :horizontal-data-resolution-range :range-facet
    :keyword :keyword
    :bounding-box :bounding-box
    :temporal :temporal
@@ -203,6 +205,11 @@
                                 :start-day recurring-start-day
                                 :end-day recurring-end-day
                                 :exclusive? exclude-boundary})))
+
+;; Converts a JSON query string and query parameters into a range facet elastic search query.
+(defmethod parse-json-condition :range-facet
+  [concept-type condition-name value]
+  (range-facet/range-facet->condition concept-type condition-name value))
 
 (defn parse-json-query
   "Converts a JSON query string and query parameters into a query model."

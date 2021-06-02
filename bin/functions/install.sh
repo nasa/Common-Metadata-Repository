@@ -97,8 +97,7 @@ function install_local_spatial_plugin () {
   lein package-es-plugin && \
   cp target/cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial/ && \
   cd $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial/ &&
-  unzip cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip && \
-  rm cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip)
+  unzip cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip)
 }
 
 function mvn_oralib_install () {

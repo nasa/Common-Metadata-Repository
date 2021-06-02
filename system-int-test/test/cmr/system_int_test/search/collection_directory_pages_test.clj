@@ -133,9 +133,9 @@
                                              :EntryTitle (str "Collection Item " n))
                                        {:format :umm-json
                                         :accept-format :json})))
-         _ (index/wait-until-indexed)
-         [c1-p3 c2-p3 c3-p3] (doall (for [n (range 101 104)]
-                                      (d/ingest-umm-spec-collection
+        _ (index/wait-until-indexed)
+        [c1-p3 c2-p3 c3-p3] (doall (for [n (range 101 104)]
+                                     (d/ingest-umm-spec-collection
                                        "PROV3"
                                        (assoc exp-conv/curr-ingest-ver-example-collection-record
                                               :ShortName (str "s" n)
@@ -145,20 +145,20 @@
                                                      :Authority (str "auth" n)}))
                                        {:format :umm-json
                                         :accept-format :json})))
-         _ (index/wait-until-indexed)
-         ;; Let's create another collection that will put the total over the
-         ;; default of 10 values so that we can ensure the :unlimited option
-         ;; is being used in the directory page data.
-         over-ten-colls (doall (for [n (range 1001 1017)]
-                                 (d/ingest-umm-spec-collection
+        _ (index/wait-until-indexed)
+        ;; Let's create another collection that will put the total over the
+        ;; default of 10 values so that we can ensure the :unlimited option
+        ;; is being used in the directory page data.
+        over-ten-colls (doall (for [n (range 1001 1017)]
+                                (d/ingest-umm-spec-collection
                                   "PROV2"
                                   (assoc exp-conv/curr-ingest-ver-example-collection-record
                                          :ShortName (str "s" n)
                                          :EntryTitle (str "Collection Item " n))
                                   {:format :umm-json
                                    :accept-format :json})))
-         [admin-1 admin-2] (doall (for [n (range 110 113)]
-                                    (d/ingest-umm-spec-collection
+        [admin-1 admin-2] (doall (for [n (range 110 113)]
+                                   (d/ingest-umm-spec-collection
                                      "ONLYADMIN"
                                      (assoc exp-conv/curr-ingest-ver-example-collection-record
                                             :ShortName (str "s" n)
@@ -168,8 +168,8 @@
                                                    :Authority (str "auth" n)}))
                                      {:format :umm-json
                                       :accept-format :json})))
-         someadmin-guest-colls (doall (for [n (range 120 123)]
-                                       (d/ingest-umm-spec-collection
+        someadmin-guest-colls (doall (for [n (range 120 123)]
+                                      (d/ingest-umm-spec-collection
                                         "SOMEADMIN"
                                         (assoc exp-conv/curr-ingest-ver-example-collection-record
                                                :ShortName (str "s" n)
@@ -179,8 +179,8 @@
                                                       :Authority (str "auth" n)}))
                                         {:format :umm-json
                                          :accept-format :json})))
-         someadmin-invisible-colls (doall (for [n (range 130 133)]
-                                           (d/ingest-umm-spec-collection
+        someadmin-invisible-colls (doall (for [n (range 130 133)]
+                                          (d/ingest-umm-spec-collection
                                             "SOMEADMIN"
                                             (assoc exp-conv/curr-ingest-ver-example-collection-record
                                                    :ShortName (str "s" n)

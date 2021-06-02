@@ -97,9 +97,8 @@
                                                                          output-format options)
             parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
         (is (= (umm-c/map->UseConstraintsType
-                 {:Description (umm-c/map->UseConstraintsDescriptionType
-                                 {:Description "First Description"})
-                  :LicenseUrl (umm-cmn/map->OnlineResourceType
+                 {:Description "First Description"
+                  :LicenseURL (umm-cmn/map->OnlineResourceType
                                 {:Linkage " https://www.nasa.examplelicenseurl1.gov"})})
                (:UseConstraints parsed-umm-json)))
         (is (= 200 status))))

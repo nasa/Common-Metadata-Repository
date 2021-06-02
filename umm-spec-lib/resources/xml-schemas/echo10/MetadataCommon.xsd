@@ -678,6 +678,7 @@
 					<xs:simpleType>
 						<xs:restriction base="xs:string">
 							<xs:enumeration value="Not Applicable"/>
+							<xs:enumeration value="Unknown"/>
 						</xs:restriction>
 					</xs:simpleType>
 				</xs:element>
@@ -694,5 +695,65 @@
 				</xs:element>
 			</xs:sequence>
 		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="AssociatedDoiType">
+		<xs:annotation>
+			<xs:documentation>This element stores DOIs that are associated with the collection
+				such as from campaigns and other related sources. Note: The values
+				should start with the directory indicator which in ESDIS' case is 10.
+				If the DOI was registered through ESDIS, the beginning of the string
+				should be 10.5067. The DOI URL is not stored here; it should be
+				stored as a RelatedURL. The DOI organization that is responsible
+				for creating the DOI is described in the Authority element. For
+				ESDIS records the value of https://doi.org/ should be used.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="DOI">
+				<xs:annotation>
+					<xs:documentation>This element stores the DOI (Digital Object Identifier) that
+						identifies an associated collection. Note: The values should
+						start with the directory indicator which in ESDIS' case is 10.
+						If the DOI was registered through ESDIS, the beginning of the
+						string should be 10.5067. The DOI URL is not stored here; it
+						should be stored as an OnlineResource.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="1024"/>
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Title" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The title of the DOI landing page. The title describes the
+						DOI object to a user, so they don't have to look it up themselves to
+						understand the association.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="1030"/>
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Authority" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The DOI organization that is responsible for creating the
+						associated DOI is described in the Authority element.
+						For ESDIS records the value of https://doi.org/ should be used.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="80" />
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
 	</xs:complexType>
 </xs:schema>

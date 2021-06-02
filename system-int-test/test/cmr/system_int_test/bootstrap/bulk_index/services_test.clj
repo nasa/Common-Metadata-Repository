@@ -24,7 +24,7 @@
                                              :grant-all-search? true
                                              :grant-all-access-control? false})]))
 
-(deftest bulk-index-services-for-provider
+(deftest ^:oracle bulk-index-services-for-provider
   (testing "Bulk index services for a single provider"
     (s/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -59,7 +59,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-services
+(deftest ^:oracle bulk-index-services
   (testing "Bulk index services for multiple providers, explicitly"
     (s/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -83,7 +83,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-all-services
+(deftest ^:oracle bulk-index-all-services
   (testing "Bulk index services for multiple providers, implicitly"
     (s/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -102,7 +102,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-service-revisions
+(deftest ^:oracle bulk-index-service-revisions
   (testing "Bulk index services index all revisions index as well"
     (s/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -165,20 +165,22 @@
        ;; Re-enable message publishing.
        (core/reenable-automatic-indexing)))))
 
-(deftest bulk-index-collections-with-service-association-test
+(deftest ^:oracle bulk-index-collections-with-service-association-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
          coll1-concept-id (:concept-id coll1)
          token (e/login (s/context) "user1")
          {serv1-concept-id :concept-id} (service/ingest-service-with-attrs
-                                         {:native-id "serv1"
-                                          :Name "service1"})
+                                          {:native-id "serv1"
+                                           :Name "service1"
+                                           :Type "ESI"
+                                           :ServiceOptions {:InterpolationTypes ["Bilinear Interpolation"]}})
          {serv2-concept-id :concept-id} (service/ingest-service-with-attrs
-                                         {:native-id "serv2"
-                                          :Name "service2"})]
+                                          {:native-id "serv2"
+                                           :Name "service2"})]
      ;; index the collection and services so that they can be found during service association
      (index/wait-until-indexed)
-     
+
      (core/disable-automatic-indexing)
      (au/associate-by-concept-ids token serv1-concept-id [{:concept-id coll1-concept-id}])
      ;; service 2 is used to test service association tombstone is indexed correctly
@@ -191,4 +193,8 @@
      (index/wait-until-indexed)
 
      ;; verify collection is associated with service1, not service2
-     (service/assert-collection-search-result coll1 {:has-formats false} [serv1-concept-id]))))
+     (service/assert-collection-search-result
+       coll1
+       {:has-transforms true
+        :service-features {:esi {:has-transforms true}}}
+       [serv1-concept-id]))))

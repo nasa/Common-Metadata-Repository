@@ -59,7 +59,7 @@
 ;; integration tests, but initiates the virtual product bootstrap
 ;; process before checking for virtual products.
 
-(deftest virtual-product-bootstrap-params
+(deftest ^:oracle virtual-product-bootstrap-params
   (s/only-with-real-database
     (testing "invalid params"
       (are2 [exp-status exp-errors provider-id entry-title]
@@ -97,7 +97,7 @@
             "LPDAAC_ECS"
             "BAR"))))
 
-(deftest virtual-product-bootstrap
+(deftest ^:oracle virtual-product-bootstrap
   (s/only-with-real-database
     (let [;; ingest and then delete a collection that has the same entry-title as one of the virtual
           ;; collections to test the edge case documented in CMR-2169
@@ -139,15 +139,17 @@
         (doseq [vp-coll vp-colls
                 :let [{:keys [provider-id source-collection]} vp-coll
                       source-short-name (get-in source-collection [:product :short-name])
-                      vp-short-name (get-in vp-coll [:product :short-name])]]
+                      vp-short-name (get-in vp-coll [:product :short-name])
+                      vp-version-id (get-in vp-coll [:product :version-id])]]
           (vp/assert-matching-granule-urs
-            (map #(svm/generate-granule-ur provider-id source-short-name vp-short-name %)
+            (map #(svm/generate-granule-ur provider-id source-short-name {:short-name vp-short-name
+                                                                          :version-id vp-version-id}  %)
                  (svm/sample-source-granule-urs
                    [provider-id (:entry-title source-collection)]))
             (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                         :page-size 50})))))))
 
-(deftest virtual-product-provider-alias-bootstrap
+(deftest ^:oracle virtual-product-provider-alias-bootstrap
   (s/only-with-real-database
     (vp/with-provider-aliases
       {"LPDAAC_ECS"  #{"LP_ALIAS"}}
@@ -197,7 +199,7 @@
             (search/find-refs :granule {:page-size 100})))))))
 
 ;; Verify that disabled source collections configuration is ignored during bootstrapping
-(deftest virtual-product-bootstrap-disabled-source-collections
+(deftest ^:oracle virtual-product-bootstrap-disabled-source-collections
   (s/only-with-real-database
     (vp/with-disabled-source-collections
       #{"ASTER L1A Reconstructed Unprocessed Instrument Data V003"}
@@ -249,7 +251,7 @@
 
 ;; Verify that latest revision ids of virtual granules and the corresponding source granules
 ;; are in sync as various ingest operations are performed on the source granules
-(deftest deleted-virtual-granules
+(deftest ^:oracle deleted-virtual-granules
   (s/only-with-real-database
     (let [ast-coll (vp/ingest-ast-coll)
           vp-colls   (vp/ingest-virtual-collections [ast-coll])
@@ -285,6 +287,6 @@
 ;; abstract out a large amount of code borrowed from the normal
 ;; virtual product service tests.
 
-(deftest ast-granule-umm-matchers-test
+(deftest ^:oracle ast-granule-umm-matchers-test
   (s/only-with-real-database
     (vp/assert-psa-granules-match bootstrap-and-index)))

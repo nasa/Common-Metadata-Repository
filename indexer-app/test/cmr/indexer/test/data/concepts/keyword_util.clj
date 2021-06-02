@@ -20,7 +20,11 @@
                            :Description "The map projection of the granule"
                            :Value "aa-value-1"
                            :DataType "STRING"}]
-   :AncillaryKeywords ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC"]
+   :AncillaryKeywords ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC" "(TMPA-RT)" "(USGS_EROS)" "(TMPA-RT-MULTI-TERM)"]
+   :AssociatedDOIs [{:DOI "Associated-DOI-1"
+                     :Title "Assoc Title 1"
+                     :Authority "https://doi.org"}
+                    {:DOI "Associated-DOI-2"}]
    :CollectionCitations [{:Creator "Bowen Island Forest and Water Management Society (BIFWMS)"
                           :OtherCitationDetails (str "U.S. Geological Survey, 1993, Digital Elevation"
                                                      " Models--data users guide 5:[Reston, Virginia],"
@@ -246,6 +250,10 @@
     :Abstract
     "An abstract summary"
 
+    "Associated DOIs"
+    :AssociatedDOIs
+    ["Associated-DOI-1" "Associated-DOI-2"]
+
     "DOI field"
     :DOI
     "Dummy-DOI"
@@ -281,7 +289,7 @@
 
     "AncillaryKeywords field"
     :AncillaryKeywords
-    ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC"]
+    ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC" "(TMPA-RT)" "(USGS_EROS)" "(TMPA-RT-MULTI-TERM)"]
 
     "CollectionCitations field"
     :CollectionCitations
@@ -374,19 +382,14 @@
            sample-umm-collection-concept :ScienceKeywords)))))
 
 (deftest concept-key->keyword-text
-  (is (= (str "a a test related url. com datacenterurl description documentation edg example "
-              "general general documentation get get service home home page page publicationurl "
-              "related related-url description. related-url-example-two.com related-url-example.com "
-              "service test two url")
+  (is (= (str "a com datacenterurl description description. documentation edg example general get "
+              "home page publicationurl related related-url related-url-example-two.com "
+              "related-url-example.com service test two url url.")
         (keyword-util/concept-key->keyword-text
          sample-umm-collection-concept :RelatedUrls)))
-  (is (= (str "3 analysis and atmosphere atmospheric atmospheric winds cat "
-              "data data analysis and visualization earth earth science "
-              "services engineering geographic geographic information systems "
-              "imagery information microwave microwave imagery radar science "
-              "science cat 3 science term 3 science topic 3 services spectral "
-              "spectral/engineering surface surface winds systems term topic "
-              "visualization winds")
+  (is (= (str "3 analysis and atmosphere atmospheric cat data earth engineering geographic imagery "
+              "information microwave radar science services spectral spectral/engineering surface "
+              "systems term topic visualization winds")
         (keyword-util/concept-key->keyword-text
          sample-umm-collection-concept :ScienceKeywords))))
 
@@ -407,15 +410,16 @@
                      :RelatedUrls
                      :ScienceKeywords
                      :DataCenters]]
-    (is (= ["001" "A test related url." "ATMOSPHERE" "ATMOSPHERIC WINDS" "AUTHOR" "Alice" "Bob"
-            "DATA ANALYSIS AND VISUALIZATION" "Data Center Contact" "DataCenterURL" "Doe"
-            "EARTH SCIENCE SERVICES" "EDG" "EOSDIS" "ESIP" "GENERAL DOCUMENTATION"
+    (is (= ["(TMPA-RT)" "(TMPA-RT-MULTI-TERM)" "(USGS_EROS)" "001" "A test related url." "ATMOSPHERE"
+            "ATMOSPHERIC WINDS" "AUTHOR" "Alice" "Bob" "DATA ANALYSIS AND VISUALIZATION" "Data Center Contact"
+            "DataCenterURL" "Doe" "EARTH SCIENCE SERVICES" "EDG" "EOSDIS" "ESIP" "GENERAL DOCUMENTATION"
             "GEOGRAPHIC INFORMATION SYSTEMS" "GET SERVICE" "HOME PAGE" "IRIS/PASSCAL" "John"
             "LP DAAC" "LPDAAC" "MICROWAVE" "MICROWAVE IMAGERY" "PublicationURL" "RADAR"
             "Related-url description." "SCIENCE CAT 3" "SCIENCE CONTACT" "SCIENCE TERM 3"
             "SCIENCE TOPIC 3" "SPECTRAL/ENGINEERING" "SURFACE WINDS" "Science Contact" "TEAM SPOCK"
             "Technical Contact" "Technical Contact" "USGS" "USGS/EROS" "VIIRS"
-            "Visible Infrared Imaging Radiometer suite." "White Marsh Institute of Health" "related-url-example-two.com" "related-url-example.com"]
+            "Visible Infrared Imaging Radiometer suite." "White Marsh Institute of Health"
+            "related-url-example-two.com" "related-url-example.com"]
            (sort
             (keyword-util/concept-keys->keywords
              sample-umm-collection-concept schema-keys))))))
@@ -424,12 +428,12 @@
   (let [schema-keys [:LongName
                      :ShortName
                      :Version]]
-    (is (= "001 imaging infrared radiometer suite viirs visible visible infrared imaging radiometer suite."
+    (is (= "001 imaging infrared radiometer suite suite. viirs visible"
            (keyword-util/concept-keys->keyword-text
             sample-umm-collection-concept schema-keys))))
   (let [schema-keys [:ShortName
                      :ContactGroups]]
-    (is (= "contact science science contact spock team team spock viirs"
+    (is (= "contact science spock team viirs"
            (keyword-util/concept-keys->keyword-text
             sample-umm-collection-concept schema-keys))))
   (let [schema-keys [:ContactPersons]]
@@ -445,18 +449,14 @@
                      :RelatedUrls
                      :ScienceKeywords
                      :DataCenters]]
-    (is (= (str "001 3 a a test related url. alice analysis and atmosphere atmospheric atmospheric "
-                "winds author bob cat center com contact daac data data analysis and visualization "
-                "data center contact datacenterurl description documentation doe earth earth science "
-                "services edg engineering eosdis eros esip example general general documentation "
-                "geographic geographic information systems get get service health home home page imagery "
-                "imaging information infrared institute iris iris/passcal john lp lp daac lpdaac marsh "
-                "microwave microwave imagery of page passcal publicationurl radar radiometer related "
-                "related-url description. related-url-example-two.com related-url-example.com science "
-                "science cat 3 science contact science term 3 science topic 3 service services spectral "
-                "spectral/engineering spock suite surface surface winds systems team team spock "
-                "technical technical contact term test topic two url usgs usgs/eros viirs visible "
-                "visible infrared imaging radiometer suite. visualization white white marsh institute "
-                "of health winds")
+    (is (= (str "(tmpa-rt) (tmpa-rt-multi-term) (usgs_eros) 001 3 a alice analysis and atmosphere "
+                "atmospheric author bob cat center com contact daac data datacenterurl description "
+                "description. documentation doe earth edg engineering eosdis eros esip example "
+                "general geographic get health home imagery imaging information infrared institute "
+                "iris iris/passcal john lp lpdaac marsh microwave multi of page passcal publicationurl "
+                "radar radiometer related related-url related-url-example-two.com related-url-example.com "
+                "rt science service services spectral spectral/engineering spock suite suite. "
+                "surface systems team technical term test tmpa tmpa-rt tmpa-rt-multi-term topic two "
+                "url url. usgs usgs/eros usgs_eros viirs visible visualization white winds")
            (keyword-util/concept-keys->keyword-text
             sample-umm-collection-concept schema-keys)))))

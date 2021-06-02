@@ -51,7 +51,7 @@
 
 (defn- facet-query
   "Returns the facet query for the given facet field"
-  [concept-type facet-field size query-params]
+  [context concept-type facet-field size query-params]
   (case facet-field
     (:science-keywords :variables)
     (let [hierarchical-field (keyword (str (name facet-field) "-h"))
@@ -68,6 +68,9 @@
     :cycle
     (cycle-facets/cycle-facet query-params)
 
+    :horizontal-data-resolution-range
+    (v2h/prioritized-range-facet context (get (facets-v2-params->elastic-fields concept-type) facet-field))
+
     ;; else
     (v2h/prioritized-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)))
 
@@ -75,11 +78,11 @@
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search. values in facet-fields-map specifies the number of results to return for the facet.
   Only a subset of the facets are returned in the v2 facets, specifically those that help enable dataset discovery."
-  [concept-type query-params facet-fields-map]
+  [context concept-type query-params facet-fields-map]
   (into {}
         (for [field (keys facet-fields-map)]
           [(get (facet-fields->aggregation-fields concept-type) field)
-           (facet-query concept-type field (field facet-fields-map) query-params)])))
+           (facet-query context concept-type field (field facet-fields-map) query-params)])))
 
 (defn add-terms-with-zero-matching-collections
   "Takes a sequence of tuples and a sequence of search terms. The tuples are of the form search term
@@ -94,24 +97,47 @@
         missing-terms (remove #(some (set [(string/lower-case %)]) all-facet-values) search-terms)]
     (reduce #(conj %1 [%2 0]) value-counts missing-terms)))
 
+(defn count-value-pairs
+  "Processes an elasticsearch aggregation response of buckets to a sequence of value and count
+   tuples. For the horizontal-data-resolution-range parameter, if all buckets contain 0 items then
+   pass back an empty sequence. We want the range facets to behave the same as the other facets
+   when the search result contains 0 records in the range facets."
+  [field-name aggregations]
+  (if (= field-name :horizontal-data-resolution-range)
+    (let [aggs (get-in aggregations [field-name :values])
+          some-values? (->> aggs
+                            :buckets
+                            (map :doc_count)
+                            (some #(< 0 %)))]
+      (if some-values?
+        (frf/buckets->value-count-pairs
+          (get-in aggregations [field-name :values]))
+        (sequence nil)))
+    (frf/buckets->value-count-pairs
+      (get-in aggregations [field-name :values]))))
+
 (defn create-prioritized-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all flat fields."
-  [concept-type elastic-aggregations facet-fields base-url query-params]
-  (let [flat-fields (remove nil? (map #(get (facet-fields->aggregation-fields concept-type) %) facet-fields))]
-    (remove nil?
-            (for [field-name flat-fields
-                  :let [search-terms-from-query (lh/get-values-for-field query-params field-name)
-                        value-counts (add-terms-with-zero-matching-collections
-                                       (frf/buckets->value-count-pairs (get-in elastic-aggregations [field-name :values]))
-                                       search-terms-from-query)
-                        snake-case-field (csk/->snake_case_string field-name)
-                        applied? (some? (or (get query-params snake-case-field)
-                                            (get query-params (str snake-case-field "[]"))))
-                        children (map (v2h/filter-node-generator base-url query-params field-name applied?)
-                                      (sort-by first util/compare-natural-strings value-counts))]]
-              (when (seq children)
-                (v2h/generate-group-node (field-name v2h/fields->human-readable-label) applied?
-                                         children))))))
+  ([concept-type elastic-aggregations facet-fields base-url query-params]
+   (create-prioritized-v2-facets concept-type elastic-aggregations facet-fields base-url query-params true))
+  ([concept-type elastic-aggregations facet-fields base-url query-params sort?]
+   (let [flat-fields (remove nil? (map #(get (facet-fields->aggregation-fields concept-type) %) facet-fields))]
+     (remove nil?
+             (for [field-name flat-fields
+                   :let [search-terms-from-query (lh/get-values-for-field query-params field-name)
+                         value-counts (add-terms-with-zero-matching-collections
+                                        (count-value-pairs field-name elastic-aggregations)
+                                        search-terms-from-query)
+                         snake-case-field (csk/->snake_case_string field-name)
+                         applied? (some? (or (get query-params snake-case-field)
+                                             (get query-params (str snake-case-field "[]"))))
+                         children (map (v2h/filter-node-generator base-url query-params field-name applied?)
+                                       (if sort?
+                                         (sort-by first util/compare-natural-strings value-counts)
+                                         value-counts))]]
+               (when (seq children)
+                 (v2h/generate-group-node (field-name v2h/fields->human-readable-label) applied?
+                                          children)))))))
 
 (defn- parse-params
   "Parse parameters from a query string into a map. Taken directly from ring code."
@@ -179,7 +205,7 @@
         query-params (parse-params query-string "UTF-8")]
     (when-let [validator (facets-validator concept-type)]
       (validator context))
-    (let [aggs-query (facets-v2-aggregations concept-type query-params facet-fields-map)]
+    (let [aggs-query (facets-v2-aggregations context concept-type query-params facet-fields-map)]
       (assoc query :aggregations aggs-query))))
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2

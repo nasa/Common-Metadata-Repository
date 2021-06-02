@@ -22,7 +22,7 @@
   [collection]
   (let [{:keys [user-id format-key revision-id concept-id provider-id deleted
                 has-variables has-formats has-transforms has-spatial-subsetting
-                has-temporal-subsetting variables services]} collection]
+                has-temporal-subsetting variables services tools]} collection]
     (util/remove-nil-keys
      {:concept-type "collection"
       :concept-id concept-id
@@ -37,8 +37,9 @@
       :has-transforms (when-not deleted (boolean has-transforms))
       :has-spatial-subsetting (when-not deleted (boolean has-spatial-subsetting))
       :has-temporal-subsetting (when-not deleted (boolean has-temporal-subsetting))
-      :associations (when (or (seq services) (seq variables))
+      :associations (when (or (seq services) (seq variables) (seq tools))
                       (util/remove-map-keys empty? {:variables (set variables)
+                                                    :tools (set tools)
                                                     :services (set services)}))})))
 
 (defn- collection->legacy-umm-json
@@ -170,13 +171,15 @@
   "Returns the UMM JSON result of the given variable."
   [version variable]
   (if (:deleted variable)
-    {:meta (variable->umm-json-meta variable)
+    {:meta (merge {:user-id "ECHO_SYS"} (variable->umm-json-meta variable))
      :associations {:collections #{}}}
     (let [;; use the original metadata for now, add version migration when Variable versioning is added
-           {:keys [metadata associated-collections]} variable]
-      {:meta (variable->umm-json-meta variable)
+           {:keys [metadata associated-collections associated-item]} variable]
+      {:meta (merge {:user-id "ECHO_SYS"} (variable->umm-json-meta variable))
        :umm (json/decode metadata true)
-       :associations {:collections (set associated-collections)}})))
+       :associations (if (seq associated-collections)
+                       {:collections (set associated-collections)}
+                       {:collections (set [associated-item])})})))
 
 (defn- result-item-for-comparison
   "Returns the result item for comparison purpose,

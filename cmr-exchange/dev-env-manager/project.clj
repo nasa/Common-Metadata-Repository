@@ -23,7 +23,7 @@
                  [leiningen-core "2.7.1" :exclusions [commons-io
                                                       org.apache.httpcomponents/httpcore
                                                       org.slf4j/slf4j-nop]]
-                 [org.apache.httpcomponents/httpclient "4.5.4"]
+                 [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.maven.wagon/wagon-provider-api "2.10"]
                  [org.clojure/clojure "1.8.0"]
                  [org.clojure/core.async "0.3.465" :exclusions [org.clojure/tools.reader]]

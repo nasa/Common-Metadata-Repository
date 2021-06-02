@@ -1,0 +1,33 @@
+#kaocha/v1
+{:tests [{:id :unit
+          :ns-patterns ["cmr.opendap.tests.*"]
+          :test-paths ["test/cmr/opendap/tests/unit"]}
+         {:id :system
+          :ns-patterns ["cmr.opendap.tests.*"]
+          :test-paths ["test/cmr/opendap/tests/system"]}
+         {:id :integration
+          :ns-patterns ["cmr.opendap.tests.*"]
+          :test-paths ["test/cmr/opendap/tests/integration"]}]
+
+ :plugins [:kaocha.plugin.alpha/info
+           :kaocha.plugin/cloverage
+           :capture-output
+           :junit-xml
+           :print-invocations
+           :profiling]
+
+ :fail-fast? false
+
+ :color? #profile {:default true
+                   :ci false}
+
+ :reporter kaocha.report/documentation
+
+ :kaocha.plugin.junit-xml/target-file "target/junit.xml"
+
+ :cloverage/opts {:codecov? #profile {:default false :ci true}
+                  :html? true}
+
+ ;; 3 slowest tests shown
+ :kaocha.plugin.profiling/count 3
+ :kaocha.plugin.profiling/profiling? true}

@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10
   "Defines mappings from a UMM record into ECHO10 XML"
   (:require
-   [clj-time.format :as f]
    [clojure.string :as string]
+   [cmr.common.date-time-parser :as p]
    [cmr.common.util :as util]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.date-util :as dates]
@@ -150,19 +150,27 @@
      [:Description (if-let [abstract (:Abstract c)]
                      (util/trunc abstract 12000)
                      spec-util/not-provided)]
-     (when-let [doi (:DOI c)]
+     (when-let [doi (get c :DOI)]
        (if (:DOI doi)
          [:DOI
           [:DOI (:DOI doi)]
           (when (:Authority doi)
             [:Authority (:Authority doi)])]
-         [:DOI
-          [:MissingReason (:MissingReason doi)]
-          (when (:Explanation doi)
-            [:Explanation (:Explanation doi)])]))
+         (when (:MissingReason doi)
+           [:DOI
+            [:MissingReason (:MissingReason doi)]
+            (when (:Explanation doi)
+              [:Explanation (:Explanation doi)])])))
+     (when-let [assoc-dois (get c :AssociatedDOIs)]
+       [:AssociatedDOIs
+         (for [assoc-doi assoc-dois]
+           [:AssociatedDOI
+             [:DOI (:DOI assoc-doi)]
+             [:Title (:Title assoc-doi)]
+             [:Authority (:Authority assoc-doi)]])])
      [:CollectionDataType (:CollectionDataType c)]
      (when-let [revision-date (dates/metadata-update-date c)]
-       [:RevisionDate (f/unparse (f/formatters :date-time) revision-date)])
+       [:RevisionDate (p/clj-time->date-time-str revision-date)])
      [:SuggestedUsage (util/trunc (:Purpose c) 4000)]
      (dc/generate-processing-centers c)
      [:ProcessingLevelId (-> c :ProcessingLevel :Id)]
@@ -173,6 +181,18 @@
      [:CollectionState (:CollectionProgress c)]
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
+     (when-let [use-constraints (get c :UseConstraints)]
+       [:UseConstraints
+         [:Description (:Description use-constraints)]
+         (when-let [url (get-in use-constraints [:LicenseURL :Linkage])]
+           [:LicenseURL
+             [:URL url]
+             [:Description (get-in use-constraints [:LicenseURL :Description])]
+             [:Type (or (get-in use-constraints [:LicenseURL :Name])
+                        "License URL")]
+             [:MimeType (get-in use-constraints [:LicenseURL :MimeType])]])
+         (when-let [license-text (:LicenseText use-constraints)]
+           [:LicenseText license-text])])
      [:Price (when-let [price-str (find-first-available-distribution-price c)]
                (try (format "%9.2f" (Double. price-str))
                  ;; If price is not a number string just ignore it. ECHO10
@@ -222,4 +242,11 @@
      (ru/generate-access-urls (:RelatedUrls c))
      (ru/generate-resource-urls (:RelatedUrls c))
      (spatial/spatial-element c)
-     (ru/generate-browse-urls (:RelatedUrls c))]))
+     (ru/generate-browse-urls (:RelatedUrls c))
+     (when-let [direct-dist-info (:DirectDistributionInformation c)]
+       [:DirectDistributionInformation
+         [:Region (:Region direct-dist-info)]
+         (for [prefix-name (:S3BucketAndObjectPrefixNames direct-dist-info)]
+           [:S3BucketAndObjectPrefixName prefix-name])
+         [:S3CredentialsAPIEndpoint (:S3CredentialsAPIEndpoint direct-dist-info)]
+         [:S3CredentialsAPIDocumentationURL (:S3CredentialsAPIDocumentationURL direct-dist-info)]])]))

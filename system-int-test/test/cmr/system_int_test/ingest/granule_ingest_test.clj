@@ -181,17 +181,23 @@
 (deftest granule-ingest-accept-header-response-test
   (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))]
     (testing "json response"
-      (let [granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection)))
-            response (ingest/ingest-concept granule {:accept-format :json :raw? true})]
+      (let [granule (data-core/item->concept
+                     (granule/granule-with-umm-spec-collection collection (:concept-id collection)))
+            response (ingest/ingest-concept granule {:accept-format :json :raw? true})
+            {:keys [concept-id revision-id]} (ingest/parse-ingest-body :json response)]
         (index/wait-until-indexed)
-        (is (= {:concept-id "G1200000006-PROV1" :revision-id 1}
-               (select-keys (ingest/parse-ingest-body :json response) [:concept-id :revision-id])))))
+        (is (= 201 (:status response)))
+        (is (re-matches #"G\d+-PROV1" concept-id))
+        (is (= 1 revision-id))))
     (testing "xml response"
-      (let [granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection)))
-            response (ingest/ingest-concept granule {:accept-format :xml :raw? true})]
+      (let [granule (data-core/item->concept
+                     (granule/granule-with-umm-spec-collection collection (:concept-id collection)))
+            response (ingest/ingest-concept granule {:accept-format :xml :raw? true})
+            {:keys [status concept-id revision-id]} (ingest/parse-ingest-body :xml response)]
         (index/wait-until-indexed)
-        (is (= {:concept-id "G1200000007-PROV1" :revision-id 1}
-               (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))))
+        (is (= 201 (:status response)))
+        (is (re-matches #"G\d+-PROV1" concept-id))
+        (is (= 1 revision-id))))))
 
 ;; Verify that the accept header works with returned errors
 (deftest granule-ingest-with-errors-accept-header-test
@@ -537,7 +543,7 @@
          (is (= 201 status))
          (is (= nil errors))))))
 
-(deftest delete-time-granule-ingest-test
+(deftest ^:oracle delete-time-granule-ingest-test
   (s/only-with-real-database
    (let [collection (data-core/ingest-umm-spec-collection
                      "PROV1"
@@ -659,7 +665,7 @@
                                                                      :identifiers [:identifier "a very nice granule :)"
                                                                                    :identifier-type "a type of identifier"]})})
                         (data-core/item->concept {:format :umm-json
-                                                  :version "1.6.1"}))
+                                                  :version "1.6.3"}))
             {:keys [status] :as response} (ingest/ingest-concept granule)]
         (is (#{200 201} status) (pr-str response))))
 

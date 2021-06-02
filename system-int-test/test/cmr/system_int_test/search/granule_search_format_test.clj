@@ -422,6 +422,9 @@
         ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://example.com/browse"})
         ru4 (dc/related-url {:type "ALGORITHM INFO" :url "http://inherited.com"})
         ru5 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://inherited.com/browse"})
+        ru6 (dc/related-url {:type "USE SERVICE API"
+                             :sub-type "OPENDAP DATA"
+                             :url "https://ghrc.nsstc.nasa.gov/opendap/ssmis/f16/daily/data/"})
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
                                                 :beginning-date-time "1970-01-01T12:00:00Z"
                                                 :spatial-coverage (dc/spatial {:gsr :geodetic})}))
@@ -466,16 +469,16 @@
                                                    :start-circular-latitude -90.0
                                                    :number-of-orbits 1.0}
                                 :spatial-coverage (dg/spatial
-                                                    (poly/polygon
-                                                      :geodetic
-                                                      [(rr/ords->ring :geodetic [-70 20, 70 20, 70 30, -70 30, -70 20])])
-                                                    polygon-with-holes
-                                                    (p/point 1 2)
-                                                    (p/point -179.9 89.4)
-                                                    (l/ords->line-string :geodetic [0 0, 0 1, 0 -90, 180 0])
-                                                    (l/ords->line-string :geodetic [1 2, 3 4, 5 6, 7 8])
-                                                    (m/mbr -180 90 180 -90)
-                                                    (m/mbr -10 20 30 -40))})
+                                                   (poly/polygon
+                                                    :geodetic
+                                                    [(rr/ords->ring :geodetic [-70 20, 70 20, 70 30, -70 30, -70 20])])
+                                                   polygon-with-holes
+                                                   (p/point 1 2)
+                                                   (p/point -179.9 89.4)
+                                                   (l/ords->line-string :geodetic [0 0, 0 1, 0 -90, 180 0])
+                                                   (l/ords->line-string :geodetic [1 2, 3 4, 5 6, 7 8])
+                                                   (m/mbr -180 90 180 -90)
+                                                   (m/mbr -10 20 30 -40))})
         gran2 (make-gran coll2 {:granule-ur "Granule2"
                                 :beginning-date-time "2011-01-01T12:00:00Z"
                                 :ending-date-time "2011-01-11T12:00:00Z"
@@ -483,7 +486,7 @@
                                 :day-night "NIGHT"
                                 :size 80.0
                                 :cloud-cover 30.0
-                                :related-urls [ru3]})
+                                :related-urls [ru6]})
         gran3 (make-gran coll3 {:granule-ur "OrbitGranule"
                                 :beginning-date-time "2011-01-01T12:00:00Z"
                                 :ending-date-time "2011-01-01T14:00:00Z"
@@ -517,7 +520,7 @@
     (testing "kml"
       (let [results (search/find-concepts-kml :granule {})]
         (dk/assert-granule-kml-results-match
-          [gran1 gran2 gran3 gran4 gran5] [coll1 coll2 coll3 coll1 coll3] results)))
+         [gran1 gran2 gran3 gran4 gran5] [coll1 coll2 coll3 coll1 coll3] results)))
 
     (testing "atom"
       (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?entry_title=Dataset1")
@@ -531,7 +534,7 @@
         (is (= gran-atom
                (:results response))))
       (let [gran-atom (da/granules->expected-atom
-                        [gran1 gran2 gran3 gran4 gran5] [coll1 coll2 coll3 coll1 coll3] "granules.atom")
+                       [gran1 gran2 gran3 gran4 gran5] [coll1 coll2 coll3 coll1 coll3] "granules.atom")
             response (search/find-concepts-atom :granule {})]
         (is (= 200 (:status response)))
         (is (= gran-atom
@@ -551,13 +554,13 @@
 
       (testing "as extension"
         (is (= (select-keys
-                 (search/find-concepts-atom :granule {:granule-ur "Granule1"})
-                 [:status :results])
+                (search/find-concepts-atom :granule {:granule-ur "Granule1"})
+                [:status :results])
                (select-keys
-                 (search/find-concepts-atom :granule
-                                            {:granule-ur "Granule1"}
-                                            {:url-extension "atom"})
-                 [:status :results]))))
+                (search/find-concepts-atom :granule
+                                           {:granule-ur "Granule1"}
+                                           {:url-extension "atom"})
+                [:status :results]))))
 
       (testing "granule size is double"
         (let [response (search/find-concepts-atom :granule {:concept-id (:concept-id gran1)})]
@@ -572,7 +575,7 @@
                (:results response))))
 
       (let [gran-json (dj/granules->expected-json
-                        [gran1 gran2 gran3 gran4 gran5] [coll1 coll2 coll3 coll1 coll3] "granules.json")
+                       [gran1 gran2 gran3 gran4 gran5] [coll1 coll2 coll3 coll1 coll3] "granules.json")
             response (search/find-concepts-json :granule {})]
         (is (= 200 (:status response)))
         (is (= gran-json
@@ -580,10 +583,99 @@
 
       (testing "as extension"
         (is (= (select-keys
-                 (search/find-concepts-json :granule {:granule-ur "Granule1"})
-                 [:status :results])
+                (search/find-concepts-json :granule {:granule-ur "Granule1"})
+                [:status :results])
                (select-keys
-                 (search/find-concepts-json :granule
-                                            {:granule-ur "Granule1"}
-                                            {:url-extension "json"})
-                 [:status :results])))))))
+                (search/find-concepts-json :granule
+                                           {:granule-ur "Granule1"}
+                                           {:url-extension "json"})
+                [:status :results])))))))
+
+(deftest search-granules-related-url-translation-and-atom-test
+  "Test the RelatedURLs of GET DATA VIA DIRECT ACCESS translations between ECHO10, ISO SMAP, UMM-G,
+   ISO 19115 MENDS and old cmr umm-g. Also test the atom link."
+  (let [ru1 (dc/related-url {:type "GET DATA" :url "http://example.com"})
+        ru2 (dc/related-url {:type "GET DATA VIA DIRECT ACCESS" :url "s3://aws.com"})
+        ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://example.com/browse"})
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
+                                                :beginning-date-time "1970-01-01T12:00:00Z"
+                                                :spatial-coverage (dc/spatial {:gsr :no-spatial})}))
+        make-gran (fn [coll attribs]
+                    (d/ingest "PROV1" (dg/granule coll attribs)))
+
+        gran-echo (make-gran coll1 {:granule-ur "Granule1"
+                                    :beginning-date-time "2010-01-01T12:00:00Z"
+                                    :ending-date-time "2010-01-11T12:00:00Z"
+                                    :producer-gran-id "Granule #1"
+                                    :day-night "DAY"
+                                    :size 100
+                                    :cloud-cover 50
+                                    :related-urls [ru1 ru2 ru3]})
+        gran-smap (d/ingest "PROV1"
+                            (dg/granule coll1 {:granule-ur "Granule2"
+                                               :related-urls [ru1 ru2 ru3]})
+                            {:format :iso-smap})
+        gran-umm  (d/ingest "PROV1"
+                            (dg/granule coll1 {:granule-ur "Granule3"
+                                               :related-urls [ru1 ru2 ru3]})
+                            {:format :umm-json})
+        gran-no-ru (d/ingest "PROV1"
+                             (dg/granule coll1 {:granule-ur "Granule4"})
+                             {:format :umm-json})]
+
+    (index/wait-until-indexed)
+
+    (util/are3 [granule granule-ur]
+      (let [gran-atom (da/granules->expected-atom [granule]
+                                                  [coll1]
+                                                  (str "granules.atom?granule_ur=" granule-ur))
+            gran-atom-links (-> gran-atom
+                                (get :entries)
+                                (first)
+                                (get :links))
+            response (search/find-concepts-atom :granule {:granule-ur granule-ur})
+            response-links (-> response
+                               (get-in [:results :entries])
+                               (first)
+                               (get :links))]
+        (is (= 200 (:status response)))
+        (is (= (:rel gran-atom-links) (:rel response-links)))
+        (is (= (:href gran-atom-links) (:href response-links)))
+        (is (some #(string/includes? % "s3#") response-links)))
+
+      "testing echo10"
+      gran-echo
+      "Granule1"
+
+      "testing iso smap"
+      gran-smap
+      "Granule2"
+
+      "testing umm-g"
+      gran-umm
+      "Granule3")
+
+    (testing "testing without related URLs."
+      (let [gran-atom (da/granules->expected-atom [gran-no-ru] [coll1] "granules.atom?granule_ur=Granule4")
+            gran-atom-links (-> gran-atom
+                                (get :entries)
+                                (first)
+                                (get :links))
+            response (search/find-concepts-atom :granule {:granule-ur "Granule4"})
+            response-links (-> response
+                               (get-in [:results :entries])
+                               (first)
+                               (get :links))]
+        (is (= 200 (:status response)))
+        (is (= gran-atom-links response-links))
+        (is (not-any? #(string/includes? % "s3#") response-links))))
+
+    (testing "testing to ISO 19115."
+      (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
+            response (search/find-metadata :granule :iso19115 {:granule-ur "Granule3"})]
+        (is (string/includes? response "s3://aws.com"))))
+
+    (testing "testing to ECHO 10"
+      (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
+            response (search/find-metadata :granule :echo10 {:granule-ur "Granule3"})]
+        (is (string/includes? response "s3://aws.com"))))))

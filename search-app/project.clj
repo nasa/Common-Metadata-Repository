@@ -1,18 +1,25 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
-  :exclusions [[cheshire]
-               [clj-time]
-               [com.fasterxml.jackson.core/jackson-core]
-               [commons-codec/commons-codec]
-               [org.apache.httpcomponents/httpclient]
-               [org.clojure/clojure]
-               [org.clojure/tools.reader]
-               [ring/ring-codec]]
+  :exclusions [cheshire
+               clj-time
+               com.fasterxml.jackson.core/jackson-core
+               com.fasterxml.jackson.dataformat/jackson-dataformat-cbor
+               commons-codec
+               org.apache.httpcomponents/httpclient
+               org.clojure/clojure
+               org.clojure/tools.reader
+               org.eclipse.emf/org.eclipse.emf.common
+               org.eclipse.emf/org.eclipse.emf.ecore
+               ring/ring-codec]
   :dependencies [[cheshire "5.8.1"]
                  [clj-time "0.15.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.9.8"]
+                 [com.fasterxml.jackson.core/jackson-annotations "2.12.0"]
+                 [com.fasterxml.jackson.core/jackson-core "2.12.0"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.12.0"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]
                  [commons-codec/commons-codec "1.11"]
+                 [commons-io/commons-io "2.6"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -25,19 +32,20 @@
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [net.sf.saxon/Saxon-HE "9.9.0-2"]
-                 [commons-io/commons-io "2.6"]
-                 [org.apache.httpcomponents/httpclient "4.5.6"]
+                 [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/data.csv "0.1.4"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [ring/ring-codec "1.1.1"]
-                 [ring/ring-core "1.7.1"]
-                 [ring/ring-json "0.4.0"]
-                 [selmer "1.12.5"]
+                 [org.eclipse.emf/org.eclipse.emf.ecore "2.23.0"]
+                 [org.eclipse.emf/org.eclipse.emf.common "2.21.0"]
                  [org.geotools/gt-shapefile "23-RC"]
                  [org.geotools/gt-geojsondatastore "23-RC"]
                  [org.geotools.xsd/gt-xsd-kml "23-RC"]
+                 [ring/ring-codec "1.1.3"]
+                 [ring/ring-core "1.9.2"]
+                 [ring/ring-json "0.5.1"]
+                 [selmer "1.12.5"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
                  [metosin/ring-swagger-ui "2.1.4-0"]
@@ -91,16 +99,36 @@
                               [lein-shell "0.5.0"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
-             :internal-repos {}}
+             :internal-repos {}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {"generate-static" ["with-profile" "static"
                                "run" "-m" "cmr.search.site.static" "all"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["do"
+                       ["generate-static"]
+                       ["kaocha" "--profile" ":ci"]]
+            "ci-itest" ["do"
+                        ["generate-static"]
+                        ["itest" "--profile" ":ci"]]
+            "ci-utest" ["do"
+                        ["generate-static"]
+                        ["utest" "--profile" ":ci"]]
+
             ;; Linting aliases
-            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
-                          ["with-profile" "lint" "kibit"]]
+            "kibit" ["do"
+                     ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+                     ["with-profile" "lint" "kibit"]]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]

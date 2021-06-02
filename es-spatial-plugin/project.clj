@@ -34,7 +34,7 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                        [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
-                                       [org.elasticsearch/elasticsearch "7.5.2"]]}
+                                       [org.elasticsearch/elasticsearch "7.10.0"]]}
              :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
                                        :exclusions [[com.dadrox/quiet-slf4j]
@@ -64,7 +64,7 @@
                    :dependencies [[criterium "0.4.4"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
-                                  [org.elasticsearch/elasticsearch "7.5.2"]
+                                  [org.elasticsearch/elasticsearch "7.10.0"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [org.clojure/tools.namespace "0.2.11"]]
@@ -84,7 +84,10 @@
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
-             :internal-repos {}}
+             :internal-repos {}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {"install-es-deps" ["do"
                                "with-profile" "es-deps,provided" "clean,"
                                "with-profile" "es-deps,provided" "uberjar,"
@@ -106,6 +109,16 @@
                          "install-es-plugin,"]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]
+
             "package-all" ["do"
                            "install-es-deps,"
                            "package-es-plugin,"

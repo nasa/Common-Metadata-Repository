@@ -132,6 +132,63 @@
                         svc-concept-id non-extant-revision)]
                (:errors response)))))))
 
+(deftest force-delete-tool-with-associations
+  (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
+        coll-concept-id (:concept-id coll)
+        tool-concept (concepts/create-and-save-concept :tool "REG_PROV" 1 3)
+        tool-concept-id (:concept-id tool-concept)
+        tool-assn (concepts/create-and-save-concept :tool-association
+                   coll tool-concept 1)
+        tool-assn-concept-id (:concept-id tool-assn)]
+    (testing "initial conditions"
+      ;; creation results as expected
+      (is (= 3 (:revision-id tool-concept)))
+      ;; tool revisions in db
+      (is (= 3
+             (count (:concepts (util/find-concepts :tool)))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           tool-concept-id 3))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           tool-concept-id 2))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           tool-concept-id 1))))
+      ;; make sure tool association in place
+      (is (= coll-concept-id
+             (get-in tool-assn [:extra-fields :associated-concept-id])))
+      (is (= tool-concept-id
+             (get-in tool-assn [:extra-fields :tool-concept-id])))
+      ;; make sure collection associations in place
+      (is (not (:deleted (:concept (util/get-concept-by-id tool-assn-concept-id))))))
+    (testing "revision 2 is force deleted"
+      (util/force-delete-concept tool-concept-id 2)
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           tool-concept-id 3))))
+      (is (= 404 (:status (util/get-concept-by-id-and-revision
+                           tool-concept-id 2))))
+      (is (= 200 (:status (util/get-concept-by-id-and-revision
+                           tool-concept-id 1))))
+      ;; verify the association hasn't been deleted
+      (is (not (:deleted (:concept (util/get-concept-by-id tool-assn-concept-id))))))
+    (testing "Cannot force delete the latest revision of a concept"
+      (let [expected-errors [(format (str "Cannot force delete the latest revision of a concept "
+                                          "[%s, %s], use regular delete instead.")
+                                     tool-concept-id 3)]
+            {:keys [status errors]} (util/force-delete-concept tool-concept-id 3)]
+        (is (= 400 status))
+        (is (= expected-errors errors))
+        ;; latest revision of the tool concept and tool associations are not deleted
+        (is (= 200 (:status (util/get-concept-by-id-and-revision
+                             tool-concept-id 3))))
+        (is (not (:deleted (:concept (util/get-concept-by-id tool-assn-concept-id)))))))
+    (testing "cannot delete non-existing revision"
+      (let [non-extant-revision 4
+            response (util/force-delete-concept tool-concept-id non-extant-revision)]
+        (is (= 404 (:status response)))
+        (is (= [(format (str "Concept with concept-id [%s] and revision-id [%s] "
+                             "does not exist.")
+                        tool-concept-id non-extant-revision)]
+               (:errors response)))))))
+
 (deftest force-delete-variable-with-associations
   (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
         coll-concept-id (:concept-id coll)

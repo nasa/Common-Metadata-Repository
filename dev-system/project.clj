@@ -54,7 +54,7 @@
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            [org.clojure/clojure "1.10.0"]
                            [ring/ring-codec "1.1.1"]]
-                  project-dependencies)
+                         project-dependencies)
   :plugins [[lein-environ "1.1.0"]
             [lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
@@ -62,15 +62,15 @@
   :repl-options {:init-ns user
                  :timeout 600000
                  :welcome (do
-                           (println (slurp "resources/text/banner.txt"))
-                           (println (slurp "resources/text/loading.txt")))}
+                            (println (slurp "resources/text/banner.txt"))
+                            (println (slurp "resources/text/loading.txt")))}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Dclojure.compiler.direct-linking=true"
              "-Dorg.jruby.embed.localcontext.scope=singlethread"]
-             ;; Uncomment to enable logging in jetty.
-             ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
-             ; "-Dorg.eclipse.jetty.LEVEL=INFO"
-             ; "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
+  ;; Uncomment to enable logging in jetty.
+                                        ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
+                                        ; "-Dorg.eclipse.jetty.LEVEL=INFO"
+                                        ; "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
@@ -90,15 +90,15 @@
                                 ;; XXX Note that profiling can be kept in a profile,
                                 ;;     with no need to comment/uncomment.
                                 ;; Use the following to enable JMX profiling with visualvm
-                                ;:jvm-opts ^:replace ["-server"
-                                ;                     "-Dcom.sun.management.jmxremote"
-                                ;                     "-Dcom.sun.management.jmxremote.ssl=false"
-                                ;                     "-Dcom.sun.management.jmxremote.authenticate=false"
-                                ;                     "-Dcom.sun.management.jmxremote.port=1098"]
+                                        ;:jvm-opts ^:replace ["-server"
+                                        ;                     "-Dcom.sun.management.jmxremote"
+                                        ;                     "-Dcom.sun.management.jmxremote.ssl=false"
+                                        ;                     "-Dcom.sun.management.jmxremote.authenticate=false"
+                                        ;                     "-Dcom.sun.management.jmxremote.port=1098"]
                                 :source-paths ["src" "dev" "test"]
                                 :injections [(require 'pjstadig.humane-test-output)
                                              (pjstadig.humane-test-output/activate!)]}
-              ;; This is to separate the dependencies from the dev-config specified in profiles.clj
+             ;; This is to separate the dependencies from the dev-config specified in profiles.clj
              :dev [:dev-dependencies :dev-config]
              ;; The following run-* profiles are used in conjunction with other lein
              ;; profiles to set the default CMR run mode and may be used in the
@@ -111,7 +111,7 @@
              :run-in-memory {:jvm-opts ["-Dcmr.runmode=in-memory"]}
              :run-external {:jvm-opts ["-Dcmr.runmode=external"]}
              :uberjar {:main cmr.dev-system.runner
-             ;; See http://stephen.genoprime.com/2013/11/14/uberjar-with-titan-dependency.html
+                       ;; See http://stephen.genoprime.com/2013/11/14/uberjar-with-titan-dependency.html
                        :uberjar-merge-with {#"org\.apache\.lucene\.codecs\.*" [slurp str spit]}
                        :aot :all}
              :static {}
@@ -127,13 +127,26 @@
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
-             :internal-repos {}}
+             :internal-repos {}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {
             ;; Creates the checkouts directory to the local projects
             "create-checkouts" ~create-checkouts-commands
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out"
             ["test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]
+
             ;; Install spatial plugin locally
             "install-spatial-plugin"
             ["shell" "cmr" "install" "local" "spatial_plugin"]
@@ -147,8 +160,8 @@
             ;; Linting aliases
             "kibit"
             ["do"
-              ["shell" "echo" "== Kibit =="]
-              ["with-profile" "lint" "kibit"]]
+             ["shell" "echo" "== Kibit =="]
+             ["with-profile" "lint" "kibit"]]
             "eastwood"
             ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed"
@@ -159,7 +172,7 @@
             ["with-profile" "security" "dependency-check"]
             "lint"
             ["do"
-              ["check"] ["kibit"] ["eastwood"]]
+             ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static"
             ["with-profile" "static"
@@ -171,5 +184,5 @@
             ["shell" "cmr" "stop" "local" "sqs-sns"]
             "restart-sqs-sns"
             ["do"
-              ["stop-sqs-sns"]
-              ["start-sqs-sns"]]})
+             ["stop-sqs-sns"]
+             ["start-sqs-sns"]]})

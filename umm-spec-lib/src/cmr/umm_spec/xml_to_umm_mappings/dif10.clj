@@ -10,7 +10,6 @@
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.json-schema :as js]
-   [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [without-default-value-of]]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
@@ -220,13 +219,57 @@
     (when (seq distributions)
       {:FileDistributionInformation distributions})))
 
+(defn- parse-doi
+  "Parse the DOI from the data citation section.  If the DOI does not exist then set the DOIs
+   MissingReason and Explanation since it is required as of UMM-C 1.16.1."
+  [doc]
+  (let [first-doi
+         (first (remove nil? (for [dsc (select doc "/DIF/Dataset_Citation")]
+                               (when (= (value-of dsc "Persistent_Identifier/Type") "DOI")
+                                 {:DOI (value-of dsc "Persistent_Identifier/Identifier")}))))]
+    (if first-doi
+      first-doi
+      {:MissingReason "Unknown"
+       :Explanation "It is unknown if this record has a DOI."})))
+
+(defn- parse-associated-dois
+  "Parse the associated DOIs."
+  [doc]
+  (if-let [assoc-dois (select doc "DIF/Associated_DOIs")]
+    (into []
+      (for [assoc-doi assoc-dois]
+        {:DOI (value-of assoc-doi "DOI")
+         :Title (value-of assoc-doi "Title")
+         :Authority (value-of assoc-doi "Authority")}))))
+
+(defn parse-use-constraints
+  "Parse the XML collection Use Constraints into the UMM-C counterparts."
+  [doc sanitize?]
+  (when-let [use-constraints (first (select doc "DIF/Use_Constraints"))]
+    (if (= java.lang.String (-> use-constraints
+                               (get :content)
+                               first
+                               type))
+      (when-let [description (su/truncate
+                               (value-of use-constraints ".")
+                               su/USECONSTRAINTS_MAX
+                               sanitize?)]
+        {:Description description})
+      (util/remove-nils-empty-maps-seqs
+        {:Description (value-of use-constraints "Description")
+         :LicenseURL (when-let [url (value-of use-constraints "License_URL/URL")]
+                       {:Linkage url
+                        :Name (value-of use-constraints "License_URL/Title")
+                        :Description (value-of use-constraints "License_URL/Description")
+                        :MimeType (value-of use-constraints "License_URL/Mime_Type")})
+         :LicenseText (value-of use-constraints "License_Text")}))))
+
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
   [doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
-   :DOI (first (remove nil? (for [dsc (select doc "/DIF/Dataset_Citation")]
-                              (when (= (value-of dsc "Persistent_Identifier/Type") "DOI")
-                                {:DOI (value-of dsc "Persistent_Identifier/Identifier")}))))
+   :DOI (parse-doi doc)
+   :AssociatedDOIs (parse-associated-dois doc)
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
    :Version (value-of doc "/DIF/Entry_ID/Version")
    :VersionDescription (value-of doc "/DIF/Version_Description")
@@ -255,13 +298,7 @@
    :DirectoryNames (dif-util/parse-idn-node doc)
    :Quality (su/truncate (value-of doc "/DIF/Quality") su/QUALITY_MAX sanitize?)
    :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
-   :UseConstraints (when-let [description (su/truncate
-                                            (value-of doc "/DIF/Use_Constraints")
-                                            su/USECONSTRAINTS_MAX
-                                            sanitize?)]
-                     (umm-coll-models/map->UseConstraintsType
-                       {:Description (umm-coll-models/map->UseConstraintsDescriptionType
-                                       {:Description description})}))
+   :UseConstraints (parse-use-constraints doc sanitize?)
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
                  :LongName (value-of platform "Long_Name")
@@ -313,7 +350,16 @@
    :DataCenters (center/parse-data-centers doc sanitize?)
    :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel") sanitize?)
    :ContactGroups (contact/parse-contact-groups (select doc "DIF/Personnel"))
-   :ArchiveAndDistributionInformation (parse-archive-dist-info doc)})
+   :ArchiveAndDistributionInformation (parse-archive-dist-info doc)
+   :DirectDistributionInformation (when-let [ddi (first
+                                                   (select doc "/DIF/DirectDistributionInformation"))]
+                                    {:Region (value-of ddi "Region")
+                                     :S3BucketAndObjectPrefixNames
+                                       (values-at ddi "S3BucketAndObjectPrefixName")
+                                     :S3CredentialsAPIEndpoint
+                                       (value-of ddi "S3CredentialsAPIEndpoint")
+                                     :S3CredentialsAPIDocumentationURL
+                                       (value-of ddi "S3CredentialsAPIDocumentationURL")})})
 
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document. The :sanitize? option

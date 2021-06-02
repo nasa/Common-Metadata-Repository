@@ -29,18 +29,18 @@
 
 (defn- build-routes [system]
   (routes
+    (context (:relative-root-url system) []
+      (POST "/reset" {context :request-context}
+        (reset context)
+        {:status 204})
 
-    (POST "/reset" {context :request-context}
-      (reset context)
-      {:status 204})
+      ;; Add routes
+      (token-api/build-routes system)
+      (providers-api/build-routes system)
+      (acls-api/build-routes system)
+      (urs-api/build-routes system)
 
-    ;; Add routes
-    (token-api/build-routes system)
-    (providers-api/build-routes system)
-    (acls-api/build-routes system)
-    (urs-api/build-routes system)
-
-    (route/not-found "Not Found")))
+      (route/not-found "Not Found"))))
 
 (defn make-api [system]
   (-> (build-routes system)

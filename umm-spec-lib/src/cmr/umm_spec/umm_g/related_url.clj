@@ -20,15 +20,17 @@
       :size Size})))
 
 (defn umm-g-related-urls->RelatedURLs
-  "Returns the umm-lib granule model RelatedURLs from the given UMM-G RelatedUrls."
+  "Returns the umm-lib granule model RelatedURLs from the given UMM-G RelatedUrls.
+  NOTE: this is converts from the new style of urls to the old style."
   [related-urls]
   (seq (map umm-g-related-url->RelatedURL related-urls)))
 
 (def umm-g-related-url-types
   "Defines the valid UMM-G related url types. This list is based on RelatedUrlTypeEnum in
   umm-g-json-schema.json, and needs to be updated when the UMM-G schema is updated."
-  #{"DOWNLOAD SOFTWARE" "EXTENDED METADATA" "GET DATA" "GET RELATED VISUALIZATION"
-    "GOTO WEB TOOL" "PROJECT HOME PAGE" "USE SERVICE API" "VIEW RELATED INFORMATION"})
+  #{"DOWNLOAD SOFTWARE" "EXTENDED METADATA" "GET DATA" "GET DATA VIA DIRECT ACCESS"
+    "GET RELATED VISUALIZATION" "GOTO WEB TOOL" "PROJECT HOME PAGE" "USE SERVICE API"
+    "VIEW RELATED INFORMATION"})
 
 (def umm-g-related-url-sub-types
   "Defines the valid UMM-G related url sub-types. This list is based on RelatedUrlSubTypeEnum in
@@ -46,10 +48,10 @@
     "MICRO ARTICLE" "PI DOCUMENTATION" "PROCESSING HISTORY" "PRODUCT HISTORY"
     "PRODUCT QUALITY ASSESSMENT" "PRODUCT USAGE" "PRODUCTION HISTORY" "PUBLICATIONS" "READ-ME"
     "REQUIREMENTS AND DESIGN" "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION"
-    "SCIENCE DATA PRODUCT VALIDATION" "USER FEEDBACK" "USER'S GUIDE"})
+    "SCIENCE DATA PRODUCT VALIDATION" "USER FEEDBACK" "USER'S GUIDE" "DMR++" "DMR++ MISSING DATA"})
 
 (defn RelatedURLs->umm-g-related-urls
-  "Returns the UMM-G RelatedUrls from the given umm-lib granule model RelatedURLs."
+  "Returns the UMM-G RelatedUrls from the given umm-lib granule model RelatedURLs. note, this is old->new"
   [related-urls]
   (when (seq related-urls)
     (for [related-url related-urls]

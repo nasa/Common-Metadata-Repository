@@ -51,8 +51,8 @@ Search API provides access to this metadata.
 - Maven (https://maven.apache.org/install.html)
     - Mac OS X devs can use `brew install maven`
     - Linux devs can use `sudo apt-get install maven`
-- GCC and libc (used for redis installation)
-- Docker (used for elasticsearch)
+- GCC and libc
+- Docker
 
 ## Obtaining the Code
 
@@ -116,12 +116,13 @@ Here are the steps to do so:
 
 1. `cmr setup profile` and then update the new `./dev-system/profiles.clj` file.
    it will look something like this:
-   ```
+   ``` clojure
    {:dev-config {:env {:cmr-metadata-db-password "<YOUR PASSWORD HERE>"
                        :cmr-sys-dba-password "<YOUR PASSWORD HERE>"
                        :cmr-bootstrap-password "<YOUR PASSWORD HERE>"
                        :cmr-ingest-password "<YOUR PASSWORD HERE>"
                        :cmr-urs-password "<YOUR PASSWORD HERE>"}}}
+   ```
 
 2. `cmr setup dev`
 3. `cmr start repl`
@@ -209,6 +210,8 @@ You will find the vulnerability summary in `./target/dependency-check-report.htm
 
 #### Testing CMR
 
+Test files in CMR should follow the naming convention of ending in `-test`.
+
 There are two modes of testing the CMR:
 
 * From the REPL
@@ -257,16 +260,31 @@ you use an Oracle VM built for this purpose. You will also need
 configuration and authentication information that will be set as environment
 variables. Be sure to contact a CMR core dev for this information.
 
-Once these are in place, you will be able to run the following:
+To run only certain types of tests, you may run the following:
+
+##### Unit Tests
+
+``` sh
+lein modules utest
+```
+
+##### Integration Tests
+
+If running CMR with the in-memory database (default)
+``` sh
+lein modules itest --skip-meta :oracle
 
 ```
-$ cmr test cicd
+
+If running CMR with an external database
+``` sh
+lein modules itest --skip-meta :in-memory-db
 ```
 
 If you want to run tests against Oracle, bring up the Oracle VM and execute
 the following to create the users and run the migrations:
 
-```
+``` sh
 cmr setup db
 ```
 
@@ -286,6 +304,31 @@ call `(reset :db :in-memory)`.
 There is also a different, optional test runner you can use. For more details
 see the docstring for `run-suites` in `dev-system/dev/user.clj`.
 It will contain usage instructions
+#### Testing in the CI Environment
+
+Throughout the modules, in the `project.clj` files there are additional `lein` aliseses for 
+executing the tests in the CI/CD environment. They are 
+* ci-itest
+* ci-utest
+
+These run the integration and unit tests, respectively, in the CI environment. The difference
+between `itest` and `ci-itest` or `utest` and `ci-utest` are the settings passed to the
+kaocha test runner.
+
+In the CI environment, color is omitted, and certain tests that require an internal memory
+database are excluded. The aliases may be used locally as well. 
+
+To see the differnce in detail, inspect the `tests.edn` files for each module to see the
+profile in use in the CI environment. Kaocha supports the use of profiles so more may 
+be added as necessary.
+
+### Test Development
+
+CMR uses the [Kaocha](https://github.com/lambdaisland/kaocha) test library.
+It provides plugins and grouping capabilities. Tests are organized in each module
+with the standard being `:unit` and `:integration`.
+
+Not all modules will contain `:integration` tests.
 
 ## Code structure
 
@@ -402,10 +445,10 @@ applications, as well as several libraries and support applications.
 
 ## Further Reading
 
-- CMR Client Partner User Guide: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide
+- CMR Client Partner User Guide: https://wiki.earthdata.nasa.gov/display/ED/CMR+Client+Partner+User+Guide
 - CMR Data Partner User Guide: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide
 - CMR Client Developer Forum: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum
 
 ## License
 
-Copyright © 2014-2019 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
+Copyright © 2014-2021 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.

@@ -88,8 +88,8 @@
                           (assoc :Type "GET RELATED VISUALIZATION")
                           (dissoc :Subtype))
    (if Subtype
-    (merge related-url (get-url-type-by-type Type Subtype))
-    related-url))))
+     (merge related-url (get-url-type-by-type Type Subtype))
+     related-url))))
 
 (defn- expected-related-url-get-service
   "Returns related-url with the expected GetService"
@@ -124,10 +124,11 @@
     (dissoc related-url :GetData)))
 
 (defn- expected-related-url
-  "Returns related-url with the expected GetService"
+  "Returns related-url with the expected GetData or GetService"
   [related-url]
   (case (:Type related-url)
-    "GET DATA" (expected-related-url-get-data related-url)
+    (or "GET DATA"
+        "GET CAPABILITIES") (expected-related-url-get-data related-url)
     (expected-related-url-get-service related-url)))
 
 (defn- expected-echo10-related-urls
@@ -327,6 +328,26 @@
       [(cmn/map->ResourceCitationType
         {:OtherCitationDetails other-citation-details})])))
 
+(defn- expected-echo10-use-constraints-license-url-name
+  "Check to see if the LicenseURL has a Name. The UseConstraints/LicenseURL/Name is translated to
+   the ECHO 10 UseConstraints/LicenseURL/Type which is required."
+  [use-constraints]
+  (if (and (get-in use-constraints [:LicenseURL :Linkage])
+           (not (get-in use-constraints [:LicenseURL :Name])))
+    (assoc-in use-constraints [:LicenseURL :Name] "License URL")
+    use-constraints))
+
+(defn- expected-echo10-use-constraints
+  "Returns expected use constraints."
+  [use-constraints]
+  (let [use-const (expected-echo10-use-constraints-license-url-name use-constraints)]
+    (if (get-in use-const [:LicenseURL :Linkage])
+      (-> use-const
+          (assoc-in [:LicenseURL :Protocol] nil)
+          (assoc-in [:LicenseURL :Function] nil)
+          (assoc-in [:LicenseURL :ApplicationProfile] nil))
+      use-const)))
+
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
@@ -339,7 +360,7 @@
       (update :DataDates fixup-echo10-data-dates)
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
-      (assoc :UseConstraints nil)
+      (update :UseConstraints expected-echo10-use-constraints)
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
       (assoc :ISOTopicCategories nil)

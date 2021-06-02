@@ -26,6 +26,8 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [DELETE - Delete an ACL](#delete-acl)
   * /permissions
     * [GET - Check User Permissions](#get-permissions)
+  * /s3-buckets
+    * [GET - Check User Permissions to S3 Buckets](#get-s3-buckets)
   * /health
     * [GET - Get the health of the access control application.](#application-health)
 
@@ -865,13 +867,50 @@ Content-Type: application/json;charset=ISO-8859-1
 #### Parameters
 
 * One of:
-** `concept_id` - Must be a valid concept id, or else use `concept_id[]=...&concept_id[]=...` to specify multiple concepts.
-** `system_object` - A system object identity target, e.g. "GROUP"
-** `provider` AND `target` - A provider id and a provider object identity target, e.g. "PROVIDER_HOLDINGS"
-** `target_group_id` - A single instance object identity target id, i.e. group concept id
+  * `concept_id` - Must be a valid concept id, or else use `concept_id[]=...&concept_id[]=...` to specify multiple concepts.
+  * `system_object` - A system object identity target, e.g. "GROUP"
+  * `provider` AND `target` - A provider id and a provider object identity target, e.g. "PROVIDER_HOLDINGS"
+  * `target_group_id` - A single instance object identity target id, i.e. group concept id
 * And one of:
-** `user_id` - The user whose permissions will be computed.
-** `user_type` - Either "guest" or "registered".
+  * `user_id` - The user whose permissions will be computed.
+  * `user_type` - Either "guest" or "registered".
+
+### <a name="get-s3-buckets"></a> User Access to S3 Buckets
+
+This endpoint will return a JSON list of S3 buckets a user has access to. If a list of providers is included in the request, the list of S3 buckets will be filtered to only include S3 buckets contained by collections within those providers.
+
+#### Parameters
+
+* Required:
+  * `user_id` - The user whose available S3 buckets and object prefix names will be determined for.
+
+* Optional
+  * `provider[]` - A list of provider ids to filter the S3 bucket and object prefix names by. If not specified, all providers will be included.
+
+
+Example request:
+```
+curl -i -H "Echo-Token: XXXX" "%CMR-ENDPOINT%/s3-buckets?user_id=user1
+
+HTTP/1.1 200 OK
+Content-Length: 81
+Content-Type: application/json
+
+["s3","s3://aws.example-1.com","s3://aws.example-2.com","s3://aws.example-3.com"]
+```
+
+
+Example request with providers specified:
+```
+curl -i -H "Echo-Token: XXXX" "%CMR-ENDPOINT%/s3-buckets?user_id=user1&provider[]=PROV2&provider[]=PROV3
+
+HTTP/1.1 200 OK
+Content-Length: 51
+Content-Type: application/json
+
+["s3://aws.example-2.com","s3://aws.example-3.com"]
+```
+
 
 ### <a name="application-health"></a> Application Health
 

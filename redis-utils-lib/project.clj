@@ -4,21 +4,19 @@
   {:version "3.2.10"
    :hash "411c604a716104f7f5a326abfad32de9cea10f15f987bec45cf86f315e9e63a0"})
 
-(def redis-install-path
-  "The directory within this library where redis is to be installed"
-  "redis")
+(def redis-version "6")
 
 (defproject nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handling cacheing with the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/redis-utils-lib"
-  :dependencies [[com.github.kstyrc/embedded-redis "0.6"]
-                 [com.taoensso/carmine "2.19.1"]
+  :dependencies [[com.taoensso/carmine "3.0.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [org.clojure/clojure "1.10.0"]]
+                 [org.clojure/clojure "1.10.0"]
+                 [org.testcontainers/testcontainers "1.15.2"]]
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
-  :resource-paths ["resources" ~redis-install-path]
+  :resource-paths ["resources"]
   :global-vars {*warn-on-reflection* true}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
@@ -45,23 +43,33 @@
                               [lein-shell "0.5.0"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
-             :internal-repos {}}
+             :internal-repos {}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {"bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]
-            "clean-redis" ["shell" "rm" "-rf" ~redis-install-path]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
-            "install" ["do" "clean-redis," "install-redis," "install," "clean"]
+            "pull-docker-images" ["shell" "docker" "pull" ~(str "redis:" redis-version)]
+
             "install!" "install"
-            "install-redis" ["shell"
-                             "support/install_redis.sh"
-                             ~(:version redis-distribution)
-                             ~(:hash redis-distribution)]
+
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]
             ;; Linting aliases
-            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
-                          ["with-profile" "lint" "kibit"]]
+            "kibit" ["do"
+                     ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+                     ["with-profile" "lint" "kibit"]]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]})
+            "test-out" ["test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]})

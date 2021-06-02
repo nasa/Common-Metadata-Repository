@@ -4,8 +4,11 @@
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.bootstrap.bulk-index.core :as core]
+   [cmr.system-int-test.data2.collection :as data-collection]
+   [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.umm-json :as data-umm-json]
    [cmr.system-int-test.system :as system]
+   [cmr.system-int-test.utils.association-util :as assoc-util]
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -21,7 +24,7 @@
                                              :grant-all-search? true
                                              :grant-all-access-control? false})]))
 
-(deftest bulk-index-tools-for-provider
+(deftest ^:oracle bulk-index-tools-for-provider
   (testing "Bulk index tools for a single provider"
     (system/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -68,7 +71,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-tools
+(deftest ^:oracle bulk-index-tools
   (testing "Bulk index tools for multiple providers, explicitly"
     (system/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -95,7 +98,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-all-tools
+(deftest ^:oracle bulk-index-all-tools
   (testing "Bulk index tools for multiple providers, implicitly"
     (system/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -117,7 +120,7 @@
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
-(deftest bulk-index-tool-revisions
+(deftest ^:oracle bulk-index-tool-revisions
   (testing "Bulk index tools index all revisions index as well"
     (system/only-with-real-database
      ;; Disable message publishing so items are not indexed.
@@ -179,3 +182,31 @@
 
        ;; Re-enable message publishing.
        (core/reenable-automatic-indexing)))))
+
+(deftest bulk-index-collections-with-tool-association-test
+  (system/only-with-real-database
+   (let [coll1 (data-core/ingest "PROV1" (data-collection/collection {:entry-title "coll1"}))
+         coll1-concept-id (:concept-id coll1)
+         token (echo-util/login (system/context) "user1")
+         {tool1-concept-id :concept-id} (tool/ingest-tool-with-attrs
+                                         {:native-id "tool1"
+                                          :Name "toolname1"})
+         {tool2-concept-id :concept-id} (tool/ingest-tool-with-attrs
+                                         {:native-id "tool2"
+                                          :Name "toolname2"})]
+     ;; index the collection and tools so that they can be found during tool association
+     (index/wait-until-indexed)
+
+     (core/disable-automatic-indexing)
+     (assoc-util/associate-by-concept-ids token tool1-concept-id [{:concept-id coll1-concept-id}])
+     ;; tool 2 is used to test tool association tombstone is indexed correctly
+     (assoc-util/associate-by-concept-ids token tool2-concept-id [{:concept-id coll1-concept-id}])
+     (assoc-util/dissociate-by-concept-ids token tool2-concept-id [{:concept-id coll1-concept-id}])
+     (core/reenable-automatic-indexing)
+
+     ;; bulk index the collection
+     (bootstrap/bulk-index-provider "PROV1")
+     (index/wait-until-indexed)
+
+     ;; verify collection is associated with tool1, not tool2
+     (tool/assert-collection-search-result coll1 {:has-formats false} [tool1-concept-id]))))

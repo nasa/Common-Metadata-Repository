@@ -40,4 +40,4 @@ Update elasticsearch mappings to the latest version:
 
 ## License
 
-Copyright © 2016-2018 NASA
+Copyright © 2016-2021 NASA

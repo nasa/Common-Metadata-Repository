@@ -596,6 +596,99 @@
                             </gmd:initiativeType>
                         </gmd:MD_AggregateInformation>
                     </gmd:aggregationInfo>
+                    <!-- Associatd DOIs -->
+                    <gmd:aggregationInfo>
+                      <gmd:MD_AggregateInformation>
+                        <gmd:aggregateDataSetName>
+                          <gmd:CI_Citation>
+                            <gmd:title>
+                              <gco:CharacterString>DOI 1 landing page title</gco:CharacterString>
+                            </gmd:title>
+                            <gmd:date gco:nilReason="missing"/>
+                          </gmd:CI_Citation>
+                        </gmd:aggregateDataSetName>
+                        <gmd:aggregateDataSetIdentifier>
+                          <gmd:MD_Identifier>
+                            <gmd:authority>
+                              <gmd:CI_Citation>
+                                <gmd:title/>
+                                <gmd:date/>
+                                <gmd:citedResponsibleParty>
+                                  <gmd:CI_ResponsibleParty>
+                                    <gmd:organisationName>
+                                      <gco:CharacterString>https://doi.org</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:role>
+                                      <gmd:CI_RoleCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="authority">authority</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                  </gmd:CI_ResponsibleParty>
+                                </gmd:citedResponsibleParty>
+                              </gmd:CI_Citation>
+                            </gmd:authority>
+                            <gmd:code>
+                              <gco:CharacterString>10.5678/AssociatedDOI1</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:codeSpace>
+                              <gco:CharacterString>gov.nasa.esdis.umm.associateddoi</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                              <gco:CharacterString>Assocaited DOI 1</gco:CharacterString>
+                            </gmd:description>
+                          </gmd:MD_Identifier>
+                        </gmd:aggregateDataSetIdentifier>
+                        <gmd:associationType>
+                          <gmd:DS_AssociationTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
+                                                      codeListValue="associatedDOI">associatedDOI
+                          </gmd:DS_AssociationTypeCode>
+                        </gmd:associationType>
+                      </gmd:MD_AggregateInformation>
+                    </gmd:aggregationInfo>
+                    <gmd:aggregationInfo>
+                      <gmd:MD_AggregateInformation>
+                        <gmd:aggregateDataSetName>
+                          <gmd:CI_Citation>
+                            <gmd:title>
+                              <gco:CharacterString>DOI 2 landing page title</gco:CharacterString>
+                            </gmd:title>
+                            <gmd:date gco:nilReason="missing"/>
+                          </gmd:CI_Citation>
+                        </gmd:aggregateDataSetName>
+                        <gmd:aggregateDataSetIdentifier>
+                          <gmd:MD_Identifier>
+                            <gmd:authority>
+                              <gmd:CI_Citation>
+                                <gmd:title/>
+                                <gmd:date/>
+                                <gmd:citedResponsibleParty>
+                                  <gmd:CI_ResponsibleParty>
+                                    <gmd:organisationName>
+                                      <gco:CharacterString>https://doi.org</gco:CharacterString>
+                                    </gmd:organisationName>
+                                    <gmd:role>
+                                      <gmd:CI_RoleCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="authority">authority</gmd:CI_RoleCode>
+                                    </gmd:role>
+                                  </gmd:CI_ResponsibleParty>
+                                </gmd:citedResponsibleParty>
+                              </gmd:CI_Citation>
+                            </gmd:authority>
+                            <gmd:code>
+                              <gco:CharacterString>10.5678/AssociatedDOI2</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:codeSpace>
+                              <gco:CharacterString>gov.nasa.esdis.umm.associateddoi</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                              <gco:CharacterString>Assocaited DOI 2</gco:CharacterString>
+                            </gmd:description>
+                          </gmd:MD_Identifier>
+                        </gmd:aggregateDataSetIdentifier>
+                        <gmd:associationType>
+                          <gmd:DS_AssociationTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
+                                                      codeListValue="associatedDOI">associatedDOI
+                          </gmd:DS_AssociationTypeCode>
+                        </gmd:associationType>
+                      </gmd:MD_AggregateInformation>
+                    </gmd:aggregationInfo>
                     <gmd:spatialRepresentationType>
                         <gmd:MD_SpatialRepresentationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">grid</gmd:MD_SpatialRepresentationTypeCode>
                     </gmd:spatialRepresentationType>
@@ -972,6 +1065,34 @@
                                     </gmd:role>
                                 </gmd:CI_ResponsibleParty>
                             </gmd:distributorContact>
+                            <gmd:distributorFormat>
+                                <gmd:MD_Format>
+                                    <gmd:name>
+                                        <gco:CharacterString>Format: text/xml MimeType: application/opensearchdescription+xml</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:version/>
+                                </gmd:MD_Format>
+                            </gmd:distributorFormat>
+                            <gmd:distributorTransferOptions>
+                                <gmd:MD_DigitalTransferOptions>
+                                  <gmd:onLine>
+                                      <gmd:CI_OnlineResource>
+                                          <gmd:linkage>
+                                              <gmd:URL>http://nsidc.org/data/docs/measures/nsidc-0547/</gmd:URL>
+                                          </gmd:linkage>
+                                          <gmd:name>
+                                              <gco:CharacterString>GET CAPABILITIES</gco:CharacterString>
+                                          </gmd:name>
+                                          <gmd:description>
+                                              <gco:CharacterString>URLContentType: DistributionURL Type: GET CAPABILITIES Subtype: OpenSearch</gco:CharacterString>
+                                          </gmd:description>
+                                          <gmd:function>
+                                              <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">information</gmd:CI_OnLineFunctionCode>
+                                          </gmd:function>
+                                      </gmd:CI_OnlineResource>
+                                  </gmd:onLine>
+                                </gmd:MD_DigitalTransferOptions>
+                            </gmd:distributorTransferOptions>
                         </gmd:MD_Distributor>
                     </gmd:distributor>
                     <gmd:transferOptions>
@@ -1034,6 +1155,22 @@
                                     </gmd:name>
                                     <gmd:description>
                                         <gco:CharacterString>DistributionURL USE SERVICE API </gco:CharacterString>
+                                    </gmd:description>
+                                    <gmd:function>
+                                        <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">information</gmd:CI_OnLineFunctionCode>
+                                    </gmd:function>
+                                </gmd:CI_OnlineResource>
+                            </gmd:onLine>
+                            <gmd:onLine>
+                                <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                        <gmd:URL>http://nsidc.org/data/docs/measures/nsidc-0547/</gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:name>
+                                        <gco:CharacterString>GET CAPABILITIES</gco:CharacterString>
+                                    </gmd:name>
+                                    <gmd:description>
+                                        <gco:CharacterString>URLContentType: DistributionURL Type: GET CAPABILITIES Subtype: OpenSearch</gco:CharacterString>
                                     </gmd:description>
                                     <gmd:function>
                                         <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="function">information</gmd:CI_OnLineFunctionCode>

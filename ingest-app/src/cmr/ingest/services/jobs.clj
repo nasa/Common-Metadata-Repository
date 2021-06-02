@@ -1,29 +1,38 @@
 (ns cmr.ingest.services.jobs
   "This contains the scheduled jobs for the ingest application."
   (:require
-    [cheshire.core :as json]
-    [clj-time.core :as t]
-    [clojure.string :as string]
-    [cmr.acl.acl-fetcher :as acl-fetcher]
-    [cmr.common.config :as cfg :refer [defconfig]]
-    [cmr.common.jobs :as jobs :refer [def-stateful-job defjob]]
-    [cmr.common.log :refer (debug info warn error)]
-    [cmr.ingest.data.bulk-update :as bulk-update]
-    [cmr.ingest.data.ingest-events :as ingest-events]
-    [cmr.ingest.data.provider-acl-hash :as pah]
-    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
-    [cmr.ingest.services.ingest-service.subscription :as sub]
-    [cmr.transmit.echo.acls :as echo-acls]
-    [cmr.transmit.metadata-db :as mdb]
-    [cmr.transmit.search :as search]
-    [markdown.core :as markdown]
-    [postal.core :as postal-core]))
+   [cheshire.core :as json]
+   [clj-time.core :as t]
+   [clojure.spec.alpha :as spec]
+   [clojure.string :as string]
+   [cmr.acl.acl-fetcher :as acl-fetcher]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.jobs :as jobs :refer [def-stateful-job]]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.ingest.data.bulk-update :as bulk-update]
+   [cmr.ingest.data.granule-bulk-update :as granule-bulk-update]
+   [cmr.ingest.data.ingest-events :as ingest-events]
+   [cmr.ingest.data.provider-acl-hash :as pah]
+   [cmr.ingest.services.granule-bulk-update-service :as gran-bulk-update-svc]
+   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
+   [cmr.ingest.services.subscriptions-helper :as subscription]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.metadata-db :as mdb]
+   [postal.core :as postal-core]))
 
-;Call the following to trigger a job, example below will fire an email subscription
-;UPDATE QRTZ_TRIGGERS
-;SET NEXT_FIRE_TIME =(((cast (SYS_EXTRACT_UTC(SYSTIMESTAMP) as DATE) - DATE'1970-01-01')*86400 + 1200) * 1000)
-;WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
+;; Specs =============================================================
+(def date-rx "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z")
 
+(def time-constraint-pattern (re-pattern (str date-rx "," date-rx)))
+
+(spec/def ::time-constraint (spec/and
+                              string?
+                              #(re-matches time-constraint-pattern %)))
+
+;; Call the following to trigger a job, example below will fire an email subscription
+;; UPDATE QRTZ_TRIGGERS
+;; SET NEXT_FIRE_TIME =(((cast (SYS_EXTRACT_UTC(SYSTIMESTAMP) as DATE) - DATE'1970-01-01')*86400 + 1200) * 1000)
+;; WHERE trigger_name='EmailSubscriptionProcessing.job.trigger';
 
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
   "The number of seconds between jobs to check for ACL changes and reindex collections."
@@ -81,7 +90,7 @@
   (let [providers (map :provider-id (mdb/get-providers context))
         provider-id-acl-hashes (or (pah/get-provider-id-acl-hashes context) {})
         current-provider-id-acl-hashes (acls->provider-id-hashes
-                                         (acl-fetcher/get-acls context [:catalog-item]))
+                                        (acl-fetcher/get-acls context [:catalog-item]))
         providers-requiring-reindex (filter (fn [provider-id]
                                               (not= (get current-provider-id-acl-hashes provider-id)
                                                     (get provider-id-acl-hashes provider-id)))
@@ -123,16 +132,6 @@
       (doseq [concept-id concept-ids]
        (mdb/save-concept context {:concept-id concept-id :deleted true})))))
 
-(defn- create-query-params
-  "Create query parameters using the query string like
-  \"polygon=1,2,3&concept-id=G1-PROV1\""
-  [query-string]
-  (let [query-string-list (string/split query-string #"&")
-        query-map-list (map #(let [a (string/split % #"=")]
-                               {(first a) (second a)})
-                             query-string-list)]
-     (apply merge query-map-list)))
-
 (def-stateful-job CleanupExpiredCollections
   [ctx system]
   (let [context {:system system}]
@@ -149,21 +148,6 @@
 ;; Only one node needs to refresh the cache because we're using the  fallback cache with Redis cache.
 ;; The value stored in Redis will be available to all the nodes.
 
-(defconfig email-server-host
-  "The host name for email server."
-  {:default ""
-   :type String})
-
-(defconfig email-server-port
-  "The port number for email server."
-  {:default 25
-   :type Long})
-
-(defconfig mail-sender
-  "The email sender's email address."
-  {:default ""
-   :type String})
-
 (defconfig partial-refresh-collection-granule-aggregation-cache-interval
   "Number of seconds between partial refreshes of the collection granule aggregation cache."
   {:default 3600
@@ -179,21 +163,22 @@
   {:default 86400 ;;24 hours
    :type Long})
 
-(defconfig email-subscription-processing-interval
-  "Number of seconds between jobs processing email subscriptions."
-  {:default 3600
+(defconfig bulk-granule-task-table-cleanup-interval
+  "Number of seconds between runs of cleanup job"
+  {:default 86400 ;;24 hours
    :type Long})
-(defconfig email-subscription-processing-lookback
-  "Number of seconds to look back for granual changes."
-  {:default 3600
+
+(defconfig bulk-update-task-status-update-poll-interval
+  "Number of seconds between runs bulk granule task status update jobs."
+  {:default 300 ;; 5 minutes
    :type Long})
 
 (defn trigger-full-refresh-collection-granule-aggregation-cache
   "Triggers a refresh of the collection granule aggregation cache in the Indexer."
   [context]
   (ingest-events/publish-provider-event
-    context
-    (ingest-events/trigger-collection-granule-aggregation-cache-refresh nil)))
+   context
+   (ingest-events/trigger-collection-granule-aggregation-cache-refresh nil)))
 
 (defn trigger-partial-refresh-collection-granule-aggregation-cache
   "Triggers a partial refresh of the collection granule aggregation cache in the Indexer."
@@ -221,97 +206,12 @@
   [context]
   (bulk-update/cleanup-old-bulk-update-status context))
 
-(defn email-granule-url-list
- "take a list of URLs and format them for an email"
- [gran-ref-location]
- (string/join "\n" (map #(str "* [" % "](" % ")") gran-ref-location)))
-
-(defn create-email-content
- "Create an email body for subscriptions"
- [from-email-address to-email-address gran-ref-location subscription]
-
- (let [metadata (json/parse-string (:metadata subscription))
-       concept-id (get-in subscription [:extra-fields :collection-concept-id])
-       meta-query (get metadata "Query")
-       sub-start-time (:start-time subscription)]
-  {:from from-email-address
-   :to to-email-address
-   :subject "Email Subscription Notification"
-   :body [{:type "text/html"
-    :content (markdown/md-to-html-string (str
-     "You have subscribed to receive notifications when data is added to the following query:\n\n"
-     "`" concept-id "`\n\n"
-     "`" meta-query "`\n\n"
-     "Since this query was last run at "
-     sub-start-time
-     ", the following granules have been added or updated:\n\n"
-     (email-granule-url-list gran-ref-location)
-     "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at [cmr-support@earthdata.nasa.gov](mailto:cmr-support@earthdata.nasa.gov).\n"
-     ))}]}))
-
-(defn- add-updated-since
- "Pull out the start and end times from a time-constraint value and associate them to a map"
- [raw time-constraint]
- (let [parts (clojure.string/split time-constraint, #",")
-       start-time (first parts)
-       end-time (last parts)]
-  (assoc raw :start-time start-time :end-time end-time)))
-
-(defn- send-update-subscription-notification-time
-  "handle any packaging of data here before sending it off to transmit package"
-  [context data]
-  (debug "send-update-subscription-notification-time with" data)
-  (search/save-subscription-notification-time context data))
-
-(defn- process-subscriptions
-  "Process each subscription in subscriptions."
-  [context subscriptions time-constraint]
-  (doseq [raw_subscription subscriptions
-         :let [subscription (add-updated-since raw_subscription time-constraint)
-               email-address (get-in subscription [:extra-fields :email-address])
-               sub-id (get subscription :concept-id)
-               coll-id (get-in subscription [:extra-fields :collection-concept-id])
-               query-string (-> (:metadata subscription)
-                                (json/decode true)
-                                :Query)
-               query-params (create-query-params query-string)
-               params1 (merge {:created-at time-constraint
-                               :collection-concept-id coll-id
-                               :token (cmr.transmit.config/echo-system-token)}
-                              query-params)
-               params2 (merge {:revision-date time-constraint
-                               :collection-concept-id coll-id
-                               :token (cmr.transmit.config/echo-system-token)}
-                              query-params)]]
-      (debug "Processing subscription: " sub-id " with\n" (str subscription) ".")
-      (try
-        ; TODO - a comment from CMR-6612's review is to not have 3 let statments, simplyfy the code after a merge
-        (let [gran-ref1 (search/find-granule-references context params1)
-              gran-ref2 (search/find-granule-references context params2)
-              gran-ref (distinct (concat gran-ref1 gran-ref2))
-              gran-ref-location (map :location gran-ref)]
-          (debug "gran-ref-locations for " sub-id ": " gran-ref-location)
-          (when (seq gran-ref)
-           (let [email-content (create-email-content (mail-sender) email-address gran-ref-location subscription)
-                email-settings {:host (email-server-host) :port (email-server-port)}]
-            (postal-core/send-message email-settings email-content)))
-          (send-update-subscription-notification-time context sub-id))
-       (catch Exception e
-         (error "Exception caught in email subscription: " sub-id "\n\n"
-          (.getMessage e) "\n\n" e)))))
-
-(defn- email-subscription-processing
-  "Process email subscriptions and send email when found granules matching the collection and queries
-  in the subscription and were created/updated during the last processing interval."
+(defn trigger-bulk-granule-update-task-table-cleanup
+  "Trigger cleanup of completed bulk granule update tasks that are older than the configured age"
   [context]
-  (let [end-time (t/now)
-        start-time (t/minus end-time (t/seconds (email-subscription-processing-lookback)))
-        time-constraint (str start-time "," end-time)
-        subscriptions
-         (->> (mdb/find-concepts context {:latest true} :subscription)
-              (filter #(not (:deleted %)))
-              (map #(select-keys % [:concept-id :extra-fields :metadata])))]
-    (process-subscriptions context subscriptions time-constraint)))
+  (ingest-events/publish-gran-bulk-update-event
+   context
+   (ingest-events/granule-bulk-update-task-cleanup-event)))
 
 (defn trigger-autocomplete-suggestions-reindex
   [context]
@@ -319,20 +219,28 @@
     (info "Sending events to reindex autocomplete suggestions in all providers:" (pr-str providers))
     (doseq [provider providers]
       (ingest-events/publish-provider-event
-        context
-        (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
+       context
+       (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
 
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
   (bulk-update-status-table-cleanup {:system system}))
 
+(def-stateful-job BulkGranUpdateTaskCleanup
+  [_ system]
+  (granule-bulk-update/cleanup-bulk-granule-tasks {:system system}))
+
 (def-stateful-job EmailSubscriptionProcessing
   [_ system]
-  (email-subscription-processing {:system system}))
+  (subscription/email-subscription-processing {:system system}))
 
 (def-stateful-job ReindexAutocompleteSuggestions
   [_ system]
   (trigger-autocomplete-suggestions-reindex {:system system}))
+
+(def-stateful-job BulkGranTaskStatusUpdatePoll
+  [_ system]
+  (gran-bulk-update-svc/update-completed-task-status! {:system system}))
 
 (defn jobs
   "A list of jobs for ingest"
@@ -350,7 +258,7 @@
     :interval (bulk-update-status-table-cleanup-interval)}
 
    {:job-type EmailSubscriptionProcessing
-    :interval (email-subscription-processing-interval)}
+    :interval (subscription/email-subscription-processing-interval)}
 
    {:job-type TriggerPartialRefreshCollectionGranuleAggregationCacheJob
     :interval (partial-refresh-collection-granule-aggregation-cache-interval)}
@@ -367,4 +275,10 @@
 
    {:job-type ReindexAutocompleteSuggestions
     ;; Run everyday at 13:20. Chosen to be offset from the last job
-    :daily-at-hour-and-minute [13 20]}])
+    :daily-at-hour-and-minute [13 20]}
+
+   {:job-type BulkGranUpdateTaskCleanup
+    :interval (bulk-granule-task-table-cleanup-interval)}
+
+   {:job-type BulkGranTaskStatusUpdatePoll
+    :interval (bulk-update-task-status-update-poll-interval)}])

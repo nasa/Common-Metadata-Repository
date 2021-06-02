@@ -215,6 +215,7 @@
                  site-example-provider (get site-provider-map (headers "host") "PROV1")
                  cmr-example-collection-id (str "C1234567-" site-example-provider)]
              {:status 200
+              :headers {"Content-Type" "text/html; charset=utf-8"}
               :body (-> resource
                         slurp
                         (string/replace "%CMR-ENDPOINT%" cmr-root)

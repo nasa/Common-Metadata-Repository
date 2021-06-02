@@ -23,7 +23,8 @@
                                         "metadata-db-app"
                                         "search-app"
                                         "virtual-product-app"
-                                        "es-spatial-plugin"]}}}
+                                        "es-spatial-plugin"
+                                        "dev-system"]}}}
   :aliases {"kibit"
             ["modules" "kibit"]
             "eastwood"
@@ -45,8 +46,8 @@
             ["shell" "cmr" "stop" "local" "sqs-sns"]
             "restart-sqs-sns"
             ["do"
-              ["stop-sqs-sns"]
-              ["start-sqs-sns"]]
+             ["stop-sqs-sns"]
+             ["start-sqs-sns"]]
             ;; Dev
             "clean-all" ["modules" "do" "clean"]
             "repl"

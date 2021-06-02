@@ -138,7 +138,8 @@
 
 (deftest delete-provider-test
   (testing "delete provider"
-    (let [token (e/login-guest (cmr.system-int-test.system/context))
+    (let [token (e/login-guest (s/context))
+          user1 (e/login (s/context) "user1")
           coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                               :ShortName "S1"
                                                                               :Version "V1"}))
@@ -152,11 +153,18 @@
                                                                               :ShortName "S3"
                                                                               :Version "V3"}))
           gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1"))
-          variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
-                                                           :Name "Variable1"})
-          variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
-                                                           :Name "Variable2"
-                                                           :provider-id "PROV2"})
+          _ (index/wait-until-indexed)
+          variable1-concept (variables/make-variable-concept
+                              {:Name "Variable1"}
+                              {:native-id "var1"
+                               :coll-concept-id (:concept-id coll1)})
+          variable2-concept (variables/make-variable-concept
+                              {:Name "Variable2"
+                               :provider-id "PROV2"}
+                              {:native-id "var2"
+                               :coll-concept-id (:concept-id coll3)})
+          variable1 (variables/ingest-variable-with-association variable1-concept)
+          variable2 (variables/ingest-variable-with-association variable2-concept)
           service1 (services/ingest-service-with-attrs {:native-id "svc1"
                                                         :Name "service1"})
           service2 (services/ingest-service-with-attrs {:native-id "svc2"
@@ -168,15 +176,25 @@
                                                :Name "tool2"
                                                :provider-id "PROV2"})
           sub1 (subscriptions/ingest-subscription-with-attrs {:native-id "sub1"
-                                                              :Name "sub1"})
+                                                              :Name "sub1"
+                                                              :SubscriberId "user1"
+                                                              :Query "platform=NOAA-7"
+                                                              :CollectionConceptId (:concept-id coll1)})
           sub2 (subscriptions/ingest-subscription-with-attrs {:native-id "sub2"
                                                               :Name "sub2"
+                                                              :SubscriberId "user1"
+                                                              :Query "platform=NOAA-9"
+                                                              :CollectionConceptId (:concept-id coll1)
                                                               :provider-id "PROV2"})
           _ (index/wait-until-indexed)
           svc-association1 (au/make-service-association
                             token (:concept-id service1) [{:concept-id (:concept-id coll1)}])
           svc-association2 (au/make-service-association
                             token (:concept-id service2) [{:concept-id (:concept-id coll3)}])
+          tool-association1 (au/make-tool-association
+                             token (:concept-id tool1) [{:concept-id (:concept-id coll1)}])
+          tool-association2 (au/make-tool-association
+                             token (:concept-id tool2) [{:concept-id (:concept-id coll3)}])
           ;; create an access group to test cascading deletes
           access-group (u/map-keys->kebab-case
                         (access-control/create-group
@@ -210,34 +228,35 @@
                 :revision-id 1}]
       (index/wait-until-indexed)
 
-      (is (= 2 (count (:refs (search/find-refs :collection {:provider-id "PROV1"})))))
-      (is (= 3 (count (:refs (search/find-refs :granule {:provider-id "PROV1"})))))
-      (d/refs-match? [variable1] (search/find-refs :variable {:name "Variable1"}))
-      (d/refs-match? [variable2] (search/find-refs :variable {:name "Variable2"}))
-      (d/refs-match? [service1] (search/find-refs :service {:name "service1"}))
-      (d/refs-match? [service2] (search/find-refs :service {:name "service2"}))
-      (d/refs-match? [tool1] (search/find-refs :tool {:name "tool1"}))
-      (d/refs-match? [tool2] (search/find-refs :tool {:name "tool2"}))
-      (d/refs-match? [sub1] (search/find-refs :subscription {:name "sub1"}))
-      (d/refs-match? [sub2] (search/find-refs :subscription {:name "sub2"}))
+      (testing "concepts still exist"
+        (is (= 2 (count (:refs (search/find-refs :collection {:provider-id "PROV1"})))))
+        (is (= 3 (count (:refs (search/find-refs :granule {:provider-id "PROV1"})))))
+        (d/refs-match? [variable1] (search/find-refs :variable {:name "Variable1"}))
+        (d/refs-match? [variable2] (search/find-refs :variable {:name "Variable2"}))
+        (d/refs-match? [service1] (search/find-refs :service {:name "service1"}))
+        (d/refs-match? [service2] (search/find-refs :service {:name "service2"}))
+        (d/refs-match? [tool1] (search/find-refs :tool {:name "tool1"}))
+        (d/refs-match? [tool2] (search/find-refs :tool {:name "tool2"}))
+        (d/refs-match? [sub1] (search/find-refs :subscription {:name "sub1"}))
+        (d/refs-match? [sub2] (search/find-refs :subscription {:name "sub2"})))
 
-      ;; ensure PROV1 group is indexed
-      (is (= [(:concept-id access-group)]
-             (map :concept_id
-                  (:items
-                   (access-control/search-for-groups (transmit-config/echo-system-token)
-                                                     {:provider "PROV1"})))))
-      ;; PROV1 ACLs are indexed
-      (is (set/subset? (set [(:concept-id acl1) (:concept-id acl2) (:concept-id acl3)])
-                       (set (map :concept_id
-                                 (:items
-                                  (access-control/search-for-acls (transmit-config/echo-system-token) {:provider "PROV1"}))))))
+      (testing "PROV1 group is indexed"
+        (is (= [(:concept-id access-group)]
+               (map :concept_id
+                    (:items
+                     (access-control/search-for-groups (transmit-config/echo-system-token)
+                                                       {:provider "PROV1"}))))))
+      (testing "PROV1 ACLs are indexed"
+        (is (set/subset? (set [(:concept-id acl1) (:concept-id acl2) (:concept-id acl3)])
+                         (set (map :concept_id
+                                   (:items
+                                    (access-control/search-for-acls (transmit-config/echo-system-token) {:provider "PROV1"})))))))
 
-      ;; delete provider PROV1, fails because collections exist
-      (let [{:keys [status errors]} (ingest/delete-ingest-provider "PROV1")]
-        (is (= 401 status))
-        (is (= ["You cannot perform this action on a provider that has collections."]
-               errors)))
+      (testing "delete provider PROV1, fails because collections exist"
+        (let [{:keys [status errors]} (ingest/delete-ingest-provider "PROV1")]
+          (is (= 401 status))
+          (is (= ["You cannot perform this action on a provider that has collections."]
+                 errors))))
 
       (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10) {:accept-format :json
                                                                           :raw? true})
@@ -245,78 +264,81 @@
                                                                           :raw? true})
       (index/wait-until-indexed)
 
-      ;; delete provider PROV1
-      (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]
-        (is (= 204 status))
-        (is (nil? content-length)))
-      (index/wait-until-indexed)
+      (testing "delete provider PROV1"
+        (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]
+          (is (= 204 status))
+          (is (nil? content-length)))
+        (index/wait-until-indexed))
 
-      ;; PROV1 concepts are not in metadata-db
-      (are [concept]
-        (not (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept)))
-        coll1
-        coll2
-        gran1
-        gran2
-        gran3
-        variable1
-        service1
-        tool1
-        sub1
-        svc-association1
-        access-group
-        acl1
-        acl2)
+      (testing "PROV1 concepts are not in metadata-db"
+        (are [concept]
+          (not (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept)))
+          coll1
+          coll2
+          gran1
+          gran2
+          gran3
+          variable1
+          service1
+          tool1
+          sub1
+          svc-association1
+          tool-association1
+          access-group
+          acl1
+          acl2))
 
-      ;; PROV1 access group is unindexed
-      (is (= 0 (:hits
-                (access-control/search-for-groups (transmit-config/echo-system-token)
-                                                  {:provider "PROV1"}))))
+      (testing "PROV1 access group is unindexed"
+        (is (= 0 (:hits
+                  (access-control/search-for-groups (transmit-config/echo-system-token)
+                                                    {:provider "PROV1"})))))
 
-      ;; PROV1 ACLs are no longer indexed
-      (is (= 0 (:hits
-                (access-control/search-for-acls token {:provider "PROV1"}))))
-      ;; PROV2 concepts are in metadata-db
-      (are [concept]
-        (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept))
-        coll3
-        gran4
-        variable2
-        service2
-        tool2
-        sub2
-        svc-association2)
+      (testing "PROV1 ACLs are no longer indexed"
+        (is (= 0 (:hits
+                  (access-control/search-for-acls token {:provider "PROV1"})))))
 
-      ;; search on PROV1 finds nothing
-      (is (d/refs-match?
-           []
-           (search/find-refs :collection {:provider-id "PROV1"})))
-      (is (d/refs-match?
-           []
-           (search/find-refs :granule {:provider-id "PROV1"})))
+      (testing "PROV2 concepts are in metadata-db"
+        (are [concept]
+          (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept))
+          coll3
+          gran4
+          variable2
+          service2
+          tool2
+          sub2
+          svc-association2
+          tool-association2))
 
-      ;; search on PROV2 finds the concepts
+      (testing "search on PROV1 finds nothing"
+        (is (d/refs-match?
+             []
+             (search/find-refs :collection {:provider-id "PROV1"})))
+        (is (d/refs-match?
+             []
+             (search/find-refs :granule {:provider-id "PROV1"}))))
+
+      (testing "search on PROV2 finds the concepts")
       (is (d/refs-match?
            [coll3]
            (search/find-refs :collection {:provider-id "PROV2"})))
       (is (d/refs-match?
            [gran4]
            (search/find-refs :granule {:provider-id "PROV2"})))
-      ;; Variable on PROV1 is not found in search
+      (testing "Variable on PROV1 is not found in search")
       (d/refs-match? [] (search/find-refs :variable {:name "Variable1"}))
-      ;; Variable on PROV2 is still found in search
+      (testing "Variable on PROV2 is still found in search")
       (d/refs-match? [variable2] (search/find-refs :variable {:name "Variable2"}))
-      ;; Tool on PROV1 is not found in search
+      (testing "Tool on PROV1 is not found in search")
       (d/refs-match? [] (search/find-refs :tool {:name "tool1"}))
-      ;; Tool on PROV2 is still found in search
+      (testing "Tool on PROV2 is still found in search")
       (d/refs-match? [tool2] (search/find-refs :tool {:name "tool2"}))
-      ;; Subscription on PROV1 is not found in search
+      (testing "Subscription on PROV1 is not found in search")
       (d/refs-match? [] (search/find-refs :subscription {:name "sub1"}))
-      ;; Subscription on PROV2 is still found in search
+      (testing "Subscription on PROV2 is still found in search")
       (d/refs-match? [sub2] (search/find-refs :subscription {:name "sub2"}))
-      ;; Service on PROV1 is not found in search
+      (testing "Service on PROV1 is not found in search")
       (d/refs-match? [] (search/find-refs :service {:name "service1"}))
-      ;; Service on PROV2 is still found in search
+      (testing "Service on PROV2 is still found in search")
       (d/refs-match? [service2] (search/find-refs :service {:name "service2"}))))
 
   (testing "delete non-existent provider"
@@ -351,6 +373,6 @@
       (is (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group)))
       (ingest/delete-ingest-provider (:provider-id provider))
       (is (not (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group))))
-      ;; re-create the provider to ensure nothing has stuck around in the DB
+      ;; re-create the provider to ensure nothing has stuck around in the DB)
       (ingest/create-ingest-provider provider)
       (is (not (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group)))))))

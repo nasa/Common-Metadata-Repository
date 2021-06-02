@@ -91,6 +91,7 @@
                          "granule-end-date"
                          "granule-start-date"
                          "insert-time"
+                         "instruments"
                          "ords"
                          "ords-info"
                          "personnel"
@@ -147,6 +148,7 @@
           entry-title :entry-title
           ords-info :ords-info
           ords :ords
+          instruments :instruments
           doi :doi
           personnel :personnel
           start-date :start-date
@@ -173,6 +175,7 @@
             :collection-citations collection-citations
             :project-sn project-sn
             :shapes (srl/ords-info->shapes ords-info ords)
+            :instruments instruments
             :doi doi
             :personnel personnel
             :start-date start-date
@@ -242,11 +245,24 @@
     {:name (or archive-center umm-spec-util/not-provided)
      :subOrganizationOf hierarchy}))
 
+(defn modis-aster?
+  "Logic to test for collections that use the MODIS or ASTER instruments as
+  these are the only ones that should be included in the data.gov output as
+  defined by The Data Curation for Discovery (DCD) team at Marshall Space Flight
+  Center (MSFC)"
+  [metadata]
+  (let [{:keys [short-name]} metadata]
+    (or (= "MODIS" short-name) (= "ASTER" short-name))))
+
 (defn keywords
-  "Create the keyword field for the collection based on the science keywords for the collection.
-  Takes the science keywords as a flat list rather than hierarchical."
-  [science-keywords-flat]
-  (conj science-keywords-flat "NGDA" "National Geospatial Data Asset"))
+  "Create the keyword field for the collection based on the science keywords for
+  the collection, but only add these for records that match the correct
+  conditions. Takes the science keywords as a flat list rather than hierarchical
+  and the current item needed for finding conditions."
+  [science-keywords-flat item]
+  (if (some modis-aster? (:instruments item))
+    (conj science-keywords-flat "NGDA" "National Geospatial Data Asset")
+    science-keywords-flat))
 
 (defn theme
   "Create the theme field for the collection based on the project short-names for the collection."
@@ -398,7 +414,7 @@
     ;; All fields are required unless otherwise noted
     (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
                            :description (not-empty summary)
-                           :keyword (keywords science-keywords-flat)
+                           :keyword (keywords science-keywords-flat item)
                            :modified (or modified-time revision-date)
                            :publisher (publisher provider-id archive-center)
                            :contactPoint (contact-point personnel)

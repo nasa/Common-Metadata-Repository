@@ -5,7 +5,7 @@
   (:require
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.common-app.config :as common-config]
    [cmr.umm-spec.json-schema :as js]
@@ -341,9 +341,8 @@
    :AccessConstraints {:Description "Restriction Comment: Access constraints"
                        :Value "0"}
    :UseConstraints (umm-coll-models/map->UseConstraintsType
-                     {:Description (umm-coll-models/map->UseConstraintsDescriptionType
-                                     {:Description "example-collection-record Description"})
-                      :LicenseUrl (cmn/map->OnlineResourceType
+                     {:Description "example-collection-record Description"
+                      :LicenseURL (cmn/map->OnlineResourceType
                                     {:Linkage "http://example-collection-record.com"})})
 
    :ArchiveAndDistributionInformation {:FileArchiveInformation
@@ -403,6 +402,12 @@
    :Quality "Pretty good quality"
    :DOI {:MissingReason "Not Applicable"
          :Explanation "This is an explanation."}
+   :AssociatedDOIs [{:DOI "10.4567/DOI1"
+                     :Title "Associated Test DOI 1"
+                     :Authority "https://doi.org"}
+                    {:DOI "10.4567/DOI2"
+                     :Title "Associated Test DOI 2"
+                     :Authority "https://doi.org"}]
    :PublicationReferences [{:PublicationDate (t/date-time 2015)
                             :OtherReferenceDetails "Other reference details"
                             :Series "series"
@@ -455,7 +460,16 @@
                   :URL "http://www.foo.com"
                   :URLContentType "VisualizationURL"
                   :Type "GET RELATED VISUALIZATION"
-                  :Subtype "WORLDVIEW"}]
+                  :Subtype "WORLDVIEW"}
+                 {:Description "Related url 4 description"
+                  :URL "http://www.foo.com"
+                  :URLContentType "DistributionURL"
+                  :Type "GET CAPABILITIES"
+                  :Subtype "OpenSearch"
+                  :GetData {:Format "Not provided"
+                            :Size 0.0,
+                            :Unit "KB"
+                            :MimeType "application/opensearchdescription+xml"}}]
    :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
                            :Description "Associated with a collection"
                            :EntryId "AssocEntryId"
@@ -689,4 +703,6 @@
    id=\"dd0b91b1b-da2d-4d8e-857e-0bb836ad2fbc\" is changed to id=\"placeholder\".
    This is used to strip the randomly generated id strings from the ISO19115 metadata during comparison."
   [x]
-  (str/replace x #"id=\".*?\">" "id=\"placeholder\""))
+  (-> x
+      (string/replace #"id=\".*?\"" "id=\"placeholder\"")
+      (string/replace #"xlink:href=\".*?\"" "id=\"placeholder\"")))

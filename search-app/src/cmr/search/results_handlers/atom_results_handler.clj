@@ -66,6 +66,8 @@
                      "has-transforms"
                      "has-spatial-subsetting"
                      "has-temporal-subsetting"
+                     "platforms"
+                     "service-features-gzip-b64"
                      "associations-gzip-b64"
                      "_score"]
         atom-fields (if (contains? (set (:result-features query)) :tags)
@@ -104,6 +106,28 @@
                    orbit-swath-helper/orbit-elastic-fields
                    acl-rhh/granule-elastic-fields)))))
 
+(def base-has-features
+  "default has_* features in JSON format"
+  {:has-formats false
+   :has-variables false
+   :has-transforms false
+   :has-spatial-subsetting false
+   :has-temporal-subsetting false})
+
+(defn- gzip-b64-str->service-features
+  "Returns the service features in JSON format from the gzipped base64 string"
+  [service-features-gzip-b64]
+  (let [service-features (if service-features-gzip-b64
+                           (-> service-features-gzip-b64
+                               util/gzip-base64->string
+                               edn/read-string)
+                           {})]
+    (-> service-features
+        (update :opendap #(merge base-has-features %))
+        (update :esi #(merge base-has-features %))
+        (update :harmony #(merge base-has-features %))
+        util/map-keys->snake_case)))
+
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
   (let [{concept-id :_id
@@ -139,6 +163,8 @@
           has-transforms :has-transforms
           has-spatial-subsetting :has-spatial-subsetting
           has-temporal-subsetting :has-temporal-subsetting
+          platforms :platforms
+          service-features-gzip-b64 :service-features-gzip-b64
           associations-gzip-b64 :associations-gzip-b64} :_source} elastic-result
         start-date (acl-rhh/parse-elastic-datetime start-date)
         end-date (acl-rhh/parse-elastic-datetime end-date)
@@ -169,6 +195,7 @@
             :data-center provider-id
             :archive-center archive-center
             :organizations (when (seq organizations) organizations)
+            :platforms (map :short-name platforms)
             :start-date start-date
             :end-date end-date
             :atom-links atom-links
@@ -188,6 +215,7 @@
             :has-transforms has-transforms
             :has-spatial-subsetting has-spatial-subsetting
             :has-temporal-subsetting has-temporal-subsetting
+            :service-features (gzip-b64-str->service-features service-features-gzip-b64)
             :associations (some-> associations-gzip-b64
                                   util/gzip-base64->string
                                   edn/read-string)}
@@ -294,7 +322,7 @@
 (def ATOM_HEADER_ATTRIBUTES
   "The set of attributes that go on the ATOM root element"
   {:xmlns "http://www.w3.org/2005/Atom"
-   :xmlns:dc "http://purl.org/dc/terms/"
+   :xmlns:dc "http://purl.org/dc/elements/1.1/"
    :xmlns:georss "http://www.georss.org/georss/10"
    :xmlns:time "http://a9.com/-/opensearch/extensions/time/1.0/"
    :xmlns:echo "https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#atom"
@@ -314,7 +342,10 @@
   {:data "http://esipfed.org/ns/fedsearch/1.1/data#"
    :browse "http://esipfed.org/ns/fedsearch/1.1/browse#"
    :documentation "http://esipfed.org/ns/fedsearch/1.1/documentation#"
-   :metadata "http://esipfed.org/ns/fedsearch/1.1/metadata#"})
+   :metadata "http://esipfed.org/ns/fedsearch/1.1/metadata#"
+   :service "http://esipfed.org/ns/fedsearch/1.1/service#"
+   :s3 "http://esipfed.org/ns/fedsearch/1.1/s3#"
+   :search "http://esipfed.org/ns/fedsearch/1.1/search#"})
 
 (defn- add-attribs
   "Returns the attribs with the field-value pair added if there is a value"

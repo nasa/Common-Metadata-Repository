@@ -1,7 +1,6 @@
 (ns cmr.elastic-utils.embedded-elastic-server
   "Used to run an Elasticsearch server inside an embedded docker container."
   (:require
-   [clojure.java.io :as io]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.util :as util])
@@ -13,11 +12,11 @@
 
 (def ^:private elasticsearch-official-docker-image
   "Official docker image."
-  "docker.elastic.co/elasticsearch/elasticsearch:7.5.2")
+  "docker.elastic.co/elasticsearch/elasticsearch:7.10.0")
 
 (def ^:private kibana-official-docker-image
   "Official kibana docker image."
-  "docker.elastic.co/kibana/kibana:7.5.2")
+  "docker.elastic.co/kibana/kibana:7.10.0")
 
 (defn- build-kibana
   "Build kibana in an embedded docker."
@@ -62,7 +61,6 @@
      (when log-level
        (.withEnv container "logger.level" (name log-level)))
      (doto container
-           (.withEnv "discovery.type" "single-node")
            (.withEnv "indices.breaker.total.use_real_memory" "false")
            (.withEnv "node.name" "embedded-elastic")
            (.withNetwork network)
@@ -75,10 +73,10 @@
       :kibana kibana})))
 
 (defrecord ElasticServer
-  [
-   http-port
-   opts
-   node]
+    [
+     http-port
+     opts
+     node]
 
   lifecycle/Lifecycle
 

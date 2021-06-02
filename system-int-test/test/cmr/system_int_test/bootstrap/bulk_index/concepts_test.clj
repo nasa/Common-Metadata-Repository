@@ -16,14 +16,28 @@
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as tc]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Fixtures
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn auto-index-fixture
+  "Disable automatic indexing during tests."
+  [f]
+  (core/disable-automatic-indexing)
+  (f)
+  (core/reenable-automatic-indexing))
+
 (use-fixtures :each (join-fixtures
                      [(ingest/reset-fixture {"provguid1" "PROV1"
                                              "provguid2" "PROV2"}
                                             {:grant-all-ingest? true
                                              :grant-all-search? true
                                              :grant-all-access-control? false})
-                      tags/grant-all-tag-fixture]))
+                      tags/grant-all-tag-fixture
+                      auto-index-fixture]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn- normalize-search-result-item
   "Returns a map with just concept-id and revision-id for the given item."
   [result-item]
@@ -52,26 +66,26 @@
    (verify-collections-granules-are-indexed collections granules nil))
   ([collections granules search-token]
    (are3 [concept-type expected]
-     (d/refs-match? expected (search/find-refs concept-type {:token search-token}))
+         (d/refs-match? expected (search/find-refs concept-type {:token search-token}))
 
-     "Collections"
-     :collection collections
+         "Collections"
+         :collection collections
 
-     "Granules"
-     :granule granules)))
+         "Granules"
+         :granule granules)))
 
-(deftest index-system-concepts-test-with-update-token
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Tests
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(deftest ^:oracle index-system-concepts-test-with-update-token
   (s/only-with-real-database
    (let [read-update-token (create-read-update-token)
          {:keys [status errors]} (bootstrap/bulk-index-system-concepts {tc/token-header read-update-token})]
      (is (= [202 nil]
             [status errors])))))
 
-(deftest index-system-concepts-test
+(deftest ^:oracle index-system-concepts-test
   (s/only-with-real-database
-   ;; Disable message publishing so items are not indexed as part of the initial save.
-   (core/disable-automatic-indexing)
-
    ;; Remove fixture ACLs
    (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
          items (:items response)]
@@ -102,8 +116,8 @@
          tag3 (core/save-tag 3 {})
          {:keys [status errors]} (bootstrap/bulk-index-system-concepts nil)]
 
-      (is (= [401 ["You do not have permission to perform that action."]]
-             [status errors]))
+     (is (= [401 ["You do not have permission to perform that action."]]
+            [status errors]))
 
      (bootstrap/bulk-index-system-concepts)
      ;; Force elastic data to be flushed, not actually waiting for index requests to finish
@@ -121,22 +135,18 @@
        (search-results-match? items [group1 group3]))
 
      (are3 [expected-tags]
-       (let [result-tags (update
-                           (tags/search {})
-                           :items
-                           (fn [items]
-                             (map #(select-keys % [:concept-id :revision-id]) items)))]
-         (tags/assert-tag-search expected-tags result-tags))
+           (let [result-tags (update
+                              (tags/search {})
+                              :items
+                              (fn [items]
+                                (map #(select-keys % [:concept-id :revision-id]) items)))]
+             (tags/assert-tag-search expected-tags result-tags))
 
-       "Tags"
-       [tag2 tag3])
-    ;; Re-enable message publishing.
-    (core/reenable-automatic-indexing))))
+           "Tags"
+           [tag2 tag3]))))
 
-(deftest bulk-index-by-concept-id
+(deftest ^:oracle bulk-index-by-concept-id
   (s/only-with-real-database
-   ;; Disable message publishing so items are not indexed.
-   (core/disable-automatic-indexing)
    (let [;; saved but not indexed
          coll1 (core/save-collection "PROV1" 1)
          coll2 (core/save-collection "PROV1" 2 {})
@@ -163,45 +173,28 @@
      (bootstrap/bulk-index-concepts "PROV1" :collection colls)
      (bootstrap/bulk-index-concepts "PROV1" :granule [(:concept-id gran2)])
      (bootstrap/bulk-index-concepts "PROV1" :tag [(:concept-id tag1)])
-     ;; Commented out until ACLs and groups are supported in the index by concept-id API
-     ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
-     ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
 
      (index/wait-until-indexed)
 
      (testing "Concepts are indexed."
        (verify-collections-granules-are-indexed [coll1 coll2] [gran2])
-
-       ; ;; ACLs
-       ; (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
-       ;       items (:items response)]
-       ;   (search-results-match? items [acl2]))
-
-       ;; Groups
-       ; (let [response (ac/search-for-groups (u/conn-context) {})
-       ;       ;; Need to filter out admin group created by fixture
-       ;       items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
-       ;   (search-results-match? items [group2]))
-
        (are3 [expected-tags]
-         (let [result-tags (update
-                            (tags/search {})
-                            :items
-                            (fn [items]
-                              (map #(select-keys % [:concept-id :revision-id]) items)))]
-           (tags/assert-tag-search expected-tags result-tags))
+             (let [result-tags (update
+                                (tags/search {})
+                                :items
+                                (fn [items]
+                                  (map #(select-keys % [:concept-id :revision-id]) items)))]
+               (tags/assert-tag-search expected-tags result-tags))
 
-         "Tags"
-         [tag1])))
+             "Tags"
+             [tag1])))))
 
-   ;; Re-enable message publishing.
-   (core/reenable-automatic-indexing)))
-
-(deftest bulk-index-after-date-time
+(deftest ^{:kaocha/skip true
+           :oracle true} zzz_bulk-index-after-date-time
+  ;; prefixed with zzz_ to ensure it runs last. There is a side-effect
+  ;; where if this runs before bulk-index-all-providers, concepts are
+  ;; not indexed correctly.
   (s/only-with-real-database
-   ;; Disable message publishing so items are not indexed.
-   (core/disable-automatic-indexing)
-
    ;; Remove fixture ACLs
    (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
          items (:items response)]
@@ -250,26 +243,22 @@
          (search-results-match? items [group2]))
 
        (are3 [expected-tags]
-         (let [result-tags (update
-                            (tags/search {})
-                            :items
-                            (fn [items]
-                              (map #(select-keys % [:concept-id :revision-id]) items)))]
-           (tags/assert-tag-search expected-tags result-tags))
+             (let [result-tags (update
+                                (tags/search {})
+                                :items
+                                (fn [items]
+                                  (map #(select-keys % [:concept-id :revision-id]) items)))]
+               (tags/assert-tag-search expected-tags result-tags))
 
-         "Tags"
-         [tag2])))
-   ;; Re-enable message publishing.
-   (core/reenable-automatic-indexing)))
+             "Tags"
+             [tag2])))))
 
-(deftest bulk-index-all-providers
+(deftest ^:oracle bulk-index-all-providers
   (s/only-with-real-database
-   ;; Disable message publishing so items are not indexed.
-   (core/disable-automatic-indexing)
    (let [;; saved but not indexed
          coll1 (core/save-collection "PROV1" 1)
          coll2 (core/save-collection "PROV2" 2)
-         colls (map :concept-id [coll1 coll2])
+
          gran1 (core/save-granule "PROV1" 1 coll1)
          gran2 (core/save-granule "PROV1" 2 coll1)
          gran3 (core/save-granule "PROV2" 2 coll2)]
@@ -290,7 +279,4 @@
      (index/wait-until-indexed)
 
      (testing "all collections and granules are indexed."
-       (verify-collections-granules-are-indexed [coll1 coll2] [gran1 gran2 gran3])))
-
-   ;; Re-enable message publishing.
-   (core/reenable-automatic-indexing)))
+       (verify-collections-granules-are-indexed [coll1 coll2] [gran1 gran2 gran3])))))

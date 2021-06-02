@@ -406,6 +406,22 @@
                                            "ECHO-Token" token}
                                  :throw-exceptions false})))))
 
+    (testing "Acceptance criteria: I receive an error if creating an ACL with JSON described in CMR-6026"
+      (is
+        (re-find #"Json parsing error:"
+                 (:body
+                   (client/post (access-control/acl-root-url
+                                 (transmit-config/context->app-connection
+                                  (test-util/conn-context)
+                                  :access-control))
+                                {:body "{\"group_permissions\": [ {\"user_type\": \"registered\",
+                                                                   \"permissions\": [\"read\"]}],
+                                         \"catalog_item_identity\": {\"name\": \"Example\",
+                                                                     \"provider_id\": \"prov-id\",}}"
+                                 :headers {"Content-Type" "application/json"
+                                           "ECHO-Token" token}
+                                 :throw-exceptions false})))))
+
     (testing "Acceptance criteria: I receive an error if creating an ACL with unsupported content type"
       (is
         (re-find #"The mime types specified in the content-type header \[application/xml\] are not supported."

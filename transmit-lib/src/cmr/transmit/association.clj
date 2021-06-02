@@ -24,6 +24,10 @@
   [context concept-id]
   (associations-by-concept-ids-url context :service concept-id))
 
+(defmethod associations-url :tool
+  [context concept-id]
+  (associations-by-concept-ids-url context :tool concept-id))
+
 (defmethod associations-url :variable
   [context concept-id]
   (associations-by-concept-ids-url context :variable concept-id))

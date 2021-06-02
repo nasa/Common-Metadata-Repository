@@ -22,8 +22,8 @@
 
 (deftest delete-concepts-test
   (doseq [concept-type [:collection :granule :service
-                        :service-association :subscription :tool]]
-    (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
+                        :service-association :subscription :tool :tool-association]]
+   (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
 
 (deftest delete-variable-and-association-concepts-test
   (cd-spec/general-delete-variable-and-association-test ["REG_PROV" "SMAL_PROV"]))
@@ -80,6 +80,17 @@
         (util/delete-concept (:concept-id service))
         (is (= true (is-association-tombstone? service-association)))))))
 
+(deftest tool-delete-cascades-associations
+  (testing "delete cascades to tool associations"
+    (let [coll (concepts/create-and-save-concept :collection "REG_PROV" 1)
+          tool (concepts/create-and-save-concept :tool "REG_PROV" 1)
+          tool-association (concepts/create-and-save-concept :tool-association coll tool 1 1)]
+      (testing "tool association was saved and is not a tombstone"
+        (is (= false (is-association-tombstone? tool-association))))
+      (testing "tool association is tombstoned after tool is deleted"
+        (util/delete-concept (:concept-id tool))
+        (is (= true (is-association-tombstone? tool-association)))))))
+
 (defn- assert-collection-tombstone
   "Make sure that the saved tombstone has expected concept-id, revision-id, user-id,
   empty metadata, and deleted = true."
@@ -104,12 +115,16 @@
           var-assn-concept-id (get-in variable [:variable-association :concept-id])
           variable-association (:concept (util/get-concept-by-id var-assn-concept-id))
           service (concepts/create-and-save-concept :service provider-id 1)
-          service-association (concepts/create-and-save-concept :service-association coll1 service 1 1)]
+          service-association (concepts/create-and-save-concept :service-association coll1 service 1 1)
+          tool (concepts/create-and-save-concept :tool provider-id 1)
+          tool-association (concepts/create-and-save-concept :tool-association coll1 tool 1 1)]
 
       ;; variable association is not a tombstone before collection is deleted
       (is (= false (is-association-tombstone? variable-association)))
       ;; service association is not a tombstone before collection is deleted
       (is (= false (is-association-tombstone? service-association)))
+      ;; tool association is not a tombstone before collection is deleted
+      (is (= false (is-association-tombstone? tool-association)))
 
       ;; now delete coll1
       (let [{:keys [status revision-id]} (util/delete-concept (:concept-id coll1))
@@ -139,6 +154,8 @@
         (is (= true (is-association-tombstone? variable-association)))
         ;; verify service association is deleted
         (is (= true (is-association-tombstone? service-association)))
+        ;; verify tool association is deleted
+        (is (= true (is-association-tombstone? tool-association)))
 
         ;; Other data left in database
         (util/verify-concept-was-saved coll2)
@@ -155,12 +172,16 @@
           var-assn-concept-id (get-in variable [:variable-association :concept-id])
           variable-association (:concept (util/get-concept-by-id var-assn-concept-id))
           service (concepts/create-and-save-concept :service provider-id 1)
-          service-association (concepts/create-and-save-concept :service-association coll1 service 1 1)]
+          service-association (concepts/create-and-save-concept :service-association coll1 service 1 1)
+          tool (concepts/create-and-save-concept :tool provider-id 1)
+          tool-association (concepts/create-and-save-concept :tool-association coll1 tool 1 1)]
 
       ;; variable association is not a tombstone before collection is deleted
       (is (= false (is-association-tombstone? variable-association)))
       ;; service association is not a tombstone before collection is deleted
       (is (= false (is-association-tombstone? service-association)))
+      ;; tool association is not a tombstone before collection is deleted
+      (is (= false (is-association-tombstone? tool-association)))
 
       ;; now delete coll1
       (let [{:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id coll1)
@@ -195,6 +216,8 @@
         (is (= true (is-association-tombstone? variable-association)))
         ;; verify service association is deleted
         (is (= true (is-association-tombstone? service-association)))
+        ;; verify tool association is deleted
+        (is (= true (is-association-tombstone? tool-association)))
 
         ;; Other data left in database
         (util/verify-concept-was-saved coll2)

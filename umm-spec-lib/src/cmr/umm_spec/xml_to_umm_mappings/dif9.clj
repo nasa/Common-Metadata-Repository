@@ -122,6 +122,20 @@
        :OnlineResource (when-let [linkage (value-of data-set-citation "Online_Resource")]
                          {:Linkage linkage})})))
 
+(defn- parse-doi
+  "Parse the DOI from the data citation section.  If the DOI does not exist then set the DOIs
+   MissingReason and Explanation since it is required as of UMM-C 1.16.1"
+  [doc]
+  (let [first-doi
+         (first (for [dsc (select doc "DIF/Data_Set_Citation")
+                      :let [doi (value-of dsc "Dataset_DOI")]
+                      :when doi]
+                  {:DOI doi}))]
+    (if first-doi
+      first-doi
+      {:MissingReason "Unknown"
+       :Explanation "It is unknown if this record has a DOI."})))
+
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc {:keys [sanitize?]}]
@@ -130,10 +144,7 @@
                                          (value-of dsc "Version"))))
         short-name (get-short-name entry-id version-id)]
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
-     :DOI (first (for [dsc (select doc "DIF/Data_Set_Citation")
-                       :let [doi (value-of dsc "Dataset_DOI")]
-                       :when doi]
-                   {:DOI doi}))
+     :DOI (parse-doi doc)
      :ShortName short-name
      :Version (or version-id (when sanitize? su/not-provided))
      :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
@@ -168,8 +179,7 @@
                                               su/USECONSTRAINTS_MAX
                                               sanitize?)]
                        (umm-coll-models/map->UseConstraintsType
-                         {:Description (umm-coll-models/map->UseConstraintsDescriptionType
-                                         {:Description description})}))
+                         {:Description description}))
      :Platforms (parse-platforms doc sanitize?)
      :TemporalExtents (parse-temporal-extents doc sanitize?)
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)

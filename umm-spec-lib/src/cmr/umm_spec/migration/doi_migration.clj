@@ -42,3 +42,29 @@
           (get-in c [:DOI :MissingReason]))
     (dissoc c :DOI)
     c))
+
+(defn migrate-doi-up-to-1-16-1
+  "If earlier records do not have a DOI add one with a missing reason and an explanation."
+  [doi]
+  (if doi
+    doi
+    {:MissingReason "Unknown"
+     :Explanation "Native record does not contain a DOI."}))
+
+(defn migrate-doi-down-to-1-16
+  "Removes DOI if a MissingReason of Unknown is found"
+  [doi]
+  (when-not (= "Unknown" (get doi :MissingReason))
+     doi))
+
+(defn migrate-pub-ref-up-to-1-16-1
+  "Migrate publication references from 1.16 to 1.16.1 because the missing reason was
+   removed from the Publication References DOI definition."
+  [pub-refs]
+  (util/remove-nils-empty-maps-seqs
+    (for [pub-ref pub-refs]
+      (if (get-in pub-ref [:DOI :MissingReason])
+        (-> pub-ref
+            (dissoc :DOI)
+            util/remove-nils-empty-maps-seqs)
+        pub-ref))))

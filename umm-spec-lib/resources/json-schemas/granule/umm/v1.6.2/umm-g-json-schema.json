@@ -1,0 +1,1307 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6",
+  "title": "UMM-G",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "GranuleUR": {
+      "description": "The Universal Reference ID of the granule referred by the data provider. This ID is unique per data provider.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 250
+    },
+    "ProviderDates": {
+      "description": "Dates related to activities involving the the granule and the data provider database with the exception for Delete. For Create, Update, and Insert the date is the date that the granule file is created, updated, or inserted into the provider database by the provider. Delete is the date that the CMR should delete the granule metadata record from its repository.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ProviderDateType"
+      },
+      "minItems": 1,
+      "maxItems": 4,
+      "uniqueItems":true
+    },
+    "CollectionReference": {
+      "description": "The collection metadata record's short name and version, or entry title to which this granule metadata record belongs.",
+      "$ref": "#/definitions/CollectionReferenceType"
+    },
+    "AccessConstraints": {
+      "description": "Allows the author to constrain access to the granule. Some words that may be used in this element's value include: Public, In-house, Limited, None. The value field is used for special ACL rules (Access Control Lists (http://en.wikipedia.org/wiki/Access_control_list)). For example it can be used to hide metadata when it isn't ready for public consumption.",
+      "$ref": "#/definitions/AccessConstraintsType"
+    },
+    "DataGranule": {
+      "description": "This entity stores basic descriptive characteristics associated with a granule.",
+      "$ref": "#/definitions/DataGranuleType"
+    },
+    "PGEVersionClass": {
+      "description": "This entity stores basic descriptive characteristics related to the Product Generation Executable associated with a granule.",
+      "$ref": "#/definitions/PGEVersionClassType"
+    },
+    "TemporalExtent": {
+      "description": "This class contains attributes which describe the temporal extent of a granule. Temporal Extent includes either a Range Date Time, or a Single Date Time",
+      "$ref": "#/definitions/TemporalExtentType"
+    },
+    "SpatialExtent": {
+      "description": "This class contains attributes which describe the spatial extent of a granule. Spatial Extent includes any or all of Granule Localities, Horizontal Spatial Domain, and Vertical Spatial Domain.",
+      "$ref": "#/definitions/SpatialExtentType"
+    },
+    "OrbitCalculatedSpatialDomains": {
+      "description": "This entity is used to store the characteristics of the orbit calculated spatial domain to include the model name, orbit number, start and stop orbit number, equator crossing date and time, and equator crossing longitude.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/OrbitCalculatedSpatialDomainType"
+      },
+      "minItems": 1,
+      "uniqueItems":true
+    },
+    "MeasuredParameters": {
+      "description": "This entity contains the name of the geophysical parameter expressed in the data as well as associated quality flags and quality statistics. The quality statistics element contains measures of quality for the granule. The parameters used to set these measures are not preset and will be determined by the data producer. Each set of measures can occur many times either for the granule as a whole or for individual parameters. The quality flags contain the science, operational and automatic quality flags which indicate the overall quality assurance levels of specific parameter values within a granule.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/MeasuredParameterType"
+      },
+      "minItems": 1,
+      "uniqueItems":true
+    },
+    "Platforms": {
+      "description": "A reference to a platform in the parent collection that is associated with the acquisition of the granule. The platform must exist in the parent collection. For example, Platform types may include (but are not limited to): ADEOS-II, AEM-2, Terra, Aqua, Aura, BALLOONS, BUOYS, C-130, DEM, DMSP-F1,etc.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PlatformType"
+      },
+      "minItems": 1,
+      "uniqueItems":true
+    },
+    "Projects": {
+      "description": "The name of the scientific program, field campaign, or project from which the data were collected. This element is intended for the non-space assets such as aircraft, ground systems, balloons, sondes, ships, etc. associated with campaigns. This element may also cover a long term project that continuously creates new data sets — like MEaSUREs from ISCCP and NVAP or CMARES from MISR. Project also includes the Campaign sub-element to support multiple campaigns under the same project.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ProjectType"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "AdditionalAttributes": {
+      "description": "Reference to an additional attribute in the parent collection. The attribute reference may contain a granule specific value that will override the value in the parent collection for this granule. An attribute with the same name must exist in the parent collection.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/AdditionalAttributeType"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "InputGranules": {
+      "description": "This entity contains the identification of the input granule(s) for a specific granule.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "TilingIdentificationSystem": {
+      "description": "This entity stores the tiling identification system for the granule. The tiling identification system information is an alternative way to express granule's spatial coverage based on a certain two dimensional coordinate system defined by the providers. The name must match the name in the parent collection.",
+      "$ref": "#/definitions/TilingIdentificationSystemType"
+    },
+    "CloudCover": {
+      "description": "A percentage value indicating how much of the area of a granule (the EOSDIS data unit) has been obscured by clouds. It is worth noting that there are many different measures of cloud cover within the EOSDIS data holdings and that the cloud cover parameter that is represented in the archive is dataset-specific.",
+      "type": "number"
+    },
+    "RelatedUrls": {
+      "description": "This element describes any data/service related URLs that include project home pages, services, related data archives/servers, metadata extensions, direct links to online software packages, web mapping services, links to images, or other data.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/RelatedUrlType"
+      },
+      "minItems": 1
+    },
+    "NativeProjectionNames": {
+      "description": "Represents the native projection of the granule if the granule has a native projection.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ProjectionNameType"
+      }
+    },
+    "GridMappingNames": {
+      "description": "Represents the native grid mapping of the granule, if the granule is gridded.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/GridMappingNameType"
+      }
+    },
+    "MetadataSpecification": {
+      "description": "Requires the user to add in schema information into every granule record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "$ref": "#/definitions/MetadataSpecificationType"
+    }
+  },
+  "required": ["GranuleUR", "ProviderDates", "CollectionReference", "MetadataSpecification"],
+
+
+
+  "definitions": {
+    "ProviderDateType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Specifies the date and its type that the provider uses for the granule. For Create, Update, and Insert the date is the date that the granule file is created, updated, or inserted into the provider database by the provider. Delete is the date that the CMR should delete the granule metadata record from its repository.",
+      "properties": {
+        "Date": {
+          "description": "This is the date that an event associated with the granule occurred.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "Type": {
+          "description": "This is the type of event associated with the date. For example, Creation or Upate.",
+          "$ref": "#/definitions/ProviderDateTypeEnum"
+        }
+      },
+      "required": ["Date", "Type"]
+    },
+    "CollectionReferenceType": {
+      "type": "object",
+      "description": "A reference to a collection metadata record's short name and version, or entry title to which this granule metadata record belongs.",
+      "oneOf": [{
+        "additionalProperties": false,
+        "properties": {
+          "ShortName": {
+            "description": "The collection's short name as per the UMM-C.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 85
+          },
+          "Version": {
+            "description": "The collection's version as per the UMM-C.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": ["ShortName", "Version"]
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "EntryTitle": {
+            "description": "The collections entry title as per the UMM-C.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1030
+          }
+        },
+        "required": ["EntryTitle"]
+      }]
+    },
+    "AccessConstraintsType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Information about any physical constraints for accessing the data set.",
+      "properties": {
+        "Description": {
+          "description": "Free-text description of the constraint. In ECHO 10, this field is called RestrictionComment. Additional detailed instructions on how to access the granule data may be entered in this field.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "Value": {
+          "description": "Numeric value that is used with Access Control Language (ACLs) to restrict access to this granule. For example, a provider might specify a granule level ACL that hides all granules with a value element set to 15. In ECHO, this field is called RestrictionFlag.",
+          "type": "number"
+        }
+      },
+      "required": ["Value"]
+    },
+    "DataGranuleType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity stores the basic descriptive characteristics associated with a granule.",
+      "properties": {
+        "ArchiveAndDistributionInformation": {
+          "description": "A list of the file(s) or file package(s) that make up the granule. A file package is something like a tar or zip file.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ArchiveAndDistributionInformationType"
+          },
+          "minItems": 1,
+          "uniqueItems":true
+        },
+        "ReprocessingPlanned": {
+          "description": "Granule level, stating what reprocessing may be performed on this granule.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ReprocessingActual": {
+          "description": "Granule level, stating what reprocessing has been performed on this granule.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "DayNightFlag": {
+          "description": "This attribute is used to identify if a granule was collected during the day, night (between  sunset and sunrise) or both.",
+          "type": "string",
+          "enum": ["Day", "Night", "Both", "Unspecified"]
+        },
+        "ProductionDateTime": {
+          "description": "The date and time a specific granule was produced by a PGE.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "Identifiers": {
+          "description": "This holds any granule identifiers the provider wishes to provide.",
+          "type": "array",
+          "items": {"$ref": "#/definitions/IdentifierType"},
+          "minItems": 1,
+          "uniqueItems":true
+        }
+      },
+      "required": ["DayNightFlag", "ProductionDateTime"]
+    },
+    "ArchiveAndDistributionInformationType": {
+      "description": "This set of elements describes a file package or a file that contains other files.  Normally this is either a tar or a zip file.",
+      "anyOf": [{"$ref": "#/definitions/FilePackageType"}, {"$ref": "#/definitions/FileType"}]
+    },
+    "FilePackageType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This set of elements describes a file package or a file that contains other files.  Normally this is either a tar or a zip file.",
+      "properties": {
+        "Name": {
+          "description": "This field describes the name of the actual file.",
+          "$ref": "#/definitions/FileNameType"
+        },
+        "SizeInBytes": {
+          "description": "The size in Bytes of the volume of data contained in the granule. Bytes are defined as eight bits. Please use this element instead of or inclusive with the Size element. The issue with the size element is that if CMR data providers use a unit other than Bytes, end users don't know how the granule size was calculated. For example, if the unit was MegaBytes, the size could be calculated by using 1000xE2 Bytes (MegaBytes) or 1024xE2 Bytes (mebibytes) and therefore there is no systematic way to know the actual size of a granule by using the granule metadata record.",
+          "type": "integer"
+        },
+        "Size": {
+          "description": "The size of the volume of data contained in the granule. Please use the SizeInBytes element either instead of this one or inclusive of this one. The issue with the size element is that if CMR data providers use a unit other than Bytes, end users don't know how the granule size was calculated. For example, if the unit was MegaBytes, the size could be calculated by using 1000xE2 Bytes (MegaBytes) or 1024xE2 Bytes (mebibytes) and therefore there is no systematic way to know the actual size of a granule by using the granule metadata record.",
+          "type": "number"
+        },
+        "SizeUnit": {
+          "description": "The unit of the file size.",
+          "$ref": "#/definitions/FileSizeUnitEnum"
+        },
+        "Format": {
+          "description": "This element defines a single format for a distributable artifact.",
+          "$ref": "#/definitions/DataFormatEnum"
+        },
+        "MimeType": {
+          "description": "The mime type of the resource.",
+          "$ref": "#/definitions/MimeTypeEnum"
+        },
+        "Checksum": {
+          "description": "Allows the provider to provide the checksum value for the file.",
+          "$ref": "#/definitions/ChecksumType"
+        },
+        "Files": {
+          "description": "Allows the provider to add the list of the files that are included in this one.",
+          "type": "array",
+          "items": {"$ref": "#/definitions/FileType"},
+          "uniqueItems": true,
+          "minItems": 1
+        }
+      },
+      "required": ["Name"],
+      "dependencies": {
+        "Size": ["SizeUnit"]
+      }
+    },
+    "FileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This set of elements describes a file. The file can be a part of the entire granule or is the granule.",
+      "properties": {
+        "Name": {
+          "description": "This field describes the name of the actual file.",
+          "$ref": "#/definitions/FileNameType"
+        },
+        "SizeInBytes": {
+          "description": "The size in Bytes of the volume of data contained in the granule. Bytes are defined as eight bits. Please use this element instead of or inclusive with the Size element. The issue with the size element is that if CMR data providers use a unit other than Bytes, end users don't know how the granule size was calculated. For example, if the unit was MegaBytes, the size could be calculated by using 1000xE2 Bytes (MegaBytes) or 1024xE2 Bytes (mebibytes) and therefore there is no systematic way to know the actual size of a granule by using the granule metadata record.",
+          "type": "integer"
+        },
+        "Size": {
+          "description": "The size of the volume of data contained in the granule. Please use the SizeInBytes element either instead of this one or inclusive of this one. The issue with the size element is that if CMR data providers use a unit other than Bytes, end users don't know how the granule size was calculated. For example, if the unit was MegaBytes, the size could be calculated by using 1000xE2 Bytes (MegaBytes) or 1024xE2 Bytes (mebibytes) and therefore there is no systematic way to know the actual size of a granule by using the granule metadata record.",
+          "type": "number"
+        },
+        "SizeUnit": {
+          "description": "The unit of the file size.",
+          "$ref": "#/definitions/FileSizeUnitEnum"
+        },
+        "Format": {
+          "description": "This element defines a single format for a distributable artifact.",
+          "$ref": "#/definitions/DataFormatEnum"
+        },
+        "FormatType": {
+          "description": "Allows the provider to state whether the distributable item's format is its native format or another supported format.",
+          "type": "string",
+          "enum": ["Native", "Supported", "NA"]
+        },
+        "MimeType": {
+          "description": "The mime type of the resource.",
+          "$ref": "#/definitions/MimeTypeEnum"
+        },
+        "Checksum": {
+          "description": "Allows the provider to provide the checksum value for the file.",
+          "$ref": "#/definitions/ChecksumType"
+        }
+      },
+      "required": ["Name"],
+      "dependencies": {
+        "Size": ["SizeUnit"]
+      }
+    },
+   "IdentifierType" :{
+      "type": "object",
+      "description": "This entity stores an identifier. If the identifier is part of the enumeration then use it. If the enumeration is 'Other',  the provider must specify the identifier's name.",
+      "oneOf": [{
+        "additionalProperties": false,
+        "properties": {
+          "Identifier": {
+            "description": "The identifier value.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "IdentifierType": {
+            "description": "The enumeration of known identifier types.",
+            "type": "string",
+            "enum": ["ProducerGranuleId", "LocalVersionId", "FeatureId", "CRID"]
+          },
+          "IdentifierName": {
+            "description": "The name of the identifier.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          }
+        },
+        "required": ["Identifier","IdentifierType"]
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "Identifier": {
+            "description": "The identifier value.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "IdentifierType": {
+            "description": "The enumeration of known identifier types.",
+            "type": "string",
+            "enum": ["Other"]
+          },
+          "IdentifierName": {
+            "description": "The Name of identifier.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          }
+        },
+        "required": ["Identifier","IdentifierType","IdentifierName"]
+      }]
+    },
+    "PGEVersionClassType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity stores basic descriptive characteristics related to the Product Generation Executable associated with a granule.",
+      "properties": {
+        "PGEName": {
+          "description": "Name of product generation executable.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "PGEVersion": {
+          "description": "Version of the product generation executable that produced the granule.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10
+        }
+      },
+      "required": ["PGEVersion"]
+    },
+    "TemporalExtentType": {
+      "type": "object",
+      "description": "Information which describes the temporal extent of a specific granule.",
+      "oneOf": [{
+        "additionalProperties": false,
+        "properties": {
+          "RangeDateTime": {
+            "description": "Stores the data acquisition start and end date/time for a granule.",
+            "$ref": "#/definitions/RangeDateTimeType"
+          }
+        },
+        "required": ["RangeDateTime"]
+      }, {
+        "additionalProperties": false,
+        "properties": {
+          "SingleDateTime": {
+            "description": "Stores the data acquisition date/time for a granule.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["SingleDateTime"]
+      }]
+    },
+    "RangeDateTimeType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Stores the data acquisition start and end date/time for a granule.",
+      "properties": {
+        "BeginningDateTime": {
+          "description": "The time when the temporal coverage period being described began.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "EndingDateTime": {
+          "description": "The time when the temporal coverage period being described ended.",
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": ["BeginningDateTime"]
+    },
+    "SpatialExtentType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This class contains attributes which describe the spatial extent of a granule. Spatial Extent includes any or all of Granule Localities, Horizontal Spatial Domain, and Vertical Spatial Domain.",
+      "properties": {
+        "GranuleLocalities": {
+          "description": "This entity stores information used at the granule level to describe the labeling of granules with compounded time/space text values and which are subsequently used to define more phenomenological-based granules, thus the locality type and description are contained.",
+          "type": "array",
+          "items": {"$ref": "#/definitions/GranuleLocalityType"},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "HorizontalSpatialDomain": {
+          "description": "This represents the granule horizontal spatial domain information.",
+          "$ref": "#/definitions/HorizontalSpatialDomainType"
+        },
+        "VerticalSpatialDomains": {
+          "description": "This represents the domain value and type for the granule's vertical spatial domain.",
+          "type": "array",
+          "items": {"$ref": "#/definitions/VerticalSpatialDomainType"},
+          "minItems":1,
+          "uniqueItems":true
+        }
+      },
+      "anyOf": [{
+        "required": ["GranuleLocalities"]
+      }, {
+        "required": ["HorizontalSpatialDomain"]
+      }, {
+        "required": ["VerticalSpatialDomains"]
+      }]
+    },
+    "HorizontalSpatialDomainType": {
+      "type": "object",
+      "description": "Information about a granule with horizontal spatial coverage.",
+      "additionalProperties": false,
+      "properties": {
+        "ZoneIdentifier": {
+          "description": "The appropriate numeric or alpha code used to identify the various zones in the granule's grid coordinate system.",
+          "$ref": "#/definitions/ZoneIdentifierType"
+        },
+        "Geometry": {
+          "description": "This entity holds the geometry representing the spatial coverage information of a granule.",
+          "$ref": "#/definitions/GeometryType"
+        },
+        "Orbit": {
+          "description": "This entity stores orbital coverage information of the granule. This coverage is an alternative way of expressing granule spatial coverage. This information supports orbital backtrack searching on a granule.",
+          "$ref": "#/definitions/OrbitType"
+        },
+        "Track": {
+          "description": "This element stores track information of the granule. Track information is used to allow a user to search for granules whose spatial extent is based on an orbital cycle, pass, and tile mapping. Though it is derived from the SWOT mission requirements, it is intended that this element type be generic enough so that other missions can make use of it. While track information is a type of spatial domain, it is expected that the metadata provider will provide geometry information that matches the spatial extent of the track information.",
+          "$ref": "#/definitions/TrackType"
+        }
+      },
+      "oneOf": [{
+        "required": ["Geometry"]
+      }, {
+        "required": ["Orbit"]
+      }]
+    },
+    "GeometryType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity holds the geometry representing the spatial coverage information of a granule.",
+      "properties": {
+        "Points": {
+          "description": "The horizontal spatial coverage of a point.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PointType"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "BoundingRectangles": {
+          "description": "This entity holds the horizontal spatial coverage of a bounding box.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BoundingRectangleType"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "GPolygons": {
+          "description": "A GPolygon specifies an area on the earth represented by a main boundary with optional boundaries for regions excluded from the main boundary.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GPolygonType"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "Lines": {
+          "description": "This entity holds the horizontal spatial coverage of a line. A line area contains at least two points.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LineType"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "anyOf": [{
+        "required": ["Points"]
+      }, {
+        "required": ["BoundingRectangles"]
+      }, {
+        "required": ["GPolygons"]
+      }, {
+        "required": ["Lines"]
+      }]
+    },
+    "PointType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The longitude and latitude values of a spatially referenced point in degrees.",
+      "properties": {
+        "Longitude": {
+          "$ref": "#/definitions/LongitudeType"
+        },
+        "Latitude": {
+          "$ref": "#/definitions/LatitudeType"
+        }
+      },
+      "required": ["Longitude", "Latitude"]
+    },
+    "BoundingRectangleType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity holds the horizontal spatial coverage of a bounding box.",
+      "properties": {
+        "WestBoundingCoordinate": {
+          "$ref": "#/definitions/LongitudeType"
+        },
+        "NorthBoundingCoordinate": {
+          "$ref": "#/definitions/LatitudeType"
+        },
+        "EastBoundingCoordinate": {
+          "$ref": "#/definitions/LongitudeType"
+        },
+        "SouthBoundingCoordinate": {
+          "$ref": "#/definitions/LatitudeType"
+        }
+      },
+      "required": ["WestBoundingCoordinate", "NorthBoundingCoordinate", "EastBoundingCoordinate", "SouthBoundingCoordinate"]
+    },
+    "GPolygonType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A GPolygon specifies an area on the earth represented by a main boundary with optional boundaries for regions excluded from the main boundary.",
+      "properties": {
+        "Boundary": {
+          "$ref": "#/definitions/BoundaryType"
+        },
+        "ExclusiveZone": {
+          "$ref": "#/definitions/ExclusiveZoneType"
+        }
+      },
+      "required": ["Boundary"]
+    },
+    "BoundaryType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A boundary is set of points connected by straight lines representing a polygon on the earth. It takes a minimum of three points to make a boundary. Points must be specified in counter-clockwise order and closed (the first and last vertices are the same).",
+      "properties": {
+        "Points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PointType"
+          },
+          "minItems": 3
+        }
+      },
+      "required": ["Points"]
+    },
+    "ExclusiveZoneType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Contains the excluded boundaries from the GPolygon.",
+      "properties": {
+        "Boundaries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BoundaryType"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["Boundaries"]
+    },
+    "LineType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity holds the horizontal spatial coverage of a line. A line area contains at lease two points.",
+      "properties": {
+        "Points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PointType"
+          },
+          "minItems": 2
+        }
+      },
+      "required": ["Points"]
+    },
+    "OrbitType":{
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity stores orbital coverage information of the granule. This coverage is an alternative way of expressing granule spatial coverage. This information supports orbital backtrack searching on a granule.",
+      "properties": {
+        "AscendingCrossing": {
+          "description": "Equatorial crossing on the ascending pass in decimal degrees longitude. The convention we've been using is it's the first included ascending crossing if one is included, and the prior ascending crossing if none is included (e.g. descending half orbits).",
+          "$ref": "#/definitions/LongitudeType"
+        },
+        "StartLatitude": {
+          "description": "Granule's starting latitude.",
+          "$ref": "#/definitions/LatitudeType"
+        },
+        "StartDirection": {
+          "description": "Ascending or descending. Valid input: 'A' or 'D'",
+          "$ref": "#/definitions/OrbitDirectionTypeEnum"
+        },
+        "EndLatitude": {
+          "description": "Granule's ending latitude.",
+          "$ref": "#/definitions/LatitudeType"
+        },
+        "EndDirection": {
+          "description": "Ascending or descending. Valid input: 'A' or 'D'",
+          "$ref": "#/definitions/OrbitDirectionTypeEnum"
+        }
+      },
+      "required": ["AscendingCrossing", "StartLatitude", "StartDirection", "EndLatitude", "EndDirection"]
+    },
+    "TrackType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This element stores track information of the granule. Track information is used to allow a user to search for granules whose spatial extent is based on an orbital cycle, pass, and tile mapping. Though it is derived from the SWOT mission requirements, it is intended that this element type be generic enough so that other missions can make use of it. While track information is a type of spatial domain, it is expected that the metadata provider will provide geometry information that matches the spatial extent of the track information.",
+      "properties": {
+        "Cycle": {
+          "description": "An integer that represents a specific set of orbital spatial extents defined by passes and tiles. Though intended to be generic, this comes from a SWOT mission requirement where each cycle represents a set of 1/2 orbits. Each 1/2 orbit is called a 'pass'. During science mode, a cycle represents 21 days of 14 full orbits or 588 passes.",
+          "type": "integer"
+        },
+        "Passes": {
+          "description": "A pass number identifies a subset of a granule's spatial extent. This element holds a list of pass numbers and their tiles that exist in the granule. It will allow a user to search by pass number and its tiles that are contained with in a cycle number.  While trying to keep this generic for all to use, this comes from a SWOT requirement where a pass represents a 1/2 orbit. This element will then hold a list of 1/2 orbits and their tiles that together represent the granule's spatial extent.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TrackPassTileType"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["Cycle", "Passes"]
+    },
+    "TrackPassTileType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This element stores a track pass and its tile information. It will allow a user to search by pass number and their tiles that are contained with in a cycle number.  While trying to keep this generic for all to use, this comes from a SWOT requirement where a pass represents a 1/2 orbit. This element will then hold a list of 1/2 orbits and their tiles that together represent the granules spatial extent.",
+      "properties": {
+        "Pass": {
+          "description": "A pass number identifies a subset of a granule's spatial extent. This element holds a pass number that exists in the granule and will allow a user to search by pass number that is contained within a cycle number.  While trying to keep this generic for all to use, this comes from a SWOT requirement where a pass represents a 1/2 orbit.",
+          "type": "integer"
+        },
+        "Tiles": {
+          "description": "A tile is a subset of a pass' spatial extent. This element holds a list of tile identifiers that exist in the granule and will allow a user to search by tile identifier that is contained within a pass number within a cycle number. Though intended to be generic, this comes from a SWOT mission requirement where a tile is a spatial extent that encompasses either a square scanning swath to the left or right of the ground track or a rectangle that includes a full scanning swath both to the left and right of the ground track.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["Pass"]
+    },
+    "VerticalSpatialDomainType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity contains the type and value for the granule's vertical spatial domain.",
+      "properties": {
+        "Type": {
+          "description": "Describes the type of the area of vertical space covered by the granule locality.",
+          "$ref": "#/definitions/VerticalSpatialDomainTypeEnum"
+        },
+        "Value": {
+          "description": "Describes the extent of the area of vertical space covered by the granule. Use this for Atmosphere profiles or for a specific value.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "MinimumValue": {
+          "description": "Describes the extent of the area of vertical space covered by the granule. Use this and MaximumValue to represent a range of values (Min and Max).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+       "MaximumValue": {
+          "description": "Describes the extent of the area of vertical space covered by the granule. Use this and MinimumValue to represent a range of values (Min and Max).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Unit": {
+          "description": "Describes the unit of the vertical extent value.",
+          "type": "string",
+          "enum": ["Fathoms", "Feet", "HectoPascals", "Kilometers", "Meters", "Millibars","PoundsPerSquareInch", "Atmosphere", "InchesOfMercury", "InchesOfWater"]
+        }
+      },
+      "oneOf": [{
+        "required": ["Type", "Value"]
+      }, {
+        "required":["Type","MinimumValue", "MaximumValue"]
+      }],
+      "allOf": [{
+        "not": {
+          "required": ["Value", "MinimumValue"]
+        }
+      }, {
+        "not": {
+          "required": ["Value", "MaximumValue"]
+        }
+      }]
+    },
+    "OrbitCalculatedSpatialDomainType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity is used to store the characteristics of the orbit calculated spatial domain to include the model name, orbit number, start and stop orbit number, equator crossing date and time, and equator crossing longitude.",
+      "properties": {
+        "OrbitalModelName": {
+          "description": "The reference to the orbital model to be used to calculate the geo-location of this data in order to determine global spatial extent.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "OrbitNumber": {
+          "description": "The orbit number to be used in calculating the spatial extent of this data.",
+          "type": "integer"
+        },
+        "BeginOrbitNumber": {
+          "description": "Orbit number at the start of the data granule.",
+          "type": "integer"
+        },
+        "EndOrbitNumber": {
+          "description": "Orbit number at the end of the data granule.",
+          "type": "integer"
+        },
+        "EquatorCrossingLongitude": {
+          "description": "This attribute represents the terrestrial longitude of the descending equator crossing.",
+          "$ref": "#/definitions/LongitudeType"
+        },
+        "EquatorCrossingDateTime": {
+          "description": "This attribute represents the date and time of the descending equator crossing.",
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "anyOf": [{
+        "required": ["OrbitalModelName"]
+      }, {
+        "required": ["EquatorCrossingLongitude"]
+      }, {
+        "required": ["EquatorCrossingDateTime"]
+      }, {
+        "required": ["OrbitNumber"]
+      }, {
+        "required": ["BeginOrbitNumber", "EndOrbitNumber"]
+      }],
+      "allOf": [{
+        "not": {
+          "required": ["OrbitNumber", "BeginOrbitNumber"]
+        }
+      }, {
+        "not": {
+          "required": ["OrbitNumber", "EndOrbitNumber"]
+        }
+      }]
+    },
+    "MeasuredParameterType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity contains the name of the geophysical parameter expressed in the data as well as associated quality flags and quality statistics. The quality statistics element contains measures of quality for the granule. The parameters used to set these measures are not preset and will be determined by the data producer. Each set of measures can occur many times either for the granule as a whole or for individual parameters. The quality flags contain the science, operational and automatic quality flags which indicate the overall quality assurance levels of specific parameter values within a granule.",
+      "properties": {
+        "ParameterName": {
+          "description": "The measured science parameter expressed in the data granule.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 250
+        },
+        "QAStats": {
+          "description": "The associated quality statistics.",
+          "$ref": "#/definitions/QAStatsType"
+        },
+        "QAFlags": {
+          "description": "The associated quality flags.",
+          "$ref": "#/definitions/QAFlagsType"
+        }
+      },
+      "required": ["ParameterName"]
+    },
+    "QAStatsType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The quality statistics element contains measures of quality for the granule. The parameters used to set these measures are not preset and will be determined by the data producer. Each set of measures can occur many times either for the granule as a whole or for individual parameters.",
+      "properties": {
+        "QAPercentMissingData": {
+          "description": "Granule level % missing data. This attribute can be repeated for individual parameters within a granule.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "QAPercentOutOfBoundsData": {
+          "description": "Granule level % out of bounds data. This attribute can be repeated for individual parameters within a granule.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "QAPercentInterpolatedData": {
+          "description": "Granule level % interpolated data. This attribute can be repeated for individual parameters within a granule.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "QAPercentCloudCover": {
+          "description": "This attribute is used to characterize the cloud cover amount of a granule. This attribute may be repeated for individual parameters within a granule. (Note - there may be more than one way to define a cloud or it's effects within a product containing several parameters; i.e. this attribute may be parameter specific).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "anyOf": [{
+        "required": ["QAPercentMissingData"]
+      }, {
+        "required": ["QAPercentOutOfBoundsData"]
+      }, {
+        "required": ["QAPercentInterpolatedData"]
+      }, {
+        "required": ["QAPercentCloudCover"]
+      }]
+    },
+    "QAFlagsType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The quality flags contain the science, operational and automatic quality flags which indicate the overall quality assurance levels of specific parameter values within a granule.",
+      "properties": {
+        "AutomaticQualityFlag": {
+          "description": "The granule level flag applying generally to the granule and specifically to parameters the granule level. When applied to parameter, the flag refers to the quality of that parameter for the granule (as applicable). The parameters determining whether the flag is set are defined by the developer and documented in the Quality Flag Explanation.",
+          "type": "string",
+          "enum": ["Passed", "Failed", "Suspect", "Undetermined"]
+        },
+        "AutomaticQualityFlagExplanation": {
+          "description": "A text explanation of the criteria used to set automatic quality flag; including thresholds or other criteria.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "OperationalQualityFlag": {
+          "description": "The granule level flag applying both generally to a granule and specifically to parameters at the granule level. When applied to parameter, the flag refers to the quality of that parameter for the granule (as applicable). The parameters determining whether the flag is set are defined by the developers and documented in the QualityFlagExplanation.",
+          "type": "string",
+          "enum": ["Passed", "Failed", "Being Investigated", "Not Investigated", "Inferred Passed", "Inferred Failed", "Suspect", "Undetermined"]
+        },
+        "OperationalQualityFlagExplanation": {
+          "description": "A text explanation of the criteria used to set operational quality flag; including thresholds or other criteria.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "ScienceQualityFlag": {
+          "description": "Granule level flag applying to a granule, and specifically to parameters. When applied to parameter, the flag refers to the quality of that parameter for the granule (as applicable). The parameters determining whether the flag is set are defined by the developers and documented in the Quality Flag Explanation.",
+          "type": "string",
+          "enum": ["Passed", "Failed", "Being Investigated", "Not Investigated", "Inferred Passed", "Inferred Failed", "Suspect", "Hold", "Undetermined"]
+        },
+        "ScienceQualityFlagExplanation": {
+          "description": "A text explanation of the criteria used to set science quality flag; including thresholds or other criteria.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      },
+      "anyOf": [{
+        "required": ["AutomaticQualityFlag"]
+      }, {
+        "required": ["OperationalQualityFlag"]
+      }, {
+        "required": ["ScienceQualityFlag"]
+      }]
+    },
+    "PlatformType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A reference to a platform in the parent collection that is associated with the acquisition of the granule. The platform must exist in the parent collection. For example, Platform types may include (but are not limited to): ADEOS-II, AEM-2, Terra, Aqua, Aura, BALLOONS, BUOYS, C-130, DEM, DMSP-F1,etc.",
+      "properties": {
+        "ShortName": {
+          "$ref": "#/definitions/ShortNameType"
+        },
+        "Instruments": {
+          "description": "References to the devices in the parent collection that were used to measure or record data, including direct human observation.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InstrumentType"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["ShortName"]
+    },
+    "InstrumentType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A reference to the device in the parent collection that was used to measure or record data, including direct human observation. In cases where instruments have a single composed of child instrument (sensor) or the instrument and composed of child instrument (sensor) are used synonymously (e.g. AVHRR) the both Instrument and composed of child instrument should be recorded. The child instrument information is represented by child entities. The instrument reference may contain granule specific characteristics and operation modes. These characteristics and modes are not checked against the referenced instrument.",
+      "properties": {
+        "ShortName": {
+          "$ref": "#/definitions/ShortNameType"
+        },
+        "Characteristics": {
+          "description": "This entity is used to define item additional attributes (unprocessed, custom data).",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CharacteristicType"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "ComposedOf": {
+          "description": "References to instrument subcomponents in the parent collection's instrument used by various sources in the granule. An instrument subcomponent reference may contain characteristics specific to the granule.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InstrumentType"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "OperationalModes": {
+          "description": "This entity identifies the instrument's operational modes for a specific collection associated with the channel, wavelength, and FOV (e.g., launch, survival, initialization, safe, diagnostic, standby, crosstrack, biaxial, solar calibration).",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": ["ShortName"]
+    },
+    "CharacteristicType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity is used to reference characteristics defined in the parent collection.",
+      "properties": {
+        "Name": {
+          "description": "The name of the characteristic attribute.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Value": {
+          "description": "The value of the Characteristic attribute.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": ["Name", "Value"]
+    },
+    "ProjectType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Information describing the scientific endeavor with which the granule is associated.",
+      "properties": {
+        "ShortName": {
+          "description": "The unique identifier by which a project is known. The project is the scientific endeavor associated with the acquisition of the collection.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+       "Campaigns": {
+          "description": "The name of the campaign/experiment (e.g. Global climate observing system).",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CampaignType"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": ["ShortName"]
+    },
+    "CampaignType": {
+      "description": "Information describing campaign names with which the granule is associated.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
+    },
+    "AdditionalAttributeType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A reference to an additional attribute in the parent collection. The attribute reference may contain a granule specific value that will override the value in the parent collection for this granule. An attribute with the  same name must exist in the parent collection.",
+      "properties": {
+        "Name": {
+          "description": "The additional attribute's name.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Values": {
+          "description": "Values of the additional attribute.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["Name", "Values"]
+    },
+    "TilingIdentificationSystemType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity stores the tiling identification system for the granule. The tiling identification system information is an alternative way to express granule's spatial coverage based on a certain two dimensional coordinate system defined by the providers. The name must match the name in the parent collection.",
+      "properties": {
+        "TilingIdentificationSystemName": {
+          "$ref": "#/definitions/TilingIdentificationSystemNameEnum"
+        },
+        "Coordinate1": {
+          "$ref": "#/definitions/TilingCoordinateType"
+        },
+        "Coordinate2": {
+          "$ref": "#/definitions/TilingCoordinateType"
+        }
+      },
+      "required": ["TilingIdentificationSystemName", "Coordinate1", "Coordinate2"]
+    },
+    "TilingCoordinateType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Defines the minimum and maximum value for one dimension of a two dimensional coordinate system.",
+      "properties": {
+        "MinimumValue": {
+          "type": "number"
+        },
+        "MaximumValue": {
+          "type": "number"
+        }
+      },
+      "required": ["MinimumValue"]
+    },
+    "RelatedUrlType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity holds all types of online URL associated with the granule such as guide document or ordering site etc.",
+      "properties": {
+        "URL": {
+          "description": "The URL for the relevant resource.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Type": {
+          "description": "A keyword describing the type of the online resource to this resource.",
+          "$ref": "#/definitions/RelatedUrlTypeEnum"
+        },
+        "Subtype": {
+          "description": "A keyword that provides more detailed information than Type of the online resource to this resource. For example if the Type=VIEW RELATED INFORMATION then the Subtype can be USER'S GUIDE or GENERAL DOCUMENTATION",
+          "$ref": "#/definitions/RelatedUrlSubTypeEnum"
+        },
+        "Description": {
+          "description": "Description of the web page at this URL.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "Format": {
+          "description": "The format of the resource.",
+          "$ref": "#/definitions/DataFormatEnum"
+        },
+        "MimeType": {
+          "description": "The mime type of the resource.",
+          "$ref": "#/definitions/MimeTypeEnum"
+        },
+        "Size": {
+          "description": "The size of the resource.",
+          "type": "number"
+        },
+        "SizeUnit": {
+          "description": "Unit of information, together with Size determines total size in bytes of the resource.",
+          "$ref": "#/definitions/FileSizeUnitEnum"
+        }
+      },
+      "required": ["URL", "Type"],
+      "dependencies": {
+        "Size": ["SizeUnit"]
+      }
+    },
+    "ChecksumType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Allows the provider to provide a checksum value and checksum algorithm name to allow the user to calculate the checksum.",
+      "properties": {
+        "Value": {
+          "description": "Describes the checksum value for a file.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "Algorithm": {
+          "description": "The algorithm name by which the checksum was calulated. This allows the user to re-calculate the checksum to verify the integrity of the downloaded data.",
+          "type": "string",
+          "enum": ["Adler-32", "BSD checksum", "Fletcher-32", "Fletcher-64", "MD5", "POSIX", "SHA-1", "SHA-2", "SHA-256", "SHA-384", "SHA-512", "SM3", "SYSV"]
+        }
+      },
+      "required": ["Value", "Algorithm"]
+    },
+    "ProjectionNameType": {
+      "description": "Represents the native projection of the granule if the granule has a native projection. The projection name must match the projection that has been defined in the parent collection.",
+      "type": "string",
+      "enum": ["Geographic", "Mercator", "Spherical Mercator", "Space Oblique Mercator", "Universal Transverse Mercator", "Military Grid Reference", "MODIS Sinusoidal System", "Sinusoidal", "Lambert Equal Area", "NSIDC EASE Grid North and South (Lambert EA)", "NSIDC EASE Grid Global", "EASE Grid 2.0 N. Polar", "Plate Carree", "Polar Stereographic", "WELD Albers Equal Area", "Canadian Albers Equal Area Conic", "Lambert Conformal Conic", "State Plane Coordinates", "Albers Equal Area Conic", "Transverse Mercator", "Lambert Azimuthal Equal Area", "UTM Northern Hemisphere", "NAD83 / UTM zone 17N", "UTM Southern Hemisphere", "Cylindrical"]
+    },
+    "GridMappingNameType": {
+      "description": "Represents the native grid mapping of the granule, if the granule is gridded. The grid name must match a grid that has been defined in the parent collection.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "ProviderDateTypeEnum": {
+      "description": "The types of dates that a metadata record can have.",
+      "type": "string",
+      "enum": ["Create", "Insert", "Update", "Delete"]
+    },
+    "FileNameType": {
+      "description": "This field describes the name of the actual file.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "FileSizeUnitEnum": {
+      "description": "The unit of the file size.",
+      "type": "string",
+      "enum": ["KB", "MB", "GB", "TB", "PB", "NA"]
+    },
+    "DistributionMediaType": {
+      "description": "This element defines the media by which the end user can obtain the distributable item. Each media type is listed separately. Examples of media include: CD-ROM, 9 track tape, diskettes, hard drives, online, transparencies, hardcopy, etc.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "GranuleLocalityType" :{
+      "description": "Provides name which spatial/temporal entity is known. This could change on a granule by granule basis. This attribute is paralleled by the AggregationType which applies at the collection level although locality has a more restricted usage. Several locality measures could be included in each granule.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "LatitudeType": {
+      "description": "The latitude value of a spatially referenced point, in degrees. Latitude values range from -90 to 90.",
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "LongitudeType": {
+      "description": "The longitude value of a spatially referenced point, in degrees. Longitude values range from -180 to 180.",
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "OrbitDirectionTypeEnum": {
+      "description": "Orbit start and end direction. A for ascending orbit and D for descending.",
+      "type": "string",
+      "enum": ["A", "D"]
+    },
+    "ZoneIdentifierType": {
+      "description": "The appropriate numeric or alpha code used to identify the various zones in the granule's grid coordinate system.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "VerticalSpatialDomainTypeEnum": {
+      "type": "string",
+      "enum": ["Atmosphere Layer","Pressure", "Altitude", "Depth"]
+    },
+    "ShortNameType": {
+      "description": "The unique name of the platform or instrument.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "TilingIdentificationSystemNameEnum": {
+       "type": "string",
+       "enum": ["CALIPSO", "MISR", "MODIS Tile EASE", "MODIS Tile SIN", "SMAP Tile EASE", "WELD Alaska Tile", "WELD CONUS Tile", "WRS-1", "WRS-2"]
+    },
+    "RelatedUrlTypeEnum": {
+      "type": "string",
+      "enum": ["DOWNLOAD SOFTWARE", "EXTENDED METADATA", "GET DATA", "GET DATA VIA DIRECT ACCESS", "GET RELATED VISUALIZATION", "GOTO WEB TOOL", "PROJECT HOME PAGE", "USE SERVICE API", "VIEW RELATED INFORMATION"]
+    },
+    "RelatedUrlSubTypeEnum": {
+      "type": "string",
+      "enum": ["MOBILE APP", "APPEARS", "DATA COLLECTION BUNDLE", "DATA TREE", "DATACAST URL", "DIRECT DOWNLOAD", "EOSDIS DATA POOL", "Earthdata Search", "GIOVANNI", "GoLIVE Portal",
+               "IceBridge Portal", "LAADS", "LANCE", "MIRADOR", "MODAPS", "NOAA CLASS", "NOMADS", "Order", "PORTAL", "Subscribe", "USGS EARTH EXPLORER", "VERTEX", "VIRTUAL COLLECTION",
+               "MAP", "WORLDVIEW", "LIVE ACCESS SERVER (LAS)", "MAP VIEWER", "SIMPLE SUBSET WIZARD (SSW)", "SUBSETTER", "GRADS DATA SERVER (GDS)", "MAP SERVICE", "OPENDAP DATA",
+               "OpenSearch", "SERVICE CHAINING", "TABULAR DATA STREAM (TDS)", "THREDDS DATA", "WEB COVERAGE SERVICE (WCS)", "WEB FEATURE SERVICE (WFS)", "WEB MAP SERVICE (WMS)",
+               "WEB MAP TILE SERVICE (WMTS)", "ALGORITHM DOCUMENTATION", "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)", "ANOMALIES", "CASE STUDY", "DATA CITATION POLICY", "DATA QUALITY",
+               "DATA RECIPE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION", "HOW-TO", "IMPORTANT NOTICE","INSTRUMENT/SENSOR CALIBRATION DOCUMENTATION", "MICRO ARTICLE",
+               "PI DOCUMENTATION", "PROCESSING HISTORY", "PRODUCT HISTORY", "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE", "PRODUCTION HISTORY", "PUBLICATIONS", "READ-ME",
+               "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION", "SCIENCE DATA PRODUCT VALIDATION", "USER FEEDBACK PAGE", "USER'S GUIDE"]
+    },
+    "MimeTypeEnum": {
+      "type": "string",
+      "enum": ["application/json", "application/xml", "application/x-netcdf", "application/x-hdfeos", "application/gml+xml",
+               "application/vnd.google-earth.kml+xml", "image/gif", "image/tiff", "image/bmp", "text/csv",
+               "text/xml", "application/pdf", "application/x-hdf", "application/x-hdf5",
+               "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",
+               "image/vnd.collada+xml", "text/html", "text/plain", "application/zip", "application/gzip", "application/tar",
+               "application/tar+gzip", "application/tar+zip", "application/vnd.opendap.dap4.dmrpp+xml", "Not provided"]
+    },
+    "DataFormatEnum": {
+      "type": "string",
+      "enum": ["ASCII", "BINARY", "BMP", "BUFR", "CSV", "GEOTIFF", "GIF", "GEOTIFFINT16", "GEOTIFFFLOAT32", "GRIB", "GZIP", "HDF4", "HDF5", "HDF-EOS2", "HDF-EOS5", "HTML", "ICARTT", "JPEG", "JSON", "KML", "NETCDF-3", "NETCDF-4", "NETCDF-CF", "PNG", "PNG24", "TAR", "TIFF", "XLSX", "XML", "ZIP", "DMRPP", "Not provided"]
+    },
+    "MetadataSpecificationType":
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+      "properties": {
+        "URL": {
+          "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
+          "type": "string",
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/granule/v1.6.2"]
+        },
+        "Name": {
+          "description": "This element represents the name of the schema.",
+          "type": "string",
+          "enum": ["UMM-G"]
+        },
+        "Version": {
+          "description": "This element represents the version of the schema.",
+          "type": "string",
+          "enum": ["1.6.2"]
+        }
+      },
+      "required": ["URL", "Name", "Version"]
+    }
+  }
+}

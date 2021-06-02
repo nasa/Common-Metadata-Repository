@@ -209,14 +209,25 @@
   [doi]
   (let [updated-doi (util/remove-nil-keys
                      (dissoc doi :Authority :MissingReason :Explanation))]
+    (if (seq updated-doi)
+      (cmn/map->DoiDoiType updated-doi)
+      {:Explanation "It is unknown if this record has a DOI.",
+       :MissingReason "Unknown"})))
+
+(defn expected-dif-pub-doi
+  "DIF9 and DIF10 do not have several DOI fields so remove them."
+  [doi]
+  (let [updated-doi (util/remove-nil-keys
+                     (dissoc doi :Authority :MissingReason :Explanation))]
     (when (seq updated-doi)
-      (cmn/map->DoiType updated-doi))))
+      (util/remove-nil-keys
+        (cmn/map->DoiDoiType updated-doi)))))
 
 (defn dif-publication-reference
   "Returns the expected value of a parsed DIF 9 or DIF10 publication reference"
   [pub-ref]
   (-> pub-ref
-      (update-in [:DOI] expected-dif-doi)
+      (update-in [:DOI] expected-dif-pub-doi)
       (update :ISBN su/format-isbn)
       (as-> pr (if (:OnlineResource pr)
                  (update pr :OnlineResource dif-online-resource)

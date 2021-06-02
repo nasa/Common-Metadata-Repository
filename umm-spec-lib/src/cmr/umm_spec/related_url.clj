@@ -2,6 +2,7 @@
   (:require
    [clojure.string :as str]
    [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.related-url-titles :as related-url-titles]))
 
 (def DOCUMENTATION_MIME_TYPES
@@ -47,6 +48,17 @@
   [related-url]
   (= "PublicationURL" (:URLContentType related-url)))
 
+(defn search-url?
+  "Returns true if the related-url is search url"
+  [related-url]
+  (and (= "GET CAPABILITIES" (:Type related-url))
+       (= "OpenSearch" (:Subtype related-url))))
+
+(defn search-urls
+  "Returns the related-urls that are search urls"
+  [related-urls]
+  (filter search-url? related-urls))
+
 (defn resource-url?
   "Returns true if the related-url is resource url"
   [related-url]
@@ -77,12 +89,14 @@
     (str URLContentType " : " Type))))
 
 (defn- related-url->link-type
-  "Returns the atom link type of the related url"
+  "Returns the atom link type of the related url - used for collections"
   [related-url]
   (cond
+    (opendap-util/opendap-url? related-url) "service"
     (downloadable-url? related-url) "data"
     (browse-url? related-url) "browse"
     (documentation-url? related-url) "documentation"
+    (search-url? related-url) "search"
     :else "metadata"))
 
 (defn- related-url->atom-link

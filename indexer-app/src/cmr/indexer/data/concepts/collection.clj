@@ -28,6 +28,7 @@
    [cmr.indexer.data.concepts.collection.location-keyword :as clk]
    [cmr.indexer.data.concepts.collection.opendata :as opendata]
    [cmr.indexer.data.concepts.collection.platform :as platform]
+   [cmr.indexer.data.concepts.collection.resolution :as resolution]
    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.concepts.service :as service]
@@ -138,23 +139,28 @@
       (assoc-nil-if :DataCenters (= (:DataCenters collection) [su/not-provided-data-center]))))
 
 (defn- associations->gzip-base64-str
-  "Returns the gziped base64 string for the given variable associations and service associations"
-  [variable-associations service-associations]
+  "Returns the gziped base64 string for the given variable,service and tool associations"
+  [variable-associations service-associations tool-associations]
   (when (or (seq variable-associations)
-            (seq service-associations))
+            (seq service-associations)
+            (seq tool-associations))
     (util/string->gzip-base64
      (pr-str
       (util/remove-map-keys empty?
                             {:variables (mapv :variable-concept-id variable-associations)
-                             :services (mapv :service-concept-id service-associations)})))))
+                             :services (mapv :service-concept-id service-associations)
+                             :tools (mapv :tool-concept-id tool-associations)})))))
 
-(defn- variable-service-associations->elastic-docs
-  "Returns the elastic docs for variable and service assocations"
-  [context variable-associations service-associations]
+(defn- variable-service-tool-associations->elastic-docs
+  "Returns the elastic docs for variable, service and tool assocations"
+  [context variable-associations service-associations tool-associations]
   (let [variable-docs (variable/variable-associations->elastic-doc context variable-associations)
         service-docs (service/service-associations->elastic-doc context service-associations)
-        has-variables (or (:has-variables variable-docs) (:has-variables service-docs))]
-    (merge variable-docs service-docs {:has-variables has-variables})))
+        tool-docs (tool/tool-associations->elastic-doc context tool-associations)
+        has-variables (or (:has-variables variable-docs) (:has-variables service-docs))
+        has-formats (:has-formats service-docs)]
+    (merge variable-docs service-docs tool-docs
+           {:has-variables has-variables} {:has-formats has-formats})))
 
 (defn- get-granule-data-format
   "Returns the Format field from
@@ -167,12 +173,18 @@
        distinct
        (remove nil?)))
 
+(defn- cloud-hosted?
+  "Test if the collection meets the criteria for being cloud hosted"
+  [collection tags]
+  (or (not (empty? (:DirectDistributionInformation collection)))
+      (tag/has-cloud-s3-tag? tags)))
+
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id native-id
-                created-at revision-date deleted format extra-fields
-                tag-associations variable-associations service-associations]} concept
+                created-at revision-date deleted format extra-fields tag-associations
+                variable-associations service-associations tool-associations]} concept
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
@@ -181,8 +193,10 @@
          publication-references :PublicationReferences
          collection-citations :CollectionCitations} collection
         parsed-version-id (collection-util/parse-version-id version-id)
+        s3-bucket-and-object-prefix-names (get-in collection [:DirectDistributionInformation :S3BucketAndObjectPrefixNames])
         doi (get-in collection [:DOI :DOI])
-        doi-lowercase (util/safe-lowercase doi)
+        doi-lowercase (into [(util/safe-lowercase doi)]
+                        (mapv #(util/safe-lowercase (:DOI %)) (get collection :AssociatedDOIs)))
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         spatial-keywords (lk/location-keywords->spatial-keywords-for-indexing
                           (:LocationKeywords collection))
@@ -272,17 +286,23 @@
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
         granule-end-date (when-not (and granule-end-date
                                         (t/within? last-3-days granule-end-date))
-                                  ;; If the granule end date is within the last 3 days we indicate that
-                                  ;; the collection has no end date. This allows NRT collections to be
-                                  ;; found even if the collection has been reindexed recently.
-                                  ;; otherwise, use granule-end-date
-                                  granule-end-date)
+                           ;; If the granule end date is within the last 3 days we indicate that
+                           ;; the collection has no end date. This allows NRT collections to be
+                           ;; found even if the collection has been reindexed recently.
+                           ;; otherwise, use granule-end-date
+                           granule-end-date)
         humanized-values (humanizer/collection-humanizers-elastic context collection)
         tags (map tag/tag-association->elastic-doc tag-associations)
         has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))
         granule-data-format (get-granule-data-format
                              (get-in collection [:ArchiveAndDistributionInformation
-                                                 :FileDistributionInformation]))]
+                                                 :FileDistributionInformation]))
+        horizontal-data-resolutions (resolution/get-horizontal-data-resolutions
+                                     (get-in collection
+                                             [:SpatialExtent
+                                              :HorizontalSpatialDomain
+                                              :ResolutionAndCoordinateSystem
+                                              :HorizontalDataResolution]))]
 
     (merge {:concept-id concept-id
             :doi-stored doi
@@ -374,6 +394,7 @@
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
             :has-opendap-url (not (empty? (filter opendap-util/opendap-url? related-urls)))
+            :cloud-hosted (cloud-hosted? collection tags)
             :publication-references opendata-references
             :collection-citations (map json/generate-string opendata-citations)
             :update-time update-time
@@ -413,12 +434,17 @@
                                                          :processing-level-id-humanized
                                                          first
                                                          :value-lowercase)
-            :associations-gzip-b64 (associations->gzip-base64-str
-                                    variable-associations service-associations)
-            :usage-relevancy-score 0}
+            :associations-gzip-b64
+            (associations->gzip-base64-str
+             variable-associations service-associations tool-associations)
+            :usage-relevancy-score 0
+            :horizontal-data-resolutions {:value horizontal-data-resolutions
+                                          :priority 0}
 
-           (variable-service-associations->elastic-docs
-            context variable-associations service-associations)
+            :s3-bucket-and-object-prefix-names s3-bucket-and-object-prefix-names}
+
+           (variable-service-tool-associations->elastic-docs
+            context variable-associations service-associations tool-associations)
            (collection-temporal-elastic context concept-id collection)
            (spatial/collection-orbit-parameters->elastic-docs collection)
            (spatial->elastic collection)

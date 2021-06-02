@@ -10,19 +10,17 @@
    [cmr.access-control.test.bootstrap :as bootstrap]
    [cmr.access-control.routes :as routes]
    [cmr.acl.acl-fetcher :as af]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common.api.web-server :as web-server]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
-   [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
-   [cmr.message-queue.config :as queue-config]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.transmit.config :as transmit-config]))
 
@@ -82,6 +80,8 @@
   "Required for jobs"
   (atom nil))
 
+(def hours->ms "Convert hours to ms" (partial * 1000 3600))
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
@@ -92,6 +92,7 @@
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
              :caches {af/acl-cache-key (af/create-acl-cache
                                         [:system-object :provider-object :single-instance-object])
+                      :providers (mem-cache/create-in-memory-cache :ttl {} {:ttl (hours->ms 12)})
                       gf/group-cache-key (gf/create-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}

@@ -101,3 +101,11 @@
       (f)
       (finally
         (clear-current-time!)))))
+
+(defn resume-time-fixture!
+  "Guarantees time will resume for tests that manipulate time."
+  [f]
+  (try
+    (f)
+    (finally
+      (clear-current-time!))))

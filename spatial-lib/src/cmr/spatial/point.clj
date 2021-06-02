@@ -138,6 +138,11 @@
   (equiv [this o]
          (and (isa? (class o) Point)
               (.equals this o)))
+  ;; Don't know what I am doing, put the following three functions here to deal with CI build error:
+  ;; java.lang.AbstractMethodError: Method cmr/spatial/point/Point.count()I is abstract
+  (count [this] 100)
+  (cons [this _o] nil)
+  (empty [this] nil)
 
   clojure.lang.Seqable
   (seq

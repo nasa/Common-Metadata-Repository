@@ -50,7 +50,7 @@
                             {:queues ["a"]}) nil)]
     (testing "start multiple times"
       (let [qb (make-qb)]
-        (= (l/start (l/start qb nil) nil) qb)))
+        (is (= (l/start (l/start qb nil) nil) qb))))
 
     (testing "shutdown with no subscribers"
       (l/stop (make-qb) nil))

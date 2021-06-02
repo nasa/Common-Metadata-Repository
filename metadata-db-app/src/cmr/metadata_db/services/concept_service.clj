@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [cmr.common.concepts :as cu]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.date-time-parser :as p]
    [cmr.common.log :refer (debug error info warn trace)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -42,6 +43,7 @@
    [cmr.metadata-db.data.oracle.concepts.service]
    [cmr.metadata-db.data.oracle.concepts.tag-association]
    [cmr.metadata-db.data.oracle.concepts.tag]
+   [cmr.metadata-db.data.oracle.concepts.tool-association]
    [cmr.metadata-db.data.oracle.concepts.tool]
    [cmr.metadata-db.data.oracle.concepts.variable-association]
    [cmr.metadata-db.data.oracle.concepts.variable]
@@ -64,7 +66,8 @@
    :variable-association 10
    :service 10
    :tool 10
-   :service-association 10})
+   :service-association 10
+   :tool-association 10})
 
 (defconfig days-to-keep-tombstone
   "Number of days to keep a tombstone before is removed from the database."
@@ -77,7 +80,12 @@
 
 (def system-level-concept-types
   "A set of concept types that only exist on system level provider CMR."
-  #{:tag :tag-association :humanizer :variable-association :service-association})
+  #{:tag
+    :tag-association
+    :humanizer
+    :variable-association
+    :service-association
+    :tool-association})
 
 ;;; utility methods
 (def ^:private native-id-separator-character
@@ -146,7 +154,9 @@
                       :variable-association (msg/variable-associations-only-system-level
                                              provider-id)
                       :service-association (msg/service-associations-only-system-level
-                                             provider-id))]
+                                             provider-id)
+                      :tool-association (msg/tool-associations-only-system-level
+                                          provider-id))]
         (errors/throw-service-errors :invalid-data [err-msg])))))
 
 (defn- provider-ids-for-validation
@@ -263,12 +273,6 @@
           existing-revision-id (:revision-id (or previous-revision
                                                  (c/get-concept db concept-type provider concept-id)))
           revision-id (if existing-revision-id (inc existing-revision-id) 1)]
-      ;; The first revision of a variable without collection info will be rejected.
-      ;; will do this later in CMR-6605t
-      ;;(when (and (= :variable (:concept-type concept))
-       ;;          (= 1 revision-id)
-        ;;         (nil? (:coll-concept-id concept)))
-        ;;(cmsg/data-error :invalid-data variable-missing-coll-info-msg (:native-id concept)))
       (assoc concept :revision-id revision-id))))
 
 (defn- check-concept-revision-id
@@ -303,21 +307,16 @@
                           (:expected result)
                           revision-id))))))
 
-(defn- invalid-variable-name-msg
-  "Returns the message for invalid variable name"
-  [new-name existing-name]
-  (format "Variable name [%s] does not match the existing variable name [%s]"
-          new-name existing-name))
-
-(defn- validate-variable-name-not-changed
-  "Validate that the concept variable name is the same as the previous concept's variable name."
+(defn- validate-new-variable-has-collection-info
+  "Validate when variable is created, it contains collection info to make association with."
   [concept previous-concept]
-  (let [new-name (get-in concept [:extra-fields :variable-name])
-        existing-name (get-in previous-concept [:extra-fields :variable-name])]
-    (when (and previous-concept
-               (not (util/is-tombstone? previous-concept))
-               (not= existing-name new-name))
-      (cmsg/data-error :invalid-data invalid-variable-name-msg new-name existing-name))))
+  ;; When the variable doesn't have previous revision or the previous revision is tombstoned,
+  ;; it indicates it's a new variale ingest. If it doesn't contain collection info to make association
+  ;; with, the ingest should be rejected.
+  (when (and (nil? (:coll-concept-id concept))
+             (or (nil? previous-concept)
+                 (util/is-tombstone? previous-concept)))
+   (cmsg/data-error :invalid-data variable-missing-coll-info-msg (:native-id concept))))
 
 ;;; this is abstracted here in case we switch to some other mechanism of
 ;;; marking tombstones
@@ -757,8 +756,8 @@
 (defmulti delete-associations
   "Delete the associations of the given association type that is associated with
   the given concept type and concept id.
-  assoc-type can be :variable-association or :service-association,
-  concept-type can be :collection, :variable, or :service."
+  assoc-type can be :variable-association, :service-association or :tool-association,
+  concept-type can be :collection, :variable, :service or :tool."
   (fn [context concept-type concept-id revision-id assoc-type]
     concept-type))
 
@@ -798,8 +797,19 @@
                           :service-concept-id concept-id
                           :exclude-metadata true
                           :latest true})]
-      ;; create variable association tombstones and queue the variable association delete events
+      ;; create service association tombstones and queue the service association delete events
       (tombstone-associations context assoc-type search-params false :service))))
+
+(defmethod delete-associations :tool
+  [context concept-type concept-id revision-id assoc-type]
+  (when (= :tool-association assoc-type)
+    (let [search-params (cutil/remove-nil-keys
+                         {:concept-type assoc-type
+                          :tool-concept-id concept-id
+                          :exclude-metadata true
+                          :latest true})]
+      ;; create tool association tombstones and queue the tool association delete events
+      (tombstone-associations context assoc-type search-params false :tool))))
 
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
@@ -834,6 +844,8 @@
             (delete-associations context concept-type concept-id nil :variable-association)
             ;; delete the associated service associations if applicable
             (delete-associations context concept-type concept-id nil :service-association)
+            ;; delete the associated tool associations if applicable
+            (delete-associations context concept-type concept-id nil :tool-association)
             ;; skip publication flag is set for tag association when its associated
             ;; collection revision is force deleted. In this case, the association is no longer
             ;; needed to be indexed, so we don't publish the deletion event.
@@ -861,9 +873,11 @@
                          msg/concept-does-not-exist
                          concept-id)))))
 
-(defn- update-service-associations
-  "Create a new revision for the non-tombstoned service associations that is related to the
-  given concept; Does noting if the given concept is not a service concept."
+(defn- publish-service-associations-update-event
+  "Publish one concept-update-event for all non-tombstoned service associations for the
+  given service concept; This is to trigger the reindexing of the associated collections in elastic
+  search when service is updated because service info is indexed into the associated collections.
+  Does nothing if the given concept is not a service concept."
   [context concept-type concept-id]
   (when (= :service concept-type)
     (let [search-params (cutil/remove-nil-keys
@@ -873,13 +887,29 @@
                           :latest true})
           associations (filter #(= false (:deleted %))
                                (search/find-concepts context search-params))]
-      (doseq [association associations]
-        (save-concept-revision
+      (when (> (count associations) 0)
+        (ingest-events/publish-event
          context
-         (-> association
-             (dissoc :revision-id :revision-date :transaction-id)
-             ;; set user-id to cmr to indicate the association is created by CMR
-             (assoc :user-id "cmr")))))))
+         (ingest-events/associations-update-event associations))))))
+
+(defn- publish-tool-associations-update-event
+  "Publish one concept-update-event for all non-tombstoned tool associations for the
+  given tool concept; This is to trigger the reindexing of the associated collections in elastic
+  search when tool is updated because tool info is indexed into the associated collections.
+  Does nothing if the given concept is not a tool concept."
+  [context concept-type concept-id]
+  (when (= :tool concept-type)
+    (let [search-params (cutil/remove-nil-keys
+                         {:concept-type :tool-association
+                          :tool-concept-id concept-id
+                          :exclude-metadata true
+                          :latest true})
+          associations (filter #(= false (:deleted %))
+                               (search/find-concepts context search-params))]
+      (when (> (count associations) 0)
+        (ingest-events/publish-event
+         context
+         (ingest-events/associations-update-event associations))))))
 
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
@@ -901,6 +931,10 @@
         {:keys [concept-type concept-id]} concept]
 
     (validate-concept-revision-id db provider concept)
+    ;; validate newly ingested variable contains collection info.
+    (when (= :variable concept-type)
+      (let [previous-concept (c/get-concept db concept-type provider concept-id)]
+        (validate-new-variable-has-collection-info concept previous-concept)))
 
     (let [concept (->> concept
                        (set-or-generate-revision-id db provider)
@@ -915,9 +949,10 @@
             (ingest-events/publish-tombstone-delete-msg
              context concept-type concept-id revision-id))))
 
-      ;; update service associatons if applicable, i.e. when the concept is a service,
-      ;; so that the collections can be updated in elasticsearch with the updated service info
-      (update-service-associations context concept-type concept-id)
+      ;; publish service/tool associations update event if applicable, i.e. when the concept is a service/tool,
+      ;; so that the collections can be updated in elasticsearch with the updated service/tool info
+      (publish-service-associations-update-event context concept-type concept-id)
+      (publish-tool-associations-update-event context concept-type concept-id)
       (ingest-events/publish-event
        context
        (ingest-events/concept-update-event concept))
@@ -941,6 +976,7 @@
   (delete-associated-tag-associations context concept-id revision-id)
   (delete-associations context concept-type concept-id revision-id :variable-association)
   (delete-associations context concept-type concept-id revision-id :service-association)
+  (delete-associations context concept-type concept-id revision-id :tool-association)
   (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
 
 (defmethod force-delete-cascading-events :variable
@@ -1062,7 +1098,9 @@
         (doseq [c expired-concepts]
           (let [tombstone (-> c
                               (update-in [:revision-id] inc)
-                              (assoc :deleted true :metadata ""))]
+                              (assoc :deleted true
+                                     :metadata ""
+                                     :revision-date (p/clj-time->date-time-str (time-keeper/now))))]
             (try
               (try-to-save db provider context tombstone)
               (ingest-events/publish-event

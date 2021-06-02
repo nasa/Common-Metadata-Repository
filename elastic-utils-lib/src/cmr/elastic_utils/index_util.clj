@@ -3,17 +3,18 @@
   (:require
    [clj-time.format :as f]
    [clojurewerkz.elastisch.rest.document :as doc]
-   [cmr.elastic-utils.es-helper :as es-helper]
-   [cmr.elastic-utils.es-index-helper :as esi-helper]
+   [cmr.common.date-time-parser :as p]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
+   [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.connect :as esc]))
 
 (defn date->elastic
   "Takes a clj-time date and returns it in a format suitable for indexing in elasticsearch."
   [date-time]
   (when date-time
-    (f/unparse (f/formatters :date-time) date-time)))
+    (p/clj-time->date-time-str date-time)))
 
 (def string-field-mapping
   {:type "keyword"})

@@ -217,6 +217,11 @@
 			<Type>METADATA</Type>
 			<MimeType>text/xml</MimeType>
 		</OnlineResource>
+		<OnlineResource>
+			<URL>https://some.s3.bucket.exammple.org</URL>
+			<Type>EXTENDED METADATA : DMR++</Type>
+			<MimeType>text/xml</MimeType>
+		</OnlineResource>
 	</OnlineResources>
 	<Orderable>true</Orderable>
 	<Visible>true</Visible>

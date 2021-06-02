@@ -65,7 +65,7 @@
   "Validate the URL. Return nil if no errors and the field path and error if the URL
   is not valid."
   [field-path value]
-  (let [validator (UrlValidator. (into-array ["http" "ftp" "https" "file"]))]
+  (let [validator (UrlValidator. (into-array ["http" "ftp" "https" "file" "s3"]))]
     (when (and (some? value)
                (not= value su/not-provided-url)
                (not (.isValid validator value)))

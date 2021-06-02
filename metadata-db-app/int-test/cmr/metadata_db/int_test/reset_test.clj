@@ -10,7 +10,7 @@
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(use-fixtures :each (util/reset-database-fixture))
+(use-fixtures :each (util/reset-database-fixture {:provider-id "PROV1" :small false}))
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

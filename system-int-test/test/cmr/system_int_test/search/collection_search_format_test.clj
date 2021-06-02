@@ -339,7 +339,7 @@
         "DIF .native extension" [c3-dif c4-dif] :dif "native" nil
         "ISO MENDS .native extension" [c5-iso c6-iso] :iso19115 "native" nil
         "SMAP ISO .native extension" [c7-smap] :iso-smap "native" nil
-        "UMM JSON .native extension" [c10-umm-json] {:format :umm-json, :version "1.15.4"} "native" nil
+        "UMM JSON .native extension" [c10-umm-json] {:format :umm-json, :version accepted-version} "native" nil
         "ECHO10 accept application/metadata+xml" [c1-echo c2-echo] :echo10 nil "application/metadata+xml"
         "DIF accept application/metadata+xml" [c3-dif c4-dif] :dif nil "application/metadata+xml"
         "ISO MENDS accept application/metadata+xml" [c5-iso c6-iso] :iso19115 nil "application/metadata+xml"
@@ -545,6 +545,12 @@
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :related-urls [ru3]
                                         :science-keywords [sk1 sk2]
+                                        :platforms [{:short-name "platform #1"
+                                                     :long-name "long platform #1"
+                                                     :type "good platform"}
+                                                    {:short-name "platform #2"
+                                                     :long-name "long platform #2"
+                                                     :type "very good platform"}]
                                         :spatial-coverage
                                         (dc/spatial {:sr :cartesian
                                                      :gsr :cartesian
@@ -553,16 +559,20 @@
                         (dc/collection
                          {:entry-title "Dataset3"
                           :personnel [p3]
+                          :science-keywords [sk1 sk2]
                           :spatial-coverage (dc/spatial {:gsr :orbit
                                                          :orbit op1})}))
-        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset4"}) {:format :iso-smap})
-        coll5 (d/ingest "PROV1" (dc/collection-dif {:entry-title "Dataset5"}) {:format :dif})
+
+        coll5 (d/ingest "PROV1" (dc/collection-dif {:entry-title "Dataset5"
+                                                    :science-keywords [sk1 sk2]})
+                                {:format :dif})
         coll6 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset6"
                                                 :short-name "ShortName#6"
                                                 :version-id "Version6"
                                                 :summary "Summary of coll6"
                                                 :organizations [(dc/org :archive-center "Larc")]
                                                 :projects pr1
+                                                :science-keywords [sk1 sk2]
                                                 :related-urls [ru4]
                                                 :beginning-date-time "2010-01-01T12:00:00Z"
                                                 :ending-date-time "2010-01-11T12:00:00Z"
@@ -577,6 +587,7 @@
                                                 :summary "Summary of coll7"
                                                 :organizations [(dc/org :archive-center "Larc")]
                                                 :personnel [p4]
+                                                :science-keywords [sk1 sk2]
                                                 :beginning-date-time "2010-01-01T12:00:00Z"
                                                 :ending-date-time "2010-01-11T12:00:00Z"
                                                 :spatial-coverage
@@ -588,6 +599,7 @@
                                                     :short-name "ShortName#8"
                                                     :version-id "Version8"
                                                     :summary "Summary of coll8"
+                                                    :science-keywords [sk1 sk2]
                                                     :organizations [(dc/org :archive-center "Landsat")]
                                                     :beginning-date-time "2010-01-01T12:00:00Z"
                                                     :ending-date-time "2010-01-11T12:00:00Z"
@@ -597,7 +609,8 @@
                                                                  :geometries [(m/mbr -180 90 180 -90)
                                                                               (m/mbr -10 20 30 -40)]})}))
         coll9 (d/ingest "PROV1"
-                        (dc/collection-dif10 {:entry-title "Dataset9"})
+                        (dc/collection-dif10 {:entry-title "Dataset9"
+                                              :science-keywords [sk1 sk2]})
                         {:format :dif10})
         _ (index/wait-until-indexed)
         ;; coll5's revision-date is needed to populate "modified" field in opendata.
@@ -606,41 +619,28 @@
                                 (get-in [:results :items])
                                 first
                                 (get-in [:meta :revision-date]))
-        ;; iso-smap LongName and CollectionCitation/Title have the same mapping.
-        ;; Need to add it to coll4 collection-citations to be exposed to citation creation.
-        coll4-opendata (assoc coll4 :collection-citations [{:title (get-in coll4 [:product :long-name])}])
         ;; Normally coll5 doesn't contain the :revision-date field. Only when this field is needed
         ;; to populate modified field, we add it to coll5 so that it can be used for the "expected" in opendata.clj.
         coll5-opendata (assoc coll5 :revision-date revision-date-coll5)]
-
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
-        (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+        (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll5 coll6 coll7
                                                  coll8 coll9] results))
       (testing "kml by concept-id"
         (let [results (search/find-concepts-kml :collection {:concept-id (:concept-id coll1)})]
           (dk/assert-collection-kml-results-match [coll1] results))))
 
-    (testing "csv is not supported"
-      (is (= {:errors ["The mime type [text/csv] is not supported for collections."],
-              :status 400}
-             (search/find-concepts-csv :collection {})))
-      (testing "as csv extension"
-        (is (= {:errors ["The mime type [text/csv] is not supported for collections."],
-                :status 400}
-               (search/find-concepts-csv :collection {} {:url-extension "csv"})))))
-
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
-        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4-opendata coll5-opendata coll6 coll7 coll8 coll9] results))
+        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll5-opendata coll6 coll7 coll8 coll9] results))
+
       (testing "as extension"
         (let [results (search/find-concepts-opendata :collection {} {:url-extension "opendata"})]
-          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4-opendata coll5-opendata coll6 coll7 coll8 coll9] results)))
+          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll5-opendata coll6 coll7 coll8 coll9] results)))
       (testing "no opendata support for granules"
         (is (= {:errors ["The mime type [application/opendata+json] is not supported for granules."],
                 :status 400}
                (search/find-concepts-opendata :granule {})))))
-
     (testing "json schema validation catches invalid collections"
       (is (not-empty (opendata-json/validate-dataset (slurp (io/resource "problem_collection_opendata.json"))))))
 
@@ -650,7 +650,7 @@
             {:keys [status results]} response]
         (is (= [200 coll-atom] [status results])))
 
-      (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+      (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3 coll5 coll6 coll7
                                                       coll8 coll9] "collections.atom")
             response (search/find-concepts-atom :collection {})
             {:keys [status results]} response]
@@ -672,12 +672,12 @@
                 [:status :results])))))
 
     (testing "JSON"
-      (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset_id=Dataset1")
+      (let [coll-json (da/collections->expected-json [coll1] "collections.json?dataset_id=Dataset1")
             response (search/find-concepts-json :collection {:dataset-id "Dataset1"})
             {:keys [status results]} response]
         (is (= [200 coll-json] [status results])))
 
-      (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+      (let [coll-json (da/collections->expected-json [coll1 coll2 coll3 coll5 coll6 coll7
                                                       coll8 coll9] "collections.json")
             response (search/find-concepts-json :collection {})
             {:keys [status results]} response]
@@ -692,6 +692,100 @@
                                            {:dataset-id "Dataset1"}
                                            {:url-extension "json"})
                 [:status :results])))))))
+
+(deftest search-collection-csv
+  (let [c1 (d/ingest "PROV1" (dc/collection {:short-name "shortie number 1"
+                                              :version-id "V1"
+                                              :long-name "lng nme"
+                                              :processing-level-id "L1"
+                                              :entry-title "I am #1"
+                                              :beginning-date-time "1970-01-01T12:00:00Z"
+                                              :platforms [{:short-name "platform #1"
+                                                           :long-name "platform #1"
+                                                           :type "t"}]}))
+        c2 (d/ingest "PROV2" (dc/collection {:short-name "world's shortest name: so short you won't believe your eyes!"
+                                              :version-id "V2"
+                                              :long-name "world's longest name"
+                                              :processing-level-id "L2"
+                                              :entry-title "lorem ipsum"
+                                              :beginning-date-time "2000-01-01T12:00:00Z"
+                                              :platforms [{:short-name "platform #21"
+                                                           :long-name "platform #21"
+                                                           :type "good platform"}
+                                                          {:short-name "platform #32"
+                                                           :long-name "platform #32"
+                                                           :type "very good platform"}]}))])
+  (index/wait-until-indexed)
+  (testing "csv"
+    (let [response (search/find-concepts-csv :collection {})]
+      (is (= 200 (:status response)))
+      (is (= (str "Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Start Time,End Time\n"
+                  "PROV1,shortie number 1,V1,I am #1,L1,platform #1,1970-01-01T12:00:00.000Z,\nPROV2,world's shortest name: so short you won't believe your eyes!,V2,lorem ipsum,L2,\"platform #21,platform #32\",2000-01-01T12:00:00.000Z,\n")
+             (:body response)))))
+  (testing "csv as extention"
+    (let [response (search/find-concepts-csv :collection {} {:url-extension "csv"})]
+      (is (= 200 (:status response)))
+      (is (= (str "Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Start Time,End Time\n"
+                  "PROV1,shortie number 1,V1,I am #1,L1,platform #1,1970-01-01T12:00:00.000Z,\nPROV2,world's shortest name: so short you won't believe your eyes!,V2,lorem ipsum,L2,\"platform #21,platform #32\",2000-01-01T12:00:00.000Z,\n")
+             (:body response)))))
+  (testing "invalid with include-granule-counts"
+    (let [response (search/find-concepts-csv :collection {:include-granule-counts "true"})]
+      (is (= 400 (:status response)))
+      (is (= ["Collections search in csv format is not supported with include_granule_counts option"]
+             (:errors response))))))
+
+(deftest atom-json-link-service-rel-types
+  (testing "Opendata search response"
+    (let [related-urls {:RelatedUrls [{:Description "A test related url description."
+                                       :URL "http://example.com/browse-image"
+                                       :Type "GET RELATED VISUALIZATION"
+                                       :URLContentType "VisualizationURL"
+                                       :GetData {:Format "png"
+                                                 :MimeType "image/png"
+                                                 :Size 10.0
+                                                 :Unit "KB"}}
+                                      {:Description "Download url and default title description"
+                                       :URL "http://example.com/download.png"
+                                       :URLContentType "DistributionURL"
+                                       :Type "GET DATA"
+                                       :GetData {:Format "png"
+                                                 :MimeType "image/png"
+                                                 :Size 10.0
+                                                 :Unit "KB"}}
+                                      {:Description "no mime type specified and GIOVANNI title"
+                                       :URL "http://example2.com/download.json"
+                                       :URLContentType "DistributionURL"
+                                       :Type "GET DATA"
+                                       :Subtype "GIOVANNI"
+                                       :GetData {:Format "png"
+                                                 :Size 10.0
+                                                 :Unit "KB"}}
+                                      {:URL "http://example.com/opendap"
+                                       :URLContentType "DistributionURL"
+                                       :Subtype "OPENDAP DATA"
+                                       :Type "GET DATA"}]}
+          data-centers {:DataCenters
+                        [(umm-spec-collection/data-center
+                          {:Roles ["ARCHIVER"]
+                           :ShortName "test-short-name"
+                           :ContactInformation {:ContactMechanisms
+                                                [{:Type "Email"
+                                                  :Value "test-address@example.com"}]}})]}
+          umm-attributes (merge related-urls data-centers)
+          concept-umm (-> (umm-spec-collection/collection 1 umm-attributes)
+                          (umm-spec-collection/collection-concept :umm-json)
+                          ingest/ingest-concept)
+          _ (index/wait-until-indexed)
+          atom-json-links (->> (search/find-concepts-json :collection {})
+                               :results
+                               :entries
+                               (map :links)
+                               first)]
+      (is (= 201 (:status concept-umm)))
+      ;; There should be at least one link of type `service`
+      (is (= true (some? (filter #(= "http://esipfed.org/ns/fedsearch/1.1/service#"
+                                    (:rel %))
+                                 atom-json-links)))))))
 
 (deftest opendata-search-result
   (testing "Opendata search response"

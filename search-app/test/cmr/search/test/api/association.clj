@@ -16,6 +16,12 @@
      {:service-association {:concept-id "SA1200000027-CMR" :revision-id 1} :associated-item {:concept-id "C1200000019-PROV2"}})
    200
 
+   "no error :tool returns 200"
+   :tool
+   '({:tool-association {:concept-id "TLA1200000026-CMR" :revision-id 1} :associated-item {:concept-id "C1200000013-PROV1"}}
+     {:tool-association {:concept-id "TLA1200000027-CMR" :revision-id 1} :associated-item {:concept-id "C1200000019-PROV2"}})
+   200
+
    "error :service returns 400"
    :service
    '({:errors '("Collection [C100-P5] does not exist or is not visible.") :associated-item {:concept-id "C100-P5"}})

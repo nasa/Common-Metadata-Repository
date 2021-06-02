@@ -40,7 +40,6 @@
 
   (def vpc (vp/ingest-virtual-collections isc)))
 
-
 (deftest specific-granule-in-virtual-product-test
   (let [[ast-coll] (vp/ingest-source-collections
                      [(assoc
@@ -79,7 +78,8 @@
       (doseq [vp-coll vp-colls]
         (vp/assert-matching-granule-urs
           [(svm/generate-granule-ur
-             "LPDAAC_ECS" "AST_L1A" (get-in vp-coll [:product :short-name]) granule-ur)]
+             "LPDAAC_ECS" "AST_L1A" {:short-name (get-in vp-coll [:product :short-name])
+                                     :version-id (get-in vp-coll [:product :version-id])} granule-ur)]
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                       :page-size 50}))))
 
@@ -145,9 +145,11 @@
       (doseq [vp-coll vp-colls
               :let [{:keys [provider-id source-collection]} vp-coll
                     source-short-name (get-in source-collection [:product :short-name])
-                    vp-short-name (get-in vp-coll [:product :short-name])]]
+                    vp-short-name (get-in vp-coll [:product :short-name])
+                    vp-version-id (get-in vp-coll [:product :version-id])]]
         (vp/assert-matching-granule-urs
-          (map #(svm/generate-granule-ur provider-id source-short-name vp-short-name %)
+          (map #(svm/generate-granule-ur provider-id source-short-name {:short-name vp-short-name
+                                                                        :version-id vp-version-id} %)
                (svm/sample-source-granule-urs
                  [provider-id (:entry-title source-collection)]))
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
@@ -292,9 +294,11 @@
 
                "Related urls with only one access url which matches the pattern"
                granule-ur
-               [{:url opendap-file-path :type "OPENDAP DATA ACCESS"}]
+               [{:url opendap-file-path :type "USE SERVICE API" :sub-type "OPENDAP DATA"}]
                [{:url (str opendap-file-path ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
-                 :type "GET DATA"}]
+                 :type "USE SERVICE API"
+                 :sub-type "OPENDAP DATA"
+                 :title "(GET DATA : OPENDAP DATA)"}]
 
                "Related urls with only one access url which matches the pattern, but is not
                an online resource url"
@@ -305,10 +309,12 @@
 
                "Multiple related urls"
                granule-ur
-               [{:url opendap-file-path :type "OPENDAP DATA ACCESS" :mime-type "application/x-netcdf"}
+               [{:url opendap-file-path :type "USE SERVICE API" :sub-type "OPENDAP DATA" :mime-type "application/x-netcdf"}
                 {:url "http://www.foo.com" :type "VIEW RELATED INFORMATION"}]
                [{:url (str opendap-file-path ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
-                 :type "GET DATA"}])))
+                 :type "USE SERVICE API"
+                 :sub-type "OPENDAP DATA"
+                 :title "(GET DATA : OPENDAP DATA)"}])))
 
 (deftest ast-granule-umm-matchers-test
   (vp/assert-psa-granules-match index/wait-until-indexed))
@@ -357,9 +363,11 @@
         (doseq [vp-coll enabled-vp-colls
                 :let [{:keys [provider-id source-collection]} vp-coll
                       source-short-name (get-in source-collection [:product :short-name])
-                      vp-short-name (get-in vp-coll [:product :short-name])]]
+                      vp-short-name (get-in vp-coll [:product :short-name])
+                      vp-version-id (get-in vp-coll [:product :version-id])]]
           (vp/assert-matching-granule-urs
-            (map #(svm/generate-granule-ur provider-id source-short-name vp-short-name %)
+            (map #(svm/generate-granule-ur provider-id source-short-name {:short-name vp-short-name
+                                                                          :version-id vp-version-id} %)
                  (svm/sample-source-granule-urs
                    [provider-id (:entry-title source-collection)]))
             (search/find-refs :granule {:entry-title (:entry-title vp-coll)

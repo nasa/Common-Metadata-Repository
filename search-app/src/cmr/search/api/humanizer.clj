@@ -8,6 +8,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.services.humanizers.humanizer-json-schema-validation :as hv]
+   [cmr.search.services.humanizers.humanizer-range-facet-service :as range-facet]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.search.services.humanizers.humanizer-service :as humanizer-service]
    [compojure.core :refer :all]
@@ -33,6 +34,7 @@
   (hv/validate-humanizer-json body)
   (let [result (humanizer-service/update-humanizers context body)
         status-code (if (= 1 (:revision-id result)) 201 200)]
+    (range-facet/get-and-store-range-facets context)
     (humanizer-response status-code result)))
 
 (defn- humanizers-report

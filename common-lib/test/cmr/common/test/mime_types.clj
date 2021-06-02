@@ -1,9 +1,10 @@
 (ns cmr.common.test.mime-types
   "Tests for mime-type functions."
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.common.util :refer [are2]]
-            [cmr.common.mime-types :as mt]))
+  (:require
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :refer [are2]]))
 
 ;; Tests various times when the content type should be used when extracting mime types from headers
 (deftest mime-type-from-headers-test
@@ -106,4 +107,7 @@
 
 (deftest test-format->mime-type
   (is (= "application/json" (mt/format->mime-type :json)))
-  (is (= "application/vnd.nasa.cmr.umm+json" (mt/format->mime-type :umm-json))))
+  (is (= "application/vnd.nasa.cmr.umm+json" (mt/format->mime-type :umm-json)))
+  (is (= "application/vnd.nasa.cmr.umm+json;version=16.1.3" (mt/format->mime-type
+                                                              {:format :umm-json
+                                                               :version "16.1.3"}))))

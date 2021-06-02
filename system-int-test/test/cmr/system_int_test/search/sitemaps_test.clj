@@ -1,13 +1,10 @@
 (ns cmr.system-int-test.search.sitemaps-test
   (:require
-   [clj-http.client :as client]
    [clj-xml-validation.core :as xmlv]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.search.services.content-service :as content-service]
-   [cmr.search.site.static :as static]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.system :as s]
@@ -15,7 +12,6 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.site-util :as site]
    [cmr.system-int-test.utils.tag-util :as tags]
-   [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.models.umm-common-models :as cm]
    [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
@@ -47,18 +43,18 @@
                                           (assoc :EntryTitle (str "Collection Item " n)))
                                       {:format :umm-json
                                        :accept-format :json})))
-         _ (index/wait-until-indexed)
-         [c1-p3 c2-p3 c3-p3] (doall (for [n (range 4 7)]
+        _ (index/wait-until-indexed)
+        [c1-p3 c2-p3 c3-p3] (doall (for [n (range 4 7)]
                                      (d/ingest-umm-spec-collection
-                                       "PROV3"
-                                       (-> exp-conv/curr-ingest-ver-example-collection-record
-                                           (assoc :ShortName (str "s" n))
-                                           (assoc :EntryTitle (str "Collection Item " n))
-                                           (assoc :DOI (cm/map->DoiType
-                                                         {:DOI (str "doi" n)
-                                                          :Authority (str "auth" n)})))
-                                       {:format :umm-json
-                                        :accept-format :json})))]
+                                      "PROV3"
+                                      (-> exp-conv/curr-ingest-ver-example-collection-record
+                                          (assoc :ShortName (str "s" n))
+                                          (assoc :EntryTitle (str "Collection Item " n))
+                                          (assoc :DOI (cm/map->DoiType
+                                                       {:DOI (str "doi" n)
+                                                        :Authority (str "auth" n)})))
+                                      {:format :umm-json
+                                       :accept-format :json})))]
     (reset! test-collections
             {"PROV1" (map :concept-id [c1-p1 c2-p1 c3-p1])
              "PROV2" (map :concept-id [c1-p2 c2-p2 c3-p2])
@@ -71,12 +67,13 @@
           nodoi-colls [c1-p1 c2-p1 c3-p1 c1-p2 c2-p2 c3-p2]
           doi-colls [c1-p3 c2-p3 c3-p3]
           all-colls (into nodoi-colls doi-colls)
-          tag-colls [c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3]
-          tag (tags/save-tag
-                user-token
-                (tags/make-tag {:tag-key "gov.nasa.eosdis"})
-                tag-colls)]
+          tag-colls [c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3]]
+      (tags/save-tag user-token
+                     (tags/make-tag {:tag-key "gov.nasa.eosdis"})
+                     tag-colls)
+
       (index/wait-until-indexed)
+
       ;; Sanity checks
       (assert (= (count notag-colls) 3))
       (assert (= (count nodoi-colls) 6))
@@ -158,8 +155,8 @@
   (let [provider "PROV2"
         tag "gov.nasa.eosdis"
         url-path (format
-                  "site/collections/directory/%s/%s/sitemap.xml"
-                  provider tag)
+                   "site/collections/directory/%s/%s/sitemap.xml"
+                   provider tag)
         response (site/get-search-response url-path)
         body (:body response)
         colls (@test-collections "PROV2")]
@@ -169,12 +166,12 @@
       (is (= 200 (:status response)))
       (is (string/includes? body "</changefreq>"))
       (is (string/includes?
-           body (format "concepts/%s.html</loc>" (second colls))))
+            body (format "concepts/%s.html</loc>" (second colls))))
       (is (string/includes?
-           body (format "concepts/%s.html</loc>" (last colls)))))
+            body (format "concepts/%s.html</loc>" (last colls)))))
     (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes?
-                body (format "%s.html</loc>" (first colls))))))))
+                 body (format "%s.html</loc>" (first colls))))))))
 
 (deftest sitemap-provider3
   (let [provider "PROV3"

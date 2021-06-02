@@ -56,7 +56,12 @@
                                      :Type "GET RELATED VISUALIZATION"
                                      :Subtype "MAP"
                                      :MimeType "Text/csv"})
-        urls [r1 r2 r3 r4 r5]]
+        r6 (cmn/map->RelatedUrlType {:URLs ["cmr.earthdata.nasa.gov"]
+                                     :URLContentType "DistributionURL"
+                                     :Type "GET CAPABILITIES"
+                                     :Subtype "OpenSearch"
+                                     :MimeType "application/opensearchdescription+xml"})
+        urls [r1 r2 r3 r4 r5 r6]]
 
     (testing "Downloadable URLs"
       (is (= [r1] (related-url/downloadable-urls urls))))
@@ -65,8 +70,8 @@
       (is (= [r2 r5] (related-url/browse-urls urls))))
 
     (testing "Resource URLs"
-      (is (= [r3 r4] (related-url/resource-urls urls))))
+      (is (= [r3 r4 r6] (related-url/resource-urls urls))))
 
     (testing "Atom link types"
-      (is (= ["data" "browse" "documentation" "metadata" "browse"]
+      (is (= ["data" "browse" "documentation" "service" "browse" "search"]
              (map :link-type (related-url/atom-links urls)))))))

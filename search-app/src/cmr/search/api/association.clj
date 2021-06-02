@@ -44,7 +44,7 @@
   If the concept-type is error-sensitive the function will check for any errors in the results, and will return 400 if
   any are errors are present. Otherwise it will return 200"
   (fn [concept-type results]
-    (when (some #{concept-type} '(:variable :service))
+    (when (some #{concept-type} '(:variable :service :tool))
       :error-sensitive)))
 
 (defmethod association-results->status-code :default
@@ -92,22 +92,3 @@
     (let [results (assoc-service/dissociate-from-collections context concept-type concept-id body)
           status-code (association-results->status-code concept-type results)]
       (api-response status-code results))))
-
-(def association-api-routes
-  (context "/associations" []
-    (context "/variables" []             
-      (context "/:variable-concept-id" [variable-concept-id]
-        (context "/collections" []
-          ;; Associate variable with a collection
-          (POST "/:collection-concept-id" [collection-concept-id
-                                           req :as {:keys [request-context headers]}]
-                ;; TODO get rid of redundant json->string conversion
-                (associate-concept-to-collections
-                  request-context headers (json/generate-string [{:concept-id collection-concept-id}]) :variable variable-concept-id))
-          
-          ;; Dissociate a variable from a collection
-          (DELETE "/:collection-concept-id" [collection-concept-id
-                                             req :as {:keys [request-context headers]}]
-                  ;; TODO get rid of redundant json->string conversion
-                  (dissociate-concept-from-collections
-                    request-context headers (json/generate-string [{:concept-id collection-concept-id}]) :variable variable-concept-id)))))))

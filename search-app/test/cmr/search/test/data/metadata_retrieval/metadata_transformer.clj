@@ -17,7 +17,7 @@
       (with-bindings {#'metadata-transformer/transform-strategy bad-transform-strategy}
         (let [actual (metadata-transformer/transform-to-multiple-formats
                       ;; The second transform fails so dif10 is excluded in the output
-                      {} tm/dif-concept [:echo10 :dif10 :iso19115] true)
+                      {} tm/dif10-concept [:echo10 :dif :iso19115] true)
               actual-formats (set (keys actual))]
           ;; We only check the generated formats, not the actual metadata generated for simplicity reasons
           (is (= #{:echo10 :iso19115} actual-formats)))))))

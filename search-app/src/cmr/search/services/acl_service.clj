@@ -1,6 +1,7 @@
 (ns cmr.search.services.acl-service
   "Performs ACL related tasks for the search application"
   (:require
+    [cmr.common.api.context :as context-util]
     [cmr.search.services.acls.acl-helper :as acl-helper]
     [cmr.transmit.config :as tc]))
 
@@ -36,8 +37,12 @@
 ;; subscriptions checks provider object ACLs, not catalog item ACLs
 (defmethod acls-match-concept? :subscription
   [context acls concept]
-  (let [sm-acls (acl-helper/get-sm-acls-applicable-to-token context)]
-    (some #(= (:provider-id concept) (get-in % [:provider-identity :provider-id])) sm-acls)))
+  (let [sm-acls (acl-helper/get-sm-acls-applicable-to-token context)
+        user-id (when (:token context)
+                  (context-util/context->user-id context))
+        subscriber-id (get-in concept [:extra-fields :subscriber-id])]
+    (or (some #(= (:provider-id concept) (get-in % [:provider-identity :provider-id])) sm-acls)
+        (= subscriber-id user-id))))
 
 (defmethod acls-match-concept? :default
   [context acls concept]

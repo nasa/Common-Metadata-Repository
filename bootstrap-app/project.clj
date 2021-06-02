@@ -11,10 +11,11 @@
                [org.clojure/tools.reader]
                [potemkin]
                [ring/ring-codec]]
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.10.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.9.8"]
+                 [com.fasterxml.jackson.core/jackson-core "2.12.1"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [compojure "1.6.1"]
@@ -25,15 +26,15 @@
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
-                 [org.apache.httpcomponents/httpclient "4.5.6"]
+                 [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
                  [potemkin "0.4.5"]
-                 [ring/ring-codec "1.1.1"]
-                 [ring/ring-core "1.7.1"]
-                 [ring/ring-json "0.4.0"]]
+                 [ring/ring-codec "1.1.3"]
+                 [ring/ring-core "1.9.2"]
+                 [ring/ring-json "0.5.1"]]
   :plugins [[drift "1.5.3"]
             [lein-exec "0.3.7"]
             [lein-shell "0.5.0"]
@@ -63,7 +64,10 @@
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
-             :internal-repos {}}
+             :internal-repos {}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   ;; Database migrations run by executing "lein migrate"
   :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]
@@ -72,9 +76,20 @@
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]
+
             ;; Linting aliases
-            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
-                          ["with-profile" "lint" "kibit"]]
+            "kibit" ["do"
+                     ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+                     ["with-profile" "lint" "kibit"]]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]

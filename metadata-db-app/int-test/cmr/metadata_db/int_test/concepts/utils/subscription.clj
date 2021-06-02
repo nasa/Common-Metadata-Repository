@@ -9,7 +9,6 @@
   (json/generate-string
    {"Name" "someSubscription"
     "SubscriberId" "someSubscriberId"
-    "EmailAddress" "someaddress@gmail.com"
     "CollectionConceptId" "C1234-PROV1"
     "Query" "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78"}))
 
@@ -23,8 +22,8 @@
   (let [native-id (str "sub-native" uniq-num)
         extra-fields (merge {:subscription-name (str "subname" uniq-num)
                              :subscriber-id (str "subid" uniq-num)
-                             :email-address (str uniq-num "@gmail.com")
-                             :collection-concept-id "C1234-PROV1"}
+                             :collection-concept-id "C12345-PROV1"
+                             :normalized-query (str "instrument=" uniq-num "B")}
                             (:extra-fields attributes))
         attributes (merge {:user-id (str "user" uniq-num)
                            :format "application/json"

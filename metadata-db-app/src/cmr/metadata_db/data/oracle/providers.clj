@@ -48,12 +48,14 @@
     (if small
       (delete-small-provider-concepts db provider)
       (ct/delete-provider-concept-tables db provider))
+    
     ;; Delete the variable associations related to the provider via variable
     (j/db-do-commands db (str "DELETE FROM cmr_variable_associations where variable_concept_id like 'V%-" provider-id "'"))
     ;; Delete the variable associations related to the provider via collection
     (j/db-do-commands db (str "DELETE FROM cmr_variable_associations where associated_concept_id like 'C%-" provider-id "'"))
     ;; Delete variables of the provider
     (j/delete! db (ct/get-table-name provider :variable) ["provider_id = ?" provider-id])
+    
     ;; Delete the service associations related to the provider via service
     (j/db-do-commands db (str "DELETE FROM cmr_service_associations where service_concept_id like 'S%-" provider-id "'"))
     ;; Delete the service associations related to the provider via collection
@@ -61,6 +63,10 @@
     ;; Delete services of the provider
     (j/delete! db (ct/get-table-name provider :service) ["provider_id = ?" provider-id])
 
+    ;; Delete the tool associations related to the provider via tool
+    (j/db-do-commands db (str "DELETE FROM cmr_tool_associations where tool_concept_id like 'TL%-" provider-id "'"))
+    ;; Delete the tool associations related to the provider via collection
+    (j/db-do-commands db (str "DELETE FROM cmr_tool_associations where associated_concept_id like 'C%-" provider-id "'"))
     ;; Delete tools of the provider
     (j/delete! db (ct/get-table-name provider :tool) ["provider_id = ?" provider-id])
 

@@ -15,9 +15,9 @@
    [cmr.transmit.tag :as transmit-tag]))
 
 (use-fixtures :each (join-fixtures
-                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
-                                             {:grant-all-search? false})
-                       tags/grant-all-tag-fixture]))
+                     [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
+                                            {:grant-all-search? false})
+                      tags/grant-all-tag-fixture]))
 
 (deftest associate-tags-by-query-with-collections-test
 
@@ -51,15 +51,15 @@
     (testing "Successfully Associate tag with collections"
       (let [response (tags/associate-by-query token tag-key {:provider "PROV1"})]
         (tags/assert-tag-association-response-ok?
-          {["C1200000013-PROV1"] {:concept-id "TA1200000026-CMR"
-                                  :revision-id 1}
-           ["C1200000014-PROV1"] {:concept-id "TA1200000027-CMR"
-                                  :revision-id 1}
-           ["C1200000015-PROV1"] {:concept-id "TA1200000028-CMR"
-                                  :revision-id 1}
-           ["C1200000016-PROV1"] {:concept-id "TA1200000029-CMR"
-                                  :revision-id 1}}
-          response)))
+         {["C1200000013-PROV1"] {:concept-id "TA1200000026-CMR"
+                                 :revision-id 1}
+          ["C1200000014-PROV1"] {:concept-id "TA1200000027-CMR"
+                                 :revision-id 1}
+          ["C1200000015-PROV1"] {:concept-id "TA1200000028-CMR"
+                                 :revision-id 1}
+          ["C1200000016-PROV1"] {:concept-id "TA1200000029-CMR"
+                                 :revision-id 1}}
+         response)))
 
     (testing "Associate using query that finds nothing"
       (let [response (tags/associate-by-query token tag-key {:provider "foo"})]
@@ -74,11 +74,11 @@
       ;; Associates all the version 2 collections which is c2-p1 (already in) and c2-p2 (new)
       (let [response (tags/associate-by-query token tag-key {:version "v2"})]
         (tags/assert-tag-association-response-ok?
-          {["C1200000014-PROV1"] {:concept-id "TA1200000027-CMR"
-                                  :revision-id 2}
-           ["C1200000018-PROV2"] {:concept-id "TA1200000030-CMR"
-                                  :revision-id 1}}
-          response)))))
+         {["C1200000014-PROV1"] {:concept-id "TA1200000027-CMR"
+                                 :revision-id 2}
+          ["C1200000018-PROV2"] {:concept-id "TA1200000030-CMR"
+                                 :revision-id 1}}
+         response)))))
 
 (deftest associate-tags-by-concept-ids-with-collections-test
 
@@ -139,7 +139,7 @@
     (testing "Associate to non-existent collections"
       (let [response (tags/associate-by-concept-ids
                       token tag-key [{:concept-id "C100-P5"}])]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
          response)))
 
@@ -149,14 +149,14 @@
             _ (index/wait-until-indexed)
             response (tags/associate-by-concept-ids
                       token tag-key [{:concept-id c1-p1}])]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
          response)))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [response (tags/associate-by-concept-ids token tag-key [{:concept-id c4-p3}])]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
          response)))
 
@@ -164,7 +164,7 @@
       (let [response (tags/associate-by-concept-ids
                       token tag-key [{:concept-id c2-p1}
                                      {:concept-id "C100-P5"}])]
-        (tags/assert-tag-association-response-ok?
+        (tags/assert-tag-association-response-error?
          {["C1200000014-PROV1"] {:concept-id "TA1200000028-CMR"
                                  :revision-id 1}
           ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
@@ -184,12 +184,12 @@
                                       (collection/collection)))]
     (testing "Associate tag using query sent with invalid content type"
       (are [associate-tag-fn request-json]
-           (= {:status 400,
+           (= {:status 400
                :errors
                ["The mime types specified in the content-type header [application/xml] are not supported."]}
               (associate-tag-fn token tag-key request-json {:http-options {:content-type :xml}}))
-           tags/associate-by-query {:provider "foo"}
-           tags/associate-by-concept-ids [{:concept-id coll-concept-id}]))
+        tags/associate-by-query {:provider "foo"}
+        tags/associate-by-concept-ids [{:concept-id coll-concept-id}]))
 
     (testing "Associate applies JSON Query validations"
       (are [associate-tag-fn request-json message]
@@ -197,19 +197,19 @@
                :errors [message]}
               (associate-tag-fn token tag-key {:foo "bar"}))
 
-           tags/associate-by-query {:foo "bar"}
-           "#/condition: extraneous key [foo] is not permitted"
+        tags/associate-by-query {:foo "bar"}
+        "#/condition: extraneous key [foo] is not permitted"
 
-           tags/associate-by-concept-ids {:concept-id coll-concept-id}
-           "#: expected type: JSONArray, found: JSONObject"))
+        tags/associate-by-concept-ids {:concept-id coll-concept-id}
+        "#: expected type: JSONArray, found: JSONObject"))
 
     (testing "Associate tag that doesn't exist"
       (are [associate-tag-fn request-json]
            (= {:status 404
                :errors ["Tag could not be found with tag-key [tag100]"]}
               (associate-tag-fn token "tag100" request-json))
-           tags/associate-by-query {:provider "foo"}
-           tags/associate-by-concept-ids [{:concept-id coll-concept-id}]))
+        tags/associate-by-query {:provider "foo"}
+        tags/associate-by-concept-ids [{:concept-id coll-concept-id}]))
 
     (testing "Associate deleted tag"
       (tags/delete-tag token tag-key)
@@ -217,8 +217,8 @@
            (= {:status 404
                :errors [(format "Tag with tag-key [%s] was deleted." tag-key)]}
               (associate-tag-fn token tag-key request-json))
-           tags/associate-by-query {:provider "foo"}
-           tags/associate-by-concept-ids [{:concept-id coll-concept-id}]))))
+        tags/associate-by-query {:provider "foo"}
+        tags/associate-by-concept-ids [{:concept-id coll-concept-id}]))))
 
 (deftest dissociate-tags-with-collections-by-query-test
   ;; Create 4 collections in each provider that are identical.
@@ -328,18 +328,18 @@
 
     (testing "Successfully dissociate tag with collections"
       (let [{:keys [status]} (tags/dissociate-by-concept-ids
-                               token
-                               tag-key
-                               (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
+                              token
+                              tag-key
+                              (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
         (is (= 200 status))
         (assert-tag-associated (concat all-prov2-colls all-prov3-colls))))
 
     (testing "Dissociate non-existent collections"
       (let [response (tags/dissociate-by-concept-ids
-                       token tag-key [{:concept-id "C100-P5"}])]
-        (tags/assert-tag-dissociation-response-ok?
-          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
-          response)))
+                      token tag-key [{:concept-id "C100-P5"}])]
+        (tags/assert-tag-dissociation-response-error?
+         {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
+         response)))
 
     (testing "Dissociate to deleted collections"
       (let [c1-p2-concept-id (:concept-id c1-p2)
@@ -347,21 +347,21 @@
             _ (ingest/delete-concept c1-p2-concept)
             _ (index/wait-until-indexed)
             response (tags/dissociate-by-concept-ids
-                       token tag-key [{:concept-id c1-p2-concept-id}])]
-        (tags/assert-tag-dissociation-response-ok?
-          {["C1200000019-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
-                                                   c1-p2-concept-id)]}}
-          response)))
+                      token tag-key [{:concept-id c1-p2-concept-id}])]
+        (tags/assert-tag-dissociation-response-error?
+         {["C1200000019-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
+                                                  c1-p2-concept-id)]}}
+         response)))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [coll-concept-id (:concept-id c4-p3)
             response (tags/dissociate-by-concept-ids
-                       token tag-key [{:concept-id coll-concept-id}])]
-        (tags/assert-tag-dissociation-response-ok?
-          {["C1200000026-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
-                                                   coll-concept-id)]}}
-          response)))))
+                      token tag-key [{:concept-id coll-concept-id}])]
+        (tags/assert-tag-dissociation-response-error?
+         {["C1200000026-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
+                                                  coll-concept-id)]}}
+         response)))))
 
 (deftest dissociate-tag-failure-test
   (echo-util/grant-registered-users (system/context)
@@ -378,31 +378,31 @@
 
     (testing "Dissociate tag using query sent with invalid content type"
       (are [dissociate-tag-fn request-json]
-           (= {:status 400,
+           (= {:status 400
                :errors
                ["The mime types specified in the content-type header [application/xml] are not supported."]}
               (dissociate-tag-fn token tag-key request-json {:http-options {:content-type :xml}}))
-           tags/dissociate-by-query {:provider "foo"}
-           tags/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
+        tags/dissociate-by-query {:provider "foo"}
+        tags/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
 
     (testing "Dissociate applies JSON Query validations"
       (are [dissociate-tag-fn request-json message]
            (= {:status 400
                :errors [message]}
               (dissociate-tag-fn token tag-key request-json))
-           tags/dissociate-by-query {:foo "bar"}
-           "#/condition: extraneous key [foo] is not permitted"
+        tags/dissociate-by-query {:foo "bar"}
+        "#/condition: extraneous key [foo] is not permitted"
 
-           tags/dissociate-by-concept-ids {:concept-id coll-concept-id}
-           "#: expected type: JSONArray, found: JSONObject"))
+        tags/dissociate-by-concept-ids {:concept-id coll-concept-id}
+        "#: expected type: JSONArray, found: JSONObject"))
 
     (testing "Dissociate tag that doesn't exist"
       (are [dissociate-tag-fn request-json]
            (= {:status 404
                :errors ["Tag could not be found with tag-key [tag100]"]}
               (dissociate-tag-fn token "tag100" request-json))
-           tags/dissociate-by-query {:provider "foo"}
-           tags/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
+        tags/dissociate-by-query {:provider "foo"}
+        tags/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
 
     (testing "Dissociate deleted tag"
       (tags/delete-tag token tag-key)
@@ -410,8 +410,8 @@
            (= {:status 404
                :errors [(format "Tag with tag-key [%s] was deleted." tag-key)]}
               (dissociate-tag-fn token tag-key request-json))
-           tags/dissociate-by-query {:provider "foo"}
-           tags/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))))
+        tags/dissociate-by-query {:provider "foo"}
+        tags/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))))
 
 (deftest dissociate-tags-with-partial-match-query-test
   (echo-util/grant-registered-users (system/context)
@@ -446,18 +446,17 @@
       (assert-tag-associated [coll1 coll2])
 
       (let [response (tags/dissociate-by-concept-ids
-                       token tag-key
-                       [{:concept-id "C100-P5"} ;; non-existent collection
-                        {:concept-id (:concept-id coll1)} ;; success
-                        {:concept-id (:concept-id coll2) :revision-id 1} ;; success
-                        {:concept-id (:concept-id coll3)}])] ;; no tag association
-
-        (tags/assert-tag-dissociation-response-ok?
-          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
-           ["C1200000012-PROV1"] {:concept-id "TA1200000016-CMR" :revision-id 2}
-           ["C1200000013-PROV1" 1] {:concept-id "TA1200000017-CMR" :revision-id 2}
-           ["C1200000014-PROV1"] {:warnings ["Tag [tag1] is not associated with collection [C1200000014-PROV1]."]}}
-          response)
+                      token tag-key
+                      [{:concept-id "C100-P5"} ;; non-existent collection
+                       {:concept-id (:concept-id coll1)} ;; success
+                       {:concept-id (:concept-id coll2) :revision-id 1} ;; success
+                       {:concept-id (:concept-id coll3)}])] ;; no tag association
+        (tags/assert-tag-dissociation-response-error?
+         {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
+          ["C1200000012-PROV1"] {:concept-id "TA1200000016-CMR" :revision-id 2}
+          ["C1200000013-PROV1" 1] {:concept-id "TA1200000017-CMR" :revision-id 2}
+          ["C1200000014-PROV1"] {:warnings ["Tag [tag1] is not associated with collection [C1200000014-PROV1]."]}}
+         response)
         (assert-tag-associated [])))))
 
 ;; This tests association retention when collections and tags are updated or deleted.
@@ -573,7 +572,7 @@
 
     ;; dissociate tag2 from coll1 and coll2
     (tags/dissociate-by-concept-ids token "tag2" [{:concept-id coll1-id}
-                                                    {:concept-id coll2-id}])
+                                                  {:concept-id coll2-id}])
     (index/wait-until-indexed)
     ;; verify association
     (assert-tag-association token [coll2] "tag1")
@@ -592,16 +591,16 @@
     (testing "Associate tag with collections by concept-id and data"
       (are [data]
            (let [{:keys [status]} (tags/associate-by-concept-ids
-                                    token tag-key [{:concept-id coll-concept-id
-                                                    :data data}])]
+                                   token tag-key [{:concept-id coll-concept-id
+                                                   :data data}])]
              (is (= 200 status)))
 
-           "string data"
-           true
-           100
-           123.45
-           [true "some string" 100]
-           {"status" "reviewed" "action" "fix typos"}))
+        "string data"
+        true
+        100
+        123.45
+        [true "some string" 100]
+        {"status" "reviewed" "action" "fix typos"}))
 
     (testing "Associate tag with collections with invalid data"
       (let [{:keys [status body]} (transmit-tag/associate-tag :concept-ids
@@ -617,19 +616,19 @@
     (testing "Associate tag with collections with data exceed 32KB"
       (let [too-much-data {"a" (tags/string-of-length 32768)}
             expected-msg (format
-                           "Tag association data exceed the maximum length of 32KB for collection with concept id [%s] revision id [%s]."
-                           coll-concept-id nil)
+                          "Tag association data exceed the maximum length of 32KB for collection with concept id [%s] revision id [%s]."
+                          coll-concept-id nil)
             response (tags/associate-by-concept-ids
-                       token tag-key [{:concept-id coll-concept-id
-                                       :data too-much-data}])]
-        (tags/assert-tag-association-response-ok?
-          {[coll-concept-id] {:errors [expected-msg]}}
-          response)))))
+                      token tag-key [{:concept-id coll-concept-id
+                                      :data too-much-data}])]
+        (tags/assert-tag-association-response-error?
+         {[coll-concept-id] {:errors [expected-msg]}}
+         response)))))
 
 (deftest retrieve-concept-by-tag-association-concept-id-test
   (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                  (search/retrieve-concept
-                                    "TA10000-CMR" nil {:throw-exceptions true}))]
+                                 (search/retrieve-concept
+                                  "TA10000-CMR" nil {:throw-exceptions true}))]
     (testing "Retrieve concept by tag association concept-id is invalid"
       (is (= [400 ["Retrieving concept by concept id is not supported for concept type [tag-association]."]]
              [status errors])))))

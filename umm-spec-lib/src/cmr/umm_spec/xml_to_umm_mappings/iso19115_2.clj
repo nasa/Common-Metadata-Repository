@@ -111,6 +111,9 @@
 (def dist-info-xpath
   "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution")
 
+(def associated-doi-xpath
+  (str md-data-id-base-xpath "/gmd:aggregationInfo/gmd:MD_AggregateInformation/"))
+
 (defn- descriptive-keywords-type-not-equal
   "Returns the descriptive keyword values for the given parent element for all keyword types excepting
   those given"
@@ -230,7 +233,8 @@
                      (gmx-anchor-value id-el "gmd:code"))
       :EntryTitle (char-string-value citation-el "gmd:title")
       :DOI (doi/parse-doi doc citation-base-xpath)
-      :Version (char-string-value citation-el "gmd:edition")
+      :AssociatedDOIs (doi/parse-associated-dois doc associated-doi-xpath)
+      :Version (or (char-string-value citation-el "gmd:edition") "Not Applicable")
       :VersionDescription version-description
       :Abstract abstract
       :Purpose (su/truncate (char-string-value md-data-id-el "gmd:purpose") su/PURPOSE_MAX sanitize?)
@@ -275,7 +279,9 @@
       :MetadataDates (parse-metadata-dates doc)
       :ArchiveAndDistributionInformation (archive-and-dist-info/parse-archive-dist-info doc
                                                                                         archive-info-xpath
-                                                                                        dist-info-xpath)})))
+                                                                                        dist-info-xpath)
+      :DirectDistributionInformation (archive-and-dist-info/parse-direct-dist-info doc
+                                                                                   dist-info-xpath)})))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document. The :sanitize? option

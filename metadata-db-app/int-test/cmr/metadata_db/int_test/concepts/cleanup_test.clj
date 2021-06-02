@@ -343,3 +343,40 @@
 
     (is (all-revisions-exist? sa2)))
   (side/eval-form `(tk/clear-current-time!)))
+
+(deftest old-tool-revisions-are-cleaned-up
+  (side/eval-form `(tk/set-time-override! (tk/now)))
+  (let [tool1 (concepts/create-and-save-concept :tool "REG_PROV" 1 13)
+        tool2 (concepts/create-and-save-concept :tool "REG_PROV" 2 3)]
+
+    ;; Verify prior revisions exist
+    (is (every? all-revisions-exist? [tool1 tool2]))
+
+    (is (= 204 (util/old-revision-concept-cleanup)))
+
+    ;; Any more than 10 of the tool revisions should have been cleaned up
+    (is (revisions-removed? tool1 (range 1 4)))
+    (is (revisions-exist? tool1 (range 4 13)))
+
+    (is (all-revisions-exist? tool2)))
+  (side/eval-form `(tk/clear-current-time!)))
+
+(deftest old-tool-association-revisions-are-cleaned-up
+  (side/eval-form `(tk/set-time-override! (tk/now)))
+  (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1 1)
+        tool1 (concepts/create-and-save-concept :tool "REG_PROV" 1 1)
+        tool2 (concepts/create-and-save-concept :tool "REG_PROV" 2 1)
+        tla1 (concepts/create-and-save-concept :tool-association coll1 tool1 1 13)
+        tla2 (concepts/create-and-save-concept :tool-association coll1 tool2 2 3)]
+
+    ;; Verify prior revisions exist
+    (is (every? all-revisions-exist? [tla1 tla2]))
+
+    (is (= 204 (util/old-revision-concept-cleanup)))
+
+    ;; Any more than 10 of the tool revisions should have been cleaned up
+    (is (revisions-removed? tla1 (range 1 4)))
+    (is (revisions-exist? tla1 (range 4 13)))
+
+    (is (all-revisions-exist? tla2)))
+  (side/eval-form `(tk/clear-current-time!)))

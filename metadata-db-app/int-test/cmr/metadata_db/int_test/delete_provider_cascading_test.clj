@@ -22,15 +22,17 @@
 (deftest delete-provider-cascade-delete-concepts
   (let [coll1 (concepts/create-and-save-concept :collection "REG_PROV" 1)
         coll2 (concepts/create-and-save-concept :collection "PROV1" 1)
+        coll1-id (:concept-id coll1)
+        coll2-id (:concept-id coll2)
         gran1 (concepts/create-and-save-concept :granule "REG_PROV" coll1 1)
         gran2 (concepts/create-and-save-concept :granule "PROV1" coll2 1)
-        variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1)
-        variable2 (concepts/create-and-save-concept :variable "PROV1" 2)
-        variable3 (concepts/create-and-save-concept :variable "PROV1" 3)
-        variable-association1 (concepts/create-and-save-concept :variable-association coll1 variable1 1)
-        variable-association2 (concepts/create-and-save-concept :variable-association coll1 variable2 2)
-        variable-association3 (concepts/create-and-save-concept :variable-association coll2 variable1 3)
-        variable-association4 (concepts/create-and-save-concept :variable-association coll2 variable2 4)]
+        ;; A variable has to be associated one and only one collection of the same provider.
+        variable1 (concepts/create-and-save-concept :variable "REG_PROV" 1 nil {:coll-concept-id coll1-id})
+        variable2 (concepts/create-and-save-concept :variable "PROV1" 2 nil {:coll-concept-id coll2-id})
+        var-assn-concept-id1 (get-in variable1 [:variable-association :concept-id])
+        var-assn-concept-id2 (get-in variable2 [:variable-association :concept-id])
+        variable-association1 (:concept (util/get-concept-by-id var-assn-concept-id1))
+        variable-association2 (:concept (util/get-concept-by-id var-assn-concept-id2))]
 
     ;; Delete REG_PROV
     (util/delete-provider "REG_PROV")
@@ -39,17 +41,12 @@
     (is (concept-deleted? coll1))
     (is (concept-deleted? gran1))
     (is (concept-deleted? variable1))
-    ;; variable-association1, both collection and variable are related to the deleted provider
+    ;; variable-association1 is related to the deleted provider.
     (is (concept-deleted? variable-association1))
-    ;; variable-association2, collection is related to the deleted provider
-    (is (concept-deleted? variable-association2))
-    ;; variable-association3, variable is related to the deleted provider
-    (is (concept-deleted? variable-association3))
 
     ;; Verify concepts not related to the delete provider (REG_PROV) still exist
     (is (concept-exist? coll2))
     (is (concept-exist? gran2))
     (is (concept-exist? variable2))
-    (is (concept-exist? variable3))
-    ;; variable-association4, either collection nor variable is related to the deleted provider
-    (is (concept-exist? variable-association4))))
+    ;; variable-association2 is not related to the deleted provider
+    (is (concept-exist? variable-association2))))

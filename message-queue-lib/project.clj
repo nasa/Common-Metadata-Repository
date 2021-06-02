@@ -15,13 +15,16 @@
                [org.apache.httpcomponents/httpcore]
                [org.clojure/tools.reader]
                [potemkin]]
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.10.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
-                 [com.fasterxml.jackson.core/jackson-databind "2.9.10.4"]
+                 [com.fasterxml.jackson.core/jackson-core "2.12.0"]
+                 [com.fasterxml.jackson.core/jackson-annotations "2.12.0"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.12.0"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [commons-logging "1.2"]
@@ -29,7 +32,7 @@
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [org.apache.httpcomponents/httpclient "4.5.6"]
+                 [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/tools.reader "1.3.2"]
@@ -61,15 +64,28 @@
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
-             :internal-repos {}}
+             :internal-repos {}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]
+
             ;; Linting aliases
             "kibit"
             ["do"
-              ["shell" "echo" "== Kibit =="]
-              ["with-profile" "lint" "kibit"]]
+             ["shell" "echo" "== Kibit =="]
+             ["with-profile" "lint" "kibit"]]
             "eastwood"
             ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed"
@@ -80,7 +96,7 @@
             ["with-profile" "security" "dependency-check"]
             "lint"
             ["do"
-              ["check"] ["kibit"] ["eastwood"]]
+             ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]
             ;; Run a local copy of SQS/SNS
@@ -90,5 +106,5 @@
             ["shell" "cmr" "stop" "local" "sqs-sns"]
             "restart-sqs-sns"
             ["do"
-              ["stop-sqs-sns"]
-              ["start-sqs-sns"]]})
+             ["stop-sqs-sns"]
+             ["start-sqs-sns"]]})

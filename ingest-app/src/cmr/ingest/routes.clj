@@ -46,6 +46,7 @@
       mp/wrap-multipart-params
       (api-errors/exception-handler default-error-format)
       common-routes/add-request-id-response-handler
+      common-routes/add-security-header-response-handler
       (context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
       params/wrap-params))

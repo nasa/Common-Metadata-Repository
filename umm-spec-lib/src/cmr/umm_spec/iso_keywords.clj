@@ -7,9 +7,12 @@
   type of the keyword."
   (:require
    [clojure.data.xml :as x]
+   [clojure.set :as set]
    [clojure.string :as str]
+   [cmr.common.services.errors :as errors]
    [cmr.common.xml :as cx]
    [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.models.umm-common-models :as c]
    [cmr.umm-spec.util :as su])
@@ -49,8 +52,12 @@
   "place")
 
 (def science-keyword-type
-  "String used to define the keyword type for location keywords."
+  "String used to define the keyword type for science keywords."
   "theme")
+
+(def science-keyword-title
+  "String used to define the keyword title for science keywords."
+  "GCMD")
 
 (defn parse-keyword-str
   "Returns a seq of individual components of an ISO-19115-2 or SMAP keyword string."
@@ -103,6 +110,36 @@
                   (format "[gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='%s']" keyword-type)
                   "/gmd:keyword/gco:CharacterString")))
 
+
+(defn descriptive-keywords-with-title
+  "Returns the descriptive keyword values for the given parent element, keyword type and
+  keyword title"
+  [md-data-id-el keyword-type keyword-title]
+  (let [desc-kws-with-kw-type
+         (select md-data-id-el
+                 (str "gmd:descriptiveKeywords"
+                      "[gmd:MD_Keywords/gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='"
+                      keyword-type "']"))
+
+        ;;for each descriptiveKeyword with the keyword-type, get /gmd:keyword/gco:CharacterString
+        ;;and /gmd:keyword/gmx:Anchor with the title that includes the substring keyword-title.
+        gco-values
+         (for [desc-kw desc-kws-with-kw-type]
+           (values-at desc-kw
+                      (str "gmd:MD_Keywords"
+                           "[contains(gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString, '"
+                           keyword-title "')]"
+                           "/gmd:keyword/gco:CharacterString")))
+        gmx-values
+         (for [desc-kw desc-kws-with-kw-type]
+           (values-at desc-kw
+                      (str "gmd:MD_Keywords"
+                           "[contains(gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString, '"
+                           keyword-title "')]"
+                           "/gmd:keyword/gmx:Anchor")))
+        keyword-values (concat gco-values gmx-values)]
+    (flatten keyword-values)))
+
 (defn parse-location-keywords
   "Returns the location keywords parsed from the given xml document."
   [md-data-id-el]
@@ -120,21 +157,29 @@
 
 (defn parse-science-keywords
   "Returns the science keywords parsed from the given xml document."
-  [md-data-id-el sanitize?]
-  (if-let [science-keywords (seq (descriptive-keywords md-data-id-el science-keyword-type))]
-    (for [sk science-keywords
-          :let [[category topic term variable-level-1 variable-level-2 variable-level-3
-                 detailed-variable] (map #(if (= nil-science-keyword-field %) nil %)
-                                         (str/split sk iso/keyword-separator-split))]]
-      {:Category category
-       :Topic (su/with-default topic)
-       :Term (su/with-default term)
-       :VariableLevel1 variable-level-1
-       :VariableLevel2 variable-level-2
-       :VariableLevel3 variable-level-3
-       :DetailedVariable detailed-variable})
-    (when sanitize?
-      su/not-provided-science-keywords)))
+  ([md-data-id-el sanitize?]
+   (parse-science-keywords md-data-id-el sanitize? false))
+  ([md-data-id-el sanitize? smap?]
+   (if-let [science-keywords (if smap?
+                               ;; smap keeps the current behavior. 
+                               (seq (descriptive-keywords md-data-id-el science-keyword-type)) 
+                               (seq (descriptive-keywords-with-title md-data-id-el
+                                                                     science-keyword-type
+                                                                     science-keyword-title)))]
+     (for [sk science-keywords
+           :let [[category topic term variable-level-1 variable-level-2 variable-level-3
+                  detailed-variable] (->> (str/split sk iso/keyword-separator-split)
+                                          (map #(when-not (= nil-science-keyword-field %)  %)))]]
+ 
+         {:Category category
+          :Topic (su/with-default topic)
+          :Term (su/with-default term)
+          :VariableLevel1 variable-level-1
+          :VariableLevel2 variable-level-2
+          :VariableLevel3 variable-level-3
+          :DetailedVariable detailed-variable})
+     (when sanitize?
+       su/not-provided-science-keywords))))
 
 (defmulti smap-keyword-str
   "Returns a SMAP keyword string for a given UMM record."
@@ -195,7 +240,12 @@
          [:gmd:MD_KeywordTypeCode
           {:codeList (str code-lists "#MD_KeywordTypeCode")
            :codeListValue keyword-type} keyword-type]])
-      [:gmd:thesaurusName {:gco:nilReason "unknown"}]]]))
+      (if (= keyword-type science-keyword-type)
+        [:gmd:thesaurusName
+         [:gmd:CI_Citation
+          [:gmd:title [:gco:CharacterString science-keyword-title]]
+          [:gmd:date {:gco:nilReason "unknown"}]]]
+        [:gmd:thesaurusName {:gco:nilReason "unknown"}])]]))
 
 (defn generate-iso19115-descriptive-keywords
   "Returns the content generator instructions ISO19115-2 descriptive keywords."

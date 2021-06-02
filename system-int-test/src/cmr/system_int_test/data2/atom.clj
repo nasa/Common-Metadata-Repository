@@ -219,6 +219,8 @@
 
 (def resource-type->link-type-uri
   {"GET DATA" "http://esipfed.org/ns/fedsearch/1.1/data#"
+   "GET DATA VIA DIRECT ACCESS" "http://esipfed.org/ns/fedsearch/1.1/s3#"
+   "USE SERVICE API" "http://esipfed.org/ns/fedsearch/1.1/service#"
    "GET RELATED VISUALIZATION" "http://esipfed.org/ns/fedsearch/1.1/browse#"
    "ALGORITHM INFO" "http://esipfed.org/ns/fedsearch/1.1/documentation#"
    "VIEW PROJECT HOME PAGE" "http://esipfed.org/ns/fedsearch/1.1/metadata#"})
@@ -234,8 +236,8 @@
   [related-url concept-type]
   (let [{:keys [type url title mime-type size inherited]} related-url
         rel (if type
-             (resource-type->link-type-uri type "http://esipfed.org/ns/fedsearch/1.1/metadata#")
-             "http://esipfed.org/ns/fedsearch/1.1/documentation#") ; The UMM spec default is a doc URL
+              (resource-type->link-type-uri type "http://esipfed.org/ns/fedsearch/1.1/metadata#")
+              "http://esipfed.org/ns/fedsearch/1.1/documentation#") ; The UMM spec default is a doc URL
         attribs (-> {}
                     (add-attribs :inherited inherited)
                     (add-attribs :size size)
@@ -244,7 +246,11 @@
                     (add-attribs :hreflang "en-US")
                     (add-attribs :href url))
         attribs (if (= :granule concept-type)
-                  (add-attribs attribs :title title)
+                  (add-attribs attribs
+                               :title
+                               (if (= "USE SERVICE API" type)
+                                 (str title " (GET DATA : OPENDAP DATA)")
+                                 title))
                   attribs)]
     attribs))
 
@@ -274,7 +280,8 @@
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
          :keys [concept-id format-key has-variables has-formats has-transforms
-                has-spatial-subsetting has-temporal-subsetting services variables]} collection
+                has-spatial-subsetting has-temporal-subsetting
+                services variables tools]} collection
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
         ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
@@ -299,9 +306,10 @@
         ;; Remove duplicate archive/distribution center from an echo10 conversion - only need one
         organizations (remove #(and (= archive-center (:org-name %)) (= :distribution-center (:type %))) organizations)
         temporal (:temporal collection)
-        associations (when (or (seq services) (seq variables))
+        associations (when (or (seq services) (seq variables) (seq tools))
                        (util/remove-map-keys empty? {:variables (set variables)
-                                                     :services (set services)}))]
+                                                     :services (set services)
+                                                     :tools (set tools)}))]
     (util/remove-nil-keys
      {:id concept-id
       :title entry-title
@@ -336,6 +344,23 @@
       :has-temporal-subsetting (boolean has-temporal-subsetting)
       :associations associations})))
 
+(defn- get-coll-service-features
+  "Returns the service features in JSON format for the given collection"
+  [collection]
+  (let [{:keys [opendap esi harmony]} (:service-features collection)]
+    {:opendap (merge atom-results-handler/base-has-features opendap)
+     :esi (merge atom-results-handler/base-has-features esi)
+     :harmony (merge atom-results-handler/base-has-features harmony)}))
+
+(defn collection->expected-json
+  "Returns the JSON map of the collection"
+  [collection]
+  (assoc (collection->expected-atom collection)
+         :platforms
+         (map :short-name (:platforms collection))
+         :service-features
+         (get-coll-service-features collection)))
+
 (defn collections->expected-atom
   "Returns the atom map of the collections"
   [collections atom-path]
@@ -344,12 +369,27 @@
      :title "ECHO dataset metadata"
      :entries (seq (map collection->expected-atom collections))}))
 
+(defn collections->expected-json
+  "Returns the JSON map of the collections"
+  [collections url-path]
+  (util/remove-nil-keys
+    {:id (str (url/search-root) url-path)
+     :title "ECHO dataset metadata"
+     :entries (seq (map collection->expected-json collections))}))
+
 (defn atom-collection-results-match?
   [expected-items atom-results]
   (let [expected-entries (map collection->expected-atom expected-items)]
     (= (set expected-entries)
        (set (map #(dissoc % :granule-count)
                  (get-in atom-results [:results :entries]))))))
+
+(defn json-collection-results-match?
+  [expected-items json-results]
+  (let [expected-entries (map collection->expected-json expected-items)]
+    (= (set expected-entries)
+       (set (map #(dissoc % :granule-count)
+                 (get-in json-results [:results :entries]))))))
 
 (defn granule->expected-atom
   "Returns the atom map of the granule"

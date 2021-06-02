@@ -132,11 +132,15 @@
     (testing "retrieval of a deleted collection results in a 404"
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                       (search/retrieve-concept
-                                        (:concept-id del-coll) nil {:throw-exceptions true
-                                                                    :headers {transmit-config/token-header
-                                                                              user1-token}}))]
+                                      (:concept-id del-coll)
+                                      nil
+                                      {:throw-exceptions true
+                                       :headers {transmit-config/token-header
+                                                 user1-token}}))]
         (is (= 404 status))
-        (is (= ["Concept with concept-id [C1200000018-PROV1] could not be found."] errors))))
+        (is (= [(format "Concept with concept-id [%s] could not be found."
+                        (:concept-id del-coll))]
+               errors))))
     (testing "retrieval by collection cmr-concept-id returns the latest revision."
       (let [response (search/retrieve-concept
                        (:concept-id coll1) nil {:query-params {:token user1-token}})
@@ -161,23 +165,23 @@
     (testing "retrieval of HTML with extension"
       (let [response (search/retrieve-concept
                        (:concept-id coll1) nil {:query-params {:token user1-token}
-                                                :url-extension "html"})
-            _ (is (= 200 (:status response)))]
+                                                :url-extension "html"})]
+        (is (= 200 (:status response)))
         (is (search/mime-type-matches-response? response mt/html))
         (is (.contains ^String (:body response) (:entry-title umm-coll)))))
     (testing "retrieval of HTML with accept headers"
       (let [response (search/retrieve-concept
                        (:concept-id coll1) nil {:query-params {:token user1-token}
-                                                :accept "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"})
-            _ (is (= 200 (:status response)))]
+                                                :accept "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"})]
+        (is (= 200 (:status response)))
         (is (search/mime-type-matches-response? response mt/html))
         (is (.contains ^String (:body response) (:entry-title umm-coll)))))
     (testing "retrieval of UMM JSON"
       (let [response (search/retrieve-concept
                        (:concept-id coll1) nil {:query-params {:token user1-token}
                                                 :url-extension "umm-json"})
-            _ (is (= 200 (:status response)))
             parsed-collection (umm-json/json->umm test-context :collection (:body response))]
+        (is (= 200 (:status response)))
         (is (search/mime-type-matches-response? response mt/umm-json))
         (is (= (:entry-title umm-coll) (:EntryTitle parsed-collection)))))))
 
@@ -189,20 +193,20 @@
     (.contains ^String (:body response) (str "https://search.earthdata.nasa.gov/search/granules?p=" concept-id))))
 
 (deftest html-collection-granule-search-test
-  "Test html search for collections with and without granules."
-  (testing "html response for collections with and without granules"
-    (e/grant-all (s/context) (e/coll-catalog-item-id "PROV1"))
-    (e/grant-all (s/context) (e/gran-catalog-item-id "PROV1"))
-    (let [coll-with-granules (d/ingest "PROV1" (dc/collection {:short-name "With granules"
-                                                               :entry-title "With granules"
-                                                               :version-id "V1"}))
-          coll-without-granules (d/ingest "PROV1" (dc/collection {:short-name "Without granules"
-                                                                  :entry-title "Without granules"
-                                                                  :version-id "V2"}))]
-      (d/ingest "PROV1" (dg/granule coll-with-granules))
-      (index/wait-until-indexed)
-      (is (html-search-response-has-collection-granule-search? coll-with-granules))
-      (is (not (html-search-response-has-collection-granule-search? coll-without-granules))))))
+  (testing "Test html search for collections with and without granules."
+    (testing "html response for collections with and without granules"
+      (e/grant-all (s/context) (e/coll-catalog-item-id "PROV1"))
+      (e/grant-all (s/context) (e/gran-catalog-item-id "PROV1"))
+      (let [coll-with-granules (d/ingest "PROV1" (dc/collection {:short-name "With granules"
+                                                                 :entry-title "With granules"
+                                                                 :version-id "V1"}))
+            coll-without-granules (d/ingest "PROV1" (dc/collection {:short-name "Without granules"
+                                                                    :entry-title "Without granules"
+                                                                    :version-id "V2"}))]
+        (d/ingest "PROV1" (dg/granule coll-with-granules))
+        (index/wait-until-indexed)
+        (is (html-search-response-has-collection-granule-search? coll-with-granules))
+        (is (not (html-search-response-has-collection-granule-search? coll-without-granules)))))))
 
 (defn- expected-umm-json
   "Returns the expected umm json in the expected-version for the given metadata whose umm
@@ -334,7 +338,7 @@
 
       (testing "json"
         (are [concept options]
-             (= (da/collection->expected-atom concept)
+             (= (da/collection->expected-json concept)
                 (dj/parse-json-collection (get-concept-by-id-helper concept options)))
              c1-echo {:url-extension "json"}
              c1-echo {:accept        "application/json"}
@@ -548,7 +552,7 @@
                                         (:concept-id coll1) nil {:throw-exceptions true
                                                                  :query-params {}}))]
         (is (= 404 status))
-        (is (= #{"Concept with concept-id [C1200000018-PROV3] could not be found."}
+        (is (= #{(format "Concept with concept-id [%s] could not be found." (:concept-id coll1))}
                (set errors))))
       ;; Guest users can't see PROV3 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
@@ -557,7 +561,7 @@
                                                                  :headers {transmit-config/token-header
                                                                            guest-token}}))]
         (is (= 404 status))
-        (is (= #{"Concept with concept-id [C1200000018-PROV3] could not be found."}
+        (is (= #{(format "Concept with concept-id [%s] could not be found." (:concept-id coll1))}
                (set errors))))
       ;; But registered users can see PROV3 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
@@ -566,7 +570,7 @@
                                                                  :headers {transmit-config/token-header
                                                                            user1-token}}))]
         (is (= 200 status))
-        (is (= nil errors)))
+        (is (nil? errors)))
       ;; Even registered users can't see PROV4 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                       (search/retrieve-concept
@@ -574,7 +578,8 @@
                                                                   :headers {transmit-config/token-header
                                                                             user1-token}}))]
         (is (= 404 status))
-        (is (= #{"Concept with concept-id [C1200000019-PROV4] could not be found."}
+        (is (= #{(format "Concept with concept-id [%s] could not be found."
+                         (:concept-id coll2))}
                (set errors)))))
 
     (testing "ACLs - concept-id + revision-id retrieval"
@@ -585,7 +590,8 @@
                                         (:revision-id coll1)
                                         {:throw-exceptions true}))]
         (is (= 404 status))
-        (is (= #{"Concept with concept-id [C1200000018-PROV3] and revision-id [1] could not be found."}
+        (is (= #{(format "Concept with concept-id [%s] and revision-id [1] could not be found."
+                         (:concept-id coll1))}
                (set errors))))
       ;; Guest users can't see PROV3 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
@@ -596,7 +602,8 @@
                                          :headers {transmit-config/token-header
                                                    guest-token}}))]
         (is (= 404 status))
-        (is (= #{"Concept with concept-id [C1200000018-PROV3] and revision-id [1] could not be found."}
+        (is (= #{(format "Concept with concept-id [%s] and revision-id [1] could not be found."
+                         (:concept-id coll1))}
                (set errors))))
       ;; But registered users can see PROV3 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
@@ -607,7 +614,7 @@
                                          :headers {transmit-config/token-header
                                                    user1-token}}))]
         (is (= 200 status))
-        (is (= nil errors)))
+        (is (nil? errors)))
       ;; Even registered users can't see PROV4 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                       (search/retrieve-concept
@@ -617,5 +624,6 @@
                                          :headers {transmit-config/token-header
                                                    user1-token}}))]
         (is (= 404 status))
-        (is (= #{"Concept with concept-id [C1200000019-PROV4] and revision-id [1] could not be found."}
+        (is (= #{(format "Concept with concept-id [%s] and revision-id [1] could not be found."
+                         (:concept-id coll2))}
                (set errors)))))))

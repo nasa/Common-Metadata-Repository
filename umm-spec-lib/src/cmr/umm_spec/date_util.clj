@@ -81,7 +81,7 @@
     (if-let [parsed-date (some-> date
                                  (str/replace "/" "-")
                                  f/parse)]
-      (f/unparse (f/formatters :date-time) parsed-date)
+      (p/clj-time->date-time-str parsed-date)
       date)
     date))
 

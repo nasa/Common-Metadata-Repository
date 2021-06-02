@@ -242,6 +242,10 @@
 					"description": "UMM two dimensional coordinate system name",
 					"$ref": "#/definitions/StringCondition"
 				},
+				"horizontal_data_resolution_range": {
+					"description": "search using the facet search parameter for horizontal data resolution range",
+					"$ref": "#/definitions/RangeCondition"
+				},
 				"keyword": {
 					"description": "Used for free text search across most search fields. Refer to the section 'Find collections by keyword search' on https://cmr.earthdata.nasa.gov/search/site/search_api_docs.html for a list of all fields searched against. Searches are always case insensitive and treat '?' and '*' as wild-cards.",
 					"type": "string"
@@ -421,6 +425,10 @@
 				"additionalProperties": false,
 				"required": ["value"]
 			}]
+		},
+		"RangeCondition": {
+			"description": "Range Condition takes a string.",
+			"type": "string"
 		},
 		"CaseInsensitiveStringCondition": {
 			"description": "String searches can take either a string or an object with a value to search for and options to apply for the search. This is similar to StringCondition, but it does not support ignore_case options.",

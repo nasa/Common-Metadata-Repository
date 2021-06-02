@@ -49,12 +49,14 @@
   [stmt]
   (s/sql stmt))
 
+(defn run-sql
+  "Run the given sql statement in string. Only intended for internal use."
+  [db statement]
+  (j/db-do-prepared db statement []))
+
 (defn query
   "Execute a query and log how long it took."
   [db stmt-and-params]
-  ;; Uncomment to debug sql
-  ; (debug "SQL:" (first stmt-and-params))
-
   (let [fetch-size (:result-set-fetch-size db)
         start (System/currentTimeMillis)
         result (j/query db (cons {:fetch-size fetch-size} stmt-and-params))

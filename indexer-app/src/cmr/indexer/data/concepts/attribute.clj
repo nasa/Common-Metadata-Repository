@@ -2,8 +2,8 @@
   "Contains functions for converting attributes into a elastic documents"
   (:require
     [camel-snake-kebab.core :as csk]
-    [clj-time.format :as f]
-    [clojure.string :as str]
+    [clojure.string :as string]
+    [cmr.common.date-time-parser :as p]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]
     [cmr.umm-spec.additional-attribute :as aa]
@@ -24,16 +24,16 @@
 
 (defmethod value->elastic-value :datetime
   [type value]
-  (when value (f/unparse (f/formatters :date-time) value)))
+  (when value (p/clj-time->date-time-str value)))
 
 (defmethod value->elastic-value :time
   [type value]
   ;; This relies on the fact that times are parsed into times on day 1970-01-01
-  (when value (f/unparse (f/formatters :date-time) value)))
+  (when value (p/clj-time->date-time-str value)))
 
 (defmethod value->elastic-value :date
   [type value]
-  (when value (f/unparse (f/formatters :date-time) value)))
+  (when value (p/clj-time->date-time-str value)))
 
 (def type->field-name
   "Converts an attribute type into the indexed field name"
@@ -58,7 +58,7 @@
                               #(coll-psa/parse-value type %))
                         (:values psa-ref))}
        {:name (:name psa-ref)
-        (str field-name "-lowercase") (map (comp str/lower-case
+        (str field-name "-lowercase") (map (comp string/lower-case
                                                  #(value->elastic-value type %)
                                                  #(coll-psa/parse-value type %))
                                            (:values psa-ref))}]

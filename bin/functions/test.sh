@@ -46,7 +46,15 @@ Notes on the ENV variables:
 EOH
 
 function test_all {
-    cd $CMR_DIR && lein test
+    cd $CMR_DIR && lein modules ci-test
+}
+
+function test_itest {
+    cd $CMR_DIR && lein modules ci-itest
+}
+
+function test_utest {
+    cd $CMR_DIR && lein modules ci-utest
 }
 
 function test_cicd {
@@ -64,6 +72,37 @@ function test_cicd {
     echo "Timestamp:" `date`
     echo "Running tests ..."
     test_all
+    if [ $? -ne 0 ] ; then
+        echo "Failed Tests" >&2
+        cmr show log-tests
+        cmr stop uberjar dev-system
+        exit 127
+    fi
+    cmr show log-tests
+    echo "Timestamp:" `date`
+    echo "Stopping applications ..."
+    cmr stop uberjar dev-system
+}
+
+function test_ci-utest {
+    test_utest
+}
+
+function test_ci-itest {
+    cmr build all
+    cmr start uberjar dev-system
+    if [ $? -ne 0 ] ; then
+        echo "Failed to build and start up dev-system" >&2
+        echo
+        echo "Log for dev-system:"
+        cat $CMR_LOG_DIR/dev-system.log
+        echo "End of dev-system log."
+        echo
+        exit 127
+    fi
+    echo "Timestamp:" `date`
+    echo "Running tests ..."
+    test_itest
     if [ $? -ne 0 ] ; then
         echo "Failed Tests" >&2
         cmr show log-tests

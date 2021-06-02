@@ -156,13 +156,20 @@
   (try
     (let [limit (search-paging-depth-limit)
           page-size (get-ivalue-from-params params :page-size)
-          page-num (get-ivalue-from-params params :page-num)]
-      (when (and page-size
-                 page-num
-                 (> (* page-size page-num) limit))
+          page-num (get-ivalue-from-params params :page-num)
+          offset (get-ivalue-from-params params :offset)]
+      (if (and page-size
+               page-num
+               (> (* page-size page-num) limit))
         [(format "The paging depth (page_num * page_size) of [%d] exceeds the limit of %d."
                  (* page-size page-num)
-                 limit)]))
+                 limit)]
+        (when (and page-size
+                   offset
+                   (> (+ page-size offset) limit))
+          [(format "The paging depth (page_size + offset) of [%d] exceeds the limit of %d."
+                   (+ page-size offset)
+                   limit)])))
     (catch NumberFormatException e
       ;; This should be handled separately by page-size and page-num validiation
       [])))

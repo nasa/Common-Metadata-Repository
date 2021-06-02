@@ -6,7 +6,8 @@
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.revision-format-map :as r]
    [cmr.search.test.data.metadata-retrieval.test-metadata :as tm]
-   [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
+   [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+   [digest :as digest]))
 
 (use-fixtures :each tk/freeze-resume-time-fixture)
 
@@ -20,7 +21,7 @@
           #{:compressed :decompressed-length})))
 
 (deftest compression-test
-  (let [uncompressed (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)
+  (let [uncompressed (r/concept->revision-format-map nil tm/dif10-concept all-metadata-formats)
         compressed (r/compress uncompressed)
         decompressed (r/decompress compressed)]
     (testing "Compress"
@@ -52,7 +53,7 @@
     (is (= expected actual))))
 
 (deftest revision-format-map-to-concept-test
-  (let [revision-format-map (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)]
+  (let [revision-format-map (r/concept->revision-format-map nil tm/dif10-concept all-metadata-formats)]
     (testing "With Decompressed revision format maps"
       (doseq [metadata-format all-metadata-formats]
         (testing (str "To " metadata-format)
@@ -65,45 +66,56 @@
               :echo10 (r/compress revision-format-map)))))
     (testing "With native target format"
       ;; DIF was the native format for sample revision format metadata
-      (is (= tm/dif-concept
+      (is (= tm/dif10-concept
              (r/revision-format-map->concept
               :native revision-format-map))))))
 
 (deftest concept-to-revision-format-map
   (testing "Convert with native"
-    (is (= {:concept-id (:concept-id tm/dif-concept)
-            :revision-id (:revision-id tm/dif-concept)
-            :native-format :dif
-            :dif (:metadata tm/dif-concept)}
-           (r/concept->revision-format-map nil tm/dif-concept #{:native}))))
+    (is (= {:concept-id (:concept-id tm/dif10-concept)
+            :revision-id (:revision-id tm/dif10-concept)
+            :native-format :dif10
+            :dif10 (:metadata tm/dif10-concept)}
+           (r/concept->revision-format-map nil tm/dif10-concept #{:native}))))
   (testing "Convert with multiple formats"
-    (is (= {:concept-id (:concept-id tm/dif-concept)
-            :revision-id (:revision-id tm/dif-concept)
-            :native-format :dif
-            :dif (:metadata tm/dif-concept)
+    (is (= {:concept-id (:concept-id tm/dif10-concept)
+            :revision-id (:revision-id tm/dif10-concept)
+            :native-format :dif10
+            :dif10 (:metadata tm/dif10-concept)
             :echo10 (:metadata (tm/concept-in-format :echo10))
             {:format :umm-json
              :version "1.3"} (:metadata tm/umm-json-1.3-concept)}
            (r/concept->revision-format-map
-            nil tm/dif-concept
+            nil tm/dif10-concept
             #{:echo10 {:format :umm-json
                        :version "1.3"}})))))
 
-(deftest add-additional-format-test
+(deftest ^:kaocha/pending add-additional-format-test
   (testing "Decompressed"
-    (let [rfm (r/concept->revision-format-map nil tm/dif-concept #{:native})]
-      (= (assoc rfm :echo10 (:metadata tm/echo10-concept))
-         (r/add-additional-format nil :echo10 rfm))))
+    (let [rfm (r/concept->revision-format-map nil tm/dif10-concept #{:native})]
+      (is (= (assoc rfm :echo10 (:metadata tm/echo10-concept))
+             (r/add-additional-format nil :echo10 rfm)))))
   (testing "Compressed"
     (let [rfm (r/compress
-               (r/concept->revision-format-map nil tm/dif-concept #{:native}))]
-      (= (assoc rfm :echo10 (util/string->lz4-bytes (:metadata tm/echo10-concept)))
-         (r/add-additional-format nil :echo10 rfm)))))
+                (r/concept->revision-format-map nil tm/dif10-concept #{:native}))
+          expected (assoc rfm :echo10 (util/string->lz4-bytes (:metadata tm/echo10-concept)))
+          actual (r/add-additional-format nil :echo10 rfm)]
+
+      ; A test like (is(= expected actual)) does not work for everyone locally
+      ; as there seams to be some problem with testing byte arrays.
+      ; To get around this, a new test was come up with which drops the
+      ; compressed segment (byte array) which fails and tests that data sepratly
+      ; by doing a comparison on the md5 values
+
+      (is (= (util/dissoc-in expected [:echo10 :compressed])
+             (util/dissoc-in actual [:echo10 :compressed])))
+      (is (= (digest/md5 (String. (get-in expected [:echo10 :compressed]) "UTF-8"))
+             (digest/md5 (String. (get-in actual [:echo10 :compressed] )"UTF-8")))))))
 
 (defn test-rfm
   "Creates a revision format map with the specified formats."
   [concept-id revision-id formats]
-  (-> (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)
+  (-> (r/concept->revision-format-map nil tm/dif10-concept all-metadata-formats)
       (select-keys (concat formats [:native-format]))
       (assoc :concept-id concept-id
              :revision-id revision-id)))

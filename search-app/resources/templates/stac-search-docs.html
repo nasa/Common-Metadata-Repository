@@ -1,0 +1,10 @@
+{% extends "templates/search-base.html" %}
+
+{% block main-content %}
+<h2>CMR STAC Links</h2>
+<ul>
+  <li><a href="{{ stac-docs-url }}">CMR STAC Documentation</a> - CMR STAC Catalog Documentation</li>
+  <li><a href="{{ stac-url }}">CMR STAC</a> - CMR STAC Catalog Endpoint</li>
+  <li><a href="{{ cloudstac-url }}">CMR Cloud STAC</a> - CMR STAC Catalog Endpoint for Cloud-hosted Holdings Only</li>
+</ul>
+{% endblock %}

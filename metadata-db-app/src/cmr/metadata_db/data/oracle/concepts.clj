@@ -7,13 +7,11 @@
    [cmr.common.concepts :as common-concepts]
    [cmr.common.date-time-parser :as p]
    [cmr.common.log :refer [debug error info trace warn]]
-   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.metadata-db.data.concepts :as concepts]
    [cmr.metadata-db.data.oracle.concept-tables :as tables]
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.metadata-db.data.util :as db-util :refer [EXPIRED_CONCEPTS_BATCH_SIZE INITIAL_CONCEPT_NUM]]
-   [cmr.metadata-db.services.provider-service :as provider-service]
    [cmr.oracle.connection :as oracle]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import
@@ -332,69 +330,68 @@
 (defn get-concept
   ([db concept-type provider concept-id]
    (j/with-db-transaction
-    [conn db]
-    (let [table (tables/get-table-name provider concept-type)]
-      (db-result->concept-map concept-type conn (:provider-id provider)
-                              (su/find-one conn (select '[*]
-                                                        (from table)
-                                                        (where `(= :concept-id ~concept-id))
-                                                        (order-by (desc :revision-id))))))))
+     [conn db]
+     (let [table (tables/get-table-name provider concept-type)]
+       (db-result->concept-map concept-type conn (:provider-id provider)
+                               (su/find-one conn (select '[*]
+                                                         (from table)
+                                                         (where `(= :concept-id ~concept-id))
+                                                         (order-by (desc :revision-id))))))))
   ([db concept-type provider concept-id revision-id]
    (if revision-id
      (let [table (tables/get-table-name provider concept-type)]
        (j/with-db-transaction
-        [conn db]
-        (db-result->concept-map concept-type conn (:provider-id provider)
-                                (su/find-one conn (select '[*]
-                                                          (from table)
-                                                          (where `(and (= :concept-id ~concept-id)
-                                                                       (= :revision-id ~revision-id))))))))
+         [conn db]
+         (db-result->concept-map concept-type conn (:provider-id provider)
+                                 (su/find-one conn (select '[*]
+                                                           (from table)
+                                                           (where `(and (= :concept-id ~concept-id)
+                                                                        (= :revision-id ~revision-id))))))))
      (get-concept db concept-type provider concept-id))))
 
 (defn get-concepts
   [db concept-type provider concept-id-revision-id-tuples]
-  (if (> (count concept-id-revision-id-tuples) 0)
+  (if (pos? (count concept-id-revision-id-tuples))
     (let [start (System/currentTimeMillis)]
       (j/with-db-transaction
-       [conn db]
-       ;; use a temporary table to insert our values so we can use a join to
-       ;; pull everything in one select
-       (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+        [conn db]
+        ;; use a temporary table to insert our values so we can use a join to
+        ;; pull everything in one select
+        (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
 
-       (let [provider-id (:provider-id provider)
-             table (tables/get-table-name provider concept-type)
-             stmt (su/build (select [:c.*]
-                                    (from (as (keyword table) :c)
-                                          (as :get-concepts-work-area :t))
-                                    (where `(and (= :c.concept-id :t.concept-id)
-                                                 (= :c.revision-id :t.revision-id)))))
+        (let [provider-id (:provider-id provider)
+              table (tables/get-table-name provider concept-type)
+              stmt (su/build (select [:c.*]
+                                     (from (as (keyword table) :c)
+                                           (as :get-concepts-work-area :t))
+                                     (where `(and (= :c.concept-id :t.concept-id)
+                                                  (= :c.revision-id :t.revision-id)))))
 
-             result (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                                (su/query conn stmt)))
-             millis (- (System/currentTimeMillis) start)]
-         (debug (format "Getting [%d] concepts took [%d] ms" (count result) millis))
-         result)))
+              result (doall (map (partial db-result->concept-map concept-type conn provider-id)
+                                 (su/query conn stmt)))
+              millis (- (System/currentTimeMillis) start)]
+          (debug (format "Getting [%d] concepts took [%d] ms" (count result) millis))
+          result)))
     []))
 
 (defn get-latest-concepts
   [db concept-type provider concept-ids]
   (get-concepts
-   db concept-type provider
-   (get-latest-concept-id-revision-id-tuples db concept-type provider concept-ids)))
+    db concept-type provider
+    (get-latest-concept-id-revision-id-tuples db concept-type provider concept-ids)))
 
 (defn get-transactions-for-concept
   [db provider concept-id]
   (j/with-db-transaction
-   [conn db]
-   (let [provider-id (:provider-id provider)
-         concept-type (common-concepts/concept-id->type concept-id)
-         table (tables/get-table-name provider concept-type)
-         stmt (su/build (select [:c.revision-id :c.transaction-id]
-                                (from (as (keyword table) :c))
-                                (where `(= :c.concept-id ~concept-id))))]
-     (map (fn [result] {:revision-id (long (:revision_id result))
-                        :transaction-id (long (:transaction_id result))})
-          (su/query conn stmt)))))
+    [conn db]
+    (let [concept-type (common-concepts/concept-id->type concept-id)
+          table (tables/get-table-name provider concept-type)
+          stmt (su/build (select [:c.revision-id :c.transaction-id]
+                                 (from (as (keyword table) :c))
+                                 (where `(= :c.concept-id ~concept-id))))]
+      (map (fn [result] {:revision-id (long (:revision_id result))
+                         :transaction-id (long (:transaction_id result))})
+           (su/query conn stmt)))))
 
 (defn save-concept
   [db provider concept]
@@ -506,6 +503,7 @@
   (j/db-do-commands this "DELETE FROM cmr_acls")
   (j/db-do-commands this "DELETE FROM cmr_humanizers")
   (j/db-do-commands this "DELETE FROM cmr_subscriptions")
+  (j/db-do-commands this "DELETE FROM cmr_sub_notifications")
   (j/db-do-commands this "DELETE FROM cmr_services")
   (j/db-do-commands this "DELETE FROM cmr_tools")
   (j/db-do-commands this "DELETE FROM cmr_variables")
@@ -575,25 +573,23 @@
          ;; older than the tombstone - up to 'limit' concepts.
          sql (if small
                (format "select t1.concept_id, t1.revision_id from %s t1 inner join
-                         (select * from
                          (select concept_id, revision_id from %s
-                         where provider_id = '%s' and DELETED = 1 and REVISION_DATE < ?)
-                         where rownum < %d) t2
+                         where provider_id = '%s' and DELETED = 1 and REVISION_DATE < ?
+                         FETCH FIRST %d ROWS ONLY) t2
                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
                        table table provider-id limit)
                (format "select t1.concept_id, t1.revision_id from %s t1 inner join
-                         (select * from
                          (select concept_id, revision_id from %s
-                         where DELETED = 1 and REVISION_DATE < ?)
-                         where rownum < %d) t2
+                         where DELETED = 1 and REVISION_DATE < ?
+                         FETCH FIRST %d ROWS ONLY) t2
                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
                        table table limit))
          stmt [sql (cr/to-sql-time tombstone-cut-off-date)]
          result (su/query conn stmt)]
      ;; create tuples of concept-id/revision-id to remove
-     (map (fn [{:keys [concept_id revision_id]}]
-            [concept_id revision_id])
-          result))))
+     (doall (map (fn [{:keys [concept_id revision_id]}]
+                   [concept_id revision_id])
+                 result)))))
 
 (defn get-old-concept-revisions
   [this provider concept-type max-revisions limit]
@@ -607,14 +603,14 @@
          ;; each returned concept-id.
          stmt (if small
                 [(format "select concept_id, revision_id from %s
-                           where concept_id in (select * from
+                           where concept_id in
                            (select concept_id from %s where provider_id = '%s' group by
-                           concept_id having count(*) > %d) where rownum <= %d)"
+                           concept_id having count(*) > %d FETCH FIRST %d ROWS ONLY)"
                          table table provider-id max-revisions limit)]
                 [(format "select concept_id, revision_id from %s
-                           where concept_id in (select * from
+                           where concept_id in
                            (select concept_id from %s group by
-                           concept_id having count(*) > %d) where rownum <= %d)"
+                           concept_id having count(*) > %d FETCH FIRST %d ROWS ONLY)"
                          table table max-revisions limit)])
          result (su/query conn stmt)
          ;; create a map of concept-ids to sequences of all returned revisions

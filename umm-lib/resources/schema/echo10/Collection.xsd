@@ -228,6 +228,19 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           <xs:documentation>This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as an OnlineResource. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections. For those that want to specify that a DOI is not applicable for their record use the second option.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="AssociatedDOIs" type="ListOfAssociatedDOIs" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>This element stores DOIs that are associated with the collection
+				    such as from campaigns and other related sources. Note: The values
+				    should start with the directory indicator which in ESDIS' case is 10.
+				    If the DOI was registered through ESDIS, the beginning of the string
+				    should be 10.5067. The DOI URL is not stored here; it should be
+				    stored as a RelatedURL. The DOI organization that is responsible
+				    for creating the DOI is described in the Authority element. For
+				    ESDIS records the value of https://doi.org/ should be used.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" name="CollectionDataType">
         <xs:annotation>
           <xs:documentation> An element to identify
@@ -451,6 +464,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
+      <xs:element name="UseConstraints" type="UseConstraintsType" minOccurs="0"/>
       <xs:element minOccurs="0" name="Price" type="DollarAmount">
         <xs:annotation>
           <xs:documentation>The price for ordering the
@@ -541,6 +555,95 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <xs:documentation>The list of browse image urls
             associated with this collection.</xs:documentation>
           </xs:annotation>
+        </xs:element>
+      </xs:choice>
+      <xs:element minOccurs="0" name="DirectDistributionInformation"
+                  type="DirectDistributionInformationType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="DirectDistributionInformationType">
+    <xs:sequence>
+      <xs:element name="Region">
+        <xs:simpleType>
+          <xs:annotation>
+            <xs:documentation>Defines the possible values for the Amazon Web Service US Regions
+                              where the data product resides.</xs:documentation>
+          </xs:annotation>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="us-east-1"></xs:enumeration>
+            <xs:enumeration value="us-east-2"></xs:enumeration>
+            <xs:enumeration value="us-west-1"></xs:enumeration>
+            <xs:enumeration value="us-west-2"></xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="S3BucketAndObjectPrefixName" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Defines the possible values for the Amazon Web Service US S3 bucket
+                            and/or object prefix names.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="1024" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="S3CredentialsAPIEndpoint">
+        <xs:annotation>
+          <xs:documentation>Defines the URL where the credentials are stored.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:anyURI">
+            <xs:minLength value="1" />
+            <xs:maxLength value="1024" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="S3CredentialsAPIDocumentationURL">
+        <xs:annotation>
+          <xs:documentation>Defines the URL where the credential documentation are stored.
+          </xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:anyURI">
+            <xs:minLength value="1" />
+            <xs:maxLength value="1024" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfAssociatedDOIs">
+    <xs:sequence>
+      <xs:element name="AssociatedDOI" type="AssociatedDoiType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="UseConstraintsType">
+    <xs:sequence>
+      <xs:element name="Description" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>This sub-element either contains a license summary or free-text description that details the permitted use or limitation of this collection.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="4000" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:choice minOccurs="0">
+        <xs:element name="LicenseURL" type="OnlineResource"/>
+        <xs:element name="LicenseText">
+          <xs:annotation>
+            <xs:documentation>This element holds the actual license text. If this element is used the LicenseUrl element cannot be used.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1" />
+              <xs:maxLength value="20000" />
+            </xs:restriction>
+          </xs:simpleType>
         </xs:element>
       </xs:choice>
     </xs:sequence>

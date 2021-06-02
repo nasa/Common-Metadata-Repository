@@ -43,9 +43,9 @@
 
 (def science-keyword-validations
   "Defines the science keyword validations for collections"
-  {:Category v/required
-   :Topic v/required
-   :Term v/required})
+  {:Category v/field-cannot-be-blank
+   :Topic v/field-cannot-be-blank
+   :Term v/field-cannot-be-blank})
 
 (def collection-validations
   "Defines validations for collections"
@@ -71,4 +71,6 @@
   :ContactGroups (v/every url/contact-persons-groups-contact-information-validations)
   :DataDates data-date/data-dates-warning-validation
   :MetadataDates data-date/data-dates-warning-validation
-  :DOI {:DOI doi-format-warning-validation}})
+  :DOI {:DOI doi-format-warning-validation}
+  :DirectDistributionInformation {:S3CredentialsAPIEndpoint url/url-validation
+                                  :S3CredentialsAPIDocumentationURL url/url-validation}})

@@ -16,8 +16,8 @@
 (defn expected-use-constraints
   "Returns the expected UseConstraints."
   [use-constraints]
-  (if-let [linkage (get-in use-constraints [:LicenseUrl :Linkage])]
-    (assoc use-constraints :LicenseUrl (cmn/map->OnlineResourceType {:Linkage linkage}))
+  (if-let [linkage (get-in use-constraints [:LicenseURL :Linkage])]
+    (assoc use-constraints :LicenseURL (cmn/map->OnlineResourceType {:Linkage linkage}))
     use-constraints))
 
 (defn- create-contact-person
@@ -106,9 +106,12 @@
   (let [explanation (when (:Explanation doi)
                       (string/trim (:Explanation doi)))
         updated-doi (util/remove-nil-keys (assoc doi :Explanation explanation))]
-    (if (seq updated-doi)
-      (cmn/map->DoiType updated-doi)
-      (cmn/map->DoiType {:MissingReason "Not Applicable"}))))
+    (cmn/map->DoiType
+      (if (or (:DOI updated-doi)
+              (:MissingReason updated-doi))
+        updated-doi
+        {:MissingReason "Unknown"
+         :Explanation "It is unknown if this record has a DOI."}))))
 
 (defn- expected-dist-media
   "Creates expected Media for FileDistributionInformation."
@@ -151,3 +154,36 @@
       (update :FileDistributionInformation expected-file-dist-info)
       (update :FileArchiveInformation expected-file-archive-info)
       umm-c/map->ArchiveAndDistributionInformationType))
+
+(defn expected-related-url-get-data
+  "Returns related-url with the expected GetData"
+  [related-url]
+  (if (and (= "DistributionURL" (:URLContentType related-url))
+           (or (= "GET DATA" (:Type related-url))
+               (= "GET CAPABILITIES" (:Type related-url))))
+    (if (nil? (:GetData related-url))
+      (assoc related-url :GetData (cmn/map->GetDataType
+                                   {:Format su/not-provided
+                                    :Size 0.0
+                                    :Unit "KB"}))
+      related-url)
+    related-url))
+
+(defn expected-related-url-get-service
+  "Returns related-url with the expected GetService"
+  [related-url]
+  (let [URI (if (empty? (get-in related-url [:GetService :URI]))
+              [(:URL related-url)]
+              (get-in related-url [:GetService :URI]))]
+      (if (and (= "DistributionURL" (:URLContentType related-url))
+               (= "USE SERVICE API" (:Type related-url)))
+          (if (nil? (:GetService related-url))
+            (assoc related-url :GetService (cmn/map->GetServiceType
+                                              {:MimeType su/not-provided
+                                               :Protocol su/not-provided
+                                               :FullName su/not-provided
+                                               :DataID su/not-provided
+                                               :DataType su/not-provided
+                                               :URI URI}))
+            (assoc-in related-url [:GetService :URI] URI))
+          (dissoc related-url :GetService))))

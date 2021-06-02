@@ -22,7 +22,7 @@
    [cmr.umm-spec.migration.version.service]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
-   [cmr.umm-spec.versioning :refer [versions current-version]]
+   [cmr.umm-spec.versioning :as versioning]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -61,9 +61,9 @@
   "Returns a sequence of version steps between begin and end, inclusive."
   [concept-type begin end]
   (->> (condp #(%1 %2) (customized-compare begin end)
-         neg?  (sort-by count (versions concept-type))
+         neg?  (versioning/versions concept-type)
          zero? nil
-         pos?  (reverse (sort-by count (versions concept-type))))
+         pos?  (reverse (versioning/versions concept-type)))
        (partition 2 1 nil)
        (drop-while #(not= (first %) begin))
        (take-while #(not= (first %) end))))

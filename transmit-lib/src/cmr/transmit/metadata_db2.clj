@@ -22,6 +22,10 @@
   [conn]
   (format "%s/concepts" (conn/root-url conn)))
 
+(defn- concept-search-url
+  [conn concept-type]
+  (format "%s/concepts/search/%s" (conn/root-url conn) (name concept-type)))
+
 (defn- latest-concept-url
   [conn concept-id]
   (str (concepts-url conn) "/" concept-id))
@@ -95,6 +99,24 @@
      (if raw?
        response
        (:concept-id response)))))
+
+(defn find-concepts
+ "Searches metadata db for concepts matching the given parameters.
+ Valid options are:
+  * :raw? - set to true to indicate the raw response should be returned. See
+  cmr.transmit.http-helper for more info. Default false.
+  * http-options - Other http-options to be sent to clj-http."
+ ([context params concept-type]
+  (find-concepts context params concept-type nil))
+ ([context params concept-type {:keys [raw? http-options]}]
+  (-> context
+      (h/request :metadata-db
+                 {:url-fn #(concept-search-url % concept-type)
+                  :method :get
+                  :raw? raw?
+                  :use-system-token? true
+                  :http-options (merge {:accept :json} http-options params)})
+      finish-parse-concept)))
 
 (defn get-concept
   "Retrieve the concept with the given concept and revision-id. Valid options are

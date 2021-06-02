@@ -122,6 +122,7 @@
       mixed-arity-param-handler
       (errors/exception-handler default-error-format)
       common-routes/add-request-id-response-handler
+      common-routes/add-security-header-response-handler
       (cmr-context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
       (shapefile-simplifier/shapefile-simplifier default-error-format)

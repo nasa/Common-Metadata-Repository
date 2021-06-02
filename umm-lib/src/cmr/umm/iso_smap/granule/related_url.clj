@@ -10,9 +10,11 @@
 (def resource-type->related-url-type
   "A mapping of SMAP ISO OnlineResource's type to UMM RelatedURL's type.
   This is probably an incomplete list. We will treat OnlineResources without a resource-type
-  as online access url, and any resource-type other than BROSE as a METADATA type."
+  or a value of GET DATA VIA DIRECT ACCESS as online access url, and any resource-type other
+  than BROWSE as a METADATA type."
   {"BROWSE" "GET RELATED VISUALIZATION"
-   "METADATA" "VIEW RELATED INFORMATION"})
+   "METADATA" "VIEW RELATED INFORMATION"
+   "GET DATA VIA DIRECT ACCESS" "GET DATA VIA DIRECT ACCESS"})
 
 (defn xml-elem->related-url
   [elem]

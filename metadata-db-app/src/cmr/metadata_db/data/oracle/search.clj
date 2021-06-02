@@ -35,14 +35,18 @@
    :humanizer (into common-columns [:user_id])
    :subscription (into common-columns
                        [:provider_id :subscription_name :subscriber_id
-                        :email_address :collection_concept_id :user_id])
+                        :email_address :collection_concept_id :user_id
+                        :normalized_query])
    :variable (into common-columns [:provider_id :variable_name :measurement :user_id :fingerprint])
    :variable-association (into common-columns
                                [:associated_concept_id :associated_revision_id
                                 :variable_concept_id :user_id])
    :service-association (into common-columns
                               [:associated_concept_id :associated_revision_id
-                               :service_concept_id :user_id])})
+                               :service_concept_id :user_id])
+   :tool-association (into common-columns
+                           [:associated_concept_id :associated_revision_id
+                            :tool_concept_id :user_id])})
 
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept
@@ -68,8 +72,9 @@
   If :include-all is true, all revisions of the concepts will be returned. This is needed for the
   find-latest-concepts function to later filter out the latest concepts that satisfy the search in memory."
   (fn [concept-type table fields params]
-    (when (= :granule concept-type)
-      :granule-search)))
+    (condp = concept-type
+      :granule :granule-search
+      concept-type)))
 
 ;; special case added to address OB_DAAC granule search not using existing index problem
 ;; where the native id or granule ur index is not being used by Oracle optimizer
@@ -94,6 +99,18 @@
                       (from table)
                       (when-not (empty? params)
                         (where (sh/find-params->sql-clause params)))))))
+
+(defmethod gen-find-concepts-in-table-sql :subscription
+  [_concept-type table fields params]
+  (let [fields (cons :last_notified_at fields)
+        root-query (gen-find-concepts-in-table-sql :default table fields params)
+        updated-query (string/replace-first
+                       (first root-query)
+                       #"WHERE"
+                       (str " LEFT JOIN cmr_sub_notifications"
+                            " ON cmr_subscriptions.concept_id = cmr_sub_notifications.subscription_concept_id"
+                            " WHERE"))]
+    (cons updated-query (rest root-query))))
 
 (defn- find-batch-starting-id
   "Returns the first id that would be returned in a batch."
@@ -154,10 +171,10 @@
                                    (assoc params :provider-id (map :provider-id providers)))
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
     (j/with-db-transaction
-     [conn db]
-     (doall
-      (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
-            (su/query conn stmt))))))
+      [conn db]
+      (doall
+        (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
+              (su/query conn stmt))))))
 
 ;; Execute a query against a normal (not small) provider table
 (defmethod find-concepts-in-table :default

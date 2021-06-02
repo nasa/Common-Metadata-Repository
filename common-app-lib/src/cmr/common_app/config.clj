@@ -6,12 +6,12 @@
 
 (defconfig cwic-tag
   "has-granules-or-cwic should also return any collection with configured cwic-tag"
-  {:default "org.ceos.wgiss.cwic.granules.prod"})
+  {:default "opensearch.granule.osdd"})
 
 (defconfig collection-umm-version
   "Defines the latest collection umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.15.4"})
+  {:default "1.16.3"})
 
 (defconfig launchpad-token-enforced
   "Flag for whether or not launchpad token is enforced."

@@ -124,12 +124,12 @@
 (defn reindex-collection-permitted-groups
   "Tells ingest to run the reindex-collection-permitted-groups job"
   ([]
-   reindex-collection-permitted-groups nil)
+   (reindex-collection-permitted-groups nil))
   ([token]
    (let [response (client/post (url/reindex-collection-permitted-groups-url)
                                {:connection-manager (s/conn-mgr)
                                 :query-params {:token token}})]
-    (is (= 200 (:status response))))))
+     (is (= 200 (:status response))))))
 
 (defn reindex-all-collections
   "Tells ingest to run the reindex all collections job"
@@ -145,6 +145,13 @@
   "Tells ingest to run the cleanup-expired-collections job"
   []
   (let [response (client/post (url/cleanup-expired-collections-url)
+                              {:connection-manager (s/conn-mgr)})]
+    (is (= 200 (:status response)))))
+
+(defn cleanup-bulk-granule-update-tasks
+  "Tells ingest to run the trigger-bulk-granule-task-cleanup job"
+  []
+  (let [response (client/post (url/cleanup-granule-bulk-update-task-url)
                               {:connection-manager (s/conn-mgr)})]
     (is (= 200 (:status response)))))
 
@@ -217,6 +224,7 @@
         (parse-xml-error-response-elem xml-elem)
         (util/remove-nil-keys
          {:concept-id (cx/string-at-path xml-elem [:concept-id])
+          :native-id (cx/string-at-path xml-elem [:native-id])
           :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))
           :warnings (cx/string-at-path xml-elem [:warnings])})))
 
@@ -328,13 +336,13 @@
    (ingest-variable variable {}))
   ([variable options]
    (let [{:keys [metadata format concept-id revision-id native-id coll-concept-id coll-revision-id]} variable
-         {:keys [client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id]} options
+         {:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id]} options
          accept-format (:accept-format options)
          headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
                                         "Cmr-Revision-id" revision-id
                                         "Cmr-Validate-Keywords" validate-keywords
                                         "Cmr-Validate-Umm-C" validate-umm-c
-                                        "Echo-Token" "mock-echo-system-token" 
+                                        "Echo-Token" token
                                         "User-Id" user-id
                                         "Client-Id" client-id
                                         "CMR-Request-Id" cmr-request-id
@@ -357,6 +365,7 @@
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
          {:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id]} options
          accept-format (:accept-format options)
+         method (get options :method :put)
          headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
                                         "Cmr-Revision-id" revision-id
                                         "Cmr-Validate-Keywords" validate-keywords
@@ -366,7 +375,7 @@
                                         "Client-Id" client-id
                                         "CMR-Request-Id" cmr-request-id
                                         "X-Request-Id" x-request-id})
-         params {:method :put
+         params {:method method
                  :url (url/ingest-url provider-id concept-type native-id)
                  :body  metadata
                  :content-type format
@@ -516,33 +525,53 @@
           :status (:status response))))
 
 (defn bulk-update-collections
- "Call ingest collection bulk update by provider"
- ([provider-id request-body]
-  (bulk-update-collections provider-id request-body nil))
- ([provider-id request-body options]
-  (let [accept-format (get options :accept-format :xml)
-        token (:token options)
-        user-id (:user-id options)
-        headers (when (or user-id token)
-                  (util/remove-nil-keys
+  "Call ingest collection bulk update by provider"
+  ([provider-id request-body]
+   (bulk-update-collections provider-id request-body nil))
+  ([provider-id request-body options]
+   (let [accept-format (get options :accept-format :xml)
+         token (:token options)
+         user-id (:user-id options)
+         headers (when (or user-id token)
+                   (util/remove-nil-keys
                     {transmit-config/token-header token
                      "user-id" user-id}))
+         params {:method :post
+                 :url (url/ingest-collection-bulk-update-url provider-id)
+                 :body (json/generate-string request-body)
+                 :connection-manager (s/conn-mgr)
+                 :throw-exceptions false}
+         params (merge params (when accept-format {:accept accept-format}))
+         params (merge params (when headers {:headers headers}))
+         response (client/request params)]
+     (parse-bulk-update-response response options))))
+
+(defn bulk-update-granules
+  "Call ingest granule bulk update by provider"
+  [provider-id request-body options]
+  (let [{:keys [token user-id]} options
+        accept-format (get options :accept-format :xml)
+        headers (when (or user-id token)
+                  (util/remove-nil-keys
+                   {transmit-config/token-header token
+                    "user-id" user-id}))
         params {:method :post
-                :url (url/ingest-collection-bulk-update-url provider-id)
+                :url (url/ingest-granule-bulk-update-url provider-id)
                 :body (json/generate-string request-body)
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}
-        params (merge params (when accept-format {:accept accept-format}))
-        params (merge params (when headers {:headers headers}))
-        response (client/request params)]
-   (parse-bulk-update-response response options))))
+        response (-> params
+                     (merge (when accept-format {:accept accept-format}))
+                     (merge params (when headers {:headers headers}))
+                     client/request)]
+    (parse-bulk-update-response response options)))
 
 (defmulti parse-bulk-update-provider-status-body
   "Parse the bulk update provider status response body as a given format"
   (fn [response-format body]
     response-format))
 
-(defmethod parse-bulk-update-provider-status-body :xml
+(defmethod parse-bulk-update-provider-status-body :default
   [response-format response]
   (try
     (let [xml-elem (x/parse-str (:body response))]
@@ -573,21 +602,52 @@
    (assoc (parse-bulk-update-provider-status-body (or (:accept-format options) :xml) response)
           :status (:status response))))
 
+(defn- bulk-update-provider-status*
+  "Get the tasks and statuses by provider"
+  [concept-type provider-id options]
+  (let [accept-format (get options :accept-format :xml)
+        token (:token options)
+        task-url (if (= :collection concept-type)
+                   (url/ingest-collection-bulk-update-status-url provider-id)
+                   (url/ingest-granule-bulk-update-status-url provider-id))
+        params {:method :get
+                :url task-url
+                :connection-manager (s/conn-mgr)
+                :throw-exceptions false}
+        params (merge params (when accept-format {:accept accept-format}))
+        params (merge params (when token {:headers {transmit-config/token-header token}}))
+        response (client/request params)]
+    (parse-bulk-update-provider-status-response response options)))
+
+(defn update-granule-bulk-update-task-statuses
+  "Force an unscheduled update of granule bulk update task status."
+  []
+  (let [params {:method :post
+                :url (url/ingest-granule-bulk-update-task-status-url)
+                :connection-manager (s/conn-mgr)
+                :throw-exceptions false
+                :headers {transmit-config/token-header
+                          (transmit-config/echo-system-token)}}]
+    (client/request params)))
+
 (defn bulk-update-provider-status
   "Get the tasks and statuses by provider"
   ([provider-id]
    (bulk-update-provider-status provider-id nil))
   ([provider-id options]
-   (let [accept-format (get options :accept-format :xml)
-         token (:token options)
-         params {:method :get
-                 :url (url/ingest-collection-bulk-update-status-url provider-id)
-                 :connection-manager (s/conn-mgr)
-                 :throw-exceptions false}
-         params (merge params (when accept-format {:accept accept-format}))
-         params (merge params (when token {:headers {transmit-config/token-header token}}))
-         response (client/request params)]
-     (parse-bulk-update-provider-status-response response options))))
+   (bulk-update-provider-status* :collection provider-id options)))
+
+(defn granule-bulk-update-tasks
+  "Get the granule bulk update tasks by provider"
+  ([provider-id]
+   (granule-bulk-update-tasks provider-id nil))
+  ([provider-id options]
+   (bulk-update-provider-status* :granule provider-id options)))
+
+(defn update-granule-bulk-update-tasks
+  "Updates the granule bulk update tasks by provider"
+  [provider-id options]
+  (bulk-update-provider-status* :granule provider-id options))
 
 (defmulti parse-bulk-update-task-status-body
   "Parse the bulk update task status response body as a given format"
@@ -621,28 +681,48 @@
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response))) e)))))
 
 (defn parse-bulk-update-task-status-response
- "Parse an bulk update task status response and append a status"
- [response options]
- (if (get options :raw? false)
-   response
-   (assoc (parse-bulk-update-task-status-body (or (:accept-format options) :xml) response)
-          :status (:status response))))
+  "Parse bulk update task status response and append the response status"
+  ([response options]
+   (parse-bulk-update-task-status-response response options :xml))
+  ([response options default-result-format]
+   (if (get options :raw? false)
+     response
+     (assoc (parse-bulk-update-task-status-body
+             (or (:accept-format options) default-result-format)
+             response)
+            :status (:status response)))))
 
-(defn bulk-update-task-status
- "Get the tasks and statuses by provider"
- ([provider-id task-id]
-  (bulk-update-task-status provider-id task-id nil))
- ([provider-id task-id options]
-  (let [accept-format (get options :accept-format :xml)
+(defn- bulk-update-task-status*
+  "Implementation function to get the bulk update task status for the given task id"
+  [concept-type provider-id task-id options]
+  (let [accept-format (get options :accept-format)
         token (:token options)
+        task-status-url (if (= :collection concept-type)
+                          (url/ingest-collection-bulk-update-task-status-url provider-id task-id)
+                          (url/ingest-granule-bulk-update-task-status-url task-id))
         params {:method :get
-                :url (url/ingest-collection-bulk-update-task-status-url provider-id task-id)
+                :url task-status-url
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}
         params (merge params (when accept-format {:accept accept-format}))
         params (merge params (when token {:headers {transmit-config/token-header token}}))
+        default-result-format (if (= :collection concept-type) :xml :json)
         response (client/request params)]
-   (parse-bulk-update-task-status-response response options))))
+    (parse-bulk-update-task-status-response response options default-result-format)))
+
+(defn bulk-update-task-status
+ "Get collection bulk update task status for the given task id"
+ ([provider-id task-id]
+  (bulk-update-task-status provider-id task-id nil))
+ ([provider-id task-id options]
+  (bulk-update-task-status* :collection provider-id task-id options)))
+
+(defn granule-bulk-update-task-status
+ "Get granule bulk update task status for the given task id"
+ ([task-id]
+  (granule-bulk-update-task-status task-id nil))
+ ([task-id options]
+  (bulk-update-task-status* :granule nil task-id options)))
 
 (defn get-ingest-update-acls
   "Get a token's system ingest management update ACLs."

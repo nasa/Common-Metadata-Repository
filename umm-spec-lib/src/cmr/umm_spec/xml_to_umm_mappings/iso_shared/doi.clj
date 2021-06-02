@@ -1,11 +1,12 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.doi
   "Functions for parsing UMM DOI records out of ISO 19115 and ISO SMAP XML documents."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as iso-shared-distrib]))
+   [cmr.umm-spec.iso19115-2-util :as iso-util]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as iso-xml-parsing-util]))
 
 (def doi-namespace
   "DOI namespace."
@@ -20,16 +21,17 @@
   [gmd-id]
   (or (= (value-of gmd-id "gmd:MD_Identifier/gmd:codeSpace/gco:CharacterString") doi-namespace)
       (if-some [x (value-of gmd-id "gmd:MD_Identifier/gmd:description/gco:CharacterString")]
-        (str/includes? x doi-in-description)
+        (string/includes? x doi-in-description)
         false)))
 
 (defn- parse-explanation
   "Parses explanation for missing reason out of description."
   [description]
   (when description
-    (when-let [explanation-index (util/get-index-or-nil description "Explanation:")]
-      (let [explanation (subs description explanation-index)]
-        (str/trim (subs explanation (inc (.indexOf explanation ":"))))))))
+    (when-let [explanation-map (iso-xml-parsing-util/convert-iso-description-string-to-map
+                                 description
+                                 (re-pattern "Explanation:"))]
+      (string/trim (:Explanation explanation-map)))))
 
 (defn parse-doi
   "There could be multiple CI_Citations. Each CI_Citation could contain multiple gmd:identifiers.
@@ -52,12 +54,42 @@
                                             gmd-id "gmd:MD_Identifier/gmd:code/gmx:Anchor"))
                              explanation (parse-explanation
                                           (value-of gmd-id
-                                                    "gmd:MD_Identifier/gmd:description/gco:CharacterString"))]]
+                                                    "gmd:MD_Identifier/gmd:description/gco:CharacterString"))
+                             attrs (get (first (select gmd-id "gmd:MD_Identifier/gmd:code")) :attrs)
+                             missing-reason (when attrs
+                                              (cond
+                                                (string/includes? attrs "inapplicable") "Not Applicable"
+                                                (string/includes? attrs "unknown") "Unknown"
+                                                :else nil))]]
                    (util/remove-nil-keys
-                    {:DOI doi-value
-                     :Authority (or (value-of gmd-id orgname-path)
-                                    (value-of gmd-id indname-path))
-                     :MissingReason (when-not (seq doi-value)
-                                      "Not Applicable")
-                     :Explanation explanation}))]
-    (first doi-list)))
+                     (if doi-value
+                       {:DOI doi-value
+                        :Authority (or (value-of gmd-id orgname-path)
+                                       (value-of gmd-id indname-path))}
+                       {:MissingReason (when missing-reason
+                                         missing-reason)
+
+                        :Explanation explanation})))]
+    (if (first doi-list)
+      (first doi-list)
+      {:MissingReason "Unknown"
+       :Explanation "It is unknown if this record has a DOI."})))
+
+(defn parse-associated-dois
+  "Parse out the associated DOIs from the ISO MENDS/SMAP document."
+  [doc associated-doi-xpath]
+  (let [assocs
+         (seq
+           (for [assoc (select doc associated-doi-xpath)
+                 :let [assoc-type (value-of assoc "gmd:associationType/gmd:DS_AssociationTypeCode")
+                       assoc-type (when assoc-type
+                                    (string/trim assoc-type))
+                       doi (iso-util/char-string-value assoc "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier/gmd:code")]
+                 :when (and doi (= "associatedDOI" assoc-type))]
+             {:DOI doi
+              :Title (iso-util/char-string-value assoc "gmd:aggregateDataSetName/gmd:CI_Citation/gmd:title")
+              :Authority (iso-util/char-string-value assoc (str "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier"
+                                                                "/gmd:authority/gmd:CI_Citation/gmd:citedResponsibleParty"
+                                                                "/gmd:CI_ResponsibleParty/gmd:organisationName"))}))]
+    (when assocs
+      (into [] assocs))))

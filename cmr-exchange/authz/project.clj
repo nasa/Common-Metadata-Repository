@@ -1,4 +1,4 @@
-(defproject gov.nasa.earthdata/cmr-authz "0.1.1"
+(defproject gov.nasa.earthdata/cmr-authz "0.1.2"
   :description "An authorization utility library for CMR services"
   :url "https://github.com/cmr-exchange/authz"
   :license {:name "Apache License, Version 2.0"

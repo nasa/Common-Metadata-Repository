@@ -1,0 +1,58 @@
+service: graphdb-indexer
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-east-1
+  role: IamRoleGraphLambdaExecution
+  deploymentBucket: graphdb-driver-deployment-bucket-${opt:stage}
+  vpc:
+    securityGroupIds:
+      - ${cf:${opt:stage}.servicesSecurityGroupId}
+    subnetIds: !Split [',', '${cf:${opt:stage}.subnetIds}']
+
+plugins:
+  - serverless-offline
+  - serverless-pseudo-parameters
+
+functions:
+  index:
+    handler: handler.index
+    environment:
+      ENVIRONMENT: ${opt:stage}
+    events:
+      - sqs:
+          batchSize: 10
+          arn: arn:aws:sqs:us-east-1:#{AWS::AccountId}:gsfc-eosdis-cmr-${opt:stage}-graphdb_queue
+
+resources:
+  Resources:
+    IamRoleGraphLambdaExecution:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: cmrGraphRole-${opt:stage}
+        PermissionsBoundary: arn:aws:iam::#{AWS::AccountId}:policy/NGAPShRoleBoundary
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: 'Allow'
+              Principal:
+                Service:
+                  - 'lambda.amazonaws.com'
+              Action:
+                - 'sts:AssumeRole'
+    cmrGraphPolicy:
+      Type: AWS::IAM::Policy
+      Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Action:
+                - 'sqs:*'
+              Effect: 'Allow'
+              Resource: '*'
+        PolicyName: cmrGraphPolicy-${opt:stage}
+        Roles:
+          - Ref: IamRoleGraphLambdaExecution

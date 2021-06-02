@@ -111,9 +111,7 @@
         archive-center (:org-name (first (filter #(= :archive-center (:type %)) organizations)))]
     (util/remove-nil-keys {:title entry-title
                            :description summary
-                           :keyword (conj (flatten-science-keywords collection)
-                                          "NGDA"
-                                          "National Geospatial Data Asset")
+                           :keyword (flatten-science-keywords collection)
                            ;; when update-time is nil, we will use the revision-date,
                            :modified (str (or update-time revision-date))
                            :publisher (odrh/publisher provider-id archive-center)

@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2
   "Defines mappings from UMM records into ISO19115-2 XML."
   (:require
-   [clj-time.format :as f]
    [clojure.string :as string]
+   [cmr.common.date-time-parser :as p]
    [cmr.common.util :as util]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.date-util :as date-util]
@@ -13,6 +13,7 @@
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :as collection-progress]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.doi :as doi]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level :as proc-level]
@@ -101,7 +102,7 @@
                           (date-util/metadata-create-date c)
                           date-util/parsed-default-date)]
   [:gmd:dateStamp
-   [:gco:DateTime (f/unparse (f/formatters :date-time) datestamp)]]))
+   [:gco:DateTime (p/clj-time->date-time-str datestamp)]]))
 
 (defn- generate-metadata-dates
   "Returns ISO datestamp and XML elements for Metadata Dates of the given UMM collection.
@@ -122,7 +123,7 @@
          {:codeList ""
           :codeListValue ""} "Date"]]
        [:gmd:domainValue
-        [:gco:CharacterString (f/unparse (f/formatters :date-time) (:Date date))]]
+        [:gco:CharacterString (p/clj-time->date-time-str (:Date date))]]
        [:gmd:parentEntity {:gco:nilReason "inapplicable"}]
        [:gmd:rule {:gco:nilReason "inapplicable"}]
        [:gmd:source {:gco:nilReason "inapplicable"}]]]]]))
@@ -133,13 +134,10 @@
   [category-value]
   (get iso-topic-categories category-value "location"))
 
-(def attribute-data-type-code-list
-  "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
-
 (defn- generate-doi-for-publication-reference
   "Generates the DOI portion of a publication reference."
   [pub-ref]
-  (let [doi (util/remove-nil-keys (dissoc (:DOI pub-ref) :MissingReason :Explanation))]
+  (let [doi (util/remove-nil-keys (:DOI pub-ref))]
     (when (seq doi)
       [:gmd:identifier
        [:gmd:MD_Identifier
@@ -229,34 +227,6 @@
                            :when (some? v)]
                       (str k "=" (string/replace v #"[,=]" ""))))))
 
-(defn- generate-doi
-  "Returns the DOI field."
-  [c]
-  (let [doi (util/remove-nil-keys (:DOI c))]
-    (if (seq (:DOI doi))
-      [:gmd:identifier
-       [:gmd:MD_Identifier
-         (when-let [authority (:Authority doi)]
-           [:gmd:authority
-            [:gmd:CI_Citation
-             [:gmd:title [:gco:CharacterString ""]]
-             [:gmd:date ""]
-             [:gmd:citedResponsibleParty
-              [:gmd:CI_ResponsibleParty
-               [:gmd:organisationName [:gco:CharacterString authority]]
-               [:gmd:role
-                [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
-                                   :codeListValue ""} "authority"]]]]]])
-         [:gmd:code [:gco:CharacterString (:DOI doi)]]
-         [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-         [:gmd:description [:gco:CharacterString "DOI"]]]]
-      [:gmd:identifier
-       [:gmd:MD_Identifier
-         [:gmd:code {:gco:nilReason "inapplicable"}]
-         [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-         (when-let [explanation (:Explanation doi)]
-           [:gmd:description [:gco:CharacterString (str "Explanation: " explanation)]])]])))
-
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
@@ -300,7 +270,7 @@
                 [:gmd:code (char-string (:ShortName c))]
                 [:gmd:codeSpace (char-string "gov.nasa.esdis.umm.shortname")]
                 [:gmd:description (char-string "Short Name")]]]
-            (generate-doi c)
+            (doi/generate-doi c)
             (when-let [collection-data-type (:CollectionDataType c)]
               [:gmd:identifier
                 [:gmd:MD_Identifier
@@ -340,6 +310,7 @@
           (ma/generate-non-source-metadata-associations c)
           (generate-publication-references (:PublicationReferences c))
           (sdru/generate-publication-related-urls c)
+          (doi/generate-associated-dois c)
           [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
           (iso-topic-categories/generate-iso-topic-categories c)
           (when (:TilingIdentificationSystems c)
@@ -388,27 +359,30 @@
          [:gmd:attributeDescription ""]
          [:gmd:contentType ""]
          [:gmd:processingLevelCode
-           (proc-level/generate-iso-processing-level processing-level)]]]
-       (let [related-url-distributions (sdru/generate-distributions c)
-             file-dist-info-formats (archive-and-dist-info/generate-file-dist-info-formats c)
-             file-dist-info-medias (archive-and-dist-info/generate-file-dist-info-medias c)
-             file-dist-info-total-coll-sizes (archive-and-dist-info/generate-file-dist-info-total-coll-sizes c)
-             file-dist-info-average-sizes (archive-and-dist-info/generate-file-dist-info-average-file-sizes c)
-             file-dist-info-distributors (archive-and-dist-info/generate-file-dist-info-distributors c)]
-         (when (or file-dist-info-formats
-                   related-url-distributions
-                   file-dist-info-distributors
-                   file-dist-info-medias
-                   file-dist-info-total-coll-sizes
-                   file-dist-info-average-sizes)
-           [:gmd:distributionInfo
-            [:gmd:MD_Distribution
-             file-dist-info-formats
-             related-url-distributions
-             file-dist-info-distributors
-             file-dist-info-medias
-             file-dist-info-total-coll-sizes
-             file-dist-info-average-sizes]])))
+           (proc-level/generate-iso-processing-level processing-level)]]])
+      (let [related-url-distributions (sdru/generate-distributions c)
+            file-dist-info-formats (archive-and-dist-info/generate-file-dist-info-formats c)
+            file-dist-info-medias (archive-and-dist-info/generate-file-dist-info-medias c)
+            file-dist-info-total-coll-sizes (archive-and-dist-info/generate-file-dist-info-total-coll-sizes c)
+            file-dist-info-average-sizes (archive-and-dist-info/generate-file-dist-info-average-file-sizes c)
+            file-dist-info-distributors (archive-and-dist-info/generate-file-dist-info-distributors c)
+            direct-dist-info (archive-and-dist-info/generate-direct-dist-info-distributors c)]
+        (when (or file-dist-info-formats
+                  related-url-distributions
+                  file-dist-info-distributors
+                  file-dist-info-medias
+                  file-dist-info-total-coll-sizes
+                  file-dist-info-average-sizes
+                  direct-dist-info)
+          [:gmd:distributionInfo
+           [:gmd:MD_Distribution
+            file-dist-info-formats
+            related-url-distributions
+            file-dist-info-distributors
+            direct-dist-info
+            file-dist-info-medias
+            file-dist-info-total-coll-sizes
+            file-dist-info-average-sizes]]))
       [:gmd:dataQualityInfo
        [:gmd:DQ_DataQuality
         [:gmd:scope

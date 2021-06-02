@@ -182,23 +182,37 @@
       (is (= expected-distribution-related-url-record-CMR-5366
              (sru/parse-online-urls doc sanitize? mends-ru/service-url-path mends-ru/distributor-xpaths-map))))))
 
-(deftest description-string-parsing
-  (testing "Parsing given string and converting it to a map"
-    (are3 [string regex expected]
-      (is (= expected (sru/convert-iso-description-string-to-map string regex)))
+(deftest description-string-parsing-keyword-test
+  (testing (str "Parsing given string and converting it to a map then converting the left hand"
+                "strings to keywords.")
+    (are3 [string expected]
+      (is (= expected (sru/parse-url-types-from-description string)))
 
       "ISO MENDS Collection Description string"
       "URLContentType: DistributionURL Description: NASA's newest search and order tool for subsetting, reprojecting, and reformatting data. Type: GET DATA Subtype: Earthdata Search"
-      (re-pattern "URLContentType:|Description:|Type:|Subtype:|Checksum:")
-      {"Type" "GET DATA",
-       "URLContentType" "DistributionURL",
-       "Description" "NASA's newest search and order tool for subsetting, reprojecting, and reformatting data.",
-       "Subtype" "Earthdata Search"}
+      {:Type "GET DATA",
+       :URLContentType "DistributionURL",
+       :Description "NASA's newest search and order tool for subsetting, reprojecting, and reformatting data.",
+       :Subtype "Earthdata Search"}
 
       "String with odd and nil values"
       ":: URLContentType:nil Checksum: \"nil\" Description: NASA's newest lawnmower ascii art: __\\.-.,,,, Type: SELF PROPELLED Subtype: Earthdata Search"
-      (re-pattern "URLContentType:|Description:|Type:|Subtype:|Checksum:")
-      {"Checksum" "\"nil\"",
-       "Description" "NASA's newest lawnmower ascii art: __\\.-.,,,,",
-       "Type" "SELF PROPELLED",
-       "Subtype" "Earthdata Search"})))
+      {:Checksum "\"nil\"",
+       :Description "NASA's newest lawnmower ascii art: __\\.-.,,,,",
+       :Type "SELF PROPELLED",
+       :Subtype "Earthdata Search"}
+
+      "String with No pattern match"
+      "This is just a plain description."
+      {:Description "This is just a plain description."})))
+
+(deftest parse-operation-description-test
+  (testing "Parsing the operation description string into a map of keywords and values."
+    (are3 [string expected]
+      (is (= expected (#'sru/parse-operation-description string)))
+
+      "ISO MENDS Collection Description string"
+      "MimeType: Not provided DataID: OCO2_L1B_Science.7r DataType: nc4"
+      {:DataID "OCO2_L1B_Science.7r",
+       :MimeType "Not provided",
+       :DataType "nc4"})))

@@ -9,6 +9,7 @@
    [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.common.concepts :as concepts]
+   [cmr.common.date-time-parser :as p]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
    [cmr.search.results-handlers.metadata-results-handler :as metadata-results-handler]
@@ -438,7 +439,7 @@
                         (t/days n)
                         (t/hours n))]
        (if to-string?
-         (f/unparse (f/formatters :date-time) date)
+         (p/clj-time->date-time-str date)
          date)))))
 
 (defn make-time

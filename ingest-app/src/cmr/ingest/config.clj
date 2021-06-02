@@ -12,14 +12,24 @@
   {:default 90
    :type Long})
 
-(defconfig bulk-update-enabled
-  "Flag for whether or not bulk update is enabled."
+(defconfig granule-bulk-cleanup-minimum-age
+  "The minimum age (in days) of the rows in granule_bulk_update_tasks and
+  bulk_update_gran_status that can be cleaned up"
+  {:default 90
+   :type Long})
+
+(defconfig collection-bulk-update-enabled
+  "Flag for whether or not bulk collection update is enabled."
+  {:default true :type Boolean})
+
+(defconfig granule-bulk-update-enabled
+  "Flag for whether or not bulk granule update is enabled."
   {:default true :type Boolean})
 
 (defconfig granule-umm-version
   "Defines the latest granule umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.6.1"})
+  {:default "1.6.3"})
 
 (defconfig variable-umm-version
   "Defines the latest variable umm version accepted by ingest - it's the latest official version.
@@ -61,6 +71,10 @@
   "Ingest database password"
   {})
 
+(defconfig cmr-support-email
+  "CMR support email address"
+  {:default "cmr-support@earthdata.nasa.gov"})
+
 (defn db-spec
   "Returns a db spec populated with config information that can be used to connect to oracle"
   [connection-pool-name]
@@ -72,20 +86,33 @@
     (ingest-username)
     (ingest-password)))
 
-(defconfig provider-exchange-name
-   "The ingest exchange to which provider change messages are published."
-   {:default "cmr_ingest_provider.exchange"})
-
-(defconfig ingest-exchange-name
-  "The ingest exchange to which provider change messages are published."
-  {:default "cmr_ingest.exchange"})
-
 (defconfig ingest-queue-name
   "The queue containing provider events like 'index provider collections'."
   {:default "cmr_ingest.queue"})
 
+(defconfig bulk-update-queue-name
+  "The queue containing granule bulk update events."
+  {:default "cmr_ingest.bulk_update_queue"})
+
+(defconfig ingest-exchange-name
+  "The ingest exchange to which ingest event messages are published."
+  {:default "cmr_ingest.exchange"})
+
+(defconfig provider-exchange-name
+   "The ingest exchange to which provider change and non-ingest messages are published."
+   {:default "cmr_ingest_provider.exchange"})
+
+(defconfig bulk-update-exchange-name
+   "The ingest exchange to which granule bulk update messages are published."
+   {:default "cmr_ingest_bulk_update.exchange"})
+
 (defconfig ingest-queue-listener-count
   "Number of worker threads to use for the queue listener for the provider queue"
+  {:default 2
+   :type Long})
+
+(defconfig bulk-update-queue-listener-count
+  "Number of worker threads to use for the queue listener for the granule bulk update queue"
   {:default 2
    :type Long})
 
@@ -93,10 +120,14 @@
   "Returns the queue configuration for the ingest application."
   []
   (assoc (queue-config/default-config)
-         :queues [(ingest-queue-name)]
-         :exchanges [(ingest-exchange-name) (provider-exchange-name)]
+         :queues [(ingest-queue-name)
+                  (bulk-update-queue-name)]
+         :exchanges [(ingest-exchange-name)
+                     (provider-exchange-name)
+                     (bulk-update-exchange-name)]
          :queues-to-exchanges
-         {(ingest-queue-name) [(ingest-exchange-name)]}))
+         {(ingest-queue-name) [(ingest-exchange-name)]
+          (bulk-update-queue-name) [(bulk-update-exchange-name)]}))
 
 (defconfig ingest-nrepl-port
   "Port to listen for nREPL connections."

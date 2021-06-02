@@ -88,6 +88,21 @@
       }
     }
 
+#### Tool Association
+
+    {
+      "concept-type": "tool-association",
+      "native-id": "TL1200000008-PROV1/C1200000005-PROV1",
+      "user-id": "user1",
+      "format": "application/edn",
+      "metadata": "{:tool-concept-id \"TL1200000008-PROV1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1}",
+      "extra-fields": {
+        "tool-concept-id": "TL1200000008-PROV1",
+        "associated-concept-id": "C1200000005-PROV1",
+        "associated-revision-id": 1
+      }
+    }
+
 #### Subscription
 
     {
@@ -389,6 +404,7 @@ Supported combinations of concept type and parameters:
   * tag associations with concept-id, native-id, tag-key, associated-concept-id, associated-revision-id
   * services with concept-id, provider-id, native-id
   * service associations with concept-id, native-id, service-concept-id, associated-concept-id, associated-revision-id
+  * subscriptions with collection-concept-id, provider-id, subscriber-id, native-id, concept-id, normalized-query
   * variables with concept-id, provider-id, native-id
   * variable associations with concept-id, native-id, variable-concept-id, associated-concept-id, associated-revision-id
 
@@ -586,4 +602,4 @@ Example un-healthy response body:
 
 ## License
 
-Copyright © 2019 NASA
+Copyright © 2021 NASA

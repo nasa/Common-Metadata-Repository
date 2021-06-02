@@ -32,6 +32,12 @@
      "VERTEX" "Download this dataset through VERTEX"
      "VIRTUAL COLLECTION" "Download this virtual dataset"}
 
+    ;; DistributionURL/GET CAPABILITIES
+    "GET CAPABILITIES"
+    {"default" "Retrieve the Get Capabilities document"
+     "OpenSearch" "Retrieve the OpenSearch Get Capabilities document"
+     "GIBS" "Retrieve the GIBS Get Capabilities document"}
+
     ;; DistributionURL/GOTO WEB TOOL
     "GOTO WEB TOOL"
     {"default" "Use this dataset in a web based tool"

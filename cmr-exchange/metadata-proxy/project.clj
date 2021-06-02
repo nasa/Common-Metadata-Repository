@@ -27,7 +27,7 @@
                  [clojusc/twig "0.4.1"]
                  [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
-                 [gov.nasa.earthdata/cmr-authz "0.1.1"]
+                 [gov.nasa.earthdata/cmr-authz "0.1.2"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.1-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.2-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.1.5"]

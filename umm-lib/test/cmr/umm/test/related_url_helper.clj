@@ -46,6 +46,9 @@
     (let [downloadable-url (umm-c/map->RelatedURL
                              {:type "GET DATA"
                               :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})
+          s3-url (umm-c/map->RelatedURL
+                   {:type "GET DATA VIA DIRECT ACCESS"
+                    :url "s3://aws.com/hydro/details"})
           browse-url (umm-c/map->RelatedURL
                        {:type "GET RELATED VISUALIZATION"
                         :url "ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/"
@@ -59,8 +62,9 @@
           metadata-url (umm-c/map->RelatedURL
                          {:type "GET SERVICE"
                           :url "http://camex.nsstc.nasa.gov/camex3/"})
-          related-urls [downloadable-url browse-url documentation-url metadata-url]]
+          related-urls [downloadable-url s3-url browse-url documentation-url metadata-url]]
       (is (= [downloadable-url] (related-url-helper/downloadable-urls related-urls)))
+      (is (= [s3-url] (related-url-helper/s3-urls related-urls)))
       (is (= [browse-url] (related-url-helper/browse-urls related-urls)))
       (is (= [documentation-url] (related-url-helper/documentation-urls related-urls)))
       (is (= [metadata-url] (related-url-helper/metadata-urls related-urls))))))

@@ -192,6 +192,17 @@
           [0 0 180 -90] {coll1 3 coll2 0 coll3 2 coll4 0 coll5 2 orbit-coll 0}
           ;; Smaller area around one granule in coll4
           [130 47 137 44] {coll1 0 coll3 0 coll4 1 orbit-coll 0}))
+      (testing "granule counts for spatial queries with ORed spatial params"
+        (are [wnes expected-counts]
+          (let [refs (search/find-refs :collection {:include-granule-counts true
+                                                    :bounding-box wnes
+                                                    "options[spatial][or]" "true"})]
+            (gran-counts/granule-counts-match? :xml expected-counts refs))
+
+          ;; north west quadrant, Smaller area around one granule in coll4
+          ["-180,0,0,90" "130,44,137,47"] {coll1 3 coll2 0 coll3 1 coll4 3 coll5 0 orbit-coll 1}
+          ;; south east quadrant, Smaller area around one granule in coll4
+          ["130,44,137,47" "0,-90,180,0"] {coll1 3 coll2 0 coll3 2 coll4 1 coll5 2 orbit-coll 0}))
 
       (testing "CMR-6515: no exception is thrown when no collections found before granule counts query"
         (let [response (search/find-refs
@@ -257,7 +268,7 @@
 
       (testing "JSON results with granule counts"
         (let [results (search/find-concepts-json :collection {:include-granule-counts true})]
-          (is (gran-counts/granule-counts-match? :atom {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3
+          (is (gran-counts/granule-counts-match? :json {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3
                                                         coll6 3 orbit-coll 1}
                                                  results)))))
 
@@ -477,7 +488,29 @@
                      (search/find-refs :collection
                                        {:has_granules_or_cwic false
                                         :page-size 20}
+                                       {:snake-kebab? false})))
+
+;as an alias, has-granules-or-opensearch should return the same results.
+    (testing "Search with has-granules-or-opensearch feature true"
+      (d/refs-match? [coll1 coll3 coll6 coll2
+                      coll7 coll8 coll9 coll10
+                      coll11 coll12 coll13 coll14
+                      coll15 coll16 coll17]
+                     (search/find-refs :collection
+                                       {:has_granules_or_opensearch true
+                                        :page-size 20}
+                                       {:snake-kebab? false})))
+
+    (testing "Search with has-granules-or-opensearch feature false"
+      (d/refs-match? [coll4 coll5 coll6
+                      coll7 coll8 coll9 coll10
+                      coll11 coll12 coll13 coll14
+                      coll15 coll16 coll17]
+                     (search/find-refs :collection
+                                       {:has_granules_or_opensearch false
+                                        :page-size 20}
                                        {:snake-kebab? false})))))
+
 
 (deftest search-collections-has-granules-or-cwic-sort-test
   (let [coll1 (make-coll 1 m/whole-world nil)

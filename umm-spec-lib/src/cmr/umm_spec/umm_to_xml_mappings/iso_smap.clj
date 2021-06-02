@@ -11,6 +11,7 @@
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :as collection-progress]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.doi :as doi]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level :as proc-level]
@@ -75,34 +76,6 @@
   (let [project-keywords (map iso/generate-title projects)]
     (kws/generate-iso-smap-descriptive-keywords "project" project-keywords)))
 
-(defn- generate-doi
-  "Returns the DOI field."
-  [c]
-  (let [doi (util/remove-nil-keys (:DOI c))]
-    (if (seq (:DOI doi))
-      [:gmd:identifier
-       [:gmd:MD_Identifier
-         (when-let [authority (:Authority doi)]
-           [:gmd:authority
-            [:gmd:CI_Citation
-             [:gmd:title [:gco:CharacterString ""]]
-             [:gmd:date ""]
-             [:gmd:citedResponsibleParty
-              [:gmd:CI_ResponsibleParty
-               [:gmd:organisationName [:gco:CharacterString authority]]
-               [:gmd:role
-                [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
-                                   :codeListValue ""} "authority"]]]]]])
-         [:gmd:code [:gco:CharacterString (:DOI doi)]]
-         [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-         [:gmd:description [:gco:CharacterString "DOI"]]]]
-      [:gmd:identifier
-       [:gmd:MD_Identifier
-         [:gmd:code {:gco:nilReason "inapplicable"}]
-         [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-         (when-let [explanation (:Explanation doi)]
-           [:gmd:description [:gco:CharacterString (str "Explanation: " explanation)]])]])))
-
 (defn umm-c-to-iso-smap-xml
   "Returns ISO SMAP XML from UMM-C record c."
   [c]
@@ -135,7 +108,7 @@
              [:gmd:MD_Identifier
               [:gmd:code (char-string (:Version c))]
               [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]
-            (generate-doi c)
+            (doi/generate-doi c)
             (when-let [collection-data-type (:CollectionDataType c)]
              [:gmd:identifier
               [:gmd:MD_Identifier
@@ -170,6 +143,7 @@
               [:gmd:keyword
                (char-string (kws/smap-keyword-str instrument))])]]
           (use-constraints/generate-user-constraints c)
+          (doi/generate-associated-dois c)
           [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
           (iso-topic-categories/generate-iso-topic-categories c)
           (when (first (:TilingIdentificationSystems c))
@@ -241,19 +215,22 @@
               file-dist-info-medias (archive-and-dist-info/generate-file-dist-info-medias c)
               file-dist-info-total-coll-sizes (archive-and-dist-info/generate-file-dist-info-total-coll-sizes c)
               file-dist-info-average-sizes (archive-and-dist-info/generate-file-dist-info-average-file-sizes c)
-              file-dist-info-distributors (archive-and-dist-info/generate-file-dist-info-distributors c)]
+              file-dist-info-distributors (archive-and-dist-info/generate-file-dist-info-distributors c)
+              direct-dist-info (archive-and-dist-info/generate-direct-dist-info-distributors c)]
           (when (or file-dist-info-formats
                     related-url-distributions
                     file-dist-info-distributors
                     file-dist-info-medias
                     file-dist-info-total-coll-sizes
                     file-dist-info-average-sizes
-                    file-dist-info-distributors)
+                    file-dist-info-distributors
+                    direct-dist-info)
             [:gmd:distributionInfo
              [:gmd:MD_Distribution
               file-dist-info-formats
               related-url-distributions
               file-dist-info-distributors
+              direct-dist-info
               file-dist-info-medias
               file-dist-info-total-coll-sizes
               file-dist-info-average-sizes]]))

@@ -2,7 +2,6 @@
   "An in memory implementation of the metadata database."
   (:require
    [clj-time.core :as t]
-   [clj-time.format :as f]
    [clojure.string :as string]
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as p]
@@ -94,6 +93,23 @@
                                  :service-concept-id (:concept-id concept)})
           tombstones (map association->tombstone service-associations)]
       ;; publish service-association delete events
+      (doseq [tombstone tombstones]
+        (ingest-events/publish-event
+         (:context db)
+         (ingest-events/concept-delete-event tombstone)))
+      (concat concepts tombstones))))
+
+(defmethod after-save :tool
+  [db concepts concept]
+  (if-not (:deleted concept)
+    concepts
+    (let [tool-associations (find-latest-concepts
+                                db
+                                {:provider-id "CMR"}
+                                {:concept-type :tool-association
+                                 :tool-concept-id (:concept-id concept)})
+          tombstones (map association->tombstone tool-associations)]
+      ;; publish tool-association delete events
       (doseq [tombstone tombstones]
         (ingest-events/publish-event
          (:context db)
@@ -382,13 +398,13 @@
    (let [{:keys [concept-type provider-id concept-id revision-id]} concept
          concept (update-in concept
                             [:revision-date]
-                            #(or % (f/unparse (f/formatters :date-time) (tk/now))))
+                            #(or % (p/clj-time->date-time-str (tk/now))))
          ;; Set the created-at time to the current timekeeper time for concepts which have
          ;; the created-at field and do not already have a :created-at time set.
          concept (if (some #{concept-type} [:collection :granule :service :tool :variable :subscription])
                    (update-in concept
                               [:created-at]
-                              #(or % (f/unparse (f/formatters :date-time) (tk/now))))
+                              #(or % (p/clj-time->date-time-str (tk/now))))
                    concept)
          concept (assoc concept :transaction-id (swap! (:next-transaction-id-atom db) inc))
          concept (if (= concept-type :granule)
@@ -520,20 +536,22 @@
   (doseq [{:keys [concept-type concept-id revision-id]} (find-concepts db [provider] nil)]
    (force-delete db concept-type provider concept-id revision-id))
 
-  ;; Cascade to delete the variable associations and service associations,
+  ;; Cascade to delete the variable associations, service associations and tool associations
   ;; this is a hacky way of doing things
-  (doseq [assoc-type [:variable-association :service-association]]
+  (doseq [assoc-type [:variable-association :service-association :tool-association]]
    (doseq [association (find-concepts db [{:provider-id "CMR"}]
                                          {:concept-type assoc-type})]
      (let [{:keys [concept-id revision-id extra-fields]} association
-           {:keys [associated-concept-id variable-concept-id service-concept-id]} extra-fields
-           referenced-providers (map (fn [cid]
-                                       (some-> cid
-                                               cc/parse-concept-id
-                                               :provider-id))
-                                     [associated-concept-id variable-concept-id service-concept-id])]
+           {:keys [associated-concept-id variable-concept-id service-concept-id tool-concept-id]}
+                  extra-fields
+           referenced-providers
+            (map (fn [cid]
+                   (some-> cid
+                    cc/parse-concept-id
+                    :provider-id))
+                 [associated-concept-id variable-concept-id service-concept-id tool-concept-id])]
        ;; If the association references the deleted provider through
-       ;; either collection or variable/service, delete the association
+       ;; either collection or variable/service/tool, delete the association
        (when (some #{(:provider-id provider)} referenced-providers)
          (force-delete db assoc-type {:provider-id "CMR"} concept-id revision-id)))))
 

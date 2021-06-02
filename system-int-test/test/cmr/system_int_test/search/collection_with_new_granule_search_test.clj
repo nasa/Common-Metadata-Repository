@@ -185,7 +185,7 @@
      :coll-spatial-match coll-spatial-match
      :coll-platform-match coll-platform-match}))
 
-(deftest collections-has-granules-created-at-test
+(deftest ^:in-memory-db collections-has-granules-created-at-test
   (s/only-with-in-memory-database
     (let [{:keys [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
                   coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
@@ -225,8 +225,8 @@
           [params expected-results]
           (let [date-range ["2015-06-01T16:13:12Z,"]
                 actual-results (search/find-refs
-                                :collection
-                                (merge {:has-granules-created-at date-range} params))]
+                                 :collection
+                                 (merge {:has-granules-created-at date-range} params))]
             (d/assert-refs-match expected-results actual-results))
 
           "Provider ID"
@@ -288,8 +288,8 @@
           [params expected-results]
           (let [date-range ["2015-06-01T16:13:12Z," ",2011-06-07T13:00:00Z"]
                 actual-results (search/find-refs
-                                :collection
-                                (merge {:has-granules-created-at date-range} params))]
+                                 :collection
+                                 (merge {:has-granules-created-at date-range} params))]
             (d/assert-refs-match expected-results actual-results))
 
           "Archive center"
@@ -304,10 +304,10 @@
         (doseq [format [:atom :dif :dif10 :echo10 :iso19115 :json :opendata :xml :umm-json]]
           (testing (str "format: " format)
             (let [results (search/search-concept-ids-in-format
-                           format
-                           :collection
-                           {:has-granules-created-at [",2015-06-01T16:13:12Z"]
-                            :sort-key "entry_title"})
+                            format
+                            :collection
+                            {:has-granules-created-at [",2015-06-01T16:13:12Z"]
+                             :sort-key "entry_title"})
                   ;; expected results sorted by entry title
                   expected-results [coll-archive-center-match
                                     coll-platform-match
@@ -320,7 +320,7 @@
                      results)))))))))
 
 
-(deftest collection-has-granules-revised-at-test
+(deftest ^:in-memory-db collection-has-granules-revised-at-test
   (s/only-with-in-memory-database
     (let [{:keys [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
                   coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
@@ -332,50 +332,50 @@
                                            coll-w-may-2010-granule
                                            (:concept-id coll-w-may-2010-granule)
                                            {:revision-id 2}))]
-     (index/wait-until-indexed)
-     (testing "has_granules_revised_at parameter by itself"
-       (util/are3
-         [date-ranges expected-results]
-         (let [actual-results (search/find-refs :collection {:has-granules-revised-at date-ranges})]
-           (d/assert-refs-match expected-results actual-results))
+      (index/wait-until-indexed)
+      (testing "has_granules_revised_at parameter by itself"
+        (util/are3
+          [date-ranges expected-results]
+          (let [actual-results (search/find-refs :collection {:has-granules-revised-at date-ranges})]
+            (d/assert-refs-match expected-results actual-results))
 
-         "Single date range"
-         ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
+          "Single date range"
+          ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
 
-         "Prior to date"
-         [",2015-06-01T16:13:12Z"] [coll-w-may-2010-granule coll-w-may-2015-granule
-                                    coll-temporal-match coll-temporal-no-match coll-spatial-match
-                                    coll-archive-center-match coll-platform-match]
+          "Prior to date"
+          [",2015-06-01T16:13:12Z"] [coll-w-may-2010-granule coll-w-may-2015-granule
+                                     coll-temporal-match coll-temporal-no-match coll-spatial-match
+                                     coll-archive-center-match coll-platform-match]
 
-         "After date"
-         ["2017-04-01T10:00:00Z,"] [coll-w-may-2010-granule]
+          "After date"
+          ["2017-04-01T10:00:00Z,"] [coll-w-may-2010-granule]
 
-         "Multiple time ranges"
-         [",2014-07-01T16:13:12Z"
-          "2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"
-          "2016-04-01T10:10:00Z,2016-07-01T16:13:12Z"]
-         [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
-          coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
-          coll-spatial-match coll-archive-center-match coll-platform-match]
+          "Multiple time ranges"
+          [",2014-07-01T16:13:12Z"
+           "2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"
+           "2016-04-01T10:10:00Z,2016-07-01T16:13:12Z"]
+          [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
+           coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
+           coll-spatial-match coll-archive-center-match coll-platform-match]
 
-         "No matches"
-         [",2090-01-01T12:34:56ZZ"] []))
+          "No matches"
+          [",2090-01-01T12:34:56ZZ"] []))
 
-     (testing "has_granules_revised_at success in multiple formats with sort"
-       (doseq [format [:atom :dif :dif10 :echo10 :iso19115 :json :opendata :xml :umm-json]]
-         (testing (str "format: " format)
-           (let [results (search/search-concept-ids-in-format
-                          format
-                          :collection
-                          {:has-granules-revised-at [",2015-06-01T16:13:12Z"]
-                           :sort-key "entry_title"})
-                 ;; expected results sorted by entry title
-                 expected-results [coll-archive-center-match
-                                   coll-platform-match
-                                   coll-spatial-match
-                                   coll-w-may-2010-granule
-                                   coll-w-may-2015-granule
-                                   coll-temporal-no-match
-                                   coll-temporal-match]]
-             (is (= (mapv :concept-id expected-results)
-                    results)))))))))
+      (testing "has_granules_revised_at success in multiple formats with sort"
+        (doseq [format [:atom :dif :dif10 :echo10 :iso19115 :json :opendata :xml :umm-json]]
+          (testing (str "format: " format)
+            (let [results (search/search-concept-ids-in-format
+                            format
+                            :collection
+                            {:has-granules-revised-at [",2015-06-01T16:13:12Z"]
+                             :sort-key "entry_title"})
+                  ;; expected results sorted by entry title
+                  expected-results [coll-archive-center-match
+                                    coll-platform-match
+                                    coll-spatial-match
+                                    coll-w-may-2010-granule
+                                    coll-w-may-2015-granule
+                                    coll-temporal-no-match
+                                    coll-temporal-match]]
+              (is (= (mapv :concept-id expected-results)
+                     results)))))))))

@@ -117,7 +117,7 @@
               :public-conf (public-conf)
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
      (transmit-config/system-with-connections
-       sys [:metadata-db :indexer :access-control :echo-rest :search :kms]))))
+       sys [:metadata-db :indexer :access-control :echo-rest :search :kms :urs]))))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

@@ -74,6 +74,11 @@
            (acl/verify-ingest-management-permission ctx :update)
            (jobs/trigger-partial-refresh-collection-granule-aggregation-cache
             ctx)
+           {:status 200})
+     (POST "/trigger-granule-task-cleanup-job"
+           {ctx :request-context}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jobs/trigger-bulk-granule-update-task-table-cleanup ctx)
            {:status 200}))))
 
 (def ingest-routes
@@ -93,6 +98,17 @@
            request
            (variables/ingest-variable
              nil native-id request coll-concept-id nil)))))
+    ;; granule bulk update status route
+    (api-core/set-default-error-format
+     :json
+     (context "/granule-bulk-update/status" []
+       (POST "/"
+         request
+         (bulk/update-completed-granule-task-statuses request))
+       (context "/:task-id" [task-id]
+         (GET "/"
+           request
+           (bulk/get-granule-task-status task-id request)))))
     ;; Provider ingest routes
     (api-core/set-default-error-format
      :xml
@@ -156,10 +172,19 @@
            (tools/delete-tool
             provider-id native-id request)))
        ;; Subscriptions
+       (context ["/subscriptions"] []
+         (POST "/"
+           request
+           (subscriptions/create-subscription
+            provider-id request)))
        (context ["/subscriptions/:native-id" :native-id #".*$"] [native-id]
+         (POST "/"
+           request
+           (subscriptions/create-subscription-with-native-id
+            provider-id native-id request))
          (PUT "/"
            request
-           (subscriptions/ingest-subscription
+           (subscriptions/create-or-update-subscription-with-native-id
             provider-id native-id request))
          (DELETE "/"
            request
@@ -173,10 +198,18 @@
             provider-id request))
          (GET "/status" ; Gets all tasks for provider
            request
-           (bulk/get-provider-tasks provider-id request))
+           (bulk/get-provider-tasks :collection provider-id request))
          (GET "/status/:task-id"
            [task-id :as request]
-           (bulk/get-provider-task-status provider-id task-id request)))))))
+           (bulk/get-collection-task-status provider-id task-id request)))
+       (context "/bulk-update/granules" []
+         (POST "/"
+           request
+           (bulk/bulk-update-granules
+            provider-id request))
+         (GET "/status" ; Gets all tasks for provider
+           request
+           (bulk/get-provider-tasks :granule provider-id request)))))))
 
 (defn build-routes [system]
   (routes

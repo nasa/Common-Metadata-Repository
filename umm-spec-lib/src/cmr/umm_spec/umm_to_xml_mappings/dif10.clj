@@ -246,6 +246,15 @@
          (when-let [online-resource (:OnlineResource collection-citation)]
            [:Online_Resource (:Linkage online-resource)])]))))
 
+(defn generate-associated-dois
+  "Returns the DIF 10 XML associated dois from a UMM-C collection record."
+  [c]
+  (for [assoc-doi (get c :AssociatedDOIs)]
+    [:Associated_DOIs
+     [:DOI (:DOI assoc-doi)]
+     [:Title (:Title assoc-doi)]
+     [:Authority (:Authority assoc-doi)]]))
+
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
@@ -258,6 +267,7 @@
     [:Version_Description (:VersionDescription c)]
     [:Entry_Title (or (:EntryTitle c) u/not-provided)]
     (generate-dataset-citation c)
+    (generate-associated-dois c)
     (contact/generate-collection-personnel c)
     (if-let [sks (:ScienceKeywords c)]
       ;; From UMM keywords
@@ -322,8 +332,17 @@
     (generate-projects (:Projects c))
     [:Quality (:Quality c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
-    (when-let [description (get-in c [:UseConstraints :Description])]
-      [:Use_Constraints (:Description description)])
+    (when-let [use-constraints (get c :UseConstraints)]
+      [:Use_Constraints
+        [:Description (:Description use-constraints)]
+        (when-let [url (get-in use-constraints [:LicenseURL :Linkage])]
+          [:License_URL
+            [:URL url]
+            [:Title (get-in use-constraints [:LicenseURL :Name])]
+            [:Description (get-in use-constraints [:LicenseURL :Description])]
+            [:Mime_Type (get-in use-constraints [:LicenseURL :MimeType])]])
+        (when-let [license-text (:LicenseText use-constraints)]
+          [:License_Text license-text])])
     (dif-util/generate-dataset-language :Dataset_Language (:DataLanguage c))
     (center/generate-organizations c)
     (for [dist (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])]
@@ -334,6 +353,13 @@
                                   (:AverageFileSizeUnit dist)))]
        [:Distribution_Format (:Format dist)]
        [:Fees (:Fees dist)]])
+    (when-let [direct-dist-info (:DirectDistributionInformation c)]
+      [:DirectDistributionInformation
+        [:Region (:Region direct-dist-info)]
+        (for [prefix-name (:S3BucketAndObjectPrefixNames direct-dist-info)]
+          [:S3BucketAndObjectPrefixName prefix-name])
+        [:S3CredentialsAPIEndpoint (:S3CredentialsAPIEndpoint direct-dist-info)]
+        [:S3CredentialsAPIDocumentationURL (:S3CredentialsAPIDocumentationURL direct-dist-info)]])
     (for [pub-ref (:PublicationReferences c)]
       [:Reference
        (map (fn [x] (if (keyword? x)

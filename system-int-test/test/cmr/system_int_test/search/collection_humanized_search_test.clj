@@ -58,41 +58,47 @@
     (json/decode (:body response) true)))
 
 (deftest humanizer-report
-  (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1
-                                         {:ShortName "A"
-                                          :Version "V1"
-                                          :Platforms [(data-umm-cmn/platform
-                                                       {:ShortName "TERRA"
-                                                        :Instruments
-                                                        [(data-umm-cmn/instrument {:ShortName "GPS RECEIVERS"})]})]}))
-  (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2
-                                         {:ShortName "B"
-                                          :Version "V2"
-                                          :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]}))
-  (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3
-                                         {:ShortName "C"
-                                          :Version "V3"
-                                          :Projects (data-umm-cmn/projects "USGS_SOFIA")
-                                          :ScienceKeywords [{:Category "Bioosphere"
-                                                             :Topic "Topic1"
-                                                             :Term "Term1"}
-                                                            {:Category "Bio sphere"
-                                                             :Topic "Topic2"
-                                                             :Term "Term2"}]}))
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection
+                                             1
+                                             {:ShortName "A"
+                                              :Version "V1"
+                                              :Platforms [(data-umm-cmn/platform
+                                                           {:ShortName "TERRA"
+                                                            :Instruments
+                                                            [(data-umm-cmn/instrument {:ShortName "GPS RECEIVERS"})]})]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection
+                                             2
+                                             {:ShortName "B"
+                                              :Version "V2"
+                                              :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]}))
+        coll3 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection
+                                             3
+                                             {:ShortName "C"
+                                              :Version "V3"
+                                              :Projects (data-umm-cmn/projects "USGS_SOFIA")
+                                              :ScienceKeywords [{:Category "Bioosphere"
+                                                                 :Topic "Topic1"
+                                                                 :Term "Term1"}
+                                                                {:Category "Bio sphere"
+                                                                 :Topic "Topic2"
+                                                                 :Term "Term2"}]}))]
 
-  (index/wait-until-indexed)
-  ;; Refresh the metadata cache
-  (search/refresh-collection-metadata-cache)
-  (testing "Humanizer report csv"
-    (let [report (search/get-humanizers-report)]
-      (is (= ["provider,concept_id,short_name,version,original_value,humanized_value"
-              "PROV1,C1200000007-PROV1,A,V1,GPS RECEIVERS,GPS Receivers"
-              "PROV1,C1200000008-PROV1,B,V2,AM-1,Terra"
-              "PROV1,C1200000009-PROV1,C,V3,Bioosphere,Biosphere"
-              "PROV1,C1200000009-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"]
-             (str/split report #"\n")))
-      (testing "Ensure that the returned report is the same as the cached one"
-       (is (= report (get-cached-report)))))))
+    (index/wait-until-indexed)
+    ;; Refresh the metadata cache
+    (search/refresh-collection-metadata-cache)
+    (testing "Humanizer report csv"
+      (let [report (search/get-humanizers-report)]
+        (is (= ["provider,concept_id,short_name,version,original_value,humanized_value"
+                (format "PROV1,%s,A,V1,GPS RECEIVERS,GPS Receivers" (:concept-id coll1))
+                (format "PROV1,%s,B,V2,AM-1,Terra" (:concept-id coll2))
+                (format "PROV1,%s,C,V3,Bioosphere,Biosphere" (:concept-id coll3))
+                (format "PROV1,%s,C,V3,USGS_SOFIA,USGS SOFIA" (:concept-id coll3))]
+               (str/split report #"\n")))
+        (testing "Ensure that the returned report is the same as the cached one"
+          (is (= report (get-cached-report))))))))
 
 (defn- get-humanizer-report-batch-size
   "Returns the currently configured value for the humanizer report batch size."
@@ -106,8 +112,10 @@
   (let [updated-batch-size (get-humanizer-report-batch-size)]
     ;; Insert more entries than the batch size to test batches
     (doseq [n (range (inc updated-batch-size))]
-      (d/ingest-umm-spec-collection "PROV1"
-       (data-umm-c/collection n
+      (d/ingest-umm-spec-collection
+       "PROV1"
+       (data-umm-c/collection
+        n
         {:ShortName "B"
          :Version n
          :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]})))
@@ -123,8 +131,11 @@
                               coll-suffix (if (< coll-normalized 10)
                                             (str "0" coll-normalized)
                                             (str coll-normalized))]
-                          (is (= (format "PROV1,C12000000%s-PROV1,B,%d,AM-1,Terra" coll-suffix n)
-                                 actual-line))))
+                          (is (-> (format "PROV1,C12000000\\d+-PROV1,B,%d,AM-1,Terra" n)
+                                  re-pattern
+                                  (re-find actual-line)
+                                  nil?
+                                  false?))))
                       (rest report-lines)))))
     (side/eval-form `(hrs/set-humanizer-report-collection-batch-size! 500))))
 
@@ -235,17 +246,25 @@
 (deftest search-by-granule-data-format-humanized
   (let [aadi1 {:ArchiveAndDistributionInformation
                {:FileDistributionInformation
-                 [{:FormatType "Binary"
-                   :AverageFileSize 50
-                   :AverageFileSizeUnit "MB"
-                   :Fees "None currently"
-                   :Format "NetCDF-3"}]}}
+                [{:FormatType "Binary"
+                  :AverageFileSize 50
+                  :AverageFileSizeUnit "MB"
+                  :Fees "None currently"
+                  :Format "NetCDF-3"}]}}
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection aadi1))]
     (index/wait-until-indexed)
+
     (testing "search collections by humanized granule data format"
       (is (d/refs-match? [coll1]
                          (search/find-refs :collection {:granule-data-format-h "NetCDF"})))
       (is (d/refs-match? [coll1]
                          (search/find-refs :collection {:granule-data-format "NetCDF-3"})))
       (is (d/refs-match? [coll1]
-                         (search/find-refs :collection {:granule-data-format "netcdf-3"}))))))
+                         (search/find-refs :collection {:granule-data-format "netcdf-3"})))
+      (is (d/refs-match? [coll1]
+                         (search/find-refs :collection {"granule-data-format-h[]" "NetCDF"}))))
+
+    (testing "CMR-7112: search by humanized field and include_granule_counts does not result in exception"
+      (is (d/refs-match? [coll1]
+                         (search/find-refs :collection {"granule-data-format-h[]" "NetCDF"
+                                                        :include_granule_counts true}))))))

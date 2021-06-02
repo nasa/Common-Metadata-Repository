@@ -2,10 +2,10 @@
   "Tests searching for collections using basic collection identifiers"
   (:require
    [clj-time.core :as t]
-   [clj-time.format :as f]
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common-app.services.search.messages :as msg]
+   [cmr.common.date-time-parser :as p]
    [cmr.indexer.config :as indexer-config]
    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
    [cmr.system-int-test.data2.collection :as dc]
@@ -414,17 +414,17 @@
          "-sensor" [c2 c5 c1 c4 c3])))
 
 (deftest collection-fuzzy-end-date-test
-  (let [today (f/unparse (f/formatters :date-time) (t/now))
-        outside-ongoing (f/unparse (f/formatters :date-time)
-                                   (t/minus (t/now) (t/days (+ 1 (indexer-config/ongoing-days)))))
-        inside-ongoing (f/unparse (f/formatters :date-time)
-                                  (t/minus (t/now) (t/days (- 1 (indexer-config/ongoing-days)))))
-        year-in-future (f/unparse (f/formatters :date-time)
-                                  (t/plus (t/now) (t/years 1)))
-        year-in-past (f/unparse (f/formatters :date-time)
-                                (t/minus (t/now) (t/years 1)))
-        far-future (f/unparse (f/formatters :date-time)
-                              (t/plus (t/now) (t/years 3000)))
+  (let [today (p/clj-time->date-time-str (t/now))
+        outside-ongoing (p/clj-time->date-time-str
+                         (t/minus (t/now) (t/days (+ 1 (indexer-config/ongoing-days)))))
+        inside-ongoing (p/clj-time->date-time-str
+                        (t/minus (t/now) (t/days (- 1 (indexer-config/ongoing-days)))))
+        year-in-future (p/clj-time->date-time-str
+                        (t/plus (t/now) (t/years 1)))
+        year-in-past (p/clj-time->date-time-str
+                      (t/minus (t/now) (t/years 1)))
+        far-future (p/clj-time->date-time-str
+                    (t/plus (t/now) (t/years 3000)))
         coll1 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection 1 {:EntryTitle "Dataset1"
@@ -468,10 +468,10 @@
                                                              :ending-date-time today})]}))]
     (index/wait-until-indexed)
     (are [sort-key items]
-         (sort-order-correct? items sort-key)
+      (sort-order-correct? items sort-key)
 
-         ["-ongoing" "entry-title"] [coll2 coll4 coll5 coll6 coll7 coll3 coll1]
-         ["ongoing" "entry-title"] [coll1 coll3 coll2 coll4 coll5 coll6 coll7])))
+      ["-ongoing" "entry-title"] [coll2 coll4 coll5 coll6 coll7 coll3 coll1]
+      ["ongoing" "entry-title"] [coll1 coll3 coll2 coll4 coll5 coll6 coll7])))
 
 (deftest collection-usage-score-sorting-test
   (let [make-named-collection (fn [cname attribs]
@@ -501,7 +501,7 @@
     (testing "usage_score as the sole sort key"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
-           
+
            ["usage_score"] [alphonse_nil charlie_nil delta_nil alpha_2_10 alpha_1_10 bravo_1_20 bravo_2_25 other_alpha_30]
            ["-usage_score"] [other_alpha_30 bravo_2_25 bravo_1_20 alpha_2_10 alpha_1_10 alphonse_nil charlie_nil delta_nil]))
 
@@ -514,7 +514,7 @@
            ["-short_name" "usage_score"] [delta_nil charlie_nil bravo_1_20 bravo_2_25 alphonse_nil alpha_2_10 alpha_1_10 other_alpha_30]
            ["-short_name" "-usage_score"] [delta_nil charlie_nil bravo_2_25 bravo_1_20 alphonse_nil other_alpha_30 alpha_2_10 alpha_1_10]
 
-           ["usage_score" "short_name"] [alphonse_nil charlie_nil delta_nil alpha_2_10 alpha_1_10 bravo_1_20 bravo_2_25 other_alpha_30] 
+           ["usage_score" "short_name"] [alphonse_nil charlie_nil delta_nil alpha_2_10 alpha_1_10 bravo_1_20 bravo_2_25 other_alpha_30]
            ["usage_score" "-short_name"] [delta_nil charlie_nil alphonse_nil alpha_2_10 alpha_1_10 bravo_1_20 bravo_2_25 other_alpha_30]
            ["-usage_score" "short_name"] [other_alpha_30 bravo_2_25 bravo_1_20 alpha_2_10 alpha_1_10 alphonse_nil charlie_nil delta_nil]
            ["-usage_score" "-short_name"] [other_alpha_30 bravo_2_25 bravo_1_20 alpha_2_10 alpha_1_10 delta_nil charlie_nil alphonse_nil]))
@@ -527,15 +527,15 @@
 
            ;; keyword relevancy sorting
            {:keyword "alph*"} [alpha_2_10 alpha_1_10 alphonse_nil other_alpha_30]
-           
+
            ;; when usage is provided it will override relevancy
            {:keyword "alph*" :sort-key ["-usage_score"]} [other_alpha_30 alpha_2_10 alpha_1_10 alphonse_nil]
            {:keyword "alph*" :sort-key ["usage_score"]} [alphonse_nil alpha_2_10 alpha_1_10 other_alpha_30]
-           
+
            ;; verify order is enforced when providing multiple keys
            {:keyword "alph*" :sort-key ["entry_title" "usage_score"]} [alpha_1_10 alpha_2_10 alphonse_nil other_alpha_30]
-           {:keyword "alph*" :sort-key ["entry_title" "-usage_score"]} [alpha_1_10 alpha_2_10 alphonse_nil other_alpha_30] 
-           {:keyword "alph*" :sort-key ["-entry_title" "usage_score"]} [other_alpha_30 alphonse_nil alpha_2_10 alpha_1_10] 
+           {:keyword "alph*" :sort-key ["entry_title" "-usage_score"]} [alpha_1_10 alpha_2_10 alphonse_nil other_alpha_30]
+           {:keyword "alph*" :sort-key ["-entry_title" "usage_score"]} [other_alpha_30 alphonse_nil alpha_2_10 alpha_1_10]
            {:keyword "alph*" :sort-key ["-entry_title" "-usage_score"]} [other_alpha_30 alphonse_nil alpha_2_10 alpha_1_10]
 
            {:keyword "alph*" :sort-key ["usage_score" "entry_title"]} [alphonse_nil alpha_1_10 alpha_2_10 other_alpha_30]
@@ -564,7 +564,7 @@
         charlie_nil (make-named-collection "charlie" {})
         delta_nil (make-named-collection "delta" {})]
 
-    (index/wait-until-indexed) 
+    (index/wait-until-indexed)
 
     (testing "unversioned metrics will be associated correctly"
       (are [query items]
@@ -579,4 +579,3 @@
                              alpha_10
                              charlie_nil
                              delta_nil]))))
-  

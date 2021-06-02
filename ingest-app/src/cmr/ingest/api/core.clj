@@ -48,7 +48,7 @@
   "Create nested elements for the nested maps."
   [m]
   (reduce-kv (fn [memo k v]
-                 (conj memo (xml/element (keyword k) {} (if (map? v) 
+                 (conj memo (xml/element (keyword k) {} (if (map? v)
                                                           (create-nested-elements v)
                                                           v))))
              []
@@ -111,13 +111,15 @@
 (defmethod generate-ingest-response :json
   [headers result]
   ;; ring-json middleware will handle converting the body to json
-  {:status (ingest-status-code result)
+  {:status (or (:status result)
+               (ingest-status-code result))
    :headers {"Content-Type" (mt/format->mime-type :json)}
    :body result})
 
 (defmethod generate-ingest-response :xml
   [headers result]
-  {:status (ingest-status-code result)
+  {:status (or (:status result)
+               (ingest-status-code result))
    :headers {"Content-Type" (mt/format->mime-type :xml)}
    :body (result-map->xml result)})
 
@@ -180,15 +182,20 @@
     {}
     {:threshold 1000}))
 
+(defn get-user-id-from-token
+  "Get user id based on token in request context"
+  [context]
+  (when-let [token (:token context)]
+    (cache/get-value (cache/context->cache context user-id-cache-key)
+                     token
+                     (partial tokens/get-user-id context token))))
+
 (defn get-user-id
   "Get user id based on context and headers"
   [context headers]
   (if-let [user-id (get headers transmit-config/user-id-header)]
     user-id
-    (when-let [token (get headers transmit-config/token-header)]
-      (cache/get-value (cache/context->cache context user-id-cache-key)
-                       token
-                       (partial tokens/get-user-id context token)))))
+    (get-user-id-from-token context)))
 
 (defn set-user-id
   "Associate user id to concept."

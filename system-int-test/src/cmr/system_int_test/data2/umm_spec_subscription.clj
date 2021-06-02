@@ -13,7 +13,6 @@
 (def ^:private sample-umm-subscription
   {:Name "someSub"
    :SubscriberId "someSubId"
-   :EmailAddress "someEmail@gmail.com"
    :CollectionConceptId "C123-PROV1"
    :Query "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78"})
 

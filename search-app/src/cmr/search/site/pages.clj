@@ -25,6 +25,14 @@
    "templates/search-docs.html"
    (data/base-page context)))
 
+(defn stac-search-docs
+  "Prepare the top-level stac search docs page."
+  [context]
+  (common-pages/render-html
+   context
+   "templates/stac-search-docs.html"
+   (data/base-page context)))
+
 (defn search-site-docs
   "Prepare the site-specific (non-API) docs page."
   [context]

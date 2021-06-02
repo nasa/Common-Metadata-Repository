@@ -99,7 +99,7 @@
         vp-config (get svm/source-to-virtual-product-mapping [provider-id entry-title])]
     (for [virtual-coll (:virtual-collections vp-config)]
       (svm/generate-granule-ur
-        provider-id (:short-name vp-config) (:short-name virtual-coll) granule-ur))))
+        provider-id (:short-name vp-config) virtual-coll granule-ur))))
 
 (defn translate-granule-entries
   "Translate the virtual granule entries to the corresponding source entries in the input json"
@@ -236,17 +236,17 @@
 
       {:granule-ur "SC:AST_L1A.003:2006227720"
        :product-specific-attributes [psa4]}
-      ["SC:AST_L1B.003:2006227720"]
+      ["SC:AST_L1B.003:2006227720" "SC:AST_L1T.031:2006227720"]
 
       {:granule-ur "SC:AST_L1A.003:2006227721"
        :product-specific-attributes [psa1]}
       ["SC:AST_05.003:2006227721" "SC:AST_08.003:2006227721" "SC:AST_09T.003:2006227721"
-       "SC:AST_L1B.003:2006227721"]
+       "SC:AST_L1B.003:2006227721" "SC:AST_L1T.031:2006227721"]
 
       {:granule-ur "SC:AST_L1A.003:2006227722"
        :product-specific-attributes [psa1 psa2 psa3 psa4]}
       ["SC:AST_05.003:2006227722" "SC:AST_08.003:2006227722" "SC:AST_09T.003:2006227722"
-       "SC:AST_L1B.003:2006227722"]
+       "SC:AST_L1B.003:2006227722" "SC:AST_L1T.031:2006227722"]
 
       {:granule-ur "SC:AST_L1A.003:2006227724"
        :product-specific-attributes [psa3 psa4]
@@ -254,7 +254,7 @@
                       {:day-night "DAY"
                        :production-date-time "2014-09-26T11:11:00Z"})}
       ["SC:AST14DEM.003:2006227724" "SC:AST14OTH.003:2006227724" "SC:AST14DMO.003:2006227724"
-       "SC:AST_L1B.003:2006227724"]
+       "SC:AST_L1B.003:2006227724" "SC:AST_L1T.031:2006227724"]
 
       {:granule-ur "SC:AST_L1A.003:2006227725"
        :product-specific-attributes [psa2 psa3 psa4]
@@ -264,7 +264,7 @@
       ["SC:AST14DMO.003:2006227725" "SC:AST_09.003:2006227725"
        "SC:AST_09XT.003:2006227725" "SC:AST14DEM.003:2006227725"
        "SC:AST_07.003:2006227725"   "SC:AST14OTH.003:2006227725"
-       "SC:AST_07XT.003:2006227725" "SC:AST_L1B.003:2006227725"]
+       "SC:AST_07XT.003:2006227725" "SC:AST_L1B.003:2006227725" "SC:AST_L1T.031:2006227725"]
 
       {:granule-ur "SC:AST_L1A.003:2006227726"
        :product-specific-attributes [psa1 psa2 psa3 psa4]
@@ -274,5 +274,5 @@
       ["SC:AST_09XT.003:2006227726" "SC:AST14DEM.003:2006227726"
        "SC:AST_08.003:2006227726"   "SC:AST_05.003:2006227726"
        "SC:AST14OTH.003:2006227726" "SC:AST_07.003:2006227726"
-       "SC:AST_09.003:2006227726"   "SC:AST_09T.003:2006227726"
+       "SC:AST_09.003:2006227726"   "SC:AST_09T.003:2006227726" "SC:AST_L1T.031:2006227726"
        "SC:AST_07XT.003:2006227726" "SC:AST14DMO.003:2006227726" "SC:AST_L1B.003:2006227726"])))

@@ -1,0 +1,24 @@
+#kaocha/v1
+{:tests #profile
+ {:default [{:id :integration
+             :ns-pattern ["*"]}]
+  :ci [{:id :integration
+        :skip-meta [:in-memory-db]
+        :ns-pattern ["*"]
+        :test-paths #include #or [#env CMR_TEST_GROUP "tests.all.edn"]}]}
+
+ :plugins [:kaocha.plugin.alpha/info
+           :kaocha.plugin/capture-output
+           :kaocha.plugin/randomize
+           :junit-xml
+           :print-invocations]
+
+ :color? #profile {:default true
+                   :ci false}
+
+ :fail-fast? false
+
+ :reporter kaocha.report/documentation
+
+ :kaocha.plugin.randomize/randomize? false
+ :kaocha.plugin.junit-xml/target-file "target/junit.xml"}

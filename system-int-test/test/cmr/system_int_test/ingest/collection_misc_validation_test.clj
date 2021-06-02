@@ -59,9 +59,8 @@
   (testing "Collections with nil versions are rejected"
     (let [concept (data-umm-c/collection-concept {:Version nil} :iso19115)
           response (ingest/ingest-concept concept)]
-      (is (= {:status 422
-              :errors ["Version is required."]}
-             response)))))
+      (is (= 201 
+             (:status response))))))
 
 (deftest field-exceeding-maxlength-warnings
   (testing "Multiple warnings returned for the fields exceeding maxlength allowed"

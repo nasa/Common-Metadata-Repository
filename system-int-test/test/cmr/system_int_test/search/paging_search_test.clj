@@ -62,6 +62,16 @@
 
       "All granules query"
       (search/find-refs :granule {:page-size 500 :page-num 22})))
+
+  (testing "page size and offset exceed limit"
+    (let [{:keys [status errors]} (search/find-refs :granule
+                                                    {:collection_concept_id "C1-PROV1"
+                                                     :page-size 5
+                                                     :offset 1000000})]
+      (is (= 400 status))
+      (is (= ["The paging depth (page_size + offset) of [1000005] exceeds the limit of 1000000."]
+             errors))))
+
   (testing "Within page depth"
     (are3 [resp]
       ;; This means the query was successful.

@@ -88,4 +88,4 @@ This task will run the relevancy tests of the form "I expect collection X to be 
 
 ## License
 
-Copyright © 2017-2018 NASA
+Copyright © 2017-2021 NASA

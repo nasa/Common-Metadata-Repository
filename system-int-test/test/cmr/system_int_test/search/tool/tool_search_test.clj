@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.tool.tool-search-test
   "This tests searching tools."
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :refer [are3]]
@@ -494,16 +495,13 @@
       "-provider"
       [tool1 tool2 tool3 tool4]
 
-      ;;The following two tests failed when running test suite locally,
-      ;;but succeeded in bamboo and locally when running tool_search_test.clj by itself.
-      ;;Filed CMR-6444 to investigate.
-      ;;"Sort by revision-date"
-      ;;"revision_date"
-      ;;[tool1 tool2 tool3 tool4]
+      "Sort by revision-date"
+      "revision_date"
+      [tool1 tool2 tool3 tool4]
 
-      ;;"Sort by revision-date descending order"
-      ;;"-revision_date"
-      ;;[tool4 tool3 tool2 tool1]
+      "Sort by revision-date descending order"
+      "-revision_date"
+      [tool4 tool3 tool2 tool1]
 
       "Sort by long-name"
       "long_name"
@@ -524,3 +522,68 @@
       "Sort by name then provider id descending order"
       ["-name" "-provider"]
       [tool2 tool1 tool4 tool3])))
+
+(deftest collection-tool-search-in-umm-json-format-test
+  (testing "collection search result in UMM JSON does have associated tools. tool search result in UMM JSON format does not have associated collections"
+    (let [token (e/login (s/context) "user1")
+          coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection) {:format :umm-json :token token})
+          ;; create tools
+          tool1-concept (tool/make-tool-concept {:native-id "svc1"
+                                                           :Name "tool1"})
+          tool1 (tool/ingest-tool tool1-concept)
+          tool2-concept (tool/make-tool-concept {:native-id "svc2"
+                                                           :Name "tool2"})
+          tool2 (tool/ingest-tool tool2-concept)
+          tool1-concept-id (:concept-id tool1)
+          tool1-assoc-colls [{:concept-id (:concept-id coll1)}]
+          expected-tool1 (merge tool1-concept tool1)
+          expected-tool2 (merge tool2-concept tool2)]
+      ;; index the collections so that they can be found during tool association
+      (index/wait-until-indexed)
+      ;; create tool associations
+      (au/associate-by-concept-ids token tool1-concept-id tool1-assoc-colls)
+      (index/wait-until-indexed)
+
+      ;; Verify collection search UMM JSON response does contain tool association.
+      (let [response (search/find-concepts-umm-json :collection {} {})
+            meta (-> response
+                     :body
+                     (json/parse-string true)
+                     :items
+                     first
+                     :meta)
+            tool-associations (get-in meta [:associations :tools])]
+
+        (is (= tool-associations [tool1-concept-id])))
+         
+      ;; verify tool search UMM JSON response is correct and does not have
+      ;; collection associations like variable search response does
+      (are3 [umm-version options]
+        (data-umm-json/assert-tool-umm-jsons-match
+         umm-version [expected-tool1 expected-tool2]
+         (search/find-concepts-umm-json :tool {} options))
+
+        "without specifying UMM JSON version"
+        umm-version/current-tool-version
+        {}
+
+        "explicit UMM JSON version through accept header"
+        umm-version/current-tool-version
+        {:accept (mime-types/with-version mime-types/umm-json umm-version/current-tool-version)}
+
+        "explicit UMM JSON version through suffix"
+        "1.0"
+        {:url-extension "umm_json_v1_0"})))
+
+  (testing "Searching with non-existent UMM JSON version"
+    (are3 [options]
+      (let [{:keys [status errors]} (search/find-concepts-umm-json :tool {} options)]
+        (is (= 400 status))
+        (is (= ["The mime type [application/vnd.nasa.cmr.umm_results+json] with version [0.1] is not supported for tools."]
+               errors)))
+
+      "explicit UMM JSON version through suffix"
+      {:url-extension "umm_json_v0_1"}
+
+      "explicit UMM JSON version through accept header"
+      {:accept (mime-types/with-version mime-types/umm-json "0.1")})))

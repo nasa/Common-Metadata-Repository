@@ -117,6 +117,26 @@
                     :associated-concept-id coll-concept-id
                     :associated-revision-id coll-revision-id}}))
 
+(defmethod association->concept-map :tool
+  [tool-association]
+  (let [{:keys [source-concept-id originator-id native-id user-id data errors]
+         coll-concept-id :concept-id
+         coll-revision-id :revision-id} tool-association]
+    {:concept-type :tool-association
+     :native-id native-id
+     :user-id user-id
+     :format mt/edn
+     :metadata (pr-str
+                 (util/remove-nil-keys
+                   {:tool-concept-id source-concept-id
+                    :originator-id originator-id
+                    :associated-concept-id coll-concept-id
+                    :associated-revision-id coll-revision-id
+                    :data data}))
+     :extra-fields {:tool-concept-id source-concept-id
+                    :associated-concept-id coll-concept-id
+                    :associated-revision-id coll-revision-id}}))
+
 (defn- update-association
   "Based on the input operation type (:insert or :delete), insert or delete the given association
   using the embedded metadata-db, returns the association result in the format of

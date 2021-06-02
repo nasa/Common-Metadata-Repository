@@ -132,14 +132,15 @@
 
 (defmethod parameter->condition :boolean
   [_context concept-type param value options]
-  (cond
+  (let [value (u/safe-lowercase value)]
+    (cond
     (or (= "true" value) (= "false" value))
     (qm/boolean-condition param (= "true" value))
     (= "unset" (string/lower-case value))
     qm/match-all
 
     :else
-    (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value))))
+    (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value)))))
 
 (defmethod parameter->condition :num-range
   [_context concept-type param value options]

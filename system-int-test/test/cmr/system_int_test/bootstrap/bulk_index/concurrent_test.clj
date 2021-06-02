@@ -29,7 +29,7 @@
 ;; 6. Searches for all of the saved/ingested concepts by concept-id.
 ;; 7. Verifies that the concepts returned by search have the expected revision ids.
 
-(deftest bulk-index-after-ingest
+(deftest ^:oracle bulk-index-after-ingest
   (s/only-with-real-database
     (let [collections (for [x (range 1 11)]
                         (let [umm (dc/collection {:short-name (str "short-name" x)

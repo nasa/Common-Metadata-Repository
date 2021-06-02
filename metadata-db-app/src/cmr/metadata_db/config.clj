@@ -67,6 +67,7 @@
    :variable ingest-exchange-name
    :variable-association ingest-exchange-name
    :tool ingest-exchange-name
+   :tool-association ingest-exchange-name
    :subscription ingest-exchange-name})
 
 (defconfig deleted-concept-revision-exchange-name

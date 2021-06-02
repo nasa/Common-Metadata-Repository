@@ -60,6 +60,7 @@ History:
                 <xs:element name="Version_Description"          type="VersionDescriptionType"       minOccurs="0"/>                         <!-- Added from UMM (ECHO) -->
                 <xs:element name="Entry_Title"                  type="EntryTitleType"/>                                                     <!-- None -->
                 <xs:element name="Dataset_Citation"             type="DatasetCitationType"          minOccurs="0"   maxOccurs="unbounded"/> <!-- Renamed -->
+                <xs:element name="Associated_DOIs"              type="AssociatedDOIsType"           minOccurs="0"   maxOccurs="unbounded"/>
                 <xs:element name="Personnel"                    type="PersonnelType"                minOccurs="0"   maxOccurs="unbounded"/> <!-- None -->
                                                                                                                                             <!-- Removed Discipline, is in dif_v9.8.3.xsd -->
                 <xs:element name="Science_Keywords"             type="ScienceKeywordsType"                          maxOccurs="unbounded"/> <!-- Renamed from Keyword in dif_v9.8.3.xsd -->
@@ -81,6 +82,7 @@ History:
                 <xs:element name="Originating_Center"           type="OriginatingCenterType"        minOccurs="0"/>                         <!-- None-->
                 <xs:element name="Organization"                 type="OrganizationType"                             maxOccurs="unbounded"/> <!-- Renamed from Data_Center in dif_v9.8.3.xsd -->
                 <xs:element name="Distribution"                 type="DistributionType"             minOccurs="0"   maxOccurs="unbounded"/> <!-- None-->
+                <xs:element name="DirectDistributionInformation" type="DirectDistributionInformationType" minOccurs="0" />                  <!-- None-->
                 <xs:element name="Multimedia_Sample"            type="MultimediaSampleType"         minOccurs="0"   maxOccurs="unbounded"/> <!-- None-->
                 <xs:element name="Reference"                    type="ReferenceType"                minOccurs="0"   maxOccurs="unbounded"/> <!-- None-->
                 <xs:element name="Summary"                      type="SummaryType"/>                                                        <!-- None-->
@@ -253,6 +255,80 @@ History:
         </xs:sequence>
     </xs:complexType>
 
+    <!-- *********************************************************** -->
+    <!-- #mark Associated DOIs -->
+
+    <xs:complexType name="AssociatedDOIsType">
+        <xs:annotation>
+            <xs:appinfo><details><path>/DIF/Associated_DOIs</path></details></xs:appinfo>
+            <xs:appinfo><action>changed</action><src>UMM</src><since>16.1</since></xs:appinfo>
+            <xs:appinfo><action>added</action><src>UMM</src><since>1.16.1</since>
+                        <note>added Associated DOIs</note></xs:appinfo>
+            <xs:documentation>
+                This element stores DOIs that are associated with the collection
+                such as from campaigns and other related sources. Note: The values
+                should start with the directory indicator which in ESDIS' case is 10.
+                If the DOI was registered through ESDIS, the beginning of the string
+                should be 10.5067. The DOI URL is not stored here; it should be
+                stored as a RelatedURL. The DOI organization that is responsible
+                for creating the DOI is described in the Authority element. For
+                ESDIS records the value of https://doi.org/ should be used.
+
+                | ECHO 10        |UMM                 | DIF 10           |
+                | -------------- | ------------------ | ---------------- |
+                | AssociatedDOIs | DOI/AssociatedDOIs | Associated_DOIs  |
+                |        -       |            -       |         -        |
+
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+    			<xs:element name="DOI">
+    				<xs:annotation>
+    					<xs:documentation>This element stores the DOI (Digital Object Identifier) that
+    						identifies an associated collection. Note: The values should
+    						start with the directory indicator which in ESDIS' case is 10.
+    						If the DOI was registered through ESDIS, the beginning of the
+    						string should be 10.5067. The DOI URL is not stored here; it
+    						should be stored as an OnlineResource.
+    					</xs:documentation>
+    				</xs:annotation>
+    				<xs:simpleType>
+    					<xs:restriction base="xs:string">
+    						<xs:maxLength value="1024"/>
+    						<xs:minLength value="1"/>
+    					</xs:restriction>
+    				</xs:simpleType>
+    			</xs:element>
+          <xs:element name="Title" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>The title of the DOI landing page. The title describes the
+                DOI object to a user, so they don't have to look it up themselves to
+                understand the association.
+              </xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:maxLength value="1030"/>
+                <xs:minLength value="1"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+    			<xs:element name="Authority" minOccurs="0">
+    				<xs:annotation>
+    					<xs:documentation>The DOI organization that is responsible for creating the
+    						associated DOI is described in the Authority element.
+    						For ESDIS records the value of https://doi.org/ should be used.
+    					</xs:documentation>
+    				</xs:annotation>
+    				<xs:simpleType>
+    					<xs:restriction base="xs:string">
+    						<xs:maxLength value="80" />
+    						<xs:minLength value="1"/>
+    					</xs:restriction>
+    				</xs:simpleType>
+    			</xs:element>
+    		</xs:sequence>
+    </xs:complexType>
     <!-- *********************************************************** -->
     <!-- #mark Personnel -->
     <xs:complexType name="PersonnelType">
@@ -1472,24 +1548,109 @@ History:
     <!-- *********************************************************** -->
     <!-- #mark Use_Constraints -->
 
-    <xs:complexType name="UseConstraintsType">
+    <xs:complexType name="UseConstraintsType" mixed="true">
          <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM (DIF)</src></xs:appinfo>
             <xs:documentation>
 
-            | DIF 9               | ECHO 10 | UMM               | DIF 10             | Notes          |
-            | ------------------- | ------- | ------------------| ------------------ | -------------  |
-            | Use_Constraints     |    -    | UseConstraints    | Use_Constraints    | No change      |
-
+    | ECHO 10                | UMM                    | DIF 10.2                | Notes          |
+    | ---------------------- | -----------------------| ----------------------- | -------------  |
+    |UseConstraints          |UseConstraints          |Use_Constraints          | No change      |
+    | /Description           | /Description           | /Description            |
+    | /LicenseURL/URL        | /LicenseURL/Linkage    | /License_URL/URL        |
+    | /LicenseURL/Type       | /LicenseURL/Name       | /License_URL/Title      |
+    | /LicenseURL/Description| /LicenseURL/Description| /License_URL/Description|
+    | /LicenseURL/MimeType   | /LicenseURL/MimeType   | /License_URL/Mime_Type  |
+    | /LicenseText           | /LicenseText           | /License_Text           |
             </xs:documentation>
-        </xs:annotation>
 
-        <xs:simpleContent>
-            <xs:extension base="DisplayableTextTypeBaseType">
-                <xs:attribute type="DisplayableTextEnum" name="mime_type" default="text/markdown"/>
-            </xs:extension>
-        </xs:simpleContent>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Description" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>This sub-element either contains a license summary or free-text description that details the permitted use or limitation of this collection.</xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="1" />
+                        <xs:maxLength value="4000" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:choice minOccurs="0">
+              <xs:element name="License_URL">
+                <xs:annotation>
+                  <xs:documentation>This entity records the documentation
+                    information of the collection including documentation type
+                    and documentation URL where apply etc.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="URL">
+                      <xs:annotation>
+                        <xs:documentation>The URL of the
+                          resource.</xs:documentation>
+                      </xs:annotation>
+                      <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                          <xs:maxLength value="1024" />
+                          <xs:minLength value="1"></xs:minLength>
+                        </xs:restriction>
+                      </xs:simpleType>
+                    </xs:element>
+                    <xs:element minOccurs="0" name="Title">
+                      <xs:annotation>
+                        <xs:documentation>The type of the resource such as
+                          'Collection Guide' or 'Campaign Guide'
+                          etc.</xs:documentation>
+                      </xs:annotation>
+                      <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                          <xs:maxLength value="100" />
+                          <xs:minLength value="1"></xs:minLength>
+                        </xs:restriction>
+                      </xs:simpleType>
+                    </xs:element>
+                    <xs:element minOccurs="0" name="Description">
+                      <xs:annotation>
+                        <xs:documentation>Comment about the online
+                          resource.</xs:documentation>
+                      </xs:annotation>
+                      <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                          <xs:maxLength value="4000" />
+                        </xs:restriction>
+                      </xs:simpleType>
+                    </xs:element>
+                    <xs:element minOccurs="0" name="Mime_Type">
+                      <xs:annotation>
+                        <xs:documentation>The mime type of the online
+                          resource.</xs:documentation>
+                      </xs:annotation>
+                      <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                          <xs:maxLength value="50" />
+                        </xs:restriction>
+                      </xs:simpleType>
+                    </xs:element>
+                  </xs:sequence>
+                 </xs:complexType>
+              </xs:element>
+              <xs:element name="License_Text" minOccurs="0">
+                  <xs:annotation>
+                      <xs:documentation>This element holds the actual license text. If this element is used the LicenseUrl element cannot be used.</xs:documentation>
+                  </xs:annotation>
+                  <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                          <xs:minLength value="1" />
+                          <xs:maxLength value="20000" />
+                      </xs:restriction>
+                  </xs:simpleType>
+              </xs:element>
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute type="DisplayableTextEnum" name="mime_type" default="text/markdown"/>
     </xs:complexType>
 
     <!-- *********************************************************** -->
@@ -1616,6 +1777,75 @@ History:
             <xs:element name="Distribution_Format"  type="xs:string" minOccurs="0"/>
             <xs:element name="Fees"                 type="xs:string" minOccurs="0"/>
         </xs:sequence>
+    </xs:complexType>
+
+    <!-- *********************************************************** -->
+    <!-- #mark DirectDistributionInformation -->
+
+    <xs:complexType name="DirectDistributionInformationType">
+      <xs:annotation>
+          <xs:appinfo><details></details></xs:appinfo>
+          <xs:appinfo><action>none</action></xs:appinfo>
+          <xs:documentation>
+              Field describes region S3 bucket or object prefix, S3 Credential API Endpoint,
+              S3 Credential API Documentation URL involved in distributing the data set through S3.
+
+            | ECHO 10                      | UMM                          | DIF 10                       | Notes      |
+            | ---------------------------- | ---------------------------- | ---------------------------- | ---------- |
+            | DirectDistributionInformation| DirectDistributionInformation| DirectDistributionInformation|            |
+          </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+        <xs:element name="Region">
+          <xs:simpleType>
+            <xs:annotation>
+              <xs:documentation>Defines the possible values for the Amazon Web Service US Regions
+                                where the data product resides.</xs:documentation>
+            </xs:annotation>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="us-east-1"></xs:enumeration>
+              <xs:enumeration value="us-east-2"></xs:enumeration>
+              <xs:enumeration value="us-west-1"></xs:enumeration>
+              <xs:enumeration value="us-west-2"></xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="S3BucketAndObjectPrefixName" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>Defines the possible values for the Amazon Web Service US S3 bucket
+                              and/or object prefix names.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1" />
+              <xs:maxLength value="1024" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="S3CredentialsAPIEndpoint">
+          <xs:annotation>
+            <xs:documentation>Defines the URL where the credentials are stored.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:anyURI">
+              <xs:minLength value="1" />
+              <xs:maxLength value="1024" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="S3CredentialsAPIDocumentationURL">
+          <xs:annotation>
+            <xs:documentation>Defines the URL where the credential documentation are stored.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:anyURI">
+              <xs:minLength value="1" />
+              <xs:maxLength value="1024" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+      </xs:sequence>
     </xs:complexType>
 
     <!-- *********************************************************** -->

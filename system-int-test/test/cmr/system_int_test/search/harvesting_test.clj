@@ -12,7 +12,8 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"})
+                                    dev-system-util/resume-time-fixture!]))
 
 (deftest harvest-granules
   (let [format-key :echo10

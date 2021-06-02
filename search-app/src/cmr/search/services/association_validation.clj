@@ -213,6 +213,46 @@
                    "please delete one of the conflicting service associations.")
               service-concept-id (:concept-id service-association)))))
 
+(defmethod validate-association-conflict-for-collection :tool
+  [context assoc-type tool-concept-id tool-association]
+  (let [vas (->> (mdb/find-concepts context
+                                    {:tool-concept-id tool-concept-id
+                                     :associated-concept-id (:concept-id tool-association)
+                                     :exclude-metadata true
+                                     :latest true}
+                                    :tool-association)
+                 (filter #(not (:deleted %))))
+        coll-revision-ids (map #(get-in % [:extra-fields :associated-revision-id]) vas)
+        not-nil-revision-ids (remove nil? coll-revision-ids)]
+    (cond
+      ;; there is no existing tool association found, no need to validate
+      (= 0 (count coll-revision-ids))
+      nil
+
+      ;; there are existing tool associations and they are all on collection revisions
+      (= (count coll-revision-ids) (count not-nil-revision-ids))
+      (when-not (:revision-id tool-association)
+        (format (str "There are already tool associations with tool concept id [%s] on "
+                     "collection [%s] revision ids [%s], cannot create tool association "
+                     "on the same collection without revision id.")
+                tool-concept-id (:concept-id tool-association) (string/join ", " coll-revision-ids)))
+
+      ;; there are existing tool associations and they are all on collection without revision
+      (= 0 (count not-nil-revision-ids))
+      (when-let [revision-id (:revision-id tool-association)]
+        (format (str "There are already tool associations with tool concept id [%s] on "
+                     "collection [%s] without revision id, cannot create tool association "
+                     "on the same collection with revision id [%s].")
+                tool-concept-id (:concept-id tool-association) revision-id))
+
+      ;; there are conflicts within the existing tool associations in metadata-db already
+      :else
+      (format (str "Service can only be associated with a collection or a collection revision, "
+                   "never both at the same time. There are already conflicting tool associations "
+                   "in metadata-db with tool concept id [%s] on collection [%s] , "
+                   "please delete one of the conflicting tool associations.")
+              tool-concept-id (:concept-id tool-association)))))
+
 (defn- validate-association-conflict
   "Validates the association (either on a specific revision or over the whole collection)
   does not conflict with one or more existing associations in Metadata DB. Tag/Variable

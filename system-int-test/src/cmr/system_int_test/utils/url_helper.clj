@@ -140,6 +140,12 @@
   (format "http://localhost:%s/concepts/search/service-associations"
           (transmit-config/metadata-db-port)))
 
+(defn mdb-tool-association-search-url
+  "URL to search tool associations in metadata db."
+  []
+  (format "http://localhost:%s/concepts/search/tool-associations"
+          (transmit-config/metadata-db-port)))
+
 (defn mdb-subscription-notification-time
   "URL to notification time in metadata db app"
   [concept-id]
@@ -179,6 +185,11 @@
   (format "http://localhost:%s/jobs/cleanup-expired-collections"
           (transmit-config/ingest-port)))
 
+(defn cleanup-granule-bulk-update-task-url
+  []
+  (format "http://localhost:%s/jobs/trigger-granule-task-cleanup-job"
+          (transmit-config/ingest-port)))
+
 (defn translate-metadata-url
   [concept-type]
   (format "http://localhost:%s/translate/%s"
@@ -187,12 +198,16 @@
 
 
 (defn ingest-url
-  [provider-id type native-id]
-  (format "http://localhost:%s/providers/%s/%ss/%s"
-          (transmit-config/ingest-port)
-          (codec/url-encode provider-id)
-          (name type)
-          (codec/url-encode native-id)))
+  ([provider-id concept-type]
+   (ingest-url provider-id concept-type nil))
+  ([provider-id concept-type native-id]
+   (let [url (format "http://localhost:%s/providers/%s/%ss"
+                     (transmit-config/ingest-port)
+                     (codec/url-encode provider-id)
+                     (name concept-type))]
+     (if native-id
+       (str url "/" (codec/url-encode native-id))
+       url))))
 
 (defn ingest-variable-url
   ([coll-id native-id]
@@ -205,9 +220,9 @@
              (codec/url-encode coll-revision-id)
              (codec/url-encode native-id))
      (format "http://localhost:%s/collections/%s/variables/%s"
-          (transmit-config/ingest-port)
-          (codec/url-encode coll-id)
-          (codec/url-encode native-id)))))
+             (transmit-config/ingest-port)
+             (codec/url-encode coll-id)
+             (codec/url-encode native-id)))))
 
 (defn validate-url
   [provider-id type native-id]
@@ -246,26 +261,50 @@
   (format "http://localhost:%s/caches/clear-cache" (transmit-config/ingest-port)))
 
 (defn ingest-collection-bulk-update-url
- "Bulk update collections"
- [provider-id]
- (format "http://localhost:%s/providers/%s/bulk-update/collections"
-  (transmit-config/ingest-port)
-  provider-id))
+  "Bulk update collections"
+  [provider-id]
+  (format "http://localhost:%s/providers/%s/bulk-update/collections"
+          (transmit-config/ingest-port)
+          provider-id))
+
+(defn ingest-granule-bulk-update-url
+  "Bulk update granules"
+  [provider-id]
+  (format "http://localhost:%s/providers/%s/bulk-update/granules"
+          (transmit-config/ingest-port)
+          provider-id))
 
 (defn ingest-collection-bulk-update-status-url
- "Get the tasks and statuses for collection bulk update by provider"
- [provider-id]
- (format "http://localhost:%s/providers/%s/bulk-update/collections/status"
-  (transmit-config/ingest-port)
-  provider-id))
+  "Get the tasks and statuses for collection bulk update by provider"
+  [provider-id]
+  (format "http://localhost:%s/providers/%s/bulk-update/collections/status"
+          (transmit-config/ingest-port)
+          provider-id))
+
+(defn ingest-granule-bulk-update-status-url
+  "Get the tasks and statuses for collection bulk update by provider"
+  [provider-id]
+  (format "http://localhost:%s/providers/%s/bulk-update/granules/status"
+          (transmit-config/ingest-port)
+          provider-id))
 
 (defn ingest-collection-bulk-update-task-status-url
- "Get the task and collection statuses by provider and task"
- [provider-id task-id]
- (format "http://localhost:%s/providers/%s/bulk-update/collections/status/%s"
-  (transmit-config/ingest-port)
-  provider-id
-  task-id))
+  "Get the task and collection statuses by provider and task"
+  [provider-id task-id]
+  (format "http://localhost:%s/providers/%s/bulk-update/collections/status/%s"
+          (transmit-config/ingest-port)
+          provider-id
+          task-id))
+
+(defn ingest-granule-bulk-update-task-status-url
+  "Get the task and collection statuses by provider and task"
+  ([]
+   (format "http://localhost:%s/granule-bulk-update/status"
+           (transmit-config/ingest-port)))
+  ([task-id]
+   (format "http://localhost:%s/granule-bulk-update/status/%s"
+           (transmit-config/ingest-port)
+           task-id)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search URLs
@@ -598,6 +637,11 @@
   "URL to search or update acls"
   []
   (format "http://localhost:%s/acls" (transmit-config/access-control-port)))
+
+(defn access-control-s3-buckets-url
+  "URL to search permitted s3-buckets"
+  []
+  (format "http://localhost:%s/s3-buckets" (transmit-config/access-control-port)))
 
 (defn indexer-url
   "URL to index a concept"

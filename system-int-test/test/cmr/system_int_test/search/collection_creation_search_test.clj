@@ -24,7 +24,7 @@
   []
   (str (first (clojure.string/split (str (java.time.LocalDateTime/now)) #"\.")) "Z"))
 
-(deftest search-for-new-collections
+(deftest ^:in-memory-db search-for-new-collections
   (s/only-with-in-memory-database
     (let [_ (dev-system-util/freeze-time! "2010-01-01T10:00:00Z")
           oldest-collection (d/ingest-umm-spec-collection
@@ -81,19 +81,19 @@
       (index/wait-until-indexed)
       (testing "Old and deleted collections should not be found."
         (let [search-results (search/find-concepts-with-param-string
-                              "collection"
-                              "created-at=2014-01-01T10:00:00Z")]
+                               "collection"
+                               "created-at=2014-01-01T10:00:00Z")]
           (d/refs-match? [youngling-collection regular-collection] search-results)))
       (testing "Multiple date-ranges. elder-collection and deleted-collection should not be found."
         (let [search-results (search/find-concepts-with-param-string
-                              "collection"
-                              "created_at=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at=2015-01-01T10:00:00Z,")]
+                               "collection"
+                               "created_at=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at=2015-01-01T10:00:00Z,")]
           (d/refs-match? [youngling-collection regular-collection oldest-collection-revision] search-results)))
       (testing "Using unsupported or incorrect parameters"
         (are [params]
-          (let [{:keys [status errors]} (search/find-concepts-with-param-string "collection" params)]
-            (= [400 [(format "Parameter [%s] was not recognized."
-                            (first (clojure.string/split params #"=")))]]
-               [status errors]))
+            (let [{:keys [status errors]} (search/find-concepts-with-param-string "collection" params)]
+              (= [400 [(format "Parameter [%s] was not recognized."
+                               (first (clojure.string/split params #"=")))]]
+                 [status errors]))
           "insert_time=2011-01-01T00:00:00Z"
           "birthday=2012-01-01T00:00:00Z")))))

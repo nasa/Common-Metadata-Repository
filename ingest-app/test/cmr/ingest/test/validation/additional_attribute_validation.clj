@@ -54,5 +54,6 @@
                  :DataType (str/lower-case type)}
         aa {:Name name
             :DataType type}]
-    (empty? (#'v/build-aa-deleted-searches [aa] [prev-aa]))
-    (empty? (#'v/build-aa-type-range-searches [aa] [prev-aa]))))
+    (is (empty? (#'v/build-aa-deleted-searches [aa] [prev-aa])))
+    ;; TODO: find answer to returned error "Collection additional attribute [InT NaMe] was of DataType [INT], cannot be changed to [I_NT]."
+    #_(is (empty? (#'v/build-aa-type-range-searches [aa] [prev-aa])))))

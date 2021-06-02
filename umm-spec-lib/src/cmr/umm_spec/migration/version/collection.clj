@@ -2,6 +2,7 @@
   "Contains functions for migrating between versions of the UMM Collection schema."
   (:require
    [clojure.set :as set]
+   [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.location-keywords :as lk]
@@ -23,6 +24,23 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions
+
+(def kms-format-lowercase-to-umm-c-enum-mapping
+  "Mapping from lower-case of KMS granule-data-format short_name values to enum list of values
+  for RelatedUrls/GetData/Format in UMM-C 1.15.4 schema. For those values that don't exist in
+  the enum list, they will be mapped to \"Not provided\""
+  {"ascii" "ascii"
+   "binary" "binary"
+   "bufr" "BUFR"
+   "hdf4" "HDF4"
+   "hdf5" "HDF5"
+   "hdf-eos4" "HDF-EOS4"
+   "hdf-eos5" "HDF-EOS5"
+   "jpeg" "jpeg"
+   "png" "png"
+   "tiff" "tiff"
+   "geotiff" "geotiff"
+   "kml" "kml"})
 
 (def not-provided-organization
   "Place holder to use when an organization is not provided."
@@ -88,6 +106,15 @@
   (->> tiling-identification-systems
        (remove #(= "Military Grid Reference System" (:TilingIdentificationSystemName %)))
        seq))
+
+(defn- replace-invalid-format
+  "Replace GetData Formats in RelatedUrls that are not present in the 1.15.4 schema."
+  [getdata]
+  (if (:Format getdata)
+    (update getdata :Format #(get kms-format-lowercase-to-umm-c-enum-mapping
+                                  (string/lower-case %)
+                                  "Not provided"))
+    getdata))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collection Migration Implementations
@@ -336,3 +363,74 @@
 (defmethod interface/migrate-umm-version [:collection "1.15.4" "1.15.3"]
   [context c & _]
   (update c :TilingIdentificationSystems drop-military-grid-reference-system))
+
+(defmethod interface/migrate-umm-version [:collection "1.15.4" "1.15.5"]
+  [context c & _]
+  ;; No need to migrate
+  c)
+
+(defmethod interface/migrate-umm-version [:collection "1.15.5" "1.15.4"]
+  [context c & _]
+  ;; Need to replace the RelatedURLs/GetData/Format with "Not provided"
+  ;; if it's not part of the enum list in 1.15.4, case insensitive.
+  (util/update-in-all c [:RelatedUrls :GetData] replace-invalid-format))
+
+(defmethod interface/migrate-umm-version [:collection "1.15.5" "1.16"]
+  [context c & _]
+  ;; No need to migrate
+  c)
+
+(defmethod interface/migrate-umm-version [:collection "1.16" "1.15.5"]
+  [context c & _]
+  (dissoc c :DirectDistributionInformation))
+
+(defmethod interface/migrate-umm-version [:collection "1.16" "1.16.1"]
+  [context c & _]
+  (-> c
+      (update :DOI doi/migrate-doi-up-to-1-16-1)
+      (update :PublicationReferences doi/migrate-pub-ref-up-to-1-16-1)
+      util/remove-nils-empty-maps-seqs))
+
+
+(defmethod interface/migrate-umm-version [:collection "1.16.1" "1.16"]
+  [context c & _]
+  (-> c
+      (update :DOI doi/migrate-doi-down-to-1-16)
+      (dissoc :AssociatedDOIs)))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.1" "1.16.2"]
+  [context c & _]
+  ;; Can't use the same solution as used in 1.16.2 -> 1.16.1 using update because when :UseConstraints
+  ;; is nil, it will be turned into (:Description nil :LIcenseUrl nil :LicenseText nil) which will
+  ;; fail validation. This is the same issue going from 1.9 -> 1.10 above.
+  (let [use-constraints (-> c
+                            :UseConstraints
+                            (assoc :Description (get-in c [:UseConstraints :Description :Description]))
+                            (set/rename-keys {:LicenseUrl :LicenseURL})
+                            util/remove-nils-empty-maps-seqs)]
+     (if use-constraints
+       (assoc c :UseConstraints use-constraints)
+       (dissoc c :UseConstraints))))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.2" "1.16.1"]
+  [context c & _]
+  (update c :UseConstraints (fn [use-constraints]
+                              (-> use-constraints
+                                  (assoc :Description {:Description (get use-constraints :Description)})
+                                  (set/rename-keys {:LicenseURL :LicenseUrl})
+                                  util/remove-nils-empty-maps-seqs))))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.2" "1.16.3"]
+  [context c & _]
+  ;; No need to migrate
+  c)
+
+(defmethod interface/migrate-umm-version [:collection "1.16.3" "1.16.2"]
+  [context c & _]
+  ;; Remove the related urls that contain GET CAPABILITIES as the type as it is not valid in the
+  ;; lower versions.
+  (-> c
+      (update :RelatedUrls (fn [related-urls]
+                             (into []
+                               (remove #(= "GET CAPABILITIES" (:Type %)) related-urls))))
+      util/remove-nils-empty-maps-seqs))

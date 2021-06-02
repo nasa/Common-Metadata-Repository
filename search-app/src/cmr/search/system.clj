@@ -29,6 +29,7 @@
    [cmr.search.routes :as routes]
    [cmr.search.services.acls.collections-cache :as coll-cache]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
+   [cmr.search.services.humanizers.humanizer-range-facet-service :as hrfs]
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as hgocrf]
    [cmr.transmit.config :as transmit-config]))
@@ -130,7 +131,8 @@
                       metadata-cache/cache-key (metadata-cache/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
-                      hrs/report-cache-key (hrs/create-report-cache)}
+                      hrs/report-cache-key (hrs/create-report-cache)
+                      hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)}
              :public-conf (public-conf)
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)

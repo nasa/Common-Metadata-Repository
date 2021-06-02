@@ -52,12 +52,15 @@
   [_ _ _])
 
 (defmethod handle-ingest-event :concept-update
-  [context all-revisions-index? {:keys [concept-id revision-id]}]
-  (if (= :humanizer (cc/concept-id->type concept-id))
-    (indexer/update-humanizers context)
-    (indexer/index-concept-by-concept-id-revision-id
-     context concept-id revision-id {:ignore-conflict? true
-                                     :all-revisions-index? all-revisions-index?})))
+  [context all-revisions-index? {:keys [concept-id revision-id more-concepts]}]
+  ;; combine concept-id revision-id with more-concepts
+  (let [all-concepts (conj more-concepts {:concept-id concept-id :revision-id revision-id})]
+    (doseq [{:keys [concept-id revision-id]} all-concepts]
+      (if (= :humanizer (cc/concept-id->type concept-id))
+        (indexer/update-humanizers context)
+        (indexer/index-concept-by-concept-id-revision-id
+         context concept-id revision-id {:ignore-conflict? true
+                                         :all-revisions-index? all-revisions-index?})))))
 
 (defmethod handle-ingest-event :concept-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]

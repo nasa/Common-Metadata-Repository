@@ -111,12 +111,17 @@
 (def spatial-extent-xpath
   (str md-identification-base-xpath "/gmd:extent/gmd:EX_Extent"))
 
+(def associated-doi-xpath
+  (str md-identification-base-xpath "/gmd:aggregationInfo/gmd:MD_AggregateInformation/"))
+
 (defn- parse-science-keywords
   "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
   Category of each theme descriptive keyword to determine if it is a science keyword."
   [data-id-el sanitize?]
   (if-let [science-keywords (seq
-                              (->> (kws/parse-science-keywords data-id-el sanitize?)
+                              ;; kws/parse-science-keywords is shared by iso19115 and isosmap
+                              ;; "true" indicates it's isosmap case.
+                              (->> (kws/parse-science-keywords data-id-el sanitize? true)
                                    (filter #(.contains kws/science-keyword-categories (:Category %)))))]
     science-keywords
     (when sanitize?
@@ -146,6 +151,7 @@
        :EntryTitle (value-of doc entry-title-xpath)
        :ISOTopicCategories (iso-topic-categories/parse-iso-topic-categories doc base-xpath)
        :DOI (doi/parse-doi doc citation-base-xpath)
+       :AssociatedDOIs (doi/parse-associated-dois doc associated-doi-xpath)
        :Version (value-of data-id-el version-xpath)
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
        :Purpose (u/truncate (value-of short-name-el "gmd:purpose/gco:CharacterString") u/PURPOSE_MAX sanitize?)
@@ -181,4 +187,6 @@
        :Projects (project/parse-projects doc projects-xpath sanitize?)
        :ArchiveAndDistributionInformation (archive-and-dist-info/parse-archive-dist-info doc
                                                                                          archive-info-xpath
-                                                                                         dist-info-xpath)}))))
+                                                                                         dist-info-xpath)
+       :DirectDistributionInformation (archive-and-dist-info/parse-direct-dist-info doc
+                                                                                    dist-info-xpath)}))))

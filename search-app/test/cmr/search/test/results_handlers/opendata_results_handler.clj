@@ -97,6 +97,24 @@
   (testing "graphic-preview-type retrieval"
     (is (= "image/gif" (opendata-results-handler/graphic-preview-type {:get-data-mime-type "image/gif"})))))
 
+(deftest ngda-keywords
+  (let [keywords ["Science Keyword"]]
+    (testing "Check that the NGDA tag is not added for records that make no mention of instruments"
+      (is (= ["Science Keyword"]
+             (opendata-results-handler/keywords keywords {}))))
+    (testing "Check that the NGDA tags are not added to unrelated instruments"
+      (is (= ["Science Keyword"]
+             (opendata-results-handler/keywords keywords {:instruments [{:short-name "unrelated"}]}))))
+    (testing "Check that NGDA tags _are_ added for records that use MODIS"
+      (is (= ["Science Keyword" "NGDA" "National Geospatial Data Asset"]
+             (opendata-results-handler/keywords keywords {:instruments [{:short-name "MODIS"}]}))))
+    (testing "Check that NGDA tags _are_ added for records that use ASTER"
+      (is (= ["Science Keyword" "NGDA" "National Geospatial Data Asset"]
+             (opendata-results-handler/keywords keywords {:instruments [{:short-name "ASTER"}]}))))
+    (testing "Check that NGDA tags _are_ added for records that use both MODIS and ASTER"
+      (is (= ["Science Keyword" "NGDA" "National Geospatial Data Asset"]
+             (opendata-results-handler/keywords keywords {:instruments [{:short-name "MODIS"} {:short-name "ASTER"}]}))))))
+
 (deftest get-best-browse-image
  (let [all-browse-fields {:url "http://example.com"
                           :get-data-mime-type "image/gif"

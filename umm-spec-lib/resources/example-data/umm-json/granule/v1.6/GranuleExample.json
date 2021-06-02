@@ -250,6 +250,21 @@
     "MimeType": "image/png",
     "Size": 10,
     "SizeUnit": "MB"
+  }, {
+    "URL": "s3://aws.com/asdf/asdf/dataproduct.nc",
+    "Type": "GET DATA VIA DIRECT ACCESS",
+    "Description": "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990",
+    "Format": "NETCDF-4",
+    "MimeType": "application/x-netcdf",
+    "Size": 1000
+  }, {
+    "URL": "s3://aws.com/bucket-name/dataproduct.data",
+    "Type": "EXTENDED METADATA",
+    "Subtype": "DMR++",
+    "Description": "DMR++ Description",
+    "Format": "NETCDF-4",
+    "MimeType": "application/x-netcdf",
+    "Size": 1000
   }],
   "NativeProjectionNames": ["MODIS Sinusoidal System", "Sinusoidal"],
   "GridMappingNames": ["Sinusoidal", "Lambert Azimuthal Equal-Area"]

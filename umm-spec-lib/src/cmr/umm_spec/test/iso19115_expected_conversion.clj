@@ -57,9 +57,9 @@
 (defn- expected-doi-in-publication-reference
   "Returns the expected DOI field in a publication reference."
   [doi]
-  (let [updated-doi (util/remove-nil-keys (dissoc doi :Authority :Explanation :MissingReason))]
+  (let [updated-doi (util/remove-nil-keys (dissoc doi :Authority))]
     (when (seq updated-doi)
-      (cmn/map->DoiType updated-doi))))
+      (cmn/map->DoiDoiType updated-doi))))
 
 (defn- iso-19115-2-publication-reference
   "Returns the expected value of a parsed ISO-19115-2 publication references"
@@ -87,38 +87,6 @@
           (-> related-url
               (update :URL #(url/format-url % true)))))))
 
-(defn- expected-related-url-get-data
-  "Returns related-url with the expected GetData"
-  [related-url]
-  (if (and (= "DistributionURL" (:URLContentType related-url))
-           (= "GET DATA" (:Type related-url)))
-    (if (nil? (:GetData related-url))
-      (assoc related-url :GetData (cmn/map->GetDataType
-                                   {:Format su/not-provided
-                                    :Size 0.0
-                                    :Unit "KB"}))
-      related-url)
-    related-url))
-
-(defn- expected-related-url-get-service
-  "Returns related-url with the expected GetService"
-  [related-url]
-  (let [URI (if (empty? (get-in related-url [:GetService :URI]))
-              [(:URL related-url)]
-              (get-in related-url [:GetService :URI]))]
-      (if (and (= "DistributionURL" (:URLContentType related-url))
-               (= "USE SERVICE API" (:Type related-url)))
-          (if (nil? (:GetService related-url))
-            (assoc related-url :GetService (cmn/map->GetServiceType
-                                              {:MimeType su/not-provided
-                                               :Protocol su/not-provided
-                                               :FullName su/not-provided
-                                               :DataID su/not-provided
-                                               :DataType su/not-provided
-                                               :URI URI}))
-            (assoc-in related-url [:GetService :URI] URI))
-          (dissoc related-url :GetService))))
-
 (defn- expected-collection-related-urls
  "Update the collection top level RelatedUrls. Do processing not applicable
  for data center/data contact RelatedUrls. DataCenter and DataContact URL
@@ -131,8 +99,8 @@
           (cmn/map->RelatedUrlType
            (-> related-url
                (dissoc :FileSize :MimeType)
-               expected-related-url-get-service
-               expected-related-url-get-data
+               iso-shared/expected-related-url-get-service
+               iso-shared/expected-related-url-get-data
                (update :Description #(when % (string/trim %)))))))))
 
 (defn- fix-iso-vertical-spatial-domain-values

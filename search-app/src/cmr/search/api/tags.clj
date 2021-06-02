@@ -2,7 +2,7 @@
   "Defines the API for tagging collections in the CMR."
   (:require
    [cheshire.core :as json]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
@@ -11,6 +11,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.services.tagging-service :as tagging-service]
+   [cmr.transmit.config :as transmit-config]
    [compojure.core :refer :all]
    [compojure.route :as route]))
 
@@ -19,10 +20,17 @@
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
-(defn- tag-api-response
+(defn- has-error?
+  "Whether there's an error in [data]."
+  [data]
+  (some #(contains? % :errors) data))
+
+(defn tag-api-response
   "Creates a successful tag response with the given data response"
   ([data]
-   (tag-api-response 200 data))
+   (if (has-error? data)
+     (tag-api-response 400 data)
+     (tag-api-response 200 data)))
   ([status-code data]
    {:status status-code
     :body (json/generate-string (util/snake-case-data data))
@@ -31,10 +39,11 @@
 (defn- verify-tag-modification-permission
   "Verifies the current user has been granted permission to modify tags in ECHO ACLs"
   [context permission-type]
-  (when-not (seq (acl/get-permitting-acls context :system-object "TAG_GROUP" permission-type))
+  (when-not (or (transmit-config/echo-system-token? context)
+                (seq (acl/get-permitting-acls context :system-object "TAG_GROUP" permission-type)))
     (errors/throw-service-error
-      :unauthorized
-      (format "You do not have permission to %s a tag." (name permission-type)))))
+     :unauthorized
+     (format "You do not have permission to %s a tag." (name permission-type)))))
 
 (defn create-tag
   "Processes a create tag request."
@@ -133,17 +142,17 @@
 
       ;; Get a tag
       (GET "/" {:keys [request-context]}
-        (get-tag request-context (str/lower-case tag-key)))
+        (get-tag request-context (string/lower-case tag-key)))
 
       ;; Delete a tag
       (DELETE "/" request
         (let [{:keys [request-context]} request]
-          (delete-tag request-context (str/lower-case tag-key))))
+          (delete-tag request-context (string/lower-case tag-key))))
 
       ;; Update a tag
       (PUT "/" request
         (let [{:keys [request-context headers body]} request]
-          (update-tag request-context headers (slurp body) (str/lower-case tag-key))))
+          (update-tag request-context headers (slurp body) (string/lower-case tag-key))))
 
       (context "/associations" []
 
@@ -151,23 +160,23 @@
         (POST "/" request
           (let [{:keys [request-context headers body]} request]
             (associate-tag-to-collections
-             request-context headers (slurp body) (str/lower-case tag-key))))
+             request-context headers (slurp body) (string/lower-case tag-key))))
 
         ;; Dissociate a tag with a list of collections
         (DELETE "/" request
           (let [{:keys [request-context headers body]} request]
             (dissociate-tag-to-collections
-             request-context headers (slurp body) (str/lower-case tag-key))))
+             request-context headers (slurp body) (string/lower-case tag-key))))
 
         (context "/by_query" []
           ;; Associate a tag with collections
           (POST "/" request
             (let [{:keys [request-context headers body]} request]
               (associate-tag-by-query
-               request-context headers (slurp body) (str/lower-case tag-key))))
+               request-context headers (slurp body) (string/lower-case tag-key))))
 
           ;; Dissociate a tag with collections
           (DELETE "/" request
             (let [{:keys [request-context headers body]} request]
               (dissociate-tag-by-query
-               request-context headers (slurp body) (str/lower-case tag-key)))))))))
+               request-context headers (slurp body) (string/lower-case tag-key)))))))))

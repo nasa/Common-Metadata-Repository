@@ -10,9 +10,9 @@
    the hardcoded commit id during dev integration with cmr_metadata_preview project.
    The hardcoded commit id should be updated when MMT releases a new version of the gem."
   {:repo "https://git.earthdata.nasa.gov/scm/cmr/cmr_metadata_preview.git"
-   :version "cmr_metadata_preview-0.2.5"
+   :version "cmr_metadata_preview-0.2.6"
    :commit-id (or (System/getenv "CMR_METADATA_PREVIEW_COMMIT")
-                  "40320c299336c68047b27110ef1e5dae5a20a24f")})
+                  "07fb716bbc0e4b74a6546895fa61ef1fef2614f4")})
 
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
@@ -62,7 +62,10 @@
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
-             :internal-repos {}}
+             :internal-repos {}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {"install-gems" ["shell"
                             "support/install_gems.sh"
                             ~jruby-version
@@ -73,12 +76,32 @@
             "install" ["do" "clean-gems," "install-gems," "install," "clean"]
             "install!" "install"
             "internal-install!" ["with-profile" "+internal-repos" "do"
-                                  ["clean-gems" "install-gems" "install" "clean"]]
+                                 ["clean-gems" "install-gems" "install" "clean"]]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["do"
+                       ["clean-gems"]
+                       ["install-gems"]
+                       ["kaocha" "--profile" ":ci"]]
+            "ci-itest" ["do"
+                        ["clean-gems"]
+                        ["install-gems"]
+                        ["itest" "--profile" ":ci"]]
+            "ci-utest" ["do"
+                        ["clean-gems"]
+                        ["install-gems"]
+                        ["utest" "--profile" ":ci"]]
+
             ;; Linting aliases
-            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
-                          ["with-profile" "lint" "kibit"]]
+            "kibit" ["do"
+                     ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+                     ["with-profile" "lint" "kibit"]]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]

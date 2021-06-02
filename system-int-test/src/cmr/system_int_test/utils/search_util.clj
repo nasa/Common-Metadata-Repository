@@ -190,7 +190,9 @@
   ([concept-id revision-id] (retrieve-concept concept-id revision-id {}))
   ([concept-id revision-id options]
    (let [url-extension (get options :url-extension)
-         concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))
+         concept-type (cs/concept-prefix->concept-type (if (= (subs concept-id 0 3) "SUB")
+                                                         "SUB"
+                                                         (subs concept-id 0 1)))
          format-mime-type (or (:accept options) mime-types/echo10)
          url (url/retrieve-concept-url concept-type concept-id revision-id)
          url (if url-extension

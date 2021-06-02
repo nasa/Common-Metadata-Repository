@@ -162,7 +162,7 @@
 
 (defn find-latest-concept
   "Searches metadata db for the latest concept matching the given parameters. Do not throw serivce
-  excpetion, returns the status and error message in a map in case of error."
+  exception, returns the status and error message in a map in case of error."
   [context params concept-type]
   (let [{:keys [status body]} (find-concepts-raw context (assoc params :latest true) concept-type)
         status (int status)]
@@ -209,6 +209,13 @@
   (let [params {:service-concept-id (:concept-id concept)
                 :latest true}]
     (find-concepts context params :service-association)))
+
+(defn get-associations-for-tool
+  "Get tool associations (including tombstones) for a given tool."
+  [context concept]
+  (let [params {:tool-concept-id (:concept-id concept)
+                :latest true}]
+    (find-concepts context params :tool-association)))
 
 (defn-timed find-collections
   "Searches metadata db for concepts matching the given parameters."

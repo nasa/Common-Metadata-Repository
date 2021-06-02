@@ -14,7 +14,7 @@
                                              :grant-all-search? true
                                              :grant-all-access-control? false})]))
 
-(deftest bulk-index-tools-no-permission
+(deftest ^:oracle bulk-index-tools-no-permission
   (testing "Bulk index tools for a single provider without a token"
     (system/only-with-real-database
       (let [{:keys [status errors]} (bootstrap/bulk-index-tools "PROV1" nil)]

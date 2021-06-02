@@ -12,39 +12,67 @@
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.config :as ingest-config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
+   [cmr.ingest.data.granule-bulk-update :as data-gran-bulk-update]
    [cmr.ingest.services.bulk-update-service :as bulk-update]
+   [cmr.ingest.services.granule-bulk-update-service :as gran-bulk-update]
    [cmr.ingest.services.ingest-service :as ingest]))
 
 (defn bulk-update-collections
   "Bulk update collections. Validate provider exists, check ACLs, and validate
   POST body. Writes rows to tables and returns task id"
   [provider-id request]
-  (if-not (ingest-config/bulk-update-enabled)
+  (if-not (ingest-config/collection-bulk-update-enabled)
     (srvc-errors/throw-service-error
-        :bad-request "Bulk update is disabled.")
+     :bad-request "Bulk update is disabled.")
     (let [{:keys [body headers request-context]} request
           content (api-core/read-body! body)
           user-id (api-core/get-user-id request-context headers)]
       (lt-validation/validate-launchpad-token request-context)
       (api-core/verify-provider-exists request-context provider-id)
       (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-      (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id content user-id)]
+      (let [task-id (bulk-update/validate-and-save-bulk-update
+                     request-context
+                     provider-id
+                     content
+                     user-id)]
         (api-core/generate-ingest-response
-          headers
-          {:status 200
-           :task-id task-id})))))
+         headers
+         {:status 200
+          :task-id task-id})))))
+
+(defn bulk-update-granules
+  "Bulk update granules. Validate provider exists, check ACLs, and validate
+   POST body. Writes tasks to queue for worker to begin processing."
+  [provider-id request]
+  (if-not (ingest-config/granule-bulk-update-enabled)
+    (srvc-errors/throw-service-error :bad-request "Bulk granule update is disabled")
+    (let [{:keys [body headers request-context]} request
+          content (api-core/read-body! body)
+          user-id (api-core/get-user-id request-context headers)]
+      (lt-validation/validate-launchpad-token request-context)
+      (api-core/verify-provider-exists request-context provider-id)
+      (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+      (let [task-id (gran-bulk-update/validate-and-save-bulk-granule-update
+                      request-context
+                      provider-id
+                      content
+                      user-id)]
+        (api-core/generate-ingest-response
+         headers
+         {:status 200
+          :task-id task-id})))))
 
 (defn- generate-xml-status-list
- "Generate XML for a status list with the format
- {:id :status :status-message}"
- [result status-list-key status-key id-key]
- (xml/element status-list-key {}
-   (for [status (get result status-list-key)
-         :let [message (:status-message status)]]
-    (xml/element status-key {}
-     (xml/element id-key {} (get status id-key))
-     (xml/element :status {} (:status status))
-     (xml/element :status-message {} message)))))
+  "Generate XML for a status list with the format
+  {:id :status :status-message}"
+  [result status-list-key status-key id-key]
+  (xml/element status-list-key {}
+               (for [status (get result status-list-key)
+                     :let [message (:status-message status)]]
+                 (xml/element status-key {}
+                              (xml/element id-key {} (get status id-key))
+                              (xml/element :status {} (:status status))
+                              (xml/element :status-message {} message)))))
 
 (defn- generate-xml-provider-tasks-list
  "Generate XML for a status list with the format
@@ -83,16 +111,29 @@
                                                          :task-id :name :created-at
                                                          [:request-json-body])))})
 
+(defmulti get-provider-tasks*
+  "Get bulk update tasks status based on concept type"
+  (fn [context provider-id concept-type]
+    concept-type))
+
+(defmethod get-provider-tasks* :collection
+  [context provider-id _]
+  (data-bulk-update/get-collection-tasks context provider-id))
+
+(defmethod get-provider-tasks* :granule
+  [context provider-id _]
+  (data-gran-bulk-update/get-granule-tasks-by-provider context provider-id))
+
 (defn get-provider-tasks
   "Get all tasks and task statuses for provider."
-  [provider-id request]
+  [concept-type provider-id request]
   (let [{:keys [headers request-context]} request]
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
     (generate-provider-tasks-response
      headers
      {:status 200
-      :tasks (data-bulk-update/get-bulk-update-statuses-for-provider request-context provider-id)})))
+      :tasks (get-provider-tasks* request-context provider-id concept-type)})))
 
 (defmulti generate-provider-task-status-response
   "Convert a result to a proper response format"
@@ -119,8 +160,15 @@
            (generate-xml-status-list result
             :collection-statuses :collection-status :concept-id)))})
 
-(defn get-provider-task-status
-  "Get the status for the given task for the provider including collection statuses"
+(defn- validate-granule-bulk-update-result-format
+  [headers]
+  (let [result-format (api-core/get-ingest-result-format headers :json)]
+    (when-not (= :json result-format)
+      (srvc-errors/throw-service-error
+       :bad-request "Granule bulk update task status is only supported in JSON format."))))
+
+(defn get-collection-task-status
+  "Get the status for the given task including collection statuses"
   [provider-id task-id request]
   (let [{:keys [headers request-context]} request]
     (api-core/verify-provider-exists request-context provider-id)
@@ -139,3 +187,39 @@
         :status-message (:status-message task-status)
         :request-json-body (:request-json-body task-status)
         :collection-statuses collection-statuses}))))
+
+(defn get-granule-task-status
+  "Get the status for the given task including granule statuses"
+  [task-id request]
+  (let [{:keys [headers request-context]} request
+        _ (validate-granule-bulk-update-result-format headers)
+        gran-task (data-gran-bulk-update/get-granule-task-by-id request-context task-id)
+        provider-id (:provider-id gran-task)]
+    (when-not provider-id
+      (srvc-errors/throw-service-error
+       :not-found
+       (format "Granule bulk update task with task id [%s] could not be found." task-id)))
+
+    (api-core/verify-provider-exists request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
+
+    (let [{:keys [name created-at status status-message request-json-body]} gran-task
+          granule-statuses (data-gran-bulk-update/get-bulk-update-granule-statuses-for-task
+                            request-context task-id)]
+      (api-core/generate-ingest-response
+       (assoc headers "accept" mt/json)
+       {:status 200
+        :created-at created-at
+        :name name
+        :task-status status
+        :status-message status-message
+        :request-json-body request-json-body
+        :granule-statuses granule-statuses}))))
+
+(defn update-completed-granule-task-statuses
+  "On demand capability to update granule task statuses. Marks bulk granule
+   update tasks as complete when there are no granules marked as PENDING."
+  [request]
+  (let [{:keys [request-context]} request]
+    (acl/verify-ingest-management-permission request-context)
+    (gran-bulk-update/update-completed-task-status! request-context)))

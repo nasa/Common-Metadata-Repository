@@ -21,7 +21,7 @@
   {:default "cmr_virtual_product.queue"})
 
 (defconfig ingest-exchange-name
-  "The ingest exchange to which messages are published."
+  "The ingest exchange to which ingest event messages are published."
   {:default "cmr_ingest.exchange"})
 
 (defconfig queue-listener-count

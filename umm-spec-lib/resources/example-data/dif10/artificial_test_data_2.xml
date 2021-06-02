@@ -15,6 +15,10 @@
         <Dataset_Creator>JAXA</Dataset_Creator>
         <!--Dataset_Title was trimmed-->
         <Dataset_Title>Level 3 Soil moisture (AMSR2) product</Dataset_Title>
+        <Persistent_Identifier>
+          <Type>DOI</Type>
+          <Identifier>10.5678/DIF_Example_DOI</Identifier>
+        </Persistent_Identifier>
     </Dataset_Citation>
     <!--renamed from Parameters to Science_Keywords-->
     <Science_Keywords>
@@ -69,6 +73,15 @@
         <Short_Name>GCOM-W</Short_Name>
         <Long_Name>Global Change Observation Mission-Water</Long_Name>
     </Project>
+    <Use_Constraints>
+        <Description>Description</Description>
+        <License_URL>
+            <URL>https://someurl.com</URL>
+            <Title>License URL</Title>
+            <Description>License URL Description</Description>
+            <Mime_Type>text/html</Mime_Type>
+        </License_URL>
+    </Use_Constraints>
     <!--renamed from Data_Center to Organization-->
     <Organization>
         <!--added - assumption-->
@@ -113,6 +126,22 @@
             <Type>VIEW PROJECT HOME PAGE</Type>
         </URL_Content_Type>
         <URL>http://suzaku.eorc.jaxa.jp/GCOM/index.html</URL>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>USE SERVICE API</Type>
+            <Subtype>OpenSearch</Subtype>
+        </URL_Content_Type>
+        <URL>http://suzaku.eorc.jaxa.jp/GCOM/index.html</URL>
+        <Mime_Type>application/opensearchdescription+xml</Mime_Type>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>USE SERVICE API</Type>
+            <Subtype>OpenSearch</Subtype>
+        </URL_Content_Type>
+        <URL>http://suzaku.eorc.jaxa.jp/GCOM/index.html</URL>
+        <Mime_Type>text/html</Mime_Type>
     </Related_URL>
     <!--Moved IDN_Node=JAPAN/JAXA to name-value.-->
     <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>

@@ -62,11 +62,11 @@
    :type Long})
 
 (defconfig ingest-exchange-name
-  "The ingest exchange to which messages are published when collections and granules are ingested."
+  "The ingest exchange to which ingest event messages are published."
   {:default "cmr_ingest.exchange"})
 
 (defconfig provider-exchange-name
-  "The ingest exchange to which provider change messages are published."
+  "The ingest exchange to which provider change and non-ingest messages are published."
   {:default "cmr_ingest_provider.exchange"})
 
 (defconfig deleted-concept-revision-exchange-name

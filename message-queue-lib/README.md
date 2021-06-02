@@ -15,4 +15,4 @@ Note that RabbitMQ allows configuration of a maximum queue size, but it will jus
 
 ## License
 
-Copyright © 2015 NASA
+Copyright © 2021 NASA

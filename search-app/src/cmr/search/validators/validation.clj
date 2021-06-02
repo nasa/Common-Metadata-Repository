@@ -23,7 +23,7 @@
 
 (defmethod cqv/supported-result-formats :collection
   [_]
-  (into #{:xml :json :legacy-umm-json :echo10 :dif :dif10 :atom :iso19115 :kml :opendata :native
+  (into #{:xml :json :legacy-umm-json :echo10 :dif :dif10 :atom :iso19115 :csv :kml :opendata :native
           ;; umm-json supported with and without versions
           :umm-json :umm-json-results}
         (umm-versioned-result-formats :collection)))

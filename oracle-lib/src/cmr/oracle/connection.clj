@@ -3,9 +3,9 @@
   backed by an Oracle database."
   (:require
    [clj-time.coerce :as cr]
-   [clj-time.format :as f]
    [clojure.java.jdbc :as j]
    [cmr.common.config :refer [defconfig]]
+   [cmr.common.date-time-parser :as p]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
@@ -105,8 +105,7 @@
   "Converts oracle.sql.TIMESTAMP instance into a string representation of the time. Must be called
   within a with-db-transaction block with the connection"
   [db ot]
-  (f/unparse (f/formatters :date-time)
-             (oracle-timestamp->clj-time db ot)))
+  (p/clj-time->date-time-str (oracle-timestamp->clj-time db ot)))
 
 (defn pool
   [spec]

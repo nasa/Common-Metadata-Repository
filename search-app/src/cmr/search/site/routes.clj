@@ -84,6 +84,11 @@
                 (str (config/application-public-root-url ctx)
                      "site/docs/search/site.html")
                 307)))
+        ;; STAC search docs context
+        (context "/site/docs/search/stac" []
+          (GET "/"
+               {ctx :request-context}
+               (pages/stac-search-docs ctx)))
         ;; Add routes for general API documentation
         (static/docs-routes
          (get-in system [:public-conf :protocol])

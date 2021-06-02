@@ -1,0 +1,26 @@
+#kaocha/v1
+{:tests [{:id :unit
+          :ns-patterns ["cmr.transmit.test*" "-test$"]}]
+
+ :plugins [:kaocha.plugin.alpha/info
+           :kaocha.plugin/cloverage
+           :capture-output
+           :junit-xml
+           :print-invocations
+           :profiling]
+
+ :fail-fast? false
+
+ :color? #profile {:default true
+                   :ci false}
+
+ :reporter kaocha.report/documentation
+
+ :kaocha.plugin.junit-xml/target-file "target/junit.xml"
+
+ :cloverage/opts {:codecov? #profile {:default false :ci true}
+                  :html? #profile {:default true :ci false}}
+
+ ;; 3 slowest tests shown
+ :kaocha.plugin.profiling/count 3
+ :kaocha.plugin.profiling/profiling? true}

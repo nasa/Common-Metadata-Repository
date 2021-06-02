@@ -34,7 +34,8 @@
      :DataDates [(umm-cmn/map->DateType {:Date (time/date-time 2012)
                                          :Type "CREATE"})]
      :Abstract "A very abstract collection"
-     :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(time/date-time 2012)]})]}))
+     :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(time/date-time 2012)]})]
+     :DOI (umm-cmn/map->DoiType {:DOI "10.5678/TestDOI"})}))
 
 (def contact-group-example-umm-c-record
   "This is the minimum valid UMM-C with contact groups."
@@ -57,6 +58,7 @@
                                          :Type "CREATE"})]
      :Abstract "A very abstract collection"
      :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(time/date-time 2012)]})]
+     :DOI (umm-cmn/map->DoiType {:DOI "10.5678/TestDOI"})
      :DataCenters [umm-spec-util/not-provided-data-center]
      :ContactGroups [(umm-cmn/map->ContactGroupType {:Roles ["Investigator"]
                                                      :GroupName "ABC"})]}))
