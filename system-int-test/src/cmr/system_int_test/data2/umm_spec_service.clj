@@ -3,10 +3,10 @@
   integration tests."
   (:require
    [cmr.common.mime-types :as mime-types]
+   [cmr.umm-spec.metadata-specification :as m-spec]
    [cmr.umm-spec.models.umm-service-models :as umm-s]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
-   [cmr.umm-spec.metadata-specification :as m-spec]))
+   [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (def context (lkt/setup-context-for-test))
 
