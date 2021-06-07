@@ -48,12 +48,10 @@
     (if-errors-throw :bad-request errors)))
 
 (defn-timed save-service
-  "Store a service concept in mdb and indexer. Return name, long-name, concept-id, and
-  revision-id."
+  "Store a service concept in mdb and indexer. Return concept-id, and revision-id."
   [context concept]
-  (let [service (as-> concept intermediate
-                      (:metadata intermediate)
-                      (spec/parse-metadata context :service (:format concept) intermediate))
+  (let [{:keys [:format :metadata]} concept
+        service (spec/parse-metadata context :service format metadata)
         _ (validate-all-fields context service)
         full-concept (as-> concept intermediate
                       (add-extra-fields-for-service context intermediate service)
