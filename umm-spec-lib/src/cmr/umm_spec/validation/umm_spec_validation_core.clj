@@ -66,6 +66,17 @@
     (validation-errors->path-errors
      (v/validate vg/granule-validations granule-with-parent))))
 
+(defn validate-service
+  "Validates the UMM record returning a list of error maps containing a path
+  through the UMM model and a list of errors at that path. Returns an empty
+  sequence if it is valid."
+  ([service]
+   (validate-service service nil))
+  ([service additional-validations]
+   (validation-errors->path-errors
+    (v/validate (cons {} additional-validations)
+                service))))
+
 (defn validate-variable
   "Validates the UMM record returning a list of error maps containing a path
   through the UMM model and a list of errors at that path. Returns an empty

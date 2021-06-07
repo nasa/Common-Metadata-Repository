@@ -2,6 +2,7 @@
   "Contains functions for migrating between versions of the UMM-G schema."
   (:require
    [cmr.common.util :as util]
+   [cmr.umm-spec.metadata-specification :as m-spec]
    [cmr.umm-spec.migration.version.interface :as interface]))
 
 (def ^:private v1-5-identifier-name-max-length
@@ -127,14 +128,6 @@
     (assoc related-url :Type "GET DATA")
     related-url))
 
-(defn- update-version
-  "At the very least, all metadaa records need to update the metadata
-   specification."
-  [umm-g version]
-  (assoc umm-g :MetadataSpecification {:URL (str "https://cdn.earthdata.nasa.gov/umm/granule/v" version)
-                                       :Name "UMM-G"
-                                       :Version version}))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Granule Migration Implementations
 
@@ -222,10 +215,10 @@
 (defmethod interface/migrate-umm-version [:granule "1.6.3" "1.6.2"]
   [context g & _]
   (-> g
-      (update-version "1.6.2")
+      (m-spec/update-version :granule "1.6.2")
       (update :RelatedUrls drop-1-6-3-related-urls)))
 
 (defmethod interface/migrate-umm-version [:granule "1.6.2" "1.6.3"]
   [context g & _]
   (-> g
-      (update-version "1.6.3")))
+      (m-spec/update-version :granule "1.6.3")))

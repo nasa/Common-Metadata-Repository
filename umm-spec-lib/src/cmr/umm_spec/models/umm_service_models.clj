@@ -43,6 +43,10 @@
    ;; The name of the service, software, or tool.
    Name
 
+   ;; Web addresses used to get supported documentation or other related information link to the
+   ;; service.
+   RelatedURLs
+
    ;; A brief description of the service.
    Description
 
@@ -68,8 +72,28 @@
 
    ;; The long name of the service, software, or tool.
    LongName
+
+   ;; Requires the user to add in schema information into every service record. It includes the
+   ;; schema's name, version, and URL location. The information is controlled through enumerations
+   ;; at the end of this schema.
+   MetadataSpecification
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-S)
+
+;; This object requires any metadata record that is validated by this schema to provide information
+;; about the schema.
+(defrecord MetadataSpecificationType
+  [
+   ;; The web address of the metadata schema used to validate the service record.
+   URL
+
+   ;; The name of the metadata schema.
+   Name
+
+   ;; The version of the metadata schema.
+   Version
+  ])
+(record-pretty-printer/enable-record-pretty-printing MetadataSpecificationType)
 
 (defrecord TimePointsType
   [
@@ -575,6 +599,33 @@
    ParameterRepeatability
   ])
 (record-pretty-printer/enable-record-pretty-printing ParameterType)
+
+;; Web addresses used to get supported documentation or other related information link to the
+;; service. Examples include project home pages, related data archives/servers, metadata extensions,
+;; online software packages, web mapping services, and calibration/validation data, other supporting
+;; documentation.
+(defrecord RelatedURLType
+  [
+   ;; A Description meant for the end user of the web page at this URL.
+   Description
+
+   ;; A keyword describing the distinct group of web addresses e.g., 'PublicationURL'.
+   URLContentType
+
+   ;; A keyword describing the type of the online resource to this resource. This helps software
+   ;; present the information to the user. The valid values are contained in the KMS System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096?gtm_keyword=Related%20URL%20Content%20Types&gtm_scheme=rucontenttype.
+   Type
+
+   ;; A keyword describing the subtype of the online resource to this resource. This helps software
+   ;; present the information to the user. The valid values are contained in the KMS System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096?gtm_keyword=Related%20URL%20Content%20Types&gtm_scheme=rucontenttype
+   Subtype
+
+   ;; The web address for the relevant web page.
+   URL
+  ])
+(record-pretty-printer/enable-record-pretty-printing RelatedURLType)
 
 ;; The described service provides a line spatial subsetting capability.
 (defrecord SpatialSubsetLineType
