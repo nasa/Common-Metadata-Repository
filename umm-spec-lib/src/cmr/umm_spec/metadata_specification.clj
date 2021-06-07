@@ -15,7 +15,7 @@
 
 (defn metadata-spec-content
   "Create the fields which are inside a MetadataSpecification node. If version
-  is not given, then it is assumed to be the lattest as defined by
+  is not given, then it is assumed to be the latest as defined by
   cmr.umm-spec.versioning"
   ([umm-type] (metadata-spec-content umm-type (-> ver/versions umm-type last)))
   ([umm-type version]
