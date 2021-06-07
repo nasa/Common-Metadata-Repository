@@ -10,7 +10,7 @@ const { getEchoToken } = require('../../../commonUtils/cmr/getEchoToken')
  */
 exports.bootstrapGremilinServer = async () => {
   const echoToken = await getEchoToken()
-  const gremlin = initializeGremlinConnection()
+  const gremlin = await initializeGremlinConnection()
 
   // Get the first page of collections from the CMR to initiate the scroll
   // session. Parse the JSON results, annd pull the scroll id from the headers

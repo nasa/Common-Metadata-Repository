@@ -1,4 +1,7 @@
-const { process: proc, driver } = require('gremlin')
+const gremlin = require('gremlin')
+
+const { DriverRemoteConnection } = gremlin.driver
+const { Graph } = gremlin.structure
 
 let connection
 
@@ -6,15 +9,16 @@ let connection
  * Connects to gremlin server to give reusable connection
  * @returns Gremlin traversal interface
  */
-exports.initializeGremlinConnection = () => {
+exports.initializeGremlinConnection = async () => {
   if (connection) {
     return connection
   }
 
-  const { traversal } = proc.AnonymousTraversalSource
-  const { DriverRemoteConnection } = driver
   const gremlinUrl = process.env.GREMLIN_URL
+  const dc = new DriverRemoteConnection(gremlinUrl, {})
 
-  connection = traversal().withRemote(new DriverRemoteConnection(gremlinUrl))
+  const graph = new Graph()
+  connection = graph.traversal().withRemote(dc)
+
   return connection
 }
