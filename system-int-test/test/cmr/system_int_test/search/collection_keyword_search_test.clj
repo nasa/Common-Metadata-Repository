@@ -214,8 +214,6 @@
          "\"coll26\"" [coll26 coll26-1]
         "Mitch made a (merry-go-round)" [coll2]
         "\"Mitch made a (merry-go-round)\"" [coll2]
-        "Mitch \"a (merry-go-round)\"" []
-        "\"Mitch made\" \"a (merry-go-round)\"" []
         "(merry-go-round)" [coll2]
         "\"(merry-go-round)\"" [coll2]
         "merry-go-round" [coll2]
@@ -226,6 +224,11 @@
         "\"merry go round\"" []
         "merry-go" []
         "\"merry-go\"" []
+
+        ;; mix of keyword and keyword phrase search: not supported yet.
+        "Mitch \"a (merry-go-round)\"" []
+        ;; multiple keyword phrase search: not supported yet.
+        "\"Mitch made\" \"a (merry-go-round)\"" []
 
         ;; entry id
         "ABC!XYZ_V001" [coll2]
