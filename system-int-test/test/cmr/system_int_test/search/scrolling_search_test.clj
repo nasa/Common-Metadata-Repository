@@ -166,49 +166,49 @@
           (is (not (nil? scroll-id)))
           (is (data2-core/refs-match? [] result)))
 
-        
-          (testing "Subsequent searches gets original page-size results"
-            (let [result (search/find-refs :granule
-              {:scroll "defer" :page-size 10}
-              {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
-              (is (= (count all-grans) hits))
-              (is (data2-core/refs-match? [gran1 gran2] result))))
+        (testing "Subsequent searches gets original page-size results"
+          (let [result (search/find-refs :granule
+            {:scroll "defer" :page-size 10}
+            {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
+            (is (= (count all-grans) hits))
+            (is (data2-core/refs-match? [gran1 gran2] result))))
             
-              
-          ;; (testing "Cache is cleared after first page is read",
-          ;;   (let [
-          ;;         url (url/search-read-caches-url)
-          ;;         ;; url (url/indexer-read-caches-url)
-          ;;         ;; result (cache-test/list-caches-for-app url admin-read-token)]
-          ;;         result (cache-test/get-cache-value 
-          ;;                 url 
-          ;;                 (name cs/scroll-first-page-cache-key)
-          ;;                 scroll-id
-          ;;                 admin-read-token)]
-          ;;     (is (= #{} (set result)))))
-            
-              (testing "Using scroll 'true' also works after defer if scroll-id is passed in"
-                (let [result (search/find-refs :granule
-                  {:scroll true}
-                  {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
-                  (is (= (count all-grans) hits))
-                  (is (data2-core/refs-match? [gran3 gran4] result))))
+        (testing "Cache is cleared after first page is read",
+          (let [
+                url (url/search-read-caches-url)
+                result (cache-test/get-cache-value 
+                        url 
+                        (name cs/scroll-first-page-cache-key)
+                        (str "first-page-" scroll-id)
+                        admin-read-token
+                        404)]
+            (is (= #{[:error (str "missing key [:first-page-"
+                                  scroll-id
+                                  "] for cache [first-page-cache]")]} 
+                   (set result)))))
+          
+        (testing "Using scroll 'true' also works after defer if scroll-id is passed in"
+          (let [result (search/find-refs :granule
+            {:scroll true}
+            {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
+            (is (= (count all-grans) hits))
+            (is (data2-core/refs-match? [gran3 gran4] result))))
                 
-                  (testing "Remaining results returned on last search"
-                    (let [result (search/find-refs :granule
-                      {:scroll true}
-                      {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
-                      (is (= (count all-grans) hits))
-                      (is (data2-core/refs-match? [gran5] result))))
+        (testing "Remaining results returned on last search"
+          (let [result (search/find-refs :granule
+            {:scroll true}
+            {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
+            (is (= (count all-grans) hits))
+            (is (data2-core/refs-match? [gran5] result))))
                     
-                      (testing "Searches beyond total hits return empty list"
-                        (let [result (search/find-refs :granule
-                          {:scroll true}
-                          {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
-                          (is (= (count all-grans) hits))
-                          (is (data2-core/refs-match? [] result))))))
+        (testing "Searches beyond total hits return empty list"
+          (let [result (search/find-refs :granule
+            {:scroll true}
+            {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
+            (is (= (count all-grans) hits))
+            (is (data2-core/refs-match? [] result))))))
                         
-                          (testing "Scrolling with different search params from the original"
+    (testing "Scrolling with different search params from the original"
       (let [result (search/find-concepts-in-format
                     mime-types/xml
                     :granule

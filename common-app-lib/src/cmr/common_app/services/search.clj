@@ -23,7 +23,7 @@
 
 (def scroll-first-page-cache-key
   "Key for the first page of scroll results cache in the system cache map."
-  :scroll-first-page-cache)
+  :first-page-cache)
 
 (defconfig scroll-id-cache-ttl
   "Time in milliseconds scroll-ids can stay in the cache before getting evicted."
@@ -82,11 +82,7 @@
   and result string to the cache using the scroll-id as the key"
   [context scroll-id results result-str]
   (when scroll-id
-    (println "ADD SCROLL-ID")
-    (println scroll-id)
-    (let [short-scroll-id (str (hash scroll-id))
-          _ (println "SHORT-ID")
-          _ (println short-scroll-id)
+    (let [short-scroll-id (str "first-page-" (hash scroll-id))
           scroll-result-cache (cache/context->cache context scroll-first-page-cache-key)
           partial-results (select-keys results [:hits :timed-out])]
       (cache/set-value scroll-result-cache short-scroll-id [partial-results result-str]))))
@@ -97,21 +93,14 @@
   reading it."
   [context scroll-id]
   (when scroll-id
-    (let [short-scroll-id (str (hash scroll-id))]
-      (println "SCROLL-ID")
-      (println scroll-id)
-      (println "HASHED SCROLL-ID")
-      (println short-scroll-id)
+    (let [short-scroll-id (str "first-page-" (hash scroll-id))]
       (when-let [result (-> context
                             (cache/context->cache scroll-first-page-cache-key)
                             (cache/get-value short-scroll-id))]
-        (println "RESULT")
-        (clojure.pprint/pprint result)
-        (clojure.pprint/pprint (get-in context [:system :caches]))
         ;; clear the cache entry
-        ;; (-> context
-        ;;     (cache/context->cache scroll-first-page-cache-key)
-        ;;     (cache/set-value short-scroll-id nil))
+        (-> context
+            (cache/context->cache scroll-first-page-cache-key)
+            (cache/set-value short-scroll-id nil))
         result))))
 
 (defn time-concept-search

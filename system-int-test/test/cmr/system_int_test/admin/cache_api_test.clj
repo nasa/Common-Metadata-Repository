@@ -48,8 +48,9 @@
     (json/decode (:body response) true)))
 
 (defn get-cache-value
-  "Gets the value for a given key from the given cache."
-  [url cache-name cache-key token]
+  "Gets the value for a given key from the given cache. Checks that the retruend status code
+  matches the expected status code."
+  [url cache-name cache-key token expected-status]
   (let [full-url (str url "/" cache-name "/" cache-key)
         response (client/request {:url full-url
                                   :method :get
@@ -57,8 +58,8 @@
                                   :connection-manager (s/conn-mgr)
                                   :throw-exceptions false})
         status (:status response)]
-    ;; Make sure the status returned success
-    (when (not= status 200)
+    ;; Make sure the returend status matches the expected-status
+    (when (not= status expected-status)
       (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
     (json/decode (:body response) true)))
 
@@ -76,55 +77,50 @@
         ;; XXX It would be better if we used the respective vars here instead
         ;; of string values. That way we can change cache names if needed
         ;; without updating tests.
-        (url/indexer-read-caches-url) [
-         "acls"
-         "collection-granule-aggregation-cache"
-         "health"
-         "humanizer-cache"
-         "indexer-index-set-cache"
-         "kms"
-         "token-imp"
-         "usage-metrics-cache"]
-        (url/mdb-read-caches-url) [
-         "health"
-         "token-imp"]
-        (url/ingest-read-caches-url) [
-         "acls"
-         "health"
-         "humanizer-alias-cache"
-         "xsl-transformer-templates"
-         "kms"
-         "providers"
-         "token-imp"
-         "token-smp"
-         "token-sid"
-         "token-user-id"
-         "token-user-ids"
-         "write-enabled"]
-        (url/access-control-read-caches-url) [
-         "acls"
-         "group-ids-guids"
-         "health"
-         "providers"
-         "write-enabled"]
-        (url/search-read-caches-url) [
-         "acls"
-         "collections-for-gran-acls"
-         "has-granules-map"
-         "has-granules-or-cwic-map"
-         "health"
-         "humanizer-range-facet-cache"
-         "humanizer-report-cache"
-         "index-names"
-         "kms"
-         "metadata-cache"
-         "scroll-id-cache"
-        "scroll-first-page-cache"
-         "token-imp"
-         "token-sid"
-         "token-user-id"
-         "write-enabled"
-         "xsl-transformer-templates"])
+        (url/indexer-read-caches-url) ["acls"
+                                       "collection-granule-aggregation-cache"
+                                       "health"
+                                       "humanizer-cache"
+                                       "indexer-index-set-cache"
+                                       "kms"
+                                       "token-imp"
+                                       "usage-metrics-cache"]
+        (url/mdb-read-caches-url) ["health"
+                                   "token-imp"]
+        (url/ingest-read-caches-url) ["acls"
+                                      "health"
+                                      "humanizer-alias-cache"
+                                      "xsl-transformer-templates"
+                                      "kms"
+                                      "providers"
+                                      "token-imp"
+                                      "token-smp"
+                                      "token-sid"
+                                      "token-user-id"
+                                      "token-user-ids"
+                                      "write-enabled"]
+        (url/access-control-read-caches-url) ["acls"
+                                              "group-ids-guids"
+                                              "health"
+                                              "providers"
+                                              "write-enabled"]
+        (url/search-read-caches-url) ["acls"
+                                      "collections-for-gran-acls"
+                                      "has-granules-map"
+                                      "has-granules-or-cwic-map"
+                                      "health"
+                                      "humanizer-range-facet-cache"
+                                      "humanizer-report-cache"
+                                      "index-names"
+                                      "kms"
+                                      "metadata-cache"
+                                      "scroll-id-cache"
+                                      "scroll-first-page-cache"
+                                      "token-imp"
+                                      "token-sid"
+                                      "token-user-id"
+                                      "write-enabled"
+                                      "xsl-transformer-templates"])
       ;; CMR-4337 - bootstrap
       #_(s/only-with-real-database
          (testing "list caches for bootstrap"
@@ -258,7 +254,7 @@
 
     (testing "lookup value for cache key"
       (are [url cache cache-key value]
-           (let [response (get-cache-value url cache cache-key admin-read-token)]
+           (let [response (get-cache-value url cache cache-key admin-read-token 200)]
              (is (= (set value) (set response))))
         (url/indexer-read-caches-url)
         "indexer-index-set-cache"
