@@ -17,7 +17,7 @@
 (use-fixtures :each (ingest/reset-fixture
                      {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"}))
 
-(defn- list-caches-for-app
+(defn list-caches-for-app
   "Gets a list of the caches for the given url."
   [url token]
   (let [response (client/request {:url url
@@ -47,7 +47,7 @@
       (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
     (json/decode (:body response) true)))
 
-(defn- get-cache-value
+(defn get-cache-value
   "Gets the value for a given key from the given cache."
   [url cache-name cache-key token]
   (let [full-url (str url "/" cache-name "/" cache-key)

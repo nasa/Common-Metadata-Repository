@@ -123,11 +123,19 @@
                                     headers :headers}
       (acl/verify-ingest-management-permission request-context :read)
       (let [cache-key (keyword cache-key)
+            ;; caches (get-in request-context [:system :caches])
+            ;; _ (println "CACHES")
+            ;; _ (clojure.pprint/pprint caches)
+            ;; _ (println "GETTING CACHE " (keyword cache-name))
             cache (cache/context->cache request-context (keyword cache-name))
+            ;; _ (when (nil? cache) (println "CACHE IS NIL"))
             result (cache/get-value cache cache-key)]
-        (when result
+        (if result
           {:status 200
-           :body (json/generate-string result)})))
+           :body (json/generate-string result)}
+           {:status 404
+            :body (json/generate-string 
+                   {:error (format "missing key [%s] for cache [%s]" cache-key cache-name)})})))
 
     (POST "/clear-cache" {:keys [request-context params headers]}
       (acl/verify-ingest-management-permission request-context :update)
