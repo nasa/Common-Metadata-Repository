@@ -1592,7 +1592,7 @@ one or more indexed keyword field values that contain the phrase.
 
     curl "%CMR-ENDPOINT%/collections?keyword=\"alpha%20beta%20g?mma\""
 
-Note: Currently we only support either keyword, or single keyword phrase search. We don't support mix of keyword and keyword phrase search and and we don't support multiple keyword phrase searches.
+Note: Currently we only support either keyword, or single keyword phrase search. We don't support mix of keyword and keyword phrase search and we don't support multiple keyword phrase search.
 
 The following fields are indexed for keyword and keyword phrase search:
 
