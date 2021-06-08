@@ -214,6 +214,8 @@
          "\"coll26\"" [coll26 coll26-1]
         "Mitch made a (merry-go-round)" [coll2]
         "\"Mitch made a (merry-go-round)\"" [coll2]
+        "Mitch \"a (merry-go-round)\"" []
+        "\"Mitch made\" \"a (merry-go-round)\"" []
         "(merry-go-round)" [coll2]
         "\"(merry-go-round)\"" [coll2]
         "merry-go-round" [coll2]

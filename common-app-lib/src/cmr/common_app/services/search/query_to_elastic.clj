@@ -201,27 +201,21 @@
   cmr.common_app.services.search.query_model.TextCondition
   (condition->elastic
    [{:keys [field query-str]} concept-type]
-   (let [field (query-field->elastic-field field concept-type)]
+   (let [elastic-field (query-field->elastic-field field concept-type)]
      (cond
-       ;; for collection keyword search, we are using the new keyword2 index
-       ;; because we can not modify the existing index mapping.
+       ;; For keyword phrase search with wildcard, we have to use span query.
        (and (= :keyword-phrase field) (= :collection concept-type))
          {:span_near
            {:clauses [{:span_multi
                         {:match
                           {:wildcard
-                            {:keyword2 (escape-query-string query-str)}}}}]
+                            {elastic-field (escape-query-string query-str)}}}}]
             :slop 0
             :in_order true}}
-       (and (= :keyword field) (= :collection concept-type))
-         {:query_string {:query (escape-query-string query-str)
-                         :analyzer :whitespace
-                         :default_field :keyword2
-                         :default_operator :and}}
        :else
         {:query_string {:query (escape-query-string query-str)
                         :analyzer :whitespace
-                        :default_field field
+                        :default_field elastic-field 
                         :default_operator :and}})))
 
   cmr.common_app.services.search.query_model.StringCondition

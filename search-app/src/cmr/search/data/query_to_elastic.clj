@@ -68,7 +68,9 @@
                           :variable-concept-id :variable-concept-ids
                           :variable-name :variable-names
                           :variable-native-id :variable-native-ids
-                          :version :version-id}]
+                          :version :version-id
+                          :keyword :keyword2
+                          :keyword-phrase :keyword2}]
     (if (use-doc-values-fields)
       (merge default-mappings spatial-doc-values-field-mappings)
       default-mappings)))
