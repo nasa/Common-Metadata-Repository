@@ -115,7 +115,7 @@
                                       "kms"
                                       "metadata-cache"
                                       "scroll-id-cache"
-                                      "scroll-first-page-cache"
+                                      "first-page-cache"
                                       "token-imp"
                                       "token-sid"
                                       "token-user-id"
@@ -250,7 +250,8 @@
                                       :connection-manager (s/conn-mgr)
                                       :throw-exceptions false})]
         (is (= 404 (:status response)))
-        (is (= "Not Found" (:body response)))))
+        (is (= "{\"error\":\"missing key [:INVALID-CACHE-ABC] for cache [acls]\"}"
+               (:body response)))))
 
     (testing "lookup value for cache key"
       (are [url cache cache-key value]
