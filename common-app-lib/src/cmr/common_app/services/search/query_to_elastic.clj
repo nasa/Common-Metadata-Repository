@@ -202,21 +202,19 @@
   (condition->elastic
    [{:keys [field query-str]} concept-type]
    (let [elastic-field (query-field->elastic-field field concept-type)]
-     (cond
-       ;; For keyword phrase search with wildcard, we have to use span query.
-       (and (= :keyword-phrase field) (= :collection concept-type))
-         {:span_near
-           {:clauses [{:span_multi
-                        {:match
-                          {:wildcard
-                            {elastic-field (escape-query-string query-str)}}}}]
-            :slop 0
-            :in_order true}}
-       :else
-        {:query_string {:query (escape-query-string query-str)
-                        :analyzer :whitespace
-                        :default_field elastic-field 
-                        :default_operator :and}})))
+     ;; For keyword phrase search with wildcard, we have to use span query.
+     (if (and (= :keyword-phrase field) (= :collection concept-type))
+       {:span_near
+         {:clauses [{:span_multi
+                      {:match
+                        {:wildcard
+                          {elastic-field (escape-query-string query-str)}}}}]
+          :slop 0
+          :in_order true}}
+       {:query_string {:query (escape-query-string query-str)
+                       :analyzer :whitespace
+                       :default_field elastic-field
+                       :default_operator :and}})))
 
   cmr.common_app.services.search.query_model.StringCondition
   (condition->elastic

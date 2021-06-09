@@ -1583,16 +1583,28 @@ string length. The longer the max keyword string length, the less number of keyw
 
 The following searches on "alpha", "beta" and "g?mma" individually and returns the collections that contain all these individual words
 in the keyword fields that are indexed. Note: these words don't have to exist in the same keyword field, but they have to exsit as a
-space(or one of special character delimiter CMR uses) delimited word.
+space (or one of special character delimiter CMR uses) delimited word.
 
     curl "%CMR-ENDPOINT%/collections?keyword=alpha%20beta%20g?mma"
 
-We also support keyword phrase search. The following searches on "*alpha beta g?mma*" as a phrase and returns the collections with
+We also support keyword phrase search. The following searches on "alpha beta g?mma" as a phrase and returns the collections with
 one or more indexed keyword field values that contain the phrase.
 
     curl "%CMR-ENDPOINT%/collections?keyword=\"alpha%20beta%20g?mma\""
 
-Note: Currently we only support either keyword, or single keyword phrase search. We don't support mix of keyword and keyword phrase search and we don't support multiple keyword phrase search.
+Note: Currently we only support either keyword, or single keyword phrase search. We don't support mix of keyword and keyword phrase search and we don't support multiple keyword phrase search. These searches like the following will be rejected with error: <error>keyword phrase mixed with keyword, or another keyword-phrase are not supported</error>
+
+   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one\"%20\"phrase%20two\"" (multipe phrase)
+   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one\"%20\word2" (mix of phrase and word)
+   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one" (missing one \")
+
+Also \" is reserved for phrase boundary. For literal double quotes, use \\\". For example, to search for 'alpha "beta" g?mma' phrase, do the following:
+
+    curl "%CMR-ENDPOINT%/collections?keyword=\"alpha%20\\\"beta\\\"%20g?mma\""
+
+To search on 'alpha', '"beta"', 'g?mma' individually, do the following:
+
+    curl "%CMR-ENDPOINT%/collections?keyword=alpha%20\\\"beta\\\"%20g?mma"
 
 The following fields are indexed for keyword and keyword phrase search:
 

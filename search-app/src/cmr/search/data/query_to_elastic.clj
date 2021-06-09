@@ -311,16 +311,41 @@
   [condition]
   (let [query-str (:query-str condition)
         trimmed-query-str (when query-str
-                            (str/trim query-str))]
+                            (str/trim query-str))
+        ;;literal double quotes are passed in as \\\"
+        query-str-without-literal-quotes (when query-str
+                                           (str/replace trimmed-query-str #"\\\"" ""))
+        ;;\" is reserved for phrase boundaries.
+        count-of-double-quotes (if query-str
+                                 (count (re-seq #"\"" query-str-without-literal-quotes))
+                                 0)]
+
+    ;;We want to reject the query if it's a mix of keyword and keyword-phrase, or
+    ;;if it's a multiple keyword-phrase search, which are not supported.
+    ;;We also want to reject it if the keyword phrase contains only one \".
+    (when (and (= :keyword (:field condition))
+               (or (> count-of-double-quotes 2) ;;multi keyword-phrase case
+                   (and (= count-of-double-quotes 2) ;;mix of keyword and keyword-phrase case
+                        (not (and (str/starts-with? trimmed-query-str "\"")
+                                  (str/ends-with? trimmed-query-str "\""))))
+                   (= 1 count-of-double-quotes 1))) ;;keyword-phrase boundary is not closed case.
+      (errors/throw-service-errors
+       :bad-request
+       ["keyword phrase mixed with keyword, or another keyword-phrase are not supported"]))
+
     (if (and query-str
              (= :keyword (:field condition))
              (str/starts-with? trimmed-query-str "\"")
              (str/ends-with? trimmed-query-str "\""))
       (assoc condition :query-str (-> trimmed-query-str
                                       (str/replace #"^\"" "* ")
-                                      (str/replace #"\"$" " *"))
+                                      (str/replace #"\"$" " *")
+                                      (str/replace #"\\\"" "\""))
                        :field :keyword-phrase)
-      condition)))
+      (if (and query-str
+               (str/includes? trimmed-query-str "\\\""))
+        (assoc condition :query-str (str/replace trimmed-query-str #"\\\"" "\""))
+        condition))))
 
 (defmethod q2e/query->elastic :collection
   [query]
