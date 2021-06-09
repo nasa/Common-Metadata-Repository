@@ -1,4 +1,4 @@
-exports.fetchCmrCollection = async (_conceptId, _token) => ({
+exports.fetchCmrCollection = async () => ({
   hits: 1,
   took: 6,
   items: [

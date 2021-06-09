@@ -1,7 +1,6 @@
 const gremlin = require('gremlin')
 
-// eslint-disable-next-line no-underscore-dangle
-const __ = gremlin.process.statics
+const gremlinStatistics = gremlin.process.statics
 
 /**
  * Given a RelatedUrl object, Gremlin connection, and
@@ -37,7 +36,7 @@ exports.indexRelatedUrl = async (relatedUrl, g, dataset, conceptId) => {
       .has('name', url)
       .fold()
       .coalesce(
-        __.unfold(),
+        gremlinStatistics.unfold(),
         g.addV('documentation').property('name', url).property('title', description || subType)
       )
       .next()
@@ -52,7 +51,7 @@ exports.indexRelatedUrl = async (relatedUrl, g, dataset, conceptId) => {
       .hasId(dataset)
       .fold()
       .coalesce(
-        __.unfold(),
+        gremlinStatistics.unfold(),
         g.V(documentationId).addE('documents').to(g.V(dataset))
       )
       .next()

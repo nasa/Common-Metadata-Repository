@@ -1,2 +1,1 @@
-// eslint-disable-next-line no-unused-vars
-exports.getEchoToken = async (_param) => '1234-very-good-token'
+exports.getEchoToken = async () => '1234-very-good-token'

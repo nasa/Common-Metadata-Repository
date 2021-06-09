@@ -1,7 +1,6 @@
 const gremlin = require('gremlin')
 
-// eslint-disable-next-line no-underscore-dangle
-const __ = gremlin.process.statics
+const gremlinStatistics = gremlin.process.statics
 const { indexRelatedUrl } = require('./indexRelatedUrl')
 
 /**
@@ -29,8 +28,6 @@ exports.indexCmrCollection = async (collection, g) => {
     datasetName = doiUrl
   }
 
-  console.log(`RelatedUrls for concept [${conceptId}]: ${relatedUrls}`)
-
   let dataset = null
   try {
     dataset = await g
@@ -39,7 +36,7 @@ exports.indexCmrCollection = async (collection, g) => {
       .has('concept-id', conceptId)
       .fold()
       .coalesce(
-        __.unfold(),
+        gremlinStatistics.unfold(),
         g.addV('dataset')
           .property('name', datasetName)
           .property('title', entryTitle)
