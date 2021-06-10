@@ -192,10 +192,9 @@
   "Generate progress message for an in-progress bulk granule update"
   [granule-statuses]
   (let [gran-count (count granule-statuses)
-        pending-count (count (filter #(= (:status %) "UPDATED") granule-statuses))]
-
+        pending-count (count (filter #(= (:status %) "PENDING") granule-statuses))]
     (if (= pending-count 0)
-     (format "All granules in this request have been processed.")
+     (format "Complete.")
      (format "Of %d total granules, %d granules have been processed and %d are still pending."
             gran-count (- gran-count pending-count) pending-count))))
 
