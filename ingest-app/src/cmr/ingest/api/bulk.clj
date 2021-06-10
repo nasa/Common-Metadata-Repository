@@ -201,8 +201,10 @@
 
 
 (defn- get-granule-task-status-response-generator
-  "Get the verbose status for the given task including granule statuses. Since a detailed show_progress
-   or show_granules has been requested, we must perform an expensive second query."
+  "Generates the response for a bulk granule update task status request. Depending on the parameters
+   show_request, show_progress, and show_granules, the response will be more or less verbose.
+   show_progress and show_granules require a full query of granules in the request, which can cause
+   this response generation to be much more expensive."
   [request-context task-id gran-task params]
   (let [{:keys [name created-at status status-message request-json-body]} gran-task
         {:keys [show_request show_progress show_granules]} params
@@ -229,8 +231,7 @@
      (conj response-fields extra-fields)))
 
 (defn get-granule-task-status
-  "Get the short and sweet status for the given task, which doesn't take require a full query of
-   granules in the task."
+  "Handles bulk granule update task status requests."
   [request task-id]
   (let [{:keys [headers request-context params]} request
         _ (validate-granule-bulk-update-result-format headers)
