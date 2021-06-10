@@ -8,11 +8,11 @@ const gremlinStatistics = gremlin.process.statics
  * relationships for any GENERAL DOCUMENTATION that exists
  * in common with other nodes in the graph database
  * @param {JSON} relatedUrl a list of RelatedUrls
- * @param {Connection} g a connection to the gremlin server
+ * @param {Connection} gremlinConnection a connection to the gremlin server
  * @param {Graph Node} dataset the parent collection vertex in the gremlin server
  * @returns null
  */
-exports.indexRelatedUrl = async (relatedUrl, g, dataset, conceptId) => {
+exports.indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId) => {
   const {
     Subtype: subType,
     URL: url,
@@ -30,31 +30,37 @@ exports.indexRelatedUrl = async (relatedUrl, g, dataset, conceptId) => {
 
   try {
     // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
-    const documentationVertex = await g
+    const documentationVertex = await gremlinConnection
       .V()
       .hasLabel('documentation')
       .has('name', url)
       .fold()
       .coalesce(
         gremlinStatistics.unfold(),
-        g.addV('documentation').property('name', url).property('title', description || subType)
+        gremlinConnection.addV('documentation').property('name', url).property('title', description || subType)
       )
       .next()
 
     const { value: { id: documentationId } } = documentationVertex
 
+    console.log(`Documentation vertex [${documentationId}] indexed for collection [${dataset}]`)
+
     // Use `fold` and `coalesce` the same as above, but to
     // create an edge between this url and its parent collection
-    await g
+    const documentationEdge = await gremlinConnection
       .V(documentationId)
       .out('documents')
       .hasId(dataset)
       .fold()
       .coalesce(
         gremlinStatistics.unfold(),
-        g.V(documentationId).addE('documents').to(g.V(dataset))
+        gremlinConnection.V(documentationId).addE('documents').to(gremlinConnection.V(dataset))
       )
       .next()
+
+    const { value: { id: edgeId } } = documentationEdge
+
+    console.log(`Documentation edge [${edgeId}] indexed to point to collection [${dataset}]`)
   } catch (error) {
     console.log(`ERROR indexing RelatedUrl for concept [${conceptId}] ${JSON.stringify(relatedUrl)}: \n Error: ${error}`)
   }

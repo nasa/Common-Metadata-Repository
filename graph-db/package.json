@@ -8,7 +8,7 @@
     "test": "jest --config jest.config.js",
     "test-coverage": "jest --coverage",
     "ci-test": "jest --coverage --config jest.config.junit_output.js",
-    "bootstrap": "serverless invoke local -f bootstrapGremlinServer -e CMR_ROOT=\"http://cmr.uat.earthdata.nasa.gov\" -e PAGE_SIZE=2000 -e GREMLIN_URL=\"ws://localhost:8182/gremlin\" --stage=sit",
+    "bootstrap-local": "serverless invoke local -f bootstrapGremlinServer -e CMR_ROOT=\"http://cmr.uat.earthdata.nasa.gov\" -e PAGE_SIZE=2000 -e GREMLIN_URL=\"ws://localhost:8182/gremlin\" --stage=sit",
     "deploy": "./node_modules/.bin/sls deploy --config serverless.yml"
   },
   "maintainers": [

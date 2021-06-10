@@ -11,8 +11,6 @@ afterEach(() => {
 
 describe('getEchoToken', () => {
   test('fetches ECHO token from AWS', async () => {
-    process.env.IS_LOCAL = false
-
     const response = await getEchoToken()
 
     expect(response).toEqual('1234-very-good-token')

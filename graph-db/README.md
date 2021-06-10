@@ -59,9 +59,9 @@ npm install
 ```
 
 ### Run
-To invoke the bootstrap function and load data into your Gremlin server from the CMR run the following command:
+To invoke the bootstrap-local function and load data into a local Gremlin server from the CMR run the following command:
 ```
-npm run bootstrap
+npm run bootstrap-local
 ```
 
 ### Test

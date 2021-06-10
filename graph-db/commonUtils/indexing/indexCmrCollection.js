@@ -6,10 +6,10 @@ const { indexRelatedUrl } = require('./indexRelatedUrl')
 /**
  * Given a collection from the CMR, index it into Gremlin
  * @param {JSON} collection collection object from `items` array in cmr response
- * @param {Gremlin Traversal Object} g connection to gremlin server
+ * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
  * @returns
  */
-exports.indexCmrCollection = async (collection, g) => {
+exports.indexCmrCollection = async (collection, gremlinConnection) => {
   const {
     meta: { 'concept-id': conceptId },
     umm: {
@@ -30,14 +30,15 @@ exports.indexCmrCollection = async (collection, g) => {
 
   let dataset = null
   try {
-    dataset = await g
+    // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
+    dataset = await gremlinConnection
       .V()
       .hasLabel('dataset')
       .has('concept-id', conceptId)
       .fold()
       .coalesce(
         gremlinStatistics.unfold(),
-        g.addV('dataset')
+        gremlinConnection.addV('dataset')
           .property('name', datasetName)
           .property('title', entryTitle)
           .property('concept-id', conceptId)
@@ -53,11 +54,11 @@ exports.indexCmrCollection = async (collection, g) => {
 
   if (relatedUrls && relatedUrls.length > 0) {
     relatedUrls.forEach((relatedUrl) => {
-      indexRelatedUrl(relatedUrl, g, datasetId, conceptId)
+      indexRelatedUrl(relatedUrl, gremlinConnection, datasetId, conceptId)
     })
   }
 
-  console.log(`Indexed collection [${conceptId}] successfully`)
+  console.log(`Dataset vertex [${datasetId}] indexed for collection [${conceptId}]`)
 
   return true
 }

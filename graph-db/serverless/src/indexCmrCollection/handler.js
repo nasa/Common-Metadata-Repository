@@ -6,9 +6,9 @@ const { getConceptType } = require('../utils/getConceptType')
 
 module.exports.indexCmrCollection = async (event) => {
   const { Records: [{ body }] } = event
-  const { 'concept-id': conceptId } = JSON.parse(body)
+  const { 'concept-id': conceptId, action } = JSON.parse(body)
 
-  console.log(`Got concept-id: [${conceptId}]`)
+  console.log(`Got event: [${body}]`)
 
   if (getConceptType(conceptId) !== 'collection') {
     return {
@@ -17,15 +17,22 @@ module.exports.indexCmrCollection = async (event) => {
     }
   }
 
+  if (action !== 'concept-update') {
+    return {
+      statusCode: 200,
+      body: `Action [${action}] was unsupported for concept [${conceptId}]`
+    }
+  }
+
   const token = await getEchoToken()
-  const collection = await fetchCmrCollection(conceptId, token)
   const gremlin = await initializeGremlinConnection()
 
+  const collection = await fetchCmrCollection(conceptId, token)
   const { items } = collection
-  const indexedSucessfully = await indexCmrCollection(items[0], gremlin)
+  const indexedSuccessfully = await indexCmrCollection(items[0], gremlin)
 
   return {
     statusCode: 200,
-    body: `Collection [${conceptId}] indexed sucessfully: ${indexedSucessfully}`
+    body: `Collection [${conceptId}] indexed sucessfully: ${indexedSuccessfully}`
   }
 }

@@ -13,13 +13,15 @@ exports.getEchoToken = async () => {
     return null
   }
 
-  const response = await getSecureParam(
-    `/${process.env.CMR_ENVIRONMENT}/graph-db/CMR_ECHO_SYSTEM_TOKEN`
-  )
-
-  if (!response) {
-    throw new Error('ECHO Token not found. Please update config!')
+  let token
+  try {
+    token = await getSecureParam(
+      `/${process.env.CMR_ENVIRONMENT}/graph-db/CMR_ECHO_SYSTEM_TOKEN`
+    )
+  } catch (error) {
+    console.warn(`Could not get ECHO token: ${error}`)
+    token = null
   }
 
-  return response
+  return token
 }
