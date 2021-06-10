@@ -168,6 +168,23 @@
 
     (index/wait-until-indexed)
 
+    (testing "search by keyword-phrase unsupported cases."
+      (are3 [keyword-str]
+        (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})
+              json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})]
+          (is (= {:errors [(str "keyword phrase mixed with keyword, or another keyword-phrase are not supported. "
+                                "keyword phrase has to be enclosed by two escaped double quotes.")]
+                  :status 400}    
+                 parameter-refs
+                 json-refs)))
+                       
+        "mix of keyword and keyword phrase search: not supported yet."
+        "Mitch \"a (merry-go-round)\""
+        "multiple keyword phrase search: not supported yet."
+        "\"Mitch made\" \"a (merry-go-round)\""
+        "Missing one \" case"
+        "\"a (merry-go-round)"))
+
     (testing "search by keywords."
       (are [keyword-str items]
         (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})

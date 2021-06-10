@@ -325,13 +325,14 @@
     ;;We also want to reject it if the keyword phrase contains only one \".
     (when (and (= :keyword (:field condition))
                (or (> count-of-double-quotes 2) ;;multi keyword-phrase case
-                   (and (= count-of-double-quotes 2) ;;mix of keyword and keyword-phrase case
+                   ;;mix of keyword and keyword-phrase case, including the case when one \" is missing.
+                   (and (str/includes? query-str-without-literal-quotes "\"")
                         (not (and (str/starts-with? trimmed-query-str "\"")
-                                  (str/ends-with? trimmed-query-str "\""))))
-                   (= 1 count-of-double-quotes 1))) ;;keyword-phrase boundary is not closed case.
+                                  (str/ends-with? trimmed-query-str "\""))))))
       (errors/throw-service-errors
        :bad-request
-       ["keyword phrase mixed with keyword, or another keyword-phrase are not supported"]))
+       [(str "keyword phrase mixed with keyword, or another keyword-phrase are not supported. "
+             "keyword phrase has to be enclosed by two escaped double quotes.")]))
 
     (if (and query-str
              (= :keyword (:field condition))
