@@ -90,6 +90,11 @@
      (for [k additional-keys]
       (xml/element k {} (get status k)))))))
 
+(defn- generate-progress-message
+  "Generate progress message for in in-progress bulk granule update"
+  [granule-statuses]
+  "status message in progress")
+
 (defmulti generate-provider-tasks-response
   "Convert a result to a proper response format"
   (fn [headers result]
@@ -188,9 +193,10 @@
         :request-json-body (:request-json-body task-status)
         :collection-statuses collection-statuses}))))
 
-(defn get-granule-task-status
-  "Get the status for the given task including granule statuses"
-  [task-id request]
+(defn get-granule-task-status-terse
+  "Get the short and sweet status for the given task, which doesn't take require a full query of
+   granules in the task."
+  [task-id request show_request]
   (let [{:keys [headers request-context]} request
         _ (validate-granule-bulk-update-result-format headers)
         gran-task (data-gran-bulk-update/get-granule-task-by-id request-context task-id)
@@ -204,17 +210,69 @@
     (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
 
     (let [{:keys [name created-at status status-message request-json-body]} gran-task
+          response-fields {:status 200
+                           :created-at created-at
+                           :name name
+                           :task-status status
+                           :status-message status-message}
+          response (if show_request
+                     (assoc response-fields :request-json-body request-json-body)
+                     response-fields)]
+      (api-core/generate-ingest-response (assoc headers "accept" mt/json) response))))
+
+
+
+(defn get-granule-task-status-verbose
+  "Get the verbose status for the given task including granule statuses. Since a detailed show_progress
+   or show_granules has been requested, we must perform an expensive second query."
+  [task-id request show_progress show_granules show_request]
+  (let [{:keys [headers request-context params]} request
+        _ (validate-granule-bulk-update-result-format headers)
+        gran-task (data-gran-bulk-update/get-granule-task-by-id request-context task-id)
+        provider-id (:provider-id gran-task)]
+    (when-not provider-id
+      (srvc-errors/throw-service-error
+       :not-found
+       (format "Granule bulk update task with task id [%s] could not be found." task-id)))
+
+    (api-core/verify-provider-exists request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
+
+    (let [{:keys [name created-at status status-message request-json-body]} gran-task
           granule-statuses (data-gran-bulk-update/get-bulk-update-granule-statuses-for-task
-                            request-context task-id)]
-      (api-core/generate-ingest-response
-       (assoc headers "accept" mt/json)
-       {:status 200
-        :created-at created-at
-        :name name
-        :task-status status
-        :status-message status-message
-        :request-json-body request-json-body
-        :granule-statuses granule-statuses}))))
+                            request-context task-id)
+          response-fields {:status 200
+                           :created-at created-at
+                           :name name
+                           :task-status status
+                           :status-message status-message}
+          extra-fields (as-> {} intermediate
+                             (if show_progress
+                               (assoc intermediate :progress (generate-progress-message granule-statuses))
+                               intermediate)
+                             (if show_request
+                               (assoc intermediate :request-json-body request-json-body)
+                               intermediate)
+                             (if show_granules
+                               (assoc intermediate :granule-statuses granule-statuses)
+                               intermediate))
+
+          response (conj response-fields extra-fields)]
+      (api-core/generate-ingest-response (assoc headers "accept" mt/json) response))))
+
+
+(defn get-granule-task-status
+  "Verbosity decider"
+  [task-id request]
+  (let [{:keys [show_progress show_granules show_request]} (:params request)]
+    (println "show_progress: " show_progress)
+    (println "show_granules: " show_granules)
+    (println "show_request: " show_request)
+    (if (or (= show_progress "true")
+            (= show_granules "true"))
+      (get-granule-task-status-verbose task-id request show_progress show_granules show_request)
+      (get-granule-task-status-terse task-id request show_request))))
+
 
 (defn update-completed-granule-task-statuses
   "On demand capability to update granule task statuses. Marks bulk granule
