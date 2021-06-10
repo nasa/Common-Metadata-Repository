@@ -1592,11 +1592,11 @@ one or more indexed keyword field values that contain the phrase.
 
     curl "%CMR-ENDPOINT%/collections?keyword=\"alpha%20beta%20g?mma\""
 
-Note: Currently we only support either keyword, or single keyword phrase search. We don't support mix of keyword and keyword phrase search and we don't support multiple keyword phrase search. These searches like the following will be rejected with error: <error>keyword phrase mixed with keyword, or another keyword-phrase are not supported</error>
+Note: Currently we only support either keyword, or single keyword phrase search. We don't support mix of keyword and keyword phrase search and we don't support multiple keyword phrase search. These searches like the following will be rejected with error: <error>keyword phrase mixed with keyword, or another keyword-phrase are not supported. keyword phrase has to be enclosed by two escaped double quotes.</error>
 
-   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one\"%20\"phrase%20two\"" (multipe phrase)
-   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one\"%20\word2" (mix of phrase and word)
-   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one" (missing one \")
+   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one\"%20\"phrase%20two\"" (multiple phrase case)
+   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one\"%20\word2" (mix of phrase and word case)
+   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one" (missing one \" case)
 
 Also \" is reserved for phrase boundary. For literal double quotes, use \\\". For example, to search for 'alpha "beta" g?mma' phrase, do the following:
 
