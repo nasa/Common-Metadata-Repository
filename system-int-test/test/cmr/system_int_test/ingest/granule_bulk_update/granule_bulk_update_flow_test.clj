@@ -179,13 +179,15 @@
                                   :status-message (format "Granule UR [SC:non-existent] in task-id [%s] does not exist."
                                                           task3-id)}]}]
             (testing "default result format"
-              (let [response (ingest/granule-bulk-update-task-status task3-id)]
+              (let [status-req-options {:query-params {:show_granules "true" :show_request "true"}}
+                    response (ingest/granule-bulk-update-task-status task3-id status-req-options)]
                 (is (= task3-expected
                        (dissoc response :created-at)))))
 
             (testing "JSON result format"
-              (let [response (ingest/granule-bulk-update-task-status
-                              task3-id {:accept-format :json})]
+              (let [status-req-options {:query-params {:show_granules "true" :show_request "true"}
+                                        :accept-format :json}
+                    response (ingest/granule-bulk-update-task-status task3-id status-req-options)]
                 (is (= task3-expected
                        (dissoc response :created-at)))))
 
