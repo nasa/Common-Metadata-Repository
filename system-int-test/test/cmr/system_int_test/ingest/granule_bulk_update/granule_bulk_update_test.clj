@@ -78,7 +78,8 @@
 
           (is (= 200 status))
           (is (some? task-id))
-          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
                 {:keys [task-status status-message granule-statuses]} status-response]
             (is (= "COMPLETE" task-status))
             (is (= "All granule updates completed successfully." status-message))
@@ -102,7 +103,8 @@
 
           (is (= 200 status))
           (is (some? task-id))
-          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
                 {:keys [task-status status-message granule-statuses]} status-response]
             (is (= "COMPLETE" task-status))
             (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
@@ -125,7 +127,8 @@
 
           (is (= 200 status))
           (is (some? task-id))
-          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
                 {:keys [task-status status-message granule-statuses]} status-response]
             (is (= "COMPLETE" task-status))
             (is (= "Task completed with 1 FAILED and 2 UPDATED out of 3 total granule update(s)."
@@ -154,7 +157,8 @@
 
           (is (= 200 status))
           (is (some? task-id))
-          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
                 {:keys [task-status status-message granule-statuses]} status-response]
             (is (= "COMPLETE" task-status))
             (is (= "Task completed with 4 FAILED out of 4 total granule update(s)."
@@ -188,7 +192,8 @@
 
           (is (= 200 status))
           (is (some? task-id))
-          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
                 {:keys [task-status status-message granule-statuses]} status-response]
             (is (= "COMPLETE" task-status))
             (is (= "All granule updates completed successfully." status-message))
@@ -212,7 +217,8 @@
 
           (is (= 200 status))
           (is (some? task-id))
-          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
                 {:keys [task-status status-message granule-statuses]} status-response]
             (is (= "COMPLETE" task-status))
             (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
@@ -235,7 +241,8 @@
 
           (is (= 200 status))
           (is (some? task-id))
-          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
                 {:keys [task-status status-message granule-statuses]} status-response]
             (is (= "COMPLETE" task-status))
             (is (= "Task completed with 1 FAILED and 2 UPDATED out of 3 total granule update(s)."
@@ -263,7 +270,8 @@
 
           (is (= 200 status))
           (is (some? task-id))
-          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
                 {:keys [task-status status-message granule-statuses]} status-response]
             (is (= "COMPLETE" task-status))
             (is (= "Task completed with 2 FAILED out of 2 total granule update(s)."
@@ -330,7 +338,8 @@
       ;; verify the granule status is UPDATED
       (is (= 200 status))
       (is (some? task-id))
-      (let [status-response (ingest/granule-bulk-update-task-status task-id)
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
             {:keys [task-status status-message granule-statuses]} status-response]
         (is (= "COMPLETE" task-status))
         (is (= "All granule updates completed successfully." status-message))
@@ -408,7 +417,8 @@
       ;; verify the granule status is UPDATED
       (is (= 200 status))
       (is (some? task-id))
-      (let [status-response (ingest/granule-bulk-update-task-status task-id)
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
             {:keys [task-status status-message granule-statuses]} status-response]
         (is (= "COMPLETE" task-status))
         (is (= "All granule updates completed successfully." status-message))
@@ -512,7 +522,8 @@
       ;; verify the granule status is UPDATED
       (is (= 200 status))
       (is (some? task-id))
-      (let [status-response (ingest/granule-bulk-update-task-status task-id)
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
             {:keys [task-status status-message granule-statuses]} status-response]
         (is (= "COMPLETE" task-status))
         (is (= "All granule updates completed successfully." status-message))
@@ -636,7 +647,8 @@
       ;; verify the granule status is UPDATED
       (is (= 200 status))
       (is (some? task-id))
-      (let [status-response (ingest/granule-bulk-update-task-status task-id)
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
             {:keys [task-status status-message granule-statuses]} status-response]
         (is (= "COMPLETE" task-status))
         (is (= "All granule updates completed successfully." status-message))
@@ -669,7 +681,8 @@
                                     (:RelatedUrls (json/parse-string latest-metadata true))))))))))))
 
 (deftest status-verbosity-test
-  (let [coll1 (data-core/ingest-umm-spec-collection
+  (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+        coll1 (data-core/ingest-umm-spec-collection
                "PROV1" (data-umm-c/collection {:EntryTitle "coll1"
                                                :ShortName "short1"
                                                :Version "V1"
@@ -715,8 +728,7 @@
                   :granule-ur "SC:AE_5DSno.002:30500515"})))]
     (testing "Specify bulk granule status verbosity"
       (testing "least verbose"
-        (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
-              bulk-update {:name "add S3 links 1"
+        (let [bulk-update {:name "add S3 links 1"
                            :operation "UPDATE_FIELD"
                            :update-field "S3Link"
                            :updates [["SC:AE_5DSno.002:30500511" "s3://url30500511"]
@@ -736,14 +748,13 @@
             (is (= nil request-json-body))
             (is (= nil progress)))))
       (testing "show_progress=true"
-        (let [bulk-update-options {:token (echo-util/login (system/context) "user1")
-                                   :query-params {:show_progress "true"}}
-              bulk-update {:name "add S3 links 1"
+        (let [bulk-update {:name "add S3 links 1"
                            :operation "UPDATE_FIELD"
                            :update-field "S3Link"
                            :updates [["SC:AE_5DSno.002:30500511" "s3://url30500511"]
                                      ["SC:AE_5DSno.002:30500512" "s3://url1, s3://url2,s3://url3"]
                                      ["SC:AE_5DSno.002:30500514" "s3://url30500514"]]}
+              status-req-options {:query-params {:show_progress "true"}}
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
               {:keys [status task-id]} response]
           (index/wait-until-indexed)
@@ -751,9 +762,82 @@
 
           (is (= 200 status))
           (is (some? task-id))
-          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+          (let [status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
                 {:keys [progress request-json-body granule-statuses]} status-response]
-            ;these three are all unincluded by default (least verbose)
             (is (= nil granule-statuses))
             (is (= nil request-json-body))
-            (is (= nil progress))))))))
+            (is (= "Complete." progress)))))
+      (testing "show_granules=true, show_progress=false"
+        (let [bulk-update {:name "add S3 links 1"
+                           :operation "UPDATE_FIELD"
+                           :update-field "S3Link"
+                           :updates [["SC:AE_5DSno.002:30500511" "s3://url30500511"]
+                                     ["SC:AE_5DSno.002:30500512" "s3://url1, s3://url2,s3://url3"]
+                                     ["SC:AE_5DSno.002:30500514" "s3://url30500514"]]}
+              status-req-options {:query-params {:show_progress "false" :show_granules "true"}}
+              response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
+              {:keys [status task-id]} response]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+                {:keys [progress request-json-body granule-statuses]} status-response]
+            (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
+                     :status "UPDATED"}
+                    {:granule-ur "SC:AE_5DSno.002:30500512"
+                     :status "UPDATED"}
+                    {:granule-ur "SC:AE_5DSno.002:30500514"
+                     :status "UPDATED"}]
+                   granule-statuses))
+            (is (= nil request-json-body))
+            (is (= nil progress)))))
+      (testing "show_request=true"
+        (let [bulk-update {:name "add S3 links 1"
+                           :operation "UPDATE_FIELD"
+                           :update-field "S3Link"
+                           :updates [["SC:AE_5DSno.002:30500511" "s3://url30500511"]
+                                     ["SC:AE_5DSno.002:30500512" "s3://url1, s3://url2,s3://url3"]
+                                     ["SC:AE_5DSno.002:30500514" "s3://url30500514"]]}
+              status-req-options {:query-params {:show_request "true"}}
+              response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
+              {:keys [status task-id]} response]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+                {:keys [progress request-json-body granule-statuses]} status-response]
+            (is (= nil granule-statuses))
+            (is (string/includes? request-json-body "{\"name\":\"add S3 links 1\",\"operation\":\"UPDATE_FIELD\""))
+            (is (= nil progress)))))
+      (testing "maximum verbosity"
+        (let [bulk-update {:name "add S3 links 1"
+                           :operation "UPDATE_FIELD"
+                           :update-field "S3Link"
+                           :updates [["SC:AE_5DSno.002:30500511" "s3://url30500511"]
+                                     ["SC:AE_5DSno.002:30500512" "s3://url1, s3://url2,s3://url3"]
+                                     ["SC:AE_5DSno.002:30500514" "s3://url30500514"]]}
+              status-req-options {:query-params {:show_request "true"
+                                                 :show_granules "true"
+                                                 :show_progress "true"}}
+              response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
+              {:keys [status task-id]} response]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+                {:keys [progress request-json-body granule-statuses]} status-response]
+            (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
+                     :status "UPDATED"}
+                    {:granule-ur "SC:AE_5DSno.002:30500512"
+                     :status "UPDATED"}
+                    {:granule-ur "SC:AE_5DSno.002:30500514"
+                     :status "UPDATED"}]
+                   granule-statuses))
+            (is (string/includes? request-json-body "{\"name\":\"add S3 links 1\",\"operation\":\"UPDATE_FIELD\""))
+            (is (= "Complete." progress))))))))
