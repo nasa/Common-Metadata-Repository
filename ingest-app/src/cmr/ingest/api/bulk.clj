@@ -205,7 +205,8 @@
   [request-context task-id gran-task params]
   (let [{:keys [name created-at status status-message request-json-body]} gran-task
         {:keys [show_request show_progress show_granules]} params
-        granule-statuses (when (or show_progress show_granules)
+        ;this call makes the status response much more expensive to retrieve
+        granule-statuses (when (or (= "true" show_progress) (= "true" show_granules))
                            (data-gran-bulk-update/get-bulk-update-granule-statuses-for-task
                             request-context task-id))
         response-fields {:status 200
@@ -214,13 +215,13 @@
                          :task-status status
                          :status-message status-message}
         extra-fields (as-> {} intermediate
-                                (if show_progress
+                                (if (= "true" show_progress)
                                   (assoc intermediate :progress (generate-progress-message granule-statuses))
                                   intermediate)
-                                (if show_request
+                                (if (= "true" show_request)
                                   (assoc intermediate :request-json-body request-json-body)
                                   intermediate)
-                                (if show_granules
+                                (if (= "true" show_granules)
                                   (assoc intermediate :granule-statuses granule-statuses)
                                   intermediate))]
      (conj response-fields extra-fields)))
