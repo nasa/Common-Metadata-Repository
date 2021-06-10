@@ -191,7 +191,6 @@
 (defn- generate-status-progress-message
   "Generate progress message for an in-progress bulk granule update"
   [granule-statuses]
-  (println granule-statuses)
   (let [gran-count (count granule-statuses)
         pending-count (count (filter #(= (:status %) "PENDING") granule-statuses))]
     (if (= pending-count 0)
@@ -231,7 +230,7 @@
      (conj response-fields extra-fields)))
 
 (defn get-granule-task-status
-  "Handles bulk granule update task status requests."
+  "Get the status for the given bulk granule update task"
   [request task-id]
   (let [{:keys [headers request-context params]} request
         _ (validate-granule-bulk-update-result-format headers)

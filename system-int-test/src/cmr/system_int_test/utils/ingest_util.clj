@@ -697,7 +697,6 @@
   [concept-type provider-id task-id options]
   (let [accept-format (get options :accept-format)
         query-params (get options :query-params)
-        _ (println query-params)
         token (:token options)
         task-status-url (if (= :collection concept-type)
                           (url/ingest-collection-bulk-update-task-status-url provider-id task-id)
