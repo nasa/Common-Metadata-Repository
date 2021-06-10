@@ -188,9 +188,10 @@
         :request-json-body (:request-json-body task-status)
         :collection-statuses collection-statuses}))))
 
-(defn- generate-progress-message
+(defn- generate-status-progress-message
   "Generate progress message for an in-progress bulk granule update"
   [granule-statuses]
+  (println granule-statuses)
   (let [gran-count (count granule-statuses)
         pending-count (count (filter #(= (:status %) "PENDING") granule-statuses))]
     (if (= pending-count 0)
@@ -216,7 +217,8 @@
                          :status-message status-message}
         extra-fields (as-> {} intermediate
                                 (if (= "true" show_progress)
-                                  (assoc intermediate :progress (generate-progress-message granule-statuses))
+                                  (assoc intermediate :progress (generate-status-progress-message
+                                                                 granule-statuses))
                                   intermediate)
                                 (if (= "true" show_request)
                                   (assoc intermediate :request-json-body request-json-body)
