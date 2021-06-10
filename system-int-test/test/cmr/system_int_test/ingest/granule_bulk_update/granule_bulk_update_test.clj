@@ -667,3 +667,93 @@
           (let [latest-metadata (:metadata (mdb/get-concept concept-id))]
             (is (= 1 (count (filter #(= "http://opendap.earthdata.nasa.gov/test1" (:URL %))
                                     (:RelatedUrls (json/parse-string latest-metadata true))))))))))))
+
+(deftest status-verbosity-test
+  (let [coll1 (data-core/ingest-umm-spec-collection
+               "PROV1" (data-umm-c/collection {:EntryTitle "coll1"
+                                               :ShortName "short1"
+                                               :Version "V1"
+                                               :native-id "native1"}))
+        gran1 (ingest/ingest-concept
+               (data-core/item->concept
+                (granule/granule-with-umm-spec-collection
+                 coll1
+                 (:concept-id coll1)
+                 {:native-id "gran-native1-1"
+                  :granule-ur "SC:AE_5DSno.002:30500511"})))
+        gran2 (ingest/ingest-concept
+               (data-core/item->concept
+                (granule/granule-with-umm-spec-collection
+                 coll1
+                 (:concept-id coll1)
+                 {:native-id "gran-native1-2"
+                  :granule-ur "SC:AE_5DSno.002:30500512"})))
+        ;; this granule will fail bulk update as it is in ISO-SMAP format
+        gran3 (ingest/ingest-concept
+               (data-core/item->concept
+                (granule/granule-with-umm-spec-collection
+                 coll1
+                 (:concept-id coll1)
+                 {:native-id "gran-native1-3"
+                  :granule-ur "SC:AE_5DSno.002:30500513"})
+                :iso-smap))
+        ;; UMM-G granule
+        gran4 (ingest/ingest-concept
+               (data-core/item->concept
+                (granule/granule-with-umm-spec-collection
+                 coll1
+                 (:concept-id coll1)
+                 {:native-id "gran-native1-4"
+                  :granule-ur "SC:AE_5DSno.002:30500514"})
+                :umm-json))
+        gran5 (ingest/ingest-concept
+               (data-core/item->concept
+                (granule/granule-with-umm-spec-collection
+                 coll1
+                 (:concept-id coll1)
+                 {:native-id "gran-native1-5"
+                  :granule-ur "SC:AE_5DSno.002:30500515"})))]
+    (testing "Specify bulk granule status verbosity"
+      (testing "least verbose"
+        (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+              bulk-update {:name "add S3 links 1"
+                           :operation "UPDATE_FIELD"
+                           :update-field "S3Link"
+                           :updates [["SC:AE_5DSno.002:30500511" "s3://url30500511"]
+                                     ["SC:AE_5DSno.002:30500512" "s3://url1, s3://url2,s3://url3"]
+                                     ["SC:AE_5DSno.002:30500514" "s3://url30500514"]]}
+              response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
+              {:keys [status task-id]} response]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+                {:keys [progress request-json-body granule-statuses]} status-response]
+            ;these three are all unincluded by default (least verbose)
+            (is (= nil granule-statuses))
+            (is (= nil request-json-body))
+            (is (= nil progress)))))
+      (testing "show_progress=true"
+        (let [bulk-update-options {:token (echo-util/login (system/context) "user1")
+                                   :query-params {:show_progress "true"}}
+              bulk-update {:name "add S3 links 1"
+                           :operation "UPDATE_FIELD"
+                           :update-field "S3Link"
+                           :updates [["SC:AE_5DSno.002:30500511" "s3://url30500511"]
+                                     ["SC:AE_5DSno.002:30500512" "s3://url1, s3://url2,s3://url3"]
+                                     ["SC:AE_5DSno.002:30500514" "s3://url30500514"]]}
+              response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)
+              {:keys [status task-id]} response]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+                {:keys [progress request-json-body granule-statuses]} status-response]
+            ;these three are all unincluded by default (least verbose)
+            (is (= nil granule-statuses))
+            (is (= nil request-json-body))
+            (is (= nil progress))))))))
