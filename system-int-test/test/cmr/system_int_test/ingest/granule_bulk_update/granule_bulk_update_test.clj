@@ -733,13 +733,15 @@
          (is (= nil request-json-body))
          (is (= nil progress)))
       (testing "status with show_progress=true"
-        (let [status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+        (let [status-req-options {:query-params {:show_progress "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
               {:keys [progress request-json-body granule-statuses]} status-response]
           (is (= nil granule-statuses))
           (is (= nil request-json-body))
           (is (= "Complete." progress))))
       (testing "status with show_granules=true, show_progress=false"
-        (let [status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+        (let [status-req-options {:query-params {:show_granules "true" :show_progress "false"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
               {:keys [progress request-json-body granule-statuses]} status-response]
           (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
                    :status "UPDATED"}
@@ -751,13 +753,15 @@
           (is (= nil request-json-body))
           (is (= nil progress))))
       (testing "status with show_request=true"
-        (let [status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+        (let [status-req-options {:query-params {:show_request "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
               {:keys [progress request-json-body granule-statuses]} status-response]
           (is (= nil granule-statuses))
           (is (string/includes? request-json-body "{\"name\":\"add S3 links 1\",\"operation\":\"UPDATE_FIELD\""))
           (is (= nil progress))))
       (testing "maximum verbosity, all parameters set to true"
-        (let [status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+        (let [status-req-options {:query-params {:show_granules "true" :show_request "true" :show_progress "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
               {:keys [progress request-json-body granule-statuses]} status-response]
           (is (= [{:granule-ur "SC:AE_5DSno.002:30500511"
                    :status "UPDATED"}
