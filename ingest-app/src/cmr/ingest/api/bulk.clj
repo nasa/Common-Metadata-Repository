@@ -188,10 +188,51 @@
         :request-json-body (:request-json-body task-status)
         :collection-statuses collection-statuses}))))
 
+(defn- generate-status-progress-message
+  "Generate progress message for an in-progress bulk granule update"
+  [granule-statuses]
+  (let [gran-count (count granule-statuses)
+        pending-count (count (filter #(= (:status %) "PENDING") granule-statuses))]
+    (if (zero? pending-count)
+     (format "Complete.")
+     (format "Of %d total granules, %d granules have been processed and %d are still pending."
+      gran-count (- gran-count pending-count) pending-count))))
+
+
+(defn- get-granule-task-status-response-generator
+  "Generates the response for a bulk granule update task status request. Depending on the parameters
+   show_request, show_progress, and show_granules, the response will be more or less verbose.
+   show_progress and show_granules require a full query of granules in the request, which can cause
+   this response generation to be much more expensive."
+  [request-context task-id gran-task params]
+  (let [{:keys [name created-at status status-message request-json-body]} gran-task
+        {:keys [show_request show_progress show_granules]} params
+        ;this call makes the status response much more expensive to retrieve
+        granule-statuses (when (or (= "true" show_progress) (= "true" show_granules))
+                           (data-gran-bulk-update/get-bulk-update-granule-statuses-for-task
+                            request-context task-id))
+        response-fields {:status 200
+                         :created-at created-at
+                         :name name
+                         :task-status status
+                         :status-message status-message}
+        extra-fields (as-> {} intermediate
+                                (if (= "true" show_progress)
+                                  (assoc intermediate :progress (generate-status-progress-message
+                                                                 granule-statuses))
+                                  intermediate)
+                                (if (= "true" show_request)
+                                  (assoc intermediate :request-json-body request-json-body)
+                                  intermediate)
+                                (if (= "true" show_granules)
+                                  (assoc intermediate :granule-statuses granule-statuses)
+                                  intermediate))]
+     (conj response-fields extra-fields)))
+
 (defn get-granule-task-status
-  "Get the status for the given task including granule statuses"
-  [task-id request]
-  (let [{:keys [headers request-context]} request
+  "Get the status for the given bulk granule update task"
+  [request task-id]
+  (let [{:keys [headers request-context params]} request
         _ (validate-granule-bulk-update-result-format headers)
         gran-task (data-gran-bulk-update/get-granule-task-by-id request-context task-id)
         provider-id (:provider-id gran-task)]
@@ -203,18 +244,9 @@
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
 
-    (let [{:keys [name created-at status status-message request-json-body]} gran-task
-          granule-statuses (data-gran-bulk-update/get-bulk-update-granule-statuses-for-task
-                            request-context task-id)]
-      (api-core/generate-ingest-response
-       (assoc headers "accept" mt/json)
-       {:status 200
-        :created-at created-at
-        :name name
-        :task-status status
-        :status-message status-message
-        :request-json-body request-json-body
-        :granule-statuses granule-statuses}))))
+    (api-core/generate-ingest-response
+     (assoc headers "accept" mt/json)
+     (get-granule-task-status-response-generator request-context task-id gran-task params))))
 
 (defn update-completed-granule-task-statuses
   "On demand capability to update granule task statuses. Marks bulk granule

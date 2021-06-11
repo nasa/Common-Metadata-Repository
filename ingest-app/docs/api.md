@@ -1309,7 +1309,16 @@ curl -i \
 
 To get a detailed task status for a given granule bulk update task, user can send an HTTP GET request to `%CMR-ENDPOINT%/granule-bulk-update/status/<task-id>`
 
-This returns the status of the bulk update task including the overall task status (IN_PROGRESS or COMPLETE), an overall task status message, the original request JSON body, and the status of each granule updated. The granule status includes the granule-ur, the granule update status (PENDING, UPDATED, SKIPPED, FAILED), and a status message. FAILED indicates an error occurred either updating the granule or during granule validation. SKIPPED indicates the update didn't happen because the update operation does not apply to the granule. The error will be reported in the granule status message.
+This returns the status of the bulk update task including the overall task status (IN_PROGRESS or COMPLETE), the name of the task, and the time the task began processing. Additionally, there are optional query parameters which will increase the verbosity of this response:
+
+`show_progress=true`
+When specified, this parameter will return a progress message indicating the number of granules which have been processed out of the total number of granules in the request.
+
+`show_granules=true`
+This parameter will return the individual granule status for all granules in the request, which includes the granule-ur and the granule update status (PENDING, UPDATED, SKIPPED, or FAILED). FAILED indicates an error occurred either updating the granule or during granule validation. SKIPPED indicates the update didn't happen because the update operation does not apply to the granule. The error will be reported in the granule status message. Note that this parameter can cause the response to become much larger, scaling with the size of the original bulk update request.
+
+`show_request=true`
+This parameter will return the original json body used to initiate the bulk update. Note that this parameter, like before, can cause the response to become much larger, scaling with the size of the original bulk update request.
 
 The only supported response format for granule bulk update task status is application/json.
 
@@ -1319,7 +1328,7 @@ Example of granule bulk update task status:
 curl -i \
   -H "Echo-Token: XXXX" \
   -H "Cmr-Pretty:true" \
-  %CMR-ENDPOINT%/granule-bulk-update/status/3
+  %CMR-ENDPOINT%/granule-bulk-update/status/3?show_granules=true&show_request=true
 
 {
   "status" : 200,
@@ -1347,4 +1356,3 @@ By default the bulk granule update jobs are checked for completion every 5 minut
 ```
 curl -XPOST -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/granule-bulk-update/status
 ```
-

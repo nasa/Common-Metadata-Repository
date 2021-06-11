@@ -108,7 +108,7 @@
        (context "/:task-id" [task-id]
          (GET "/"
            request
-           (bulk/get-granule-task-status task-id request)))))
+           (bulk/get-granule-task-status request task-id)))))
     ;; Provider ingest routes
     (api-core/set-default-error-format
      :xml
