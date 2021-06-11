@@ -193,10 +193,10 @@
   [granule-statuses]
   (let [gran-count (count granule-statuses)
         pending-count (count (filter #(= (:status %) "PENDING") granule-statuses))]
-    (if (= pending-count 0)
+    (if (zero? pending-count)
      (format "Complete.")
      (format "Of %d total granules, %d granules have been processed and %d are still pending."
-            gran-count (- gran-count pending-count) pending-count))))
+      gran-count (- gran-count pending-count) pending-count))))
 
 
 (defn- get-granule-task-status-response-generator

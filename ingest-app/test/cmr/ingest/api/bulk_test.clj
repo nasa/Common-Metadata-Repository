@@ -1,4 +1,4 @@
-(ns cmr.ingest.api.subscriptions-test
+(ns cmr.ingest.api.bulk-test
   "tests functions in bulk update api"
   (:require
     [clojure.test :refer :all]
