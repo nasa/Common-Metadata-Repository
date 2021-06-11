@@ -16,10 +16,20 @@ plugins:
   - serverless-pseudo-parameters
 
 functions:
-  index:
-    handler: handler.index
+  bootstrapGremlinServer:
+    timeout: 900
+    handler: serverless/src/bootstrapGremlinServer/handler.bootstrap
+    environment:
+      CMR_ROOT: 'http://cmr.sit.earthdata.nasa.gov'
+      PAGE_SIZE: 1000
+      GREMLIN_URL: 'wss://localhost:8182/gremlin'
+  indexCmrCollection:
+    timeout: 20
+    handler: serverless/src/indexCmrCollection/handler.indexCmrCollection
     environment:
       ENVIRONMENT: ${opt:stage}
+      CMR_ROOT: 'http://cmr.sit.earthdata.nasa.gov'
+      GREMLIN_URL: 'wss://localhost:8182/gremlin'
     events:
       - sqs:
           batchSize: 10

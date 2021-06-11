@@ -1,0 +1,1 @@
+exports.indexCmrCollection = async () => true
