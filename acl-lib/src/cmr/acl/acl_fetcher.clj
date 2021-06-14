@@ -77,25 +77,32 @@
   "Calls acl search endpoint using object-identity-types. Pages through results as needed."
   [context object-identity-types]
   (let [page-size 2000
-        response (access-control/search-for-acls (assoc context :token (config/echo-system-token))
-                                                 {:identity-type (object-identity-types->identity-strings
-                                                                  object-identity-types)
-                                                  :include-full-acl true
-                                                  :page-size page-size})
-        total-pages (int (Math/ceil (/ (:hits response) page-size)))]
+        response (try
+                   (access-control/search-for-acls
+                    (assoc context :token (config/echo-system-token))
+                    {:identity-type (object-identity-types->identity-strings
+                                     object-identity-types)
+                     :include-full-acl true
+                     :page-size page-size})
+                   (catch java.lang.Exception e
+                     (warn "Failed to retrieve ACLs" e)))
+        total-pages (int (Math/ceil (/ (get response :hits 0) page-size)))]
     (if (> total-pages 1)
       ;; Take the items from first page of the response from above,
       ;; and concat each page after that in sequence.
-      (reduce (fn [all-items new-items]
-                (conj all-items new-items))
+      (reduce conj
               [response]
-              (for [page-num (range 2 (+ 1 total-pages))
-                    :let [response (access-control/search-for-acls (assoc context :token (config/echo-system-token))
-                                                                   {:identity-type (object-identity-types->identity-strings
-                                                                                    object-identity-types)
-                                                                    :include-full-acl true
-                                                                    :page-size page-size
-                                                                    :page-num page-num})]]
+              (for [page-num (range 2 (inc total-pages))
+                    :let [response (try
+                                     (access-control/search-for-acls
+                                      (assoc context :token (config/echo-system-token))
+                                      {:identity-type (object-identity-types->identity-strings
+                                                       object-identity-types)
+                                       :include-full-acl true
+                                       :page-size page-size
+                                       :page-num page-num})
+                                     (catch java.lang.Exception e
+                                       (warn "Failed to retrieve ACLs")))]]
                 response))
       [response])))
 

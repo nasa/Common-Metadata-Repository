@@ -25,10 +25,15 @@
                    #(when % (lifecycle/start % (:system system-tracker))))
         (update :started-components conj component-name))
     (catch Exception e
-      (error (str "Exception occurred during startup. Shutting down started "
-                  "components"))
-      (stop (:system system-tracker) (:started-components system-tracker))
-      (throw e))))
+      (case (type e)
+        java.sql.SQLException (warn "Failed to establish DB connection, continuing with degraded service and will retry.")
+        org.quartz.JobPersistenceException (warn "Failed to establish quartz connection, continuing with degraded service.")
+        ;; default
+        (do
+          (error (str "Exception occurred during startup. Shutting down started "
+                      "components"))
+          (stop (:system system-tracker) (:started-components system-tracker))
+          (throw e))))))
 
 (defn start
   "Starts the system using the given component order."
