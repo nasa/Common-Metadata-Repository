@@ -19,6 +19,7 @@ exports.indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, concept
     Description: description,
     URLContentType: urlContentType
   } = relatedUrl
+
   if (!subType
     || !url
     || urlContentType !== 'PublicationURL') {
@@ -32,8 +33,7 @@ exports.indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, concept
     // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
     const documentationVertex = await gremlinConnection
       .V()
-      .hasLabel('documentation')
-      .has('name', url)
+      .has('documentation', 'name', url)
       .fold()
       .coalesce(
         gremlinStatistics.unfold(),
@@ -48,13 +48,11 @@ exports.indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, concept
     // Use `fold` and `coalesce` the same as above, but to
     // create an edge between this url and its parent collection
     const documentationEdge = await gremlinConnection
+      .V(dataset).as('d')
       .V(documentationId)
-      .out('documents')
-      .hasId(dataset)
-      .fold()
       .coalesce(
-        gremlinStatistics.unfold(),
-        gremlinConnection.V(documentationId).addE('documents').to(gremlinConnection.V(dataset))
+        gremlinStatistics.outE('documents').where(gremlinStatistics.inV().as('d')),
+        gremlinConnection.addE('documents').to('d')
       )
       .next()
 
