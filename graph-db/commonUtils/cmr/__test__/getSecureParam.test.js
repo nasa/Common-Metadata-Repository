@@ -17,7 +17,7 @@ describe('getSecureParam', () => {
       getParameter: jest.fn().mockImplementationOnce(() => (secretsManagerData))
     }))
 
-    const response = await getSecureParam(`/${process.env.CMR_ENVIRONMENT}/graph-db/CMR_ECHO_SYSTEM_TOKEN`)
+    const response = await getSecureParam(`/${process.env.ENVIRONMENT}/graph-db/CMR_ECHO_SYSTEM_TOKEN`)
 
     expect(response).toEqual('SUPER-SECRET-TOKEN')
     expect(secretsManagerData.promise).toBeCalledTimes(1)

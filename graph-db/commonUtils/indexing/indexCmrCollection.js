@@ -1,3 +1,5 @@
+require('array-foreach-async')
+
 const gremlin = require('gremlin')
 
 const gremlinStatistics = gremlin.process.statics
@@ -18,6 +20,7 @@ exports.indexCmrCollection = async (collection, gremlinConnection) => {
       RelatedUrls: relatedUrls
     }
   } = collection
+
   let doiUrl = 'Not provided'
   let datasetName = `${process.env.CMR_ROOT}/concepts/${conceptId}.html`
 
@@ -53,8 +56,8 @@ exports.indexCmrCollection = async (collection, gremlinConnection) => {
   const { value: { id: datasetId } } = dataset
 
   if (relatedUrls && relatedUrls.length > 0) {
-    relatedUrls.forEach((relatedUrl) => {
-      indexRelatedUrl(relatedUrl, gremlinConnection, datasetId, conceptId)
+    await relatedUrls.forEachAsync(async (relatedUrl) => {
+      await indexRelatedUrl(relatedUrl, gremlinConnection, datasetId, conceptId)
     })
   }
 

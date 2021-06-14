@@ -16,7 +16,7 @@ exports.getEchoToken = async () => {
   let token
   try {
     token = await getSecureParam(
-      `/${process.env.CMR_ENVIRONMENT}/graph-db/CMR_ECHO_SYSTEM_TOKEN`
+      `/${process.env.ENVIRONMENT}/graph-db/CMR_ECHO_SYSTEM_TOKEN`
     )
   } catch (error) {
     console.warn(`Could not get ECHO token: ${error}`)

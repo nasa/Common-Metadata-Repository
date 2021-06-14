@@ -29,7 +29,7 @@ functions:
     environment:
       ENVIRONMENT: ${opt:stage}
       CMR_ROOT: 'http://cmr.sit.earthdata.nasa.gov'
-      GREMLIN_URL: 'wss://localhost:8182/gremlin'
+      GREMLIN_URL: 'wss://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'
     events:
       - sqs:
           batchSize: 10
@@ -64,5 +64,20 @@ resources:
               Effect: 'Allow'
               Resource: '*'
         PolicyName: cmrGraphPolicy-${opt:stage}
+        Roles:
+          - Ref: IamRoleGraphLambdaExecution
+    cmrParamStorePolicy:
+      Type: AWS::IAM::Policy
+      Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Action:
+                - 'ssm:GetParameter*'
+                - 'secretsmanager:GetSecretValue'
+              Effect: 'Allow'
+              Resource:
+                - 'arn:aws:ssm:*:*:parameter/${opt:stage}/graph-db/*'
+        PolicyName: cmrParamStorePolicy-${opt:stage}
         Roles:
           - Ref: IamRoleGraphLambdaExecution
