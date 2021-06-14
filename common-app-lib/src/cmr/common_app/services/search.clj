@@ -51,7 +51,7 @@
   "Returns a single-threaded cache wrapping a fallback cache that uses a consistent cache backed by
   Redis. This cache is used to store a map of cmr scroll-ids to the first page of results
   in a consistent way acrosss all instances of search. This is used to support scrolling with
-  sessions intitiated with a HEAD request."
+  sessions intitiated with a HEAD, GET, or POS request."
   []
   (stl-cache/create-single-thread-lookup-cache
    (fallback-cache/create-fallback-cache
@@ -78,7 +78,7 @@
     [(:concept-type query) (qm/base-result-format query)]))
 
 (defn- add-scroll-results-to-cache
-  "Adds the given search results (truncated to ony the :hits, :timed-out, and :scroll-id keys) 
+  "Adds the given search results (truncated to only the :hits, :timed-out, and :scroll-id keys) 
   and result string to the cache using the scroll-id as the key"
   [context scroll-id results result-str]
   (when scroll-id
