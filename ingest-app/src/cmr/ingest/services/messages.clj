@@ -75,6 +75,13 @@
    (format "ISO Topic Category [%s] was not a valid keyword."
            iso-topic-category))
 
+(defn related-url-type-subtype-not-matching-kms-keywords
+  "Error msg when Related URL Type and Subtype pair is not in KMS."
+  [related-url]
+  (format "Related URL Type and Subtype pair [%s>%s] are not valid keywords"
+          (:Type related-url)
+          (:Subtype related-url)))
+
 (def science-keyword-attribute-order
   "The order of fields that should be displayed in the science keyword human readable list."
   [:Category :Topic :Term :VariableLevel1 :VariableLevel2 :VariableLevel3])

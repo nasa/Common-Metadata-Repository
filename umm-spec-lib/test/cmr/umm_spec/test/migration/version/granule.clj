@@ -5,6 +5,7 @@
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
+   [cmr.umm-spec.metadata-specification :as m-spec]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.migration.version.granule :as granule]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
@@ -643,7 +644,7 @@
                    :Version "0.0.0"}}
         base-granule {:OtherMetadata :content-to-ignore
                       :MetadataSpecification {:Name :none}}
-        actual (#'granule/update-version base-granule "0.0.0")]
+        actual (m-spec/update-version base-granule :granule "0.0.0")]
     (is (= expected actual))))
 
 (def sample-granule-1-6-3

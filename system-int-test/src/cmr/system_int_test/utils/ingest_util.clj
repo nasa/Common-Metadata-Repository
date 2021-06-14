@@ -696,6 +696,7 @@
   "Implementation function to get the bulk update task status for the given task id"
   [concept-type provider-id task-id options]
   (let [accept-format (get options :accept-format)
+        query-params (get options :query-params)
         token (:token options)
         task-status-url (if (= :collection concept-type)
                           (url/ingest-collection-bulk-update-task-status-url provider-id task-id)
@@ -704,6 +705,7 @@
                 :url task-status-url
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}
+        params (merge params (when query-params {:query-params query-params}))
         params (merge params (when accept-format {:accept accept-format}))
         params (merge params (when token {:headers {transmit-config/token-header token}}))
         default-result-format (if (= :collection concept-type) :xml :json)

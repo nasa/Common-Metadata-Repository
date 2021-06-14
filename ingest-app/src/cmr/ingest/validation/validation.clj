@@ -119,9 +119,9 @@
        (match-kms-keywords-validation
         kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}
      :RelatedUrls
-      (v/every  {:GetData {:Format (match-getdata-format-kms-keywords-validation
-                                    kms-index
-                                    msg/getdata-format-not-matches-kms-keywords)}})}))
+      (v/every {:GetData {:Format (match-getdata-format-kms-keywords-validation
+                                   kms-index
+                                   msg/getdata-format-not-matches-kms-keywords)}})}))
 
 (defn- pad-zeros-to-version
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
