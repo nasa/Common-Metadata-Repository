@@ -1,9 +1,9 @@
-const { indexCmrCollection } = require('../handler')
+import indexCmrCollection from '../handler'
 
-jest.mock('../../../../commonUtils/cmr/getEchoToken')
-jest.mock('../../../../commonUtils/cmr/fetchCmrCollection')
-jest.mock('../../../../commonUtils/gremlin/initializeGremlinConnection')
-jest.mock('../../../../commonUtils/indexing/indexCmrCollection')
+// jest.mock('../../../../commonUtils/cmr/getEchoToken')
+// jest.mock('../../../../commonUtils/cmr/fetchCmrCollection')
+// jest.mock('../../../../commonUtils/gremlin/initializeGremlinConnection')
+// jest.mock('../../../../commonUtils/indexing/indexCmrCollection')
 
 beforeEach(() => {
   jest.clearAllMocks()

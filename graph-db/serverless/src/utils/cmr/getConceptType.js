@@ -10,7 +10,7 @@ const conceptTypes = {
  * @param {String} conceptId
  * @returns {String} concept type
  */
-exports.getConceptType = (conceptId) => {
+export const getConceptType = (conceptId) => {
   const conceptKey = conceptId[0]
 
   return conceptTypes[conceptKey]

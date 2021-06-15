@@ -1,6 +1,6 @@
-const nock = require('nock')
+import nock from 'nock'
 
-const { fetchPageFromCMR } = require('../fetchPageFromCmr')
+import { fetchPageFromCMR } from '../fetchPageFromCMR'
 
 const OLD_ENV = process.env
 
@@ -23,6 +23,7 @@ describe('fetchPageFromCMR', () => {
     process.env.PAGE_SIZE = 0
     process.env.IS_LOCAL = true
     process.env.CMR_ROOT = 'http://localhost'
+
     const mockedBody = {
       hits: 16996,
       took: 5,
@@ -39,6 +40,7 @@ describe('fetchPageFromCMR', () => {
     process.env.PAGE_SIZE = 1
     process.env.IS_LOCAL = true
     process.env.CMR_ROOT = 'http://localhost'
+
     const mockedBody = {
       hits: 16996,
       took: 5,
@@ -74,8 +76,8 @@ describe('fetchPageFromCMR', () => {
   test('Single result with mocked ECHO token', async () => {
     process.env.IS_LOCAL = false
     process.env.CMR_ROOT = 'http://localhost'
-
     process.env.PAGE_SIZE = 1
+
     const mockedBody = {
       hits: 16996,
       took: 5,
@@ -112,6 +114,7 @@ describe('fetchPageFromCMR', () => {
     process.env.PAGE_SIZE = 2
     process.env.IS_LOCAL = true
     process.env.CMR_ROOT = 'http://localhost'
+
     const mockedBody = {
       errors: ["Invalid concept_id [C1234-PROV1]! I can't believe you've done this"]
     }

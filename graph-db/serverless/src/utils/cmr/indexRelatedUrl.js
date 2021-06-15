@@ -1,4 +1,4 @@
-const gremlin = require('gremlin')
+import gremlin from 'gremlin'
 
 const gremlinStatistics = gremlin.process.statics
 
@@ -12,14 +12,13 @@ const gremlinStatistics = gremlin.process.statics
  * @param {Graph Node} dataset the parent collection vertex in the gremlin server
  * @returns null
  */
-exports.indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId) => {
+const indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId) => {
   const {
     Subtype: subType,
     URL: url,
     Description: description,
     URLContentType: urlContentType
   } = relatedUrl
-
   if (!subType
     || !url
     || urlContentType !== 'PublicationURL') {
@@ -48,7 +47,6 @@ exports.indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, concept
     // Use `fold` and `coalesce` the same as above, but to
     // create an edge between this url and its parent collection
     const documentationEdge = await gremlinConnection
-      .V(dataset).as('d')
       .V(documentationId)
       .coalesce(
         gremlinStatistics.outE('documents').where(gremlinStatistics.inV().as('d')),
@@ -63,3 +61,5 @@ exports.indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, concept
     console.log(`ERROR indexing RelatedUrl for concept [${conceptId}] ${JSON.stringify(relatedUrl)}: \n Error: ${error}`)
   }
 }
+
+export default indexRelatedUrl

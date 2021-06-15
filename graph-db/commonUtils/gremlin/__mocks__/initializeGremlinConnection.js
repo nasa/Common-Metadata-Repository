@@ -1,1 +1,0 @@
-exports.initializeGremlinConnection = () => ({ connected: true })

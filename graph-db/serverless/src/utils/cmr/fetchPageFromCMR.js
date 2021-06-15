@@ -1,13 +1,12 @@
-const fetch = require('node-fetch')
+import fetch from 'node-fetch'
 
 /**
- * fetchPageFromCMR: Fetch a page of collections from CMR
- * search endpoint and initiate or continue scroll request
+ * fetchPageFromCMR: Fetch a page of collections from CMR search endpoint and initiate or continue scroll request
  * @param scrollId {String} An optional scroll-id given from the CMR
  * @param token {String} An optional Echo Token
  * @returns [{JSON}] An array of UMM JSON collection results
  */
-exports.fetchPageFromCMR = async (scrollId, token) => {
+export const fetchPageFromCMR = async (scrollId, token) => {
   const requestHeaders = {}
 
   if (token) {
@@ -18,7 +17,7 @@ exports.fetchPageFromCMR = async (scrollId, token) => {
     requestHeaders['CMR-Scroll-Id'] = scrollId
   }
 
-  const response = await fetch(`${process.env.CMR_ROOT}/search/collections.umm_json?page_size=${process.env.PAGE_SIZE}&scroll=true`, {
+  const response = fetch(`${process.env.CMR_ROOT}/search/collections.umm_json?page_size=${process.env.PAGE_SIZE}&scroll=true`, {
     method: 'GET',
     headers: requestHeaders
   }).catch((error) => {

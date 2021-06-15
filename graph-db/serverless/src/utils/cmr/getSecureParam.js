@@ -1,4 +1,4 @@
-const AWS = require('aws-sdk')
+import AWS from 'aws-sdk'
 
 let ssm
 
@@ -7,9 +7,11 @@ let ssm
  * @param {String} param name of parameter to fetch
  * @returns {JSON} server response object from Parameter Store
  */
-exports.getSecureParam = async (param) => {
+export const getSecureParam = async (param) => {
   if (!ssm) {
-    ssm = new AWS.SSM()
+    ssm = new AWS.SSM({
+      region: 'us-east-1'
+    })
   }
 
   const request = await ssm

@@ -1,10 +1,10 @@
-const { indexCmrCollection } = require('../../../commonUtils/indexing/indexCmrCollection')
-const { initializeGremlinConnection } = require('../../../commonUtils/gremlin/initializeGremlinConnection')
-const { fetchCmrCollection } = require('../../../commonUtils/cmr/fetchCmrCollection')
-const { getEchoToken } = require('../../../commonUtils/cmr/getEchoToken')
-const { getConceptType } = require('../utils/getConceptType')
+import { fetchCmrCollection } from '../utils/cmr/fetchCmrCollection'
+import { getConceptType } from '../utils/cmr/getConceptType'
+import { getEchoToken } from '../utils/cmr/getEchoToken'
+import { indexCmrCollection } from '../utils/cmr/indexCmrCollection'
+import { initializeGremlinConnection } from '../utils/gremlin/initializeGremlinConnection'
 
-module.exports.indexCmrCollection = async (event) => {
+const indexCmrCollections = async (event) => {
   const { Records: [{ body }] } = event
   const { 'concept-id': conceptId, action } = JSON.parse(body)
 
@@ -25,7 +25,7 @@ module.exports.indexCmrCollection = async (event) => {
   }
 
   const token = await getEchoToken()
-  const gremlin = await initializeGremlinConnection()
+  const gremlin = initializeGremlinConnection()
 
   const collection = await fetchCmrCollection(conceptId, token)
   const { items } = collection
@@ -36,3 +36,5 @@ module.exports.indexCmrCollection = async (event) => {
     body: `Collection [${conceptId}] indexed sucessfully: ${indexedSuccessfully}`
   }
 }
+
+export default indexCmrCollections

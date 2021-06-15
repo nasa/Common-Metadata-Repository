@@ -1,5 +1,6 @@
-const AWS = require('aws-sdk')
-const { getSecureParam } = require('../getSecureParam')
+import AWS from 'aws-sdk'
+
+import { getSecureParam } from '../getSecureParam'
 
 beforeEach(() => {
   jest.clearAllMocks()
