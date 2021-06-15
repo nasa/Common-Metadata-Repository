@@ -403,11 +403,11 @@
             :created-at created-at
             :coordinate-system coordinate-system
 
-            ;; fields added to support keyword searches
-            :keyword (k/create-keywords-field concept-id collection
-                                              {:platform-long-names platform-long-names
-                                               :instrument-long-names instrument-long-names
-                                               :entry-id entry-id})
+            ;; fields added to support keyword searches including the quoted string case.
+            :keyword2 (k/create-keywords-field concept-id collection
+                                               {:platform-long-names platform-long-names
+                                                :instrument-long-names instrument-long-names
+                                                :entry-id entry-id})
             :platform-ln-lowercase (map str/lower-case platform-long-names)
             :instrument-ln-lowercase (map str/lower-case instrument-long-names)
             :sensor-ln-lowercase (map str/lower-case sensor-long-names)

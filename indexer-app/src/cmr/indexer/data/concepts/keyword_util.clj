@@ -16,6 +16,10 @@
   "Defines Regex to split strings with special characters into multiple words for keyword searches."
   #"[!@#$%^&()\-=_+{}\[\]|;'.,\\\"/:<>?`~* ]")
 
+(def keyword-phrase-separator-regex
+  "Defines Regex to split strings with special characters into multiple phrases for keyword phrase searches."
+  #"[!@#$%^&()\-=_+{}\[\]|;'.,\\\"/:<>?`~*]")
+
 (defn- wrapped-keyword?
   "Checks if the field-value about to be processed is a term surrounded by parens or brackets.
    If it is, we want to add the usual keywords, but also add the unwrapped field-value on its own."
@@ -48,6 +52,15 @@
        (keep not-empty)
        (apply sorted-set)
        (string/join \space)))
+
+(defn field-values->individual-words
+  "Return a list of individual keyword words for the given list of field values."
+  [field-values]
+  (->> field-values
+       (mapcat #(string/split % #" "))
+       (mapcat prepare-keyword-field)
+       (keep not-empty)
+       (apply sorted-set)))
 
 (defn contact-group->keywords
   "Converts a contact group into a vector of terms for keyword searches."

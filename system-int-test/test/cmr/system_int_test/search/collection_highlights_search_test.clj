@@ -228,6 +228,9 @@
 (deftest reserved-characters-test
   ;; This test documents the current elasticsearch highlighting behavior with respect to reserved
   ;; characters. The behavior is inconsistent for the : ? and * characters.
+  ;; Note: original reserved string "\"" is now used as keyword-phrase boundary, literal "\"" needs
+  ;; to be entered as "\\\"" to pass the keyword-phrase validation. It will be converted back to "\""
+  ;; afterwards.
   (let [reserved-strings #{"+" "-" "=" "&&" "||" ">" "<" "!" "(" ")" "{" "}" "[" "]" "^" "\"" "~" "*"
                            "?" ":" "\\" "/"}
         reserved-strings-with-different-behavior #{":" "?" "*"}]
@@ -244,8 +247,10 @@
                (get-search-results-summaries (search/find-concepts-in-json-with-json-query
                                               :collection
                                               {:include-highlights true}
-                                              {:keyword (format "MODIS%sTERRA"
-                                                                reserved-string)}))))))
+                                              {:keyword (if (= "\"" reserved-string)
+                                                          "MODIS\\\"TERRA"
+                                                          (format "MODIS%sTERRA"
+                                                                  reserved-string))}))))))
 
     (testing "Colons are highlighted along with the search string."
       (is (= #{["<em>MODIS:TERRA</em> dataset."]}
