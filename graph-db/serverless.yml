@@ -20,9 +20,10 @@ functions:
     timeout: 900
     handler: serverless/src/bootstrapGremlinServer/handler.bootstrap
     environment:
+      ENVIRONMENT: ${opt:stage}
       CMR_ROOT: 'http://cmr.sit.earthdata.nasa.gov'
       PAGE_SIZE: 1000
-      GREMLIN_URL: 'wss://localhost:8182/gremlin'
+      GREMLIN_URL: 'wss://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'
   indexCmrCollection:
     timeout: 20
     handler: serverless/src/indexCmrCollection/handler.indexCmrCollection
