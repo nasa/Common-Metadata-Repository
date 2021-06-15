@@ -161,10 +161,29 @@
 
         coll26 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection {:EntryTitle "coll26" :ShortName "S26"
                                                                              :ContactPersons [personnel1]}) {:format :dif10})
+        coll26-1 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection {:EntryTitle "coll26 one" :ShortName "S26 (sname one) \"sname one\""
+                                                                               :ContactPersons [personnel1]}) {:format :dif10})
         coll27 (d/ingest-umm-spec-collection "PROV5" (data-umm-c/collection {:EntryTitle "coll27" :ShortName "S27" :ContactPersons [personnel2]}) {:format :dif10})]
 
 
     (index/wait-until-indexed)
+
+    (testing "search by keyword-phrase unsupported cases."
+      (are3 [keyword-str]
+        (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})
+              json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})]
+          (is (= {:errors [(str "keyword phrase mixed with keyword, or another keyword-phrase are not supported. "
+                                "keyword phrase has to be enclosed by two escaped double quotes.")]
+                  :status 400}
+                 parameter-refs
+                 json-refs)))
+
+        "mix of keyword and keyword phrase search: not supported yet."
+        "Mitch \"a (merry-go-round)\""
+        "multiple keyword phrase search: not supported yet."
+        "\"Mitch made\" \"a (merry-go-round)\""
+        "Missing one \" case"
+        "\"a (merry-go-round)"))
 
     (testing "search by keywords."
       (are [keyword-str items]
@@ -183,8 +202,10 @@
           (and parameter-matches? json-matches?))
 
         ;; search by contact persons
-        "Bob Hope" [coll26]
-        "bob.hope@nasa.gov" [coll26]
+        "Bob Hope" [coll26 coll26-1]
+        "\"Bob Hope\"" []
+        "bob.hope@nasa.gov" [coll26 coll26-1]
+        "\"bob.hope@nasa.gov\"" [coll26 coll26-1]
         "Victor" [coll27]
         "victor.fries@nsidc.gov" [coll27]
 
@@ -205,18 +226,38 @@
 
         ;; entry title
         "coll1" [coll1]
+        "\"coll1\"" [coll1]
+        "coll26" [coll26 coll26-1]
+         "\"coll26\"" [coll26 coll26-1]
         "Mitch made a (merry-go-round)" [coll2]
+        "\"Mitch made a (merry-go-round)\"" [coll2]
         "(merry-go-round)" [coll2]
+        "\"(merry-go-round)\"" [coll2]
         "merry-go-round" [coll2]
+        "\"merry-go-round\"" [coll2]
         "merry" [coll2]
+        "\"merry\"" [coll2]
         "merry go round" [coll2]
+        "\"merry go round\"" []
         "merry-go" []
+        "\"merry-go\"" []
+
+        ;; mix of keyword and keyword phrase search: not supported yet.
+        "Mitch \"a (merry-go-round)\"" []
+        ;; multiple keyword phrase search: not supported yet.
+        "\"Mitch made\" \"a (merry-go-round)\"" []
 
         ;; entry id
         "ABC!XYZ_V001" [coll2]
 
         ;; short name
         "XYZ" [coll2]
+        "\"XYZ\"" [coll2]
+        "sname one" [coll26-1]
+        "\"sname one\"" [coll26-1]
+        "(sname one)" [coll26-1]
+        "\"(sname one)\"" [coll26-1]
+        "\"(sname one) \\\"sname one\\\"\"" [coll26-1]
 
         ;; version id
         "V001" [coll2]
@@ -361,7 +402,7 @@
         "p*ce" [coll6]
         "NEA*REA*IME" [coll22]
         "nea*rea*ime" [coll22]
-        "\"Quoted*" [coll23]
+        "\\\"Quoted*" [coll23]
 
         ;; search by keywords using wildcard ?
         "XY?" [coll2]
@@ -913,17 +954,31 @@
              (println "Actual:" (map :name (:refs refs))))
            matches?)
          "begin!end" [1]
+         "\"begin!end\"" [1]
          "begin\\end" [19]
+         "\"begin\\end\"" [19]
+         "begin\\\"end" [26]
+         "\"begin\\\"end\"" [26]
          "begin<end" [27]
+         "\"begin<end\"" [27]
          "begin\\?end" [29]
+         "\"begin\\?end\"" [29]
          "begin~end" [31]
+         "\"begin~end\"" [31]
          "begin\\*end" [50]
+         "\"begin\\*end\"" [50]
          "begin" [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 50]
+         "\"begin\"" [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 50]
          "end" [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 50]
+         "\"end\"" [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 50]
          "&&" [0]
+         "\"&&\"" [0]
          "||" [0]
+         "\"||\"" [0]
          "48AND" [48]
-         "OR" [49])))
+         "\"48AND\"" [48]
+         "OR" [49]
+         "\"OR\"" [49])))
 
 ;; Test that the same collection short-name with different versions comes back
 ;; in descending order by version, even if the versions are in different formats
