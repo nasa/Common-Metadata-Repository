@@ -5,11 +5,16 @@
   "main": "handler.js",
   "repository": "nasa/common-metadata-repository",
   "scripts": {
-    "test": "jest --config jest.config.js",
+    "test": "jest",
+    "test:watch": "jest --watchAll",
     "test-coverage": "jest --coverage",
     "ci-test": "jest --coverage --config jest.config.junit_output.js",
     "bootstrap-local": "serverless invoke local -f bootstrapGremlinServer -e CMR_ROOT=\"http://cmr.uat.earthdata.nasa.gov\" -e PAGE_SIZE=2000 -e GREMLIN_URL=\"ws://localhost:8182/gremlin\" --stage=sit",
-    "deploy": "./node_modules/.bin/sls deploy --config serverless.yml"
+    "deploy": "./node_modules/.bin/sls deploy --config serverless.yml",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run -c video=false",
+    "cypress:ci": "NODE_ENV=test_cypress start-server-and-test start:ci http-get://localhost:8080 cypress:run",
+    "cypress:prepare-ci": "bin/cypress-prepare-ci"
   },
   "maintainers": [
     {
@@ -21,12 +26,14 @@
   "dependencies": {
     "array-foreach-async": "^1.0.1",
     "aws-sdk": "^2.891.0",
+    "cypress": "^7.5.0",
     "gremlin": "^3.4.10",
     "lodash": "^4.17.21",
     "node-fetch": "^2.6.1",
     "serverless": "^2.38.0"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.14.5",
     "eslint": "^7.26.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",

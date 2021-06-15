@@ -1,4 +1,4 @@
-exports.fetchCmrCollection = async () => ({
+const fetchCmrCollection = async () => ({
   hits: 1,
   took: 6,
   items: [

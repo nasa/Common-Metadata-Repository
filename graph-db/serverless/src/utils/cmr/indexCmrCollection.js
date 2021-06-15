@@ -1,9 +1,8 @@
-require('array-foreach-async')
+import gremlin from 'gremlin'
 
-const gremlin = require('gremlin')
+import indexRelatedUrl from './indexRelatedUrl'
 
 const gremlinStatistics = gremlin.process.statics
-const { indexRelatedUrl } = require('./indexRelatedUrl')
 
 /**
  * Given a collection from the CMR, index it into Gremlin
@@ -11,7 +10,7 @@ const { indexRelatedUrl } = require('./indexRelatedUrl')
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
  * @returns
  */
-exports.indexCmrCollection = async (collection, gremlinConnection) => {
+export const indexCmrCollection = async (collection, gremlinConnection) => {
   const {
     meta: { 'concept-id': conceptId },
     umm: {
@@ -20,7 +19,6 @@ exports.indexCmrCollection = async (collection, gremlinConnection) => {
       RelatedUrls: relatedUrls
     }
   } = collection
-
   let doiUrl = 'Not provided'
   let datasetName = `${process.env.CMR_ROOT}/concepts/${conceptId}.html`
 
@@ -56,8 +54,8 @@ exports.indexCmrCollection = async (collection, gremlinConnection) => {
   const { value: { id: datasetId } } = dataset
 
   if (relatedUrls && relatedUrls.length > 0) {
-    await relatedUrls.forEachAsync(async (relatedUrl) => {
-      await indexRelatedUrl(relatedUrl, gremlinConnection, datasetId, conceptId)
+    relatedUrls.forEach((relatedUrl) => {
+      indexRelatedUrl(relatedUrl, gremlinConnection, datasetId, conceptId)
     })
   }
 

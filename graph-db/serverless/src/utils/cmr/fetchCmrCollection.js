@@ -1,6 +1,6 @@
-const fetch = require('node-fetch')
+import fetch from 'node-fetch'
 
-exports.fetchCmrCollection = async (conceptId, token) => {
+export const fetchCmrCollection = async (conceptId, token) => {
   const requestHeaders = {}
 
   if (token) {
