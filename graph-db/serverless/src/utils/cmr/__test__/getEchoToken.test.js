@@ -18,6 +18,8 @@ afterEach(() => {
 
 describe('getEchoToken', () => {
   test('fetches ECHO token from AWS', async () => {
+    process.env.IS_LOCAL = 'false'
+
     jest.spyOn(getSecureParam, 'getSecureParam').mockResolvedValue('1234-abcd-5678-efgh')
 
     const response = await getEchoToken()

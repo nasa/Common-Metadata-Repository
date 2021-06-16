@@ -26,11 +26,12 @@
   "dependencies": {
     "array-foreach-async": "^1.0.1",
     "aws-sdk": "^2.891.0",
-    "cypress": "^7.5.0",
     "gremlin": "^3.4.10",
     "lodash": "^4.17.21",
     "node-fetch": "^2.6.1",
-    "serverless": "^2.38.0"
+    "serverless": "^2.38.0",
+    "serverless-webpack": "^5.5.1",
+    "webpack": "^5.39.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.14.5",

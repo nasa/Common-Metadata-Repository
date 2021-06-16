@@ -1,4 +1,5 @@
 import gremlin from 'gremlin'
+import 'array-foreach-async'
 
 import indexRelatedUrl from './indexRelatedUrl'
 
@@ -12,13 +13,18 @@ const gremlinStatistics = gremlin.process.statics
  */
 export const indexCmrCollection = async (collection, gremlinConnection) => {
   const {
-    meta: { 'concept-id': conceptId },
+    meta: {
+      'concept-id': conceptId
+    },
     umm: {
       EntryTitle: entryTitle,
-      DOI: { DOI: doiDescription },
+      DOI: {
+        DOI: doiDescription
+      },
       RelatedUrls: relatedUrls
     }
   } = collection
+
   let doiUrl = 'Not provided'
   let datasetName = `${process.env.CMR_ROOT}/concepts/${conceptId}.html`
 
@@ -48,14 +54,16 @@ export const indexCmrCollection = async (collection, gremlinConnection) => {
       .next()
   } catch (error) {
     console.log(`Error indexing collection [${conceptId}]: ${error.message}`)
+
     return false
   }
 
-  const { value: { id: datasetId } } = dataset
+  const { value = {} } = dataset
+  const { id: datasetId } = value
 
   if (relatedUrls && relatedUrls.length > 0) {
-    relatedUrls.forEach((relatedUrl) => {
-      indexRelatedUrl(relatedUrl, gremlinConnection, datasetId, conceptId)
+    await relatedUrls.forEachAsync(async (relatedUrl) => {
+      await indexRelatedUrl(relatedUrl, gremlinConnection, datasetId, conceptId)
     })
   }
 

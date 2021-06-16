@@ -1,8 +1,11 @@
 module.exports = {
-  // clearMocks: true,
-  // testEnvironment: 'node',
+  clearMocks: true,
   collectCoverage: true,
   collectCoverageFrom: [
-    'src/**/*.js'
-  ]
+    'serverless/src/**/*.js'
+  ],
+  setupFilesAfterEnv: ['<rootDir>/test-env.js'],
+  globals: {
+    testGremlinConnection: null
+  }
 }

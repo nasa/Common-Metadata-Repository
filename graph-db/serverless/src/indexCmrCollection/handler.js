@@ -4,36 +4,53 @@ import { getEchoToken } from '../utils/cmr/getEchoToken'
 import { indexCmrCollection } from '../utils/cmr/indexCmrCollection'
 import { initializeGremlinConnection } from '../utils/gremlin/initializeGremlinConnection'
 
+let gremlineConnection
+let token
+
 const indexCmrCollections = async (event) => {
-  const { Records: [{ body }] } = event
-  const { 'concept-id': conceptId, action } = JSON.parse(body)
-
-  console.log(`Got event: [${body}]`)
-
-  if (getConceptType(conceptId) !== 'collection') {
-    return {
-      statusCode: 200,
-      body: `Concept [${conceptId}] was not a collection and will not be indexed`
-    }
+  // Prevent creating more tokens than necessary
+  if (!token) {
+    token = await getEchoToken()
   }
 
-  if (action !== 'concept-update') {
-    return {
-      statusCode: 200,
-      body: `Action [${action}] was unsupported for concept [${conceptId}]`
-    }
+  // Prevent connecting to Gremlin more than necessary
+  if (!gremlineConnection) {
+    gremlineConnection = initializeGremlinConnection()
   }
 
-  const token = await getEchoToken()
-  const gremlin = initializeGremlinConnection()
+  let recordCount = 0
 
-  const collection = await fetchCmrCollection(conceptId, token)
-  const { items } = collection
-  const indexedSuccessfully = await indexCmrCollection(items[0], gremlin)
+  const { Records: updatedConcepts = [] } = event
+
+  await updatedConcepts.forEachAsync(async (message) => {
+    const { body } = message
+
+    const { 'concept-id': conceptId, action } = JSON.parse(body)
+
+    if (getConceptType(conceptId) !== 'collection') {
+      console.log(`Concept [${conceptId}] was not a collection and will not be indexed`)
+    }
+
+    if (action !== 'concept-update') {
+      console.log(`Action [${action}] was unsupported for concept [${conceptId}]`)
+    }
+
+    if (getConceptType(conceptId) === 'collection' && action === 'concept-update') {
+      const collection = await fetchCmrCollection(conceptId, token)
+
+      const { items } = collection
+      const [firstCollection] = items
+
+      await indexCmrCollection(firstCollection, gremlineConnection)
+
+      recordCount += 1
+    }
+  })
 
   return {
+    isBase64Encoded: false,
     statusCode: 200,
-    body: `Collection [${conceptId}] indexed sucessfully: ${indexedSuccessfully}`
+    body: `Successfully indexed ${recordCount} collection(s)`
   }
 }
 

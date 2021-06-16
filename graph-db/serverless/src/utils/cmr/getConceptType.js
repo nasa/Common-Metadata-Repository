@@ -7,7 +7,7 @@ const conceptTypes = {
 
 /**
  * Given a concept id, determine and return CMR concept type
- * @param {String} conceptId
+ * @param {String} conceptId Collection concept id from CMR
  * @returns {String} concept type
  */
 export const getConceptType = (conceptId) => {

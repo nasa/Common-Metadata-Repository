@@ -8,20 +8,21 @@ provider:
   stage: ${opt:stage, 'dev'}
   deploymentBucket: graphdb-driver-deployment-bucket-${self:provider.stage}
 
-  vpc:
-    securityGroupIds:
-      - ${cf:${self:provider.stage}.servicesSecurityGroupId}
-    subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
+  # vpc:
+  #   securityGroupIds:
+  #     - ${cf:${self:provider.stage}.servicesSecurityGroupId}
+  #   subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
 
   environment:
-    CMR_ROOT: ${self:custom.variables.CMR_ROOT}
-    ENVIRONMENT: ${self:custom.variables.ENVIRONMENT}
-    GREMLIN_URL: ${self:custom.variables.GREMLIN_URL}
-    PAGE_SIZE: ${self:custom.variables.PAGE_SIZE}
+    CMR_ROOT: 'https://cmr.uat.earthdata.nasa.gov'
+    ENVIRONMENT: 'dev'
+    GREMLIN_URL: 'ws://localhost:8182/gremlin'
+    PAGE_SIZE: '10'
 
 plugins:
   - serverless-offline
   - serverless-pseudo-parameters
+  - serverless-webpack
 
 functions:
   bootstrapGremlinServer:
@@ -83,10 +84,10 @@ resources:
         Roles:
           - Ref: IamRoleGraphLambdaExecution
 
-custom:
-  variables:
-    # Default values for environment variables
-    CMR_ROOT: ${env:CMR_ROOT, 'https://cmr.sit.earthdata.nasa.gov'}
-    ENVIRONMENT: ${self:provider.stage}
-    GREMLIN_URL: ${env:GREMLIN_URL, 'ws://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'}
-    PAGE_SIZE: ${env:PAGE_SIZE, '1000'}
+# custom:
+#   variables:
+#     # Default values for environment variables
+#     CMR_ROOT: ${env:CMR_ROOT, 'https://cmr.uat.earthdata.nasa.gov'}
+#     ENVIRONMENT: ${self:provider.stage}
+#     GREMLIN_URL: ${env:GREMLIN_URL, 'ws://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'}
+#     PAGE_SIZE: ${env:PAGE_SIZE, '1000'}

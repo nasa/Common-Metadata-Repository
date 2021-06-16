@@ -1,12 +1,13 @@
+import 'array-foreach-async'
+
 import { indexCmrCollection } from './indexCmrCollection'
 
 /**
- * Helper function to iterate through CMR search results and index into
- * a Graph database
+ * Helper function to iterate through CMR search results and index into a Graph database
  * @param {JSON} results
  */
 export const indexPageOfCmrResults = async (results, gremlin) => {
-  results.map(async (result) => {
+  await results.forEachAsync(async (result) => {
     try {
       await indexCmrCollection(result, gremlin)
     } catch (error) {
@@ -17,6 +18,4 @@ export const indexPageOfCmrResults = async (results, gremlin) => {
       console.warn(`Could not index concept [${conceptId}] into Graph database due to error: ${error}`)
     }
   })
-
-  return true
 }
