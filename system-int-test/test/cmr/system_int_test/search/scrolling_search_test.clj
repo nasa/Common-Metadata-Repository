@@ -5,9 +5,12 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common-app.api.routes :as routes]
+   [cmr.common-app.services.search :as cs]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util :refer [are3]]
    [cmr.elastic-utils.config :as es-config]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.admin.cache-api-test :as cache-test]
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.granule :as data2-granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -41,47 +44,50 @@
 (deftest scrolling-in-umm-json
   (let [colls (doall
                (for [idx (range 5)]
-                (data2-core/ingest-umm-spec-collection
-                 "PROV1"
-                 (data-umm-c/collection idx {}))))
+                 (data2-core/ingest-umm-spec-collection
+                  "PROV1"
+                  (data-umm-c/collection idx {}))))
         grans (doall
                (for [coll colls]
                  (data2-core/ingest
                   "PROV1"
-                   (data2-granule/granule-with-umm-spec-collection
-                    coll
-                    (:concept-id coll)))))]
+                  (data2-granule/granule-with-umm-spec-collection
+                   coll
+                   (:concept-id coll)))))]
     (index/wait-until-indexed)
 
     (testing "UMM-JSON scrolling"
       (are3 [concept-type accept extension all-refs]
-        (let [response (search/find-concepts-umm-json
-                        concept-type
-                        {:scroll true
-                         :page-size 1
-                         :provider "PROV1"}
-                        {:url-extension extension
-                         :accept accept})
-              [num-scrolls all-concepts] (scroll-all-umm-json concept-type response)]
-          (is (not (nil? (:scroll-id response))))
-          (is (= (count all-refs) num-scrolls))
-          (is (= (set (map :concept-id all-refs))
-                 (set (map #(get-in % [:meta :concept-id]) all-concepts)))))
+            (let [response (search/find-concepts-umm-json
+                            concept-type
+                            {:scroll true
+                             :page-size 1
+                             :provider "PROV1"}
+                            {:url-extension extension
+                             :accept accept})
+                  [num-scrolls all-concepts] (scroll-all-umm-json concept-type response)]
+              (is (not (nil? (:scroll-id response))))
+              (is (= (count all-refs) num-scrolls))
+              (is (= (set (map :concept-id all-refs))
+                     (set (map #(get-in % [:meta :concept-id]) all-concepts)))))
 
-        "Collection UMM-JSON via extension"
-        :collection nil "umm_json" colls
+            "Collection UMM-JSON via extension"
+            :collection nil "umm_json" colls
 
-        "Collection UMM-JSON via accept"
-        :collection mime-types/umm-json nil colls
+            "Collection UMM-JSON via accept"
+            :collection mime-types/umm-json nil colls
 
-        "Granule UMM-JSON via extension"
-        :granule nil "umm_json" grans
+            "Granule UMM-JSON via extension"
+            :granule nil "umm_json" grans
 
-        "Granule UMM-JSON via accept"
-        :granule mime-types/umm-json nil grans))))
+            "Granule UMM-JSON via accept"
+            :granule mime-types/umm-json nil grans))))
 
 (deftest granule-scrolling
-  (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1"
+  (let [admin-read-group-concept-id (e/get-or-create-group (s/context) "admin-read-group")
+        admin-read-token (e/login (s/context) "admin" [admin-read-group-concept-id])
+        _ (e/grant-group-admin (s/context) admin-read-group-concept-id :read)
+        coll1 (data2-core/ingest-umm-spec-collection "PROV1"
                                                      (data-umm-c/collection {:EntryTitle "E1"
                                                                              :ShortName "S1"
                                                                              :Version "V1"}))
@@ -139,16 +145,69 @@
           (let [result (search/find-refs :granule
                                          {:scroll true}
                                          {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
-            (is (= (count all-grans) hits))
+            (is (= (count all-grans) (:hits result)))
             (is (data2-core/refs-match? [gran5] result))))
 
         (testing "Searches beyond total hits return empty list"
           (let [result (search/find-refs :granule
                                          {:scroll true}
                                          {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
-            (is (= (count all-grans) hits))
+            (is (= (count all-grans) (:hits result)))
             (is (data2-core/refs-match? [] result))))))
 
+    (testing "Deferred scrolling"
+      (let [{:keys [hits scroll-id] :as result} (search/find-refs
+                                                 :granule
+                                                 {:provider "PROV1"
+                                                  :scroll "defer"
+                                                  :page-size 2})]
+        (testing "First call returns scroll-id and hits count with no results"
+          (is (= (count all-grans) hits))
+          (is (not (nil? scroll-id)))
+          (is (data2-core/refs-match? [] result)))
+
+        (testing "Subsequent searches gets original page-size results"
+          (let [result (search/find-refs :granule
+            {:scroll "defer" :page-size 10}
+            {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
+            (is (= (count all-grans) hits))
+            (is (data2-core/refs-match? [gran1 gran2] result))))
+            
+        (testing "Cache is cleared after first page is read",
+          (let [
+                url (url/search-read-caches-url)
+                result (cache-test/get-cache-value 
+                        url 
+                        (name cs/scroll-first-page-cache-key)
+                        (str "first-page-" scroll-id)
+                        admin-read-token
+                        404)]
+            (is (= #{[:error (str "missing key [:first-page-"
+                                  scroll-id
+                                  "] for cache [first-page-cache]")]} 
+                   (set result)))))
+          
+        (testing "Using scroll 'true' also works after defer if scroll-id is passed in"
+          (let [result (search/find-refs :granule
+            {:scroll true}
+            {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
+            (is (= (count all-grans) hits))
+            (is (data2-core/refs-match? [gran3 gran4] result))))
+                
+        (testing "Remaining results returned on last search"
+          (let [result (search/find-refs :granule
+            {:scroll true}
+            {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
+            (is (= (count all-grans) hits))
+            (is (data2-core/refs-match? [gran5] result))))
+                    
+        (testing "Searches beyond total hits return empty list"
+          (let [result (search/find-refs :granule
+            {:scroll true}
+            {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
+            (is (= (count all-grans) hits))
+            (is (data2-core/refs-match? [] result))))))
+                        
     (testing "Scrolling with different search params from the original"
       (let [result (search/find-concepts-in-format
                     mime-types/xml
@@ -261,39 +320,39 @@
 
     (testing "invalid parameters"
       (are3 [query options status err-msg]
-        (let [response (search/find-refs :granule query (merge options {:allow-failure? true}))]
-          (is (= status (:status response)))
-          (is (= err-msg
-                 (first (:errors response)))))
+            (let [response (search/find-refs :granule query (merge options {:allow-failure? true}))]
+              (is (= status (:status response)))
+              (is (= err-msg
+                     (first (:errors response)))))
 
-        "Scroll queries cannot be all-granule queries"
-        {:scroll true}
-        {}
-        400
-        (str "The CMR does not allow querying across granules in all collections when scrolling."
-             " You should limit your query using conditions that identify one or more collections "
-             "such as provider, concept_id, short_name, or entry_title.")
+            "Scroll queries cannot be all-granule queries"
+            {:scroll true}
+            {}
+            400
+            (str "The CMR does not allow querying across granules in all collections when scrolling."
+                 " You should limit your query using conditions that identify one or more collections "
+                 "such as provider, concept_id, short_name, or entry_title.")
 
-        "scroll parameter must be boolean"
-        {:provider "PROV1" :scroll "foo"}
-        {}
-        400
-        "Parameter scroll must take value of true or false but was [foo]"
+            "scroll parameter must be boolean"
+            {:provider "PROV1" :scroll "foo"}
+            {}
+            400
+            "Parameter scroll must take value of true, false, or defer but was [foo]"
 
-        "page_num is not allowed with scrolling"
-        {:provider "PROV1" :scroll true :page-num 2}
-        {}
-        400
-        "page_num is not allowed with scrolling"
+            "page_num is not allowed with scrolling"
+            {:provider "PROV1" :scroll true :page-num 2}
+            {}
+            400
+            "page_num is not allowed with scrolling"
 
-        "offset is not allowed with scrolling"
-        {:provider "PROV1" :scroll true :offset 2}
-        {}
-        400
-        "offset is not allowed with scrolling"
+            "offset is not allowed with scrolling"
+            {:provider "PROV1" :scroll true :offset 2}
+            {}
+            400
+            "offset is not allowed with scrolling"
 
-        "Unknown scroll-id"
-        {:scroll true}
-        {:headers {routes/SCROLL_ID_HEADER "foo"}}
-        404
-        "Scroll session [foo] does not exist"))))
+            "Unknown scroll-id"
+            {:scroll true}
+            {:headers {routes/SCROLL_ID_HEADER "foo"}}
+            404
+            "Scroll session [foo] does not exist"))))

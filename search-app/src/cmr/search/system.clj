@@ -127,6 +127,7 @@
                       ;; application will also pick up the updated KMS keywords.
                       kf/kms-cache-key (kf/create-kms-cache)
                       search/scroll-id-cache-key (search/create-scroll-id-cache)
+                      search/scroll-first-page-cache-key (search/create-scroll-first-page-cache)
                       metadata-cache/cache-key (metadata-cache/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
@@ -148,8 +149,8 @@
                           jvm-info/log-jvm-statistics-job
                           hrs/humanizer-report-generator-job])}]
     (transmit-config/system-with-connections
-      sys
-      [:indexer :echo-rest :metadata-db :kms :access-control])))
+     sys
+     [:indexer :echo-rest :metadata-db :kms :access-control])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

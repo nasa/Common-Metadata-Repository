@@ -244,11 +244,13 @@ You can not page past the 1 millionth item. Please contact the CMR Team through 
 
 Scrolling allows the retrieval of all results of a query in an efficient manner. This parameter is primarily intended to support harvesting of metadata. Scrolling is only supported for parameter queries, but all query parameters are available with the exception of the `page_num` and `offset` parameters. The response format for scrolling queries is identical to the response for normal parameter queries with the exception of the addition of the `CMR-Scroll-Id` header. The `CMR-Hits` header is useful for determining the number of requests that will be needed to retrieve all the available results.
 
-Scrolling is *session based*; the first search conducted with the `scroll` parameter set to `true` will return a session id in the form of a `CMR-Scroll-Id` header. This header should be included in subsequent searches until the desired number of results have been retrieved. Sessions time out after 10 minutes of inactivity; each new query before the timeout is reached with a given `CMR-Scroll-Id` header will reset the timeout to 10 minutes. Queries occurring after a session has timed out will result in an HTTP 404 status code and error message.
+Scrolling is *session based*; the first search conducted with the `scroll` parameter set to `true` or `defer` will return a session id in the form of a `CMR-Scroll-Id` header. This header should be included in subsequent searches until the desired number of results have been retrieved. Sessions time out after 10 minutes of inactivity; each new query before the timeout is reached with a given `CMR-Scroll-Id` header will reset the timeout to 10 minutes. Queries occurring after a session has timed out will result in an HTTP 404 status code and error message.
+
+Setting the `scroll` parameter to `defer` will not return any search results with the initial response. The second request passing in the `CMR-Scroll-Id` header will return the first page of results with subsequent requests returning subsequent pages. This is useful for staging a scrolling session and getting the total number of hits before beginning the process of retrieving results. `defer` works with `HEAD`, `GET`, and `POST` requests.
 
 When all the results have been returned subsequent calls using the same `CMR-Scroll-Id` header will return an empty list.
 
-Important note: Clients using scrolling (especially via programatic api or scripts) should explicitly invoke [`clear scroll session`] (#clear-scroll) to release the scroll session when they are finished. This will end the scroll session and free up system resources.
+Important note: Clients using scrolling (especially via programmatic api or scripts) should explicitly invoke [`clear scroll session`] (#clear-scroll) to release the scroll session when they are finished. This will end the scroll session and free up system resources.
 
 #### <a name="parameter-options"></a> Parameter Options
 

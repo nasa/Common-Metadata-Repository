@@ -99,8 +99,7 @@
 (defmethod parameter->condition :default
   [_context concept-type param value options]
   (errors/internal-error!
-    (format "Could not find parameter handler for [%s] with concept-type [%s]"
-            param concept-type)))
+   (format "Could not find parameter handler for [%s] with concept-type [%s]" param concept-type)))
 
 (defn string-parameter->condition
   [concept-type param value options]
@@ -126,10 +125,10 @@
 (defmethod parameter->condition :exclude
   [context concept-type param value options]
   (gc/or-conds
-    (map (fn [[exclude-param exclude-val]]
-           (qm/map->NegatedCondition
-             {:condition (parameter->condition context concept-type exclude-param exclude-val options)}))
-         value)))
+   (map (fn [[exclude-param exclude-val]]
+          (qm/map->NegatedCondition
+           {:condition (parameter->condition context concept-type exclude-param exclude-val options)}))
+        value)))
 
 (defmethod parameter->condition :boolean
   [_context concept-type param value options]
@@ -178,7 +177,10 @@
   ([concept-type params aliases]
    (let [page-size (Integer. (get params :page-size qm/default-page-size))
          scroll (when-let [scroll-param (:scroll params)]
-                  (= (string/lower-case scroll-param) "true"))
+                  (case (string/lower-case scroll-param)
+                    "true" true
+                    "defer" "defer"
+                    false))
          {:keys [offset page-num]} params]
      [(dissoc params :offset :page-size :page-num :result-format :scroll :sort-key)
       {:concept-type concept-type
@@ -221,8 +223,8 @@
   "Converts given parameters into query conditions"
   [context concept-type params options]
   (map (fn [[param value]]
-           (parameter->condition context concept-type param value options))
-        params))
+         (parameter->condition context concept-type param value options))
+       params))
 
 (defn- create-combined-conditions
   "When valid spatial parameters are given and the spatial OR option is passed,
@@ -230,7 +232,7 @@
   [context concept-type options params spatial-params]
   (let [spatial-conditions (when (seq spatial-params)
                              (generate-conditions
-                               context concept-type spatial-params options))
+                              context concept-type spatial-params options))
         combined-spatial-conditions (when (seq spatial-params)
                                       (gc/or-conds spatial-conditions))
         non-spatial-params (-> params
@@ -249,23 +251,23 @@
   [context concept-type options params query-attribs]
   (let [valid-spatial-params [:bounding-box :circle :point :line :polygon :bounding-box]
         spatial-option (if (= (get-in options [:spatial :or]) "true")
-                           :or
-                           :and)
+                         :or
+                         :and)
         spatial-params (select-keys params valid-spatial-params)]
     (if (and (= :or spatial-option)
              (seq spatial-params))
-        (qm/query
-         (assoc query-attribs :condition (create-combined-conditions context
-                                                                     concept-type
-                                                                     options
-                                                                     params
-                                                                     spatial-params)))
-        (qm/query
-         (assoc query-attribs :condition (gc/and-conds
-                                          (generate-conditions context
-                                                               concept-type
-                                                               params
-                                                               options)))))))
+      (qm/query
+       (assoc query-attribs :condition (create-combined-conditions context
+                                                                   concept-type
+                                                                   options
+                                                                   params
+                                                                   spatial-params)))
+      (qm/query
+       (assoc query-attribs :condition (gc/and-conds
+                                        (generate-conditions context
+                                                             concept-type
+                                                             params
+                                                             options)))))))
 
 (defn parse-parameter-query
   "Converts parameters into a query model."

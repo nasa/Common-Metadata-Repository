@@ -263,6 +263,16 @@
       (svc-errors/throw-service-error
        :invalid-content-type (str "Unsupported content type [" content-type-header "]")))))
 
+(defn- remove-scroll-results-from-cache
+  "Removes the first page of results from a scroll session (along with the original query
+  execution time) from the cache using the scroll-id as a key."
+  [context scroll-id]
+  (when scroll-id
+    ;; clear the cache entry
+    (-> context
+        (cache/context->cache search/scroll-first-page-cache-key)
+        (cache/set-value scroll-id nil))))
+
 (defn- clear-scroll
   "Invokes query service to clear the scroll context for the given scroll id.
    The concept type of the request must be JSON."
@@ -277,8 +287,10 @@
       (if-let [scroll-id (->> short-scroll-id
                               (core-api/get-scroll-id-and-search-params-from-cache context)
                               :scroll-id)]
-        ;; clear the scroll session for the scroll id
-        (query-svc/clear-scroll context scroll-id)
+        ;; clear the scroll session for the scroll id and the first page of results from the cache
+        (do 
+          (query-svc/clear-scroll context scroll-id)
+          (remove-scroll-results-from-cache context scroll-id))
         (svc-errors/throw-service-error
          :invalid-data (format "scroll_id [%s] not found." short-scroll-id))))
     (svc-errors/throw-service-error

@@ -33,8 +33,8 @@
   "Validates presence and combinations of system_object, concept_id, provider, and target parameters."
   [{:keys [system_object concept_id provider target target_group_id]}]
   (let [present? #(if (string? %)
-                   (not (str/blank? %))
-                   (seq %))]
+                    (not (str/blank? %))
+                    (seq %))]
     (when-not (util/xor (present? system_object)
                         (present? concept_id)
                         (present? target_group_id)
