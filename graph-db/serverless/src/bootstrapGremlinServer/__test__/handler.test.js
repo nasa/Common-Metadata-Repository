@@ -4,27 +4,31 @@ import bootstrapGremlinServer from '../handler'
 
 import * as getEchoToken from '../../utils/cmr/getEchoToken'
 
-const OLD_ENV = process.env
-
-beforeEach(() => {
-  // Manage resetting ENV variables
-  jest.resetModules()
-  process.env = { ...OLD_ENV }
-  delete process.env.NODE_ENV
-})
-
-afterEach(() => {
-  // Restore any ENV variables overwritten in tests
-  process.env = OLD_ENV
-})
-
 describe('bootstrapGremlinServer handler', () => {
-  test('test service response', async () => {
-    process.env.GREMLIN_URL = 'ws://localhost:8182/gremlin'
-    process.env.PAGE_SIZE = 1000
-    process.env.CMR_ROOT = 'https://cmr.sit.earthdata.nasa.gov'
+  describe('When the response from CMR is an error', () => {
+    test('throws an exception', async () => {
+      nock(/local-cmr/)
+        .get(/collections/)
+        .reply(400, {
+          errors: [
+            'Parameter [asdf] was not recognized.'
+          ]
+        })
 
-    nock(/cmr/)
+      jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => null)
+
+      const response = await bootstrapGremlinServer()
+
+      const { body, statusCode } = response
+
+      expect(body).toBe('Indexing completed')
+
+      expect(statusCode).toBe(200)
+    })
+  })
+
+  test('test service response', async () => {
+    nock(/local-cmr/)
       .get(/collections/)
       .reply(200, {
         hits: 1,
@@ -235,7 +239,7 @@ describe('bootstrapGremlinServer handler', () => {
         ]
       })
 
-    nock(/cmr/)
+    nock(/local-cmr/)
       .get(/collections/)
       .reply(200, {
         hits: 0,
@@ -248,6 +252,32 @@ describe('bootstrapGremlinServer handler', () => {
     const response = await bootstrapGremlinServer()
 
     const { body, statusCode } = response
+
+    let checkAgain = true
+    let edgeId
+
+    jest.setTimeout(30000)
+
+    while (checkAgain) {
+      // eslint-disable-next-line no-await-in-loop
+      const record = await global.testGremlinConnection
+        .V().hasLabel('dataset')
+        .has('title', "'Latent reserves' within the Swiss NFI")
+        .inE('documents')
+        .next()
+
+      const { value: edgeValue = {} } = record
+
+      if (edgeValue) {
+        ({ id: edgeId } = edgeValue)
+        expect(edgeId).not.toBe(null)
+        checkAgain = false
+      } else {
+        console.log('Sleeping for 1000ms...')
+
+        setTimeout(1000)
+      }
+    }
 
     expect(body).toBe('Indexing completed')
 
