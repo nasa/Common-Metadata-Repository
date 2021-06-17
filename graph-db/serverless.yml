@@ -11,7 +11,7 @@ provider:
       - ${cf:${self:provider.stage}.servicesSecurityGroupId}
     subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
   environment:
-    CMR_ROOT: ${self:custom.variables.CMR_ROOT}
+    CMR_ROOT: ${self:custom.cmrRoot.${opt:stage}}
     ENVIRONMENT: ${self:custom.variables.ENVIRONMENT}
     GREMLIN_URL: ${self:custom.variables.GREMLIN_URL}
     PAGE_SIZE: ${self:custom.variables.PAGE_SIZE}
@@ -77,9 +77,13 @@ resources:
         Roles:
           - Ref: IamRoleGraphLambdaExecution
 custom:
+  cmrRoot:
+    dev: 'http://localhost:3003'
+    sit: 'https://cmr.sit.earthdata.nasa.gov'
+    uat: 'https://cmr.uat.earthdata.nasa.gov'
+    prod: 'https://cmr.earthdata.nasa.gov'
   variables:
     # Default values for environment variables
-    CMR_ROOT: ${env:CMR_ROOT, 'https://cmr.sit.earthdata.nasa.gov'}
     ENVIRONMENT: ${self:provider.stage}
     GREMLIN_URL: ${env:GREMLIN_URL, 'wss://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'}
     PAGE_SIZE: ${env:PAGE_SIZE, '1000'}
