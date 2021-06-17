@@ -247,35 +247,25 @@
            (get system db-system-key)))
 
         ;; Start quartz
-        (try
-          (let [scheduler (qs/start (qs/initialize))]
+        (let [scheduler (qs/start (qs/initialize))]
 
-            ;; schedule all the jobs
-            (doseq [job jobs]
-              (schedule-job scheduler system-holder-var-name job))
+          ;; schedule all the jobs
+          (doseq [job jobs]
+            (schedule-job scheduler system-holder-var-name job))
 
-            (when (paused? (assoc this :qz-scheduler scheduler))
-              (warn "All jobs are currently paused"))
+          (when (paused? (assoc this :qz-scheduler scheduler))
+            (warn "All jobs are currently paused"))
 
-            (assoc this
-                   :running? true
-                   :qz-scheduler scheduler))
-          (catch org.quartz.JobPersistenceException e
-            (warn "Quartz Scheduler failed to start" e)
-            (assoc this :running? false))
-          (catch java.sql.SQLException e
-            (warn "Scheduler failed to start" e)
-            (assoc this :running? false))))
+          (assoc this
+                 :running? true
+                 :qz-scheduler scheduler)))
       (errors/internal-error! "No jobs to schedule.")))
 
   (stop
     [this system]
     (when (:running? this)
       ;; Shutdown and wait for jobs to complete
-      (try
-        (qs/shutdown qz-scheduler true)
-        (catch Exception e
-          (error "An exception occurred while stopping the JobScheduler" e)))
+      (qs/shutdown qz-scheduler true)
       (assoc this :running? false :qz-scheduler nil)))
 
   JobRunner

@@ -77,15 +77,12 @@
   "Calls acl search endpoint using object-identity-types. Pages through results as needed."
   [context object-identity-types]
   (let [page-size 2000
-        response (try
-                   (access-control/search-for-acls
-                    (assoc context :token (config/echo-system-token))
-                    {:identity-type (object-identity-types->identity-strings
-                                     object-identity-types)
-                     :include-full-acl true
-                     :page-size page-size})
-                   (catch java.lang.Exception e
-                     (warn "Failed to retrieve ACLs" e)))
+        response (access-control/search-for-acls
+                  (assoc context :token (config/echo-system-token))
+                  {:identity-type (object-identity-types->identity-strings
+                                   object-identity-types)
+                   :include-full-acl true
+                   :page-size page-size})
         total-pages (int (Math/ceil (/ (get response :hits 0) page-size)))]
     (if (> total-pages 1)
       ;; Take the items from first page of the response from above,

@@ -25,15 +25,12 @@
   (info "Bootstrapping development data in access control")
   (let [context {:system system :token (transmit-config/echo-system-token)}
         ;; Find or create the administrators group.
-        {:keys [concept-id]} (or (try
-                                   (mdb-legacy/find-latest-concept
-                                    context
-                                    {:native-id (str/lower-case (transmit-config/administrators-group-name))
-                                     :provider-id "CMR"
-                                     :exclude-metadata true}
-                                    :access-group)
-                                   (catch Exception e
-                                     (error e)))
+        {:keys [concept-id]} (or (mdb-legacy/find-latest-concept
+                                  context
+                                  {:native-id (str/lower-case (transmit-config/administrators-group-name))
+                                   :provider-id "CMR"
+                                   :exclude-metadata true}
+                                  :access-group)
                                  (group-service/create-group context (administrators-group) {:skip-acls? true}))]
     ;; Add the echo system user to the group. Add members properly handles adding duplicate members
     ;; so there shouldn't be a problem.
