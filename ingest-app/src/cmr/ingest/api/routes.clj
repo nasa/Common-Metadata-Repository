@@ -104,7 +104,8 @@
      (context "/granule-bulk-update/status" []
        (POST "/"
          request
-         (bulk/update-completed-granule-task-statuses request))
+         (bulk/update-completed-granule-task-statuses request)
+         {:status 200})
        (context "/:task-id" [task-id]
          (GET "/"
            request
