@@ -2,6 +2,8 @@ import nock from 'nock'
 
 import indexCmrCollection from '../handler'
 
+import { verifyGraphDb } from '../../testUtil/verifyGraphDb'
+
 beforeEach(() => {
   jest.clearAllMocks()
 })
@@ -45,6 +47,8 @@ describe('indexCmrCollection handler', () => {
 
     expect(body).toBe('Successfully indexed 1 collection(s)')
     expect(statusCode).toBe(200)
+
+    await verifyGraphDb("'Latent reserves' within the Swiss NFI", 'https://en.wikipedia.org/wiki/Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo')
   })
 
   test('test unsupported event type', async () => {

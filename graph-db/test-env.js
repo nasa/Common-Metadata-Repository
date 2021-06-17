@@ -1,6 +1,6 @@
 import nock from 'nock'
 
-import { initializeGremlinConnection } from './serverless/src/utils/gremlin/initializeGremlinConnection'
+import { driverRemoteConnection, initializeGremlinConnection } from './serverless/src/utils/gremlin/initializeGremlinConnection'
 
 process.env.PAGE_SIZE = 1
 process.env.IS_LOCAL = true
@@ -11,11 +11,16 @@ nock.cleanAll()
 nock.disableNetConnect()
 nock.enableNetConnect(/localhost/)
 
-global.testGremlinConnection = initializeGremlinConnection()
+beforeAll(() => {
+  global.testGremlinConnection = initializeGremlinConnection()
+})
 
 global.beforeEach(async () => {
   // Clear out the gremlin server before running each test
   await global.testGremlinConnection.V().drop().iterate()
+})
 
-  console.log(await global.testGremlinConnection.E().next())
+afterAll(() => {
+  // Closing the DB connection allows Jest to exit successfully.
+  driverRemoteConnection().close()
 })

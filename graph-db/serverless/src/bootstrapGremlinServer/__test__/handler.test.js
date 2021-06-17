@@ -4,6 +4,8 @@ import bootstrapGremlinServer from '../handler'
 
 import * as getEchoToken from '../../utils/cmr/getEchoToken'
 
+import { verifyGraphDb } from '../../testUtil/verifyGraphDb'
+
 describe('bootstrapGremlinServer handler', () => {
   describe('When the response from CMR is an error', () => {
     test('throws an exception', async () => {
@@ -250,37 +252,11 @@ describe('bootstrapGremlinServer handler', () => {
     jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => null)
 
     const response = await bootstrapGremlinServer()
-
     const { body, statusCode } = response
 
-    let checkAgain = true
-    let edgeId
-
-    jest.setTimeout(30000)
-
-    while (checkAgain) {
-      // eslint-disable-next-line no-await-in-loop
-      const record = await global.testGremlinConnection
-        .V().hasLabel('dataset')
-        .has('title', "'Latent reserves' within the Swiss NFI")
-        .inE('documents')
-        .next()
-
-      const { value: edgeValue = {} } = record
-
-      if (edgeValue) {
-        ({ id: edgeId } = edgeValue)
-        expect(edgeId).not.toBe(null)
-        checkAgain = false
-      } else {
-        console.log('Sleeping for 1000ms...')
-
-        setTimeout(1000)
-      }
-    }
-
     expect(body).toBe('Indexing completed')
-
     expect(statusCode).toBe(200)
+
+    await verifyGraphDb("'Latent reserves' within the Swiss NFI", 'https://www.envidat.ch/dataset/latent-reserves-in-the-swiss-nfi')
   })
 })

@@ -1,0 +1,26 @@
+import gremlin from 'gremlin'
+
+const gremlinStatistics = gremlin.process.statics
+
+export const verifyGraphDb = async (datasetTitle, docName) => {
+  // verify the dataset vertex with the given title exists
+  const dataset = await global.testGremlinConnection
+    .V().has('dataset', 'title', datasetTitle).next()
+  const { value: { id: datasetId } } = dataset
+  expect(datasetId).not.toBe(null)
+
+  // verify the documentation vertex with the given name exists
+  const doc = await global.testGremlinConnection
+    .V().has('documentation', 'name', docName).next()
+  const { value: { id: docId } } = doc
+  expect(docId).not.toBe(null)
+
+  // verify the edge exists between the two vertices
+  const record = await global.testGremlinConnection
+    .V().has('dataset', 'title', datasetTitle)
+    .inE('documents')
+    .filter(gremlinStatistics.outV().has('documentation', 'name', docName))
+    .next()
+  const { value: { id: edgeId } } = record
+  expect(edgeId).not.toBe(null)
+}

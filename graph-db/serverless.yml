@@ -1,42 +1,35 @@
 service: graphdb-indexer
-
 provider:
   name: aws
   runtime: nodejs12.x
   region: us-east-1
   role: IamRoleGraphLambdaExecution
   stage: ${opt:stage, 'dev'}
-  deploymentBucket: graphdb-driver-deployment-bucket-${self:provider.stage}
-
-  # vpc:
-  #   securityGroupIds:
-  #     - ${cf:${self:provider.stage}.servicesSecurityGroupId}
-  #   subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
-
+  deploymentBucket: graphdb-driver-deployment-bucket-${opt:stage}
+  vpc:
+    securityGroupIds:
+      - ${cf:${self:provider.stage}.servicesSecurityGroupId}
+    subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
   environment:
-    CMR_ROOT: 'https://cmr.uat.earthdata.nasa.gov'
-    ENVIRONMENT: 'dev'
-    GREMLIN_URL: 'ws://localhost:8182/gremlin'
-    PAGE_SIZE: '10'
-
+    CMR_ROOT: ${self:custom.variables.CMR_ROOT}
+    ENVIRONMENT: ${self:custom.variables.ENVIRONMENT}
+    GREMLIN_URL: ${self:custom.variables.GREMLIN_URL}
+    PAGE_SIZE: ${self:custom.variables.PAGE_SIZE}
 plugins:
   - serverless-offline
   - serverless-pseudo-parameters
   - serverless-webpack
-
 functions:
   bootstrapGremlinServer:
     timeout: 900
     handler: serverless/src/bootstrapGremlinServer/handler.default
-
   indexCmrCollection:
     timeout: 20
-    handler: serverless/src/bootstrapGremlinServer/handler.default
+    handler: serverless/src/indexCmrCollection/handler.default
     events:
       - sqs:
           batchSize: 10
           arn: arn:aws:sqs:us-east-1:#{AWS::AccountId}:gsfc-eosdis-cmr-${self:provider.stage}-graphdb_queue
-
 resources:
   Resources:
     IamRoleGraphLambdaExecution:
@@ -83,11 +76,10 @@ resources:
         PolicyName: cmrParamStorePolicy-${opt:stage}
         Roles:
           - Ref: IamRoleGraphLambdaExecution
-
-# custom:
-#   variables:
-#     # Default values for environment variables
-#     CMR_ROOT: ${env:CMR_ROOT, 'https://cmr.uat.earthdata.nasa.gov'}
-#     ENVIRONMENT: ${self:provider.stage}
-#     GREMLIN_URL: ${env:GREMLIN_URL, 'ws://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'}
-#     PAGE_SIZE: ${env:PAGE_SIZE, '1000'}
+custom:
+  variables:
+    # Default values for environment variables
+    CMR_ROOT: ${env:CMR_ROOT, 'https://cmr.sit.earthdata.nasa.gov'}
+    ENVIRONMENT: ${self:provider.stage}
+    GREMLIN_URL: ${env:GREMLIN_URL, 'wss://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'}
+    PAGE_SIZE: ${env:PAGE_SIZE, '1000'}

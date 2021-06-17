@@ -8,7 +8,7 @@ import { indexPageOfCmrResults } from './indexPageOfCmrResults'
  * @param {String} token An optional Echo Token
  * @returns [{JSON}] An array of UMM JSON collection results
  */
-export const fetchPageFromCMR = async (scrollId, token, gremlineConnection) => {
+export const fetchPageFromCMR = async (scrollId, token, gremlinConnection) => {
   const requestHeaders = {}
 
   if (token) {
@@ -34,11 +34,11 @@ export const fetchPageFromCMR = async (scrollId, token, gremlineConnection) => {
 
     const { items = [] } = collectionsJson
 
-    await indexPageOfCmrResults(items, gremlineConnection)
+    await indexPageOfCmrResults(items, gremlinConnection)
 
     // If we have an active scrollId and there are more results
     if (scrollId && items.length === parseInt(process.env.PAGE_SIZE, 10)) {
-      fetchPageFromCMR(scrollId, token, gremlineConnection)
+      fetchPageFromCMR(scrollId, token, gremlinConnection)
     }
   } catch (e) {
     console.log(`Could not complete request due to error: ${e}`)

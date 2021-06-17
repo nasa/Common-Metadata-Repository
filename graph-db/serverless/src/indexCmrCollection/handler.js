@@ -4,7 +4,7 @@ import { getEchoToken } from '../utils/cmr/getEchoToken'
 import { indexCmrCollection } from '../utils/cmr/indexCmrCollection'
 import { initializeGremlinConnection } from '../utils/gremlin/initializeGremlinConnection'
 
-let gremlineConnection
+let gremlinConnection
 let token
 
 const indexCmrCollections = async (event) => {
@@ -14,8 +14,8 @@ const indexCmrCollections = async (event) => {
   }
 
   // Prevent connecting to Gremlin more than necessary
-  if (!gremlineConnection) {
-    gremlineConnection = initializeGremlinConnection()
+  if (!gremlinConnection) {
+    gremlinConnection = initializeGremlinConnection()
   }
 
   let recordCount = 0
@@ -25,7 +25,7 @@ const indexCmrCollections = async (event) => {
   await updatedConcepts.forEachAsync(async (message) => {
     const { body } = message
 
-    const { 'concept-id': conceptId, action } = JSON.parse(body)
+    const { 'concept-id': conceptId, 'revision-id': revisionId, action } = JSON.parse(body)
 
     if (getConceptType(conceptId) !== 'collection') {
       console.log(`Concept [${conceptId}] was not a collection and will not be indexed`)
@@ -36,12 +36,14 @@ const indexCmrCollections = async (event) => {
     }
 
     if (getConceptType(conceptId) === 'collection' && action === 'concept-update') {
+      console.log(`Start indexing concept [${conceptId}], revision-id [${revisionId}]`)
+
       const collection = await fetchCmrCollection(conceptId, token)
 
       const { items } = collection
       const [firstCollection] = items
 
-      await indexCmrCollection(firstCollection, gremlineConnection)
+      await indexCmrCollection(firstCollection, gremlinConnection)
 
       recordCount += 1
     }
