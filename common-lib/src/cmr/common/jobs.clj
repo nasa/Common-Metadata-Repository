@@ -185,20 +185,19 @@
                      {"system-holder-var-name" system-holder-var-name})
                     (qj/with-identity (qj/key job-key)))
         trigger (create-trigger job-key job)]
-    (async/go
-      (loop [max-tries 3]
-        (when-not (try-to-schedule-job scheduler job-key quartz-job trigger)
-          (if (pos? max-tries)
-            (do
-              (warn (format "Failed to schedule job [%s]. Retrying." job-key))
-              ;; Random sleep time to make it less likely that two nodes try to
-              ;; recreate the job at the same time. Sleeps between 0.5 seconds
-              ;; and 3 seconds.
-              (Thread/sleep (+ 500 (rand-int 2500)))
-              (recur (dec max-tries)))
-            (warn
-             (format
-              "All retries to schedule job [%s] failed." job-key))))))))
+    (async/go-loop [max-tries 3]
+      (when-not (try-to-schedule-job scheduler job-key quartz-job trigger)
+        (if (pos? max-tries)
+          (do
+            (warn (format "Failed to schedule job [%s]. Retrying." job-key))
+            ;; Random sleep time to make it less likely that two nodes try to
+            ;; recreate the job at the same time. Sleeps between 0.5 seconds
+            ;; and 3 seconds.
+            (Thread/sleep (+ 500 (rand-int 2500)))
+            (recur (dec max-tries)))
+          (warn
+           (format
+            "All retries to schedule job [%s] failed." job-key)))))))
 
 (defprotocol JobRunner
   "Defines functions for pausing and resuming jobs"
