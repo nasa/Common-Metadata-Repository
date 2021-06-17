@@ -5,10 +5,6 @@ import { fetchPageFromCMR } from '../fetchPageFromCMR'
 import * as indexPageOfCmrResults from '../indexPageOfCmrResults'
 
 describe('fetchPageFromCMR', () => {
-  // beforeAll(() => {
-  //   gremlinConnection = initializeGremlinConnection()
-  // })
-
   test('Empty page', async () => {
     const mockedBody = {
       hits: 16996,
