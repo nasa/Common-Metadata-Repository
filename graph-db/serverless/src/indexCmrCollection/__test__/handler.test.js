@@ -44,7 +44,7 @@ describe('indexCmrCollection handler', () => {
 
     const { body, statusCode } = indexed
 
-    expect(body).toBe('Successfully indexed 0 collection(s)')
+    expect(body).toBe('Successfully indexed 0 collection(s). Skipped 1 collection(s).')
     expect(statusCode).toBe(200)
   })
 
@@ -60,7 +60,7 @@ describe('indexCmrCollection handler', () => {
 
     const { body, statusCode } = indexed
 
-    expect(body).toBe('Successfully indexed 0 collection(s)')
+    expect(body).toBe('Successfully indexed 0 collection(s).')
     expect(statusCode).toBe(200)
   })
 
@@ -76,7 +76,7 @@ describe('indexCmrCollection handler', () => {
 
     const { body, statusCode } = indexed
 
-    expect(body).toBe('Successfully indexed 0 collection(s)')
+    expect(body).toBe('Successfully indexed 0 collection(s).')
     expect(statusCode).toBe(200)
   })
 

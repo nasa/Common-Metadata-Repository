@@ -23,6 +23,7 @@ const indexCmrCollections = async (event) => {
   }
 
   let recordCount = 0
+  let skipCount = 0
 
   const { Records: updatedConcepts = [] } = event
 
@@ -46,6 +47,8 @@ const indexCmrCollections = async (event) => {
 
       if (items.length === 0) {
         console.log(`Skip indexing of collection [${conceptId}] as it is not found in CMR`)
+
+        skipCount += 1
       } else {
         const [firstCollection] = items
 
@@ -64,10 +67,16 @@ const indexCmrCollections = async (event) => {
     }
   })
 
+  let body = `Successfully indexed ${recordCount} collection(s).`
+
+  if (skipCount > 0) {
+    body += ` Skipped ${skipCount} collection(s).`
+  }
+
   return {
     isBase64Encoded: false,
     statusCode: 200,
-    body: `Successfully indexed ${recordCount} collection(s)`
+    body
   }
 }
 
