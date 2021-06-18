@@ -7,7 +7,7 @@ import indexCmrCollection from '../handler'
 
 import { updateCollection, deleteCollection } from '../../testUtil/indexCollection'
 
-import { verifyExistInGraphDb, verifyNotExistInGraphDb, verifyDatasetNotExistInGraphDb } from '../../testUtil/verifyGraphDb'
+import { verifyExistInGraphDb, verifyNotExistInGraphDb } from '../../testUtil/verifyGraphDb'
 
 beforeEach(() => {
   jest.clearAllMocks()
