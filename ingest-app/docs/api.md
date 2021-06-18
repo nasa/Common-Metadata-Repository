@@ -1149,6 +1149,12 @@ Granule bulk update is initiated through a POST to the ingest endpoint with the 
 
 Updated granules are validated using business rule validations.  Updates will not be saved if the business validations fail. The error will be recorded in the individual granule status, which can be queried via the status endpoint.
 
+Granule Bulk Update speed is hardware dependent, but can typically update granules at a rate of 2,000 granules per minute in production. This value will fluctuate based on overall system load.
+
+There is no hard limit on the number of granules which can be included in a single request, but the JSON patch file provided with a request should be no larger than `20MB`. As a result, the length of granule URs in a given patch file, as well as the length and volume of links provided for each granule will dictate how many granules can be submitted in a single request.
+
+If the number of granules in need of update update exceeds 250,000, we ask that you get in touch with the CMR team to schedule the pacing of these requests.
+
 Granule bulk update currently supports updating with the following operations, update fields and metadata formats:
 
 **operation: "APPEND_TO_FIELD", update-field: "OPeNDAPLink"**
