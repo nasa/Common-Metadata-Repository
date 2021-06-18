@@ -25,17 +25,12 @@ export const verifyExistInGraphDb = async (datasetTitle, docName) => {
   expect(edgeId).not.toBe(null)
 }
 
-export const verifyDatasetNotExistInGraphDb = async (datasetTitle) => {
+export const verifyNotExistInGraphDb = async (datasetTitle, docName) => {
   // verify the dataset vertex with the given title does not exist
   const dataset = await global.testGremlinConnection
     .V().has('dataset', 'title', datasetTitle).next()
   const { value: datasetValue} = dataset
   expect(datasetValue).toBe(null)
-}
-
-export const verifyNotExistInGraphDb = async (datasetTitle, docName) => {
-  // verify the dataset vertex with the given title does not exist
-  await verifyDatasetNotExistInGraphDb(datasetTitle)
 
   // verify the documentation vertex with the given name does not exist
   const doc = await global.testGremlinConnection
