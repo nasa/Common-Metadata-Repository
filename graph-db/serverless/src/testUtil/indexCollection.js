@@ -46,7 +46,7 @@ export const updateCollection = async (conceptId, datasetTitle, docNames) => {
 
   const { body, statusCode } = indexed
 
-  expect(body).toBe('Successfully indexed 1 collection(s)')
+  expect(body).toBe('Successfully indexed 1 collection(s).')
   expect(statusCode).toBe(200)
 }
 
@@ -64,6 +64,6 @@ export const deleteCollection = async (conceptId) => {
 
   const { body, statusCode } = indexed
 
-  expect(body).toBe('Successfully indexed 1 collection(s)')
+  expect(body).toBe('Successfully indexed 1 collection(s).')
   expect(statusCode).toBe(200)
 }
