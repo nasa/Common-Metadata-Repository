@@ -246,18 +246,22 @@
            (get system db-system-key)))
 
         ;; Start quartz
-        (let [scheduler (qs/start (qs/initialize))]
+        (try
+          (let [scheduler (qs/start (qs/initialize))]
 
-          ;; schedule all the jobs
-          (doseq [job jobs]
-            (schedule-job scheduler system-holder-var-name job))
+            ;; schedule all the jobs
+            (doseq [job jobs]
+              (schedule-job scheduler system-holder-var-name job))
 
-          (when (paused? (assoc this :qz-scheduler scheduler))
-            (warn "All jobs are currently paused"))
+            (when (paused? (assoc this :qz-scheduler scheduler))
+              (warn "All jobs are currently paused"))
 
-          (assoc this
-                 :running? true
-                 :qz-scheduler scheduler)))
+            (assoc this
+                   :running? true
+                   :qz-scheduler scheduler))
+          (catch Exception e
+            (error "Could not start scheduler" e)
+            (assoc this :running? false))))
       (errors/internal-error! "No jobs to schedule.")))
 
   (stop
