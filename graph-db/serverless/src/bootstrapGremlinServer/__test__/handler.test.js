@@ -4,7 +4,7 @@ import bootstrapGremlinServer from '../handler'
 
 import * as getEchoToken from '../../utils/cmr/getEchoToken'
 
-import { verifyGraphDb } from '../../testUtil/verifyGraphDb'
+import { verifyExistInGraphDb } from '../../testUtil/verifyGraphDb'
 
 describe('bootstrapGremlinServer handler', () => {
   describe('When the response from CMR is an error', () => {
@@ -257,6 +257,6 @@ describe('bootstrapGremlinServer handler', () => {
     expect(body).toBe('Indexing completed')
     expect(statusCode).toBe(200)
 
-    await verifyGraphDb("'Latent reserves' within the Swiss NFI", 'https://www.envidat.ch/dataset/latent-reserves-in-the-swiss-nfi')
+    await verifyExistInGraphDb("'Latent reserves' within the Swiss NFI", 'https://www.envidat.ch/dataset/latent-reserves-in-the-swiss-nfi')
   })
 })
