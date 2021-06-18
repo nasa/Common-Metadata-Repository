@@ -1,10 +1,8 @@
 import gremlin from 'gremlin'
 import 'array-foreach-async'
 
-import indexRelatedUrl from './indexRelatedUrl'
-
 const gremlinStatistics = gremlin.process.statics
-const { P: { lte } } = gremlin.process;
+const { P: { lte } } = gremlin.process
 
 /**
  * Delete the collection with the given concept id from graph db
@@ -14,7 +12,6 @@ const { P: { lte } } = gremlin.process;
  */
 export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
   // drop all the documentation vertices that are connected to and only connected to the dataset vertex
-  let dataset = null
   try {
     await gremlinConnection
       .V()

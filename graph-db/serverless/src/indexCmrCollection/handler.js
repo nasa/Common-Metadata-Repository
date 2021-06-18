@@ -40,16 +40,21 @@ const indexCmrCollections = async (event) => {
     }
 
     if (getConceptType(conceptId) === 'collection' && action === updateActionType) {
-      console.log(`Start indexing concept [${conceptId}], revision-id [${revisionId}]`)
-
       const collection = await fetchCmrCollection(conceptId, token)
 
       const { items } = collection
-      const [firstCollection] = items
 
-      await indexCmrCollection(firstCollection, gremlinConnection)
+      if (items.length === 0) {
+        console.log(`Skip indexing of collection [${conceptId}] as it is not found in CMR`)
+      } else {
+        const [firstCollection] = items
 
-      recordCount += 1
+        console.log(`Start indexing concept [${conceptId}], revision-id [${revisionId}]`)
+
+        await indexCmrCollection(firstCollection, gremlinConnection)
+
+        recordCount += 1
+      }
     } else if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {
       console.log(`Start deleting concept [${conceptId}], revision-id [${revisionId}]`)
 

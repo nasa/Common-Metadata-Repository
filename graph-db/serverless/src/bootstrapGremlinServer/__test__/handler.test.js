@@ -61,7 +61,7 @@ describe('bootstrapGremlinServer handler', () => {
                     Linkage: 'https://www.envidat.ch/dataset/latent-reserves-in-the-swiss-nfi'
                   },
                   Publisher: 'EnviDat',
-                  Title: "'Latent reserves' within the Swiss NFI",
+                  Title: 'Latent reserves within the Swiss NFI',
                   ReleaseDate: '2020-01-01T00:00:00.000Z',
                   Version: '1.0',
                   ReleasePlace: 'Birmensdorf, Switzerland'
@@ -135,7 +135,7 @@ describe('bootstrapGremlinServer handler', () => {
                 DOI: 'doi:10.16904/envidat.166'
               },
               ShortName: 'latent-reserves-in-the-swiss-nfi',
-              EntryTitle: "'Latent reserves' within the Swiss NFI",
+              EntryTitle: 'Latent reserves within the Swiss NFI',
               ISOTopicCategories: [
                 'environment'
               ],
@@ -257,6 +257,6 @@ describe('bootstrapGremlinServer handler', () => {
     expect(body).toBe('Indexing completed')
     expect(statusCode).toBe(200)
 
-    await verifyExistInGraphDb("'Latent reserves' within the Swiss NFI", 'https://www.envidat.ch/dataset/latent-reserves-in-the-swiss-nfi')
+    await verifyExistInGraphDb('Latent reserves within the Swiss NFI', 'https://www.envidat.ch/dataset/latent-reserves-in-the-swiss-nfi')
   })
 })

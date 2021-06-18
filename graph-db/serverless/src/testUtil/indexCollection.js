@@ -1,17 +1,14 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import nock from 'nock'
 
 import indexCmrCollection from '../indexCmrCollection/handler'
 
-import * as getEchoToken from '../utils/cmr/getEchoToken'
-
-const relatedUrl = (docName) => {
-  return {
-    URLContentType: 'PublicationURL',
-    Type: 'VIEW RELATED INFORMATION',
-    Subtype: 'GENERAL DOCUMENTATION',
-    URL: docName
-  }
-}
+const relatedUrl = (docName) => ({
+  URLContentType: 'PublicationURL',
+  Type: 'VIEW RELATED INFORMATION',
+  Subtype: 'GENERAL DOCUMENTATION',
+  URL: docName
+})
 
 /**
  * create/update the collection with given concept id, dataset title and documentation name

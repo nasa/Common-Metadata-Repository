@@ -29,7 +29,7 @@ export const verifyNotExistInGraphDb = async (datasetTitle, docName) => {
   // verify the dataset vertex with the given title does not exist
   const dataset = await global.testGremlinConnection
     .V().has('dataset', 'title', datasetTitle).next()
-  const { value: datasetValue} = dataset
+  const { value: datasetValue } = dataset
   expect(datasetValue).toBe(null)
 
   // verify the documentation vertex with the given name does not exist
