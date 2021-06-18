@@ -16,7 +16,7 @@ const getEvent = (conceptId, actionType) => {
 }
 
 describe('indexCmrCollection handler', () => {
-  test('test index of single collection', async () => {
+  test('test initial indexing of a collection', async () => {
     const datasetTitle = 'Latent reserves within the Swiss NFI'
     const docName = 'https://en.wikipedia.org/wiki/latent_nfi'
 
@@ -116,5 +116,33 @@ describe('indexCmrCollection handler', () => {
     await deleteCollection('C1237293909-TESTPROV')
     await verifyNotExistInGraphDb(datasetTitle, ownDocName)
     await verifyExistInGraphDb(anotherDatasetTitle, sharedDocName)
+  })
+
+  test('test update collection', async () => {
+    const datasetTitle = 'Latent reserves within the Swiss NFI'
+    const anotherDatasetTitle = 'Another Latent reserves within the Swiss NFI'
+    // this documentation url is referenced by both the old and new version of the collection
+    const keptDocName = 'https://en.wikipedia.org/wiki/latent_nfi'
+    // this documentation url is referenced only by the old version of collection
+    const removedDocName = 'https://en.wikipedia.org/wiki/latent_nfi_old'
+    // this documentation url is referenced only by the new version of collection
+    const newDocName = 'https://en.wikipedia.org/wiki/latent_nfi_new'
+
+    // first index the collection and verify dataset and documentation vertices are created
+    await updateCollection('C1237293909-TESTPROV', datasetTitle, [keptDocName, removedDocName])
+    await verifyExistInGraphDb(datasetTitle, keptDocName)
+    await verifyExistInGraphDb(datasetTitle, removedDocName)
+
+    // update the collection
+    await updateCollection('C1237293909-TESTPROV', anotherDatasetTitle, [keptDocName, newDocName])
+
+    // verify the datasetTitle dataset vertex and the removedDocName documentation vertex are deleted
+    await verifyNotExistInGraphDb(datasetTitle, removedDocName)
+
+    // verify the dataset vertext with the new title exist,
+    // verify the documentation vertices with name keptDocName and newDocName exist,
+    // and there are correct edges between the dataset vertex and the documentation vertices
+    await verifyExistInGraphDb(anotherDatasetTitle, keptDocName)
+    await verifyExistInGraphDb(anotherDatasetTitle, newDocName)
   })
 })

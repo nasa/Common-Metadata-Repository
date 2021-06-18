@@ -2,6 +2,7 @@ import gremlin from 'gremlin'
 import 'array-foreach-async'
 
 import indexRelatedUrl from './indexRelatedUrl'
+import { deleteCmrCollection } from './deleteCmrCollection'
 
 const gremlinStatistics = gremlin.process.statics
 
@@ -24,6 +25,9 @@ export const indexCmrCollection = async (collection, gremlinConnection) => {
       RelatedUrls: relatedUrls
     }
   } = collection
+
+  // delete the collection first so that we can clean up its related documentation vertices
+  await deleteCmrCollection(conceptId, gremlinConnection)
 
   let doiUrl = 'Not provided'
   let datasetName = `${process.env.CMR_ROOT}/concepts/${conceptId}.html`
