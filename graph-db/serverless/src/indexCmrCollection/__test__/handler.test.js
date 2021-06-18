@@ -1,8 +1,5 @@
 import nock from 'nock'
 
-import assert from 'assert'
-import { AssertionError } from 'assert';
-
 import indexCmrCollection from '../handler'
 
 import { updateCollection, deleteCollection } from '../../testUtil/indexCollection'
@@ -12,6 +9,11 @@ import { verifyExistInGraphDb, verifyNotExistInGraphDb } from '../../testUtil/ve
 beforeEach(() => {
   jest.clearAllMocks()
 })
+
+const getEvent = (conceptId, actionType) => {
+  const eventBody = `{"concept-id": "${conceptId}", "revision-id": "1", "action": "${actionType}" }`
+  return { Records: [{ body: eventBody }] }
+}
 
 describe('indexCmrCollection handler', () => {
   test('test index of single collection', async () => {
@@ -31,25 +33,23 @@ describe('indexCmrCollection handler', () => {
         items: []
       })
 
-    const event = { Records: [{ body: '{"concept-id": "C1237293909-TESTPROV", "action": "concept-update" }' }] }
-    try {
-      await indexCmrCollection(event)
-      assert.fail('expected exception not thrown')
-    } catch (e) {
-      // this catches all errors, those thrown by the function under test
-      // and those thrown by assert.fail
-      if (e instanceof AssertionError) {
-        // bubble up the assertion error
-        throw e;
-      }
-      assert.equal(e.message, 'Cannot read property \'meta\' of undefined');
-    }
+    const event = getEvent('C123755555-TESTPROV', 'concept-update')
 
-    await verifyNotExistInGraphDb('datasetTitle', 'docName')
+    const consoleMock = jest.spyOn(console, 'log')
+
+    const indexed = await indexCmrCollection(event)
+
+    expect(consoleMock).toBeCalledTimes(1)
+    expect(consoleMock).toBeCalledWith('Skip indexing of collection [C123755555-TESTPROV] as it is not found in CMR')
+
+    const { body, statusCode } = indexed
+
+    expect(body).toBe('Successfully indexed 0 collection(s)')
+    expect(statusCode).toBe(200)
   })
 
   test('test unsupported event type', async () => {
-    const event = { Records: [{ body: '{"concept-id": "C1237293909-TESTPROV", "action": "concept-create" }' }] }
+    const event = getEvent('C1237293909-TESTPROV', 'concept-create')
 
     const consoleMock = jest.spyOn(console, 'log')
 
@@ -65,7 +65,7 @@ describe('indexCmrCollection handler', () => {
   })
 
   test('test unsupported concept type', async () => {
-    const event = { Records: [{ body: '{"concept-id": "G1237293909-TESTPROV", "action": "concept-update" }' }] }
+    const event = getEvent('G1237293909-TESTPROV', 'concept-update')
 
     const consoleMock = jest.spyOn(console, 'log')
 
@@ -117,5 +117,4 @@ describe('indexCmrCollection handler', () => {
     await verifyNotExistInGraphDb(datasetTitle, ownDocName)
     await verifyExistInGraphDb(anotherDatasetTitle, sharedDocName)
   })
-
 })
