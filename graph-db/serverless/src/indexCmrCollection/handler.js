@@ -2,10 +2,14 @@ import { fetchCmrCollection } from '../utils/cmr/fetchCmrCollection'
 import { getConceptType } from '../utils/cmr/getConceptType'
 import { getEchoToken } from '../utils/cmr/getEchoToken'
 import { indexCmrCollection } from '../utils/cmr/indexCmrCollection'
+import { deleteCmrCollection } from '../utils/cmr/deleteCmrCollection'
 import { initializeGremlinConnection } from '../utils/gremlin/initializeGremlinConnection'
 
 let gremlinConnection
 let token
+
+const updateActionType = 'concept-update'
+const deleteActionType = 'concept-delete'
 
 const indexCmrCollections = async (event) => {
   // Prevent creating more tokens than necessary
@@ -31,11 +35,11 @@ const indexCmrCollections = async (event) => {
       console.log(`Concept [${conceptId}] was not a collection and will not be indexed`)
     }
 
-    if (action !== 'concept-update') {
+    if (action !== updateActionType && action !== deleteActionType) {
       console.log(`Action [${action}] was unsupported for concept [${conceptId}]`)
     }
 
-    if (getConceptType(conceptId) === 'collection' && action === 'concept-update') {
+    if (getConceptType(conceptId) === 'collection' && action === updateActionType) {
       console.log(`Start indexing concept [${conceptId}], revision-id [${revisionId}]`)
 
       const collection = await fetchCmrCollection(conceptId, token)
@@ -44,6 +48,12 @@ const indexCmrCollections = async (event) => {
       const [firstCollection] = items
 
       await indexCmrCollection(firstCollection, gremlinConnection)
+
+      recordCount += 1
+    } else if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {
+      console.log(`Start deleting concept [${conceptId}], revision-id [${revisionId}]`)
+
+      await deleteCmrCollection(conceptId, gremlinConnection)
 
       recordCount += 1
     }

@@ -41,14 +41,14 @@ describe('fetchPageFromCMR', () => {
               URLContentType: 'PublicationURL',
               Type: 'VIEW RELATED INFORMATION',
               Subtype: 'GENERAL DOCUMENTATION',
-              URL: 'https://en.wikipedia.org/wiki/Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo'
+              URL: 'https://en.wikipedia.org/wiki/latent_nfi'
             }
           ],
           DOI: {
             DOI: 'doi:10.16904/envidat.166'
           },
           ShortName: 'latent-reserves-in-the-swiss-nfi',
-          EntryTitle: '\'Latent reserves\' within the Swiss NFI'
+          EntryTitle: 'Latent reserves within the Swiss NFI'
         }
       }]
     }
@@ -82,14 +82,14 @@ describe('fetchPageFromCMR', () => {
               URLContentType: 'PublicationURL',
               Type: 'VIEW RELATED INFORMATION',
               Subtype: 'GENERAL DOCUMENTATION',
-              URL: 'https://en.wikipedia.org/wiki/Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo'
+              URL: 'https://en.wikipedia.org/wiki/latent_nfi'
             }
           ],
           DOI: {
             DOI: 'doi:10.16904/envidat.166'
           },
           ShortName: 'latent-reserves-in-the-swiss-nfi',
-          EntryTitle: '\'Latent reserves\' within the Swiss NFI'
+          EntryTitle: 'Latent reserves within the Swiss NFI'
         }
       }]
     }
