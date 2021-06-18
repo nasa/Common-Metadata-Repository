@@ -48,7 +48,7 @@
   "Returns a sequence of keys that have multiple values where at least one of values matches the
   passed in value. Looks for matches case insensitively."
   [query-params value]
-  (let [value (str/lower-case value)]
+  (let [value (when value (str/lower-case value))]
     (for [[k value-or-values] query-params
           :when (and (coll? value-or-values)
                      (some #{value} (map str/lower-case value-or-values)))]
@@ -58,7 +58,7 @@
   "Returns a sequence of keys that have a single value which matches the passed in value. Looks for
   matches case insensitively."
   [query-params value]
-  (let [value (str/lower-case value)]
+  (let [value (when value (str/lower-case value))]
     (for [[k value-or-values] query-params
           :when (and (not (coll? value-or-values))
                      (= (str/lower-case value-or-values) value))]
