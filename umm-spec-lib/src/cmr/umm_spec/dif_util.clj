@@ -43,6 +43,7 @@
   ["GET DATA" nil] {:URLContentType "DistributionURL" :Type "GET DATA"}
   ["GET DATA" "ALTERNATE ACCESS"] {:URLContentType "DistributionURL" :Type "GET DATA"}
   ["GET DATA" "APPEEARS"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "APPEEARS"}
+  ["GET DATA" "CERES Ordering Tool"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "CERES Ordering Tool"}
   ["GET DATA" "DATA COLLECTION BUNDLE"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "DATA COLLECTION BUNDLE"}
   ["GET DATA" "DATA TREE"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "DATA TREE"}
   ["GET DATA" "DATACAST URL"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "DATACAST URL"}
@@ -69,6 +70,7 @@
   ["GET DATA" "PORTAL"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "PORTAL"}
   ["GET DATA" "REVERB"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "Earthdata Search"}
   ["GET DATA" "SSW"] {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "SIMPLE SUBSET WIZARD (SSW)"}
+  ["GET DATA" "Sub-Orbital Order Tool"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "Sub-Orbital Order Tool"}
   ["GET DATA" "SUBSETTER"] {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "SUBSETTER"}
   ["GET DATA" "THREDDS CATALOG"] {:URLContentType "DistributionURL" :Type "USE SERVICE API" :Subtype "THREDDS DATA"}
   ["GET DATA" "THREDDS DATA"] {:URLContentType "DistributionURL" :Type "USE SERVICE API" :Subtype "THREDDS DATA"}
@@ -81,6 +83,7 @@
   ["GET RELATED VISUALIZATION" nil] {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION"}
   ["GET RELATED VISUALIZATION" "GIOVANNI"] {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "GIOVANNI"}
   ["GET RELATED VISUALIZATION" "MAP"] {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "MAP"}
+  ["GET RELATED VISUALIZATION" "SOTO"] {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "SOTO"}
   ["GET RELATED VISUALIZATION" "WORLDVIEW"] {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "WORLDVIEW"}
   ["GET SERVICE" nil] {:URLContentType "DistributionURL" :Type "USE SERVICE API"}
   ["GET SERVICE" "ACCESS MAP VIEWER"] {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "MAP VIEWER"}
@@ -96,6 +99,7 @@
   ["GET SERVICE" "GET WORKFLOW (SERVICE CHAIN)"] {:URLContentType "DistributionURL" :Type "USE SERVICE API" :Subtype "SERVICE CHAINING"}
   ["GET SERVICE" "OpenSearch"] {:URLContentType "DistributionURL" :Type "USE SERVICE API" :Subtype "OpenSearch"}
   ["GOTO WEB TOOL" nil] {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL"}
+  ["GOTO WEB TOOL" "HITIDE"] {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "HITIDE"}
   ["GOTO WEB TOOL" "LIVE ACCESS SERVER (LAS)"] {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "LIVE ACCESS SERVER (LAS)"}
   ["GOTO WEB TOOL" "MAP VIEWER"] {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "MAP VIEWER"}
   ["GOTO WEB TOOL" "SIMPLE SUBSET WIZARD (SSW)"] {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "SIMPLE SUBSET WIZARD (SSW)"}
@@ -167,6 +171,7 @@
   {:URLContentType "DistributionURL" :Type "GET CAPABILITIES" :Subtype "GIBS"} ["GET CAPABILITIES" "GIBS"]
   {:URLContentType "DistributionURL" :Type "GET DATA"} ["GET DATA" nil]
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "APPEEARS"} ["GET DATA" "APPEEARS"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "CERES Ordering Tool"} ["GET DATA" "CERES Ordering Tool"]
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "DATA COLLECTION BUNDLE"} ["GET DATA" "DATA COLLECTION BUNDLE"]
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "DATA TREE"} ["GET DATA" "DATA TREE"]
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "DATACAST URL"} ["GET DATA" "DATACAST URL"]
@@ -189,6 +194,7 @@
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "ON-LINE ARCHIVE"} ["GET DATA" "DATA TREE"]
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "PORTAL"} ["GET DATA" "PORTAL"]
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "REVERB"} ["GET DATA" "Earthdata Search"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "Sub-Orbital Order Tool"} ["GET DATA" "Sub-Orbital Order Tool"]
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "USGS EARTH EXPLORER"} ["GET DATA" "USGS EARTH EXPLORER"]
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "VERTEX"} ["GET DATA" "VERTEX"]
   {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "VIRTUAL COLLECTION"} ["GET DATA" "VIRTUAL COLLECTION"]
@@ -215,6 +221,7 @@
   {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "WEB MAP FOR TIME SERIES"} ["USE SERVICE API" "WEB MAP SERVICE (WMS)"]
   {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "WEB MAP SERVICE (WMS)"} ["USE SERVICE API" "WEB MAP SERVICE (WMS)"]
   {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "WORKFLOW (SERVICE CHAIN)"} ["USE SERVICE API" "SERVICE CHAINING"]
+  {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "HITIDE"} ["GOTO WEB TOOL" "HITIDE"]
   {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "LIVE ACCESS SERVER (LAS)"} ["GOTO WEB TOOL" "LIVE ACCESS SERVER (LAS)"]
   {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "MAP VIEWER"} ["GOTO WEB TOOL" "MAP VIEWER"]
   {:URLContentType "DistributionURL" :Type "GOTO WEB TOOL" :Subtype "SIMPLE SUBSET WIZARD (SSW)"} ["GOTO WEB TOOL" "SIMPLE SUBSET WIZARD (SSW)"]
@@ -268,7 +275,8 @@
   {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION"} ["GET RELATED VISUALIZATION" nil]
   {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "GIBS"} ["GET RELATED VISUALIZATION" "WORLDVIEW"]
   {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "GIOVANNI"} ["GET RELATED VISUALIZATION" "GIOVANNI"]
-  {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "MAP"} ["GET RELATED VISUALIZATION" "MAP"]})
+  {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "MAP"} ["GET RELATED VISUALIZATION" "MAP"]
+  {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "SOTO"} ["GET RELATED VISUALIZATION" "SOTO"]})
 
 (def iso-639-2->dif10-dataset-language
   "Mapping from ISO 639-2 to the enumeration supported for dataset languages in DIF10."

@@ -420,6 +420,8 @@
                                   (set/rename-keys {:LicenseURL :LicenseUrl})
                                   util/remove-nils-empty-maps-seqs))))
 
+;; Migrations related to 1.16.3 --------------
+
 (defmethod interface/migrate-umm-version [:collection "1.16.2" "1.16.3"]
   [context c & _]
   ;; No need to migrate
@@ -434,3 +436,23 @@
                              (into []
                                (remove #(= "GET CAPABILITIES" (:Type %)) related-urls))))
       util/remove-nils-empty-maps-seqs))
+
+;; Migrations related to 1.16.4 --------------
+
+(defmethod interface/migrate-umm-version [:collection "1.16.3" "1.16.4"]
+  [context collection & _]
+  ;; No need to migrate
+  collection)
+
+
+(defn- remove-1-16-4-urls
+  [related-urls]
+  (let [sans ["HITIDE", "SOTO", "Sub-Orbital Order Tool", "CERES Ordering Tool"]]
+    (into [] (remove #(not (= nil (some #{(:Subtype %)} sans))) related-urls))))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.4" "1.16.3"]
+  [context collection & _]
+  ;; Remove the related urls that sub-types that were not valid in the lower versions.
+  (-> collection
+        (update :RelatedUrls remove-1-16-4-urls)
+        util/remove-nils-empty-maps-seqs))

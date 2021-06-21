@@ -14,6 +14,7 @@
     "GET DATA"
     {"default" "Download this dataset"
      "APPEEARS" "Download this dataset through APPEEARS"
+     "CERES Ordering Tool" "Download this dataset through the CERES Ordering Tool"
      "DATA COLLECTION BUNDLE" "Download this dataset as one complete package"
      "DATA TREE" "Download this dataset through a directory map"
      "DATACAST URL" "Download this dataset through a datacast URL."
@@ -28,6 +29,7 @@
      "NOAA CLASS" "Download this dataset through NOAA CLASS"
      "NOMADS" "Download this dataset through NOMADS"
      "PORTAL" "Download this dataset through a portal"
+     "Sub-Orbital Order Tool" "Download this dataset through the Sub-Orbital Order Tool"
      "USGS EARTH EXPLORER" "Download this dataset through USGS Earth Explorer"
      "VERTEX" "Download this dataset through VERTEX"
      "VIRTUAL COLLECTION" "Download this virtual dataset"}
@@ -41,6 +43,7 @@
     ;; DistributionURL/GOTO WEB TOOL
     "GOTO WEB TOOL"
     {"default" "Use this dataset in a web based tool"
+     "HITIDE" "Use this dataset in the HITIDE tool"
      "LIVE ACCESS SERVER (LAS)" "Use this dataset in the web based Live Access Server (LAS)"
      "MAP VIEWER" "Use this dataset in a web based map viewerf"
      "SIMPLE SUBSET WIZARD (SSW)" "Subset this dataset using a web based simple subset wizard (SSW)"
@@ -67,6 +70,7 @@
     {"default" "Get a related visualization"
      "GIOVANNI" "Get a related visualization through GIOVANNI"
      "MAP" "Get a related map visualization"
+     "SOTO" "Get a visualization through SOTO"
      "WORLDVIEW" "Get a related visualization through WORLDVIEW"}}
 
    "CollectionURL"
