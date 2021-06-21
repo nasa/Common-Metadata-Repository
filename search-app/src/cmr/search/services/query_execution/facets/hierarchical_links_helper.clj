@@ -48,20 +48,20 @@
   "Returns a sequence of keys that have multiple values where at least one of values matches the
   passed in value. Looks for matches case insensitively."
   [query-params value]
-  (let [value (when value (str/lower-case value))]
+  (let [value (util/safe-lowercase value)]
     (for [[k value-or-values] query-params
           :when (and (coll? value-or-values)
-                     (some #{value} (map str/lower-case value-or-values)))]
+                     (some #{value} (map util/safe-lowercase value-or-values)))]
       k)))
 
 (defn- get-keys-to-remove
   "Returns a sequence of keys that have a single value which matches the passed in value. Looks for
   matches case insensitively."
   [query-params value]
-  (let [value (when value (str/lower-case value))]
+  (let [value (util/safe-lowercase value)]
     (for [[k value-or-values] query-params
           :when (and (not (coll? value-or-values))
-                     (= (str/lower-case value-or-values) value))]
+                     (= (util/safe-lowercase value-or-values) value))]
       k)))
 
 (defn- get-potential-matching-query-params
@@ -89,22 +89,24 @@
   case insensitively."
   [query-params potential-query-param-matches value]
   (let [updated-query-params (apply dissoc query-params
-                                    (get-keys-to-remove potential-query-param-matches value))]
+                                    (when value
+                                      (get-keys-to-remove potential-query-param-matches value)))]
     (reduce (fn [updated-params k]
                 (update updated-params k
                  (fn [existing-values]
                    (remove (fn [existing-value]
-                             (= value (str/lower-case existing-value)))
+                             (= value (util/safe-lowercase existing-value)))
                            existing-values))))
             updated-query-params
-            (get-keys-to-update potential-query-param-matches value))))
+            (when value
+              (get-keys-to-update potential-query-param-matches value)))))
 
 (defn- process-removal-for-field-value-tuple
   "Helper to process a subfield and value tuple to remove the appropriate term from the query
   parameters."
   [base-field potential-qp-matches query-params field-value-tuple]
   (let [[field value] field-value-tuple
-        value (str/lower-case value)
+        value (util/safe-lowercase value)
         field-name (format "%s[0][%s]" base-field (csk/->snake_case_string field))
         potential-qp-matches (or potential-qp-matches
                                 (get-potential-matching-query-params query-params field-name))]
@@ -184,9 +186,9 @@
         ;; Sequences of actual matches against the query parameters for each potential index
         ancestor-matches (map (fn [ancestor]
                                 (into {} (for [[k v] ancestor
-                                               :when (= (str/lower-case v)
+                                               :when (= (util/safe-lowercase v)
                                                         (some->
-                                                          (get query-params k) str/lower-case))]
+                                                          (get query-params k) util/safe-lowercase))]
                                            [k v])))
                               ancestors-to-match)]
     ;; Filter the results to only those where every ancestor was found in the query parameters for
@@ -256,8 +258,10 @@
                                                    parent-indexes value has-siblings?)))
 
      (let [potential-query-params (get-potential-matching-query-params query-params field-name)
-           value-exists? (or (seq (get-keys-to-remove potential-query-params value))
-                             (seq (get-keys-to-update potential-query-params value)))]
+           value-exists? (or (seq (when value
+                                    (get-keys-to-remove potential-query-params value)))
+                             (seq (when value
+                                    (get-keys-to-update potential-query-params value))))]
        (if value-exists?
          (create-remove-link-for-hierarchical-field base-url query-params field-name value
                                                     applied-children-tuples nil)
