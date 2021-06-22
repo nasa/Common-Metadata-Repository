@@ -444,7 +444,6 @@
   ;; No need to migrate
   collection)
 
-
 (defn- remove-1-16-4-urls
   [related-urls]
   (let [sans ["HITIDE", "SOTO", "Sub-Orbital Order Tool", "CERES Ordering Tool"]]
