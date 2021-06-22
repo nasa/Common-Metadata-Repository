@@ -6,6 +6,7 @@
    [cmr.common.lifecycle :as l]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
+   [clojure.core.async :as async]
    ;; quartzite dependencies
    [clojurewerkz.quartzite.conversion :as qc]
    [clojurewerkz.quartzite.jobs :as qj]
@@ -179,12 +180,12 @@
   (let [{:keys [^Class job-type job-key]} job
         job-key (or job-key (str (.getSimpleName job-type) ".job"))
         quartz-job (qj/build
-                     (qj/of-type job-type)
-                     (qj/using-job-data
-                       {"system-holder-var-name" system-holder-var-name})
-                     (qj/with-identity (qj/key job-key)))
+                    (qj/of-type job-type)
+                    (qj/using-job-data
+                     {"system-holder-var-name" system-holder-var-name})
+                    (qj/with-identity (qj/key job-key)))
         trigger (create-trigger job-key job)]
-    (loop [max-tries 3]
+    (async/go-loop [max-tries 3]
       (when-not (try-to-schedule-job scheduler job-key quartz-job trigger)
         (if (pos? max-tries)
           (do
@@ -195,8 +196,8 @@
             (Thread/sleep (+ 500 (rand-int 2500)))
             (recur (dec max-tries)))
           (warn
-            (format
-              "All retries to schedule job [%s] failed." job-key)))))))
+           (format
+            "All retries to schedule job [%s] failed." job-key)))))))
 
 (defprotocol JobRunner
   "Defines functions for pausing and resuming jobs"
@@ -211,21 +212,21 @@
     "Returns true if the jobs are paused and false otherwise."))
 
 (defrecord JobScheduler
-  [;; A var that will point to an atom to use to contain the system. Jobs need
-   ;; access to the system. There can be multiple systems running at once so
-   ;; there needs to be a separate var per system as a way for jobs to access
-   ;; it at run time.
-   system-holder-var
-   ;; The key used to store the jobs db in the system
-   db-system-key
-   ;; A list of maps containing job-type, interval, and optionally start-delay
-   jobs
-   ;; True or false to indicate it should run in clustered mode.
-   clustered?
-   ;; true or false to indicate it's running
-   running?
-   ;; Instance of a quartzite scheduler
-   ^StdScheduler qz-scheduler]
+    [;; A var that will point to an atom to use to contain the system. Jobs need
+     ;; access to the system. There can be multiple systems running at once so
+     ;; there needs to be a separate var per system as a way for jobs to access
+     ;; it at run time.
+     system-holder-var
+     ;; The key used to store the jobs db in the system
+     db-system-key
+     ;; A list of maps containing job-type, interval, and optionally start-delay
+     jobs
+     ;; True or false to indicate it should run in clustered mode.
+     clustered?
+     ;; true or false to indicate it's running
+     running?
+     ;; Instance of a quartzite scheduler
+     ^StdScheduler qz-scheduler]
 
   l/Lifecycle
 
@@ -242,22 +243,26 @@
 
         (when (:clustered? this)
           (configure-quartz-clustering-system-properties
-            (get system db-system-key)))
+           (get system db-system-key)))
 
         ;; Start quartz
-        (let [scheduler (qs/start (qs/initialize))]
+        (try
+          (let [scheduler (qs/start (qs/initialize))]
 
-          ;; schedule all the jobs
-          (doseq [job jobs]
-            (schedule-job scheduler system-holder-var-name job))
+            ;; schedule all the jobs
+            (doseq [job jobs]
+              (schedule-job scheduler system-holder-var-name job))
 
-          (when (paused? (assoc this :qz-scheduler scheduler))
-            (warn "All jobs are currently paused"))
+            (when (paused? (assoc this :qz-scheduler scheduler))
+              (warn "All jobs are currently paused"))
 
-          (assoc this
-                 :running? true
-                 :qz-scheduler scheduler)))
-     (errors/internal-error! "No jobs to schedule.")))
+            (assoc this
+                   :running? true
+                   :qz-scheduler scheduler))
+          (catch Exception e
+            (error "Could not start scheduler" e)
+            (assoc this :running? false))))
+      (errors/internal-error! "No jobs to schedule.")))
 
   (stop
     [this system]
@@ -284,8 +289,8 @@
 
 ;; A scheduler that does not track or run jobs
 (defrecord NonRunningJobScheduler
-  ;; no fields
-  []
+    ;; no fields
+    []
 
   l/Lifecycle
 

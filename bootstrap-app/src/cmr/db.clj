@@ -38,10 +38,10 @@
 
         (= "migrate" op)
         (drift/run
-         (conj
-          args
-          "-c" 
-          "config.bootstrap-migrate-config/app-migrate-config"))
+          (conj
+           (vec args)
+           "-c"
+           "config.bootstrap_migrate_config/app-migrate-config"))
 
         :else
         (info "Unsupported operation: " op))
