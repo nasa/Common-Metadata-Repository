@@ -31,7 +31,6 @@ jobs:
       gremlin-server:
         # Docker Hub image
         image: tinkerpop/gremlin-server
-        #
         ports:
           # Opens tcp port 8182 on the host and service container
           - 8182:8182
