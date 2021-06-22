@@ -47,6 +47,14 @@ The Gremlin Console is a REPL environment that allows user to experiment with a 
 docker run -it -p 8182:8182 --network host tinkerpop/gremlin-console
 ```
 
+Then connect to the Gremlin Server and run Gremlin queries in the console, e.g.
+
+```
+:remote connect tinkerpop.server conf/remote.yaml
+:remote console
+g.V().count()
+```
+
 ### Graphexp
 Graphexp is a lightweight web interface to explore and display a graph stored in a Gremlin graph database, via the Gremlin server. This is an easy way to visualize nodes and edges in the graph database.
 Clone the graphexp repository at https://github.com/bricaud/graphexp
