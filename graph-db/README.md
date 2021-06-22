@@ -28,12 +28,17 @@ npm install -g npm@latest
 ### Docker
 Download docker on https://docs.docker.com/get-docker/
 
+### TinkerPop
+Apache TinkerPop™ is an open source, vendor-agnostic, graph computing framework distributed under the commercial friendly Apache2 license. When a data system is TinkerPop-enabled, its users are able to model their domain as a graph and analyze that graph using the Gremlin graph traversal language. We use the default Gremlin Server TinkerGraph db and Tinkerpop Gremlin Console in our local development.
+
 ### Gremlin Server
-Gremlin Server provides a way to remotely execute Gremlin against one or more Graph instances hosted within it. We use the default Gremlin Server TinkerGraph db as our local development graph db. To start it, replace the <path_to_cmr_graphdb> with the path to your local CMR graph-db directory and run:
+Gremlin Server provides a way to remotely execute Gremlin against one or more Graph instances hosted within it. We use the default Gremlin Server TinkerGraph db as our local development graph db. To start Gremlin Server, run:
 
 ```
-docker run -it -p 8182:8182 -v <path_to_cmr_graph-db>/data:/data tinkerpop/gremlin-server
+docker run -it -p 8182:8182 tinkerpop/gremlin-server
 ```
+
+If you want to load existing local data into Gremlin Server, you can add `-v <path_to_cmr_graph-db>/data:/data` to map a local directory with data to the docker instance. Replace the `<path_to_cmr_graphdb>` with the path to your local data directory.
 
 ### Gremlin Console
 The Gremlin Console is a REPL environment that allows user to experiment with a variety of TinkerPop-related activities, such as loading data, administering graphs and working out complex traversals. We use Gremlin Console to connect to the Gremlin Server and explore the graph db in local development. To start it, run:
@@ -78,7 +83,7 @@ npm run test -- --watch
 ## Indexer
 
   Indexer is a serverless application that is connected to a SQS queue that is associated with the live CMR collection ingest/update events. It will index new CMR collection ingest/update into the graph database.
-  
+
 ### Build
 ```
 npm install
