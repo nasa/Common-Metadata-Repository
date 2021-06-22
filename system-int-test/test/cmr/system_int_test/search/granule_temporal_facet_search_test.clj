@@ -19,6 +19,20 @@
   (d/ingest provider
             (dg/granule-with-umm-spec-collection collection (:concept-id collection) granule-map)))
 
+(deftest search-temporal-facet-no-gran-scenario
+  (testing "no granule temporal facets"
+    (let [coll1 (d/ingest-umm-spec-collection
+               "PROV1" (data-umm-c/collection {:ShortName "SN1"
+                                               :Version "V1"
+                                               :EntryTitle "ET1"
+                                               :concept-id "C1-PROV1"}))
+          _ (index/wait-until-indexed)
+          {:keys [status errors]} (search/find-concepts-json :granule {:temporal_facet {"0" {:year "1992"}}
+                                                                       :include-facets "v2"
+                                                                       :collection-concept-id "C1-PROV1"})]
+      (is (= 200 status))
+      (is (= nil errors)))))
+
 (deftest search-by-temporal-facet
   (let [coll1 (d/ingest-umm-spec-collection
                "PROV1" (data-umm-c/collection {:TemporalExtents
