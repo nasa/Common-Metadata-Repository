@@ -5,10 +5,10 @@ name: graph-db Node.js CI
 
 on:
   push:
+    branches: [ master ]
     paths:
       - 'graph-db/**'
   pull_request:
-    branches: [ master ]
     paths:
       - 'graph-db/**'
 
