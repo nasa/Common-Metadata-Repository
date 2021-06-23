@@ -1149,13 +1149,57 @@ Granule bulk update is initiated through a POST to the ingest endpoint with the 
 
 Updated granules are validated using business rule validations.  Updates will not be saved if the business validations fail. The error will be recorded in the individual granule status, which can be queried via the status endpoint.
 
-Granule Bulk Update speed is hardware dependent, but can typically update granules at a rate of 2,000 granules per minute in production. This value will fluctuate based on overall system load.
+Granule Bulk Update speed is hardware dependent, but can typically update granules at a rate of 2,000 granules per minute in production. This value will fluctuate based on overall system load. Updates are processed on a first-come-first-serve basis, which could delay the granule updates in a given task from starting immediately when submitted.
 
 There is no hard limit on the number of granules which can be included in a single request, but the JSON patch file provided with a request should be no larger than `20MB`. As a result, the length of granule URs in a given patch file, as well as the length and volume of links provided for each granule will dictate how many granules can be submitted in a single request.
 
 If the number of granules in need of update update exceeds 250,000, we ask that you get in touch with the CMR team to schedule the pacing of these requests.
 
 Granule bulk update currently supports updating with the following operations, update fields and metadata formats:
+
+**operation: "UPDATE_FIELD", update-field: "OPeNDAPLink"**
+supported metadata formats:
+  - OPeNDAP url in OnlineResources for ECHO10 format
+  - OPeNDAP url in RelatedUrls for UMM-G format
+
+There can only be ONE on-prem and/or ONE Hyrax-in-the-cloud OPeNDAP url in the granule metadata. The rule to determine if an OPeNDAP url is an on-prem or Hyrax-in-the-cloud url is to match the URL against this pattern: https://opendap.*.earthdata.nasa.gov/*. If the url matches, it is a Hyrax-in-the-cloud OPeNDAP url; if it does not match, it is an on-prem OPeNDAP url.
+The OPeNDAP url value provided in the granule bulk update request can be comma-separated urls, but it can have two at most: one is an on-prem url and the other is a Hyrax-in-the-cloud url. The exact url type is determined by matching the url against the same pattern above. During an update, the Hyrax-in-the-cloud url will overwrite any existing Hyrax-in-the-cloud OPeNDAP url in the granule metadata, and the on-prem url will overwrite any existing on-prem OPeNDAP url in the granule metadata.
+
+**operation: "UPDATE_FIELD", update-field: "S3Link"**
+supported metadata formats:
+  - S3 url in OnlineAccessURLs for ECHO10 format
+  - S3 url in RelatedUrls for UMM-G format
+
+The S3 url value provided in the granule bulk update request can be comma-separated urls. Each url must start with s3:// (case-sensitive). This lowercase s3:// naming convention is to make the s3 links compatible with AWS S3 API. During bulk update, the provided S3 urls in the request will overwrite any existing S3 links already in the granule metadata.
+
+Example: Add/update OPeNDAP url for 3 granules under PROV1.
+
+```
+curl -i -XPOST \
+  -H "Cmr-Pretty:true" \
+  -H "Content-Type: application/json"
+  -H "Echo-Token: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{ "name": "example of adding OPeNDAP link",
+	"operation": "UPDATE_FIELD",
+	"update-field":"OPeNDAPLink",
+	"updates":[
+             ["granule_ur1", "https://via.placeholder.com/150"],
+             ["granule_ur2", "https://via.placeholder.com/160"],
+             ["granule_ur3", "https://via.placeholder.com/170,https://opendap.earthdata.nasa.gov/foo"]
+	]
+}'
+```
+
+Example granule bulk update response:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+    <status>200</status>
+    <task-id>5</task-id>
+</result>
+```
 
 **operation: "APPEND_TO_FIELD", update-field: "OPeNDAPLink"**
 supported metadata formats:
@@ -1220,50 +1264,6 @@ Example granule bulk update response:
  "status" : 200,
  "task-id": 4
 }
-```
-
-**operation: "UPDATE_FIELD", update-field: "OPeNDAPLink"**
-supported metadata formats:
-  - OPeNDAP url in OnlineResources for ECHO10 format
-  - OPeNDAP url in RelatedUrls for UMM-G format
-
-There can only be ONE on-prem and/or ONE Hyrax-in-the-cloud OPeNDAP url in the granule metadata. The rule to determine if an OPeNDAP url is an on-prem or Hyrax-in-the-cloud url is to match the URL against this pattern: https://opendap.*.earthdata.nasa.gov/*. If the url matches, it is a Hyrax-in-the-cloud OPeNDAP url; if it does not match, it is an on-prem OPeNDAP url.
-The OPeNDAP url value provided in the granule bulk update request can be comma-separated urls, but it can have two at most: one is an on-prem url and the other is a Hyrax-in-the-cloud url. The exact url type is determined by matching the url against the same pattern above. During an update, the Hyrax-in-the-cloud url will overwrite any existing Hyrax-in-the-cloud OPeNDAP url in the granule metadata, and the on-prem url will overwrite any existing on-prem OPeNDAP url in the granule metadata.
-
-**operation: "UPDATE_FIELD", update-field: "S3Link"**
-supported metadata formats:
-  - S3 url in OnlineAccessURLs for ECHO10 format
-  - S3 url in RelatedUrls for UMM-G format
-
-The S3 url value provided in the granule bulk update request can be comma-separated urls. Each url must start with s3:// (case-sensitive). This lowercase s3:// naming convention is to make the s3 links compatible with AWS S3 API. During bulk update, the provided S3 urls in the request will overwrite any existing S3 links already in the granule metadata.
-
-Example: Add/update OPeNDAP url for 3 granules under PROV1.
-
-```
-curl -i -XPOST \
-  -H "Cmr-Pretty:true" \
-  -H "Content-Type: application/json"
-  -H "Echo-Token: XXXX" \
-  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
-  -d
-'{ "name": "example of adding OPeNDAP link",
-	"operation": "UPDATE_FIELD",
-	"update-field":"OPeNDAPLink",
-	"updates":[
-             ["granule_ur1", "https://via.placeholder.com/150"],
-             ["granule_ur2", "https://via.placeholder.com/160"],
-             ["granule_ur3", "https://via.placeholder.com/170,https://opendap.earthdata.nasa.gov/foo"]
-	]
-}'
-```
-
-Example granule bulk update response:
-```
-<?xml version="1.0" encoding="UTF-8"?>
-<result>
-    <status>200</status>
-    <task-id>5</task-id>
-</result>
 ```
 
 ### Query Granule Bulk Update Status
