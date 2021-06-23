@@ -1,0 +1,241 @@
+<Collection>
+    <ShortName>MODIS_A-JPL-L2P-v2019.0</ShortName>
+    <VersionId>2019.0</VersionId>
+    <InsertTime>2019-12-02T22:59:24.849Z</InsertTime>
+    <LastUpdate>2019-12-02T22:59:24.849Z</LastUpdate>
+    <LongName>Not provided</LongName>
+    <DataSetId>GHRSST Level 2P Global Sea Surface Skin Temperature from the Moderate Resolution Imaging Spectroradiometer (MODIS) on the NASA Aqua satellite (GDS2)</DataSetId>
+    <Description>NASA produces skin sea surface temperature (SST) products from the Infrared (IR) channels of the Moderate-resolution Imaging Spectroradiometer (MODIS) onboard the Aqua satellite. Aqua was launched by NASA on May 4, 2002, into a sun synchronous, polar orbit with a daylight ascending node at 1:30 pm, formation flying in the A-train with other Earth Observation Satellites (EOS), to study the global dynamics of the Earth atmosphere, land and oceans. MODIS captures data in 36 spectral bands at a variety of spatial resolutions.  Two SST products can be present in these files. The first is a skin SST produced for both day and night (NSST) observations, derived from the long wave IR 11 and 12 micron wavelength channels, using a modified nonlinear SST algorithm intended to provide continuity of SST derived from heritage and current NASA sensors. At night, a second SST product is generated using the mid-infrared 3.95 and 4.05 micron  wavelength channels which are unique to MODIS; the SST derived from these measurements is identified as SST4. The SST4 product has lower uncertainty, but due to sun glint can only be used at night. MODIS L2P SST data have a 1 km spatial resolution at nadir and are stored in 288 five minute granules per day. Full global coverage is obtained every two days, with coverage poleward of 32.3 degree being complete each day.  The production of MODIS L2P SST files is part of the Group for High Resolution Sea Surface Temperature (GHRSST) project and is a joint collaboration between the NASA Jet Propulsion Laboratory (JPL), the NASA Ocean Biology Processing Group (OBPG), and the Rosenstiel School of Marine and Atmospheric Science (RSMAS). Researchers at RSMAS are responsible for SST algorithm development, error statistics and quality flagging, while the OBPG, as the NASA ground data system, is responsible for the production of daily MODIS ocean products. JPL acquires MODIS ocean granules from the OBPG and reformats them to the GHRSST L2P netCDF specification with complete metadata and ancillary variables, and distributes the data as the official Physical Oceanography Data Archive (PO.DAAC) for SST.  The R2019.0 supersedes the previous R2014.0 datasets which can be found athttps://doi.org/10.5067/GHMDA-2PJ02</Description>
+    <DOI>
+        <DOI>10.5067/GHMDA-2PJ19</DOI>
+    </DOI>
+    <RevisionDate>2020-07-27T20:48:00.000Z</RevisionDate>
+    <ProcessingCenter>NASA/JPL/AQUARIUS</ProcessingCenter>
+    <ProcessingLevelId>2</ProcessingLevelId>
+    <ArchiveCenter>NASA/JPL/PODAAC</ArchiveCenter>
+    <CitationForExternalPublication>JPL/OBPG/RSMAS, Jet Propulsion Laboratory, 2020-01-15, GHRSST Level 2P Global Sea Surface Skin Temperature from the Moderate Resolution Imaging Spectroradiometer (MODIS) on the NASA Aqua satellite (GDS2), 10.5067/GHMDA-2PJ19, Information on the the MODIS SST algorithm can be found in the following documents: http://modis.gsfc.nasa.gov/data/atbd/atbd_mod25.pdf and http://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/</CitationForExternalPublication>
+    <CollectionState>ACTIVE</CollectionState>
+    <RestrictionFlag>10</RestrictionFlag>
+    <RestrictionComment>Testing</RestrictionComment>
+    <DataFormat>NETCDF</DataFormat>
+    <SpatialKeywords>
+        <Keyword>GLOBAL</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <EndsAtPresentFlag>false</EndsAtPresentFlag>
+        <RangeDateTime>
+            <BeginningDateTime>2002-07-04T00:00:00.000Z</BeginningDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>PROCESSOR</Role>
+            <OrganizationName>NASA/JPL/AQUARIUS</OrganizationName>
+        </Contact>
+        <Contact>
+            <Role>ARCHIVER</Role>
+            <OrganizationName>NASA/JPL/PODAAC</OrganizationName>
+        </Contact>
+        <Contact>
+            <Role>ARCHIVER</Role>
+            <OrganizationName>NASA/JPL/RDC</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>305-421-4615</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>KKilpatrick@rsmas.miami.edu</Email>
+            </OrganizationEmails>
+        </Contact>
+        <Contact>
+            <Role>ARCHIVER</Role>
+            <OrganizationName>NASA/JPL/PODAAC</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>818-393-6710</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>edward.m.armstrong@jpl.nasa.gov</Email>
+            </OrganizationEmails>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>OCEAN TEMPERATURE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SEA SURFACE TEMPERATURE</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>SEA SURFACE SKIN TEMPERATURE</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>Aqua</ShortName>
+            <LongName>Earth Observing System, AQUA</LongName>
+            <Type>SPACECRAFT</Type>
+            <Characteristics>
+                <Characteristic>
+                    <Name>OrbitPeriod</Name>
+                    <Description>Nominal period of a spacecraft?s single revolution on an orbital plane.</Description>
+                    <DataType>FLOAT</DataType>
+                    <Unit>Minutes</Unit>
+                    <Value>98.4</Value>
+                </Characteristic>
+                <Characteristic>
+                    <Name>InclinationAngle</Name>
+                    <Description>Spacecraft angular distance from orbital plane relative to the Equator.</Description>
+                    <DataType>FLOAT</DataType>
+                    <Unit>Degrees</Unit>
+                    <Value>98.1</Value>
+                </Characteristic>
+            </Characteristics>
+            <Instruments>
+                <Instrument>
+                    <ShortName>MODIS</ShortName>
+                    <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                    <Characteristics>
+                        <Characteristic>
+                            <Name>SwathWidth</Name>
+                            <Description>Spacecraft angular distance from orbital plane relative to the Equator.</Description>
+                            <DataType>FLOAT</DataType>
+                            <Unit>Meters</Unit>
+                            <Value>2330.0</Value>
+                        </Characteristic>
+                    </Characteristics>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <Campaigns>
+        <Campaign>
+            <ShortName>GHRSST</ShortName>
+        </Campaign>
+    </Campaigns>
+    <SpatialInfo>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalCoordinateSystem>
+            <GeodeticModel>
+                <HorizontalDatumName>World Geodetic System 1984</HorizontalDatumName>
+                <EllipsoidName>WGS 84</EllipsoidName>
+                <SemiMajorAxis>6378137</SemiMajorAxis>
+                <DenominatorOfFlatteningRatio>298.2572236</DenominatorOfFlatteningRatio>
+            </GeodeticModel>
+            <GeographicCoordinateSystem>
+                <GeographicCoordinateUnits>Meters</GeographicCoordinateUnits>
+                <LatitudeResolution>5</LatitudeResolution>
+                <LongitudeResolution>5</LongitudeResolution>
+            </GeographicCoordinateSystem>
+        </HorizontalCoordinateSystem>
+    </SpatialInfo>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>https://data.nodc.noaa.gov/ghrsst/GDS2/L2P/MODIS_A/JPL/v2019.0</URL>
+            <URLDescription>The HTTP location for the collection.</URLDescription>
+            <MimeType>text/html</MimeType>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>https://podaac-tools.jpl.nasa.gov/drive/files/allData/ghrsst/data/GDS2/L2P/MODIS_A/JPL/v2019.0</URL>
+            <URLDescription>The HTTP location for the collection.</URLDescription>
+            <MimeType>text/html</MimeType>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>https://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-GHMDA-2PJ19</URL>
+            <URLDescription>(Search Granule)</URLDescription>
+            <MimeType>application/xml</MimeType>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>https://oceancolor.gsfc.nasa.gov/atbd/sst4/</URL>
+            <Type>VIEW RELATED INFORMATION : GENERAL DOCUMENTATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>/data/export/web/thumbnails</URL>
+            <Description>Thumbnail image for Website</Description>
+            <Type>VIEW RELATED INFORMATION : GENERAL DOCUMENTATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://oceancolor.gsfc.nasa.gov/reprocessing/r2019/sst/</URL>
+            <Type>VIEW RELATED INFORMATION : GENERAL DOCUMENTATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://www.ghrsst.org</URL>
+            <Type>CollectionURL : PROJECT HOME PAGE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://podaac.jpl.nasa.gov/forum/viewforum.php?f=18&amp;sid=e2d67e5a01815fc6e39fcd2087ed8bc8</URL>
+            <Type>VIEW RELATED INFORMATION : GENERAL DOCUMENTATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://ghrsst.jpl.nasa.gov</URL>
+            <Type>VIEW RELATED INFORMATION : GENERAL DOCUMENTATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://podaac-tools.jpl.nasa.gov/drive/files/OceanTemperature/ghrsst/docs/GDS20r5.pdf</URL>
+            <Description>Documentation on the GDS version 2 format specification</Description>
+            <Type>VIEW RELATED INFORMATION : USER'S GUIDE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://podaac-tools.jpl.nasa.gov/soto/</URL>
+            <Description>Select (Sea Surface Temperature - Infrared)</Description>
+            <Type>DistributionURL : GOTO WEB TOOL</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://oceancolor.gsfc.nasa.gov/atbd/sst/flag/</URL>
+            <Type>VIEW RELATED INFORMATION : GENERAL DOCUMENTATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://modis.gsfc.nasa.gov/data/atbd/atbd_mod25.pdf</URL>
+            <Type>VIEW RELATED INFORMATION : GENERAL DOCUMENTATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://podaac-tools.jpl.nasa.gov/hitide/</URL>
+            <Description>HIgh-level Tool for Interactive Data Extraction</Description>
+            <Type>DistributionURL : GOTO WEB TOOL</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://oceancolor.gsfc.nasa.gov/atbd/sst/</URL>
+            <Type>VIEW RELATED INFORMATION : GENERAL DOCUMENTATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://podaac-tools.jpl.nasa.gov/drive/files/allData/ghrsst/sw/generic_nc_readers/</URL>
+            <Type>DistributionURL : DOWNLOAD SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://doi.org/10.5067/GHMDA-2PJ19</URL>
+            <Description>Access the data set landing page for the collection.</Description>
+            <Type>CollectionURL : DATA SET LANDING PAGE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L2P/MODIS_A/JPL/v2019.0/</URL>
+            <Description>The OPeNDAP base directory location for the collection.</Description>
+            <Type>VIEW RELATED INFORMATION : GENERAL DOCUMENTATION</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://github.com/podaac/tutorials/tree/master/notebooks/harmony%20subsetting</URL>
+            <Description>L2 Subsetting via Harmony Notebook</Description>
+            <Type>VIEW RELATED INFORMATION : DATA RECIPE</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>90.0</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-90.0</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

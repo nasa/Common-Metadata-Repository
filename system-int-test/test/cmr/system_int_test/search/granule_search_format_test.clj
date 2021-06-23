@@ -38,6 +38,27 @@
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
     (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})))
 
+(deftest simple-search-test-for-gran-echo-1.6.3-schema
+  (let [coll-7340 (d/ingest-concept-with-metadata-file "CMR-7340/Coll-CMR-7340.echo10"
+                                                  {:provider-id "PROV1"
+                                                   :concept-type :collection
+                                                   :native-id "echo10-collection"
+                                                   :format-key :echo10})
+        ;; This granule contains additional file added in the new schema
+        gran-7340 (d/ingest-concept-with-metadata-file "CMR-7340/Gran-CMR-7340.echo10"
+                                                     {:provider-id "PROV1"
+                                                      :concept-type :granule
+                                                      :native-id "echo10-granule"
+                                                      :format-key :echo10})]
+    (index/wait-until-indexed)
+    (let [params {:concept-id (:concept-id gran-7340)}
+          options {:accept nil
+                   :url-extension "native"}
+          format-key :echo10
+          response (search/find-metadata :granule format-key params options)]
+      (is (= 1 (count (:items response))))
+      (is (= (:concept-id (first (:items response))) (:concept-id gran-7340))))))
+
 (deftest simple-search-test
   (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
         g1-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g1"
