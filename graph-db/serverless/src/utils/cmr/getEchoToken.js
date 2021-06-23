@@ -19,7 +19,7 @@ export const getEchoToken = async () => {
       `/${process.env.ENVIRONMENT}/graph-db/${process.env.CMR_TOKEN_KEY}`
     )
   } catch (error) {
-    console.warn(`Could not get ECHO token: ${error}`)
+    console.error(`Could not get ECHO token: ${error}`)
 
     token = null
   }

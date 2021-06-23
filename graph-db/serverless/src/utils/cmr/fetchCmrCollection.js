@@ -19,7 +19,7 @@ export const fetchCmrCollection = async (conceptId, token) => {
   })
     .then((request) => request.json())
     .catch((error) => {
-      console.log(`Could not complete request due to error: ${error}`)
+      console.error(`Could not complete request due to error: ${error}`)
       return null
     })
 
