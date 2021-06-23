@@ -72,9 +72,14 @@ npm install
 ```
 
 ### Run
-To invoke the bootstrap-local function and load data into a local Gremlin server from the CMR run the following command:
+The bootstrap-local function can be invoked to load data into a local Gremlin server from CMR (by default, the UAT environment). E.g.
 ```
 npm run bootstrap-local
+```
+
+The bootstrap-wss function can be invoked to load data into a remote Gremlin server from CMR (by default, the UAT environment). A SSH tunnel should be established to localhost:8182 beforehand. Make sure to update the TOKEN environment variable to the correct token value before running. E.g.
+```
+npm run bootstrap-wss
 ```
 
 ### Test
