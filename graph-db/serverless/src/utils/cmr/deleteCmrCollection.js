@@ -22,7 +22,7 @@ export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
       .drop()
       .next()
   } catch (error) {
-    console.log(`Error deleting documentation vertices only linked to collection [${conceptId}]: ${error.message}`)
+    console.error(`Error deleting documentation vertices only linked to collection [${conceptId}]: ${error.message}`)
 
     return false
   }
@@ -35,7 +35,7 @@ export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
       .drop()
       .next()
   } catch (error) {
-    console.log(`Error deleting dataset vertex for collection [${conceptId}]: ${error.message}`)
+    console.error(`Error deleting dataset vertex for collection [${conceptId}]: ${error.message}`)
 
     return false
   }

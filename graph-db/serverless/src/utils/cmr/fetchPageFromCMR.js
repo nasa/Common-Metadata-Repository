@@ -2,6 +2,8 @@ import fetch from 'node-fetch'
 
 import { indexPageOfCmrResults } from './indexPageOfCmrResults'
 
+let scrollNum = 0
+
 /**
  * Fetch a page of collections from CMR search endpoint and initiate or continue scroll request
  * @param {String} scrollId An optional scroll-id given from the CMR
@@ -10,6 +12,9 @@ import { indexPageOfCmrResults } from './indexPageOfCmrResults'
  */
 export const fetchPageFromCMR = async (scrollId, token, gremlinConnection) => {
   const requestHeaders = {}
+
+  scrollNum += 1
+  console.log(`Fetch collections from CMR, scroll #${scrollNum}`)
 
   if (token) {
     requestHeaders['Echo-Token'] = token
@@ -25,10 +30,7 @@ export const fetchPageFromCMR = async (scrollId, token, gremlinConnection) => {
       headers: requestHeaders
     })
 
-    const { headers = {} } = cmrCollections;
-
-    // eslint-disable-next-line no-param-reassign
-    ({ 'CMR-Scroll-Id': scrollId } = headers)
+    const { 'cmr-scroll-id': cmrScrollId } = cmrCollections.headers.raw()
 
     const collectionsJson = await cmrCollections.json()
 
@@ -37,11 +39,11 @@ export const fetchPageFromCMR = async (scrollId, token, gremlinConnection) => {
     await indexPageOfCmrResults(items, gremlinConnection)
 
     // If we have an active scrollId and there are more results
-    if (scrollId && items.length === parseInt(process.env.PAGE_SIZE, 10)) {
-      fetchPageFromCMR(scrollId, token, gremlinConnection)
+    if (cmrScrollId && items.length === parseInt(process.env.PAGE_SIZE, 10)) {
+      await fetchPageFromCMR(cmrScrollId, token, gremlinConnection)
     }
   } catch (e) {
-    console.log(`Could not complete request due to error: ${e}`)
+    console.error(`Could not complete request due to error: ${e}`)
   }
 
   return scrollId

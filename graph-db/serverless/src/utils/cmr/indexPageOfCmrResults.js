@@ -15,7 +15,7 @@ export const indexPageOfCmrResults = async (results, gremlin) => {
       const { meta } = result
       const { 'concept-id': conceptId } = meta
 
-      console.warn(`Could not index concept [${conceptId}] into Graph database due to error: ${error}`)
+      console.error(`Could not index concept [${conceptId}] into Graph database due to error: ${error}`)
     }
   })
 }

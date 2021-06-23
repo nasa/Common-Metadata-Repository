@@ -19,7 +19,7 @@ export const clearScrollSession = async (scrollId) => {
   })
     .then((res) => res.status)
     .catch((error) => {
-      console.warn(`Could not clear scroll session [${scrollId}] due to error: ${error}`)
+      console.error(`Could not clear scroll session [${scrollId}] due to error: ${error}`)
       return null
     })
 
