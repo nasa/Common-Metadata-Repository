@@ -9,7 +9,8 @@
     "test:watch": "jest -i --watchAll",
     "test-coverage": "jest --coverage",
     "ci-test": "jest -i --reporters=\"default\" --reporters=\"jest-junit\"",
-    "bootstrap-local": "serverless invoke local -f bootstrapGremlinServer -e CMR_ROOT=\"https://cmr.uat.earthdata.nasa.gov\" -e PAGE_SIZE=2000 -e GREMLIN_URL=\"ws://localhost:8182/gremlin\" --stage=sit",
+    "bootstrap-local": "serverless invoke local -f bootstrapGremlinServer --path local-bootstrap.json -e CMR_ROOT=\"https://cmr.uat.earthdata.nasa.gov\" -e PAGE_SIZE=2000 -e GREMLIN_URL=\"ws://localhost:8182/gremlin\" --stage=sit",
+    "bootstrap-wss": "serverless invoke local -f bootstrapGremlinServer --path local-bootstrap.json -e TOKEN=\"replace_with_token_for_CMR_ROOT\" -e CMR_ROOT=\"https://cmr.uat.earthdata.nasa.gov\" -e PAGE_SIZE=20 -e GREMLIN_URL=\"wss://localhost:8182/gremlin\" --stage=sit",
     "deploy": "./node_modules/.bin/sls deploy --config serverless.yml"
   },
   "maintainers": [

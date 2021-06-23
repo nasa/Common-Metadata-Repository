@@ -6,7 +6,7 @@ import { initializeGremlinConnection } from '../utils/gremlin/initializeGremlinC
 let gremlinConnection
 let token
 
-const bootstrapGremlinServer = async () => {
+const bootstrapGremlinServer = async (event) => {
   // Prevent creating more tokens than necessary
   if (!token) {
     token = await getEchoToken()
@@ -17,9 +17,15 @@ const bootstrapGremlinServer = async () => {
     gremlinConnection = initializeGremlinConnection()
   }
 
+  const { Records: bootstrapEvents = ['{}'] } = event
+
+  const { body } = bootstrapEvents[0]
+
+  const { 'provider-id': providerId = null } = JSON.parse(body)
+
   // Fetch all CMR Collections and index each page, utlimately returning the scroll session
   // id if once was created
-  const scrollId = await fetchPageFromCMR(null, token, gremlinConnection)
+  const scrollId = await fetchPageFromCMR(null, token, gremlinConnection, providerId)
 
   // If a scroll session was created we need to inform CMR that we are done with it
   if (scrollId) {

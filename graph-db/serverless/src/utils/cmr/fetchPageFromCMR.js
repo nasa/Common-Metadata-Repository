@@ -8,9 +8,10 @@ let scrollNum = 0
  * Fetch a page of collections from CMR search endpoint and initiate or continue scroll request
  * @param {String} scrollId An optional scroll-id given from the CMR
  * @param {String} token An optional Echo Token
+ * @param {String} providerId CMR provider id whose collections to bootstrap, null means all providers.
  * @returns [{JSON}] An array of UMM JSON collection results
  */
-export const fetchPageFromCMR = async (scrollId, token, gremlinConnection) => {
+export const fetchPageFromCMR = async (scrollId, token, gremlinConnection, providerId) => {
   const requestHeaders = {}
 
   scrollNum += 1
@@ -24,8 +25,14 @@ export const fetchPageFromCMR = async (scrollId, token, gremlinConnection) => {
     requestHeaders['CMR-Scroll-Id'] = scrollId
   }
 
+  let fetchUrl = `${process.env.CMR_ROOT}/search/collections.umm_json?page_size=${process.env.PAGE_SIZE}&scroll=true`
+
+  if (providerId !== null) {
+    fetchUrl += `&provider=${providerId}`
+  }
+
   try {
-    const cmrCollections = await fetch(`${process.env.CMR_ROOT}/search/collections.umm_json?page_size=${process.env.PAGE_SIZE}&scroll=true`, {
+    const cmrCollections = await fetch(fetchUrl, {
       method: 'GET',
       headers: requestHeaders
     })
@@ -40,7 +47,7 @@ export const fetchPageFromCMR = async (scrollId, token, gremlinConnection) => {
 
     // If we have an active scrollId and there are more results
     if (cmrScrollId && items.length === parseInt(process.env.PAGE_SIZE, 10)) {
-      await fetchPageFromCMR(cmrScrollId, token, gremlinConnection)
+      await fetchPageFromCMR(cmrScrollId, token, gremlinConnection, providerId)
     }
   } catch (e) {
     console.error(`Could not complete request due to error: ${e}`)

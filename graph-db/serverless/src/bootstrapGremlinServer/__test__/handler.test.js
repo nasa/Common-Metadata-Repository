@@ -6,6 +6,8 @@ import * as getEchoToken from '../../utils/cmr/getEchoToken'
 
 import { verifyExistInGraphDb } from '../../testUtil/verifyGraphDb'
 
+const event = { Records: [{ body: '{}' }] }
+
 describe('bootstrapGremlinServer handler', () => {
   describe('When the response from CMR is an error', () => {
     test('throws an exception', async () => {
@@ -19,7 +21,7 @@ describe('bootstrapGremlinServer handler', () => {
 
       jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => null)
 
-      const response = await bootstrapGremlinServer()
+      const response = await bootstrapGremlinServer(event)
 
       const { body, statusCode } = response
 
@@ -251,7 +253,7 @@ describe('bootstrapGremlinServer handler', () => {
 
     jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => null)
 
-    const response = await bootstrapGremlinServer()
+    const response = await bootstrapGremlinServer(event)
     const { body, statusCode } = response
 
     expect(body).toBe('Indexing completed')

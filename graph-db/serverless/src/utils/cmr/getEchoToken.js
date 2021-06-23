@@ -9,7 +9,12 @@ export const getEchoToken = async () => {
   const { env: { IS_LOCAL } } = process
 
   if (IS_LOCAL === 'true') {
-    return null
+    let localToken = process.env.TOKEN
+    if (localToken === undefined) {
+      localToken = null
+    }
+
+    return localToken
   }
 
   let token

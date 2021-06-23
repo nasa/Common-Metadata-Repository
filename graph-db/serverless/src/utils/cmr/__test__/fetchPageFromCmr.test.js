@@ -21,7 +21,7 @@ describe('fetchPageFromCMR', () => {
 
     const pageOfCmrResultsMock = jest.spyOn(indexPageOfCmrResults, 'indexPageOfCmrResults')
 
-    await fetchPageFromCMR(null, null, global.testGremlinConnection)
+    await fetchPageFromCMR(null, null, global.testGremlinConnection, null)
 
     expect(pageOfCmrResultsMock).toBeCalledTimes(1)
   })
@@ -62,7 +62,7 @@ describe('fetchPageFromCMR', () => {
 
     const pageOfCmrResultsMock = jest.spyOn(indexPageOfCmrResults, 'indexPageOfCmrResults')
 
-    await fetchPageFromCMR(null, null, global.testGremlinConnection)
+    await fetchPageFromCMR(null, null, global.testGremlinConnection, null)
 
     expect(pageOfCmrResultsMock).toBeCalledTimes(1)
   })
@@ -103,7 +103,7 @@ describe('fetchPageFromCMR', () => {
 
     const pageOfCmrResultsMock = jest.spyOn(indexPageOfCmrResults, 'indexPageOfCmrResults')
 
-    await fetchPageFromCMR('fake-scroll-id', 'SUPER-SECRET-TOKEN', global.testGremlinConnection)
+    await fetchPageFromCMR('fake-scroll-id', 'SUPER-SECRET-TOKEN', global.testGremlinConnection, null)
 
     expect(pageOfCmrResultsMock).toBeCalledTimes(1)
   })
@@ -117,7 +117,7 @@ describe('fetchPageFromCMR', () => {
 
     const pageOfCmrResultsMock = jest.spyOn(indexPageOfCmrResults, 'indexPageOfCmrResults')
 
-    await fetchPageFromCMR(null, null, global.testGremlinConnection)
+    await fetchPageFromCMR(null, null, global.testGremlinConnection, null)
 
     expect(pageOfCmrResultsMock).toBeCalledTimes(1)
   })
