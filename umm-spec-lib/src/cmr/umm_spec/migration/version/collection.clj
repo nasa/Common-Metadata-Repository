@@ -447,7 +447,7 @@
 (defn- remove-1-16-4-urls
   [related-urls]
   (let [sans ["HITIDE", "SOTO", "Sub-Orbital Order Tool", "CERES Ordering Tool"]]
-    (into [] (remove #(not (= nil (some #{(:Subtype %)} sans))) related-urls))))
+    (into [] (remove #(some? (some #{(:Subtype %)} sans)) related-urls))))
 
 (defmethod interface/migrate-umm-version [:collection "1.16.4" "1.16.3"]
   [context collection & _]
