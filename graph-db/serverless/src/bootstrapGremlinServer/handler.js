@@ -39,6 +39,8 @@ const bootstrapGremlinServer = async (event) => {
     closeGremlinConnection()
   }
 
+  console.log('Bootstrap completed.')
+
   return {
     isBase64Encoded: false,
     statusCode: 200,
