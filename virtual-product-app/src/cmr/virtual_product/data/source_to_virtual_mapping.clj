@@ -274,11 +274,16 @@
   "Compute source granule ur from the virtual granule ur. This function should be the inverse
   of generate-granule-ur."
   (fn [provider-id source-short-name virtual-short-name virtual-granule-ur]
-    [provider-id source-short-name]))
+    [(provider-alias->provider-id provider-id) source-short-name]))
 
 (defmethod compute-source-granule-ur :default
   [provider-id source-short-name virtual-short-name virtual-granule-ur]
   (str/replace-first virtual-granule-ur virtual-short-name source-short-name))
+
+(defmethod compute-source-granule-ur ["LPDAAC_ECS" "AST_L1A"]
+  [provider-id source-short-name virtual-short-name virtual-granule-ur]
+  (as-> (str/replace-first virtual-granule-ur virtual-short-name source-short-name) virtual-granule-ur
+        (str/replace-first virtual-granule-ur #"\.\d\d\d:" ".003:")))
 
 (defn- update-core-fields
   "Update the core set of fields in the source granule umm to create the virtual granule umm. These
