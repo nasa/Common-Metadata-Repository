@@ -6,16 +6,12 @@ const { Graph } = gremlin.structure
 let connection
 let driverRC
 
-export const driverRemoteConnection = () => {
+export const closeGremlinConnection = () => {
   if (driverRC) {
-    return driverRC
+    driverRC.close()
+    driverRC = null
+    connection = null
   }
-
-  const gremlinUrl = process.env.GREMLIN_URL
-
-  driverRC = new DriverRemoteConnection(gremlinUrl, {})
-
-  return driverRC
 }
 
 /**
@@ -27,7 +23,9 @@ export const initializeGremlinConnection = () => {
     return connection
   }
 
-  driverRC = driverRemoteConnection()
+  const gremlinUrl = process.env.GREMLIN_URL
+
+  driverRC = new DriverRemoteConnection(gremlinUrl, {})
 
   const graph = new Graph()
   connection = graph.traversal().withRemote(driverRC)

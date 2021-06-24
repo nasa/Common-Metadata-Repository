@@ -1,6 +1,6 @@
 import nock from 'nock'
 
-import { driverRemoteConnection, initializeGremlinConnection } from './serverless/src/utils/gremlin/initializeGremlinConnection'
+import { closeGremlinConnection, initializeGremlinConnection } from './serverless/src/utils/gremlin/initializeGremlinConnection'
 
 process.env.PAGE_SIZE = 1
 process.env.IS_LOCAL = true
@@ -22,5 +22,5 @@ global.beforeEach(async () => {
 
 afterAll(() => {
   // Closing the DB connection allows Jest to exit successfully.
-  driverRemoteConnection().close()
+  closeGremlinConnection()
 })
