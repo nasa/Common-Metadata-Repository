@@ -1,8 +1,7 @@
-import AWS from 'aws-sdk'
 import fetch from 'node-fetch'
+import 'array-foreach-async'
 
-// AWS SQS adapter
-let sqs
+import { chunkArray } from '../chunkArray'
 
 /**
  * Fetch a page of collections from CMR search endpoint and initiate or continue scroll request
@@ -12,12 +11,15 @@ let sqs
  * @param {String} providerId CMR provider id whose collections to bootstrap, null means all providers.
  * @returns [{JSON}] An array of UMM JSON collection results
  */
-export const fetchPageFromCMR = async (scrollId, token, gremlinConnection, providerId, scrollNum = 0) => {
+export const fetchPageFromCMR = async ({
+  scrollId,
+  token,
+  gremlinConnection,
+  providerId,
+  scrollNum = 0,
+  sqs
+}) => {
   const requestHeaders = {}
-
-  if (sqs == null) {
-    sqs = new AWS.SQS(getSqsConfig())
-  }
 
   console.log(`Fetch collections from CMR, scroll #${scrollNum}`)
 
@@ -29,7 +31,7 @@ export const fetchPageFromCMR = async (scrollId, token, gremlinConnection, provi
     requestHeaders['CMR-Scroll-Id'] = scrollId
   }
 
-  let fetchUrl = `${process.env.CMR_ROOT}/search/collections.umm_json?page_size=${process.env.PAGE_SIZE}&scroll=true`
+  let fetchUrl = `${process.env.CMR_ROOT}/search/collections.json?page_size=${process.env.PAGE_SIZE}&scroll=true`
 
   if (providerId !== null) {
     fetchUrl += `&provider=${providerId}`
@@ -45,25 +47,41 @@ export const fetchPageFromCMR = async (scrollId, token, gremlinConnection, provi
 
     const collectionsJson = await cmrCollections.json()
 
-    const { items = [] } = collectionsJson
+    const { feed = {} } = collectionsJson
+    const { entry = [] } = feed
 
-    items.forEachAsync((collection) => {
-      const { meta } = collection
-      const { 'concept-id': conceptId, 'revision-id': revisionId } = meta
+    const chunkedItems = chunkArray(entry, 10)
 
-      await sqs.sendMessage({
-        QueueUrl: process.env.COLLECTION_INDEXING_QUEUE_URL,
-        MessageBody: JSON.stringify({
-          action: 'concept-update',
-          'concept-id': conceptId,
-          'revision-id': revisionId
+    if (chunkedItems.length !== 0) {
+      await chunkedItems.forEachAsync(async (chunk) => {
+        const sqsEntries = []
+        chunk.forEach((collection) => {
+          const { id: conceptId } = collection
+          sqsEntries.push({
+            Id: conceptId,
+            MessageBody: JSON.stringify({
+              action: 'concept-update',
+              'concept-id': conceptId
+            })
+          })
         })
-      }).promise()
-    })
 
+        await sqs.sendMessageBatch({
+          QueueUrl: process.env.COLLECTION_INDEXING_QUEUE_URL,
+          Entries: sqsEntries
+        }).promise()
+      })
+    }
     // If we have an active scrollId and there are more results
-    if (cmrScrollId && items.length === parseInt(process.env.PAGE_SIZE, 10)) {
-      await fetchPageFromCMR(cmrScrollId, token, gremlinConnection, providerId, (scrollNum + 1))
+    if (cmrScrollId && entry.length === parseInt(process.env.PAGE_SIZE, 10)) {
+      await fetchPageFromCMR({
+        scrollId: cmrScrollId,
+        token,
+        gremlinConnection,
+        providerId,
+        scrollNum: (scrollNum + 1),
+        sqs
+      })
     }
   } catch (e) {
     console.error(`Could not complete request due to error: ${e}`)

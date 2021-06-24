@@ -1,3 +1,5 @@
+import 'array-foreach-async'
+
 import { fetchCmrCollection } from '../utils/cmr/fetchCmrCollection'
 import { getConceptType } from '../utils/cmr/getConceptType'
 import { getEchoToken } from '../utils/cmr/getEchoToken'

@@ -1,5 +1,7 @@
 import nock from 'nock'
 
+import AWS from 'aws-sdk'
+
 import bootstrapGremlinServer from '../handler'
 
 import * as getEchoToken from '../../utils/cmr/getEchoToken'
@@ -21,6 +23,15 @@ describe('bootstrapGremlinServer handler', () => {
 
       jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => null)
 
+      const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
+        promise: jest.fn().mockResolvedValue()
+      })
+
+      AWS.SQS = jest.fn()
+        .mockImplementationOnce(() => ({
+          sendMessageBatch: sqsCollectionIndexingQueue
+        }))
+
       const response = await bootstrapGremlinServer(event)
 
       const { body, statusCode } = response
@@ -35,223 +46,56 @@ describe('bootstrapGremlinServer handler', () => {
     nock(/local-cmr/)
       .get(/collections/)
       .reply(200, {
-        hits: 1,
-        took: 6,
-        items: [
-          {
-            meta: {
-              'revision-id': 5,
-              deleted: false,
-              format: 'application/dif10+xml',
-              'concept-id': 'C1237293909-SCIOPSTEST'
+        feed: {
+          updated: '2021-06-24T17:06:22.292Z',
+          id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&scroll=true&page_size=1&pretty=true',
+          title: 'ECHO dataset metadata',
+          entry: [{
+            time_start: '1999-12-18T00:00:00.000Z',
+            boxes: ['-83 -180 83 180'],
+            online_access_flag: true,
+            has_transforms: true,
+            id: 'C1216257563-LPDAAC_TS1',
+            associations: {
+              services: ['S1224343297-LPDAAC_TS1']
             },
-            umm: {
-              DataLanguage: 'eng',
-              AncillaryKeywords: [
-                'FOREST RESERVES',
-                'NATIONAL FOREST INVENTORY',
-                'NEAR-NATURAL FOREST',
-                'SWITZERLAND',
-                'TREE MORTALITY'
-              ],
-              CollectionCitations: [
-                {
-                  Creator: 'Jeanne Portier, Jan Wunder, Golo Stadelmann, Jürgen Zell, Meinrad Abegg, Esther Thürig, Brigitte Rohner',
-                  Editor: 'Fabrizio Cioldi',
-                  DataPresentationForm: '.csv,csv',
-                  OnlineResource: {
-                    Linkage: 'https://www.envidat.ch/dataset/latent-reserves-in-the-swiss-nfi'
-                  },
-                  Publisher: 'EnviDat',
-                  Title: 'Latent reserves within the Swiss NFI',
-                  ReleaseDate: '2020-01-01T00:00:00.000Z',
-                  Version: '1.0',
-                  ReleasePlace: 'Birmensdorf, Switzerland'
-                }
-              ],
-              SpatialExtent: {
-                HorizontalSpatialDomain: {
-                  Geometry: {
-                    CoordinateSystem: 'CARTESIAN',
-                    BoundingRectangles: [
-                      {
-                        WestBoundingCoordinate: 5.95587,
-                        NorthBoundingCoordinate: 47.80838,
-                        EastBoundingCoordinate: 10.49203,
-                        SouthBoundingCoordinate: 45.81802
-                      }
-                    ],
-                    GPolygons: [
-                      {
-                        Boundary: {
-                          Points: [
-                            {
-                              Longitude: 10.49203,
-                              Latitude: 45.81802
-                            },
-                            {
-                              Longitude: 10.49203,
-                              Latitude: 47.80838
-                            },
-                            {
-                              Longitude: 5.95587,
-                              Latitude: 47.80838
-                            },
-                            {
-                              Longitude: 5.95587,
-                              Latitude: 45.81802
-                            },
-                            {
-                              Longitude: 10.49203,
-                              Latitude: 45.81802
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                },
-                GranuleSpatialRepresentation: 'CARTESIAN'
-              },
-              CollectionProgress: 'COMPLETE',
-              ScienceKeywords: [
-                {
-                  Category: 'EARTH SCIENCE',
-                  Topic: 'BIOSPHERE',
-                  Term: 'FOREST SCIENCE',
-                  VariableLevel1: 'FOREST CONSERVATION'
-                }
-              ],
-              TemporalExtents: [
-                {
-                  EndsAtPresentFlag: false,
-                  SingleDateTimes: [
-                    '2020-01-01T00:00:00.000Z'
-                  ]
-                }
-              ],
-              ProcessingLevel: {
-                Id: 'Not provided'
-              },
-              DOI: {
-                DOI: 'doi:10.16904/envidat.166'
-              },
-              ShortName: 'latent-reserves-in-the-swiss-nfi',
-              EntryTitle: 'Latent reserves within the Swiss NFI',
-              ISOTopicCategories: [
-                'environment'
-              ],
-              AccessConstraints: {
-                Description: 'Access to the data upon request'
-              },
-              RelatedUrls: [
-                {
-                  URLContentType: 'VisualizationURL',
-                  Type: 'GET RELATED VISUALIZATION',
-                  URL: 'https://www.envidat.ch/envidat_thumbnail.png'
-                },
-                {
-                  URLContentType: 'PublicationURL',
-                  Type: 'VIEW RELATED INFORMATION',
-                  Subtype: 'GENERAL DOCUMENTATION',
-                  URL: 'https://www.envidat.ch/dataset/latent-reserves-in-the-swiss-nfi'
-                }
-              ],
-              DataDates: [
-                {
-                  Date: '2020-07-29T14:18:59.791Z',
-                  Type: 'CREATE'
-                },
-                {
-                  Date: '2021-02-04T04:39:30.512Z',
-                  Type: 'UPDATE'
-                }
-              ],
-              Abstract: "The files refer to the data used in Portier et al. \"‘Latent reserves’: a hidden treasure in National Forest Inventories\" (2020) *Journal of Ecology*.           **'Latent reserves'** are defined as plots in National Forest Inventories (NFI) that have been free of human influence for >40 to >70 years. They can be used to investigate and acquire a deeper understanding of attributes and processes of near-natural forests using existing long-term data. To determine which NFI sample plots could be considered ‘latent reserves’, criteria were defined based on the information available in the Swiss NFI database:           * Shrub forests were excluded.  * Plots must have been free of any kind of management, including salvage logging or sanitary cuts, for a minimum amount of time. Thresholds of 40, 50, 60 and 70 years without intervention were tested.  * To ensure that species composition was not influenced by past management, plots where potential vegetation was classified as deciduous by Ellenberg & Klötzli (1972) had to have an observed proportion of deciduous trees matching the theoretical proportion expected in a natural deciduous forest, as defined by Kienast, Brzeziecki, & Wildi (1994).  * Plots had to originate from natural regeneration.   * Intensive livestock grazing must never have occurred on the plots.          The tables stored here were derived from the first, second and third campaigns of the Swiss NFI. The raw data from the Swiss NFI can be provided free of charge within the scope of a contractual agreement (http://www.lfi.ch/dienstleist/daten-en.php).    ****    The files 'Data figure 2' to 'Data figure 8' are publicly available and contain the data used to produce the figures published in the paper.     The files 'Plot-level data for characterisation of 'latent reserves' and 'Tree-level data for characterisation of 'latent reserves' contain all the data required to reproduce the section of the article concerning the characterisation of 'latent reserves' and the comparison to managed forests. The file 'Data for mortality analyses' contains the data required to reproduce the section of the article concerning tree mortality in 'latent reserves'. The access to these three files is restricted as they contain some raw data from the Swiss NFI, submitted to the Swiss law and only accessible upon contractual agreement.   ",
-              MetadataDates: [
-                {
-                  Date: '2020-07-29T14:18:59.791Z',
-                  Type: 'CREATE'
-                },
-                {
-                  Date: '2021-02-04T04:39:30.512Z',
-                  Type: 'UPDATE'
-                }
-              ],
-              Version: '1.0',
-              UseConstraints: {
-                Description: 'Usage constraintes defined by the license "WSL Data Policy", see https://www.wsl.ch/en/about-wsl/programmes-and-initiatives/envidat.html'
-              },
-              ContactPersons: [
-                {
-                  Roles: [
-                    'Technical Contact'
-                  ],
-                  ContactInformation: {
-                    ContactMechanisms: [
-                      {
-                        Type: 'Email',
-                        Value: 'fabrizio.cioldi@wsl.ch'
-                      }
-                    ]
-                  },
-                  FirstName: 'Fabrizio',
-                  LastName: 'Cioldi'
-                }
-              ],
-              DataCenters: [
-                {
-                  Roles: [
-                    'DISTRIBUTOR'
-                  ],
-                  ShortName: 'WSL',
-                  LongName: 'Swiss Federal Institute for Forest, Snow and Landscape Research WSL',
-                  ContactGroups: [
-                    {
-                      Roles: [
-                        'Data Center Contact'
-                      ],
-                      ContactInformation: {
-                        ContactMechanisms: [
-                          {
-                            Type: 'Email',
-                            Value: 'envidat@wsl.ch'
-                          }
-                        ]
-                      },
-                      GroupName: 'EnviDat'
-                    }
-                  ],
-                  ContactInformation: {
-                    RelatedUrls: [
-                      {
-                        URLContentType: 'DataCenterURL',
-                        Type: 'HOME PAGE',
-                        URL: 'https://www.wsl.ch'
-                      }
-                    ]
-                  }
-                }
-              ],
-              Platforms: [
-                {
-                  ShortName: 'Not provided'
-                }
-              ]
-            }
-          }
-        ]
+            browse_flag: false,
+            has_temporal_subsetting: true,
+            summary: "The ASTER Digital Elevation Model (DEM) product is generated using bands 3N (nadir-viewing) and 3B (backward-viewing) of an ASTER Level-1A image acquired by the Visible Near Infrared (VNIR) sensor. The VNIR subsystem includes two independent telescope assemblies that facilitate the generation of stereoscopic data. The Band-3 stereo pair is acquired in the spectral range of 0.78 and 0.86 microns with a base-to-height ratio of 0.6 and an intersection angle of about 27.7. There is a time lag of approximately one minute between the acquisition of the nadir and backward images. \r\n\r\nStarting in early summer of 2006, LP DAAC has implemented a new production software for efficiently creating quality DEMs. Based on an automated stereo-correlation method, the new software generates a relative DEM without any ground control points (GCPs). It utilizes the ephemeris and attitude data derived from both the ASTER instrument and the Terra spacecraft platform. The new ASTER DEM is a single-band product with 30-meters horizontal postings that is geodetically referenced to the UTM coordinate system, and referenced to the Earth's geoid using the EGM96 geopotential model. Compared to ASTER DEMs previously available from the LP DAAC, users likely will note some differences in ASTER DEMs produced by the new system, because DEMs now are produced automatically, with no manual editing. Larger water bodies are detected and typically have a single value, but they no longer are manually edited. Any failed areas, while infrequent, remain as they occur. Cloudy areas typically appear as bright regions, rather than as manually edited dark areas.\r\n\r\nThe accuracy of the new LP DAAC-produced DEMs will meet or exceed accuracy specifications set for the ASTER relative DEMs by the applicable Algorithm Theoretical Basis Document (ATBD). Users likely will find that the DEMs produced by the new DAAC system have accuracies approaching those specified in the ATBD for absolute DEMs. Validation testing has shown that DEMs produced by the new system frequently are more accurate than 25 meters RMSExyz.\r\n\r\nV003 data set release date: 2002-05-03\r\n\r\nData Set Characteristics: \r\nArea: ~60 km x 60 km \r\nImage Dimensions: 2500 rows x 2500 columns \r\nFile Size: ~25 MB \r\nUnits: \r\nProjection: Universal Transverse Mercator (UTM) \r\nData Format: GeoTIFF\r\nVgroup Data Fields: 1",
+            coordinate_system: 'CARTESIAN',
+            original_format: 'UMM_JSON',
+            processing_level_id: '3',
+            data_center: 'LPDAAC_TS1',
+            has_spatial_subsetting: true,
+            archive_center: 'LP DAAC',
+            links: [{
+              rel: 'http://esipfed.org/ns/fedsearch/1.1/data#',
+              hreflang: 'en-US',
+              href: 'http://reverb.echo.nasa.gov/reverb/'
+            }]
+          }]
+        }
       })
 
     nock(/local-cmr/)
       .get(/collections/)
       .reply(200, {
-        hits: 0,
-        took: 6,
-        items: []
+        feed: {
+          title: 'ECHO dataset metadata',
+          entry: []
+        }
       })
 
     jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => null)
+
+    const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
+      promise: jest.fn().mockResolvedValue()
+    })
+
+    AWS.SQS = jest.fn()
+      .mockImplementationOnce(() => ({
+        sendMessageBatch: sqsCollectionIndexingQueue
+      }))
 
     const response = await bootstrapGremlinServer(event)
     const { body, statusCode } = response
@@ -259,6 +103,6 @@ describe('bootstrapGremlinServer handler', () => {
     expect(body).toBe('Indexing completed')
     expect(statusCode).toBe(200)
 
-    await verifyExistInGraphDb('Latent reserves within the Swiss NFI', 'https://www.envidat.ch/dataset/latent-reserves-in-the-swiss-nfi')
+    // await verifyExistInGraphDb('Latent reserves within the Swiss NFI', 'https://www.envidat.ch/dataset/latent-reserves-in-the-swiss-nfi')
   })
 })
