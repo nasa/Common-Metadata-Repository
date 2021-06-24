@@ -1,8 +1,8 @@
+import AWS from 'aws-sdk'
 import fetch from 'node-fetch'
 
-import { indexPageOfCmrResults } from './indexPageOfCmrResults'
-
-let scrollNum = 0
+// AWS SQS adapter
+let sqs
 
 /**
  * Fetch a page of collections from CMR search endpoint and initiate or continue scroll request
@@ -12,10 +12,13 @@ let scrollNum = 0
  * @param {String} providerId CMR provider id whose collections to bootstrap, null means all providers.
  * @returns [{JSON}] An array of UMM JSON collection results
  */
-export const fetchPageFromCMR = async (scrollId, token, gremlinConnection, providerId) => {
+export const fetchPageFromCMR = async (scrollId, token, gremlinConnection, providerId, scrollNum = 0) => {
   const requestHeaders = {}
 
-  scrollNum += 1
+  if (sqs == null) {
+    sqs = new AWS.SQS(getSqsConfig())
+  }
+
   console.log(`Fetch collections from CMR, scroll #${scrollNum}`)
 
   if (token) {
@@ -44,11 +47,23 @@ export const fetchPageFromCMR = async (scrollId, token, gremlinConnection, provi
 
     const { items = [] } = collectionsJson
 
-    await indexPageOfCmrResults(items, gremlinConnection)
+    items.forEachAsync((collection) => {
+      const { meta } = collection
+      const { 'concept-id': conceptId, 'revision-id': revisionId } = meta
+
+      await sqs.sendMessage({
+        QueueUrl: process.env.COLLECTION_INDEXING_QUEUE_URL,
+        MessageBody: JSON.stringify({
+          action: 'concept-update',
+          'concept-id': conceptId,
+          'revision-id': revisionId
+        })
+      }).promise()
+    })
 
     // If we have an active scrollId and there are more results
     if (cmrScrollId && items.length === parseInt(process.env.PAGE_SIZE, 10)) {
-      await fetchPageFromCMR(cmrScrollId, token, gremlinConnection, providerId)
+      await fetchPageFromCMR(cmrScrollId, token, gremlinConnection, providerId, (scrollNum + 1))
     }
   } catch (e) {
     console.error(`Could not complete request due to error: ${e}`)
