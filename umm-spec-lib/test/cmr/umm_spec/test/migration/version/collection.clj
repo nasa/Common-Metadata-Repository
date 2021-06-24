@@ -2747,3 +2747,75 @@
     "Testing when no related urls exist."
     nil
     {}))
+
+;; 1.16.4 related tests ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def expected-related-urls-1-16-4
+  {:RelatedUrls [{:Description "Related URL that should stay"
+                  :URL "https://example.gov/earthdata-link-01"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "ECHO"
+                  :GetData {:Format "binary" :Size 10.0 :Unit "MB" :Fees "fees"}}]})
+
+(def related-urls-1-16-4
+  {:RelatedUrls [{:Description "Related URL that should stay"
+                  :URL "https://example.gov/earthdata-link-01"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "ECHO"
+                  :GetData {:Format "binary" :Size 10.0 :Unit "MB" :Fees "fees"}}
+                 {:Description "HITIDE - 1.16.4 specific URL"
+                  :URL "https://example.gov/hitide"
+                  :URLContentType "DistributionURL"
+                  :Type "GOTO WEB TOOL"
+                  :Subtype "HITIDE"
+                  :GetData {:Format "binary" :Size 10.0 :Unit "MB" :Fees "fees"}}
+                 {:Description "SOTO - 1.16.4 specific URL"
+                  :URL "https://example.gov/vis-01.suto"
+                  :URLContentType "VisualizationURL"
+                  :Type "GET RELATED VISUALIZATION"
+                  :Subtype "SOTO"
+                  :GetData {:Format "binary" :Size 10.0 :Unit "MB" :Fees "fees"}}
+                 {:Description "Sub-Orbital - 1.16.4 specific URL"
+                  :URL "https://example.gov/suborbital_order_tool"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "Sub-Orbital Order Tool"
+                  :GetData {:Format "binary" :Size 10.0 :Unit "MB" :Fees "fees"}}
+                 {:Description "CERES - 1.16.4 specific URL"
+                  :URL "https://example.gov/ceres_ordering_tool"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "CERES Ordering Tool"
+                  :GetData {:Format "Not provided" :Size 10.0 :Unit "MB" :Fees "fees"}}]})
+
+(deftest migrate-1-16-4-to-1-16-3
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.4" "1.16.3" sample-collection)]
+      (is (= expected result)))
+
+    "Testing removing the new related urls"
+    expected-related-urls-1-16-4
+    related-urls-1-16-4
+
+    "Testing when no new related urls exist."
+    expected-related-urls-1-16-4
+    expected-related-urls-1-16-4
+
+    "Testing when no related urls exist."
+    nil
+    {}))
+
+(deftest migrate-1-16-3-to-1-16-4
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.3" "1.16.4" sample-collection)]
+      (is (= expected result)))
+
+    "If new urls already exist, they should be unchanged by the move up"
+    related-urls-1-16-4
+    related-urls-1-16-4
+
+    "Testing when no related urls exist, none should be added"
+    {}
+    {}))
