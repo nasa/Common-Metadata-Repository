@@ -8,6 +8,7 @@ let scrollNum = 0
  * Fetch a page of collections from CMR search endpoint and initiate or continue scroll request
  * @param {String} scrollId An optional scroll-id given from the CMR
  * @param {String} token An optional Echo Token
+ * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
  * @param {String} providerId CMR provider id whose collections to bootstrap, null means all providers.
  * @returns [{JSON}] An array of UMM JSON collection results
  */

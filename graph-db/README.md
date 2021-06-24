@@ -79,7 +79,7 @@ npm run bootstrap-local
 
 The bootstrap-wss function can be invoked to load data into a remote Gremlin server from CMR (by default, the UAT environment). A SSH tunnel should be established to localhost:8182 beforehand. Make sure to update the TOKEN environment variable to the correct token value before running. E.g.
 ```
-npm run bootstrap-wss
+npm run bootstrap-wss -- -e TOKEN=<replace_with_token_for_CMR_ROOT>
 ```
 
 ### Test
