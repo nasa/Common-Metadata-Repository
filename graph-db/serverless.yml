@@ -16,6 +16,8 @@ provider:
     ENVIRONMENT: ${self:custom.variables.ENVIRONMENT}
     GREMLIN_URL: ${self:custom.variables.GREMLIN_URL}
     PAGE_SIZE: ${self:custom.variables.PAGE_SIZE}
+    COLLECTION_INDEXING_QUEUE_URL:
+      Ref: CollectionIndexingQueue
 plugins:
   - serverless-offline
   - serverless-pseudo-parameters
@@ -30,9 +32,39 @@ functions:
     events:
       - sqs:
           batchSize: 10
-          arn: arn:aws:sqs:us-east-1:#{AWS::AccountId}:gsfc-eosdis-cmr-${self:provider.stage}-graphdb_queue
+          arn:
+            Fn::GetAtt:
+              - CollectionIndexingQueue
+              - Arn
 resources:
   Resources:
+    CollectionIndexingQueue:
+      Type: 'AWS::SQS::Queue'
+      Properties:
+        VisibilityTimeout: 300
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - CollectionIndexingQueueDeadLetterQueue
+              - Arn
+          maxReceiveCount: 2 # Number of times a message will be tried before being dumped to the DLQ
+
+    CollectionIndexingQueueDeadLetterQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:custom.siteName}-CollectionIndexingQueueDeadLetterQueue
+        MessageRetentionPeriod: 1209600
+
+    cmrSnsSubscription:
+      Type: 'AWS::SNS::Subscription'
+      Properties:
+        TopicArn: ${env:CMR_CONCEPT_SNS_TOPIC}
+        Endpoint: !GetAtt
+          - CollectionIndexingQueue
+          - Arn
+        Protocol: sqs
+        RawMessageDelivery: 'true'
+
     IamRoleGraphLambdaExecution:
       Type: AWS::IAM::Role
       Properties:
