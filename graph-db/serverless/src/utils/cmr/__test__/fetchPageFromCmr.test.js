@@ -1,111 +1,172 @@
 import nock from 'nock'
 
+import AWS from 'aws-sdk'
+
 import { fetchPageFromCMR } from '../fetchPageFromCMR'
 
-import * as indexPageOfCmrResults from '../indexPageOfCmrResults'
+beforeEach(() => {
+  jest.clearAllMocks()
+  jest.resetAllMocks()
+  jest.resetModules()
+})
 
 describe('fetchPageFromCMR', () => {
   test('Empty page', async () => {
     const mockedBody = {
-      hits: 16996,
-      took: 5,
-      items: []
+      feed: {
+        title: 'ECHO dataset metadata',
+        entry: []
+      }
     }
 
     nock(/local-cmr/).get(/search/).reply(200, mockedBody)
-    nock(/local-cmr/).get(/search/).reply(200, {
-      hits: 0,
-      took: 5,
-      items: []
+
+    await fetchPageFromCMR({
+      scrollId: null,
+      token: null,
+      gremlinConnection: global.testGremlinConnection,
+      providerId: null
     })
-
-    const pageOfCmrResultsMock = jest.spyOn(indexPageOfCmrResults, 'indexPageOfCmrResults')
-
-    await fetchPageFromCMR(null, null, global.testGremlinConnection, null)
-
-    expect(pageOfCmrResultsMock).toBeCalledTimes(1)
   })
 
   test('Single result', async () => {
     const mockedBody = {
-      hits: 16996,
-      took: 5,
-      items: [{
-        meta: {
-          'concept-id': 'C1237293909-TESTPROV',
-          'provider-id': 'TESTPROV'
-        },
-        umm: {
-          RelatedUrls: [
-            {
-              URLContentType: 'PublicationURL',
-              Type: 'VIEW RELATED INFORMATION',
-              Subtype: 'GENERAL DOCUMENTATION',
-              URL: 'https://en.wikipedia.org/wiki/latent_nfi'
-            }
-          ],
-          DOI: {
-            DOI: 'doi:10.16904/envidat.166'
+      feed: {
+        updated: '2021-06-24T17:06:22.292Z',
+        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&scroll=true&page_size=1&pretty=true',
+        title: 'ECHO dataset metadata',
+        entry: [{
+          time_start: '1999-12-18T00:00:00.000Z',
+          boxes: ['-83 -180 83 180'],
+          online_access_flag: true,
+          has_transforms: true,
+          id: 'C1216257563-LPDAAC_TS1',
+          associations: {
+            services: ['S1224343297-LPDAAC_TS1']
           },
-          ShortName: 'latent-reserves-in-the-swiss-nfi',
-          EntryTitle: 'Latent reserves within the Swiss NFI'
-        }
-      }]
+          browse_flag: false,
+          has_temporal_subsetting: true,
+          summary: "The ASTER Digital Elevation Model (DEM) product is generated using bands 3N (nadir-viewing) and 3B (backward-viewing) of an ASTER Level-1A image acquired by the Visible Near Infrared (VNIR) sensor. The VNIR subsystem includes two independent telescope assemblies that facilitate the generation of stereoscopic data. The Band-3 stereo pair is acquired in the spectral range of 0.78 and 0.86 microns with a base-to-height ratio of 0.6 and an intersection angle of about 27.7. There is a time lag of approximately one minute between the acquisition of the nadir and backward images. \r\n\r\nStarting in early summer of 2006, LP DAAC has implemented a new production software for efficiently creating quality DEMs. Based on an automated stereo-correlation method, the new software generates a relative DEM without any ground control points (GCPs). It utilizes the ephemeris and attitude data derived from both the ASTER instrument and the Terra spacecraft platform. The new ASTER DEM is a single-band product with 30-meters horizontal postings that is geodetically referenced to the UTM coordinate system, and referenced to the Earth's geoid using the EGM96 geopotential model. Compared to ASTER DEMs previously available from the LP DAAC, users likely will note some differences in ASTER DEMs produced by the new system, because DEMs now are produced automatically, with no manual editing. Larger water bodies are detected and typically have a single value, but they no longer are manually edited. Any failed areas, while infrequent, remain as they occur. Cloudy areas typically appear as bright regions, rather than as manually edited dark areas.\r\n\r\nThe accuracy of the new LP DAAC-produced DEMs will meet or exceed accuracy specifications set for the ASTER relative DEMs by the applicable Algorithm Theoretical Basis Document (ATBD). Users likely will find that the DEMs produced by the new DAAC system have accuracies approaching those specified in the ATBD for absolute DEMs. Validation testing has shown that DEMs produced by the new system frequently are more accurate than 25 meters RMSExyz.\r\n\r\nV003 data set release date: 2002-05-03\r\n\r\nData Set Characteristics: \r\nArea: ~60 km x 60 km \r\nImage Dimensions: 2500 rows x 2500 columns \r\nFile Size: ~25 MB \r\nUnits: \r\nProjection: Universal Transverse Mercator (UTM) \r\nData Format: GeoTIFF\r\nVgroup Data Fields: 1",
+          coordinate_system: 'CARTESIAN',
+          original_format: 'UMM_JSON',
+          processing_level_id: '3',
+          data_center: 'LPDAAC_TS1',
+          has_spatial_subsetting: true,
+          archive_center: 'LP DAAC',
+          links: [{
+            rel: 'http://esipfed.org/ns/fedsearch/1.1/data#',
+            hreflang: 'en-US',
+            href: 'http://reverb.echo.nasa.gov/reverb/'
+          }]
+        }]
+      }
     }
 
     nock(/local-cmr/).get(/search/).reply(200, mockedBody)
     nock(/local-cmr/).get(/search/).reply(200, {
-      hits: 0,
-      took: 5,
-      items: []
+      feed: {
+        title: 'ECHO dataset metadata',
+        entry: []
+      }
     })
 
-    const pageOfCmrResultsMock = jest.spyOn(indexPageOfCmrResults, 'indexPageOfCmrResults')
+    const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
+      promise: jest.fn().mockResolvedValue()
+    })
 
-    await fetchPageFromCMR(null, null, global.testGremlinConnection, null)
+    AWS.SQS = jest.fn()
+      .mockImplementationOnce(() => ({
+        sendMessageBatch: sqsCollectionIndexingQueue
+      }))
 
-    expect(pageOfCmrResultsMock).toBeCalledTimes(1)
+    await fetchPageFromCMR({
+      scrollId: null,
+      token: null,
+      gremlinConnection: global.testGremlinConnection,
+      providerId: null
+    })
+
+    expect(sqsCollectionIndexingQueue).toBeCalledTimes(1)
+    expect(sqsCollectionIndexingQueue.mock.calls[0]).toEqual([{
+      QueueUrl: 'http://example.com/collectionIndexQueue',
+      Entries: [{
+        Id: 'C1216257563-LPDAAC_TS1',
+        MessageBody: JSON.stringify({
+          action: 'concept-update',
+          'concept-id': 'C1216257563-LPDAAC_TS1'
+        })
+      }]
+    }])
   })
 
   test('Single result with mocked ECHO token', async () => {
     const mockedBody = {
-      hits: 16996,
-      took: 5,
-      items: [{
-        meta: {
-          'concept-id': 'C1237293909-TESTPROV',
-          'provider-id': 'TESTPROV'
-        },
-        umm: {
-          RelatedUrls: [
-            {
-              URLContentType: 'PublicationURL',
-              Type: 'VIEW RELATED INFORMATION',
-              Subtype: 'GENERAL DOCUMENTATION',
-              URL: 'https://en.wikipedia.org/wiki/latent_nfi'
-            }
-          ],
-          DOI: {
-            DOI: 'doi:10.16904/envidat.166'
+      feed: {
+        updated: '2021-06-24T17:06:22.292Z',
+        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&scroll=true&page_size=1&pretty=true',
+        title: 'ECHO dataset metadata',
+        entry: [{
+          time_start: '1999-12-18T00:00:00.000Z',
+          boxes: ['-83 -180 83 180'],
+          online_access_flag: true,
+          has_transforms: true,
+          id: 'C1216257563-LPDAAC_TS1',
+          associations: {
+            services: ['S1224343297-LPDAAC_TS1']
           },
-          ShortName: 'latent-reserves-in-the-swiss-nfi',
-          EntryTitle: 'Latent reserves within the Swiss NFI'
-        }
-      }]
+          browse_flag: false,
+          has_temporal_subsetting: true,
+          summary: "The ASTER Digital Elevation Model (DEM) product is generated using bands 3N (nadir-viewing) and 3B (backward-viewing) of an ASTER Level-1A image acquired by the Visible Near Infrared (VNIR) sensor. The VNIR subsystem includes two independent telescope assemblies that facilitate the generation of stereoscopic data. The Band-3 stereo pair is acquired in the spectral range of 0.78 and 0.86 microns with a base-to-height ratio of 0.6 and an intersection angle of about 27.7. There is a time lag of approximately one minute between the acquisition of the nadir and backward images. \r\n\r\nStarting in early summer of 2006, LP DAAC has implemented a new production software for efficiently creating quality DEMs. Based on an automated stereo-correlation method, the new software generates a relative DEM without any ground control points (GCPs). It utilizes the ephemeris and attitude data derived from both the ASTER instrument and the Terra spacecraft platform. The new ASTER DEM is a single-band product with 30-meters horizontal postings that is geodetically referenced to the UTM coordinate system, and referenced to the Earth's geoid using the EGM96 geopotential model. Compared to ASTER DEMs previously available from the LP DAAC, users likely will note some differences in ASTER DEMs produced by the new system, because DEMs now are produced automatically, with no manual editing. Larger water bodies are detected and typically have a single value, but they no longer are manually edited. Any failed areas, while infrequent, remain as they occur. Cloudy areas typically appear as bright regions, rather than as manually edited dark areas.\r\n\r\nThe accuracy of the new LP DAAC-produced DEMs will meet or exceed accuracy specifications set for the ASTER relative DEMs by the applicable Algorithm Theoretical Basis Document (ATBD). Users likely will find that the DEMs produced by the new DAAC system have accuracies approaching those specified in the ATBD for absolute DEMs. Validation testing has shown that DEMs produced by the new system frequently are more accurate than 25 meters RMSExyz.\r\n\r\nV003 data set release date: 2002-05-03\r\n\r\nData Set Characteristics: \r\nArea: ~60 km x 60 km \r\nImage Dimensions: 2500 rows x 2500 columns \r\nFile Size: ~25 MB \r\nUnits: \r\nProjection: Universal Transverse Mercator (UTM) \r\nData Format: GeoTIFF\r\nVgroup Data Fields: 1",
+          coordinate_system: 'CARTESIAN',
+          original_format: 'UMM_JSON',
+          processing_level_id: '3',
+          data_center: 'LPDAAC_TS1',
+          has_spatial_subsetting: true,
+          archive_center: 'LP DAAC',
+          links: [{
+            rel: 'http://esipfed.org/ns/fedsearch/1.1/data#',
+            hreflang: 'en-US',
+            href: 'http://reverb.echo.nasa.gov/reverb/'
+          }]
+        }]
+      }
     }
 
     nock(/local-cmr/).get(/search/).reply(200, mockedBody)
     nock(/local-cmr/).get(/search/).reply(200, {
-      hits: 0,
-      took: 5,
-      items: []
+      feed: {
+        title: 'ECHO dataset metadata',
+        entry: []
+      }
     })
 
-    const pageOfCmrResultsMock = jest.spyOn(indexPageOfCmrResults, 'indexPageOfCmrResults')
+    const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
+      promise: jest.fn().mockResolvedValue()
+    })
 
-    await fetchPageFromCMR('fake-scroll-id', 'SUPER-SECRET-TOKEN', global.testGremlinConnection, null)
+    AWS.SQS = jest.fn()
+      .mockImplementationOnce(() => ({
+        sendMessageBatch: sqsCollectionIndexingQueue
+      }))
 
-    expect(pageOfCmrResultsMock).toBeCalledTimes(1)
+    await fetchPageFromCMR({
+      scrollId: 'fake-scroll-id',
+      token: 'SUPER-SECRET-TOKEN',
+      gremlinConnection: global.testGremlinConnection,
+      providerId: null
+    })
+
+    expect(sqsCollectionIndexingQueue).toBeCalledTimes(1)
+    expect(sqsCollectionIndexingQueue.mock.calls[0]).toEqual([{
+      QueueUrl: 'http://example.com/collectionIndexQueue',
+      Entries: [{
+        Id: 'C1216257563-LPDAAC_TS1',
+        MessageBody: JSON.stringify({
+          action: 'concept-update',
+          'concept-id': 'C1216257563-LPDAAC_TS1'
+        })
+      }]
+    }])
   })
 
   test('Invalid concept-id', async () => {
@@ -115,10 +176,17 @@ describe('fetchPageFromCMR', () => {
 
     nock(/local-cmr/).get(/search/).reply(400, mockedBody)
 
-    const pageOfCmrResultsMock = jest.spyOn(indexPageOfCmrResults, 'indexPageOfCmrResults')
+    const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
+      promise: jest.fn().mockResolvedValue()
+    })
 
-    await fetchPageFromCMR(null, null, global.testGremlinConnection, null)
+    await fetchPageFromCMR({
+      scrollId: null,
+      token: null,
+      gremlinConnection: global.testGremlinConnection,
+      providerId: null
+    })
 
-    expect(pageOfCmrResultsMock).toBeCalledTimes(1)
+    expect(sqsCollectionIndexingQueue).toBeCalledTimes(0)
   })
 })

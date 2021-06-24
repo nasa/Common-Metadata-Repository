@@ -52,7 +52,7 @@ resources:
     CollectionIndexingQueueDeadLetterQueue:
       Type: AWS::SQS::Queue
       Properties:
-        QueueName: ${self:custom.siteName}-CollectionIndexingQueueDeadLetterQueue
+        QueueName: graphdb-indexer-${self:provider.stage}-CollectionIndexingQueueDeadLetterQueue
         MessageRetentionPeriod: 1209600
 
     cmrSnsSubscription:
