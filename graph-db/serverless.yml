@@ -42,6 +42,7 @@ resources:
       Type: 'AWS::SQS::Queue'
       Properties:
         VisibilityTimeout: 300
+        DelaySeconds: 5
         RedrivePolicy:
           deadLetterTargetArn:
             Fn::GetAtt:
