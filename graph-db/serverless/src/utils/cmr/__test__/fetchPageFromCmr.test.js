@@ -6,9 +6,16 @@ import { fetchPageFromCMR } from '../fetchPageFromCMR'
 
 beforeEach(() => {
   jest.clearAllMocks()
-  jest.resetAllMocks()
-  jest.resetModules()
 })
+
+const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
+  promise: jest.fn().mockResolvedValue()
+})
+
+AWS.SQS = jest.fn()
+  .mockImplementationOnce(() => ({
+    sendMessageBatch: sqsCollectionIndexingQueue
+  }))
 
 describe('fetchPageFromCMR', () => {
   test('Empty page', async () => {
@@ -27,6 +34,8 @@ describe('fetchPageFromCMR', () => {
       gremlinConnection: global.testGremlinConnection,
       providerId: null
     })
+
+    expect(sqsCollectionIndexingQueue).toBeCalledTimes(0)
   })
 
   test('Single result', async () => {
@@ -62,22 +71,13 @@ describe('fetchPageFromCMR', () => {
       }
     }
 
-    nock(/local-cmr/).get(/search/).reply(200, mockedBody)
+    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-scroll-id': 196827907 })
     nock(/local-cmr/).get(/search/).reply(200, {
       feed: {
         title: 'ECHO dataset metadata',
         entry: []
       }
-    })
-
-    const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
-      promise: jest.fn().mockResolvedValue()
-    })
-
-    AWS.SQS = jest.fn()
-      .mockImplementationOnce(() => ({
-        sendMessageBatch: sqsCollectionIndexingQueue
-      }))
+    }, { 'cmr-scroll-id': 196827907 })
 
     await fetchPageFromCMR({
       scrollId: null,
@@ -132,22 +132,13 @@ describe('fetchPageFromCMR', () => {
       }
     }
 
-    nock(/local-cmr/).get(/search/).reply(200, mockedBody)
+    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-scroll-id': 196827907 })
     nock(/local-cmr/).get(/search/).reply(200, {
       feed: {
         title: 'ECHO dataset metadata',
         entry: []
       }
-    })
-
-    const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
-      promise: jest.fn().mockResolvedValue()
-    })
-
-    AWS.SQS = jest.fn()
-      .mockImplementationOnce(() => ({
-        sendMessageBatch: sqsCollectionIndexingQueue
-      }))
+    }, { 'cmr-scroll-id': 196827907 })
 
     await fetchPageFromCMR({
       scrollId: 'fake-scroll-id',
@@ -175,10 +166,6 @@ describe('fetchPageFromCMR', () => {
     }
 
     nock(/local-cmr/).get(/search/).reply(400, mockedBody)
-
-    const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
-      promise: jest.fn().mockResolvedValue()
-    })
 
     await fetchPageFromCMR({
       scrollId: null,

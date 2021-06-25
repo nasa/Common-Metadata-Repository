@@ -1,7 +1,12 @@
-import fetch from 'node-fetch'
+import AWS from 'aws-sdk'
+
 import 'array-foreach-async'
 
+import fetch from 'node-fetch'
+
 import { chunkArray } from '../chunkArray'
+
+let sqs
 
 /**
  * Fetch a page of collections from CMR search endpoint and initiate or continue scroll request
@@ -16,8 +21,7 @@ export const fetchPageFromCMR = async ({
   token,
   gremlinConnection,
   providerId,
-  scrollNum = 0,
-  sqs
+  scrollNum = 0
 }) => {
   const requestHeaders = {}
 
@@ -38,12 +42,16 @@ export const fetchPageFromCMR = async ({
   }
 
   try {
+    if (sqs == null) {
+      sqs = new AWS.SQS({ apiVersion: '2012-11-05' })
+    }
+
     const cmrCollections = await fetch(fetchUrl, {
       method: 'GET',
       headers: requestHeaders
     })
 
-    const { 'cmr-scroll-id': cmrScrollId } = cmrCollections.headers.raw()
+    const cmrScrollId = cmrCollections.headers.get('cmr-scroll-id')
 
     const collectionsJson = await cmrCollections.json()
 
@@ -52,11 +60,13 @@ export const fetchPageFromCMR = async ({
 
     const chunkedItems = chunkArray(entry, 10)
 
-    if (chunkedItems.length !== 0) {
+    if (chunkedItems.length > 0) {
       await chunkedItems.forEachAsync(async (chunk) => {
         const sqsEntries = []
+
         chunk.forEach((collection) => {
           const { id: conceptId } = collection
+
           sqsEntries.push({
             Id: conceptId,
             MessageBody: JSON.stringify({
@@ -72,6 +82,7 @@ export const fetchPageFromCMR = async ({
         }).promise()
       })
     }
+
     // If we have an active scrollId and there are more results
     if (cmrScrollId && entry.length === parseInt(process.env.PAGE_SIZE, 10)) {
       await fetchPageFromCMR({
@@ -79,13 +90,12 @@ export const fetchPageFromCMR = async ({
         token,
         gremlinConnection,
         providerId,
-        scrollNum: (scrollNum + 1),
-        sqs
+        scrollNum: (scrollNum + 1)
       })
     }
+
+    return cmrScrollId
   } catch (e) {
     console.error(`Could not complete request due to error: ${e}`)
   }
-
-  return scrollId
 }
