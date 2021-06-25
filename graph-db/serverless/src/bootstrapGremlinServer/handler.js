@@ -1,4 +1,3 @@
-import AWS from 'aws-sdk'
 import { clearScrollSession } from '../utils/cmr/clearScrollSession'
 import { fetchPageFromCMR } from '../utils/cmr/fetchPageFromCMR'
 import { getEchoToken } from '../utils/cmr/getEchoToken'
@@ -6,7 +5,6 @@ import { closeGremlinConnection, initializeGremlinConnection } from '../utils/gr
 
 let gremlinConnection
 let token
-let sqs
 
 const bootstrapGremlinServer = async (event) => {
   // Prevent creating more tokens than necessary
@@ -17,10 +15,6 @@ const bootstrapGremlinServer = async (event) => {
   // Prevent connecting to Gremlin more than necessary
   if (!gremlinConnection) {
     gremlinConnection = initializeGremlinConnection()
-  }
-
-  if (sqs == null) {
-    sqs = new AWS.SQS({ apiVersion: '2012-11-05' })
   }
 
   const { Records: bootstrapEvents = ['{}'] } = event
@@ -35,8 +29,7 @@ const bootstrapGremlinServer = async (event) => {
     scrollId: null,
     token,
     gremlinConnection,
-    providerId,
-    sqs
+    providerId
   })
 
   // If a scroll session was created we need to inform CMR that we are done with it
