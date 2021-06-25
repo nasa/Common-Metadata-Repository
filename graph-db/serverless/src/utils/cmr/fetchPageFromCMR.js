@@ -10,10 +10,12 @@ let sqs
 
 /**
  * Fetch a page of collections from CMR search endpoint and initiate or continue scroll request
- * @param {String} scrollId An optional scroll-id given from the CMR
- * @param {String} token An optional Echo Token
- * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
- * @param {String} providerId CMR provider id whose collections to bootstrap, null means all providers.
+ * @param {Object} param0 The parameter object
+ * @param {String} param0.scrollId An optional scroll-id given from the CMR
+ * @param {String} param0.token An optional Echo Token
+ * @param {Gremlin Traversal Object} param0.gremlinConnection connection to gremlin server
+ * @param {String} param0.providerId CMR provider id whose collections to bootstrap, null means all providers.
+ * @param {Integer} param0.scrollNum Scroll number parameter used for logging the current iteration of the CMR scroll
  * @returns {String} CMR scroll id if more results available
  */
 export const fetchPageFromCMR = async ({
