@@ -21,4 +21,16 @@ describe('clearScrollSession', () => {
     await clearScrollSession('196827907')
       .then((res) => expect(res).toEqual(204))
   })
+
+  test('logs an error when the request fails', async () => {
+    const consoleMock = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    nock(/local-cmr/)
+      .get(/clear-scroll/)
+      .reply(500)
+
+    await clearScrollSession('196827907')
+
+    expect(consoleMock).toHaveBeenCalledTimes(1)
+  })
 })
