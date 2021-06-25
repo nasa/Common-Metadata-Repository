@@ -110,8 +110,6 @@ describe('bootstrapGremlinServer handler', () => {
 
       expect(body).toBe('Indexing completed')
       expect(statusCode).toBe(200)
-
-      // await verifyExistInGraphDb('Latent reserves within the Swiss NFI', 'https://www.envidat.ch/dataset/latent-reserves-in-the-swiss-nfi')
     })
   })
 
@@ -251,8 +249,6 @@ describe('bootstrapGremlinServer handler', () => {
 
       expect(body).toBe('Indexing completed')
       expect(statusCode).toBe(200)
-
-      // await verifyExistInGraphDb('Latent reserves within the Swiss NFI', 'https://www.envidat.ch/dataset/latent-reserves-in-the-swiss-nfi')
     })
   })
 })
