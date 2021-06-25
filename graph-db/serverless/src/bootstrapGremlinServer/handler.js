@@ -1,7 +1,7 @@
 import { clearScrollSession } from '../utils/cmr/clearScrollSession'
 import { fetchPageFromCMR } from '../utils/cmr/fetchPageFromCMR'
 import { getEchoToken } from '../utils/cmr/getEchoToken'
-import { closeGremlinConnection, initializeGremlinConnection } from '../utils/gremlin/initializeGremlinConnection'
+import { initializeGremlinConnection } from '../utils/gremlin/initializeGremlinConnection'
 
 let gremlinConnection
 let token
@@ -35,13 +35,6 @@ const bootstrapGremlinServer = async (event) => {
   // If a scroll session was created we need to inform CMR that we are done with it
   if (scrollId) {
     await clearScrollSession(scrollId)
-  }
-
-  // CLOSE_CONNECTION allows serverless bootstrap call to exit successfully.
-  const { env: { CLOSE_CONNECTION } } = process
-
-  if (CLOSE_CONNECTION === 'true') {
-    closeGremlinConnection()
   }
 
   console.log('Bootstrap completed.')

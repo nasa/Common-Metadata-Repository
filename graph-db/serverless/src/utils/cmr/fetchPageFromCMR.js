@@ -14,7 +14,7 @@ let sqs
  * @param {String} token An optional Echo Token
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
  * @param {String} providerId CMR provider id whose collections to bootstrap, null means all providers.
- * @returns [{JSON}] An array of UMM JSON collection results
+ * @returns {String} CMR scroll id if more results available
  */
 export const fetchPageFromCMR = async ({
   scrollId,
@@ -97,5 +97,6 @@ export const fetchPageFromCMR = async ({
     return cmrScrollId
   } catch (e) {
     console.error(`Could not complete request due to error: ${e}`)
+    return null
   }
 }
