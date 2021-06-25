@@ -49,6 +49,24 @@ resources:
               - CollectionIndexingQueueDeadLetterQueue
               - Arn
           maxReceiveCount: 2 # Number of times a message will be tried before being dumped to the DLQ
+    SqsQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Sid: topic-subscription-${env:CMR_CONCEPT_SNS_TOPIC}
+              Effect: Allow
+              Principal: 
+                AWS: "*"
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt CollectionIndexingQueue.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: ${env:CMR_CONCEPT_SNS_TOPIC}
+        Queues:
+          - !Ref CollectionIndexingQueue
 
     CollectionIndexingQueueDeadLetterQueue:
       Type: AWS::SQS::Queue
