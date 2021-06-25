@@ -62,24 +62,17 @@ Clone the graphexp repository at https://github.com/bricaud/graphexp
 ## Serverless Applications
 There are two serverless applications that interact with the graph database:
 
-## Bootstrap
+### Bootstrap
 
   Bootstrap is a serverless application that load all collections from a CMR environment (SIT, UAT, PROD) into the graph database.
+
+### Indexer
+
+  Indexer is a serverless application that is connected to a SQS queue that is associated with the live CMR collection ingest/update events. It will index new CMR collection ingest/update into the graph database.
 
 ### Build
 ```
 npm install
-```
-
-### Run
-The bootstrap-local function can be invoked to load data into a local Gremlin server from CMR (by default, the UAT environment). E.g.
-```
-npm run bootstrap-local
-```
-
-The bootstrap-wss function can be invoked to load data into a remote Gremlin server from CMR (by default, the UAT environment). A SSH tunnel should be established to localhost:8182 beforehand. Make sure to update the TOKEN environment variable to the correct token value before running. E.g.
-```
-npm run bootstrap-wss -- -e TOKEN=<replace_with_token_for_CMR_ROOT>
 ```
 
 ### Test
@@ -91,15 +84,6 @@ npm run test
 To run the test suite in watch mode, run
 ```
 npm run test -- --watch
-```
-
-## Indexer
-
-  Indexer is a serverless application that is connected to a SQS queue that is associated with the live CMR collection ingest/update events. It will index new CMR collection ingest/update into the graph database.
-
-### Build
-```
-npm install
 ```
 
 ### Deploy
@@ -114,6 +98,30 @@ To roll back the deployed graph indexer application in a CMR environment, run th
 ```
 export AWS_PROFILE=cmr-sit
 serverless remove -v --stage sit
+```
+
+### Run Bootstrap
+To bootstrap all CMR collections from the CMR environment as specified in the deployment (default in serverless.yml) to graph db, send the following test event in the deployed bootstrap lambda function in AWS.
+
+```
+{
+  "Records": [
+    {
+      "body": "{}"
+    }
+  ]
+}
+```
+
+To bootstrap all collections in a specific provider (e.g LPDAAC_TS2), send the following test event:
+```
+{
+  "Records": [
+    {
+      "body": "{\"provider-id\": \"LPDAAC_TS2\"}"
+    }
+  ]
+}
 ```
 
 ## Explore Indexed Data
