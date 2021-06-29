@@ -1581,35 +1581,13 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
 #### <a name="c-keyword"></a> Find collections by keyword (free text) search
 
-Keyword searches are case insensitive and support wild cards ? and *, in which '\*' matches zero or more characters and '?' matches any single character. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword
+Keyword searches are case insensitive and support wild cards ? and *.
+There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword
 string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
-
-The following searches on "alpha", "beta" and "g?mma" individually and returns the collections that contain all these individual words
-in the keyword fields that are indexed. Note: these words don't have to exist in the same keyword field, but they have to exsit as a
-space (or one of special character delimiter CMR uses) delimited word.
 
     curl "%CMR-ENDPOINT%/collections?keyword=alpha%20beta%20g?mma"
 
-We also support keyword phrase search. The following searches on "alpha beta g?mma" as a phrase and returns the collections with
-one or more indexed keyword field values that contain the phrase.
-
-    curl "%CMR-ENDPOINT%/collections?keyword=\"alpha%20beta%20g?mma\""
-
-Note: Currently we only support either keyword, or single keyword phrase search. We don't support mix of keyword and keyword phrase search and we don't support multiple keyword phrase search. These searches like the following will be rejected with error: <error>keyword phrase mixed with keyword, or another keyword-phrase are not supported. keyword phrase has to be enclosed by two escaped double quotes.</error>
-
-   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one\"%20\"phrase%20two\"" (multiple phrase case)
-   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one\"%20\word2" (mix of phrase and word case)
-   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one" (missing one \" case)
-
-Also \" is reserved for phrase boundary. For literal double quotes, use \\\". For example, to search for 'alpha "beta" g?mma' phrase, do the following:
-
-    curl "%CMR-ENDPOINT%/collections?keyword=\"alpha%20\\\"beta\\\"%20g?mma\""
-
-To search on 'alpha', '"beta"', 'g?mma' individually, do the following:
-
-    curl "%CMR-ENDPOINT%/collections?keyword=alpha%20\\\"beta\\\"%20g?mma"
-
-The following fields are indexed for keyword and keyword phrase search:
+The following fields are indexed for keyword search:
 
 * Concept ID
 * DOI value

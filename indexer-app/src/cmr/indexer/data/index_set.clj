@@ -468,7 +468,7 @@
           :personnel m/string-field-mapping
 
           ;; analyzed field for keyword searches
-          :keyword2 m/text-field-keyword-mapping
+          :keyword m/text-field-mapping
           :long-name-lowercase m/string-field-mapping
           :project-ln-lowercase m/string-field-mapping
           :platform-ln-lowercase m/string-field-mapping

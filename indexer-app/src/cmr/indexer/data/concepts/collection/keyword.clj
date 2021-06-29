@@ -1,21 +1,14 @@
 (ns cmr.indexer.data.concepts.collection.keyword
   "Contains functions to create keyword fields"
   (:require
-   [clojure.string :as str]
-   [cmr.common.concepts :as concepts]
-   [cmr.common.util :as util]
-   [cmr.indexer.data.concepts.keyword-util :as keyword-util]))
+    [cmr.common.concepts :as concepts]
+    [cmr.common.util :as util]
+    [cmr.indexer.data.concepts.keyword-util :as keyword-util]))
 
 (defn create-keywords-field
   [concept-id collection other-fields]
-  "Create a keyword field for keyword searches by concatenating 4 group of fields together:
-  1. All the keyword fields, unprocessed, for general keyword phrase search.
-  2. All the keyword fields, split on a set of special characters, for keyword phrase search when
-     the phrase exists in between special characters.
-  3. All the keyword fields, split on parens and brackets, for keyword phrase search when the phrase
-     exists in the parents or brackets, but contains some other special characters.
-  4. All the keyword fields, split into individual words, same as the original keyword search case.
-  The new way of indexing support both quoted and unquoted keyword searches."
+  "Create a keyword field for keyword searches by concatenating several other fields
+  into a single string"
   (let [{:keys [platform-long-names instrument-long-names entry-id]} other-fields
         provider-id (:provider-id (concepts/parse-concept-id concept-id))
         schema-keys [:Abstract
@@ -50,24 +43,5 @@
                   [concept-id]
                   [entry-id]
                   [provider-id]
-                  (keyword-util/concept-keys->keywords collection schema-keys))
-        ;; split each keyword on special characters and extract out phrases surrounded by special characters.
-        sp-phrases (mapcat #(str/split % keyword-util/keyword-phrase-separator-regex) keywords)
-        ;; split each keyword on parens and brackets only and extract out the word/phrase inside that might contain
-        ;; other special characters like in "(merry-go-round)" where  "-" is considered special character.
-        paren-bracket-phrases (mapcat #(str/split % #"[(){}\[\]]") keywords)
-        ;; the index needed for the original unquoted keyword search.
-        keywords-in-words (keyword-util/field-values->individual-words keywords)]
-    ;; Lower-case the keywords and add a space at the beginning and the end of each field
-    ;; to help with partial keyword phrase matching: i.e. we don't need to distinguish if the match is at the beginning,
-    ;; or in the middle or at the end of the keyword field, we just need to match using general expression "* phrase *".
-    (->> keywords
-         ;; need to index additional keyword phrases that are surrounded by special characters because "* phrase *"
-         ;; won't find a match in keyword fields directly because of the extra space added to generalize the search.
-         (concat (keep not-empty sp-phrases))
-         (concat (keep not-empty paren-bracket-phrases))
-         (map #(str/lower-case %))
-         (map #(str " " % " "))
-         ;; The keyword-in-words here are used for unquoted keyword search. It's exactly the same as the existing
-         ;; keyword index fields, without the need to go through a whitespace analyzer.
-         (concat keywords-in-words))))
+                  (keyword-util/concept-keys->keywords collection schema-keys))]
+    (keyword-util/field-values->keyword-text keywords)))
