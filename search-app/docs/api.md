@@ -1798,9 +1798,9 @@ Find collections matching tool concept id.
 ##### <a name="c-polygon"></a> Polygon
 
 Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.
-This parameter supports the and/or option as shown below.
+The polygon parameter could be either "polygon" or "polygon[]", it supports the and/or option as shown below. The first example is to search for collections that match both the first polygon and the second polygon. The second example is to search for collections that match either the first polygon or the second polygon.
 
-    curl "%CMR-ENDPOINT%/collections?polygon[]=10,10,30,10,30,20,10,20,10,10"
+    curl "%CMR-ENDPOINT%/collections?polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11"
 
     curl "%CMR-ENDPOINT%/collections?polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11&options[polygon][or]=true"
 
@@ -2108,8 +2108,12 @@ For granule additional attributes search, the default is searching for the attri
 The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
 
 ##### <a name="g-polygon"></a> Polygon
+Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.
+The polygon parameter could be either "polygon" or "polygon[]", it supports the and/or option as shown below. The first example is to search for granules that match both the first polygon and the second polygon. The second example is to search for granules that match either the first polygon or the second polygon.
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon=10,10,30,10,30,20,10,20,10,10"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11"
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11&options[polygon][or]=true"
 
 ##### <a name="g-bounding-box"></a> Bounding Box
 
