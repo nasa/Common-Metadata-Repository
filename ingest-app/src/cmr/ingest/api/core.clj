@@ -252,9 +252,14 @@
   [concept request-context]
   (let [metadata-size-bytes (-> (:metadata concept) (.getBytes "UTF-8") alength)
         concept (assoc concept :metadata-size-bytes metadata-size-bytes)]
-    (info (format "Successfully ingested %s from client %s"
+    (info (format "Successfully ingested %s from client %s using %s"
                   (concept->loggable-string concept)
-                  (:client-id request-context)))))
+                  (:client-id request-context)
+                  "a token type"))
+    (println (format "Successfully ingested %s from client %s, token_type %s"
+                  (concept->loggable-string concept)
+                  (:client-id request-context)
+                  (lt-validation/get-token-type (:token request-context))))))
 
 (defn set-default-error-format [default-response-format handler]
   "Ring middleware to add a default format to the exception-info created during exceptions. This
