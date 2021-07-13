@@ -16,9 +16,9 @@ export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
     await gremlinConnection
       .V()
       .has('dataset', 'concept-id', conceptId)
-      .inE('documents')
-      .outV()
-      .where(gremlinStatistics.outE('documents').count().is(lte(1)))
+      .outE('documentedBy')
+      .inV()
+      .where(gremlinStatistics.inE('documentedBy').count().is(lte(1)))
       .drop()
       .next()
   } catch (error) {
