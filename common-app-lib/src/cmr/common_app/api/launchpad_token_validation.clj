@@ -63,12 +63,13 @@
 (defn get-token-type
   "Returns the type of a given token"
   [token]
-  (cond
-    (= (transmit-config/echo-system-token) token) "System"
-    (re-seq #"[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}" token) "Echo-Token"
-    (is-legacy-token? token) "Legacy-EDL"
-    (is-jwt-token? token) "JWT"
-    :else "Launchpad"))
+  (when (string? token)
+    (cond
+      (= (transmit-config/echo-system-token) token) "System"
+      (re-seq #"[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}" token) "Echo-Token"
+      (is-legacy-token? token) "Legacy-EDL"
+      (is-jwt-token? token) "JWT"
+      :else "Launchpad")))
 
 (defn validate-launchpad-token
   "Validate the token in request context is a Launchpad Token if launchpad token enforcement
