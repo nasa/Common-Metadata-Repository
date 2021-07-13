@@ -23,8 +23,8 @@ export const verifyExistInGraphDb = async (datasetTitle, docName) => {
   const record = await global.testGremlinConnection
     .V()
     .has('dataset', 'title', datasetTitle)
-    .inE('documents')
-    .filter(gremlinStatistics.outV()
+    .outE('documentedBy')
+    .filter(gremlinStatistics.inV()
       .has('documentation', 'name', docName))
     .next()
   const { value: { id: edgeId } } = record

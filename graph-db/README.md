@@ -125,7 +125,7 @@ To bootstrap all collections in a specific provider (e.g LPDAAC_TS2), send the f
 ```
 
 ## Explore Indexed Data
-CMR graph database is a Neptune database hosted on AWS. Currently, we only index collections and their documentation related urls as vertices in the graph database with edges (named `documents`) from the related url vertices to the collection vertices that reference them.
+CMR graph database is a Neptune database hosted on AWS. Currently, we only index collections and their documentation related urls as vertices in the graph database with edges (named `documentedBy`) from the collection vertices to the related url vertices that document them.
 
 The collection vertex has the following properties:
 
@@ -155,7 +155,7 @@ curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().li
 
 To see all collections that share the same documentation URL with the collection (C1233352242-GHRC):
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"dataset\").has(\"concept-id\", \"C1233352242-GHRC\").inE(\"documents\").outV().hasLabel(\"documentation\").outE(\"documents\").inV().hasLabel(\"dataset\").valueMap()"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"dataset\").has(\"concept-id\", \"C1233352242-GHRC\").outE(\"documentedBy\").inV().hasLabel(\"documentation\").inE(\"documentedBy\").outV().hasLabel(\"dataset\").valueMap()"}'
 ```
 
 For users have write access to graphdb, they can also add vertices and edges between vertices. For example:
@@ -172,7 +172,7 @@ curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.addV(\
 
 To create an edge from the above documentation vertex to the collection vertex:
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"documentation\").has(\"name\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\").addE(\"documents\").to(g.V().hasLabel(\"dataset\").has(\"concept-id\", \"C1233352242-GHRC\"))"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"dataset\").has(\"concept-id\", \"C1233352242-GHRC\").addE(\"documentedBy\").to(g.V().hasLabel(\"documentation\").has(\"name\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\"))"}'
 ```
 
 ### Access via SSH tunnel and Gremlin Console locally
