@@ -164,7 +164,7 @@
   []
   (format "http://localhost:%s/disable-writes" (transmit-config/ingest-port)))
 
-(defn indexer-reindex-suggestions-url
+(defn reindex-suggestions-url
   "URL to reindex autocomplete suggestions"
   []
   (format "http://localhost:%s/jobs/reindex-autocomplete-suggestions"

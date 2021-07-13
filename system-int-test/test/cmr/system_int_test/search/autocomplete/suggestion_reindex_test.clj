@@ -31,12 +31,12 @@
   [actual expected]
   ;; check score returns
   (when (seq actual)
-    (is (scores-descending? actual) actual))
+    (is (scores-descending? actual) (pr-str actual)))
 
   ;; compare values
   (let [expected (map #(dissoc % :score) expected)
         actual (map #(dissoc % :score) actual)]
-    (is (= expected actual))))
+    (is (= expected actual) (pr-str actual))))
 
 (def sk1 (umm-spec-common/science-keyword {:Category "Earth science"
                                            :Topic "Topic1"
@@ -91,6 +91,7 @@
                                             :Term "Ocean Optics"
                                             :VariableLevel1 "Bioluminescence"}))
 
+
 (def gdf1 {:FileDistributionInformation
            [{:FormatType "Binary"
              :AverageFileSize 50
@@ -103,13 +104,13 @@
   (let [admin-read-group-concept-id (e/get-or-create-group (s/context) "admin-read-group")
         coll1 (d/ingest "PROV1"
                         (dc/collection
-                          {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
-                           :ArchiveAndDistributionInformation gdf1
-                           :SpatialKeywords ["DC" "Miami"]
-                           :ProcessingLevelId (:ProcessingLevelId (fu/processing-level-id "PL1"))
-                           :Projects [(:Projects (fu/projects "proj1" "PROJ2"))]
-                           :Platforms [(:Platforms (fu/platforms fu/FROM_KMS 2 2 1))]
-                           :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]}))
+                         {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
+                          :ArchiveAndDistributionInformation gdf1
+                          :SpatialKeywords ["DC" "Miami"]
+                          :ProcessingLevelId (:ProcessingLevelId (fu/processing-level-id "PL1"))
+                          :Projects [(:Projects (fu/projects "proj1" "PROJ2"))]
+                          :Platforms [(:Platforms (fu/platforms fu/FROM_KMS 2 2 1))]
+                          :ScienceKeywords [(:ScienceKeywords (fu/science-keywords sk1 sk2))]}))
         coll2 (fu/make-coll 2 "PROV1"
                             (fu/science-keywords sk1 sk3)
                             (fu/projects "proj1" "PROJ2")
@@ -124,23 +125,23 @@
                                                     :format-key :echo10})
         coll4 (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7 sk8 sk9 sk11))
         coll5 (d/ingest-umm-spec-collection
-                "PROV2"
-                (data-umm-spec/collection
-                  {:EntryTitle "Secret Collection"
-                   :Projects (:Projects (fu/projects "From whence you came!"))
-                   :Platforms (:Platforms (fu/platforms "SECRET" 2 2 1))
-                   :ScienceKeywords (:ScienceKeywords (fu/science-keywords sk12))
-                   :AccessConstraints (data-umm-spec/access-constraints
-                                         {:Value 1 :Description "Those files are for British eyes only."})})
-                {:format :umm-json})
+               "PROV2"
+               (data-umm-spec/collection
+                {:EntryTitle "Secret Collection"
+                 :Projects (:Projects (fu/projects "From whence you came!"))
+                 :Platforms (:Platforms (fu/platforms "SECRET" 2 2 1))
+                 :ScienceKeywords (:ScienceKeywords (fu/science-keywords sk12))
+                 :AccessConstraints (data-umm-spec/access-constraints
+                                     {:Value 1 :Description "Those files are for British eyes only."})})
+               {:format :umm-json})
         coll6 (d/ingest-umm-spec-collection
-                "PROV2"
-                (data-umm-spec/collection
-                  {:ShortName "short but not so short that it's not unique"
-                   :EntryTitle "Registered Collection"
-                   :Projects (:Projects (fu/projects "REGISTERED"))
-                   :Platforms (:Platforms (fu/platforms "REGISTERED" 2 2 1))})
-                {:format :umm-json})
+               "PROV2"
+               (data-umm-spec/collection
+                {:ShortName "short but not so short that it's not unique"
+                 :EntryTitle "Registered Collection"
+                 :Projects (:Projects (fu/projects "REGISTERED"))
+                 :Platforms (:Platforms (fu/platforms "REGISTERED" 2 2 1))})
+               {:format :umm-json})
         c1-echo (d/ingest "PROV1"
                           (dc/collection {:entry-title "c1-echo" :access-value 1})
                           {:format :echo10})
@@ -177,8 +178,8 @@
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=From" {:headers {:echo-token user1-token}}) [:feed :entry])
        [{:type "project",
-          :value "From whence you came!",
-          :fields "From whence you came!"}]))
+         :value "From whence you came!",
+         :fields "From whence you came!"}]))
     (testing "Suggestions associated to collections with access constraints not returned without a token"
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=From") [:feed :entry])
@@ -186,54 +187,56 @@
     (testing "Suggestion associated to collections granted to registered users"
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=REGISTERED" {:headers {:echo-token user3-token}}) [:feed :entry])
-       [{:score 4.5634737 :type "project" :value "REGISTERED" :fields "REGISTERED"}
-        {:score 3.2571084 :type "instrument" :value "REGISTERED-p0-i0" :fields "REGISTERED-p0-i0"}
-        {:score 3.187054 :type "platform" :value "REGISTERED-p0" :fields "REGISTERED-p0"}
-        {:score 3.187054 :type "platform" :value "REGISTERED-p1" :fields "REGISTERED-p1"}
-        {:score 3.136525 :type "instrument" :value "REGISTERED-p0-i1" :fields "REGISTERED-p0-i1"}
-        {:score 3.136525 :type "instrument" :value "REGISTERED-p1-i0" :fields "REGISTERED-p1-i0"}
-        {:score 3.136525 :type "instrument" :value "REGISTERED-p1-i1" :fields "REGISTERED-p1-i1"}]))))
+       [{:type "project" :value "REGISTERED" :fields "REGISTERED"}
+        {:type "instrument" :value "REGISTERED-p0-i0" :fields "REGISTERED-p0-i0"}
+        {:type "platform" :value "REGISTERED-p0" :fields "REGISTERED-p0"}
+        {:type "platform" :value "REGISTERED-p1" :fields "REGISTERED-p1"}
+        {:type "instrument" :value "REGISTERED-p0-i1" :fields "REGISTERED-p0-i1"}
+        {:type "instrument" :value "REGISTERED-p1-i0" :fields "REGISTERED-p1-i0"}
+        {:type "instrument" :value "REGISTERED-p1-i1" :fields "REGISTERED-p1-i1"}]))))
 
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
     (compare-autocomplete-results
-      (get-in (search/get-autocomplete-json "q=l") [:feed :entry])
-      [{:type "instrument" :value "lVIs" :fields "lVIs"}
-       {:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}]))
+     (get-in (search/get-autocomplete-json "q=l") [:feed :entry])
+     [{:type "instrument" :value "lVIs" :fields "lVIs"}
+      {:type "organization"
+       :value "Langley DAAC User Services"
+       :fields "Langley DAAC User Services"}]))
 
   (testing "Ensure science keywords are being indexed properly"
     (are3
-      [query expected]
-      (let [actual (get-in (search/get-autocomplete-json query) [:feed :entry])]
-        (compare-autocomplete-results actual expected))
+     [query expected]
+     (let [actual (get-in (search/get-autocomplete-json query) [:feed :entry])]
+       (compare-autocomplete-results actual expected))
 
-      "shorter match"
-      "q=solar"
-      [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]
+     "shorter match"
+     "q=solar"
+     [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
+      {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]
 
-      "more complete match"
-      "q=solar irradiation"
-      [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]))
+     "more complete match"
+     "q=solar irradiation"
+     [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
+      {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]))
 
   (testing "Anti-value filtering"
     (are3
-      [query expected]
-      (let [results (get-in (search/get-autocomplete-json (str "q=" query)) [:feed :entry])]
-        (compare-autocomplete-results results expected))
+     [query expected]
+     (let [results (get-in (search/get-autocomplete-json (str "q=" query)) [:feed :entry])]
+       (compare-autocomplete-results results expected))
 
-      "excludes 'None'"
-      "none" []
+     "excludes 'None'"
+     "none" []
 
-      "excludes 'Not Applicable'"
-      "not applicable" []
+     "excludes 'Not Applicable'"
+     "not applicable" []
 
-      "excludes 'Not Provided'"
-      "not provided" []
+     "excludes 'Not Provided'"
+     "not provided" []
 
-      "does not filter 'not' prefixed values"
-      "not" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}])))
+     "does not filter 'not' prefixed values"
+     "not" [{:value "Nothofagus" :type "science_keywords" :fields "Biosphere:Nothofagus"}])))
 
 (deftest prune-stale-data-test
   (testing "The suggestions from these old collections shouldn't be found"
@@ -241,23 +244,23 @@
      [query expected]
      (let [_ (dev-sys-util/freeze-time! "2020-01-01T10:00:00Z")
            coll7 (d/ingest-umm-spec-collection
-                   "PROV1"
-                   (data-umm-spec/collection
-                    {:ShortName "This one is old and should be cleaned up"
-                     :EntryTitle "Oldie"
-                     :Projects (:Projects (fu/projects "OLD"))
-                     :Platforms (:Platforms (fu/platforms "STALE" 2 2 1))}))
+                  "PROV1"
+                  (data-umm-spec/collection
+                   {:ShortName "This one is old and should be cleaned up"
+                    :EntryTitle "Oldie"
+                    :Projects (:Projects (fu/projects "OLD"))
+                    :Platforms (:Platforms (fu/platforms "STALE" 2 2 1))}))
 
            _ (dev-sys-util/freeze-time! (time/yesterday))
            coll8 (d/ingest-umm-spec-collection
-                   "PROV2"
-                   (data-umm-spec/collection
-                    {:ShortName "Yesterday's news"
-                     :EntryTitle "Also an Oldie"
-                     :Platforms (:Platforms (fu/platforms "old AND stale" 2 1 1))}))
+                  "PROV2"
+                  (data-umm-spec/collection
+                   {:ShortName "Yesterday's news"
+                    :EntryTitle "Also an Oldie"
+                    :Platforms (:Platforms (fu/platforms "old AND stale" 2 1 1))}))
            _ (index/wait-until-indexed)
            _ (dev-sys-util/clear-current-time!)
-           
+
            results (get-in (search/get-autocomplete-json (str "q=" query)) [:feed :entry])]
        (compare-autocomplete-results results expected))
      "None found"
@@ -265,3 +268,46 @@
 
      "Still none found"
      "old" [])))
+
+(deftest semi-hierachical-keywords-test
+  (testing "science keywords with level-1 but no level-2 or level-3 but including detailed-variables"
+    (let [gap-sk (umm-spec-common/science-keyword {:Category "Fiction"
+                                                   :Topic "Kurt Vonnegut"
+                                                   :Term "Cat's Cradle"
+                                                   :VariableLevel1 "Ice"
+                                                   :DetailedVariable "ice-nine"})]
+      (d/ingest-umm-spec-collection
+       "PROV1"
+       (data-umm-spec/collection
+        {:EntryTitle "Secret Collection"
+         :ScienceKeywords (:ScienceKeywords (fu/science-keywords gap-sk))})
+       {:format :umm-json})
+
+      (index/wait-until-indexed)
+      (index/reindex-suggestions)
+      (index/wait-until-indexed)
+
+      (search/clear-caches)
+
+      (compare-autocomplete-results
+       (get-in (search/get-autocomplete-json "q=ice") [:feed :entry])
+       [{:value "Ice-Nine"
+         :fields "Kurt Vonnegut:Cat'S Cradle:Ice:::Ice-Nine"
+         :type "science_keywords"}]))))
+
+(deftest nil-handling-test
+  (testing "nils can be passed through the suggestion indexing"
+    (d/ingest-umm-spec-collection
+     "PROV1"
+     (data-umm-spec/collection
+      {:EntryTitle "A boring collection"})
+     {:format :umm-json})
+
+    (index/wait-until-indexed)
+    (try
+      (index/reindex-suggestions)
+      ;; redudant `is` for testing
+      (is (true? true))
+      (catch java.lang.NullPointerException e
+        ;; This should never be caught
+        (is (nil? e) (.getMessage e))))))
