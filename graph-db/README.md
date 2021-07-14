@@ -125,19 +125,9 @@ To bootstrap all collections in a specific provider (e.g LPDAAC_TS2), send the f
 ```
 
 ## Explore Indexed Data
-CMR graph database is a Neptune database hosted on AWS. Currently, we only index collections and their documentation related urls as vertices in the graph database with edges (named `documentedBy`) from the collection vertices to the related url vertices that document them.
+CMR graph database is a Neptune database hosted on AWS. Currently, we only index collections and their documentation related urls and campaigns as vertices in the graph database. See the following diagram for details:
 
-The collection vertex has the following properties:
-
-* concept-id - Collection concept id
-* name - Url to the collection landing page
-* title - Entry title of the collection
-* doi - DOI link of the collection
-
-The documentation vertex has the following properties:
-
-* name - documentation url
-* title - description of the documentation url
+![CMR Collection GraphDB Diagram](images/cmr_collection_graphdb_diagram.png)
 
 ### Access via CMR graphdb endpoint
 
