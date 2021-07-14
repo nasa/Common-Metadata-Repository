@@ -33,8 +33,8 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    await verifyDocumentationExistInGraphDb(datasetTitle, docName)
     await verifyCampaignExistInGraphDb(datasetTitle, campaign1)
+    await verifyDocumentationExistInGraphDb(datasetTitle, docName)
   })
 
   test('test index of not found collection', async () => {
@@ -108,13 +108,13 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    await verifyDocumentationExistInGraphDb(datasetTitle, docName)
     await verifyCampaignExistInGraphDb(datasetTitle, campaign1)
+    await verifyDocumentationExistInGraphDb(datasetTitle, docName)
 
-    // delete the collection and verify dataset and documentation vertices are deleted
+    // delete the collection and verify dataset and campaign/documentation vertices are deleted
     await deleteCollection('C1237293909-TESTPROV')
-    await verifyDocumentationNotExistInGraphDb(datasetTitle, docName)
     await verifyCampaignNotExistInGraphDb(datasetTitle, campaign1)
+    await verifyDocumentationNotExistInGraphDb(datasetTitle, docName)
   })
 
   test('test deletion collection not delete linked documentation vertex if it is also linked to another collection', async () => {
@@ -131,7 +131,7 @@ describe('indexCmrCollection handler', () => {
     // this documentation url is referenced only by one collection
     const ownDocName = 'https://en.wikipedia.org/wiki/latent_nfi2'
 
-    // first index the collection and verify dataset and documentation vertices are created
+    // first index the collection and verify dataset and campaign/documentation vertices are created
     await updateCollection(
       'C1237293909-TESTPROV',
       datasetTitle,
@@ -146,7 +146,8 @@ describe('indexCmrCollection handler', () => {
     await verifyDocumentationExistInGraphDb(datasetTitle, sharedDocName)
     await verifyDocumentationExistInGraphDb(datasetTitle, ownDocName)
 
-    // index a second collection that reference the same documentation vertex and verify dataset and documentation vertices are created
+    // index a second collection that reference the same campaign/documentation vertex
+    // and verify dataset and campaign/documentation vertices are created
     await updateCollection(
       'C1237294000-TESTPROV',
       anotherDatasetTitle,
