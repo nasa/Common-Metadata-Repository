@@ -388,6 +388,11 @@
   [keyword-scheme]
   (format "http://localhost:%s/keywords/%s" (transmit-config/search-port) (name keyword-scheme)))
 
+(defn smart-handoff-url
+  "Returns the URL for retrieving smart handoff schema for the given client."
+  [client]
+  (format "http://localhost:%s/smart-handoff/%s" (transmit-config/search-port) (name client)))
+
 (defn retrieve-concept-url
   ([type concept-id] (retrieve-concept-url type concept-id nil))
   ([type concept-id revision-id]

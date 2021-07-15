@@ -150,6 +150,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Humanizers Report](#facets-humanizers-report)
   * [Search for Tiles](#search-for-tiles)
   * [Retrieve Controlled Keywords](#retrieve-controlled-keywords)
+  * [Retrieve Smart Handoff Schemas](#retrieve-smart-handoff-schemas)
   * [Find collections that have been deleted after a given date](#deleted-collections)
   * [Find granules that have been deleted after a given date](#deleted-granules)
   * [Tagging](#tagging)
@@ -3147,6 +3148,25 @@ __Example Response__
 }
 ```
 
+### <a name="retrieve-smart-handoff-schemas"></a> Retrieve Smart Handoff Schemas
+
+Smart handoff provides the ability for one application to automatically generate link of the same data to another related application. It is achieved using [JSON-LD schema](https://en.wikipedia.org/wiki/JSON-LD) in [schema.org](https://schema.org/docs/schemas.html). The smart handoff endpoints are used to retrieve the JSON-LD schemas for smart handoff among clients: SOTO, Giovanni and EDSC.
+
+To retrieve smart handoff schema for SOTO:
+```
+curl "%CMR-ENDPOINT%/smart-handoff/soto"
+```
+
+To retrieve smart handoff schema for Giovanni:
+```
+curl "%CMR-ENDPOINT%/smart-handoff/giovanni"
+```
+
+To retrieve smart handoff schema for EDSC:
+```
+curl "%CMR-ENDPOINT%/smart-handoff/edsc"
+```
+
 ### <a name="deleted-collections"></a> Find collections that have been deleted after a given date
 
 To support metadata harvesting, a harvesting client can search CMR for collections that are deleted after a given date. The only search parameter supported is `revision_date` and its format is slightly different from the `revision_date` parameter in regular collection search in that only one revision date can be provided and it can only be a starting date, not a date range. The only supported result format is xml references. The response is the references to the highest non-tombstone collection revisions of the collections that are deleted. e.g.
@@ -3613,7 +3633,7 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: ignore_case, or
 measurement_identifiers parameter is a nested parameter with subfields: contextmedium, object and quantity. Multiple measurement_identifiers can be specified via different indexes to search variables. The following example searches for variables that have at least one measurement_identifier with contextmedium of Med1, object of Object1 and quantity of Q1, and another measurement_identifier with contextmedium of Med2 and object of Obj2.
 
-    
+
 ````
 curl -g "%CMR-ENDPOINT%/variables?measurement_identifiers\[0\]\[contextmedium\]=Med1&measurement_identifiers\[0\]\[object\]=Object1&measurement_identifiers\[0\]\[quantity\]=Q1&measurement_identifiers\[1\]\[contextmedium\]=med2&measurement_identifiers\[2\]\[object\]=Obj2"
 ````

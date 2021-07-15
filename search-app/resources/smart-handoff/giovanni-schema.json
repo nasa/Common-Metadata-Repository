@@ -1,0 +1,66 @@
+{
+  "@context": "http://schema.org",
+  "@type": "ServiceChannel",
+  "url": "https://giovanni.gsfc.nasa.gov/giovanni",
+  "providesService": {
+    "@type": "Service",
+    "name": "Giovanni",
+    "url": "https://giovanni.gsfc.nasa.gov/giovanni",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://giovanni.gsfc.nasa.gov/giovanni/#service=TmAvMp&starttime={start}&endtime={end}&bbox={box}&dataKeyword={collection}&data={variables}",
+      "query-input": [
+        {
+          "@type": "PropertyValueSpecification",
+          "valueRequired": false,
+          "valueName": "start",
+          "defaultValue": {
+            "@id": "schema:startDate",
+            "@type": "Property"
+          }
+        },
+        {
+          "@type": "PropertyValueSpecification",
+          "valueRequired": false,
+          "valueName": "end",
+          "defaultValue": {
+            "@id": "schema:endDate",
+            "@type": "Property"
+          }
+        },
+        {
+          "@type": "PropertyValueSpecification",
+          "valueRequired": false,
+          "valueName": "box",
+          "defaultValue": {
+            "@type": "Place",
+            "geo": {
+              "@type": "GeoShape",
+              "box": "-90.0000 180.0000 90.0000 -180.0000"
+            }
+          }
+        },
+        {
+          "@type": "PropertyValueSpecification",
+          "valueRequired": false,
+          "valueName": "collection",
+          "defaultValue": {
+            "@type": "DefinedTerm",
+            "@id": "https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#c-short-name",
+            "name": "CMR Shortname"
+          }
+        },
+        {
+          "@type": "PropertyValueSpecification",
+          "valueRequired": false,
+          "multipleValues": true,
+          "valueName": "variables",
+          "defaultValue": {
+            "@id": "schema:variableMeasured",
+            "@type": "Property"
+          }
+        }
+      ]
+    }
+  }
+}
