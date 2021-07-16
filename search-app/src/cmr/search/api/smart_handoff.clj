@@ -22,7 +22,7 @@
 (def ^:private smart-handoff-headers
   "smart handoff headers"
   (assoc (:headers cr/options-response)
-                  cr/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)))
+         cr/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)))
 
 (def smart-handoff-routes
   (context "/smart-handoff" []

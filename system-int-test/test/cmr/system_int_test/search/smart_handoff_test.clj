@@ -6,7 +6,7 @@
    [cmr.system-int-test.utils.search-util :as search]))
 
 (deftest retrieve-smart-handoff-schemas
-  (testing "successful retrival of smart handoff schemas"
+  (testing "successful retrieval of smart handoff schemas"
     (are3
       [client]
       (let [expected-schema (->> client
