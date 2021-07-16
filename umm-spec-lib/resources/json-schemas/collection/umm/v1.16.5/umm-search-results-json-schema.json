@@ -91,12 +91,12 @@
           "description": "Contains variables and services associated with the collection",
           "$ref": "#/definitions/AssociationsType"
         },
-          "s3-links": {
-              "description": "Contains the DirectDistributionInformation S3 links assoociated with the collection.",
-              "type": "array",
-              "items": {
-                  "type": "string"
-              }
+        "s3-links": {
+          "description": "Contains the DirectDistributionInformation S3 links assoociated with the collection.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": ["provider-id", "concept-type", "native-id", "concept-id", "revision-id", "revision-date"]

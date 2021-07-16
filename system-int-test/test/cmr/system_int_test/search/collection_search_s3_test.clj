@@ -49,10 +49,10 @@
           (is (= s3-links (get-in result [:meta :s3-links]))))
 
         "with single s3-link available"
-        {:keyword "one"} ["s3://aws.example-1.com"]
+        {:entry-title "one"} ["s3://aws.example-1.com"]
 
         "with multiple s3-links available"
-        {:keyword "two"} ["s3://aws.example-1.com/1" "s3://aws.example-2.com/2"]
+        {:entry-title "two"} ["s3://aws.example-1.com/1" "s3://aws.example-2.com/2"]
 
         "with no s3-links available"
-        {:keyword "none"} []))
+        {:entry-title "none"} []))
