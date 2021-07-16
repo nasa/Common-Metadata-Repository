@@ -3150,7 +3150,7 @@ __Example Response__
 
 ### <a name="retrieve-smart-handoff-schemas"></a> Retrieve Smart Handoff Schemas
 
-Smart handoff provides the ability for one application to automatically generate a link of the same data to another related application. It is achieved using [JSON-LD schema](https://en.wikipedia.org/wiki/JSON-LD) in [schema.org](https://schema.org/docs/schemas.html). The smart handoff endpoints are used to retrieve the JSON-LD schemas for smart handoff among clients: SOTO, Giovanni and EDSC.
+Smart handoffs provide the ability for one application (a) to automatically generate a link to another application (b). That link will preserve the 'context' of the search in application a and recreate it in application b. The context may include spatial, temporal, variable and free text filters. It is achieved using [JSON-LD schema](https://en.wikipedia.org/wiki/JSON-LD) in [schema.org](https://schema.org/docs/schemas.html). The smart handoff endpoints are used to retrieve the JSON-LD schemas for smart handoff among clients: SOTO, Giovanni and EDSC.
 
 To retrieve smart handoff schema for SOTO:
 ```
