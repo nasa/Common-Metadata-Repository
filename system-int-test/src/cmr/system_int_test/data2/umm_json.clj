@@ -2,6 +2,7 @@
   "Contains helper functions for UMM JSON testing."
   (:require
    [cheshire.core :as json]
+   [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
@@ -17,30 +18,43 @@
 
 (def test-context (lkt/setup-context-for-test))
 
+(defn- current-version-meets-min-version?
+  "Takes 'major.minor.patch' version strings and returns true if the target meets or exceeds the minimum"
+  [min-version version]
+  (letfn [(parse-version [v] (map #(Integer/parseInt %) (str/split v #"\.")))]
+    (let [[major minor patch] (parse-version min-version)
+          [c-major c-minor c-patch] (parse-version version)]
+      (and (>= c-major major)
+           (>= c-minor minor)
+           (>= c-patch patch)))))
+
 (defn- collection->umm-json-meta
   "Returns the meta section of umm-json format."
-  [collection]
+  [collection & [version]]
   (let [{:keys [user-id format-key revision-id concept-id provider-id deleted
                 has-variables has-formats has-transforms has-spatial-subsetting
-                has-temporal-subsetting variables services tools]} collection]
-    (util/remove-nil-keys
-     {:concept-type "collection"
-      :concept-id concept-id
-      :revision-id revision-id
-      :native-id (or (:entry-title collection) (:EntryTitle collection))
-      :user-id user-id
-      :provider-id provider-id
-      :format (mt/format->mime-type format-key)
-      :deleted (boolean deleted)
-      :has-variables (when-not deleted (boolean has-variables))
-      :has-formats (when-not deleted (boolean has-formats))
-      :has-transforms (when-not deleted (boolean has-transforms))
-      :has-spatial-subsetting (when-not deleted (boolean has-spatial-subsetting))
-      :has-temporal-subsetting (when-not deleted (boolean has-temporal-subsetting))
-      :associations (when (or (seq services) (seq variables) (seq tools))
-                      (util/remove-map-keys empty? {:variables (set variables)
-                                                    :tools (set tools)
-                                                    :services (set services)}))})))
+                has-temporal-subsetting variables services tools s3-bucket-and-object-prefix-names]} collection
+        meta (util/remove-nil-keys
+              {:concept-type "collection"
+               :concept-id concept-id
+               :revision-id revision-id
+               :native-id (or (:entry-title collection) (:EntryTitle collection))
+               :user-id user-id
+               :provider-id provider-id
+               :format (mt/format->mime-type format-key)
+               :deleted (boolean deleted)
+               :has-variables (when-not deleted (boolean has-variables))
+               :has-formats (when-not deleted (boolean has-formats))
+               :has-transforms (when-not deleted (boolean has-transforms))
+               :has-spatial-subsetting (when-not deleted (boolean has-spatial-subsetting))
+               :has-temporal-subsetting (when-not deleted (boolean has-temporal-subsetting))
+               :associations (when (or (seq services) (seq variables) (seq tools))
+                               (util/remove-map-keys empty? {:variables (set variables)
+                                                             :tools (set tools)
+                                                             :services (set services)}))})]
+    (if (and (string? version) (current-version-meets-min-version? "1.16.5" version))
+      (assoc meta :s3-links (or s3-bucket-and-object-prefix-names []))
+      meta)))
 
 (defn- collection->legacy-umm-json
   "Returns the response of a search in legacy UMM JSON format. The UMM JSON search response format was
@@ -73,14 +87,14 @@
   "Returns the response of a search in UMM JSON format."
   [version collection]
   (if (:deleted collection)
-    {:meta (collection->umm-json-meta collection)}
+    {:meta (collection->umm-json-meta collection version)}
     (let [ingested-metadata (umm-legacy/generate-metadata
                              test-context (d/remove-ingest-associated-keys collection) (:format-key collection))
           umm-spec-record (umm-spec/parse-metadata
                            test-context :collection (:format-key collection) ingested-metadata)
           umm-json (umm-spec/generate-metadata
                     test-context umm-spec-record {:format :umm-json :version version})]
-      {:meta (collection->umm-json-meta collection)
+      {:meta (collection->umm-json-meta collection version)
        :umm (json/decode umm-json true)})))
 
 (defn- meta-for-comparison
