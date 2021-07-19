@@ -105,7 +105,7 @@
       (if max-version
         (and min-satisfied?
              ;; note version order is reversed to check maxium
-             (version-valid? max-version tgt-version))
+             (supported-version? max-version tgt-version))
         min-satisfied?))))
 
 (defn- append-extra-fields
