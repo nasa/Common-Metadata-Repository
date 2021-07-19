@@ -217,7 +217,7 @@ The Maximum URL Length supported by CMR is indirectly controlled by the Request 
 
 #### <a name="cors-header-support"></a> CORS Header support
 
-The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Echo-Token, Authorization, and Client-Id. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id and CMR-Scroll-Id.
+The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Authorization and Client-Id. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id and CMR-Scroll-Id.
 
 #### <a name="query-parameters"></a> Query Parameters
 
@@ -227,7 +227,7 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
  * `scroll` - A boolean flag (true/false) that allows all results to be retrieved efficiently. `page_size` is supported with `scroll` while `page_num` and `offset` are not. If `scroll` is `true` then the first call of a scroll session sets the page size; `page_size` is ignored on subsequent calls.
  * `sort_key` - Indicates one or more fields to sort on. Described below
  * `pretty` - return formatted results if set to true
- * `token` - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token
+ * `token` - specifies a user/guest token to use to authenticate yourself.
  * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
 
 #### <a name="paging-details"></a> Paging Details
@@ -287,7 +287,6 @@ These are query parameters that control what extra data is included with collect
 
   * Accept - specifies the MimeType to return search results in. Default is "application/xml".
     * `curl -H "Accept: application/xml" -i "%CMR-ENDPOINT%/collections"`
-  * `Echo-Token` - specifies an ECHO token to use to authenticate yourself.
   * `Authorization: Bearer` - specifies an EDL Authorization Bearer token to use to authenticate yourself.
     * `curl -H "Authorization: Bearer <access_token>" -i "%CMR-ENDPOINT%/collections"`
   * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
@@ -2991,10 +2990,10 @@ Humanizers define the rules that are used by CMR to provide humanized values for
 
 #### <a name="updating-humanizers"></a> Updating Humanizers
 
-Humanizers can be updated with a JSON representation of the humanizer rules to `%CMR-ENDPOINT%/humanizers` along with a valid ECHO token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
+Humanizers can be updated with a JSON representation of the humanizer rules to `%CMR-ENDPOINT%/humanizers` along with a valid token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
 
 ```
-curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/humanizers -d \
+curl -XPUT -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/humanizers -d \
 '[{"type": "trim_whitespace", "field": "platform", "order": -100},
   {"type": "alias", "field": "platform", "source_value": "AM-1", "replacement_value": "Terra", "reportable": true, "order": 0}]'
 
@@ -3231,10 +3230,10 @@ Access to tags is granted through the TAG_GROUP system object identity. Users ca
 
 #### <a name="creating-a-tag"></a> Creating a Tag
 
-Tags are created by POSTing a JSON representation of a tag to `%CMR-ENDPOINT%/tags` along with a valid ECHO token. The user id of the user associated with the token will be used as the originator id. The response will contain a concept id identifying the tag along with the tag revision id.
+Tags are created by POSTing a JSON representation of a tag to `%CMR-ENDPOINT%/tags` along with a valid token. The user id of the user associated with the token will be used as the originator id. The response will contain a concept id identifying the tag along with the tag revision id.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags -d \
 '{
   "tag_key": "org.ceos.wgiss.cwic.quality",
   "description": "This is a sample tag."
@@ -3270,7 +3269,7 @@ Content-Type: application/json;charset=ISO-8859-1
 Tags are updated by sending a PUT request with the JSON representation of a tag to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag. The same rules apply when updating a tag as when creating it but in addition tag key and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
 
 ```
-curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality -d \
+curl -XPUT -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality -d \
 '{
   "tag_key": "org.ceos.wgiss.cwic.quality",
   "description": "This is a sample tag for indicating some data is high quality."
@@ -3288,7 +3287,7 @@ Content-Length: 48
 Tags are deleted by sending a DELETE request to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag. Deleting a tag creates a tombstone that marks the tag as deleted. The concept id of the tag and the revision id of the tombstone are returned from a delete request. Deleting a tag dissociates all collections with the tag.
 
 ```
-curl -XDELETE -i  -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality
+curl -XDELETE -i  -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -3303,7 +3302,7 @@ Content-Length: 48
 A tag can be associated with collections through either a JSON query or a list of collection concept revisions. Tag association by query only supports tagging the latest revision of collections. Tag association by collections supports tagging any specified collection revisions. The tag association request normally returns status code 200 with a response that consists of a list of individual tag association responses, one for each tag association attempted to create. Each individual tag association response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. The `tagged_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tag association. The tag and the collections must exist before they can be associated together. Here is a sample tag association request and its response:
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.native_id/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.native_id/associations -d \
 '[{"concept_id": "C1200000005-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition, 2016"},
   {"concept_id": "C1200000006-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition"}]'
 
@@ -3331,7 +3330,7 @@ On occasions when tag association cannot be processed at all due to invalid inpu
 Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and re-added it will maintain its tags.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
@@ -3367,7 +3366,7 @@ Content-Length: 168
 Tags can be associated with collections by POSTing a JSON array of collection concept-ids and optional revision ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag. User can also provide arbitrary JSON data which is optional during tag association. The max length of JSON data used for tag association is 32KB. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and re-added it will maintain its tags. If a tag is already associated with a collection without revision, it cannot be associated with a specific revision of that collection again, and vice versa. Tags cannot be associated on tombstoned collection revisions.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
 '[{"concept_id": "C1200000005-PROV1", "revision_id": 2, "data": "APPROVED"},
   {"concept_id": "C1200000006-PROV1", "revision_id": 1, "data": "IN_REVIEW"},
   {"concept_id": "C1200000007-PROV1", "revision_id": 1, "data": "REVIEW_DISPUTED"}]'
@@ -3405,7 +3404,7 @@ Content-Length: 168
 A tag can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to tag association requests. Tag dissociation by query only supports tag dissociation of the latest revision of collections. Tag dissociation by collections supports tag dissociation from any specified collection revisions. The tag dissociation response looks the same as tag association response. It normally returns status code 200 with a response of a list of individual tag dissociation responses, one for each tag association attempted to delete. Each tag dissociation response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag dissociation succeeded or an `errors` or `warnings` field with detailed message when the tag dissociation failed or inapplicable. The `tagged_item` field is the collection concept id and the optional revision id that is used to identify the collection during tag dissociation. Here is a sample tag dissociation request and its response:
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
@@ -3451,7 +3450,7 @@ Tags can be dissociated from collections by sending a DELETE request with a JSON
 
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
@@ -3488,7 +3487,7 @@ Tags can be dissociated from collections by sending a DELETE request with a JSON
 
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
 '[{"concept_id": "C1200000005-PROV1", "revision_id": 1},
   {"concept_id": "C1200000006-PROV1", "revision_id": 2}]'
 
@@ -4118,7 +4117,7 @@ Access to service and service association is granted through the provider via th
 A service identified by its concept id can be associated with collections through a list of collection concept revisions. The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create. Each individual service association response has an `associated_item` field and either a `service_association` field with the service association concept id and revision id when the service association succeeded or an `errors` field with detailed error message when the service association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during service association. Here is a sample service association request and its response:
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
@@ -4154,7 +4153,7 @@ On occassions when service association cannot be processed at all due to invalid
 A service identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to service association requests.
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
@@ -4486,7 +4485,7 @@ Access to tool is granted through the provider via the INGEST_MANAGEMENT_ACL.
 A tool identified by its concept id can be associated with collections through a list of collection concept revisions. The tool association request normally returns status code 200 with a response that consists of a list of individual tool association responses, one for each tool association attempted to create. Each individual tool association response has an `associated_item` field and either a `tool_association` field with the tool association concept id and revision id when the tool association succeeded or an `errors` field with detailed error message when the tool association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tool association. Here is a sample tool association request and its response:
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
@@ -4522,7 +4521,7 @@ On occassions when tool association cannot be processed at all due to invalid in
 A tool identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to tool association requests.
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
@@ -4828,14 +4827,14 @@ Community usage metrics are metrics showing how many times a particular version 
 
 #### <a name="updating-community-usage-metrics"></a> Updating Community Usage Metrics
 
-Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid ECHO token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR. The comprehensive parameter accepts a boolean value, true will cause a lookup verification on each line, false will try and short cut the lookup by checking first against the current metrics humanizer, defaults to false.
+Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR. The comprehensive parameter accepts a boolean value, true will cause a lookup verification on each line, false will try and short cut the lookup by checking first against the current metrics humanizer, defaults to false.
 
 Note that when sending the data, use the --data-binary option so that the linebreaks in the CSV data are not removed. See the example below.
 
 The response will contain a concept id and revision id identifying the set of community usage metrics.
 
 ```
-curl -XPUT -i -H "Content-Type: text/csv" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/community-usage-metrics --data-binary <csv-file-location>
+curl -XPUT -i -H "Content-Type: text/csv" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/community-usage-metrics --data-binary <csv-file-location>
 
 HTTP/1.1 200 OK
 Content-Type: application/json
