@@ -4,9 +4,9 @@
    [cmr.common.util :as util :refer [are3]]
    [cmr.search.results-handlers.umm-json-results-handler :as umm-results]))
 
-(deftest version-valid-test
+(deftest supported-version-test
   (are3 [version min-ver max-ver valid?]
-        (is (= valid? (umm-results/version-valid? version min-ver max-ver)))
+        (is (= valid? (umm-results/supported-version? version min-ver max-ver)))
 
         "min has more specification (but exceeds min)"
         "1.2" "1.1.5" nil true
