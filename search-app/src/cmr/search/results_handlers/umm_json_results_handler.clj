@@ -2,6 +2,8 @@
   "Handles Collection umm-json results format and related functions"
   (:require
    [cheshire.core :as json]
+   [clojure.edn :as edn]
+   [clojure.string :as str]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
@@ -76,14 +78,54 @@
        (map :meta)
        (map :concept-id)))
 
+(def version-extra-fields
+  "Map of extra fields available by version
+  Supported keys
+  :min-version - semver string
+  :max-version - semver string
+  :fields - collection of availble fields in Elastic"
+  [{:min-version "1.16.5" :fields ["s3-bucket-and-object-prefix-names"]}])
+
+(defn- version-exceeds-min?
+  "Takes an array of integer version values and compares if the version exceeds a min"
+  [versions min-versions]
+  (let [v (first versions)
+        m (or (first min-versions) 0)]
+    (or (empty? versions)
+        (if (= v m)
+          (recur (rest versions) (rest min-versions))
+          (> v m)))))
+
+(defn version-valid?
+  "Takes semantic version strings returns true if the target version meets the minimum without exceeding an optional maximum "
+  [tgt-version min-version & [max-version]]
+  (letfn [(parse-semver [v] (map edn/read-string (str/split v #"\.")))]
+    (let [min-satisfied? (version-exceeds-min? (parse-semver tgt-version)
+                                               (parse-semver min-version))]
+      (if max-version
+        (and min-satisfied?
+             ;; note version order is reversed to check maxium
+             (version-valid? max-version tgt-version))
+        min-satisfied?))))
+
+(defn- append-extra-fields
+  "Takes the list of [[version-extra-fields]] and appends additional _source entries to return with the result"
+  [version fields]
+  (->> version-extra-fields
+       (filter #(version-valid? version (:min-version %) (:max-version %)))
+       (map :fields)
+       (concat fields)))
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :legacy-umm-json]
   [concept-type query]
-  (concat
-   results-helper/meta-fields
-   ["entry-title"
-    "entry-id"
-    "short-name"
-    "version-id"]))
+  (let [schema-version (get-in query [:result-format :version])
+        fields (concat
+                results-helper/meta-fields
+                ["entry-title"
+                 "entry-id"
+                 "short-name"
+                 "version-id"])]
+    (append-extra-fields schema-version fields)))
 
 (defmethod elastic-results/elastic-result->query-result-item [:collection :legacy-umm-json]
   [context query elastic-result]

@@ -24,8 +24,7 @@
    "has-transforms"
    "has-spatial-subsetting"
    "has-temporal-subsetting"
-   "associations-gzip-b64"
-   "s3-bucket-and-object-prefix-names"])
+   "associations-gzip-b64"])
 
 (defn elastic-result->meta
   "Takes an elasticsearch result and returns a map of the meta fields for the response."
@@ -50,12 +49,10 @@
                :has-transforms has-transforms
                :has-spatial-subsetting has-spatial-subsetting
                :has-temporal-subsetting has-temporal-subsetting
+               :s3-links s3-bucket-and-object-prefix-names
                :associations (some-> associations-gzip-b64
                                      util/gzip-base64->string
-                                     edn/read-string)})]
-    (if (= :collection concept-type)
-      (assoc meta :s3-links (or s3-bucket-and-object-prefix-names []))
-      meta)))
+                                     edn/read-string)})]))
 
 (defn elastic-result->tuple
   "Returns a tuple of concept id and revision id from the elastic result of the given concept type."
@@ -71,7 +68,9 @@
 (defn query-elastic-results->query-results
   "Returns the query results for the given concept type, query and elastic results."
   [context concept-type query elastic-results]
+  (clojure.pprint/pprint query)
   (let [{:keys [result-format]} query
+        schema-version (get-in query [:result-format :version] :latest)
         hits (get-in elastic-results [:hits :total :value])
         timed-out (:timed_out elastic-results)
         scroll-id (:_scroll_id elastic-results)
@@ -83,9 +82,9 @@
         ;; Convert concepts into items with parsed umm.
         items (mapv (fn [elastic-result concept]
                       (if (:deleted concept)
-                        {:meta (elastic-result->meta concept-type elastic-result)}
+                        {:meta (elastic-result->meta concept-type elastic-result schema-version)}
                         (elastic-result+metadata->umm-json-item
-                         concept-type elastic-result (:metadata concept))))
+                         concept-type elastic-result (:metadata concept) schema-version)))
                     elastic-matches
                     concepts)]
     (results/map->Results {:hits hits
