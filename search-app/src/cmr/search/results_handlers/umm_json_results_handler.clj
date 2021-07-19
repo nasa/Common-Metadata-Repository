@@ -96,8 +96,8 @@
           (recur (rest versions) (rest min-versions))
           (> v m)))))
 
-(defn version-valid?
-  "Takes semantic version strings returns true if the target version meets the minimum without exceeding an optional maximum "
+(defn supported-version?
+  "Takes semantic version strings returns true if the target version meets the minimum without exceeding an optional maximum"
   [tgt-version min-version & [max-version]]
   (letfn [(parse-semver [v] (map edn/read-string (str/split v #"\.")))]
     (let [min-satisfied? (version-exceeds-min? (parse-semver tgt-version)
@@ -109,10 +109,11 @@
         min-satisfied?))))
 
 (defn- append-extra-fields
-  "Takes the list of [[version-extra-fields]] and appends additional _source entries to return with the result"
-  [version fields]
-  (->> version-extra-fields
-       (filter #(version-valid? version (:min-version %) (:max-version %)))
+  "Takes the list of extra-fields and appends additional _source entries to return with the result
+  See [[version-extra-fields]]"
+  [version fields & [{extra-fields :extra-fields :or {extra-fields version-extra-fields}}]]
+  (->> extra-fields
+       (filter #(supported-version? version (:min-version %) (:max-version %)))
        (map :fields)
        (concat fields)))
 

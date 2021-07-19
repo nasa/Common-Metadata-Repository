@@ -33,26 +33,26 @@
                 revision-date deleted has-variables has-formats has-transforms
                 has-spatial-subsetting has-temporal-subsetting
                 associations-gzip-b64 s3-bucket-and-object-prefix-names]} (:_source elastic-result)
-        revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))
-        meta (util/remove-nil-keys
-              {:concept-type concept-type
-               :concept-id concept-id
-               :revision-id revision-id
-               :native-id native-id
-               :user-id user-id
-               :provider-id provider-id
-               :format (mt/format->mime-type (keyword metadata-format))
-               :revision-date revision-date
-               :deleted deleted
-               :has-variables has-variables
-               :has-formats has-formats
-               :has-transforms has-transforms
-               :has-spatial-subsetting has-spatial-subsetting
-               :has-temporal-subsetting has-temporal-subsetting
-               :s3-links s3-bucket-and-object-prefix-names
-               :associations (some-> associations-gzip-b64
-                                     util/gzip-base64->string
-                                     edn/read-string)})]))
+        revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))]
+    (util/remove-nil-keys
+     {:concept-type concept-type
+      :concept-id concept-id
+      :revision-id revision-id
+      :native-id native-id
+      :user-id user-id
+      :provider-id provider-id
+      :format (mt/format->mime-type (keyword metadata-format))
+      :revision-date revision-date
+      :deleted deleted
+      :has-variables has-variables
+      :has-formats has-formats
+      :has-transforms has-transforms
+      :has-spatial-subsetting has-spatial-subsetting
+      :has-temporal-subsetting has-temporal-subsetting
+      :s3-links s3-bucket-and-object-prefix-names
+      :associations (some-> associations-gzip-b64
+                            util/gzip-base64->string
+                            edn/read-string)})))
 
 (defn elastic-result->tuple
   "Returns a tuple of concept id and revision id from the elastic result of the given concept type."
@@ -68,7 +68,6 @@
 (defn query-elastic-results->query-results
   "Returns the query results for the given concept type, query and elastic results."
   [context concept-type query elastic-results]
-  (clojure.pprint/pprint query)
   (let [{:keys [result-format]} query
         schema-version (get-in query [:result-format :version] :latest)
         hits (get-in elastic-results [:hits :total :value])
@@ -82,9 +81,9 @@
         ;; Convert concepts into items with parsed umm.
         items (mapv (fn [elastic-result concept]
                       (if (:deleted concept)
-                        {:meta (elastic-result->meta concept-type elastic-result schema-version)}
+                        {:meta (elastic-result->meta concept-type elastic-result)}
                         (elastic-result+metadata->umm-json-item
-                         concept-type elastic-result (:metadata concept) schema-version)))
+                         concept-type elastic-result (:metadata concept))))
                     elastic-matches
                     concepts)]
     (results/map->Results {:hits hits
