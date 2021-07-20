@@ -37,7 +37,7 @@
       :has-transforms (when-not deleted (boolean has-transforms))
       :has-spatial-subsetting (when-not deleted (boolean has-spatial-subsetting))
       :has-temporal-subsetting (when-not deleted (boolean has-temporal-subsetting))
-      :s3-links (or s3-bucket-and-object-prefix-names [])
+      :s3-links s3-bucket-and-object-prefix-names
       :associations (when (or (seq services) (seq variables) (seq tools))
                       (util/remove-map-keys empty? {:variables (set variables)
                                                     :tools (set tools)
