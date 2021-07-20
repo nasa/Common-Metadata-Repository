@@ -55,4 +55,4 @@
         {:entry-title "two"} ["s3://aws.example-1.com/1" "s3://aws.example-2.com/2"]
 
         "with no s3-links available"
-        {:entry-title "none"} []))
+        {:entry-title "none"} nil))

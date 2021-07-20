@@ -56,7 +56,7 @@
   [version fields & [{extra-fields :extra-fields :or {extra-fields version-extra-fields}}]]
   (->> extra-fields
        (filter #(supported-version? version (:min-version %) (:max-version %)))
-       (map :fields)
+       (mapcat :fields)
        (concat fields)))
 
 (defn- get-granule-count-for-item
@@ -122,14 +122,12 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :legacy-umm-json]
   [concept-type query]
-  (let [schema-version (get-in query [:result-format :version])
-        fields ["entry-title"
-                "entry-id"
-                "short-name"
-                "version-id"]]
-    (->> results-helper/meta-fields
-         (concat fields)
-         (append-extra-fields schema-version))))
+  (concat
+   results-helper/meta-fields
+   ["entry-title"
+    "entry-id"
+    "short-name"
+    "version-id"]))
 
 (defmethod elastic-results/elastic-result->query-result-item [:collection :legacy-umm-json]
   [context query elastic-result]
