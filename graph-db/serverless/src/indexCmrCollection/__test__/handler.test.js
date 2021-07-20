@@ -4,7 +4,10 @@ import indexCmrCollection from '../handler'
 
 import { updateCollection, deleteCollection } from '../../testUtil/indexCollection'
 
-import { verifyExistInGraphDb, verifyNotExistInGraphDb } from '../../testUtil/verifyGraphDb'
+import {
+  verifyDocumentationExistInGraphDb, verifyDocumentationNotExistInGraphDb,
+  verifyCampaignExistInGraphDb, verifyCampaignNotExistInGraphDb
+} from '../../testUtil/verifyGraphDb'
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -18,10 +21,20 @@ const getEvent = (conceptId, actionType) => {
 describe('indexCmrCollection handler', () => {
   test('test initial indexing of a collection', async () => {
     const datasetTitle = 'Latent reserves within the Swiss NFI'
+    const campaign1 = 'Campaign One'
     const docName = 'https://en.wikipedia.org/wiki/latent_nfi'
 
-    await updateCollection('C1237293909-TESTPROV', datasetTitle, [docName])
-    await verifyExistInGraphDb(datasetTitle, docName)
+    await updateCollection(
+      'C1237293909-TESTPROV',
+      datasetTitle,
+      {
+        campaigns: [campaign1],
+        docNames: [docName]
+      }
+    )
+
+    await verifyCampaignExistInGraphDb(datasetTitle, campaign1)
+    await verifyDocumentationExistInGraphDb(datasetTitle, docName)
   })
 
   test('test index of not found collection', async () => {
@@ -82,45 +95,92 @@ describe('indexCmrCollection handler', () => {
 
   test('test deletion of single collection', async () => {
     const datasetTitle = 'Latent reserves within the Swiss NFI'
+    const campaign1 = 'Campaign One'
     const docName = 'https://en.wikipedia.org/wiki/latent_nfi'
 
     // first index the collection and verify dataset and documentation vertices are created
-    await updateCollection('C1237293909-TESTPROV', datasetTitle, [docName])
-    await verifyExistInGraphDb(datasetTitle, docName)
+    await updateCollection(
+      'C1237293909-TESTPROV',
+      datasetTitle,
+      {
+        campaigns: [campaign1],
+        docNames: [docName]
+      }
+    )
 
-    // delete the collection and verify dataset and documentation vertices are deleted
+    await verifyCampaignExistInGraphDb(datasetTitle, campaign1)
+    await verifyDocumentationExistInGraphDb(datasetTitle, docName)
+
+    // delete the collection and verify dataset and campaign/documentation vertices are deleted
     await deleteCollection('C1237293909-TESTPROV')
-    await verifyNotExistInGraphDb(datasetTitle, docName)
+    await verifyCampaignNotExistInGraphDb(datasetTitle, campaign1)
+    await verifyDocumentationNotExistInGraphDb(datasetTitle, docName)
   })
 
   test('test deletion collection not delete linked documentation vertex if it is also linked to another collection', async () => {
     const datasetTitle = 'Latent reserves within the Swiss NFI'
     const anotherDatasetTitle = 'Another Latent reserves within the Swiss NFI'
+
+    // this campaign is referenced by two collections
+    const sharedCampaign = 'SharedCampaign'
+    // this campaign is referenced only by one collection
+    const ownCampaign = 'OwnCampaign'
+
     // this documentation url is referenced by two collections
     const sharedDocName = 'https://en.wikipedia.org/wiki/latent_nfi'
     // this documentation url is referenced only by one collection
     const ownDocName = 'https://en.wikipedia.org/wiki/latent_nfi2'
 
-    // first index the collection and verify dataset and documentation vertices are created
-    await updateCollection('C1237293909-TESTPROV', datasetTitle, [sharedDocName, ownDocName])
-    await verifyExistInGraphDb(datasetTitle, sharedDocName)
-    await verifyExistInGraphDb(datasetTitle, ownDocName)
+    // first index the collection and verify dataset and campaign/documentation vertices are created
+    await updateCollection(
+      'C1237293909-TESTPROV',
+      datasetTitle,
+      {
+        campaigns: [sharedCampaign, ownCampaign],
+        docNames: [sharedDocName, ownDocName]
+      }
+    )
 
-    // index a second collection that reference the same documentation vertex and verify dataset and documentation vertices are created
-    await updateCollection('C1237294000-TESTPROV', anotherDatasetTitle, [sharedDocName])
-    await verifyExistInGraphDb(anotherDatasetTitle, sharedDocName)
+    await verifyCampaignExistInGraphDb(datasetTitle, sharedCampaign)
+    await verifyCampaignExistInGraphDb(datasetTitle, ownCampaign)
+    await verifyDocumentationExistInGraphDb(datasetTitle, sharedDocName)
+    await verifyDocumentationExistInGraphDb(datasetTitle, ownDocName)
+
+    // index a second collection that reference the same campaign/documentation vertex
+    // and verify dataset and campaign/documentation vertices are created
+    await updateCollection(
+      'C1237294000-TESTPROV',
+      anotherDatasetTitle,
+      {
+        campaigns: [sharedCampaign],
+        docNames: [sharedDocName]
+      }
+    )
+
+    await verifyCampaignExistInGraphDb(anotherDatasetTitle, sharedCampaign)
+    await verifyDocumentationExistInGraphDb(anotherDatasetTitle, sharedDocName)
 
     // delete the collection and verify dataset vertex is deleted
-    // the documentation vertex that is not referenced by another collection is deleted
-    // the documentation vertex that is referenced by another collection is not deleted
+    // the campaign/documentation vertex that is not referenced by another collection is deleted
+    // the campaign/documentation vertex that is referenced by another collection is not deleted
     await deleteCollection('C1237293909-TESTPROV')
-    await verifyNotExistInGraphDb(datasetTitle, ownDocName)
-    await verifyExistInGraphDb(anotherDatasetTitle, sharedDocName)
+    await verifyCampaignNotExistInGraphDb(datasetTitle, ownCampaign)
+    await verifyCampaignExistInGraphDb(anotherDatasetTitle, sharedCampaign)
+    await verifyDocumentationNotExistInGraphDb(datasetTitle, ownDocName)
+    await verifyDocumentationExistInGraphDb(anotherDatasetTitle, sharedDocName)
   })
 
   test('test update collection', async () => {
     const datasetTitle = 'Latent reserves within the Swiss NFI'
     const anotherDatasetTitle = 'Another Latent reserves within the Swiss NFI'
+
+    // this campaign is referenced by both the old and new version of the collection
+    const keptCampaign = 'KeptCampaign'
+    // this campaign is referenced only by the old version of collection
+    const removedCampaign = 'RemovedCampaign'
+    // this campaign is referenced only by the new version of collection
+    const newCampaign = 'NewCampaign'
+
     // this documentation url is referenced by both the old and new version of the collection
     const keptDocName = 'https://en.wikipedia.org/wiki/latent_nfi'
     // this documentation url is referenced only by the old version of collection
@@ -129,20 +189,40 @@ describe('indexCmrCollection handler', () => {
     const newDocName = 'https://en.wikipedia.org/wiki/latent_nfi_new'
 
     // first index the collection and verify dataset and documentation vertices are created
-    await updateCollection('C1237293909-TESTPROV', datasetTitle, [keptDocName, removedDocName])
-    await verifyExistInGraphDb(datasetTitle, keptDocName)
-    await verifyExistInGraphDb(datasetTitle, removedDocName)
+    await updateCollection(
+      'C1237293909-TESTPROV',
+      datasetTitle,
+      {
+        campaigns: [keptCampaign, removedCampaign],
+        docNames: [keptDocName, removedDocName]
+      }
+    )
+
+    await verifyCampaignExistInGraphDb(datasetTitle, keptCampaign)
+    await verifyCampaignExistInGraphDb(datasetTitle, removedCampaign)
+    await verifyDocumentationExistInGraphDb(datasetTitle, keptDocName)
+    await verifyDocumentationExistInGraphDb(datasetTitle, removedDocName)
 
     // update the collection
-    await updateCollection('C1237293909-TESTPROV', anotherDatasetTitle, [keptDocName, newDocName])
+    await updateCollection(
+      'C1237293909-TESTPROV',
+      anotherDatasetTitle,
+      {
+        campaigns: [keptCampaign, newCampaign],
+        docNames: [keptDocName, newDocName]
+      }
+    )
 
-    // verify the datasetTitle dataset vertex and the removedDocName documentation vertex are deleted
-    await verifyNotExistInGraphDb(datasetTitle, removedDocName)
+    // verify the datasetTitle dataset vertex and the removed campaign/documentation vertex are deleted
+    await verifyCampaignNotExistInGraphDb(datasetTitle, removedCampaign)
+    await verifyDocumentationNotExistInGraphDb(datasetTitle, removedDocName)
 
     // verify the dataset vertext with the new title exist,
-    // verify the documentation vertices with name keptDocName and newDocName exist,
-    // and there are correct edges between the dataset vertex and the documentation vertices
-    await verifyExistInGraphDb(anotherDatasetTitle, keptDocName)
-    await verifyExistInGraphDb(anotherDatasetTitle, newDocName)
+    // verify the campaign/documentation vertices referenced by another collection exist,
+    // and there are correct edges between the dataset vertex and the campaign/documentation vertices
+    await verifyCampaignExistInGraphDb(anotherDatasetTitle, keptCampaign)
+    await verifyCampaignExistInGraphDb(anotherDatasetTitle, newCampaign)
+    await verifyDocumentationExistInGraphDb(anotherDatasetTitle, keptDocName)
+    await verifyDocumentationExistInGraphDb(anotherDatasetTitle, newDocName)
   })
 })
