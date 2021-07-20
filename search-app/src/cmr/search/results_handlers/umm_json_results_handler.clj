@@ -40,7 +40,7 @@
   [concept-type query]
   (concat
    results-helper/meta-fields
-   ["s3-buckets-and-object-prefix-names"]))
+   ["s3-bucket-and-object-prefix-names"]))
 
 (defmethod elastic-results/elastic-result->query-result-item [:collection :umm-json-results]
   [context query elastic-result]
