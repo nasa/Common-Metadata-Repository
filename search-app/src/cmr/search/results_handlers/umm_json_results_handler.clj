@@ -46,7 +46,7 @@
                            true)]
       (if max-version
         (and min-satisfied?
-             ;; note version order is reversed to check maxium
+             ;; note version order is reversed to check maximum
              (supported-version? max-version tgt-version))
         min-satisfied?))))
 
