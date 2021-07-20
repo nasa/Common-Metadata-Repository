@@ -8,6 +8,9 @@
   (are3 [version min-ver max-ver valid?]
         (is (= valid? (umm-results/supported-version? version min-ver max-ver)))
 
+        "nil versions are not filtered"
+        nil "1.15.6" nil true
+
         "min has more specification (but exceeds min)"
         "1.2" "1.1.5" nil true
 

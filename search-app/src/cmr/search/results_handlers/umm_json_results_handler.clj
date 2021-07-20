@@ -18,6 +18,47 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Collection UMM JSON
 
+(def version-extra-fields
+  "List of extra fields available by version of umm-c response
+  Supported keys
+  :min-version - semver string e.g. 1.16.5
+  :max-version - semver string
+  :fields - collection of availble fields in Elastic"
+  [{:min-version "1.16.5" :fields ["s3-bucket-and-object-prefix-names"]}])
+
+(defn- version-exceeds-min?
+  "Takes an array of integer version values and compares if the version exceeds a min"
+  [versions min-versions]
+  (let [v (first versions)
+        m (or (first min-versions) 0)]
+    (or (empty? versions)
+        (if (= v m)
+          (recur (rest versions) (rest min-versions))
+          (> v m)))))
+
+(defn supported-version?
+  "Takes semantic version strings returns true if the target version meets the minimum without exceeding an optional maximum"
+  [tgt-version min-version & [max-version]]
+  (letfn [(parse-semver [v] (map edn/read-string (str/split v #"\.")))]
+    (let [min-satisfied? (if tgt-version
+                           (version-exceeds-min? (parse-semver tgt-version)
+                                                 (parse-semver min-version))
+                           true)]
+      (if max-version
+        (and min-satisfied?
+             ;; note version order is reversed to check maxium
+             (supported-version? max-version tgt-version))
+        min-satisfied?))))
+
+(defn- append-extra-fields
+  "Takes the list of extra-fields and appends additional _source entries to return with the result
+  See [[version-extra-fields]]"
+  [version fields & [{extra-fields :extra-fields :or {extra-fields version-extra-fields}}]]
+  (->> extra-fields
+       (filter #(supported-version? version (:min-version %) (:max-version %)))
+       (map :fields)
+       (concat fields)))
+
 (defn- get-granule-count-for-item
   "Get the granule count from granule-counts-map using the concept-id in the item."
   [item granule-counts-map]
@@ -38,7 +79,8 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :umm-json-results]
   [concept-type query]
-  results-helper/meta-fields)
+  (let [schema-version (get-in query [:result-format :version])]
+    (append-extra-fields schema-version results-helper/meta-fields)))
 
 (defmethod elastic-results/elastic-result->query-result-item [:collection :umm-json-results]
   [context query elastic-result]
@@ -78,55 +120,16 @@
        (map :meta)
        (map :concept-id)))
 
-(def version-extra-fields
-  "Map of extra fields available by version
-  Supported keys
-  :min-version - semver string
-  :max-version - semver string
-  :fields - collection of availble fields in Elastic"
-  [{:min-version "1.16.5" :fields ["s3-bucket-and-object-prefix-names"]}])
-
-(defn- version-exceeds-min?
-  "Takes an array of integer version values and compares if the version exceeds a min"
-  [versions min-versions]
-  (let [v (first versions)
-        m (or (first min-versions) 0)]
-    (or (empty? versions)
-        (if (= v m)
-          (recur (rest versions) (rest min-versions))
-          (> v m)))))
-
-(defn supported-version?
-  "Takes semantic version strings returns true if the target version meets the minimum without exceeding an optional maximum"
-  [tgt-version min-version & [max-version]]
-  (letfn [(parse-semver [v] (map edn/read-string (str/split v #"\.")))]
-    (let [min-satisfied? (version-exceeds-min? (parse-semver tgt-version)
-                                               (parse-semver min-version))]
-      (if max-version
-        (and min-satisfied?
-             ;; note version order is reversed to check maxium
-             (supported-version? max-version tgt-version))
-        min-satisfied?))))
-
-(defn- append-extra-fields
-  "Takes the list of extra-fields and appends additional _source entries to return with the result
-  See [[version-extra-fields]]"
-  [version fields & [{extra-fields :extra-fields :or {extra-fields version-extra-fields}}]]
-  (->> extra-fields
-       (filter #(supported-version? version (:min-version %) (:max-version %)))
-       (map :fields)
-       (concat fields)))
-
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :legacy-umm-json]
   [concept-type query]
   (let [schema-version (get-in query [:result-format :version])
-        fields (concat
-                results-helper/meta-fields
-                ["entry-title"
-                 "entry-id"
-                 "short-name"
-                 "version-id"])]
-    (append-extra-fields schema-version fields)))
+        fields ["entry-title"
+                "entry-id"
+                "short-name"
+                "version-id"]]
+    (->> results-helper/meta-fields
+         (concat fields)
+         (append-extra-fields schema-version))))
 
 (defmethod elastic-results/elastic-result->query-result-item [:collection :legacy-umm-json]
   [context query elastic-result]

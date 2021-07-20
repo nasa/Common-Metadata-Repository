@@ -69,7 +69,6 @@
   "Returns the query results for the given concept type, query and elastic results."
   [context concept-type query elastic-results]
   (let [{:keys [result-format]} query
-        schema-version (get-in query [:result-format :version] :latest)
         hits (get-in elastic-results [:hits :total :value])
         timed-out (:timed_out elastic-results)
         scroll-id (:_scroll_id elastic-results)
