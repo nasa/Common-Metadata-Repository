@@ -24,7 +24,8 @@
    "has-transforms"
    "has-spatial-subsetting"
    "has-temporal-subsetting"
-   "associations-gzip-b64"])
+   "associations-gzip-b64"
+   "s3-bucket-and-object-prefix-names"])
 
 (defn elastic-result->meta
   "Takes an elasticsearch result and returns a map of the meta fields for the response."

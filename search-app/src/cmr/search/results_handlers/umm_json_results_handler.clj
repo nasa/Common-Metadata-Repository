@@ -2,8 +2,6 @@
   "Handles Collection umm-json results format and related functions"
   (:require
    [cheshire.core :as json]
-   [clojure.edn :as edn]
-   [clojure.string :as str]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
@@ -38,9 +36,7 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :umm-json-results]
   [concept-type query]
-  (concat
-   results-helper/meta-fields
-   ["s3-bucket-and-object-prefix-names"]))
+  results-helper/meta-fields)
 
 (defmethod elastic-results/elastic-result->query-result-item [:collection :umm-json-results]
   [context query elastic-result]
