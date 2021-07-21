@@ -125,7 +125,7 @@ To bootstrap all collections in a specific provider (e.g LPDAAC_TS2), send the f
 ```
 
 ## Explore Indexed Data
-CMR graph database is a Neptune database hosted on AWS. Currently, we only index collections and their documentation related urls and campaigns as vertices in the graph database. See the following diagram for details:
+CMR graph database is a Neptune database hosted on AWS. Currently, we index collections and their documentation related urls, campaigns, platforms and instruments as vertices in the graph database. See the following diagram for details:
 
 ![CMR Collection GraphDB Diagram](images/cmr_collection_graphdb_diagram.png)
 
