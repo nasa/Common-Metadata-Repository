@@ -259,8 +259,8 @@
     (mt/format-key (:format concept))))
 
 (defmethod update-checksum :echo10
-  [context concept urls]
-  (checksum-echo10/update-checksum concept urls))
+  [context concept new-value]
+  (checksum-echo10/update-checksum concept new-value))
 
 (defmethod update-checksum :umm-json
   [context concept urls]
