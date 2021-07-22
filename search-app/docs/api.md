@@ -5,7 +5,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
 
 ### ECHO-Token Deprecation Notice
 
-CMR Legacy Services' ECHO tokens are getting deprecated soon. Please switch over to using EDL tokens and send them over the Authorization header. This document contains many mentions of ECHO-Token, which will soon be out of date. Instructions on how to generate an EDL token are [here](#https://wiki.earthdata.nasa.gov/display/EL/How+to+Generate+a+User+Token)
+CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens and send them with the Authorization header. This document contains many mentions of ECHO-Tokens, which will soon be out of date. Instructions on how to generate an EDL token are [here](#https://wiki.earthdata.nasa.gov/display/EL/How+to+Generate+a+User+Token)
 
 ### Table of Contents
 
