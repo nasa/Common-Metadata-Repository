@@ -11,7 +11,8 @@
       "type": "string",
       "enum": [
         "OPeNDAPLink",
-        "S3Link"
+        "S3Link",
+        "Checksum"
       ]
     },
     "UpdateTupleType": {
