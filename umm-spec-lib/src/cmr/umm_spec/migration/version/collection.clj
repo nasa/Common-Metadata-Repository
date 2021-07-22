@@ -444,6 +444,11 @@
   ;; No need to migrate
   collection)
 
+(defmethod interface/migrate-umm-version [:collection "1.16.4" "1.16.5"]
+  [context collection & _]
+  ;; No need to migrate
+  collection)
+
 (defn- remove-1-16-4-urls
   [related-urls]
   (let [sans ["HITIDE", "SOTO", "Sub-Orbital Order Tool", "CERES Ordering Tool"]]
@@ -453,5 +458,10 @@
   [context collection & _]
   ;; Remove the related urls that sub-types that were not valid in the lower versions.
   (-> collection
-        (update :RelatedUrls remove-1-16-4-urls)
-        util/remove-nils-empty-maps-seqs))
+      (update :RelatedUrls remove-1-16-4-urls)
+      util/remove-nils-empty-maps-seqs))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.5" "1.16.4"]
+  [context collection & _]
+  ;; No need to migrate
+  collection)

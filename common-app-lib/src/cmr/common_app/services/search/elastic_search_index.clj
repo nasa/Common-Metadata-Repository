@@ -220,8 +220,8 @@
         elapsed (- (System/currentTimeMillis) start)
         hits (get-in e-results [:hits :total :value])]
     (info "Elastic query took" (:took e-results) "ms. Connection elapsed:" elapsed "ms")
-    (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits])))
-               (errors/internal-error! "Failed to retrieve all hits.")))
+    (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits]))))
+      (errors/internal-error! "Failed to retrieve all hits."))
     e-results))
 
 (defn refresh
