@@ -7,6 +7,26 @@ const campaign = (shortName) => ({
   ShortName: shortName
 })
 
+const instrument = (shortName) => ({
+  ShortName: shortName
+})
+
+// Returns the UMM Platforms JSON for the given attributes in the format of
+// {platform: platformName, instruments: [instrumentName ...]}
+const platformInstruments = (attributes) => {
+  const { platform, instruments } = attributes
+  let instrumentObjs
+
+  if (instruments) {
+    instrumentObjs = instruments.map(instrument)
+  }
+
+  return {
+    ShortName: platform,
+    Instruments: instrumentObjs
+  }
+}
+
 const relatedUrl = (docName) => ({
   URLContentType: 'PublicationURL',
   Type: 'VIEW RELATED INFORMATION',
@@ -22,12 +42,17 @@ const relatedUrl = (docName) => ({
  * @returns null
  */
 export const updateCollection = async (conceptId, datasetTitle, attributes) => {
-  const { docNames, campaigns } = attributes
+  const { docNames, campaigns, platforms } = attributes
   let projects
+  let platformInstrumentObjs
   let relatedUrls
 
   if (campaigns) {
     projects = campaigns.map(campaign)
+  }
+
+  if (platforms) {
+    platformInstrumentObjs = platforms.map(platformInstruments)
   }
 
   if (docNames) {
@@ -47,6 +72,7 @@ export const updateCollection = async (conceptId, datasetTitle, attributes) => {
           },
           umm: {
             Projects: projects,
+            Platforms: platformInstrumentObjs,
             RelatedUrls: relatedUrls,
             DOI: {
               DOI: 'doi:10.16904/envidat.166'

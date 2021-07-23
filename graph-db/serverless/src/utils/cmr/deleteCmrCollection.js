@@ -37,9 +37,15 @@ const deleteLinkedVertices = async (conceptId, gremlinConnection, vertexLabel, e
  * @returns
  */
 export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
-  // drop all the campaign vertices that are connected to and only connected to the dataset vertex
   let success
+  // drop all the campaign vertices that are connected to and only connected to the dataset vertex
   success = await deleteLinkedVertices(conceptId, gremlinConnection, 'campaign', 'includedIn')
+  if (success === false) {
+    return false
+  }
+
+  // drop all the platformInstrument vertices that are connected to and only connected to the dataset vertex
+  success = await deleteLinkedVertices(conceptId, gremlinConnection, 'platformInstrument', 'acquiredBy')
   if (success === false) {
     return false
   }
