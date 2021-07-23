@@ -5,10 +5,16 @@ import indexCmrCollection from '../handler'
 import { updateCollection, deleteCollection } from '../../testUtil/indexCollection'
 
 import {
-  verifyDocumentationExistInGraphDb, verifyDocumentationNotExistInGraphDb,
-  verifyCampaignExistInGraphDb, verifyCampaignNotExistInGraphDb,
+  verifyDocumentationExistInGraphDb, verifyDocumentationNotExistInGraphDb
+} from '../../testUtil/verifyDocumentation'
+
+import {
+  verifyCampaignExistInGraphDb, verifyCampaignNotExistInGraphDb
+} from '../../testUtil/verifyCampaign'
+
+import {
   verifyPlatformInstrumentsExistInGraphDb, verifyPlatformInstrumentsNotExistInGraphDb
-} from '../../testUtil/verifyGraphDb'
+} from '../../testUtil/verifyPlatformInstrument'
 
 beforeEach(() => {
   jest.clearAllMocks()
