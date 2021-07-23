@@ -254,21 +254,21 @@
    :invalid-data [(format "Appending s3 urls is not supported for format [%s]" (:format concept))]))
 
 (defmulti update-checksum
-  "Add s3 url to the given granule concept."
+  "Add checksum to the given granule concept."
   (fn [context concept urls]
     (mt/format-key (:format concept))))
 
 (defmethod update-checksum :echo10
-  [context concept new-value]
-  (checksum-echo10/update-checksum concept new-value))
+  [context concept checksum]
+  (checksum-echo10/update-checksum concept checksum))
 
 (defmethod update-checksum :umm-json
-  [context concept urls]
+  [context concept checksum]
   (errors/throw-service-errors
    :invalid-data ["Updating checksum for UMM_JSON is coming soon!"]))
 
 (defmethod update-checksum :default
-  [context concept urls]
+  [context concept checksum]
   (errors/throw-service-errors
    :invalid-data [(format "Updating checksum is not supported for format [%s]" (:format concept))]))
 
