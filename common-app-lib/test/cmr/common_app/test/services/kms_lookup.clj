@@ -25,6 +25,14 @@
                       {:category "SPACE" :uuid "location5-uuid"}
                       {:category "CONTINENT" :type "UNITED STATES" :subregion-1 "GEORGIA"
                        :uuid "location6-uuid"}]
+   :related-urls [{:url-content-type "DistributionURL"
+                   :type "GOTO WEB TOOL"
+                   :subtype "HITIDE"
+                   :uuid "related1-uuid-hitide"}
+                  {:url-content-type "VisualizationURL"
+                   :type "GET RELATED VISUALIZATION"
+                   :subtype "MAP"
+                   :uuid "related2-uuid-map"}]
    :iso-topic-categories [{:iso-topic-category "BIOTA" :uuid "itc1-uuid"} {:iso-topic-category "CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" :uuid "itc2-uuid"}]
    :concepts [{:short-name "GOSIC/GTOS" :uuid "dn1-uuid"} {:short-name "GOMMP" :uuid "dn2-uuid"}]
    :science-keywords [{:category "EARTH SCIENCE" :topic "TOPIC1" :term "TERM1"
@@ -103,6 +111,31 @@
 
     "Lookup iso topic category"
     :iso-topic-categories {:iso-topic-category "BIOTA"} "itc1-uuid"
+
+    "Lookup first related-url"
+    :related-urls
+    {:url-content-type "DistributionURL" :type "GOTO WEB TOOL" :subtype "HITIDE"}
+    "related1-uuid-hitide"
+
+    "Lookup second related-url"
+    :related-urls
+    {:url-content-type "VisualizationURL" :type "GET RELATED VISUALIZATION" :subtype "MAP"}
+    "related2-uuid-map"
+
+    "Lookup related-url and not find one when the Content Type is wrong"
+    :related-urls
+    {:url-content-type "Wrong" :type "GOTO WEB TOOL" :subtype "HITIDE"}
+    nil
+
+    "Lookup related-url and not find one when the Type is wrong"
+    :related-urls
+    {:url-content-type "DistributionURL" :type "Wrong" :subtype "HITIDE"}
+    nil
+
+    "Lookup related-url and not find one when the Subtype is wrong"
+    :related-urls
+    {:url-content-type "DistributionURL" :type "GOTO WEB TOOL" :subtype "Wrong"}
+    nil
 
     "Lookup spatial keyword"
     :spatial-keywords {:category "CONTINENT" :type "AFRICA" :subregion-1 "CENTRAL AFRICA"

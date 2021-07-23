@@ -183,6 +183,47 @@
                       :Unit "MB"
                       :Fees "fees"}}]})
 
+  ;; Test that correct but missmatched enums are not allowed
+  (are3 [attribs]
+        (assert-invalid-keywords
+         attribs
+         ["RelatedUrls" 0]
+         [(msg/related-url-type-subtype-not-matching-kms-keywords
+           (first (:RelatedUrls attribs)))])
+
+        "Missmatched ContentType and Type/Subtype pair"
+        {:ArchiveAndDistributionInformation
+         {:FileDistributionInformation [{:Format "hdf5"}]
+          :FileArchiveInformation [{:Format "hdf5"}]}
+          :RelatedUrls
+          [{:Description "Related url description"
+            :URL "www.foobarbazquxquux.com"
+            :URLContentType "DistributionURL" ; wrong enum in this context
+            :Type "GET RELATED VISUALIZATION"
+            :Subtype "MAP"}]}
+
+        "Missmatched ContentType/Type pair and Subtype"
+        {:ArchiveAndDistributionInformation
+         {:FileDistributionInformation [{:Format "HDF5"}]
+          :FileArchiveInformation [{:Format "HDF5"}]}
+         :RelatedUrls
+         [{:Description "Related url description"
+           :URL "www.foobarbazquxquux.com"
+           :URLContentType "VisualizationURL"
+           :Type "GET RELATED VISUALIZATION"
+           :Subtype "HITIDE"}]} ; wrong enum in this context
+
+        "Missmatched Type from ContentType/Subtype pair"
+        {:ArchiveAndDistributionInformation
+         {:FileDistributionInformation [{:Format "JPEG"}]
+          :FileArchiveInformation [{:Format "JPEG"}]}
+          :RelatedUrls
+          [{:Description "Related url description"
+            :URL "www.foobarbazquxquux.com"
+            :URLContentType "VisualizationURL"
+            :Type "DOWNLOAD SOFTWARE" ; wrong enum in this context
+            :Subtype "MAP"}]})
+
   (testing "Project keyword validation"
     (are2 [short-name long-name]
           (assert-invalid-keywords

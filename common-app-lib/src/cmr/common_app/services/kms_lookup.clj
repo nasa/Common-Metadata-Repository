@@ -36,7 +36,7 @@
    :concepts [:short-name]
    :iso-topic-categories [:iso-topic-category]
    :granule-data-format [:format]
-   :related-urls [:type :subtype]})
+   :related-urls [:url-content-type :type :subtype]})
 
 (def kms-scheme->fields-for-umm-var-lookup
   "Maps the KMS keyword scheme to the list of fields that should be matched when comparing fields
