@@ -143,9 +143,24 @@ To see the content of the first 10 vertices in the graph db:
 curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().limit(10)"}'
 ```
 
-To see all collections that share the same documentation URL with the collection (C1233352242-GHRC):
+To see all collections that share the same documentation URL with the collection (C1200400842-GHRC):
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"dataset\").has(\"concept-id\", \"C1233352242-GHRC\").outE(\"documentedBy\").inV().hasLabel(\"documentation\").inE(\"documentedBy\").outV().hasLabel(\"dataset\").valueMap()"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"dataset\").has(\"concept-id\", \"C1200400842-GHRC\").outE(\"documentedBy\").inV().hasLabel(\"documentation\").inE(\"documentedBy\").outV().hasLabel(\"dataset\").valueMap()"}'
+```
+
+To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared documentation:
+```
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"dataset\", \"concept-id\", \"C1200400842-GHRC\").as(\"a\").outE(\"documentedBy\").inV().project(\"shared-link\", \"concept-id\").by(\"name\").by(inE(\"documentedBy\").outV().hasLabel(\"dataset\").where(neq(\"a\")).values(\"concept-id\").fold())"}'
+```
+
+To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared campaigns:
+```
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"dataset\", \"concept-id\", \"C1200400842-GHRC\").as(\"a\").outE(\"includedIn\").inV().project(\"campaign\", \"concept-id\").by(\"name\").by(inE(\"includedIn\").outV().hasLabel(\"dataset\").where(neq(\"a\")).values(\"concept-id\").fold())"}'
+```
+
+To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared platform and instruments:
+```
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"dataset\", \"concept-id\", \"C1200400842-GHRC\").as(\"a\").outE(\"acquiredBy\").inV().project(\"platformInstrument\", \"concept-id\").by(valueMap()).by(inE(\"acquiredBy\").outV().hasLabel(\"dataset\").where(neq(\"a\")).values(\"concept-id\").fold())"}'
 ```
 
 For users have write access to graphdb, they can also add vertices and edges between vertices. For example:
