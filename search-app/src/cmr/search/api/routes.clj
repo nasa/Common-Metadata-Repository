@@ -13,6 +13,7 @@
    [cmr.search.api.keyword :as keyword-api]
    [cmr.search.api.providers :as providers-api]
    [cmr.search.api.services :as services-api]
+   [cmr.search.api.smart-handoff :as smart-handoff-api]
    [cmr.search.api.tags :as tags-api]
    [cmr.search.api.tools :as tools-api]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
@@ -126,6 +127,9 @@
 
         ;; Add routes for searching tiles
         concepts-search-api/tiles-routes
+
+        ;; Add routes for smart handoff
+        smart-handoff-api/smart-handoff-routes
 
         ;; clear scroll routes
         concepts-search-api/clear-scroll-routes))))

@@ -95,6 +95,15 @@
            :headers {"Content-Type" "application/csv; charset=utf-8"}}
           (route/not-found "KMS resource not found\n"))))
 
+    ;; Retrieve smart handoff resources
+    (GET "/smart-handoff/:schema-filename" [schema-filename]
+      (let [resource (io/resource (str "smart-handoff/" schema-filename))]
+        (if resource
+          {:status 200
+           :body (slurp resource)
+           :headers {"Content-Type" "application/json; charset=utf-8"}}
+          (route/not-found "Smart handoff resource not found\n"))))
+
     ;; For debugging. Gets the state of the world in relations to ACLs and what's indexed
     (GET "/acl-state" []
       {:status 200

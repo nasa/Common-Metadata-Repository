@@ -86,6 +86,7 @@
 (def-app-conn-config indexer {:port 3004})
 (def-app-conn-config ingest {:port 3002})
 (def-app-conn-config kms {:port 2999, :relative-root-url "/kms"})
+(def-app-conn-config smart-handoff {:port 2999, :relative-root-url "/smart-handoff"})
 (def-app-conn-config metadata-db {:port 3001})
 ;; CMR open search is 3010
 (def-app-conn-config search {:port 3003})
@@ -220,7 +221,11 @@
    :urs {:protocol (urs-protocol)
          :host (urs-host)
          :port (urs-port)
-         :context (urs-relative-root-url)}})
+         :context (urs-relative-root-url)}
+   :smart-handoff {:protocol (smart-handoff-protocol)
+                   :host (smart-handoff-host)
+                   :port (smart-handoff-port)
+                   :context (smart-handoff-relative-root-url)}})
 
 (defn app-connection-system-key-name
   "The name of the app connection in the system"

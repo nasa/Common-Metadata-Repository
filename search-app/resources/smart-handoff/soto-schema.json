@@ -1,0 +1,48 @@
+{
+  "@context": "http://schema.org",
+  "@type": "ServiceChannel",
+  "url": "https://podaac-tools.jpl.nasa.gov/soto",
+  "providesService": {
+    "@type": "Service",
+    "name": "State of the Ocean",
+    "url": "https://podaac-tools.jpl.nasa.gov/soto",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://podaac-tools.jpl.nasa.gov/soto/#b=BlueMarble_ShadedRelief_Bathymetry&l={layers}&ve={box}&d={start}",
+      "query-input": [
+        {
+          "@type": "PropertyValueSpecification",
+          "valueRequired": false,
+          "valueName": "start",
+          "defaultValue": {
+            "@id": "schema:startDate",
+            "@type": "Property"
+          }
+        },
+        {
+          "@type": "PropertyValueSpecification",
+          "valueRequired": false,
+          "valueName": "box",
+          "defaultValue": {
+            "@type": "Place",
+            "geo": {
+              "@type": "GeoShape",
+              "box": "-90.0000 180.0000 90.0000 -180.0000"
+            }
+          }
+        },
+        {
+          "@type": "PropertyValueSpecification",
+          "valueRequired": false,
+          "multipleValues": true,
+          "valueName": "layers",
+          "defaultValue": {
+            "@type": "DefinedTerm",
+            "@id": "https://developer.earthdata.nasa.gov/gibs/gibs-api-for-developers#GIBSAPIforDevelopers-LayerConfigurationInformation",
+            "name": "PO.DAAC imagery layer. For example: GHRSST_L4_MUR_Sea_Surface_Temperature"
+          }
+        }
+      ]
+    }
+  }
+}

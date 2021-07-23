@@ -1,0 +1,42 @@
+{
+  "@context": "http://schema.org",
+  "@type": "ServiceChannel",
+  "url": "https://search.earthdata.nasa.gov",
+  "providesService": {
+    "@type": "Service",
+    "name": "Earthdata Search",
+    "url": "https://search.earthdata.nasa.gov",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://search.earthdata.nasa.gov/search?q={query}&qt={temporal}&sb={box}",
+      "query-input": [
+        {
+          "@type": "PropertyValueSpecification",
+          "valueRequired": false,
+          "valueName": "temporal",
+          "defaultValue": {
+            "@id": "schema:datasetTimeInterval",
+            "@type": "Property"
+          }
+        },
+        {
+          "@type": "PropertyValueSpecification",
+          "valueRequired": false,
+          "valueName": "box",
+          "defaultValue": {
+            "@type": "Place",
+            "geo": {
+              "@type": "GeoShape",
+              "box": "-90.0000 180.0000 90.0000 -180.0000"
+            }
+          }
+        },
+        {
+          "@type": "PropertyValueSpecification",
+          "valueRequired": false,
+          "valueName": "query"
+        }
+      ]
+    }
+  }
+}

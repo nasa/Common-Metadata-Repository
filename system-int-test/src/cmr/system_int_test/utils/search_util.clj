@@ -743,6 +743,18 @@
         :results (json/decode body)}
        response))))
 
+(defn get-smart-handoff-schema
+  "Calls the CMR search endpoint to retrieve the smart handoff schema for the given client."
+  [client]
+  (get-search-failure-data
+   (let [response (client/get (url/smart-handoff-url client)
+                              {:connection-manager (s/conn-mgr)})
+         {:keys [status body]} response]
+     (if (= 200 status)
+       {:status status
+        :body body}
+       response))))
+
 (defn get-humanizers-report-raw
   "Returns the humanizers report."
   ([]
