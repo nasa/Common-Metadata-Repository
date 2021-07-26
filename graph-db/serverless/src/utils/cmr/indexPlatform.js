@@ -44,6 +44,7 @@ const indexPlatform = async (platform, gremlinConnection, dataset, conceptId) =>
     }
   } catch (error) {
     console.error(`ERROR indexing Platform for concept [${conceptId}] ${JSON.stringify(platform)}: ${error}`)
+    throw error
   }
 }
 

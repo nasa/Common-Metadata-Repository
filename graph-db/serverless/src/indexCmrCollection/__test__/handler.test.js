@@ -4,6 +4,8 @@ import indexCmrCollection from '../handler'
 
 import { updateCollection, deleteCollection } from '../../testUtil/indexCollection'
 
+import { verifyDatasetPropertiesInGraphDb } from '../../testUtil/verifyDataset'
+
 import {
   verifyDocumentationExistInGraphDb, verifyDocumentationNotExistInGraphDb
 } from '../../testUtil/verifyDocumentation'
@@ -28,6 +30,7 @@ const getEvent = (conceptId, actionType) => {
 describe('indexCmrCollection handler', () => {
   test('test initial indexing of a collection', async () => {
     const datasetTitle = 'Latent reserves within the Swiss NFI'
+    const conceptId = 'C1237293909-TESTPROV'
     const campaign1 = 'Campaign One'
     const platform1 = 'Platform One'
     const instrument1 = 'Instrument One'
@@ -35,12 +38,21 @@ describe('indexCmrCollection handler', () => {
     const docName = 'https://en.wikipedia.org/wiki/latent_nfi'
 
     await updateCollection(
-      'C1237293909-TESTPROV',
+      conceptId,
       datasetTitle,
       {
         campaigns: [campaign1],
         platforms: [{ platform: platform1, instruments: [instrument1] }, { platform: platform2 }],
         docNames: [docName]
+      }
+    )
+
+    await verifyDatasetPropertiesInGraphDb(
+      {
+        datasetTitle,
+        conceptId,
+        landingPage: 'https://dx.doi.org/10.16904/envidat.166',
+        doi: 'doi:10.16904/envidat.166'
       }
     )
 
@@ -221,7 +233,7 @@ describe('indexCmrCollection handler', () => {
     await verifyDocumentationExistInGraphDb(anotherDatasetTitle, sharedDocName)
   })
 
-  test.only('test update collection', async () => {
+  test('test update collection', async () => {
     const datasetTitle = 'Latent reserves within the Swiss NFI'
     const anotherDatasetTitle = 'Another Latent reserves within the Swiss NFI'
 

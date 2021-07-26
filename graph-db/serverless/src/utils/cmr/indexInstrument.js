@@ -31,6 +31,7 @@ export const indexInstrument = async (instrument, gremlinConnection, platformNam
       .next()
   } catch (error) {
     console.error(`ERROR indexing instrument: ${error}`)
+    throw error
   }
 
   const { value: vertexValue = {} } = piVertex
