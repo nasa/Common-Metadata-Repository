@@ -1,24 +1,14 @@
 (ns cmr.ingest.services.granule-bulk-update.checksum.echo10
-  "Contains functions to update ECHO10 granule xml for S3 url bulk update."
+  "Contains functions to update ECHO10 granule xml for checksum bulk granule update."
   (:require
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [clojure.zip :as zip]
    [cmr.common.services.errors :as errors]
-   [cmr.common.xml :as cx]
-   [clojure.pprint :as p]))
-
-;;tags for identifying xml elements within zipper structure
-
-(def ^:private tags-after-data-granule
-  "Defines the element tags that come after DataGranule in ECHO10 Granule xml schema"
-  #{:PGEVersionClass :Temporal :Spatial :OrbitCalculatedSpatialDomains :MeasuredParameters
-    :Platforms :Campaigns :AdditionalAttributes :InputGranules :TwoDCoordinateSystem :Price
-    :OnlineAccessURLs :OnlineResources :Orderable :DataFormat :Visible :CloudCover
-    :MetadataStandardName :MetadataStandardVersion :AssociatedBrowseImages :AssociatedBrowseImageUrls})
+   [cmr.common.xml :as cx]))
 
 (def ^:private tags-after-checksum
-  "Defines the element tags that come after Checksum in ECHO10 Granule xml schema"
+  "Defines the element tags that come after Checksum in a DataGranule element"
   #{:ReprocessingPlanned :ReprocessingActual :ProducerGranuleId :DayNightFlag :ProductionDateTime
     :LocalVersionId :AdditionalFile})
 
@@ -36,13 +26,16 @@
                (xml/element :Algorithm {} algorithm)))
 
 (defn- update-checksum-element
-  "Takes in a zipper location, call the given insert function and url values to add OnlineResources"
+  "Takes in a zipper location, call the given insert function to build a new Checksum element.
+   This new checksum element will either be added to the DataGranule or replace an existing Checksum element."
   [loc insert-fn checksum]
-  (let [[value algorithm] (string/split checksum #",")]
-    (if (and (= insert-fn zip/insert-left)
-             (not algorithm))
-      (println "error yo")
-      (insert-fn loc (checksum-element value algorithm)))))
+  (let [[new-value new-algorithm] (string/split checksum #",")
+        current-algorithm (cx/string-at-path (zip/node loc) [:Algorithm])]
+    (if (and (= insert-fn zip/insert-left) ;inserting new <Checksum> node, aka not replacing values
+             (not new-algorithm))
+      (errors/throw-service-errors :invalid-data
+       ["Cannot add new <Checksum> element: please specify a checksum value as well as an algorithm."])
+      (insert-fn loc (checksum-element new-value (or new-algorithm current-algorithm))))))
 
 (defn- update-checksum-in-data-granule
   "Takes the zipper loc of a DataGranule element in the xml, and updates the checksum element with
@@ -57,15 +50,15 @@
           (= :Checksum (-> loc zip/node :tag))
           (recur (update-checksum-element loc zip/replace checksum) true)
 
-         ;; at an element after Checksum, add to the left
-         (or (nil? loc) (some tags-after-checksum [(-> loc zip/node :tag)]))
-         (recur (update-checksum-element loc zip/insert-left checksum) true)
+          ;; at an element after Checksum, add to the left
+          (or (nil? loc) (some tags-after-checksum [(-> loc zip/node :tag)]))
+          (recur (update-checksum-element loc zip/insert-left checksum) true)
 
           ;; no action needs to be taken, move to the next node
-         :else
-         (recur (zip/right loc) false))))))
+          :else
+          (recur (zip/right loc) false))))))
 
-(defn- find-data-granule-element
+(defn- update-data-granule-element
   "Take a parsed granule xml, update the <Checksum> value and optionally the algorithm.
   Returns the zipper representation of the updated xml."
   [parsed checksum]
@@ -87,13 +80,11 @@
           (recur right-loc))))))
 
 (defn- update-checksum-metadata
-  "Takes the granule ECHO10 xml and a checksum with optional algorithm.
-  Update the ECHO10 granule metadata with the checksum (and value, if supplied).
-  Returns the updated metadata."
+  "Takes the granule ECHO10 xml and a checksum with optionally an algorithm.
+  Update the ECHO10 granule metadata with the checksum. Returns the updated metadata."
   [gran-xml checksum]
-  (let [parsed (xml/parse-str gran-xml)
-        result (find-data-granule-element parsed checksum)]
-    (xml/indent-str (find-data-granule-element parsed checksum))))
+  (let [parsed (xml/parse-str gran-xml)]
+    (xml/indent-str (update-data-granule-element parsed checksum))))
 
 (defn update-checksum
   "Update the ECHO10 granule metadata with checksum and optional algorithm.
