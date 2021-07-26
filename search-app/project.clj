@@ -11,7 +11,8 @@
                org.clojure/tools.reader
                org.eclipse.emf/org.eclipse.emf.common
                org.eclipse.emf/org.eclipse.emf.ecore
-               ring/ring-codec]
+               ring/ring-codec
+               org.mozilla/rhino]
   :dependencies [[cheshire "5.8.1"]
                  [clj-time "0.15.1"]
                  [com.fasterxml.jackson.core/jackson-annotations "2.12.0"]
@@ -42,6 +43,7 @@
                  [org.geotools/gt-shapefile "23-RC"]
                  [org.geotools/gt-geojsondatastore "23-RC"]
                  [org.geotools.xsd/gt-xsd-kml "23-RC"]
+                 [org.mozilla/rhino "1.7.12"]
                  [ring/ring-codec "1.1.3"]
                  [ring/ring-core "1.9.2"]
                  [ring/ring-json "0.5.1"]

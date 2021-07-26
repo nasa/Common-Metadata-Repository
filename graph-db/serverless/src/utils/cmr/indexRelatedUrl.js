@@ -43,11 +43,11 @@ const indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId
 
     // Create an edge between this url and its parent collection
     const documentationEdge = await gremlinConnection
-      .V(dataset).as('d')
-      .V(documentationId)
+      .V(documentationId).as('d')
+      .V(dataset)
       .coalesce(
-        gremlinStatistics.outE('documents').where(gremlinStatistics.inV().as('d')),
-        gremlinConnection.addE('documents').to('d')
+        gremlinStatistics.outE('documentedBy').where(gremlinStatistics.inV().as('d')),
+        gremlinConnection.addE('documentedBy').to('d')
       )
       .next()
 

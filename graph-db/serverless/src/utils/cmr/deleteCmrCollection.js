@@ -8,22 +8,51 @@ const { P: { lte } } = gremlin.process
  * Delete the collection with the given concept id from graph db
  * @param {String} conceptId Collection concept id from CMR
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
+ * @param {String} vertexLabel Label of the linked vertex
+ * @param {String} edgeName Name of the edge between the dataset vertex and its linked vertex
  * @returns
  */
-export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
-  // drop all the documentation vertices that are connected to and only connected to the dataset vertex
+const deleteLinkedVertices = async (conceptId, gremlinConnection, vertexLabel, edgeName) => {
   try {
     await gremlinConnection
       .V()
       .has('dataset', 'concept-id', conceptId)
-      .inE('documents')
-      .outV()
-      .where(gremlinStatistics.outE('documents').count().is(lte(1)))
+      .outE(edgeName)
+      .inV()
+      .where(gremlinStatistics.inE(edgeName).count().is(lte(1)))
       .drop()
       .next()
   } catch (error) {
-    console.error(`Error deleting documentation vertices only linked to collection [${conceptId}]: ${error.message}`)
+    console.error(`Error deleting ${vertexLabel} vertices only linked to collection [${conceptId}]: ${error.message}`)
 
+    return false
+  }
+
+  return true
+}
+/**
+ * Delete the collection with the given concept id from graph db
+ * @param {String} conceptId Collection concept id from CMR
+ * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
+ * @returns
+ */
+export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
+  let success
+  // drop all the campaign vertices that are connected to and only connected to the dataset vertex
+  success = await deleteLinkedVertices(conceptId, gremlinConnection, 'campaign', 'includedIn')
+  if (success === false) {
+    return false
+  }
+
+  // drop all the platformInstrument vertices that are connected to and only connected to the dataset vertex
+  success = await deleteLinkedVertices(conceptId, gremlinConnection, 'platformInstrument', 'acquiredBy')
+  if (success === false) {
+    return false
+  }
+
+  // drop all the documentation vertices that are connected to and only connected to the dataset vertex
+  success = await deleteLinkedVertices(conceptId, gremlinConnection, 'documentation', 'documentedBy')
+  if (success === false) {
     return false
   }
 

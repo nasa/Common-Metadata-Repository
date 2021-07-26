@@ -24,7 +24,8 @@
    "has-transforms"
    "has-spatial-subsetting"
    "has-temporal-subsetting"
-   "associations-gzip-b64"])
+   "associations-gzip-b64"
+   "s3-bucket-and-object-prefix-names"])
 
 (defn elastic-result->meta
   "Takes an elasticsearch result and returns a map of the meta fields for the response."
@@ -32,7 +33,7 @@
   (let [{:keys [concept-id revision-id native-id user-id provider-id metadata-format
                 revision-date deleted has-variables has-formats has-transforms
                 has-spatial-subsetting has-temporal-subsetting
-                associations-gzip-b64]} (:_source elastic-result)
+                associations-gzip-b64 s3-bucket-and-object-prefix-names]} (:_source elastic-result)
         revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))]
     (util/remove-nil-keys
      {:concept-type concept-type
@@ -49,6 +50,7 @@
       :has-transforms has-transforms
       :has-spatial-subsetting has-spatial-subsetting
       :has-temporal-subsetting has-temporal-subsetting
+      :s3-links s3-bucket-and-object-prefix-names
       :associations (some-> associations-gzip-b64
                             util/gzip-base64->string
                             edn/read-string)})))

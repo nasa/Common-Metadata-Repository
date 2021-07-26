@@ -3,6 +3,30 @@ import nock from 'nock'
 
 import indexCmrCollection from '../indexCmrCollection/handler'
 
+const campaign = (shortName) => ({
+  ShortName: shortName
+})
+
+const instrument = (shortName) => ({
+  ShortName: shortName
+})
+
+// Returns the UMM Platforms JSON for the given attributes in the format of
+// {platform: platformName, instruments: [instrumentName ...]}
+const platformInstruments = (attributes) => {
+  const { platform, instruments } = attributes
+  let instrumentObjs
+
+  if (instruments) {
+    instrumentObjs = instruments.map(instrument)
+  }
+
+  return {
+    ShortName: platform,
+    Instruments: instrumentObjs
+  }
+}
+
 const relatedUrl = (docName) => ({
   URLContentType: 'PublicationURL',
   Type: 'VIEW RELATED INFORMATION',
@@ -14,10 +38,27 @@ const relatedUrl = (docName) => ({
  * create/update the collection with given concept id, dataset title and documentation name
  * @param {String} conceptId Collection concept id from CMR
  * @param {String} datasetTitle Entry Title of the collection which becomes the title of dataset vertex
- * @param {String} docNames An array of Urls of the PublicationURL of the collection which becomes the names of the documentation vertices
+ * @param {JSON} attributes a map of field value pairs of attributes to update the collection
  * @returns null
  */
-export const updateCollection = async (conceptId, datasetTitle, docNames) => {
+export const updateCollection = async (conceptId, datasetTitle, attributes) => {
+  const { docNames, campaigns, platforms } = attributes
+  let projects
+  let platformInstrumentObjs
+  let relatedUrls
+
+  if (campaigns) {
+    projects = campaigns.map(campaign)
+  }
+
+  if (platforms) {
+    platformInstrumentObjs = platforms.map(platformInstruments)
+  }
+
+  if (docNames) {
+    relatedUrls = docNames.map(relatedUrl)
+  }
+
   nock(/local-cmr/)
     .get(/search/)
     .reply(200,
@@ -30,7 +71,9 @@ export const updateCollection = async (conceptId, datasetTitle, docNames) => {
             'provider-id': 'TESTPROV'
           },
           umm: {
-            RelatedUrls: docNames.map(relatedUrl),
+            Projects: projects,
+            Platforms: platformInstrumentObjs,
+            RelatedUrls: relatedUrls,
             DOI: {
               DOI: 'doi:10.16904/envidat.166'
             },
@@ -53,8 +96,6 @@ export const updateCollection = async (conceptId, datasetTitle, docNames) => {
 /**
  * delete the collection with given concept id, dataset title and documentation name
  * @param {String} conceptId Collection concept id from CMR
- * @param {String} datasetTitle Entry Title of the collection which is the title of dataset vertex
- * @param {String} docName URL of the PublicationURL of the collection which is the name of the documentation vertex
  * @returns null
  */
 export const deleteCollection = async (conceptId) => {
