@@ -7,6 +7,13 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.xml :as cx]))
 
+(def ^:private tags-after-data-granule
+  "Defines the element tags that come after DataGranule in ECHO10 Granule xml schema"
+  #{:PGEVersionClass :Temporal :Spatial :OrbitCalculatedSpatialDomains :MeasuredParameters
+    :Platforms :Campaigns :AdditionalAttributes :InputGranules :TwoDCoordinateSystem :Price
+    :OnlineAccessURLs :OnlineResources :Orderable :DataFormat :Visible :CloudCover
+    :MetadataStandardName :MetadataStandardVersion :AssociatedBrowseImages :AssociatedBrowseImageUrls})
+
 (def ^:private tags-after-checksum
   "Defines the element tags that come after Checksum in a DataGranule element"
   #{:ReprocessingPlanned :ReprocessingActual :ProducerGranuleId :DayNightFlag :ProductionDateTime
