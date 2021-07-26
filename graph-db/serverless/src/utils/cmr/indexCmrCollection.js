@@ -1,6 +1,8 @@
 import gremlin from 'gremlin'
 import 'array-foreach-async'
 
+import indexCampaign from './indexCampaign'
+import indexPlatform from './indexPlatform'
 import indexRelatedUrl from './indexRelatedUrl'
 import { deleteCmrCollection } from './deleteCmrCollection'
 
@@ -22,6 +24,8 @@ export const indexCmrCollection = async (collection, gremlinConnection) => {
       DOI: {
         DOI: doiDescription
       },
+      Projects: projects,
+      Platforms: platforms,
       RelatedUrls: relatedUrls
     }
   } = collection
@@ -64,6 +68,18 @@ export const indexCmrCollection = async (collection, gremlinConnection) => {
 
   const { value = {} } = dataset
   const { id: datasetId } = value
+
+  if (projects && projects.length > 0) {
+    await projects.forEachAsync(async (project) => {
+      await indexCampaign(project, gremlinConnection, datasetId, conceptId)
+    })
+  }
+
+  if (platforms && platforms.length > 0) {
+    await platforms.forEachAsync(async (platform) => {
+      await indexPlatform(platform, gremlinConnection, datasetId, conceptId)
+    })
+  }
 
   if (relatedUrls && relatedUrls.length > 0) {
     await relatedUrls.forEachAsync(async (relatedUrl) => {

@@ -75,4 +75,10 @@
                    false false false false
                    false false
                    false false false
-                   true] #'token/is-launchpad-token?))))
+                   true] #'token/is-launchpad-token?))
+    (testing "get-token-type"
+      (test-group ["Echo-Token"
+                   "Legacy-EDL" "Legacy-EDL" "Legacy-EDL" "Legacy-EDL"
+                   "Legacy-EDL" "Legacy-EDL"
+                   "JWT" "JWT" "JWT"
+                   "Launchpad"] token/get-token-type))))
