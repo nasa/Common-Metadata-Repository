@@ -255,7 +255,7 @@
 
 (defmulti update-checksum
   "Add checksum to the given granule concept."
-  (fn [context concept urls]
+  (fn [context concept checksum]
     (mt/format-key (:format concept))))
 
 (defmethod update-checksum :echo10

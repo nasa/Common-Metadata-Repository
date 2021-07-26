@@ -31,7 +31,7 @@
   [loc insert-fn checksum]
   (let [[new-value new-algorithm] (string/split checksum #",")
         current-algorithm (cx/string-at-path (zip/node loc) [:Algorithm])]
-    (if (and (= insert-fn zip/insert-left) ;inserting new <Checksum> node, aka not replacing values
+    (if (and (= insert-fn zip/insert-left) ;inserting new <Checksum> node, aka not just replacing values, so algorithm is required.
              (not new-algorithm))
       (errors/throw-service-errors :invalid-data
        ["Cannot add new <Checksum> element: please specify a checksum value as well as an algorithm."])
@@ -51,8 +51,14 @@
           (recur (update-checksum-element loc zip/replace checksum) true)
 
           ;; at an element after Checksum, add to the left
-          (or (nil? loc) (some tags-after-checksum [(-> loc zip/node :tag)]))
+          (some tags-after-checksum [(-> loc zip/node :tag)])
           (recur (update-checksum-element loc zip/insert-left checksum) true)
+
+          ;have reached the end of the DataGranule without encountering any of the tags-after-checksum.
+          ;this condition should be impossible to actually trigger, as there are required fields after checksum.
+          (nil? loc)
+          (errors/throw-service-errors :invalid-data
+            ["Cannot update checksum: invalid DataGranule element detected."])
 
           ;; no action needs to be taken, move to the next node
           :else
@@ -67,7 +73,7 @@
     (loop [loc start-loc]
       (let [right-loc (zip/right loc)]
         (cond
-          ;; at a DataGranule element, replace the node with updated value
+          ;; at a DataGranule element, attempt to update/add checksum inside this node
           (= :DataGranule (-> right-loc zip/node :tag))
           (update-checksum-in-data-granule right-loc checksum)
 
