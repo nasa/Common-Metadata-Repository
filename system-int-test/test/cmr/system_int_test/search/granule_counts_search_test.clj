@@ -7,6 +7,7 @@
    [cmr.spatial.codec :as codec]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
@@ -17,7 +18,8 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.tag-util :as tags]))
+   [cmr.system-int-test.utils.tag-util :as tags]
+   [cmr.umm.umm-spatial :as umm-spatial]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
@@ -68,6 +70,12 @@
                (dg/granule coll (merge {:granule-ur ur
                                         :spatial-coverage (apply dg/spatial orbit nil)}
                                        other-attribs))))))
+
+(defn- polygon
+  "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
+  The polygon will be closed automatically."
+  [& ords]
+  (poly/polygon [(apply umm-spatial/ords->ring ords)]))
 
 (deftest granule-related-collection-query-results-features-test
   (let [no-match-temporal {:beginning-date-time "1990-01-01T00:00:00"
@@ -310,6 +318,58 @@
                                                                  :concept-id (map :concept-id all-colls)})]
           (is (= (set (map :concept-id [coll1 coll3 coll4 coll5 coll6 orbit-coll]))
                  (set (map :concept-id (:items results))))))))))
+
+(deftest CMR-6745-ORed-spatial-search-granule-count
+  (let [no-match-temporal {:beginning-date-time "1990-01-01T00:00:00"
+                           :ending-date-time "1991-01-01T00:00:00"}
+        coll1 (make-coll 6745 m/whole-world no-match-temporal
+                        {:science-keywords
+                        [(dc/science-keyword {:category "Tornado"
+                                              :topic "Wind"
+                                              :term "Speed"})]})]
+    (index/wait-until-indexed)
+    (make-gran
+     coll1
+     (polygon 136.11192342 -36.17110948
+              136.18665788 -35.90588352
+              136.37132055 -35.23530856
+              136.09904081 -35.23808754
+              136.11192342 -36.17110948)
+     nil)
+    (make-gran
+     coll1
+     (polygon 134.99977994 -35.3312641
+              136.20781537 -35.32523074
+              136.19344454 -34.33530605
+              134.99978255 -34.34112235
+              134.99977994 -35.3312641)
+     nil)
+    (make-gran
+     coll1
+     (polygon 136.10023295 -35.32625771
+              136.34706996 -35.32375924
+              136.61794555 -34.33043224
+              136.08714151 -34.33629608
+              136.10023295 -35.32625771)
+     nil)
+
+    ;; This granule should not be found
+    (make-gran
+     coll1
+     (polygon 134.9997868 -32.62558044
+              136.1701524 -32.6201286
+              136.15757909 -31.62975815
+              134.99978909 -31.63500577
+              134.9997868 -32.62558044)
+     nil)
+    (testing "ORed granule counts special case"
+      (let [coll1-id (:concept-id coll1)
+            refs (search/find-refs :collection {:include-granule-counts true
+                                                :concept-id coll1-id
+                                                :polygon ["-21.33069,80.92296,-24.68258,80.58223,-26.80316,80.36716,-29.06056,79.60629,-24.34055,78.86559,-17.56837,79.10088,-14.62691,79.83818,-14.83213,80.79254,-21.33069,80.92296"
+                                                          "136.75804,-34.82121,135.13466,-34.7865,134.43289,-35.0361,133.97631,-35.53991,134.6189,-36.7958,136.56358,-36.90405,137.07088,-36.15672,136.75804,-34.82121"]
+                                                "options[spatial][or]" "true"})]
+        (gran-counts/granule-counts-match? :xml {coll1 3} refs)))))
 
 (deftest collection-has-granules-caching-test
   (let [;; Create collections
