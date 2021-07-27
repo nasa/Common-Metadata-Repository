@@ -47,6 +47,7 @@ const indexCampaign = async (project, gremlinConnection, dataset, conceptId) => 
 
     console.log(`campaign edge [${edgeId}] indexed to point to collection [${dataset}]`)
   } catch (error) {
+    // Log specific error message, but throw error again to stop indexing
     console.error(`ERROR indexing campaign for concept [${conceptId}] ${JSON.stringify(project)}: \n Error: ${error}`)
     throw error
   }
