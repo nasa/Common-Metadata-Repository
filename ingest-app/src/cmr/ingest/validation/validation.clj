@@ -2,6 +2,7 @@
   "Provides functions to validate concept"
   (:require
     [cheshire.core :as json]
+    [clojure.data :as data]
     [clojure.string :as str]
     [cmr.common.util :as util :refer [defn-timed]]
     [cmr.common-app.services.kms-fetcher :as kms-fetcher]
@@ -181,18 +182,37 @@
 (defn umm-spec-validate-collection
   "Validate collection through umm-spec validation functions. If warn? flag is
   true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
-  [collection validation-options context warn?]
-  (when-let [err-messages (seq (umm-spec-validation/validate-collection
-                                collection
-                                (when (:validate-keywords? validation-options)
-                                  [(keyword-validations context)])))]
-    (if (or (:validate-umm? validation-options)
-            (config/return-umm-spec-validation-errors)
-            (not warn?))
-      (errors/throw-service-errors :invalid-data err-messages)
-      (do
-        (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
-        err-messages))))
+  ([collection validation-options context warn?]
+   (umm-spec-validate-collection collection nil validation-options context warn?))
+  ([collection prev-collection validation-options context warn?]
+   (when-let [err-messages (seq (umm-spec-validation/validate-collection
+                                 collection
+                                 (when (:validate-keywords? validation-options)
+                                   [(keyword-validations context)])))]
+     (if (or (:validate-umm? validation-options)
+             (config/return-umm-spec-validation-errors)
+             (not warn?))
+       ;; whenever it's time to throw errors, we want to check if it's an collection update and
+       ;; it's not bulk-update and progressive-update-enabled is true. If so, we want to throw
+       ;; errors only when new errors are introduced, otherwise return all the existing errors as
+       ;; error-warnings.
+       (if (and (config/progressive-update-enabled)
+                (not (:bulk-update? validation-options)) 
+                prev-collection)
+         (let [prev-err-messages (seq (umm-spec-validation/validate-collection
+                                       prev-collection
+                                       (when (:validate-keywords? validation-options)
+                                         [(keyword-validations context)])))
+               ;; get the newly introduced validation errors
+               new-err-messages (seq (first (data/diff (set err-messages) (set prev-err-messages))))]
+            (if new-err-messages
+              (errors/throw-service-errors :invalid-data new-err-messages)
+              ;; when there is no newly introduced errors, err-messages contains only existing errors.
+              [{:existing-errors err-messages}]))
+         (errors/throw-service-errors :invalid-data err-messages))
+       (do
+         (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+         err-messages)))))
 
 (defn umm-spec-validate-collection-warnings
   "Validate umm-spec collection validation warnings functions - errors that we want
@@ -229,11 +249,13 @@
 
 (defn-timed validate-business-rules
   "Validates the concept against CMR ingest rules."
-  [context concept]
-  (if-errors-throw :invalid-data
-                   (mapcat #(% context concept)
-                           (bv/business-rule-validations
-                            (:concept-type concept)))))
+  ([context concept]
+   (validate-business-rules context concept nil))
+  ([context concept prev-concept]
+   (if-errors-throw :invalid-data
+                    (mapcat #(% context concept prev-concept)
+                            (bv/business-rule-validations
+                             (:concept-type concept))))))
 
 (defn- measurement-validation
   "A validation that checks that the measurement matches a known KMS field. Takes the following arguments:
