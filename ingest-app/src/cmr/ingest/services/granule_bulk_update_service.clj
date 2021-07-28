@@ -339,10 +339,8 @@
    context concept bulk-update-params user-id append-s3-url))
 
 (defn- modify-checksum*
-  "Modify the S3Link data for the given concept with the provided URLs
-  using the provided transform function.
-  S3 links will be added to the existing concept. If a duplicate S3 link
-  is provided it will be ignored."
+  "Add or update the checksum value and algorithm for the given concept with the provided values
+  using the provided transform function."
   [context concept bulk-update-params user-id xf]
   (let [{:keys [format metadata]} concept
         {:keys [granule-ur new-value]} bulk-update-params
