@@ -250,12 +250,17 @@
 (defn-timed validate-business-rules
   "Validates the concept against CMR ingest rules."
   ([context concept]
-   (validate-business-rules context concept nil))
-  ([context concept prev-concept]
-   (if-errors-throw :invalid-data
-                    (mapcat #(% context concept prev-concept)
-                            (bv/business-rule-validations
-                             (:concept-type concept))))))
+   (validate-business-rules context concept nil nil false))
+  ([context concept prev-concept prev-coll-concept progressive-coll-update?]
+   (let [val-result (map #(% context concept prev-concept prev-coll-concept progressive-coll-update?)
+                         (bv/business-rule-validations
+                         (:concept-type concept)))
+         errors (mapcat #(:errors %) val-result)
+         warnings (mapcat #(:warnings %) val-result)]
+     (if (and progressive-coll-update?
+             (not (seq errors)))
+       (seq warnings)
+       (if-errors-throw :invalid-data errors)))))
 
 (defn- measurement-validation
   "A validation that checks that the measurement matches a known KMS field. Takes the following arguments:

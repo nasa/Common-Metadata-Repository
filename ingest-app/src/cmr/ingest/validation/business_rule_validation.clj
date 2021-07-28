@@ -19,35 +19,41 @@
 
 (defn- version-is-not-nil-validation
   "Validates that the version is not nil"
-  ([_ concept]
-   (version-is-not-nil-validation nil concept nil))
-  ([_ concept _]
-   (when (nil? (get-in concept [:extra-fields :version-id]))
-     ["Version is required."])))
+  [_ concept _ prev-coll-concept progressive-coll-update?]
+  (when (nil? (get-in concept [:extra-fields :version-id]))
+    (let [msgs ["Version is required."]]
+      (if (and progressive-coll-update?
+               (nil? (get-in prev-coll-concept [:extra-fields :version-id])))
+        {:warnings [{:existing-errors msgs}]}
+        {:errors msgs}))))
 
 (defn delete-time-validation
   "Validates the concept delete-time.
   Returns error if the delete time exists and is before one minute from the current time."
   ([_ concept]
-   (delete-time-validation nil concept nil))
-  ([_ concept _]
-   (let [delete-time (get-in concept [:extra-fields :delete-time])]
+   (delete-time-validation nil concept nil nil false))
+  ([_ concept _ prev-coll-concept progressive-coll-update?]
+   (let [delete-time (get-in concept [:extra-fields :delete-time])
+         prev-delete-time (get-in prev-coll-concept [:extra-fields :delete-time])]
      (when (some-> delete-time
                    p/parse-datetime
                    (t/before? (t/plus (tk/now) (t/minutes 1))))
-       [(format "DeleteTime %s is before the current time." delete-time)]))))
+       (let [msgs [(format "DeleteTime %s is before the current time." delete-time)]]
+         (if (and progressive-coll-update?
+                  (= delete-time prev-delete-time))
+           {:warnings [{:existing-errors msgs}]}
+           {:errors msgs})))))) 
 
 (defn- concept-id-validation
   "Validates the concept-id if provided matches the metadata-db concept-id for the concept native-id"
-  ([context concept]
-   (concept-id-validation context concept nil))
-  ([context concept _]
-   (let [{:keys [concept-type provider-id native-id concept-id]} concept]
-     (when concept-id
-       (let [mdb-concept-id (mdb/get-concept-id context concept-type provider-id native-id false)]
-         (when (and mdb-concept-id (not= concept-id mdb-concept-id))
-           [(format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
-                    concept-id mdb-concept-id native-id)]))))))
+  [context concept _ _ _]
+  (let [{:keys [concept-type provider-id native-id concept-id]} concept]
+    (when concept-id
+      (let [mdb-concept-id (mdb/get-concept-id context concept-type provider-id native-id false)]
+        (when (and mdb-concept-id (not= concept-id mdb-concept-id))
+          ;; progressive-coll-update doesn't apply to this case.
+          {:errors [(format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
+                             concept-id mdb-concept-id native-id)]})))))
 
 (def collection-update-searches
   "Defines a list of functions that take the context, concept-id, updated UMM concept and the
@@ -79,21 +85,21 @@
 
 (defn- collection-update-validation
   "Validate collection update does not invalidate any existing granules."
-  ([context concept]
-   (collection-update-validation context concept nil))
-  ([context concept prev-concept]
-   (let [{:keys [extra-fields umm-concept]} concept
-         {:keys [entry-title]} extra-fields]
-     (when prev-concept
-       (let [prev-umm-concept (spec/parse-metadata context prev-concept)
-             has-granule-searches (mapcat
-                                   #(% context (:concept-id prev-concept) umm-concept prev-umm-concept)
-                                   collection-update-searches)
-             search-errors (->> has-granule-searches
-                                (map (partial has-granule-search-error context))
-                                (remove nil?))]
-         (when (seq search-errors)
-           search-errors))))))
+  [context concept prev-concept _ _]
+  (let [{:keys [extra-fields umm-concept]} concept
+        {:keys [entry-title]} extra-fields]
+    (when prev-concept
+      (let [prev-umm-concept (spec/parse-metadata context prev-concept)
+            has-granule-searches (mapcat
+                                  #(% context (:concept-id prev-concept) umm-concept prev-umm-concept)
+                                  collection-update-searches)
+            search-errors (->> has-granule-searches
+                               (map (partial has-granule-search-error context))
+                               (remove nil?))]
+        (when (seq search-errors)
+          ;; progressive-coll-update doesn't apply to this case - any collection update that breaks the
+          ;; collection-granule relationship rules introduces new error.
+          {:errors search-errors})))))
 
 (def business-rule-validations
   "A map of concept-type to the list of the functions that validates concept ingest business rules."
