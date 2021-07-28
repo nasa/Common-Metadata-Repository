@@ -43,7 +43,9 @@ const indexPlatform = async (platform, gremlinConnection, dataset, conceptId) =>
       await createAcquiredByEdge(piId, gremlinConnection, dataset)
     }
   } catch (error) {
+    // Log specific error message, but throw error again to stop indexing
     console.error(`ERROR indexing Platform for concept [${conceptId}] ${JSON.stringify(platform)}: ${error}`)
+    throw error
   }
 }
 

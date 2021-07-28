@@ -56,7 +56,9 @@ const indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId
 
     console.log(`Documentation edge [${edgeId}] indexed to point to collection [${dataset}]`)
   } catch (error) {
-    console.log(`ERROR indexing RelatedUrl for concept [${conceptId}] ${JSON.stringify(relatedUrl)}: \n Error: ${error}`)
+    // Log specific error message, but throw error again to stop indexing
+    console.error(`ERROR indexing RelatedUrl for concept [${conceptId}] ${JSON.stringify(relatedUrl)}: \n Error: ${error}`)
+    throw error
   }
 }
 
