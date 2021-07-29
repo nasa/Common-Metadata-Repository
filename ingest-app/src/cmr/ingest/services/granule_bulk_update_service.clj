@@ -14,6 +14,7 @@
    [cmr.ingest.data.granule-bulk-update :as data-granule-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.services.bulk-update-service :as bulk-update-service]
+   [cmr.ingest.services.granule-bulk-update.checksum.echo10 :as checksum-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.echo10 :as opendap-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]
    [cmr.ingest.services.granule-bulk-update.opendap.umm-g :as opendap-umm-g]
@@ -50,10 +51,10 @@
 (defn- update->instruction
   "Returns the granule bulk update instruction for a single update item"
   [event-type item]
-  (let [[granule-ur url] item]
+  (let [[granule-ur value] item]
     {:event-type event-type
      :granule-ur granule-ur
-     :url url}))
+     :new-value value}))
 
 (defn- request->instructions
   "Returns granule bulk update instructions for the given request"
@@ -252,6 +253,25 @@
   (errors/throw-service-errors
    :invalid-data [(format "Appending s3 urls is not supported for format [%s]" (:format concept))]))
 
+(defmulti update-checksum
+  "Add checksum to the given granule concept."
+  (fn [context concept checksum]
+    (mt/format-key (:format concept))))
+
+(defmethod update-checksum :echo10
+  [context concept checksum]
+  (checksum-echo10/update-checksum concept checksum))
+
+(defmethod update-checksum :umm-json
+  [context concept checksum]
+  (errors/throw-service-errors
+   :invalid-data ["Updating checksum for UMM_JSON is coming soon!"]))
+
+(defmethod update-checksum :default
+  [context concept checksum]
+  (errors/throw-service-errors
+   :invalid-data [(format "Updating checksum is not supported for format [%s]" (:format concept))]))
+
 (defmulti update-granule-concept
   "Perform the update of the granule concept."
   (fn [context concept bulk-update-params user-id]
@@ -264,8 +284,8 @@
   Successful updates will return the updated concept."
   [context concept bulk-update-params user-id xf]
   (let [{:keys [format metadata]} concept
-        {:keys [granule-ur url]} bulk-update-params
-        grouped-urls (opendap-util/validate-url url)
+        {:keys [granule-ur new-value]} bulk-update-params
+        grouped-urls (opendap-util/validate-url new-value)
         updated-concept (xf context concept grouped-urls)
         {updated-metadata :metadata updated-format :format} updated-concept]
     (if-let [err-messages (:errors updated-metadata)]
@@ -294,8 +314,8 @@
   is provided it will be ignored."
   [context concept bulk-update-params user-id xf]
   (let [{:keys [format metadata]} concept
-        {:keys [granule-ur url]} bulk-update-params
-        urls (s3-util/validate-url url)
+        {:keys [granule-ur new-value]} bulk-update-params
+        urls (s3-util/validate-url new-value)
         ;; invoke the appropriate transform
         updated-concept (xf context concept urls)
         {updated-metadata :metadata updated-format :format} updated-concept]
@@ -317,6 +337,29 @@
   [context concept bulk-update-params user-id]
   (modify-s3-link*
    context concept bulk-update-params user-id append-s3-url))
+
+(defn- modify-checksum*
+  "Add or update the checksum value and algorithm for the given concept with the provided values
+  using the provided transform function."
+  [context concept bulk-update-params user-id xf]
+  (let [{:keys [format metadata]} concept
+        {:keys [granule-ur new-value]} bulk-update-params
+        ;; invoke the appropriate transform - for checksum, there is only one option (update)
+        updated-concept (xf context concept new-value)
+        {updated-metadata :metadata updated-format :format} updated-concept]
+    (if-let [err-messages (:errors updated-metadata)]
+      (errors/throw-service-errors :invalid-data err-messages)
+      (-> concept
+          (assoc :metadata updated-metadata)
+          (assoc :format updated-format)
+          (update :revision-id inc)
+          (assoc :revision-date (time-keeper/now))
+          (assoc :user-id user-id)))))
+
+(defmethod update-granule-concept :update_field:checksum
+  [context concept bulk-update-params user-id]
+  (modify-checksum*
+   context concept bulk-update-params user-id update-checksum))
 
 (defmethod update-granule-concept :default
   [context concept bulk-update-params user-id]
