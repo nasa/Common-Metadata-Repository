@@ -90,7 +90,7 @@
 (def related-url-validations
   [{:URL url-validation}
    description-validation
-   related-url-type-validation
+   ;related-url-type-validation ; remove this to use new code
    get-service-validation
    get-data-validation])
 
