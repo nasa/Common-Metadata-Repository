@@ -14,6 +14,7 @@
    [cmr.ingest.data.granule-bulk-update :as data-granule-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.services.bulk-update-service :as bulk-update-service]
+   [cmr.ingest.services.granule-bulk-update.additional-files.umm-g :as additional-files-umm-g]
    [cmr.ingest.services.granule-bulk-update.checksum.echo10 :as checksum-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.echo10 :as opendap-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]
@@ -48,9 +49,20 @@
              :when (> freq 1)]
          id)))
 
-(defn- update->instruction
+(defmulti update->instruction
   "Returns the granule bulk update instruction for a single update item"
-  [event-type item]
+  (fn [event-type update-field item]
+    (keyword update-field)))
+
+(defmethod update->instruction :AdditionalFile
+  [event-type update-field item]
+  (let [{:keys [GranuleUR Files]} item]
+    {:event-type event-type
+     :granule-ur GranuleUR
+     :new-value Files}))
+
+(defmethod update->instruction :default
+  [event-type update-field item]
   (let [[granule-ur value] item]
     {:event-type event-type
      :granule-ur granule-ur
@@ -61,7 +73,7 @@
   [parsed-json]
   (let [{:keys [operation update-field updates]} parsed-json
         event-type (string/lower-case (str operation ":" update-field))]
-    (map (partial update->instruction event-type) updates)))
+    (map (partial update->instruction event-type update-field) updates)))
 
 (defn- validate-granule-bulk-update-no-duplicate-urs
   "Validate no duplicate URs exist within the list of instructions"
@@ -128,6 +140,7 @@
   [context provider-id json-body user-id]
   (let [request (validate-and-parse-bulk-granule-update context json-body provider-id)
         instructions (request->instructions request)
+
         task-id (try
                   (data-granule-bulk-update/create-granule-bulk-update-task
                    context
@@ -272,6 +285,25 @@
   (errors/throw-service-errors
    :invalid-data [(format "Updating checksum is not supported for format [%s]" (:format concept))]))
 
+(defmulti update-additional-files
+  "Update AdditionalFiles in given granule concept."
+  (fn [context concept checksum]
+    (mt/format-key (:format concept))))
+
+(defmethod update-additional-files :echo10
+  [context concept checksum]
+  (errors/throw-service-errors
+   :invalid-data ["Updating AdditionalFiles for ECHO10 is coming soon!"]))
+
+(defmethod update-additional-files :umm-json
+  [context concept checksum]
+  (additional-files-umm-g/update-additional-files concept checksum))
+
+(defmethod update-additional-files :default
+  [context concept checksum]
+  (errors/throw-service-errors
+   :invalid-data [(format "Updating AdditionalFiles is not supported for format [%s]" (:format concept))]))
+
 (defmulti update-granule-concept
   "Perform the update of the granule concept."
   (fn [context concept bulk-update-params user-id]
@@ -360,6 +392,29 @@
   [context concept bulk-update-params user-id]
   (modify-checksum*
    context concept bulk-update-params user-id update-checksum))
+
+(defn- modify-additional-files*
+  "Add or update the checksum value and algorithm for the given concept with the provided values
+  using the provided transform function."
+  [context concept bulk-update-params user-id xf]
+  (let [{:keys [format metadata]} concept
+        {:keys [granule-ur new-value]} bulk-update-params
+        ;; invoke the appropriate transform - for checksum, there is only one option (update)
+        updated-concept (xf context concept new-value)
+        {updated-metadata :metadata updated-format :format} updated-concept]
+    (if-let [err-messages (:errors updated-metadata)]
+      (errors/throw-service-errors :invalid-data err-messages)
+      (-> concept
+          (assoc :metadata updated-metadata)
+          (assoc :format updated-format)
+          (update :revision-id inc)
+          (assoc :revision-date (time-keeper/now))
+          (assoc :user-id user-id)))))
+
+(defmethod update-granule-concept :update_field:additionalfile
+  [context concept bulk-update-params user-id]
+  (modify-additional-files*
+   context concept bulk-update-params user-id update-additional-files))
 
 (defmethod update-granule-concept :default
   [context concept bulk-update-params user-id]
