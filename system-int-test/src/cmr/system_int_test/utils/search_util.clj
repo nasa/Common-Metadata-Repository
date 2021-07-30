@@ -733,15 +733,17 @@
 
 (defn get-keywords-by-keyword-scheme
   "Calls the CMR search endpoint to retrieve the controlled keywords for the given keyword scheme."
-  [keyword-scheme]
-  (get-search-failure-data
-   (let [response (client/get (url/search-keywords-url keyword-scheme)
-                              {:connection-manager (s/conn-mgr)})
-         {:keys [status body]} response]
-     (if (= 200 status)
-       {:status status
-        :results (json/decode body)}
-       response))))
+  ([keyword-scheme]
+   (get-keywords-by-keyword-scheme keyword-scheme ""))
+  ([keyword-scheme search-parameters]
+   (get-search-failure-data
+    (let [response (client/get (url/search-keywords-url keyword-scheme search-parameters)
+                               {:connection-manager (s/conn-mgr)})
+          {:keys [status body]} response]
+      (if (= 200 status)
+        {:status status
+         :results (json/decode body)}
+        response)))))
 
 (defn get-humanizers-report-raw
   "Returns the humanizers report."

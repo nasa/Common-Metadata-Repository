@@ -385,8 +385,13 @@
 
 (defn search-keywords-url
   "Returns the URL for retrieving controlled keywords."
-  [keyword-scheme]
-  (format "http://localhost:%s/keywords/%s" (transmit-config/search-port) (name keyword-scheme)))
+  ([keyword-scheme]
+   (search-keywords-url keyword-scheme ""))
+  ([keyword-scheme search-parameters] 
+   (format "http://localhost:%s/keywords/%s%s"
+           (transmit-config/search-port)
+           (name keyword-scheme)
+           search-parameters)))
 
 (defn retrieve-concept-url
   ([type concept-id] (retrieve-concept-url type concept-id nil))

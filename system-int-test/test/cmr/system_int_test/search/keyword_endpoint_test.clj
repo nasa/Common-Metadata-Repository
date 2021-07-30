@@ -466,6 +466,12 @@
     "Testing correct keyword heirarchy returned for granule data format"
     :granule-data-format (:granule-data-format expected-hierarchy)))
 
+(deftest search-parameter-filter-not-supported
+  (testing "Adding search parameter filter returns 400 error"
+    (is (= {:status 400
+            :errors [ "Search parameter filters are not supported: [{:platform \"TRIMM\"}]" ]}
+           (search/get-keywords-by-keyword-scheme :instruments "?platform=TRIMM&pretty=true")))))
+       
 (deftest invalid-keywords-test
   (testing "Invalid keyword scheme returns 400 error"
     (is (= {:status 400
