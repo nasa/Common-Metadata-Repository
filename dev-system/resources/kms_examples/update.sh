@@ -26,6 +26,7 @@ schemes_to_import="granuledataformat idnnode instruments isotopiccategory \
 
 env='' # sit|uat|prod|<blank> are all posible values
 version='' # DRAFT|<blank> are all posible values
+additional_flags='' # use this to pass the cache clear param or other flags
 
 # return the url to the server hosting GCMD KMS
 function gcmd_host()
@@ -39,12 +40,18 @@ function gcmd_host()
 # download one scheme and save it to a file
 function fetch_scheme()
 {
-  gcmd_host "${1}"
+  gcmd_host "${1}"  #returns a value in "returned"
   host_name=${returned}
-  echo Exporting ${2} from ${host_name}
+
+  scheme="${2}"
+  version="${3}"
+  options="${4}"
+
+  echo Exporting ${scheme} from ${host_name}
+  # Download the scheme CSV file and save to a file of the same name
   curl -s \
-    "${host_name}/kms/concepts/concept_scheme/${2}?format=csv&version=${3}" \
-    > ${2}
+    "${host_name}/kms/concepts/concept_scheme/${scheme}?format=csv&version=${version}${options}" \
+    > ${scheme}
 }
 
 # loop through all the schmems and download them
@@ -52,7 +59,7 @@ function work()
 {
   for scheme in ${schemes_to_import}
   do
-    fetch_scheme "$env" "$scheme" "$version"
+    fetch_scheme "$env" "$scheme" "$version" "$additional_flags"
   done
 }
 
@@ -66,28 +73,38 @@ function help()
   echo "    then download platforms at version 1.2.3,"
   echo
 
-  format="%4s %-12s %s\n"
-  printf "${format}" Flag Name Description
-  printf "${format}" ---- ------------ -----------
-  printf "${format}" -e Environment "Server environment, sit,uat,prod,<blank>"
-  printf "${format}" -h Help "Print out a help message"
-  printf "${format}" -s Scheme "Space deliminated list of schems to download"
-  printf "${format}" -v Version "Scheme version name"
-  printf "${format}" -w Work "Do the download work"
+  printf '=%.0s' {1..80} ; printf '\n'
+  format="%4s %-11s %5s %-42s | %12s\n"
+  printf "${format}" Flag Name Input Description Defaults
+  printf "${format}" ---- ----------- ----- ------------------------------------------ ------------
+  printf "${format}" -a Additional Str "Aditional KMS HTTP parameters to send" "$(echo ${additional_flags} | cut -c -12)"
+  printf "${format}" -e Environment Str "Server env: [sit | uat | prod | <blank>]" "${env}"
+  printf "${format}" -h Help '' 'Print out a help message' ''
+  printf "${format}" -s Scheme List "Schemas, Space delim" "$(echo $schemes_to_import | cut -c -12)"
+  printf "${format}" -v Version Str "Scheme version name" "${version}"
+  printf "${format}" -w Work '' 'Do the download work' ''
+  printf '=%.0s' {1..80} ; printf '\n\n'
+
+  echo "* Additional Default only lists first 12 letters."
+  echo "* Schema Default only lists first 12 letters."
 }
 
+# assume that work() will be run after parameter processing and not durring
 manual_mode="no"
 
-while getopts "e:hs:v:w" OPTION ; do
+# flags are "tasks" which are run in order, like a mini language
+while getopts "a:e:hs:v:w" OPTION ; do
   case ${OPTION} in
-    e) env="${OPTARG}" ;;
-    h) help ; exit ;;
-    s) schemes_to_import="${OPTARG}" ;;
-    v) version="${OPTARG}" ;;
-    w) manual_mode="yes" ; work ;;
+    a) additional_flags="${OPTARG}" ;;    # set flags and continue
+    e) env="${OPTARG}" ;;                 # set env and continue
+    h) help ; exit ;;                     # print help and exit
+    s) schemes_to_import="${OPTARG}" ;;   # set schemes and continue
+    v) version="${OPTARG}" ;;             # set version and continue
+    w) manual_mode="yes" ; work ;;        # work() now and not latter, CONTINUE
   esac
 done
 
+# if work() has not been requested, then assume it runs here
 if [ "${manual_mode}" == "no" ] ; then
   work
 fi

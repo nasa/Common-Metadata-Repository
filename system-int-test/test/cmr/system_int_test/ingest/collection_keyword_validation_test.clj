@@ -84,7 +84,7 @@
                         :Format "8-track tape"})]}
                     :RelatedUrls
                     [{:Description "Related url description"
-                      :URL "www.foobarbazquxquux.com"
+                      :URL "http://www.example.gov"
                       :URLContentType "DistributionURL"
                       :Type "GET DATA"
                       :GetData {:Format "8-track tape"
@@ -92,7 +92,7 @@
                                 :Unit "MB"
                                 :Fees "fees"}}
                      {:Description "Related url description"
-                      :URL "www.foobarbazquxquux.com"
+                      :URL "http://www.example.org"
                       :URLContentType "DistributionURL"
                       :Type "GET DATA"}]}
                   :umm-json)
@@ -129,7 +129,7 @@
             :Format "HDF5"}]}
          :RelatedUrls
          [{:Description "Related url description"
-           :URL "www.foobarbazquxquux.com"
+           :URL "http://www.foobarbazquxquux.com"
            :URLContentType "DistributionURL"
            :Type "GET DATA"
            :GetData {:Format "HDF5"
@@ -152,7 +152,7 @@
              :Format "hdf5"}]}
           :RelatedUrls
           [{:Description "Related url description"
-            :URL "www.foobarbazquxquux.com"
+            :URL "http://www.foobarbazquxquux.com"
             :URLContentType "DistributionURL"
             :Type "GET DATA"
             :GetData {:Format "hdf5"
@@ -175,7 +175,7 @@
             :Format "JPEG"}]}
           :RelatedUrls
           [{:Description "Related url description"
-            :URL "www.foobarbazquxquux.com"
+            :URL "http://www.foobarbazquxquux.com"
             :URLContentType "DistributionURL"
             :Type "GET DATA"
             :GetData {:Format "JPEG"
@@ -191,35 +191,35 @@
          [(msg/related-url-type-subtype-not-matching-kms-keywords
            (first (:RelatedUrls attribs)))])
 
-        "Missmatched ContentType and Type/Subtype pair"
+        "- Missmatched ContentType and Type/Subtype pair"
         {:ArchiveAndDistributionInformation
          {:FileDistributionInformation [{:Format "hdf5"}]
           :FileArchiveInformation [{:Format "hdf5"}]}
           :RelatedUrls
           [{:Description "Related url description"
-            :URL "www.foobarbazquxquux.com"
+            :URL "http://www.example.gov"
             :URLContentType "DistributionURL" ; wrong enum in this context
             :Type "GET RELATED VISUALIZATION"
             :Subtype "MAP"}]}
 
-        "Missmatched ContentType/Type pair and Subtype"
+        "- Missmatched ContentType/Type pair and Subtype"
         {:ArchiveAndDistributionInformation
          {:FileDistributionInformation [{:Format "HDF5"}]
           :FileArchiveInformation [{:Format "HDF5"}]}
          :RelatedUrls
          [{:Description "Related url description"
-           :URL "www.foobarbazquxquux.com"
+           :URL "http://www.example.gov"
            :URLContentType "VisualizationURL"
            :Type "GET RELATED VISUALIZATION"
            :Subtype "HITIDE"}]} ; wrong enum in this context
 
-        "Missmatched Type from ContentType/Subtype pair"
+        "- Missmatched Type from ContentType/Subtype pair"
         {:ArchiveAndDistributionInformation
          {:FileDistributionInformation [{:Format "JPEG"}]
           :FileArchiveInformation [{:Format "JPEG"}]}
           :RelatedUrls
           [{:Description "Related url description"
-            :URL "www.foobarbazquxquux.com"
+            :URL "http://www.example.gov"
             :URLContentType "VisualizationURL"
             :Type "DOWNLOAD SOFTWARE" ; wrong enum in this context
             :Subtype "MAP"}]})

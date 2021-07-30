@@ -4,54 +4,60 @@ See the [CMR Data Partner User Guide](https://wiki.earthdata.nasa.gov/display/CM
 See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide) for a general guide to developing a CMR client.
 Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) to ask questions, make suggestions and discuss topics like future CMR capabilities.
 
+### API Conventions
+
+* [HTTP Headers](#headers) 
+* [Responses](#responses)
+* [CMR Ids](#cmr-ids)
+
 ### Latest UMM Schema Versions
 
-  * [Latest UMM schema versions](#latest-umm-versions)
+* [Latest UMM schema versions](#latest-umm-versions)
 
 ### Metadata Ingest API Overview
 
-  * /providers/\<provider-id>/validate/collection/\<native-id>
-    * [POST - Validate collection metadata.](#validate-collection)
-  * /providers/\<provider-id>/collections/\<native-id>
-    * [PUT - Create or update a collection.](#create-update-collection)
-    * [DELETE - Delete a collection.](#delete-collection)
-  * /providers/\<provider-id>/validate/granule/\<native-id>
-    * [POST - Validate granule metadata.](#validate-granule)
-  * /providers/\<provider-id>/granules/\<native-id>
-    * [PUT - Create or update a granule.](#create-update-granule)
-    * [DELETE - Delete a granule.](#delete-granule)
-  * /collections/\<collection-concept-id>/\<collection-revision-id>/variables/\<native-id>
-    * [PUT - Create or update a variable with association.](#create-update-variable)
-  * /providers/\<provider-id>/variables/\<native-id>
-    * [PUT - Update a variable.](#create-update-variable)
-    * [DELETE - Delete a variable.](#delete-variable)
-  * /providers/\<provider-id>/services/\<native-id>
-    * [PUT - Create or update a service.](#create-update-service)
-    * [DELETE - Delete a service.](#delete-service)
-  * /providers/\<provider-id>/tools/\<native-id>
-    * [PUT - Create or update a tool.](#create-update-tool)
-    * [DELETE - Delete a tool.](#delete-tool)
-  * /providers/\<provider-id>/subscriptions
+* /providers/\<provider-id>/validate/collection/\<native-id>
+	* [POST - Validate collection metadata.](#validate-collection)
+* /providers/\<provider-id>/collections/\<native-id>
+   * [PUT - Create or update a collection.](#create-update-collection)
+   * [DELETE - Delete a collection.](#delete-collection)
+* /providers/\<provider-id>/validate/granule/\<native-id>
+   * [POST - Validate granule metadata.](#validate-granule)
+* /providers/\<provider-id>/granules/\<native-id>
+   * [PUT - Create or update a granule.](#create-update-granule)
+   * [DELETE - Delete a granule.](#delete-granule)
+* /collections/\<collection-concept-id>/\<collection-revision-id>/variables/\<native-id>
+   * [PUT - Create or update a variable with association.](#create-update-variable)
+* /providers/\<provider-id>/variables/\<native-id>
+   * [PUT - Update a variable.](#create-update-variable)
+   * [DELETE - Delete a variable.](#delete-variable)
+* /providers/\<provider-id>/services/\<native-id>
+   * [PUT - Create or update a service.](#create-update-service)
+   * [DELETE - Delete a service.](#delete-service)
+* /providers/\<provider-id>/tools/\<native-id>
+   * [PUT - Create or update a tool.](#create-update-tool)
+   * [DELETE - Delete a tool.](#delete-tool)
+* /providers/\<provider-id>/subscriptions
    *  [POST - Create a subscription without specifying a native-id.](#create-subscription)
-  * /providers/\<provider-id>/subscriptions/\<native-id>
-    * [POST - Create a subscription with a provided native-id.](#create-subscription)
-    * [PUT - Create or Update a subscription.](#update-subscription)
-    * [DELETE - Delete a subscription.](#delete-subscription)
-    * [Subscription Access Control](#subscription-access-control)
-  * /translate/collection
-    * [POST - Translate collection metadata.](#translate-collection)
-  * /translate/granule
-    * [POST - Translate granule metadata.](#translate-granule)
-  * /providers/\<provider-id\>/bulk-update/collections
-    * [POST - Collection bulk update](#collection-bulk-update)
-  * /providers/\<provider-id\>/bulk-update/granules
-    * [POST - Granule bulk update](#granule-bulk-update)
-  * /granule-bulk-update/status
-    * [POST - Granule bulk update](#granule-bulk-update)
-  * /granule-bulk-update/status/\<task-id\>
-    * [GET - Granule bulk update status](#granule-bulk-update)
+* /providers/\<provider-id>/subscriptions/\<native-id>
+   * [POST - Create a subscription with a provided native-id.](#create-subscription)
+   * [PUT - Create or Update a subscription.](#update-subscription)
+   * [DELETE - Delete a subscription.](#delete-subscription)
+   * [Subscription Access Control](#subscription-access-control)
+* /translate/collection
+   * [POST - Translate collection metadata.](#translate-collection)
+* /translate/granule
+   * [POST - Translate granule metadata.](#translate-granule)
+* /providers/\<provider-id\>/bulk-update/collections
+   * [POST - Collection bulk update](#collection-bulk-update)
+* /providers/\<provider-id\>/bulk-update/granules
+   * [POST - Granule bulk update](#granule-bulk-update)
+* /granule-bulk-update/status
+   * [POST - Granule bulk update](#granule-bulk-update)
+* /granule-bulk-update/status/\<task-id\>
+   * [GET - Granule bulk update status](#granule-bulk-update)
 
-***
+--------------------------------------------------------------------------------
 
 ## <a name="api-conventions"></a> API Conventions
 
@@ -78,9 +84,7 @@ Note: UMM JSON accepts an additional version parameter for both `Content-Type` a
 
 For an example, the following means version 1.16.2 of the UMM JSON format:
 
-```
-application/vnd.nasa.cmr.umm+json;version=1.16.2
-```
+    application/vnd.nasa.cmr.umm+json;version=1.16.2
 
 Note: For all values of `Content-Type`, data sent using POST or PUT should not be URL encoded.
 
@@ -94,19 +98,29 @@ The token can alternatively be specified using the `Authorization: Bearer` heade
 
 #### <a name="accept-header"></a> Accept Header
 
-The Accept header specifies the format of the response message. The Accept header will default to XML for the normal Ingest APIs. `application/json` can be specified if you prefer responses in JSON.
+The `Accept` header specifies the format of the response message and defaults to XML for the normal Ingest APIs. `application/json` can be specified if the preferred responses is JSON.
+
+#### <a name="cmr-pretty-header"></a> Cmr-Pretty Header
+
+The `Cmr-Pretty` Header set to `true` or using the alias `&pretty=true` URL parameter will tell CMR to format the output with new lines and spaces for better readability by humans.
+
+    curl -H "Cmr-Pretty: true" ...
 
 #### <a name="cmr-revision-id-header"></a> Cmr-Revision-Id Header
 
-The revision id header allows specifying the [revision id](#revision-id) to use when saving the concept. If the revision id specified is not the latest a HTTP Status code of 409 will be returned indicating a conflict.
+The `Cmr-Revision-Id` header allows specifying the [revision id](#revision-id) to use when saving the concept. If the revision id specified is not the latest a HTTP Status code of 409 will be returned indicating a conflict.
 
 #### <a name="cmr-concept-id-header"></a> Cmr-Concept-Id (or Concept-Id) Header
 
-The concept id header allows specifying the [concept id](#concept-id) to use when saving a concept. This should normally not be sent by clients. The CMR should normally generate the concept id. The header Concept-Id is an alias for Cmr-Concept-Id.
+The `Cmr-Concept-Id` header allows specifying the [concept id](#concept-id) to use when saving a concept. This should normally not be sent by clients. The CMR should normally generate the concept id. The header `Concept-Id` is an alias for `Cmr-Concept-Id`.
 
 #### <a name="validate-keywords-header"></a> Cmr-Validate-Keywords Header
 
-If this header is set to true, ingest will validate that the UMM-C collection keywords match known keywords from the GCMD KMS. The following fields are validated.
+If the `Cmr-Validate-Keywords` header is set to `true`, ingest will validate that the UMM-C collection keywords match known keywords from the GCMD KMS.
+
+	curl -H "Cmr-Validate-Keywords: true" ...
+
+The following fields are validated:
 
 * [Platforms](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/platforms?format=csv) - short name, long name, and type
 * [Instruments](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/instruments?format=csv) - short name and long name
@@ -118,30 +132,38 @@ If this header is set to true, ingest will validate that the UMM-C collection ke
 * [ISO Topic Categories](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/isotopiccategory?format=csv) - iso topic category
 * [Data Format](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/granuledataformat?format=csv) - Archival and Distribution File Format, and GetData Format
 
+**Note**: that when multiple fields are present the combination of keywords are validated to match a known combination.
 
-Note that when multiple fields are present the combination of keywords are validated to match a known combination.
+**Note**: the following fields are always checked:
+
+* [Related URL Content Type](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/rucontenttype?format=csv) - Related URL Content Type, Type, and Subtype are all verified and must belong to the correct set and context. Example: A data center contact URL can have a URL Content Type of "DataContactURL" and a Type of "HOME PAGE" with no Subtype.
+
 
 #### <a name="validate-umm-c-header"></a> Cmr-Validate-Umm-C Header
 
-If this header is set to true, collection metadata is validated against the UMM-C JSON schema. It also uses the UMM-C Specification for parsing the metadata and checking business rules. This is temporary header for testing. Eventually the CMR will enforce this validation by default.
+If the `Cmr-Validate-Umm-C` header is set to `true`, collection metadata is validated against the UMM-C JSON schema. It also uses the UMM-C Specification for parsing the metadata and checking business rules. This is temporary header for testing. Eventually the CMR will enforce this validation by default.
+
+	curl -H "Cmr-Validate-Umm-C: true" ...
 
 #### <a name="skip-sanitize-umm-c-header"></a> Cmr-Skip-Sanitize-Umm-C Header
 
-If this header is set to true, translation to UMM JSON will not add default values to the converted UMM when the required fields are missing. This may cause umm schema validation failure if skip-umm-validation is not set to true. This header can not be set to true when translating to formats other than UMM JSON.
+If the `Cmr-Skip-Sanitize-Umm-C` header is set to `true`, translation to UMM JSON will not add default values to the converted UMM when the required fields are missing. This may cause umm schema validation failure if skip-umm-validation is not set to true. This header can not be set to true when translating to formats other than UMM JSON.
+
+	curl -H "Cmr-Skip-Sanitize-Umm-C: true" ...
 
 #### <a name="user-id"></a> User-Id Header
 
-The user id header allows specifying the user-id to use when saving or deleting a collection concept. This header is currently ignored for granule concepts. If user-id header is not specified, user id is retrieved using the token supplied during the ingest.
+The `User-Id` header allows specifying the user-id to use when saving or deleting a collection concept. This header is currently ignored for granule concepts. If user-id header is not specified, user id is retrieved using the token supplied during the ingest.
 
 #### <a name="x-request-id"></a> X-Request-Id Header
 
-This provides standard X-Request-Id support to allow user to pass in some random ID which will be logged on the server side for debugging purpose.
+This provides standard `X-Request-Id` support to allow user to pass in some random ID which will be logged on the server side for debugging purpose.
 
 #### <a name="cmr-request-id"></a> CMR-Request-Id Header
 
 This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems.
 
-***
+--------------------------------------------------------------------------------
 
 ### <a name="responses"></a> Responses
 
@@ -149,7 +171,7 @@ This header serves the same purpose as X-Request-Id header. It's kept to support
 
 #### <a name="CMR-Request-Id-header"></a> cmr-request-id
 
-This header returns the value passed in through CMR-Request-Id request header or X-Request-Id request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors. The generated value is a long string of the form
+This header returns the value passed in through `CMR-Request-Id` request header or `X-Request-Id` request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors. The generated value is a long string of the form
 
     828ef0b8-a876-4579-85db-3cc9d1b5f6e5
 
@@ -191,11 +213,9 @@ Requests could fail for several reasons when communicating with the CMR as descr
 
 Ingest validation errors can take one of two shapes. General error messages will be returned as a list of error messages like the following:
 
-```
-<errors>
-   <error>Parent collection for granule [SC:AE_5DSno.002:30500511] does not exist.</error>
-</errors>
-```
+	<errors>
+   		<error>Parent collection for granule [SC:AE_5DSno.002:30500511] does not exist.</error>
+	</errors>
 
 ##### <a name="umm-ialidation-errors"></a> UMM Validation Errors
 
@@ -238,8 +258,7 @@ Error messages can also be returned in JSON by setting the Accept header to appl
 }
 ```
 
-***
-
+--------------------------------------------------------------------------------
 
 ### <a name="cmr-ids"></a> CMR Ids
 
@@ -284,7 +303,7 @@ An example concept id is C179460405-LPDAAC_ECS. The letter identifies the concep
 
 A native-id is an identifier, unique per provider, used to identify concepts within CMR. The native-id is a string with no specific pattern.
 
-***
+--------------------------------------------------------------------------------
 
 ## <a name="metadata-ingest"></a> Metadata Ingest
 
@@ -324,7 +343,6 @@ curl -i -XPOST -H "Content-type: application/echo10+xml" \
 </Collection>"
 ```
 
-
 ### <a name="create-update-collection"></a> Create / Update a Collection
 
 Collection metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). The metadata that is uploaded is validated for XML well-formedness, XML schema validation, and against UMM validation rules. Keyword validation can be enabled with the [keyword validation header](#validate-keywords-header). If there is a need to retrieve the native-id of an already-ingested collection for updating, requesting the collection via the search API in UMM-JSON format will provide the native-id.
@@ -363,19 +381,15 @@ curl -i -XPUT \
 
 #### Successful Response in JSON
 
-```
-{"concept-id":"C1200000000-PROV1","revision-id":1}
-```
+	{"concept-id":"C1200000000-PROV1","revision-id":1}
 
 ### <a name="delete-collection"></a> Delete a Collection
 
 Collection metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
-```
-curl -i -XDELETE \
-  -H "Echo-Token: XXXX" \
-  %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
-```
+	curl -i -XDELETE \
+  		-H "Echo-Token: XXXX" \
+  		%CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
 
 Note: When a collection is deleted, all the associaitons will be deleted(tombstoned) too. With the new requirement that a variable can not exist without an association with a collection, since each variable can only be associated with one collection, all the variables associated with the deleted collection will be deleted too.
 
@@ -391,11 +405,9 @@ Note: When a collection is deleted, all the associaitons will be deleted(tombsto
 
 #### Successful Response in JSON
 
-```
-{"concept-id":"C1200000000-PROV1","revision-id":2}
-```
+	{"concept-id":"C1200000000-PROV1","revision-id":2}
 
-***
+--------------------------------------------------------------------------------
 
 ### <a name="validate-granule"></a> Validate Granule
 
@@ -466,9 +478,7 @@ Granule metadata can be created or updated by sending an HTTP PUT with the metad
 
 #### Successful Response in JSON
 
-```
-{"concept-id":"G1200000001-PROV1","revision-id":1}
-```
+    {"concept-id":"G1200000001-PROV1","revision-id":1}
 
 ### <a name="delete-granule"></a> Delete a Granule
 
@@ -490,10 +500,7 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 
 #### Successful Response in JSON
 
-```
-{"concept-id":"G1200000001-PROV1","revision-id":2}
-```
-
+    {"concept-id":"G1200000001-PROV1","revision-id":2}
 
 ### <a name="create-update-variable"></a> Create / Update a Variable
 
@@ -605,9 +612,7 @@ curl -i -XPUT \
 By passing the option `-H "Accept: application/json"` to `curl`, one may
 get a JSON response:
 
-```
-{"concept-id":"V1200000012-PROV1","revision-id":1}
-```
+    {"concept-id":"V1200000012-PROV1","revision-id":1}
 
 ### <a name="delete-variable"></a> Delete a Variable
 
@@ -631,9 +636,7 @@ curl -i -X DELETE \
 
 #### Successful Response in JSON
 
-```
-{"concept-id":"V1200000012-PROV1","revision-id":2}
-```
+    {"concept-id":"V1200000012-PROV1","revision-id":2}
 
 ### <a name="create-update-service"></a> Create / Update a Service
 
@@ -663,9 +666,7 @@ curl -i -XPUT \
 By passing the option `-H "Accept: application/json"` to `curl`, one may
 get a JSON response:
 
-```
-{"concept-id":"S1200000015-PROV1","revision-id":1}
-```
+    {"concept-id":"S1200000015-PROV1","revision-id":1}
 
 ### <a name="delete-service"></a> Delete a Service
 
@@ -689,9 +690,7 @@ curl -i -X DELETE \
 
 #### Successful Response in JSON
 
-```
-{"concept-id":"S1200000015-PROV1","revision-id":2}
-```
+    {"concept-id":"S1200000015-PROV1","revision-id":2}
 
 ### <a name="create-update-tool"></a> Create / Update a Tool
 
@@ -721,19 +720,15 @@ curl -i -XPUT \
 By passing the option `-H "Accept: application/json"` to `curl`, one may
 get a JSON response:
 
-```
-{"concept-id":"TL1200000015-PROV1","revision-id":1}
-```
+    {"concept-id":"TL1200000015-PROV1","revision-id":1}
 
 ### <a name="delete-tool"></a> Delete a Tool
 
 Tool metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/providers/<provider-id>/tools/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
-```
-curl -i -X DELETE \
-  -H "Echo-Token: XXXX" \
-  %CMR-ENDPOINT%/providers/PROV1/tools/tool123
-```
+	curl -i -X DELETE \
+  		-H "Echo-Token: XXXX" \
+  		%CMR-ENDPOINT%/providers/PROV1/tools/tool123
 
 #### Successful Response in XML
 
@@ -747,9 +742,7 @@ curl -i -X DELETE \
 
 #### Successful Response in JSON
 
-```
-{"concept-id":"TL1200000015-PROV1","revision-id":2}
-```
+    {"concept-id":"TL1200000015-PROV1","revision-id":2}
 
 ### <a name="create-subscription"></a> Create a Subscription
 
@@ -769,9 +762,8 @@ POST or PUT may be used with the following URL.
 `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`
 
 Query values should not be URL encoded. Instead, the query should consist of standard granule search parameters, separated by '&'. For example, a valid query string might look like:
-```
-instrument=MODIS&sensor=1B&polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78
-```
+
+    instrument=MODIS&sensor=1B&polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78
 
 If the query provided is invalid for granule searching, subscription creation will fail with HTTP status response of 400, and an error message detailing which query parameters were invalid.
 
@@ -816,9 +808,7 @@ curl -i -XPOST \
 By passing the option `-H "Accept: application/json"` to `curl`, one may
 get a JSON response:
 
-```
-{"concept-id":"SUB1200000015-PROV1","revision-id":1,"native-id":"subscription123"}
-```
+    {"concept-id":"SUB1200000015-PROV1","revision-id":1,"native-id":"subscription123"}
 
 ### <a name="delete-subscription"></a> Delete a Subscription
 
@@ -842,9 +832,8 @@ curl -i -X DELETE \
 
 #### Successful Response in JSON
 
-```
-{"concept-id":"SUB1200000015-PROV1","revision-id":2}
-```
+    {"concept-id":"SUB1200000015-PROV1","revision-id":2}
+
 ### <a name="subscription-access-control"></a> Subscription Access Control
 
 Ingest permissions for subscriptions are granted through the provider via the INGEST_MANAGEMENT_ACL and SUBSCRIPTION_MANAGEMENT. In order to ingest/update/delete a subscription for a given provider, update permission has to be granted to the user through both INGEST_MANAGEMENT_ACL and SUBSCRIPTION_MANAGEMENT ACLs for the provider.
@@ -982,29 +971,29 @@ Updated collections are validated using business rule validations.  Updates will
 
 Collection bulk update currently supports updating the following fields:
 
-  * Science Keywords
-  * Location Keywords
-  * Data Centers
-  * Instruments
-  * Platforms
+* Science Keywords
+* Location Keywords
+* Data Centers
+* Instruments
+* Platforms
 
 The following update types are supported:
 
-  * Add to existing - the update value is added to the existing list. An update value is required.
-  * Clear all and replace - clear the list and replace with the update value.
-  * Find and replace - replace any instance in the list that matches the find value with the update value.
-  * Find and update - merge update value into any instance in the list that matches the find value.
-  * Find and update home page url - A special case for Find and update.
-  * Find and remove - remove any instance from the list that matches the find value.
+* Add to existing - the update value is added to the existing list. An update value is required.
+* Clear all and replace - clear the list and replace with the update value.
+* Find and replace - replace any instance in the list that matches the find value with the update value.
+* Find and update - merge update value into any instance in the list that matches the find value.
+* Find and update home page url - A special case for Find and update.
+* Find and remove - remove any instance from the list that matches the find value.
 
 Bulk update post request takes the following parameters:
 
-  * Concept-ids (required) - a list of concept ids to update, which need to be associated with the provider the bulk update is initiated with. If it is equal to ["ALL"], case insensitive, all the collections for the provider will be updated.
-  * Name (optional) - a name used to identify a bulk update task. It needs to be unique within a provider.
-  * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`, `FIND_AND_UPDATE_HOME_PAGE_URL`
-  * Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
-  * Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.  
-  * Find value (required for `FIND_AND_REPLACE`, `FIND_AND_UPDATE` and `FIND_AND_REMOVE` update types) - UMM-JSON representation of the data to find
+* Concept-ids (required) - a list of concept ids to update, which need to be associated with the provider the bulk update is initiated with. If it is equal to ["ALL"], case insensitive, all the collections for the provider will be updated.
+* Name (optional) - a name used to identify a bulk update task. It needs to be unique within a provider.
+* Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`, `FIND_AND_UPDATE_HOME_PAGE_URL`
+* Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
+* Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.  
+* Find value (required for `FIND_AND_REPLACE`, `FIND_AND_UPDATE` and `FIND_AND_REMOVE` update types) - UMM-JSON representation of the data to find
 
 Update types that include a FIND will match on the fields supplied in the find value. For example, for a science keyword update with a find value of `{"Category": "EARTH SCIENCE"}`, any science keyword with a category of "EARTH SCIENCE" will be considered a match regardless of the values of the science keyword topic, term, etc.  It's worth noting that find value can not contain nested fields. So for bulk update on PLATFORMS, for example, find value can only contain Type, ShortName and LongName, not the nested fields like Characteristics and Instruments. On the other hand, update value can contain all the valid fields including the nested fields. So, nested fields can be updated, they just can't be used to find the matches.   
 
@@ -1161,16 +1150,18 @@ Granule bulk update currently supports updating with the following operations, u
 
 **operation: "UPDATE_FIELD", update-field: "OPeNDAPLink"**
 Supported metadata formats:
-  - OPeNDAP url in OnlineResources for ECHO10 format
-  - OPeNDAP url in RelatedUrls for UMM-G format
+
+* OPeNDAP url in OnlineResources for ECHO10 format
+* OPeNDAP url in RelatedUrls for UMM-G format
 
 There can only be ONE on-prem and/or ONE Hyrax-in-the-cloud OPeNDAP url in the granule metadata. The rule to determine if an OPeNDAP url is an on-prem or Hyrax-in-the-cloud url is to match the URL against this pattern: https://opendap.*.earthdata.nasa.gov/*. If the url matches, it is a Hyrax-in-the-cloud OPeNDAP url; if it does not match, it is an on-prem OPeNDAP url.
 The OPeNDAP url value provided in the granule bulk update request can be comma-separated urls, but it can have two at most: one is an on-prem url and the other is a Hyrax-in-the-cloud url. The exact url type is determined by matching the url against the same pattern above. During an update, the Hyrax-in-the-cloud url will overwrite any existing Hyrax-in-the-cloud OPeNDAP url in the granule metadata, and the on-prem url will overwrite any existing on-prem OPeNDAP url in the granule metadata.
 
 **operation: "UPDATE_FIELD", update-field: "S3Link"**
 Supported metadata formats:
-  - S3 url in OnlineAccessURLs for ECHO10 format
-  - S3 url in RelatedUrls for UMM-G format
+
+* S3 url in OnlineAccessURLs for ECHO10 format
+* S3 url in RelatedUrls for UMM-G format
 
 The S3 url value provided in the granule bulk update request can be comma-separated urls. Each url must start with s3:// (case-sensitive). This lowercase s3:// naming convention is to make the s3 links compatible with AWS S3 API. During bulk update, the provided S3 urls in the request will overwrite any existing S3 links already in the granule metadata.
 
@@ -1240,19 +1231,21 @@ Example granule bulk update response:
 
 **operation: "APPEND_TO_FIELD", update-field: "OPeNDAPLink"**
 supported metadata formats:
-  - OPeNDAPLink url in OnlineResources for ECHO10 format
-  - OPeNDAPLink url in RelatedUrls for UMM-G format
 
-Append operations on OPeNDAPLink will behave as follows
- - OPeNDAP updates may contain a maximum of two URLs, separated by comma
-   - At most, only one of each OPeNDAP URL type may be included (on-prem or Hyrax-in-the-cloud)
- - If the granule contains no OPeNDAP urls the new URLs will be added
- - If the granule does not contain a conflicting URL for the type (on-prem or Hyrax-in-the-cloud), the new value will be added.
- - If the granule already contains URLs for both on-prem and cloud, the granule update will fail.
+* OPeNDAPLink url in OnlineResources for ECHO10 format
+* OPeNDAPLink url in RelatedUrls for UMM-G format
 
-URLs matching the pattern: https://opendap.*.earthdata.nasa.gov/* will be determined to be Hyrax-in-the-cloud, otherwise it will be on-prem.
+Append operations on OPeNDAPLink will behave as follows:
 
-``` bash
+* OPeNDAP updates may contain a maximum of two URLs, separated by comma
+  * At most, only one of each OPeNDAP URL type may be included (on-prem or Hyrax-in-the-cloud)
+* If the granule contains no OPeNDAP urls the new URLs will be added
+* If the granule does not contain a conflicting URL for the type (on-prem or Hyrax-in-the-cloud), the new value will be added.
+* If the granule already contains URLs for both on-prem and cloud, the granule update will fail.
+
+URLs matching the pattern: `https://opendap.*.earthdata.nasa.gov/*` will be determined to be Hyrax-in-the-cloud, otherwise it will be on-prem.
+
+```
 curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules -d
 '{ "name": "example of appending OPeNDAP links",
 	"operation": "APPEND_TO_FIELD",
@@ -1266,6 +1259,7 @@ curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo
 ```
 
 Example granule bulk update response:
+
 ```
 {
  "status" : 200,
@@ -1396,6 +1390,4 @@ Granule bulk update tasks and statuses are available for 90 days.
 
 By default the bulk granule update jobs are checked for completion every 5 minutes. However granule bulk update task statuses can be refreshed manually, provided the user has the ingest-management permission, with the following command.
 
-```
-curl -XPOST -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/granule-bulk-update/status
-```
+    curl -XPOST -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/granule-bulk-update/status
