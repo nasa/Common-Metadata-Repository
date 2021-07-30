@@ -327,7 +327,6 @@
                             [(dc/science-keyword {:category "Tornado"
                                                   :topic "Wind"
                                                   :term "Speed"})]})]
-    (index/wait-until-indexed)
     (make-gran
      coll6745
      (polygon 136.11192342 -36.17110948
@@ -362,6 +361,9 @@
               134.99978909 -31.63500577
               134.9997868 -32.62558044)
      nil)
+
+    (index/wait-until-indexed)
+    
     (testing "ORed granule counts special case"
       (let [coll6745-id (:concept-id coll6745)
             refs (search/find-refs :collection {:include-granule-counts true
@@ -369,14 +371,15 @@
                                                 :polygon ["-21.33069,80.92296,-24.68258,80.58223,-26.80316,80.36716,-29.06056,79.60629,-24.34055,78.86559,-17.56837,79.10088,-14.62691,79.83818,-14.83213,80.79254,-21.33069,80.92296"
                                                           "136.75804,-34.82121,135.13466,-34.7865,134.43289,-35.0361,133.97631,-35.53991,134.6189,-36.7958,136.56358,-36.90405,137.07088,-36.15672,136.75804,-34.82121"]
                                                 "options[spatial][or]" "true"})]
-        (is (true? (gran-counts/granule-counts-match? :xml {coll6745 3} refs)))))
+        (is (gran-counts/granule-counts-match? :xml {coll6745 3} refs))))
+
     (testing "The same case without ORed spatial conditions"
       (let [coll6745-id (:concept-id coll6745)
             refs (search/find-refs :collection {:include-granule-counts true
                                                 :concept-id coll6745-id
                                                 :polygon ["-21.33069,80.92296,-24.68258,80.58223,-26.80316,80.36716,-29.06056,79.60629,-24.34055,78.86559,-17.56837,79.10088,-14.62691,79.83818,-14.83213,80.79254,-21.33069,80.92296"
                                                           "136.75804,-34.82121,135.13466,-34.7865,134.43289,-35.0361,133.97631,-35.53991,134.6189,-36.7958,136.56358,-36.90405,137.07088,-36.15672,136.75804,-34.82121"]})]
-        (is (true? (gran-counts/granule-counts-match? :xml {coll6745 0} refs)))))))
+        (is (gran-counts/granule-counts-match? :xml {coll6745 0} refs))))))
 
 (deftest collection-has-granules-caching-test
   (let [;; Create collections
