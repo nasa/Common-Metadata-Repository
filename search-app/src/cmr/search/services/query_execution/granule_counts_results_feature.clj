@@ -12,6 +12,7 @@
    [cmr.common-app.services.search.query-execution :as query-execution]
    [cmr.common-app.services.search.query-model :as q]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.search.models.query :as qm]
    [cmr.search.services.acl-service :as acl-service]
@@ -92,9 +93,9 @@
           parameters (string/split query-string #"\?|&")
           spatial-param-regex #"(options%5Bspatial%5D%5Bor%5D=true|options\[spatial\]\[or\]=true)"
           spatial-or-option? (some #(re-matches spatial-param-regex %) parameters)]
-      (println "QUERY STRING: " query-string)
-      (println "PARAMETERS: " parameters)
-      (println "SPATIAL-OR-OPTION: " spatial-or-option?)
+      (error "QUERY STRING: " query-string)
+      (error "PARAMETERS: " parameters)
+      (error "SPATIAL-OR-OPTION: " spatial-or-option?)
       (if spatial-or-option?
         :or
         :and))))
