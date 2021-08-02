@@ -50,7 +50,6 @@
 (def collection-validations
   "Defines validations for collections"
   {:TemporalExtents (v/every temporal-extent/temporal-extent-validation)
-   :RelatedUrls (v/every url/related-url-validations)
    :Platforms p/platforms-validation
    :AdditionalAttributes aa/additional-attribute-validation
    :Projects project/projects-validation
