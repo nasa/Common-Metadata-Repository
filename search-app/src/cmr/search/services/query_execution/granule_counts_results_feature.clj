@@ -85,7 +85,6 @@
 (defn- extract-spatial-operator
   "Determine whether spatial conditions should be ORed or ANDed together"
   [context]
-  (info "QUERY STRING: " (:query-string context))
   (if (empty? (:query-string context))
     ; If there's no query string, we can safely assume that there is no
     ; options[spatial][or] parameter being passed
@@ -94,9 +93,6 @@
           parameters (string/split query-string #"\?|&")
           spatial-param-regex #"(options%5Bspatial%5D%5Bor%5D=true|options\[spatial\]\[or\]=true)"
           spatial-or-option? (some #(re-matches spatial-param-regex %) parameters)]
-      (info "QUERY STRING: " query-string)
-      (info "PARAMETERS: " parameters)
-      (info "SPATIAL-OR-OPTION: " spatial-or-option?)
       (if spatial-or-option?
         :or
         :and))))
