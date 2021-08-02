@@ -176,12 +176,10 @@
      context
      (ingest-events/ingest-granule-bulk-update-event provider-id task-id user-id instruction))))
 
-(defn- update-umm-g-urls
-  "Takes the UMM-G granule concept and update s3 urls in the format of
-  {:cloud <cloud_url> :on-prem <on_prem_url>}. Update the UMM-G granule metadata with the
-  s3 urls in the latest UMM-G version.
+(defn- update-umm-g-metadata
+  "Takes the UMM-G granule concept and update with the given update fn and update-values.
   Returns the granule concept with the updated metadata."
-  [concept urls update-umm-g-urls-fn]
+  [concept update-values update-umm-g-metadata-fn]
   (let [{:keys [format metadata]} concept
         source-version (umm-spec/umm-json-version :granule format)
         parsed-metadata (json/decode metadata true)
@@ -189,7 +187,7 @@
         migrated-metadata (util/remove-nils-empty-maps-seqs
                            (vc/migrate-umm
                             nil :granule source-version target-version parsed-metadata))
-        updated-metadata (umm-json/umm->json (update-umm-g-urls-fn migrated-metadata urls))
+        updated-metadata (umm-json/umm->json (update-umm-g-metadata-fn migrated-metadata update-values))
         updated-format (mt/format->mime-type {:format :umm-json
                                               :version target-version})]
     (assoc concept :metadata updated-metadata :format updated-format)))
@@ -205,7 +203,7 @@
 
 (defmethod update-opendap-url :umm-json
   [context concept grouped-urls]
-  (update-umm-g-urls concept grouped-urls opendap-umm-g/update-opendap-url))
+  (update-umm-g-metadata concept grouped-urls opendap-umm-g/update-opendap-url))
 
 (defmethod update-opendap-url :default
   [context concept grouped-urls]
@@ -223,7 +221,7 @@
 
 (defmethod append-opendap-url :umm-json
   [context concept grouped-urls]
-  (update-umm-g-urls concept grouped-urls opendap-umm-g/append-opendap-url))
+  (update-umm-g-metadata concept grouped-urls opendap-umm-g/append-opendap-url))
 
 (defmethod append-opendap-url :default
   [context concept grouped-urls]
@@ -241,7 +239,7 @@
 
 (defmethod add-s3-url :umm-json
   [context concept urls]
-  (update-umm-g-urls concept urls s3-umm-g/update-s3-url))
+  (update-umm-g-metadata concept urls s3-umm-g/update-s3-url))
 
 (defmethod add-s3-url :default
   [context concept urls]
@@ -259,7 +257,7 @@
 
 (defmethod append-s3-url :umm-json
   [context concept urls]
-  (update-umm-g-urls concept urls s3-umm-g/append-s3-url))
+  (update-umm-g-metadata concept urls s3-umm-g/append-s3-url))
 
 (defmethod append-s3-url :default
   [context concept urls]
@@ -296,8 +294,8 @@
    :invalid-data ["Updating AdditionalFiles for ECHO10 is coming soon!"]))
 
 (defmethod update-additional-files :umm-json
-  [context concept checksum]
-  (additional-files-umm-g/update-additional-files concept checksum))
+  [context concept new-files]
+  (update-umm-g-metadata concept new-files additional-files-umm-g/update-additional-files))
 
 (defmethod update-additional-files :default
   [context concept checksum]
