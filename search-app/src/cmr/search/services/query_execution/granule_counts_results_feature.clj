@@ -88,11 +88,13 @@
     ; If there's no query string, we can safely assume that there is no
     ; options[spatial][or] parameter being passed
     :and
-    (let [spatial-param-regex #"(options%5Bspatial%5D%5Bor%5D=true|options\[spatial\]\[or\]=true)"
-          spatial-or-option? (-> context
-                                 :query-string
-                                 (string/split #"\?|&")
-                                 (as-> context (some #(re-matches spatial-param-regex %) context)))]
+    (let [query-string (:query-string context)
+          parameters (string/split query-string #"\?|&")
+          spatial-param-regex #"(options%5Bspatial%5D%5Bor%5D=true|options\[spatial\]\[or\]=true)"
+          spatial-or-option? (some #(re-matches spatial-param-regex %) parameters)]
+      (println "QUERY STRING: " query-string)
+      (println "PARAMETERS: " parameters)
+      (println "SPATIAL-OR-OPTION: " spatial-or-option?)
       (if spatial-or-option?
         :or
         :and))))
