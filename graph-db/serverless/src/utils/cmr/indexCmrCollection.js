@@ -34,13 +34,13 @@ export const indexCmrCollection = async (collection, gremlinConnection) => {
   await deleteCmrCollection(conceptId, gremlinConnection)
 
   let doiUrl = 'Not provided'
-  let datasetName = `${process.env.CMR_ROOT}/concepts/${conceptId}.html`
+  let landingPage = `${process.env.CMR_ROOT}/concepts/${conceptId}.html`
 
   if (doiDescription) {
     // Take the second element from the split method
     const [, doiAddress] = doiDescription.split(':')
     doiUrl = `https://dx.doi.org/${doiAddress}`
-    datasetName = doiUrl
+    landingPage = doiUrl
   }
 
   let dataset = null
@@ -54,7 +54,7 @@ export const indexCmrCollection = async (collection, gremlinConnection) => {
       .coalesce(
         gremlinStatistics.unfold(),
         gremlinConnection.addV('dataset')
-          .property('name', datasetName)
+          .property('landing-page', landingPage)
           .property('title', entryTitle)
           .property('concept-id', conceptId)
           .property('doi', doiDescription || 'Not provided')

@@ -680,6 +680,141 @@
             (is (= 1 (count (filter #(= "http://opendap.earthdata.nasa.gov/test1" (:URL %))
                                     (:RelatedUrls (json/parse-string latest-metadata true))))))))))))
 
+(deftest update-checksum
+  "test updating checksum with real granule file that is already in CMR code base"
+  (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+        coll (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
+                                                          {:provider-id "PROV1"
+                                                           :concept-type :collection
+                                                           :native-id "OMSO2-collection"
+                                                           :format-key :dif10})
+        granule (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-granule.xml"
+                                                             {:provider-id "PROV1"
+                                                              :concept-type :granule
+                                                              :native-id "OMSO2-granule"
+                                                              :format-key :echo10})
+        granule-with-no-data-element
+          (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-granule-no-data-granule.xml"
+                                                       {:provider-id "PROV1"
+                                                        :concept-type :granule
+                                                        :native-id "OMSO2-granule-data-granule"
+                                                        :format-key :echo10})
+        granule-with-no-checksum-element
+          (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-granule-no-checksum.xml"
+                                                       {:provider-id "PROV1"
+                                                        :concept-type :granule
+                                                        :native-id "OMSO2-granule-no-checksum"
+                                                        :format-key :echo10})]
+    (testing "ECHO10 granule update for checksum value and algorithm"
+      (let [bulk-update {:operation "UPDATE_FIELD"
+                         :update-field "Checksum"
+                         :updates [["OMSO2.003:OMI-Aura_L2-OMSO2_2004m1001t2307-o01146_v003-2016m0615t191523.he5"
+                                    "0987654321,MD5"]]}
+            {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                   "PROV1" bulk-update bulk-update-options)
+            {:keys [concept-id revision-id]} granule
+            target-metadata (-> "CMR-4722/OMSO2.003-granule-checksum.xml" io/resource slurp)]
+        (index/wait-until-indexed)
+        (is (= 200 status))
+        (is (some? task-id))
+        (is (= target-metadata
+               (:metadata (mdb/get-concept concept-id (inc revision-id)))))
+
+        (ingest/update-granule-bulk-update-task-statuses)
+
+        ;; verify the granule status is UPDATED
+        (let [status-req-options {:query-params {:show_granules "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "All granule updates completed successfully." status-message))
+          (is (= [{:granule-ur "OMSO2.003:OMI-Aura_L2-OMSO2_2004m1001t2307-o01146_v003-2016m0615t191523.he5"
+                   :status "UPDATED"}]
+                 granule-statuses)))))
+    (testing "ECHO10 granule failure (no DataGranule element)"
+      (let [bulk-update {:operation "UPDATE_FIELD"
+                         :update-field "Checksum"
+                         :updates [["OMSO2.003:no-data-granule"
+                                    "0987654321,MD5"]]}
+            {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                   "PROV1" bulk-update bulk-update-options)
+            {:keys [concept-id revision-id]} granule-with-no-data-element]
+        (index/wait-until-indexed)
+        (is (= 200 status))
+        (is (some? task-id))
+
+        (ingest/update-granule-bulk-update-task-statuses)
+
+        ;; verify the granule status is FAILED
+        (let [status-req-options {:query-params {:show_granules "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+          (is (= [{:granule-ur "OMSO2.003:no-data-granule"
+                   :status "FAILED"
+                   :status-message "Can't update <Checksum>: no parent <DataGranule> element"}]
+                 granule-statuses)))
+
+        (testing "verify the metadata was not altered"
+          (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))
+
+    (testing "ECHO10 granule failure: attempt to add new <Checksum> with no algorithm specified"
+      (let [bulk-update {:operation "UPDATE_FIELD"
+                         :update-field "Checksum"
+                         :updates [["OMSO2.003:no-checksum"
+                                    "0987654321"]]}
+            {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                   "PROV1" bulk-update bulk-update-options)
+            {:keys [concept-id revision-id]} granule-with-no-checksum-element]
+        (index/wait-until-indexed)
+        (is (= 200 status))
+        (is (some? task-id))
+
+
+        (ingest/update-granule-bulk-update-task-statuses)
+
+        ;; verify the granule status is FAILED
+        (let [status-req-options {:query-params {:show_granules "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+          (is (= [{:granule-ur "OMSO2.003:no-checksum"
+                   :status "FAILED"
+                   :status-message "Cannot add new <Checksum> element: please specify a checksum value as well as an algorithm."}]
+                 granule-statuses)))
+
+        (testing "verify the metadata was not altered"
+          (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))
+
+    (testing "Successfully add new <Checksum> element"
+      (let [bulk-update {:operation "UPDATE_FIELD"
+                         :update-field "Checksum"
+                         :updates [["OMSO2.003:no-checksum"
+                                    "0987654321,MD5"]]}
+            {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                   "PROV1" bulk-update bulk-update-options)
+            {:keys [concept-id revision-id]} granule
+            target-metadata (-> "CMR-4722/OMSO2.003-granule-checksum.xml" io/resource slurp)]
+        (index/wait-until-indexed)
+        (is (= 200 status))
+        (is (some? task-id))
+        (is (= target-metadata
+               (:metadata (mdb/get-concept concept-id (inc revision-id)))))
+
+        (ingest/update-granule-bulk-update-task-statuses)
+
+        ;; verify the granule status is UPDATED
+        (let [status-req-options {:query-params {:show_granules "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "All granule updates completed successfully." status-message))
+          (is (= [{:granule-ur "OMSO2.003:no-checksum"
+                   :status "UPDATED"}]
+                 granule-statuses)))))))
+
 (deftest status-verbosity-test
   (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
         coll1 (data-core/ingest-umm-spec-collection

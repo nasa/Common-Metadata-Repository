@@ -21,7 +21,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [PUT - Create or update a granule.](#create-update-granule)
     * [DELETE - Delete a granule.](#delete-granule)
   * /collections/\<collection-concept-id>/\<collection-revision-id>/variables/\<native-id>
-    * [PUT - Create or update a variable with assoication.](#create-update-variable)
+    * [PUT - Create or update a variable with association.](#create-update-variable)
   * /providers/\<provider-id>/variables/\<native-id>
     * [PUT - Update a variable.](#create-update-variable)
     * [DELETE - Delete a variable.](#delete-variable)
@@ -1158,7 +1158,7 @@ If the number of granules in need of update update exceeds 250,000, we ask that 
 Granule bulk update currently supports updating with the following operations, update fields and metadata formats:
 
 **operation: "UPDATE_FIELD", update-field: "OPeNDAPLink"**
-supported metadata formats:
+Supported metadata formats:
   - OPeNDAP url in OnlineResources for ECHO10 format
   - OPeNDAP url in RelatedUrls for UMM-G format
 
@@ -1166,7 +1166,7 @@ There can only be ONE on-prem and/or ONE Hyrax-in-the-cloud OPeNDAP url in the g
 The OPeNDAP url value provided in the granule bulk update request can be comma-separated urls, but it can have two at most: one is an on-prem url and the other is a Hyrax-in-the-cloud url. The exact url type is determined by matching the url against the same pattern above. During an update, the Hyrax-in-the-cloud url will overwrite any existing Hyrax-in-the-cloud OPeNDAP url in the granule metadata, and the on-prem url will overwrite any existing on-prem OPeNDAP url in the granule metadata.
 
 **operation: "UPDATE_FIELD", update-field: "S3Link"**
-supported metadata formats:
+Supported metadata formats:
   - S3 url in OnlineAccessURLs for ECHO10 format
   - S3 url in RelatedUrls for UMM-G format
 
@@ -1188,6 +1188,41 @@ curl -i -XPOST \
              ["granule_ur1", "https://via.placeholder.com/150"],
              ["granule_ur2", "https://via.placeholder.com/160"],
              ["granule_ur3", "https://via.placeholder.com/170,https://opendap.earthdata.nasa.gov/foo"]
+	]
+}'
+```
+
+Example granule bulk update response:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+    <status>200</status>
+    <task-id>5</task-id>
+</result>
+```
+
+**operation: "UPDATE_FIELD", update-field: "Checksum"**
+Supported metadata formats:
+  - Checksum in <DataGranule> element for ECHO10 format
+
+An `algorithm` can optionally be supplied with the new checksum `value` by specifying two values, comma-seperated (`value,algorithm`). If an update is requested for a granule with no existing `<Checksum>` element, then specifying an `algorithm` is required. Any values beyond the first two for a given granule are ignored.
+
+Example: Add/update checksum for 3 granules under PROV1. Granules 1 and 2 only receive checksum `value` updates, while granule 3 receives an update to checksum `value` *and* `algorithm`.
+
+```
+curl -i -XPOST \
+  -H "Cmr-Pretty:true" \
+  -H "Content-Type: application/json"
+  -H "Echo-Token: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{ "name": "example of adding OPeNDAP link",
+	"operation": "UPDATE_FIELD",
+	"update-field":"Checksum",
+	"updates":[
+             ["granule_ur1", "92959a96fd69146c5fe7cbde6e5720f2"],
+             ["granule_ur2", "925a89b43f3caff507db0a86d20a2428007"],
+             ["granule_ur3", "a3dcb4d229de6fde0db5686dee47145d,SHA-256"]
 	]
 }'
 ```
