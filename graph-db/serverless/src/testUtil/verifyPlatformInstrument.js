@@ -30,7 +30,7 @@ const verifyPlatformInstrumentExistInGraphDb = async (
   if (instrumentName) {
     record = await global.testGremlinConnection
       .V()
-      .has('dataset', 'title', datasetTitle)
+      .has('collection', 'title', datasetTitle)
       .outE('acquiredBy')
       .filter(gremlinStatistics.inV()
         .has('platformInstrument', 'platform', platformName)
@@ -39,7 +39,7 @@ const verifyPlatformInstrumentExistInGraphDb = async (
   } else {
     record = await global.testGremlinConnection
       .V()
-      .has('dataset', 'title', datasetTitle)
+      .has('collection', 'title', datasetTitle)
       .outE('acquiredBy')
       .filter(gremlinStatistics.inV()
         .has('platformInstrument', 'platform', platformName))
@@ -54,7 +54,7 @@ export const verifyPlatformInstrumentsExistInGraphDb = async (datasetTitle, attr
   // verify the dataset vertex with the given title exists
   const dataset = await global.testGremlinConnection
     .V()
-    .has('dataset', 'title', datasetTitle)
+    .has('collection', 'title', datasetTitle)
     .next()
   const { value: { id: datasetId } } = dataset
   expect(datasetId).not.toBe(null)
@@ -97,7 +97,7 @@ export const verifyPlatformInstrumentsNotExistInGraphDb = async (datasetTitle, a
   // verify the dataset vertex with the given title does not exist
   const dataset = await global.testGremlinConnection
     .V()
-    .has('dataset', 'title', datasetTitle)
+    .has('collection', 'title', datasetTitle)
     .next()
   const { value: datasetValue } = dataset
   expect(datasetValue).toBe(null)

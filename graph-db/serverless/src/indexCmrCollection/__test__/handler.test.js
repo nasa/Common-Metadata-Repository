@@ -4,7 +4,7 @@ import indexCmrCollection from '../handler'
 
 import { updateCollection, deleteCollection } from '../../testUtil/indexCollection'
 
-import { verifyDatasetPropertiesInGraphDb } from '../../testUtil/verifyDataset'
+import { verifyCollectionPropertiesInGraphDb } from '../../testUtil/verifyCollection'
 
 import {
   verifyDocumentationExistInGraphDb, verifyDocumentationNotExistInGraphDb
@@ -47,11 +47,10 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    await verifyDatasetPropertiesInGraphDb(
+    await verifyCollectionPropertiesInGraphDb(
       {
         datasetTitle,
         conceptId,
-        landingPage: 'https://dx.doi.org/10.16904/envidat.166',
         doi: 'doi:10.16904/envidat.166'
       }
     )

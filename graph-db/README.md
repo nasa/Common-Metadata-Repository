@@ -145,39 +145,39 @@ curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().li
 
 To see all collections that share the same documentation URL with the collection (C1200400842-GHRC):
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"dataset\").has(\"concept-id\", \"C1200400842-GHRC\").outE(\"documentedBy\").inV().hasLabel(\"documentation\").inE(\"documentedBy\").outV().hasLabel(\"dataset\").valueMap()"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"collection\").has(\"id\", \"C1200400842-GHRC\").outE(\"documentedBy\").inV().hasLabel(\"documentation\").inE(\"documentedBy\").outV().hasLabel(\"collection\").valueMap()"}'
 ```
 
 To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared documentation:
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"dataset\", \"concept-id\", \"C1200400842-GHRC\").as(\"a\").outE(\"documentedBy\").inV().project(\"shared-link\", \"concept-id\").by(\"name\").by(inE(\"documentedBy\").outV().hasLabel(\"dataset\").where(neq(\"a\")).values(\"concept-id\").fold())"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"collection\", \"id\", \"C1200400842-GHRC\").as(\"a\").outE(\"documentedBy\").inV().project(\"shared-link\", \"id\").by(\"url\").by(inE(\"documentedBy\").outV().hasLabel(\"collection\").where(neq(\"a\")).values(\"id\").fold())"}'
 ```
 
 To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared campaigns:
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"dataset\", \"concept-id\", \"C1200400842-GHRC\").as(\"a\").outE(\"includedIn\").inV().project(\"campaign\", \"concept-id\").by(\"name\").by(inE(\"includedIn\").outV().hasLabel(\"dataset\").where(neq(\"a\")).values(\"concept-id\").fold())"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"collection\", \"id\", \"C1200400842-GHRC\").as(\"a\").outE(\"includedIn\").inV().project(\"campaign\", \"id\").by(\"name\").by(inE(\"includedIn\").outV().hasLabel(\"collection\").where(neq(\"a\")).values(\"id\").fold())"}'
 ```
 
 To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared platform and instruments:
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"dataset\", \"concept-id\", \"C1200400842-GHRC\").as(\"a\").outE(\"acquiredBy\").inV().project(\"platformInstrument\", \"concept-id\").by(valueMap()).by(inE(\"acquiredBy\").outV().hasLabel(\"dataset\").where(neq(\"a\")).values(\"concept-id\").fold())"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"collection\", \"id\", \"C1200400842-GHRC\").as(\"a\").outE(\"acquiredBy\").inV().project(\"platformInstrument\", \"id\").by(valueMap()).by(inE(\"acquiredBy\").outV().hasLabel(\"collection\").where(neq(\"a\")).values(\"id\").fold())"}'
 ```
 
 For users have write access to graphdb, they can also add vertices and edges between vertices. For example:
 
 To create a collection vertex:
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.addV(\"dataset\").property(\"name\", \"https://dx.doi.org/undefined\").property(\"title\", \"GPM Ground Validation Precipitation Imaging Package (PIP) ICE POP V1\").property(\"concept-id\", \"C1233352242-GHRC\").property(\"doi\", \"10.5067/GPMGV/ICEPOP/PIP/DATA101\")"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.addV(\"collection\").property(\"title\", \"GPM Ground Validation Precipitation Imaging Package (PIP) ICE POP V1\").property(\"id\", \"C1233352242-GHRC\").property(\"doi\", \"10.5067/GPMGV/ICEPOP/PIP/DATA101\")"}'
 ```
 
 To create a documentation vertex:
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.addV(\"documentation\").property(\"name\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\").property(\"title\", \"NASA Participation in the International Collaborative Experiments for Pyeongchang 2018 Olympic and Paralympic Winter Games (ICE-POP 2018)\")"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.addV(\"documentation\").property(\"url\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\").property(\"title\", \"NASA Participation in the International Collaborative Experiments for Pyeongchang 2018 Olympic and Paralympic Winter Games (ICE-POP 2018)\")"}'
 ```
 
 To create an edge from the above documentation vertex to the collection vertex:
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"dataset\").has(\"concept-id\", \"C1233352242-GHRC\").addE(\"documentedBy\").to(g.V().hasLabel(\"documentation\").has(\"name\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\"))"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"collection\").has(\"id\", \"C1233352242-GHRC\").addE(\"documentedBy\").to(g.V().hasLabel(\"documentation\").has(\"url\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\"))"}'
 ```
 
 ### Access via SSH tunnel and Gremlin Console locally
