@@ -6,7 +6,7 @@ export const verifyCampaignExistInGraphDb = async (datasetTitle, campaignName) =
   // verify the dataset vertex with the given title exists
   const dataset = await global.testGremlinConnection
     .V()
-    .has('dataset', 'title', datasetTitle)
+    .has('collection', 'title', datasetTitle)
     .next()
   const { value: { id: datasetId } } = dataset
   expect(datasetId).not.toBe(null)
@@ -22,7 +22,7 @@ export const verifyCampaignExistInGraphDb = async (datasetTitle, campaignName) =
   // verify the edge exists between the two vertices
   const record = await global.testGremlinConnection
     .V()
-    .has('dataset', 'title', datasetTitle)
+    .has('collection', 'title', datasetTitle)
     .outE('includedIn')
     .filter(gremlinStatistics.inV()
       .has('campaign', 'name', campaignName))
@@ -35,7 +35,7 @@ export const verifyCampaignNotExistInGraphDb = async (datasetTitle, campaignName
   // verify the dataset vertex with the given title does not exist
   const dataset = await global.testGremlinConnection
     .V()
-    .has('dataset', 'title', datasetTitle)
+    .has('collection', 'title', datasetTitle)
     .next()
   const { value: datasetValue } = dataset
   expect(datasetValue).toBe(null)

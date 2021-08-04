@@ -28,11 +28,11 @@ const indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId
     // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
     const documentationVertex = await gremlinConnection
       .V()
-      .has('documentation', 'name', url)
+      .has('documentation', 'url', url)
       .fold()
       .coalesce(
         gremlinStatistics.unfold(),
-        gremlinConnection.addV('documentation').property('name', url).property('title', description || subType)
+        gremlinConnection.addV('documentation').property('url', url).property('title', description || subType)
       )
       .next()
 
