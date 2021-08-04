@@ -50,7 +50,6 @@
                                             (and-conds (spatial-cond 2)
                                                        (and-conds (temporal-cond 2)
                                                                   (other))))})
-          context {:query-string "?include_granule_counts=true&concept_id=C1-PROV1"}
           results (results-with-items "C1-PROV1" "C2-PROV1")]
       (is (= (expected-query-with-condition
               2 (and-conds
@@ -59,7 +58,7 @@
                  (not-limit-to-granules (temporal-cond 1))
                  (spatial-cond 2)
                  (not-limit-to-granules (temporal-cond 2))))
-             (gcrf/extract-granule-count-query context coll-query results)))))
+             (gcrf/extract-granule-count-query coll-query results)))))
   (testing "spatial and temporal query with no results"
     (let [coll-query (cqm/query {:condition
                                  (and-conds (other)
@@ -68,14 +67,12 @@
                                             (and-conds (spatial-cond 2)
                                                        (and-conds (temporal-cond 2)
                                                                   (other))))})
-          results (results-with-items)
-          context {:query-string "?include_granule_counts=true&concept_id=C1-PROV1"}]
+          results (results-with-items)]
       (is (= (expected-query-with-condition 0 cqm/match-none)
-             (gcrf/extract-granule-count-query context coll-query results)))))
+             (gcrf/extract-granule-count-query coll-query results)))))
   (testing "non-spatial non-temporal query"
     (let [coll-query (cqm/query {:condition (and-conds (other) (other))})
-          results (results-with-items "C1-PROV1" "C2-PROV1")
-          context {:query-string "?include_granule_counts=true&concept_id=C1-PROV1"}]
+          results (results-with-items "C1-PROV1" "C2-PROV1")]
       (is (= (expected-query-with-condition
               2 (cqm/string-conditions :collection-concept-id ["C1-PROV1" "C2-PROV1"] true))
-             (gcrf/extract-granule-count-query context coll-query results))))))
+             (gcrf/extract-granule-count-query coll-query results))))))

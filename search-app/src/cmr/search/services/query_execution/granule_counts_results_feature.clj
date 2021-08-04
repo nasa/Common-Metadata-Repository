@@ -12,7 +12,6 @@
    [cmr.common-app.services.search.query-execution :as query-execution]
    [cmr.common-app.services.search.query-model :as q]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.search.models.query :as qm]
    [cmr.search.services.acl-service :as acl-service]
@@ -84,18 +83,16 @@
 
 (defn- extract-spatial-operator
   "Determine whether spatial conditions should be ORed or ANDed together"
-  [context]
-  (if (empty? (:query-string context))
-    ; If there's no query string, we can safely assume that there is no
-    ; options[spatial][or] parameter being passed
-    :and
-    (let [query-string (:query-string context)
-          parameters (string/split query-string #"\?|&")
-          spatial-param-regex #"(options%5Bspatial%5D%5Bor%5D=true|options\[spatial\]\[or\]=true)"
-          spatial-or-option? (some #(re-matches spatial-param-regex %) parameters)]
-      (if spatial-or-option?
-        :or
-        :and))))
+  [query]
+  (let [conditions (get-in query [:condition :conditions])
+        condition-is-shape? (->> conditions
+                                 (map keys)
+                                 flatten
+                                 (filter #(= % :shape))
+                                 seq)
+        parent-group-operator (get-in query [:condition :operation])]
+    (when condition-is-shape?
+      parent-group-operator)))
 
 (defn- combine-spatial-and-non-spatial-conditions
   "Helper function. If spatial conitions are ORed, combine them with the rest of
@@ -114,9 +111,9 @@
   "Extracts a query to find the number of granules per collection in the results from a collection query
   coll-query - The collection query
   results - the results of the collection query"
-  [context coll-query results]
+  [coll-query results]
   (let [collection-ids (query-results->concept-ids results)
-        spatial-operator (extract-spatial-operator context)
+        spatial-operator (extract-spatial-operator coll-query)
         spatial-temp-conds (->> coll-query
                                 extract-spatial-and-temporal-conditions
                                 (map convert-spatial-or-temporal-condition))
@@ -160,7 +157,7 @@
   (if (zero? (count (query-results->concept-ids query-results)))
     query-results
     (->> query-results
-         (extract-granule-count-query context query)
+         (extract-granule-count-query query)
          (query-execution/execute-query context)
          search-results->granule-counts
          (assoc query-results :granule-counts-map))))
