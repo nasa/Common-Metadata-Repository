@@ -9,7 +9,7 @@
     "aws-sdk": "^2.814.0",
     "node-fetch": "^2.6.1",
     "redis": "^2.8.0",
-    "sharp": "^0.24.1"
+    "sharp": "^0.28.3"
   },
   "scripts": {
     "test": "jest --coverage",
