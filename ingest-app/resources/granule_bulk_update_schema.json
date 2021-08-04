@@ -70,7 +70,7 @@
         },
         "Format": {
           "type": "string",
-          "enum": ["ASCII", "BINARY", "BMP", "BUFR", "CSV", "GEOTIFF", "GIF", "GEOTIFFINT16", "GEOTIFFFLOAT32", "GRIB", "GZIP",
+          "enum": ["BOGUS", "ASCII", "BINARY", "BMP", "BUFR", "CSV", "GEOTIFF", "GIF", "GEOTIFFINT16", "GEOTIFFFLOAT32", "GRIB", "GZIP",
             "HDF4", "HDF5", "HDF-EOS2", "HDF-EOS5", "HTML", "ICARTT", "JPEG", "JSON", "KML", "NETCDF-3", "NETCDF-4", "NETCDF-CF",
             "PNG", "PNG24", "TAR", "TIFF", "XLSX", "XML", "ZIP", "DMRPP", "Not provided"]
         },
