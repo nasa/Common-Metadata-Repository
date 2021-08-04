@@ -56,17 +56,29 @@
 
 (defmethod update->instruction :AdditionalFile
   [event-type update-field item]
-  (let [{:keys [GranuleUR Files]} item]
-    {:event-type event-type
-     :granule-ur GranuleUR
-     :new-value Files}))
+  (if (vector? item)
+    (errors/throw-service-errors
+     :bad-request
+     [(format (str "Wrong update format specified for granule UR [%s]. "
+                   "Please use the correct update format for updates with update-field [%s]")
+              (first item) update-field)])
+    (let [{:keys [GranuleUR Files]} item]
+      {:event-type event-type
+       :granule-ur GranuleUR
+       :new-value Files})))
 
 (defmethod update->instruction :default
   [event-type update-field item]
-  (let [[granule-ur value] item]
-    {:event-type event-type
-     :granule-ur granule-ur
-     :new-value value}))
+  (if (map? item)
+    (errors/throw-service-errors
+     :bad-request
+     [(format (str "Wrong update format specified for granule UR [%s]. "
+                   "Please use the correct update format for updates with update-field [%s]")
+              (:GranuleUR item) update-field)])
+    (let [[granule-ur value] item]
+      {:event-type event-type
+       :granule-ur granule-ur
+       :new-value value})))
 
 (defn- request->instructions
   "Returns granule bulk update instructions for the given request"
