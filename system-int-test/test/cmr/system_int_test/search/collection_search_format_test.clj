@@ -763,7 +763,7 @@
                                       {:URL "http://example.com/opendap"
                                        :URLContentType "DistributionURL"
                                        :Subtype "OPENDAP DATA"
-                                       :Type "GET DATA"}]}
+                                       :Type "USE SERVICE API"}]}
           data-centers {:DataCenters
                         [(umm-spec-collection/data-center
                           {:Roles ["ARCHIVER"]
@@ -839,12 +839,12 @@
                                        :Subtype "VERTEX"
                                        :Type "GET DATA"}
                                       {:URL "http://example.com/html.html"
-                                       :URLContentType "VisualizationURL"
+                                       :URLContentType "DistributionURL"
                                        :Type "GET DATA"}
                                       {:URL "http://example.com/access-url"
                                        :Description "Test access URL"
-                                       :URLContentType "VisualizationURL"
-                                       :Type "GET DATA"}]}
+                                       :URLContentType "DistributionURL"
+                                       :Type "DOWNLOAD SOFTWARE"}]}
           data-centers {:DataCenters
                         [(umm-spec-collection/data-center
                           {:Roles ["ARCHIVER"]
@@ -892,6 +892,7 @@
 
           "accessURL in distribution no title"
           {:accessURL "http://example.com/access-url"
+           :title "Downloadable software applications"
            :description "Test access URL"} opendata-coll-umm
 
           "downloadURL and default title in distribution"
@@ -912,7 +913,8 @@
            :mediaType "text/csv"} opendata-coll-umm
 
           "accessURL for text mime type no title"
-          {:accessURL "http://example.com/html.html"} opendata-coll-umm))
+          {:accessURL "http://example.com/html.html"
+           :title "Download this dataset"} opendata-coll-umm))
       (testing "Opendata fields in response."
         (are3 [expected-result field-key opendata-test-collection]
           (is (= expected-result (field-key opendata-test-collection)))

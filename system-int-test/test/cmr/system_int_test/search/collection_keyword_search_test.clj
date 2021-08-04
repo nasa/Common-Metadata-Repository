@@ -107,9 +107,11 @@
         org (data-umm-cmn/data-center {:Roles ["ARCHIVER"]
                                      :ShortName "Some&Place"})
         url1 (data-umm-cmn/related-url {:URL "http://cmr.earthdata.nasa.gov"
-                                      :Description "Earthdata"})
+                                        :Type "PROJECT HOME PAGE"
+                                        :Description "Earthdata"})
         url2 (data-umm-cmn/related-url {:URL "http://nsidc.org/"
-                                      :Description "Home page of National Snow and Ice Data Center"})
+                                        :Type "PROJECT HOME PAGE"
+                                        :Description "Home page of National Snow and Ice Data Center"})
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll1" :ShortName "S1"
                                                                             :VersionDescription "VersionDescription"}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Mitch made a (merry-go-round)"
