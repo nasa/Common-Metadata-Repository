@@ -208,7 +208,7 @@
             (if new-err-messages
               (errors/throw-service-errors :invalid-data new-err-messages)
               ;; when there is no newly introduced errors, err-messages contains only existing errors.
-              [{:existing-errors err-messages}]))
+              [{:existing-errors (map #(str (:path %) " " (:errors %)) err-messages)}]))
          (errors/throw-service-errors :invalid-data err-messages))
        (do
          (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))

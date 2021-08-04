@@ -99,7 +99,14 @@
                       prev-coll-concept
                       progressive-coll-update?)]
     {:concept coll-concept
-     :warnings (concat warnings err-warnings)}))
+     :warnings (if (some #(:existing-errors %) warnings)
+                 ;; combine the existing-errors in warnings and err-warnings.
+                 (map #(if (:existing-errors %)
+                         (assoc % :existing-errors (concat (:existing-errors %)
+                                                           (:existing-errors (first err-warnings))))
+                         %)
+                      warnings)
+                 (concat warnings err-warnings))}))
 
 (defn-timed save-collection
   "Store a concept in mdb and indexer.
