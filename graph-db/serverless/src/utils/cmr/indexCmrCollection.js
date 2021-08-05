@@ -34,6 +34,14 @@ export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
   await deleteCmrCollection(conceptId, gremlinConnection)
 
   let collection = null
+  const addVCommand = gremlinConnection.addV('collection')
+    .property('title', entryTitle)
+    .property('id', conceptId)
+
+  if (doiDescription) {
+    addVCommand.property('doi', doiDescription)
+  }
+
   try {
     // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
     collection = await gremlinConnection
@@ -43,10 +51,7 @@ export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
       .fold()
       .coalesce(
         gremlinStatistics.unfold(),
-        gremlinConnection.addV('collection')
-          .property('title', entryTitle)
-          .property('id', conceptId)
-          .property('doi', doiDescription || 'Not provided')
+        addVCommand
       )
       .next()
   } catch (error) {
