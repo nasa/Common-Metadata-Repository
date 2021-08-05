@@ -129,16 +129,16 @@
 
 (defn manditory-keyword-validations
   "The list of keywords which are validated if the optional validation is not
-   requested. This function is in contrast to keyword-validations which represent
-   the list of validations to use when reqesting validation. Over time, buisness
-   rules will dictate moving move values from that function to this one as
-   requirements become more strict"
+   requested. This function is in contrast to optional-keyword-validations which
+   represent the list of validations to use when reqesting validation. Over
+   time, buisness rules will dictate moving more validations from that function
+   to this one as requirements become more strict."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
     (-> (related-url-validator kms-index)
         (merge (datacenter-url-validators kms-index)))))
 
-(defn keyword-validations
+(defn optional-keyword-validations
   "Creates validations that check various collection fields to see if they match KMS keywords."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
@@ -235,7 +235,7 @@
   (when-let [err-messages (seq (umm-spec-validation/validate-collection
                                 collection
                                 (if (:validate-keywords? validation-options)
-                                  [(keyword-validations context)]
+                                  [(optional-keyword-validations context)]
                                   [(manditory-keyword-validations context)])))]
     (if (or (:validate-umm? validation-options)
             (config/return-umm-spec-validation-errors)
