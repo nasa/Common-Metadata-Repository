@@ -27,11 +27,11 @@ const platformInstruments = (attributes) => {
   }
 }
 
-const relatedUrl = (docName) => ({
+const relatedUrlObj = (relatedUrl) => ({
   URLContentType: 'PublicationURL',
   Type: 'VIEW RELATED INFORMATION',
   Subtype: 'GENERAL DOCUMENTATION',
-  URL: docName
+  URL: relatedUrl
 })
 
 /**
@@ -42,10 +42,14 @@ const relatedUrl = (docName) => ({
  * @returns null
  */
 export const updateCollection = async (conceptId, datasetTitle, attributes) => {
-  const { docNames, campaigns, platforms } = attributes
+  const {
+    relatedUrls, campaigns, platforms, doi
+  } = attributes
+
   let projects
   let platformInstrumentObjs
-  let relatedUrls
+  let relatedUrlObjs
+  let doiValue = { MissingReason: 'Not Applicable' }
 
   if (campaigns) {
     projects = campaigns.map(campaign)
@@ -55,8 +59,12 @@ export const updateCollection = async (conceptId, datasetTitle, attributes) => {
     platformInstrumentObjs = platforms.map(platformInstruments)
   }
 
-  if (docNames) {
-    relatedUrls = docNames.map(relatedUrl)
+  if (relatedUrls) {
+    relatedUrlObjs = relatedUrls.map(relatedUrlObj)
+  }
+
+  if (doi) {
+    doiValue = { DOI: doi }
   }
 
   nock(/local-cmr/)
@@ -73,10 +81,8 @@ export const updateCollection = async (conceptId, datasetTitle, attributes) => {
           umm: {
             Projects: projects,
             Platforms: platformInstrumentObjs,
-            RelatedUrls: relatedUrls,
-            DOI: {
-              DOI: 'doi:10.16904/envidat.166'
-            },
+            RelatedUrls: relatedUrlObjs,
+            DOI: doiValue,
             ShortName: 'latent-reserves-in-the-swiss-nfi',
             EntryTitle: datasetTitle
           }
