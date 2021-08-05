@@ -10,7 +10,9 @@
 #samples from each file. If you need to test against the full files you can copy
 #the <type>_full to <type>
 
-# you can use the script below to grab all the updated content
+# You can use the script below to grab all the updated content from the KMS
+# service. You would do this if the content or structure of the data has changed
+# significently and new data is desired in tests.
 
 schemes_to_import="granuledataformat idnnode instruments isotopiccategory \
   locations measurementname platforms projects providers rucontenttype \
@@ -27,6 +29,7 @@ schemes_to_import="granuledataformat idnnode instruments isotopiccategory \
 env='' # sit|uat|prod|<blank> are all posible values
 version='' # DRAFT|<blank> are all posible values
 additional_flags='' # use this to pass the cache clear param or other flags
+stream_mode='off'
 
 # return the url to the server hosting GCMD KMS
 function gcmd_host()
@@ -49,9 +52,13 @@ function fetch_scheme()
 
   echo Exporting ${scheme} from ${host_name}
   # Download the scheme CSV file and save to a file of the same name
-  curl -s \
-    "${host_name}/kms/concepts/concept_scheme/${scheme}?format=csv&version=${version}${options}" \
-    > ${scheme}
+  url="${host_name}/kms/concepts/concept_scheme/${scheme}?format=csv&version=${version}${options}"
+
+  if [ "${stream_mode}" == "off" ] ; then
+    curl -s ${url} > ${scheme}
+  else
+    curl -s ${url}
+  fi
 }
 
 # loop through all the schmems and download them
@@ -81,6 +88,7 @@ function help()
   printf "${format}" -e Environment Str "Server env: [sit | uat | prod | <blank>]" "${env}"
   printf "${format}" -h Help '' 'Print out a help message' ''
   printf "${format}" -s Scheme List "Schemas, Space delim" "$(echo $schemes_to_import | cut -c -12)"
+  printf "${format}" -S Stream Mode "Dump output to stdout and not file" "${stream_mode}"
   printf "${format}" -v Version Str "Scheme version name" "${version}"
   printf "${format}" -w Work '' 'Do the download work' ''
   printf '=%.0s' {1..80} ; printf '\n\n'
@@ -93,12 +101,13 @@ function help()
 manual_mode="no"
 
 # flags are "tasks" which are run in order, like a mini language
-while getopts "a:e:hs:v:w" OPTION ; do
+while getopts "a:e:hs:Sv:w" OPTION ; do
   case ${OPTION} in
     a) additional_flags="${OPTARG}" ;;    # set flags and continue
     e) env="${OPTARG}" ;;                 # set env and continue
     h) help ; exit ;;                     # print help and exit
     s) schemes_to_import="${OPTARG}" ;;   # set schemes and continue
+    S) stream_mode="on" ;;
     v) version="${OPTARG}" ;;             # set version and continue
     w) manual_mode="yes" ; work ;;        # work() now and not latter, CONTINUE
   esac

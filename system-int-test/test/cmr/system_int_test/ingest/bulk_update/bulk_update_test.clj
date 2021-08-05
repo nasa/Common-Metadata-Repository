@@ -60,9 +60,6 @@
                   :Uuid "ef941ad9-1662-400d-a24a-c300a72c1531"
                   :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
                                                       :Type "HOME PAGE"
-                                                      :URL "http://nsidc.org/daac/index.html"}
-                                                     {:URLContentType "DataCenterURL"
-                                                      :Type "PROJECT HOME PAGE"
                                                       :URL "http://nsidc.org/daac/index.html"}]
                                        :ContactMechanisms  [{:Type "Telephone"
                                                              :Value "1 303 492 6199 x"}
@@ -620,10 +617,7 @@
            (is (= 2
                   (:revision-id (:meta concept))))
            (is (= [{:ShortName "New ShortName"
-                    :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
-                                                        :Type "PROJECT HOME PAGE"
-                                                        :URL "http://nsidc.org/daac/index.html"}]
-                                         :ContactMechanisms  [{:Type "Telephone"
+                    :ContactInformation {:ContactMechanisms  [{:Type "Telephone"
                                                                :Value "1 303 492 6199 x"}
                                                               {:Type  "Fax"
                                                                :Value "1 303 492 2468 x"}
@@ -666,10 +660,7 @@
                     :LongName "New LongName"
                     :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
                                                         :Type "HOME PAGE"
-                                                        :URL "http://test.org/daac/index.html"}
-                                                       {:URLContentType "DataCenterURL"
-                                                        :Type "PROJECT HOME PAGE"
-                                                        :URL "http://nsidc.org/daac/index.html"}]
+                                                        :URL "http://test.org/daac/index.html"}]
                                          :ContactMechanisms  [{:Type "Telephone"
                                                                :Value "1 303 492 6199 x"}
                                                               {:Type  "Fax"

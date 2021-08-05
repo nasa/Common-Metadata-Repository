@@ -93,7 +93,7 @@
                     :Projects projects
                     :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                     :TilingIdentificationSystems [two-d-cs]
-                    :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                    :RelatedUrls [(data-umm-cmn/related-url {:Type "PROJECT HOME PAGE" :URL "http://www.foo.com"})]
                     :TemporalExtents [(data-umm-cmn/temporal-extent
                                        {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                         :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
@@ -111,7 +111,7 @@
                     :Projects projects
                     :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                     :TilingIdentificationSystems [two-d-cs]
-                    :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                    :RelatedUrls [(data-umm-cmn/related-url {:Type "PROJECT HOME PAGE" :URL "http://www.foo.com"})]
                     :TemporalExtents [(data-umm-cmn/temporal-extent
                                        {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                         :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
@@ -291,7 +291,7 @@
                      :Projects projects
                      :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                      :TilingIdentificationSystems [c-two-d-cs-A]
-                     :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                     :RelatedUrls [(data-umm-cmn/related-url {:Type "PROJECT HOME PAGE" :URL "http://www.foo.com"})]
                      :TemporalExtents [(data-umm-cmn/temporal-extent
                                         {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                          :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
@@ -308,7 +308,7 @@
                      :Projects projects
                      :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                      :TilingIdentificationSystems [c-two-d-cs-B]
-                     :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                     :RelatedUrls [(data-umm-cmn/related-url {:Type "PROJECT HOME PAGE" :URL "http://www.foo.com"})]
                      :TemporalExtents [(data-umm-cmn/temporal-extent
                                         {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                          :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
@@ -414,7 +414,7 @@
                      :Projects projects
                      :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                      :TilingIdentificationSystems [c-two-d-cs]
-                     :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                     :RelatedUrls [(data-umm-cmn/related-url {:Type "PROJECT HOME PAGE" :URL "http://www.foo.com"})]
                      :TemporalExtents [(data-umm-cmn/temporal-extent
                                         {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                          :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
@@ -431,7 +431,7 @@
                      :Projects projects
                      :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                      :TilingIdentificationSystems [c-two-d-cs]
-                     :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                     :RelatedUrls [(data-umm-cmn/related-url {:Type "PROJECT HOME PAGE" :URL "http://www.foo.com"})]
                      :TemporalExtents [(data-umm-cmn/temporal-extent
                                         {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                          :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
@@ -514,7 +514,7 @@
                    :Projects projects
                    :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                    :TilingIdentificationSystems [two-d-cs]
-                   :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                   :RelatedUrls [(data-umm-cmn/related-url {:Type "PROJECT HOME PAGE" :URL "http://www.foo.com"})]
                    :TemporalExtents [(data-umm-cmn/temporal-extent
                                       {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                        :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
@@ -608,7 +608,7 @@
                    :Projects projects
                    :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                    :TilingIdentificationSystems [two-d-cs]
-                   :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                   :RelatedUrls [(data-umm-cmn/related-url {:Type "PROJECT HOME PAGE" :URL "http://www.foo.com"})]
                    :TemporalExtents [(data-umm-cmn/temporal-extent
                                       {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                        :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
