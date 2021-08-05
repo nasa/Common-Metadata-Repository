@@ -131,10 +131,10 @@
 
 (defn manditory-keyword-validations
   "The list of keywords which are validated if the optional validation is not
-   requested. This function is in contrast to keyword-validations which represent
-   the list of validations to use when reqesting validation. Over time, buisness
-   rules will dictate moving move values from that function to this one as
-   requirements become more strict"
+   requested. This function is in contrast to optional-keyword-validations which
+   represent the list of validations to use when reqesting validation. Over
+   time, buisness rules will dictate moving more validations from that function
+   to this one as requirements become more strict."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
     (-> (related-url-validator kms-index)
@@ -229,8 +229,6 @@
       (do
         (warn "UMM-C JSON-Schema Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
-
-()
 
 (defn umm-spec-validate-collection
   "Validate collection through umm-spec validation functions. If warn? flag is
