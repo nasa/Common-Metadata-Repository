@@ -39,7 +39,7 @@
                                             "category" "topic" "term" "variable-level-1" "variable-level-2"
                                             "variable-level-3" "any" "two-d-coordinate-system-name"
                                             "processing-level-id" "data-center" "archive-center"]}]
-    (ke/extract-keywords query)))
+    (is (= expected-keywords (ke/extract-keywords query)))))
 
 (deftest contains-keyword-condition-test
   (testing "Works with keyword condition"
