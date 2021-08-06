@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.granule-bulk-update.additional-files.umm-g
+(ns cmr.ingest.services.granule-bulk-update.additional-file.umm-g
   "Contains functions to update UMM-G granule metadata for OPeNDAP url bulk update."
   (:require
    [cmr.common.services.errors :as errors]
@@ -18,7 +18,15 @@
     (when (and (:Size new-size-and-unit)
                (not (:SizeUnit new-size-and-unit)))
       (errors/throw-service-errors :invalid-data
-        ["Can't update granule: size value supplied with no sizeunit present"]))
+        [(format (str "Can't update granule: Size value supplied with no SizeUnit present"
+                      " for File or FilePackage with name [%s]")
+                 (:Name file))]))
+    (when (and (:SizeUnit new-size-and-unit)
+               (not (:Size new-size-and-unit)))
+      (errors/throw-service-errors :invalid-data
+        [(format (str "Can't update granule: SizeUnit value supplied with no Size present"
+                      " for File or FilePackage with name [%s]")
+                 (:Name file))]))
     (merge new-size-in-bytes new-size-and-unit)))
 
 (defn- get-new-formats
@@ -32,16 +40,20 @@
   "Returns updated checksum value and algorithm.
    File is the old file, while input-file is the supplied file with the same name in the patch file."
   [file input-file]
-  (let [old-checksum (get file :Checksum)
-        input-checksum (get input-file :Checksum)
+  (let [old-checksum (:Checksum file)
+        input-checksum (:Checksum input-file)
         value (or (:Value input-checksum) (:Value old-checksum))
         algorithm (or (:Algorithm input-checksum) (:Algorithm old-checksum))]
+    (when (and (:Checksum input-checksum) (not :Value input-checksum))
+      (errors/throw-service-errors :invalid-data
+       [(format (str "Can't update granule: checksum algorithm update requested without new checksum value"
+                     " for file with name [%s]")
+                (:Name file))]))
     (when (and value (not algorithm))
       (errors/throw-service-errors :invalid-data
-       ["Can't update granule: checksum value supplied with no algorithm present"]))
-    (when (and algorithm (not value))
-      (errors/throw-service-errors :invalid-data
-       ["Can't update granule: checksum algorithm supplied with no value present"]))
+       [(format (str "Can't update granule: checksum value supplied with no algorithm present"
+                     " for file with name [%s]")
+                (:Name file))]))
     (when (and value algorithm)
       {:Value value :Algorithm algorithm})))
 
@@ -84,12 +96,12 @@
         input-files-map (into (sorted-map) (vec input-files-2-vectors))]
     (when-not (every? (set file-names) input-file-names)
       (errors/throw-service-errors :invalid-data
-        ["Update failed - please only specify Files or FilePackages contained in the"
-          "existing granule metadata"]))
+        [(str "Update failed - please only specify Files or FilePackages contained in the"
+              "existing granule metadata")]))
     (when-not (= (count (set file-names)) (count file-names))
       (errors/throw-service-errors :invalid-data
-        ["Update failed - this operation is not available for granules with duplicate"
-          "FilePackage/File names in the granule metadata."]))
+        [(str "Update failed - this operation is not available for granules with duplicate"
+              "FilePackage/File names in the granule metadata.")]))
     (when-not (= (count (set input-file-names)) (count input-file-names))
       (errors/throw-service-errors :invalid-data
         ["Update failed - duplicate files provided for granule update"]))

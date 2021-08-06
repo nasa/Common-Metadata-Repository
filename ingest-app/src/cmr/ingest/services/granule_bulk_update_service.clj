@@ -14,7 +14,7 @@
    [cmr.ingest.data.granule-bulk-update :as data-granule-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.services.bulk-update-service :as bulk-update-service]
-   [cmr.ingest.services.granule-bulk-update.additional-files.umm-g :as additional-files-umm-g]
+   [cmr.ingest.services.granule-bulk-update.additional-file.umm-g :as additional-file-umm-g]
    [cmr.ingest.services.granule-bulk-update.checksum.echo10 :as checksum-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.echo10 :as opendap-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]
@@ -307,7 +307,7 @@
 
 (defmethod update-additional-files :umm-json
   [context concept new-files]
-  (update-umm-g-metadata concept new-files additional-files-umm-g/update-additional-files))
+  (update-umm-g-metadata concept new-files additional-file-umm-g/update-additional-files))
 
 (defmethod update-additional-files :default
   [context concept checksum]
