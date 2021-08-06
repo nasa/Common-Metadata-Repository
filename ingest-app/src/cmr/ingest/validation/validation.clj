@@ -199,10 +199,17 @@
        (if (and (config/progressive-update-enabled)
                 (not (:bulk-update? validation-options)) 
                 prev-collection)
-         (let [prev-err-messages (seq (umm-spec-validation/validate-collection
+         (let [prev-err-messages (if (:test-existing-errors? validation-options)
+                                   ;; We can't really test the case when the errors are existing errors
+                                   ;; because we can't ingest invalid collections into the system.
+                                   ;; We can only mimic the case when the validation errors for the updated
+                                   ;; collection are the same as the validation errors for the previous revision
+                                   ;; of the collection.
+                                   err-messages
+                                   (seq (umm-spec-validation/validate-collection
                                        prev-collection
                                        (when (:validate-keywords? validation-options)
-                                         [(keyword-validations context)])))
+                                         [(keyword-validations context)]))))
                ;; get the newly introduced validation errors
                new-err-messages (seq (first (data/diff (set err-messages) (set prev-err-messages))))]
             (if new-err-messages
@@ -250,14 +257,14 @@
 (defn-timed validate-business-rules
   "Validates the concept against CMR ingest rules."
   ([context concept]
-   (validate-business-rules context concept nil nil false))
-  ([context concept prev-concept prev-coll-concept progressive-coll-update?]
-   (let [val-result (map #(% context concept prev-concept prev-coll-concept progressive-coll-update?)
+   (validate-business-rules context concept nil nil nil))
+  ([context concept prev-concept prev-coll-concept validation-options]
+   (let [val-result (map #(% context concept prev-concept prev-coll-concept validation-options)
                          (bv/business-rule-validations
                          (:concept-type concept)))
          errors (mapcat #(:errors %) val-result)
          warnings (mapcat #(:warnings %) val-result)]
-     (if (and progressive-coll-update?
+     (if (and (:progressive-coll-update validation-options)
              (not (seq errors)))
        (seq warnings)
        (if-errors-throw :invalid-data errors)))))

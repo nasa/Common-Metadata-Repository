@@ -19,11 +19,12 @@
 
 (defn- version-is-not-nil-validation
   "Validates that the version is not nil"
-  [_ concept _ prev-coll-concept progressive-coll-update?]
+  [_ concept _ prev-coll-concept validation-options]
   (when (nil? (get-in concept [:extra-fields :version-id]))
     (let [msgs ["Version is required."]]
-      (if (and progressive-coll-update?
-               (nil? (get-in prev-coll-concept [:extra-fields :version-id])))
+      (if (and (:progressive-coll-update validation-options)
+               (or (nil? (get-in prev-coll-concept [:extra-fields :version-id]))
+                   (:test-existing-errors? validation-options)))
         {:warnings [{:existing-errors msgs}]}
         {:errors msgs}))))
 
@@ -32,15 +33,16 @@
   Returns error if the delete time exists and is before one minute from the current time."
   ([_ concept]
    (delete-time-validation nil concept nil nil false))
-  ([_ concept _ prev-coll-concept progressive-coll-update?]
+  ([_ concept _ prev-coll-concept validation-options]
    (let [delete-time (get-in concept [:extra-fields :delete-time])
          prev-delete-time (get-in prev-coll-concept [:extra-fields :delete-time])]
      (when (some-> delete-time
                    p/parse-datetime
                    (t/before? (t/plus (tk/now) (t/minutes 1))))
        (let [msgs [(format "DeleteTime %s is before the current time." delete-time)]]
-         (if (and progressive-coll-update?
-                  (= delete-time prev-delete-time))
+         (if (and (:progressive-coll-update validation-options)
+                  (or (= delete-time prev-delete-time)
+                      (:test-existing-errors? validation-options)))
            {:warnings [{:existing-errors msgs}]}
            {:errors msgs})))))) 
 

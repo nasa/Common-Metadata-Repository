@@ -97,7 +97,7 @@
                       coll-concept
                       prev-concept
                       prev-coll-concept
-                      progressive-coll-update?)]
+                      (assoc validation-options :progressive-coll-update progressive-coll-update?))]
     {:concept coll-concept
      :warnings (if (some #(:existing-errors %) warnings)
                  ;; combine the existing-errors in warnings and err-warnings.
