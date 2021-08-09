@@ -17,8 +17,17 @@ afterEach(() => {
 })
 
 describe('getEchoToken', () => {
-  test('fetches ECHO token from AWS', async () => {
+  test('Default setting, no CMR token is provided', async () => {
     process.env.IS_LOCAL = 'false'
+
+    const response = await getEchoToken()
+
+    expect(response).toEqual(null)
+  })
+
+  test('Configure an ECHO token to retrieve from AWS', async () => {
+    process.env.IS_LOCAL = 'false'
+    process.env.CMR_TOKEN_KEY = 'SIT_TOKEN'
 
     jest.spyOn(getSecureParam, 'getSecureParam').mockResolvedValue('1234-abcd-5678-efgh')
 

@@ -12,7 +12,6 @@ provider:
     subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
   environment:
     CMR_ROOT: ${self:custom.variables.CMR_ROOT}
-    CMR_TOKEN_KEY: ${self:custom.variables.CMR_TOKEN_KEY}
     ENVIRONMENT: ${self:custom.variables.ENVIRONMENT}
     GREMLIN_URL: ${self:custom.variables.GREMLIN_URL}
     PAGE_SIZE: ${self:custom.variables.PAGE_SIZE}
@@ -57,7 +56,7 @@ resources:
           Statement:
             - Sid: topic-subscription-${env:CMR_CONCEPT_SNS_TOPIC}
               Effect: Allow
-              Principal: 
+              Principal:
                 AWS: "*"
               Action:
                 - sqs:SendMessage
@@ -132,7 +131,6 @@ custom:
   variables:
     # Default values for environment variables
     CMR_ROOT: ${env:CMR_ROOT, 'https://cmr.sit.earthdata.nasa.gov'}
-    CMR_TOKEN_KEY: ${env:CMR_TOKEN_KEY, 'SIT_TOKEN'}
     ENVIRONMENT: ${self:provider.stage}
     GREMLIN_URL: ${env:GREMLIN_URL, 'wss://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'}
     PAGE_SIZE: ${env:PAGE_SIZE, '1000'}
