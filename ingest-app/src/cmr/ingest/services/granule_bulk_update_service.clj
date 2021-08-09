@@ -288,7 +288,7 @@
 (defmethod update-checksum :umm-json
   [context concept checksum]
   (errors/throw-service-errors
-   :invalid-data ["Updating checksum for UMM_JSON is coming soon!"]))
+   :invalid-data ["Updating checksum is not supported for UMM-G. Please use update-field: AdditionalFile"]))
 
 (defmethod update-checksum :default
   [context concept checksum]

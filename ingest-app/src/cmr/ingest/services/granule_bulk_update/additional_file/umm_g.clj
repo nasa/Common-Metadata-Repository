@@ -1,8 +1,11 @@
 (ns cmr.ingest.services.granule-bulk-update.additional-file.umm-g
   "Contains functions to update UMM-G granule metadata for OPeNDAP url bulk update."
   (:require
+   [clojure.string :as string]
    [cmr.common.services.errors :as errors]
-   [clojure.pprint :as pprint]))
+   [cmr.umm-spec.umm-json :as umm-json]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]))
+
 
 (defn- get-new-sizes
   "Returns updated size values.
@@ -97,11 +100,11 @@
     (when-not (every? (set file-names) input-file-names)
       (errors/throw-service-errors :invalid-data
         [(str "Update failed - please only specify Files or FilePackages contained in the"
-              "existing granule metadata")]))
+              " existing granule metadata")]))
     (when-not (= (count (set file-names)) (count file-names))
       (errors/throw-service-errors :invalid-data
         [(str "Update failed - this operation is not available for granules with duplicate"
-              "FilePackage/File names in the granule metadata.")]))
+              " FilePackage/File names in the granule metadata.")]))
     (when-not (= (count (set input-file-names)) (count input-file-names))
       (errors/throw-service-errors :invalid-data
         ["Update failed - duplicate files provided for granule update"]))
@@ -109,6 +112,20 @@
 
 (defn update-additional-files
   "Does a thing"
-  [umm-gran additional-files]
-  (update-in umm-gran [:DataGranule :ArchiveAndDistributionInformation]
-         #(update-additional-file-metadata % additional-files)))
+  ([umm-gran additional-files]
+   (update-additional-files umm-gran additional-files true))
+  ([umm-gran additional-files catch-errors]
+   (let [updated-metadata (update-in umm-gran [:DataGranule :ArchiveAndDistributionInformation]
+                                 #(update-additional-file-metadata % additional-files))
+         validation-errors (umm-spec/validate-metadata :granule
+                                     :umm-json
+                                     (umm-json/umm->json updated-metadata))]
+
+     (when (and catch-errors (seq validation-errors))          
+       ;;normal validation only throws the first error in the seq, but we want to throw them all,
+       ;;with the exception of "extraneous key" errors, which are compound errors resulting from
+       ;;invalid keys (which is the only type of error we are expecting).
+       (errors/throw-service-errors :invalid-data
+        [(string/join "; " (remove #(re-seq #"extraneous key" %) validation-errors))]))
+
+     updated-metadata)))

@@ -21,7 +21,7 @@
       (is (= result
              (get-in (umm-g/update-additional-files
                       {:DataGranule {:ArchiveAndDistributionInformation source}}
-                      input-files)
+                      input-files false)
                      [:DataGranule :ArchiveAndDistributionInformation])))
 
       "Add SizeInBytes to a File or Package"
@@ -154,7 +154,7 @@
       (is (= result
              (get-in (umm-g/update-additional-files
                       {:DataGranule {:ArchiveAndDistributionInformation source}}
-                      input-files)
+                      input-files false)
                      [:DataGranule :ArchiveAndDistributionInformation])))
 
       "Add Format to a File or Package"
@@ -246,7 +246,7 @@
       (is (= result
              (get-in (umm-g/update-additional-files
                       {:DataGranule {:ArchiveAndDistributionInformation source}}
-                      input-files)
+                      input-files false)
                      [:DataGranule :ArchiveAndDistributionInformation])))
 
       "Add a checksum"
