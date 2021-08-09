@@ -92,21 +92,12 @@
               "description": "The algorithm name by which the checksum was calulated. This allows the user to re-calculate the checksum to verify the integrity of the downloaded data.",
               "type": "string"
             }
-          },
-          "required": [
-            "Value",
-            "Algorithm"
-          ]
+          }
         }
       },
       "required": [
         "Name"
-      ],
-      "dependencies": {
-        "Size": [
-          "SizeUnit"
-        ]
-      }
+      ]
     },
     "UpdateArgumentsType": {
       "type": "array",

@@ -35,13 +35,4 @@
                     invalid-json))))
             "Missing :operation" :operation
             "Missing :update-field" :update-field
-            "Missing :updates" :updates)))
-
-  (testing "granule bulk update schema wrong op (needs update before merge)"
-    (let [invalid-json (json/generate-string sample-message-wrong-op)]
-      (is (thrown-with-msg?
-           clojure.lang.ExceptionInfo
-           #"#/updates/0: expected type: JSONObject, found: JSONArray"
-           (schema-validation/validate-json!
-            granule-bulk-update/granule-bulk-update-schema
-            invalid-json))))))
+            "Missing :updates" :updates))))

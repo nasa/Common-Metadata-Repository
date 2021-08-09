@@ -47,7 +47,7 @@
         input-checksum (:Checksum input-file)
         value (or (:Value input-checksum) (:Value old-checksum))
         algorithm (or (:Algorithm input-checksum) (:Algorithm old-checksum))]
-    (when (and (:Checksum input-checksum) (not :Value input-checksum))
+    (when (and (:Algorithm input-checksum) (not (:Value input-checksum)))
       (errors/throw-service-errors :invalid-data
        [(format (str "Can't update granule: checksum algorithm update requested without new checksum value"
                      " for file with name [%s]")
@@ -121,11 +121,11 @@
                                      :umm-json
                                      (umm-json/umm->json updated-metadata))]
 
-     (when (and catch-errors (seq validation-errors))          
+     (when (and catch-errors (seq validation-errors))
        ;;normal validation only throws the first error in the seq, but we want to throw them all,
        ;;with the exception of "extraneous key" errors, which are compound errors resulting from
        ;;invalid keys (which is the only type of error we are expecting).
        (errors/throw-service-errors :invalid-data
-        [(string/join "; " (remove #(re-seq #"extraneous key" %) validation-errors))]))
+        [(string/join "; " (set (remove #(re-seq #"extraneous key" %) validation-errors)))]))
 
      updated-metadata)))
