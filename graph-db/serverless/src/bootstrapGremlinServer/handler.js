@@ -8,7 +8,7 @@ let token
 
 const bootstrapGremlinServer = async (event) => {
   // Prevent creating more tokens than necessary
-  if (!token) {
+  if (token === undefined) {
     token = await getEchoToken()
   }
 
