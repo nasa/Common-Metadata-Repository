@@ -5,6 +5,7 @@
    [clj-time.core :as t]
    [clojure.string :as s]
    [cmr.common.date-time-parser :as date-time-parser]
+   [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
@@ -50,6 +51,8 @@
                                             {:headers {"Accept" mt/json
                                                        "Echo-Token" (transmit-config/echo-system-token)}
                                              :form-params {:id token}})]
+
+      (info (format "get_token_info called with token [%s]" (common-util/scrub-token token)))
       (case (int status)
         200 (let [expires (some-> (get-in parsed [:token_info :expires])
                                   date-time-parser/parse-datetime)]
