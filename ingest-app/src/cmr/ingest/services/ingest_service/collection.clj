@@ -62,7 +62,6 @@
          warnings (concat err-warnings warnings collection-warnings)]
      ;; The sanitized UMM Spec collection is returned so that ingest does not fail
      {:collection sanitized-collection
-      :prev-collection sanitized-prev-collection
       :warnings warnings})))
 
 (defn-timed validate-and-prepare-collection
@@ -73,40 +72,18 @@
         {:keys [provider-id native-id]} concept
         prev-concept (first (ingest-helper/find-visible-collections context {:provider-id provider-id
                                                                              :native-id native-id}))
-        {:keys [collection prev-collection warnings]} (validate-and-parse-collection-concept
+        {:keys [collection warnings]} (validate-and-parse-collection-concept
                                                        context
                                                        concept
                                                        prev-concept
                                                        validation-options)
         ;; Add extra fields for the collection
         coll-concept (assoc (add-extra-fields-for-collection context concept collection)
-                            :umm-concept collection)
-        prev-coll-concept (when prev-concept
-                            (add-extra-fields-for-collection context prev-concept prev-collection))
-        
-        ;; Validate ingest business rules through umm-spec-lib
-        ;; if progressive update is enabled, and it's collection update but not bulk update, 
-        ;;  Either throw newly introduced errors or return existing errors as warnings(it could be nil)
-        ;; else
-        ;;  throw errors if there are any.
-        progressive-coll-update? (and (config/progressive-update-enabled)
-                                      (not (:bulk-update? validation-options))
-                                      prev-collection)
-        err-warnings (v/validate-business-rules
-                      context
-                      coll-concept
-                      prev-concept
-                      prev-coll-concept
-                      (assoc validation-options :progressive-coll-update progressive-coll-update?))]
+                            :umm-concept collection)]
+    ;; progressive update doesn't apply to business rules.
+    (v/validate-business-rules context coll-concept prev-concept)
     {:concept coll-concept
-     :warnings (if (some #(:existing-errors %) warnings)
-                 ;; combine the existing-errors in warnings and err-warnings.
-                 (map #(if (:existing-errors %)
-                         (assoc % :existing-errors (concat (:existing-errors %)
-                                                           (:existing-errors (first err-warnings))))
-                         %)
-                      warnings)
-                 (concat warnings err-warnings))}))
+     :warnings warnings}))
 
 (defn-timed save-collection
   "Store a concept in mdb and indexer.

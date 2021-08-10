@@ -199,7 +199,8 @@
        (if (and (config/progressive-update-enabled)
                 (not (:bulk-update? validation-options)) 
                 prev-collection)
-         (let [prev-err-messages (if (:test-existing-errors? validation-options)
+         (let [prev-err-messages (if (and (:test-existing-errors? validation-options)
+                                          (= "mock-echo-system-token" (:token context)))
                                    ;; We can't really test the case when the errors are existing errors
                                    ;; because we can't ingest invalid collections into the system.
                                    ;; We can only mimic the case when the validation errors for the updated
@@ -257,17 +258,12 @@
 (defn-timed validate-business-rules
   "Validates the concept against CMR ingest rules."
   ([context concept]
-   (validate-business-rules context concept nil nil nil))
-  ([context concept prev-concept prev-coll-concept validation-options]
-   (let [val-result (map #(% context concept prev-concept prev-coll-concept validation-options)
-                         (bv/business-rule-validations
-                         (:concept-type concept)))
-         errors (mapcat #(:errors %) val-result)
-         warnings (mapcat #(:warnings %) val-result)]
-     (if (and (:progressive-coll-update validation-options)
-             (not (seq errors)))
-       (seq warnings)
-       (if-errors-throw :invalid-data errors)))))
+   (validate-business-rules context concept nil))
+  ([context concept prev-concept]
+   (if-errors-throw :invalid-data
+                    (mapcat #(% context concept prev-concept)
+                            (bv/business-rule-validations
+                             (:concept-type concept))))))
 
 (defn- measurement-validation
   "A validation that checks that the measurement matches a known KMS field. Takes the following arguments:
