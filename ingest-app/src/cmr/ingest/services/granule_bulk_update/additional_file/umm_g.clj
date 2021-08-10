@@ -1,5 +1,5 @@
 (ns cmr.ingest.services.granule-bulk-update.additional-file.umm-g
-  "Contains functions to update UMM-G granule metadata for OPeNDAP url bulk update."
+  "Contains functions to update UMM-G granule metadata for AdditionalFile granule bulk update."
   (:require
    [clojure.string :as string]
    [cmr.common.services.errors :as errors]
@@ -8,8 +8,9 @@
 
 
 (defn- get-new-sizes
-  "Returns updated size values.
-   File is the old file, while input-file is the supplied file with the same name in the patch file."
+  "Returns updated Size, SizeUnit, and SizeInBytes. This operation is unique from the others in that
+   Size/SizeUnit or SizeInBytes can actually be removed by specifying a value of 0.
+   File is the existing file, while input-file is the supplied file with the same name in the patch file."
   [file input-file]
   (let [new-size-and-unit (if (= 0 (:Size input-file))
                             {} ;if 0 is specified, do not include size and size-unit
@@ -33,7 +34,8 @@
     (merge new-size-in-bytes new-size-and-unit)))
 
 (defn- get-new-formats
-  "gets new formats"
+  "Returns updated format, format type, and mime type..
+   File is the existing file, while input-file is the supplied file with the same name in the patch file."
   [file input-file]
   {:Format (or (:Format input-file) (:Format file))
    :FormatType (or (:FormatType input-file) (:FormatType file))
@@ -41,7 +43,7 @@
 
 (defn- get-new-checksum
   "Returns updated checksum value and algorithm.
-   File is the old file, while input-file is the supplied file with the same name in the patch file."
+   File is the existing file, while input-file is the supplied file with the same name in the patch file."
   [file input-file]
   (let [old-checksum (:Checksum file)
         input-checksum (:Checksum input-file)
@@ -61,7 +63,7 @@
       {:Value value :Algorithm algorithm})))
 
 (defn- merge-file-fields
-  "Merges file fields"
+  "Merges file fields and returns in a clean order"
   [filename sizes formats checksum files]
   ;array-map used to enforce a clean order for updated files
   (array-map :Name filename
@@ -75,13 +77,14 @@
              :Files files))
 
 (defn- transform-file
-  "Does third thing"
+  "Builds an updated version of each File and FilePackage using the existing file and its matching input-file,
+   if one was provided. Also calls itself on and File children of a FilePackage."
   [file input-files-map]
   (if-let [input-file (get input-files-map (:Name file))]
     (let [sizes (get-new-sizes file input-file)
           formats (get-new-formats file input-file)
           checksum (get-new-checksum file input-file)
-          files (when (:Files file)
+          files (when (:Files file) ;ths function can call itself on any File children of a FilePackage
                   (map #(transform-file % input-files-map) (:Files file)))
           updated-file (merge-file-fields (:Name file) sizes formats checksum files)]
       (into {} (remove (comp nil? val) updated-file)))
@@ -90,13 +93,15 @@
       file)))
 
 (defn- update-additional-file-metadata
-  "Does another thing"
+  "Prepares the metadata files for updating, checks for error cases. If the granule and input-Files
+   are suitable for updates, maps the transform function to every File and FilePackage."
   [files input-files]
   (let [sub-file-names (->> files (map :Files) (flatten) (map :Name))
         file-names (vec (remove nil? (concat sub-file-names (map :Name files))))
         input-file-names (mapv :Name input-files)
         input-files-2-vectors (map (juxt :Name identity) input-files)
         input-files-map (into (sorted-map) (vec input-files-2-vectors))]
+
     (when-not (every? (set file-names) input-file-names)
       (errors/throw-service-errors :invalid-data
         [(str "Update failed - please only specify Files or FilePackages contained in the"
@@ -108,10 +113,13 @@
     (when-not (= (count (set input-file-names)) (count input-file-names))
       (errors/throw-service-errors :invalid-data
         ["Update failed - duplicate files provided for granule update"]))
+
     (map #(transform-file % input-files-map) files)))
 
 (defn update-additional-files
-  "Does a thing"
+  "Updates the metadata Files and FilePackages contained under /DataGranule/ArchiveAndDistributionInformation.
+   Optionally returns a list of unique validation errors which will be thrown if the resulting granule
+   is saved."
   ([umm-gran additional-files]
    (update-additional-files umm-gran additional-files true))
   ([umm-gran additional-files catch-errors]

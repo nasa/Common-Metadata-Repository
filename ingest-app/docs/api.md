@@ -1216,7 +1216,7 @@ curl -i -XPOST \
   -H "Echo-Token: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
-'{ "name": "example of adding OPeNDAP link",
+'{ "name": "example of updating granule checksums",
 	"operation": "UPDATE_FIELD",
 	"update-field":"Checksum",
 	"updates":[
@@ -1235,6 +1235,74 @@ Example granule bulk update response:
     <task-id>5</task-id>
 </result>
 ```
+
+**operation: "UPDATE_FIELD", update-field: "AdditionalFile"**
+Supported metadata formats:
+  - UMM-G File and FilePackage elements located under DataGranule/ArchiveAndDistributionInformation.
+
+This update type can be used to update any of the values in a [File or FilePackage](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.3/umm-g-json-schema.json#259) in the UMM-G schema. This includes:
+	- Size and SizeUnit
+	- SizeInBytes
+	- Format, FormatType, and MimeType
+	- Checksum (Value and Algorithm)
+
+All values specified must conform to what is allowed by the UMM-G schema for any given field.
+
+This type of Bulk Granule Updates has a unique format for its `updates` - for each granule, an array of Files can be specified, and each File can contain any combination of the elements above. The full schema can be found [here](https://github.com/nasa/Common-Metadata-Repository/blob/master/ingest-app/resources/granule_bulk_update_schema.json), and an example request can be found below:
+
+```
+curl -i -XPOST \
+  -H "Cmr-Pretty:true" \
+  -H "Content-Type: application/json"
+  -H "Echo-Token: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{
+  "name": "Update FilePackages and Files",
+  "operation": "UPDATE_FIELD",
+  "update-field": "AdditionalFile",
+  "updates": [
+    {
+      "GranuleUR": "Example_Granule_UR_1",
+      "Files": [
+        {
+          "Name": "ZippedFilePackage",
+          "SizeInBytes": 12000,
+          "Size": 12,
+          "SizeUnit": "KB",
+          "Format": "ZIP"
+        }, {
+          "Name": "GranuleFileName1",
+          "MimeType": "application/xml",
+          "Checksum": {
+            "Value": "92959a96fd69146c5fe",
+            "Algorithm": "MD5"
+          }
+        }
+      ]
+    }, {
+      "GranuleUR": "Example_Granule_UR_2",
+      "Files": [
+        {
+          "Name": "GranuleZipFile",
+          "SizeInBytes": 12000,
+          "Size": 0,
+        }
+      ]
+    }
+  ]
+}'
+```
+In the above request, `Example_Granule_UR_1` recieves updates to two elements: The FilePackage `ZippedFilePackage` has SizeInBytes, Size/SizeUnit, and Format updated, while File `GranuleFileName1` has MimeType and Checksum updated. 
+
+Note that specifying whether an element is a File or FilePackage is unecessary. Providing the `name` for an element is sufficient to locate and update it.
+
+`Example_Granule_UR_2` also receives updates on the contained `GranuleZipFile`, on its Size/SizeUnit and SizeInBytes fields. This also displays a special use special case for Size-related updates: When a file update is requested with Size `0`, then the Size and SizeUnit fields will be removed from the resulting file. The same applies for SizeInBytes, which will be removed on its own if a value of `0` is supplied.
+
+There are several scenarios which will cause a granule update to fail:
+ - Files with duplicate names are specified in the request patch file
+ - A granule with existing duplicate file names is requested for update
+ - A file is provided in the patch file with a file name which is not present in the granule
 
 **operation: "APPEND_TO_FIELD", update-field: "OPeNDAPLink"**
 supported metadata formats:

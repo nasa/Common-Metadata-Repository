@@ -29,8 +29,8 @@
   "Returns the checksum element with the provided value, and optionally the algorithm"
   [value algorithm]
   (xml/element :Checksum {}
-               (xml/element :Value {} value)
-               (xml/element :Algorithm {} algorithm)))
+               (xml/element :Value {} (string/trim value))
+               (xml/element :Algorithm {} (string/trim algorithm))))
 
 (defn- update-checksum-element
   "Takes in a zipper location, call the given insert function to build a new Checksum element.
