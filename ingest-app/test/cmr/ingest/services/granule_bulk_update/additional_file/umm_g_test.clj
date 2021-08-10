@@ -1,21 +1,13 @@
 (ns cmr.ingest.services.granule-bulk-update.additional-file.umm-g-test
-  "Unit tests for UMM-G s3 url update"
+  "Unit tests for UMM-G additionalfile update"
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
    [cmr.ingest.services.granule-bulk-update.additional-file.umm-g :as umm-g]))
 
-(def ^:private doc-related-url
-  "Sample document RelatedUrl"
-  {:URL "http://example.com/doc.html"
-   :Type "VIEW RELATED INFORMATION"
-   :Subtype "USER'S GUIDE"
-   :Description "ORNL DAAC Data Set Documentation"
-   :Format "HTML"
-   :MimeType "text/html"})
-
-
 (deftest update-files
+  ;;note we are not validating values here, so these tests serve solely to verify
+  ;;replacement logic. Proper validation is done as part of integration testing
   (testing "Add/update/remove AdditionalFile Size, SizeInBytes, and SizeUnit"
     (are3 [input-files source result]
       (is (= result
@@ -126,7 +118,7 @@
         :SizeInBytes 10000
         :Checksum {:Value "123ABC" :Algorithm "MD5"}}]
 
-      "Update SizeInBytes, SizeUnit, and add SizeUnit in a File within a FilePackage"
+      "Update Size, SizeUnit, and add SizeInBytes in a File within a FilePackage"
       [{:Name "granFile2" :SizeInBytes 2000 :Size 2 :SizeUnit "KB"}]
       [{:Name "granFile1"
         :Format "HDF5"
@@ -241,7 +233,7 @@
                  :FormatType "Native"
                  :MimeType "image/jpeg"}]}]))
 
-  (testing "Add/update AdditionalFile Format, FormatType, and MimeType"
+  (testing "Add/update checksum value and algorithm"
     (are3 [input-files source result]
       (is (= result
              (get-in (umm-g/update-additional-files

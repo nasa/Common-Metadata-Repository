@@ -14,14 +14,6 @@
              ["SC:AE_5DSno.002:30500512" "url3456"]
              ["SC:AE_5DSno.002:30500513" "url5678"]]})
 
-(def sample-message-wrong-op
-  {:name "add opendap links"
-   :operation :UPDATE_FIELD
-   :update-field "AdditionalFile"
-   :updates [["SC:AE_5DSno.002:30500511" "url1234"]
-             ["SC:AE_5DSno.002:30500512" "url3456"]
-             ["SC:AE_5DSno.002:30500513" "url5678"]]})
-
 (deftest validate-json-test
   (testing "granule bulk update schema"
     (testing "required fields"

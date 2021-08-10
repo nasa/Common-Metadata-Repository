@@ -152,7 +152,6 @@
   [context provider-id json-body user-id]
   (let [request (validate-and-parse-bulk-granule-update context json-body provider-id)
         instructions (request->instructions request)
-
         task-id (try
                   (data-granule-bulk-update/create-granule-bulk-update-task
                    context
