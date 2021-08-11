@@ -12,7 +12,7 @@ afterEach (() => {
 
 describe ('slurpImageIntoBuffer', () => {
     test ('handles 200', async () => {
-        let starsData = await fs.readFile ('__test__/stars.jpg');
+        let starsData = await fs.readFile ('__tests__/stars.jpg');
         const scope = nock (/mock\.com/)
               .get (/.*/)
               .reply (200, starsData);
