@@ -17,13 +17,13 @@ const Cache = (function (cfg) {
      */
     function getInstance() {
         if (!instance) {
-            instance = redisClient = redis.createClient({
+            instance = redis.createClient({
                 return_buffers: true,
                 host: cfg.REDIS_URL,
                 port: cfg.REDIS_PORT
             }).on("error", (err) => {
                 console.error(`Failed to connect to Redis with error: ${err}.`);
-                redisClient.quit();
+                instance.quit();
             });
         }
 
