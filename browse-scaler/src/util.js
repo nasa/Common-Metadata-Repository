@@ -1,5 +1,8 @@
 const fetch = require('node-fetch');
 const AWS = require('aws-sdk');
+const config = require ('./config');
+
+AWS.config.update ({region: config.AWS_REGION});
 
 const ssm = new AWS.SSM();
 
@@ -40,7 +43,7 @@ exports.withTimeout = (millis, promise) => {
  */
 exports.slurpImageIntoBuffer = async imageUrl => {
   const thumbnail = await fetch(imageUrl)
-    .then(response => {
+        .then(response => {
       if (response.ok) {
         return response.buffer();
       }
@@ -52,6 +55,6 @@ exports.slurpImageIntoBuffer = async imageUrl => {
       console.error(`Could not slurp image from url ${imageUrl}: ${error}`);
       return null;
     });
-  console.log(`slurped image into buffer from ${imageUrl}`);
+
   return thumbnail;
 };

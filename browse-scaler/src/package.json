@@ -18,6 +18,7 @@
     "lint": "./node_modules/.bin/eslint \"*.js\""
   },
   "devDependencies": {
+    "aws-sdk-mock": "^5.2.1",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.1",
     "eslint-config-prettier": "^4.3.0",
@@ -27,6 +28,7 @@
     "eslint-plugin-react": "^7.20.6",
     "jest": "^24.9.0",
     "jest-junit": "^6.4.0",
+    "nock": "^13.1.1",
     "prettier": "^1.19.1"
   }
 }
