@@ -10,15 +10,15 @@ const config = require ('./config');
  * if no token is supplied.
  */
 const getEchoToken = async () => {
-    console.log('Fetching Echo-Token [' + config.CMR_ENVIRONMENT + '] from store');
-    const response = await getSecureParam(
-        `/${config.CMR_ENVIRONMENT}/browse-scaler/CMR_ECHO_SYSTEM_TOKEN`
-    );
+  console.log('Fetching Echo-Token [' + config.CMR_ENVIRONMENT + '] from store');
+  const response = await getSecureParam(
+    `/${config.CMR_ENVIRONMENT}/browse-scaler/CMR_ECHO_SYSTEM_TOKEN`
+  );
 
-    if (!response) {
-        throw new Error('ECHO Token not found. Please update config!');
-    }
-    return response;
+  if (!response) {
+    throw new Error('ECHO Token not found. Please update config!');
+  }
+  return response;
 };
 
 exports.getEchoToken = getEchoToken;
@@ -31,25 +31,25 @@ exports.getEchoToken = getEchoToken;
  * @returns {JSON} the collection associated with the supplied id
  */
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
-    const token = config.CMR_ECHO_TOKEN || await getEchoToken();
-    const response = await fetch(cmrEndpoint + conceptId, {
-        method: 'GET',
-        headers: {
-            'Echo-Token': token
+  const token = config.CMR_ECHO_TOKEN || await getEchoToken();
+  const response = await fetch(cmrEndpoint + conceptId, {
+    method: 'GET',
+    headers: {
+      'Echo-Token': token
+    }
+  })
+      .then(res => res.json())
+      .then(json => {
+        if (json.errors) {
+          throw new Error(`The following errors occurred: ${json.errors}`);
+        } else {
+          return json.feed.entry[0];
         }
-    })
-          .then(res => res.json())
-          .then(json => {
-              if (json.errors) {
-                  throw new Error(`The following errors occurred: ${json.errors}`);
-              } else {
-                  return json.feed.entry[0];
-              }
-          })
-          .catch(error => {
-              console.log(`Could not find concept ${conceptId}: ${error}`);
-          });
-    return response;
+      })
+      .catch(error => {
+        console.log(`Could not find concept ${conceptId}: ${error}`);
+      });
+  return response;
 };
 
 /**
@@ -59,23 +59,23 @@ const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
  * @returns {String} the image url if one is found, or null if none is found
  */
 exports.getBrowseImageFromConcept = async concept => {
-    if (!concept) {
-        console.error ('No concept provided to getBrowseImageFromConcept');
-        return;
-    }
-    try {
-        const { links } = concept;
-        const imgRegex = /\b(browse#)$/;
-        const imgurl = links.filter(link => imgRegex.test(link.rel))[0];
+  if (!concept) {
+    console.error ('No concept provided to getBrowseImageFromConcept');
+    return;
+  }
+  try {
+    const { links } = concept;
+    const imgRegex = /\b(browse#)$/;
+    const imgurl = links.filter(link => imgRegex.test(link.rel))[0];
 
-        console.debug(`links from metadata ${JSON.stringify(links)}`);
-        console.debug(`image link from metadata ${JSON.stringify(imgurl)}`);
-        if (imgurl && imgurl.href) {
-            return imgurl.href;
-        }
-    } catch (err) {
-        console.error(`Could not get image from concept: ${err}`);
+    console.debug(`links from metadata ${JSON.stringify(links)}`);
+    console.debug(`image link from metadata ${JSON.stringify(imgurl)}`);
+    if (imgurl && imgurl.href) {
+      return imgurl.href;
     }
+  } catch (err) {
+    console.error(`Could not get image from concept: ${err}`);
+  }
 };
 
 /**
@@ -85,10 +85,10 @@ exports.getBrowseImageFromConcept = async concept => {
  * return the first of any links found in the first granule associated with said collection
  */
 exports.getGranuleLevelBrowseImage = async conceptId => {
-    const granuleConcept = await fetchConceptFromCMR(conceptId, config.CMR_GRANULE_URL);
-    const granuleImagery = await this.getBrowseImageFromConcept(granuleConcept);
+  const granuleConcept = await fetchConceptFromCMR(conceptId, config.CMR_GRANULE_URL);
+  const granuleImagery = await this.getBrowseImageFromConcept(granuleConcept);
 
-    return granuleImagery;
+  return granuleImagery;
 };
 
 /**
@@ -99,15 +99,15 @@ exports.getGranuleLevelBrowseImage = async conceptId => {
  * @returns {String} browse image url, if any are found. Return null if not
  */
 exports.getCollectionLevelBrowseImage = async collectionId => {
-    const collectionConcept = await fetchConceptFromCMR(collectionId, config.CMR_COLLECTION_URL);
-    console.log (collectionConcept);
-    const collectionImagery = await this.getBrowseImageFromConcept(collectionConcept);
-    if (collectionImagery) {
-        return collectionImagery;
-    }
+  const collectionConcept = await fetchConceptFromCMR(collectionId, config.CMR_COLLECTION_URL);
+  console.log (collectionConcept);
+  const collectionImagery = await this.getBrowseImageFromConcept(collectionConcept);
+  if (collectionImagery) {
+    return collectionImagery;
+  }
 
-    const firstGranuleFromCollection = await fetchConceptFromCMR(collectionId, config.CMR_GRANULE_URL);
-    const granuleImagery = await this.getBrowseImageFromConcept(firstGranuleFromCollection);
+  const firstGranuleFromCollection = await fetchConceptFromCMR(collectionId, config.CMR_GRANULE_URL);
+  const granuleImagery = await this.getBrowseImageFromConcept(firstGranuleFromCollection);
 
-    return granuleImagery;
+  return granuleImagery;
 };

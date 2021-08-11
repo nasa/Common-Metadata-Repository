@@ -14,11 +14,11 @@ const ssm = new AWS.SSM();
  */
 exports.getSecureParam = async param => {
   const request = await ssm
-    .getParameter({
-      Name: param,
-      WithDecryption: true
-    })
-    .promise();
+  .getParameter({
+    Name: param,
+    WithDecryption: true
+  })
+  .promise();
   return request.Parameter.Value;
 };
 
@@ -44,22 +44,21 @@ exports.withTimeout = (millis, promise) => {
  */
 exports.slurpImageIntoBuffer = async imageUrl => {
   const thumbnail = await fetch(imageUrl)
-        .then(response => {
-      if (response.ok) {
-        return response.buffer();
-      }
-      return Promise.reject(
-        new Error(`Failed to fetch ${response.url}: ${response.status} ${response.statusText}`)
-      );
-    })
-    .catch(error => {
-      console.error(`Could not slurp image from url ${imageUrl}: ${error}`);
-      return null;
-    });
+    .then(response => {
+    if (response.ok) {
+    return response.buffer();
+    }
+    return Promise.reject(
+    new Error(`Failed to fetch ${response.url}: ${response.status} ${response.statusText}`)
+    );
+  })
+  .catch(error => {
+    console.error(`Could not slurp image from url ${imageUrl}: ${error}`);
+    return null;
+  });
 
   return thumbnail;
 };
-
 
 /**
  * This replicates the functionality of promise based readFile function
@@ -70,12 +69,12 @@ exports.slurpImageIntoBuffer = async imageUrl => {
  * const buffer = await fs.readFile('<filename>');
  */
 exports.readFile = async (f) => {
-    return new Promise ((resolve, reject) => {
-        fs.readFile (f, (err, data) => {
-            if (err) {
-                reject (err);
-            }
-            resolve (data);
-        });
+  return new Promise ((resolve, reject) => {
+    fs.readFile (f, (err, data) => {
+      if (err) {
+        reject (err);
+      }
+      resolve (data);
     });
+  });
 }
