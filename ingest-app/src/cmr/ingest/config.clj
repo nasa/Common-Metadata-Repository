@@ -7,6 +7,10 @@
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as conn]))
 
+(defconfig progressive-update-enabled
+  "Flag for whether or not collection progressive update is enabled."
+  {:default true :type Boolean})
+
 (defconfig bulk-update-cleanup-minimum-age
   "The minimum age(in days) of the rows in bulk-update-task-status table that can be cleaned up"
   {:default 90
