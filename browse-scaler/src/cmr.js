@@ -27,7 +27,7 @@ exports.getEchoToken = getEchoToken;
  * fetchConceptFromCMR: Given a concept id, fetch the metadata supplied by
  * the elasticsearch JSON response
  * @param {String} conceptId A collection or granule concept-id
- * @param {String} cmrpEndpoint The collection or granule search URL
+ * @param {String} cmrEndpoint The collection or granule search URL
  * @returns {JSON} the collection associated with the supplied id
  */
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
