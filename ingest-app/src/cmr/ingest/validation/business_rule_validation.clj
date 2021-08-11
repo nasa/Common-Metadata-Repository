@@ -42,7 +42,6 @@
     (when concept-id
       (let [mdb-concept-id (mdb/get-concept-id context concept-type provider-id native-id false)]
         (when (and mdb-concept-id (not= concept-id mdb-concept-id))
-          ;; progressive-coll-update doesn't apply to this case.
           [(format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
                    concept-id mdb-concept-id native-id)])))))
 
@@ -88,8 +87,6 @@
                                (map (partial has-granule-search-error context))
                                (remove nil?))]
         (when (seq search-errors)
-          ;; progressive-coll-update doesn't apply to this case - any collection update that breaks the
-          ;; collection-granule relationship rules introduces new error.
           search-errors)))))
 
 (def business-rule-validations
