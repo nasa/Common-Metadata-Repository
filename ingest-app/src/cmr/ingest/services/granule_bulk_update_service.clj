@@ -18,6 +18,7 @@
    [cmr.ingest.services.granule-bulk-update.opendap.echo10 :as opendap-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]
    [cmr.ingest.services.granule-bulk-update.opendap.umm-g :as opendap-umm-g]
+   [cmr.ingest.services.granule-bulk-update.size.echo10 :as size-echo10]
    [cmr.ingest.services.granule-bulk-update.s3.echo10 :as s3-echo10]
    [cmr.ingest.services.granule-bulk-update.s3.s3-util :as s3-util]
    [cmr.ingest.services.granule-bulk-update.s3.umm-g :as s3-umm-g]
@@ -272,6 +273,20 @@
   (errors/throw-service-errors
    :invalid-data [(format "Updating checksum is not supported for format [%s]" (:format concept))]))
 
+(defmulti update-size
+  "Add size to the given granule concept."
+  (fn [context concept size]
+    (mt/format-key (:format concept))))
+
+(defmethod update-size :echo10
+  [context concept size]
+  (size-echo10/update-size concept size))
+
+(defmethod update-size :default
+  [context concept size]
+  (errors/throw-service-errors
+   :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))]))
+
 (defmulti update-granule-concept
   "Perform the update of the granule concept."
   (fn [context concept bulk-update-params user-id]
@@ -360,6 +375,28 @@
   [context concept bulk-update-params user-id]
   (modify-checksum*
    context concept bulk-update-params user-id update-checksum))
+
+(defn- modify-size*
+  "Add or update the size"
+  [context concept bulk-update-params user-id xf]
+  (let [{:keys [format metadata]} concept
+        {:keys [granule-ur new-value]} bulk-update-params
+        ;; invoke the appropriate transform - for size, there is only one option (update)
+        updated-concept (xf context concept new-value)
+        {updated-metadata :metadata updated-format :format} updated-concept]
+    (if-let [err-messages (:errors updated-metadata)]
+      (errors/throw-service-errors :invalid-data err-messages)
+      (-> concept
+          (assoc :metadata updated-metadata)
+          (assoc :format updated-format)
+          (update :revision-id inc)
+          (assoc :revision-date (time-keeper/now))
+          (assoc :user-id user-id)))))
+
+(defmethod update-granule-concept :update_field:size
+  [context concept bulk-update-params user-id]
+  (modify-size*
+   context concept bulk-update-params user-id update-size))
 
 (defmethod update-granule-concept :default
   [context concept bulk-update-params user-id]
