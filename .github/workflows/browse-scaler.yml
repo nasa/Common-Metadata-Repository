@@ -2,6 +2,8 @@ name: browse-scaler Node.js CI
 
 on:
   push:
+    branch:
+      - 'master'
     paths:
       - 'browse-scaler/**'
   pull_request:
