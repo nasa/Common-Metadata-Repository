@@ -52,7 +52,8 @@
                                                        "Echo-Token" (transmit-config/echo-system-token)}
                                              :form-params {:id token}})]
 
-      (info (format "get_token_info called with token [%s]" (common-util/scrub-token token)))
+      (info (format "get_token_info call on token [%s] returned with status [%s]"
+                    (common-util/scrub-token token) status))
       (case (int status)
         200 (let [expires (some-> (get-in parsed [:token_info :expires])
                                   date-time-parser/parse-datetime)]
