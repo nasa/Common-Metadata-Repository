@@ -43,7 +43,7 @@ jobs:
 
     - run: npm install
 
-    - run: npm run ci-test
+    - run: npm run ci-test -- --detectOpenHandles --forceExit
 
     - uses: codecov/codecov-action@v2
       with:
