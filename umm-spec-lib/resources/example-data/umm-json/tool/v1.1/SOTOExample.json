@@ -1,0 +1,102 @@
+{
+    "Type": "Web User Interface",
+    "AccessConstraints": "None.",
+    "Description": "SOTO is a suite of tools presented through an interactive, web-based visualization front end. It provides access to a broad range of satellite-derived products and key parameters of interest to the oceanographic community. SOTO facilitates visual exploration and comparative analysis of physical oceanographic data, enabling scientific oceanographic, climate, and related research.",
+    "Version": "2",
+    "UseConstraints": {
+        "LicenseText": "None"
+    },
+    "Name": "SOTO",
+    "LongName": "State Of The Ocean",
+    "URL": {
+        "Description": "SOTO Landing Page",
+        "URLValue": "https://podaac-tools.jpl.nasa.gov/soto",
+        "URLContentType": "DistributionURL",
+        "Type": "GOTO WEB TOOL"
+    },
+    "ToolKeywords": [
+        {
+            "ToolCategory": "EARTH SCIENCE SERVICES",
+            "ToolTopic": "DATA ANALYSIS AND VISUALIZATION"
+        }
+    ],
+    "Organizations": [
+        {
+            "Roles": [
+                "SERVICE PROVIDER"
+            ],
+            "ShortName": "PO.DAAC",
+            "LongName": "Physical Oceanography Distributed Active Archive Center",
+            "URLValue": "https://podaac.jpl.nasa.gov/"
+        }
+    ],
+    "Quality": {
+        "QualityFlag": "Available"
+    },
+    "ContactGroups": [
+        {
+            "Roles": [
+                "SERVICE PROVIDER"
+            ],
+            "ContactInformation": {
+                "ServiceHours": "M-F, 8 a.m. to 4 p.m. Pacific Time",
+                "ContactInstruction": "PO.DAAC User Services is the point of contact for answering questions concerning data products, data access, and online applications.",
+                "ContactMechanisms": [
+                    {
+                        "Type": "Email",
+                        "Value": "podaac@podaac.jpl.nasa.gov"
+                    }
+                ],
+                "Addresses": [
+                    {
+                        "Country": "United States",
+                        "StreetAddresses": [
+                            "4800 Oak Grove Dr"
+                        ],
+                        "City": "Pasadena",
+                        "StateProvince": "CA",
+                        "PostalCode": "91109"
+                    }
+                ]
+            },
+            "GroupName": "PO.DAAC User Services"
+        }
+    ],
+    "PotentialAction": {
+        "Type": "SearchAction",
+        "Target": {
+            "Type": "EntryPoint",
+            "ResponseContentType": ["text/html"],
+            "UrlTemplate": "https://podaac-tools.jpl.nasa.gov/soto/#b=BlueMarble_ShadedRelief_Bathymetry&l={layers}&ve={bbox}&d={date}",
+            "Description": "SOTO is a suite of tools presented through an interactive, web-based visualization front end. It provides access to a broad range of satellite-derived products and key parameters of interest to the oceanographic community. SOTO facilitates visual exploration and comparative analysis of physical oceanographic data, enabling scientific oceanographic, climate, and related research.",
+            "HttpMethod": [
+                "GET"
+            ]
+        },
+        "QueryInput": [
+            {
+                "ValueName": "layers",
+                "Description": "A comma-separated list of visualization layer ids, as defined by GIBS. These layers will be portrayed on the web application",
+                "ValueRequired": true,
+                "ValueType": "https://wiki.earthdata.nasa.gov/display/GIBS/GIBS+API+for+Developers#GIBSAPIforDevelopers-LayerNaming"
+            },
+            {
+                "ValueName": "date",
+                "Description": "A UTC ISO DateTime. The layers portrayed will correspond to this date.",
+                "ValueRequired": false,
+                "ValueType": "https://schema.org/startDate"
+            },
+            {
+                "ValueName": "bbox",
+                "Description": "A spatial bounding box that will set the spatial extent of the portrayed layers. The first point is the lower corner, the second point is the upper corner. A box is expressed as two points separated by a space character.",
+                "ValueRequired": false,
+                "ValueType": "https://schema.org/box"
+            }
+        ]
+    },
+    "MetadataSpecification": {
+        "URL": "https://cdn.earthdata.nasa.gov/umm/tool/v1.1",
+        "Name": "UMM-T",
+        "Version": "1.1"
+    }
+}
