@@ -21,7 +21,7 @@
   "Validates that the version is not nil"
   [_ concept _]
   (when (nil? (get-in concept [:extra-fields :version-id]))
-     ["Version is required."]))
+    ["Version is required."]))
 
 (defn delete-time-validation
   "Validates the concept delete-time.
@@ -43,8 +43,8 @@
       (let [mdb-concept-id (mdb/get-concept-id context concept-type provider-id native-id false)]
         (when (and mdb-concept-id (not= concept-id mdb-concept-id))
           ;; progressive-coll-update doesn't apply to this case.
-          {:errors [(format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
-                             concept-id mdb-concept-id native-id)]})))))
+          [(format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
+                   concept-id mdb-concept-id native-id)])))))
 
 (def collection-update-searches
   "Defines a list of functions that take the context, concept-id, updated UMM concept and the
@@ -90,7 +90,7 @@
         (when (seq search-errors)
           ;; progressive-coll-update doesn't apply to this case - any collection update that breaks the
           ;; collection-granule relationship rules introduces new error.
-          {:errors search-errors})))))
+          search-errors)))))
 
 (def business-rule-validations
   "A map of concept-type to the list of the functions that validates concept ingest business rules."

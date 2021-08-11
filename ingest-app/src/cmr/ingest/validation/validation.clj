@@ -15,6 +15,7 @@
     [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
     [cmr.ingest.services.messages :as msg]
     [cmr.ingest.validation.business-rule-validation :as bv]
+    [cmr.transmit.config :as transmit-config]
     [cmr.transmit.search :as transmit-search]
     [cmr.umm-spec.json-schema :as json-schema]
     [cmr.umm-spec.umm-json :as umm-json]
@@ -200,6 +201,8 @@
                 (not (:bulk-update? validation-options)) 
                 prev-collection)
          (let [prev-err-messages (if (and (:test-existing-errors? validation-options)
+                                          ;; double check to make sure only the local and ci tests can use the header.
+                                          (transmit-config/echo-system-token? context)
                                           (= "mock-echo-system-token" (:token context)))
                                    ;; We can't really test the case when the errors are existing errors
                                    ;; because we can't ingest invalid collections into the system.
