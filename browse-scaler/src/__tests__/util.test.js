@@ -1,4 +1,4 @@
-const fs = require ('fs/promises');
+const fs = require ('fs');
 const nock = require ('nock');
 const AWSMock = require('aws-sdk-mock');
 const AWS = require ('aws-sdk');
@@ -10,9 +10,28 @@ afterEach (() => {
     nock.restore ();
 });
 
+/**
+ * This replicates the functionality of promise based readFile function
+ * In the node12 fs/promises does not exist yet, 
+ * Once at node14 this function may be replaced with the native call
+ * 
+ * const fs = require('fs/promises')
+ * const buffer = await fs.readFile('<filename>');
+ */
+async function readFile (f) {
+    return new Promise ((resolve, reject) => {
+        fs.readFile (f, (err, data) => {
+            if (err) {
+                reject (err);
+            }
+            resolve (data);
+        });
+    });
+}
+
 describe ('slurpImageIntoBuffer', () => {
     test ('handles 200', async () => {
-        let starsData = await fs.readFile ('__tests__/stars.jpg');
+        let starsData = await readFile ('__tests__/stars.jpg');
         const scope = nock (/mock\.com/)
               .get (/.*/)
               .reply (200, starsData);
