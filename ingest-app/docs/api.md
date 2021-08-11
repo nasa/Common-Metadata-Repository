@@ -329,7 +329,7 @@ curl -i -XPOST -H "Content-type: application/echo10+xml" \
 
 Collection metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). The metadata that is uploaded is validated for XML well-formedness, XML schema validation, and against UMM validation rules. Keyword validation can be enabled with the [keyword validation header](#validate-keywords-header). If there is a need to retrieve the native-id of an already-ingested collection for updating, requesting the collection via the search API in UMM-JSON format will provide the native-id.
 
-Note: we now provide progressive collection update feature, which allows a collection to be updated with non-schema related validation errors that are existing validation errors for the previous collection revision. Only newly introduced validation errors will fail the update. Schema validation errors always fail the update.
+Note: we now provide progressive collection update feature through a new configuration parameter CMR_PROGRESSIVE_UPDATE_ENABLED, which is turned on by default. It allows a collection to be updated with non-schema related validation errors that are existing validation errors for the previous collection revision. Only newly introduced validation errors will fail the update. Schema validation errors always fail the update.
 
 ```
 curl -i -XPUT \

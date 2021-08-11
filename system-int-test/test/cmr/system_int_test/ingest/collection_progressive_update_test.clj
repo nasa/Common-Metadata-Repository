@@ -79,4 +79,4 @@
                            (catch Exception e
                              (.toString e)))
                 exception "java.lang.Exception: Ingest failed when expected to succeed: {:errors (\"DeleteTime 2000-01-01T00:00:00.000Z is before the current time.\"), :status 422}"]
-                (is (= response exception)))))))
+            (is (= response exception)))))))
