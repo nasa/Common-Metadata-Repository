@@ -380,13 +380,18 @@
         (gran-counts/granule-counts-match? :xml {coll6745 3} refs)
         (gran-counts/granule-counts-match? :xml {coll6745 3} refs)))
     (testing "EDSC Pageload error case"
-      (d/refs-match? [coll6745]
-                     (search/find-refs :collection {:include-granule-counts true
-                                                    :has-granules-or-cwic true
-                                                    :include-has-granules true
-                                                    "options[science_keywords_h][or]" "true"
-                                                    "options[spatial][or]" "true"
-                                                    "options[temporal][limit_to_granules]" "true"})))))
+      (is (= [{:id "C1200000006-PROV1"
+                :name "coll6745"
+                :revision-id 1
+                :location "http://localhost:3003/concepts/C1200000006-PROV1/1"
+                :granule-count 4
+                :has-granules true}]
+            (:refs (search/find-refs :collection {:include-granule-counts true
+                                                  :has-granules-or-cwic true
+                                                  :include-has-granules true
+                                                  "options[science_keywords_h][or]" "true"
+                                                  "options[spatial][or]" "true"
+                                                  "options[temporal][limit_to_granules]" "true"})))))))
 
 (deftest collection-has-granules-caching-test
   (let [;; Create collections
