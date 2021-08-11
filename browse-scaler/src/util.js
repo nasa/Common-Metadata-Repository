@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const AWS = require('aws-sdk');
 const config = require ('./config');
+const fs = require ('fs');
 
 AWS.config.update ({region: config.AWS_REGION});
 
@@ -58,3 +59,23 @@ exports.slurpImageIntoBuffer = async imageUrl => {
 
   return thumbnail;
 };
+
+
+/**
+ * This replicates the functionality of promise based readFile function
+ * In the node12 fs/promises does not exist yet,
+ * Once at node14 this function may be replaced with the native call
+ *
+ * const fs = require('fs/promises')
+ * const buffer = await fs.readFile('<filename>');
+ */
+exports.readFile = async (f) => {
+    return new Promise ((resolve, reject) => {
+        fs.readFile (f, (err, data) => {
+            if (err) {
+                reject (err);
+            }
+            resolve (data);
+        });
+    });
+}

@@ -1,6 +1,4 @@
 const fs = require('fs');
-const fsp = require ('fs/promises');
-
 const sharp = require('sharp');
 const { resizeImage, notFound } = require('../resize');
 
