@@ -461,19 +461,3 @@
                   "71938553")
                (= (cx/string-at-path granule-data [:Size])
                   nil))))))
-
-(comment
-  (cx/string-at-path
-   (g/generate-data-granule
-          (umm-g/map->DataGranule
-            {:size-in-bytes 71938553
-             :size-unit "KB"
-             :producer-gran-id "0000000.0000001.hdf"
-             :day-night "NIGHT"})) [:DataGranuleSizeInBytes])
-  (cmr.common.xml/string-at-path
-   (g/generate-data-granule
-          (umm-g/map->DataGranule
-            {:size-in-bytes 71938553
-             :size-unit "KB"
-             :producer-gran-id "0000000.0000001.hdf"
-             :day-night "NIGHT"})) [:Size]))

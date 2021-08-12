@@ -46,11 +46,9 @@
     "PB" (* size 1024 1024 1024)
     size))
 
-;(print data-granule)
 (defn generate-data-granule
   "Generates the DataGranule element of an ECHO10 XML from a UMM Granule data-granule entry."
   [data-granule]
-  (def data-granule data-granule)
   (when data-granule
     (let [{:keys [producer-gran-id
                   day-night
