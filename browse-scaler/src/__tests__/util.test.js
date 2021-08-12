@@ -11,24 +11,18 @@ const { getSecureParam,
 
 const jsonData = require ('./C179003030-ORNL_DAAC.json');
 
-let starsData;
-
-beforeAll (async () => {
-  starsData = await readFile ('./__tests__/stars.jpg');
-});
-
 describe ('slurpImageIntoBuffer', () => {
-  nock ('http://mock.com')
-    .get (/200/)
-    .reply (200, starsData)
-    .get (/404/)
-    .reply (404);
+    let starsData = fs.readFileSync ('./__tests__/stars.jpg');
+
+    nock ('http://mock.com')
+        .get (/200/)
+        .reply (200, starsData)
+        .get (/404/)
+        .reply (404);
   
   test ('handles 200', async () => {
-    const res = await slurpImageIntoBuffer ('http://mock.com/200')
-    console.error (res);
-    // expect (res).toStrictEqual (starsData);
-    expect (res).toBeTruthy ();
+      const res = await slurpImageIntoBuffer ('http://mock.com/200')
+      expect (res).toStrictEqual (starsData);
   });
   
   test ('handles 404', async () => {
