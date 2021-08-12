@@ -41,7 +41,7 @@
         options (util/remove-nil-keys
                  {:form-params {:concept-id concept-ids
                                 :page-size 2000}
-                  :headers {:echo-token (System/getenv "CMR_SYSTEM_TOKEN")}})
+                  :headers {:authorization (System/getenv "CMR_SYSTEM_TOKEN")}})
         response (client/post url options)
         items (:items (json/parse-string (:body response) true))]
     (into {}
@@ -55,7 +55,7 @@
   (let [url (format "%s/concepts/%s" (source-url) concept-id)
         params (util/remove-nil-keys
                 {:query-params {:concept-id concept-id}
-                 :headers {:echo-token (System/getenv "CMR_SYSTEM_TOKEN")}})
+                 :headers {:authorization (System/getenv "CMR_SYSTEM_TOKEN")}})
         params (if (= fmt "application/vnd.nasa.cmr.umm+json")
                  (assoc params :accept "application/vnd.nasa.cmr.umm+json") ; want latest version of umm
                  params)

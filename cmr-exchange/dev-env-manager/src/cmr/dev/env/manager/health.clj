@@ -8,7 +8,7 @@
     [taoensso.timbre :as log]))
 
 (def http-default-opts
-  {:headers {:echo-token transmit/mock-echo-system-token}
+  {:headers {:authorization transmit/mock-echo-system-token}
    :accept :json
    :throw-exceptions false})
 

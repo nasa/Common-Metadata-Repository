@@ -272,5 +272,5 @@
 
     (testing "with invalid parameters"
       (is (= {:status 400
-              :errors ["Parameter [echo_token] was not recognized."]}
-             (u/search-for-groups token {"Echo-Token" "true"}))))))
+              :errors ["Parameter [authorization] was not recognized."]}
+             (u/search-for-groups token {"Authorization" "true"}))))))
