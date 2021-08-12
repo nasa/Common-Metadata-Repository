@@ -61,3 +61,10 @@ describe('Image resizing', () => {
     fs.unlinkSync(`${__dirname}/desk-flip-larger.png`);
   });
 });
+
+describe ('notFound', () => {
+    test ('returns buffer', async () => {
+        const res = await notFound ();
+        expect (Buffer.isBuffer (res)).toBeTruthy ();
+    });
+});

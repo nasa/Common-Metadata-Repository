@@ -1,46 +1,46 @@
 /* REDIS */
 const redis = require('redis');
-const redisHost = process.env.REDIS_URL || 'localhost';
-const redisPort = process.env.REDIS_PORT || 6379;
-const redisKeyExpireSeconds = process.env.REDIS_KEY_EXPIRE_SECONDS || 84000;
-
-
-var redisClient = null;
+const config = require ('./config');
+const { REDIS_URL,
+    REDIS_PORT,
+    REDIS_KEY_EXPIRE_SECONDS } = require ('./config');
 
 const { promisify } = require('util');
 
-/**
-* getClient: Retrieve the Redis client. Start new client if client is null or not connected.
-* @returns {RedisClient} RedisClient object containing the connection to Redis.
-*/
-function getClient() {
-  if (redisClient && redisClient.connected) {
-    return redisClient;
+const Cache = (function (cfg) {
+  // redis singleton
+  let instance;
+
+  /**
+   * getInstance: Retrieve the Redis client. Start new client if client is null or not connected. //
+   * @returns {RedisClient} RedisClient object containing the connection to Redis. //
+   */
+  function getInstance() {
+    if (!instance) {
+      instance = redis.createClient({
+        return_buffers: true,
+        host: cfg.REDIS_URL,
+        port: cfg.REDIS_PORT
+      }).on("error", (err) => {
+        console.error(`Failed to connect to Redis with error: ${err}.`);
+        instance.quit();
+      });
+    }
+
+    return instance;
   }
+  return { getInstance };
+}) ({REDIS_PORT, REDIS_URL});
 
-  if (redisClient) {
-    redisClient.quit();
-  }
-
-  redisClient = redis.createClient({
-    return_buffers: true,
-    host: redisHost,
-    port: redisPort
-  }).on("error", (err) => {
-    console.error(`Failed to connect to Redis with error: ${err}.`);
-    redisClient.quit();
-  });
-
-  return redisClient;
-}
+exports.Cache = Cache;
 
 /**
  * cacheImage: Puts the given image in cache. This does not return anything.
  * @param {String} key This is what you use to get the image later
  * @param {Buffer<Image>} image This is what you want the key to get
  */
-exports.cacheImage = (key, image) => {
-  getClient().set(key, image, 'EX', redisKeyExpireSeconds, err => {
+exports.cacheImage = (key, image, expiration = REDIS_KEY_EXPIRE_SECONDS) => {
+  Cache.getInstance().set(key, image, 'EX', expiration, err => {
     if (err) {
       console.error(`Unable to cache image ${key}: ${err}`);
     }
@@ -53,7 +53,7 @@ exports.cacheImage = (key, image) => {
  * @returns {Buffer<Image>} the image associated with given cache key or null if none is found
  */
 exports.getImageFromCache = async key => {
-  let client = getClient();
+  let client = Cache.getInstance();
   return promisify(client.get).bind(client)(key)
     .catch(err => {
       console.error(`Unable to retrieve image ${key} from Redis.`);
