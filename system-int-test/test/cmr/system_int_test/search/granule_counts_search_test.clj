@@ -377,21 +377,23 @@
                                                 :polygon ["-21.33069,80.92296,-24.68258,80.58223,-26.80316,80.36716,-29.06056,79.60629,-24.34055,78.86559,-17.56837,79.10088,-14.62691,79.83818,-14.83213,80.79254,-21.33069,80.92296"
                                                           "136.75804,-34.82121,135.13466,-34.7865,134.43289,-35.0361,133.97631,-35.53991,134.6189,-36.7958,136.56358,-36.90405,137.07088,-36.15672,136.75804,-34.82121"]
                                                 "options[spatial][or]" "true"})]
-        (gran-counts/granule-counts-match? :xml {coll6745 3} refs)
-        (gran-counts/granule-counts-match? :xml {coll6745 3} refs)))
+        (is (gran-counts/granule-counts-match? :xml {coll6745 3} refs))))
+    (testing "ANDed granule counts special case"
+      (let [coll6745-id (:concept-id coll6745)
+            refs (search/find-refs :collection {:include-granule-counts true
+                                                :concept-id coll6745-id
+                                                :polygon ["-21.33069,80.92296,-24.68258,80.58223,-26.80316,80.36716,-29.06056,79.60629,-24.34055,78.86559,-17.56837,79.10088,-14.62691,79.83818,-14.83213,80.79254,-21.33069,80.92296"
+                                                          "136.75804,-34.82121,135.13466,-34.7865,134.43289,-35.0361,133.97631,-35.53991,134.6189,-36.7958,136.56358,-36.90405,137.07088,-36.15672,136.75804,-34.82121"]
+                                                "options[spatial][or]" "false"})]
+        (is (gran-counts/granule-counts-match? :xml {coll6745 0} refs))))
     (testing "EDSC Pageload error case"
-      (is (= [{:id "C1200000006-PROV1"
-                :name "coll6745"
-                :revision-id 1
-                :location "http://localhost:3003/concepts/C1200000006-PROV1/1"
-                :granule-count 4
-                :has-granules true}]
-            (:refs (search/find-refs :collection {:include-granule-counts true
-                                                  :has-granules-or-cwic true
-                                                  :include-has-granules true
-                                                  "options[science_keywords_h][or]" "true"
-                                                  "options[spatial][or]" "true"
-                                                  "options[temporal][limit_to_granules]" "true"})))))))
+      (let [refs (search/find-refs :collection {:include-granule-counts true
+                                                :has-granules-or-cwic true
+                                                "options[science_keywords_h][or]" "true"
+                                                "options[spatial][or]" "true"
+                                                "options[temporal][limit_to_granules]" "true"})]
+        (is (d/refs-match? [coll6745] refs))
+        (is (gran-counts/granule-counts-match? :xml {coll6745 4} refs))))))
 
 (deftest collection-has-granules-caching-test
   (let [;; Create collections

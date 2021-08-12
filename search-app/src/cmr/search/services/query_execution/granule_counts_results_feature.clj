@@ -102,7 +102,7 @@
   [spatial-conditions temporal-conditions collection-ids]
   (let [collection-id-conditions (q/string-conditions :collection-concept-id collection-ids true)
         ored-spatial-conditions (gc/or-conds spatial-conditions)]
-    (if (seq? collection-ids)
+    (if (seq collection-ids)
       (gc/and-conds (remove empty? [collection-id-conditions
                                     ored-spatial-conditions
                                     temporal-conditions]))
