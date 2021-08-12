@@ -8,14 +8,15 @@
 
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
-            [clojure.string :as s]
-            [cmr.umm.test.generators.granule :as gran-gen]
+            [clojure.string :as string]
             [cmr.common.date-time-parser :as p]
+            [cmr.common.xml :as cx]
             [cmr.umm.echo10.granule :as g]
             [cmr.umm.echo10.echo10-core :as echo10]
             [cmr.umm.umm-collection :as umm-c]
             [cmr.umm.umm-granule :as umm-g]
-            [cmr.umm.test.echo10.echo10-collection-tests :as tc]))
+            [cmr.umm.test.echo10.echo10-collection-tests :as tc]
+            [cmr.umm.test.generators.granule :as gran-gen]))
 
 (defn- data-granule->expected
   "Returns the expected data-granule for comparison with the parsed record."
@@ -445,4 +446,34 @@
             "Exception while parsing invalid XML: Line 3 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'InsertTime' is not valid."
             "Exception while parsing invalid XML: Line 4 - cvc-datatype-valid.1.2.1: 'XXXX-01-05T05:30:30.550-05:00' is not a valid value for 'dateTime'."
             "Exception while parsing invalid XML: Line 4 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'LastUpdate' is not valid."]
-           (g/validate-xml (s/replace valid-granule-xml-w-sn-ver "2010" "XXXX"))))))
+           (g/validate-xml (string/replace valid-granule-xml-w-sn-ver "2010" "XXXX"))))))
+
+(deftest generate-data-granule-test
+  (testing "Testing the generate-data-granule method when the size doesn't exist - making sure that
+            a null pointer exception isn't thrown. CMR-7605"
+    (let [granule-data (g/generate-data-granule
+                         (umm-g/map->DataGranule
+                           {:size-in-bytes 71938553
+                            :size-unit "KB"
+                            :producer-gran-id "0000000.0000001.hdf"
+                            :day-night "NIGHT"}))]
+      (is (and (= (cx/string-at-path granule-data [:DataGranuleSizeInBytes])
+                  "71938553")
+               (= (cx/string-at-path granule-data [:Size])
+                  nil))))))
+
+(comment
+  (cx/string-at-path
+   (g/generate-data-granule
+          (umm-g/map->DataGranule
+            {:size-in-bytes 71938553
+             :size-unit "KB"
+             :producer-gran-id "0000000.0000001.hdf"
+             :day-night "NIGHT"})) [:DataGranuleSizeInBytes])
+  (cmr.common.xml/string-at-path
+   (g/generate-data-granule
+          (umm-g/map->DataGranule
+            {:size-in-bytes 71938553
+             :size-unit "KB"
+             :producer-gran-id "0000000.0000001.hdf"
+             :day-night "NIGHT"})) [:Size]))
