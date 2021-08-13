@@ -57,7 +57,7 @@
                   size-unit
                   size-in-bytes
                   checksum]} data-granule
-          day-night (if day-night day-night "UNSPECIFIED")]
+          day-night (or day-night "UNSPECIFIED")]
       (x/element :DataGranule {}
                  (when size-in-bytes
                    (x/element :DataGranuleSizeInBytes {} size-in-bytes))
