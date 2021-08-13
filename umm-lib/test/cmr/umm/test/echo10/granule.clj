@@ -1,22 +1,23 @@
 (ns cmr.umm.test.echo10.granule
   "Tests parsing and generating ECHO10 Granule XML."
-  (:require [clojure.test :refer :all]
+  (:require
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
 
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [defspec]]
+   ; [clojure.test.check.clojure-test :refer [defspec]]
+   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+   [cmr.common.test.test-check-ext :refer [defspec]]
 
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [clojure.string :as string]
-            [cmr.common.date-time-parser :as p]
-            [cmr.common.xml :as cx]
-            [cmr.umm.echo10.granule :as g]
-            [cmr.umm.echo10.echo10-core :as echo10]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.umm-granule :as umm-g]
-            [cmr.umm.test.echo10.echo10-collection-tests :as tc]
-            [cmr.umm.test.generators.granule :as gran-gen]))
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.xml :as cx]
+   [cmr.umm.echo10.granule :as g]
+   [cmr.umm.echo10.echo10-core :as echo10]
+   [cmr.umm.test.echo10.echo10-collection-tests :as tc]
+   [cmr.umm.test.generators.granule :as gran-gen]
+   [cmr.umm.umm-collection :as umm-c]
+   [cmr.umm.umm-granule :as umm-g]))
 
 (defn- data-granule->expected
   "Returns the expected data-granule for comparison with the parsed record."
@@ -457,7 +458,7 @@
                             :size-unit "KB"
                             :producer-gran-id "0000000.0000001.hdf"
                             :day-night "NIGHT"}))]
-      (is (and (= (cx/string-at-path granule-data [:DataGranuleSizeInBytes])
-                  "71938553")
-               (= (cx/string-at-path granule-data [:Size])
-                  nil))))))
+      (is (= (cx/string-at-path granule-data [:DataGranuleSizeInBytes])
+             "71938553"))
+      (is (= (cx/string-at-path granule-data [:Size])
+             nil)))))
