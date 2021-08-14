@@ -38,6 +38,7 @@ const indexPlatform = async (platform, gremlinConnection, dataset, conceptId) =>
 
       const { value: vertexValue = {} } = piVertex
       const { id: piId } = vertexValue
+
       console.log(`PlatformInstrument vertex [${piId}] indexed for collection [${dataset}]`)
 
       await createAcquiredByEdge(piId, gremlinConnection, dataset)
@@ -45,6 +46,7 @@ const indexPlatform = async (platform, gremlinConnection, dataset, conceptId) =>
   } catch (error) {
     // Log specific error message, but throw error again to stop indexing
     console.error(`ERROR indexing Platform for concept [${conceptId}] ${JSON.stringify(platform)}: ${error}`)
+
     throw error
   }
 }

@@ -11,8 +11,8 @@ import {
 } from '../../testUtil/verifyDocumentation'
 
 import {
-  verifyCampaignExistInGraphDb, verifyCampaignNotExistInGraphDb
-} from '../../testUtil/verifyCampaign'
+  verifyProjectExistInGraphDb, verifyProjectNotExistInGraphDb
+} from '../../testUtil/verifyProject'
 
 import {
   verifyPlatformInstrumentsExistInGraphDb, verifyPlatformInstrumentsNotExistInGraphDb
@@ -31,7 +31,7 @@ describe('indexCmrCollection handler', () => {
   test('test initial indexing of a collection', async () => {
     const datasetTitle = 'Latent reserves within the Swiss NFI'
     const conceptId = 'C1237293909-TESTPROV'
-    const campaign1 = 'Campaign One'
+    const project1 = 'Project One'
     const platform1 = 'Platform One'
     const instrument1 = 'Instrument One'
     const platform2 = 'Platform Two'
@@ -42,7 +42,7 @@ describe('indexCmrCollection handler', () => {
       conceptId,
       datasetTitle,
       {
-        campaigns: [campaign1],
+        projects: [project1],
         platforms: [{ platform: platform1, instruments: [instrument1] }, { platform: platform2 }],
         relatedUrls: [relatedUrl],
         doi
@@ -57,7 +57,7 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    await verifyCampaignExistInGraphDb(datasetTitle, campaign1)
+    await verifyProjectExistInGraphDb(datasetTitle, project1)
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle,
       { platform: platform1, instruments: [instrument1] })
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: platform2 })
@@ -145,7 +145,7 @@ describe('indexCmrCollection handler', () => {
 
   test('test deletion of single collection', async () => {
     const datasetTitle = 'Latent reserves within the Swiss NFI'
-    const campaign1 = 'Campaign One'
+    const project1 = 'Project One'
     const platform1 = 'Platform One'
     const instrument1 = 'Instrument One'
     const instrument2 = 'Instrument Two'
@@ -157,7 +157,7 @@ describe('indexCmrCollection handler', () => {
       'C1237293909-TESTPROV',
       datasetTitle,
       {
-        campaigns: [campaign1],
+        projects: [project1],
         platforms: [
           { platform: platform1, instruments: [instrument1, instrument2] },
           { platform: platform2 }],
@@ -165,15 +165,15 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    await verifyCampaignExistInGraphDb(datasetTitle, campaign1)
+    await verifyProjectExistInGraphDb(datasetTitle, project1)
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle,
       { platform: platform1, instruments: [instrument1, instrument2] })
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: platform2 })
     await verifyDocumentationExistInGraphDb(datasetTitle, relatedUrl)
 
-    // delete the collection and verify dataset and campaign/documentation vertices are deleted
+    // delete the collection and verify dataset and project/documentation vertices are deleted
     await deleteCollection('C1237293909-TESTPROV')
-    await verifyCampaignNotExistInGraphDb(datasetTitle, campaign1)
+    await verifyProjectNotExistInGraphDb(datasetTitle, project1)
     await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle,
       { platform: platform1, instruments: [instrument1, instrument2] })
     await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle, { platform: platform2 })
@@ -184,10 +184,10 @@ describe('indexCmrCollection handler', () => {
     const datasetTitle = 'Latent reserves within the Swiss NFI'
     const anotherDatasetTitle = 'Another Latent reserves within the Swiss NFI'
 
-    // this campaign is referenced by two collections
-    const sharedCampaign = 'SharedCampaign'
-    // this campaign is referenced only by one collection
-    const ownCampaign = 'OwnCampaign'
+    // this project is referenced by two collections
+    const sharedProject = 'SharedProject'
+    // this project is referenced only by one collection
+    const ownProject = 'OwnProject'
 
     // this platform is referenced by two collections
     const sharedPlatform = 'SharedPlatform'
@@ -201,12 +201,12 @@ describe('indexCmrCollection handler', () => {
     // this documentation url is referenced only by one collection
     const ownDocUrl = 'https://en.wikipedia.org/wiki/latent_nfi2'
 
-    // first index the collection and verify dataset and campaign/documentation vertices are created
+    // first index the collection and verify dataset and project/documentation vertices are created
     await updateCollection(
       'C1237293909-TESTPROV',
       datasetTitle,
       {
-        campaigns: [sharedCampaign, ownCampaign],
+        projects: [sharedProject, ownProject],
         platforms: [
           { platform: sharedPlatform, instruments: [sharedInstrument, ownInstrument] },
           { platform: ownPlatform }],
@@ -214,38 +214,38 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    await verifyCampaignExistInGraphDb(datasetTitle, sharedCampaign)
-    await verifyCampaignExistInGraphDb(datasetTitle, ownCampaign)
+    await verifyProjectExistInGraphDb(datasetTitle, sharedProject)
+    await verifyProjectExistInGraphDb(datasetTitle, ownProject)
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle,
       { platform: sharedPlatform, instruments: [sharedInstrument, ownInstrument] })
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: ownPlatform })
     await verifyDocumentationExistInGraphDb(datasetTitle, sharedDocUrl)
     await verifyDocumentationExistInGraphDb(datasetTitle, ownDocUrl)
 
-    // index a second collection that reference the same campaign/documentation vertex
-    // and verify dataset and campaign/documentation vertices are created
+    // index a second collection that reference the same project/documentation vertex
+    // and verify dataset and project/documentation vertices are created
     await updateCollection(
       'C1237294000-TESTPROV',
       anotherDatasetTitle,
       {
-        campaigns: [sharedCampaign],
+        projects: [sharedProject],
         platforms: [
           { platform: sharedPlatform, instruments: [sharedInstrument] }],
         relatedUrls: [sharedDocUrl]
       }
     )
 
-    await verifyCampaignExistInGraphDb(anotherDatasetTitle, sharedCampaign)
+    await verifyProjectExistInGraphDb(anotherDatasetTitle, sharedProject)
     await verifyPlatformInstrumentsExistInGraphDb(anotherDatasetTitle,
       { platform: sharedPlatform, instruments: [sharedInstrument] })
     await verifyDocumentationExistInGraphDb(anotherDatasetTitle, sharedDocUrl)
 
     // delete the collection and verify dataset vertex is deleted
-    // the campaign/documentation/platformInstrument vertex that is not referenced by another collection is deleted
-    // the campaign/documentation/platformInstrument vertex that is referenced by another collection is not deleted
+    // the project/documentation/platformInstrument vertex that is not referenced by another collection is deleted
+    // the project/documentation/platformInstrument vertex that is referenced by another collection is not deleted
     await deleteCollection('C1237293909-TESTPROV')
-    await verifyCampaignNotExistInGraphDb(datasetTitle, ownCampaign)
-    await verifyCampaignExistInGraphDb(anotherDatasetTitle, sharedCampaign)
+    await verifyProjectNotExistInGraphDb(datasetTitle, ownProject)
+    await verifyProjectExistInGraphDb(anotherDatasetTitle, sharedProject)
 
     await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle,
       { platform: sharedPlatform, instruments: [ownInstrument] })
@@ -261,12 +261,12 @@ describe('indexCmrCollection handler', () => {
     const datasetTitle = 'Latent reserves within the Swiss NFI'
     const anotherDatasetTitle = 'Another Latent reserves within the Swiss NFI'
 
-    // this campaign is referenced by both the old and new version of the collection
-    const keptCampaign = 'KeptCampaign'
-    // this campaign is referenced only by the old version of collection
-    const removedCampaign = 'RemovedCampaign'
-    // this campaign is referenced only by the new version of collection
-    const newCampaign = 'NewCampaign'
+    // this project is referenced by both the old and new version of the collection
+    const keptProject = 'KeptProject'
+    // this project is referenced only by the old version of collection
+    const removedProject = 'RemovedProject'
+    // this project is referenced only by the new version of collection
+    const newProject = 'NewProject'
 
     // this platform is referenced by both the old and new version of the collection
     const keptPlatform = 'KeptPlatform'
@@ -294,7 +294,7 @@ describe('indexCmrCollection handler', () => {
       'C1237293909-TESTPROV',
       datasetTitle,
       {
-        campaigns: [keptCampaign, removedCampaign],
+        projects: [keptProject, removedProject],
         platforms: [
           { platform: keptPlatform, instruments: [keptInstrument, removedInstrument] },
           { platform: removedPlatform }],
@@ -302,8 +302,8 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    await verifyCampaignExistInGraphDb(datasetTitle, keptCampaign)
-    await verifyCampaignExistInGraphDb(datasetTitle, removedCampaign)
+    await verifyProjectExistInGraphDb(datasetTitle, keptProject)
+    await verifyProjectExistInGraphDb(datasetTitle, removedProject)
 
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle,
       { platform: keptPlatform, instruments: [keptInstrument, removedInstrument] })
@@ -317,7 +317,7 @@ describe('indexCmrCollection handler', () => {
       'C1237293909-TESTPROV',
       anotherDatasetTitle,
       {
-        campaigns: [keptCampaign, newCampaign],
+        projects: [keptProject, newProject],
         platforms: [
           { platform: keptPlatform, instruments: [keptInstrument, newInstrument] },
           { platform: newPlatform, instruments: [newInstrument] }],
@@ -325,18 +325,18 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    // verify the datasetTitle dataset vertex and the removed campaign/documentation/platformInstrument vertex are deleted
-    await verifyCampaignNotExistInGraphDb(datasetTitle, removedCampaign)
+    // verify the datasetTitle dataset vertex and the removed project/documentation/platformInstrument vertex are deleted
+    await verifyProjectNotExistInGraphDb(datasetTitle, removedProject)
     await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle,
       { platform: keptPlatform, instruments: [removedInstrument] })
     await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle, { platform: removedPlatform })
     await verifyDocumentationNotExistInGraphDb(datasetTitle, removedDocUrl)
 
     // verify the dataset vertext with the new title exist,
-    // verify the campaign/documentation vertices referenced by another collection exist,
-    // and there are correct edges between the dataset vertex and the campaign/documentation vertices
-    await verifyCampaignExistInGraphDb(anotherDatasetTitle, keptCampaign)
-    await verifyCampaignExistInGraphDb(anotherDatasetTitle, newCampaign)
+    // verify the project/documentation vertices referenced by another collection exist,
+    // and there are correct edges between the dataset vertex and the project/documentation vertices
+    await verifyProjectExistInGraphDb(anotherDatasetTitle, keptProject)
+    await verifyProjectExistInGraphDb(anotherDatasetTitle, newProject)
     await verifyPlatformInstrumentsExistInGraphDb(anotherDatasetTitle,
       { platform: keptPlatform, instruments: [keptInstrument, newInstrument] })
     await verifyPlatformInstrumentsExistInGraphDb(anotherDatasetTitle,

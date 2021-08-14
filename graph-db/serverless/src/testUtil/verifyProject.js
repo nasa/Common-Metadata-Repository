@@ -2,7 +2,7 @@ import gremlin from 'gremlin'
 
 const gremlinStatistics = gremlin.process.statics
 
-export const verifyCampaignExistInGraphDb = async (datasetTitle, campaignName) => {
+export const verifyProjectExistInGraphDb = async (datasetTitle, projectName) => {
   // verify the dataset vertex with the given title exists
   const dataset = await global.testGremlinConnection
     .V()
@@ -11,10 +11,10 @@ export const verifyCampaignExistInGraphDb = async (datasetTitle, campaignName) =
   const { value: { id: datasetId } } = dataset
   expect(datasetId).not.toBe(null)
 
-  // verify the campaign vertex with the given name exists
+  // verify the project vertex with the given name exists
   const doc = await global.testGremlinConnection
     .V()
-    .has('campaign', 'name', campaignName)
+    .has('project', 'name', projectName)
     .next()
   const { value: { id: docId } } = doc
   expect(docId).not.toBe(null)
@@ -25,13 +25,13 @@ export const verifyCampaignExistInGraphDb = async (datasetTitle, campaignName) =
     .has('collection', 'title', datasetTitle)
     .outE('includedIn')
     .filter(gremlinStatistics.inV()
-      .has('campaign', 'name', campaignName))
+      .has('project', 'name', projectName))
     .next()
   const { value: { id: edgeId } } = record
   expect(edgeId).not.toBe(null)
 }
 
-export const verifyCampaignNotExistInGraphDb = async (datasetTitle, campaignName) => {
+export const verifyProjectNotExistInGraphDb = async (datasetTitle, projectName) => {
   // verify the dataset vertex with the given title does not exist
   const dataset = await global.testGremlinConnection
     .V()
@@ -40,10 +40,10 @@ export const verifyCampaignNotExistInGraphDb = async (datasetTitle, campaignName
   const { value: datasetValue } = dataset
   expect(datasetValue).toBe(null)
 
-  // verify the campaign vertex with the given name does not exist
+  // verify the project vertex with the given name does not exist
   const doc = await global.testGremlinConnection
     .V()
-    .has('campaign', 'name', campaignName)
+    .has('project', 'name', projectName)
     .next()
   const { value: docValue } = doc
   expect(docValue).toBe(null)

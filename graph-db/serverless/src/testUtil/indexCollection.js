@@ -3,35 +3,38 @@ import nock from 'nock'
 
 import indexCmrCollection from '../indexCmrCollection/handler'
 
-const campaign = (shortName) => ({
+// Helper to create a Project object simular to the one returned by CMR
+const projectObj = (shortName) => ({
   ShortName: shortName
 })
 
-const instrument = (shortName) => ({
+// Helper to create a Instrument object simular to the one returned by CMR
+const instrumentObj = (shortName) => ({
   ShortName: shortName
 })
 
-// Returns the UMM Platforms JSON for the given attributes in the format of
+// Helper to create a Platforms object simular to the one returned by CMR
 // {platform: platformName, instruments: [instrumentName ...]}
-const platformInstruments = (attributes) => {
+const platformInstrumentsObj = (attributes) => {
   const { platform, instruments } = attributes
-  let instrumentObjs
+
+  const returnObj = {
+    ShortName: platform
+  }
 
   if (instruments) {
-    instrumentObjs = instruments.map(instrument)
+    returnObj.Instruments = instruments.map(instrumentObj)
   }
 
-  return {
-    ShortName: platform,
-    Instruments: instrumentObjs
-  }
+  return returnObj
 }
 
-const relatedUrlObj = (relatedUrl) => ({
+// Helper to create a RelatedUrl object simular to the one returned by CMR
+const relatedUrl = (docName) => ({
   URLContentType: 'PublicationURL',
   Type: 'VIEW RELATED INFORMATION',
   Subtype: 'GENERAL DOCUMENTATION',
-  URL: relatedUrl
+  URL: docName
 })
 
 /**
@@ -42,29 +45,21 @@ const relatedUrlObj = (relatedUrl) => ({
  * @returns null
  */
 export const updateCollection = async (conceptId, datasetTitle, attributes) => {
-  const {
-    relatedUrls, campaigns, platforms, doi
-  } = attributes
-
-  let projects
+  const { docNames, projects, platforms } = attributes
+  let projectsObjs
   let platformInstrumentObjs
-  let relatedUrlObjs
-  let doiValue = { MissingReason: 'Not Applicable' }
+  let relatedUrls
 
-  if (campaigns) {
-    projects = campaigns.map(campaign)
+  if (projects) {
+    projectsObjs = projects.map(projectObj)
   }
 
   if (platforms) {
-    platformInstrumentObjs = platforms.map(platformInstruments)
+    platformInstrumentObjs = platforms.map(platformInstrumentsObj)
   }
 
-  if (relatedUrls) {
-    relatedUrlObjs = relatedUrls.map(relatedUrlObj)
-  }
-
-  if (doi) {
-    doiValue = { DOI: doi }
+  if (docNames) {
+    relatedUrls = docNames.map(relatedUrl)
   }
 
   nock(/local-cmr/)
@@ -79,10 +74,12 @@ export const updateCollection = async (conceptId, datasetTitle, attributes) => {
             'provider-id': 'TESTPROV'
           },
           umm: {
-            Projects: projects,
+            Projects: projectsObjs,
             Platforms: platformInstrumentObjs,
-            RelatedUrls: relatedUrlObjs,
-            DOI: doiValue,
+            RelatedUrls: relatedUrls,
+            DOI: {
+              DOI: 'doi:10.16904/envidat.166'
+            },
             ShortName: 'latent-reserves-in-the-swiss-nfi',
             EntryTitle: datasetTitle
           }

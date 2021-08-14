@@ -11,13 +11,13 @@ const gremlinStatistics = gremlin.process.statics
  */
 const indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId) => {
   const {
-    Subtype: subType,
     URL: url,
-    Description: description,
-    URLContentType: urlContentType
+    Type: type,
+    SubType: subType,
+    Description: description
   } = relatedUrl
 
-  if (!subType || !url || urlContentType !== 'PublicationURL') {
+  if (!url || type !== 'VIEW RELATED INFORMATION') {
     // We only care about documentation at the moment.
     // Checking the URLContentType is the most efficient way to find its type.
     // Return early if it isn't some kind of documentation.
@@ -25,6 +25,15 @@ const indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId
   }
 
   try {
+    const addVCommand = gremlinConnection.addV('documentation')
+      .property('url', url)
+      .property('type', type)
+      .property('subType', subType)
+
+    if (description) {
+      addVCommand.property('description', description)
+    }
+
     // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
     const documentationVertex = await gremlinConnection
       .V()
@@ -32,7 +41,7 @@ const indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId
       .fold()
       .coalesce(
         gremlinStatistics.unfold(),
-        gremlinConnection.addV('documentation').property('url', url).property('title', description || subType)
+        addVCommand
       )
       .next()
 
@@ -58,6 +67,7 @@ const indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId
   } catch (error) {
     // Log specific error message, but throw error again to stop indexing
     console.error(`ERROR indexing RelatedUrl for concept [${conceptId}] ${JSON.stringify(relatedUrl)}: \n Error: ${error}`)
+
     throw error
   }
 }

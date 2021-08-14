@@ -17,6 +17,8 @@ export const verifyCollectionPropertiesInGraphDb = async (attrs) => {
   // verify the collection vertex with the given properties exists
   const collection = await verifyCommand.next()
 
-  const { value: { id: collectionId } } = collection
+  const { collectionValue = {} } = collection
+  const { id: collectionId } = collectionValue
+
   expect(collectionId).not.toBe(null)
 }
