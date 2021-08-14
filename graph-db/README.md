@@ -125,7 +125,7 @@ To bootstrap all collections in a specific provider (e.g LPDAAC_TS2), send the f
 ```
 
 ## Explore Indexed Data
-CMR graph database is a Neptune database hosted on AWS. Currently, we index collections and their documentation related urls, campaigns, platforms and instruments as vertices in the graph database. See the following diagram for details:
+CMR graph database is a Neptune database hosted on AWS. Currently, we index collections and their documentation related urls, projects, platforms and instruments as vertices in the graph database. See the following diagram for details:
 
 ![CMR Collection GraphDB Diagram](images/cmr_collection_graphdb_diagram.png)
 
@@ -153,9 +153,9 @@ To see all collections that are associated with a collection (C1200400842-GHRC) 
 curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"collection\", \"id\", \"C1200400842-GHRC\").as(\"a\").outE(\"documentedBy\").inV().project(\"shared-link\", \"id\").by(\"url\").by(inE(\"documentedBy\").outV().hasLabel(\"collection\").where(neq(\"a\")).values(\"id\").fold())"}'
 ```
 
-To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared campaigns:
+To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared projects:
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"collection\", \"id\", \"C1200400842-GHRC\").as(\"a\").outE(\"includedIn\").inV().project(\"campaign\", \"id\").by(\"name\").by(inE(\"includedIn\").outV().hasLabel(\"collection\").where(neq(\"a\")).values(\"id\").fold())"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"collection\", \"id\", \"C1200400842-GHRC\").as(\"a\").outE(\"includedIn\").inV().project(\"project\", \"id\").by(\"name\").by(inE(\"includedIn\").outV().hasLabel(\"collection\").where(neq(\"a\")).values(\"id\").fold())"}'
 ```
 
 To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared platform and instruments:
