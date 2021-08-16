@@ -14,7 +14,12 @@
     :OnlineAccessURLs :OnlineResources :Orderable :DataFormat :Visible :CloudCover
     :MetadataStandardName :MetadataStandardVersion :AssociatedBrowseImages :AssociatedBrowseImageUrls})
 
-(def ^:private tags-after-size
+(def ^:private tags-after-size-in-bytes
+  "Defines the element tags that come after size in a DataGranule element"
+  #{:SizeMBDataGranule :Checksum :ReprocessingPlanned :ReprocessingActual :ProducerGranuleId :DayNightFlag :ProductionDateTime
+    :LocalVersionId :AdditionalFile})
+
+(def ^:private tags-after-size-in-mb
   "Defines the element tags that come after size in a DataGranule element"
   #{:Checksum :ReprocessingPlanned :ReprocessingActual :ProducerGranuleId :DayNightFlag :ProductionDateTime
     :LocalVersionId :AdditionalFile})
@@ -33,44 +38,75 @@
         byte-vals (remove nil? (map #(re-find #"^[0-9]+$" %) sizes))
         size-map (merge (when (seq mb-vals) {:SizeMBDataGranule (first mb-vals)})
                         (when (seq byte-vals) {:DataGranuleSizeInBytes (first byte-vals)}))]
-    (when (or (< 2 (count sizes))
-              (< 1 (count mb-vals))
-              (< 1 (count byte-vals))
-              (not (or (seq mb-vals) (seq byte-vals))))
+    (when (or (< 2 (count sizes)) ;;too many values
+              (< 1 (count mb-vals)) ;;too many MB values
+              (< 1 (count byte-vals)) ;;too many byte values
+              (not= (+ (count byte-vals) (count mb-vals))
+                    (count sizes)) ;;extraneous values (don't match int or double) specified      
+              (not (or (seq mb-vals) (seq byte-vals)))) ;;no valid values specified
       (errors/throw-service-errors :invalid-data
        [(str "Can't update Size: invalid data specified. Please include at most one value for "
              "DataGranuleSizeInBytes, and one value for SizeMBDataGranule, seperated by a comma.")]))
     size-map))
 
-(defn- update-size-in-data-granule
-  "Takes the zipper loc of a DataGranule element's leftmost child in the xml, and updates the size element with
-   the provided values before returning the root"
-  [loc sizes element]
-  (let [{:keys [DataGranuleSizeInBytes SizeMBDataGranule]} sizes]
+(defn- size-in-mb-element
+  "Returns"
+  [val]
+  (xml/element :SizeMBDataGranule {} val))
 
-    (cond
-      ;; at a Size element, replace the node with updated value
-      (= :DataGranuleSizeInBytes element)
-      (if DataGranuleSizeInBytes
-        (let [xml-elem (xml/element :DataGranuleSizeInBytes {} DataGranuleSizeInBytes)]
-          (if (= :DataGranuleSizeInBytes (-> loc zip/node :tag))
-            (update-size-in-data-granule
-             (zip/right (zip/replace loc xml-elem))
-             sizes :SizeMBDataGranule)
-            (update-size-in-data-granule
-             (zip/insert-left loc xml-elem)
-             sizes :SizeMBDataGranule)))
-        (update-size-in-data-granule loc sizes :SizeMBDataGranule))
+(defn- update-size-in-mb
+  "Take"
+  [start-loc sizes]
+  (let [{:keys [SizeMBDataGranule]} sizes]
+    (loop [loc start-loc done (if SizeMBDataGranule false true)]
+      (if done
+        (zip/root loc)
+        (cond
+          ;;
+          (= :SizeMBDataGranule (-> loc zip/node :tag))
+          (recur (zip/replace loc (size-in-mb-element SizeMBDataGranule)) true)
 
-      (and (= :SizeMBDataGranule element) SizeMBDataGranule)
-      (let [xml-elem (xml/element :SizeMBDataGranule {} SizeMBDataGranule)]
-        (zip/root (if (= :SizeMBDataGranule (-> loc zip/node :tag))
-                    (zip/replace loc xml-elem)
-                    (zip/insert-left loc xml-elem))))
+          ;;
+          (some tags-after-size-in-mb [(-> loc zip/node :tag)])
+          (recur (zip/insert-left loc (size-in-mb-element SizeMBDataGranule)) true)
 
-      ;; just return the root
-      :else
-      (zip/root loc))))
+          ;;this should be possible, as there are required tags after size elements
+          (nil? loc)
+          (recur nil true)
+
+          ;; no action needs to be taken, move to the next node
+          :else
+          (recur (zip/right loc) false))))))
+
+(defn- size-in-bytes-element
+  "Returns "
+  [val]
+  (xml/element :DataGranuleSizeInBytes {} val))
+
+(defn- update-size-in-bytes
+  "Takes "
+  [start-loc sizes]
+  (let [{:keys [DataGranuleSizeInBytes]} sizes]
+    (println DataGranuleSizeInBytes)
+    (loop [loc start-loc done (if DataGranuleSizeInBytes false true)]
+      (if done
+        (update-size-in-mb (zip/leftmost loc) sizes)
+        (cond
+          ;;
+          (= :DataGranuleSizeInBytes (-> loc zip/node :tag))
+          (recur (zip/replace loc (size-in-bytes-element DataGranuleSizeInBytes)) true)
+
+          ;;
+          (some tags-after-size-in-bytes [(-> loc zip/node :tag)])
+          (recur (zip/insert-left loc (size-in-bytes-element DataGranuleSizeInBytes)) true)
+
+          ;;this should be possible, as there are required tags after size elements
+          (nil? loc)
+          (recur nil true)
+
+          ;; no action needs to be taken, move to the next node
+          :else
+          (recur (zip/right loc) false))))))
 
 (defn- update-data-granule-element
   "Take a parsed granule xml, update size"
@@ -82,7 +118,7 @@
         (cond
           ;; at a DataGranule element, attempt to update/add size inside this node
           (= :DataGranule (-> right-loc zip/node :tag))
-          (update-size-in-data-granule (zip/down right-loc) sizes :DataGranuleSizeInBytes)
+          (update-size-in-bytes (zip/down right-loc) sizes)
 
           ;; at an element after DataGranule, cannot update granule
           (or (nil? right-loc) (some tags-after-data-granule [(-> right-loc zip/node :tag)]))
