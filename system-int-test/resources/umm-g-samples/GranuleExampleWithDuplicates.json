@@ -1,0 +1,485 @@
+{
+  "GranuleUR": "Gran_With_Dupes",
+  "ProviderDates": [
+    {
+      "Date": "2018-07-19T00:00:00Z",
+      "Type": "Create"
+    },
+    {
+      "Date": "2018-08-19T01:00:00Z",
+      "Type": "Insert"
+    },
+    {
+      "Date": "2018-09-19T02:00:00Z",
+      "Type": "Update"
+    },
+    {
+      "Date": "2030-08-19T03:00:00Z",
+      "Type": "Delete"
+    }
+  ],
+  "CollectionReference": {
+    "ShortName": "CollectionShortName",
+    "Version": "1.6"
+  },
+  "AccessConstraints": {
+    "Description": "Public Access",
+    "Value": 42
+  },
+  "DataGranule": {
+    "ArchiveAndDistributionInformation": [
+      {
+        "Name": "GranuleZipFile",
+        "SizeInBytes": 23000,
+        "Size": 23,
+        "SizeUnit": "KB",
+        "Format": "ZIP",
+        "MimeType": "application/zip",
+        "Checksum": {
+          "Value": "E51569BF48DD0FD0640C6503A46D4753",
+          "Algorithm": "MD5"
+        },
+        "Files": [
+          {
+            "Name": "GranuleFileName1",
+            "SizeInBytes": 10000,
+            "Size": 10,
+            "SizeUnit": "KB",
+            "Format": "NETCDF-4",
+            "MimeType": "application/x-netcdf",
+            "FormatType": "Native",
+            "Checksum": {
+              "Value": "E51569BF48DD0FD0640C6503A46D4754",
+              "Algorithm": "MD5"
+            }
+          },
+          {
+            "Name": "GranuleFileName2",
+            "SizeInBytes": 1000,
+            "Size": 1,
+            "SizeUnit": "KB",
+            "Format": "ASCII",
+            "MimeType": "text/plain",
+            "FormatType": "NA"
+          }
+        ]
+      },
+      {
+        "Name": "GranuleFileName1",
+        "SizeInBytes": 11000,
+        "Size": 11,
+        "SizeUnit": "KB",
+        "Format": "NETCDF-CF",
+        "FormatType": "Supported",
+        "MimeType": "application/x-netcdf",
+        "Checksum": {
+          "Value": "E51569BF48DD0FD0640C6503A46D4755",
+          "Algorithm": "MD5"
+        }
+      },
+      {
+        "Name": "GranuleZipFile2",
+        "SizeInBytes": 23000,
+        "Size": 23,
+        "SizeUnit": "KB",
+        "Format": "ZIP",
+        "MimeType": "application/zip",
+        "Checksum": {
+          "Value": "E51569BF48DD0FD0640C6503A46D4753",
+          "Algorithm": "MD5"
+        },
+        "Files": [
+          {
+            "Name": "GranuleFileName3",
+            "SizeInBytes": 10000,
+            "Format": "NETCDF-4",
+            "MimeType": "application/x-netcdf",
+            "FormatType": "Native",
+            "Checksum": {
+              "Value": "E51569BF48DD0FD0640C6503A46D4754",
+              "Algorithm": "MD5"
+            }
+          },
+          {
+            "Name": "GranuleFileName4",
+            "SizeInBytes": 1000,
+            "Size": 1,
+            "SizeUnit": "KB",
+            "Format": "ASCII",
+            "MimeType": "text/plain",
+            "FormatType": "NA"
+          }
+        ]
+      }
+    ],
+    "ReprocessingPlanned": "The Reprocessing Planned Statement Value",
+    "ReprocessingActual": "The Reprocessing Actual Statement Value",
+    "DayNightFlag": "Unspecified",
+    "ProductionDateTime": "2018-07-19T12:01:01Z",
+    "Identifiers": [
+      {
+        "Identifier": "SMAP_L3_SM_P_20150407_R13080_001.h5",
+        "IdentifierType": "ProducerGranuleId"
+      },
+      {
+        "Identifier": "LocalVersionIdValue",
+        "IdentifierType": "LocalVersionId"
+      },
+      {
+        "Identifier": "FeatureIdValue1",
+        "IdentifierType": "FeatureId"
+      },
+      {
+        "Identifier": "FeatureIdValue2",
+        "IdentifierType": "FeatureId"
+      },
+      {
+        "Identifier": "12345678911234567892123456789312345678941234567895123456789612345678971234567898123456789912345678901234567891123456789212345678901234567890",
+        "IdentifierType": "Other",
+        "IdentifierName": "SomeIdentifierVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongName"
+      },
+      {
+        "Identifier": "CRIDValue",
+        "IdentifierType": "CRID"
+      }
+    ]
+  },
+  "PGEVersionClass": {
+    "PGEName": "A PGE Name",
+    "PGEVersion": "6.0.27"
+  },
+  "TemporalExtent": {
+    "RangeDateTime": {
+      "BeginningDateTime": "2018-07-17T00:00:00.000Z",
+      "EndingDateTime": "2018-07-17T23:59:59.999Z"
+    }
+  },
+  "SpatialExtent": {
+    "GranuleLocalities": [
+      "GranuleLocality1",
+      "GranuleLocality2"
+    ],
+    "HorizontalSpatialDomain": {
+      "ZoneIdentifier": "ZoneIdentifier 1",
+      "Geometry": {
+        "Points": [
+          {
+            "Longitude": -77,
+            "Latitude": 88
+          },
+          {
+            "Longitude": 10,
+            "Latitude": 10
+          }
+        ],
+        "BoundingRectangles": [
+          {
+            "WestBoundingCoordinate": -180,
+            "NorthBoundingCoordinate": 85.04450225830078,
+            "EastBoundingCoordinate": 180,
+            "SouthBoundingCoordinate": -85.04450225830078
+          }
+        ],
+        "GPolygons": [
+          {
+            "Boundary": {
+              "Points": [
+                {
+                  "Longitude": -10,
+                  "Latitude": -10
+                },
+                {
+                  "Longitude": 10,
+                  "Latitude": -10
+                },
+                {
+                  "Longitude": 10,
+                  "Latitude": 10
+                },
+                {
+                  "Longitude": -10,
+                  "Latitude": 10
+                },
+                {
+                  "Longitude": -10,
+                  "Latitude": -10
+                }
+              ]
+            },
+            "ExclusiveZone": {
+              "Boundaries": [
+                {
+                  "Points": [
+                    {
+                      "Longitude": -5,
+                      "Latitude": -5
+                    },
+                    {
+                      "Longitude": -1,
+                      "Latitude": -5
+                    },
+                    {
+                      "Longitude": -1,
+                      "Latitude": -1
+                    },
+                    {
+                      "Longitude": -5,
+                      "Latitude": -1
+                    },
+                    {
+                      "Longitude": -5,
+                      "Latitude": -5
+                    }
+                  ]
+                },
+                {
+                  "Points": [
+                    {
+                      "Longitude": 0,
+                      "Latitude": 0
+                    },
+                    {
+                      "Longitude": 5,
+                      "Latitude": 0
+                    },
+                    {
+                      "Longitude": 5,
+                      "Latitude": 5
+                    },
+                    {
+                      "Longitude": 0,
+                      "Latitude": 5
+                    },
+                    {
+                      "Longitude": 0,
+                      "Latitude": 0
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "Lines": [
+          {
+            "Points": [
+              {
+                "Longitude": -100,
+                "Latitude": -70
+              },
+              {
+                "Longitude": -88,
+                "Latitude": -66
+              }
+            ]
+          }
+        ]
+      },
+      "Track": {
+        "Cycle": 1,
+        "Passes": [
+          {
+            "Pass": 1,
+            "Tiles": [
+              "1L",
+              "1R",
+              "2F"
+            ]
+          },
+          {
+            "Pass": 2,
+            "Tiles": [
+              "3L",
+              "3R",
+              "4F"
+            ]
+          }
+        ]
+      }
+    },
+    "VerticalSpatialDomains": [
+      {
+        "Type": "Atmosphere Layer",
+        "Value": "Atmosphere Profile"
+      },
+      {
+        "Type": "Pressure",
+        "Value": "100",
+        "Unit": "HectoPascals"
+      },
+      {
+        "Type": "Altitude",
+        "MinimumValue": "10",
+        "MaximumValue": "100",
+        "Unit": "Meters"
+      }
+    ]
+  },
+  "OrbitCalculatedSpatialDomains": [
+    {
+      "OrbitalModelName": "OrbitalModelName",
+      "BeginOrbitNumber": 99263,
+      "EndOrbitNumber": 99263,
+      "EquatorCrossingLongitude": 88.92,
+      "EquatorCrossingDateTime": "2018-08-16T16:22:21.000Z"
+    }
+  ],
+  "MeasuredParameters": [
+    {
+      "ParameterName": "Parameter Name",
+      "QAStats": {
+        "QAPercentMissingData": 10,
+        "QAPercentOutOfBoundsData": 20,
+        "QAPercentInterpolatedData": 30,
+        "QAPercentCloudCover": 40
+      },
+      "QAFlags": {
+        "AutomaticQualityFlag": "Passed",
+        "AutomaticQualityFlagExplanation": "Automatic Quality Flag Explanation",
+        "OperationalQualityFlag": "Passed",
+        "OperationalQualityFlagExplanation": "Operational Quality Flag Explanation",
+        "ScienceQualityFlag": "Passed",
+        "ScienceQualityFlagExplanation": "Science Quality Flag Explanation"
+      }
+    }
+  ],
+  "Platforms": [
+    {
+      "ShortName": "Aqua",
+      "Instruments": [
+        {
+          "ShortName": "AMSR-E",
+          "Characteristics": [
+            {
+              "Name": "InstrumentCaracteristicName1",
+              "Value": "150"
+            },
+            {
+              "Name": "InstrumentCaracteristicName2",
+              "Value": "22F"
+            }
+          ],
+          "ComposedOf": [
+            {
+              "ShortName": "AMSR-E_ChildInstrument",
+              "Characteristics": [
+                {
+                  "Name": "ChildInstrumentCharacteristicName3",
+                  "Value": "250"
+                }
+              ],
+              "OperationalModes": [
+                "Mode3"
+              ]
+            }
+          ],
+          "OperationalModes": [
+            "Mode1",
+            "Mode2"
+          ]
+        }
+      ]
+    }
+  ],
+  "Projects": [
+    {
+      "ShortName": "Project1"
+    },
+    {
+      "ShortName": "Project2"
+    }
+  ],
+  "AdditionalAttributes": [
+    {
+      "Name": "AdditionalAttribute1 Name1",
+      "Values": [
+        "AdditionalAttribute1 Value3",
+        "AdditionalAttribute1 Value4"
+      ]
+    },
+    {
+      "Name": "EVI1KM16DAYQCLASSPERCENTAGE",
+      "Values": [
+        "EVI1KM16DAYQCLASSPERCENTAGE Value5",
+        "EVI1KM16DAYQCLASSPERCENTAGE Value6"
+      ]
+    },
+    {
+      "Name": "QAFRACTIONGOODQUALITY",
+      "Values": [
+        "QAFRACTIONGOODQUALITY Value7",
+        "QAFRACTIONGOODQUALITY Value8"
+      ]
+    },
+    {
+      "Name": "QAFRACTIONNOTPRODUCEDCLOUD",
+      "Values": [
+        "QAFRACTIONNOTPRODUCEDCLOUD Value9",
+        "QAFRACTIONNOTPRODUCEDCLOUD Value10"
+      ]
+    }
+  ],
+  "InputGranules": [
+    "InputGranule1",
+    "InputGranule2"
+  ],
+  "TilingIdentificationSystem": {
+    "TilingIdentificationSystemName": "MODIS Tile EASE",
+    "Coordinate1": {
+      "MinimumValue": -100,
+      "MaximumValue": -50
+    },
+    "Coordinate2": {
+      "MinimumValue": 50,
+      "MaximumValue": 100
+    }
+  },
+  "CloudCover": 60,
+  "RelatedUrls": [
+    {
+      "URL": "https://daac.ornl.gov/daacdata/islscp_ii/vegetation/erbe_albedo_monthly_xdeg/data/erbe_albedo_1deg_1986.zip",
+      "Type": "GET DATA",
+      "Description": "This link provides direct download access to the granule.",
+      "Format": "ZIP",
+      "MimeType": "application/zip",
+      "Size": 395.673,
+      "SizeUnit": "KB"
+    },
+    {
+      "URL": "https://opendap.uat.earthdata.nasa.gov/erbe_albedo_monthly_xdeg",
+      "Type": "VIEW RELATED INFORMATION",
+      "Subtype": "OPENDAP DATA",
+      "Description": "ORNL DAAC Data Set OPENDATA Hyrax-in-the-cloud example"
+    },
+    {
+      "URL": "https://daac.ornl.gov/ISLSCP_II/guides/erbe_albedo_monthly_xdeg.html",
+      "Type": "VIEW RELATED INFORMATION",
+      "Subtype": "USER'S GUIDE",
+      "Description": "ORNL DAAC Data Set Documentation",
+      "Format": "HTML",
+      "MimeType": "text/html"
+    },
+    {
+      "URL": "https://webmap.ornl.gov/sdat/pimg/957_1.png",
+      "Type": "GET RELATED VISUALIZATION",
+      "Description": "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990",
+      "Format": "PNG",
+      "MimeType": "image/png",
+      "Size": 10,
+      "SizeUnit": "MB"
+    }
+  ],
+  "NativeProjectionNames": [
+    "MODIS Sinusoidal System",
+    "Sinusoidal"
+  ],
+  "GridMappingNames": [
+    "Sinusoidal",
+    "Lambert Azimuthal Equal-Area"
+  ],
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6",
+    "Name": "UMM-G",
+    "Version": "1.6"
+  }
+}
