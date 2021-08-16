@@ -6,7 +6,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
 
 ### API Conventions
 
-* [HTTP Headers](#headers) 
+* [HTTP Headers](#headers)
 * [Responses](#responses)
 * [CMR Ids](#cmr-ids)
 
@@ -99,6 +99,12 @@ The token can alternatively be specified using the `Authorization: Bearer` heade
 #### <a name="accept-header"></a> Accept Header
 
 The `Accept` header specifies the format of the response message and defaults to XML for the normal Ingest APIs. `application/json` can be specified if the preferred responses is JSON.
+
+#### <a name="cmr-pretty-header"></a> Cmr-Pretty Header
+
+The `Cmr-Pretty` Header set to `true` or using the alias `&pretty=true` URL parameter will tell CMR to format the output with new lines and spaces for better readability by humans.
+
+    curl -H "Cmr-Pretty: true" ...
 
 #### <a name="cmr-pretty-header"></a> Cmr-Pretty Header
 
