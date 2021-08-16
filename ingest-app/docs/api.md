@@ -1293,11 +1293,11 @@ curl -i -XPOST \
   ]
 }'
 ```
-In the above request, `Example_Granule_UR_1` recieves updates to two elements: The FilePackage `ZippedFilePackage` has SizeInBytes, Size/SizeUnit, and Format updated, while File `GranuleFileName1` has MimeType and Checksum updated. 
+In the above request, `Example_Granule_UR_1` recieves updates to two elements: The FilePackage `ZippedFilePackage` has SizeInBytes, Size/SizeUnit, and Format updated, while File `GranuleFileName1` has MimeType and Checksum updated.
 
 Note that specifying whether an element is a File or FilePackage is unecessary. Providing the `name` for an element is sufficient to locate and update it.
 
-`Example_Granule_UR_2` also receives updates on the contained `GranuleZipFile`, on its Size/SizeUnit and SizeInBytes fields. This also displays a special use special case for Size-related updates: When a file update is requested with Size `0`, then the Size and SizeUnit fields will be removed from the resulting file. The same applies for SizeInBytes, which will be removed on its own if a value of `0` is supplied.
+`Example_Granule_UR_2` also receives updates on the contained `GranuleZipFile`, on its Size/SizeUnit and SizeInBytes fields. This also displays a special use case for Size-related updates: When a file update is requested with Size `0`, then the Size and SizeUnit fields will be removed from the resulting file. The same applies for SizeInBytes, which will be removed on its own if a value of `0` is supplied.
 
 There are several scenarios which will cause a granule update to fail:
  - Files with duplicate names are specified in the request patch file
