@@ -815,6 +815,273 @@
                    :status "UPDATED"}]
                  granule-statuses)))))))
 
+(deftest update-additional-file
+  "test updating files and filepackages with real granule files that are already in CMR code base"
+  (testing "UMM-G granule"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample2.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          {:keys [concept-id revision-id]} granule
+          bulk-update {:operation "UPDATE_FIELD"
+                       :update-field "AdditionalFile"
+                       :updates [{:GranuleUR "Unique_Granule_UR_v1.6"
+                                  :Files [{:Name "GranuleFileName1"
+                                           :SizeInBytes 20000
+                                           :Size 20}
+                                          {:Name "GranuleZipFile2"
+                                           :Format "ASCII"}
+                                          {:Name "SupportedGranuleFileNotInPackage"
+                                           :Checksum {:Value "123foobar"
+                                                      :Algorithm "SHA-256"}}]}]}
+
+
+          {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                 "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 200 status))
+      (is (some? task-id))
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+            {:keys [task-status status-message granule-statuses]} status-response]
+        (is (= "COMPLETE" task-status))
+        (is (= "All granule updates completed successfully." status-message))
+        (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                 :status "UPDATED"}]
+               granule-statuses)))
+      ;; verify the granule metadata is updated as expected
+      (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
+            updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))
+            expected-metadata (string/replace
+                               (slurp (io/resource "additional-file-results/GranEx2UpdateSize.json"))
+                               #"\s+" "")]
+
+        (is (string/includes? updated-metadata expected-metadata)))))
+
+  (testing "Failure cases"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample2.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          {:keys [concept-id revision-id]} granule]
+      (testing "Add size with no sizeunit"
+        (let [bulk-update {:operation "UPDATE_FIELD"
+                           :update-field "AdditionalFile"
+                           :updates [{:GranuleUR "Unique_Granule_UR_v1.6"
+                                      :Files [{:Name "GranuleFileName3"
+                                               :Size 20}]}]}
+
+              {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                     "PROV1" bulk-update bulk-update-options)]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          ;; verify the granule status is FAILED
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+                {:keys [task-status status-message granule-statuses]} status-response]
+            (is (= "COMPLETE" task-status))
+            (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                     :status "FAILED"
+                     :status-message "Can't update granule: Size value supplied with no SizeUnit present for File or FilePackage with name [GranuleFileName3]"}]
+                   granule-statuses))
+            ;;verify metadata is not altered
+            (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))
+
+      (testing "Add sizeunit with no size"
+        (let [bulk-update {:operation "UPDATE_FIELD"
+                           :update-field "AdditionalFile"
+                           :updates [{:GranuleUR "Unique_Granule_UR_v1.6"
+                                      :Files [{:Name "GranuleFileName3"
+                                               :SizeUnit "KB"}]}]}
+
+              {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                     "PROV1" bulk-update bulk-update-options)]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          ;; verify the granule status is FAILED
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+                {:keys [task-status status-message granule-statuses]} status-response]
+            (is (= "COMPLETE" task-status))
+            (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                     :status "FAILED"
+                     :status-message "Can't update granule: SizeUnit value supplied with no Size present for File or FilePackage with name [GranuleFileName3]"}]
+                   granule-statuses))
+            ;;verify metadata is not altered
+            (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))
+
+      (testing "Update checksum algorithm with no value"
+        (let [bulk-update {:operation "UPDATE_FIELD"
+                           :update-field "AdditionalFile"
+                           :updates [{:GranuleUR "Unique_Granule_UR_v1.6"
+                                      :Files [{:Name "GranuleZipFile2"
+                                               :Checksum {:Algorithm "SHA-256"}}]}]}
+
+              {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                     "PROV1" bulk-update bulk-update-options)]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          ;; verify the granule status is FAILED
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+                {:keys [task-status status-message granule-statuses]} status-response]
+            (is (= "COMPLETE" task-status))
+            (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                     :status "FAILED"
+                     :status-message "Can't update granule: checksum algorithm update requested without new checksum value for file with name [GranuleZipFile2]"}]
+                   granule-statuses))
+            ;;verify metadata is not altered
+            (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))
+
+      (testing "Update checksum value with no algorithm"
+        (let [bulk-update {:operation "UPDATE_FIELD"
+                           :update-field "AdditionalFile"
+                           :updates [{:GranuleUR "Unique_Granule_UR_v1.6"
+                                      :Files [{:Name "GranuleFileName4"
+                                               :Checksum {:Value "foobar123"}}]}]}
+
+              {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                     "PROV1" bulk-update bulk-update-options)]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          ;; verify the granule status is FAILED
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+                {:keys [task-status status-message granule-statuses]} status-response]
+            (is (= "COMPLETE" task-status))
+            (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                     :status "FAILED"
+                     :status-message "Can't update granule: checksum value supplied with no algorithm present for file with name [GranuleFileName4]"}]
+                   granule-statuses))
+            ;;verify metadata is not altered
+            (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))
+
+      (testing "Attempt to update with nonexistent input file"
+        (let [bulk-update {:operation "UPDATE_FIELD"
+                           :update-field "AdditionalFile"
+                           :updates [{:GranuleUR "Unique_Granule_UR_v1.6"
+                                      :Files [{:Name "GranuleZipFile4"
+                                               :Checksum {:Value "foobar123"}}]}]}
+
+              {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                     "PROV1" bulk-update bulk-update-options)]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          ;; verify the granule status is FAILED
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+                {:keys [task-status status-message granule-statuses]} status-response]
+            (is (= "COMPLETE" task-status))
+            (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                     :status "FAILED"
+                     :status-message "Update failed - please only specify Files or FilePackages contained in the existing granule metadata"}]
+                   granule-statuses))
+            ;;verify metadata is not altered
+            (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))
+
+     (testing "Attempt to update a granule with duplicate files"
+       (let [granule2 (data-core/ingest-concept-with-metadata-file
+                        "umm-g-samples/GranuleExampleWithDuplicates.json"
+                        {:provider-id "PROV1"
+                         :concept-type :granule
+                         :native-id "test-gran2"
+                         :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+             {:keys [concept-id revision-id]} granule2
+             bulk-update {:operation "UPDATE_FIELD"
+                          :update-field "AdditionalFile"
+                          :updates [{:GranuleUR "Gran_With_Dupes"
+                                     :Files [{:Name "GranuleFileName4"
+                                              :Format "ASCII"}
+                                             {:Name "GranuleFileName4"
+                                                      :Format "BINARY"}]}]}
+
+             {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                    "PROV1" bulk-update bulk-update-options)]
+         (index/wait-until-indexed)
+         (ingest/update-granule-bulk-update-task-statuses)
+
+         ;; verify the granule status is FAILED
+         (is (= 200 status))
+         (is (some? task-id))
+         (let [status-req-options {:query-params {:show_granules "true"}}
+               status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+               {:keys [task-status status-message granule-statuses]} status-response]
+           (is (= "COMPLETE" task-status))
+           (is (= [{:granule-ur "Gran_With_Dupes"
+                    :status "FAILED"
+                    :status-message "Update failed - this operation is not available for granules with duplicate FilePackage/File names in the granule metadata."}]
+                  granule-statuses))))
+           ;;verify metadata is not altered
+           ;(is (not (:metadata (mdb/get-concept concept-id (inc revision-id)))))))))))
+
+      (testing "Validation failures to non-UMM enum values"
+        (let [bulk-update {:operation "UPDATE_FIELD"
+                           :update-field "AdditionalFile"
+                           :updates [{:GranuleUR "Unique_Granule_UR_v1.6"
+                                      :Files [{:Name "GranuleZipFile2"
+                                               :Format "fakeformat"
+                                               :Checksum {:Value "12345" :Algorithm "SHA-123"}}
+                                              {:Name "GranuleFileName2"
+                                               :MimeType "application/bogus"}]}]}
+
+
+              {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                     "PROV1" bulk-update bulk-update-options)]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          ;; verify the granule status is FAILED
+          (is (= 200 status))
+          (is (some? task-id))
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+                {:keys [task-status status-message granule-statuses]} status-response]
+            (is (= "COMPLETE" task-status))
+            (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                     :status "FAILED"
+                     :status-message (str "#/DataGranule/ArchiveAndDistributionInformation/2/Checksum/Algorithm: SHA-123 is not a valid enum value; "
+                                          "#/DataGranule/ArchiveAndDistributionInformation/2/Format: fakeformat is not a valid enum value; "
+                                          "#/DataGranule/ArchiveAndDistributionInformation/0/Files/1/MimeType: application/bogus is not a valid enum value")}]
+                   granule-statuses))
+            ;;verify metadata is not altered
+            (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))))))
+
 (deftest status-verbosity-test
   (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
         coll1 (data-core/ingest-umm-spec-collection
@@ -907,3 +1174,72 @@
                  granule-statuses))
           (is (string/includes? request-json-body "{\"name\":\"add S3 links 1\",\"operation\":\"UPDATE_FIELD\""))
           (is (= "Complete." progress))))))))
+
+(deftest update-format-test
+  "test updating files and filepackages with real granule files that are already in CMR code base"
+  (testing "Give new :updates format with update-field that isn't AdditionalFile"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample2.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          {:keys [concept-id revision-id]} granule
+          bulk-update {:operation "UPDATE_FIELD"
+                       :update-field "S3Link"
+                       :updates [{:GranuleUR "Unique_Granule_UR_v1.6"
+                                  :Files [{:Name "GranuleFileName1"
+                                           :SizeInBytes 20000
+                                           :Size 20}]}]}
+
+
+
+          {:keys [status task-id errors] :as response} (ingest/bulk-update-granules
+                                                        "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 400 status))
+      (is (not (some? task-id)))
+      (is (= "Wrong update format specified for granule UR [Unique_Granule_UR_v1.6]. Please use the correct update format for updates with update-field [S3Link]"
+             (first errors)))))
+
+  (testing "Give new :updates format with update-field that isn't AdditionalFile"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample2.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          {:keys [concept-id revision-id]} granule
+          bulk-update {:operation "UPDATE_FIELD"
+                       :update-field "AdditionalFile"
+                       :updates [["GranuleUR1" "s3://foo/bar"]]}
+
+
+
+          {:keys [status task-id errors] :as response} (ingest/bulk-update-granules
+                                                        "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 400 status))
+      (is (not (some? task-id)))
+      (is (= "Wrong update format specified for granule UR [GranuleUR1]. Please use the correct update format for updates with update-field [AdditionalFile]"
+             (first errors))))))
