@@ -12,7 +12,8 @@
       "enum": [
         "OPeNDAPLink",
         "S3Link",
-        "Checksum"
+        "Checksum",
+        "Size"
       ]
     },
     "UpdateTupleType": {
