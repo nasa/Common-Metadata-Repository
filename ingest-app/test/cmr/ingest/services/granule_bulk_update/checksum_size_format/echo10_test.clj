@@ -238,7 +238,7 @@
       update-checksum-element-middle-result)))
 
 (def ^:private gran-1
-  "ECHO10 granule for testing updating granule sizes in MB and bytes.."
+  "ECHO10 granule for testing updating granule sizes in MB and bytes"
   "<Granule>
     <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
     <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
@@ -282,7 +282,7 @@
 </Granule>\n")
 
 (def ^:private gran-1-update-bytes
-  "Result ECHO10 granule after updating granule sizes in MB and bytes.
+  "Result ECHO10 granule after updating granule sizes in bytes.
    Do not format the following as whitespace matters in the string comparison in the test."
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
@@ -305,7 +305,7 @@
 </Granule>\n")
 
 (def ^:private gran-1-update-mb
-  "Result ECHO10 granule after updating granule sizes in MB and bytes.
+  "Result ECHO10 granule after updating granule sizes in MB.
    Do not format the following as whitespace matters in the string comparison in the test."
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
@@ -328,7 +328,7 @@
 </Granule>\n")
 
 (def ^:private gran-2
-  "ECHO10 granule for testing updating granule sizes in MB and bytes.."
+  "ECHO10 granule for testing updating granule sizes in MB and bytes"
   "<Granule>
     <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
     <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
@@ -348,7 +348,7 @@
   </Granule>")
 
 (def ^:private gran-2-update-bytes
-  "ECHO10 granule for testing updating granule sizes in MB and bytes.."
+  "ECHO10 granule for testing updating granule sizes in bytes"
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
@@ -369,7 +369,7 @@
 </Granule>\n")
 
 (def ^:private gran-2-update-and-add
-  "ECHO10 granule for testing updating granule sizes in MB and bytes.."
+  "ECHO10 granule for testing updating granule sizes in MB and bytes"
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
@@ -391,7 +391,7 @@
 </Granule>\n")
 
 (def ^:private gran-3
-  "ECHO10 granule for testing updating granule sizes in MB and bytes.."
+  "ECHO10 granule for testing updating granule sizes in MB and bytes"
   "<Granule>
     <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
     <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
@@ -411,7 +411,7 @@
   </Granule>")
 
 (def ^:private gran-3-update-mb
-  "ECHO10 granule for testing updating granule sizes in MB and bytes.."
+  "ECHO10 granule for testing updating granule sizes in MB"
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
@@ -432,7 +432,7 @@
 </Granule>\n")
 
 (def ^:private gran-3-update-both
-  "ECHO10 granule for testing updating granule sizes in MB and bytes.."
+  "ECHO10 granule for testing updating granule sizes in bytes"
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
@@ -454,7 +454,7 @@
 </Granule>\n")
 
 (def ^:private gran-4
-  "ECHO10 granule for testing updating granule sizes in MB and bytes.."
+  "ECHO10 granule for testing updating granule sizes in MB and byte."
   "<Granule>
     <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
     <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
@@ -473,7 +473,7 @@
   </Granule>")
 
 (def ^:private gran-4-add-mb
-  "ECHO10 granule for testing updating granule sizes in MB and bytes.."
+  "ECHO10 granule for testing updating granule sizes in MB"
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
@@ -494,7 +494,7 @@
 </Granule>\n")
 
 (def ^:private gran-4-add-bytes
-  "ECHO10 granule for testing updating granule sizes in MB and bytes.."
+  "ECHO10 granule for testing updating granule sizes in bytes"
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
@@ -515,7 +515,7 @@
 </Granule>\n")
 
 (def ^:private gran-4-add-both
-  "ECHO10 granule for testing updating granule sizes in MB and bytes.."
+  "ECHO10 granule for testing updating granule sizes in MB and bytes"
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>

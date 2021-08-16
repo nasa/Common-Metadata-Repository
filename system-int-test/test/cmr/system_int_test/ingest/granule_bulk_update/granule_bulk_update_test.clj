@@ -889,7 +889,7 @@
         (testing "verify the metadata was not altered"
           (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))
 
-    (testing "ECHO10 granule failures for "
+    (testing "ECHO10 granule failures for bad input"
       (let [bulk-update {:operation "UPDATE_FIELD"
                          :update-field "Size"
                          :updates [["7504BothSizeFields"

@@ -31,7 +31,7 @@
    ["Can't update Size: no parent <DataGranule> element"]))
 
 (defn- get-sizes
-  "gets sizes"
+  "Returns a map containing the MB value and the byte value for a granule's input"
   [size]
   (let [sizes (map string/trim (string/split size #","))
         mb-vals (remove nil? (map #(re-find #"^[0-9]+\.[0-9]+$" %) sizes))
@@ -42,7 +42,7 @@
               (< 1 (count mb-vals)) ;;too many MB values
               (< 1 (count byte-vals)) ;;too many byte values
               (not= (+ (count byte-vals) (count mb-vals))
-                    (count sizes)) ;;extraneous values (don't match int or double) specified      
+                    (count sizes)) ;;extraneous values (don't match int or double) specified
               (not (or (seq mb-vals) (seq byte-vals)))) ;;no valid values specified
       (errors/throw-service-errors :invalid-data
        [(str "Can't update Size: invalid data specified. Please include at most one value for "
@@ -50,27 +50,27 @@
     size-map))
 
 (defn- size-in-mb-element
-  "Returns"
+  "Returns an XML element for size in MB"
   [val]
   (xml/element :SizeMBDataGranule {} val))
 
 (defn- update-size-in-mb
-  "Take"
+  "Takes a loc of the leftmost child loc of the DataGranule element, adds/updates MB value before returning root"
   [start-loc sizes]
   (let [{:keys [SizeMBDataGranule]} sizes]
     (loop [loc start-loc done (if SizeMBDataGranule false true)]
       (if done
         (zip/root loc)
         (cond
-          ;;
+          ;;Already exists, replace
           (= :SizeMBDataGranule (-> loc zip/node :tag))
           (recur (zip/replace loc (size-in-mb-element SizeMBDataGranule)) true)
 
-          ;;
+          ;;adding in new element, insert to left
           (some tags-after-size-in-mb [(-> loc zip/node :tag)])
           (recur (zip/insert-left loc (size-in-mb-element SizeMBDataGranule)) true)
 
-          ;;this should be possible, as there are required tags after size elements
+          ;;this shouldn't be possible, as there are required tags after size elements
           (nil? loc)
           (recur nil true)
 
@@ -79,12 +79,13 @@
           (recur (zip/right loc) false))))))
 
 (defn- size-in-bytes-element
-  "Returns "
+  "Returns an XML element for size in bytes"
   [val]
   (xml/element :DataGranuleSizeInBytes {} val))
 
 (defn- update-size-in-bytes
-  "Takes "
+  "Takes a loc of the leftmost child loc of the DataGranule element, adds/updated size in byte-vals
+   before calling (update-size-in-mb..) which performs the same operation on size in MB and then returns the root"
   [start-loc sizes]
   (let [{:keys [DataGranuleSizeInBytes]} sizes]
     (println DataGranuleSizeInBytes)
@@ -92,15 +93,15 @@
       (if done
         (update-size-in-mb (zip/leftmost loc) sizes)
         (cond
-          ;;
+          ;;Already exists, replace
           (= :DataGranuleSizeInBytes (-> loc zip/node :tag))
           (recur (zip/replace loc (size-in-bytes-element DataGranuleSizeInBytes)) true)
 
-          ;;
+          ;;adding in new element, insert to left
           (some tags-after-size-in-bytes [(-> loc zip/node :tag)])
           (recur (zip/insert-left loc (size-in-bytes-element DataGranuleSizeInBytes)) true)
 
-          ;;this should be possible, as there are required tags after size elements
+          ;;this shouldn't be possible, as there are required tags after size elements
           (nil? loc)
           (recur nil true)
 
@@ -109,7 +110,7 @@
           (recur (zip/right loc) false))))))
 
 (defn- update-data-granule-element
-  "Take a parsed granule xml, update size"
+  "Take a parsed granule xml, locate the DataGranule element, and updates sizes within"
   [parsed sizes]
   (let [zipper (zip/xml-zip parsed)
         start-loc (-> zipper zip/down)]
@@ -129,14 +130,14 @@
           (recur right-loc))))))
 
 (defn- update-size-metadata
-  "Takes the granule ECHO10 xml"
+  "Takes the granule ECHO10 xml, parses the input values, and returns the updated xml"
   [gran-xml size]
   (let [size-map (get-sizes size)
         parsed (xml/parse-str gran-xml)]
     (xml/indent-str (update-data-granule-element parsed size-map))))
 
 (defn update-size
-  "Update the ECHO10 granule metadata"
+  "Updates the ECHO10 granule metadata"
   [concept size]
   (let [updated-metadata (update-size-metadata (:metadata concept) size)]
     (assoc concept :metadata updated-metadata)))
