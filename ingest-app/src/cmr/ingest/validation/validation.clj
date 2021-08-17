@@ -129,7 +129,7 @@
      (datacenter-contact-url-validator kms-index :ContactGroups)
      (datacenter-contact-url-validator kms-index :ContactPersons)])})
 
-(defn minimum-keyword-validations
+(defn- minimum-keyword-validations
   "The list of keywords which are validated if the optional validation is not
    requested. This function is in contrast to expanded-keyword-validations which
    represent the list of validations to use when reqesting all validations. Over
@@ -141,7 +141,7 @@
     (-> (related-url-validator kms-index)
         (merge (datacenter-url-validators kms-index)))))
 
-(defn expanded-keyword-validations
+(defn- expanded-keyword-validations
   "Creates validations that check various collection fields to see if they match KMS keywords."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
@@ -171,10 +171,10 @@
         kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}
      :RelatedUrls
       [(match-related-url-kms-keywords-validations kms-index)
-        (datacenter-url-validators kms-index)
-        (v/every {:GetData {:Format (match-getdata-format-kms-keywords-validation
-                                     kms-index
-                                     msg/getdata-format-not-matches-kms-keywords)}})]}))
+       (datacenter-url-validators kms-index)
+       (v/every {:GetData {:Format (match-getdata-format-kms-keywords-validation
+                                    kms-index
+                                    msg/getdata-format-not-matches-kms-keywords)}})]}))
 
 (defn- pad-zeros-to-version
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
