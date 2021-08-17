@@ -52,7 +52,7 @@
                                                        "Echo-Token" (transmit-config/echo-system-token)}
                                              :form-params {:id token}})]
 
-      (info (format "get_token_info call on token [%s] returned with status [%s]"
+      (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
                     (common-util/scrub-token token) status))
       (case (int status)
         200 (let [expires (some-> (get-in parsed [:token_info :expires])
@@ -62,7 +62,7 @@
                 (get-in parsed [:token_info :user_name])
                 (errors/throw-service-error
                   :unauthorized
-                  (format "Token [%s] has expired. Note the token value has been partially redacted." 
+                  (format "Token [%s] has expired. Note the token value has been partially redacted."
                           (common-util/scrub-token token)))))
         401 (errors/throw-service-errors
               :unauthorized
