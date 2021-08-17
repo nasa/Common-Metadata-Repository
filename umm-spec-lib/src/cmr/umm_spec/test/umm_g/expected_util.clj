@@ -10,6 +10,7 @@
    [cmr.spatial.polygon :as poly]
    [cmr.umm.umm-spatial :as umm-s]
    [cmr.umm-spec.umm-g.measured-parameters :as measured-parameters]
+   [cmr.umm-spec.util :as umm-spec-util]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-lib-g]))
 
@@ -62,6 +63,9 @@
                           updated-umm))
       (as-> updated-umm (if (:data-granule updated-umm)
                           (update-in updated-umm [:data-granule :day-night] #(if % % "UNSPECIFIED"))
+                          updated-umm))
+      (as-> updated-umm (if (:project-refs updated-umm)
+                          (update updated-umm :project-refs #(conj % umm-spec-util/not-provided))
                           updated-umm))
       umm-lib-g/map->UmmGranule))
 
@@ -118,7 +122,7 @@
                                             :value "250"})]})]
                          :operation-modes ["Mode1" "Mode2"]})]})]
     :cloud-cover 60.0
-    :project-refs ["Campaign1" "Campaign2" "Campaign3"]
+    :project-refs ["Project1" "Project2" "Campaign1" "Campaign2" "Campaign3"]
     :two-d-coordinate-system (umm-lib-g/map->TwoDCoordinateSystem
                               {:name "MODIS Tile EASE"
                                :start-coordinate-1 -100.0

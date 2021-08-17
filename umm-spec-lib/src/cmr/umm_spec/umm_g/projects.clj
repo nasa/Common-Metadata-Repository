@@ -5,9 +5,11 @@
    [cmr.umm-spec.util :as util]))
 
 (defn umm-g-projects->ProjectRefs
-  "Returns the umm-lib granule model ProjectRefs from the given UMM-G Projects."
+  "Returns the umm-lib granule model ProjectRefs from the given UMM-G Projects. Until
+   projects and campaings get sorted out they need to be put together."
   [projects]
-  (seq (distinct (mapcat :Campaigns projects))))
+  (seq (distinct (concat (map :ShortName projects)
+                         (mapcat :Campaigns projects)))))
 
 (defn ProjectRefs->umm-g-projects
   "Returns the UMM-G Projects from the given umm-lib granule model ProjectRefs."
