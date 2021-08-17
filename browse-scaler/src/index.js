@@ -3,8 +3,8 @@ const { getCollectionLevelBrowseImage, getGranuleLevelBrowseImage } = require('.
 const { cacheImage, getImageFromCache } = require('./cache');
 const { withTimeout, slurpImageIntoBuffer } = require('./util');
 
-const timeoutInterval = process.env.EXTERNAL_REQUEST_TIMEOUT || 1000;
-console.log(`Timeout interval is: ${timeoutInterval}`);
+const config = require ('./config');
+
 /**
  * buildResponse: assembles response body to avoid code duplication
  * @param {Buffer<Image>} image
@@ -32,20 +32,19 @@ const buildResponse = image => {
  */
 const getImageUrlFromConcept = async (conceptId, conceptType) => {
   console.log(`Concept id: ${conceptId}`);
-  if (conceptId === null || conceptId === undefined) {
+
+  if (!conceptId) {
     return null;
   }
 
   if (conceptType === 'granules') {
     return getGranuleLevelBrowseImage(conceptId);
-  }
-
-  if (conceptType === 'datasets') {
+  } else if (conceptType === 'datasets') {
     return getCollectionLevelBrowseImage(conceptId);
   }
 
-  console.log(`Unable to find browse imagery for concept: ${conceptId}`);
-  return null;
+  console.error (`Unable to fetch imagery for concept-type: ${conceptType} on concept-id ${conceptId}`)
+  return;
 };
 
 /**
@@ -68,12 +67,12 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width) =
   // If given an image url, fetch the image and resize. If no valid image
   // exists, return the not found response
   const imageUrl = await withTimeout(
-    timeoutInterval,
+    config.TIMEOUT_INTERVAL,
     getImageUrlFromConcept(conceptId, conceptType)
   );
   // If the url is not `null`, `undefined`, or an empty string try to grab the image and resize it
   if (imageUrl) {
-    const imageBuffer = await withTimeout(timeoutInterval, slurpImageIntoBuffer(imageUrl));
+    const imageBuffer = await withTimeout(config.TIMEOUT_INTERVAL, slurpImageIntoBuffer(imageUrl));
     if (imageBuffer) {
       const thumbnail = await resizeImage(imageBuffer, height, width);
       if (thumbnail) {
@@ -104,8 +103,8 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width) =
  */
 const parseArguments = event => {
   const pathParams = event.path
-    .split('/')
-    .filter(param => param !== 'browse-scaler' && param !== 'browse_images' && param !== '');
+      .split('/')
+      .filter(param => param !== 'browse-scaler' && param !== 'browse_images' && param !== '');
 
   const args = {
     conceptType: pathParams[0],
@@ -114,11 +113,11 @@ const parseArguments = event => {
     w: event.queryStringParameters.w
   };
 
-  if (args.conceptId === null) {
+  if (!args.conceptId) {
     throw new Error('Please supply a concept id');
   }
 
-  if (args.h === null && args.w === null) {
+  if (!args.h && !args.w) {
     throw new Error('Please supply at least a height or a width');
   }
 

@@ -15,7 +15,7 @@ const deleteActionType = 'concept-delete'
 
 const indexCmrCollections = async (event) => {
   // Prevent creating more tokens than necessary
-  if (!token) {
+  if (token === undefined) {
     token = await getEchoToken()
   }
 

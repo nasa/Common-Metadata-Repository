@@ -16,7 +16,7 @@ const deleteLinkedVertices = async (conceptId, gremlinConnection, vertexLabel, e
   try {
     await gremlinConnection
       .V()
-      .has('dataset', 'concept-id', conceptId)
+      .has('collection', 'id', conceptId)
       .outE(edgeName)
       .inV()
       .where(gremlinStatistics.inE(edgeName).count().is(lte(1)))
@@ -60,7 +60,7 @@ export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
   try {
     await gremlinConnection
       .V()
-      .has('dataset', 'concept-id', conceptId)
+      .has('collection', 'id', conceptId)
       .drop()
       .next()
   } catch (error) {

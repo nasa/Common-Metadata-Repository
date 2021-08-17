@@ -3151,6 +3151,16 @@ __Example Response__
 }
 ```
 
+Note: Search parameter filtering are not supported - requests are rejected when there exist parameters other than pretty=true.
+
+    curl -i "%CMR-ENDPOINT%/keywords/instruments?platform=TRIMM&pretty=true"
+
+```
+{
+  "errors" : [ "Search parameter filters are not supported: [{:platform \"TRIMM\"}]" ]
+}
+```
+
 ### <a name="deleted-collections"></a> Find collections that have been deleted after a given date
 
 To support metadata harvesting, a harvesting client can search CMR for collections that are deleted after a given date. The only search parameter supported is `revision_date` and its format is slightly different from the `revision_date` parameter in regular collection search in that only one revision date can be provided and it can only be a starting date, not a date range. The only supported result format is xml references. The response is the references to the highest non-tombstone collection revisions of the collections that are deleted. e.g.

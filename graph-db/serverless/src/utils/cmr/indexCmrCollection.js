@@ -10,11 +10,11 @@ const gremlinStatistics = gremlin.process.statics
 
 /**
  * Given a collection from the CMR, index it into Gremlin
- * @param {JSON} collection collection object from `items` array in cmr response
+ * @param {JSON} collectionObj collection object from `items` array in cmr response
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
  * @returns
  */
-export const indexCmrCollection = async (collection, gremlinConnection) => {
+export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
   const {
     meta: {
       'concept-id': conceptId
@@ -28,36 +28,30 @@ export const indexCmrCollection = async (collection, gremlinConnection) => {
       Platforms: platforms,
       RelatedUrls: relatedUrls
     }
-  } = collection
+  } = collectionObj
 
   // delete the collection first so that we can clean up its related documentation vertices
   await deleteCmrCollection(conceptId, gremlinConnection)
 
-  let doiUrl = 'Not provided'
-  let landingPage = `${process.env.CMR_ROOT}/concepts/${conceptId}.html`
+  let collection = null
+  const addVCommand = gremlinConnection.addV('collection')
+    .property('title', entryTitle)
+    .property('id', conceptId)
 
   if (doiDescription) {
-    // Take the second element from the split method
-    const [, doiAddress] = doiDescription.split(':')
-    doiUrl = `https://dx.doi.org/${doiAddress}`
-    landingPage = doiUrl
+    addVCommand.property('doi', doiDescription)
   }
 
-  let dataset = null
   try {
     // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
-    dataset = await gremlinConnection
+    collection = await gremlinConnection
       .V()
-      .hasLabel('dataset')
-      .has('concept-id', conceptId)
+      .hasLabel('collection')
+      .has('id', conceptId)
       .fold()
       .coalesce(
         gremlinStatistics.unfold(),
-        gremlinConnection.addV('dataset')
-          .property('landing-page', landingPage)
-          .property('title', entryTitle)
-          .property('concept-id', conceptId)
-          .property('doi', doiDescription || 'Not provided')
+        addVCommand
       )
       .next()
   } catch (error) {
@@ -66,28 +60,28 @@ export const indexCmrCollection = async (collection, gremlinConnection) => {
     return false
   }
 
-  const { value = {} } = dataset
-  const { id: datasetId } = value
+  const { value = {} } = collection
+  const { id: collectionId } = value
 
   if (projects && projects.length > 0) {
     await projects.forEachAsync(async (project) => {
-      await indexCampaign(project, gremlinConnection, datasetId, conceptId)
+      await indexCampaign(project, gremlinConnection, collectionId, conceptId)
     })
   }
 
   if (platforms && platforms.length > 0) {
     await platforms.forEachAsync(async (platform) => {
-      await indexPlatform(platform, gremlinConnection, datasetId, conceptId)
+      await indexPlatform(platform, gremlinConnection, collectionId, conceptId)
     })
   }
 
   if (relatedUrls && relatedUrls.length > 0) {
     await relatedUrls.forEachAsync(async (relatedUrl) => {
-      await indexRelatedUrl(relatedUrl, gremlinConnection, datasetId, conceptId)
+      await indexRelatedUrl(relatedUrl, gremlinConnection, collectionId, conceptId)
     })
   }
 
-  console.log(`Dataset vertex [${datasetId}] indexed for collection [${conceptId}]`)
+  console.log(`Collection vertex [${collectionId}] indexed for collection [${conceptId}]`)
 
   return true
 }

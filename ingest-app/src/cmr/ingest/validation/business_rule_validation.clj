@@ -19,23 +19,25 @@
 
 (defn- version-is-not-nil-validation
   "Validates that the version is not nil"
-  [_ concept]
+  [_ concept _]
   (when (nil? (get-in concept [:extra-fields :version-id]))
     ["Version is required."]))
 
 (defn delete-time-validation
   "Validates the concept delete-time.
   Returns error if the delete time exists and is before one minute from the current time."
-  [_ concept]
-  (let [delete-time (get-in concept [:extra-fields :delete-time])]
-    (when (some-> delete-time
-                  p/parse-datetime
-                  (t/before? (t/plus (tk/now) (t/minutes 1))))
-      [(format "DeleteTime %s is before the current time." delete-time)])))
+  ([_ concept]
+   (delete-time-validation nil concept nil))
+  ([_ concept _]
+   (let [delete-time (get-in concept [:extra-fields :delete-time])]
+     (when (some-> delete-time
+                   p/parse-datetime
+                   (t/before? (t/plus (tk/now) (t/minutes 1))))
+       [(format "DeleteTime %s is before the current time." delete-time)]))))
 
 (defn- concept-id-validation
   "Validates the concept-id if provided matches the metadata-db concept-id for the concept native-id"
-  [context concept]
+  [context concept _]
   (let [{:keys [concept-type provider-id native-id concept-id]} concept]
     (when concept-id
       (let [mdb-concept-id (mdb/get-concept-id context concept-type provider-id native-id false)]
@@ -73,11 +75,9 @@
 
 (defn- collection-update-validation
   "Validate collection update does not invalidate any existing granules."
-  [context concept]
-  (let [{:keys [provider-id extra-fields umm-concept native-id]} concept
-        {:keys [entry-title]} extra-fields
-        prev-concept (first (h/find-visible-collections context {:provider-id provider-id
-                                                                 :native-id native-id}))]
+  [context concept prev-concept]
+  (let [{:keys [extra-fields umm-concept]} concept
+        {:keys [entry-title]} extra-fields]
     (when prev-concept
       (let [prev-umm-concept (spec/parse-metadata context prev-concept)
             has-granule-searches (mapcat

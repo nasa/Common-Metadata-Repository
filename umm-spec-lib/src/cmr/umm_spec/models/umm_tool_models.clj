@@ -48,6 +48,10 @@
    ;; the text are preserved.
    Quality
 
+   ;; This element contains information about a smart handoff from one web user interface to
+   ;; another.
+   PotentialAction
+
    ;; Information on how the item (downloadable tool or web user interface) may or may not be used
    ;; after access is granted. This includes any special restrictions, legal prerequisites, terms
    ;; and conditions, and/or limitations on using the item. Providers may request acknowledgement of
@@ -56,10 +60,6 @@
 
    ;; The operating system(s) and associated version supported by the downloadable tool.
    SupportedOperatingSystems
-
-   ;; This element contains information about a smart handoff from one web user interface to
-   ;; another.
-   SearchAction
 
    ;; The name of the downloadable tool or web user interface.
    Name
@@ -103,6 +103,44 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-T)
 
+;; The HTTP API definition of this tool for use with smart-handoffs.
+(defrecord PotentialActionType
+  [
+   ;; The intent of action this tool supports. Does this tool provide a search? Does it create a
+   ;; resource? Does it consume a resource?
+   Type
+
+   ;; The HTTP endpoint definition.
+   Target
+
+   ;; A set of HTTP query parameter inputs. Each one indicates how a property should be filled in
+   ;; before initiating the action
+   QueryInput
+  ])
+(record-pretty-printer/enable-record-pretty-printing PotentialActionType)
+
+;; The definition of a query parameter for an HTTP API
+(defrecord PropertyValueSpecificationType
+  [
+   ;; Note: not currently part of schema.org specification. This element references a standard
+   ;; describing the type and format of the query parameter value. For example,
+   ;; `https://schema.org/box` will describe a geo bounding box with the format `min Longitude, min
+   ;; Latitude, max Longitude, max Latitude`.
+   ValueType
+
+   ;; Provides information regarding the correct population of the url template parameter with
+   ;; respect to type, format and whether the parameter is required.
+   Description
+
+   ;; Indicates the name of the parameter this PropertyValue specification maps to in the URL
+   ;; template.
+   ValueName
+
+   ;; Whether the property must be filled in to complete the action. Default is false.
+   ValueRequired
+  ])
+(record-pretty-printer/enable-record-pretty-printing PropertyValueSpecificationType)
+
 ;; This object requires any metadata record that is validated by this schema to provide information
 ;; about the schema.
 (defrecord MetadataSpecificationType
@@ -135,14 +173,6 @@
    URLValue
   ])
 (record-pretty-printer/enable-record-pretty-printing OrganizationType)
-
-;; Information about a smart handoff from one web user interface to another.
-(defrecord SearchActionType
-  [
-   ;; This element contains the search action information needed to support a smart handoff.
-   SearchActionElement
-  ])
-(record-pretty-printer/enable-record-pretty-printing SearchActionType)
 
 ;; Defines the contact information of a downloadable tool or web user interface.
 (defrecord ContactInformationType
@@ -252,6 +282,28 @@
    BrowserVersion
   ])
 (record-pretty-printer/enable-record-pretty-printing SupportedBrowserType)
+
+;; The definition of the tool's HTTP API.
+(defrecord ActionTargetType
+  [
+   ;; The type of target. For example, is it an entry point into the application this record
+   ;; describes?
+   Type
+
+   ;; Human readable text that answers the question of what this API can do
+   Description
+
+   ;; The supported MIME type(s) of the response from the HTTP API.
+   ResponseContentType
+
+   ;; An url template (RFC6570) that will be used to construct the target of the execution of the
+   ;; action.
+   UrlTemplate
+
+   ;; The accepted HTTP methods for this API.
+   HttpMethod
+  ])
+(record-pretty-printer/enable-record-pretty-printing ActionTargetType)
 
 (defrecord ContactPersonType
   [

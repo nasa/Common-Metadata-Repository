@@ -4,7 +4,7 @@ import indexCmrCollection from '../handler'
 
 import { updateCollection, deleteCollection } from '../../testUtil/indexCollection'
 
-import { verifyDatasetPropertiesInGraphDb } from '../../testUtil/verifyDataset'
+import { verifyCollectionPropertiesInGraphDb } from '../../testUtil/verifyCollection'
 
 import {
   verifyDocumentationExistInGraphDb, verifyDocumentationNotExistInGraphDb
@@ -35,7 +35,8 @@ describe('indexCmrCollection handler', () => {
     const platform1 = 'Platform One'
     const instrument1 = 'Instrument One'
     const platform2 = 'Platform Two'
-    const docName = 'https://en.wikipedia.org/wiki/latent_nfi'
+    const relatedUrl = 'https://en.wikipedia.org/wiki/latent_nfi'
+    const doi = 'doi:10.16904/envidat.166'
 
     await updateCollection(
       conceptId,
@@ -43,16 +44,16 @@ describe('indexCmrCollection handler', () => {
       {
         campaigns: [campaign1],
         platforms: [{ platform: platform1, instruments: [instrument1] }, { platform: platform2 }],
-        docNames: [docName]
+        relatedUrls: [relatedUrl],
+        doi
       }
     )
 
-    await verifyDatasetPropertiesInGraphDb(
+    await verifyCollectionPropertiesInGraphDb(
       {
         datasetTitle,
         conceptId,
-        landingPage: 'https://dx.doi.org/10.16904/envidat.166',
-        doi: 'doi:10.16904/envidat.166'
+        doi
       }
     )
 
@@ -60,7 +61,30 @@ describe('indexCmrCollection handler', () => {
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle,
       { platform: platform1, instruments: [instrument1] })
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: platform2 })
-    await verifyDocumentationExistInGraphDb(datasetTitle, docName)
+    await verifyDocumentationExistInGraphDb(datasetTitle, relatedUrl)
+  })
+
+  test('test indexing of a collection with no DOI value', async () => {
+    const datasetTitle = 'Latent reserves within the Swiss NFI'
+    const conceptId = 'C1237293909-TESTPROV'
+    const platform1 = 'Platform One'
+
+    await updateCollection(
+      conceptId,
+      datasetTitle,
+      {
+        platforms: [{ platform: platform1 }]
+      }
+    )
+
+    await verifyCollectionPropertiesInGraphDb(
+      {
+        datasetTitle,
+        conceptId
+      }
+    )
+
+    await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: platform1 })
   })
 
   test('test index of not found collection', async () => {
@@ -126,7 +150,7 @@ describe('indexCmrCollection handler', () => {
     const instrument1 = 'Instrument One'
     const instrument2 = 'Instrument Two'
     const platform2 = 'Platform Two'
-    const docName = 'https://en.wikipedia.org/wiki/latent_nfi'
+    const relatedUrl = 'https://en.wikipedia.org/wiki/latent_nfi'
 
     // first index the collection and verify dataset and documentation vertices are created
     await updateCollection(
@@ -137,7 +161,7 @@ describe('indexCmrCollection handler', () => {
         platforms: [
           { platform: platform1, instruments: [instrument1, instrument2] },
           { platform: platform2 }],
-        docNames: [docName]
+        relatedUrls: [relatedUrl]
       }
     )
 
@@ -145,7 +169,7 @@ describe('indexCmrCollection handler', () => {
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle,
       { platform: platform1, instruments: [instrument1, instrument2] })
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: platform2 })
-    await verifyDocumentationExistInGraphDb(datasetTitle, docName)
+    await verifyDocumentationExistInGraphDb(datasetTitle, relatedUrl)
 
     // delete the collection and verify dataset and campaign/documentation vertices are deleted
     await deleteCollection('C1237293909-TESTPROV')
@@ -153,7 +177,7 @@ describe('indexCmrCollection handler', () => {
     await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle,
       { platform: platform1, instruments: [instrument1, instrument2] })
     await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle, { platform: platform2 })
-    await verifyDocumentationNotExistInGraphDb(datasetTitle, docName)
+    await verifyDocumentationNotExistInGraphDb(datasetTitle, relatedUrl)
   })
 
   test('test deletion collection not delete linked documentation vertex if it is also linked to another collection', async () => {
@@ -173,9 +197,9 @@ describe('indexCmrCollection handler', () => {
     const ownInstrument = 'OwnInstrument'
 
     // this documentation url is referenced by two collections
-    const sharedDocName = 'https://en.wikipedia.org/wiki/latent_nfi'
+    const sharedDocUrl = 'https://en.wikipedia.org/wiki/latent_nfi'
     // this documentation url is referenced only by one collection
-    const ownDocName = 'https://en.wikipedia.org/wiki/latent_nfi2'
+    const ownDocUrl = 'https://en.wikipedia.org/wiki/latent_nfi2'
 
     // first index the collection and verify dataset and campaign/documentation vertices are created
     await updateCollection(
@@ -186,7 +210,7 @@ describe('indexCmrCollection handler', () => {
         platforms: [
           { platform: sharedPlatform, instruments: [sharedInstrument, ownInstrument] },
           { platform: ownPlatform }],
-        docNames: [sharedDocName, ownDocName]
+        relatedUrls: [sharedDocUrl, ownDocUrl]
       }
     )
 
@@ -195,8 +219,8 @@ describe('indexCmrCollection handler', () => {
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle,
       { platform: sharedPlatform, instruments: [sharedInstrument, ownInstrument] })
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: ownPlatform })
-    await verifyDocumentationExistInGraphDb(datasetTitle, sharedDocName)
-    await verifyDocumentationExistInGraphDb(datasetTitle, ownDocName)
+    await verifyDocumentationExistInGraphDb(datasetTitle, sharedDocUrl)
+    await verifyDocumentationExistInGraphDb(datasetTitle, ownDocUrl)
 
     // index a second collection that reference the same campaign/documentation vertex
     // and verify dataset and campaign/documentation vertices are created
@@ -207,14 +231,14 @@ describe('indexCmrCollection handler', () => {
         campaigns: [sharedCampaign],
         platforms: [
           { platform: sharedPlatform, instruments: [sharedInstrument] }],
-        docNames: [sharedDocName]
+        relatedUrls: [sharedDocUrl]
       }
     )
 
     await verifyCampaignExistInGraphDb(anotherDatasetTitle, sharedCampaign)
     await verifyPlatformInstrumentsExistInGraphDb(anotherDatasetTitle,
       { platform: sharedPlatform, instruments: [sharedInstrument] })
-    await verifyDocumentationExistInGraphDb(anotherDatasetTitle, sharedDocName)
+    await verifyDocumentationExistInGraphDb(anotherDatasetTitle, sharedDocUrl)
 
     // delete the collection and verify dataset vertex is deleted
     // the campaign/documentation/platformInstrument vertex that is not referenced by another collection is deleted
@@ -229,8 +253,8 @@ describe('indexCmrCollection handler', () => {
     await verifyPlatformInstrumentsExistInGraphDb(anotherDatasetTitle,
       { platform: sharedPlatform, instruments: [sharedInstrument] })
 
-    await verifyDocumentationNotExistInGraphDb(datasetTitle, ownDocName)
-    await verifyDocumentationExistInGraphDb(anotherDatasetTitle, sharedDocName)
+    await verifyDocumentationNotExistInGraphDb(datasetTitle, ownDocUrl)
+    await verifyDocumentationExistInGraphDb(anotherDatasetTitle, sharedDocUrl)
   })
 
   test('test update collection', async () => {
@@ -259,11 +283,11 @@ describe('indexCmrCollection handler', () => {
     const newInstrument = 'NewInstrument'
 
     // this documentation url is referenced by both the old and new version of the collection
-    const keptDocName = 'https://en.wikipedia.org/wiki/latent_nfi'
+    const keptDocUrl = 'https://en.wikipedia.org/wiki/latent_nfi'
     // this documentation url is referenced only by the old version of collection
-    const removedDocName = 'https://en.wikipedia.org/wiki/latent_nfi_old'
+    const removedDocUrl = 'https://en.wikipedia.org/wiki/latent_nfi_old'
     // this documentation url is referenced only by the new version of collection
-    const newDocName = 'https://en.wikipedia.org/wiki/latent_nfi_new'
+    const newDocUrl = 'https://en.wikipedia.org/wiki/latent_nfi_new'
 
     // first index the collection and verify dataset and documentation vertices are created
     await updateCollection(
@@ -274,7 +298,7 @@ describe('indexCmrCollection handler', () => {
         platforms: [
           { platform: keptPlatform, instruments: [keptInstrument, removedInstrument] },
           { platform: removedPlatform }],
-        docNames: [keptDocName, removedDocName]
+        relatedUrls: [keptDocUrl, removedDocUrl]
       }
     )
 
@@ -285,8 +309,8 @@ describe('indexCmrCollection handler', () => {
       { platform: keptPlatform, instruments: [keptInstrument, removedInstrument] })
     await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: removedPlatform })
 
-    await verifyDocumentationExistInGraphDb(datasetTitle, keptDocName)
-    await verifyDocumentationExistInGraphDb(datasetTitle, removedDocName)
+    await verifyDocumentationExistInGraphDb(datasetTitle, keptDocUrl)
+    await verifyDocumentationExistInGraphDb(datasetTitle, removedDocUrl)
 
     // update the collection
     await updateCollection(
@@ -297,7 +321,7 @@ describe('indexCmrCollection handler', () => {
         platforms: [
           { platform: keptPlatform, instruments: [keptInstrument, newInstrument] },
           { platform: newPlatform, instruments: [newInstrument] }],
-        docNames: [keptDocName, newDocName]
+        relatedUrls: [keptDocUrl, newDocUrl]
       }
     )
 
@@ -306,7 +330,7 @@ describe('indexCmrCollection handler', () => {
     await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle,
       { platform: keptPlatform, instruments: [removedInstrument] })
     await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle, { platform: removedPlatform })
-    await verifyDocumentationNotExistInGraphDb(datasetTitle, removedDocName)
+    await verifyDocumentationNotExistInGraphDb(datasetTitle, removedDocUrl)
 
     // verify the dataset vertext with the new title exist,
     // verify the campaign/documentation vertices referenced by another collection exist,
@@ -317,7 +341,7 @@ describe('indexCmrCollection handler', () => {
       { platform: keptPlatform, instruments: [keptInstrument, newInstrument] })
     await verifyPlatformInstrumentsExistInGraphDb(anotherDatasetTitle,
       { platform: newPlatform, instruments: [newInstrument] })
-    await verifyDocumentationExistInGraphDb(anotherDatasetTitle, keptDocName)
-    await verifyDocumentationExistInGraphDb(anotherDatasetTitle, newDocName)
+    await verifyDocumentationExistInGraphDb(anotherDatasetTitle, keptDocUrl)
+    await verifyDocumentationExistInGraphDb(anotherDatasetTitle, newDocUrl)
   })
 })
