@@ -83,16 +83,18 @@
 
 (defn- extract-spatial-operator
   "Determine whether spatial conditions should be ORed or ANDed together"
-  [query]
-  (let [conditions (get-in query [:condition :conditions])
-        condition-is-shape? (->> conditions
-                                 (map keys)
-                                 flatten
-                                 (filter #(= % :shape))
-                                 seq)
-        parent-group-operator (get-in query [:condition :operation])]
-    (when condition-is-shape?
-      parent-group-operator)))
+  [context]
+  (if (empty? (:query-string context))
+      ; If there's no query string, we can safely assume that there is no
+      ; options[spatial][or] parameter being passed
+      :and
+      (let [query-string (:query-string context)
+            parameters (string/split query-string #"\?|&")
+            spatial-param-regex #"(options%5Bspatial%5D%5Bor%5D=true|options\[spatial\]\[or\]=true)"
+            spatial-or-option? (some #(re-matches spatial-param-regex %) parameters)]
+        (if spatial-or-option?
+          :or
+          :and))))
 
 (defn- combine-spatial-and-non-spatial-conditions
   "Helper function. If spatial conitions are ORed, combine them with the rest of
@@ -111,9 +113,9 @@
   "Extracts a query to find the number of granules per collection in the results from a collection query
   coll-query - The collection query
   results - the results of the collection query"
-  [coll-query results]
+  [context coll-query results]
   (let [collection-ids (query-results->concept-ids results)
-        spatial-operator (extract-spatial-operator coll-query)
+        spatial-operator (extract-spatial-operator context)
         spatial-temp-conds (->> coll-query
                                 extract-spatial-and-temporal-conditions
                                 (map convert-spatial-or-temporal-condition))
@@ -132,7 +134,8 @@
                     ;; The results were empty so the granule count query doesn't need to find anything.
                     q/match-none)]
     (q/query {:concept-type :granule
-              :condition (if (= :or spatial-operator)
+              :condition (if (and (= :or spatial-operator)
+                                  (seq combined-conditions))
                            combined-conditions
                            condition)
               ;; We don't need any results
@@ -157,7 +160,7 @@
   (if (zero? (count (query-results->concept-ids query-results)))
     query-results
     (->> query-results
-         (extract-granule-count-query query)
+         (extract-granule-count-query context query)
          (query-execution/execute-query context)
          search-results->granule-counts
          (assoc query-results :granule-counts-map))))

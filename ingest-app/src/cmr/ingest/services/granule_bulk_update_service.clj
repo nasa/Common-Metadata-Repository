@@ -14,6 +14,7 @@
    [cmr.ingest.data.granule-bulk-update :as data-granule-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.services.bulk-update-service :as bulk-update-service]
+   [cmr.ingest.services.granule-bulk-update.additional-file.umm-g :as additional-file-umm-g]
    [cmr.ingest.services.granule-bulk-update.checksum.echo10 :as checksum-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.echo10 :as opendap-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]
@@ -49,20 +50,43 @@
              :when (> freq 1)]
          id)))
 
-(defn- update->instruction
+(defmulti update->instruction
   "Returns the granule bulk update instruction for a single update item"
-  [event-type item]
-  (let [[granule-ur value] item]
-    {:event-type event-type
-     :granule-ur granule-ur
-     :new-value value}))
+  (fn [event-type update-field item]
+    (keyword update-field)))
+
+(defmethod update->instruction :AdditionalFile
+  [event-type update-field item]
+  (if (vector? item)
+    (errors/throw-service-errors
+     :bad-request
+     [(format (str "Wrong update format specified for granule UR [%s]. "
+                   "Please use the correct update format for updates with update-field [%s]")
+              (first item) update-field)])
+    (let [{:keys [GranuleUR Files]} item]
+      {:event-type event-type
+       :granule-ur GranuleUR
+       :new-value Files})))
+
+(defmethod update->instruction :default
+  [event-type update-field item]
+  (if (map? item)
+    (errors/throw-service-errors
+     :bad-request
+     [(format (str "Wrong update format specified for granule UR [%s]. "
+                   "Please use the correct update format for updates with update-field [%s]")
+              (:GranuleUR item) update-field)])
+    (let [[granule-ur value] item]
+      {:event-type event-type
+       :granule-ur granule-ur
+       :new-value value})))
 
 (defn- request->instructions
   "Returns granule bulk update instructions for the given request"
   [parsed-json]
   (let [{:keys [operation update-field updates]} parsed-json
         event-type (string/lower-case (str operation ":" update-field))]
-    (map (partial update->instruction event-type) updates)))
+    (map (partial update->instruction event-type update-field) updates)))
 
 (defn- validate-granule-bulk-update-no-duplicate-urs
   "Validate no duplicate URs exist within the list of instructions"
@@ -164,12 +188,10 @@
      context
      (ingest-events/ingest-granule-bulk-update-event provider-id task-id user-id instruction))))
 
-(defn- update-umm-g-urls
-  "Takes the UMM-G granule concept and update s3 urls in the format of
-  {:cloud <cloud_url> :on-prem <on_prem_url>}. Update the UMM-G granule metadata with the
-  s3 urls in the latest UMM-G version.
+(defn- update-umm-g-metadata
+  "Takes the UMM-G granule concept and update with the given update fn and update-values.
   Returns the granule concept with the updated metadata."
-  [concept urls update-umm-g-urls-fn]
+  [concept update-values update-umm-g-metadata-fn]
   (let [{:keys [format metadata]} concept
         source-version (umm-spec/umm-json-version :granule format)
         parsed-metadata (json/decode metadata true)
@@ -177,7 +199,7 @@
         migrated-metadata (util/remove-nils-empty-maps-seqs
                            (vc/migrate-umm
                             nil :granule source-version target-version parsed-metadata))
-        updated-metadata (umm-json/umm->json (update-umm-g-urls-fn migrated-metadata urls))
+        updated-metadata (umm-json/umm->json (update-umm-g-metadata-fn migrated-metadata update-values))
         updated-format (mt/format->mime-type {:format :umm-json
                                               :version target-version})]
     (assoc concept :metadata updated-metadata :format updated-format)))
@@ -193,7 +215,7 @@
 
 (defmethod update-opendap-url :umm-json
   [context concept grouped-urls]
-  (update-umm-g-urls concept grouped-urls opendap-umm-g/update-opendap-url))
+  (update-umm-g-metadata concept grouped-urls opendap-umm-g/update-opendap-url))
 
 (defmethod update-opendap-url :default
   [context concept grouped-urls]
@@ -211,7 +233,7 @@
 
 (defmethod append-opendap-url :umm-json
   [context concept grouped-urls]
-  (update-umm-g-urls concept grouped-urls opendap-umm-g/append-opendap-url))
+  (update-umm-g-metadata concept grouped-urls opendap-umm-g/append-opendap-url))
 
 (defmethod append-opendap-url :default
   [context concept grouped-urls]
@@ -229,7 +251,7 @@
 
 (defmethod add-s3-url :umm-json
   [context concept urls]
-  (update-umm-g-urls concept urls s3-umm-g/update-s3-url))
+  (update-umm-g-metadata concept urls s3-umm-g/update-s3-url))
 
 (defmethod add-s3-url :default
   [context concept urls]
@@ -247,7 +269,7 @@
 
 (defmethod append-s3-url :umm-json
   [context concept urls]
-  (update-umm-g-urls concept urls s3-umm-g/append-s3-url))
+  (update-umm-g-metadata concept urls s3-umm-g/append-s3-url))
 
 (defmethod append-s3-url :default
   [context concept urls]
@@ -266,7 +288,7 @@
 (defmethod update-checksum :umm-json
   [context concept checksum]
   (errors/throw-service-errors
-   :invalid-data ["Updating checksum for UMM_JSON is coming soon!"]))
+   :invalid-data ["Updating checksum is not supported for UMM-G. Please use update-field: AdditionalFile"]))
 
 (defmethod update-checksum :default
   [context concept checksum]
@@ -286,6 +308,25 @@
   [context concept size]
   (errors/throw-service-errors
    :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))]))
+
+(defmulti update-additional-files
+  "Update AdditionalFiles in given granule concept."
+  (fn [context concept checksum]
+    (mt/format-key (:format concept))))
+
+(defmethod update-additional-files :echo10
+  [context concept checksum]
+  (errors/throw-service-errors
+   :invalid-data ["Updating AdditionalFiles for ECHO10 is coming soon!"]))
+
+(defmethod update-additional-files :umm-json
+  [context concept new-files]
+  (update-umm-g-metadata concept new-files additional-file-umm-g/update-additional-files))
+
+(defmethod update-additional-files :default
+  [context concept checksum]
+  (errors/throw-service-errors
+   :invalid-data [(format "Updating AdditionalFiles is not supported for format [%s]" (:format concept))]))
 
 (defmulti update-granule-concept
   "Perform the update of the granule concept."
@@ -396,7 +437,30 @@
 (defmethod update-granule-concept :update_field:size
   [context concept bulk-update-params user-id]
   (modify-size*
-   context concept bulk-update-params user-id update-size))
+   context concept bulk-update-params user-id update-size))   
+
+(defn- modify-additional-files*
+  "Add or update the checksum value and algorithm for the given concept with the provided values
+  using the provided transform function."
+  [context concept bulk-update-params user-id xf]
+  (let [{:keys [format metadata]} concept
+        {:keys [granule-ur new-value]} bulk-update-params
+        ;; invoke the appropriate transform - for checksum, there is only one option (update)
+        updated-concept (xf context concept new-value)
+        {updated-metadata :metadata updated-format :format} updated-concept]
+    (if-let [err-messages (:errors updated-metadata)]
+      (errors/throw-service-errors :invalid-data err-messages)
+      (-> concept
+          (assoc :metadata updated-metadata)
+          (assoc :format updated-format)
+          (update :revision-id inc)
+          (assoc :revision-date (time-keeper/now))
+          (assoc :user-id user-id)))))
+
+(defmethod update-granule-concept :update_field:additionalfile
+  [context concept bulk-update-params user-id]
+  (modify-additional-files*
+   context concept bulk-update-params user-id update-additional-files))
 
 (defmethod update-granule-concept :default
   [context concept bulk-update-params user-id]

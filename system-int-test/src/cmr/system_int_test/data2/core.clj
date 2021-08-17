@@ -155,6 +155,7 @@
                                           :user-id
                                           :validate-keywords
                                           :validate-umm-c
+                                          :test-existing-errors
                                           :accept-format
                                           :warnings]))
          status (:status response)]

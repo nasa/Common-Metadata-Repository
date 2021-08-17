@@ -11,12 +11,14 @@
 
 (def VALIDATE_KEYWORDS_HEADER "cmr-validate-keywords")
 (def ENABLE_UMM_C_VALIDATION_HEADER "cmr-validate-umm-c")
+(def TESTING_EXISTING_ERRORS_HEADER "cmr-test-existing-errors")
 
 (defn get-validation-options
   "Returns a map of validation options with boolean values"
   [headers]
   {:validate-keywords? (= "true" (get headers VALIDATE_KEYWORDS_HEADER))
-   :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))})
+   :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))
+   :test-existing-errors? (= "true" (get headers TESTING_EXISTING_ERRORS_HEADER))})
 
 (defn validate-collection
   [provider-id native-id request]

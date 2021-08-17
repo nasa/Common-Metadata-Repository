@@ -7,6 +7,10 @@
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as conn]))
 
+(defconfig progressive-update-enabled
+  "Flag for whether or not collection progressive update is enabled."
+  {:default true :type Boolean})
+
 (defconfig bulk-update-cleanup-minimum-age
   "The minimum age(in days) of the rows in bulk-update-task-status table that can be cleaned up"
   {:default 90
@@ -44,7 +48,7 @@
 (defconfig tool-umm-version
   "Defines the latest tool umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.0"})
+  {:default "1.1"})
 
 (defconfig subscription-umm-version
   "Defines the latest subscription umm version accepted by ingest - it's the latest official version.

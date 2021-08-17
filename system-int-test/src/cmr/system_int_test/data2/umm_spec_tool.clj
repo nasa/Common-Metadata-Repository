@@ -13,7 +13,7 @@
 (def ^:private sample-umm-tool
   {:Name "USGS_TOOLS_LATLONG"
    :LongName "WRS-2 Path/Row to Latitude/Longitude Converter"
-   :Type "Downloadable Tool" 
+   :Type "Downloadable Tool"
    :Version "1.0"
    :Description "The USGS WRS-2 Path/Row to Latitude/Longitude Converter allows users to enter any Landsat path and row to get the nearest scene center latitude and longitude coordinates."
    :URL {:URLContentType "DistributionURL"
@@ -28,9 +28,21 @@
                     :ShortName "USGS/EROS"
                     :LongName "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES"
                     :URLValue "http://www.usgs.gov"}]
-   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.0"
+   :PotentialAction {:Type "SearchAction"
+                     :Target {:Type "EntryPoint",
+                              :UrlTemplate "https://podaac-tools.jpl.nasa.gov/soto/#b=BlueMarble_ShadedRelief_Bathymetry&l={layers}&ve={bbox}&d={date}"
+                              :HttpMethod [ "GET" ] }
+                     :QueryInput [{:ValueName "layers"
+                                   :Description "A comma-separated list of visualization layer ids, as defined by GIBS. These layers will be portrayed on the web application"
+                                   :ValueRequired true
+                                   :ValueType "https://wiki.earthdata.nasa.gov/display/GIBS/GIBS+API+for+Developers#GIBSAPIforDevelopers-LayerNaming"}
+                                  {:ValueName "date"
+                                   :ValueType "https://schema.org/startDate"}
+                                  {:ValueName "bbox"
+                                   :ValueType "https://schema.org/box"}]}
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.1"
                            :Name "UMM-T"
-                           :Version "1.0"}})
+                           :Version "1.1"}})
 
 (defn- tool
   "Returns a UMM-T record from the given attribute map."
