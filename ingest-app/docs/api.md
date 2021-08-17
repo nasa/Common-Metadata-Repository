@@ -1238,7 +1238,6 @@ Example granule bulk update response:
 </result>
 ```
 
-
 **operation: "UPDATE_FIELD", update-field: "Size"**
 Supported metadata formats:
   - <DataGranuleSizeInBytes> and <SizeMBDataGranule> inside <DataGranule> element for ECHO10 format
@@ -1287,7 +1286,6 @@ This update type can be used to update any of the values in a [File or FilePacka
 All values specified must conform to what is allowed by the UMM-G schema for any given field.
 
 This type of Bulk Granule Updates has a unique format for its `updates` - for each granule, an array of Files can be specified, and each File can contain any combination of the elements above. The full schema can be found [here](https://github.com/nasa/Common-Metadata-Repository/blob/master/ingest-app/resources/granule_bulk_update_schema.json), and an example request can be found below:
-
 
 ```
 curl -i -XPOST \
