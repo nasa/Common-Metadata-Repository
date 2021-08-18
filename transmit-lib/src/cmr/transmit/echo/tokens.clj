@@ -5,6 +5,7 @@
    [clj-time.core :as t]
    [clojure.string :as s]
    [cmr.common.date-time-parser :as date-time-parser]
+   [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
@@ -50,6 +51,9 @@
                                             {:headers {"Accept" mt/json
                                                        "Authorization" (transmit-config/echo-system-token)}
                                              :form-params {:id token}})]
+
+      (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
+                    (common-util/scrub-token token) status))
       (case (int status)
         200 (let [expires (some-> (get-in parsed [:token_info :expires])
                                   date-time-parser/parse-datetime)]
@@ -58,7 +62,7 @@
                 (get-in parsed [:token_info :user_name])
                 (errors/throw-service-error
                   :unauthorized
-                  (format "Token [%s] has expired. Note the token value has been partially redacted." 
+                  (format "Token [%s] has expired. Note the token value has been partially redacted."
                           (common-util/scrub-token token)))))
         401 (errors/throw-service-errors
               :unauthorized
