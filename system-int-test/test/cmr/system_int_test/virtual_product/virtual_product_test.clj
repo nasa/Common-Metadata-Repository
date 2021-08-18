@@ -19,6 +19,7 @@
    [cmr.umm.echo10.granule :as g]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-g]
+   [cmr.umm-spec.util :as umm-spec-util]
    [cmr.virtual-product.config]
    [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
@@ -387,7 +388,7 @@
                           (dc/collection
                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
                              :short-name "AST_L1A"
-                             :projects (dc/projects "proj1" "proj2" "proj3")})
+                             :projects (dc/projects "proj1" "proj2" "proj3" umm-spec-util/not-provided)})
                           :provider-id "LPDAAC_ECS")])
           vp-colls (vp/ingest-virtual-collections [ast-coll])
           granule-ur "SC:AST_L1A.003:2006227720"
