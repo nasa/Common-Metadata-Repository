@@ -14,6 +14,8 @@
         "Checksum",
         "OPeNDAPLink",
         "S3Link",
+        "Size"
+
       ]
     },
     "UpdateTupleType": {

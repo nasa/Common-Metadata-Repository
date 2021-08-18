@@ -815,6 +815,135 @@
                    :status "UPDATED"}]
                  granule-statuses)))))))
 
+(deftest update-size
+  "test updating size with real granule file that is already in CMR code base"
+  (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+        coll (data-core/ingest-concept-with-metadata-file "CMR-7504/7504-Coll.xml"
+                                                          {:provider-id "PROV1"
+                                                           :concept-type :collection
+                                                           :native-id "MODIS_A-JPL-L2P-v2019.0"
+                                                           :format-key :dif10})
+        granule (data-core/ingest-concept-with-metadata-file "CMR-7504/7504-Both.xml"
+                                                             {:provider-id "PROV1"
+                                                              :concept-type :granule
+                                                              :native-id "MODIS_A-JPL-L2P-Gran"
+                                                              :format-key :echo10})
+        granule-with-no-data-element
+                (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-granule-no-data-granule.xml"
+                                                             {:provider-id "PROV1"
+                                                              :concept-type :granule
+                                                              :native-id "OMSO2-granule-data-granule"
+                                                              :format-key :echo10})]
+    (testing "ECHO10 granule update for Size in MB and bytes"
+      (let [bulk-update {:operation "UPDATE_FIELD"
+                         :update-field "Size"
+                         :updates [["7504BothSizeFields"
+                                    "1.0,1024"]]}
+            {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                   "PROV1" bulk-update bulk-update-options)
+            {:keys [concept-id revision-id]} granule
+            target-metadata (-> "CMR-7504/7504-Both-Updated.xml" io/resource slurp)]
+        (index/wait-until-indexed)
+        (is (= 200 status))
+        (is (some? task-id))
+        (is (= target-metadata
+               (:metadata (mdb/get-concept concept-id (inc revision-id)))))
+
+        (ingest/update-granule-bulk-update-task-statuses)
+
+        ;; verify the granule status is UPDATED
+        (let [status-req-options {:query-params {:show_granules "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "All granule updates completed successfully." status-message))
+          (is (= [{:granule-ur "7504BothSizeFields"
+                   :status "UPDATED"}]
+                 granule-statuses)))))
+
+    (testing "ECHO10 size BGU failure (no DataGranule element)"
+      (let [bulk-update {:operation "UPDATE_FIELD"
+                         :update-field "Size"
+                         :updates [["OMSO2.003:no-data-granule"
+                                    "0987654321"]]}
+            {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                   "PROV1" bulk-update bulk-update-options)
+            {:keys [concept-id revision-id]} granule-with-no-data-element]
+        (index/wait-until-indexed)
+        (is (= 200 status))
+        (is (some? task-id))
+
+        (ingest/update-granule-bulk-update-task-statuses)
+
+        ;; verify the granule status is FAILED
+        (let [status-req-options {:query-params {:show_granules "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+          (is (= [{:granule-ur "OMSO2.003:no-data-granule"
+                   :status "FAILED"
+                   :status-message "Can't update Size: no parent <DataGranule> element"}]
+                 granule-statuses)))
+
+        (testing "verify the metadata was not altered"
+          (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))
+
+    (testing "ECHO10 granule failures for bad input"
+      (let [bulk-update {:operation "UPDATE_FIELD"
+                         :update-field "Size"
+                         :updates [["7504BothSizeFields"
+                                    "123,ABC"]]}
+            {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                   "PROV1" bulk-update bulk-update-options)
+            {:keys [concept-id revision-id]} granule-with-no-data-element]
+        (index/wait-until-indexed)
+        (is (= 200 status))
+        (is (some? task-id))
+
+        (ingest/update-granule-bulk-update-task-statuses)
+
+        ;; verify the granule status is FAILED
+        (let [status-req-options {:query-params {:show_granules "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+          (is (= [{:granule-ur "7504BothSizeFields"
+                   :status "FAILED"
+                   :status-message (str "Can't update Size: invalid data specified. Please include"
+                                        " at most one value for DataGranuleSizeInBytes, and one "
+                                        "value for SizeMBDataGranule, seperated by a comma.")}]
+                 granule-statuses)))
+
+        (testing "verify the metadata was not altered"
+          (is (not (:metadata (mdb/get-concept concept-id (inc revision-id)))))))
+      (let [bulk-update {:operation "UPDATE_FIELD"
+                         :update-field "Size"
+                         :updates [["7504BothSizeFields"
+                                    "123,456"]]}
+            {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                   "PROV1" bulk-update bulk-update-options)
+            {:keys [concept-id revision-id]} granule-with-no-data-element]
+        (index/wait-until-indexed)
+        (is (= 200 status))
+        (is (some? task-id))
+
+        (ingest/update-granule-bulk-update-task-statuses)
+
+        ;; verify the granule status is FAILED
+        (let [status-req-options {:query-params {:show_granules "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+          (is (= [{:granule-ur "7504BothSizeFields"
+                   :status "FAILED"
+                   :status-message (str "Can't update Size: invalid data specified. Please include"
+                                        " at most one value for DataGranuleSizeInBytes, and one "
+                                        "value for SizeMBDataGranule, seperated by a comma.")}]
+                 granule-statuses)))))))
+
 (deftest update-additional-file
   "test updating files and filepackages with real granule files that are already in CMR code base"
   (testing "UMM-G granule"

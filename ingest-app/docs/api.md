@@ -1235,6 +1235,41 @@ Example granule bulk update response:
 </result>
 ```
 
+**operation: "UPDATE_FIELD", update-field: "Size"**
+Supported metadata formats:
+  - <DataGranuleSizeInBytes> and <SizeMBDataGranule> inside <DataGranule> element for ECHO10 format
+
+To update DataGranuleSizeInBytes, input an integer value, such as `22`. To update SizeMBDataGranule, input a double (decimal) value, such as `52.235`. If a file has an flat number value, such as exactly `25MB`, this should be input as `25.0`. Both values can be updated at once by supplying two values, comma seperated, as seen below. If more than one integer value, more than one double value, or any extraneous values are supplied, the granule update will fail.
+
+Example: Add/update size values for 3 granules under PROV1. Granules 1 receives an update to `DataGranuleSizeInBytes`, granule 2 receives an update to `SizeMBDataGranule`, and granule 3 receives an update to both values.
+
+```
+curl -i -XPOST \
+  -H "Cmr-Pretty:true" \
+  -H "Content-Type: application/json"
+  -H "Echo-Token: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d 
+'{ "name": "Example of updating sizes",
+	"operation": "UPDATE_FIELD",
+	"update-field":"Size",
+	"updates":[
+             ["granule_ur1", "156"],
+             ["granule_ur2", "10.0"],
+             ["granule_ur3", "8.675306,8675309"]
+	]
+}'
+```
+
+Example granule bulk update response:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+    <status>200</status>
+    <task-id>5</task-id>
+</result>
+```
+  
 **operation: "UPDATE_FIELD", update-field: "AdditionalFile"**
 Supported metadata formats:
   - UMM-G File and FilePackage elements located under DataGranule/ArchiveAndDistributionInformation.
