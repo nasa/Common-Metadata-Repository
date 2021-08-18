@@ -261,9 +261,9 @@
               :errors ["Concept-id [F100-CMR] is not valid."]}
              (test-util/get-group token "F100-CMR"))))
     (testing "Retrieve group with invalid parameters"
-      (let [response (test-util/get-group token concept_id {"Echo-Token" "asdf" "bf2376tri7f" "true"})]
+      (let [response (test-util/get-group token concept_id {"Authorization" "asdf" "bf2376tri7f" "true"})]
         (is (= {:status 400
-                :errors #{"Parameter [Echo-Token] was not recognized." "Parameter [bf2376tri7f] was not recognized."}}
+                :errors #{"Parameter [Authorization] was not recognized." "Parameter [bf2376tri7f] was not recognized."}}
                (update-in response [:errors] set)))))
     (testing "Retrieve group with concept id for a different concept type"
       (is (= {:status 400

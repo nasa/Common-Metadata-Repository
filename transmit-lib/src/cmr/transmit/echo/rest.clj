@@ -15,7 +15,7 @@
     (config/conn-params conn)
     {:accept :json
      :throw-exceptions false
-     :headers {"Echo-Token" (config/echo-system-token)}
+     :headers {"Authorization" (config/echo-system-token)}
      ;; Overrides the socket timeout from conn-params
      :socket-timeout (config/echo-http-socket-timeout)}))
 

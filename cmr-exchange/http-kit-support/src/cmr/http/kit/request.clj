@@ -28,7 +28,7 @@
   ([token]
     (add-token-header {} token))
   ([req token]
-    (add-header req "Echo-Token" token)))
+    (add-header req "Authorization" token)))
 
 (defn add-content-type
   ([ct]

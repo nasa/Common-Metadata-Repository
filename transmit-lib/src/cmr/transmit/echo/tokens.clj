@@ -48,7 +48,7 @@
 
     (let [[status parsed body] (r/rest-post context "/tokens/get_token_info"
                                             {:headers {"Accept" mt/json
-                                                       "Echo-Token" (transmit-config/echo-system-token)}
+                                                       "Authorization" (transmit-config/echo-system-token)}
                                              :form-params {:id token}})]
       (case (int status)
         200 (let [expires (some-> (get-in parsed [:token_info :expires])

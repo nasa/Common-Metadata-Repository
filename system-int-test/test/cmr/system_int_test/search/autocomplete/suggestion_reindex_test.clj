@@ -175,7 +175,7 @@
         _ (index/refresh-elastic-index)]
     (testing "Suggestions associated to collections with access constraints are returned"
       (compare-autocomplete-results
-       (get-in (search/get-autocomplete-json "q=From" {:headers {:echo-token user1-token}}) [:feed :entry])
+       (get-in (search/get-autocomplete-json "q=From" {:headers {:authorization user1-token}}) [:feed :entry])
        [{:type "project",
           :value "From whence you came!",
           :fields "From whence you came!"}]))
@@ -185,7 +185,7 @@
        []))
     (testing "Suggestion associated to collections granted to registered users"
       (compare-autocomplete-results
-       (get-in (search/get-autocomplete-json "q=REGISTERED" {:headers {:echo-token user3-token}}) [:feed :entry])
+       (get-in (search/get-autocomplete-json "q=REGISTERED" {:headers {:authorization user3-token}}) [:feed :entry])
        [{:score 4.5634737 :type "project" :value "REGISTERED" :fields "REGISTERED"}
         {:score 3.2571084 :type "instrument" :value "REGISTERED-p0-i0" :fields "REGISTERED-p0-i0"}
         {:score 3.187054 :type "platform" :value "REGISTERED-p0" :fields "REGISTERED-p0"}

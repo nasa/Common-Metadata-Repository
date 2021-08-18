@@ -342,7 +342,7 @@
                                         "Cmr-Revision-id" revision-id
                                         "Cmr-Validate-Keywords" validate-keywords
                                         "Cmr-Validate-Umm-C" validate-umm-c
-                                        "Echo-Token" token
+                                        "Authorization" token
                                         "User-Id" user-id
                                         "Client-Id" client-id
                                         "CMR-Request-Id" cmr-request-id
@@ -371,7 +371,7 @@
                                         "Cmr-Validate-Keywords" validate-keywords
                                         "Cmr-Validate-Umm-C" validate-umm-c
                                         "Cmr-Test-Existing-Errors" test-existing-errors
-                                        "Echo-Token" token
+                                        "Authorization" token
                                         "User-Id" user-id
                                         "Client-Id" client-id
                                         "CMR-Request-Id" cmr-request-id
@@ -393,7 +393,7 @@
   ([concept options]
    (let [{:keys [provider-id concept-type native-id]} concept
          {:keys [token client-id accept-format revision-id user-id]} options
-         headers (util/remove-nil-keys {"Echo-Token" token
+         headers (util/remove-nil-keys {"Authorization" token
                                         "Client-Id" client-id
                                         "User-Id" user-id
                                         "Cmr-Revision-id" revision-id})
