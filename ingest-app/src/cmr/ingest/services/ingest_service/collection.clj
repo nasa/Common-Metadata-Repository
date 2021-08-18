@@ -104,6 +104,8 @@
           entry-title (get-in concept [:extra-fields :entry-title])]
       ;; if ingested with existing error, log the existing errors and warnings for the collection
       ;; and the user
+      ;; note: err-warnings are the existing errors that are returned as part of the warnings since
+      ;; we bypass them in the progressive update,  non-err-warnings are the true warnings.
       (when (seq err-warnings)
         (warn "Ingest with existing errors info:  "
               (format "Collection[%s] has the existing errors: %s and warnings: %s by user: [%s]"
