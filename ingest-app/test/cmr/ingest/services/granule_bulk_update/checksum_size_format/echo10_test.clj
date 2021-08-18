@@ -536,6 +536,47 @@
    </DataGranule>
 </Granule>\n")
 
+(def ^:private gran-5
+  "ECHO10 granule for testing updating granule sizes in MB when existing val is integer"
+  "<Granule>
+    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+    <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+    <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+    <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+    </Collection>
+    <DataGranule>
+      <SizeMBDataGranule>400</SizeMBDataGranule>
+      <Checksum>
+        <Value>1ff38cc592c4c5d0c8e3ca38be8f1eb1</Value>
+        <Algorithm>MD5</Algorithm>
+      </Checksum>
+      <DayNightFlag>UNSPECIFIED</DayNightFlag>
+      <ProductionDateTime>2018-02-06T19:13:22Z</ProductionDateTime>
+    </DataGranule>
+  </Granule>")
+
+(def ^:private gran-5-update-mb
+  "ECHO10 granule for testing updating granule sizes in MB"
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<Granule>
+   <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+   <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+   <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+   <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+   </Collection>
+   <DataGranule>
+      <SizeMBDataGranule>500.45</SizeMBDataGranule>
+      <Checksum>
+         <Value>1ff38cc592c4c5d0c8e3ca38be8f1eb1</Value>
+         <Algorithm>MD5</Algorithm>
+      </Checksum>
+      <DayNightFlag>UNSPECIFIED</DayNightFlag>
+      <ProductionDateTime>2018-02-06T19:13:22Z</ProductionDateTime>
+   </DataGranule>
+</Granule>\n")
+
 (deftest update-size
   (testing "various cases of updating size"
     (are3 [size-value source result]
@@ -594,4 +635,9 @@
       "Add both"
       "222,22.222"
       gran-4
-      gran-4-add-both)))
+      gran-4-add-both
+
+      "Update a granule whose exist MB value is an integer"
+      "500.45"
+      gran-5
+      gran-5-update-mb)))

@@ -46,7 +46,9 @@
               (not (or (seq mb-vals) (seq byte-vals)))) ;;no valid values specified
       (errors/throw-service-errors :invalid-data
        [(str "Can't update Size: invalid data specified. Please include at most one value for "
-             "DataGranuleSizeInBytes, and one value for SizeMBDataGranule, seperated by a comma.")]))
+             "DataGranuleSizeInBytes, and one value for SizeMBDataGranule, seperated by a comma."
+             "DataGranuleSizeInBytes must be an integer value, while SizeMBDataGranule must be a "
+             "double value with a decimal point.")]))
     size-map))
 
 (defn- size-in-mb-element
@@ -88,7 +90,6 @@
    before calling (update-size-in-mb..) which performs the same operation on size in MB and then returns the root"
   [start-loc sizes]
   (let [{:keys [DataGranuleSizeInBytes]} sizes]
-    (println DataGranuleSizeInBytes)
     (loop [loc start-loc done (if DataGranuleSizeInBytes false true)]
       (if done
         (update-size-in-mb (zip/leftmost loc) sizes)
