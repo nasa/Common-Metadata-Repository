@@ -1,6 +1,8 @@
 (ns cmr.ingest.services.ingest-service.collection
   (:require
    [clojure.string :as string]
+   [cmr.common.api.context :as common-context]
+   [cmr.common.log :as log :refer (warn)]
    [cmr.common.util :refer [defn-timed]]
    [cmr.ingest.config :as config]
    [cmr.ingest.services.helper :as ingest-helper]
@@ -73,10 +75,10 @@
         prev-concept (first (ingest-helper/find-visible-collections context {:provider-id provider-id
                                                                              :native-id native-id}))
         {:keys [collection warnings]} (validate-and-parse-collection-concept
-                                                       context
-                                                       concept
-                                                       prev-concept
-                                                       validation-options)
+                                       context
+                                       concept
+                                       prev-concept
+                                       validation-options)
         ;; Add extra fields for the collection
         coll-concept (assoc (add-extra-fields-for-collection context concept collection)
                             :umm-concept collection)]
@@ -93,7 +95,20 @@
                                                                     concept
                                                                     validation-options)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)
-          entry-title (get-in concept [:extra-fields :entry-title])]
+          entry-title (get-in concept [:extra-fields :entry-title])
+          ;; extract out existing errors from warnings
+          existing-errors (some #(:existing-errors %) warnings)
+          ;; extract out the rest of the  warnings from warnings
+          other-warnings (remove #(:existing-errors %) warnings)]
+      ;; if ingested with existing errors, log the existing errors and warnings for the collection
+      ;; and the user
+      (when (seq existing-errors)
+        (warn "Ingest with existing errors info:  "
+              (format "Collection[%s] has the existing errors: %s and warnings: %s by user: [%s]"
+                      concept-id (pr-str existing-errors) (pr-str other-warnings)
+                      (if (:token context)
+                        (common-context/context->user-id context)
+                        "unknown user"))))
       {:entry-title entry-title
        :concept-id concept-id
        :revision-id revision-id
