@@ -215,8 +215,8 @@
     the second URL type failed to match a valid keyword."
     (let [related-urls [{"URL" "https://example.gov/good1"
                          "URLContentType" "PublicationURL"
-                         "Type" "USE SERVICE API"
-                         "Subtype" "OpenSearch"}  ;this is the valid Related URL
+                         "Type" "VIEW RELATED INFORMATION"
+                         "Subtype" "HOW-TO"}  ;this is the valid Related URL
                         {"URL" "https://example.gov/bad1"
                          "URLContentType" "PublicationURL"
                          "Type" "USE SERVICE APIs"
@@ -236,21 +236,23 @@
       (is (= 400 status))
       (is (= 2 (count errors)))
 
-      (are3 [expected-type expected-subtype index error-item]
-        (let [expected-msg (format "Related URL Type and Subtype pair [%s>%s] are not valid keywords"
-                                   expected-type expected-subtype)
+      (are3 [expected-content expected-type expected-subtype index error-item]
+        (let [expected-msg (format "Related URL Content Type, Type, and Subtype [%s>%s>%s] are not a valid set together."
+                                   expected-content expected-type expected-subtype)
               error-path (:path error-item)]
           (is (= expected-msg (first (:errors error-item))))
           (is (= "relatedurls" (clojure.string/lower-case (first error-path))))
           (is (= index (second error-path))))
 
         "First URL with bad keyword pair"
+        "PublicationURL"
         "USE SERVICE APIs"
         "Closed Search"
         1
         (first errors)
 
         "Second URL with bad keyword pair"
+        "PublicationURL"
         "USE SERVICE APIs"
         "Very Closed Search"
         2

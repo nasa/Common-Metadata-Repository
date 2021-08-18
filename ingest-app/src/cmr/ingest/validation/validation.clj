@@ -92,7 +92,56 @@
       (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index :granule-data-format value)
         {field-path [(msg-fn value)]}))))
 
-(defn keyword-validations
+(defn match-related-url-kms-keywords-validations
+  "Return the value from match-kms-keywords-validation but defaulted to the a
+   related-url validator with message"
+  [kms-index]
+  (match-kms-keywords-validation
+   kms-index
+   :related-urls
+   msg/related-url-type-subtype-not-matching-kms-keywords))
+
+(defn- related-url-validator
+  "Return a validator that checks a ContentType, Type, and Subtype keywords for
+   Related URL field which can be inside a ContactInformation or be a standalone
+   field. ContactInformation can themselfs be found in DataCenters, ContactGroups,
+   and ContactPersons meaning 4 different uses cases for this validator."
+  [kms-index]
+  {:RelatedUrls (match-related-url-kms-keywords-validations kms-index)})
+
+(defn- datacenter-url-validator
+  "Return a validater for datacenter contact information's related url"
+  [kms-index]
+  {:ContactInformation (related-url-validator kms-index)})
+
+(defn- datacenter-contact-url-validator
+  "Return a validator for the related urls inside the Contact information fields
+   belolonging to either a :ContactGroups or a ContactPersons."
+  [kms-index contact-type]
+  {contact-type (v/every {:ContactInformation (related-url-validator kms-index)})})
+
+(defn- datacenter-url-validators
+  "Return all the validators needed to check the related url valids in DataCenter"
+  [kms-index]
+  {:DataCenters
+   (v/every
+    [(datacenter-url-validator kms-index)
+     (datacenter-contact-url-validator kms-index :ContactGroups)
+     (datacenter-contact-url-validator kms-index :ContactPersons)])})
+
+(defn- minimum-keyword-validations
+  "The list of keywords which are validated if the optional validation is not
+   requested. This function is in contrast to expanded-keyword-validations which
+   represent the list of validations to use when reqesting all validations. Over
+   time, buisness rules will dictate adding more validations from that function
+   to this one as requirements become more strict and eventually getting rid of
+   the other function"
+  [context]
+  (let [kms-index (kms-fetcher/get-kms-index context)]
+    (-> (related-url-validator kms-index)
+        (merge (datacenter-url-validators kms-index)))))
+
+(defn- expanded-keyword-validations
   "Creates validations that check various collection fields to see if they match KMS keywords."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
@@ -121,9 +170,11 @@
        (match-kms-keywords-validation
         kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}
      :RelatedUrls
-      (v/every {:GetData {:Format (match-getdata-format-kms-keywords-validation
-                                   kms-index
-                                   msg/getdata-format-not-matches-kms-keywords)}})}))
+      [(match-related-url-kms-keywords-validations kms-index)
+       (datacenter-url-validators kms-index)
+       (v/every {:GetData {:Format (match-getdata-format-kms-keywords-validation
+                                    kms-index
+                                    msg/getdata-format-not-matches-kms-keywords)}})]}))
 
 (defn- pad-zeros-to-version
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
@@ -180,6 +231,15 @@
         (warn "UMM-C JSON-Schema Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
 
+(defn keyword-validation-rules
+  "Return the list of keyword validations that fit the user's request, specificly
+  check the Cmr-Validate-Keywords parameter and return a different set of
+  validation rules for that use case."
+  [context validation-options]
+  [(if (:validate-keywords? validation-options)
+     (expanded-keyword-validations context)
+     (minimum-keyword-validations context))])
+
 (defn umm-spec-validate-collection
   "Validate collection through umm-spec validation functions. If warn? flag is
   true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
@@ -188,8 +248,7 @@
   ([collection prev-collection validation-options context warn?]
    (when-let [err-messages (seq (umm-spec-validation/validate-collection
                                  collection
-                                 (when (:validate-keywords? validation-options)
-                                   [(keyword-validations context)])))]
+                                 (keyword-validation-rules context validation-options)))]
      (if (or (:validate-umm? validation-options)
              (config/return-umm-spec-validation-errors)
              (not warn?))
@@ -198,7 +257,7 @@
        ;; errors only when new errors are introduced, otherwise return all the existing errors as
        ;; error-warnings.
        (if (and (config/progressive-update-enabled)
-                (not (:bulk-update? validation-options)) 
+                (not (:bulk-update? validation-options))
                 prev-collection)
          (let [prev-err-messages (if (and (:test-existing-errors? validation-options)
                                           ;; double check to make sure only the local and ci tests can use the header.
@@ -212,8 +271,7 @@
                                    err-messages
                                    (seq (umm-spec-validation/validate-collection
                                        prev-collection
-                                       (when (:validate-keywords? validation-options)
-                                         [(keyword-validations context)]))))
+                                       (keyword-validation-rules context validation-options))))
                ;; get the newly introduced validation errors
                new-err-messages (seq (first (data/diff (set err-messages) (set prev-err-messages))))]
             (if new-err-messages

@@ -78,7 +78,8 @@
 (defn related-url-type-subtype-not-matching-kms-keywords
   "Error msg when Related URL Type and Subtype pair is not in KMS."
   [related-url]
-  (format "Related URL Type and Subtype pair [%s>%s] are not valid keywords"
+  (format "Related URL Content Type, Type, and Subtype [%s>%s>%s] are not a valid set together."
+          (:URLContentType related-url)
           (:Type related-url)
           (:Subtype related-url)))
 

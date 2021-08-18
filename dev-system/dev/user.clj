@@ -2,6 +2,7 @@
   (:require
    [alex-and-georges.debug-repl]
    [clojure.java.io :as io]
+   [clojure.java.shell :as shell]
    [clojure.main]
    [clojure.pprint :refer [pp pprint]]
    [clojure.repl :refer :all]
@@ -337,5 +338,11 @@
   []
   (println (slurp (io/resource "text/banner.txt")))
   :ok)
+
+(defn network-purge
+  "Tell docker to purge the network"
+  []
+  (println "This may take a minute...")
+  (shell/sh "docker" "network" "prune" "-f"))
 
 (info "Custom dev-system user.clj loaded.")

@@ -55,7 +55,8 @@
    :granule-data-format "granuledataformat?format=csv"})
 
 (def keyword-scheme->field-names
-  "Maps each keyword scheme to its subfield names."
+  "Maps each keyword scheme to its subfield names. These values are also used to
+  decide which concepts will be cached"
   {:providers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name :url :uuid]
    :platforms [:category :series-entity :short-name :long-name :uuid]
    :instruments [:category :class :type :subtype :short-name :long-name :uuid]
@@ -67,7 +68,7 @@
    :measurement-name [:context-medium :object :quantity :uuid]
    :concepts [:short-name :long-name :uuid]
    :iso-topic-categories [:iso-topic-category :uuid]
-   :related-urls [:type :subtype :uuid]
+   :related-urls [:url-content-type :type :subtype :uuid]
    :granule-data-format [:short-name :long-name :uuid]})
 
 (def keyword-scheme->expected-field-names
