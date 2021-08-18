@@ -61,13 +61,10 @@
                                collection validation-options context))
          collection-warnings (map #(str (:path %) " " (string/join " " (:errors %)))
                                   collection-warnings)
-         non-err-warnings (concat warnings collection-warnings)
-         warnings (concat err-warnings non-err-warnings)]
+         warnings (concat err-warnings warnings collection-warnings)]
      ;; The sanitized UMM Spec collection is returned so that ingest does not fail
      {:collection sanitized-collection
-      :warnings warnings
-      :err-warnings err-warnings
-      :non-err-warnings non-err-warnings})))
+      :warnings warnings})))
 
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
@@ -77,39 +74,38 @@
         {:keys [provider-id native-id]} concept
         prev-concept (first (ingest-helper/find-visible-collections context {:provider-id provider-id
                                                                              :native-id native-id}))
-        {:keys [collection warnings err-warnings non-err-warnings]} (validate-and-parse-collection-concept
-                                                                     context
-                                                                     concept
-                                                                     prev-concept
-                                                                     validation-options)
+        {:keys [collection warnings]} (validate-and-parse-collection-concept
+                                       context
+                                       concept
+                                       prev-concept
+                                       validation-options)
         ;; Add extra fields for the collection
         coll-concept (assoc (add-extra-fields-for-collection context concept collection)
                             :umm-concept collection)]
     ;; progressive update doesn't apply to business rules.
     (v/validate-business-rules context coll-concept prev-concept)
     {:concept coll-concept
-     :warnings warnings
-     :err-warnings (:existing-errors (first err-warnings))
-     :non-err-warnings non-err-warnings}))
+     :warnings warnings}))
 
 (defn-timed save-collection
   "Store a concept in mdb and indexer.
    Return entry-titile, concept-id, revision-id, and warnings."
   [context concept validation-options]
-  (let [{:keys [concept warnings err-warnings non-err-warnings]} (validate-and-prepare-collection
-                                                                  context
-                                                                  concept
-                                                                  validation-options)]
+  (let [{:keys [concept warnings]} (validate-and-prepare-collection context
+                                                                    concept
+                                                                    validation-options)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)
-          entry-title (get-in concept [:extra-fields :entry-title])]
-      ;; if ingested with existing error, log the existing errors and warnings for the collection
+          entry-title (get-in concept [:extra-fields :entry-title])
+          ;; extract out existing errors from warnings
+          existing-errors (some #(:existing-errors %) warnings)
+          ;; extract out the rest of the  warnings from warnings
+          other-warnings (remove #(:existing-errors %) warnings)]
+      ;; if ingested with existing errors, log the existing errors and warnings for the collection
       ;; and the user
-      ;; note: err-warnings are the existing errors that are returned as part of the warnings since
-      ;; we bypass them in the progressive update,  non-err-warnings are the true warnings.
-      (when (seq err-warnings)
+      (when (seq existing-errors)
         (warn "Ingest with existing errors info:  "
               (format "Collection[%s] has the existing errors: %s and warnings: %s by user: [%s]"
-                      concept-id (pr-str err-warnings) (pr-str non-err-warnings)
+                      concept-id (pr-str existing-errors) (pr-str other-warnings)
                       (if (:token context)
                         (common-context/context->user-id context)
                         "unknown user"))))
