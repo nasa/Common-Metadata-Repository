@@ -644,7 +644,7 @@
       gran-5-update-mb)))
 
 (def ^:private gran-without-format
-  "ECHO10 granule for testing adding format"
+  "ECHO10 granule for testing adding format as final element"
   "<Granule>
     <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
     <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
@@ -663,7 +663,7 @@
   </Granule>")
 
 (def ^:private updated-gran-without-format
-  "ECHO10 granule for testing adding format"
+  "ECHO10 granule for testing adding format as final element"
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
@@ -684,7 +684,7 @@
 </Granule>\n")
 
 (def ^:private gran-without-format-middle
-  "ECHO10 granule for testing updating format"
+  "ECHO10 granule for testing adding format"
   "<Granule>
     <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
     <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
@@ -704,7 +704,7 @@
   </Granule>")
 
 (def ^:private updated-gran-without-format-middle
-  "ECHO10 granule for testing updating format"
+  "ECHO10 granule for testing adding format"
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>

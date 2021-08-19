@@ -5,7 +5,7 @@
    [clojure.zip :as zip]))
 
 (def ^:private tags-after-data-format
-  "Defines the element tags that come after DataGranule in ECHO10 Granule xml schema"
+  "Defines the element tags that come after DataFormat in ECHO10 Granule xml schema"
   #{:Visible :CloudCover :MetadataStandardName :MetadataStandardVersion :AssociatedBrowseImages :AssociatedBrowseImageUrls})
 
 (defn- data-format-element
@@ -13,7 +13,7 @@
   [value]
   (xml/element :DataFormat {} value))
 
-(defn- update-data-granule-element
+(defn- update-data-format-element
   "Take a parsed granule xml, update the <DataFormat>.
   Returns the zipper representation of the updated xml."
   [parsed format]
@@ -45,7 +45,7 @@
   Update the ECHO10 granule metadata with the format. Returns the updated metadata."
   [gran-xml format]
   (let [parsed (xml/parse-str gran-xml)]
-    (xml/indent-str (update-data-granule-element parsed format))))
+    (xml/indent-str (update-data-format-element parsed format))))
 
 (defn update-format
   "Update the ECHO10 granule metadata with format.

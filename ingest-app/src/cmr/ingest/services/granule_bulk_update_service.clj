@@ -297,7 +297,7 @@
    :invalid-data [(format "Updating checksum is not supported for format [%s]" (:format concept))]))
 
 (defmulti update-size
-  "Add size to the given granule concept."
+  "Add/update size to the given granule concept."
   (fn [context concept size]
     (mt/format-key (:format concept))))
 
@@ -311,7 +311,7 @@
    :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))]))
 
 (defmulti update-format
-  "Add format to the given granule concept."
+  "Add/update format to the given granule concept."
   (fn [context concept size]
     (mt/format-key (:format concept))))
 
@@ -410,7 +410,7 @@
    context concept bulk-update-params user-id append-s3-url))
 
 (defn- modify-checksum-size-format
-  "Add or update the checksum value and algorithm for the given concept with the provided values
+  "Add or update the checksum, size, or format for the given concept with the provided values
   using the provided transform function."
   [context concept bulk-update-params user-id xf]
   (let [{:keys [format metadata]} concept
