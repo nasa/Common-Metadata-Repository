@@ -66,7 +66,8 @@
   limitations. Because we need to be able to publish data for all three envirments
   with one host, it was decided to use the different version capabilities in KMS
   to isolate production from the other two envirments. Specificly: rucontenttype
-  is a three level tree in SIT, but not PROD."
+  is a three level tree in SIT, but not PROD. This process is only needed durring
+  the transition and should be deleted once in production."
 
   (env-varient "rucontenttype?format=csv" if-not-production "&version=DRAFT")
  )
