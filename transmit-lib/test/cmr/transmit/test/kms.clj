@@ -69,3 +69,15 @@
   (testing "Invalid keyword scheme requested throws an exception"
     (is (thrown? java.lang.AssertionError
           (kms/get-keywords-for-keyword-scheme nil :not-a-kms-scheme)))))
+
+(deftest env-varient-test
+  (let [base-value "base=value"
+        additional "&add=this"
+        prod-test (fn [] false)
+        other-test (fn [] true)]
+    (testing "Check that we can update the KMS url based on environments"
+      (is (= "base=value" (#'cmr.transmit.kms/env-varient base-value prod-test additional)))
+      (is (= "base=value&add=this" (#'cmr.transmit.kms/env-varient base-value other-test additional))))
+    (testing "Do a real world test using a real url"
+      (is (= "rucontenttype?format=csv&version=DRAFT"
+             (#'cmr.transmit.kms/env-varient "rucontenttype?format=csv" other-test "&version=DRAFT"))))))
