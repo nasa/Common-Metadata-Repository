@@ -3,6 +3,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
    [cmr.ingest.services.granule-bulk-update.checksum.echo10 :as checksum]
+   [cmr.ingest.services.granule-bulk-update.format.echo10 :as format]
    [cmr.ingest.services.granule-bulk-update.size.echo10 :as size]))
 
 (def ^:private update-value-and-algorithm
@@ -641,3 +642,146 @@
       "500.45"
       gran-5
       gran-5-update-mb)))
+
+(def ^:private gran-without-format
+  "ECHO10 granule for testing adding format"
+  "<Granule>
+    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+    <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+    <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+    <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+    </Collection>
+    <DataGranule>
+      <Checksum>
+        <Value>1ff38cc592c4c5d0c8e3ca38be8f1eb1</Value>
+        <Algorithm>MD5</Algorithm>
+      </Checksum>
+      <DayNightFlag>UNSPECIFIED</DayNightFlag>
+      <ProductionDateTime>2018-02-06T19:13:22Z</ProductionDateTime>
+    </DataGranule>
+  </Granule>")
+
+(def ^:private updated-gran-without-format
+  "ECHO10 granule for testing adding format"
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<Granule>
+   <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+   <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+   <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+   <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+   </Collection>
+   <DataGranule>
+      <Checksum>
+         <Value>1ff38cc592c4c5d0c8e3ca38be8f1eb1</Value>
+         <Algorithm>MD5</Algorithm>
+      </Checksum>
+      <DayNightFlag>UNSPECIFIED</DayNightFlag>
+      <ProductionDateTime>2018-02-06T19:13:22Z</ProductionDateTime>
+   </DataGranule>
+   <DataFormat>NET-CDF</DataFormat>
+</Granule>\n")
+
+(def ^:private gran-without-format-middle
+  "ECHO10 granule for testing updating format"
+  "<Granule>
+    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+    <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+    <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+    <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+    </Collection>
+    <DataGranule>
+      <Checksum>
+        <Value>1ff38cc592c4c5d0c8e3ca38be8f1eb1</Value>
+        <Algorithm>MD5</Algorithm>
+      </Checksum>
+      <DayNightFlag>UNSPECIFIED</DayNightFlag>
+      <ProductionDateTime>2018-02-06T19:13:22Z</ProductionDateTime>
+    </DataGranule>
+    <Visible>true</Visible>
+  </Granule>")
+
+(def ^:private updated-gran-without-format-middle
+  "ECHO10 granule for testing updating format"
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<Granule>
+   <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+   <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+   <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+   <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+   </Collection>
+   <DataGranule>
+      <Checksum>
+         <Value>1ff38cc592c4c5d0c8e3ca38be8f1eb1</Value>
+         <Algorithm>MD5</Algorithm>
+      </Checksum>
+      <DayNightFlag>UNSPECIFIED</DayNightFlag>
+      <ProductionDateTime>2018-02-06T19:13:22Z</ProductionDateTime>
+   </DataGranule>
+   <DataFormat>MP3</DataFormat>
+   <Visible>true</Visible>
+</Granule>\n")
+
+(def ^:private gran-with-format
+  "ECHO10 granule for testing updating format"
+  "<Granule>
+    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+    <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+    <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+    <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+    </Collection>
+    <DataGranule>
+      <Checksum>
+        <Value>1ff38cc592c4c5d0c8e3ca38be8f1eb1</Value>
+        <Algorithm>MD5</Algorithm>
+      </Checksum>
+      <DayNightFlag>UNSPECIFIED</DayNightFlag>
+      <ProductionDateTime>2018-02-06T19:13:22Z</ProductionDateTime>
+    </DataGranule>
+    <DataFormat>ZIP</DataFormat>
+  </Granule>")
+
+(def ^:private updated-gran-with-format
+  "ECHO10 granule for testing updating format"
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<Granule>
+   <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+   <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+   <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+   <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+   </Collection>
+   <DataGranule>
+      <Checksum>
+         <Value>1ff38cc592c4c5d0c8e3ca38be8f1eb1</Value>
+         <Algorithm>MD5</Algorithm>
+      </Checksum>
+      <DayNightFlag>UNSPECIFIED</DayNightFlag>
+      <ProductionDateTime>2018-02-06T19:13:22Z</ProductionDateTime>
+   </DataGranule>
+   <DataFormat>XML</DataFormat>
+</Granule>\n")
+
+(deftest update-format
+  (testing "various cases of updating size"
+    (are3 [format source result]
+      (is (= result (#'format/update-format-metadata source format)))
+
+      "Add DataFormat to a granule without it (final element)"
+      "NET-CDF"
+      gran-without-format
+      updated-gran-without-format
+
+      "Add DataFormat to a granule without it"
+      "MP3"
+      gran-without-format-middle
+      updated-gran-without-format-middle
+
+      "Update DataFormat in a granule that already has the element"
+      "XML"
+      gran-with-format
+      updated-gran-with-format)))
