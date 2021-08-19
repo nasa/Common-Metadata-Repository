@@ -1249,7 +1249,7 @@ curl -i -XPOST \
   -H "Content-Type: application/json"
   -H "Echo-Token: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
-  -d 
+  -d
 '{ "name": "Example of updating sizes",
 	"operation": "UPDATE_FIELD",
 	"update-field":"Size",
@@ -1283,7 +1283,7 @@ curl -i -XPOST \
   -H "Echo-Token: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
-'{ "name": "Example of updating sizes",
+'{ "name": "Example of updating format",
 	"operation": "UPDATE_FIELD",
 	"update-field":"Size",
 	"updates":[
