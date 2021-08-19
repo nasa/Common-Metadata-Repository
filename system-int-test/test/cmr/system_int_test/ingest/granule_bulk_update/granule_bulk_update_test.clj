@@ -911,9 +911,11 @@
           (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
           (is (= [{:granule-ur "7504BothSizeFields"
                    :status "FAILED"
-                   :status-message (str "Can't update Size: invalid data specified. Please include"
-                                        " at most one value for DataGranuleSizeInBytes, and one "
-                                        "value for SizeMBDataGranule, seperated by a comma.")}]
+                   :status-message
+                          (str "Can't update Size: invalid data specified. Please include at most one value for "
+                            "DataGranuleSizeInBytes, and one value for SizeMBDataGranule, seperated by a comma. "
+                            "DataGranuleSizeInBytes must be an integer value, while SizeMBDataGranule must be a "
+                            "double value with a decimal point.")}]
                  granule-statuses)))
 
         (testing "verify the metadata was not altered"
@@ -939,9 +941,11 @@
           (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
           (is (= [{:granule-ur "7504BothSizeFields"
                    :status "FAILED"
-                   :status-message (str "Can't update Size: invalid data specified. Please include"
-                                        " at most one value for DataGranuleSizeInBytes, and one "
-                                        "value for SizeMBDataGranule, seperated by a comma.")}]
+                   :status-message
+                          (str "Can't update Size: invalid data specified. Please include at most one value for "
+                            "DataGranuleSizeInBytes, and one value for SizeMBDataGranule, seperated by a comma. "
+                            "DataGranuleSizeInBytes must be an integer value, while SizeMBDataGranule must be a "
+                            "double value with a decimal point.")}]
                  granule-statuses)))))))
 
 (deftest update-additional-file
