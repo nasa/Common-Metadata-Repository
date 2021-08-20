@@ -948,6 +948,46 @@
                             "double value with a decimal point.")}]
                  granule-statuses)))))))
 
+(deftest update-format
+  "test updating format with real granule file that is already in CMR code base"
+  (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+        coll (data-core/ingest-concept-with-metadata-file "CMR-7504/7504-Coll.xml"
+                                                          {:provider-id "PROV1"
+                                                           :concept-type :collection
+                                                           :native-id "MODIS_A-JPL-L2P-v2019.0"
+                                                           :format-key :dif10})
+        granule (data-core/ingest-concept-with-metadata-file "CMR-7505/7505.xml"
+                                                             {:provider-id "PROV1"
+                                                              :concept-type :granule
+                                                              :native-id "MODIS_A-JPL-L2P-Gran"
+                                                              :format-key :echo10})]
+    (testing "ECHO10 granule update for Size in MB and bytes"
+      (let [bulk-update {:operation "UPDATE_FIELD"
+                         :update-field "Format"
+                         :updates [["7505" "NET-CDF"]]}
+            {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                   "PROV1" bulk-update bulk-update-options)
+            {:keys [concept-id revision-id]} granule
+            target-metadata (-> "CMR-7505/7505-Updated.xml" io/resource slurp)]
+        (index/wait-until-indexed)
+        (is (= 200 status))
+        (is (some? task-id))
+        (is (= target-metadata
+               (:metadata (mdb/get-concept concept-id (inc revision-id)))))
+
+        (ingest/update-granule-bulk-update-task-statuses)
+
+        ;; verify the granule status is UPDATED
+        (let [status-req-options {:query-params {:show_granules "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "All granule updates completed successfully." status-message))
+          (is (= [{:granule-ur "7505"
+                   :status "UPDATED"}]
+                 granule-statuses)))))))
+
+
 (deftest update-additional-file
   "test updating files and filepackages with real granule files that are already in CMR code base"
   (testing "UMM-G granule"
@@ -1309,7 +1349,7 @@
           (is (= "Complete." progress))))))))
 
 (deftest update-format-test
-  "test updating files and filepackages with real granule files that are already in CMR code base"
+  "test updating with incorrect combinations of update-field and update format"
   (testing "Give new :updates format with update-field that isn't AdditionalFile"
     (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
           coll (data-core/ingest-concept-with-metadata-file

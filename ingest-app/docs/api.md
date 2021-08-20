@@ -1249,7 +1249,7 @@ curl -i -XPOST \
   -H "Content-Type: application/json"
   -H "Echo-Token: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
-  -d 
+  -d
 '{ "name": "Example of updating sizes",
 	"operation": "UPDATE_FIELD",
 	"update-field":"Size",
@@ -1269,7 +1269,40 @@ Example granule bulk update response:
     <task-id>5</task-id>
 </result>
 ```
-  
+
+**operation: "UPDATE_FIELD", update-field: "Format"**
+Supported metadata formats:
+  - <DataFormat> element in ECHO10 format
+
+To update DataFormat, simply supply a new string value - the example below shows three granules requested for a Format update:
+
+```
+curl -i -XPOST \
+  -H "Cmr-Pretty:true" \
+  -H "Content-Type: application/json"
+  -H "Echo-Token: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{ "name": "Example of updating format",
+	"operation": "UPDATE_FIELD",
+	"update-field":"Size",
+	"updates":[
+             ["granule_ur1", "HDF-EOS5"],
+             ["granule_ur2", "ZIP"],
+             ["granule_ur3", "netCDF"]
+	]
+}'
+```
+
+Example granule bulk update response:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+    <status>200</status>
+    <task-id>5</task-id>
+</result>
+```
+
 **operation: "UPDATE_FIELD", update-field: "AdditionalFile"**
 Supported metadata formats:
   - UMM-G File and FilePackage elements located under DataGranule/ArchiveAndDistributionInformation.

@@ -12,6 +12,7 @@
       "enum": [
         "AdditionalFile",
         "Checksum",
+        "Format",
         "OPeNDAPLink",
         "S3Link",
         "Size"
