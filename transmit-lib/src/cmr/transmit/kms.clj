@@ -39,38 +39,20 @@
    :related-urls :uuid
    :granule-data-format :uuid})
 
-(defn- if-not-production
-  "Return true if CMR is not currently in production. This function is passed to
-   env-varient. If new rules are needed, then write a similar file. The function
-   requires that a function return true if the KMS URL is to be appended to"
-  []
-  (not= "prod" (System/getenv "ENVIRONMENT")))
-
-(defn- env-varient
-  "Return the KMS URL fragment that is specific to the envirment CMR is currently
-   running in. Use this function to update the URL parameter list that will be
-   sent to KMS.
-   Take three parameters:
-   * resource-name : URL fragment found in keyword-scheme->gcmd-resource-name
-   * env-fn : function that returns true if URL is to be appended to
-   * varient : URL parameters to append if env-fn is true"
-  [resource-name env-fn varient]
-  (let [url resource-name]
-    (if (env-fn)
-      (str url varient)
-      url)))
-
 (comment
- "The following line of code is used for trasitioning CMR from SIT->UAT->PROD.
-  These three envirments all talk to production KMS due to AWS->EBNET network
-  limitations. Because we need to be able to publish data for all three envirments
-  with one host, it was decided to use the different version capabilities in KMS
+ "The following map contains code used for trasitioning CMR from SIT->UAT->PROD
+  and keeping in step with KMS changes. These three envirments all talk to
+  production KMS due to AWS->EBNET network limitations. Because of of this we
+  need to be able to publish data for all three envirments with one host. while
+  not ideal, it was decided to use the different 'version' capabilities in KMS
   to isolate production from the other two envirments. Specificly: rucontenttype
   is a three level tree in SIT, but not PROD. This process is only needed durring
   the transition and should be deleted once in production."
-
-  (env-varient "rucontenttype?format=csv" if-not-production "&version=DRAFT")
  )
+
+ (def production?
+   "Return true if CMR is not currently in production."
+   (= "prod" (System/getenv "ENVIRONMENT")))
 
 (def keyword-scheme->gcmd-resource-name
   "Maps each keyword scheme to the GCMD resource name"
@@ -84,7 +66,8 @@
    :measurement-name "measurementname?format=csv"
    :concepts "idnnode?format=csv"
    :iso-topic-categories "isotopiccategory?format=csv"
-   :related-urls (env-varient "rucontenttype?format=csv" if-not-production "&version=DRAFT")
+   :related-urls (if production? "rucontenttype?format=csv"
+                   "rucontenttype?format=csv&version=DRAFT")
    :granule-data-format "granuledataformat?format=csv"})
 
 (def keyword-scheme->field-names
