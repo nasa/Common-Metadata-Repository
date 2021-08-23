@@ -1,0 +1,182 @@
+{
+    "Name": "This Tool broke some tests",
+    "LongName": "Isn't it ironic that a tool would be the one to break something?",
+    "Version": "1.0",
+    "VersionDescription": "Description of the version of the tool.",
+    "Type": "Downloadable Tool",
+    "LastUpdatedDate": "2020-05-01T00:00:00Z",
+    "Description": "Description of the factory made tool.",
+    "DOI": "https://doi.org/10.1234/SOMEDAAC/5678",
+    "URL": {
+      "Description": "Access the WRS-2 Path/Row to Latitude/Longitude Converter.",
+      "URLContentType": "DistributionURL",
+      "Type": "DOWNLOAD SOFTWARE",
+      "Subtype": "MOBILE APP",
+      "URLValue": "http://www.scp.byu.edu/software/slice_response/Xshape_temp.html"
+    },
+    "RelatedURLs": [
+      {
+        "Description": "Test related url",
+        "URLContentType": "VisualizationURL",
+        "Type": "GET RELATED VISUALIZATION",
+        "Subtype": "MAP",
+        "URL": "nasa.gov"
+      },
+      {
+        "Description": "Test another related url",
+        "URLContentType": "PublicationURL",
+        "Type": "VIEW RELATED INFORMATION",
+        "Subtype": "ALGORITHM DOCUMENTATION",
+        "URL": "algorithms.org"
+      }
+    ],
+    "SupportedInputFormats": ["GEOTIFFFLOAT32", "ICARTT"],
+    "SupportedOutputFormats": ["KML", "NETCDF-4"],
+    "SupportedOperatingSystems": [
+      {
+        "OperatingSystemName": "Puppy Linux",
+        "OperatingSystemVersion": "8.8"
+      },
+      {
+        "OperatingSystemName": "Tails",
+        "OperatingSystemVersion": "9.5"
+      }
+    ],
+    "SupportedBrowsers": [
+      {
+        "BrowserName": "3B",
+        "BrowserVersion": "3.0"
+      },
+      {
+        "BrowserName": "Retawq",
+        "BrowserVersion": "1.1"
+      }
+    ],
+    "SupportedSoftwareLanguages": [
+      {
+        "SoftwareLanguageName": "LOLCODE",
+        "SoftwareLanguageVersion": "LOL"
+      },
+      {
+        "SoftwareLanguageName": "Chicken",
+        "SoftwareLanguageVersion": "Chicken Chicken Chicken Chicken"
+      }
+    ],
+    "Quality": {
+      "QualityFlag": "Reviewed",
+      "Traceability": "traceability",
+      "Lineage": "lineage"
+    },
+    "AccessConstraints": "access constraint 1",
+    "UseConstraints": {
+      "LicenseURL": "tool.license.boo",
+      "LicenseText": "license text text license"
+    },
+    "ToolKeywords": [
+      {
+        "ToolCategory": "EARTH SCIENCE SERVICES",
+        "ToolTopic": "DATA ANALYSIS AND VISUALIZATION",
+        "ToolTerm": "GEOGRAPHIC INFORMATION SYSTEMS",
+        "ToolSpecificTerm": "DESKTOP GEOGRAPHIC INFORMATION SYSTEMS"
+      },
+      {
+        "ToolCategory": "EARTH SCIENCE SERVICES",
+        "ToolTopic": "DATA ANALYSIS AND VISUALIZATION",
+        "ToolTerm": "GEOGRAPHIC INFORMATION SYSTEMS",
+        "ToolSpecificTerm": "MOBILE GEOGRAPHIC INFORMATION SYSTEMS"
+      }
+    ],
+    "AncillaryKeywords": ["Ancillary keyword 1", "Ancillary keyword 2"],
+    "Organizations": [
+      {
+        "Roles": ["SERVICE PROVIDER", "DEVELOPER"],
+        "ShortName": "UCAR/NCAR/EOL/CEOPDM",
+        "LongName": "CEOP Data Management, Earth Observing Laboratory, National Center for Atmospheric Research, University Corporation for Atmospheric Research",
+        "URLValue": "http://www.eol.ucar.edu/projects/ceop/dm/"
+      },
+      {
+        "Roles": ["PUBLISHER"],
+        "ShortName": "AARHUS-HYDRO",
+        "LongName": "Hydrogeophysics Group, Aarhus University "
+      }
+    ],
+    "ContactGroups": [
+      {
+        "Roles": ["SERVICE PROVIDER", "PUBLISHER"],
+        "GroupName": "Group 1",
+        "ContactInformation": {
+          "ServiceHours": "9-6, M-F",
+          "ContactInstruction": "Email only",
+          "ContactMechanisms": [
+            {
+              "Type": "Email",
+              "Value": "example@example.com"
+            }, {
+              "Type": "Email",
+              "Value": "example2@example.com"
+            }
+          ],
+          "Addresses": [
+            {
+              "StreetAddresses": ["300 E Street Southwest", "Room 203", "Address line 3"],
+              "City": "Washington",
+              "StateProvince": "DC",
+              "PostalCode": "20546",
+              "Country": "United States"
+            },
+            {
+              "StreetAddresses": ["8800 Greenbelt Road"],
+              "City": "Greenbelt",
+              "StateProvince": "MD",
+              "PostalCode": "20771",
+              "Country": "United States"
+            }
+          ]
+        }
+      },
+      {
+        "Roles": ["SERVICE PROVIDER"],
+        "GroupName": "Group 2"
+      }
+    ],
+    "ContactPersons": [
+      {
+        "Roles": ["DEVELOPER", "SERVICE PROVIDER"],
+        "ContactInformation": {
+          "ContactMechanisms": [
+            {
+              "Type": "Email",
+              "Value": "example@example.com"
+            }, {
+              "Type": "Fax",
+              "Value": "800-555-1212"
+            }
+          ],
+          "Addresses": [
+            {
+              "StreetAddresses": ["47914 252nd Street"],
+              "City": "Sioux Falls",
+              "StateProvince": "SD",
+              "Country": "USA",
+              "PostalCode": "57198-0001"
+            }
+          ]
+        },
+        "FirstName": "Service Provider Personnel First Name",
+        "MiddleName": "Service Provider Personnel Middle Name",
+        "LastName": "Service Provider Personnel Last Name"
+      },
+      {
+        "Roles": ["DEVELOPER"],
+        "LastName": "Last 2"
+      }
+    ],
+    "SearchAction": {
+      "SearchActionElement": "A little chant may not seem like a real spell, but it can still bring magickal results if you put your heart into it. Use this spell when you are looking for something you've misplaced in your home. You just need a white candle. Light the candle, and put it in a holder that is easy to carry. Begin to walk from room to room with it, repeating the following: I need what I seek Give me a peek Draw my eyes For my prize. Let your eyes wander around until you feel drawn to the spot where your missing item is hiding."
+    },
+    "MetadataSpecification": {
+      "URL": "https://cdn.earthdata.nasa.gov/umm/tool/v1.0",
+      "Name": "UMM-T",
+      "Version": "1.0"
+    }
+  }
