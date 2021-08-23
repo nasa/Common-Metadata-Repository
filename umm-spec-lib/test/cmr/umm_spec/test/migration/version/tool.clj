@@ -30,7 +30,7 @@
                     :ShortName "USGS/EROS"
                     :LongName "US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES"
                     :URLValue "http://www.usgs.gov"}]
-   :SearchAction "smart handoff search action"
+   :SearchAction {:SearchActionElement "smart handoff search action"}
    :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.0"
                            :Name "UMM-T"
                            :Version "1.0"}})
