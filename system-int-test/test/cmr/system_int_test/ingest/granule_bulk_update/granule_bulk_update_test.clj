@@ -680,6 +680,55 @@
             (is (= 1 (count (filter #(= "http://opendap.earthdata.nasa.gov/test1" (:URL %))
                                     (:RelatedUrls (json/parse-string latest-metadata true))))))))))))
 
+(deftest update-opendap-type
+  "test updating OPeNDAP type with real granule file that is already in CMR code base"
+  (testing "UMM-G granule"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          {:keys [concept-id revision-id]} granule
+          bulk-update {:operation "UPDATE_TYPE"
+                       :update-field "OPeNDAPLink"
+                       :updates ["Unique_Granule_UR_v1.6"]}
+          {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                 "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 200 status))
+      (is (some? task-id))
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+            {:keys [task-status status-message granule-statuses]} status-response]
+        (is (= "COMPLETE" task-status))
+        (is (= "All granule updates completed successfully." status-message))
+        (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                 :status "UPDATED"}]
+               granule-statuses)))
+      ;; verify the granule metadata is updated as expected
+      (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
+            updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
+        ;; since the metadata will be returned in the latest UMM-G format,
+        ;; we can't compare the whole metadata to an expected string.
+        ;; We just verify the updated OPeNDAP url, type and subtype exists in the metadata.
+        ;; The different scenarios of the RelatedUrls update are covered in unit tests.
+        (is (string/includes? original-metadata "OPENDAP DATA"))
+        (is (not (string/includes? original-metadata "USE SERVICE API")))
+
+        (is (string/includes? updated-metadata "OPENDAP DATA"))
+        (is (string/includes? updated-metadata "USE SERVICE API"))))))
+
 (deftest update-checksum
   "test updating checksum with real granule file that is already in CMR code base"
   (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}

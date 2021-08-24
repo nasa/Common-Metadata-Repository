@@ -3,8 +3,9 @@
     "OperationEnum": {
       "type": "string",
       "enum": [
+        "APPEND_TO_FIELD",
         "UPDATE_FIELD",
-        "APPEND_TO_FIELD"
+        "UPDATE_TYPE"
       ]
     },
     "UpdateFieldEnum": {
@@ -16,7 +17,6 @@
         "OPeNDAPLink",
         "S3Link",
         "Size"
-
       ]
     },
     "UpdateTupleType": {
@@ -112,6 +112,9 @@
           },
           {
             "$ref": "#/definitions/UpdateTupleType"
+          },
+          {
+            "type": "string"
           }
         ]
       }

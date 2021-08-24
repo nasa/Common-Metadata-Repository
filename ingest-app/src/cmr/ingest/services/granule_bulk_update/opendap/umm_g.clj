@@ -1,6 +1,7 @@
 (ns cmr.ingest.services.granule-bulk-update.opendap.umm-g
   "Contains functions to update UMM-G granule metadata for OPeNDAP url bulk update."
   (:require
+   [clojure.string :as string]
    [cmr.common.services.errors :as errors]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]))
 
@@ -36,6 +37,14 @@
        first
        (update-opendap-url* (first (opendap-type url-map)))))
 
+(defn- updated-type-related-url
+  "Updates types"
+  [related-url]
+  (if (re-find #"opendap" (string/lower-case (:URL related-url)))
+    (merge related-url {:Type OPENDAP_RELATEDURL_TYPE} {:Subtype OPENDAP_RELATEDURL_SUBTYPE})
+    related-url))
+
+
 (defn- updated-related-urls
   "Take the RelatedUrls, update any existing opendap url with the given url-map."
   [related-urls url-map]
@@ -59,6 +68,15 @@
         on-prem-url (urls->updated-url :on-prem opendap-urls url-map)
         updated-urls (conj related-urls cloud-url on-prem-url)]
     (remove nil? updated-urls)))
+
+(defn update-opendap-type
+  "Takes UMM-G record and grouped OPeNDAP urls in the format of
+  {:cloud [<cloud_url>] :on-prem [<on_prem_url>]}.
+  The cloud url will overwrite any existing Hyrax-in-the-cloud OPeNDAP url in the UMM-G record;
+  the on-prem url will overwrite any existing on-prem OPeNDAP url in the UMM-G record.
+  Returns the updated UMM-G record."
+  [umm-gran grouped-urls]
+  (update umm-gran :RelatedUrls #(mapv updated-type-related-url %)))
 
 (defn update-opendap-url
   "Takes UMM-G record and grouped OPeNDAP urls in the format of

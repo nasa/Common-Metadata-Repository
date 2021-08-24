@@ -230,3 +230,39 @@
       "matching RelatedUrls in metadata, cloud url update"
       "https://opendap.earthdata.nasa.gov/foo"
       {:RelatedUrls sample-urls})))
+
+
+(deftest update-opendap-type
+  (testing "add or update OPeNDAP url to UMM-G"
+    (are3 [source result]
+      (is (= result (umm-g/update-opendap-type source nil)))
+
+      "No opendap links, shouldn't be changed"
+      {:RelatedUrls [{:URL "http://example.com/foo"
+                      :Type "FOO TYPE"
+                      :Subtype "GET DATA"}]}
+      {:RelatedUrls [{:URL "http://example.com/foo"
+                      :Type "FOO TYPE"
+                      :Subtype "GET DATA"}]}
+
+      "One opendap link, gets updated type"
+      {:RelatedUrls [{:URL "http://example.com/opendap"
+                      :Type "FOO TYPE"
+                      :Subtype "GET DATA"}]}
+      {:RelatedUrls [{:URL "http://example.com/opendap"
+                      :Type "USE SERVICE API"
+                      :Subtype "OPENDAP DATA"}]}
+
+      "One opendap link, gets updated type"
+      {:RelatedUrls [{:URL "http://example.com/opendap"
+                      :Type "USE SERVICE API"
+                      :Subtype "GET DATA"}
+                     {:URL "http://example.com/other-service"
+                      :Type "USE SERVICE API"
+                      :Subtype "GET DATA"}]}
+      {:RelatedUrls [{:URL "http://example.com/opendap"
+                      :Type "USE SERVICE API"
+                      :Subtype "OPENDAP DATA"}
+                     {:URL "http://example.com/other-service"
+                      :Type "USE SERVICE API"
+                      :Subtype "GET DATA"}]})))
