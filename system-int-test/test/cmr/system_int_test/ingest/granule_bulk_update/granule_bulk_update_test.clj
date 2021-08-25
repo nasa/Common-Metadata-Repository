@@ -1467,7 +1467,8 @@
       ;; verify the granule status is UPDATED
       (is (= 400 status))
       (is (not (some? task-id)))
-      (is (= "Wrong update format specified for granule UR [Unique_Granule_UR_v1.6]. Please use the correct update format for updates with event-type [update_field:s3link]"
+      (is (= (str "Bulk Granule Update failed - invalid update format specified for the "
+                  "operation:update-field combination [update_field:s3link].")
              (first errors)))))
 
   (testing "Give new :updates format with update-field that isn't AdditionalFile"
@@ -1499,5 +1500,48 @@
       ;; verify the granule status is UPDATED
       (is (= 400 status))
       (is (not (some? task-id)))
-      (is (= "Wrong update format specified for granule UR [GranuleUR1]. Please use the correct update format for updates with event-type [update_field:additionalfile]"
-             (first errors))))))
+      (is (= (str "Bulk Granule Update failed - invalid update format specified for the "
+                  "operation:update-field combination [update_field:additionalfile].")
+             (first errors)))))
+
+  (testing "Invalid operation:update_field combination"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample2.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          {:keys [concept-id revision-id]} granule
+          bulk-update {:operation "UPDATE_TYPE"
+                       :update-field "Size"
+                       :updates [["Unique_Granule_UR_v1.6" "123"]]}
+
+
+
+          {:keys [status task-id errors] :as response} (ingest/bulk-update-granules
+                                                        "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 200 status))
+      (is (some? task-id))
+
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+            {:keys [task-status status-message granule-statuses]} status-response]
+        (is (= "COMPLETE" task-status))
+        (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                 :status "FAILED"
+                 :status-message (str "Bulk Granule Update failed - the operation:update-field "
+                                      "combination [update_type:size] is invalid.")}]
+               granule-statuses))
+        ;;verify metadata is not altered
+        (is (not (:metadata (mdb/get-concept concept-id (inc revision-id)))))))))

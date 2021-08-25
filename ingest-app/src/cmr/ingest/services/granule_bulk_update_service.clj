@@ -51,6 +51,23 @@
              :when (> freq 1)]
          id)))
 
+(defn- invalid-update-error
+  "throws error"
+  [event-type]
+  (errors/throw-service-errors
+   :bad-request
+   [(format (str "Bulk Granule Update failed - invalid update format specified for the "
+                 "operation:update-field combination [%s].")
+            event-type)]))
+
+(defn- invalid-event-type
+  "throws error"
+  [event-type]
+  (errors/throw-service-errors
+   :bad-request
+   [(format (str "Bulk Granule Update failed - the operation:update-field combination [%s] is invalid.")
+            event-type)]))
+
 (defmulti update->instruction
   "Returns the granule bulk update instruction for a single update item"
   (fn [event-type item]
@@ -59,11 +76,7 @@
 (defmethod update->instruction :update_field:additionalfile
   [event-type item]
   (if-not (map? item)
-    (errors/throw-service-errors
-     :bad-request
-     [(format (str "Wrong update format specified for granule UR [%s]. "
-                   "Please use the correct update format for updates with event-type [%s]")
-              (first item) event-type)])
+    (invalid-update-error event-type)
     (let [{:keys [GranuleUR Files]} item]
       {:event-type event-type
        :granule-ur GranuleUR
@@ -72,11 +85,7 @@
 (defmethod update->instruction :update_type:opendaplink
   [event-type item]
   (if-not (string? item)
-    (errors/throw-service-errors
-     :bad-request
-     [(format (str "Wrong update format specified for granule UR [%s]. "
-                   "Please use the correct update format for updates with event-type [%s]")
-              (first item) event-type)])
+    (invalid-update-error event-type)
     {:event-type event-type
      :granule-ur item}))
 
@@ -84,11 +93,7 @@
 (defmethod update->instruction :default
   [event-type item]
   (if-not (vector? item)
-    (errors/throw-service-errors
-     :bad-request
-     [(format (str "Wrong update format specified for granule UR [%s]. "
-                   "Please use the correct update format for updates with event-type [%s]")
-              (:GranuleUR item) event-type)])
+    (invalid-update-error event-type)
     (let [[granule-ur value] item]
       {:event-type event-type
        :granule-ur granule-ur
@@ -503,7 +508,7 @@
 
 (defmethod update-granule-concept :default
   [context concept bulk-update-params user-id]
-  (warn "No default implementation for update-granule-concept"))
+  (invalid-event-type (:event-type bulk-update-params)))
 
 (defn- update-granule-concept-and-status
   "Perform update for the granule concept and granule bulk update status."
