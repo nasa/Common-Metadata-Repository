@@ -2,6 +2,7 @@
   "CMR Ingest collection progressive update integration tests"
   (:require
     [clj-time.core :as time-core]
+    [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.system-int-test.data2.core :as data-core]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -62,7 +63,39 @@
             (is (= revision-id (+ 2 (:revision-id coll))))
             (is (= nil errors))
             (is (= expected-existing-errors existing-errors))))
-        
+
+        (testing "Progressive update collection successful case, real existing errors in json format"
+          (let [additional-attributes [(data-umm-cmn/additional-attribute {:Name "int" :DataType "STRING" :ParameterRangeBegin 1 :ParameterRangeEnd 10})]
+                temporal-extents [(data-umm-cmn/temporal-extent {:beginning-date-time "2001-01-01T12:00:00Z"
+                                                                 :ending-date-time "2000-05-11T12:00:00Z"})]
+                data-dates [(umm-cmn/map->DateType {:Date (time-core/date-time 2032) :Type "DELETE"})]
+                ;; now that the previous concept containing validation errors, we don't need to pass options to mimic existing errors.
+                response (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                                                        {:EntryTitle "ERS-2_LEVEL0"
+                                                                         :ShortName "ERS-2_L0"
+                                                                         :Version "1"
+                                                                         :AdditionalAttributes additional-attributes
+                                                                         :TemporalExtents temporal-extents
+                                                                         :DataDates data-dates})
+                                                                       {:accept-format :json})]
+            (is (string/includes? (:body response) "\"existing-errors\":"))))
+
+        (testing "Progressive update collection successful case, real existing errors in xml format"
+          (let [additional-attributes [(data-umm-cmn/additional-attribute {:Name "int" :DataType "STRING" :ParameterRangeBegin 1 :ParameterRangeEnd 10})]
+                temporal-extents [(data-umm-cmn/temporal-extent {:beginning-date-time "2001-01-01T12:00:00Z"
+                                                                 :ending-date-time "2000-05-11T12:00:00Z"})]
+                data-dates [(umm-cmn/map->DateType {:Date (time-core/date-time 2032) :Type "DELETE"})]
+                ;; now that the previous concept containing validation errors, we don't need to pass options to mimic existing errors.
+                response (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                                                        {:EntryTitle "ERS-2_LEVEL0"
+                                                                         :ShortName "ERS-2_L0"
+                                                                         :Version "1"
+                                                                         :AdditionalAttributes additional-attributes
+                                                                         :TemporalExtents temporal-extents
+                                                                         :DataDates data-dates}))]
+            (is (and (string/includes? (:body response) "<existing-errors>")
+                     (string/includes? (:body response) "</existing-errors>")))))
+
         (testing "Progressive update collection failed case, introducing new data-dates errors"
           (let [additional-attributes [(data-umm-cmn/additional-attribute {:Name "int" :DataType "STRING" :ParameterRangeBegin 1 :ParameterRangeEnd 10})]
                 temporal-extents [(data-umm-cmn/temporal-extent {:beginning-date-time "2001-01-01T12:00:00Z"

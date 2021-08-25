@@ -175,7 +175,8 @@
               :revision-id (:revision-id response)
               :format-key format-key
               :warnings (:warnings response)
-              :existing-errors (:existing-errors response))
+              :existing-errors (:existing-errors response)
+              :body (:body response))
        response))))
 
 (defn umm-var->concept

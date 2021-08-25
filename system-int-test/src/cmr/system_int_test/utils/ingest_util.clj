@@ -227,7 +227,8 @@
           :native-id (cx/string-at-path xml-elem [:native-id])
           :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))
           :warnings (cx/string-at-path xml-elem [:warnings])
-          :existing-errors (cx/string-at-path xml-elem [:existing-errors])})))
+          :existing-errors (cx/string-at-path xml-elem [:existing-errors])
+          :body (:body response)})))
 
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
@@ -235,7 +236,7 @@
 (defmethod parse-ingest-body :json
   [response-format response]
   (try
-    (json/decode (:body response) true)
+    (assoc (json/decode (:body response) true) :body (:body response))
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response))) e)))))
 
