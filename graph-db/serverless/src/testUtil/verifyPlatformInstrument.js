@@ -4,7 +4,7 @@ import 'array-foreach-async'
 const gremlinStatistics = gremlin.process.statics
 
 const verifyPlatformInstrumentExistInGraphDb = async (
-  datasetTitle,
+  collectionTitle,
   platformName,
   instrumentName
 ) => {
@@ -30,7 +30,7 @@ const verifyPlatformInstrumentExistInGraphDb = async (
   if (instrumentName) {
     record = await global.testGremlinConnection
       .V()
-      .has('collection', 'title', datasetTitle)
+      .has('collection', 'title', collectionTitle)
       .outE('acquiredBy')
       .filter(gremlinStatistics.inV()
         .has('platformInstrument', 'platform', platformName)
@@ -39,7 +39,7 @@ const verifyPlatformInstrumentExistInGraphDb = async (
   } else {
     record = await global.testGremlinConnection
       .V()
-      .has('collection', 'title', datasetTitle)
+      .has('collection', 'title', collectionTitle)
       .outE('acquiredBy')
       .filter(gremlinStatistics.inV()
         .has('platformInstrument', 'platform', platformName))
@@ -49,28 +49,28 @@ const verifyPlatformInstrumentExistInGraphDb = async (
   expect(edgeId).not.toBe(null)
 }
 
-export const verifyPlatformInstrumentsExistInGraphDb = async (datasetTitle, attrs) => {
+export const verifyPlatformInstrumentsExistInGraphDb = async (collectionTitle, attrs) => {
   const { platform, instruments } = attrs
-  // verify the dataset vertex with the given title exists
-  const dataset = await global.testGremlinConnection
+  // verify the collection vertex with the given title exists
+  const collection = await global.testGremlinConnection
     .V()
-    .has('collection', 'title', datasetTitle)
+    .has('collection', 'title', collectionTitle)
     .next()
-  const { value: { id: datasetId } } = dataset
-  expect(datasetId).not.toBe(null)
+  const { value: { id: collectionId } } = collection
+  expect(collectionId).not.toBe(null)
 
   // verify the platformInstrument vertex with the given platforms/instruments exists
   if (instruments && instruments.length > 0) {
     await instruments.forEachAsync(async (instrument) => {
-      await verifyPlatformInstrumentExistInGraphDb(datasetTitle, platform, instrument)
+      await verifyPlatformInstrumentExistInGraphDb(collectionTitle, platform, instrument)
     })
   } else {
-    await verifyPlatformInstrumentExistInGraphDb(datasetTitle, platform, null)
+    await verifyPlatformInstrumentExistInGraphDb(collectionTitle, platform, null)
   }
 }
 
 const verifyPlatformInstrumentNotExistInGraphDb = async (
-  datasetTitle,
+  collectionTitle,
   platformName,
   instrumentName
 ) => {
@@ -92,22 +92,22 @@ const verifyPlatformInstrumentNotExistInGraphDb = async (
   expect(docValue).toBe(null)
 }
 
-export const verifyPlatformInstrumentsNotExistInGraphDb = async (datasetTitle, attrs) => {
+export const verifyPlatformInstrumentsNotExistInGraphDb = async (collectionTitle, attrs) => {
   const { platform, instruments } = attrs
-  // verify the dataset vertex with the given title does not exist
-  const dataset = await global.testGremlinConnection
+  // verify the collection vertex with the given title does not exist
+  const collection = await global.testGremlinConnection
     .V()
-    .has('collection', 'title', datasetTitle)
+    .has('collection', 'title', collectionTitle)
     .next()
-  const { value: datasetValue } = dataset
-  expect(datasetValue).toBe(null)
+  const { value: collectionValue } = collection
+  expect(collectionValue).toBe(null)
 
   // verify the platformInstrument vertex with the given platforms/instruments does not exist
   if (instruments && instruments.length > 0) {
     await instruments.forEachAsync(async (instrument) => {
-      await verifyPlatformInstrumentNotExistInGraphDb(datasetTitle, platform, instrument)
+      await verifyPlatformInstrumentNotExistInGraphDb(collectionTitle, platform, instrument)
     })
   } else {
-    await verifyPlatformInstrumentNotExistInGraphDb(datasetTitle, platform, null)
+    await verifyPlatformInstrumentNotExistInGraphDb(collectionTitle, platform, null)
   }
 }

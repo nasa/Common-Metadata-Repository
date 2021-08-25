@@ -29,7 +29,7 @@ const getEvent = (conceptId, actionType) => {
 
 describe('indexCmrCollection handler', () => {
   test('test initial indexing of a collection', async () => {
-    const datasetTitle = 'Latent reserves within the Swiss NFI'
+    const collectionTitle = 'Latent reserves within the Swiss NFI'
     const conceptId = 'C1237293909-TESTPROV'
     const project1 = 'Project One'
     const platform1 = 'Platform One'
@@ -40,7 +40,7 @@ describe('indexCmrCollection handler', () => {
 
     await updateCollection(
       conceptId,
-      datasetTitle,
+      collectionTitle,
       {
         projects: [project1],
         platforms: [{ platform: platform1, instruments: [instrument1] }, { platform: platform2 }],
@@ -51,27 +51,27 @@ describe('indexCmrCollection handler', () => {
 
     await verifyCollectionPropertiesInGraphDb(
       {
-        datasetTitle,
+        collectionTitle,
         conceptId,
         doi
       }
     )
 
-    await verifyProjectExistInGraphDb(datasetTitle, project1)
-    await verifyPlatformInstrumentsExistInGraphDb(datasetTitle,
+    await verifyProjectExistInGraphDb(collectionTitle, project1)
+    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle,
       { platform: platform1, instruments: [instrument1] })
-    await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: platform2 })
-    await verifyRelatedUrlExistInGraphDb(datasetTitle, relatedUrl)
+    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle, { platform: platform2 })
+    await verifyRelatedUrlExistInGraphDb(collectionTitle, relatedUrl)
   })
 
   test('test indexing of a collection with no DOI value', async () => {
-    const datasetTitle = 'Latent reserves within the Swiss NFI'
+    const collectionTitle = 'Latent reserves within the Swiss NFI'
     const conceptId = 'C1237293909-TESTPROV'
     const platform1 = 'Platform One'
 
     await updateCollection(
       conceptId,
-      datasetTitle,
+      collectionTitle,
       {
         platforms: [{ platform: platform1 }]
       }
@@ -79,12 +79,12 @@ describe('indexCmrCollection handler', () => {
 
     await verifyCollectionPropertiesInGraphDb(
       {
-        datasetTitle,
+        collectionTitle,
         conceptId
       }
     )
 
-    await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: platform1 })
+    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle, { platform: platform1 })
   })
 
   test('test index of not found collection', async () => {
@@ -144,7 +144,7 @@ describe('indexCmrCollection handler', () => {
   })
 
   test('test deletion of single collection', async () => {
-    const datasetTitle = 'Latent reserves within the Swiss NFI'
+    const collectionTitle = 'Latent reserves within the Swiss NFI'
     const project1 = 'Project One'
     const platform1 = 'Platform One'
     const instrument1 = 'Instrument One'
@@ -152,10 +152,10 @@ describe('indexCmrCollection handler', () => {
     const platform2 = 'Platform Two'
     const relatedUrl = 'https://en.wikipedia.org/wiki/latent_nfi'
 
-    // first index the collection and verify dataset and relatedUrl vertices are created
+    // first index the collection and verify collection and relatedUrl vertices are created
     await updateCollection(
       'C1237293909-TESTPROV',
-      datasetTitle,
+      collectionTitle,
       {
         projects: [project1],
         platforms: [
@@ -165,24 +165,24 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    await verifyProjectExistInGraphDb(datasetTitle, project1)
-    await verifyPlatformInstrumentsExistInGraphDb(datasetTitle,
+    await verifyProjectExistInGraphDb(collectionTitle, project1)
+    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle,
       { platform: platform1, instruments: [instrument1, instrument2] })
-    await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: platform2 })
-    await verifyRelatedUrlExistInGraphDb(datasetTitle, relatedUrl)
+    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle, { platform: platform2 })
+    await verifyRelatedUrlExistInGraphDb(collectionTitle, relatedUrl)
 
-    // delete the collection and verify dataset and project/relatedUrl vertices are deleted
+    // delete the collection and verify collection and project/relatedUrl vertices are deleted
     await deleteCollection('C1237293909-TESTPROV')
-    await verifyProjectNotExistInGraphDb(datasetTitle, project1)
-    await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle,
+    await verifyProjectNotExistInGraphDb(collectionTitle, project1)
+    await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle,
       { platform: platform1, instruments: [instrument1, instrument2] })
-    await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle, { platform: platform2 })
-    await verifyRelatedUrlNotExistInGraphDb(datasetTitle, relatedUrl)
+    await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle, { platform: platform2 })
+    await verifyRelatedUrlNotExistInGraphDb(collectionTitle, relatedUrl)
   })
 
   test('test deletion collection not delete linked relatedUrl vertex if it is also linked to another collection', async () => {
-    const datasetTitle = 'Latent reserves within the Swiss NFI'
-    const anotherDatasetTitle = 'Another Latent reserves within the Swiss NFI'
+    const collectionTitle = 'Latent reserves within the Swiss NFI'
+    const anothercollectionTitle = 'Another Latent reserves within the Swiss NFI'
 
     // this project is referenced by two collections
     const sharedProject = 'SharedProject'
@@ -201,10 +201,10 @@ describe('indexCmrCollection handler', () => {
     // this relatedUrl url is referenced only by one collection
     const ownDocUrl = 'https://en.wikipedia.org/wiki/latent_nfi2'
 
-    // first index the collection and verify dataset and project/relatedUrl vertices are created
+    // first index the collection and verify collection and project/relatedUrl vertices are created
     await updateCollection(
       'C1237293909-TESTPROV',
-      datasetTitle,
+      collectionTitle,
       {
         projects: [sharedProject, ownProject],
         platforms: [
@@ -214,19 +214,19 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    await verifyProjectExistInGraphDb(datasetTitle, sharedProject)
-    await verifyProjectExistInGraphDb(datasetTitle, ownProject)
-    await verifyPlatformInstrumentsExistInGraphDb(datasetTitle,
+    await verifyProjectExistInGraphDb(collectionTitle, sharedProject)
+    await verifyProjectExistInGraphDb(collectionTitle, ownProject)
+    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle,
       { platform: sharedPlatform, instruments: [sharedInstrument, ownInstrument] })
-    await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: ownPlatform })
-    await verifyRelatedUrlExistInGraphDb(datasetTitle, sharedDocUrl)
-    await verifyRelatedUrlExistInGraphDb(datasetTitle, ownDocUrl)
+    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle, { platform: ownPlatform })
+    await verifyRelatedUrlExistInGraphDb(collectionTitle, sharedDocUrl)
+    await verifyRelatedUrlExistInGraphDb(collectionTitle, ownDocUrl)
 
     // index a second collection that reference the same project/relatedUrl vertex
-    // and verify dataset and project/relatedUrl vertices are created
+    // and verify collection and project/relatedUrl vertices are created
     await updateCollection(
       'C1237294000-TESTPROV',
-      anotherDatasetTitle,
+      anothercollectionTitle,
       {
         projects: [sharedProject],
         platforms: [
@@ -235,31 +235,31 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    await verifyProjectExistInGraphDb(anotherDatasetTitle, sharedProject)
-    await verifyPlatformInstrumentsExistInGraphDb(anotherDatasetTitle,
+    await verifyProjectExistInGraphDb(anothercollectionTitle, sharedProject)
+    await verifyPlatformInstrumentsExistInGraphDb(anothercollectionTitle,
       { platform: sharedPlatform, instruments: [sharedInstrument] })
-    await verifyRelatedUrlExistInGraphDb(anotherDatasetTitle, sharedDocUrl)
+    await verifyRelatedUrlExistInGraphDb(anothercollectionTitle, sharedDocUrl)
 
-    // delete the collection and verify dataset vertex is deleted
+    // delete the collection and verify collection vertex is deleted
     // the project/relatedUrl/platformInstrument vertex that is not referenced by another collection is deleted
     // the project/relatedUrl/platformInstrument vertex that is referenced by another collection is not deleted
     await deleteCollection('C1237293909-TESTPROV')
-    await verifyProjectNotExistInGraphDb(datasetTitle, ownProject)
-    await verifyProjectExistInGraphDb(anotherDatasetTitle, sharedProject)
+    await verifyProjectNotExistInGraphDb(collectionTitle, ownProject)
+    await verifyProjectExistInGraphDb(anothercollectionTitle, sharedProject)
 
-    await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle,
+    await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle,
       { platform: sharedPlatform, instruments: [ownInstrument] })
-    await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle, { platform: ownPlatform })
-    await verifyPlatformInstrumentsExistInGraphDb(anotherDatasetTitle,
+    await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle, { platform: ownPlatform })
+    await verifyPlatformInstrumentsExistInGraphDb(anothercollectionTitle,
       { platform: sharedPlatform, instruments: [sharedInstrument] })
 
-    await verifyRelatedUrlNotExistInGraphDb(datasetTitle, ownDocUrl)
-    await verifyRelatedUrlExistInGraphDb(anotherDatasetTitle, sharedDocUrl)
+    await verifyRelatedUrlNotExistInGraphDb(collectionTitle, ownDocUrl)
+    await verifyRelatedUrlExistInGraphDb(anothercollectionTitle, sharedDocUrl)
   })
 
   test('test update collection', async () => {
-    const datasetTitle = 'Latent reserves within the Swiss NFI'
-    const anotherDatasetTitle = 'Another Latent reserves within the Swiss NFI'
+    const collectionTitle = 'Latent reserves within the Swiss NFI'
+    const anothercollectionTitle = 'Another Latent reserves within the Swiss NFI'
 
     // this project is referenced by both the old and new version of the collection
     const keptProject = 'KeptProject'
@@ -289,10 +289,10 @@ describe('indexCmrCollection handler', () => {
     // this relatedUrl url is referenced only by the new version of collection
     const newDocUrl = 'https://en.wikipedia.org/wiki/latent_nfi_new'
 
-    // first index the collection and verify dataset and relatedUrl vertices are created
+    // first index the collection and verify collection and relatedUrl vertices are created
     await updateCollection(
       'C1237293909-TESTPROV',
-      datasetTitle,
+      collectionTitle,
       {
         projects: [keptProject, removedProject],
         platforms: [
@@ -302,20 +302,20 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    await verifyProjectExistInGraphDb(datasetTitle, keptProject)
-    await verifyProjectExistInGraphDb(datasetTitle, removedProject)
+    await verifyProjectExistInGraphDb(collectionTitle, keptProject)
+    await verifyProjectExistInGraphDb(collectionTitle, removedProject)
 
-    await verifyPlatformInstrumentsExistInGraphDb(datasetTitle,
+    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle,
       { platform: keptPlatform, instruments: [keptInstrument, removedInstrument] })
-    await verifyPlatformInstrumentsExistInGraphDb(datasetTitle, { platform: removedPlatform })
+    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle, { platform: removedPlatform })
 
-    await verifyRelatedUrlExistInGraphDb(datasetTitle, keptDocUrl)
-    await verifyRelatedUrlExistInGraphDb(datasetTitle, removedDocUrl)
+    await verifyRelatedUrlExistInGraphDb(collectionTitle, keptDocUrl)
+    await verifyRelatedUrlExistInGraphDb(collectionTitle, removedDocUrl)
 
     // update the collection
     await updateCollection(
       'C1237293909-TESTPROV',
-      anotherDatasetTitle,
+      anothercollectionTitle,
       {
         projects: [keptProject, newProject],
         platforms: [
@@ -325,23 +325,23 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    // verify the datasetTitle dataset vertex and the removed project/relatedUrl/platformInstrument vertex are deleted
-    await verifyProjectNotExistInGraphDb(datasetTitle, removedProject)
-    await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle,
+    // verify the collectionTitle collection vertex and the removed project/relatedUrl/platformInstrument vertex are deleted
+    await verifyProjectNotExistInGraphDb(collectionTitle, removedProject)
+    await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle,
       { platform: keptPlatform, instruments: [removedInstrument] })
-    await verifyPlatformInstrumentsNotExistInGraphDb(datasetTitle, { platform: removedPlatform })
-    await verifyRelatedUrlNotExistInGraphDb(datasetTitle, removedDocUrl)
+    await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle, { platform: removedPlatform })
+    await verifyRelatedUrlNotExistInGraphDb(collectionTitle, removedDocUrl)
 
-    // verify the dataset vertext with the new title exist,
+    // verify the collection vertext with the new title exist,
     // verify the project/relatedUrl vertices referenced by another collection exist,
-    // and there are correct edges between the dataset vertex and the project/relatedUrl vertices
-    await verifyProjectExistInGraphDb(anotherDatasetTitle, keptProject)
-    await verifyProjectExistInGraphDb(anotherDatasetTitle, newProject)
-    await verifyPlatformInstrumentsExistInGraphDb(anotherDatasetTitle,
+    // and there are correct edges between the collection vertex and the project/relatedUrl vertices
+    await verifyProjectExistInGraphDb(anothercollectionTitle, keptProject)
+    await verifyProjectExistInGraphDb(anothercollectionTitle, newProject)
+    await verifyPlatformInstrumentsExistInGraphDb(anothercollectionTitle,
       { platform: keptPlatform, instruments: [keptInstrument, newInstrument] })
-    await verifyPlatformInstrumentsExistInGraphDb(anotherDatasetTitle,
+    await verifyPlatformInstrumentsExistInGraphDb(anothercollectionTitle,
       { platform: newPlatform, instruments: [newInstrument] })
-    await verifyRelatedUrlExistInGraphDb(anotherDatasetTitle, keptDocUrl)
-    await verifyRelatedUrlExistInGraphDb(anotherDatasetTitle, newDocUrl)
+    await verifyRelatedUrlExistInGraphDb(anothercollectionTitle, keptDocUrl)
+    await verifyRelatedUrlExistInGraphDb(anothercollectionTitle, newDocUrl)
   })
 })

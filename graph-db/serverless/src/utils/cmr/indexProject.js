@@ -6,10 +6,10 @@ const gremlinStatistics = gremlin.process.statics
  * Given a project object, Gremlin connection, and associated collection, index project and build relationships for any GENERAL project that exists in common with other nodes in the graph database
  * @param {JSON} project UMM project object
  * @param {Connection} gremlinConnection a connection to the gremlin server
- * @param {Graph Node} dataset the parent collection vertex in the gremlin server
+ * @param {Graph Node} collection the parent collection vertex in the gremlin server
  * @returns null
  */
-const indexProject = async (project, gremlinConnection, dataset, conceptId) => {
+export const indexProject = async (project, gremlinConnection, collection, conceptId) => {
   // CMR UMM-C actually put the project info in the Projects ShortName field rather than the Projects field for historical reasons
   const {
     ShortName: shortName
@@ -30,12 +30,12 @@ const indexProject = async (project, gremlinConnection, dataset, conceptId) => {
     const { value: vertexValue = {} } = projectVertex
     const { id: projectId } = vertexValue
 
-    console.log(`project vertex [${projectId}] indexed for collection [${dataset}]`)
+    console.log(`project vertex [${projectId}] indexed for collection [${collection}]`)
 
     // Create an edge between this project and its parent collection
     const projectEdge = await gremlinConnection
       .V(projectId).as('c')
-      .V(dataset)
+      .V(collection)
       .coalesce(
         gremlinStatistics.outE('includedIn').where(gremlinStatistics.inV().as('c')),
         gremlinConnection.addE('includedIn').to('c')
@@ -45,7 +45,7 @@ const indexProject = async (project, gremlinConnection, dataset, conceptId) => {
     const { value: edgeValue = {} } = projectEdge
     const { id: edgeId } = edgeValue
 
-    console.log(`project edge [${edgeId}] indexed to point to collection [${dataset}]`)
+    console.log(`project edge [${edgeId}] indexed to point to collection [${collection}]`)
   } catch (error) {
     // Log specific error message, but throw error again to stop indexing
     console.error(`ERROR indexing project for concept [${conceptId}] ${JSON.stringify(project)}: \n Error: ${error}`)
@@ -53,5 +53,3 @@ const indexProject = async (project, gremlinConnection, dataset, conceptId) => {
     throw error
   }
 }
-
-export default indexProject

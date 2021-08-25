@@ -1,10 +1,10 @@
 import gremlin from 'gremlin'
 import 'array-foreach-async'
 
-import indexProject from './indexProject'
-import indexPlatform from './indexPlatform'
-import indexRelatedUrl from './indexRelatedUrl'
 import { deleteCmrCollection } from './deleteCmrCollection'
+import { indexPlatform } from './indexPlatform'
+import { indexProject } from './indexProject'
+import { indexRelatedUrl } from './indexRelatedUrl'
 
 const gremlinStatistics = gremlin.process.statics
 

@@ -30,25 +30,26 @@ const platformInstrumentsObj = (attributes) => {
 }
 
 // Helper to create a RelatedUrl object simular to the one returned by CMR
-const relatedUrl = (docName) => ({
+const relatedUrlObj = (relatedUrl) => ({
   URLContentType: 'PublicationURL',
   Type: 'VIEW RELATED INFORMATION',
   Subtype: 'GENERAL DOCUMENTATION',
-  URL: docName
+  URL: relatedUrl
 })
 
 /**
- * create/update the collection with given concept id, dataset title and relatedUrl name
+ * create/update the collection with given concept id, collection title and relatedUrl name
  * @param {String} conceptId Collection concept id from CMR
- * @param {String} datasetTitle Entry Title of the collection which becomes the title of dataset vertex
+ * @param {String} collectionTitle Entry Title of the collection which becomes the title of collection vertex
  * @param {JSON} attributes a map of field value pairs of attributes to update the collection
  * @returns null
  */
-export const updateCollection = async (conceptId, datasetTitle, attributes) => {
-  const { docNames, projects, platforms } = attributes
+export const updateCollection = async (conceptId, collectionTitle, attributes) => {
+  const { relatedUrls, projects, platforms } = attributes
+
   let projectsObjs
   let platformInstrumentObjs
-  let relatedUrls
+  let relatedUrlsObjs
 
   if (projects) {
     projectsObjs = projects.map(projectObj)
@@ -58,9 +59,13 @@ export const updateCollection = async (conceptId, datasetTitle, attributes) => {
     platformInstrumentObjs = platforms.map(platformInstrumentsObj)
   }
 
-  if (docNames) {
-    relatedUrls = docNames.map(relatedUrl)
+  if (relatedUrls) {
+    relatedUrlsObjs = relatedUrls.map(relatedUrlObj)
   }
+
+  console.log('projectsObjs', projectsObjs)
+  console.log('platformInstrumentObjs', platformInstrumentObjs)
+  console.log('relatedUrlsObjs', relatedUrlsObjs)
 
   nock(/local-cmr/)
     .get(/search/)
@@ -76,12 +81,12 @@ export const updateCollection = async (conceptId, datasetTitle, attributes) => {
           umm: {
             Projects: projectsObjs,
             Platforms: platformInstrumentObjs,
-            RelatedUrls: relatedUrls,
+            RelatedUrls: relatedUrlsObjs,
             DOI: {
               DOI: 'doi:10.16904/envidat.166'
             },
             ShortName: 'latent-reserves-in-the-swiss-nfi',
-            EntryTitle: datasetTitle
+            EntryTitle: collectionTitle
           }
         }]
       })
@@ -97,7 +102,7 @@ export const updateCollection = async (conceptId, datasetTitle, attributes) => {
 }
 
 /**
- * delete the collection with given concept id, dataset title and relatedUrl name
+ * delete the collection with given concept id, collection title and relatedUrl name
  * @param {String} conceptId Collection concept id from CMR
  * @returns null
  */
