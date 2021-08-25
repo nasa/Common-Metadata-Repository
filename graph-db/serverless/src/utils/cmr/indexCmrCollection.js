@@ -30,7 +30,7 @@ export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
     }
   } = collectionObj
 
-  // delete the collection first so that we can clean up its related documentation vertices
+  // delete the collection first so that we can clean up its related, relatedUrl vertices
   await deleteCmrCollection(conceptId, gremlinConnection)
 
   let collection = null

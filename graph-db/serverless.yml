@@ -10,21 +10,25 @@ provider:
     securityGroupIds:
       - ${cf:${self:provider.stage}.servicesSecurityGroupId}
     subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
+
   environment:
     CMR_ROOT: ${self:custom.variables.CMR_ROOT}
+    COLLECTION_INDEXING_QUEUE_URL:
+      Ref: CollectionIndexingQueue
     ENVIRONMENT: ${self:custom.variables.ENVIRONMENT}
     GREMLIN_URL: ${self:custom.variables.GREMLIN_URL}
     PAGE_SIZE: ${self:custom.variables.PAGE_SIZE}
-    COLLECTION_INDEXING_QUEUE_URL:
-      Ref: CollectionIndexingQueue
+
 plugins:
   - serverless-offline
   - serverless-pseudo-parameters
   - serverless-webpack
+
 functions:
   bootstrapGremlinServer:
     timeout: 900
     handler: serverless/src/bootstrapGremlinServer/handler.default
+
   indexCmrCollection:
     timeout: 20
     handler: serverless/src/indexCmrCollection/handler.default
@@ -35,6 +39,7 @@ functions:
             Fn::GetAtt:
               - CollectionIndexingQueue
               - Arn
+
 resources:
   Resources:
     CollectionIndexingQueue:
@@ -99,6 +104,7 @@ resources:
                   - 'lambda.amazonaws.com'
               Action:
                 - 'sts:AssumeRole'
+
     cmrGraphPolicy:
       Type: AWS::IAM::Policy
       Properties:
@@ -112,6 +118,7 @@ resources:
         PolicyName: cmrGraphPolicy-${self:provider.stage}
         Roles:
           - Ref: IamRoleGraphLambdaExecution
+
     cmrParamStorePolicy:
       Type: AWS::IAM::Policy
       Properties:
