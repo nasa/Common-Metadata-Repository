@@ -26,10 +26,9 @@
   (str "user-id:" token))
 
 (defn extract
-  "Extract the value of `Echo-Token` or `Authorization` header that was passed in the request."
+  "Extract the value of Authorization` header that was passed in the request."
   [request]
-  (or (request/get-header request "authorization")
-      (request/get-header request "echo-token")))
+  (request/get-header request "authorization"))
 
 (defn find-xml
   [xml-str in-keys]
