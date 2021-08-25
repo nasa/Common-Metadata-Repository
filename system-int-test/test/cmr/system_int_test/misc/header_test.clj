@@ -4,6 +4,7 @@
    [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.test :refer :all]
+   [cmr.acl.core :as acl]
    [cmr.common-app.api.routes :as routes]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.utils.index-util :as index]
@@ -153,6 +154,7 @@
     (let [allowed-headers (-> (client/options (url/search-url :collection))
                               (get-in [:headers "Access-Control-Allow-Headers"])
                               (string/split #", "))]
+      ;; (is (not-any? #{"Echo-Token"} allowed-headers))
       (is (some #{"Echo-Token"} allowed-headers))
       (is (some #{"Authorization"} allowed-headers))
       (is (some #{"Client-Id"} allowed-headers))

@@ -39,9 +39,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def token-header
-  "echo-token")
-
-(def authorization-header
   "authorization")
 
 (def revision-id-header

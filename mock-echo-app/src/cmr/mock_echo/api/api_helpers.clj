@@ -33,7 +33,7 @@
 
 (defn require-sys-admin-token
   [headers]
-  (when-not (or (get headers "echo-token") (get headers "authorization"))
+  (when-not (get headers "authorization")
     (svc-errors/throw-service-error
       :unauthorized
       "User does not have requested access to [TOKEN].")))

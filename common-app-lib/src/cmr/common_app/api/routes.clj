@@ -92,7 +92,7 @@
    :headers {CONTENT_TYPE_HEADER "text/plain; charset=utf-8"
              CORS_ORIGIN_HEADER "*"
              CORS_METHODS_HEADER "POST, GET, OPTIONS"
-             CORS_CUSTOM_ALLOWED_HEADER "Echo-Token, Accept, Content-Type, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, Authorization"
+             CORS_CUSTOM_ALLOWED_HEADER (str (when (acl/allow-echo-token) "Echo-Token, ") "Accept, Content-Type, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, Authorization")
              ;; the value in seconds for how long the response to the preflight request can be cached
              ;; set to 30 days
              CORS_MAX_AGE_HEADER "2592000"}})
