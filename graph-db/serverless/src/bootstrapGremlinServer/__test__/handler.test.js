@@ -163,7 +163,7 @@ describe('bootstrapGremlinServer handler', () => {
               ],
               online_access_flag: false,
               has_transforms: true,
-              id: 'C1000-LPDAAC_TS1',
+              id: 'C100000-CMR',
               associations: {
                 services: [
                   'S1224343297-LPDAAC_TS1'

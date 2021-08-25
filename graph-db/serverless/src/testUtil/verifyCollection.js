@@ -1,11 +1,11 @@
 export const verifyCollectionPropertiesInGraphDb = async (attrs) => {
   const {
-    conceptId, datasetTitle, doi
+    conceptId, collectionTitle, doi
   } = attrs
 
   const verifyCommand = global.testGremlinConnection
     .V()
-    .has('collection', 'title', datasetTitle)
+    .has('collection', 'title', collectionTitle)
     .has('id', conceptId)
 
   if (doi) {

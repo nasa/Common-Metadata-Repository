@@ -9,7 +9,7 @@ const { P: { lte } } = gremlin.process
  * @param {String} conceptId Collection concept id from CMR
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
  * @param {String} vertexLabel Label of the linked vertex
- * @param {String} edgeName Name of the edge between the dataset vertex and its linked vertex
+ * @param {String} edgeName Name of the edge between the collection vertex and its linked vertex
  * @returns
  */
 const deleteLinkedVertices = async (conceptId, gremlinConnection, vertexLabel, edgeName) => {
@@ -38,25 +38,25 @@ const deleteLinkedVertices = async (conceptId, gremlinConnection, vertexLabel, e
  */
 export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
   let success
-  // drop all the project vertices that are connected to and only connected to the dataset vertex
+  // drop all the project vertices that are connected to and only connected to the collection vertex
   success = await deleteLinkedVertices(conceptId, gremlinConnection, 'project', 'includedIn')
   if (success === false) {
     return false
   }
 
-  // drop all the platformInstrument vertices that are connected to and only connected to the dataset vertex
+  // drop all the platformInstrument vertices that are connected to and only connected to the collection vertex
   success = await deleteLinkedVertices(conceptId, gremlinConnection, 'platformInstrument', 'acquiredBy')
   if (success === false) {
     return false
   }
 
-  // drop all the relatedUrl vertices that are connected to and only connected to the dataset vertex
+  // drop all the relatedUrl vertices that are connected to and only connected to the collection vertex
   success = await deleteLinkedVertices(conceptId, gremlinConnection, 'relatedUrl', 'linkedBy')
   if (success === false) {
     return false
   }
 
-  // delete the dataset vertex
+  // delete the collection vertex
   try {
     await gremlinConnection
       .V()
@@ -64,7 +64,7 @@ export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
       .drop()
       .next()
   } catch (error) {
-    console.error(`Error deleting dataset vertex for collection [${conceptId}]: ${error.message}`)
+    console.error(`Error deleting collection vertex for collection [${conceptId}]: ${error.message}`)
 
     return false
   }

@@ -2,17 +2,17 @@ import gremlin from 'gremlin'
 
 const gremlinStatistics = gremlin.process.statics
 
-export const verifyRelatedUrlExistInGraphDb = async (datasetTitle, url) => {
-  // verify the dataset vertex with the given title exists
-  const dataset = await global.testGremlinConnection
+export const verifyRelatedUrlExistInGraphDb = async (collectionTitle, url) => {
+  // verify the collection vertex with the given title exists
+  const collection = await global.testGremlinConnection
     .V()
-    .has('collection', 'title', datasetTitle)
+    .has('collection', 'title', collectionTitle)
     .next()
 
-  const { datasetValue = {} } = dataset
-  const { id: datasetId } = datasetValue
+  const { collectionValue = {} } = collection
+  const { id: collectionId } = collectionValue
 
-  expect(datasetId).not.toBe(null)
+  expect(collectionId).not.toBe(null)
 
   // verify the relatedUrl vertex with the given name exists
   const doc = await global.testGremlinConnection
@@ -28,7 +28,7 @@ export const verifyRelatedUrlExistInGraphDb = async (datasetTitle, url) => {
   // verify the edge exists between the two vertices
   const record = await global.testGremlinConnection
     .V()
-    .has('collection', 'title', datasetTitle)
+    .has('collection', 'title', collectionTitle)
     .outE('linkedBy')
     .filter(gremlinStatistics.inV()
       .has('relatedUrl', 'url', url))
@@ -40,16 +40,16 @@ export const verifyRelatedUrlExistInGraphDb = async (datasetTitle, url) => {
   expect(edgeId).not.toBe(null)
 }
 
-export const verifyRelatedUrlNotExistInGraphDb = async (datasetTitle, url) => {
-  // verify the dataset vertex with the given title does not exist
-  const dataset = await global.testGremlinConnection
+export const verifyRelatedUrlNotExistInGraphDb = async (collectionTitle, url) => {
+  // verify the collection vertex with the given title does not exist
+  const collection = await global.testGremlinConnection
     .V()
-    .has('collection', 'title', datasetTitle)
+    .has('collection', 'title', collectionTitle)
     .next()
 
-  const { value: datasetValue = {} } = dataset
+  const { value: collectionValue = {} } = collection
 
-  expect(datasetValue).toBe(null)
+  expect(collectionValue).toBe(null)
 
   // verify the relatedUrl vertex with the given name does not exist
   const doc = await global.testGremlinConnection

@@ -9,10 +9,10 @@ const gremlinStatistics = gremlin.process.statics
  * @param {JSON} instrument the instrument
  * @param {Connection} gremlinConnection a connection to the gremlin server
  * @param {String} platformName the name of the platform
- * @param {Graph Node} dataset the parent collection vertex in the gremlin server
+ * @param {Graph Node} collection the parent collection vertex in the gremlin server
  * @returns null
  */
-export const indexInstrument = async (instrument, gremlinConnection, platformName, dataset) => {
+export const indexInstrument = async (instrument, gremlinConnection, platformName, collection) => {
   const {
     ShortName: instrumentName
   } = instrument
@@ -38,7 +38,7 @@ export const indexInstrument = async (instrument, gremlinConnection, platformNam
 
   const { value: vertexValue = {} } = piVertex
   const { id: piId } = vertexValue
-  console.log(`PlatformInstrument vertex [${piId}] indexed for collection [${dataset}]`)
+  console.log(`PlatformInstrument vertex [${piId}] indexed for collection [${collection}]`)
 
-  await createAcquiredByEdge(piId, gremlinConnection, dataset)
+  await createAcquiredByEdge(piId, gremlinConnection, collection)
 }

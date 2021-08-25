@@ -53,6 +53,7 @@ resources:
               - CollectionIndexingQueueDeadLetterQueue
               - Arn
           maxReceiveCount: 2 # Number of times a message will be tried before being dumped to the DLQ
+
     SqsQueuePolicy:
       Type: AWS::SQS::QueuePolicy
       Properties:
