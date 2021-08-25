@@ -1439,6 +1439,42 @@ Example granule bulk update response:
 }
 ```
 
+**operation: "UPDATE_TYPE", update-field: "OPeNDAPLink"**
+Supported metadata formats:
+
+* OPeNDAP url in RelatedUrls for UMM-G format
+* *Coming Soon*: OPeNDAP url in OnlineResources for ECHO10 format
+
+Input for this update type should be a list of granule URs. UMM-G Granules listed will have any `RelatedUrl`s containg the string `"opendap"` updated to include `"Type": "USE SERVICE API"` and
+`"Subtype": "OPENDAP DATA"`.
+
+Example: Add/update OPeNDAP link type for 3 granules under PROV1.
+
+```
+curl -i -XPOST \
+  -H "Cmr-Pretty:true" \
+  -H "Content-Type: application/json"
+  -H "Echo-Token: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{ "name": "example of updating OPeNDAP link types",
+	"operation": "UPDATE_TYPE",
+	"update-field":"OPeNDAPLink",
+	"updates":[
+             ["granule_ur1", "granule_ur2", "granule_ur3"]
+	]
+}'
+```
+
+Example granule bulk update response:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+    <status>200</status>
+    <task-id>5</task-id>
+</result>
+```
+
 ### Query Granule Bulk Update Status
 
 The task information of all granule bulk update tasks that has been applied on a provider can be retrieved by sending an HTTP GET request to `%CMR-ENDPOINT%/providers/<provider-id>/bulk-update/granules/status`

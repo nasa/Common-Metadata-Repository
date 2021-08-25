@@ -727,7 +727,43 @@
         (is (not (string/includes? original-metadata "USE SERVICE API")))
 
         (is (string/includes? updated-metadata "OPENDAP DATA"))
-        (is (string/includes? updated-metadata "USE SERVICE API"))))))
+        (is (string/includes? updated-metadata "USE SERVICE API")))))
+
+  (testing "Failure case - no opendap links to update"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample3.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          {:keys [concept-id revision-id]} granule
+          bulk-update {:operation "UPDATE_TYPE"
+                       :update-field "OPeNDAPLink"
+                       :updates ["Unique_Granule_UR_v1.6"]}
+          {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                 "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 200 status))
+      (is (some? task-id))
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+            {:keys [task-status status-message granule-statuses]} status-response]
+        (is (= "COMPLETE" task-status))
+        (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+        (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                 :status "FAILED"
+                 :status-message "Granule update failed - there are no OPeNDAP Links to update."}]
+               granule-statuses))))))
 
 (deftest update-checksum
   "test updating checksum with real granule file that is already in CMR code base"
@@ -1397,7 +1433,7 @@
           (is (string/includes? request-json-body "{\"name\":\"add S3 links 1\",\"operation\":\"UPDATE_FIELD\""))
           (is (= "Complete." progress))))))))
 
-(deftest update-format-test
+(deftest input-format-test
   "test updating with incorrect combinations of update-field and update format"
   (testing "Give new :updates format with update-field that isn't AdditionalFile"
     (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
@@ -1431,7 +1467,7 @@
       ;; verify the granule status is UPDATED
       (is (= 400 status))
       (is (not (some? task-id)))
-      (is (= "Wrong update format specified for granule UR [Unique_Granule_UR_v1.6]. Please use the correct update format for updates with update-field [S3Link]"
+      (is (= "Wrong update format specified for granule UR [Unique_Granule_UR_v1.6]. Please use the correct update format for updates with event-type [update_field:s3link]"
              (first errors)))))
 
   (testing "Give new :updates format with update-field that isn't AdditionalFile"
@@ -1463,5 +1499,5 @@
       ;; verify the granule status is UPDATED
       (is (= 400 status))
       (is (not (some? task-id)))
-      (is (= "Wrong update format specified for granule UR [GranuleUR1]. Please use the correct update format for updates with update-field [AdditionalFile]"
+      (is (= "Wrong update format specified for granule UR [GranuleUR1]. Please use the correct update format for updates with event-type [update_field:additionalfile]"
              (first errors))))))

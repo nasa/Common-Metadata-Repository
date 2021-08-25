@@ -19,6 +19,11 @@
   [related-url]
   (= OPENDAP_RELATEDURL_SUBTYPE (:Subtype related-url)))
 
+(defn- contains-opendap?
+  "Returns true if the given related-url has the substring 'opendap' in the URL."
+  [related-url]
+  (boolean (re-find #"opendap" (string/lower-case (:URL related-url)))))
+
 (defn- update-opendap-url*
   "Returns the related url with given OPeNDAP url merged into the related-url."
   [url related-url]
@@ -37,13 +42,21 @@
        first
        (update-opendap-url* (first (opendap-type url-map)))))
 
-(defn- updated-type-related-url
-  "Updates types"
+(defn- update-opendap-related-url-type
+  "Updates type"
   [related-url]
-  (if (re-find #"opendap" (string/lower-case (:URL related-url)))
+  (if (contains-opendap? related-url)
     (merge related-url {:Type OPENDAP_RELATEDURL_TYPE} {:Subtype OPENDAP_RELATEDURL_SUBTYPE})
     related-url))
 
+(defn- updated-type-related-urls
+  "Updates types"
+  [related-urls]
+  (if (some contains-opendap? related-urls)
+    (mapv update-opendap-related-url-type related-urls)
+    (errors/throw-service-errors
+     :invalid-data
+     [(str "Granule update failed - there are no OPeNDAP Links to update.")])))
 
 (defn- updated-related-urls
   "Take the RelatedUrls, update any existing opendap url with the given url-map."
@@ -76,7 +89,7 @@
   the on-prem url will overwrite any existing on-prem OPeNDAP url in the UMM-G record.
   Returns the updated UMM-G record."
   [umm-gran grouped-urls]
-  (update umm-gran :RelatedUrls #(mapv updated-type-related-url %)))
+  (update umm-gran :RelatedUrls updated-type-related-urls))
 
 (defn update-opendap-url
   "Takes UMM-G record and grouped OPeNDAP urls in the format of

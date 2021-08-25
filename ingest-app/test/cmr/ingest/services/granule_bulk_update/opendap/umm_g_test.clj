@@ -237,14 +237,6 @@
     (are3 [source result]
       (is (= result (umm-g/update-opendap-type source nil)))
 
-      "No opendap links, shouldn't be changed"
-      {:RelatedUrls [{:URL "http://example.com/foo"
-                      :Type "FOO TYPE"
-                      :Subtype "GET DATA"}]}
-      {:RelatedUrls [{:URL "http://example.com/foo"
-                      :Type "FOO TYPE"
-                      :Subtype "GET DATA"}]}
-
       "One opendap link, gets updated type"
       {:RelatedUrls [{:URL "http://example.com/opendap"
                       :Type "FOO TYPE"
@@ -253,7 +245,7 @@
                       :Type "USE SERVICE API"
                       :Subtype "OPENDAP DATA"}]}
 
-      "One opendap link, gets updated type"
+      "One opendap link and one non-opendap, only opendap gets updated"
       {:RelatedUrls [{:URL "http://example.com/opendap"
                       :Type "USE SERVICE API"
                       :Subtype "GET DATA"}
