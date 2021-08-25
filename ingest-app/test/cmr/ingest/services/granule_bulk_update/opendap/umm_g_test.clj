@@ -233,7 +233,7 @@
 
 
 (deftest update-opendap-type
-  (testing "add or update OPeNDAP url to UMM-G"
+  (testing "Update opendap type in UMM-G"
     (are3 [source result]
       (is (= result (umm-g/update-opendap-type source nil)))
 

@@ -52,7 +52,8 @@
          id)))
 
 (defn- invalid-update-error
-  "throws error"
+  "Throws error in the case the wrong format for the updates field was used for a
+   given operation:update-field combination"
   [event-type]
   (errors/throw-service-errors
    :bad-request
@@ -61,7 +62,7 @@
             event-type)]))
 
 (defn- invalid-event-type
-  "throws error"
+  "Throws error in the case the operation:update-field combination is invalid."
   [event-type]
   (errors/throw-service-errors
    :bad-request
@@ -241,7 +242,8 @@
    :invalid-data [(format "Adding OPeNDAP url is not supported for format [%s]" (:format concept))]))
 
 (defmulti update-opendap-type
-  "Udate opendap types"
+  "Updates the opendap type in the provided concepts.
+   Note: grouped-urls will be nil for this update, as there is no input needed."
   (fn [context concept grouped-urls]
     (mt/format-key (:format concept))))
 
@@ -484,8 +486,8 @@
    context concept bulk-update-params user-id update-format))
 
 (defn- modify-additional-files
-  "Add or update the checksum value and algorithm for the given concept with the provided values
-  using the provided transform function."
+  "Add or update the size, type, mimetype, and/or checksum value and algorithm for the given concept
+   with the provided values using the provided transform function."
   [context concept bulk-update-params user-id xf]
   (let [{:keys [format metadata]} concept
         {:keys [granule-ur new-value]} bulk-update-params

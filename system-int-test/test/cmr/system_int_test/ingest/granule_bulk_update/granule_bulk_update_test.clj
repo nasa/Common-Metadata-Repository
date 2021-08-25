@@ -1522,9 +1522,6 @@
           bulk-update {:operation "UPDATE_TYPE"
                        :update-field "Size"
                        :updates [["Unique_Granule_UR_v1.6" "123"]]}
-
-
-
           {:keys [status task-id errors] :as response} (ingest/bulk-update-granules
                                                         "PROV1" bulk-update bulk-update-options)]
       (index/wait-until-indexed)

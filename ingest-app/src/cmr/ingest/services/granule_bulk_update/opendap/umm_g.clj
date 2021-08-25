@@ -43,14 +43,15 @@
        (update-opendap-url* (first (opendap-type url-map)))))
 
 (defn- update-opendap-related-url-type
-  "Updates type"
+  "Updates type and subtype of a related-url if it contains an opendap link. Note the use of
+   contains-opendap?, and not is-opendap?."
   [related-url]
   (if (contains-opendap? related-url)
     (merge related-url {:Type OPENDAP_RELATEDURL_TYPE} {:Subtype OPENDAP_RELATEDURL_SUBTYPE})
     related-url))
 
 (defn- updated-type-related-urls
-  "Updates types"
+  "Updates types of any opendap links in the provided related-urls"
   [related-urls]
   (if (some contains-opendap? related-urls)
     (mapv update-opendap-related-url-type related-urls)
@@ -83,11 +84,7 @@
     (remove nil? updated-urls)))
 
 (defn update-opendap-type
-  "Takes UMM-G record and grouped OPeNDAP urls in the format of
-  {:cloud [<cloud_url>] :on-prem [<on_prem_url>]}.
-  The cloud url will overwrite any existing Hyrax-in-the-cloud OPeNDAP url in the UMM-G record;
-  the on-prem url will overwrite any existing on-prem OPeNDAP url in the UMM-G record.
-  Returns the updated UMM-G record."
+  "Takes UMM-G record and updates the type and subtype on any mistyped OPeNDAP links."
   [umm-gran grouped-urls]
   (update umm-gran :RelatedUrls updated-type-related-urls))
 
