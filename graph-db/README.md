@@ -125,7 +125,7 @@ To bootstrap all collections in a specific provider (e.g LPDAAC_TS2), send the f
 ```
 
 ## Explore Indexed Data
-CMR graph database is a Neptune database hosted on AWS. Currently, we index collections and their documentation related urls, projects, platforms and instruments as vertices in the graph database. See the following diagram for details:
+CMR graph database is a Neptune database hosted on AWS. Currently, we index collections and their relatedUrl related urls, projects, platforms and instruments as vertices in the graph database. See the following diagram for details:
 
 ![CMR Collection GraphDB Diagram](images/cmr_collection_graphdb_diagram.png)
 
@@ -143,14 +143,14 @@ To see the content of the first 10 vertices in the graph db:
 curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().limit(10)"}'
 ```
 
-To see all collections that share the same documentation URL with the collection (C1200400842-GHRC):
+To see all collections that share the same relatedUrl URL with the collection (C1200400842-GHRC):
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"collection\").has(\"id\", \"C1200400842-GHRC\").outE(\"documentedBy\").inV().hasLabel(\"documentation\").inE(\"documentedBy\").outV().hasLabel(\"collection\").valueMap()"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"collection\").has(\"id\", \"C1200400842-GHRC\").outE(\"linkedBy\").inV().hasLabel(\"relatedUrl\").inE(\"linkedBy\").outV().hasLabel(\"collection\").valueMap()"}'
 ```
 
-To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared documentation:
+To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared relatedUrl:
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"collection\", \"id\", \"C1200400842-GHRC\").as(\"a\").outE(\"documentedBy\").inV().project(\"shared-link\", \"id\").by(\"url\").by(inE(\"documentedBy\").outV().hasLabel(\"collection\").where(neq(\"a\")).values(\"id\").fold())"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"collection\", \"id\", \"C1200400842-GHRC\").as(\"a\").outE(\"linkedBy\").inV().project(\"shared-link\", \"id\").by(\"url\").by(inE(\"linkedBy\").outV().hasLabel(\"collection\").where(neq(\"a\")).values(\"id\").fold())"}'
 ```
 
 To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared projects:
@@ -170,14 +170,14 @@ To create a collection vertex:
 curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.addV(\"collection\").property(\"title\", \"GPM Ground Validation Precipitation Imaging Package (PIP) ICE POP V1\").property(\"id\", \"C1233352242-GHRC\").property(\"doi\", \"10.5067/GPMGV/ICEPOP/PIP/DATA101\")"}'
 ```
 
-To create a documentation vertex:
+To create a relatedUrl vertex:
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.addV(\"documentation\").property(\"url\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\").property(\"title\", \"NASA Participation in the International Collaborative Experiments for Pyeongchang 2018 Olympic and Paralympic Winter Games (ICE-POP 2018)\")"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.addV(\"relatedUrl\").property(\"url\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\").property(\"title\", \"NASA Participation in the International Collaborative Experiments for Pyeongchang 2018 Olympic and Paralympic Winter Games (ICE-POP 2018)\")"}'
 ```
 
-To create an edge from the above documentation vertex to the collection vertex:
+To create an edge from the above relatedUrl vertex to the collection vertex:
 ```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"collection\").has(\"id\", \"C1233352242-GHRC\").addE(\"documentedBy\").to(g.V().hasLabel(\"documentation\").has(\"url\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\"))"}'
+curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"collection\").has(\"id\", \"C1233352242-GHRC\").addE(\"linkedBy\").to(g.V().hasLabel(\"relatedUrl\").has(\"url\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\"))"}'
 ```
 
 ### Access via SSH tunnel and Gremlin Console locally

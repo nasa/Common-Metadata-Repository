@@ -38,7 +38,7 @@ const relatedUrl = (docName) => ({
 })
 
 /**
- * create/update the collection with given concept id, dataset title and documentation name
+ * create/update the collection with given concept id, dataset title and relatedUrl name
  * @param {String} conceptId Collection concept id from CMR
  * @param {String} datasetTitle Entry Title of the collection which becomes the title of dataset vertex
  * @param {JSON} attributes a map of field value pairs of attributes to update the collection
@@ -97,7 +97,7 @@ export const updateCollection = async (conceptId, datasetTitle, attributes) => {
 }
 
 /**
- * delete the collection with given concept id, dataset title and documentation name
+ * delete the collection with given concept id, dataset title and relatedUrl name
  * @param {String} conceptId Collection concept id from CMR
  * @returns null
  */

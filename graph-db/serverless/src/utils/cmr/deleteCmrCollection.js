@@ -50,8 +50,8 @@ export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
     return false
   }
 
-  // drop all the documentation vertices that are connected to and only connected to the dataset vertex
-  success = await deleteLinkedVertices(conceptId, gremlinConnection, 'documentation', 'documentedBy')
+  // drop all the relatedUrl vertices that are connected to and only connected to the dataset vertex
+  success = await deleteLinkedVertices(conceptId, gremlinConnection, 'relatedUrl', 'linkedBy')
   if (success === false) {
     return false
   }

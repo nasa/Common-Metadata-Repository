@@ -18,14 +18,12 @@ const indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId
   } = relatedUrl
 
   if (!url || type !== 'VIEW RELATED INFORMATION') {
-    // We only care about documentation at the moment.
-    // Checking the URLContentType is the most efficient way to find its type.
-    // Return early if it isn't some kind of documentation.
+    // Ignore non related information related urls for now
     return
   }
 
   try {
-    const addVCommand = gremlinConnection.addV('documentation')
+    const addVCommand = gremlinConnection.addV('relatedUrl')
       .property('url', url)
       .property('type', type)
       .property('subType', subType)
@@ -35,9 +33,9 @@ const indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId
     }
 
     // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
-    const documentationVertex = await gremlinConnection
+    const relatedUrlVertex = await gremlinConnection
       .V()
-      .has('documentation', 'url', url)
+      .has('relatedUrl', 'url', url)
       .fold()
       .coalesce(
         gremlinStatistics.unfold(),
@@ -45,25 +43,25 @@ const indexRelatedUrl = async (relatedUrl, gremlinConnection, dataset, conceptId
       )
       .next()
 
-    const { value: vertexValue = {} } = documentationVertex
-    const { id: documentationId } = vertexValue
+    const { value: vertexValue = {} } = relatedUrlVertex
+    const { id: relatedUrlId } = vertexValue
 
-    console.log(`Documentation vertex [${documentationId}] indexed for collection [${dataset}]`)
+    console.log(`RelatedUrl vertex [${relatedUrlId}] indexed for collection [${dataset}]`)
 
     // Create an edge between this url and its parent collection
-    const documentationEdge = await gremlinConnection
-      .V(documentationId).as('d')
+    const relatedUrlEdge = await gremlinConnection
+      .V(relatedUrlId).as('d')
       .V(dataset)
       .coalesce(
-        gremlinStatistics.outE('documentedBy').where(gremlinStatistics.inV().as('d')),
-        gremlinConnection.addE('documentedBy').to('d')
+        gremlinStatistics.outE('linkedBy').where(gremlinStatistics.inV().as('d')),
+        gremlinConnection.addE('linkedBy').to('d')
       )
       .next()
 
-    const { value: edgeValue = {} } = documentationEdge
+    const { value: edgeValue = {} } = relatedUrlEdge
     const { id: edgeId } = edgeValue
 
-    console.log(`Documentation edge [${edgeId}] indexed to point to collection [${dataset}]`)
+    console.log(`RelatedUrl edge [${edgeId}] indexed to point to collection [${dataset}]`)
   } catch (error) {
     // Log specific error message, but throw error again to stop indexing
     console.error(`ERROR indexing RelatedUrl for concept [${conceptId}] ${JSON.stringify(relatedUrl)}: \n Error: ${error}`)
