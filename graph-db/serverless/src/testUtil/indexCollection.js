@@ -63,10 +63,6 @@ export const updateCollection = async (conceptId, collectionTitle, attributes) =
     relatedUrlsObjs = relatedUrls.map(relatedUrlObj)
   }
 
-  console.log('projectsObjs', projectsObjs)
-  console.log('platformInstrumentObjs', platformInstrumentObjs)
-  console.log('relatedUrlsObjs', relatedUrlsObjs)
-
   nock(/local-cmr/)
     .get(/search/)
     .reply(200,
