@@ -93,15 +93,20 @@
     201
     200))
 
-(defn format-and-contextualize-warnings
-  "Format and add a message to warnings to make translation issues more clear to the user."
+(defn format-and-contextualize-warnings-existing-errors
+  "Format and add a message to warnings and existing-errors to make translation issues more clear to the user."
   [result]
-  (let [warning-context "After translating item to UMM-C the metadata had the following issue: "]
-   (update result
-           :warnings
-           (fn [warnings]
-             (when (not-empty warnings)
-               [(str warning-context (string/join ". " warnings))])))))
+  (let [warning-context "After translating item to UMM-C the metadata had the following issue: "
+        err-context "After translating item to UMM-C the metadata had the following existing errors: "]
+    (-> result
+        (update :warnings
+                (fn [warnings]
+                  (when (not-empty warnings)
+                    [(str warning-context (string/join ". " warnings))])))
+        (update :existing-errors
+                (fn [existing-errors]
+                  (when (not-empty existing-errors)
+                    [(str err-context (string/join ". " existing-errors))]))))))
 
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"
@@ -286,7 +291,7 @@
     (info (format "Deleting %s %s from client %s"
                   (name concept-type) (pr-str concept-attribs) (:client-id request-context)))
     (generate-ingest-response headers
-                              (format-and-contextualize-warnings
+                              (format-and-contextualize-warnings-existing-errors
                                (ingest/delete-concept
                                 request-context
                                 concept-attribs)))))

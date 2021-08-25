@@ -36,12 +36,12 @@
                                                                        :TemporalExtents temporal-extents
                                                                        :DataDates data-dates})
                                                                       options)
-              expected-warnings "After translating item to UMM-C the metadata had the following issue: {:existing-errors (\"[:TemporalExtents 0 :RangeDateTimes 0] [\\\"BeginningDateTime [2001-01-01T12:00:00.000Z] must be no later than EndingDateTime [2000-05-11T12:00:00.000Z]\\\"]\" \"[:AdditionalAttributes 0] [\\\"Parameter Range Begin is not allowed for type [STRING]\\\" \\\"Parameter Range End is not allowed for type [STRING]\\\"]\")}. [:TemporalExtents 0 :RangeDateTimes 0] BeginningDateTime [2001-01-01T12:00:00.000Z] must be no later than EndingDateTime [2000-05-11T12:00:00.000Z]. [:AdditionalAttributes 0] Parameter Range Begin is not allowed for type [STRING] Parameter Range End is not allowed for type [STRING]" 
-              {:keys [errors warnings concept-id revision-id]} response]
+              expected-existing-errors "After translating item to UMM-C the metadata had the following existing errors: [:TemporalExtents 0 :RangeDateTimes 0] BeginningDateTime [2001-01-01T12:00:00.000Z] must be no later than EndingDateTime [2000-05-11T12:00:00.000Z]. [:AdditionalAttributes 0] Parameter Range Begin is not allowed for type [STRING] Parameter Range End is not allowed for type [STRING]" 
+              {:keys [errors warnings existing-errors concept-id revision-id]} response]
           (is (= concept-id (:concept-id coll)))
           (is (= revision-id (+ 1 (:revision-id coll))))
           (is (= nil errors))
-          (is (= expected-warnings warnings))))
+          (is (= expected-existing-errors existing-errors))))
 
         (testing "Progressive update collection successful case, real existing errors"
           (let [additional-attributes [(data-umm-cmn/additional-attribute {:Name "int" :DataType "STRING" :ParameterRangeBegin 1 :ParameterRangeEnd 10})]
@@ -56,12 +56,12 @@
                                                                          :AdditionalAttributes additional-attributes
                                                                          :TemporalExtents temporal-extents
                                                                          :DataDates data-dates}))
-                expected-warnings "After translating item to UMM-C the metadata had the following issue: {:existing-errors (\"[:TemporalExtents 0 :RangeDateTimes 0] [\\\"BeginningDateTime [2001-01-01T12:00:00.000Z] must be no later than EndingDateTime [2000-05-11T12:00:00.000Z]\\\"]\" \"[:AdditionalAttributes 0] [\\\"Parameter Range Begin is not allowed for type [STRING]\\\" \\\"Parameter Range End is not allowed for type [STRING]\\\"]\")}. [:TemporalExtents 0 :RangeDateTimes 0] BeginningDateTime [2001-01-01T12:00:00.000Z] must be no later than EndingDateTime [2000-05-11T12:00:00.000Z]. [:AdditionalAttributes 0] Parameter Range Begin is not allowed for type [STRING] Parameter Range End is not allowed for type [STRING]"
-                {:keys [errors warnings concept-id revision-id]} response]
+                expected-existing-errors "After translating item to UMM-C the metadata had the following existing errors: [:TemporalExtents 0 :RangeDateTimes 0] BeginningDateTime [2001-01-01T12:00:00.000Z] must be no later than EndingDateTime [2000-05-11T12:00:00.000Z]. [:AdditionalAttributes 0] Parameter Range Begin is not allowed for type [STRING] Parameter Range End is not allowed for type [STRING]"
+                {:keys [errors warnings existing-errors concept-id revision-id]} response]
             (is (= concept-id (:concept-id coll)))
             (is (= revision-id (+ 2 (:revision-id coll))))
             (is (= nil errors))
-            (is (= expected-warnings warnings))))
+            (is (= expected-existing-errors existing-errors))))
         
         (testing "Progressive update collection failed case, introducing new data-dates errors"
           (let [additional-attributes [(data-umm-cmn/additional-attribute {:Name "int" :DataType "STRING" :ParameterRangeBegin 1 :ParameterRangeEnd 10})]
