@@ -7,6 +7,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.routes :as routes]
    [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
@@ -150,18 +151,25 @@
       (is (cmr-request-id-in-header? headers x-request-id)))))
 
 (deftest cors-headers
-  (testing "allowed headers in options search request"
+  (testing "allowed headers in options search request when ECHO-Tokens are allowed"
+    (dev-sys-util/eval-in-dev-sys `(acl/set-allow-echo-token! true))
     (let [allowed-headers (-> (client/options (url/search-url :collection))
                               (get-in [:headers "Access-Control-Allow-Headers"])
                               (string/split #", "))]
-      (is (if (acl/allow-echo-token)
-        (some #{"Echo-Token"} allowed-headers)
-        (not-any? #{"Echo-Token"} allowed-headers)))
+      (is (some #{"Echo-Token"} allowed-headers))
       (is (some #{"Authorization"} allowed-headers))
       (is (some #{"Client-Id"} allowed-headers))
       (is (some #{"CMR-Request-Id"} allowed-headers))
       (is (some #{"X-Request-Id"} allowed-headers))
       (is (some #{"CMR-Scroll-Id"} allowed-headers))))
+
+  (testing "that Echo-Token header is not allowed when the toggle for it is off"
+    (dev-sys-util/eval-in-dev-sys `(acl/set-allow-echo-token! false))
+    (let [allowed-headers (-> (client/options (url/search-url :collection))
+                              (get-in [:headers "Access-Control-Allow-Headers"])
+                              (string/split #", "))]
+      (is (not-any? #{"Echo-Token"} allowed-headers))
+      (dev-sys-util/eval-in-dev-sys `(acl/set-allow-echo-token! true))))
 
   (testing "exposed headers in search request"
     (let [exposed-headers (-> (client/head (url/search-url :collection))

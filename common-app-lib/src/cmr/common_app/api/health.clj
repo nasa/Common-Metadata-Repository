@@ -56,6 +56,6 @@
   working as expected."
   [health-fn]
   (context "/health" []
-    (OPTIONS "/" req common-routes/options-response)
+    (OPTIONS "/" req (common-routes/options-response))
     (GET "/" {:keys [request-context]}
       (get-app-health request-context health-fn))))

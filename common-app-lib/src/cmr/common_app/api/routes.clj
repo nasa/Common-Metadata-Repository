@@ -86,8 +86,9 @@
              response)
    :body    results})
 
-(def options-response
+(defn options-response
   "Generate the response map when requesting options"
+  []
   {:status 200
    :headers {CONTENT_TYPE_HEADER "text/plain; charset=utf-8"
              CORS_ORIGIN_HEADER "*"
