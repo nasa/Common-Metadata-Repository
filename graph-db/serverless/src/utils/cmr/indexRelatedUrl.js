@@ -18,7 +18,7 @@ export const indexRelatedUrl = async (
   const {
     URL: url,
     Type: type,
-    SubType: subType,
+    Subtype: subType,
     Description: description
   } = relatedUrl
 
