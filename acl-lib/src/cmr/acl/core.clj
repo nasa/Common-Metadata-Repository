@@ -32,7 +32,7 @@
     (or (non-empty-string (get headers tc/token-header))
         (non-empty-string (:token params))
         (when (allow-echo-token) 
-          (non-empty-string (get headers echo-token-header))))))
+          (non-empty-string (get headers tc/echo-token-header))))))
 
 (defn- get-client-id
   "Gets the client id passed by the client or tries to determine it from other headers"
