@@ -20,7 +20,9 @@
   (= OPENDAP_RELATEDURL_SUBTYPE (:Subtype related-url)))
 
 (defn- contains-opendap?
-  "Returns true if the given related-url has the substring 'opendap' in the URL."
+  "Returns true if the given related-url has the substring 'opendap' in the URL.
+   If a subtype was supplied, then it will instead return true if the given related-urls
+   has a subtype matching the input subtype string."
   [related-url subtype]
   (if subtype
     (when (:Subtype related-url)

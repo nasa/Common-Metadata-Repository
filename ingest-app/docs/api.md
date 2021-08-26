@@ -1445,8 +1445,7 @@ Supported metadata formats:
 * OPeNDAP url in RelatedUrls for UMM-G format
 * *Coming Soon*: OPeNDAP url in OnlineResources for ECHO10 format
 
-Input for this update type should be a list of granule URs. UMM-G Granules listed will have any `RelatedUrl`s containg the string `"opendap"` updated to include `"Type": "USE SERVICE API"` and
-`"Subtype": "OPENDAP DATA"`.
+Input for this update type should be a list of granule URs. UMM-G Granules listed will have any `RelatedUrl`s containg the string `"opendap"` updated to include `"Type": "USE SERVICE API"` and `"Subtype": "OPENDAP DATA"`.
 
 As an alternative to identifying links via the `"opendap"` string method, a subtype string can be supplied with each granule UR as a tuple. If supplied, any links with a subtype matching this input string will be updated instead. As before, the link will be updated to include `"Type": "USE SERVICE API"` and `"Subtype": "OPENDAP DATA"`.
 
@@ -1467,7 +1466,8 @@ curl -i -XPOST \
 	]
 }'
 ```
-For this next update, each granule in the list will have any links with a subtype matching the supplied value updated.
+
+For this next update, each granule in the list will have any links with a subtype matching the supplied value updated to the new Type and Subtype
 
 ```
 curl -i -XPOST \
@@ -1480,8 +1480,8 @@ curl -i -XPOST \
 	"operation": "UPDATE_TYPE",
 	"update-field":"OPeNDAPLink",
 	"updates":[
-             ["granule_ur1", "GET DATA"]
-						 ["granule_ur2", "GET DATA"]
+             ["granule_ur1", "OPENDAP DATA"]
+						 ["granule_ur2", "OPENDAP DATA"]
 						 ["granule_ur3", "DIRECT DOWNLOAD"]
 	]
 }'
