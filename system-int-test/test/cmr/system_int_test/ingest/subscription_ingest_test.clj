@@ -153,7 +153,7 @@
         (is (= {:revision-id 1
                 :native-id "Name 0"
                 :concept-id supplied-concept-id}
-               (ingest/parse-ingest-body :json response)))))
+               (dissoc (ingest/parse-ingest-body :json response) :body)))))
 
     (testing "xml response"
       (let [response (ingest/ingest-concept
@@ -165,7 +165,7 @@
         (is (= {:revision-id 2
                 :native-id "Name 0"
                 :concept-id supplied-concept-id}
-               (ingest/parse-ingest-body :xml response)))))))
+               (dissoc (ingest/parse-ingest-body :xml response) :body)))))))
 
 (deftest subscription-ingest-with-bad-query-error-test
   (testing "ingest of a new subscription concept"
