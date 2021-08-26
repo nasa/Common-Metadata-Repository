@@ -6,7 +6,7 @@ describe('indexRelatedUrl', () => {
     test('it indexes the relatedUrl', async () => {
       const relatedUrl = {
         Type: 'VIEW RELATED INFORMATION',
-        SubType: 'PublicationUrl',
+        Subtype: 'PublicationUrl',
         Description: 'Nulla vitae elit libero, a pharetra augue.',
         URL: 'https://example.com/test.json'
       }
