@@ -23,7 +23,8 @@
   "Returns true if the given related-url has the substring 'opendap' in the URL."
   [related-url subtype]
   (if subtype
-    (= (string/lower-case subtype) (string/lower-case (:Subtype related-url)))
+    (when (:Subtype related-url)
+      (= (string/lower-case subtype) (string/lower-case (:Subtype related-url))))
     (boolean (re-find #"opendap" (string/lower-case (:URL related-url))))))
 
 (defn- update-opendap-url*

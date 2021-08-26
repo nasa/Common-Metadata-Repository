@@ -1448,7 +1448,9 @@ Supported metadata formats:
 Input for this update type should be a list of granule URs. UMM-G Granules listed will have any `RelatedUrl`s containg the string `"opendap"` updated to include `"Type": "USE SERVICE API"` and
 `"Subtype": "OPENDAP DATA"`.
 
-Example: Add/update OPeNDAP link type for 3 granules under PROV1.
+As an alternative to identifying links via the `"opendap"` string method, a subtype string can be supplied with each granule UR as a tuple. If supplied, any links with a subtype matching this input string will be updated instead. As before, the link will be updated to include `"Type": "USE SERVICE API"` and `"Subtype": "OPENDAP DATA"`.
+
+Examples for each update format are provided below. For the first update, each granule in the list will have any links containing the string `"opendap"` updated to the new Type and Subtype.
 
 ```
 curl -i -XPOST \
@@ -1457,7 +1459,7 @@ curl -i -XPOST \
   -H "Echo-Token: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
-'{ "name": "example of updating OPeNDAP link types",
+'{ "name": "Update type and subtype for links containing the string 'opendap'",
 	"operation": "UPDATE_TYPE",
 	"update-field":"OPeNDAPLink",
 	"updates":[
@@ -1465,14 +1467,24 @@ curl -i -XPOST \
 	]
 }'
 ```
+For this next update, each granule in the list will have any links with a subtype matching the supplied value updated.
 
-Example granule bulk update response:
 ```
-<?xml version="1.0" encoding="UTF-8"?>
-<result>
-    <status>200</status>
-    <task-id>5</task-id>
-</result>
+curl -i -XPOST \
+  -H "Cmr-Pretty:true" \
+  -H "Content-Type: application/json"
+  -H "Echo-Token: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{ "name": "Update type and subtype for links containing a subtype matching the supplied value",
+	"operation": "UPDATE_TYPE",
+	"update-field":"OPeNDAPLink",
+	"updates":[
+             ["granule_ur1", "GET DATA"]
+						 ["granule_ur2", "GET DATA"]
+						 ["granule_ur3", "DIRECT DOWNLOAD"]
+	]
+}'
 ```
 
 ### Query Granule Bulk Update Status
