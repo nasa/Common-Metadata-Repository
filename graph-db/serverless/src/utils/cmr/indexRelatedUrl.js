@@ -26,10 +26,13 @@ export const indexRelatedUrl = async (
     const addVCommand = gremlinConnection.addV('relatedUrl')
       .property('url', url)
       .property('type', type)
-      .property('subType', subType)
 
     if (description) {
       addVCommand.property('description', description)
+    }
+
+    if (subType) {
+      addVCommand.property('subType', subType)
     }
 
     // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
