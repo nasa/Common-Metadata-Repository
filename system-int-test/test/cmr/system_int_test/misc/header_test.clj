@@ -154,8 +154,9 @@
     (let [allowed-headers (-> (client/options (url/search-url :collection))
                               (get-in [:headers "Access-Control-Allow-Headers"])
                               (string/split #", "))]
-      ;; (is (not-any? #{"Echo-Token"} allowed-headers))
-      (is (some #{"Echo-Token"} allowed-headers))
+      (is (if (acl/allow-echo-token)
+        (some #{"Echo-Token"} allowed-headers)
+        (not-any? #{"Echo-Token"} allowed-headers)))
       (is (some #{"Authorization"} allowed-headers))
       (is (some #{"Client-Id"} allowed-headers))
       (is (some #{"CMR-Request-Id"} allowed-headers))
