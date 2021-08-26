@@ -21,8 +21,10 @@
 
 (defn- contains-opendap?
   "Returns true if the given related-url has the substring 'opendap' in the URL."
-  [related-url]
-  (boolean (re-find #"opendap" (string/lower-case (:URL related-url)))))
+  [related-url subtype]
+  (if subtype
+    (= (string/lower-case subtype) (string/lower-case (:Subtype related-url)))
+    (boolean (re-find #"opendap" (string/lower-case (:URL related-url))))))
 
 (defn- update-opendap-url*
   "Returns the related url with given OPeNDAP url merged into the related-url."
@@ -45,16 +47,16 @@
 (defn- update-opendap-related-url-type
   "Updates type and subtype of a related-url if it contains an opendap link. Note the use of
    contains-opendap?, and not is-opendap?."
-  [related-url]
-  (if (contains-opendap? related-url)
+  [related-url subtype]
+  (if (contains-opendap? related-url subtype)
     (merge related-url {:Type OPENDAP_RELATEDURL_TYPE} {:Subtype OPENDAP_RELATEDURL_SUBTYPE})
     related-url))
 
 (defn- updated-type-related-urls
   "Updates types of any opendap links in the provided related-urls"
-  [related-urls]
-  (if (some contains-opendap? related-urls)
-    (mapv update-opendap-related-url-type related-urls)
+  [related-urls subtype]
+  (if (some #(contains-opendap? % subtype) related-urls)
+    (mapv #(update-opendap-related-url-type % subtype) related-urls)
     (errors/throw-service-errors
      :invalid-data
      [(str "Granule update failed - there are no OPeNDAP Links to update.")])))
@@ -85,8 +87,8 @@
 
 (defn update-opendap-type
   "Takes UMM-G record and updates the type and subtype on any mistyped OPeNDAP links."
-  [umm-gran grouped-urls]
-  (update umm-gran :RelatedUrls updated-type-related-urls))
+  [umm-gran subtype]
+  (update umm-gran :RelatedUrls #(updated-type-related-urls % subtype)))
 
 (defn update-opendap-url
   "Takes UMM-G record and grouped OPeNDAP urls in the format of

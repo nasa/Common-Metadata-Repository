@@ -85,11 +85,18 @@
 
 (defmethod update->instruction :update_type:opendaplink
   [event-type item]
-  (if-not (string? item)
-    (invalid-update-error event-type)
-    {:event-type event-type
-     :granule-ur item}))
+  (cond
+    (vector? item)
+    (let [[granule-ur value] item]
+      {:event-type event-type
+       :granule-ur granule-ur
+       :new-value value})
 
+    (string? item)
+    {:event-type event-type
+     :granule-ur item}
+
+    :else (invalid-update-error event-type)))
 
 (defmethod update->instruction :default
   [event-type item]
@@ -391,11 +398,13 @@
   Updates containing a url type that is already present on the concept
   will fail with an exception.
   Successful updates will return the updated concept."
-  [context concept bulk-update-params user-id xf]
+  [context concept bulk-update-params target-field user-id xf]
   (let [{:keys [format metadata]} concept
         {:keys [granule-ur new-value]} bulk-update-params
         grouped-urls (opendap-util/validate-url new-value)
-        updated-concept (xf context concept grouped-urls)
+        updated-concept (if (= :Type target-field)
+                          (xf context concept new-value)
+                          (xf context concept grouped-urls))
         {updated-metadata :metadata updated-format :format} updated-concept]
     (if-let [err-messages (:errors updated-metadata)]
       (errors/throw-service-errors :invalid-data err-messages)
@@ -409,17 +418,17 @@
 (defmethod update-granule-concept :update_field:opendaplink
   [context concept bulk-update-params user-id]
   (modify-opendap-link*
-   context concept bulk-update-params user-id update-opendap-url))
+   context concept bulk-update-params :URL user-id update-opendap-url))
 
 (defmethod update-granule-concept :append_to_field:opendaplink
   [context concept bulk-update-params user-id]
   (modify-opendap-link*
-   context concept bulk-update-params user-id append-opendap-url))
+   context concept bulk-update-params :URL user-id append-opendap-url))
 
 (defmethod update-granule-concept :update_type:opendaplink
   [context concept bulk-update-params user-id]
   (modify-opendap-link*
-   context concept bulk-update-params user-id update-opendap-type))
+   context concept bulk-update-params :Type user-id update-opendap-type))
 
 (defn- modify-s3-link*
   "Modify the S3Link data for the given concept with the provided URLs
