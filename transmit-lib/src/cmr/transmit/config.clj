@@ -41,6 +41,9 @@
 (def token-header
   "authorization")
 
+(def echo-token-header
+  "echo-token")
+
 (def revision-id-header
   "cmr-revision-id")
 
