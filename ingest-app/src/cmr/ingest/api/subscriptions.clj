@@ -330,7 +330,7 @@
     (info (format "Deleting subscription %s from client %s"
                   (pr-str concept-attribs) (:client-id request-context)))
     (api-core/generate-ingest-response headers
-                                       (api-core/format-and-contextualize-warnings
+                                       (api-core/format-and-contextualize-warnings-existing-errors
                                         (ingest/delete-concept
                                          request-context
                                          concept-attribs)))))

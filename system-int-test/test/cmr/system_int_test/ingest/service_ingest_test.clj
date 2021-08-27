@@ -38,7 +38,7 @@
                        :raw? true})]
         (is (= {:revision-id 1
                 :concept-id supplied-concept-id}
-               (ingest/parse-ingest-body :json response)))))
+               (dissoc (ingest/parse-ingest-body :json response) :body)))))
 
     (testing "xml response"
       (let [response (ingest/ingest-concept
@@ -48,7 +48,7 @@
                        :raw? true})]
         (is (= {:revision-id 2
                 :concept-id supplied-concept-id}
-               (ingest/parse-ingest-body :xml response)))))))
+               (dissoc (ingest/parse-ingest-body :xml response) :body)))))))
 
 ;; Verify that the accept header works with returned errors
 (deftest service-ingest-with-errors-accept-header-test

@@ -50,8 +50,10 @@
          ;;   or return existing errors as warnings(it could be nil)
          ;; else
          ;;  throw errors for validation on sanitized collection, if there are any.
-         err-warnings (v/umm-spec-validate-collection
-                       sanitized-collection sanitized-prev-collection validation-options context false)
+         existing-errors (v/umm-spec-validate-collection
+                          sanitized-collection sanitized-prev-collection validation-options context false)
+         existing-errors (map #(str (:path %) " " (string/join " " (:errors %)))
+                              existing-errors)
          ;; Return warnings for schema validation errors going from xml -> UMM
          warnings (v/validate-collection-umm-spec-schema collection validation-options)
          ;; Return warnings for validation errors on collection without sanitization
@@ -61,10 +63,11 @@
                                collection validation-options context))
          collection-warnings (map #(str (:path %) " " (string/join " " (:errors %)))
                                   collection-warnings)
-         warnings (concat err-warnings warnings collection-warnings)]
+         warnings (concat warnings collection-warnings)]
      ;; The sanitized UMM Spec collection is returned so that ingest does not fail
      {:collection sanitized-collection
-      :warnings warnings})))
+      :warnings warnings
+      :existing-errors existing-errors})))
 
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
@@ -74,42 +77,40 @@
         {:keys [provider-id native-id]} concept
         prev-concept (first (ingest-helper/find-visible-collections context {:provider-id provider-id
                                                                              :native-id native-id}))
-        {:keys [collection warnings]} (validate-and-parse-collection-concept
-                                       context
-                                       concept
-                                       prev-concept
-                                       validation-options)
+        {:keys [collection warnings existing-errors]} (validate-and-parse-collection-concept
+                                                       context
+                                                       concept
+                                                       prev-concept
+                                                       validation-options)
         ;; Add extra fields for the collection
         coll-concept (assoc (add-extra-fields-for-collection context concept collection)
                             :umm-concept collection)]
     ;; progressive update doesn't apply to business rules.
     (v/validate-business-rules context coll-concept prev-concept)
     {:concept coll-concept
-     :warnings warnings}))
+     :warnings warnings
+     :existing-errors existing-errors}))
 
 (defn-timed save-collection
   "Store a concept in mdb and indexer.
    Return entry-titile, concept-id, revision-id, and warnings."
   [context concept validation-options]
-  (let [{:keys [concept warnings]} (validate-and-prepare-collection context
-                                                                    concept
-                                                                    validation-options)]
+  (let [{:keys [concept warnings existing-errors]} (validate-and-prepare-collection context
+                                                                                    concept
+                                                                                    validation-options)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)
-          entry-title (get-in concept [:extra-fields :entry-title])
-          ;; extract out existing errors from warnings
-          existing-errors (some #(:existing-errors %) warnings)
-          ;; extract out the rest of the  warnings from warnings
-          other-warnings (remove #(:existing-errors %) warnings)]
+          entry-title (get-in concept [:extra-fields :entry-title])]
       ;; if ingested with existing errors, log the existing errors and warnings for the collection
       ;; and the user
       (when (seq existing-errors)
         (warn "Ingest with existing errors info:  "
               (format "Collection[%s] has the existing errors: %s and warnings: %s by user: [%s]"
-                      concept-id (pr-str existing-errors) (pr-str other-warnings)
+                      concept-id (pr-str existing-errors) (pr-str warnings)
                       (if (:token context)
                         (common-context/context->user-id context)
                         "unknown user"))))
       {:entry-title entry-title
        :concept-id concept-id
        :revision-id revision-id
-       :warnings warnings})))
+       :warnings warnings
+       :existing-errors existing-errors})))

@@ -370,31 +370,31 @@
 
           "ECHO10 Ingest and Ingest Validation"
           :echo10 (data-umm-c/collection-missing-properties {})
-          "After translating item to UMM-C the metadata had the following issue: #: required key [DataCenters] not found. #: required key [ProcessingLevel] not found. #: required key [ScienceKeywords] not found. #: required key [TemporalExtents] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found"
+          "After translating item to UMM-C the metadata had the following issue(s): #: required key [DataCenters] not found. #: required key [ProcessingLevel] not found. #: required key [ScienceKeywords] not found. #: required key [TemporalExtents] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found"
 
           "umm-json Ingest and Ingest Validation for Invalid data date ranges"
           :umm-json (collection-invalid-data-date-ranges)
-          "After translating item to UMM-C the metadata had the following issue: [:MetadataDates] latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past. earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future. DELETE date value: [2049-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2050-01-01T00:00:00.000Z].. [:DataDates] CREATE date value: [2050-01-01T00:00:00.000Z] should be in the past. latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past. earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future. Earliest UPDATE date value: [2011-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2050-01-01T00:00:00.000Z]."
+          "After translating item to UMM-C the metadata had the following issue(s): [:MetadataDates] latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past. earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future. DELETE date value: [2049-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2050-01-01T00:00:00.000Z].. [:DataDates] CREATE date value: [2050-01-01T00:00:00.000Z] should be in the past. latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past. earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future. Earliest UPDATE date value: [2011-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2050-01-01T00:00:00.000Z]."
 
           "DIF10 Ingest and Ingest Validation"
           :dif10 (data-umm-c/collection-missing-properties-dif10 {})
-          "After translating item to UMM-C the metadata had the following issue: #: required key [ProcessingLevel] not found. #: required key [CollectionProgress] not found"
+          "After translating item to UMM-C the metadata had the following issue(s): #: required key [ProcessingLevel] not found. #: required key [CollectionProgress] not found"
 
           "DIF9 Ingest and Ingest Validation"
           :dif (data-umm-c/collection-missing-properties-dif {})
-          "After translating item to UMM-C the metadata had the following issue: #: required key [ProcessingLevel] not found. #: required key [TemporalExtents] not found. #: required key [SpatialExtent] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found"
+          "After translating item to UMM-C the metadata had the following issue(s): #: required key [ProcessingLevel] not found. #: required key [TemporalExtents] not found. #: required key [SpatialExtent] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found"
 
           "ISO19115 Ingest and Ingest Validation"
           :iso19115 (data-umm-c/collection-missing-properties {})
-          "After translating item to UMM-C the metadata had the following issue: #: required key [DataCenters] not found. #: required key [ProcessingLevel] not found. #: required key [ScienceKeywords] not found. #: required key [TemporalExtents] not found. #: required key [SpatialExtent] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found"
+          "After translating item to UMM-C the metadata had the following issue(s): #: required key [DataCenters] not found. #: required key [ProcessingLevel] not found. #: required key [ScienceKeywords] not found. #: required key [TemporalExtents] not found. #: required key [SpatialExtent] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found"
 
           "ISO SMAP Ingest and Ingest Validation"
           :iso-smap (data-umm-c/collection-missing-properties {})
-          "After translating item to UMM-C the metadata had the following issue: #: required key [DataCenters] not found. #: required key [ProcessingLevel] not found. #: required key [ScienceKeywords] not found. #: required key [TemporalExtents] not found. #: required key [SpatialExtent] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found"
+          "After translating item to UMM-C the metadata had the following issue(s): #: required key [DataCenters] not found. #: required key [ProcessingLevel] not found. #: required key [ScienceKeywords] not found. #: required key [TemporalExtents] not found. #: required key [SpatialExtent] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found"
 
           "DIF9 with no version - has warnings, but passes ingest"
           :dif (assoc (data-umm-c/collection-missing-properties-dif {}) :Version nil)
-          "After translating item to UMM-C the metadata had the following issue: #: required key [Version] not found. #: required key [ProcessingLevel] not found. #: required key [TemporalExtents] not found. #: required key [SpatialExtent] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found")))
+          "After translating item to UMM-C the metadata had the following issue(s): #: required key [Version] not found. #: required key [ProcessingLevel] not found. #: required key [TemporalExtents] not found. #: required key [SpatialExtent] not found. #: required key [Platforms] not found. #: required key [CollectionProgress] not found")))
 
 (deftest umm-spec-temporal-validation
   (testing "Invalid temporal extents"
