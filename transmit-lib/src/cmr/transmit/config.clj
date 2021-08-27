@@ -39,10 +39,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def token-header
-  "echo-token")
-
-(def authorization-header
   "authorization")
+
+(def echo-token-header
+  "echo-token")
 
 (def revision-id-header
   "cmr-revision-id")

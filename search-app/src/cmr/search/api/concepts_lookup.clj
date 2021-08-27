@@ -119,7 +119,7 @@
   (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][A-Z]?[A-Z]?[0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
     ;; OPTIONS method is needed to support CORS when custom headers are used in requests to
     ;; the endpoint. In this case, the Echo-Token header is used in the GET request.
-    (OPTIONS "/" req common-routes/options-response)
+    (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
       {params :params headers :headers ctx :request-context}
       (find-concept-by-cmr-concept-id ctx path-w-extension params headers))))

@@ -304,7 +304,7 @@
 (def search-routes
   "Routes for /search/granules, /search/collections, etc."
   (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services))(?:\..+)?"] [path-w-extension]
-    (OPTIONS "/" req common-routes/options-response)
+    (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}
       (find-concepts ctx path-w-extension params headers query-string))
@@ -316,7 +316,7 @@
 (def granule-timeline-routes
   "Routes for /search/granules/timeline."
   (context ["/granules/:path-w-extension" :path-w-extension #"(?:timeline)(?:\..+)?"] [path-w-extension]
-    (OPTIONS "/" req common-routes/options-response)
+    (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}
       (get-granules-timeline ctx path-w-extension params headers query-string))
@@ -327,13 +327,13 @@
   "Routes for finding deleted granules and collections."
   (routes
     (context ["/:path-w-extension" :path-w-extension #"(?:deleted-collections)(?:\..+)?"] [path-w-extension]
-      (OPTIONS "/" req common-routes/options-response)
+      (OPTIONS "/" req (common-routes/options-response))
       (GET "/"
         {params :params headers :headers ctx :request-context}
         (get-deleted-collections ctx path-w-extension params headers)))
 
     (context ["/:path-w-extension" :path-w-extension #"(?:deleted-granules)(?:\..+)?"] [path-w-extension]
-      (OPTIONS "/" req common-routes/options-response)
+      (OPTIONS "/" req (common-routes/options-response))
       (GET "/"
         {params :params headers :headers ctx :request-context}
         (get-deleted-granules ctx path-w-extension params headers)))))
@@ -341,7 +341,7 @@
 (def aql-search-routes
   "Routes for finding concepts using the ECHO Alternative Query Language (AQL)."
   (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
-    (OPTIONS "/" req common-routes/options-response)
+    (OPTIONS "/" req (common-routes/options-response))
     (POST "/"
       {params :params headers :headers ctx :request-context body :body-copy}
       (find-concepts-by-aql ctx path-w-extension params headers body))))

@@ -48,7 +48,7 @@
 
 (def holdings-routes
   (context ["/:path-w-extension" :path-w-extension #"(?:provider_holdings)(?:\..+)?"] [path-w-extension]
-    (OPTIONS "/" req common-routes/options-response)
+    (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
       {params :params headers :headers ctx :request-context}
       (get-provider-holdings ctx path-w-extension params headers))))

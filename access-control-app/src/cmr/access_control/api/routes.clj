@@ -262,7 +262,7 @@
         (OPTIONS "/"
                  {params :params}
                  (pv/validate-standard-params params)
-                 common-routes/options-response)
+                 (common-routes/options-response))
 
         ;; Search for groups
         (GET "/"
@@ -281,7 +281,7 @@
                                 (:managing_group_id params))))
 
         (context "/:group-id" [group-id]
-          (OPTIONS "/" req common-routes/options-response)
+          (OPTIONS "/" req (common-routes/options-response))
           ;; Get a group
           (GET "/"
                {ctx :request-context params :params}
@@ -303,7 +303,7 @@
                (update-group ctx headers (slurp body) group-id))
 
           (context "/members" []
-            (OPTIONS "/" req common-routes/options-response)
+            (OPTIONS "/" req (common-routes/options-response))
             (GET "/"
                  {ctx :request-context params :params}
                  (pv/validate-group-route-params params)
@@ -325,7 +325,7 @@
         (OPTIONS "/"
                  {params :params}
                  (pv/validate-standard-params params)
-                 common-routes/options-response)
+                 (common-routes/options-response))
 
         ;; Search for ACLs with either GET or POST
         (GET "/"
@@ -344,7 +344,7 @@
               (create-acl ctx headers (slurp body)))
 
         (context "/:concept-id" [concept-id]
-          (OPTIONS "/" req common-routes/options-response)
+          (OPTIONS "/" req (common-routes/options-response))
 
           ;; Update an ACL
           (PUT "/"
@@ -364,20 +364,20 @@
                (get-acl ctx headers concept-id params))))
 
       (context "/permissions" []
-        (OPTIONS "/" [] common-routes/options-response)
+        (OPTIONS "/" [] (common-routes/options-response))
 
         (GET "/"
              {ctx :request-context params :params}
              (get-permissions ctx params)))
 
       (context "/current-sids" []
-        (OPTIONS "/" [] common-routes/options-response)
+        (OPTIONS "/" [] (common-routes/options-response))
 
         (GET "/" {:keys [request-context params]}
              (get-current-sids request-context params)))
 
       (context "/s3-buckets" []
-        (OPTIONS "/" [] common-routes/options-response)
+        (OPTIONS "/" [] (common-routes/options-response))
 
         (GET "/"
              {ctx :request-context params :params}
