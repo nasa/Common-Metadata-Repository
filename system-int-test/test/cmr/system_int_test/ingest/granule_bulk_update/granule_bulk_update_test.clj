@@ -680,6 +680,158 @@
             (is (= 1 (count (filter #(= "http://opendap.earthdata.nasa.gov/test1" (:URL %))
                                     (:RelatedUrls (json/parse-string latest-metadata true))))))))))))
 
+(deftest update-opendap-type
+  "test updating OPeNDAP type with real granule file that is already in CMR code base"
+  (testing "UMM-G granule update via url regex"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          granule2 (data-core/ingest-concept-with-metadata-file
+                    "umm-g-samples/GranuleExample4.json"
+                    {:provider-id "PROV1"
+                     :concept-type :granule
+                     :native-id "test-gran2"
+                     :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+
+          {:keys [concept-id revision-id]} granule
+          bulk-update {:operation "UPDATE_TYPE"
+                       :update-field "OPeNDAPLink"
+                       :updates ["Unique_Granule_UR_v1.6"
+                                 "Unique_Granule_UR_2_v1.6"]}
+          {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                 "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 200 status))
+      (is (some? task-id))
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+            {:keys [task-status status-message granule-statuses]} status-response]
+        (is (= "COMPLETE" task-status))
+        (is (= "All granule updates completed successfully." status-message))
+        (is (= [{:granule-ur "Unique_Granule_UR_2_v1.6"
+                 :status "UPDATED"}
+                {:granule-ur "Unique_Granule_UR_v1.6"
+                 :status "UPDATED"}]
+               granule-statuses)))
+      ;; verify the granule metadata is updated as expected
+      (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
+            updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
+        ;; since the metadata will be returned in the latest UMM-G format,
+        ;; we can't compare the whole metadata to an expected string.
+        ;; We just verify the updated OPeNDAP url, type and subtype exists in the metadata.
+        ;; The different scenarios of the RelatedUrls update are covered in unit tests.
+        (is (string/includes? original-metadata "OPENDAP DATA"))
+        (is (not (string/includes? original-metadata "USE SERVICE API")))
+
+        (is (string/includes? updated-metadata "OPENDAP DATA"))
+        (is (string/includes? updated-metadata "USE SERVICE API")))))
+
+  (testing "UMM-G granule update via supplied subtype"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          granule2 (data-core/ingest-concept-with-metadata-file
+                    "umm-g-samples/GranuleExample4.json"
+                    {:provider-id "PROV1"
+                     :concept-type :granule
+                     :native-id "test-gran2"
+                     :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+
+          {:keys [concept-id revision-id]} granule
+          bulk-update {:operation "UPDATE_TYPE"
+                       :update-field "OPeNDAPLink"
+                       :updates [["Unique_Granule_UR_v1.6" "OPENDAP DATA"]
+                                 "Unique_Granule_UR_2_v1.6"]} ;;can actually mix update types, if so inclined
+          {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                 "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 200 status))
+      (is (some? task-id))
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+            {:keys [task-status status-message granule-statuses]} status-response]
+        (is (= "COMPLETE" task-status))
+        (is (= "All granule updates completed successfully." status-message))
+        (is (= [{:granule-ur "Unique_Granule_UR_2_v1.6"
+                 :status "UPDATED"}
+                {:granule-ur "Unique_Granule_UR_v1.6"
+                 :status "UPDATED"}]
+               granule-statuses)))
+      ;; verify the granule metadata is updated as expected
+      (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
+            updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
+        ;; since the metadata will be returned in the latest UMM-G format,
+        ;; we can't compare the whole metadata to an expected string.
+        ;; We just verify the updated OPeNDAP url, type and subtype exists in the metadata.
+        ;; The different scenarios of the RelatedUrls update are covered in unit tests.
+        (is (string/includes? original-metadata "OPENDAP DATA"))
+        (is (not (string/includes? original-metadata "USE SERVICE API")))
+
+        (is (string/includes? updated-metadata "OPENDAP DATA"))
+        (is (string/includes? updated-metadata "USE SERVICE API")))))
+
+  (testing "Failure case - no opendap links to update"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample3.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          {:keys [concept-id revision-id]} granule
+          bulk-update {:operation "UPDATE_TYPE"
+                       :update-field "OPeNDAPLink"
+                       :updates ["Unique_Granule_UR_v1.6"]}
+          {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                 "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 200 status))
+      (is (some? task-id))
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+            {:keys [task-status status-message granule-statuses]} status-response]
+        (is (= "COMPLETE" task-status))
+        (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+        (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                 :status "FAILED"
+                 :status-message "Granule update failed - there are no OPeNDAP Links to update."}]
+               granule-statuses))))))
+
 (deftest update-checksum
   "test updating checksum with real granule file that is already in CMR code base"
   (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
@@ -1348,7 +1500,7 @@
           (is (string/includes? request-json-body "{\"name\":\"add S3 links 1\",\"operation\":\"UPDATE_FIELD\""))
           (is (= "Complete." progress))))))))
 
-(deftest update-format-test
+(deftest input-format-test
   "test updating with incorrect combinations of update-field and update format"
   (testing "Give new :updates format with update-field that isn't AdditionalFile"
     (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
@@ -1382,7 +1534,8 @@
       ;; verify the granule status is UPDATED
       (is (= 400 status))
       (is (not (some? task-id)))
-      (is (= "Wrong update format specified for granule UR [Unique_Granule_UR_v1.6]. Please use the correct update format for updates with update-field [S3Link]"
+      (is (= (str "Bulk Granule Update failed - invalid update format specified for the "
+                  "operation:update-field combination [update_field:s3link].")
              (first errors)))))
 
   (testing "Give new :updates format with update-field that isn't AdditionalFile"
@@ -1414,5 +1567,45 @@
       ;; verify the granule status is UPDATED
       (is (= 400 status))
       (is (not (some? task-id)))
-      (is (= "Wrong update format specified for granule UR [GranuleUR1]. Please use the correct update format for updates with update-field [AdditionalFile]"
-             (first errors))))))
+      (is (= (str "Bulk Granule Update failed - invalid update format specified for the "
+                  "operation:update-field combination [update_field:additionalfile].")
+             (first errors)))))
+
+  (testing "Invalid operation:update_field combination"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file
+                "umm-g-samples/Collection.json"
+                {:provider-id "PROV1"
+                 :concept-type :collection
+                 :native-id "test-coll1"
+                 :format "application/vnd.nasa.cmr.umm+json;version=1.16"})
+          granule (data-core/ingest-concept-with-metadata-file
+                   "umm-g-samples/GranuleExample2.json"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
+          {:keys [concept-id revision-id]} granule
+          bulk-update {:operation "UPDATE_TYPE"
+                       :update-field "Size"
+                       :updates [["Unique_Granule_UR_v1.6" "123"]]}
+          {:keys [status task-id errors] :as response} (ingest/bulk-update-granules
+                                                        "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 200 status))
+      (is (some? task-id))
+
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+            {:keys [task-status status-message granule-statuses]} status-response]
+        (is (= "COMPLETE" task-status))
+        (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                 :status "FAILED"
+                 :status-message (str "Bulk Granule Update failed - the operation:update-field "
+                                      "combination [update_type:size] is invalid.")}]
+               granule-statuses))
+        ;;verify metadata is not altered
+        (is (not (:metadata (mdb/get-concept concept-id (inc revision-id)))))))))

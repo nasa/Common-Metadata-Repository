@@ -1439,6 +1439,54 @@ Example granule bulk update response:
 }
 ```
 
+**operation: "UPDATE_TYPE", update-field: "OPeNDAPLink"**
+Supported metadata formats:
+
+* OPeNDAP url in RelatedUrls for UMM-G format
+* *Coming Soon*: OPeNDAP url in OnlineResources for ECHO10 format
+
+Input for this update type should be a list of granule URs. UMM-G Granules listed will have any `RelatedUrl`s containg the string `"opendap"` updated to include `"Type": "USE SERVICE API"` and `"Subtype": "OPENDAP DATA"`.
+
+As an alternative to identifying links via the `"opendap"` string method, a subtype string can be supplied with each granule UR as a tuple. If supplied, any links with a subtype matching this input string will be updated instead. As before, the link will be updated to include `"Type": "USE SERVICE API"` and `"Subtype": "OPENDAP DATA"`.
+
+Examples for each update format are provided below. For the first update, each granule in the list will have any links containing the string `"opendap"` updated to the new Type and Subtype.
+
+```
+curl -i -XPOST \
+  -H "Cmr-Pretty:true" \
+  -H "Content-Type: application/json"
+  -H "Echo-Token: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{ "name": "Update type and subtype for links containing the string 'opendap'",
+	"operation": "UPDATE_TYPE",
+	"update-field":"OPeNDAPLink",
+	"updates":[
+             ["granule_ur1", "granule_ur2", "granule_ur3"]
+	]
+}'
+```
+
+For this next update, each granule in the list will have any links with a subtype matching the supplied value updated to the new Type and Subtype
+
+```
+curl -i -XPOST \
+  -H "Cmr-Pretty:true" \
+  -H "Content-Type: application/json"
+  -H "Echo-Token: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{ "name": "Update type and subtype for links containing a subtype matching the supplied value",
+	"operation": "UPDATE_TYPE",
+	"update-field":"OPeNDAPLink",
+	"updates":[
+             ["granule_ur1", "OPENDAP DATA"]
+						 ["granule_ur2", "OPENDAP DATA"]
+						 ["granule_ur3", "DIRECT DOWNLOAD"]
+	]
+}'
+```
+
 ### Query Granule Bulk Update Status
 
 The task information of all granule bulk update tasks that has been applied on a provider can be retrieved by sending an HTTP GET request to `%CMR-ENDPOINT%/providers/<provider-id>/bulk-update/granules/status`

@@ -31,27 +31,28 @@
   https://opendap.*.earthdata.nasa.gov/* and no more than one that does not match the pattern.
   Returns the parsed urls in a map under keys :cloud and :on-prem with the corresponding urls."
   [url]
-  (let [urls (map string/trim (string/split url #","))]
-    (doseq [url urls]
-      (when (string/starts-with? url "s3://")
+  (when url
+    (let [urls (map string/trim (string/split url #","))]
+      (doseq [url urls]
+        (when (string/starts-with? url "s3://")
+          (errors/throw-service-errors
+           :invalid-data
+           [(str "OPeNDAP URL value cannot start with s3://, but was " url)])))
+      (if (> (count urls) 2)
         (errors/throw-service-errors
-         :invalid-data
-         [(str "OPeNDAP URL value cannot start with s3://, but was " url)])))
-    (if (> (count urls) 2)
-      (errors/throw-service-errors
-       :invalid-data [(str "Invalid URL value, no more than two urls can be provided: " url)])
-      (let [grouped-urls (group-by url->opendap-type urls)]
-        (when (> (count (:cloud grouped-urls)) 1)
-          (errors/throw-service-errors
-           :invalid-data
-           [(str "Invalid URL value, no more than one Hyrax-in-the-cloud OPeNDAP url can be provided: "
-                 url)]))
-        (when (> (count (:on-prem grouped-urls)) 1)
-          (errors/throw-service-errors
-           :invalid-data
-           [(str "Invalid URL value, no more than one on-prem OPeNDAP url can be provided: "
-                 url)]))
-        grouped-urls))))
+         :invalid-data [(str "Invalid URL value, no more than two urls can be provided: " url)])
+        (let [grouped-urls (group-by url->opendap-type urls)]
+          (when (> (count (:cloud grouped-urls)) 1)
+            (errors/throw-service-errors
+             :invalid-data
+             [(str "Invalid URL value, no more than one Hyrax-in-the-cloud OPeNDAP url can be provided: "
+                   url)]))
+          (when (> (count (:on-prem grouped-urls)) 1)
+            (errors/throw-service-errors
+             :invalid-data
+             [(str "Invalid URL value, no more than one on-prem OPeNDAP url can be provided: "
+                   url)]))
+          grouped-urls)))))
 
 (defn- validate-append-no-conflicting-on-prem
   "Validate there is no on-prem url already present when appending a new on-prem-url

@@ -230,3 +230,57 @@
       "matching RelatedUrls in metadata, cloud url update"
       "https://opendap.earthdata.nasa.gov/foo"
       {:RelatedUrls sample-urls})))
+
+
+(deftest update-opendap-type
+  (testing "Update opendap type in UMM-G"
+    (are3 [subtype source result]
+      (is (= result (umm-g/update-opendap-type source subtype)))
+
+      "One opendap link, gets updated type via regex"
+      nil
+      {:RelatedUrls [{:URL "http://example.com/opendap"
+                      :Type "FOO TYPE"
+                      :Subtype "GET DATA"}]}
+      {:RelatedUrls [{:URL "http://example.com/opendap"
+                      :Type "USE SERVICE API"
+                      :Subtype "OPENDAP DATA"}]}
+
+      "One opendap link and one non-opendap, only opendap gets updated via regex"
+      nil
+      {:RelatedUrls [{:URL "http://example.com/opendap"
+                      :Type "USE SERVICE API"
+                      :Subtype "GET DATA"}
+                     {:URL "http://example.com/other-service"
+                      :Type "USE SERVICE API"
+                      :Subtype "GET DATA"}]}
+      {:RelatedUrls [{:URL "http://example.com/opendap"
+                      :Type "USE SERVICE API"
+                      :Subtype "OPENDAP DATA"}
+                     {:URL "http://example.com/other-service"
+                      :Type "USE SERVICE API"
+                      :Subtype "GET DATA"}]}
+
+      "One opendap link, gets updated type via subtype"
+      "GET DATA"
+      {:RelatedUrls [{:URL "http://example.com/opendap"
+                      :Type "FOO TYPE"
+                      :Subtype "GET DATA"}]}
+      {:RelatedUrls [{:URL "http://example.com/opendap"
+                      :Type "USE SERVICE API"
+                      :Subtype "OPENDAP DATA"}]}
+
+      "One opendap link and one non-opendap, only opendap gets updated via subtype"
+      "MOBILE APP"
+      {:RelatedUrls [{:URL "http://example.com/opendap"
+                      :Type "USE SERVICE API"
+                      :Subtype "MOBILE APP"}
+                     {:URL "http://example.com/other-service"
+                      :Type "USE SERVICE API"
+                      :Subtype "GET DATA"}]}
+      {:RelatedUrls [{:URL "http://example.com/opendap"
+                      :Type "USE SERVICE API"
+                      :Subtype "OPENDAP DATA"}
+                     {:URL "http://example.com/other-service"
+                      :Type "USE SERVICE API"
+                      :Subtype "GET DATA"}]})))
