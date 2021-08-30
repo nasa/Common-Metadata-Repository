@@ -42,7 +42,7 @@
    :measurement-name [:context-medium :object :quantity]
    :concepts [:short-name]
    :iso-topic-categories [:iso-topic-category]
-   :related-urls [:type :subtype]
+   :related-urls [:url-content-type :type :subtype]
    :granule-data-format [:short-name :uuid]})
 
 (def FIELD_NOT_PRESENT
