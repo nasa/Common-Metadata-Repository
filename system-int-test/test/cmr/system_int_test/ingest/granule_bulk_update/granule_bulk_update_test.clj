@@ -9,6 +9,7 @@
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -364,7 +365,7 @@
         (is (string/includes? updated-metadata "USE SERVICE API"))))))
 
 (deftest add-s3-url
-  "test adding S3 url with real granule file that is already in CMR code base"
+  ;; test adding S3 url with real granule file that is already in CMR code base
   (testing "ECHO10 granule"
     (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
           coll (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
@@ -636,7 +637,7 @@
                                     (:RelatedUrls (json/parse-string latest-metadata true))))))))))))
 
 (deftest update-opendap-type
-  "test updating OPeNDAP type with real granule file that is already in CMR code base"
+  ;; test updating OPeNDAP type with real granule file that is already in CMR code base
   (testing "UMM-G granule update via url regex"
     (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
           coll (data-core/ingest-concept-with-metadata-file
@@ -1295,51 +1296,21 @@
             ;;verify metadata is not altered
             (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))
 
-     (testing "Attempt to update a granule with duplicate files"
-       (let [granule2 (data-core/ingest-concept-with-metadata-file
+      (testing "Attempt to update a granule with duplicate files"
+        (let [granule2 (data-core/ingest-concept-with-metadata-file
                         "umm-g-samples/GranuleExampleWithDuplicates.json"
                         {:provider-id "PROV1"
                          :concept-type :granule
                          :native-id "test-gran2"
                          :format "application/vnd.nasa.cmr.umm+json;version=1.6"})
-             {:keys [concept-id revision-id]} granule2
-             bulk-update {:operation "UPDATE_FIELD"
-                          :update-field "AdditionalFile"
-                          :updates [{:GranuleUR "Gran_With_Dupes"
-                                     :Files [{:Name "GranuleFileName4"
-                                              :Format "ASCII"}
-                                             {:Name "GranuleFileName4"
-                                                      :Format "BINARY"}]}]}
-
-             {:keys [status task-id] :as response} (ingest/bulk-update-granules
-                                                    "PROV1" bulk-update bulk-update-options)]
-         (index/wait-until-indexed)
-         (ingest/update-granule-bulk-update-task-statuses)
-
-         ;; verify the granule status is FAILED
-         (is (= 200 status))
-         (is (some? task-id))
-         (let [status-req-options {:query-params {:show_granules "true"}}
-               status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
-               {:keys [task-status status-message granule-statuses]} status-response]
-           (is (= "COMPLETE" task-status))
-           (is (= [{:granule-ur "Gran_With_Dupes"
-                    :status "FAILED"
-                    :status-message "Update failed - this operation is not available for granules with duplicate FilePackage/File names in the granule metadata."}]
-                  granule-statuses))))
-           ;;verify metadata is not altered
-           ;(is (not (:metadata (mdb/get-concept concept-id (inc revision-id)))))))))))
-
-      (testing "Validation failures to non-UMM enum values"
-        (let [bulk-update {:operation "UPDATE_FIELD"
+              {:keys [concept-id revision-id]} granule2
+              bulk-update {:operation "UPDATE_FIELD"
                            :update-field "AdditionalFile"
-                           :updates [{:GranuleUR "Unique_Granule_UR_v1.6"
-                                      :Files [{:Name "GranuleZipFile2"
-                                               :Format "fakeformat"
-                                               :Checksum {:Value "12345" :Algorithm "SHA-123"}}
-                                              {:Name "GranuleFileName2"
-                                               :MimeType "application/bogus"}]}]}
-
+                           :updates [{:GranuleUR "Gran_With_Dupes"
+                                      :Files [{:Name "GranuleFileName4"
+                                               :Format "ASCII"}
+                                              {:Name "GranuleFileName4"
+                                               :Format "BINARY"}]}]}
 
               {:keys [status task-id] :as response} (ingest/bulk-update-granules
                                                      "PROV1" bulk-update bulk-update-options)]
@@ -1353,14 +1324,44 @@
                 status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
                 {:keys [task-status status-message granule-statuses]} status-response]
             (is (= "COMPLETE" task-status))
-            (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+            (is (= [{:granule-ur "Gran_With_Dupes"
                      :status "FAILED"
-                     :status-message (str "#/DataGranule/ArchiveAndDistributionInformation/2/Checksum/Algorithm: SHA-123 is not a valid enum value; "
-                                          "#/DataGranule/ArchiveAndDistributionInformation/2/Format: fakeformat is not a valid enum value; "
-                                          "#/DataGranule/ArchiveAndDistributionInformation/0/Files/1/MimeType: application/bogus is not a valid enum value")}]
-                   granule-statuses))
-            ;;verify metadata is not altered
-            (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))))))
+                     :status-message "Update failed - this operation is not available for granules with duplicate FilePackage/File names in the granule metadata."}]
+                   granule-statuses))))
+        ;;verify metadata is not altered
+                                        ;(is (not (:metadata (mdb/get-concept concept-id (inc revision-id)))))))))))
+
+        (testing "Validation failures to non-UMM enum values"
+          (let [bulk-update {:operation "UPDATE_FIELD"
+                             :update-field "AdditionalFile"
+                             :updates [{:GranuleUR "Unique_Granule_UR_v1.6"
+                                        :Files [{:Name "GranuleZipFile2"
+                                                 :Format "fakeformat"
+                                                 :Checksum {:Value "12345" :Algorithm "SHA-123"}}
+                                                {:Name "GranuleFileName2"
+                                                 :MimeType "application/bogus"}]}]}
+
+
+                {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                       "PROV1" bulk-update bulk-update-options)]
+            (index/wait-until-indexed)
+            (ingest/update-granule-bulk-update-task-statuses)
+
+            ;; verify the granule status is FAILED
+            (is (= 200 status))
+            (is (some? task-id))
+            (let [status-req-options {:query-params {:show_granules "true"}}
+                  status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+                  {:keys [task-status status-message granule-statuses]} status-response]
+              (is (= "COMPLETE" task-status))
+              (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
+                       :status "FAILED"
+                       :status-message (str "#/DataGranule/ArchiveAndDistributionInformation/2/Checksum/Algorithm: SHA-123 is not a valid enum value; "
+                                            "#/DataGranule/ArchiveAndDistributionInformation/2/Format: fakeformat is not a valid enum value; "
+                                            "#/DataGranule/ArchiveAndDistributionInformation/0/Files/1/MimeType: application/bogus is not a valid enum value")}]
+                     granule-statuses))
+              ;;verify metadata is not altered
+              (is (not (:metadata (mdb/get-concept concept-id (inc revision-id))))))))))))
 
 (deftest status-verbosity-test
   (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
@@ -1564,3 +1565,41 @@
                granule-statuses))
         ;;verify metadata is not altered
         (is (not (:metadata (mdb/get-concept concept-id (inc revision-id)))))))))
+
+(deftest update-online-resource-type-test
+  (testing "echo10"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          collection (data-core/ingest-umm-spec-collection
+                      "PROV1"
+                      (data-umm-c/collection {:concept-id "C1-PROV1"
+                                              :ShortName "MUR-JPL-L4-GLOB-v4.1"
+                                              :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                                              :Version "4.1"
+                                              :TemporalExtents
+                                              [(data-umm-cmn/temporal-extent
+                                                {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
+          granule (data-core/ingest-concept-with-metadata-file
+                   "CMR-7503-echo10-online-resource-type.xml"
+                   {:provider-id "PROV1"
+                    :concept-type :granule
+                    :native-id "test-gran1"
+                    :format-key :echo10})
+          {:keys [concept-id revision-id]} granule]
+
+      (index/wait-until-indexed)
+
+      (testing "success case"
+        (let [bulk-update {:name "update opendap link online resource type 1"
+                           :operation "UPDATE_TYPE"
+                           :update-field "OPeNDAPLink"
+                           :updates ["20020602090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc"]}
+              response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)]
+
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
+                updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
+            (is (= (string/trim (slurp (io/resource "CMR-7503-echo10-online-resource-type.xml")))
+                   original-metadata))
+            (is (= (string/trim (slurp (io/resource "CMR-7503-echo10-online-resource-type_updated.xml")))
+                   updated-metadata))))))))

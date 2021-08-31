@@ -255,9 +255,8 @@
     (mt/format-key (:format concept))))
 
 (defmethod update-opendap-type :echo10
-  [context concept grouped-urls]
-  (errors/throw-service-errors
-   :invalid-data ["Updating opendap link type for echo10 is coming soon!"]))
+  [_ concept _]
+  (opendap-echo10/update-opendap-type concept))
 
 (defmethod update-opendap-type :umm-json
   [context concept grouped-urls]

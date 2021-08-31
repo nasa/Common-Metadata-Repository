@@ -25,6 +25,14 @@
   "Returns true if the URL given matches :on-prem URL patterns"
   (complement cloud-url?))
 
+(defn is-opendap?
+  "Returns true if the given online resource type is of OPeNDAP.
+   An online resource is of OPeNDAP type if the resource type contains OPENDAP (case insensitive)"
+  [resource-type]
+  (if (string? resource-type)
+    (some? (re-find #"(?i)OPENDAP" resource-type))
+    false))
+
 (defn validate-url
   "Validate the given OPeNDAP url for granule bulk update. It can be no more than two urls
   separated by comma, and no more than one url matches the pattern
