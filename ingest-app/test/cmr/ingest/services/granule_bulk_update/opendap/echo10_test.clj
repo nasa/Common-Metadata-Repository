@@ -30,7 +30,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
    </OnlineResources>
 </Granule>\n")
@@ -62,7 +62,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
    </OnlineResources>
    <Orderable>false</Orderable>
@@ -117,7 +117,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -147,7 +147,7 @@
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/to_be_updated</URL>
-          <Type>GET DATA : OPENDAP DATA</Type>
+          <Type>USE SERVICE API : OPENDAP DATA</Type>
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/Browse</URL>
@@ -171,7 +171,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -227,7 +227,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -254,11 +254,11 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/to_be_updated</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>https://opendap.earthdata.nasa.gov/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -289,7 +289,7 @@
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/to_be_updated</URL>
-          <Type>GET DATA : OPENDAP DATA (DODS)</Type>
+          <Type>USE SERVICE API : OPENDAP DATA (DODS)</Type>
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/Browse</URL>
@@ -313,7 +313,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA (DODS)</Type>
+         <Type>USE SERVICE API : OPENDAP DATA (DODS)</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -343,7 +343,7 @@
        </OnlineResource>
        <OnlineResource>
           <URL>https://opendap.earthdata.nasa.gov/to_be_updated</URL>
-          <Type>GET DATA : OPENDAP DATA</Type>
+          <Type>USE SERVICE API : OPENDAP DATA</Type>
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/Browse</URL>
@@ -365,7 +365,7 @@
     <OnlineResources>
        <OnlineResource>
           <URL>http://example.com/to_be_updated</URL>
-          <Type>GET DATA : OPENDAP DATA</Type>
+          <Type>USE SERVICE API : OPENDAP DATA</Type>
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/doc</URL>
@@ -373,7 +373,7 @@
        </OnlineResource>
        <OnlineResource>
           <URL>https://opendap.earthdata.nasa.gov/to_be_updated</URL>
-          <Type>GET DATA : OPENDAP DATA</Type>
+          <Type>USE SERVICE API : OPENDAP DATA</Type>
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/Browse</URL>
@@ -397,7 +397,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>https://opendap.earthdata.nasa.gov/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -425,11 +425,11 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>https://opendap.earthdata.nasa.gov/to_be_updated</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -457,11 +457,11 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>https://opendap.earthdata.nasa.gov/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>

@@ -2,17 +2,26 @@
   "Contains functions to update ECHO10 granule xml for OPeNDAP url bulk update."
   (:require
    [clojure.data.xml :as xml]
+   [clojure.string :as str]
    [clojure.zip :as zip]
    [cmr.common.services.errors :as errors]
+   [cmr.common.util :refer [remove-nil-keys]]
    [cmr.common.xml :as cx]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util
     :as opendap-util
     :refer [cloud-url? is-opendap?]]))
 
+(def ^:private OPENDAP_RESOURCE_TYPE_MAJOR
+  "OnlineResource Type of OPenDAP url in ECHO10 granule schema is used for referencing tool access
+   Distinct from 'GET DATA : OPENDAP DATA' which is use for direct downloads, which are placed under the OnlineAccess element"
+  "USE SERVICE API")
+
+(def ^:private OPENDAP_RESOURCE_TYPE_MINOR
+  "Minor Type string"
+  "OPENDAP DATA")
+
 (def ^:private OPENDAP_RESOURCE_TYPE
-  "OnlineResource Type of OPenDAP url in ECHO10 granule schema is used to link directly to a data access point
-   Distinct from 'USE SERVICE API : OPENDAP DATA' which is use for specifying tool access"
-  "GET DATA : OPENDAP DATA")
+  (str OPENDAP_RESOURCE_TYPE_MAJOR " : " OPENDAP_RESOURCE_TYPE_MINOR))
 
 (def ^:private tags-after
   "Defines the element tags that come after OnlineResources in ECHO10 Granule xml schema"
@@ -41,12 +50,21 @@
     (when (seq urls)
       urls)))
 
+(defn- update-resource-type
+  [type-value]
+  (let [trim-with-default (fnil str/trim OPENDAP_RESOURCE_TYPE_MINOR)
+        minor (trim-with-default (second (str/split type-value #":")))]
+    (str OPENDAP_RESOURCE_TYPE_MAJOR " : " minor)))
+
 (defn- update-opendap-resource
   "Returns the online resource with given OPeNDAP url merged into the online-resource."
   [url online-resource]
   (if url
     (if online-resource
-      (assoc online-resource :url url :type OPENDAP_RESOURCE_TYPE)
+      (-> online-resource
+          (assoc :url url)
+          (update :type update-resource-type)
+          remove-nil-keys)
       {:url url :type OPENDAP_RESOURCE_TYPE})
     online-resource))
 
@@ -124,7 +142,7 @@
   Returns the zipper representation of the updated xml."
   [parsed online-resources grouped-urls operation]
   (let [zipper (zip/xml-zip parsed)
-        start-loc (-> zipper zip/down)]
+        start-loc (zip/down zipper)]
     (loop [loc start-loc done false]
       (if done
         (zip/root loc)
