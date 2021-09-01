@@ -576,6 +576,51 @@
             (is (= 1 (count (re-seq #"s3://zyxwvut/test-gran1" latest-metadata))))))))))
 
 (deftest append-opendap-link
+  (testing "ECHO10 granule"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          coll (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
+                                                            {:provider-id "PROV1"
+                                                             :concept-type :collection
+                                                             :native-id "OMSO2-collection"
+                                                             :format-key :dif10})
+          granule (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-granule.xml"
+                                                               {:provider-id "PROV1"
+                                                                :concept-type :granule
+                                                                :native-id "OMSO2-granule"
+                                                                :format-key :echo10})
+          {:keys [concept-id revision-id]} granule
+          target-metadata (-> "CMR-4722/OMSO2.003-granule-opendap-url.xml" io/resource slurp)
+          bulk-update {:operation "APPEND_TO_FIELD"
+                       :update-field "OPeNDAPLink"
+                       :updates [["OMSO2.003:OMI-Aura_L2-OMSO2_2004m1001t2307-o01146_v003-2016m0615t191523.he5"
+                                  "http://opendap-url.example.com"]]}
+          {:keys [status] :as response} (ingest/bulk-update-granules
+                                         "PROV1" bulk-update bulk-update-options)]
+      (index/wait-until-indexed)
+      (is (= 200 status))
+      (is (= target-metadata
+             (:metadata (mdb/get-concept concept-id (inc revision-id)))))
+
+      (testing "append will not overwrite existing opendap links when one is already present"
+        (let [bulk-update {:operation "APPEND_TO_FIELD"
+                           :update-field "OPeNDAPLink"
+                           :updates [["OMSO2.003:OMI-Aura_L2-OMSO2_2004m1001t2307-o01146_v003-2016m0615t191523.he5"
+                                      "http://opendap-url.example.com2"]]}
+              {:keys [status task-id] :as response} (ingest/bulk-update-granules
+                                                     "PROV1" bulk-update bulk-update-options)]
+          (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
+
+          (let [status-response (ingest/granule-bulk-update-task-status task-id)
+                {:keys [task-status status-message granule-statuses]} status-response]
+            (is (= "COMPLETE" task-status))
+            (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message)))
+
+          (testing "verify the metadata was not altered"
+            (let [latest-metadata (:metadata (mdb/get-concept concept-id))]
+              (is (= target-metadata
+                     (:metadata (mdb/get-concept concept-id (inc revision-id)))))))))))
+
   (testing "UMM-G granule"
     (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
           coll (data-core/ingest-concept-with-metadata-file
