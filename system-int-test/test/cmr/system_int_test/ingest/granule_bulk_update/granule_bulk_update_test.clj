@@ -286,7 +286,7 @@
                    granule-statuses))))))))
 
 (deftest add-opendap-url
-  "test adding OPeNDAP url with real granule file that is already in CMR code base"
+  ;; test adding OPeNDAP url with real granule file that is already in CMR code base
   (testing "ECHO10 granule"
     (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
           coll (data-core/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
@@ -1638,10 +1638,11 @@
               response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)]
 
           (ingest/update-granule-bulk-update-task-statuses)
+          (index/wait-until-indexed)
 
           (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
                 updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
             (is (= (string/trim (slurp (io/resource "CMR-7503-echo10-online-resource-type.xml")))
                    original-metadata))
-            (is (= (string/trim (slurp (io/resource "CMR-7503-echo10-online-resource-type_updated.xml")))
+            (is (= (slurp (io/resource "CMR-7503-echo10-online-resource-type_updated.xml"))
                    updated-metadata))))))))

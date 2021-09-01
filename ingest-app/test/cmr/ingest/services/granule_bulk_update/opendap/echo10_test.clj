@@ -632,3 +632,10 @@
 (deftest update-opendap-type-test
   (is (= update-opendap-type-xml-result
          (:metadata (#'echo10/update-opendap-type {:metadata update-opendap-type-xml})))))
+
+(deftest update-resource-type-type
+  (are [resource-type output] (= output (#'echo10/update-resource-type resource-type))
+    "OPENDAP" "USE SERVICE API : OPENDAP DATA"
+    "GET DATA : OPENDAP DATA" "USE SERVICE API : OPENDAP DATA"
+    "GET DATA : OPENDAP DATA (DODS)" "USE SERVICE API : OPENDAP DATA (DODS)"
+    nil "USE SERVICE API : OPENDAP DATA"))

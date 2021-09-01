@@ -51,10 +51,13 @@
       urls)))
 
 (defn- update-resource-type
+  "Transforms and returns the Type value, where the minor type is preserved."
   [type-value]
-  (let [trim-with-default (fnil str/trim OPENDAP_RESOURCE_TYPE_MINOR)
-        minor (trim-with-default (second (str/split type-value #":")))]
-    (str OPENDAP_RESOURCE_TYPE_MAJOR " : " minor)))
+  (if type-value
+    (let [trim-with-default (fnil str/trim OPENDAP_RESOURCE_TYPE_MINOR)
+          minor (trim-with-default (second (str/split type-value #":")))]
+      (str OPENDAP_RESOURCE_TYPE_MAJOR " : " minor))
+    OPENDAP_RESOURCE_TYPE))
 
 (defn- update-opendap-resource
   "Returns the online resource with given OPeNDAP url merged into the online-resource."
