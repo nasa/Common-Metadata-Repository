@@ -267,12 +267,12 @@
 
 (deftest omi-aura-configuration-test
   (let [[omi-coll] (vp/ingest-source-collections
-                     [(assoc
-                        (dc/collection
-                          {:entry-title (str "OMI/Aura Surface UVB Irradiance and Erythemal"
-                                             " Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC")
-                           :short-name "OMUVBd"})
-                        :provider-id "GES_DISC")])
+                    [(assoc
+                      (dc/collection
+                       {:entry-title (str "OMI/Aura Surface UVB Irradiance and Erythemal"
+                                          " Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC")
+                        :short-name "OMUVBd"})
+                      :provider-id "GES_DISC")])
         vp-colls (vp/ingest-virtual-collections [omi-coll])
         granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2015m0103_v003-2015m0107t093002.he5"
         [ur-prefix ur-suffix] (str/split granule-ur #":")
@@ -280,13 +280,13 @@
         opendap-file-path (str opendap-dir-path granule-ur)]
     (util/are2 [src-granule-ur source-related-urls expected-related-url-maps]
                (let [_ (vp/ingest-source-granule
-                         "GES_DISC"
-                         (dg/granule
-                           omi-coll {:granule-ur src-granule-ur
-                                     :related-urls source-related-urls
-                                     :data-granule {:day-night "UNSPECIFIED"
-                                                    :production-date-time "2013-07-27T07:43:14.000Z"
-                                                    :size 40}}))
+                        "GES_DISC"
+                        (dg/granule
+                         omi-coll {:granule-ur src-granule-ur
+                                   :related-urls source-related-urls
+                                   :data-granule {:day-night "UNSPECIFIED"
+                                                  :production-date-time "2013-07-27T07:43:14.000Z"
+                                                  :size 40}}))
                      _ (index/wait-until-indexed)
                      virt-gran-umm (first (get-virtual-granule-umms src-granule-ur))
                      expected-related-urls (map #(umm-c/map->RelatedURL %) expected-related-url-maps)]
@@ -299,7 +299,7 @@
                [{:url (str opendap-file-path ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
                  :type "USE SERVICE API"
                  :sub-type "OPENDAP DATA"
-                 :title "(GET DATA : OPENDAP DATA)"}]
+                 :title "(USE SERVICE API : OPENDAP DATA)"}]
 
                "Related urls with only one access url which matches the pattern, but is not
                an online resource url"
@@ -315,7 +315,7 @@
                [{:url (str opendap-file-path ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
                  :type "USE SERVICE API"
                  :sub-type "OPENDAP DATA"
-                 :title "(GET DATA : OPENDAP DATA)"}])))
+                 :title "(USE SERVICE API : OPENDAP DATA)"}])))
 
 (deftest ast-granule-umm-matchers-test
   (vp/assert-psa-granules-match index/wait-until-indexed))
