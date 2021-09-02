@@ -1630,7 +1630,7 @@
 
       (index/wait-until-indexed)
 
-      (testing "success case"
+      (testing "using only the Granule UR to identify"
         (let [bulk-update {:name "update opendap link online resource type 1"
                            :operation "UPDATE_TYPE"
                            :update-field "OPeNDAPLink"
@@ -1644,5 +1644,19 @@
                 updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
             (is (= (string/trim (slurp (io/resource "CMR-7503-echo10-online-resource-type.xml")))
                    original-metadata))
-            (is (= (slurp (io/resource "CMR-7503-echo10-online-resource-type_updated.xml"))
-                   updated-metadata))))))))
+            (is (= (slurp (io/resource "CMR-7503-echo10-online-resource-type_updated_by_granuleur.xml"))
+                   updated-metadata)))))
+
+      (testing "using the GranuleUR and link type to identify"
+        (let [bulk-update {:name "update opendap link online resource type 2"
+                           :operation "UPDATE_TYPE"
+                           :update-field "OPeNDAPLink"
+                           :updates [["20020602090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc" "OTHER LINK"]]}
+              response (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)]
+
+          (ingest/update-granule-bulk-update-task-statuses)
+          (index/wait-until-indexed)
+
+          (let [latest-metadata (:metadata (mdb/get-concept concept-id))]
+            (is (= (slurp (io/resource "CMR-7503-echo10-online-resource-type_updated_by_granuleur_and_type.xml"))
+                   latest-metadata))))))))

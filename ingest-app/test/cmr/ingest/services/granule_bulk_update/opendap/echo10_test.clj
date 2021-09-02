@@ -216,7 +216,7 @@
 (def ^:private update-opendap-type-xml-result
   "Result ECHO10 granule for testing updating OPeNDAP type existing in OnlineResources.
    Do not format the following as whitespace matters in the string comparison in the test."
-  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Granule>
    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
    <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
@@ -236,6 +236,34 @@
       <OnlineResource>
          <URL>http://example.com/Browse</URL>
          <Type>Browse</Type>
+      </OnlineResource>
+   </OnlineResources>
+   <Orderable>false</Orderable>
+</Granule>\n")
+
+(def ^:private update-opendap-other-type-xml-result
+  "Result ECHO10 granule for testing updating OPeNDAP type existing in OnlineResources.
+   Do not format the following as whitespace matters in the string comparison in the test."
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<Granule>
+   <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+   <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+   <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+   <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+   </Collection>
+   <OnlineResources>
+      <OnlineResource>
+         <URL>http://example.com/foo</URL>
+         <Type>OPENDAP</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>http://example.com/doc</URL>
+         <Type>Documentation</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>http://example.com/Browse</URL>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
    </OnlineResources>
    <Orderable>false</Orderable>
@@ -630,10 +658,15 @@
       update-both-opendap-url)))
 
 (deftest update-opendap-type-test
-  (is (= update-opendap-type-xml-result
-         (:metadata (#'echo10/update-opendap-type {:metadata update-opendap-type-xml})))))
+  (testing "using defaults"
+    (is (= update-opendap-type-xml-result
+           (:metadata (#'echo10/update-opendap-type {:metadata update-opendap-type-xml})))))
 
-(deftest update-resource-type-type
+  (testing "specifying a specific target type to transform"
+    (is (= update-opendap-other-type-xml-result
+           (:metadata (#'echo10/update-opendap-type {:metadata update-opendap-type-xml} "Browse"))))))
+
+(deftest update-resource-type-test
   (are [resource-type output] (= output (#'echo10/update-resource-type resource-type))
     "OPENDAP" "USE SERVICE API : OPENDAP DATA"
     "GET DATA : OPENDAP DATA" "USE SERVICE API : OPENDAP DATA"

@@ -17,7 +17,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
 ### Metadata Ingest API Overview
 
 * /providers/\<provider-id>/validate/collection/\<native-id>
-	* [POST - Validate collection metadata.](#validate-collection)
+   * [POST - Validate collection metadata.](#validate-collection)
 * /providers/\<provider-id>/collections/\<native-id>
    * [PUT - Create or update a collection.](#create-update-collection)
    * [DELETE - Delete a collection.](#delete-collection)
@@ -1443,7 +1443,7 @@ Example granule bulk update response:
 Supported metadata formats:
 
 * OPeNDAP url in RelatedUrls for UMM-G format
-* *Coming Soon*: OPeNDAP url in OnlineResources for ECHO10 format
+* OPeNDAP url in OnlineResources for ECHO10 format
 
 Input for this update type should be a list of granule URs. UMM-G Granules listed will have any `RelatedUrl`s containg the string `"opendap"` updated to include `"Type": "USE SERVICE API"` and `"Subtype": "OPENDAP DATA"`.
 
@@ -1455,14 +1455,14 @@ Examples for each update format are provided below. For the first update, each g
 curl -i -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json"
-  -H "Echo-Token: XXXX" \
+  -H "Authorization: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "Update type and subtype for links containing the string 'opendap'",
 	"operation": "UPDATE_TYPE",
 	"update-field":"OPeNDAPLink",
 	"updates":[
-             ["granule_ur1", "granule_ur2", "granule_ur3"]
+             "granule_ur1", "granule_ur2", "granule_ur3"
 	]
 }'
 ```
@@ -1473,7 +1473,7 @@ For this next update, each granule in the list will have any links with a subtyp
 curl -i -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json"
-  -H "Echo-Token: XXXX" \
+  -H "Authorization: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "Update type and subtype for links containing a subtype matching the supplied value",
@@ -1481,8 +1481,8 @@ curl -i -XPOST \
 	"update-field":"OPeNDAPLink",
 	"updates":[
              ["granule_ur1", "OPENDAP DATA"]
-						 ["granule_ur2", "OPENDAP DATA"]
-						 ["granule_ur3", "DIRECT DOWNLOAD"]
+			 ["granule_ur2", "OPENDAP DATA"]
+			 ["granule_ur3", "DIRECT DOWNLOAD"]
 	]
 }'
 ```

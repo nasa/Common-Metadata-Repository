@@ -46,6 +46,12 @@
          <Type>USE SERVICE API : OPENDAP DATA</Type>
          <MimeType>text/html</MimeType>
       </OnlineResource>
+      <OnlineResource>
+         <URL>https://otherResource.foo</URL>
+         <Description>The OTHER location for the granule.</Description>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
+         <MimeType>text/html</MimeType>
+      </OnlineResource>
    </OnlineResources>
    <DataFormat>NETCDF</DataFormat>
 </Granule>

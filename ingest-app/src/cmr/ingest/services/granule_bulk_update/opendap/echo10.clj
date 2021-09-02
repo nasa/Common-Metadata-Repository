@@ -85,7 +85,11 @@
    with the given url-map that is parsed from the url value."
   [online-resources url-map]
   (let [opendap-resources (filter #(is-opendap? (:type %)) online-resources)
-        other-resources (remove #(is-opendap? (:type %)) online-resources)
+        non-opendap (remove #(is-opendap? (:type %)) online-resources)
+        other-resources (for [resource non-opendap]
+                          (if (get url-map (:type resource))
+                            (update-opendap-resource (:url resource) resource)
+                            resource))
         cloud-resource (resources->updated-resource :cloud opendap-resources url-map)
         on-prem-resource (resources->updated-resource :on-prem opendap-resources url-map)
         updated-resources (conj other-resources cloud-resource on-prem-resource)]
@@ -180,26 +184,46 @@
 
 (defn update-opendap-url
   "Takes the ECHO10 granule concept and grouped OPeNDAP urls in the format of
-  {:cloud [<cloud_url>] :on-prem [<on_prem_url>]}.
+  {:cloud [<cloud_url>] :on-prem [<on_prem_url>] <OTHER UPDATE> [<URLS to update>]}.
   Update the ECHO10 granule metadata with the OPeNDAP urls.
   Returns the granule concept with the updated metadata."
   [concept grouped-urls]
   (let [updated-metadata (update-opendap-url-metadata (:metadata concept) grouped-urls :replace)]
     (assoc concept :metadata updated-metadata)))
 
+(defn- filter-opendap-resources
+  "Takes a list of OnlineResource and returns the OPeNDAP links as a map of {:cloud [<url>] :on-prem [<url>]}"
+  [online-resources]
+  (->> online-resources
+       (filter #(is-opendap? (:type %)))
+       (map #(if (cloud-url? (:url %))
+               {:cloud [(:url %)]}
+               {:on-prem [(:url %)]}))
+       (apply merge)))
+
+(defn- filter-other-resources
+  "Takes a list of OnlineResource and returns the ones that match the type as a map of {:other [<url>, <url>]}"
+  [online-resources target-type]
+  (let [resources (->> online-resources
+                       (filter #(= target-type (:type %)))
+                       (map :url))]
+    {target-type resources}))
+
 (defn update-opendap-type
   "Takes the ECHO10 granule concept and updates all OPeNDAP link Types elements to be the string
-   designated by [[OPENDAP_RESOURCE_TYPE]]"
-  [concept]
-  (let [parsed (xml/parse-str (:metadata concept))
-        online-resources (xml-elem->online-resources parsed)
-        opendap-resources (->> online-resources
-                               (filter #(is-opendap? (:type %)))
-                               (map #(if (cloud-url? (:url %))
-                                       {:cloud [(:url %)]}
-                                       {:on-prem [(:url %)]}))
-                               (apply merge))]
-    (update-opendap-url concept opendap-resources)))
+   designated by [[OPENDAP_RESOURCE_TYPE]]
+
+   Optionally a specific link type may be specified to be updated. When specified only that type
+   will be updated."
+  ([concept]
+   (update-opendap-type concept nil))
+  ([concept target-type]
+   (let [parsed (xml/parse-str (:metadata concept))
+         online-resources (xml-elem->online-resources parsed)
+         resources (if target-type
+                     (filter-other-resources online-resources target-type)
+                     (filter-opendap-resources online-resources))]
+     (update-opendap-url concept resources))))
 
 (defn append-opendap-url
   "Takes the ECHO10 granule concept and grouped OPeNDAP urls in the format of
