@@ -43,7 +43,7 @@
       <OnlineResource>
          <URL>https://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L4/GLOB/JPL/MUR/v4.1/2002/153/20020602090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.html</URL>
          <Description>The OPENDAP location for the granule.</Description>
-         <Type>USE SERVICE API : OPENDAP DATA</Type>
+         <Type>OPENDAP</Type>
          <MimeType>text/html</MimeType>
       </OnlineResource>
       <OnlineResource>
