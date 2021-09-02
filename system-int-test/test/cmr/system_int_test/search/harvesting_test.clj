@@ -59,7 +59,7 @@
 
     (index/wait-until-indexed)
 
-    (testing "JSON format"
+    (testing "scroll"
       (let [params {:collection_concept_id (:concept-id coll1-echo) :scroll true :page-size 2}
             options {:accept nil
                      :url-extension "native"}
@@ -67,65 +67,152 @@
             scroll-id (:scroll-id response)]
         (testing "First search gets expected count and scroll-id"
           (is (= (count coll1-grans) (:hits response)))
-          (is (not (nil? scroll-id))))))
+          (is (not (nil? scroll-id)))))
 
-    (testing "Harvest by collection-concept-id"
-      (let [params {:collection_concept_id (:concept-id coll1-echo) :scroll true :page-size 2}
-            options {:accept nil
-                      :url-extension "native"}
-            response (search/find-metadata :granule format-key params options)
-            scroll-id (:scroll-id response)]
-        (testing "First search gets expected granules and scroll-id"
-          (is (= (count coll1-grans) (:hits response)))
-          (is (not (nil? scroll-id)))
-          (data2-core/assert-metadata-results-match format-key [g1-echo g2-echo] response))
-
-        (testing "Second search gets next two granules"
-          (data2-core/assert-metadata-results-match
-            format-key
-            [g3-echo g4-echo]
-            (search/find-metadata :granule
-                                  format-key
-                                  {:scroll true}
-                                  {:headers {"CMR-Scroll-Id" scroll-id}})))
-
-        (testing "Third search gets last granule"
-          (data2-core/assert-metadata-results-match
-            format-key
-            [g5-echo]
-            (search/find-metadata :granule
-                                  format-key
-                                  {:scroll true}
-                                  {:headers {"CMR-Scroll-Id" scroll-id}})))
-
-        (testing "Subsequent search gets empty list"
-          (data2-core/assert-metadata-results-match
-            format-key
-            []
-            (search/find-metadata :granule
-                                  format-key
-                                  {:scroll true}
-                                  {:headers {"CMR-Scroll-Id" scroll-id}})))))
-    ;; Created-at is controlled by the Oracle database server normally. With the in-memory
-    ;; database we use time-keeper so that we can set created-at dates explicitly
-    (s/only-with-in-memory-database
-      (testing "Harvest granules by created-at"
-        (let [params {:concept-id [coll1-concept-id coll2-concept-id]
-                      :created-at "2010-01-01T10:00:00Z,2014-02-01T10:00:00Z"
-                      :scroll true
-                      :page-size 2}
+      (testing "Harvest by collection-concept-id"
+        (let [params {:collection_concept_id (:concept-id coll1-echo) :scroll true :page-size 2}
               options {:accept nil
                        :url-extension "native"}
-              response (search/find-metadata :granule :echo10 params options)
+              response (search/find-metadata :granule format-key params options)
               scroll-id (:scroll-id response)]
-          (is (not (nil? scroll-id)))
-          (data2-core/assert-metadata-results-match format-key [g1-echo g2-echo] response)))
-      (testing "Harvest collections by created-at"
-        (let [params {:created_at "2010-01-01T10:00:00Z,2011-01-01T10:00:00Z" :scroll true :page-size 2}
+          (testing "First search gets expected granules and scroll-id"
+            (is (= (count coll1-grans) (:hits response)))
+            (is (not (nil? scroll-id)))
+            (data2-core/assert-metadata-results-match format-key [g1-echo g2-echo] response))
+
+          (testing "Second search gets next two granules"
+            (data2-core/assert-metadata-results-match
+             format-key
+             [g3-echo g4-echo]
+             (search/find-metadata :granule
+                                   format-key
+                                   {:scroll true}
+                                   {:headers {"CMR-Scroll-Id" scroll-id}})))
+
+          (testing "Third search gets last granule"
+            (data2-core/assert-metadata-results-match
+             format-key
+             [g5-echo]
+             (search/find-metadata :granule
+                                   format-key
+                                   {:scroll true}
+                                   {:headers {"CMR-Scroll-Id" scroll-id}})))
+
+          (testing "Subsequent search gets empty list"
+            (data2-core/assert-metadata-results-match
+             format-key
+             []
+             (search/find-metadata :granule
+                                   format-key
+                                   {:scroll true}
+                                   {:headers {"CMR-Scroll-Id" scroll-id}})))
+
+          (testing "scroll-id is not allowed with search-after"
+            (let [{:keys [status errors]} (search/find-metadata :granule
+                                                 format-key
+                                                 {}
+                                                 {:headers {"CMR-Scroll-Id" scroll-id
+                                                            "CMR-Search-After" "[0]"}})]
+              (is (= 400 status))
+              (is (= ["scroll_id is not allowed with search-after"]
+                     errors))))))
+
+      ;; Created-at is controlled by the Oracle database server normally. With the in-memory
+      ;; database we use time-keeper so that we can set created-at dates explicitly
+      (s/only-with-in-memory-database
+       (testing "Harvest granules by created-at"
+         (let [params {:concept-id [coll1-concept-id coll2-concept-id]
+                       :created-at "2010-01-01T10:00:00Z,2014-02-01T10:00:00Z"
+                       :scroll true
+                       :page-size 2}
+               options {:accept nil
+                        :url-extension "native"}
+               response (search/find-metadata :granule :echo10 params options)
+               scroll-id (:scroll-id response)]
+           (is (not (nil? scroll-id)))
+           (data2-core/assert-metadata-results-match format-key [g1-echo g2-echo] response)))
+       (testing "Harvest collections by created-at"
+         (let [params {:created_at "2010-01-01T10:00:00Z,2011-01-01T10:00:00Z" :scroll true :page-size 2}
+               options {:accept nil
+                        :url-extension "native"}
+               response (search/find-metadata :collection :echo10 params options)
+               scroll-id (:scroll-id response)]
+           (is (= 1 (:hits response)))
+           (is (not (nil? scroll-id)))
+           (data2-core/assert-metadata-results-match format-key [coll1-echo] response)))))
+
+    (testing "search-after"
+      (testing "Harvest by collection-concept-id"
+        (let [params {:collection_concept_id (:concept-id coll1-echo) :page-size 2}
               options {:accept nil
                        :url-extension "native"}
-              response (search/find-metadata :collection :echo10 params options)
-              scroll-id (:scroll-id response)]
-          (is (= 1 (:hits response)))
-          (is (not (nil? scroll-id)))
-          (data2-core/assert-metadata-results-match format-key [coll1-echo] response))))))
+              response (search/find-metadata :granule format-key params options)
+              search-after (:search-after response)]
+          (testing "First search gets expected granules and search-after"
+            (is (= (count coll1-grans) (:hits response)))
+            (is (not (nil? search-after)))
+            (data2-core/assert-metadata-results-match
+             format-key
+             [g1-echo g2-echo]
+             response))
+
+          (testing "Second search gets next two granules and search-after"
+            (let [response (search/find-metadata :granule
+                                                 format-key
+                                                 params
+                                                 {:headers {"CMR-Search-After" search-after}})
+                  search-after-1 (:search-after response)]
+              (is (not (nil? search-after-1)))
+              (is (not= search-after search-after-1))
+              (data2-core/assert-metadata-results-match
+               format-key
+               [g3-echo g4-echo]
+               response)
+
+              (testing "Third search gets last granule and search-after"
+                (let [response (search/find-metadata :granule
+                                                     format-key
+                                                     params
+                                                     {:headers {"CMR-Search-After" search-after-1}})
+                      search-after-2 (:search-after response)]
+                  (is (not (nil? search-after-2)))
+                  (is (not= search-after search-after-1 search-after-2))
+                  (data2-core/assert-metadata-results-match
+                   format-key
+                   [g5-echo]
+                   response)
+
+                  (testing "Subsequent search gets empty list and no search-after"
+                    (let [response (search/find-metadata :granule
+                                                         format-key
+                                                         params
+                                                         {:headers {"CMR-Search-After" search-after-2}})
+                          search-after-3 (:search-after response)]
+                      (is (nil? search-after-3))
+                      (data2-core/assert-metadata-results-match
+                       format-key
+                       []
+                       response)))))))))
+
+      ;; Created-at is controlled by the Oracle database server normally. With the in-memory
+      ;; database we use time-keeper so that we can set created-at dates explicitly
+      (s/only-with-in-memory-database
+       (testing "Harvest granules by created-at"
+         (let [params {:concept-id [coll1-concept-id coll2-concept-id]
+                       :created-at "2010-01-01T10:00:00Z,2014-02-01T10:00:00Z"
+                       :page-size 2}
+               options {:accept nil
+                        :url-extension "native"}
+               response (search/find-metadata :granule :echo10 params options)
+               search-after (:search-after response)]
+           (is (not (nil? search-after)))
+           (data2-core/assert-metadata-results-match format-key [g1-echo g2-echo] response))
+         (testing "Harvest collections by created-at"
+           (let [params {:created_at "2010-01-01T10:00:00Z,2011-01-01T10:00:00Z" :page-size 2}
+                 options {:accept nil
+                          :url-extension "native"}
+                 response (search/find-metadata :collection :echo10 params options)
+                 search-after (:search-after response)]
+             (is (= 1 (:hits response)))
+             (is (not (nil? search-after)))
+             (data2-core/assert-metadata-results-match format-key [coll1-echo] response))))))))

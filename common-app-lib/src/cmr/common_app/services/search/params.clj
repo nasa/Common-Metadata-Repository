@@ -274,12 +274,14 @@
   [context concept-type params]
   (let [[params query-attribs] (parse-query-level-params concept-type params)
         options (u/map-keys->kebab-case (get params :options {}))
-        scroll-id (:scroll-id context)
+        {:keys [scroll-id search-after]} context
         params (dissoc params :options)
         query (if (empty? params)
                 ;; matches everything
                 (qm/query query-attribs)
                 ;; Convert params into conditions
                 (params->query-conditions context concept-type options params query-attribs))]
-    ;; add the scroll-id if present
-    (merge query (when scroll-id {:scroll-id scroll-id}))))
+    ;; add the scroll-id and search-after if present
+    (merge query
+           (when scroll-id {:scroll-id scroll-id})
+           (when search-after {:search-after search-after}))))
