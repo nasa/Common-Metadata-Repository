@@ -96,6 +96,71 @@
                                update2
                                (assoc bulk-update-options :accept-format :json :raw? true)))
             task2-id (str (:task-id update2-response))
+            ;; add a 9 more bulk update to test the sorting of the task-ids, in desc order, as numbers, not alphabetically.
+            update2-1-response (ingest/parse-bulk-update-body
+                                :json
+                                (ingest/bulk-update-granules
+                                 "PROV1"
+                                 update2
+                                 (assoc bulk-update-options :accept-format :json :raw? true)))
+            task2-1-id (str (:task-id update2-1-response))
+            update2-2-response (ingest/parse-bulk-update-body
+                                :json
+                                (ingest/bulk-update-granules
+                                 "PROV1"
+                                 update2
+                                 (assoc bulk-update-options :accept-format :json :raw? true)))
+            task2-2-id (str (:task-id update2-2-response))
+            update2-3-response (ingest/parse-bulk-update-body
+                                :json
+                                (ingest/bulk-update-granules
+                                 "PROV1"
+                                 update2
+                                 (assoc bulk-update-options :accept-format :json :raw? true)))
+            task2-3-id (str (:task-id update2-3-response))
+            update2-4-response (ingest/parse-bulk-update-body
+                                :json
+                                (ingest/bulk-update-granules
+                                 "PROV1"
+                                 update2
+                                 (assoc bulk-update-options :accept-format :json :raw? true)))
+            task2-4-id (str (:task-id update2-4-response))
+            update2-5-response (ingest/parse-bulk-update-body
+                                :json
+                                (ingest/bulk-update-granules
+                                 "PROV1"
+                                 update2
+                                 (assoc bulk-update-options :accept-format :json :raw? true)))
+            task2-5-id (str (:task-id update2-5-response))
+            update2-6-response (ingest/parse-bulk-update-body
+                                :json
+                                (ingest/bulk-update-granules
+                                 "PROV1"
+                                 update2
+                                 (assoc bulk-update-options :accept-format :json :raw? true)))
+            task2-6-id (str (:task-id update2-6-response))
+            update2-7-response (ingest/parse-bulk-update-body
+                                :json
+                                (ingest/bulk-update-granules
+                                 "PROV1"
+                                 update2
+                                 (assoc bulk-update-options :accept-format :json :raw? true)))
+            task2-7-id (str (:task-id update2-7-response))
+            update2-8-response (ingest/parse-bulk-update-body
+                                :json
+                                (ingest/bulk-update-granules
+                                 "PROV1"
+                                 update2
+                                 (assoc bulk-update-options :accept-format :json :raw? true)))
+            task2-8-id (str (:task-id update2-8-response))
+            update2-9-response (ingest/parse-bulk-update-body
+                                :json
+                                (ingest/bulk-update-granules
+                                 "PROV1"
+                                 update2
+                                 (assoc bulk-update-options :accept-format :json :raw? true)))
+            task2-9-id (str (:task-id update2-9-response))
+
             ;; run granule bulk update on PROV2 to verify get task status works for given provider
             update3 {:operation "UPDATE_FIELD"
                      :update-field "OPeNDAPLink"
@@ -113,6 +178,16 @@
         (is (= 200 (:status update3-response)))
 
         (ingest/update-granule-bulk-update-task-statuses)
+
+        (testing "Granule bulk update tasks response sorting on task-id in desc order as numbers"
+          (let [response (ingest/granule-bulk-update-tasks
+                          "PROV1"
+                          {:accept-format :json})
+                {:keys [status tasks]} response]
+            (is (= 200 status))
+            (is (= ["11" "10" "9" "8" "7" "6" "5" "4" "3" "2" "1"]
+                   (map :task-id tasks)))))
+
         (testing "Granule bulk update tasks response"
           ;; PROV1
           (are3 [accept-format]
@@ -128,6 +203,51 @@
                             :request-json-body update1-json}
                            {:task-id task2-id,
                             :name (str "add opendap links: " task2-id)
+                            :status-message "All granule updates completed successfully.",
+                            :status "COMPLETE",
+                            :request-json-body update2-json}
+                           {:task-id task2-1-id,
+                            :name (str "add opendap links: " task2-1-id)
+                            :status-message "All granule updates completed successfully.",
+                            :status "COMPLETE",
+                            :request-json-body update2-json}
+                           {:task-id task2-2-id,
+                            :name (str "add opendap links: " task2-2-id)
+                            :status-message "All granule updates completed successfully.",
+                            :status "COMPLETE",
+                            :request-json-body update2-json}
+                           {:task-id task2-3-id,
+                            :name (str "add opendap links: " task2-3-id)
+                            :status-message "All granule updates completed successfully.",
+                            :status "COMPLETE",
+                            :request-json-body update2-json}
+                           {:task-id task2-4-id,
+                            :name (str "add opendap links: " task2-4-id)
+                            :status-message "All granule updates completed successfully.",
+                            :status "COMPLETE",
+                            :request-json-body update2-json}
+                           {:task-id task2-5-id,
+                            :name (str "add opendap links: " task2-5-id)
+                            :status-message "All granule updates completed successfully.",
+                            :status "COMPLETE",
+                            :request-json-body update2-json}
+                           {:task-id task2-6-id,
+                            :name (str "add opendap links: " task2-6-id)
+                            :status-message "All granule updates completed successfully.",
+                            :status "COMPLETE",
+                            :request-json-body update2-json}
+                           {:task-id task2-7-id,
+                            :name (str "add opendap links: " task2-7-id)
+                            :status-message "All granule updates completed successfully.",
+                            :status "COMPLETE",
+                            :request-json-body update2-json}
+                           {:task-id task2-8-id,
+                            :name (str "add opendap links: " task2-8-id)
+                            :status-message "All granule updates completed successfully.",
+                            :status "COMPLETE",
+                            :request-json-body update2-json}
+                           {:task-id task2-9-id,
+                            :name (str "add opendap links: " task2-9-id)
                             :status-message "All granule updates completed successfully.",
                             :status "COMPLETE",
                             :request-json-body update2-json}])
