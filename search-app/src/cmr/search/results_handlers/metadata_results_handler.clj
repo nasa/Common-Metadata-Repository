@@ -5,7 +5,7 @@
    [clojure.data.xml :as x]
    [clojure.string :as string]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.results-model :as results]
    [cmr.common.log :refer (debug info warn error)]
@@ -47,7 +47,7 @@
   "Returns the query result item for the given elastic result"
   [concept-type elastic-result]
   {:concept-id (:_id elastic-result)
-   :revision-id (elastic-results/get-revision-id-from-elastic-result concept-type elastic-result)
+   :revision-id (er-to-qr/get-revision-id-from-elastic-result concept-type elastic-result)
    :tags (when (= :collection concept-type)
            (trf/collection-elastic-result->tags elastic-result))})
 
@@ -65,10 +65,11 @@
   "A helper for converting elastic results into metadata results."
   [context query elastic-results]
   (let [{:keys [concept-type result-format result-features]} query
-        hits (get-in elastic-results [:hits :total :value])
-        scroll-id (:_scroll_id elastic-results)
-        timed-out (:timed_out elastic-results)
-        elastic-matches (get-in elastic-results [:hits :hits])
+        hits (er-to-qr/get-hits elastic-results)
+        timed-out (er-to-qr/get-timedout elastic-results)
+        scroll-id (er-to-qr/get-scroll-id elastic-results)
+        search-after (er-to-qr/get-search-after elastic-results)
+        elastic-matches (er-to-qr/get-elastic-matches elastic-results)
         result-items (mapv #(elastic-result->query-result-item concept-type %) elastic-matches)
         tuples (mapv #(vector (:concept-id %) (:revision-id %)) result-items)
         [req-time items] (util/time-execution
@@ -86,7 +87,8 @@
                            :items items
                            :timed-out timed-out
                            :result-format result-format
-                           :scroll-id scroll-id})))
+                           :scroll-id scroll-id
+                           :search-after search-after})))
 
 
 ;; Define transormations methods from query results to concept-ids
@@ -217,7 +219,7 @@
 (doseq [concept-type [:collection :granule]
         metadata-format (distinct (flatten (vals result-formats)))]
   ;; define transformations from elastic results to query results for each format
-  (defmethod elastic-results/elastic-results->query-results [concept-type metadata-format]
+  (defmethod er-to-qr/elastic-results->query-results [concept-type metadata-format]
     [context query elastic-results]
     (elastic-results->query-metadata-results context query elastic-results))
 

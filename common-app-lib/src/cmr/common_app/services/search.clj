@@ -78,7 +78,7 @@
     [(:concept-type query) (qm/base-result-format query)]))
 
 (defn- add-scroll-results-to-cache
-  "Adds the given search results (truncated to only the :hits, :timed-out, and :scroll-id keys) 
+  "Adds the given search results (truncated to only the :hits, :timed-out, and :scroll-id keys)
   and result string to the cache using the scroll-id as the key"
   [context scroll-id results result-str]
   (when scroll-id
@@ -117,8 +117,8 @@
   "Executes a search for concepts using the given query."
   [context _concept-type query]
   (validate-query context query)
-  ;; If the scroll-id is not nil, first look in the cache to see if there is a deferred result and 
-  ;; use that if so. If the scroll-id is not set and scroll is set to 'defer' then store the 
+  ;; If the scroll-id is not nil, first look in the cache to see if there is a deferred result and
+  ;; use that if so. If the scroll-id is not set and scroll is set to 'defer' then store the
   ;; search results in the cache and return an empty result (with appropriate headers). Otherwise
   ;; do normal query/scrolling without using the cache.
   (let [scroll-id (:scroll-id query)
@@ -138,4 +138,5 @@
        :hits (:hits results)
        :timed-out (:timed-out results)
        :result-format (:result-format query)
-       :scroll-id (:scroll-id results)})))
+       :scroll-id (:scroll-id results)
+       :search-after (:search-after results)})))

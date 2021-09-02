@@ -1,8 +1,36 @@
 (ns cmr.common-app.services.search.elastic-results-to-query-results
   "Contains functions to convert elasticsearch results to query results."
-  (:require [clojure.string :as s]
-            [cmr.common-app.services.search.query-model :as common-qm]
-            [cmr.common-app.services.search.results-model :as results]))
+  (:require
+   [cmr.common-app.services.search.query-model :as common-qm]
+   [cmr.common-app.services.search.results-model :as results]))
+
+(defn get-hits
+  "Returns hits from the given elastic-results"
+  [elastic-results]
+  (get-in elastic-results [:hits :total :value]))
+
+(defn get-timedout
+  "Returns timedout from the given elastic-results"
+  [elastic-results]
+  (:timed_out elastic-results))
+
+(defn get-scroll-id
+  "Returns scroll-id from the given elastic-results"
+  [elastic-results]
+  (:_scroll_id elastic-results))
+
+(defn get-search-after
+  "Returns search-after from the given elastic-results"
+  [elastic-results]
+  (-> elastic-results
+      (get-in [:hits :hits])
+      last
+      :sort))
+
+(defn get-elastic-matches
+  "Returns matches from the given elastic-results"
+  [elastic-results]
+  (get-in elastic-results [:hits :hits]))
 
 (defmulti elastic-result->query-result-item
   "Converts the Elasticsearch result into the result expected from execute-query for the given format."
@@ -36,18 +64,20 @@
 (defn default-elastic-results->query-results
   "Default function for converting elastic-results to query-results"
   [context query elastic-results]
-  (let [hits (get-in elastic-results [:hits :total :value])
-        timed-out (:timed_out elastic-results)
-        scroll-id (:_scroll_id elastic-results)
-        elastic-matches (get-in elastic-results [:hits :hits])
+  (let [hits (get-hits elastic-results)
+        timed-out (get-timedout elastic-results)
+        scroll-id (get-scroll-id elastic-results)
+        search-after (get-search-after elastic-results)
+        elastic-matches (get-elastic-matches elastic-results)
         items (mapv #(elastic-result->query-result-item context query %) elastic-matches)]
     (results/map->Results
-      {:aggregations (:aggregations elastic-results)
-        :hits hits
-        :timed-out timed-out
-        :items items
-        :result-format (:result-format query)
-        :scroll-id scroll-id})))
+     {:aggregations (:aggregations elastic-results)
+      :hits hits
+      :timed-out timed-out
+      :items items
+      :result-format (:result-format query)
+      :scroll-id scroll-id
+      :search-after search-after})))
 
 (defmethod elastic-results->query-results :default
   [context query elastic-results]

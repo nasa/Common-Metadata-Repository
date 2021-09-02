@@ -68,3 +68,12 @@
     [(str "The CMR does not allow querying across granules in all collections when scrolling. "
           "You should limit your query using conditions that identify one or more collections"
           " such as provider, concept_id, short_name, or entry_title.")]))
+
+(defn no-all-granules-with-search-after
+  "Validates that the query is not an all granules query if it is a search-after query."
+  [query]
+  (when (and (:search-after query)
+             (all-granules-query? query))
+    [(str "The CMR does not allow querying across granules in all collections when using search-after. "
+          "You should limit your query using conditions that identify one or more collections"
+          " such as provider, concept_id, short_name, or entry_title.")]))
