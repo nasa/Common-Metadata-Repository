@@ -251,7 +251,7 @@ Search After supersedes scrolling. Search After allows the retrieval of all resu
 
 Search After is only supported for parameter queries and JSON queries. All query parameters are available with the exception of the `page_num` and `offset` parameters.
 
-Search After is stateless, it is always resolved against the latest version of the data. Any parameter search against CMR with returns a `search-after` value in the `CMR-Search-After` header of the search response. User can then pass this returned value to the `CMR-Search-After` header of the following request to retrieve the next page of results based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` header in its response. Supplying the new `search-after` value in the `CMR-Search-After` header in the following request will retrieve the next page. The `CMR-Hits` header is useful for determining the number of requests that will be needed to retrieve all the available results.
+Search After is stateless, it is always resolved against the latest version of the data. Any search against CMR that has results not fully returned in the current request will return a `search-after` value in the `CMR-Search-After` header of the search response. User can then pass this returned value in the `CMR-Search-After` header of the following request to retrieve the next page of result based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` response header. Supplying the new `search-after` value in the following request's `CMR-Search-After` header will retrieve the next page. The `CMR-Hits` header is useful for determining the number of requests that will be needed to retrieve all the available results.
 
 When all the results have been returned, the subsequent search will return an empty result set and no `CMR-Search-After` header in the response.
 
@@ -267,7 +267,7 @@ returns 200 granule references and the following info in the response header:
 CMR-Hits: 408
 CMR-Search-After: ["aaa", 123, 456]
 ```
-This tells us that there are total 408 granules matching our search and we can use the `CMR-Search-After: ["aaa", 123, 456]` header to page through the rest of the result set. To do that, we run:
+This tells us that there are total 408 granules matching our search and we can use the `CMR-Search-After: ["aaa", 123, 456]` header to get the next page of the result set. To do that, we run:
 ```
 curl -i -H 'CMR-Search-After: ["aaa", 123, 456]' "%CMR-ENDPOINT%/granules?concept_id=C1-PROV1&page_size=200"
 ```
@@ -280,7 +280,7 @@ We can then use the new `CMR-Search-After: ["xyz", 789, 999]` header to get the 
 ```
 curl -i -H 'CMR-Search-After: ["xyz", 789, 999]' "%CMR-ENDPOINT%/granules?concept_id=C1-PROV1&page_size=200"
 ```
-Since there is only 8 granules left and nothing to search after, we will get the 8 granules back and there won't be a `CMR-Search-After` header in the response.
+Since there are only 8 granules left and nothing to search after, we will get the 8 granules back and there won't be a `CMR-Search-After` header in the response.
 
 #### <a name="scrolling-details"></a> Scrolling Details
 
