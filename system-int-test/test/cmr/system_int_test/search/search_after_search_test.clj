@@ -199,16 +199,15 @@
 
 (deftest search-after-invalid-parameters
   (testing "invalid parameters"
-    (are3 [query options expected-status err-msg]
+    (are3 [query expected-status err-msg]
       (let [{:keys [status errors]} (search/find-refs :granule
                                                       query
                                                       {:allow-failure? true
-                                                       :headers (merge {routes/SEARCH_AFTER_HEADER "[0]"} options)})]
+                                                       :headers {routes/SEARCH_AFTER_HEADER "[0]"}})]
         (is (= expected-status status))
         (is (= [err-msg] errors)))
 
       "Search After queries cannot be all-granule queries"
-      {}
       {}
       400
       (str "The CMR does not allow querying across granules in all collections when using search-after."
@@ -217,18 +216,15 @@
 
       "page_num is not allowed with search-after"
       {:provider "PROV1" :page-num 2}
-      {}
       400
       "page_num is not allowed with search-after"
 
       "offset is not allowed with search-after"
       {:provider "PROV1" :offset 2}
-      {}
       400
       "offset is not allowed with search-after"
 
       "scroll is not allowed with search-after"
       {:scroll true}
-      {}
       400
       "scroll is not allowed with search-after")))
