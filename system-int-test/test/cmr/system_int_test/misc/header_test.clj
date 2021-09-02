@@ -161,7 +161,8 @@
       (is (some #{"Client-Id"} allowed-headers))
       (is (some #{"CMR-Request-Id"} allowed-headers))
       (is (some #{"X-Request-Id"} allowed-headers))
-      (is (some #{"CMR-Scroll-Id"} allowed-headers))))
+      (is (some #{"CMR-Scroll-Id"} allowed-headers))
+      (is (some #{"CMR-Search-After"} allowed-headers))))
 
   (testing "that Echo-Token header is not allowed when the toggle for it is off"
     (dev-sys-util/eval-in-dev-sys `(acl/set-allow-echo-token! false))
@@ -178,4 +179,5 @@
       (is (some #{"CMR-Hits"} exposed-headers))
       (is (some #{"CMR-Request-Id"} exposed-headers))
       (is (some #{"X-Request-Id"} exposed-headers))
-      (is (some #{"CMR-Scroll-Id"} exposed-headers)))))
+      (is (some #{"CMR-Scroll-Id"} exposed-headers))
+      (is (some #{"CMR-Search-After"} exposed-headers)))))
