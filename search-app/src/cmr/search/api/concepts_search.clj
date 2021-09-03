@@ -194,11 +194,10 @@
         log-message (format "Searching for %ss from client %s in format %s with params %s"
                             (name concept-type) (:client-id ctx)
                             (rfh/printable-result-format result-format) (pr-str params))
-        _ (info (if short-scroll-id
-                  (format "%s, scroll-id: %s." log-message short-scroll-id)
-                  (if search-after
-                    (format "%s, search-after: %s." log-message search-after)
-                    (format "%s." log-message))))
+        _ (info (cond
+                  short-scroll-id (format "%s, scroll-id: %s." log-message short-scroll-id)
+                  search-after (format "%s, search-after: %s." log-message search-after)
+                  :else (format "%s." log-message)))
         search-params (if cached-search-params
                         cached-search-params
                         (lp/process-legacy-psa params))

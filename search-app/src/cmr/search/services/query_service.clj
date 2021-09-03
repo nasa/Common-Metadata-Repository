@@ -211,14 +211,13 @@
         log-message (format "Found %d %ss in %d ms from client %s in format %s with params %s"
                             (:hits results) (name concept-type) total-took (:client-id context)
                             (rfh/printable-result-format (:result-format query)) (pr-str params))]
-    (info (if scroll-id
-            (format "%s, scroll-id: %s." log-message (str (hash scroll-id)))
-            (if search-after
-              (format "%s, search-after: %s, new search-after: %s."
-                      log-message
-                      (json/encode search-after)
-                      (:search-after results))
-              (format "%s." log-message))))
+    (info (cond
+            scroll-id (format "%s, scroll-id: %s." log-message (str (hash scroll-id)))
+            search-after (format "%s, search-after: %s, new search-after: %s."
+                                 log-message
+                                 (json/encode search-after)
+                                 (:search-after results))
+            :else (format "%s." log-message)))
     (assoc results :took total-took)))
 
 (defn find-concepts-by-json-query
