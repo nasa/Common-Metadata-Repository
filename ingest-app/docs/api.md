@@ -1492,6 +1492,7 @@ curl -i -XPOST \
 The task information of all granule bulk update tasks that has been applied on a provider can be retrieved by sending an HTTP GET request to `%CMR-ENDPOINT%/providers/<provider-id>/bulk-update/granules/status`
 
 This returns a list of: name, task id, created-at, status (IN_PROGRESS or COMPLETE), a status message, and the original request JSON body.
+The list is ordered by task id, in descending order so that the newest update will show up on the top.
 
 The supported response formats are application/xml and application/json. The default is application/xml.
 
@@ -1507,9 +1508,9 @@ curl -i \
 <result>
     <tasks>
         <task>
-            <created-at>2021-03-12T20:38:53.415Z</created-at>
-            <name>add opendap links: 1</name>
-            <task-id>1</task-id>
+            <created-at>2021-03-12T20:38:53.473Z</created-at>
+            <name>add opendap links: 3</name>
+            <task-id>3</task-id>
             <status>COMPLETE</status>
             <status-message>All granule updates completed successfully.</status-message>
             <request-json-body>{"name":"add opendap links","operation":"UPDATE_FIELD","update-field":"OPeNDAPLink","updates":[["SC:AE_5DSno.002:30500511","https://url30500511"],["SC:AE_5DSno.002:30500512","https://url30500512"]]}</request-json-body>
@@ -1523,9 +1524,9 @@ curl -i \
             <request-json-body>{"name":"add opendap links","operation":"UPDATE_FIELD","update-field":"OPeNDAPLink","updates":[["SC:AE_5DSno.002:30500518","https://url30500518"],["SC:coll2:30500519","https://url30500519"]]}</request-json-body>
         </task>
         <task>
-            <created-at>2021-03-12T20:38:53.473Z</created-at>
-            <name>3: 3</name>
-            <task-id>3</task-id>
+            <created-at>2021-03-12T20:38:53.415Z</created-at>
+            <name>add opendap links: 1</name>
+            <task-id>1</task-id>
             <status>COMPLETE</status>
             <status-message>Task completed with 1 FAILED and 1 UPDATED out of 2 total granule update(s).</status-message>
             <request-json-body>{"operation":"UPDATE_FIELD","update-field":"OPeNDAPLink","updates":[["SC:coll3:30500514","https://url30500514"],["SC:non-existent","https://url30500515"]]}</request-json-body>
