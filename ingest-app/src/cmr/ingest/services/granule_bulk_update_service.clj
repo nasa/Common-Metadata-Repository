@@ -255,8 +255,8 @@
     (mt/format-key (:format concept))))
 
 (defmethod update-opendap-type :echo10
-  [_ concept _]
-  (opendap-echo10/update-opendap-type concept))
+  [_ concept type-to-update]
+  (opendap-echo10/update-opendap-type concept type-to-update))
 
 (defmethod update-opendap-type :umm-json
   [context concept grouped-urls]
