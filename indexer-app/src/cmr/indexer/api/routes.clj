@@ -96,12 +96,6 @@
        ;; for NGAP deployment health check
       (GET "/" {} {:status 200})
 
-      ;; TEMPORARY CODE - Remove this after EI-3988 is fixed.
-      (POST "/wait/:n" [n]
-        (info "Waiting" n "seconds to respond")
-        (Thread/sleep (* (Long. n) 1000))
-        {:status 200})
-
       ;; Index a concept
       (POST "/" {body :body context :request-context params :params headers :headers}
         (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
