@@ -2,7 +2,7 @@
   "Contains functions to update ECHO10 granule xml for OPeNDAP url bulk update."
   (:require
    [clojure.data.xml :as xml]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.zip :as zip]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :refer [remove-nil-keys]]
@@ -54,8 +54,8 @@
   "Transforms and returns the Type value, where the minor type is preserved."
   [type-value]
   (if type-value
-    (let [trim-with-default (fnil str/trim OPENDAP_RESOURCE_TYPE_MINOR)
-          minor (trim-with-default (second (str/split type-value #":")))]
+    (let [trim-with-default (fnil string/trim OPENDAP_RESOURCE_TYPE_MINOR)
+          minor (trim-with-default (second (string/split type-value #":")))]
       (str OPENDAP_RESOURCE_TYPE_MAJOR " : " minor))
     OPENDAP_RESOURCE_TYPE))
 
