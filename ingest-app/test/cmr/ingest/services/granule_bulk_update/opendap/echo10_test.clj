@@ -667,8 +667,18 @@
            (:metadata (#'echo10/update-opendap-type {:metadata update-opendap-type-xml} "Browse"))))))
 
 (deftest update-resource-type-test
-  (are [resource-type output] (= output (#'echo10/update-resource-type resource-type))
+  (are3 [resource-type output] (is (= output (#'echo10/update-resource-type resource-type)))
+    "opendap updated to USE SERVICE API"
     "OPENDAP" "USE SERVICE API : OPENDAP DATA"
+
+    "GET DATA to USE SERVICE API"
     "GET DATA : OPENDAP DATA" "USE SERVICE API : OPENDAP DATA"
+
+    "GET DATA with sub-type to USE SERVICE API"
     "GET DATA : OPENDAP DATA (DODS)" "USE SERVICE API : OPENDAP DATA (DODS)"
+
+    "handles empty"
+    "" "USE SERVICE API : OPENDAP DATA"
+
+    "handles nil"
     nil "USE SERVICE API : OPENDAP DATA"))
