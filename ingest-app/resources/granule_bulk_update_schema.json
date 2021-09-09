@@ -14,6 +14,7 @@
         "AdditionalFile",
         "Checksum",
         "Format",
+        "MimeType",
         "OPeNDAPLink",
         "S3Link",
         "Size"
@@ -102,6 +103,43 @@
         "Name"
       ]
     },
+    "UpdateGranuleLinksType": {
+      "type": "object",
+      "minItems": 1,
+      "properties": {
+        "GranuleUR": {
+          "description": "This field describes the UR of the granule.",
+          "type": "string"
+        },
+        "Links": {
+          "description": "Allows the provider to add the list of the links to be updated.",
+          "type": "array",
+          "items": {"$ref": "#/definitions/LinkType"},
+          "uniqueItems": true,
+          "minItems": 1
+        }
+      }
+    },
+    "LinkType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This set of elements describes a link, including a URL and MimeType",
+      "properties": {
+        "URL": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "MimeType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "URL", "MimeType"
+      ]
+    },
     "UpdateArgumentsType": {
       "type": "array",
       "minItems": 1,
@@ -109,6 +147,9 @@
         "anyOf": [
           {
             "$ref": "#/definitions/UpdateGranuleFilesType"
+          },
+          {
+            "$ref": "#/definitions/UpdateGranuleLinksType"
           },
           {
             "$ref": "#/definitions/UpdateTupleType"
