@@ -30,7 +30,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
    </OnlineResources>
 </Granule>\n")
@@ -62,7 +62,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
    </OnlineResources>
    <Orderable>false</Orderable>
@@ -117,7 +117,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -147,7 +147,7 @@
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/to_be_updated</URL>
-          <Type>GET DATA : OPENDAP DATA</Type>
+          <Type>USE SERVICE API : OPENDAP DATA</Type>
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/Browse</URL>
@@ -171,7 +171,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -180,6 +180,90 @@
       <OnlineResource>
          <URL>http://example.com/Browse</URL>
          <Type>Browse</Type>
+      </OnlineResource>
+   </OnlineResources>
+   <Orderable>false</Orderable>
+</Granule>\n")
+
+(def ^:private update-opendap-type-xml
+  "Result ECHO10 granule for testing updating OPeNDAP type existing in OnlineResources.
+   Do not format the following as whitespace matters in the string comparison in the test."
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<Granule>
+   <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+   <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+   <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+   <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+   </Collection>
+   <OnlineResources>
+      <OnlineResource>
+         <URL>http://example.com/foo</URL>
+         <Type>OPENDAP</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>http://example.com/doc</URL>
+         <Type>Documentation</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>http://example.com/Browse</URL>
+         <Type>Browse</Type>
+      </OnlineResource>
+   </OnlineResources>
+   <Orderable>false</Orderable>
+</Granule>\n")
+
+(def ^:private update-opendap-type-xml-result
+  "Result ECHO10 granule for testing updating OPeNDAP type existing in OnlineResources.
+   Do not format the following as whitespace matters in the string comparison in the test."
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<Granule>
+   <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+   <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+   <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+   <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+   </Collection>
+   <OnlineResources>
+      <OnlineResource>
+         <URL>http://example.com/foo</URL>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>http://example.com/doc</URL>
+         <Type>Documentation</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>http://example.com/Browse</URL>
+         <Type>Browse</Type>
+      </OnlineResource>
+   </OnlineResources>
+   <Orderable>false</Orderable>
+</Granule>\n")
+
+(def ^:private update-opendap-other-type-xml-result
+  "Result ECHO10 granule for testing updating OPeNDAP type existing in OnlineResources.
+   Do not format the following as whitespace matters in the string comparison in the test."
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<Granule>
+   <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+   <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+   <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+   <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+   </Collection>
+   <OnlineResources>
+      <OnlineResource>
+         <URL>http://example.com/foo</URL>
+         <Type>OPENDAP</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>http://example.com/doc</URL>
+         <Type>Documentation</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>http://example.com/Browse</URL>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
    </OnlineResources>
    <Orderable>false</Orderable>
@@ -198,11 +282,11 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/to_be_updated</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>https://opendap.earthdata.nasa.gov/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -233,7 +317,7 @@
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/to_be_updated</URL>
-          <Type>GET DATA : OPENDAP DATA (DODS)</Type>
+          <Type>USE SERVICE API : OPENDAP DATA (DODS)</Type>
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/Browse</URL>
@@ -257,7 +341,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA (DODS)</Type>
+         <Type>USE SERVICE API : OPENDAP DATA (DODS)</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -287,7 +371,7 @@
        </OnlineResource>
        <OnlineResource>
           <URL>https://opendap.earthdata.nasa.gov/to_be_updated</URL>
-          <Type>GET DATA : OPENDAP DATA</Type>
+          <Type>USE SERVICE API : OPENDAP DATA</Type>
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/Browse</URL>
@@ -309,7 +393,7 @@
     <OnlineResources>
        <OnlineResource>
           <URL>http://example.com/to_be_updated</URL>
-          <Type>GET DATA : OPENDAP DATA</Type>
+          <Type>USE SERVICE API : OPENDAP DATA</Type>
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/doc</URL>
@@ -317,7 +401,7 @@
        </OnlineResource>
        <OnlineResource>
           <URL>https://opendap.earthdata.nasa.gov/to_be_updated</URL>
-          <Type>GET DATA : OPENDAP DATA</Type>
+          <Type>USE SERVICE API : OPENDAP DATA</Type>
        </OnlineResource>
        <OnlineResource>
           <URL>http://example.com/Browse</URL>
@@ -341,7 +425,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>https://opendap.earthdata.nasa.gov/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -369,11 +453,11 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>https://opendap.earthdata.nasa.gov/to_be_updated</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -401,11 +485,11 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://example.com/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>https://opendap.earthdata.nasa.gov/foo</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
       <OnlineResource>
          <URL>http://example.com/doc</URL>
@@ -572,3 +656,29 @@
       "update with multiple urls, both Hyrax-in-the-cloud and on-prem in metadata"
       "https://opendap.earthdata.nasa.gov/foo, http://example.com/foo"
       update-both-opendap-url)))
+
+(deftest update-opendap-type-test
+  (testing "using defaults"
+    (is (= update-opendap-type-xml-result
+           (:metadata (#'echo10/update-opendap-type {:metadata update-opendap-type-xml})))))
+
+  (testing "specifying a specific target type to transform"
+    (is (= update-opendap-other-type-xml-result
+           (:metadata (#'echo10/update-opendap-type {:metadata update-opendap-type-xml} "Browse"))))))
+
+(deftest update-resource-type-test
+  (are3 [resource-type output] (is (= output (#'echo10/update-resource-type resource-type)))
+    "opendap updated to USE SERVICE API"
+    "OPENDAP" "USE SERVICE API : OPENDAP DATA"
+
+    "GET DATA to USE SERVICE API"
+    "GET DATA : OPENDAP DATA" "USE SERVICE API : OPENDAP DATA"
+
+    "GET DATA with sub-type to USE SERVICE API"
+    "GET DATA : OPENDAP DATA (DODS)" "USE SERVICE API : OPENDAP DATA (DODS)"
+
+    "handles empty"
+    "" "USE SERVICE API : OPENDAP DATA"
+
+    "handles nil"
+    nil "USE SERVICE API : OPENDAP DATA"))
