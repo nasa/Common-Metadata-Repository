@@ -21,5 +21,3 @@ build.xml
 /resources/elasticsearch/es_libs
 dev/no_commit.clj
 profiles.clj
-.rebl
-.calva
