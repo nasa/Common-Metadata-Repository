@@ -320,13 +320,17 @@
                  (set (map :concept-id (:items results))))))))))
 
 (deftest CMR-6745-ORed-spatial-search-granule-count
-  (let [no-match-temporal {:beginning-date-time "1990-01-01T00:00:00"
-                           :ending-date-time "1991-01-01T00:00:00"}
-        coll6745 (make-coll 6745 m/whole-world no-match-temporal
-                           {:science-keywords
-                            [(dc/science-keyword {:category "Tornado"
-                                                  :topic "Wind"
-                                                  :term "Speed"})]})
+  (let [coll-temporal {:beginning-date-time "1990-01-01T00:00:00"
+                       :ending-date-time "1991-01-01T00:00:00"}
+        gran-temporal {:beginning-date-time "1990-01-21T00:00:00"
+                       :ending-date-time "1991-01-01T00:00:00"}
+        coll6745 (make-coll 6745
+                            m/whole-world
+                            coll-temporal
+                            {:science-keywords
+                             [(dc/science-keyword {:category "Tornado"
+                                                   :topic "Wind"
+                                                   :term "Speed"})]})
         search-polygon ["-21.33069,80.92296,-24.68258,80.58223,-26.80316,80.36716,-29.06056,79.60629,-24.34055,78.86559,-17.56837,79.10088,-14.62691,79.83818,-14.83213,80.79254,-21.33069,80.92296"
                         "136.75804,-34.82121,135.13466,-34.7865,134.43289,-35.0361,133.97631,-35.53991,134.6189,-36.7958,136.56358,-36.90405,137.07088,-36.15672,136.75804,-34.82121"]]
     (make-gran
@@ -336,7 +340,7 @@
               136.37132055 -35.23530856
               136.09904081 -35.23808754
               136.11192342 -36.17110948)
-     nil)
+     gran-temporal)
     (make-gran
      coll6745
      (polygon 134.99977994 -35.3312641
@@ -365,13 +369,13 @@
      nil)
 
     (index/wait-until-indexed)
-    
+
     ;; Refresh the aggregate cache so that it includes all the granules that were added.
     (index/full-refresh-collection-granule-aggregate-cache)
     ;; Reindex all the collections to get the latest information.
     (ingest/reindex-all-collections)
     (index/wait-until-indexed)
-    
+
     (testing "ORed granule counts special case"
       (let [coll6745-id (:concept-id coll6745)
             refs (search/find-refs :collection {:include-granule-counts true
@@ -379,7 +383,7 @@
                                                 :polygon search-polygon
                                                 "options[spatial][or]" "true"})]
         (is (gran-counts/granule-counts-match? :xml {coll6745 3} refs))))
-    
+
     (testing "ANDed granule counts special case"
       (let [coll6745-id (:concept-id coll6745)
             refs (search/find-refs :collection {:include-granule-counts true
@@ -387,14 +391,65 @@
                                                 :polygon search-polygon
                                                 "options[spatial][or]" "false"})]
         (is (gran-counts/granule-counts-match? :xml {coll6745 0} refs))))
-    
+
     (testing "EDSC Pageload error case"
       (let [refs (search/find-refs :collection {:include-granule-counts true
                                                 :has-granules-or-cwic true
                                                 "options[science_keywords_h][or]" "true"
                                                 "options[spatial][or]" "true"
                                                 "options[temporal][limit_to_granules]" "true"})]
-        (is (gran-counts/granule-counts-match? :xml {coll6745 4} refs))))))
+        (is (gran-counts/granule-counts-match? :xml {coll6745 4} refs))))
+
+    (testing "CMR-7692: EDSC temporal search"
+      (are3 [search-params collection-found? matched-granule-count]
+        (let [refs (search/find-refs :collection (merge {:include-granule-counts true
+                                                         :has-granules-or-cwic true
+                                                         "options[science_keywords_h][or]" "true"
+                                                         "options[spatial][or]" "true"}
+                                                        search-params))]
+          (if collection-found?
+            (is (gran-counts/granule-counts-match? :xml {coll6745 matched-granule-count} refs))
+            (is (= [] (:refs refs)))))
+
+        "temporal cover granule temporal limit_to_granules=true"
+        {:temporal "1990-01-05T00:00:00.000Z,"
+         "options[temporal][limit_to_granules]" "true"}
+        true
+        1
+
+        ;; note: even though the limit_to_granules is false, the granule count is still
+        ;; searched against the temporal range when calculating granule counts
+        "temporal cover granule temporal limit_to_granules=false"
+        {:temporal "1990-01-05T00:00:00.000Z,"
+         "options[temporal][limit_to_granules]" "false"}
+        true
+        1
+
+        "temporal not cover granule temporal limit_to_granules=true"
+        {:temporal "1990-01-05T00:00:00.000Z,1990-01-15T00:00:00.000Z"
+         "options[temporal][limit_to_granules]" "true"}
+        false
+        0
+
+        ;; note: even though the limit_to_granules is false, the granule count is still
+        ;; searched against the temporal range when calculating granule counts
+        "temporal not cover granule temporal limit_to_granules=false"
+        {:temporal "1990-01-05T00:00:00.000Z,1990-01-15T00:00:00.000Z"
+         "options[temporal][limit_to_granules]" "false"}
+        true
+        0
+
+        "no temporal or spatial conditions"
+        {"options[temporal][limit_to_granules]" "true"}
+        true
+        4
+
+        "both temporal and spatial conditions"
+        {:temporal "1990-01-05T00:00:00.000Z,"
+         :polygon search-polygon
+         "options[temporal][limit_to_granules]" "true"}
+        true
+        1))))
 
 (deftest collection-has-granules-caching-test
   (let [;; Create collections
@@ -417,13 +472,13 @@
 
     (testing "has_granules"
       (are [result-format results]
-           (let [expected-has-granules (util/map-keys :concept-id {coll1 true coll2 false})
-                 actual-has-granules (gran-counts/results->actual-has-granules result-format results)]
-             (= expected-has-granules actual-has-granules))
-           :xml (search/find-refs :collection {:include-has-granules true})
-           :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true})
-           :atom (search/find-concepts-atom :collection {:include-has-granules true})
-           :atom (search/find-concepts-json :collection {:include-has-granules true})))
+        (let [expected-has-granules (util/map-keys :concept-id {coll1 true coll2 false})
+              actual-has-granules (gran-counts/results->actual-has-granules result-format results)]
+          (= expected-has-granules actual-has-granules))
+        :xml (search/find-refs :collection {:include-has-granules true})
+        :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true})
+        :atom (search/find-concepts-atom :collection {:include-has-granules true})
+        :atom (search/find-concepts-json :collection {:include-has-granules true})))
 
     (testing "after ingesting more granules"
       (make-gran coll2 (p/point 0 0) nil)
@@ -439,30 +494,30 @@
       (testing "include_has_granules"
         (testing "without include-granule-counts"
           (are [result-format results]
-               (let [expected-has-granules (util/map-keys :concept-id {coll1 true coll2 true})
-                     actual-has-granules (gran-counts/results->actual-has-granules result-format results)]
-                 (not= expected-has-granules actual-has-granules))
-               :xml (search/find-refs :collection {:include-has-granules true})
-               :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true})
-               :atom (search/find-concepts-atom :collection {:include-has-granules true})
-               :atom (search/find-concepts-json :collection {:include-has-granules true})))
+            (let [expected-has-granules (util/map-keys :concept-id {coll1 true coll2 true})
+                  actual-has-granules (gran-counts/results->actual-has-granules result-format results)]
+              (not= expected-has-granules actual-has-granules))
+            :xml (search/find-refs :collection {:include-has-granules true})
+            :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true})
+            :atom (search/find-concepts-atom :collection {:include-has-granules true})
+            :atom (search/find-concepts-json :collection {:include-has-granules true})))
 
         (testing "with include-granule-counts"
           (are [result-format results]
-               (let [expected-has-granules (util/map-keys :concept-id {coll1 true coll2 true})
-                     actual-has-granules (gran-counts/results->actual-has-granules result-format results)]
-                 (= expected-has-granules actual-has-granules))
-               :xml (search/find-refs :collection {:include-has-granules true :include-granule-counts true})
-               :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true :include-granule-counts true})
-               :iso19115 (search/find-metadata :collection :iso19115 {:include-has-granules true :include-granule-counts true})
-               :atom (search/find-concepts-atom :collection {:include-has-granules true :include-granule-counts true})
-               :atom (search/find-concepts-json :collection {:include-has-granules true :include-granule-counts true}))))
+            (let [expected-has-granules (util/map-keys :concept-id {coll1 true coll2 true})
+                  actual-has-granules (gran-counts/results->actual-has-granules result-format results)]
+              (= expected-has-granules actual-has-granules))
+            :xml (search/find-refs :collection {:include-has-granules true :include-granule-counts true})
+            :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true :include-granule-counts true})
+            :iso19115 (search/find-metadata :collection :iso19115 {:include-has-granules true :include-granule-counts true})
+            :atom (search/find-concepts-atom :collection {:include-has-granules true :include-granule-counts true})
+            :atom (search/find-concepts-json :collection {:include-has-granules true :include-granule-counts true}))))
 
       (testing "granule_count"
         (are3 [result-format results]
           (let [expected-granule-count (util/map-keys :concept-id {coll1 2 coll2 2})
                 actual-granule-count (gran-counts/results->actual-granule-count result-format results)]
-            (= expected-granule-count actual-granule-count))
+            (is (= expected-granule-count actual-granule-count)))
           "granule count in xml format"
           :xml (search/find-refs :collection {:include-has-granules true :include-granule-counts true})
 
@@ -486,11 +541,11 @@
 
       (testing "granule_count failure cases"
         (are3 [result-format results]
-          (let [expected-results (str "{:errors (Collections search in "
-                                      (name result-format)
-                                      " format is not supported with include_granule_counts "
-                                      "option), :status 400}")]
-            (= expected-results results))
+          (let [expected-error (format "Collections search in %s format is not supported with include_granule_counts option"
+                                       (name result-format))
+                {:keys [status errors]} results]
+            (is (= 400 status))
+            (is (= [expected-error] errors)))
 
           "granule count in kml format"
           :kml (search/find-concepts-kml :collection {:include-has-granules true :include-granule-counts true})
