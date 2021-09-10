@@ -380,7 +380,7 @@
    :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))]))
 
 (defmulti update-mime-type
-  "Add/update format to the given granule concept."
+  "Add/update mime types for RelatedUrl links in a given granule."
   (fn [context concept links]
     (mt/format-key (:format concept))))
 
@@ -388,7 +388,7 @@
   [context concept links]
   (update-umm-g-metadata concept links mime-type-umm-g/update-mime-type))
 
-(defmethod update-format :default
+(defmethod update-mime-type :default
   [context concept links]
   (errors/throw-service-errors
    :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))]))

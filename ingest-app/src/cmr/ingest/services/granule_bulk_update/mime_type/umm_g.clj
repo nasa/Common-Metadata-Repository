@@ -5,8 +5,7 @@
    [cmr.common.services.errors :as errors]))
 
 (defn- transform-link
-  "Builds an updated version of each File and FilePackage using the existing file and its matching input-file,
-   if one was provided. Also calls itself on and File children of a FilePackage."
+  "Adds or updates MimeType for a given link"
   [link input-links-map]
   (if-let [input-link (get input-links-map (:URL link))]
     (merge link {:MimeType (:MimeType input-link)})
@@ -31,6 +30,6 @@
     (map #(transform-link % input-links-map) granule-links)))
 
 (defn update-mime-type
-  "Updates "
+  "Updates MimeTypes in RelaredUrls, returns the granule"
   [umm-gran input-links]
   (update umm-gran :RelatedUrls #(updated-mime-type-links % input-links)))
