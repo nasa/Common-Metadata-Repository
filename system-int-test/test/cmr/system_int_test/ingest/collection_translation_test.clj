@@ -103,6 +103,20 @@
                (:UseConstraints parsed-umm-json)))
         (is (= 200 status))))
 
+    (testing (format "Translating iso19115 to umm-json produces the right DataCenters")
+      (let [input-format :iso19115
+            output-format :umm-json
+            options {:skip-sanitize-umm-c false}
+            input-xml (slurp (io/resource "CMR-7636/iso19115_test_data.xml"))
+            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                         output-format options)
+            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+        (is (= [(umm-cmn/map->DataCenterType
+                 {:Roles ["ARCHIVER"] 
+                  :ShortName "Not provided"})]
+               (:DataCenters parsed-umm-json)))
+        (is (= 200 status))))
+
     (testing (format "Translating iso19115 to umm-json without skipping sanitizing makes use of default values")
       (let [input-format :iso19115
             output-format :umm-json
