@@ -1316,7 +1316,7 @@ curl -i -XPOST \
   -H "Echo-Token: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
-'{ "name": "Example of updating format",
+'{ "name": "Example of updating RelatedUrl MimeTypes",
 	"operation": "UPDATE_FIELD",
 	"update-field":"MimeType",
 	"updates":[{

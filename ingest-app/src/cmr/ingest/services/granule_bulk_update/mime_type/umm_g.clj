@@ -4,8 +4,8 @@
    [clojure.string :as string]
    [cmr.common.services.errors :as errors]))
 
-(defn- transform-link
-  "Adds or updates MimeType for a given link"
+(defn- update-link-mime-type
+  "Adds or updates MimeType for a given link, if a matching link was input"
   [link input-links-map]
   (if-let [input-link (get input-links-map (:URL link))]
     (merge link {:MimeType (:MimeType input-link)})
@@ -27,7 +27,7 @@
       (errors/throw-service-errors :invalid-data
         ["Update failed - duplicate URLs provided for granule update"]))
 
-    (map #(transform-link % input-links-map) granule-links)))
+    (map #(update-link-mime-type % input-links-map) granule-links)))
 
 (defn update-mime-type
   "Updates MimeTypes in RelaredUrls, returns the granule"
