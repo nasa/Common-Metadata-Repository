@@ -1303,6 +1303,51 @@ Example granule bulk update response:
 </result>
 ```
 
+**operation: "UPDATE_FIELD", update-field: "MimeType"**
+Supported metadata formats:
+  - RelatedUrls in UMM-G
+
+To update the MimeType value for RelatedUrls, an array of URLs and MimeTypes can be specified for each granule to specify the new MimeType for each RelatedUrl.
+
+```
+curl -i -XPOST \
+  -H "Cmr-Pretty:true" \
+  -H "Content-Type: application/json"
+  -H "Echo-Token: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{ "name": "Example of updating RelatedUrl MimeTypes",
+	"operation": "UPDATE_FIELD",
+	"update-field":"MimeType",
+	"updates":[{
+		"GranuleUR": "Gran_With_Links_1"
+		"Links": [
+			{
+				"URL": "www.example.com/1"
+			 "MimeType": application/json
+		 	},
+			{
+				"URL": "www.example.com/2"
+			 "MimeType": application/xml
+		 	}
+		]
+	},
+	{
+		"GranuleUR": "Gran_With_Links_2"
+		"Links": [
+			{
+				"URL": "www.example.com/myimportantlink"
+			 "MimeType": application/zip
+		 	},
+			{
+				"URL": "www.example.com/myveryimportanlink"
+			 "MimeType": application/tar
+		 	}
+		]
+	}]
+}'
+```
+
 **operation: "UPDATE_FIELD", update-field: "AdditionalFile"**
 Supported metadata formats:
   - UMM-G File and FilePackage elements located under DataGranule/ArchiveAndDistributionInformation.

@@ -17,6 +17,7 @@
    [cmr.ingest.services.granule-bulk-update.additional-file.umm-g :as additional-file-umm-g]
    [cmr.ingest.services.granule-bulk-update.checksum.echo10 :as checksum-echo10]
    [cmr.ingest.services.granule-bulk-update.format.echo10 :as format-echo10]
+   [cmr.ingest.services.granule-bulk-update.mime-type.umm-g :as mime-type-umm-g]
    [cmr.ingest.services.granule-bulk-update.opendap.echo10 :as opendap-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]
    [cmr.ingest.services.granule-bulk-update.opendap.umm-g :as opendap-umm-g]
@@ -82,6 +83,15 @@
       {:event-type event-type
        :granule-ur GranuleUR
        :new-value Files})))
+
+(defmethod update->instruction :update_field:mimetype
+  [event-type item]
+  (if-not (map? item)
+    (invalid-update-error event-type)
+    (let [{:keys [GranuleUR Links]} item]
+      {:event-type event-type
+       :granule-ur GranuleUR
+       :new-value Links})))
 
 (defmethod update->instruction :update_type:opendaplink
   [event-type item]
@@ -368,6 +378,20 @@
   (errors/throw-service-errors
    :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))]))
 
+(defmulti update-mime-type
+  "Add/update mime types for RelatedUrl links in a given granule."
+  (fn [context concept links]
+    (mt/format-key (:format concept))))
+
+(defmethod update-mime-type :umm-json
+  [context concept links]
+  (update-umm-g-metadata concept links mime-type-umm-g/update-mime-type))
+
+(defmethod update-mime-type :default
+  [context concept links]
+  (errors/throw-service-errors
+   :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))]))
+
 (defmulti update-additional-files
   "Update AdditionalFiles in given granule concept."
   (fn [context concept checksum]
@@ -492,6 +516,11 @@
   [context concept bulk-update-params user-id]
   (modify-checksum-size-format
    context concept bulk-update-params user-id update-format))
+
+(defmethod update-granule-concept :update_field:mimetype
+  [context concept bulk-update-params user-id]
+  (modify-checksum-size-format
+   context concept bulk-update-params user-id update-mime-type))
 
 (defn- modify-additional-files
   "Add or update the size, type, mimetype, and/or checksum value and algorithm for the given concept
