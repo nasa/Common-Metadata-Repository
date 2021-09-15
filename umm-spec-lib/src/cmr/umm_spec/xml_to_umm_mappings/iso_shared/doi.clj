@@ -21,9 +21,8 @@
    identifier is a DOI. Returns true if sucessful or nil if not."
   [gmd-id]
   (let [attrs (get (first (select gmd-id "gmd:MD_Identifier/gmd:code/gmx:Anchor")) :attrs)]
-    (some #(when (= :xlink/title (key %))
-             (when (= "DOI" (val %))
-               true))
+    (some #(and (= :xlink/title (key %))
+                (= "DOI" (val %)))
           attrs)))
 
 (defn- is-doi-field?
