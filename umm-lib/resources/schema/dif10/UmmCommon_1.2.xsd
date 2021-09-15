@@ -148,6 +148,7 @@ technical contact
             <xs:enumeration value="Navigation Platforms"/>
             <xs:enumeration value="Solar/Space Observation Satellites"/>
             <xs:enumeration value="Space Stations/Manned Spacecraft"/>
+            <xs:enumeration value="Space Stations/Crewed Spacecraft"/>
         </xs:restriction>
     </xs:simpleType>
     
