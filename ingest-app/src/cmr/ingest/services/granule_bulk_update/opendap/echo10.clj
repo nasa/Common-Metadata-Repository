@@ -4,7 +4,6 @@
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [clojure.zip :as zip]
-   [cmr.common.services.errors :as errors]
    [cmr.common.util :refer [remove-nil-keys]]
    [cmr.common.xml :as cx]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util
