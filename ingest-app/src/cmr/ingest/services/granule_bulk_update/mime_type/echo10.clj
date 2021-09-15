@@ -2,7 +2,9 @@
   "Contains functions to update ECHO10 granule xml for OnlineResource MimeType bulk update."
   (:require
    [clojure.data.xml :as xml]
+   [clojure.set :as set]
    [clojure.zip :as zip]
+   [cmr.common.services.errors :as errors]
    [cmr.common.xml :as cx]))
 
 (defn- xml-elem->online-resource
@@ -56,11 +58,15 @@
             (recur right-loc false)))))))
 
 (defn update-mime-type
-  [concept url-map]
+  [concept links]
   (let [parsed (xml/parse-str (:metadata concept))
         online-resources (cx/elements-at-path
                           parsed
                           [:OnlineResources :OnlineResource])
+        url-map (apply merge (map #(hash-map (:URL %) (:MimeType %)) links))
+        _ (when-not (= (count (set (keys url-map))) (count links))
+            (errors/throw-service-errors :invalid-data
+                                         ["Update failed - duplicate URLs provided for granule update"]))
         updated-metadata (-> online-resources
                              (update-resources url-map)
                              (update-xml parsed)
