@@ -1,5 +1,6 @@
 (ns cmr.ingest.services.granule-bulk-update.mime-type.echo10
-  "Contains functions to update ECHO10 granule xml for OnlineResource MimeType bulk update."
+  "Contains functions to update ECHO10 granule xml for OnlineResource
+   and OnlineAccessURL MimeType in bulk update."
   (:require
    [clojure.data.xml :as xml]
    [clojure.zip :as zip]
@@ -102,11 +103,10 @@
       (update-access online-access-urls url-map))))
 
 (defn update-mime-type
-  "Replace the MimeType for elements within OnlineResources and OnlineAccess."
+  "Update the the MimeType for elements within OnlineResources and OnlineAccess in echo10
+   granule metadata and return granule."
   [concept links]
-
   (let [parsed (xml/parse-str (:metadata concept))
-
         url-map (apply merge (map #(hash-map (:URL %) (:MimeType %)) links))
         _ (when-not (= (count (set (keys url-map))) (count links))
             (errors/throw-service-errors :invalid-data
