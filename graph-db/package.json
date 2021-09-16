@@ -4,7 +4,8 @@
   "description": "",
   "main": "handler.js",
   "repository": "nasa/common-metadata-repository",
-  "scripts": {
+    "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "test": "jest -i",
     "test:watch": "jest -i --watchAll",
     "test-coverage": "jest --coverage",
