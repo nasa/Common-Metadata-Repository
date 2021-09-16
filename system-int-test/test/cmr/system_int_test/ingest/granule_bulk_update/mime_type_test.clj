@@ -188,30 +188,30 @@
         ;; verify the granule metadata is NOT updated
         (is (not (:metadata (mdb/get-concept concept-id (inc revision-id)))))))
 
-    #_(testing "actually update granule"
-        (let [bulk-update {:operation "UPDATE_FIELD"
-                           :update-field "MimeType"
-                           :updates [{"GranuleUR" "mime-type-update-gran-ur"
-                                      "Links" [{:URL "https://link-1"
-                                                :MimeType "application/gzip"}]}]}
-              {:keys [status task-id]} (ingest/bulk-update-granules
-                                        "PROV1" bulk-update bulk-update-options)]
-          (index/wait-until-indexed)
-          (ingest/update-granule-bulk-update-task-statuses)
+    (testing "actually update granule"
+      (let [bulk-update {:operation "UPDATE_FIELD"
+                         :update-field "MimeType"
+                         :updates [{"GranuleUR" "mime-type-update-gran-ur"
+                                    "Links" [{:URL "https://link-1"
+                                              :MimeType "application/gzip"}]}]}
+            {:keys [status task-id]} (ingest/bulk-update-granules
+                                      "PROV1" bulk-update bulk-update-options)]
+        (index/wait-until-indexed)
+        (ingest/update-granule-bulk-update-task-statuses)
 
-          ;; verify the granule status is UPDATED
-          (is (= 200 status))
-          (is (some? task-id))
-          (let [status-req-options {:query-params {:show_granules "true"}}
-                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
-                {:keys [task-status status-message granule-statuses]} status-response]
-            (is (= "COMPLETE" task-status))
-            (is (= "All granule updates completed successfully." status-message))
-            (is (= [{:granule-ur "mime-type-update-gran-ur"
-                     :status "UPDATED"}]
-                   granule-statuses)))
-          ;; verify the granule metadata is updated as expected
-          (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
-                updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
-            (is (not (string/includes? original-metadata "application/gzip")))
-            (is (string/includes? updated-metadata "application/gzip")))))))
+        ;; verify the granule status is UPDATED
+        (is (= 200 status))
+        (is (some? task-id))
+        (let [status-req-options {:query-params {:show_granules "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "All granule updates completed successfully." status-message))
+          (is (= [{:granule-ur "mime-type-update-gran-ur"
+                   :status "UPDATED"}]
+                 granule-statuses)))
+        ;; verify the granule metadata is updated as expected
+        (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
+              updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
+          (is (not (string/includes? original-metadata "application/gzip")))
+          (is (string/includes? updated-metadata "application/gzip")))))))
