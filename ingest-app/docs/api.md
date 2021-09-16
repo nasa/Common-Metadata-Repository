@@ -1310,7 +1310,7 @@ Supported metadata formats:
 
 To update the MimeType value for RelatedUrls, an array of URLs and MimeTypes can be specified for each granule to specify the new MimeType for each RelatedUrl.
 
-In ECHO10 the OnlineResources and OnlineAccessURLs are represented in UMM-G as RelatedURLs. Either can be updated using the MimeType bulk granule update with the same syntax as for UMM-G.
+In ECHO10, MimeType for either OnlineResource or OnlineAccessURL links can be updated using the update syntax as for UMM-G..
 
 ```
 curl -i -XPOST \

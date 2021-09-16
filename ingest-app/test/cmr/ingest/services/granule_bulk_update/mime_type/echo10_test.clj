@@ -1,6 +1,7 @@
 (ns cmr.ingest.services.granule-bulk-update.mime-type.echo10-test
   (:require
    [clojure.data.xml :as xml]
+   [clojure.string :as string]
    [clojure.test :refer [deftest testing is]]
    [cmr.common.util :as util :refer [are3]]
    [cmr.common.xml :as cx]
@@ -74,12 +75,6 @@
     <DataFormat>NETCDF</DataFormat>
 </Granule>")
 
-(def echo10-metadata-no-resources-no-access "
-<Granule>
-    <GranuleUR>20020602090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc</GranuleUR>
-    <DataFormat>NETCDF</DataFormat>
-</Granule>")
-
 (deftest update-mime-type-test
   (testing "single link provided to update"
     (let [granule {:metadata echo10-metadata}
@@ -137,15 +132,30 @@
                               {:URL "https://link-1.com"
                                :MimeType "application/gzip"}])))))
 
+  (testing "throws exception when update contains URL not found in granule"
+    (let [granule {:metadata echo10-metadata}]
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Update failed - please only specify URLs contained in the existing granule.*"
+                            (echo10/update-mime-type
+                             granule
+                             [{:URL "https://link-not-found.com"
+                               :MimeType "application/echo10+xml"}])))))
+
   (testing "Handles xml regardless of which elements are present where"
-    (are3 [metadata]
+    (are3 [metadata url]
           (let [granule {:metadata metadata}
                 output (echo10/update-mime-type
                         granule
-                        [{:URL "https://foo.com" :MimeType "application/baz+xml"}])]
-            (is (string? (:metadata output))))
+                        [{:URL url :MimeType "application/baz+xml"}])]
 
-          "Both OnlineResources and OnlineAccessURLs present" echo10-metadata
-          "Only OnlineAccessURLs" echo10-metadata-no-resources
-          "Only OnlineResoruces" echo10-metadata-no-access
-          "No Online elements" echo10-metadata-no-resources-no-access)))
+            (is (not (string/includes? metadata "application/baz+xml")))
+            (is (string/includes? (:metadata output) "application/baz+xml")))
+
+          "Both OnlineResources and OnlineAccessURLs present"
+          echo10-metadata "https://link-1.com"
+
+          "Only OnlineAccessURLs"
+          echo10-metadata-no-resources "https://link-3"
+
+          "Only OnlineResources"
+          echo10-metadata-no-access "https://link-2.com")))

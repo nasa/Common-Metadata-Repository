@@ -3,6 +3,8 @@
    and OnlineAccessURL MimeType in bulk update."
   (:require
    [clojure.data.xml :as xml]
+   [clojure.set :as set]
+   [clojure.string :as string]
    [clojure.zip :as zip]
    [cmr.common.services.errors :as errors]
    [cmr.common.xml :as cx]))
@@ -47,7 +49,7 @@
      :url-description description
      :mime-type mime-type}))
 
-(defn- update-access
+(defn- update-accesses
   "Constructs the new OnlineAccessURLs node in zipper representation"
   [online-access-urls url-map]
   (let [edn-access-urls (map xml-elem->online-access-url online-access-urls)
@@ -100,7 +102,7 @@
                             tree
                             [:OnlineAccessURLs :OnlineAccessURL])]
     (when (seq online-access-urls)
-      (update-access online-access-urls url-map))))
+      (update-accesses online-access-urls url-map))))
 
 (defn update-mime-type
   "Update the the MimeType for elements within OnlineResources and OnlineAccess in echo10
@@ -108,9 +110,25 @@
   [concept links]
   (let [parsed (xml/parse-str (:metadata concept))
         url-map (apply merge (map #(hash-map (:URL %) (:MimeType %)) links))
+
+        existing-urls (map #(cx/string-at-path % [:URL])
+                           (concat (cx/elements-at-path parsed [:OnlineAccessURLs :OnlineAccessURL])
+                                   (cx/elements-at-path parsed [:OnlineResources :OnlineResource])))
+
+        _ (when-not (set/superset? (set existing-urls) (set (keys url-map)))
+            (errors/throw-service-errors
+             :invalid-data
+             [(str "Update failed - please only specify URLs contained in the"
+                   " existing granule OnlineResources or OnlineAccessURLs ["
+                   (string/join ", " (set/difference (set (keys url-map)) (set existing-urls)))
+                   "] were not found")]))
+
         _ (when-not (= (count (set (keys url-map))) (count links))
-            (errors/throw-service-errors :invalid-data
-                                         ["Update failed - duplicate URLs provided for granule update"]))
+            (errors/throw-service-errors
+             :invalid-data
+             [(str "Update failed - duplicate URLs provided for granule update ["
+                   (string/join ", " (for [[v freq] (frequencies (map :URL links)) :when (> freq 1)] v))
+                   "]")]))
 
         online-resources (update-online-resources parsed url-map)
         access-urls (update-online-access-urls parsed url-map)

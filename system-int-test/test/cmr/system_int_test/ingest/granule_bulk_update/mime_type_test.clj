@@ -183,7 +183,38 @@
           (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
           (is (= [{:granule-ur "mime-type-update-gran-ur"
                    :status "FAILED"
-                   :status-message "Update failed - duplicate URLs provided for granule update"}]
+                   :status-message (str "Update failed - duplicate URLs provided for granule update"
+                                        " [https://link-1]")}]
+                 granule-statuses)))
+        ;; verify the granule metadata is NOT updated
+        (is (not (:metadata (mdb/get-concept concept-id (inc revision-id)))))))
+
+    (testing "failure from unmatched links"
+      (let [bulk-update {:operation "UPDATE_FIELD"
+                         :update-field "MimeType"
+                         :updates [{"GranuleUR" "mime-type-update-gran-ur"
+                                    "Links" [{:URL "https://unmatched-link"
+                                              :MimeType "application/zip"}
+                                             {:URL "https://wrong-link"
+                                              :MimeType "application/zip"}]}]}
+            {:keys [status task-id]} (ingest/bulk-update-granules
+                                      "PROV1" bulk-update bulk-update-options)]
+        (index/wait-until-indexed)
+        (ingest/update-granule-bulk-update-task-statuses)
+
+        ;; verify the granule status is UPDATED
+        (is (= 200 status))
+        (is (some? task-id))
+        (let [status-req-options {:query-params {:show_granules "true"}}
+              status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+              {:keys [task-status status-message granule-statuses]} status-response]
+          (is (= "COMPLETE" task-status))
+          (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+          (is (= [{:granule-ur "mime-type-update-gran-ur"
+                   :status "FAILED"
+                   :status-message (str "Update failed - please only specify URLs contained"
+                                        " in the existing granule OnlineResources or OnlineAccessURLs"
+                                        " [https://wrong-link, https://unmatched-link] were not found")}]
                  granule-statuses)))
         ;; verify the granule metadata is NOT updated
         (is (not (:metadata (mdb/get-concept concept-id (inc revision-id)))))))
