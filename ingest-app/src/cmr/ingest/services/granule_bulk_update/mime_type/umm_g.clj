@@ -21,11 +21,11 @@
         input-links-map (into (sorted-map) (vec input-link-2-vectors))]
     (when-not (every? (set granule-urls) input-urls)
       (errors/throw-service-errors :invalid-data
-        [(str "Update failed - please only specify URLs contained in the"
-              " existing granule RelatedURLs")]))
+                                   [(str "Update failed - please only specify URLs contained in the"
+                                         " existing granule RelatedURLs")]))
     (when-not (= (count (set input-urls)) (count input-urls))
       (errors/throw-service-errors :invalid-data
-        ["Update failed - duplicate URLs provided for granule update"]))
+                                   ["Update failed - duplicate URLs provided for granule update"]))
 
     (map #(update-link-mime-type % input-links-map) granule-links)))
 

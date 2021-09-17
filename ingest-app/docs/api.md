@@ -1306,8 +1306,11 @@ Example granule bulk update response:
 **operation: "UPDATE_FIELD", update-field: "MimeType"**
 Supported metadata formats:
   - RelatedUrls in UMM-G
+  - OnlineAccessURLs and OnlineResources in ECHO10
 
 To update the MimeType value for RelatedUrls, an array of URLs and MimeTypes can be specified for each granule to specify the new MimeType for each RelatedUrl.
+
+In ECHO10, MimeType for either OnlineResource or OnlineAccessURL links can be updated using the update syntax as for UMM-G..
 
 ```
 curl -i -XPOST \

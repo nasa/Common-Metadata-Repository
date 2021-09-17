@@ -17,6 +17,7 @@
    [cmr.ingest.services.granule-bulk-update.additional-file.umm-g :as additional-file-umm-g]
    [cmr.ingest.services.granule-bulk-update.checksum.echo10 :as checksum-echo10]
    [cmr.ingest.services.granule-bulk-update.format.echo10 :as format-echo10]
+   [cmr.ingest.services.granule-bulk-update.mime-type.echo10 :as mime-type-echo10]
    [cmr.ingest.services.granule-bulk-update.mime-type.umm-g :as mime-type-umm-g]
    [cmr.ingest.services.granule-bulk-update.opendap.echo10 :as opendap-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]
@@ -72,7 +73,7 @@
 
 (defmulti update->instruction
   "Returns the granule bulk update instruction for a single update item"
-  (fn [event-type item]
+  (fn [event-type _item]
     (keyword event-type)))
 
 (defmethod update->instruction :update_field:additionalfile
@@ -148,7 +149,7 @@
 
 (defn- validate-and-parse-bulk-granule-update
   "Perform validation operations on bulk granule update requests."
-  [context json-body provider-id]
+  [_context json-body _provider-id]
   ;; validate request against schema
   (validate-granule-bulk-update-json json-body)
   (let [request (json/parse-string json-body true)]
@@ -199,6 +200,7 @@
                   (catch Exception e
                     (error "An exception occurred saving a bulk granule update request:" e)
                     (let [message (.getMessage e)]
+                      (log/error message)
                       (errors/throw-service-errors
                        :internal-error
                        [(str "There was a problem saving a bulk granule update request."
@@ -246,15 +248,15 @@
     (mt/format-key (:format concept))))
 
 (defmethod update-opendap-url :echo10
-  [context concept grouped-urls]
+  [_context concept grouped-urls]
   (opendap-echo10/update-opendap-url concept grouped-urls))
 
 (defmethod update-opendap-url :umm-json
-  [context concept grouped-urls]
+  [_context concept grouped-urls]
   (update-umm-g-metadata concept grouped-urls opendap-umm-g/update-opendap-url))
 
 (defmethod update-opendap-url :default
-  [context concept grouped-urls]
+  [_context concept _grouped-urls]
   (errors/throw-service-errors
    :invalid-data [(format "Adding OPeNDAP url is not supported for format [%s]" (:format concept))]))
 
@@ -382,6 +384,10 @@
   "Add/update mime types for RelatedUrl links in a given granule."
   (fn [context concept links]
     (mt/format-key (:format concept))))
+
+(defmethod update-mime-type :echo10
+  [_context concept links]
+  (mime-type-echo10/update-mime-type concept links))
 
 (defmethod update-mime-type :umm-json
   [context concept links]
