@@ -247,7 +247,7 @@ You can not page past the 1 millionth item. Please contact the CMR Team through 
 
 #### <a name="search-after"></a> Search After
 
-Search After supersedes scrolling. Search After allows the retrieval of all results of a query in an efficient manner. It is supported through the `CMR-Search-After` header. Search After is primarily intended to support harvesting of metadata.
+Search After supersedes scrolling. Search After allows the retrieval of all results of a query in a stateless manner and is the recommended way for deep paging by Elasticsearch. It is supported through the `CMR-Search-After` header. Search After is primarily intended to support harvesting of metadata.
 
 Search After is only supported for parameter queries and JSON queries. All query parameters are available with the exception of the `page_num` and `offset` parameters.
 
