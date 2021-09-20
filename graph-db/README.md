@@ -12,11 +12,8 @@ Nodejs application to perform graph db operations in CMR
 ### Node
 CMR graph-db runs on Node.js, in order to run the application you'll need to install nodejs.
 
-Recommended: Use Homebrew
-
-```
-brew install node
-```
+##### NVM
+To ensure that you're using the correct version of Node, it is recommended that you use Node Version Manager. Installation instructions can be found on [the repository](https://github.com/nvm-sh/nvm#install--update-script). The version used is defined in .nvmrc and will be used automatically if NVM is configured correctly.
 
 ### NPM
 npm is a separate project from Node.js, and tends to update more frequently. As a result, even if you’ve just downloaded Node.js (and therefore npm), you’ll probably need to update your npm. Luckily, npm knows how to update itself! To update your npm, type this into your terminal:
