@@ -219,6 +219,10 @@
   [concept-type params]
   (default-parse-query-level-params concept-type params))
 
+(def ^:private valid-spatial-params
+  "Define a list of valid spatial parameter keys"
+  [:bounding-box :circle :point :line :polygon])
+
 (defn- generate-conditions
   "Converts given parameters into query conditions"
   [context concept-type params options]
@@ -230,31 +234,24 @@
   "When valid spatial parameters are given and the spatial OR option is passed,
    create proper search conditions"
   [context concept-type options params spatial-params]
-  (let [spatial-conditions (when (seq spatial-params)
-                             (generate-conditions
-                              context concept-type spatial-params options))
-        combined-spatial-conditions (when (seq spatial-params)
-                                      (gc/or-conds spatial-conditions))
-        non-spatial-params (-> params
-                               (data/diff spatial-params)
-                               first)
+  (let [non-spatial-params (apply dissoc params valid-spatial-params)
         non-spatial-conditions (when (seq non-spatial-params)
                                  (generate-conditions
                                   context concept-type non-spatial-params options))
-        combined-non-spatial-conditions (when (seq non-spatial-conditions)
-                                          (gc/and-conds non-spatial-conditions))
-        all-conditions (remove nil? [combined-spatial-conditions combined-non-spatial-conditions])]
+        combined-spatial-conditions (when (seq spatial-params)
+                                      (gc/or-conds
+                                       (generate-conditions
+                                        context concept-type spatial-params options)))
+        all-conditions (remove nil?
+                               (conj non-spatial-conditions combined-spatial-conditions))]
     (gc/and-conds all-conditions)))
 
 (defn- params->query-conditions
   "Appropriately combine query operators based on given options"
   [context concept-type options params query-attribs]
-  (let [valid-spatial-params [:bounding-box :circle :point :line :polygon :bounding-box]
-        spatial-option (if (= (get-in options [:spatial :or]) "true")
-                         :or
-                         :and)
+  (let [has-spatial-or-option? (= (get-in options [:spatial :or]) "true")
         spatial-params (select-keys params valid-spatial-params)]
-    (if (and (= :or spatial-option)
+    (if (and has-spatial-or-option?
              (seq spatial-params))
       (qm/query
        (assoc query-attribs :condition (create-combined-conditions context
@@ -274,12 +271,14 @@
   [context concept-type params]
   (let [[params query-attribs] (parse-query-level-params concept-type params)
         options (u/map-keys->kebab-case (get params :options {}))
-        scroll-id (:scroll-id context)
+        {:keys [scroll-id search-after]} context
         params (dissoc params :options)
         query (if (empty? params)
                 ;; matches everything
                 (qm/query query-attribs)
                 ;; Convert params into conditions
                 (params->query-conditions context concept-type options params query-attribs))]
-    ;; add the scroll-id if present
-    (merge query (when scroll-id {:scroll-id scroll-id}))))
+    ;; add the scroll-id and search-after if present
+    (merge query
+           (when scroll-id {:scroll-id scroll-id})
+           (when search-after {:search-after search-after}))))

@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Collection>
+   <ShortName>echo10-collection</ShortName>
+   <VersionId>1</VersionId>
+   <InsertTime>2019-03-29T00:00:00Z</InsertTime>
+   <LastUpdate>2021-08-30T21:08:31Z</LastUpdate>
+   <LongName>ABoVE: AirSWOT Ka-band Radar over Surface Waters of Alaska and Canada, 2017</LongName>
+   <DataSetId>ABoVE: AirSWOT Ka-band Radar over Surface Waters of Alaska and Canada, 2017</DataSetId>
+   <Description>AirSWOT is an airborne calibration and validation instrument for the upcoming Surface Water Topography Mission (SWOT) satellite. AirSWOT is capable of producing high resolution digital elevation models over land and water bodies. This dataset provides AirSWOT Ka-band (35.75 GHz) radar data products collected from an airborne platform over parts of Alaska and Canada during the period 2017-07-09 to 2017-08-17. Flights targeted specific surface water features, including rivers, lakes, ponds, and wetlands in the ABoVE domain. The radar data include six products: elevation (above the WGS84 ellipsoid), incidence angle, magnitude (backscatter), interferometric correlation (coherence), DHDPHI (incidence angle dependent height sensitivity), and error (estimated height random error, 1-sigma standard deviation). The flight lines were selected to span a full spectrum of permafrost conditions (permafrost-free to continuous permafrost, low to high ground ice content), ecosystems, climatic regions, topographic relief, and geological substrates across the ABoVE domain to investigate surface water responses to thawing permafrost and spatial and temporal variability in terrestrial water storage by measuring elevation and extent of surface waters. The data are provided in two forms: 1) the original output (outer-swath products only) at 3.6 m2 resolution in UTM coordinates from the AirSWOT processing group at the Jet Propulsion Laboratory (JPL), and 2) the ABoVE Projection at 3.6 m2 resolution, clipped to the ABoVE reference grid tiles using the C grid.</Description>
+   <DOI>
+      <DOI>10.3334/ORNLDAAC/1646</DOI>
+      <Authority>https://doi.org</Authority>
+   </DOI>
+   <Orderable>false</Orderable>
+   <Visible>true</Visible>
+   <RevisionDate>2019-03-29T00:00:00Z</RevisionDate>
+   <ProcessingLevelId>2</ProcessingLevelId>
+   <ProcessingLevelDescription>Derived geophysical variables at the same resolution as L1 source data</ProcessingLevelDescription>
+   <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+   <CitationForExternalPublication>Fayne, J.V., L.C. Smith, L.H. Pitcher, and T.M. Pavelsky. 2019. ABoVE: AirSWOT Ka-band Radar over Surface Waters of Alaska and Canada, 2017. ORNL DAAC, Oak Ridge, Tennessee, USA. https://doi.org/10.3334/ORNLDAAC/1646</CitationForExternalPublication>
+   <CollectionState>COMPLETE</CollectionState>
+   <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+   <UseConstraints>
+      <LicenseURL>
+         <URL>https://science.nasa.gov/earth-science/earth-science-data/data-information-policy</URL>
+         <Description>License URL for data use policy</Description>
+         <Type>Data Use Policy</Type>
+         <MimeType>text/html</MimeType>
+      </LicenseURL>
+   </UseConstraints>
+   <Price>0</Price>
+   <DataFormat>GeoTIFF</DataFormat>
+   <SpatialKeywords>
+      <Keyword>ALASKA</Keyword>
+      <Keyword>CANADA</Keyword>
+      <Keyword>ARCTIC</Keyword>
+      <Keyword>NORTHERN HEMISPHERE</Keyword>
+   </SpatialKeywords>
+   <Temporal>
+      <RangeDateTime>
+         <BeginningDateTime>2001-07-08T00:00:00Z</BeginningDateTime>
+         <EndingDateTime>2017-08-17T23:59:59Z</EndingDateTime>
+      </RangeDateTime>
+   </Temporal>
+   <Contacts>
+      <Contact>
+         <Role>ARCHIVER</Role>
+         <OrganizationName>ORNL_DAAC</OrganizationName>
+         <OrganizationAddresses>
+            <Address>
+               <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+               <City>Oak Ridge</City>
+               <StateProvince>Tennessee</StateProvince>
+               <PostalCode>37831-6407</PostalCode>
+               <Country>USA</Country>
+            </Address>
+         </OrganizationAddresses>
+         <OrganizationPhones>
+            <Phone>
+               <Number>(865) 241-3952</Number>
+               <Type>Direct Line</Type>
+            </Phone>
+         </OrganizationPhones>
+         <OrganizationEmails>
+            <Email>uso@daac.ornl.gov</Email>
+         </OrganizationEmails>
+      </Contact>
+   </Contacts>
+   <ScienceKeywords>
+      <ScienceKeyword>
+         <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+         <TopicKeyword>LAND SURFACE</TopicKeyword>
+         <TermKeyword>TOPOGRAPHY</TermKeyword>
+         <VariableLevel1Keyword>
+            <Value>TERRAIN ELEVATION</Value>
+         </VariableLevel1Keyword>
+      </ScienceKeyword>
+      <ScienceKeyword>
+         <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+         <TopicKeyword>SPECTRAL/ENGINEERING</TopicKeyword>
+         <TermKeyword>RADAR</TermKeyword>
+         <VariableLevel1Keyword>
+            <Value>RADAR BACKSCATTER</Value>
+         </VariableLevel1Keyword>
+      </ScienceKeyword>
+      <ScienceKeyword>
+         <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+         <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+         <TermKeyword>SURFACE WATER</TermKeyword>
+         <VariableLevel1Keyword>
+            <Value>SURFACE WATER FEATURES</Value>
+            <VariableLevel2Keyword>
+               <Value>LAKES/RESERVOIRS</Value>
+            </VariableLevel2Keyword>
+         </VariableLevel1Keyword>
+      </ScienceKeyword>
+      <ScienceKeyword>
+         <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+         <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+         <TermKeyword>SURFACE WATER</TermKeyword>
+         <VariableLevel1Keyword>
+            <Value>SURFACE WATER FEATURES</Value>
+            <VariableLevel2Keyword>
+               <Value>RIVERS/STREAMS</Value>
+            </VariableLevel2Keyword>
+         </VariableLevel1Keyword>
+      </ScienceKeyword>
+      <ScienceKeyword>
+         <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+         <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+         <TermKeyword>SURFACE WATER</TermKeyword>
+         <VariableLevel1Keyword>
+            <Value>SURFACE WATER FEATURES</Value>
+            <VariableLevel2Keyword>
+               <Value>WETLANDS</Value>
+            </VariableLevel2Keyword>
+         </VariableLevel1Keyword>
+      </ScienceKeyword>
+   </ScienceKeywords>
+   <Platforms>
+      <Platform>
+         <ShortName>B-200</ShortName>
+         <LongName>Beechcraft King Air B-200</LongName>
+         <Type>Aircraft</Type>
+         <Instruments>
+            <Instrument>
+               <ShortName>AirSWOT</ShortName>
+               <LongName>AirSWOT</LongName>
+            </Instrument>
+         </Instruments>
+      </Platform>
+   </Platforms>
+   <Campaigns>
+      <Campaign>
+         <ShortName>ABoVE</ShortName>
+         <LongName>Arctic-Boreal Vulnerability Experiment</LongName>
+      </Campaign>
+   </Campaigns>
+   <OnlineAccessURLs>
+      <OnlineAccessURL>
+         <URL>https://daac.ornl.gov/daacdata/above/ABoVE_AirSWOT_Radar_Data/</URL>
+         <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+      </OnlineAccessURL>
+   </OnlineAccessURLs>
+   <OnlineResources>
+      <OnlineResource>
+         <URL>https://daac.ornl.gov/ABOVE/guides/ABoVE_AirSWOT_Radar_Data.html</URL>
+         <Description>ORNL DAAC Data Set Documentation</Description>
+         <Type>USER'S GUIDE</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>https://doi.org/10.3334/ORNLDAAC/1646</URL>
+         <Description>Data set Landing Page DOI URL</Description>
+         <Type>DATA SET LANDING PAGE</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>https://daac.ornl.gov/daacdata/above/ABoVE_AirSWOT_Radar_Data/comp/ABoVE_AirSWOT_Radar_Data.pdf</URL>
+         <Description>ABoVE: AirSWOT Ka-band Radar in the ABoVE Domain, 2017: ABoVE_AirSWOT_Radar_Data.pdf</Description>
+         <Type>GENERAL DOCUMENTATION</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>https://daac.ornl.gov/daacdata/above/ABoVE_AirSWOT_Radar_Data/comp/AirSWOT_Radar_TileIndex.kmz</URL>
+         <Description>ABoVE: AirSWOT Ka-band Radar in the ABoVE Domain, 2017: AirSWOT_Radar_TileIndex.kmz</Description>
+         <Type>GENERAL DOCUMENTATION</Type>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>https://daac.ornl.gov/ABOVE/guides/ABoVE_AirSWOT_Radar_Data_Fig1.png</URL>
+         <Description>Example of AirSWOT radar products in ABoVE Projection at 3.6 m2 resolution, for a flight over the ABoVE C grid Ch065v034. Left: Shape for backscatter image. Middle: Magnitude image. Right: Elevation product image.</Description>
+         <Type>GET RELATED VISUALIZATION</Type>
+         <MimeType>image/png</MimeType>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>https://above.nasa.gov</URL>
+         <Description>ABoVE project site</Description>
+         <Type>PROJECT HOME PAGE</Type>
+         <MimeType>text/html</MimeType>
+      </OnlineResource>
+   </OnlineResources>
+   <Spatial>
+      <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+      <HorizontalSpatialDomain>
+         <Geometry>
+            <CoordinateSystem>CARTESIAN</CoordinateSystem>
+            <BoundingRectangle>
+               <WestBoundingCoordinate>-149.83</WestBoundingCoordinate>
+               <NorthBoundingCoordinate>70.49</NorthBoundingCoordinate>
+               <EastBoundingCoordinate>-98.63</EastBoundingCoordinate>
+               <SouthBoundingCoordinate>46.85</SouthBoundingCoordinate>
+            </BoundingRectangle>
+         </Geometry>
+      </HorizontalSpatialDomain>
+      <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+   </Spatial>
+   <DirectDistributionInformation>
+      <Region>us-west-2</Region>
+      <S3BucketAndObjectPrefixName>s3://ornl-cumulus-prod-protected/above/ABoVE_AirSWOT_Radar_Data/</S3BucketAndObjectPrefixName>
+      <S3CredentialsAPIEndpoint>https://data.ornldaac.earthdata.nasa.gov/s3credentials</S3CredentialsAPIEndpoint>
+      <S3CredentialsAPIDocumentationURL>https://data.ornldaac.earthdata.nasa.gov/s3credentialsREADME</S3CredentialsAPIDocumentationURL>
+   </DirectDistributionInformation>
+</Collection>

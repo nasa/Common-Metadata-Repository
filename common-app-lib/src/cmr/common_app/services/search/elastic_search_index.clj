@@ -59,7 +59,7 @@
   and is stripped out before calling elastisch to determine whether a normal search call or a
   scroll call should be made."
   [query]
-  (let [{:keys [page-size offset concept-type aggregations highlights scroll scroll-id]} query
+  (let [{:keys [page-size offset concept-type aggregations highlights scroll scroll-id search-after]} query
         scroll-timeout (when scroll (es-config/elastic-scroll-timeout))
         search-type (if scroll
                         (es-config/elastic-scroll-search-type)
@@ -77,6 +77,7 @@
      :aggs aggregations
      :scroll scroll-timeout
      :scroll-id scroll-id
+     :search-after search-after
      :search_type search-type
      :highlight highlights}))
 
@@ -149,6 +150,8 @@
         index-info (concept-type->index-info context concept-type query)
         query-map (-> elastic-query
                       (merge execution-params)
+                      ;; rename search-after to search_after for ES execution
+                      (set/rename-keys {:search-after :search_after})
                       util/remove-nil-keys)]
     (info "Executing against indexes [" (:index-name index-info) "] the elastic query:"
            (pr-str elastic-query)
@@ -157,6 +160,8 @@
            "and highlights" (pr-str highlights))
     (when-let [scroll-id (:scroll-id query-map)]
       (info "Using scroll-id" scroll-id))
+    (when-let [search-after (:search_after query-map)]
+      (info "Using search-after" search-after))
     (let [response (send-query context index-info query-map)]
       ;; Replace the Elasticsearch field names with their query model field names within the results
       (update-in response [:hits :hits]

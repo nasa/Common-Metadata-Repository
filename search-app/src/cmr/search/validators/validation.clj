@@ -103,6 +103,7 @@
    all-granule-validation/no-all-granules-with-spatial
    all-granule-validation/all-granules-exceeds-page-depth-limit
    all-granule-validation/no-all-granules-with-scroll
+   all-granule-validation/no-all-granules-with-search-after
    validate-facets-v2-format])
 
 (extend-protocol cqv/Validator

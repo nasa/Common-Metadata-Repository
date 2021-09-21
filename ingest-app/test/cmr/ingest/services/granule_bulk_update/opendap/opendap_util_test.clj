@@ -27,3 +27,16 @@
       "more than one Hyrax-in-the-cloud url provided"
       "https://opendap.earthdata.nasa.gov/foo,https://opendap.uat.earthdata.nasa.gov/foo"
       #"Invalid URL value, no more than one Hyrax-in-the-cloud OPeNDAP url can be provided:")))
+
+(deftest is-opendap-test
+  (are3 [type-string result] (is (= result (opendap-util/is-opendap? type-string)))
+    "lower case" "opendap" true
+    "upper case" "OPENDAP" true
+    "Mixed case" "OPeNDAP" true
+    "GET DATA" "GET DATA : OPENDAP DATA" true
+    "USE SERVICE API" "USE SERVICE API : OPENDAP DATA" true
+    "Other type" "README" false
+    "empty string" "" false
+    "non-string" 0 false
+    "keyword" :opendap false
+    "nil case" nil false))

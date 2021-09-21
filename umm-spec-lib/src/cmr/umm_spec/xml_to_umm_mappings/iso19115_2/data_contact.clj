@@ -252,7 +252,8 @@
                             (process-duplicate-data-centers data-centers (:data-centers-xml additional-contacts) sanitize?)
                             (process-duplicate-data-centers data-centers (:data-centers-xml distributors) sanitize?)
                             (process-duplicate-data-centers data-centers (:data-centers-xml processors) sanitize?)
-                            (process-duplicate-data-centers data-centers (:data-centers-xml cited-resp-party-contacts) sanitize?))]
+                            (process-duplicate-data-centers data-centers (:data-centers-xml cited-resp-party-contacts) sanitize?))
+       data-centers (remove nil? data-centers)]
   (merge
    {:DataCenters (if (seq data-centers)
                   data-centers

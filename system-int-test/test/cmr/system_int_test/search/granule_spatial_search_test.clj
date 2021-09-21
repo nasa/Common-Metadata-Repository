@@ -457,6 +457,16 @@
       (is (d/refs-match? [across-am-poly whole-world]
                          anded-refs))))
 
+    (testing "ORed spatial search with other search params"
+      (is (d/refs-match? [am-point]
+                         (search/find-refs
+                          :granule
+                          {:provider "PROV1"
+                           :granule-ur "am-point"
+                           :circle "179.8,41,100000"
+                           :bounding-box "166.11,-19.14,-166.52,53.04"
+                           "options[spatial][or]" "true"}))))
+
     (testing "AQL spatial search"
       (are [type ords items]
         (let [refs (search/find-refs-with-aql :granule [{type ords}] {:dataCenterId "PROV1"})

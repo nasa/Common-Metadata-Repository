@@ -14,6 +14,7 @@ CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens 
     * [CORS Header support](#cors-header-support)
     * [Query Parameters](#query-parameters)
     * [Paging Details](#paging-details)
+    * [Search After](#search-after)
     * [Scrolling Details](#scrolling-details)
     * [Parameter Options](#parameter-options)
     * [Collection Result Feature Parameters](#collection-result-features)
@@ -221,7 +222,7 @@ The Maximum URL Length supported by CMR is indirectly controlled by the Request 
 
 #### <a name="cors-header-support"></a> CORS Header support
 
-The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Echo-Token, Authorization, and Client-Id. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id and CMR-Scroll-Id.
+The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Echo-Token, Authorization, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id and CMR-Search-After. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Search-After, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count and CMR-Shapefile-Simplified-Point-Count.
 
 #### <a name="query-parameters"></a> Query Parameters
 
@@ -244,7 +245,46 @@ The CMR contains many more results than can be returned in a single response so 
 
 You can not page past the 1 millionth item. Please contact the CMR Team through the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) if you need to retrieve items in excess of 1 million from the CMR. Additionally granule queries which do not target a set of collections are limited to paging up to the 10000th item.
 
+#### <a name="search-after"></a> Search After
+
+Search After supersedes scrolling. Search After allows the retrieval of all results of a query in a stateless manner and is the recommended way for deep paging by Elasticsearch. It is supported through the `CMR-Search-After` header. Search After is primarily intended to support harvesting of metadata.
+
+Search After is only supported for parameter queries and JSON queries. All query parameters are available with the exception of the `page_num` and `offset` parameters.
+
+Search After is stateless, it is always resolved against the latest version of the data. Any search against CMR that has results not fully returned in the current request will return a `search-after` value in the `CMR-Search-After` header of the search response. User can then pass this returned value in the `CMR-Search-After` header of the following request to retrieve the next page of result based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` response header. Supplying the new `search-after` value in the following request's `CMR-Search-After` header will retrieve the next page. The `CMR-Hits` header is useful for determining the number of requests that will be needed to retrieve all the available results.
+
+When all the results have been returned, the subsequent search will return an empty result set and no `CMR-Search-After` header in the response.
+
+Different from scrolling requests, each search-after request needs to supply all the search parameters, and the `CMR-Search-After` header needs to be updated with the new value returned from the previous search to page through the whole result set. Although user can change the search parameters and still get results back as long as the sort order of the search is unchanged, it breaks the rationale of paging and offers no real use case. Thus user should always supply the same search parameters while using Search After requests to page through a large result set.
+
+__Example__
+
+```
+curl -i "%CMR-ENDPOINT%/granules?concept_id=C1-PROV1&page_size=200"
+```
+returns 200 granule references and the following info in the response header:
+```
+CMR-Hits: 408
+CMR-Search-After: ["aaa", 123, 456]
+```
+This tells us that there are total 408 granules matching our search and we can use the `CMR-Search-After: ["aaa", 123, 456]` header to get the next page of the result set. To do that, we run:
+```
+curl -i -H 'CMR-Search-After: ["aaa", 123, 456]' "%CMR-ENDPOINT%/granules?concept_id=C1-PROV1&page_size=200"
+```
+this returns the next 200 granules in the result set and the following info in the response header:
+```
+CMR-Hits: 408
+CMR-Search-After: ["xyz", 789, 999]
+```
+We can then use the new `CMR-Search-After: ["xyz", 789, 999]` header to get the next page of the result set.
+```
+curl -i -H 'CMR-Search-After: ["xyz", 789, 999]' "%CMR-ENDPOINT%/granules?concept_id=C1-PROV1&page_size=200"
+```
+Since there are only 8 granules left and nothing to search after, we will get the 8 granules back and there won't be a `CMR-Search-After` header in the response.
+
 #### <a name="scrolling-details"></a> Scrolling Details
+
+__NOTE:__ Scrolling is being deprecated in favor of [Search After](#search-after). Please switch your scroll based queries to [Search After](#search-after) which is more efficient and easier to use.
 
 Scrolling allows the retrieval of all results of a query in an efficient manner. This parameter is primarily intended to support harvesting of metadata. Scrolling is only supported for parameter queries, but all query parameters are available with the exception of the `page_num` and `offset` parameters. The response format for scrolling queries is identical to the response for normal parameter queries with the exception of the addition of the `CMR-Scroll-Id` header. The `CMR-Hits` header is useful for determining the number of requests that will be needed to retrieve all the available results.
 
@@ -3627,7 +3667,7 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: ignore_case, or
 measurement_identifiers parameter is a nested parameter with subfields: contextmedium, object and quantity. Multiple measurement_identifiers can be specified via different indexes to search variables. The following example searches for variables that have at least one measurement_identifier with contextmedium of Med1, object of Object1 and quantity of Q1, and another measurement_identifier with contextmedium of Med2 and object of Obj2.
 
-    
+
 ````
 curl -g "%CMR-ENDPOINT%/variables?measurement_identifiers\[0\]\[contextmedium\]=Med1&measurement_identifiers\[0\]\[object\]=Object1&measurement_identifiers\[0\]\[quantity\]=Q1&measurement_identifiers\[1\]\[contextmedium\]=med2&measurement_identifiers\[2\]\[object\]=Obj2"
 ````

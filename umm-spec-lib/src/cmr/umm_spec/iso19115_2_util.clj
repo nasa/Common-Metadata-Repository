@@ -29,7 +29,7 @@
 (def code-lists
   "The uri base of the code-lists used in the generation of ISO xml"
   {:earthdata "http://earthdata.nasa.gov/metadata/resources/Codelists.xml"
-   :ngdc "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml"
+   :ngdc "http://data.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml"
    :iso "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml"})
 
 (def iso-date-type-codes

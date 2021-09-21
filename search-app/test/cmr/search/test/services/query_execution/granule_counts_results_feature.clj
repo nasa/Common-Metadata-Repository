@@ -56,8 +56,8 @@
               2 (and-conds
                  (cqm/string-conditions :collection-concept-id ["C1-PROV1" "C2-PROV1"] true)
                  (spatial-cond 1)
-                 (not-limit-to-granules (temporal-cond 1))
                  (spatial-cond 2)
+                 (not-limit-to-granules (temporal-cond 1))
                  (not-limit-to-granules (temporal-cond 2))))
              (gcrf/extract-granule-count-query context coll-query results)))))
   (testing "spatial and temporal query with no results"

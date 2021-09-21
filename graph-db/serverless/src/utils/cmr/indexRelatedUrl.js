@@ -18,7 +18,7 @@ export const indexRelatedUrl = async (
   const {
     URL: url,
     Type: type,
-    Subtype: subType,
+    Subtype: subtype,
     Description: description
   } = relatedUrl
 
@@ -31,8 +31,8 @@ export const indexRelatedUrl = async (
       addVCommand.property('description', description)
     }
 
-    if (subType) {
-      addVCommand.property('subType', subType)
+    if (subtype) {
+      addVCommand.property('subtype', subtype)
     }
 
     // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.

@@ -54,60 +54,68 @@
                "condition. Query:" (pr-str query))))
       (recur (rest conditions)))))
 
-(defn- extract-spatial-and-temporal-conditions
-  "Returns a list of the spatial and temporal conditions in the query. Throws an exception if a
-  parent of the spatial or temporal condition isn't expected."
-  [query]
+(defn- extract-conditions
+  "Returns a list of conditions with the given condition type in the query.
+  Throws an exception if a parent of the condition isn't expected."
+  [query conditionType]
   (condition-extractor/extract-conditions
     query
-    ;; Matches spatial or temporal conditions
+    ;; Matches conditions by condition type
     (fn [condition-path condition]
-      (when (or (instance? SpatialCondition condition)
-                (instance? TemporalCondition condition))
-        ;; Validate that the parent of the spatial or temporal condition is acceptable
+      (when (instance? conditionType condition)
+        ;; Validate that the parent of the condition is acceptable
         (validate-path-to-condition query condition-path)
         true))))
 
+(defn- extract-spatial-conditions
+  "Returns a list of the spatial conditions in the query."
+  [query]
+  (extract-conditions query SpatialCondition))
 
-(defn- convert-spatial-or-temporal-condition
-  "Applies any necessary changes to spatial or temporal condition to make them work with granules"
+(defn- sanitize-temporal-condition
+  "Returns the temporal condition with collection related info cleared out."
   [condition]
-  (if (instance? TemporalCondition condition)
-    ;; Remove collection concept type and turn off limit to granules
-    ;; so that the correct fields will be searched.
-    ;; limit to granules is a collection applicable parameter.
-    (-> condition
-        (dissoc :concept-type)
-        (assoc :limit-to-granules false))
-    condition))
+  (-> condition
+      (dissoc :concept-type)
+      (assoc :limit-to-granules false)))
 
-(defn- extract-spatial-operator
-  "Determine whether spatial conditions should be ORed or ANDed together"
+(defn- extract-temporal-conditions
+  "Returns a list of the temporal conditions in the query. "
+  [query]
+  (->> (extract-conditions query TemporalCondition)
+       (map sanitize-temporal-condition)))
+
+(defn- has-spatial-or-option?
+  "Returns true if the spatial conditions should be ORed together"
   [context]
-  (if (empty? (:query-string context))
-      ; If there's no query string, we can safely assume that there is no
-      ; options[spatial][or] parameter being passed
-      :and
-      (let [query-string (:query-string context)
-            parameters (string/split query-string #"\?|&")
-            spatial-param-regex #"(options%5Bspatial%5D%5Bor%5D=true|options\[spatial\]\[or\]=true)"
-            spatial-or-option? (some #(re-matches spatial-param-regex %) parameters)]
-        (if spatial-or-option?
-          :or
-          :and))))
+  (when-let [query-string (:query-string context)]
+    (let [parameters (string/split query-string #"\?|&")
+          spatial-param-regex #"(options%5Bspatial%5D%5Bor%5D=true|options\[spatial\]\[or\]=true)"]
+      (when (some #(re-matches spatial-param-regex %) parameters)
+        true))))
 
-(defn- combine-spatial-and-non-spatial-conditions
-  "Helper function. If spatial conitions are ORed, combine them with the rest of
-  the conditions appropriately."
-  [spatial-conditions temporal-conditions collection-ids]
-  (let [collection-id-conditions (q/string-conditions :collection-concept-id collection-ids true)
-        ored-spatial-conditions (gc/or-conds spatial-conditions)]
-    (if (seq collection-ids)
-      (gc/and-conds (remove empty? [collection-id-conditions
-                                    ored-spatial-conditions
-                                    temporal-conditions]))
-      ;; The results were empty so the granule count query doesn't need to find anything.
-      q/match-none)))
+(defn- get-spatial-condition
+  "Returns the spatial condition from collection query and spatial operator."
+  [context coll-query]
+  (let [spatial-conds (extract-spatial-conditions coll-query)]
+    (when (seq spatial-conds)
+      (if (has-spatial-or-option? context)
+        (gc/or-conds spatial-conds)
+        (gc/and-conds spatial-conds)))))
+
+(defn- get-granule-count-condition
+  "Returns the granule count query condition for the given collection ids and collection query."
+  [context collection-ids coll-query]
+  (if (seq collection-ids)
+    (let [ids-condition (q/string-conditions :collection-concept-id collection-ids true)
+          spatial-condition (get-spatial-condition context coll-query)
+          temporal-conditions (extract-temporal-conditions coll-query)]
+      (gc/and-conds
+       (remove nil?
+               (concat [ids-condition spatial-condition]
+                       temporal-conditions))))
+    ;; The results were empty so the granule count query doesn't need to find anything.
+    q/match-none))
 
 (defn extract-granule-count-query
   "Extracts a query to find the number of granules per collection in the results from a collection query
@@ -115,29 +123,9 @@
   results - the results of the collection query"
   [context coll-query results]
   (let [collection-ids (query-results->concept-ids results)
-        spatial-operator (extract-spatial-operator context)
-        spatial-temp-conds (->> coll-query
-                                extract-spatial-and-temporal-conditions
-                                (map convert-spatial-or-temporal-condition))
-        spatial-conditions (->> spatial-temp-conds
-                                (map :shape)
-                                (map qm/->SpatialCondition))
-        temporal-conditions (remove :shape spatial-temp-conds)
-        combined-conditions (if (and (= spatial-operator :or)
-                                     (seq spatial-conditions))
-                              (combine-spatial-and-non-spatial-conditions
-                               spatial-conditions temporal-conditions collection-ids)
-                              spatial-temp-conds)
-        condition (if (seq collection-ids)
-                    (gc/and-conds (cons (q/string-conditions :collection-concept-id collection-ids true)
-                                        spatial-temp-conds))
-                    ;; The results were empty so the granule count query doesn't need to find anything.
-                    q/match-none)]
+        condition (get-granule-count-condition context collection-ids coll-query)]
     (q/query {:concept-type :granule
-              :condition (if (and (= :or spatial-operator)
-                                  (seq combined-conditions))
-                           combined-conditions
-                           condition)
+              :condition condition
               ;; We don't need any results
               :page-size 0
               :result-format :query-specified

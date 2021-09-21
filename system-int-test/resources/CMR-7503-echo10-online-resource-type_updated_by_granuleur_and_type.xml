@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Granule>
+   <GranuleUR>20020602090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc</GranuleUR>
+   <InsertTime>2015-08-19T19:31:03.105Z</InsertTime>
+   <LastUpdate>2019-12-06T16:40:19.803Z</LastUpdate>
+   <Collection>
+      <ShortName>MUR-JPL-L4-GLOB-v4.1</ShortName>
+      <VersionId>4.1</VersionId>
+   </Collection>
+   <DataGranule>
+      <SizeMBDataGranule>331.33482456207275</SizeMBDataGranule>
+      <DayNightFlag>UNSPECIFIED</DayNightFlag>
+      <ProductionDateTime>2021-08-19T10:35:04.000Z</ProductionDateTime>
+   </DataGranule>
+   <Temporal>
+      <RangeDateTime>
+         <BeginningDateTime>2021-08-02T09:00:00.000Z</BeginningDateTime>
+         <EndingDateTime>2021-08-02T09:00:00.000Z</EndingDateTime>
+      </RangeDateTime>
+   </Temporal>
+   <Spatial>
+      <HorizontalSpatialDomain>
+         <Geometry>
+            <BoundingRectangle>
+               <WestBoundingCoordinate>-179.641</WestBoundingCoordinate>
+               <NorthBoundingCoordinate>53.855</NorthBoundingCoordinate>
+               <EastBoundingCoordinate>58.885</EastBoundingCoordinate>
+               <SouthBoundingCoordinate>-87.300</SouthBoundingCoordinate>
+            </BoundingRectangle>
+         </Geometry>
+      </HorizontalSpatialDomain>
+   </Spatial>
+   <OrbitCalculatedSpatialDomains>
+      <OrbitCalculatedSpatialDomain/>
+   </OrbitCalculatedSpatialDomains>
+   <OnlineAccessURLs>
+      <OnlineAccessURL>
+         <URL>https://podaac-tools.jpl.nasa.gov/drive/files/allData/ghrsst/data/GDS2/L4/GLOB/JPL/MUR/v4.1/2002/153/20020602090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc</URL>
+         <URLDescription>The HTTP location for the granule.</URLDescription>
+      </OnlineAccessURL>
+   </OnlineAccessURLs>
+   <OnlineResources>
+      <OnlineResource>
+         <URL>https://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L4/GLOB/JPL/MUR/v4.1/2002/153/20020602090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.html</URL>
+         <Description>The OPENDAP location for the granule.</Description>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
+         <MimeType>text/html</MimeType>
+      </OnlineResource>
+      <OnlineResource>
+         <URL>https://otherResource.foo</URL>
+         <Description>The OTHER location for the granule.</Description>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
+         <MimeType>text/html</MimeType>
+      </OnlineResource>
+   </OnlineResources>
+   <DataFormat>NETCDF</DataFormat>
+</Granule>

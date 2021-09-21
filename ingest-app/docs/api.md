@@ -1310,6 +1310,54 @@ Example granule bulk update response:
 </result>
 ```
 
+**operation: "UPDATE_FIELD", update-field: "MimeType"**
+Supported metadata formats:
+  - RelatedUrls in UMM-G
+  - OnlineAccessURLs and OnlineResources in ECHO10
+
+To update the MimeType value for RelatedUrls, an array of URLs and MimeTypes can be specified for each granule to specify the new MimeType for each RelatedUrl.
+
+In ECHO10, MimeType for either OnlineResource or OnlineAccessURL links can be updated using the update syntax as for UMM-G..
+
+```
+curl -i -XPOST \
+  -H "Cmr-Pretty:true" \
+  -H "Content-Type: application/json"
+  -H "Echo-Token: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{ "name": "Example of updating RelatedUrl MimeTypes",
+	"operation": "UPDATE_FIELD",
+	"update-field":"MimeType",
+	"updates":[{
+		"GranuleUR": "Gran_With_Links_1"
+		"Links": [
+			{
+				"URL": "www.example.com/1"
+			 "MimeType": application/json
+		 	},
+			{
+				"URL": "www.example.com/2"
+			 "MimeType": application/xml
+		 	}
+		]
+	},
+	{
+		"GranuleUR": "Gran_With_Links_2"
+		"Links": [
+			{
+				"URL": "www.example.com/myimportantlink"
+			 "MimeType": application/zip
+		 	},
+			{
+				"URL": "www.example.com/myveryimportanlink"
+			 "MimeType": application/tar
+		 	}
+		]
+	}]
+}'
+```
+
 **operation: "UPDATE_FIELD", update-field: "AdditionalFile"**
 Supported metadata formats:
   - UMM-G File and FilePackage elements located under DataGranule/ArchiveAndDistributionInformation.
@@ -1450,7 +1498,7 @@ Example granule bulk update response:
 Supported metadata formats:
 
 * OPeNDAP url in RelatedUrls for UMM-G format
-* *Coming Soon*: OPeNDAP url in OnlineResources for ECHO10 format
+* OPeNDAP url in OnlineResources for ECHO10 format
 
 Input for this update type should be a list of granule URs. UMM-G Granules listed will have any `RelatedUrl`s containg the string `"opendap"` updated to include `"Type": "USE SERVICE API"` and `"Subtype": "OPENDAP DATA"`.
 
@@ -1462,14 +1510,14 @@ Examples for each update format are provided below. For the first update, each g
 curl -i -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json"
-  -H "Echo-Token: XXXX" \
+  -H "Authorization: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "Update type and subtype for links containing the string 'opendap'",
 	"operation": "UPDATE_TYPE",
 	"update-field":"OPeNDAPLink",
 	"updates":[
-             ["granule_ur1", "granule_ur2", "granule_ur3"]
+             "granule_ur1", "granule_ur2", "granule_ur3"
 	]
 }'
 ```
@@ -1480,7 +1528,7 @@ For this next update, each granule in the list will have any links with a subtyp
 curl -i -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json"
-  -H "Echo-Token: XXXX" \
+  -H "Authorization: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "Update type and subtype for links containing a subtype matching the supplied value",
@@ -1488,8 +1536,8 @@ curl -i -XPOST \
 	"update-field":"OPeNDAPLink",
 	"updates":[
              ["granule_ur1", "OPENDAP DATA"]
-						 ["granule_ur2", "OPENDAP DATA"]
-						 ["granule_ur3", "DIRECT DOWNLOAD"]
+			 ["granule_ur2", "OPENDAP DATA"]
+			 ["granule_ur3", "DIRECT DOWNLOAD"]
 	]
 }'
 ```

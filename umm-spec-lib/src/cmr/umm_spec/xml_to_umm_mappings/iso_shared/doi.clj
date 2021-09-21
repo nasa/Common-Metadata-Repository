@@ -16,13 +16,23 @@
   "This is used to check if the constant DOI is contained in the identification description element."
   "DOI")
 
+(defn- is-doi-identified-by-attribute?
+  "Checks to see if the Anchor contains an <gmx:Anchor xlink:title=\"DOI\" attribute. If it does then the
+   identifier is a DOI. Returns true if sucessful or nil if not."
+  [gmd-id]
+  (let [attrs (get (first (select gmd-id "gmd:MD_Identifier/gmd:code/gmx:Anchor")) :attrs)]
+    (some #(and (= :xlink/title (key %))
+                (= "DOI" (val %)))
+          attrs)))
+
 (defn- is-doi-field?
   "Returns true if the given gmd-id is for a DOI field."
   [gmd-id]
   (or (= (value-of gmd-id "gmd:MD_Identifier/gmd:codeSpace/gco:CharacterString") doi-namespace)
       (if-some [x (value-of gmd-id "gmd:MD_Identifier/gmd:description/gco:CharacterString")]
         (string/includes? x doi-in-description)
-        false)))
+        false)
+      (is-doi-identified-by-attribute? gmd-id)))
 
 (defn- parse-explanation
   "Parses explanation for missing reason out of description."

@@ -241,13 +241,17 @@
   ([concept-type query-params json-as-map]
    (find-with-json-query concept-type query-params json-as-map mime-types/xml))
   ([concept-type query-params json-as-map result-format]
-   (client/post (url/search-url concept-type)
-                {:accept result-format
-                 :content-type mime-types/json
-                 :body (json/generate-string {:condition json-as-map})
-                 :query-params query-params
-                 :throw-exceptions true
-                 :connection-manager (s/conn-mgr)})))
+   (find-with-json-query concept-type query-params json-as-map result-format {}))
+  ([concept-type query-params json-as-map result-format options]
+   (let [headers (get options :headers {})]
+     (client/post (url/search-url concept-type)
+                  {:accept result-format
+                   :content-type mime-types/json
+                   :headers headers
+                   :body (json/generate-string {:condition json-as-map})
+                   :query-params query-params
+                   :throw-exceptions true
+                   :connection-manager (s/conn-mgr)}))))
 
 (defn get-autocomplete-suggestions
   "Executes a query to the autocomplete endpoint with the given value and returns the results."
@@ -421,6 +425,7 @@
       {:status status
        :body body
        :scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
+       :search-after (get-in response [:headers routes/SEARCH_AFTER_HEADER])
        :content-type (get-in response [:headers "content-type"])
        :results (json/decode body true)}
       response)))
@@ -448,6 +453,7 @@
     (let [format-mime-type (mime-types/format->mime-type format-key)
           response (find-concepts-in-format format-mime-type concept-type params options)
           scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
+          search-after (get-in response [:headers routes/SEARCH_AFTER_HEADER])
           body (:body response)
           parsed (fx/parse-str body)
           hits (cx/long-at-path parsed [:hits])
@@ -477,7 +483,8 @@
       (util/remove-nil-keys {:items items
                              :facets facets
                              :hits hits
-                             :scroll-id scroll-id})))))
+                             :scroll-id scroll-id
+                             :search-after search-after})))))
 
 (defn find-metadata-tags
   "Search metadata, parse out the collection concept id to tags mapping from the search response
@@ -516,6 +523,7 @@
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
         scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
+        search-after (get-in response [:headers routes/SEARCH_AFTER_HEADER])
         refs (map (fn [ref-elem]
                     (util/remove-nil-keys
                      {:id (cx/string-at-path ref-elem [:id])
@@ -533,6 +541,7 @@
      {:refs refs
       :hits hits
       :scroll-id scroll-id
+      :search-after search-after
       :took took
       :facets facets})))
 
@@ -612,10 +621,13 @@
 
 (defn find-refs-with-json-query
   "Returns the references that are found by searching using a JSON request."
-  [concept-type query-params json-as-map]
-  (get-search-failure-xml-data
-   (let [response (find-with-json-query concept-type query-params json-as-map)]
-     (parse-reference-response (:echo-compatible query-params) response))))
+  ([concept-type query-params json-as-map]
+   (find-refs-with-json-query concept-type query-params json-as-map {}))
+  ([concept-type query-params json-as-map options]
+   (get-search-failure-xml-data
+    (let [response (find-with-json-query
+                    concept-type query-params json-as-map mime-types/xml options)]
+      (parse-reference-response (:echo-compatible query-params) response)))))
 
 (defn find-refs-with-aql-string
   ([aql]

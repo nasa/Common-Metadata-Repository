@@ -249,7 +249,7 @@
                   (add-attribs attribs
                                :title
                                (if (= "USE SERVICE API" type)
-                                 (str title " (GET DATA : OPENDAP DATA)")
+                                 (str title " (USE SERVICE API : OPENDAP DATA)")
                                  title))
                   attribs)]
     attribs))
