@@ -16,46 +16,53 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
 
 ### Metadata Ingest API Overview
 
-* /providers/\<provider-id>/validate/collection/\<native-id>
-	* [POST - Validate collection metadata.](#validate-collection)
-* /providers/\<provider-id>/collections/\<native-id>
-   * [PUT - Create or update a collection.](#create-update-collection)
-   * [DELETE - Delete a collection.](#delete-collection)
-* /providers/\<provider-id>/validate/granule/\<native-id>
-   * [POST - Validate granule metadata.](#validate-granule)
-* /providers/\<provider-id>/granules/\<native-id>
-   * [PUT - Create or update a granule.](#create-update-granule)
-   * [DELETE - Delete a granule.](#delete-granule)
-* /collections/\<collection-concept-id>/\<collection-revision-id>/variables/\<native-id>
-   * [PUT - Create or update a variable with association.](#create-update-variable)
-* /providers/\<provider-id>/variables/\<native-id>
-   * [PUT - Update a variable.](#create-update-variable)
-   * [DELETE - Delete a variable.](#delete-variable)
-* /providers/\<provider-id>/services/\<native-id>
-   * [PUT - Create or update a service.](#create-update-service)
-   * [DELETE - Delete a service.](#delete-service)
-* /providers/\<provider-id>/tools/\<native-id>
-   * [PUT - Create or update a tool.](#create-update-tool)
-   * [DELETE - Delete a tool.](#delete-tool)
-* /providers/\<provider-id>/subscriptions
-   *  [POST - Create a subscription without specifying a native-id.](#create-subscription)
-* /providers/\<provider-id>/subscriptions/\<native-id>
-   * [POST - Create a subscription with a provided native-id.](#create-subscription)
-   * [PUT - Create or Update a subscription.](#update-subscription)
-   * [DELETE - Delete a subscription.](#delete-subscription)
-   * [Subscription Access Control](#subscription-access-control)
-* /translate/collection
-   * [POST - Translate collection metadata.](#translate-collection)
-* /translate/granule
-   * [POST - Translate granule metadata.](#translate-granule)
-* /providers/\<provider-id\>/bulk-update/collections
-   * [POST - Collection bulk update](#collection-bulk-update)
-* /providers/\<provider-id\>/bulk-update/granules
-   * [POST - Granule bulk update](#granule-bulk-update)
-* /granule-bulk-update/status
-   * [POST - Granule bulk update](#granule-bulk-update)
-* /granule-bulk-update/status/\<task-id\>
-   * [GET - Granule bulk update status](#granule-bulk-update)
+* Collections
+    * /providers/\<provider-id>/validate/collection/\<native-id>
+        * [POST - Validate collection metadata.](#validate-collection)
+    * /providers/\<provider-id>/collections/\<native-id>
+        * [PUT - Create or update a collection.](#create-update-collection)
+        * [DELETE - Delete a collection.](#delete-collection)
+    * /providers/\<provider-id>/validate/granule/\<native-id>
+        * [POST - Validate granule metadata.](#validate-granule)
+    * /providers/\<provider-id>/granules/\<native-id>
+        * [PUT - Create or update a granule.](#create-update-granule)
+        * [DELETE - Delete a granule.](#delete-granule)
+    * /collections/\<collection-concept-id>/\<collection-revision-id>/variables/\<native-id>
+        * [PUT - Create or update a variable with association.](#create-update-variable)
+* Variables
+    * /providers/\<provider-id>/variables/\<native-id>
+        * [PUT - Update a variable.](#create-update-variable)
+        * [DELETE - Delete a variable.](#delete-variable)
+* Services
+    * /providers/\<provider-id>/services/\<native-id>
+        * [PUT - Create or update a service.](#create-update-service)
+        * [DELETE - Delete a service.](#delete-service)
+* Tools
+    * /providers/\<provider-id>/tools/\<native-id>
+        * [PUT - Create or update a tool.](#create-update-tool)
+        * [DELETE - Delete a tool.](#delete-tool)
+* Subscriptions
+    * /providers/\<provider-id>/subscriptions
+        *  [POST - Create a subscription without specifying a native-id.](#create-subscription)
+      * /providers/\<provider-id>/subscriptions/\<native-id>
+        * [POST - Create a subscription with a provided native-id.](#create-subscription)
+        * [PUT - Create or Update a subscription.](#update-subscription)
+        * [DELETE - Delete a subscription.](#delete-subscription)
+        * [Subscription Access Control](#subscription-access-control)
+* Translations
+    * /translate/collection
+        * [POST - Translate collection metadata.](#translate-collection)
+    * /translate/granule
+        * [POST - Translate granule metadata.](#translate-granule)
+* Bulk Updates
+    * /providers/\<provider-id\>/bulk-update/collections
+        * [POST - Collection bulk update](#collection-bulk-update)
+    * /providers/\<provider-id\>/bulk-update/granules
+        *  [POST - Granule bulk update](#granule-bulk-update)
+    * /granule-bulk-update/status
+        * [POST - Granule bulk update](#granule-bulk-update)
+    * /granule-bulk-update/status/\<task-id\>
+        * [GET - Granule bulk update status](#granule-bulk-update)
 
 --------------------------------------------------------------------------------
 
@@ -143,7 +150,7 @@ The following fields are validated:
 **Note**: the following fields are always checked:
 
 * [Related URL Content Type](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/rucontenttype?format=csv) - Related URL Content Type, Type, and Subtype are all verified and must belong to the correct set and context. Example: A data center contact URL can have a URL Content Type of "DataContactURL" and a Type of "HOME PAGE" with no Subtype.
-
+* [Granule Data Format](https://cmr.sit.earthdata.nasa.gov/search/keywords/granule-data-format) - Was previously checked against the JSON Schema, but starting with version 1.6.4 CMR will use KMS.
 
 #### <a name="validate-umm-c-header"></a> Cmr-Validate-Umm-C Header
 
@@ -397,7 +404,7 @@ Collection metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPO
   		-H "Echo-Token: XXXX" \
   		%CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
 
-Note: When a collection is deleted, all the associaitons will be deleted(tombstoned) too. With the new requirement that a variable can not exist without an association with a collection, since each variable can only be associated with one collection, all the variables associated with the deleted collection will be deleted too.
+Note: When a collection is deleted, all the associations will be deleted, also called tombstoned (tombstoned means to mark record as ready to be deleted but the actual deletion is scheduled for latter) too. With the new requirement that a variable can not exist without an association with a collection, since each variable can only be associated with one collection, all the variables associated with the deleted collection will be deleted too.
 
 #### Successful Response in XML
 
@@ -759,7 +766,7 @@ POST requests may only be used for creating subscriptions.
 
 If a SubscriberId is not provided, then the user ID associated with the token used to ingest the subscription will be used as the SubscriberId.
 
-EmailAddress was previously a required field, but this field is now deprecated. Instead, the email address associated with the SubscriberId's Earthdata Login (URS) account will be used as the EmailAddress. If an EmailAddress is specified at subscription creation it will be ignored.
+EmailAddress was previously a required field, but this field is now deprecated. Instead, the email address associated with the SubscriberId's EarthData Login (URS) account will be used as the EmailAddress. If an EmailAddress is specified at subscription creation it will be ignored.
 
 POST only may be used without a native-id at the following URL.
 `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions`
@@ -1160,7 +1167,7 @@ Supported metadata formats:
 * OPeNDAP url in OnlineResources for ECHO10 format
 * OPeNDAP url in RelatedUrls for UMM-G format
 
-There can only be ONE on-prem and/or ONE Hyrax-in-the-cloud OPeNDAP url in the granule metadata. The rule to determine if an OPeNDAP url is an on-prem or Hyrax-in-the-cloud url is to match the URL against this pattern: https://opendap.*.earthdata.nasa.gov/*. If the url matches, it is a Hyrax-in-the-cloud OPeNDAP url; if it does not match, it is an on-prem OPeNDAP url.
+There can only be ONE on-prem (on-premis) and/or ONE Hyrax-in-the-cloud OPeNDAP url in the granule metadata. The rule to determine if an OPeNDAP url is an on-prem or Hyrax-in-the-cloud url is to match the URL against this pattern: https://opendap.*.earthdata.nasa.gov/*. If the url matches, it is a Hyrax-in-the-cloud OPeNDAP url; if it does not match, it is an on-prem OPeNDAP url.
 The OPeNDAP url value provided in the granule bulk update request can be comma-separated urls, but it can have two at most: one is an on-prem url and the other is a Hyrax-in-the-cloud url. The exact url type is determined by matching the url against the same pattern above. During an update, the Hyrax-in-the-cloud url will overwrite any existing Hyrax-in-the-cloud OPeNDAP url in the granule metadata, and the on-prem url will overwrite any existing on-prem OPeNDAP url in the granule metadata.
 
 **operation: "UPDATE_FIELD", update-field: "S3Link"**
@@ -1204,7 +1211,7 @@ Example granule bulk update response:
 Supported metadata formats:
   - Checksum in <DataGranule> element for ECHO10 format
 
-An `algorithm` can optionally be supplied with the new checksum `value` by specifying two values, comma-seperated (`value,algorithm`). If an update is requested for a granule with no existing `<Checksum>` element, then specifying an `algorithm` is required. Any values beyond the first two for a given granule are ignored.
+An `algorithm` can optionally be supplied with the new checksum `value` by specifying two values, comma-separated (`value,algorithm`). If an update is requested for a granule with no existing `<Checksum>` element, then specifying an `algorithm` is required. Any values beyond the first two for a given granule are ignored.
 
 Example: Add/update checksum for 3 granules under PROV1. Granules 1 and 2 only receive checksum `value` updates, while granule 3 receives an update to checksum `value` *and* `algorithm`.
 
@@ -1360,9 +1367,9 @@ curl -i -XPOST \
   ]
 }'
 ```
-In the above request, `Example_Granule_UR_1` recieves updates to two elements: The FilePackage `ZippedFilePackage` has SizeInBytes, Size/SizeUnit, and Format updated, while File `GranuleFileName1` has MimeType and Checksum updated.
+In the above request, `Example_Granule_UR_1` receives updates for two elements: The FilePackage `ZippedFilePackage` has SizeInBytes, Size/SizeUnit, and Format updated, while File `GranuleFileName1` has MimeType and Checksum updated.
 
-Note that specifying whether an element is a File or FilePackage is unecessary. Providing the `name` for an element is sufficient to locate and update it.
+Note that specifying whether an element is a File or FilePackage is unnecessary. Providing the `name` for an element is sufficient to locate and update it.
 
 `Example_Granule_UR_2` also receives updates on the contained `GranuleZipFile`, on its Size/SizeUnit and SizeInBytes fields. This also displays a special use case for Size-related updates: When a file update is requested with Size `0`, then the Size and SizeUnit fields will be removed from the resulting file. The same applies for SizeInBytes, which will be removed on its own if a value of `0` is supplied.
 
