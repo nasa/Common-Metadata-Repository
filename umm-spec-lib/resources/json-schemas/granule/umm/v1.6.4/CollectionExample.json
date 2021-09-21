@@ -1,0 +1,227 @@
+{
+    "MetadataDates": [
+        {
+            "Date": "2018-06-19T00:00:00Z",
+            "Type": "CREATE"
+        },
+        {
+            "Date": "2018-07-19T00:00:00Z",
+            "Type": "UPDATE"
+        },
+        {
+            "Date": "2030-08-18T00:00:00Z",
+            "Type": "DELETE"
+        },
+        {
+            "Date": "2025-08-18T00:00:00Z",
+            "Type": "REVIEW"
+        }
+    ],
+    "VersionDescription": "The collection to which the GranuleExample.json file can be ingested.",
+    "ShortName": "CollectionShortName",
+    "Abstract": "Test collection to test UMM-G version 1.6 ingest.",
+    "DataDates": [
+        {
+            "Date": "2018-06-18T00:00:00Z",
+            "Type": "CREATE"
+        },
+        {
+            "Date": "2018-06-18T12:00:00Z",
+            "Type": "UPDATE"
+        },
+        {
+            "Date": "2030-08-18T12:00:00Z",
+            "Type": "DELETE"
+        },
+        {
+            "Date": "2025-08-18T12:00:00Z",
+            "Type": "REVIEW"
+        }
+    ],
+    "SpatialExtent": {
+      "SpatialCoverageType": "HORIZONTAL",
+      "HorizontalSpatialDomain": {"Geometry": {
+        "CoordinateSystem": "CARTESIAN",
+        "BoundingRectangles": [{
+          "WestBoundingCoordinate": -180,
+          "NorthBoundingCoordinate": 90,
+          "EastBoundingCoordinate": 180,
+          "SouthBoundingCoordinate": -90
+        }]  
+      }},
+      "OrbitParameters": {
+        "SwathWidth": 22,
+        "Period": 1,
+        "InclinationAngle": 4,
+        "NumberOfOrbits": 1,
+        "StartCircularLatitude": 1
+      },
+      "GranuleSpatialRepresentation": "CARTESIAN"
+    },
+    "ScienceKeywords": [
+        {
+            "Category": "EARTH SCIENCE",
+            "Topic": "HYDROSPHERE",
+            "Term": "SNOW/ICE",
+            "VariableLevel1": "SNOW WATER EQUIVALENT"
+        },
+        {
+            "Category": "EARTH SCIENCE",
+            "Topic": "CRYOSPHERE",
+            "Term": "SNOW/ICE",
+            "VariableLevel1": "SNOW WATER EQUIVALENT"
+        },
+        {
+            "Category": "earth science",
+            "Topic": "climate indicators",
+            "Term": "cryospheric indicators",
+            "VariableLevel1": "snow cover"
+        }
+    ],
+    "EntryTitle": "CollectionTitle0 v1.6",
+    "CollectionProgress": "ACTIVE",
+    "AccessConstraints": {
+        "Description": "Testing",
+        "Value": 1
+    },
+    "ProcessingLevel": {
+        "ProcessingLevelDescription": "GRID",
+        "Id": "3"
+    },
+    "Platforms": [{
+        "Type": "Spacecraft",
+        "ShortName": "Aqua",
+        "LongName": "First EOS Polar Orbiting Satellite, 1:30 PM Ascending Equator Crossing",
+        "Instruments": [{
+            "ShortName": "AMSR-E",
+            "LongName": "Advanced Microwave Scanning Radiometer-EOS",
+            "Characteristics": [{
+              "Name": "InstrumentCaracteristicName1",
+              "Description": "Descripion of InstrumentCaracteristicName1",
+              "Value": "0",
+              "Unit": "Meters",
+              "DataType": "INT"
+            }, {
+              "Name": "InstrumentCaracteristicName2",
+              "Description": "Descripion of InstrumentCaracteristicName2",
+              "Value": "0F",
+              "Unit": "Hexidecimal",
+              "DataType": "STRING"
+            }],
+            "Technique": "Broadband scanning radiometry",
+            "NumberOfInstruments": 2,
+            "ComposedOf": [{
+              "ShortName": "AMSR-E_ChildInstrument",
+              "Characteristics": [{
+                "Name": "ChildInstrumentCharacteristicName3",
+                "Description": "Descripion of InstrumentCaracteristicName3",
+                "Value": "0",
+                "Unit": "Meters",
+                "DataType": "INT"
+              }]
+            }],
+            "OperationalModes": ["Mode1", "Mode2"]
+        }]
+    }],
+    "Version": "1.6",
+    "TemporalExtents": [{
+      "PrecisionOfSeconds": 1,
+      "EndsAtPresentFlag": true,
+      "RangeDateTimes": [{
+        "BeginningDateTime": "2018-01-01T00:00:00.000Z"
+      }]
+    }],
+    "DataCenters": [
+        {
+            "Roles": ["PROCESSOR"],
+            "ShortName": "AMSR-E SIPS-GHCC"
+        },
+        {
+            "Roles": ["ARCHIVER"],
+            "ShortName": "NSIDC_1"
+        },
+        {
+            "Roles": ["ORIGINATOR"],
+            "ShortName": "Not provided",
+            "ContactPersons": [{
+                "Roles": ["Technical Contact"],
+                "FirstName": "Alfred",
+                "LastName": "Chang"
+            }],
+            "ContactInformation": {"ContactMechanisms": [{
+                "Type": "Email",
+                "Value": "achang@rainfall.gsfc.nasa.gov"
+            }]}
+        },
+        {
+            "Roles": ["ARCHIVER"],
+            "ShortName": "National Snow and Ice Data Center",
+            "ContactInformation": {
+                "ServiceHours": "8am-5pm (Mountain Time) Monday through Friday",
+                "ContactInstruction": "contact by e-mail first",
+                "ContactMechanisms": [
+                    {
+                        "Type": "Telephone",
+                        "Value": "303-492-6199"
+                    },
+                    {
+                        "Type": "Fax",
+                        "Value": "303-492-2468"
+                    },
+                    {
+                        "Type": "Email",
+                        "Value": "nsidc@kryos.colorado.edu"
+                    }
+                ],
+                "Addresses": [{
+                    "StreetAddresses": ["1540 30th St Campus Box 449"],
+                    "City": "Boulder",
+                    "StateProvince": "CO",
+                    "Country": "USA",
+                    "PostalCode": "80303-0449"
+                }]
+            }
+        }
+    ],
+    "TilingIdentificationSystems": [{
+      "TilingIdentificationSystemName": "MODIS Tile EASE",
+      "Coordinate1": {
+        "MinimumValue": -100,
+        "MaximumValue": -50
+      },
+      "Coordinate2": {
+        "MinimumValue": 50,
+        "MaximumValue": 100
+      }
+    }],
+    "LocationKeywords": [{
+      "Category": "CONTINENT",
+      "Type": "AFRICA",
+      "Subregion1": "CENTRAL AFRICA",
+      "DetailedLocation": "CONGO LAKE"
+    }],
+    "AdditionalAttributes": [{
+      "Name": "AdditionalAttribute1 Name1",
+      "Description": "The first additional attribute.",
+      "DataType": "STRING"
+    }, {
+      "Name": "EVI1KM16DAYQCLASSPERCENTAGE",
+      "Description": "The second additional attribute.",
+      "DataType": "STRING"
+    }, {
+      "Name": "QAFRACTIONGOODQUALITY",
+      "Description": "The third additional attribute.",
+      "DataType": "STRING"
+    }, {
+      "Name": "QAFRACTIONNOTPRODUCEDCLOUD",
+      "Description": "The fourth additional attribute.",
+      "DataType": "STRING"
+    }],
+    "Projects": [{
+      "ShortName": "Project1",
+      "Campaigns": ["Campaign1"]
+    }, {
+      "ShortName": "Project2",
+      "Campaigns": ["Campaign2", "Campaign3"]
+    }]
+}
