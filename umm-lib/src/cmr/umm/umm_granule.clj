@@ -51,6 +51,10 @@
    ;; maps to SizeUnit in UMM-G schema
    size-unit
 
+   ;; Format is validated against values in KMS
+   ;; https://cmr.sit.earthdata.nasa.gov/search/keywords/granule-data-format
+   format
+
    ;; maps to Granule/DataGranule/Checksum
    checksum
 

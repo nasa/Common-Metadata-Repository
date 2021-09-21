@@ -9,13 +9,14 @@
 (defn- umm-g-related-url->RelatedURL
   "Returns the umm-lib granule model RelatedURL from the given UMM-G RelatedUrl."
   [related-url]
-  (let [{:keys [URL Type Subtype Description MimeType Size]} related-url]
+  (let [{:keys [URL Type Subtype Description MimeType Size Format]} related-url]
     (umm-c/map->RelatedURL
      {:type Type
       :sub-type Subtype
       :url URL
       :description Description
       :mime-type MimeType
+      :format Format
       :title Description
       :size Size})))
 

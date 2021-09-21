@@ -176,6 +176,15 @@
                                     kms-index
                                     msg/getdata-format-not-matches-kms-keywords)}})]}))
 
+(defn- granule-keyword-validations
+  "These are the keyword validation rules needed for granule metadata. Remember
+   granules are in the legacy format."
+  [context]
+  (let [kms-index (kms-fetcher/get-kms-index context)]
+    {:RelatedUrls {:related-urls (v/every {:format (match-getdata-format-kms-keywords-validation
+                                 kms-index
+                                 msg/getdata-format-not-matches-kms-keywords)})}}))
+
 (defn- pad-zeros-to-version
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
   [version]
@@ -304,7 +313,8 @@
                           (humanizer-alias-cache/update-collection-with-aliases context
                                                                                 collection
                                                                                 true)
-                          granule))]
+                          granule
+                          (granule-keyword-validations context)))]
     (if-errors-throw :invalid-data errors)))
 
 (defn validate-granule-umm
@@ -314,7 +324,8 @@
   (if-errors-throw :invalid-data (umm-spec-validation/validate-granule
                                   (humanizer-alias-cache/update-collection-with-aliases
                                    context collection false)
-                                  granule)))
+                                  granule
+                                  (granule-keyword-validations context))))
 
 (defn-timed validate-business-rules
   "Validates the concept against CMR ingest rules."

@@ -43,6 +43,7 @@
          :size-unit (let [SizeUnit (get (first ArchiveAndDistributionInformation) :SizeUnit)]
                       (when (not= "NA" SizeUnit)
                         SizeUnit))
+         :format (get (first ArchiveAndDistributionInformation) :Format)
          :size-in-bytes (get (first ArchiveAndDistributionInformation) :SizeInBytes)
          :checksum (when-let [checksum (get (first ArchiveAndDistributionInformation) :Checksum)]
                      (g/map->Checksum
@@ -70,7 +71,7 @@
                                             :SizeInBytes size-in-bytes
                                             :Checksum (when checksum
                                                         {:Value (:value checksum)
-                                                         :Algorithm (:algorithm checksum)})  
+                                                         :Algorithm (:algorithm checksum)})
                                             :SizeUnit (if size-unit
                                                         size-unit
                                                         "NA")}]})))

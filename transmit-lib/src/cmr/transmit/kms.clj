@@ -67,8 +67,9 @@
    :concepts "idnnode?format=csv"
    :iso-topic-categories "isotopiccategory?format=csv"
    :related-urls (if production? "rucontenttype?format=csv"
-                   "rucontenttype?format=csv&version=DRAFT")
-   :granule-data-format "granuledataformat?format=csv"})
+                   "rucontenttype?format=csv&version=draft")
+   :granule-data-format (if production? "granuledataformat?format=csv"
+                          "granuledataformat?format=csv&version=draft")})
 
 (def keyword-scheme->field-names
   "Maps each keyword scheme to its subfield names. These values are also used to

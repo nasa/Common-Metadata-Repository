@@ -61,10 +61,12 @@
 (defn validate-granule
   "Validates the umm record returning a list of error maps containing a path through the
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
-  [collection granule]
-  (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
-    (validation-errors->path-errors
-     (v/validate vg/granule-validations granule-with-parent))))
+  ([collection granule]
+   (validate-granule collection granule nil))
+  ([collection granule additional-validations]
+   (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
+     (validation-errors->path-errors
+      (v/validate (cons vg/granule-validations additional-validations) granule-with-parent)))))
 
 (defn validate-service
   "Validates the UMM record returning a list of error maps containing a path
