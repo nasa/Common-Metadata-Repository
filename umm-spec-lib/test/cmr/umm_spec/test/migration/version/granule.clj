@@ -725,7 +725,7 @@
             :Version "1.6.4"}
            (:MetadataSpecification converted))
         "Specification must be 1.6.4")
-    (is (= "Future-Type" (:Format (first (:RelatedURLs converted)))) "")))
+    (is (= "NETCDF-4" (:Format (nth (:RelatedUrls converted) 3))) "Confirm that existing values are not touched")))
 
 (deftest migrate-1-6-4-down-to-1-6-3
   "Make sure the unwanted url type is gone"
