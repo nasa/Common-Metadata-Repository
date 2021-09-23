@@ -2,7 +2,7 @@
   (:require
    [clojure.edn :as edn]
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.access-control.data.access-control-index :as index]
    [cmr.access-control.data.acl-json-results-handler :as result-handler]
    [cmr.access-control.data.acl-schema :as schema]
@@ -368,11 +368,11 @@
   "Check if string has embedded array, if not then return result conj'd with results,
    if so then convert it into an array of strings and concat that with results."
   [results result]
-  (let [result (str/trim result)]
-    (if (str/starts-with? result "[")
-      (as-> (str/replace result #"\[|\]|\\|\"" "") result
-            (str/split result #",")
-            (map str/trim result)
+  (let [result (string/trim result)]
+    (if (string/starts-with? result "[")
+      (as-> (string/replace result #"\[|\]|\\|\"" "") result
+            (string/split result #",")
+            (map string/trim result)
             (concat results result))
       (conj results result))))
 
@@ -408,9 +408,9 @@
          :items
          (map :s3-bucket-and-object-prefix-names)
          flatten
-         parse-single-string-multi-valued-bucket-lists
          distinct
-         (remove nil?))))
+         (remove nil?)
+         parse-single-string-multi-valued-bucket-lists)))
 
 (defn- get-and-cache-providers
   "Retrieves and caches the current providers in the database."
