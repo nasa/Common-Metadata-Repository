@@ -12,6 +12,14 @@
     "\"line with no short-name\",\"\",\"\",\"\",\"def-456\"\n"
     "\"field1 value 2\",\"field2 v2\",\"Last Entry\",\"This is the Last Entry\",\"xyz-789\"\n"))
 
+(def sample-csv-mimetype
+  "Sample KMS csv file for mimetype"
+  (str
+    "\"This is a sample for testing.\"\n"
+    "MimeType,UUID\n"
+    "\"application/gml+xml\",\"40bdf6e5-780c-43e2-ab8e-e5dfae4bd779\"\n"
+    "\"application/gzip\",\"a8ee535a-8bc8-46fd-8b97-917bd7ea7666\"\n"))
+
 (def sample-kms-entries
   "Sample KMS entries map"
   [{:uuid "abc-123",
@@ -46,7 +54,7 @@
       (is (= expected actual)))))
 
 (deftest parse-entries-from-csv-test
-  (testing "Successful parsing"
+  (testing "Successful parsing for platforms"
     (let [expected [{:short-name "First Entry"
                      :series-entity "field2"
                      :category "field1 value, (with commas)"
@@ -57,6 +65,14 @@
                      :category "field1 value 2"
                      :uuid "xyz-789"}]
           actual (#'cmr.transmit.kms/parse-entries-from-csv :platforms sample-csv)]
+      (is (= expected actual))))
+
+  (testing "Successful parsing for mimetype"
+    (let [expected [{:mime-type "application/gml+xml",
+                     :uuid "40bdf6e5-780c-43e2-ab8e-e5dfae4bd779"}
+                    {:mime-type "application/gzip",
+                     :uuid "a8ee535a-8bc8-46fd-8b97-917bd7ea7666"}]
+          actual (#'cmr.transmit.kms/parse-entries-from-csv :mime-type sample-csv-mimetype)]
       (is (= expected actual))))
 
   (testing "Invalid subfield names in the CSV throws an exception"
