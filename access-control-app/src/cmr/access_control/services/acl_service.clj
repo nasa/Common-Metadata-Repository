@@ -364,6 +364,24 @@
       (auth-util/get-sids context :guest)
       (auth-util/get-sids context (tokens/get-user-id context user-token)))))
 
+(defn- fix-single-string-with-multiple-values
+  "Check if string has embedded array, if not then return result conj'd with results,
+   if so then convert it into an array of strings and concat that with results."
+  [results result]
+  (let [result (str/trim result)]
+    (if (str/starts-with? result "[")
+      (as-> (str/replace result #"\[|\]|\\|\"" "") result
+            (str/split result #",")
+            (map str/trim result)
+            (concat results result))
+      (conj results result))))
+
+(defn- parse-single-string-multi-valued-bucket-lists
+  "Depending on how data is initially ingested, sometimes multiple values can be returned as a single string.
+   Here we attempt to parse out that single string value(of multiple values) into the proper format."
+  [results]
+  (reduce fix-single-string-with-multiple-values [] results))
+
 (defn- fetch-s3-buckets-by-sids
   "Fetch the list of S3 buckets available to the SIDs provided. Buckets
   associated with the list of providers will be returned. If no providers
@@ -390,6 +408,7 @@
          :items
          (map :s3-bucket-and-object-prefix-names)
          flatten
+         parse-single-string-multi-valued-bucket-lists
          distinct
          (remove nil?))))
 
