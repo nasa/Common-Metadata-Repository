@@ -620,7 +620,7 @@
     (is (= {:status 400
             :errors [(str "The keyword scheme [foo] is not supported. Valid schemes are:"
                           " providers, measurement_name, spatial_keywords, granule_data_format,"
-                          " related_urls, iso_topic_categories,"
+                          " mime_type, related_urls, iso_topic_categories,"
                           " instruments, science_keywords, concepts, temporal_keywords, platforms,"
                           " archive_centers, data_centers, location_keywords, and projects.")]}
            (search/get-keywords-by-keyword-scheme :foo)))))
