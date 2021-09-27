@@ -4,6 +4,7 @@
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [clojure.zip :as zip]
+   [cmr.common.services.errors :as errors]
    [cmr.common.util :refer [remove-nil-keys]]
    [cmr.common.xml :as cx]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util
@@ -74,10 +75,12 @@
   "Returns the updated OPeNDAP type (cloud or on-prem) resource based on the opendap resources,
   the opendap type and the url-map that is parsed from the update url value."
   [opendap-type opendap-resources url-map]
-  (->> opendap-resources
-       (filter #(= opendap-type (opendap-util/url->opendap-type (:url %))))
-       first
-       (update-opendap-resource (first (opendap-type url-map)))))
+  (let [resources (filter #(= opendap-type (opendap-util/url->opendap-type (:url %))) opendap-resources)]
+    (when (< 1 (count resources))
+      (errors/throw-service-errors :invalid-data
+                                   [(str "Cannot update granule - more than one Hyrax-in-the-cloud or"
+                                         " more than one on-prem OPeNDAP link was detected in the granule")]))
+    (update-opendap-resource (first (opendap-type url-map)) (first resources))))
 
 (defn- updated-online-resources
   "Take the parsed online resources in the original metadata, update the existing opendap url
