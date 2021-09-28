@@ -2,7 +2,7 @@
   (:require
    [clojure.edn :as edn]
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.access-control.data.access-control-index :as index]
    [cmr.access-control.data.acl-json-results-handler :as result-handler]
    [cmr.access-control.data.acl-schema :as schema]
@@ -364,6 +364,24 @@
       (auth-util/get-sids context :guest)
       (auth-util/get-sids context (tokens/get-user-id context user-token)))))
 
+(defn- fix-single-string-with-multiple-values
+  "Check if string has embedded array, if not then return result conj'd with results,
+   if so then convert it into an array of strings and concat that with results."
+  [results result]
+  (let [result (string/trim result)]
+    (if (string/starts-with? result "[")
+      (as-> (string/replace result #"\[|\]|\\|\"" "") result
+            (string/split result #",")
+            (map string/trim result)
+            (concat results result))
+      (conj results result))))
+
+(defn- parse-single-string-multi-valued-bucket-lists
+  "Depending on how data is initially ingested, sometimes multiple values can be returned as a single string.
+   Here we attempt to parse out that single string value(of multiple values) into the proper format."
+  [results]
+  (reduce fix-single-string-with-multiple-values [] results))
+
 (defn- fetch-s3-buckets-by-sids
   "Fetch the list of S3 buckets available to the SIDs provided. Buckets
   associated with the list of providers will be returned. If no providers
@@ -391,7 +409,8 @@
          (map :s3-bucket-and-object-prefix-names)
          flatten
          distinct
-         (remove nil?))))
+         (remove nil?)
+         parse-single-string-multi-valued-bucket-lists)))
 
 (defn- get-and-cache-providers
   "Retrieves and caches the current providers in the database."
