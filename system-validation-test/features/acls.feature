@@ -16,13 +16,20 @@ Feature: ACL
     Then the response status code is 200
 
   @acls
-  Scenario: Searching for permissions without any discriminator
+  Scenario: Searching for permissions without any discriminator yields an error
     Given I am searching for "permissions"
     When I submit a "GET" request
     Then the response status code is 400
     
   @acls
-  Scenario: Searching for s3-buckets without any discriminator
+  Scenario: Searching for s3-buckets without any discriminator yields an error
     Given I am searching for "s3-buckets"
     When I submit a "GET" request
     Then the response status code is 400
+
+  @acls @only
+  Scenario: Searching for s3-buckets without specifying a user
+    Given I am searching for "s3-buckets"
+    And I set the query param "user_id" to environment value "CMR_USER"
+    When I submit a "GET" request
+    Then the response status code is 200

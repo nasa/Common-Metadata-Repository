@@ -80,7 +80,7 @@ Given('I reset/clear the query') do
   @query = nil
 end
 
-Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)=(.*)"$/) do |op, _, _, _, key, value|
+Given(/^I (set|add) ((the|a) )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)=(.*)"$/) do |op, _, _, _, key, value|
   @query = if op == 'add'
              append_query(@query, key, value)
            else
@@ -88,11 +88,21 @@ Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)=(
            end
 end
 
-Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)" (of|to) "(.*)"$/) do |op, _, _, _, key, _, value|
+Given(/^I (set|add) ((the|a) )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)" (of|to) "(.*)"$/) do |op, _, _, _, key, _, value|
   @query = if op == 'add'
              append_query(@query, key, value)
            else
              update_query(@query, key, value)
+           end
+end
+
+Given(/^I (set|add) ((the|a) )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)" (of|to) environment value "(.*)"$/) do |op, _, _, _, key, _, env_key|
+  raise "No environment value or argument passed in for #{env_key}" if ENV[env_key].to_s.empty?
+
+  @query = if op == 'add'
+             append_query(@query, key, ENV[env_key])
+           else
+             update_query(@query, key, ENV[env_key])
            end
 end
 
