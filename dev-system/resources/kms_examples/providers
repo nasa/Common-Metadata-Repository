@@ -1,4 +1,4 @@
-"Keyword Version: 8.1","Revision: 2015-07-10 17:26:04","Timestamp: 2015-08-10 06:39:14","Terms Of Use: See http://gcmd.nasa.gov/r/l/TermsOfUse","The most up to date XML representations can be found here: http://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/providers/?format=xml"
+"Keyword Version: 8.6","Revision: 2018-11-02 15:51:08","Timestamp: 2018-11-05 09:12:24","Terms Of Use: http://gcmd.nasa.gov/r/l/TermsOfUse","The most up to date XML representations can be found here: https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/providers/?format=xml""Case native"
 Bucket_Level0,Bucket_Level1,Bucket_Level2,Bucket_Level3,Short_Name,Long_Name,Data_Center_URL,UUID
 "ACADEMIC","","","","AARHUS-HYDRO","Hydrogeophysics Group, Aarhus University ","","bd197c6d-8612-42c2-a818-1975c4911e45"
 "ACADEMIC","OR-STATE/EOARC","","","OR-STATE/EOARC","Eastern Oregon Agriculture Research Center, Oregon State University","http://oregonstate.edu/dept/eoarcunion/","44a93a03-29c0-4800-a5a8-67d2c2c2caa7"

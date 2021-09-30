@@ -1,4 +1,4 @@
-"Keyword Version: 8.1","Revision: 2015-08-04 12:34:05","Timestamp: 2015-09-03 12:48:24","Terms Of Use: See http://gcmd.nasa.gov/r/l/TermsOfUse","The most up to date XML representations can be found here: http://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords/?format=xml"
+"Keyword Version: 8.5","Revision: 2017-12-28 11:33:42","Timestamp: 2018-01-23 15:39:14","Terms Of Use: http://gcmd.nasa.gov/r/l/TermsOfUse","The most up to date XML representations can be found here: https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords/?format=xml""Case native"
 Category,Topic,Term,Variable_Level_1,Variable_Level_2,Variable_Level_3,Detailed_Variable,UUID
 "EARTH SCIENCE","","","","","","","e9f67a66-e9fc-435c-b720-ae32a2c3d8f5"
 "EARTH SCIENCE SERVICES","","","","","","","894f9116-ae3c-40b6-981d-5113de961710"

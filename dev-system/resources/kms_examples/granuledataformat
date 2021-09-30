@@ -1,4 +1,4 @@
-"Keyword Version: 9.1.5","Revision: 2020-08-10 07:37:58","Timestamp: 2020-08-10 08:35:54","Terms Of Use: http://gcmd.nasa.gov/r/l/TermsOfUse","The most up to date XML representations can be found here: https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/granuledataformat/?format=xml""Case native"
+"Hits: 118","page_num: 1","page_size: 2000","Keyword Version: 11.1","Revision: 2021-09-08 10:40:02","Timestamp: 2021-09-28 01:08:28","Terms Of Use: https://cdn.earthdata.nasa.gov/conduit/upload/5182/KeywordsCommunityGuide_Baseline_v1_SIGNED_FINAL.pdf","The most up to date XML representations can be found here: https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/granuledataformat/?format=xml""Case native"
 Short_Name,Long_Name,UUID
 "HDF5","Hierarchical Data Format Version 5","1c406abc-104d-4517-96b8-dbbcf515f00f"
 "JPEG","Joint Photographic Experts Group Format","7443bb2d-1dbb-44d1-bd29-0241d30fbc57"
