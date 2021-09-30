@@ -37,7 +37,7 @@ Cucumber supports tagging of tests to allow for targeted runs of certain areas o
 
 ## Test Construction Philosophy
 
-Tests should be constructed such that only externally facing APIs are used. No access to dev-system or side-api is invoked, nor direct access to the database or Elasticsearch cluster.
+Tests should be constructed such that only externally facing APIs are used. No calls to dev-system, side-api, direct access to the database nor Elasticsearch cluster.
 
 Tests should follow the Given-When-Then syntax.
 

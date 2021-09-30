@@ -40,7 +40,7 @@ module CmrRestfulHelper
 end
 World CmrRestfulHelper
 
-Given(/^I am (searching|querying|looking) for (an? )?"(\w+)"$/) do |_, _, concept_type|
+Given(/^I am (searching|querying|looking) for (an? )?"([\w\d\-_ ]+)"$/) do |_, _, concept_type|
   @resource_url = case concept_type.downcase
                   when 'acl', 'acls'
                     "#{cmr_root}/access-control/acls"
