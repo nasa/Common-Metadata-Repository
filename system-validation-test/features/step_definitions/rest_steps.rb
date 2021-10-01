@@ -76,6 +76,25 @@ Given(/^I (want|ask for|request) (an? )?"(\w+)"( (response|returned))?$/) do |_,
                    end
 end
 
+Given(/^I (set|add) header "([\w\d\-_+]+)=(.*)"$/) do |_, header, value|
+  @headers ||= {}
+  @headers[header] = value
+end
+
+Given(/^I (set|add) header "([\w\d\-_+]+)" using environment ((variable|value) )?"(.*)"$/) do |_, header, _, env_key|
+  pending("Need to set #{env_key} in environment or cucumber profile") unless ENV[env_key]
+
+  @headers ||= {}
+  @headers[header] = ENV[env_key]
+end
+
+Given(/^I (set|add) header "([\w\d\-_+]+)" using stored value "(.*)"$/) do |_, header, stored_value_key|
+  pending("Need to set #{env_key} in environment or cucumber profile") unless @stashes[stored_value_key]
+
+  @headers ||= {}
+  @headers[header] = @stashes[stored_value_key]
+end
+
 Given('I reset/clear the query') do
   @query = nil
 end
@@ -121,7 +140,8 @@ When(/^I submit (a|another) "(\w+)" request$/) do |_, method|
 
   case method.upcase
   when 'GET'
-    options = { query: @query }
+    options = { query: @query,
+                headers: @headers }
     @response = HTTParty.get(resource_uri, options)
   else
     raise "#{method} is not supported yet"
