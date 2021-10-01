@@ -1624,7 +1624,13 @@
                     :concept-type :granule
                     :native-id "test-gran1"
                     :format-key :echo10})
-          {:keys [concept-id revision-id]} granule]
+          {:keys [concept-id revision-id]} granule
+          bad-granule (data-core/ingest-concept-with-metadata-file
+                       "CMR-7503-echo10-bad-data.xml"
+                       {:provider-id "PROV1"
+                        :concept-type :granule
+                        :native-id "test-gran2"
+                        :format-key :echo10})]
 
       (index/wait-until-indexed)
 
@@ -1657,4 +1663,27 @@
 
           (let [latest-metadata (:metadata (mdb/get-concept concept-id))]
             (is (= (slurp (io/resource "CMR-7503-echo10-online-resource-type_updated_by_granuleur_and_type.xml"))
-                   latest-metadata))))))))
+                   latest-metadata)))))
+
+      (testing "error due to duplicate link types in granule"
+        (let [bulk-update {:name "update opendap link online resource type 3"
+                           :operation "UPDATE_TYPE"
+                           :update-field "OPeNDAPLink"
+                           :updates ["granule_with_duplicate_opendap_types"]}
+              {:keys [status task-id errors] :as response} (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)]
+
+          (ingest/update-granule-bulk-update-task-statuses)
+          (index/wait-until-indexed)
+
+          (is (= 200 status))
+          (is (some? task-id))
+
+          (let [status-req-options {:query-params {:show_granules "true"}}
+                status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+                {:keys [task-status status-message granule-statuses]} status-response]
+            (is (= "COMPLETE" task-status))
+            (is (= [{:granule-ur "granule_with_duplicate_opendap_types"
+                     :status "FAILED"
+                     :status-message (str "Cannot update granule - more than one Hyrax-in-the-cloud "
+                                          "or more than one on-prem OPeNDAP link was detected in the granule")}]
+                   granule-statuses))))))))
