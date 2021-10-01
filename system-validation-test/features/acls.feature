@@ -26,10 +26,3 @@ Feature: ACL
     Given I am searching for "s3-buckets"
     When I submit a "GET" request
     Then the response status code is 400
-
-  @acls @only
-  Scenario: Searching for s3-buckets without specifying a user
-    Given I am searching for "s3-buckets"
-    And I set the query param "user_id" to environment value "CMR_USER"
-    When I submit a "GET" request
-    Then the response status code is 200

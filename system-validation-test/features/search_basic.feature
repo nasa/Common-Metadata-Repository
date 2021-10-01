@@ -61,31 +61,28 @@ Feature: Basic Search API Calls
       |CMR-request-id |
       |CMR-Hits       |
 
-  @search @paging
+  @search
   Scenario: Paging using page_num defaults to page 1 when not specified
     Given I am searching for "collections"
     And I want "json"
     When I submit a "GET" request
-    And I save the json response feed entries as "first_page"
+    And I save the results as "first_page"
     And I add query param "page_num=1"
     And I submit another "GET" request
-    And I save the json response feed entries as "page_1"
+    And I save the results as "page_1"
     Then saved value "first_page" is equal to saved value "page_1"
 
-  @search @paging
+  @search
   Scenario: Paging using page_num and changing pages changes results
     Given I am searching for "collections"
     And I want "json"
     When I submit a "GET" request
-    And I save the json response feed entries as "page_1"
-    
+    And I save the results as "page_1"
     And I set query param "page_num=2"
     And I submit a "GET" request
-    And I save the json response feed entries as "page_2"
-    
+    And I save the results as "page_2"
     And I set query param "page_num=1"
     And I submit a "GET" request
-    And I save the json response feed entries as "page_3"
+    And I save the results as "page_3"
     Then saved value "page_1" does not equal saved value "page_2"
     And saved value "page_1" is equal to saved value "page_3"
-    

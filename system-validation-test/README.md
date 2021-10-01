@@ -1,4 +1,4 @@
-# CMR System Validation Test
+# CMR::Validation
 
 This is the repository for the Common Metadata Repository Client Validation Gem. This gem is intended to be a suite of tests to provide validation of a CMR instance for common queries and functions of the CMR. The tests within use only the existing outwardly facing CMR APIs
 
@@ -37,7 +37,7 @@ Cucumber supports tagging of tests to allow for targeted runs of certain areas o
 
 ## Test Construction Philosophy
 
-Tests should be constructed such that only externally facing APIs are used. No calls to dev-system, side-api, direct access to the database nor Elasticsearch cluster.
+Tests should be constructed such that only externally facing APIs are used. No access to dev-system or side-api is invoked, nor direct access to the database or Elasticsearch cluster.
 
 Tests should follow the Given-When-Then syntax.
 

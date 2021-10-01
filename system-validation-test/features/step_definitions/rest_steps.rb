@@ -42,15 +42,15 @@ World CmrRestfulHelper
 
 Given(/^I am (searching|querying|looking) for (an? )?"([\w\d\-_ ]+)"$/) do |_, _, concept_type|
   @resource_url = case concept_type.downcase
-                  when 'acl', 'acls'
+                  when /^acls?$/
                     "#{cmr_root}/access-control/acls"
-                  when 'group', 'groups'
+                  when /^groups?$/
                     "#{cmr_root}/access-control/groups"
-                  when 'permission', 'permissions'
+                  when /^permissions?$/
                     "#{cmr_root}/access-control/permissions"
-                  when 's3-bucket', 's3-buckets'
+                  when /^s3-buckets?$/
                     "#{cmr_root}/access-control/s3-buckets"
-                  when 'concepts', 'collections', 'granules', 'services', 'variables', 'tools'
+                  when /^(concept|collection|granule|service|tool|variable)s?$/
                     "#{cmr_root}/search/#{concept_type}"
                   else
                     raise "#{concept_type} searching is not available in CMR"
@@ -80,7 +80,7 @@ Given('I reset/clear the query') do
   @query = nil
 end
 
-Given(/^I (set|add) ((the|a) )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)=(.*)"$/) do |op, _, _, _, key, value|
+Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)=(.*)"$/) do |op, _, _, _, key, value|
   @query = if op == 'add'
              append_query(@query, key, value)
            else
@@ -88,7 +88,7 @@ Given(/^I (set|add) ((the|a) )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\
            end
 end
 
-Given(/^I (set|add) ((the|a) )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)" (of|to) "(.*)"$/) do |op, _, _, _, key, _, value|
+Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)" (of|to) "(.*)"$/) do |op, _, _, _, key, _, value|
   @query = if op == 'add'
              append_query(@query, key, value)
            else
@@ -96,13 +96,11 @@ Given(/^I (set|add) ((the|a) )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\
            end
 end
 
-Given(/^I (set|add) ((the|a) )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)" (of|to) environment value "(.*)"$/) do |op, _, _, _, key, _, env_key|
-  raise "No environment value or argument passed in for #{env_key}" if ENV[env_key].to_s.empty?
-
+Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)" using saved value "(.*)"$/) do |op, _, _, _, key, saved_value_key|
   @query = if op == 'add'
-             append_query(@query, key, ENV[env_key])
+             append_query(@query, key, @stashes[saved_value_key])
            else
-             update_query(@query, key, ENV[env_key])
+             update_query(@query, key, @stashes[saved_value_key])
            end
 end
 
@@ -127,24 +125,6 @@ Then('the response Content-Type is {string}') do |content_type|
   expect(actual_type[0]).to eq(content_type)
 end
 
-Then('the response header {string} to be {string}') do |header, value|
-  raise 'Blank or empty values not allowed' if value.empty?
-
-  expect(@response.headers[header]).to eq(value)
-end
-
-Then('the response header contains an entry for {string}') do |header|
-  expect(@response.headers).to have_key(header.downcase)
-end
-
-Then('the response body is {string}') do |body|
-  expect(@response.body).to eq(body)
-end
-
-Then('the response body contains/includes {string}') do |body|
-  expect(@response.body).to include(body)
-end
-
 When(/^I save the response (as|into) "(\w[\w\d\-_ ]+)"$/) do |_, name|
   @stashes ||= {}
   @stashes = @stashes.merge({ name => @response })
@@ -163,30 +143,4 @@ end
 When(/^I save the response header "(\w+)" (as|into) "(\w[\w\d\-_ ]+)"$/) do |header, _, name|
   @stashes ||= {}
   @stashes = @stashes.merge({ name => @response.headers[header] })
-end
-
-Then('saved value {string} is equal to saved value {string}') do |a, b|
-  expect(@stashes[a]).to eq(@stashes[b])
-end
-
-Then('saved value {string} does not equal saved value {string}') do |a, b|
-  expect(@stashes[a]).not_to eq(@stashes[b])
-end
-
-When('I save the json response feed entries as {string}') do |key|
-  path = JsonPath.new('$..entry')
-  data = JSON.parse(@response.body)
-
-  entries = path.on(data)
-
-  @stashes ||= {}
-  @stashes = @stashes.merge({ key => entries })
-end
-
-Then('the json response entries count is at least {int}') do |length|
-  path = JsonPath.new('$..entry')
-  data = JSON.parse(@response.body)
-
-  entries = path.on(data)
-  expect(entries.length).to be >= length
 end
