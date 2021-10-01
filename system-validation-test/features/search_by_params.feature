@@ -4,7 +4,7 @@ Feature: CMR Search Parameters
   Background:
     Given I want "json"
 
-  @search @only
+  @search
   Scenario: Searching for collections using has_granules=false
     Given I am searching for "collections"
     When I add query param "has_granules=<has_granules>"

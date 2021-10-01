@@ -97,10 +97,22 @@ Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)" 
 end
 
 Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)" using saved value "(.*)"$/) do |op, _, _, _, key, saved_value_key|
+  raise "No value for #{env_key} in stored values" unless @stashes[saved_value_key]
+
   @query = if op == 'add'
              append_query(@query, key, @stashes[saved_value_key])
            else
              update_query(@query, key, @stashes[saved_value_key])
+           end
+end
+
+Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)" using environment (value|variable) "(.*)"$/) do |op, _, _, _, key, _, env_key|
+  pending("Need to set #{env_key} in environment or cucumber profile") unless ENV[env_key]
+
+  @query = if op == 'add'
+             append_query(@query, key, ENV[env_key])
+           else
+             update_query(@query, key, ENV[env_key])
            end
 end
 
