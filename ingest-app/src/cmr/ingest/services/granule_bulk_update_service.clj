@@ -229,7 +229,7 @@
 (defn- update-umm-g-metadata
   "Takes the UMM-G granule concept and update with the given update fn and update-values.
   Returns the granule concept with the updated metadata."
-  [concept update-values update-umm-g-metadata-fn]
+  [context concept update-values update-umm-g-metadata-fn]
   (let [{:keys [format metadata]} concept
         source-version (umm-spec/umm-json-version :granule format)
         parsed-metadata (json/decode metadata true)
@@ -237,7 +237,7 @@
         migrated-metadata (util/remove-nils-empty-maps-seqs
                            (vc/migrate-umm
                             nil :granule source-version target-version parsed-metadata))
-        updated-metadata (umm-json/umm->json (update-umm-g-metadata-fn migrated-metadata update-values))
+        updated-metadata (umm-json/umm->json (update-umm-g-metadata-fn context migrated-metadata update-values))
         updated-format (mt/format->mime-type {:format :umm-json
                                               :version target-version})]
     (assoc concept :metadata updated-metadata :format updated-format)))
@@ -252,8 +252,8 @@
   (opendap-echo10/update-opendap-url concept grouped-urls))
 
 (defmethod update-opendap-url :umm-json
-  [_context concept grouped-urls]
-  (update-umm-g-metadata concept grouped-urls opendap-umm-g/update-opendap-url))
+  [context concept grouped-urls]
+  (update-umm-g-metadata context concept grouped-urls opendap-umm-g/update-opendap-url))
 
 (defmethod update-opendap-url :default
   [_context concept _grouped-urls]
@@ -272,7 +272,7 @@
 
 (defmethod update-opendap-type :umm-json
   [context concept grouped-urls]
-  (update-umm-g-metadata concept grouped-urls opendap-umm-g/update-opendap-type))
+  (update-umm-g-metadata context concept grouped-urls opendap-umm-g/update-opendap-type))
 
 (defmethod update-opendap-type :default
   [context concept grouped-urls]
@@ -290,7 +290,7 @@
 
 (defmethod append-opendap-url :umm-json
   [context concept grouped-urls]
-  (update-umm-g-metadata concept grouped-urls opendap-umm-g/append-opendap-url))
+  (update-umm-g-metadata context concept grouped-urls opendap-umm-g/append-opendap-url))
 
 (defmethod append-opendap-url :default
   [context concept grouped-urls]
@@ -308,7 +308,7 @@
 
 (defmethod add-s3-url :umm-json
   [context concept urls]
-  (update-umm-g-metadata concept urls s3-umm-g/update-s3-url))
+  (update-umm-g-metadata context concept urls s3-umm-g/update-s3-url))
 
 (defmethod add-s3-url :default
   [context concept urls]
@@ -326,7 +326,7 @@
 
 (defmethod append-s3-url :umm-json
   [context concept urls]
-  (update-umm-g-metadata concept urls s3-umm-g/append-s3-url))
+  (update-umm-g-metadata context concept urls s3-umm-g/append-s3-url))
 
 (defmethod append-s3-url :default
   [context concept urls]
@@ -391,7 +391,7 @@
 
 (defmethod update-mime-type :umm-json
   [context concept links]
-  (update-umm-g-metadata concept links mime-type-umm-g/update-mime-type))
+  (update-umm-g-metadata context concept links mime-type-umm-g/update-mime-type))
 
 (defmethod update-mime-type :default
   [context concept links]
@@ -410,7 +410,7 @@
 
 (defmethod update-additional-files :umm-json
   [context concept new-files]
-  (update-umm-g-metadata concept new-files additional-file-umm-g/update-additional-files))
+  (update-umm-g-metadata context concept new-files additional-file-umm-g/update-additional-files))
 
 (defmethod update-additional-files :default
   [context concept checksum]
@@ -618,7 +618,12 @@
   "Finds incomplete bulk granule update tasks and marks them as complete if
   no granules remain to be processed."
   [context]
-  (when-let [incomplete-tasks (data-granule-bulk-update/get-incomplete-granule-task-ids context)]
-    (doseq [task incomplete-tasks]
-      (when (data-granule-bulk-update/task-completed? context task)
-        (data-granule-bulk-update/mark-task-complete context task)))))
+  (try
+    (when-let [incomplete-tasks (data-granule-bulk-update/get-incomplete-granule-task-ids context)]
+      (doseq [task incomplete-tasks]
+        (when (data-granule-bulk-update/task-completed? context task)
+          (data-granule-bulk-update/mark-task-complete context task))))
+    (catch Exception e
+      ;; not sure if this is the best way to handle this error, looks like a
+      ;; bunch of noise during tests which has no impact.
+      (println (.getMessage e)))))

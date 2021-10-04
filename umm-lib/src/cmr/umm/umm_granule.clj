@@ -55,6 +55,8 @@
    ;; https://cmr.sit.earthdata.nasa.gov/search/keywords/granule-data-format
    format
 
+   files
+
    ;; maps to Granule/DataGranule/Checksum
    checksum
 
@@ -187,6 +189,10 @@
    pass
    tiles
    ])
+
+(defrecord Files [name size-in-bytes size size-unit format mime-type checksum])
+
+(defrecord Checksum [value algorithm])
 
 (defrecord UmmGranule
   [

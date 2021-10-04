@@ -90,7 +90,7 @@
 
 (defn update-opendap-type
   "Takes UMM-G record and updates the type and subtype on any mistyped OPeNDAP links."
-  [umm-gran subtype]
+  [_context umm-gran subtype]
   (update umm-gran :RelatedUrls #(updated-type-related-urls % subtype)))
 
 (defn update-opendap-url
@@ -99,7 +99,7 @@
   The cloud url will overwrite any existing Hyrax-in-the-cloud OPeNDAP url in the UMM-G record;
   the on-prem url will overwrite any existing on-prem OPeNDAP url in the UMM-G record.
   Returns the updated UMM-G record."
-  [umm-gran grouped-urls]
+  [_context umm-gran grouped-urls]
   (update umm-gran :RelatedUrls #(updated-related-urls % grouped-urls)))
 
 (defn append-opendap-url
@@ -108,5 +108,5 @@
   If the UMM-G record already contains a url for a type specified in
   the update, cloud or on-prem, the update will fail and an exception will be thrown.
   Returns the updated UMM-G record on success."
-  [umm-gran grouped-urls]
+  [_context umm-gran grouped-urls]
   (update umm-gran :RelatedUrls #(appended-related-urls % grouped-urls)))

@@ -19,13 +19,33 @@
   "Defines the day night flag mapping between UMM-G and umm-lib models."
   (set/map-invert umm-lib-day-night->umm-g-day-night))
 
+(defn- umm-g-file->File
+  "Return the umm-lib granule model for a Schema file field"
+  [file]
+  (when file
+    {:name (:Name file)
+     :size-in-bytes (:SizeInBytes file)
+     :size (:Size file)
+     :size-unit (:SizeUnit file)
+     :format (if (nil? (:Format file)) "Not provided" (:Format file))
+     :format-type (:FormatType file)
+     :mime-type (:MimeType file)
+     :checksum (g/map->Checksum {:value (get file [:Checksum :Value])
+                                 :algorithm (get file [:Checksum :Algorithm])})}))
+
+(defn- umm-g-files->Files
+  "Return the umm-lib granule model for a list of Schema File fields"
+  [files]
+  (when files (map umm-g-file->File files)))
+
 (defn umm-g-data-granule->DataGranule
   "Returns the umm-lib granule model DataGranule from the given UMM-G DataGranule."
   [data-granule]
   (when data-granule
     (g/map->DataGranule
       (let [{:keys [Identifiers DayNightFlag ProductionDateTime
-                    ArchiveAndDistributionInformation]} data-granule]
+                    ArchiveAndDistributionInformation]} data-granule
+            first-arch-dist-info (first ArchiveAndDistributionInformation)]
         {:day-night (get umm-g-day-night->umm-lib-day-night DayNightFlag "UNSPECIFIED")
          :producer-gran-id (->> Identifiers
                                 (some #(when (= "ProducerGranuleId" (:IdentifierType %)) %))
@@ -43,9 +63,10 @@
          :size-unit (let [SizeUnit (get (first ArchiveAndDistributionInformation) :SizeUnit)]
                       (when (not= "NA" SizeUnit)
                         SizeUnit))
-         :format (get (first ArchiveAndDistributionInformation) :Format)
-         :size-in-bytes (get (first ArchiveAndDistributionInformation) :SizeInBytes)
-         :checksum (when-let [checksum (get (first ArchiveAndDistributionInformation) :Checksum)]
+         :files (umm-g-files->Files (:Files first-arch-dist-info))
+         :format (get first-arch-dist-info :Format)
+         :size-in-bytes (get first-arch-dist-info :SizeInBytes)
+         :checksum (when-let [checksum (get first-arch-dist-info :Checksum)]
                      (g/map->Checksum
                        {:value (:Value checksum)
                         :algorithm (:Algorithm checksum)}))}))))

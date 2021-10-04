@@ -31,5 +31,5 @@
 
 (defn update-mime-type
   "Updates MimeTypes in RelaredUrls, returns the granule"
-  [umm-gran input-links]
+  [_context umm-gran input-links]
   (update umm-gran :RelatedUrls #(updated-mime-type-links % input-links)))

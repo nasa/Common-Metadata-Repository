@@ -64,6 +64,8 @@
                  {:native-id "gran-native1-5"
                   :granule-ur "SC:AE_5DSno.002:30500515"})))]
 
+    (index/wait-until-indexed)
+
     (testing "OPeNDAP url granule bulk update"
       (testing "successful OPeNDAP url granule bulk update"
         (let [bulk-update {:name "add opendap links 1"
@@ -722,9 +724,9 @@
             {:keys [task-status status-message granule-statuses]} status-response]
         (is (= "COMPLETE" task-status))
         (is (= "All granule updates completed successfully." status-message))
-        (is (= [{:granule-ur "Unique_Granule_UR_2_v1.6"
+        (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
                  :status "UPDATED"}
-                {:granule-ur "Unique_Granule_UR_v1.6"
+                {:granule-ur "Unique_Granule_UR_2_v1.6"
                  :status "UPDATED"}]
                granule-statuses)))
       ;; verify the granule metadata is updated as expected
@@ -779,9 +781,9 @@
             {:keys [task-status status-message granule-statuses]} status-response]
         (is (= "COMPLETE" task-status))
         (is (= "All granule updates completed successfully." status-message))
-        (is (= [{:granule-ur "Unique_Granule_UR_2_v1.6"
+        (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
                  :status "UPDATED"}
-                {:granule-ur "Unique_Granule_UR_v1.6"
+                {:granule-ur "Unique_Granule_UR_2_v1.6"
                  :status "UPDATED"}]
                granule-statuses)))
       ;; verify the granule metadata is updated as expected
@@ -1397,7 +1399,7 @@
               (is (= [{:granule-ur "Unique_Granule_UR_v1.6"
                        :status "FAILED"
                        :status-message (str "#/DataGranule/ArchiveAndDistributionInformation/2/Checksum/Algorithm: SHA-123 is not a valid enum value; "
-                                            "#/DataGranule/ArchiveAndDistributionInformation/2/Format: fakeformat is not a valid enum value; "
+                                            "#/DataGranule/ArchiveAndDistributionInformation/2/Format: Format [fakeformat] was not a valid keyword.; "
                                             "#/DataGranule/ArchiveAndDistributionInformation/0/Files/1/MimeType: application/bogus is not a valid enum value")}]
                      granule-statuses))
              ;;verify metadata is not altered

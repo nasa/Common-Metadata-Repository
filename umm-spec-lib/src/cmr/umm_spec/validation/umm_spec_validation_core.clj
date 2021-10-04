@@ -68,6 +68,15 @@
      (validation-errors->path-errors
       (v/validate (cons vg/granule-validations additional-validations) granule-with-parent)))))
 
+(defn validate-granule-without-collection
+  "Validates the granule alone, without a collection, returning a list of error
+   maps containing a path through the UMM model and a list of errors at that
+   path. Returns an empty sequence if it is valid."
+  ([granule]
+   (validate-granule granule nil))
+  ([granule additional-validations]
+   (validation-errors->path-errors (v/validate additional-validations granule))))
+
 (defn validate-service
   "Validates the UMM record returning a list of error maps containing a path
   through the UMM model and a list of errors at that path. Returns an empty
