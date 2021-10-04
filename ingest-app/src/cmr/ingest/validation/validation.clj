@@ -204,8 +204,7 @@
                              msg/getdata-format-not-matches-kms-keywords)
                    :Files (v/every {:Format (match-getdata-format-kms-keywords-validation
                                              kms-index
-                                             msg/getdata-format-not-matches-kms-keywords)})
-                   }}
+                                             msg/getdata-format-not-matches-kms-keywords)})}}
 
       :data-granule {
                    :format (match-getdata-format-kms-keywords-validation
