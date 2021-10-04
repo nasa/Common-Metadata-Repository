@@ -1567,3 +1567,18 @@
               {:user_id "user1"
                :system_object "DASHBOARD_ARC_CURATOR"}
               {:token token}))))))
+
+(deftest create-acl-with-edl-id
+  (testing "Can make an ACL with an EDL group ID (alphanumeric only)"
+    (let [acl (access-control/create-acl (test-util/conn-context)
+                                         {:group_permissions [{:group_id "EDLGroupName"
+                                                               :permissions ["create"]}]
+                                          :provider_identity {:provider_id "PROV2"
+                                                              :target "CATALOG_ITEM_ACL"}})
+          response (access-control/get-acl (test-util/conn-context)
+                                           (get acl :concept_id)
+                                           {:token "mock-echo-system-token" :raw? true
+                                            :include_full_acl true})]
+      (is (contains? acl :revision_id))
+      (is (contains? acl :concept_id))
+      (is (= "EDLGroupName" (:group_id (first (get-in response [:body :group_permissions]))))))))
