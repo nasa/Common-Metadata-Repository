@@ -51,17 +51,7 @@ When(/I save the results as "(.*)"/) do |save_as|
   @stashes = @stashes.merge({ save_as => data })
 end
 
-When(/I save the first result as "(.*)"/) do |save_as|
-  @stashes ||= {}
-
-  mime_type = @response.headers['Content-Type'].split(';')[0]
-  mime_type.strip!
-
-  data = extract_results(mime_type, @response.body)
-  @stashes = @stashes.merge({ save_as => data[0] })
-end
-
-When('I save the {string} result {string} as {string}') do |nth, key, save_as|
+When('I save/saved the {string} result {string} as {string}') do |nth, key, save_as|
   mime_type = @response.headers['Content-Type'].split(';')[0]
   mime_type.strip!
 
@@ -80,7 +70,7 @@ When('I save the {string} result {string} as {string}') do |nth, key, save_as|
 
   concept = extract_results(mime_type, @response.body)[index]
 
-  raise "No entry found for #{key} on concept" unless concept.key?(key)
+  raise "No entry found for #{key} on concept #{@response.body}" unless concept.key?(key)
 
   @stashes ||= {}
   @stashes = @stashes.merge({ save_as => concept[key] })

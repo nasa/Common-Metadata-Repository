@@ -10,7 +10,6 @@ Feature: CMR Search Parameters
     Given I am searching for "collections"
     When I add query param "has_granules=<has_granules>"
     And I submit a "GET" request
-    And I save the results as "without granules"
     And I save the "first" result "id" as "my collection ID"
     And I clear the query
     And I am searching for "granules"

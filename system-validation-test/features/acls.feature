@@ -20,6 +20,22 @@ Feature: ACL
     Given I am searching for "permissions"
     When I submit a "GET" request
     Then the response status code is 400
+
+  @acls
+  Scenario: Searching for permissions with user_id and concept_id
+    Given I am searching for "collections"
+    And I want "json"
+    And I submit a "GET" request
+    And I save the "first" result "id" as "my collection ID"
+
+    When I am searching for "permissions"
+    And I reset the extension
+    And I clear the query
+    And I add query param "user_id" using environment variable "CMR_USER"
+    And I add query param "concept_id" using saved value "my collection ID"
+    And I submit a "GET" request
+    Then the response status code is 200
+    And the response body contains one of "read, update, delete, order"
     
   @acls
   Scenario: Searching for s3-buckets without any discriminator yields an error

@@ -42,3 +42,11 @@ end
 Then(/^saved value "([\w\d\-_ ]+)" (does not equal|is not equal to) saved value "([\w\d\-_ ]+)"$/) do |a, _, b|
   expect(@stashes[a]).not_to eq(@stashes[b])
 end
+
+Then('the response body contains one of {string}') do |value|
+  terms = value.split(',').map(&:strip)
+
+  expect(@response.body).to satisfy do |body|
+    terms.reduce(false) { |found, term| found || body.include?(term) }
+  end
+end

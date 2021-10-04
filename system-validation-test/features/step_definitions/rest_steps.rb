@@ -100,8 +100,12 @@ Given(/^I am (searching|querying|looking) for (an? )?"([\w\d\-_ ]+)"$/) do |_, _
                   end
 end
 
-Given(/^I (use|add) extension "(\.?[\w-]+)"$/) do |_, extension|
-  @resource_url += extension
+Given('I clear/reset/remove/delete the extension') do
+  @url_extension = nil
+end
+
+Given('I use/add extension {string}') do |extension|
+  @url_extension = extension
 end
 
 Given(/^I (want|ask for|request) (an? )?"(\w+)"( (response|returned))?$/) do |_, _, format, _|
@@ -138,7 +142,7 @@ Given(/^I (set|add) header "([\w\d\-_+]+)" using stored value "(.*)"$/) do |_, h
   @headers[header] = @stashes[stored_value_key]
 end
 
-Given('I reset/clear the query') do
+Given('I reset/clear/delete/remove the query') do
   @query = nil
 end
 

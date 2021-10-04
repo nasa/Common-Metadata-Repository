@@ -6,7 +6,7 @@ Feature: Find concepts by Spatial Search
     And I am searching for "collections"
     And I want "json"
 
-  @search @spatial @only
+  @search @spatial
   Scenario: Collection Spatial Search using a single polygon
     Given I add a search param "polygon=10,10,30,10,30,20,10,20,10,10"
     When I submit a "GET" request
