@@ -61,13 +61,13 @@ Given('I use/set the authorization token from/with/using environment variable/va
 
   raise "No Token string found in environment using #{variable}" if token.to_s.empty?
 
-  @headers ||= {}
   token = if token.start_with?('EDL')
             "Bearer #{token}"
           else
             token
           end
 
+  @headers ||= {}
   @headers = @headers.merge({ 'Authorization' => token })
 end
 
@@ -136,7 +136,7 @@ Given(/^I (set|add) header "([\w\d\-_+]+)" using environment ((variable|value) )
 end
 
 Given(/^I (set|add) header "([\w\d\-_+]+)" using stored value "(.*)"$/) do |_, header, stored_value_key|
-  pending("Need to set #{env_key} in environment or cucumber profile") unless @stashes[stored_value_key]
+  pending("Need to save a value for  #{store_value_key} first") unless @stashes[stored_value_key]
 
   @headers ||= {}
   @headers[header] = @stashes[stored_value_key]
