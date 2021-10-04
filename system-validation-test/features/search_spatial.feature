@@ -2,11 +2,11 @@ Feature: Find concepts by Spatial Search
   Spatial Search is a core feature of the CMR and several search mechanisms are supported
 
   Background:
-    Given I am not logged in
+    Given I use the authorization token from environment variable "CMR_TOKEN"
     And I am searching for "collections"
     And I want "json"
 
-  @search @spatial
+  @search @spatial @only
   Scenario: Collection Spatial Search using a single polygon
     Given I add a search param "polygon=10,10,30,10,30,20,10,20,10,10"
     When I submit a "GET" request

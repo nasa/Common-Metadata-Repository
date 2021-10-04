@@ -2,7 +2,8 @@ Feature: CMR Search Parameters
   CMR supports many parameters to support complex queries to retrieve concepts
 
   Background:
-    Given I want "json"
+    Given I use the authorization token from environment variable "CMR_TOKEN"
+    And I want "json"
 
   @search
   Scenario: Searching for collections using has_granules=false

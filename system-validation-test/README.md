@@ -16,7 +16,7 @@ And then execute:
 
 To run all tests invoke cucumber with the following
 
-    $ cucumber CMR_ROOT=https://cmr.my-instance.com
+    $ cucumber CMR_ROOT=https://cmr.my-instance.com CMR_TOKEN=$MY_CMR_EDL_TOKEN
 
 
 To perform a limited test use the `@quick` tag as shown below

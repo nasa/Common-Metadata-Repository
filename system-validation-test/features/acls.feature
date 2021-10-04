@@ -1,7 +1,7 @@
 Feature: ACL
 
   Background:
-    Given I am not logged in
+    Given I use the authorization token from environment variable "CMR_TOKEN"
 
   @acls
   Scenario: Searching for ACLs

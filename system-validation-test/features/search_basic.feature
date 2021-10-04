@@ -3,10 +3,22 @@ Feature: Basic Search API Calls
   Check basic search restrictions
 
   Background:
-    Given I am not logged in
+    Given I use the authorization token from environment variable "CMR_TOKEN"
 
   @search
   Scenario: Concept Search
+    Given I am searching for "<concept-type>"
+    When I submit a "GET" request
+    Then the response status code is 200
+    Examples:
+      | concept-type |
+      | collections  |
+      | tools        |
+      | services     |
+
+  @search
+  Scenario: Concept Search but anonymous
+    Given I am not logged in
     And I am searching for "<concept-type>"
     When I submit a "GET" request
     Then the response status code is 200

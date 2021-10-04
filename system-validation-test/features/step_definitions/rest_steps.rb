@@ -40,6 +40,33 @@ module CmrRestfulHelper
 end
 World CmrRestfulHelper
 
+Given('I use/set the authorization token from/with/using environment variable/value {string}') do |variable|
+  token = ENV[variable]
+
+  raise "No Token string found in environment using #{variable}" if token.to_s.empty?
+
+  @headers ||= {}
+  token = if token.start_with?('EDL')
+            "Bearer #{token}"
+          else
+            token
+          end
+
+  @headers = @headers.merge({ 'Authorization' => token })
+end
+
+Given('I use/set the authorization token to {string}') do |token|
+  @headers ||= {}
+  @headers = @headers.merge({ 'Authorization' => token }) unless @token.to_s.empty?
+end
+
+Given('I am not logged in') do
+  @token = nil
+
+  @headers ||= {}
+  @headers.delete('Authorization')
+end
+
 Given(/^I am (searching|querying|looking) for (an? )?"([\w\d\-_ ]+)"$/) do |_, _, concept_type|
   @resource_url = case concept_type.downcase
                   when /^acls?$/

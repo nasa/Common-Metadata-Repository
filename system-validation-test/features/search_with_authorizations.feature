@@ -10,7 +10,7 @@ Feature: CMR limits access to certain concepts and data to users with proper cre
   @search
   Scenario: Using Authorization header
     Given I am searching for "collections"
-    And I set header "Authorization" using environment variable "CMR_USER_TOKEN"
+    And I use the authorization token from environment variable "CMR_TOKEN"
     When I submit a "GET" request
     Then the response status code is 200
 
