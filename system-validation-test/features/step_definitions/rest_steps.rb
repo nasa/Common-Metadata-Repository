@@ -44,8 +44,6 @@ module CmrRestfulHelper
 
     case method.upcase
     when 'GET'
-      options = { query: @query,
-                  headers: @headers }
       response = HTTParty.get(resource_uri, options)
     else
       raise "#{method} is not supported yet"

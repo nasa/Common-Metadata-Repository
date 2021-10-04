@@ -99,12 +99,12 @@ Feature: Basic Search API Calls
     Given I am searching for "collections"
     And I want "json"
     When I submit a "GET" request
-    And I save the results as "page_1"
+    And I save the results as "first_page"
     And I set query param "page_num=2"
     And I submit a "GET" request
     And I save the results as "page_2"
     And I set query param "page_num=1"
     And I submit a "GET" request
-    And I save the results as "page_3"
-    Then saved value "page_1" does not equal saved value "page_2"
-    And saved value "page_1" is equal to saved value "page_3"
+    And I save the results as "page_1"
+    Then saved value "first_page" does not equal saved value "page_2"
+    And saved value "first_page" is equal to saved value "page_1"
