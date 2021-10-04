@@ -17,6 +17,16 @@ Feature: Basic Search API Calls
       | services     |
 
   @search
+  Scenario: Collection search using basic operators that are commonly used
+    Given I am searching for "collections"
+    And I want "json"
+    When I submit a "GET" request
+    And I add search param "science_keyword=ice"
+    And I add search param "include_granule_count=true"
+    Then the response status code is 200
+    And the response "entry" count is at least 1
+
+  @search
   Scenario: Concept Search but anonymous
     Given I am not logged in
     And I am searching for "<concept-type>"
