@@ -32,7 +32,7 @@ When(/^(I )?save the response body as "(.*)"/) do |_, save_as|
   mime_type = @response.headers['Content-Type'].split(';')[0]
   mime_type.strip!
 
-  data = if mime_type.match?(%r{^application/(.*\+)json$})
+  data = if mime_type.match?(%r{^application/(.*\+)?json$})
            JSON.parse(@response.body)
          else
            @response.body
