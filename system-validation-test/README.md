@@ -14,9 +14,15 @@ And then execute:
 
 ## Usage
 
+| Variable | Description | Required |
+|----------|-------------|----------|
+| CMR_ROOT | The URL of the base CMR instance | yes |
+| CMR_TOKEN | The token string to use as authorization. This may be an EDL token or Echo-Token (Echo-Tokens are being deprecated) | yes |
+| CMR_USER | A username to check certain queries with | no |
+
 To run all tests invoke cucumber with the following
 
-    $ cucumber CMR_ROOT=https://cmr.my-instance.com CMR_TOKEN=$MY_CMR_EDL_TOKEN
+    $ cucumber CMR_ROOT=https://cmr.my-instance.com CMR_TOKEN=$MY_CMR_EDL_TOKEN CMR_USER=$MY_EDL_USERNAME
 
 
 To perform a limited test use the `@quick` tag as shown below
