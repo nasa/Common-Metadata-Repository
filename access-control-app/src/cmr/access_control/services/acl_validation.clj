@@ -96,7 +96,7 @@
 (defn- group-id-validation
   "Validates if group-ids are valid CMR concept-ids"
   [key-path group-id]
-  (let [regex #"AG\d+-\S+"]
+  (let [regex #"^AG\d+-\S+$|^[0-9a-zA-Z]+$"]
     (when-not (re-matches regex group-id)
       {key-path [(format "[%s] is not a valid group concept-id" group-id)]})))
 
