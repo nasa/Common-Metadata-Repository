@@ -37,6 +37,22 @@ module CmrRestfulHelper
 
     query
   end
+
+  # Send the query
+  def submit_query(method, url, options)
+    resource_uri = URI(url)
+
+    case method.upcase
+    when 'GET'
+      options = { query: @query,
+                  headers: @headers }
+      response = HTTParty.get(resource_uri, options)
+    else
+      raise "#{method} is not supported yet"
+    end
+
+    response
+  end
 end
 World CmrRestfulHelper
 
@@ -162,17 +178,19 @@ Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)" 
            end
 end
 
-When(/^I submit (a|another) "(\w+)" request$/) do |_, method|
-  resource_uri = URI("#{@resource_url}#{@url_extension}")
+When(/^I (submit|send) (a|another) "(\w+)" request to "(.*)"$/) do |_, _, method, url|
+  url = "#{cmr_root}#{url}#{@url_extension}"
+  options = { query: @query,
+              headers: @headers }
+  @response = submit_query(method, url, options)
+end
 
-  case method.upcase
-  when 'GET'
-    options = { query: @query,
-                headers: @headers }
-    @response = HTTParty.get(resource_uri, options)
-  else
-    raise "#{method} is not supported yet"
-  end
+When(/^I (submit|send) (a|another) "(\w+)" request$/) do |_, _, method|
+  url = "#{@resource_url}#{@url_extension}"
+  options = { query: @query,
+              headers: @headers }
+
+  @response = submit_query(method, url, options)
 end
 
 Then(/^the response (status( code)?) is (\d+)$/) do |_, status_code|

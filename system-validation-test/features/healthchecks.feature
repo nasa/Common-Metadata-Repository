@@ -4,12 +4,12 @@ Feature: Service Health Checks
 
   @quick
   Scenario: Check status endpoints
-    Given I am checking the <service> service status endpoint
-    When I submit a "GET" request
+    When I send a "GET" request to <health-check-endpoint>
     Then the response status code is 200
-    And the response Content-Type is "application/json"
-  Examples:
-    | service          |
-    | "search"         |
-    | "access-control" |
-    | "ingest"         |
+    And the response Content-Type is <content-type>
+    Examples:
+      | health-check-endpoint                | content-type       |
+      | "/search/health"                     | "application/json" |
+      | "/access-control/health"             | "application/json" |
+      | "/ingest/health"                     | "application/json" |
+      | "/legacy-services/rest/availability" | "application/xml"  |
