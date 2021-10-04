@@ -190,9 +190,15 @@
    tiles
    ])
 
-(defrecord Files [name size-in-bytes size size-unit format mime-type checksum])
-
-(defrecord Checksum [value algorithm])
+(defrecord File
+  [
+   name
+   size-in-bytes
+   size size-unit
+   format
+   mime-type
+   checksum
+   ])
 
 (defrecord UmmGranule
   [

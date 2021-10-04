@@ -42,4 +42,5 @@
 
 (deftest parse-granule-test
   (testing "parse granule"
-    (is (= expected-util/expected-sample-granule (core/parse-metadata {} :granule :umm-json sample-umm-g-granule)))))
+    (is (= expected-util/expected-sample-granule
+           (core/parse-metadata {} :granule :umm-json sample-umm-g-granule)))))

@@ -23,15 +23,17 @@
   "Return the umm-lib granule model for a Schema file field"
   [file]
   (when file
-    {:name (:Name file)
-     :size-in-bytes (:SizeInBytes file)
-     :size (:Size file)
-     :size-unit (:SizeUnit file)
-     :format (if (nil? (:Format file)) "Not provided" (:Format file))
-     :format-type (:FormatType file)
-     :mime-type (:MimeType file)
-     :checksum (g/map->Checksum {:value (get file [:Checksum :Value])
-                                 :algorithm (get file [:Checksum :Algorithm])})}))
+    (g/map->File
+     {:name (:Name file)
+      :size-in-bytes (:SizeInBytes file)
+      :size (:Size file)
+      :size-unit (:SizeUnit file)
+      :format (if (nil? (:Format file)) "Not provided" (:Format file))
+      :format-type (:FormatType file)
+      :mime-type (:MimeType file)
+      :checksum (when-let [checksum (get file :Checksum)]
+                  (g/map->Checksum {:value (:Value checksum)
+                                    :algorithm (:Algorithm checksum)}))})))
 
 (defn- umm-g-files->Files
   "Return the umm-lib granule model for a list of Schema File fields"
