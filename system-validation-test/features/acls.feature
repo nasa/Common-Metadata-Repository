@@ -32,4 +32,4 @@ Feature: ACL
     Given I am searching for "s3-buckets"
     And I add query param "user_id" using environment variable "CMR_USER"
     When I submit a "GET" request
-    Then the response status code is 400
+    Then the response status code is 200
