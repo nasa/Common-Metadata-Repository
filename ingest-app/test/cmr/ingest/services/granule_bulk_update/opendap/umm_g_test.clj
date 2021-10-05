@@ -6,6 +6,8 @@
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]
    [cmr.ingest.services.granule-bulk-update.opendap.umm-g :as umm-g]))
 
+(def ^:private context "A fake context object" {})
+
 (def ^:private doc-related-url
   "Sample document RelatedUrl"
   {:URL "http://example.com/doc.html"
@@ -32,7 +34,7 @@
     (are3 [url-value source result]
       (let [grouped-urls (opendap-util/validate-url url-value)]
         (is (= result
-               (umm-g/update-opendap-url source grouped-urls))))
+               (umm-g/update-opendap-url context source grouped-urls))))
 
       "no RelatedUrls in metadata, on-prem url update"
       "http://example.com/foo"
@@ -129,7 +131,7 @@
     (are3 [url-value source result]
       (let [grouped-urls (opendap-util/validate-url url-value)]
         (is (= result
-               (umm-g/append-opendap-url source grouped-urls))))
+               (umm-g/append-opendap-url context source grouped-urls))))
 
       "no RelatedUrls in metadata, on-prem url update"
       "http://example.com/foo"
@@ -218,7 +220,7 @@
         (is (thrown-with-msg?
              clojure.lang.ExceptionInfo
              #"Update contains conflict"
-             (umm-g/append-opendap-url source grouped-urls))))
+             (umm-g/append-opendap-url context source grouped-urls))))
       "matching RelatedUrls in metadata, on-prem url update"
       "http://example.com/foo"
       {:RelatedUrls sample-urls}
@@ -235,7 +237,7 @@
 (deftest update-opendap-type
   (testing "Update opendap type in UMM-G"
     (are3 [subtype source result]
-      (is (= result (umm-g/update-opendap-type source subtype)))
+      (is (= result (umm-g/update-opendap-type context source subtype)))
 
       "One opendap link, gets updated type via regex"
       nil

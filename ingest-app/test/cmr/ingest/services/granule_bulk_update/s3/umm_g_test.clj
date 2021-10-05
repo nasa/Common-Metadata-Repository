@@ -6,6 +6,8 @@
    [cmr.ingest.services.granule-bulk-update.s3.s3-util :as s3-util]
    [cmr.ingest.services.granule-bulk-update.s3.umm-g :as umm-g]))
 
+(def ^:private context "A fake context object" {})
+
 (def ^:private doc-related-url
   "Sample document RelatedUrl"
   {:URL "http://example.com/doc.html"
@@ -30,7 +32,7 @@
   (testing "add or update s3 url to UMM-G"
     (are3 [url-value source result]
       (let [urls (s3-util/validate-url url-value)]
-        (is (= result (umm-g/update-s3-url source urls))))
+        (is (= result (umm-g/update-s3-url context source urls))))
 
       "no RelatedUrls in metadata"
       "s3://abc/foo"
@@ -93,7 +95,7 @@
     (are3 [url-value source result]
       (let [urls (s3-util/validate-url url-value)]
         (is (= result
-               (:RelatedUrls (umm-g/append-s3-url source urls)))))
+               (:RelatedUrls (umm-g/append-s3-url context source urls)))))
 
       "no RelatedUrls in metadata"
       "s3://abc/foo"
