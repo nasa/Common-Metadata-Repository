@@ -9,7 +9,6 @@
     [cmr.access-control.test.util :as test-util]
     [cmr.common.util :as util :refer [are3]]
     [cmr.mock-echo.client.echo-util :as echo-util]
-    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
     [cmr.transmit.access-control :as access-control]
     [cmr.transmit.config :as transmit-config]
     [cmr.transmit.metadata-db2 :as metadata-db2]))
