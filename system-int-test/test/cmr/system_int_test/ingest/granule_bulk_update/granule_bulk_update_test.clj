@@ -779,16 +779,14 @@
       (let [status-req-options {:query-params {:show_granules "true"}}
             status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
             {:keys [task-status status-message granule-statuses]} status-response
-            expected [{:granule-ur "Unique_Granule_UR_v1.6"
-                     :status "UPDATED"}
-                    {:granule-ur "Unique_Granule_UR_2_v1.6"
-                     :status "UPDATED"}]]
+            expected [{:granule-ur "Unique_Granule_UR_v1.6" :status "UPDATED"}
+                      {:granule-ur "Unique_Granule_UR_2_v1.6" :status "UPDATED"}]]
         (is (= "COMPLETE" task-status))
         (is (= "All granule updates completed successfully." status-message))
 
         (doseq [item expected]
           (is (some #(= item %) granule-statuses)
-              (format "does %s exist in granule-statuses regardless of order" item)))
+              (format "does %s exist in granule-statuses regardless of order" item))))
       ;; verify the granule metadata is updated as expected
       (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
             updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
