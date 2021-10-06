@@ -1572,7 +1572,7 @@
 
 (deftest create-acl-with-edl-id
   (testing "Can make an ACL with an EDL group ID when toggle set true"
-    (dev-sys-util/eval-in-dev-sys `(acl-validation/set-allow-edl-groups! true))
+    (acl-validation/set-allow-edl-groups! true)
     (let [acl (access-control/create-acl (test-util/conn-context)
                                          {:group_permissions [{:group_id "EDLGroupName"
                                                                :permissions ["create"]}]
@@ -1586,7 +1586,7 @@
       (is (contains? acl :concept_id))
       (is (= "EDLGroupName" (:group_id (first (get-in response [:body :group_permissions])))))))
   (testing "ACL creation with EDL Group name fails when toggle set false (existing behavior)"
-    (dev-sys-util/eval-in-dev-sys `(acl-validation/set-allow-edl-groups! false))
+    (acl-validation/set-allow-edl-groups! false)
     (is (thrown? java.lang.Exception
                  (access-control/create-acl (test-util/conn-context)
                                             {:group_permissions [{:group_id "EDLGroupName"
