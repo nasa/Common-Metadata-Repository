@@ -5,9 +5,11 @@
     [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.access-control.int-test.fixtures :as fixtures]
+    [cmr.access-control.services.acl-validation :as acl-validation]
     [cmr.access-control.test.util :as test-util]
     [cmr.common.util :as util :refer [are3]]
     [cmr.mock-echo.client.echo-util :as echo-util]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
     [cmr.transmit.access-control :as access-control]
     [cmr.transmit.config :as transmit-config]
     [cmr.transmit.metadata-db2 :as metadata-db2]))
@@ -1569,7 +1571,8 @@
               {:token token}))))))
 
 (deftest create-acl-with-edl-id
-  (testing "Can make an ACL with an EDL group ID (alphanumeric only)"
+  (testing "Can make an ACL with an EDL group ID when toggle set true"
+    (dev-sys-util/eval-in-dev-sys `(acl-validation/set-allow-edl-groups! true))
     (let [acl (access-control/create-acl (test-util/conn-context)
                                          {:group_permissions [{:group_id "EDLGroupName"
                                                                :permissions ["create"]}]
@@ -1581,4 +1584,12 @@
                                             :include_full_acl true})]
       (is (contains? acl :revision_id))
       (is (contains? acl :concept_id))
-      (is (= "EDLGroupName" (:group_id (first (get-in response [:body :group_permissions]))))))))
+      (is (= "EDLGroupName" (:group_id (first (get-in response [:body :group_permissions])))))))
+  (testing "ACL creation with EDL Group name fails when toggle set false (existing behavior)"
+    (dev-sys-util/eval-in-dev-sys `(acl-validation/set-allow-edl-groups! false))
+    (is (thrown? java.lang.Exception
+                 (access-control/create-acl (test-util/conn-context)
+                                            {:group_permissions [{:group_id "EDLGroupName"
+                                                                  :permissions ["create"]}]
+                                             :provider_identity {:provider_id "PROV2"
+                                                                 :target "CATALOG_ITEM_ACL"}})))))
