@@ -1568,27 +1568,3 @@
               {:user_id "user1"
                :system_object "DASHBOARD_ARC_CURATOR"}
               {:token token}))))))
-
-(deftest create-acl-with-edl-id
-  (testing "Can make an ACL with an EDL group ID when toggle set true"
-    (acl-validation/set-allow-edl-groups! true)
-    (let [acl (access-control/create-acl (test-util/conn-context)
-                                         {:group_permissions [{:group_id "EDLGroupName1"
-                                                               :permissions ["create"]}]
-                                          :provider_identity {:provider_id "PROV2"
-                                                              :target "CATALOG_ITEM_ACL"}})
-          response (access-control/get-acl (test-util/conn-context)
-                                           (get acl :concept_id)
-                                           {:token "mock-echo-system-token" :raw? true
-                                            :include_full_acl true})]
-      (is (contains? acl :revision_id))
-      (is (contains? acl :concept_id))
-      (is (= "EDLGroupName1" (:group_id (first (get-in response [:body :group_permissions])))))))
-  (testing "ACL creation with EDL Group name fails when toggle set false (existing behavior)"
-    (acl-validation/set-allow-edl-groups! false)
-    (is (thrown? java.lang.Exception
-                 (access-control/create-acl (test-util/conn-context)
-                                            {:group_permissions [{:group_id "EDLGroupName2"
-                                                                  :permissions ["create"]}]
-                                             :provider_identity {:provider_id "PROV2"
-                                                                 :target "CATALOG_ITEM_ACL"}})))))
