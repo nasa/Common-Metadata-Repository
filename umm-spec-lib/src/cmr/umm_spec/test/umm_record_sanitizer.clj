@@ -190,9 +190,7 @@
                (-> ru
                    sanitize-get-service-and-get-data
                    (assoc :URL (first (gen/sample test/file-url-string 1))))]]
-    (if type-subtype
-      (merge ru-sanitized type-subtype)
-      ru-sanitized))))
+     (merge ru-sanitized type-subtype))))
 
 (defn- sanitize-contact-informations
   "Sanitize a record with ContactInformation"
