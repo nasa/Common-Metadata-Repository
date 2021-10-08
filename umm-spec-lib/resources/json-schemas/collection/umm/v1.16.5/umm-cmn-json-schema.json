@@ -269,16 +269,22 @@
           "maxLength": 4000
         },
         "URLContentType": {
-            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
-            "$ref": "#/definitions/RelatedURLContentTypeEnum"
+            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL'). The valid values are contained in the KMS System: https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096?gtm_keyword=Related%20URL%20Content%20Types&gtm_scheme=rucontenttype.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
         },
         "Type": {
-            "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
-            "$ref": "#/definitions/RelatedUrlTypeEnum"
+            "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION'). The valid values are contained in the KMS System: https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096?gtm_keyword=Related%20URL%20Content%20Types&gtm_scheme=rucontenttype.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
         },
         "Subtype": {
-            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').",
-            "$ref": "#/definitions/RelatedURLSubTypeEnum"
+            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI'). The valid values are contained in the KMS System: https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096?gtm_keyword=Related%20URL%20Content%20Types&gtm_scheme=rucontenttype.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
         },
         "URL": {
           "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
@@ -1221,29 +1227,6 @@
     "DurationUnitEnum": {
       "type": "string",
       "enum": ["DAY", "MONTH", "YEAR"]
-    },
-    "RelatedURLContentTypeEnum": {
-      "type": "string",
-      "enum": ["CollectionURL", "PublicationURL", "DataCenterURL", "DistributionURL", "DataContactURL", "VisualizationURL"]
-    },
-    "RelatedUrlTypeEnum": {
-      "type": "string",
-      "enum": ["DATA SET LANDING PAGE", "DOWNLOAD SOFTWARE", "EXTENDED METADATA", "GET CAPABILITIES", "GET DATA", "GET RELATED VISUALIZATION",
-               "GOTO WEB TOOL", "PROFESSIONAL HOME PAGE", "PROJECT HOME PAGE", "USE SERVICE API", "VIEW RELATED INFORMATION", "HOME PAGE"]
-    },
-    "RelatedURLSubTypeEnum": {
-      "type": "string",
-      "enum": ["MOBILE APP", "APPEEARS", "DATA COLLECTION BUNDLE", "DATA TREE", "DATACAST URL", "DIRECT DOWNLOAD", "EOSDIS DATA POOL",
-               "Earthdata Search", "GIBS", "GIOVANNI", "GoLIVE Portal", "IceBridge Portal", "LAADS", "LANCE", "MIRADOR", "MODAPS", "NOAA CLASS", "NOMADS",
-               "Order", "PORTAL", "Subscribe", "USGS EARTH EXPLORER", "VERTEX", "VIRTUAL COLLECTION", "MAP", "WORLDVIEW", "LIVE ACCESS SERVER (LAS)",
-               "MAP VIEWER", "SIMPLE SUBSET WIZARD (SSW)", "SUBSETTER", "GRADS DATA SERVER (GDS)", "MAP SERVICE", "OPENDAP DATA", "OpenSearch",
-               "SERVICE CHAINING", "TABULAR DATA STREAM (TDS)", "THREDDS DATA", "WEB COVERAGE SERVICE (WCS)", "WEB FEATURE SERVICE (WFS)",
-               "WEB MAP SERVICE (WMS)", "WEB MAP TILE SERVICE (WMTS)", "ALGORITHM DOCUMENTATION", "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)",
-               "ANOMALIES", "CASE STUDY", "DATA CITATION POLICY", "DATA QUALITY", "DATA RECIPE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION",
-               "HOW-TO", "IMPORTANT NOTICE", "INSTRUMENT/SENSOR CALIBRATION DOCUMENTATION", "MICRO ARTICLE", "PI DOCUMENTATION",
-               "PROCESSING HISTORY", "PRODUCT HISTORY", "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE", "PRODUCTION HISTORY", "PUBLICATIONS",
-               "READ-ME", "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION", "SCIENCE DATA PRODUCT VALIDATION",
-               "USER FEEDBACK PAGE", "USER'S GUIDE", "HITIDE", "SOTO", "Sub-Orbital Order Tool", "CERES Ordering Tool"]
     },
     "URLMimeTypeEnum": {
       "type": "string",

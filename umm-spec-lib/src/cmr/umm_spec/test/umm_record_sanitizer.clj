@@ -128,12 +128,13 @@
 (defn- generate-valid-type-and-subtype-for-url-content-type
  "Generate a valid URLContentType, Type, and Subtype combo given the URLContentType"
  [url-content-type concept-type]
- (let [valid-types (gen/elements (valid-types-for-url-content-type url-content-type concept-type))
-       types (gen/sample valid-types 1)
-       valid-subtypes (valid-subtypes-for-type url-content-type type concept-type)
+ (let [valid-types (valid-types-for-url-content-type url-content-type concept-type)
+       types (when valid-types (gen/sample (gen/elements valid-types) 1))
+       valid-subtypes (valid-subtypes-for-type url-content-type (first types) concept-type)
        subtypes (when valid-subtypes (gen/sample (gen/elements valid-subtypes) 1))]
-  {:Type (first types)
-   :Subtype (first subtypes)}))
+   (when types
+     {:Type (first types)
+      :Subtype (first subtypes)})))
 
 (defn- sanitize-get-data
   "Removes GetData from relate-url if URLContentType != DistributionURL
@@ -164,15 +165,18 @@
   [entry concept-type]
   (if-let [urls (get-in entry [:RelatedUrl :URL])]
     (let [url-content-type (get-in entry [:RelatedUrl :URLContentType])
-          {:keys [Type Subtype]} (generate-valid-type-and-subtype-for-url-content-type url-content-type concept-type)]
-      (-> entry
-          (assoc-in [:RelatedUrl :URL] (gen/sample test/file-url-string 1))
-          (assoc-in [:RelatedUrl :Type] Type)
-          (assoc-in [:RelatedUrl :Subtype] Subtype)
-          ;; These two fields cannot ever exist in a CollectionCitations or
-          ;; PublicationReferences RelatedUrl
-          (update :RelatedUrl dissoc :GetData)
-          (update :RelatedUrl dissoc :GetService)))
+          {:keys [Type Subtype]} (generate-valid-type-and-subtype-for-url-content-type url-content-type concept-type)
+          sanitized-entry (-> entry
+                              (assoc-in [:RelatedUrl :URL] (gen/sample test/file-url-string 1))
+                              ;; These two fields cannot ever exist in a CollectionCitations or
+                              ;; PublicationReferences RelatedUrl
+                              (update :RelatedUrl dissoc :GetData)
+                              (update :RelatedUrl dissoc :GetService))]
+      (if Type
+        (-> sanitized-entry
+            (assoc-in [:RelatedUrl :Type] Type)
+            (assoc-in [:RelatedUrl :Subtype] Subtype))
+        sanitized-entry))
     entry))
 
 (defn- sanitize-related-urls
@@ -181,12 +185,14 @@
   (when related-urls
    (for [ru related-urls
          :let [type-subtype
-               (generate-valid-type-and-subtype-for-url-content-type (:URLContentType ru) concept-type)]]
-    (merge
-     (-> ru
-         sanitize-get-service-and-get-data
-         (assoc :URL (first (gen/sample test/file-url-string 1))))
-     type-subtype))))
+               (generate-valid-type-and-subtype-for-url-content-type (:URLContentType ru) concept-type)
+               ru-sanitized
+               (-> ru
+                   sanitize-get-service-and-get-data
+                   (assoc :URL (first (gen/sample test/file-url-string 1))))]]
+    (if type-subtype
+      (merge ru-sanitized type-subtype)
+      ru-sanitized))))
 
 (defn- sanitize-contact-informations
   "Sanitize a record with ContactInformation"

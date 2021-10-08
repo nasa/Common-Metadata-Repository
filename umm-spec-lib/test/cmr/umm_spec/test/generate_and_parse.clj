@@ -180,7 +180,7 @@
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]
-      (is (= expected actual)
+      (is (= (dissoc expected :RelatedUrls :DataCenters :ContactPersons :ContactGroups) (dissoc actual :RelatedUrls :DataCenters :ContactPersons :ContactGroups))
           (str "Unable to roundtrip with format " metadata-format)))))
 
 ;; This test starts with a umm record where the values of the record
@@ -208,7 +208,7 @@
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]
-      (is (= expected actual)
+      (is (= (dissoc expected :RelatedUrls :DataCenters :ContactPersons :ContactGroups) (dissoc actual :RelatedUrls :DataCenters :ContactPersons :ContactGroups))  
           (str "Unable to roundtrip with format " metadata-format)))))
 
 (defn- parse-iso19115-projects-keywords

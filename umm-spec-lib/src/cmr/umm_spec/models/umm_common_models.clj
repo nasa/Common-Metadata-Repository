@@ -582,17 +582,22 @@
    Description
 
    ;; A keyword describing the distinct content type of the online resource to this resource. (e.g.,
-   ;; 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').
+   ;; 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL'). The valid values are contained in
+   ;; the KMS System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096?gtm_keyword=Related%20URL%20Content%20Types&gtm_scheme=rucontenttype.
    URLContentType
 
    ;; A keyword describing the type of the online resource to this resource. This helps the GUI to
    ;; know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').
+   ;; The valid values are contained in the KMS System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096?gtm_keyword=Related%20URL%20Content%20Types&gtm_scheme=rucontenttype.
    Type
 
    ;; A keyword describing the subtype of the online resource to this resource. This further helps
    ;; the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP',
    ;; 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW',
-   ;; 'ESI').
+   ;; 'ESI'). The valid values are contained in the KMS System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096?gtm_keyword=Related%20URL%20Content%20Types&gtm_scheme=rucontenttype.
    Subtype
 
    ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
