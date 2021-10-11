@@ -30,8 +30,8 @@
 
 (defmethod cqv/supported-result-formats :granule
   [_]
-  (into #{:xml, :json, :echo10, :atom, :iso19115, :csv, :kml, :native :timeline
-          :umm-json :umm-json-results}
+  (into #{:xml :json :echo10 :atom :iso19115 :csv :kml :native :timeline
+          :umm-json :umm-json-results :stac}
         (umm-versioned-result-formats :granule)))
 
 (defmethod cqv/supported-result-formats :variable

@@ -2566,6 +2566,7 @@ The following extensions and MIME types are supported by the `/concepts/` resour
   * `dif10`     "application/dif10+xml"
   * `atom`      "application/atom+xml"
   * `umm_json`  "application/vnd.nasa.cmr.umm+json"
+  * `stac`      "application/json; profile=stac-catalogue"
 
 The following extensions and MIME types are supported by the `/concepts/` resource for the variable, service, tool  and subscription concept types:
 

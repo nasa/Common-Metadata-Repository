@@ -27,6 +27,7 @@
     mt/opendata
     mt/csv
     mt/kml
+    mt/stac
     mt/native})
 
 (defn add-scroll-id-and-search-params-to-cache

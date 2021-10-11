@@ -4,10 +4,35 @@
     [cmr.common.config :as cfg]
     [cmr.transmit.config :as tconfig]))
 
+(defn search-root
+  "Returns the url root for reference location"
+  [context]
+  (tconfig/application-public-root-url context))
+
 (defn reference-root
   "Returns the url root for reference location"
   [context]
-  (str (tconfig/application-public-root-url context) "concepts/"))
+  (str (search-root context) "concepts/"))
+
+(defn concept-stac-url
+  "Returns the STAC url for a given concept id"
+  [context concept-id]
+  (format "%s%s.stac" (reference-root context) concept-id))
+
+(defn concept-xml-url
+  "Returns the xml url for a given concept id"
+  [context concept-id]
+  (format "%s%s.xml" (reference-root context) concept-id))
+
+(defn concept-json-url
+  "Returns the JSON url for a given concept id"
+  [context concept-id]
+  (format "%s%s.json" (reference-root context) concept-id))
+
+(defn concept-umm-json-url
+  "Returns the UMM JSON url for a given concept id"
+  [context concept-id]
+  (format "%s%s.umm_json" (reference-root context) concept-id))
 
 (defn atom-request-url
   "Returns the atom request url based on search concept type with extension and query string"

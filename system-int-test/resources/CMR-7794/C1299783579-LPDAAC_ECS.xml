@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Collection>
+  <ShortName>AST14DEM</ShortName>
+  <VersionId>003</VersionId>
+  <InsertTime>2021-10-11T15:50:55.700Z</InsertTime>
+  <LastUpdate>2021-10-11T15:50:55.700Z</LastUpdate>
+  <LongName>Not provided</LongName>
+  <DataSetId>ASTER Digital Elevation Model V003</DataSetId>
+  <Description>The ASTER Digital Elevation Model (AST14DEM) product is generated (https://lpdaac.usgs.gov/documents/618/ASTER_Earthdata_Search_Order_Instructions.pdf) using bands 3N (nadir-viewing) and 3B (backward-viewing) of an (ASTER Level 1A) (https://doi.org/10.5067/ASTER/AST_L1A.003) image acquired by the Visible and Near Infrared (VNIR) sensor. The VNIR subsystem includes two independent telescope assemblies that facilitate the generation of stereoscopic data. The band 3 stereo pair is acquired in the spectral range of 0.78 and 0.86 microns with a base-to-height ratio of 0.6 and an intersection angle of 27.7 degrees. There is a time lag of approximately one minute between the acquisition of the nadir and backward images. For a better understanding, refer to this (diagram) (https://lpdaac.usgs.gov/documents/301/ASTER_Along_Track_Imaging_Geometry.png) depicting the along-track imaging geometry of the ASTER VNIR nadir and backward-viewing sensors.The accuracy of the new LP DAAC produced DEMs will meet or exceed accuracy specifications set for the ASTER relative DEMs by the Algorithm Theoretical Basis Document (ATBD) (https://lpdaac.usgs.gov/documents/81/AST14_ATBD.pdf). Users likely will find that the DEMs produced by the new LP DAAC system have accuracies approaching those specified in the ATBD for absolute DEMs. Validation testing has shown that DEMs produced by the new system frequently are more accurate than 25 meters root mean square error (RMSE) in xyz dimensions.Improvements/Changes from Previous VersionsAs of January 2021, the LP DAAC has implemented version 3.0 of the Sensor Information Laboratory Corporation ASTER DEM/Ortho (SILCAST) software, which is used to generate the Level 2 on-demand ASTER Orthorectified and Digital Elevation Model (DEM) products (AST14). The updated software provides digital elevation extraction and orthorectification from ASTER L1B input data without needing to enter ground control points or depending on external global DEMs at 30-arc-second resolution (GTOPO30). It utilizes the ephemeris and attitude data derived from both the ASTER instrument and the Terra spacecraft platform. The outputs are geoid height-corrected and waterbodies are automatically detected in this version. Users will notice differences between AST14DEM, AST14DMO, and AST14OTH products ordered before January 2021 (generated with SILCAST V1) and those generated with the updated version of the production software (version 3.0). Differences may include slight elevation changes over different surface types, including waterbodies. Differences have also been observed over cloudy portions of ASTER scenes. Additional information on SILCAST version 3.0 can be found on the  SILCAST website (http://www.silc.co.jp/en/products.html).Starting June 23, 2021, radiometric calibration coefficient Version 5 (RCC V5) will be applied to newly observed ASTER data and archived ASTER data products. Details regarding RCC V5 are described in the following journal article.Tsuchida, S., Yamamoto, H., Kouyama, T., Obata, K., Sakuma, F., Tachikawa, T., Kamei, A., Arai, K., Czapla-Myers, J.S., Biggar, S.F., and Thome, K.J., 2020, Radiometric Degradation Curves for the ASTER VNIR Processing Using Vicarious and Lunar Calibrations: Remote Sensing, v. 12, no. 3, at https://doi.org/10.3390/rs12030427.</Description>
+  <DOI>
+    <DOI>10.5067/ASTER/AST14DEM.003</DOI>
+    <Authority>https://doi.org</Authority>
+  </DOI>
+  <RevisionDate>2021-06-23T19:15:00.000Z</RevisionDate>
+  <ProcessingLevelId>3</ProcessingLevelId>
+  <ProcessingLevelDescription>ASTER On-Demand L3 DEM</ProcessingLevelDescription>
+  <ArchiveCenter>LP DAAC</ArchiveCenter>
+  <VersionDescription>Not provided</VersionDescription>
+  <CitationForExternalPublication>The DOI landing page provides citations in APA and Chicago styles.</CitationForExternalPublication>
+  <CollectionState>ACTIVE</CollectionState>
+  <UseConstraints>
+    <LicenseURL>
+      <URL>https://earthdata.nasa.gov/earth-observation-data/data-use-policy</URL>
+      <Description>License URL for data use policy</Description>
+      <Type>Data Use Policy</Type>
+      <MimeType>text/html</MimeType>
+    </LicenseURL>
+  </UseConstraints>
+  <DataFormat>GeoTIFF</DataFormat>
+  <SpatialKeywords>
+    <Keyword>GLOBAL LAND</Keyword>
+    <Keyword>GLOBAL</Keyword>
+  </SpatialKeywords>
+  <Temporal>
+    <EndsAtPresentFlag>true</EndsAtPresentFlag>
+    <RangeDateTime>
+      <BeginningDateTime>2000-03-06T00:30:05.000Z</BeginningDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Contacts>
+    <Contact>
+      <Role>ARCHIVER</Role>
+      <HoursOfService>M-F, 8 a.m. to 4 p.m. Central Time</HoursOfService>
+      <Instructions>LP DAAC User Services is the point of contact for answering questions concerning data products, data access, and online applications.</Instructions>
+      <OrganizationName>LP DAAC</OrganizationName>
+      <OrganizationAddresses>
+        <Address>
+          <StreetAddress>U.S. Geological Survey, Earth Resources Observation and Science (EROS) Center</StreetAddress>
+          <City>Sioux Falls</City>
+          <StateProvince>South Dakota</StateProvince>
+          <PostalCode>57198</PostalCode>
+          <Country>US</Country>
+        </Address>
+      </OrganizationAddresses>
+      <OrganizationPhones>
+        <Phone>
+          <Number>605-594-6116</Number>
+          <Type>Telephone</Type>
+        </Phone>
+        <Phone>
+          <Number>866-573-3222</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+      </OrganizationPhones>
+      <OrganizationEmails>
+        <Email>lpdaac@usgs.gov</Email>
+      </OrganizationEmails>
+    </Contact>
+  </Contacts>
+  <ScienceKeywords>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>LAND SURFACE</TopicKeyword>
+      <TermKeyword>TOPOGRAPHY</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>TERRAIN ELEVATION</Value>
+        <VariableLevel2Keyword>
+          <Value>TOPOGRAPHICAL RELIEF MAPS</Value>
+        </VariableLevel2Keyword>
+      </VariableLevel1Keyword>
+    </ScienceKeyword>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>LAND SURFACE</TopicKeyword>
+      <TermKeyword>TOPOGRAPHY</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>TERRAIN ELEVATION</Value>
+      </VariableLevel1Keyword>
+    </ScienceKeyword>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>LAND SURFACE</TopicKeyword>
+      <TermKeyword>TOPOGRAPHY</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>TERRAIN ELEVATION</Value>
+        <VariableLevel2Keyword>
+          <Value>DIGITAL ELEVATION/TERRAIN MODEL (DEM)</Value>
+        </VariableLevel2Keyword>
+      </VariableLevel1Keyword>
+    </ScienceKeyword>
+  </ScienceKeywords>
+  <Platforms>
+    <Platform>
+      <ShortName>Terra</ShortName>
+      <LongName>Earth Observing System, Terra (AM-1)</LongName>
+      <Type>Earth Observation Satellites</Type>
+      <Instruments>
+        <Instrument>
+          <ShortName>ASTER</ShortName>
+          <LongName>Advanced Spaceborne Thermal Emission and Reflection Radiometer</LongName>
+          <Sensors>
+            <Sensor>
+              <ShortName>VNIR</ShortName>
+              <LongName>Visible and Near Infrared Radiometer</LongName>
+              <Technique>Imaging Radiometer</Technique>
+            </Sensor>
+            <Sensor>
+              <ShortName>SWIR</ShortName>
+              <LongName>Short Wavelength Infrared Radiometer</LongName>
+            </Sensor>
+            <Sensor>
+              <ShortName>TIR</ShortName>
+              <LongName>Thermal Infrared Radiometer</LongName>
+            </Sensor>
+          </Sensors>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+  <AdditionalAttributes>
+    <AdditionalAttribute>
+      <Name>DAR_ID</Name>
+      <DataType>INT</DataType>
+      <Description>ID of the Data Acquisition Request</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>GenerationDateandTime</Name>
+      <DataType>DATETIME_STRING</DataType>
+      <Description>Date and Time granule produced</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>LowerLeftQuadCloudCoverage</Name>
+      <DataType>INT</DataType>
+      <Description>The percentage of cloud coverage for the lower left quadrant</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>LowerRightQuadCloudCoverage</Name>
+      <DataType>INT</DataType>
+      <Description>The percentage of cloud coverage for the lower right quadrant</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>SceneCloudCoverage</Name>
+      <DataType>INT</DataType>
+      <Description>Percentage of cloud coverage for the whole scene</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Solar_Azimuth_Angle</Name>
+      <DataType>FLOAT</DataType>
+      <Description>Angle of the sun clockwise from true North</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Solar_Elevation_Angle</Name>
+      <DataType>FLOAT</DataType>
+      <Description>Angle of the sun above the horizon</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>UpperLeftQuadCloudCoverage</Name>
+      <DataType>INT</DataType>
+      <Description>The percentage of cloud coverage for the upper left quadrant</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>UpperRightQuadCloudCoverage</Name>
+      <DataType>INT</DataType>
+      <Description>The percentage of cloud coverage for the upper right quadrant</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Band4_Available</Name>
+      <DataType>STRING</DataType>
+      <Description>Identifies the status of Band 4 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Band5_Available</Name>
+      <DataType>STRING</DataType>
+      <Description>Identifies the status of Band 5 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Band6_Available</Name>
+      <DataType>STRING</DataType>
+      <Description>Identifies the status of Band 6 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Band7_Available</Name>
+      <DataType>STRING</DataType>
+      <Description>Identifies the status of Band 7 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Band8_Available</Name>
+      <DataType>STRING</DataType>
+      <Description>Identifies the status of Band 8 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Band9_Available</Name>
+      <DataType>STRING</DataType>
+      <Description>Identifies the status of Band 9 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>RadiometricDBVersion</Name>
+      <DataType>STRING</DataType>
+      <Description>The version number of the Radiometric Database used in Level 1 processing.</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>GeometricDBVersion</Name>
+      <DataType>STRING</DataType>
+      <Description>The version number of the Geometric Database used in Level 1 processing.</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>ASTERGains</Name>
+      <DataType>STRING</DataType>
+      <Description>Identifies the Gain setting for the Bands: HGH, NOR, LO1, LO2, LOW, OFF</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>ASTERGRANULEID</Name>
+      <DataType>STRING</DataType>
+      <Description>Unique identifier for the data granule held at the ASTER GDS</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>ASTERProcessingCenter</Name>
+      <DataType>STRING</DataType>
+      <Description>Name of the center where these ASTER data were processed</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>ASTERVNIRPointingAngle</Name>
+      <DataType>FLOAT</DataType>
+      <Description>Specifies the pointing angle of the ASTER Visible Near Infrared (VNIR) sensor</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>ASTERSWIRPointingAngle</Name>
+      <DataType>FLOAT</DataType>
+      <Description>Specifies the pointing angle of the ASTER Shortwave Infrared (SWIR) sensor</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>ASTERMapOrientationAngle</Name>
+      <DataType>FLOAT</DataType>
+      <Description>Denotes the angle between the path oriented image and the map oriented image for this ASTER scene.</Description>
+      <ParameterRangeBegin>-180.0</ParameterRangeBegin>
+      <ParameterRangeEnd>180.0</ParameterRangeEnd>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>ASTERReceivingCenter</Name>
+      <DataType>STRING</DataType>
+      <Description>Name of the center where these ASTER data were received</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>ASTERSceneOrientationAngle</Name>
+      <DataType>FLOAT</DataType>
+      <Description>Denotes the azimuth angle made by the meridian at the ASTER scene center and the along-track direction, rotating from North toward East.</Description>
+      <ParameterRangeBegin>0.0</ParameterRangeBegin>
+      <ParameterRangeEnd>180.0</ParameterRangeEnd>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>source_granule_ur</Name>
+      <DataType>STRING</DataType>
+      <Description>Granule-ur of the source granule</Description>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>metadata.uuid</Name>
+      <DataType>STRING</DataType>
+      <Description>Not provided</Description>
+      <Value>e63c1490-00ed-4868-b0eb-88a4f2d8d593</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>metadata.extraction_date</Name>
+      <DataType>STRING</DataType>
+      <Description>Not provided</Description>
+      <Value>2016-01-11 08:20:51</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>metadata.keyword_version</Name>
+      <DataType>FLOAT</DataType>
+      <Description>Not provided</Description>
+      <Value>8.6</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>DIF9.0-to-DIF10-Converter</Name>
+      <DataType>STRING</DataType>
+      <Description>Not provided</Description>
+      <Value>2016-01-11T13:43:11ZVersion:-3.0Target:10.2</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Discipline</Name>
+      <DataType>STRING</DataType>
+      <Description>Not provided</Description>
+      <Value>EARTH SCIENCE</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>IDN_Node.Short_Name</Name>
+      <DataType>STRING</DataType>
+      <Description>Not provided</Description>
+      <Value>ECHOUSA/NASA</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>IDN_Node.UUID</Name>
+      <DataType>STRING</DataType>
+      <Description>Not provided</Description>
+      <Value>2efb470f-61f8-4046-b2ee-ebed27e2f3109ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Original.Dataset_Citation.DOI</Name>
+      <DataType>STRING</DataType>
+      <Description>Not provided</Description>
+      <Value>10.5067/ASTER/AST14DEM.003</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Original.Metadata_Version</Name>
+      <DataType>STRING</DataType>
+      <Description>Not provided</Description>
+      <Value>VERSION 9.9.3</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Original.Dataset_Language</Name>
+      <DataType>STRING</DataType>
+      <Description>Not provided</Description>
+      <Value>English</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>Original.xsi:schemaLocation</Name>
+      <DataType>STRING</DataType>
+      <Description>Not provided</Description>
+      <Value>https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>identifier_product_doi</Name>
+      <DataType>STRING</DataType>
+      <Description>Digital object identifier that uniquely identifies this data product</Description>
+      <Value>10.5067/ASTER/AST14DEM.003</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>identifier_product_doi_authority</Name>
+      <DataType>STRING</DataType>
+      <Description>URL of the digital object identifier resolving authority</Description>
+      <Value>https://doi.org</Value>
+    </AdditionalAttribute>
+  </AdditionalAttributes>
+  <Campaigns>
+    <Campaign>
+      <ShortName>Terra</ShortName>
+      <LongName>Earth Observing System (EOS), Terra</LongName>
+    </Campaign>
+  </Campaigns>
+  <SpatialInfo>
+    <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+    <HorizontalCoordinateSystem>
+      <GeodeticModel>
+        <HorizontalDatumName>World Geodetic System (WGS84)</HorizontalDatumName>
+      </GeodeticModel>
+      <GeographicCoordinateSystem>
+        <GeographicCoordinateUnits>Meters</GeographicCoordinateUnits>
+        <LatitudeResolution>30.0</LatitudeResolution>
+        <LongitudeResolution>30.0</LongitudeResolution>
+      </GeographicCoordinateSystem>
+    </HorizontalCoordinateSystem>
+  </SpatialInfo>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>https://search.earthdata.nasa.gov/search?q=C1299783579-LPDAAC_ECS</URL>
+      <URLDescription>Earthdata Search allows users to search, discover, visualize, refine, and access NASA Earth Observation data.</URLDescription>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>https://lpdaac.usgs.gov/</URL>
+      <Description>The LP DAAC website provides detailed information on discovery, distribution, access, and support of land data products.</Description>
+      <Type>CollectionURL : PROJECT HOME PAGE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://asterweb.jpl.nasa.gov/</URL>
+      <Description>The ASTER home page is maintained through NASA's Jet Propulsion Laboratory and documents various aspects of the ASTER mission.</Description>
+      <Type>CollectionURL : PROJECT HOME PAGE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://doi.org/10.5067/ASTER/AST14DEM.003</URL>
+      <Description>The LP DAAC product page provides information on Science Data Set layers and links for user guides, ATBDs, data access, tools, customer support, etc.</Description>
+      <Type>CollectionURL : DATA SET LANDING PAGE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://lpdaac.usgs.gov/documents/69/AST_L1_User_Guide_V3.pdf</URL>
+      <Description>ASTER Level-1 User Guide</Description>
+      <Type>VIEW RELATED INFORMATION : USER'S GUIDE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://lpdaac.usgs.gov/documents/80/AST14_User_Guide_V3.pdf</URL>
+      <Description>ASTER Higher-Level Product User Guide</Description>
+      <Type>VIEW RELATED INFORMATION : USER'S GUIDE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://lpdaac.usgs.gov/documents/81/AST14_ATBD.pdf</URL>
+      <Description>The ATBD provides physical theory and mathematical procedures for the calculations used to produce the data products.</Description>
+      <Type>VIEW RELATED INFORMATION : ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://lpdaac.usgs.gov/documents/996/ASTER_Earthdata_Search_Order_Instructions.pdf</URL>
+      <Description>ASTER Order Instructions</Description>
+      <Type>VIEW RELATED INFORMATION : HOW-TO</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://lpdaac.usgs.gov/documents/642/DEM_Comparison_Guide.pdf</URL>
+      <Description>DEM Comparison Guide</Description>
+      <Type>VIEW RELATED INFORMATION : PRODUCT USAGE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://lpdaac.usgs.gov/documents/1010/ASTER_User_Handbook_v3.pdf</URL>
+      <Description>The ASTER User Handbook provides in depth information on ASTER data products.</Description>
+      <Type>VIEW RELATED INFORMATION : USER'S GUIDE</Type>
+    </OnlineResource>
+  </OnlineResources>
+  <Spatial>
+    <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+    <HorizontalSpatialDomain>
+      <Geometry>
+        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+        <BoundingRectangle>
+          <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+          <NorthBoundingCoordinate>83.0</NorthBoundingCoordinate>
+          <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+          <SouthBoundingCoordinate>-83.0</SouthBoundingCoordinate>
+        </BoundingRectangle>
+      </Geometry>
+    </HorizontalSpatialDomain>
+    <GranuleSpatialRepresentation>GEODETIC</GranuleSpatialRepresentation>
+  </Spatial>
+  <AssociatedBrowseImageUrls>
+    <ProviderBrowseUrl>
+      <URL>https://e4ftl01.cr.usgs.gov//WORKING/BRWS/Browse.001/2021.06.16/pg-BR1A0000-2021061601_029_043.1.VNIR.jpg</URL>
+      <Description>Browse image for Earthdata Search</Description>
+    </ProviderBrowseUrl>
+  </AssociatedBrowseImageUrls>
+</Collection>
