@@ -1,7 +1,9 @@
 (ns cmr.system-int-test.search.granule-search-format-test
   "Integration tests for searching granules in various formats"
   (:require
+   [cheshire.core :as json]
    [clj-http.client :as client]
+   [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.concepts :as cu]
@@ -700,3 +702,35 @@
       (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
             response (search/find-metadata :granule :echo10 {:granule-ur "Granule3"})]
         (is (string/includes? response "s3://aws.com"))))))
+
+(deftest granule-concept-stac-retrieval-test
+  (testing "retrieval of granule concept in STAC format"
+    (let [coll-metadata (slurp (io/resource "CMR-7794/C1299783579-LPDAAC_ECS.xml"))
+          {coll-concept-id :concept-id} (ingest/ingest-concept
+                                         (ingest/concept :collection "PROV1" "foo" :echo10 coll-metadata))
+          gran-metadata (slurp (io/resource "CMR-7794/G1327299284-LPDAAC_ECS.xml"))
+          {gran-concept-id :concept-id} (ingest/ingest-concept
+                                         (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))
+          expected (-> "CMR-7794/granule_stac.json"
+                       io/resource
+                       slurp
+                       (string/replace #"CollectionConceptId" coll-concept-id)
+                       (string/replace #"GranuleConceptId" gran-concept-id)
+                       (json/decode true))]
+      (index/wait-until-indexed)
+
+      (util/are3 [options]
+        (let [response (search/retrieve-concept gran-concept-id nil options)
+              temp-excluded-fields [:geometry :bbox]]
+          (is (search/mime-type-matches-response? response mt/stac))
+          ; (is (= expected
+          ;        (json/decode (:body response) true)))
+          (is (= (apply (partial dissoc expected) temp-excluded-fields)
+                 (apply (partial dissoc (json/decode (:body response) true)) temp-excluded-fields)))
+          )
+
+        "retrieval by accept header"
+        {:accept "application/json; profile=stac-catalogue"}
+
+        "retrieval by suffix"
+        {:url-extension "stac"}))))

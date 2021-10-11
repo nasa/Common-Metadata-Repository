@@ -31,7 +31,12 @@
 (defn base-mime-type-of
   "Returns the base MIME type of the given MIME type string."
   [mt]
-  (:base (parse-mime-type mt)))
+  (let [{:keys [base parameters]} (parse-mime-type mt)
+        profile (get parameters "profile")]
+    (if (and (= "application/json" base)
+             (= "stac-catalogue" profile))
+      "application/json; profile=stac-catalogue"
+      base)))
 
 (defn version-of
   "Returns the version parameter, if present, of the given mime type."
@@ -79,6 +84,7 @@
    :atom             "application/atom+xml"
    :kml              "application/vnd.google-earth.kml+xml"
    :opendata         "application/opendata+json"
+   :stac             "application/json; profile=stac-catalogue"
    :native           "application/metadata+xml"
    :edn              "application/edn"
    :opendap          "application/x-netcdf"

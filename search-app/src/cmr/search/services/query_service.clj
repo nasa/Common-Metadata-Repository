@@ -284,7 +284,7 @@
 (defn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context result-format concept-id]
-  (if (contains? #{:atom :json} result-format)
+  (if (contains? #{:atom :json :stac} result-format)
     ;; do a query and use single-result->response
     (let [query (common-params/parse-parameter-query context
                                                      (cc/concept-id->type concept-id)
