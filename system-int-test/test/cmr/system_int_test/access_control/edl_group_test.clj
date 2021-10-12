@@ -8,7 +8,6 @@
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.ingest-util :as ingest]))
 
-
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"
                                            "provguid3" "PROV3"}))
@@ -25,6 +24,8 @@
       (dev-sys-util/eval-in-dev-sys `(acl-validation/set-allow-edl-groups! true))
       (is (= 200 (:status (data-core/create-acl acl)))))
 
-    (testing "Error returned when try to ingest ACL with an EDL group ID when toggle set flase"
+    (testing "Error returned when try to ingest ACL with an EDL group ID when toggle set false"
       (dev-sys-util/eval-in-dev-sys `(acl-validation/set-allow-edl-groups! false))
-      (is (thrown? java.lang.Exception (data-core/create-acl acl))))))
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"clj-http: status 400"
+                            (data-core/create-acl acl))))))
