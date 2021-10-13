@@ -139,7 +139,12 @@
       :Unit "KB",
       :Fees nil,
       :Checksum nil,
-      :MimeType nil}}))
+      :MimeType nil}}
+    {:URL "https://search.earthdata.nasa.gov/search?q=MOD10A1",
+     :URLContentType "CollectionURL",
+     :Type "PROJECT HOME PAGE",
+     :Subtype nil,
+     :Description "Project Home Page."}))
 
 (defn- distribution-related-url-iso-mends-record
   "Returns an example ISO19115 metadata record that includes multiple related urls

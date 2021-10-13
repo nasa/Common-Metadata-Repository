@@ -336,6 +336,8 @@ This is like a sentence saying "Science Users can view and order and Guests can 
 
 The subject and predicate are in `group_permissions`. An ACL can identify multiple permissions per group. There can be multiple subjects and multiple predicates per subject in a single ACL.
 
+By default, any provided `group_id` must be in the format of a CMR group concept_id. If the access-control configuration `allow-edl-groups` is set to `true`, then this validation will be bypassed.
+
 Every ACL refers to an object called an "identity". The "identity" identifies what in the CMR is being granted permission by the the ACL. There are 4 kinds of identities:
 
 * System Identities - Identifies a system level thing in the CMR.

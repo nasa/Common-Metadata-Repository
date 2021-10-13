@@ -110,7 +110,8 @@
         :when (not (= href-type "DirectDistributionInformation"))]
     (merge
      {:URL url-link
-      :URLContentType "DistributionURL"
+      :URLContentType (or (:URLContentType types-and-desc)
+                          "DistributionURL")
       :Type type
       :Subtype (if opendap-type
                 "OPENDAP DATA (DODS)"

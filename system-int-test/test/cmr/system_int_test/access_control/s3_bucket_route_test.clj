@@ -54,6 +54,19 @@
                       :S3BucketAndObjectPrefixNames ["s3://aws.example-3.com" "s3"]
                       :S3CredentialsAPIEndpoint "http://api.example.com"
                       :S3CredentialsAPIDocumentationURL "http://docs.example.com"}}))
+
+        ;; CMR-7416
+        concept-4 (data-core/ingest-umm-spec-collection
+                   "PROV1"
+                   (data-umm-c/collection
+                    {:EntryTitle "s3-PROV1-2"
+                     :ShortName "s3 bucket test collection 2"
+                     :DirectDistributionInformation
+                     {:Region "us-east-1"
+                      :S3BucketAndObjectPrefixNames [" [\"test-daac/test-prefix1/\", \"test-daac/test-prefix2/\"]"]
+                      :S3CredentialsAPIEndpoint "http://api.example.com"
+                      :S3CredentialsAPIDocumentationURL "http://docs.example.com"}}))
+
         ;; create all access group
         all-prov-group-id (echo-util/get-or-create-group
                            (system/context)
@@ -112,12 +125,17 @@
        ["s3"
         "s3://aws.example-1.com"
         "s3://aws.example-2.com"
-        "s3://aws.example-3.com"]
+        "s3://aws.example-3.com"
+        "test-daac/test-prefix1/"
+        "test-daac/test-prefix2/"]
 
        "single provider filtering"
        {:user_id "user1"
         :provider ["PROV1"]}
-       ["s3" "s3://aws.example-1.com"]
+       ["s3"
+        "s3://aws.example-1.com"
+        "test-daac/test-prefix1/"
+        "test-daac/test-prefix2/"]
 
        "multiple provider filtering"
        {:user_id "user1"

@@ -37,7 +37,8 @@
    :concepts :short-name
    :iso-topic-categories :uuid
    :related-urls :uuid
-   :granule-data-format :uuid})
+   :granule-data-format :uuid
+   :mime-type :uuid})
 
 (comment
  "The following map contains code used for trasitioning CMR from SIT->UAT->PROD
@@ -66,10 +67,11 @@
    :measurement-name "measurementname?format=csv"
    :concepts "idnnode?format=csv"
    :iso-topic-categories "isotopiccategory?format=csv"
-   :related-urls (if production? "rucontenttype?format=csv"
-                   "rucontenttype?format=csv&version=draft")
-   :granule-data-format (if production? "granuledataformat?format=csv"
-                          "granuledataformat?format=csv&version=draft")})
+   :related-urls (if production?
+                   "rucontenttype?format=csv"
+                   "rucontenttype?format=csv&version=DRAFT")
+   :granule-data-format "granuledataformat?format=csv"
+   :mime-type "mimetype?format=csv"})
 
 (def keyword-scheme->field-names
   "Maps each keyword scheme to its subfield names. These values are also used to
@@ -86,7 +88,8 @@
    :concepts [:short-name :long-name :uuid]
    :iso-topic-categories [:iso-topic-category :uuid]
    :related-urls [:url-content-type :type :subtype :uuid]
-   :granule-data-format [:short-name :long-name :uuid]})
+   :granule-data-format [:short-name :long-name :uuid]
+   :mime-type [:mime-type :uuid]})
 
 (def keyword-scheme->expected-field-names
   "Maps each keyword scheme to the expected field names to be returned by KMS. We changed
