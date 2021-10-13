@@ -159,23 +159,6 @@
     (testing (str format " to :umm-json")
       (is (empty? (generate-and-validate-xml :collection :umm-json umm-c-record))))))
 
-(defn- remove-contacts-related-urls
-  "Remove all the related urls from contacts, it could be contact persons or groups.
-  Each contact contains ContactInformation which contains RelatedUrls"
-  [contacts]
-  (for [contact contacts]
-    (update contact :ContactInformation #(dissoc % :RelatedUrls))))
-
-(defn- remove-datacenters-related-urls
-  "Remove all the related urls from data centers. Each data center contains
-  ContactInformation, as well as contact persons and groups."
-  [data-centers]
-  (for [data-center data-centers]
-    (-> data-center
-        (update :ContactInformation #(dissoc % :RelatedUrls))
-        (update :ContactPersons #(remove-contacts-related-urls %))
-        (update :ContactGroups #(remove-contacts-related-urls %)))))
-
 ;; This test starts with a umm record where the values of the record
 ;; are generated with different values every time. This test takes the
 ;; UMM record and converts it into another supported format, then converts it back
@@ -193,30 +176,12 @@
                                            {:Date (t/date-time 2013)
                                             :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
-          ;; remove all RelatedUrls because after we change the schema values
-          ;; from enum to string, the random values won't be matching after the
-          ;; convert and the roundtrip.
-          expected (-> expected
-                       (dissoc :RelatedUrls)
-                       ;; ContactPerson/Group contains ContactInformation, which contains RelatedUrls
-                       (update :ContactPersons #(remove-contacts-related-urls %))
-                       (update :ContactGrouops #(remove-contacts-related-urls %))
-                       ;; DataCenter contains ContactInformation, ContactPersons and ContactGroups.
-                       (update :DataCenters  #(remove-datacenters-related-urls %)))
           actual (xml-round-trip :collection metadata-format umm-record)
-          actual (-> actual
-                     (dissoc :RelatedUrls)
-                     ;; contains ContactInformation, which contains RelatedUrls
-                     (update :ContactPersons #(remove-contacts-related-urls %))
-                     (update :ContactGrouops #(remove-contacts-related-urls %))
-                     ;; contains ContactInformation, ContactPersons and ContactGroups.
-                     (update :DataCenters  #(remove-datacenters-related-urls %)))
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]
       (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
-
 
 ;; This test starts with a umm record where the values of the record
 ;; are generated with a seed number. When using a seed number you can
@@ -239,28 +204,11 @@
                                          {:Date (t/date-time 2013)
                                           :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
-          ;; remove all RelatedUrls because after we change the schema values
-          ;; from enum to string, the random values won't be matching after the
-          ;; convert and the roundtrip.
-          expected (-> expected
-                       (dissoc :RelatedUrls)
-                       ;; ContactPerson/Group contains ContactInformation, which contains RelatedUrls
-                       (update :ContactPersons #(remove-contacts-related-urls %))
-                       (update :ContactGrouops #(remove-contacts-related-urls %))
-                       ;; DataCenter contains ContactInformation, ContactPersons and ContactGroups.
-                       (update :DataCenters  #(remove-datacenters-related-urls %)))
           actual (xml-round-trip :collection metadata-format umm-record)
-          actual (-> actual 
-                     (dissoc :RelatedUrls)
-                     ;; contains ContactInformation, which contains RelatedUrls
-                     (update :ContactPersons #(remove-contacts-related-urls %))
-                     (update :ContactGrouops #(remove-contacts-related-urls %))
-                     ;; contains ContactInformation, ContactPersons and ContactGroups.
-                     (update :DataCenters  #(remove-datacenters-related-urls %)))
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]
-      (is (= expected actual)  
+      (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
 
 (defn- parse-iso19115-projects-keywords
