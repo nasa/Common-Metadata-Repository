@@ -5,6 +5,7 @@
     [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.access-control.int-test.fixtures :as fixtures]
+    [cmr.access-control.services.acl-validation :as acl-validation]
     [cmr.access-control.test.util :as test-util]
     [cmr.common.util :as util :refer [are3]]
     [cmr.mock-echo.client.echo-util :as echo-util]

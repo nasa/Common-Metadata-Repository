@@ -5,6 +5,7 @@
     [cmr.access-control.services.group-service :as group-service]
     [cmr.access-control.services.messages :as msg]
     [cmr.acl.core :as acl]
+    [cmr.common.config :as cfg :refer [defconfig]]
     [cmr.common.date-time-parser :as dtp]
     [cmr.common.validations.core :as v]
     [cmr.common.concepts :as concepts]
@@ -85,6 +86,10 @@
       (println "|" target "|" (clojure.string/join ", " permissions) "|"))
     (println)))
 
+(defconfig allow-edl-groups
+  "Flag that indicates if we accept EDL Group Names as group_id identifiers."
+  {:default false :type Boolean})
+
 (defn- get-identity-type
   [acl]
   (cond
@@ -96,8 +101,8 @@
 (defn- group-id-validation
   "Validates if group-ids are valid CMR concept-ids"
   [key-path group-id]
-  (let [regex #"AG\d+-\S+"]
-    (when-not (re-matches regex group-id)
+  (let [regex #"^AG\d+-\S+$"]
+    (when-not (or (allow-edl-groups) (re-matches regex group-id))
       {key-path [(format "[%s] is not a valid group concept-id" group-id)]})))
 
 (defn- make-group-permissions-validation
