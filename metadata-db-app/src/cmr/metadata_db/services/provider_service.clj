@@ -41,7 +41,6 @@
    (or (when (= (:provider-id pv/cmr-provider) provider-id)
          pv/cmr-provider)
        (providers/get-provider (mdb-util/context->db context) provider-id)
-       ; filter out nils here?
        (when throw-error?
          (errors/throw-service-error :not-found (msg/provider-does-not-exist provider-id))))))
 
