@@ -93,8 +93,8 @@
             "- nil test"
             "PROV0A" "S0A" false false nil
 
-            "- empty string"
-            "PROV0B" "S0B" true false ""
+            ;"- empty string"
+            ;"PROV0B" "S0B" true false ""
 
             "- one consortium "
             "PROV0F" "S0F" false true "Group1"
