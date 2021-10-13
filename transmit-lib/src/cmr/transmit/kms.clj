@@ -70,7 +70,9 @@
    :related-urls (if production?
                    "rucontenttype?format=csv"
                    "rucontenttype?format=csv&version=DRAFT")
-   :granule-data-format "granuledataformat?format=csv"
+   :granule-data-format (if production?
+                          "granuledataformat?format=csv"
+                          "granuledataformat?format=csv&version=DRAFT")
    :mime-type "mimetype?format=csv"})
 
 (def keyword-scheme->field-names

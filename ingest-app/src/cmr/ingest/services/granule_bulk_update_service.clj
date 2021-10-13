@@ -626,4 +626,4 @@
     (catch Exception e
       ;; not sure if this is the best way to handle this error, looks like a
       ;; bunch of noise during tests which has no impact.
-      (println (.getMessage e)))))
+      (comment println (.getMessage e)))))

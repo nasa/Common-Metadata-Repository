@@ -674,7 +674,7 @@
                                     "value" "5c406abc-104d-4517-96b8-dbbcf515f00f"}]}
                           {"value" "netCDF-4"
                            "uuid" [{"value" "30ea4e9a-4741-42c9-ad8f-f10930b35294"
-                                    "uuid" "30ea4e9a-4741-42c9-ad8f-f10930b35294"}]}]}})
+                                    "uuid" "30ea4e9a-4741-42c9-ad8f-f10930b35294"}]}]}
     :mime-type {"mime_type"
                 [{"value" "text/css"
                   "uuid"

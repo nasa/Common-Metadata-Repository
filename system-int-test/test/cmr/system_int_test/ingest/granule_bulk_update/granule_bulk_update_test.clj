@@ -729,14 +729,7 @@
 
         (doseq [item expected]
           (is (some #(= item %) granule-statuses)
-              (format "does %s exist in granule-statuses regardless of order" item)))
-
-        (comment is (= [{:granule-ur "Unique_Granule_UR_v1.6"
-                 :status "UPDATED"}
-                {:granule-ur "Unique_Granule_UR_2_v1.6"
-                 :status "UPDATED"}]
-               granule-statuses))
-      )
+              (format "does %s exist in granule-statuses regardless of order" item))))
       ;; verify the granule metadata is updated as expected
       (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
             updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
