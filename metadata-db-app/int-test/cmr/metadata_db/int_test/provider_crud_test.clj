@@ -75,9 +75,9 @@
                     :small false}
           updated-provider (assoc provider :cmr-only true)]
       (util/save-provider provider)
-      (is (util/verify-provider-was-saved provider))
+      (is (util/verify-provider-was-saved provider) "before update")
       (util/update-provider updated-provider)
-      (is (util/verify-provider-was-saved updated-provider))))
+      (is (util/verify-provider-was-saved updated-provider) "after update")))
   (testing "cannot modify small field of a provider"
     (let [{:keys [status errors]} (util/update-provider {:provider-id "PROV1"
                                                          :short-name "S1"

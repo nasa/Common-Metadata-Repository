@@ -2,6 +2,7 @@
   "CMR provider ingest integration test"
   (:require
     [clj-http.client :as client]
+    ;[clojure.pprint :as pprint]
     [clojure.set :as set]
     [clojure.test :refer :all]
     [cmr.access-control.test.util :as access-control]
@@ -36,10 +37,11 @@
 (deftest provider-ingest-test
   (testing "create provider and get providers through ingest app"
     (are [provider-id short-name cmr-only small]
-         (let [{:keys [status]} (ingest/create-ingest-provider {:provider-id provider-id
-                                                                :short-name short-name
-                                                                :cmr-only cmr-only
-                                                                :small small})]
+         (let [provider {:provider-id provider-id
+                         :short-name short-name
+                         :cmr-only cmr-only
+                         :small small}
+               {:keys [status]} (ingest/create-ingest-provider provider)]
            (and (= 201 status))
            (= (ingest/get-providers) (ingest/get-ingest-providers)))
          "PROV3" "S3" false false
@@ -48,6 +50,7 @@
          "PROV6" "S6" true true
          "PROV7" "S7" nil nil
          "PROV8" nil nil nil))
+
   (testing "create provider invalid value"
     (u/are2
       [provider error]
@@ -72,7 +75,38 @@
                                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
             {:keys [status body]} response]
         (is (= 415 status))
-        (is (re-find #"Creating or updating a provider requires a JSON content type" body))))))
+        (is (re-find #"Creating or updating a provider requires a JSON content type" body)))))
+
+  (testing "create provider with consortiums and get providers through ingest app"
+    (u/are3 [provider-id short-name cmr-only small consortiums]
+         (let [provider {:provider-id provider-id
+                         :short-name short-name
+                         :cmr-only cmr-only
+                         :small small
+                         :consortiums consortiums}
+               {:keys [status]} (ingest/create-ingest-provider provider)
+               results (ingest/get-ingest-providers)
+               test_candidate (first (filter #(= provider-id (:provider-id %)) results))]
+           (is (= 201 status) "status check")
+           (is (= consortiums (:consortiums test_candidate)) "consortiums check"))
+
+            "- nil test"
+            "PROV0A" "S0A" false false nil
+
+            "- empty string"
+            "PROV0B" "S0B" true false ""
+
+            "- one consortium "
+            "PROV0F" "S0F" false true "Group1"
+
+            "- two consortiums"
+            "PROV10" "S10" true true "Group2,Group3"
+
+            "- two consortiums with a space"
+            "PROV11" "S11" nil nil "Group2, Group3"
+
+            "- all blank"
+            "PROV12" nil nil nil nil)))
 
 (deftest update-provider-test
   (testing "creating a provider and changing attributes"
@@ -91,8 +125,29 @@
     (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
              {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
              {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
-             {:provider-id "PROV1" :short-name "PROV1":cmr-only true :small false}}
+             {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
            (set (ingest/get-ingest-providers)))))
+
+    (testing "creating a provider and changing consortiums attributes"
+      (ingest/create-ingest-provider {:provider-id "PROV6"
+                                      :short-name "S6"
+                                      :cmr-only false
+                                      :small false})
+      (ingest/update-ingest-provider {:provider-id "PROV6"
+                                      :short-name "S6"
+                                      :cmr-only false
+                                      :small false
+                                      :consortiums "Consortium-6"})
+
+      (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
+               {:provider-id "PROV6" :short-name "S6" :cmr-only false :small false :consortiums "Consortium-6"}
+               {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
+               {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
+               {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
+             (set (ingest/get-ingest-providers)))))
+
+
+
   (testing "updating a non-existent provider fails"
     (is (= 404 (:status (ingest/update-ingest-provider {:provider-id "PROV5"
                                                         :short-name "S5"
