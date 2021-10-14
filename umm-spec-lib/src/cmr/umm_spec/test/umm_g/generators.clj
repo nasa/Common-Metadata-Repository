@@ -113,7 +113,7 @@
   (-> granule-model-gen
       (assoc :collection-ref (gen/generate umm-g-coll-refs))
       (assoc :measured-parameters (-> umm-g-measured-parameter-gen
-                                      (gen/vector 0 5)
+                                      (gen/vector-distinct 0 5)
                                       ext-gen/nil-if-empty
                                       ext-gen/optional
                                       gen/generate))
