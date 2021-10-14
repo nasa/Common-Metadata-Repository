@@ -93,6 +93,7 @@
             "- nil test"
             "PROV0A" "S0A" false false nil
 
+            ;;The following test is actually the same as the one above on SQL
             ;"- empty string"
             ;"PROV0B" "S0B" true false ""
 
