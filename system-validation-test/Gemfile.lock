@@ -35,6 +35,9 @@ GEM
       cucumber-messages (~> 17.0, >= 17.0.1)
     diff-lcs (1.4.4)
     ffi (1.15.4)
+    httparty (0.20.0)
+      mime-types (~> 3.0)
+      multi_xml (>= 0.5.2)
     jsonpath (1.1.0)
       multi_json
     mime-types (3.3.1)
@@ -42,6 +45,10 @@ GEM
     mime-types-data (3.2021.0901)
     multi_json (1.15.0)
     multi_test (0.1.2)
+    multi_xml (0.6.0)
+    nokogiri (1.12.5-x86_64-darwin)
+      racc (~> 1.4)
+    racc (1.5.2)
     rspec (3.10.0)
       rspec-core (~> 3.10.0)
       rspec-expectations (~> 3.10.0)
@@ -63,7 +70,9 @@ PLATFORMS
 
 DEPENDENCIES
   cucumber (~> 7.0.0)
+  httparty (~> 0.20.0)
   jsonpath (~> 1.1)
+  nokogiri (~> 1.12.5)
   rspec (~> 3.10.0)
 
 BUNDLED WITH
