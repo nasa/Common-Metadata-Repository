@@ -5,6 +5,8 @@
    [cmr.common.util :as util :refer [are3]]
    [cmr.ingest.services.granule-bulk-update.additional-file.umm-g :as umm-g]))
 
+(def ^:private context "A fake context object" {:ignore-kms-keywords true})
+
 (deftest update-files
   ;;note we are not validating values here, so these tests serve solely to verify
   ;;replacement logic. Proper validation is done as part of integration testing
@@ -12,6 +14,7 @@
     (are3 [input-files source result]
       (is (= result
              (get-in (umm-g/update-additional-files
+                      context
                       {:DataGranule {:ArchiveAndDistributionInformation source}}
                       input-files false)
                      [:DataGranule :ArchiveAndDistributionInformation])))
@@ -145,6 +148,7 @@
     (are3 [input-files source result]
       (is (= result
              (get-in (umm-g/update-additional-files
+                      context
                       {:DataGranule {:ArchiveAndDistributionInformation source}}
                       input-files false)
                      [:DataGranule :ArchiveAndDistributionInformation])))
@@ -237,6 +241,7 @@
     (are3 [input-files source result]
       (is (= result
              (get-in (umm-g/update-additional-files
+                      context
                       {:DataGranule {:ArchiveAndDistributionInformation source}}
                       input-files false)
                      [:DataGranule :ArchiveAndDistributionInformation])))

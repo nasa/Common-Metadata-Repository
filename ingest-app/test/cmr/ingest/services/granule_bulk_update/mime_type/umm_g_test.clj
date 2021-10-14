@@ -5,12 +5,14 @@
    [cmr.common.util :as util :refer [are3]]
    [cmr.ingest.services.granule-bulk-update.mime-type.umm-g :as umm-g]))
 
+(def ^:private context "A fake context object" {})
+
 (deftest update-mime-types
   ;;note we are not checking errors here, so these tests serve solely to verify
   ;;replacement logic. Proper validation is done as part of integration testing
   (testing "Add/update mime-types"
     (are3 [input-links source result]
-      (is (= (umm-g/update-mime-type {:RelatedUrls source} input-links)
+      (is (= (umm-g/update-mime-type context {:RelatedUrls source} input-links)
              {:RelatedUrls result}))
 
       "Add some mime types to links"

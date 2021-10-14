@@ -33,7 +33,7 @@
 (defconfig granule-umm-version
   "Defines the latest granule umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.6.3"})
+  {:default "1.6.4"})
 
 (defconfig variable-umm-version
   "Defines the latest variable umm version accepted by ingest - it's the latest official version.

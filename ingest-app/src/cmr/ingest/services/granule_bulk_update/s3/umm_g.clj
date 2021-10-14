@@ -38,11 +38,11 @@
 (defn update-s3-url
   "Takes UMM-G record and a list of S3 urls to update.
   Returns the updated UMM-G record."
-  [umm-gran urls]
+  [_context umm-gran urls]
   (update umm-gran :RelatedUrls #(updated-related-urls % urls)))
 
 (defn append-s3-url
   "Takes UMM-G record and a list of S3 urls to append.
   Returns the updated UMM-G record."
-  [umm-gran urls]
+  [_context umm-gran urls]
   (update umm-gran :RelatedUrls #(appended-related-urls % urls)))

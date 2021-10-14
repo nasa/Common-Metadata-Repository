@@ -2,10 +2,13 @@
   "Contains functions to update UMM-G granule metadata for AdditionalFile granule bulk update."
   (:require
    [clojure.string :as string]
+   [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common.services.errors :as errors]
+   [cmr.common.validations.core :as v-core]
+   [cmr.ingest.validation.validation :as v-validation]
    [cmr.umm-spec.umm-json :as umm-json]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]))
-
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]))
 
 (defn- get-new-sizes
   "Returns updated Size, SizeUnit, and SizeInBytes. This operation is unique from the others in that
@@ -116,19 +119,34 @@
 
     (map #(transform-file % input-files-map) files)))
 
+(defn- path-errors->scheme-error
+  "Converts a validation error into a schema style error message for consistency
+   with existing code. This translation is needed for enums which were
+   previous checked against a Schema but are now checked against KMS"
+  [validation-errors]
+  (for [error validation-errors]
+    (format "#/%s: %s" (string/replace
+                        (string/join "/" (mapv str (:path error))) #":" "")
+            (first (:errors error)))))
+
 (defn update-additional-files
   "Updates the metadata Files and FilePackages contained under /DataGranule/ArchiveAndDistributionInformation.
    Optionally returns a list of unique validation errors which will be thrown if the resulting granule
    is saved."
-  ([umm-gran additional-files]
-   (update-additional-files umm-gran additional-files true))
-  ([umm-gran additional-files catch-errors]
+  ([context umm-gran additional-files]
+   (update-additional-files context umm-gran additional-files true))
+  ([context umm-gran additional-files catch-errors]
    (let [updated-metadata (update-in umm-gran [:DataGranule :ArchiveAndDistributionInformation]
                                  #(update-additional-file-metadata % additional-files))
-         validation-errors (umm-spec/validate-metadata :granule
-                                     :umm-json
-                                     (umm-json/umm->json updated-metadata))]
-
+         kms-index (kms-fetcher/get-kms-index context)
+         kms-errors (path-errors->scheme-error
+                     (umm-spec-validation/validate-granule-without-collection
+                      updated-metadata
+                      (v-validation/bulk-granule-keyword-validations context)))
+         schema-errors (umm-spec/validate-metadata :granule
+                                                   :umm-json
+                                                   (umm-json/umm->json updated-metadata))
+         validation-errors (concat kms-errors schema-errors)]
      (when (and catch-errors (seq validation-errors))
        ;;normal validation only throws the first error in the seq, but we want to throw them all,
        ;;with the exception of "extraneous key" errors, which are compound errors resulting from

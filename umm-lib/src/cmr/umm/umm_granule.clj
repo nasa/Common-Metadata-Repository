@@ -51,6 +51,12 @@
    ;; maps to SizeUnit in UMM-G schema
    size-unit
 
+   ;; Format is validated against values in KMS
+   ;; https://cmr.sit.earthdata.nasa.gov/search/keywords/granule-data-format
+   format
+
+   files
+
    ;; maps to Granule/DataGranule/Checksum
    checksum
 
@@ -182,6 +188,16 @@
   [
    pass
    tiles
+   ])
+
+(defrecord File
+  [
+   name
+   size-in-bytes
+   size size-unit
+   format
+   mime-type
+   checksum
    ])
 
 (defrecord UmmGranule

@@ -1,3 +1,7 @@
+[*.md]
+indent_style = space
+indent_size = 4 #this is important, the markdown for API docs will not see 2 spaces
+
 [*]
 indent_style = space
 indent_size = 2
