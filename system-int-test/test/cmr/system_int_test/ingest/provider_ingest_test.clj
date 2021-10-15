@@ -2,7 +2,6 @@
   "CMR provider ingest integration test"
   (:require
     [clj-http.client :as client]
-    ;[clojure.pprint :as pprint]
     [clojure.set :as set]
     [clojure.test :refer :all]
     [cmr.access-control.test.util :as access-control]
