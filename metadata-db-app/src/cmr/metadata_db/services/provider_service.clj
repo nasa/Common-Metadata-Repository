@@ -29,7 +29,7 @@
   (info "Getting provider list.")
   (let [db (mdb-util/context->db context)
         providers (providers/get-providers db)]
-    (map cmr.common.util/remove-nil-keys providers)))
+    (map util/remove-nil-keys providers)))
 
 (defn get-provider-by-id
   "Returns the provider with the given provider-id, raise error when provider does not exist based
