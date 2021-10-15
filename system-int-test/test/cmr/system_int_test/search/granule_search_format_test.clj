@@ -720,14 +720,10 @@
       (index/wait-until-indexed)
 
       (util/are3 [options]
-        (let [response (search/retrieve-concept gran-concept-id nil options)
-              temp-excluded-fields [:geometry :bbox]]
+        (let [response (search/retrieve-concept gran-concept-id nil options)]
           (is (search/mime-type-matches-response? response mt/stac))
-          ; (is (= expected
-          ;        (json/decode (:body response) true)))
-          (is (= (apply (partial dissoc expected) temp-excluded-fields)
-                 (apply (partial dissoc (json/decode (:body response) true)) temp-excluded-fields)))
-          )
+          (is (= expected
+                 (json/decode (:body response) true))))
 
         "retrieval by accept header"
         {:accept "application/json; profile=stac-catalogue"}
