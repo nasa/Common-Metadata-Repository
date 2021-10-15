@@ -48,12 +48,14 @@
       (let [provider-id (get body "provider-id")
             short-name (get body "short-name")
             cmr-only (get body "cmr-only")
-            small (get body "small")]
+            small (get body "small")
+            consortiums (get body "consortiums")]
         (save-provider request-context params
                        {:provider-id provider-id
                         :short-name (or short-name provider-id)
                         :cmr-only (if (some? cmr-only) cmr-only false)
-                        :small (if (some? small) small false)})))
+                        :small (if (some? small) small false)
+                        :consortiums consortiums})))
 
     ;; update a provider
     (PUT "/:provider-id" {{:keys [provider-id] :as params} :params

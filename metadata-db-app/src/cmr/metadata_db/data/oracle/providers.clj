@@ -15,11 +15,12 @@
 
 (defn dbresult->provider
   "Converts a map result from the database to a provider map"
-  [{:keys [provider_id short_name cmr_only small]}]
-  {:provider-id provider_id
-   :short-name short_name
-   :cmr-only (== 1 cmr_only)
-   :small (== 1 small)})
+  [{:keys [provider_id short_name cmr_only small consortiums]}]
+  (cutil/remove-nil-keys {:provider-id provider_id
+                          :short-name short_name
+                          :cmr-only (== 1 cmr_only)
+                          :small (== 1 small)
+                          :consortiums consortiums}))
 
 (defn- delete-small-provider-concepts
   "Delete all concepts of the given small provider"
@@ -48,14 +49,14 @@
     (if small
       (delete-small-provider-concepts db provider)
       (ct/delete-provider-concept-tables db provider))
-    
+
     ;; Delete the variable associations related to the provider via variable
     (j/db-do-commands db (str "DELETE FROM cmr_variable_associations where variable_concept_id like 'V%-" provider-id "'"))
     ;; Delete the variable associations related to the provider via collection
     (j/db-do-commands db (str "DELETE FROM cmr_variable_associations where associated_concept_id like 'C%-" provider-id "'"))
     ;; Delete variables of the provider
     (j/delete! db (ct/get-table-name provider :variable) ["provider_id = ?" provider-id])
-    
+
     ;; Delete the service associations related to the provider via service
     (j/db-do-commands db (str "DELETE FROM cmr_service_associations where service_concept_id like 'S%-" provider-id "'"))
     ;; Delete the service associations related to the provider via collection
@@ -78,11 +79,11 @@
 
 (defn save-provider
   [db provider]
-  (let [{:keys [provider-id short-name cmr-only small]} provider]
+  (let [{:keys [provider-id short-name cmr-only small consortiums]} provider]
     (j/insert! db
                :providers
-               ["provider_id" "short_name" "cmr_only" "small"]
-               [provider-id short-name (if cmr-only 1 0) (if small 1 0)])
+               ["provider_id" "short_name" "cmr_only" "small" "consortiums"]
+               [provider-id short-name (if cmr-only 1 0) (if small 1 0) consortiums])
     (when (not small)
       (ct/create-provider-concept-tables db provider))))
 
@@ -95,15 +96,18 @@
   [db provider-id]
   (first (map dbresult->provider
               (j/query db
-                       ["SELECT provider_id, short_name, cmr_only, small FROM providers where provider_id = ?"
+                       [(str "SELECT provider_id, short_name, cmr_only, small, consortiums"
+                             " FROM providers"
+                             " WHERE provider_id = ?")
                         provider-id]))))
 
 (defn update-provider
-  [db {:keys [provider-id short-name cmr-only]}]
+  [db {:keys [provider-id short-name cmr-only consortiums]}]
   (j/update! db
              :providers
              {:short_name short-name
-              :cmr_only (if cmr-only 1 0)}
+              :cmr_only (if cmr-only 1 0)
+              :consortiums consortiums}
              ["provider_id = ?" provider-id]))
 
 (defn delete-provider
