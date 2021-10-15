@@ -1676,8 +1676,8 @@
                            :updates ["granule_with_duplicate_opendap_types"]}
               {:keys [status task-id errors] :as response} (ingest/bulk-update-granules "PROV1" bulk-update bulk-update-options)]
 
-          (ingest/update-granule-bulk-update-task-statuses)
           (index/wait-until-indexed)
+          (ingest/update-granule-bulk-update-task-statuses)
 
           (is (= 200 status))
           (is (some? task-id))
