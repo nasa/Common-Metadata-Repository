@@ -8,9 +8,8 @@
    [cmr.common-app.services.search.results-model :as r]
    [cmr.common.util :as util]
    [cmr.search.models.query :as q]
-   [cmr.search.results-handlers.atom-results-handler :as atom]
-   [cmr.search.results-handlers.atom-links-results-handler :as atom-links]
    [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
+   [cmr.search.results-handlers.stac-spatial-results-handler :as ssrh]
    [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.url-helper :as url]
    [cmr.spatial.serialize :as srl]))
@@ -60,14 +59,6 @@
         atom-links (map (fn [link-str]
                           (update-in (json/decode link-str true) [:size] #(when % (str %))))
                         atom-links)
-        orbit (when ascending-crossing
-                {:ascending-crossing (util/double->string ascending-crossing)
-                 :start-lat (util/double->string start-lat)
-                 :start-direction start-direction
-                 :end-lat (util/double->string end-lat)
-                 :end-direction end-direction})
-        orbit-calculated-spatial-domains (map orbit-swath-helper/ocsd-json->map
-                                              orbit-calculated-spatial-domains-json)
         shapes (concat (srl/ords-info->shapes ords-info ords)
                        (when (and start-date end-date)
                          (orbit-swath-helper/elastic-result->swath-shapes
@@ -141,11 +132,6 @@
                   :href (:href first-browse-link)
                   :type (href->browse-type (:href first-browse-link))}))}))))
 
-(defn- shapes->geometry
-  "Returns the STAC geometry from the given shapes"
-  [shapes]
-  )
-
 (defmulti stac-reference->json
   "Converts a search result STAC reference into json"
   (fn [context concept-type reference]
@@ -165,8 +151,8 @@
                 :stac_version STAC_VERSION
                 :stac_extensions []
                 :collection collection-concept-id
-                :geometry (shapes->geometry shapes)
-                :bbox []
+                :geometry (ssrh/shapes->stac-geometry shapes)
+                :bbox (ssrh/shapes->stac-bbox shapes)
                 :links [{:rel "self"
                          :href (url/concept-stac-url context id)}
                         {:rel "parent"
