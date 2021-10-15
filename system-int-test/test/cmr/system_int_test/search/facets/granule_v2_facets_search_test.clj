@@ -120,7 +120,7 @@
               ;; do not test those.
               :when (not (#{:timeline :json} fmt))
               :let [format-key (mt/format-key fmt)
-                    expected-body (if (#{:csv :umm-json :umm-json-results} format-key)
+                    expected-body (if (#{:csv :umm-json :umm-json-results :stac} format-key)
                                     json-error-string
                                     xml-error-string)]]
         (testing (str "format" fmt)
@@ -411,7 +411,7 @@
           (is (= cnt (get-count-by-title cycle-facets title)))
           "3" "3" 6
           "42" "42" 2))
-      
+
       (testing "and selecting a cycle"
         (let [response (traverse-link "3" cycle-facets)
               body-for-cycle-3-query (json/parse-string (:body response) true)
@@ -419,7 +419,7 @@
                             (get-in [:feed :facets])
                             :children
                             ;; Spatial group
-                            first 
+                            first
                             :children
                             ;; Cycle Group
                             first
@@ -431,7 +431,7 @@
             (is (= "3" (:title c3-filter)))
             (is (= "filter" (:type c3-filter)))
             (is (= :remove (first (keys (:links c3-filter))))))
-          
+
           (testing "returns pass results"
             (let [c3-pass-group (first (get c3-filter :children))]
               (is (not= nil c3-pass-group))
@@ -449,7 +449,7 @@
                                        :children
                                        ;; Cycle Group
                                        first
-                                       :children                                       
+                                       :children
                                        ;; Cycle[]=3 Filter
                                        first
                                        :children
@@ -472,8 +472,7 @@
 
                     (testing "and cycle count is correct"
                       (is (= 6 (:count c3-filter))))
-                    
+
                     (testing "and correct remove or apply link options"
                       (is (= :remove (first (keys (:links c3-p3-filter)))))
                       (is (= :apply (first (keys (:links c3-p4-filter))))))))))))))))
-
