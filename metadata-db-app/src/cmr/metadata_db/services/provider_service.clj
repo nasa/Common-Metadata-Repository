@@ -23,8 +23,7 @@
     (providers/save-provider db provider)))
 
 (defn get-providers
-  "Get the list of providers. The special provider 'cmr' is not included in the
-  returned list, nor are optional columns such as consortiums.
+  "Get the list of providers.
   Returns a clojure.lang.APersistentMap$ValSeq; list of maps"
   [context]
   (info "Getting provider list.")
