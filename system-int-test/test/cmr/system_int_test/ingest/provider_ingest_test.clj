@@ -92,10 +92,6 @@
             "- nil test"
             "PROV0A" "S0A" false false nil
 
-            ;;The following test is actually the same as the one above on SQL
-            ;"- empty string"
-            ;"PROV0B" "S0B" true false ""
-
             "- one consortium "
             "PROV0F" "S0F" false true "Group1"
 
@@ -128,25 +124,23 @@
              {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
            (set (ingest/get-ingest-providers)))))
 
-    (testing "creating a provider and changing consortiums attributes"
-      (ingest/create-ingest-provider {:provider-id "PROV6"
-                                      :short-name "S6"
-                                      :cmr-only false
-                                      :small false})
-      (ingest/update-ingest-provider {:provider-id "PROV6"
-                                      :short-name "S6"
-                                      :cmr-only false
-                                      :small false
-                                      :consortiums "Consortium-6"})
+  (testing "creating a provider and changing consortiums attributes"
+    (ingest/create-ingest-provider {:provider-id "PROV6"
+                                    :short-name "S6"
+                                    :cmr-only false
+                                    :small false})
+    (ingest/update-ingest-provider {:provider-id "PROV6"
+                                    :short-name "S6"
+                                    :cmr-only false
+                                    :small false
+                                    :consortiums "Consortium-6"})
 
-      (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
-               {:provider-id "PROV6" :short-name "S6" :cmr-only false :small false :consortiums "Consortium-6"}
-               {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
-               {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
-               {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
-             (set (ingest/get-ingest-providers)))))
-
-
+    (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
+             {:provider-id "PROV6" :short-name "S6" :cmr-only false :small false :consortiums "Consortium-6"}
+             {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
+             {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
+             {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
+           (set (ingest/get-ingest-providers)))))
 
   (testing "updating a non-existent provider fails"
     (is (= 404 (:status (ingest/update-ingest-provider {:provider-id "PROV5"
