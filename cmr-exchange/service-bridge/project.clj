@@ -59,6 +59,7 @@
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]
+  :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]]                 
   :main cmr.opendap.core
   :aot [clojure.tools.logging.impl
         cmr.opendap.core]
