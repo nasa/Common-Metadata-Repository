@@ -69,7 +69,7 @@
             :start-date (acl-rhh/parse-elastic-datetime start-date)
             :end-date (acl-rhh/parse-elastic-datetime end-date)
             :atom-links atom-links
-            :cloud-cover (when cloud-cover (str cloud-cover))
+            :cloud-cover cloud-cover
             :shapes shapes}
            (acl-rhh/parse-elastic-item :granule elastic-result))))
 
@@ -146,10 +146,14 @@
   [context concept-type reference]
   (let [{:keys [id collection-concept-id start-date end-date atom-links cloud-cover shapes]} reference
         metadata-link (url/concept-xml-url context id)
+        stac-extension (if cloud-cover
+                         ;; cloud-cover requires the eo extension
+                         ["https://stac-extensions.github.io/eo/v1.0.0/schema.json"]
+                         [])
         result {:type "Feature"
                 :id id
                 :stac_version STAC_VERSION
-                :stac_extensions []
+                :stac_extensions stac-extension
                 :collection collection-concept-id
                 :geometry (ssrh/shapes->stac-geometry shapes)
                 :bbox (ssrh/shapes->stac-bbox shapes)
@@ -167,10 +171,9 @@
                          :href (url/concept-umm-json-url context id)}]
                 :properties (util/remove-nil-keys
                              {:datetime start-date
-                             :start_datetime start-date
-                             :end_datetime (or end-date start-date)
-                             ; :eo:cloud_cover cloud-cover
-                              })
+                              :start_datetime start-date
+                              :end_datetime (or end-date start-date)
+                              :eo:cloud_cover cloud-cover})
                 :assets (atom-links->assets metadata-link atom-links)}]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))

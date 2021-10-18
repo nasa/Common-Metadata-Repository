@@ -2,7 +2,7 @@
   "type": "Feature",
   "id": "GranuleConceptId",
   "stac_version": "1.0.0",
-  "stac_extensions": [],
+  "stac_extensions": ["https://stac-extensions.github.io/eo/v1.0.0/schema.json"],
   "collection": "CollectionConceptId",
   "geometry": {
     "type": "Polygon",
@@ -39,7 +39,8 @@
   "properties": {
     "datetime": "2000-03-06T00:30:05.810Z",
     "start_datetime": "2000-03-06T00:30:05.810Z",
-    "end_datetime": "2000-03-06T00:30:05.810Z"
+    "end_datetime": "2000-03-06T00:30:05.810Z",
+    "eo:cloud_cover": 100.0
   },
   "assets": {
     "browse": {
