@@ -425,16 +425,13 @@
                                         {:URL "https://www.foo.com"
                                          :Description "Description"})]})))))
 
-(deftest bucket-validation
-  (testing "S3 bucket prefixes"
+(deftest ^:only bucket-validation
+  (testing "S3 bucket validation"
     (are3 [s3-value comparitor]
           (is (comparitor (related-url/s3-bucket-validation "S3BucketAndObjectPrefix" s3-value)))
 
           "valid prefix"
           "s3prefix" #'nil?
-
-          "invalid prefix"
-          "s3 prefix" #'some?
 
           "valid url [s3]"
           "s3://example.com" #'nil?
@@ -449,4 +446,19 @@
           "ftp://example.com" #'some?
 
           "unescaped JSON"
-          "[\"s3://bad\", \"s3\"]" #'some?)))
+          "[\"s3://bad\", \"s3\"]" #'some?
+
+          "unescaped JSON"
+          "[\"s3://bad\",\"s3\"]" #'some?
+
+          "valid example 1"
+          "podaac-ops-cumulus-protected/GOES16-OSISAF-L3C-v1.0/" #'nil?
+
+          "valid example 2"
+          "cumulus-test-sandbox-protected#part/*" #'nil?
+
+          "valid example 3"
+          "cumulus-test-sandbox-protected-2/*" #'nil?
+
+          "valid example 4"
+          "cumulus-sandbox-public/__1" #'nil?)))

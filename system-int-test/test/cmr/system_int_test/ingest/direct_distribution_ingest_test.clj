@@ -25,6 +25,7 @@
                           {:allow-failure? true})]
             (is (= status (:status response))))
 
+          
           "unescaped JSON array"
           ["[\"s3://aws.example-1.com\", \"s3\"]"] 400
 
@@ -59,4 +60,4 @@
           ["127.0.0.1"] 400
 
           "valid entry"
-          ["s3://aws.example-1.com" "s3"] 200)))
+          ["s3://aws.example-1.com" "podaac-ops-cumulus-public/JASON_CS_S6A_L2_ALT_LR_STD_OST_NRT_F"] 200)))

@@ -78,16 +78,12 @@
   "Validate the S3 bucket url or prefix. Returns the field path and error if invalid, otherwise nil."
   [field-path value]
   (let [url-validator (UrlValidator. (into-array ["s3"]))
-        prefix-validator (re-pattern "^[\\w\\d\\-_]+$")]
-    (when (and (some? value)
-               (and
-                (nil? (re-matches prefix-validator value))
-                (or
-                 (= value su/not-provided-url)
-                 (not (.isValid url-validator value)))))
+        url-pattern (re-pattern "^[\\w\\d]+:\\/\\/")]
+    (when (or (and (re-seq url-pattern value)
+                   (not (.isValid url-validator value)))
+              (= su/not-provided-url value)
+              (re-seq #"[\[\"]" value))
       {field-path
-       ;; Escape the %, because the error messages go through a format, which will throw an error
-       ;; Do the escape after the format here, so it doesn't get formatted out
        [(vu/escape-error-string (format "[%s] is not a valid S3 bucket or prefix" value))]})))
 
 (defn description-validation
