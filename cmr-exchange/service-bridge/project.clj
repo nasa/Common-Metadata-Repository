@@ -20,7 +20,8 @@
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :exclusions [[org.clojure/clojurescript]]
+  :exclusions [[org.clojure/clojurescript]
+               [org.eclipse.emf/org.eclipse.emf.ecore]]
   :dependencies [[cheshire "5.10.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
@@ -49,11 +50,14 @@
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
+                 [org.geotools/gt-geometry "24.5"]
+                 [org.geotools/gt-referencing "24.5"]
                  [ring/ring-core "1.7.1"]
                  [ring/ring-codec "1.1.2"]
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.12.12"]
                  [tolitius/xml-in "0.1.0"]]
+  :repositories [["osgeo" "https://repo.osgeo.org/repository/release/"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]
