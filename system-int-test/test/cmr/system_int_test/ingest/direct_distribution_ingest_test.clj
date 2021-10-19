@@ -46,5 +46,17 @@
           "invalid prefix name"
           ["s3 prefix with spaces"] 400
 
+          "invalid protocol [http]"
+          ["http://example-1.com"] 400
+
+          "invalid protocol [https]"
+          ["https://example-2.com"] 400
+
+          "invalid protocol [ftp]"
+          ["ftp://example-3.com"] 400
+
+          "missing protocol"
+          ["127.0.0.1"] 400
+
           "valid entry"
           ["s3://aws.example-1.com" "s3"] 200)))
