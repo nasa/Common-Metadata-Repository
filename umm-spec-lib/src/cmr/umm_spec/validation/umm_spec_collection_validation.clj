@@ -72,5 +72,6 @@
   :DataDates data-date/data-dates-warning-validation
   :MetadataDates data-date/data-dates-warning-validation
   :DOI {:DOI doi-format-warning-validation}
-  :DirectDistributionInformation {:S3CredentialsAPIEndpoint url/url-validation
+  :DirectDistributionInformation {:S3BucketAndObjectPrefixNames (v/every url/s3-bucket-validation)
+                                  :S3CredentialsAPIEndpoint url/url-validation
                                   :S3CredentialsAPIDocumentationURL url/url-validation}})
