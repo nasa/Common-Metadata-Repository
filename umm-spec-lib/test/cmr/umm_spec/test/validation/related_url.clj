@@ -425,7 +425,7 @@
                                         {:URL "https://www.foo.com"
                                          :Description "Description"})]})))))
 
-(deftest ^:only bucket-validation
+(deftest bucket-validation
   (testing "S3 bucket validation"
     (are3 [s3-value comparitor]
           (is (comparitor (related-url/s3-bucket-validation "S3BucketAndObjectPrefix" s3-value)))

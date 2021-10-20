@@ -24,7 +24,6 @@
                              :S3CredentialsAPIDocumentationURL "http://docs.example.com"}})
                           {:allow-failure? true})]
             (is (= status (:status response))))
-
           
           "unescaped JSON array"
           ["[\"s3://aws.example-1.com\", \"s3\"]"] 400
