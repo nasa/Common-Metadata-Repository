@@ -1,7 +1,7 @@
 (def jruby-version
   "The version of JRuby to use. This is the same as used in the echo orbits java package to prevent
    classpath issues"
-  "9.3.1.0")
+  "9.2.6.0")
 
 (def metadata-preview-info
   "Defines the commit id, version, and repo of cmr_metadata_preview project that we should build the gem off.
@@ -12,7 +12,7 @@
   {:repo "https://git.earthdata.nasa.gov/scm/cmr/cmr_metadata_preview.git"
    :version "cmr_metadata_preview-0.2.9"
    :commit-id (or (System/getenv "CMR_METADATA_PREVIEW_COMMIT")
-                  "f980f9ec0f2")})
+                  "c292fb4ab2f")})
 
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
