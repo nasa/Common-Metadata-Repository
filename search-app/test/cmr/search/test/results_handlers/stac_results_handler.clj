@@ -18,6 +18,10 @@
         (is (= expected-assets
                (#'stac-results-handler/atom-links->assets metadata-link links))))
 
+      "no extra links"
+      nil
+      nil
+
       "single data link"
       [{:href "ftp://f5eil01v.edn.ecs.nasa.gov/example-data"
         :link-type "data"
