@@ -9,7 +9,7 @@
 (use-fixtures :each (join-fixtures
                      [(ingest/reset-fixture {"provguid1" "PROV1"})]))
 
-(deftest ^:only direct-distribution-s3-validation
+(deftest direct-distribution-s3-validation
   (testing "S3BucketAndObjectPrefixNames are validated correctly"
     (are3 [s3-buckets status]
           (let [response (data-core/ingest-umm-spec-collection
