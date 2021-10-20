@@ -108,6 +108,41 @@
       "raw" "image/raw"
       "image/jpeg")))
 
+(defn- get-browse-type
+  "Returns the STAC browse type for the given link. The browse type is determined by:
+  if MimeType exists in the browse link and is valid, use it; otherwise deduce from the URL suffix."
+  [link]
+  (let [{:keys [mime-type href]} link]
+    (if (some #{mime-type} ["image/png" "image/tiff" "image/raw" "image/jpeg"])
+      mime-type
+      (href->browse-type href))))
+
+(defn- atom-link->asset
+  "Returns the STAC asset value of the given atom link"
+  [link]
+  (when link
+    (util/remove-nil-keys
+     {:title (:title link)
+      :href (:href link)
+      :type (:mime-type link)})))
+
+(defn- indexed-link->asset
+  "Returns the STAC asset value of the given index and link"
+  [index link]
+  (let [suffix (when (> index 0) index)]
+    {(keyword (str "data" suffix)) (util/remove-nil-keys
+                                    {:title (:title link)
+                                     :href (:href link)
+                                     :type (:mime-type link)})}))
+
+(defn- data-links->assets
+  "Returns the STAC assets for the given data links"
+  [data-links]
+  (when (seq data-links)
+    (->> data-links
+         (map-indexed indexed-link->asset)
+         (apply merge))))
+
 (defn- atom-links->assets
   "Returns the STAC assets from the given atom links"
   [metadata-link atom-links]
@@ -115,22 +150,19 @@
   ;; here we just put in a placeholder of doing just one data link and one browse link
   (let [data-links (filter #(= (:link-type %) "data") atom-links)
         browse-links (filter #(= (:link-type %) "browse") atom-links)
-        first-data-link (first data-links)
-        first-browse-link (first browse-links)]
-    (when (or first-data-link first-browse-link)
-      (util/remove-nil-keys
-       {:data (when first-data-link
-               (util/remove-nil-keys
-                {:title (:title first-data-link)
-                 :href (:href first-data-link)
-                 :type (:mime-type first-data-link)}))
-       :metadata {:href metadata-link
-                  :type "application/xml"}
-       :browse (when first-browse-link
-                (util/remove-nil-keys
-                 {:title (:title first-browse-link)
-                  :href (:href first-browse-link)
-                  :type (href->browse-type (:href first-browse-link))}))}))))
+        opendap-links (filter #(= (:link-type %) "service") atom-links)
+        first-browse-link (first browse-links)
+        first-opendap-link (first opendap-links)]
+    (util/remove-nil-keys
+     (merge {:metadata {:href metadata-link
+                        :type "application/xml"}
+             :browse (when first-browse-link
+                       (util/remove-nil-keys
+                        {:title (:title first-browse-link)
+                         :href (:href first-browse-link)
+                         :type (get-browse-type first-browse-link)}))
+             :opendap (atom-link->asset first-opendap-link)}
+            (data-links->assets data-links)))))
 
 (defmulti stac-reference->json
   "Converts a search result STAC reference into json"
@@ -180,9 +212,10 @@
 
 (defn- single-result->response
   [context query results]
-  (json/generate-string (stac-reference->json context
-                                              (:concept-type query)
-                                              (first (:items results)))))
+  (json/generate-string
+   (stac-reference->json context
+                         (:concept-type query)
+                         (first (:items results)))))
 
 (defmethod qs/single-result->response [:granule :stac]
   [context query results]
