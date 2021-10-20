@@ -196,6 +196,28 @@
       </Values>
     </AdditionalAttribute>
   </AdditionalAttributes>
+  <OnlineAccessURLs>
+      <OnlineAccessURL>
+          <URL>ftp://f5eil01v.edn.ecs.nasa.gov//FS1/ATLAS/ATL04.000/2015.10.27/ATL04_20151027T044311_00810302_000_01.h5</URL>
+          <MimeType>application/x-hdfeos</MimeType>
+      </OnlineAccessURL>
+      <OnlineAccessURL>
+          <URL>ftp://f5eil01v.edn.ecs.nasa.gov//FS1/ATLAS/ATL04.000/2015.10.27/ATL04_20151027T044311_00810303_000_01.hdf</URL>
+          <MimeType>application/x-hdfeos</MimeType>
+      </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+      <OnlineResource>
+          <URL>ftp://f5eil01v.edn.ecs.nasa.gov//FS1/ATLAS/ATL04.000/2015.10.27/ATL04_20151027T044311_00810302_000_01.h5.iso.xml</URL>
+          <Type>USER SUPPORT</Type>
+          <MimeType>text/xml</MimeType>
+      </OnlineResource>
+      <OnlineResource>
+          <URL>https://f5eil01v.edn.ecs.nasa.gov/opendapurl</URL>
+          <Type>OPENDAP DATA</Type>
+          <MimeType>text/xml</MimeType>
+      </OnlineResource>
+  </OnlineResources>
   <CloudCover>100.0</CloudCover>
   <AssociatedBrowseImageUrls>
     <ProviderBrowseUrl>
