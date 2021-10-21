@@ -459,19 +459,19 @@
     (let [invalid-nil-region-umm (assoc (data-umm-c/collection)
                                         :DirectDistributionInformation
                                          {:Region nil
-                                          :S3BucketAndObjectPrefixNames ["one two"]
+                                          :S3BucketAndObjectPrefixNames ["one" "two"]
                                           :S3CredentialsAPIEndpoint "hello"
                                           :S3CredentialsAPIDocumentationURL "hello"})
           invalid-region-umm (assoc (data-umm-c/collection)
                                     :DirectDistributionInformation
                                      {:Region "hello"
-                                      :S3BucketAndObjectPrefixNames ["one two"]
+                                      :S3BucketAndObjectPrefixNames ["one" "two"]
                                       :S3CredentialsAPIEndpoint "hello"
                                       :S3CredentialsAPIDocumentationURL "hello"})
           invalid-url-umm (assoc (data-umm-c/collection)
                                  :DirectDistributionInformation
                                   {:Region "us-west-1"
-                                   :S3BucketAndObjectPrefixNames ["one two"]
+                                   :S3BucketAndObjectPrefixNames ["one" "two"]
                                    :S3CredentialsAPIEndpoint "hello"
                                    :S3CredentialsAPIDocumentationURL "hello"})]
 
