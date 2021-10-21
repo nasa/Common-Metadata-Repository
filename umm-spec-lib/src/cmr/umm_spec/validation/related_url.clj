@@ -82,7 +82,7 @@
     (when (or (and (re-seq url-pattern value)
                    (not (str/starts-with? value "s3")))
               (= su/not-provided-url value)
-              (re-seq #"[\[\"]" value))
+              (re-seq #"[\[\"\s,;]" value))
       {field-path
        [(vu/escape-error-string (format "[%s] is not a valid S3 bucket or prefix" value))]})))
 

@@ -40,9 +40,6 @@
           "semi-colon delimited string"
           ["s3://aws.example-1.com;s3"] 422
 
-          "colon delimited string"
-          ["s3://aws.example-1.com:s3"] 422
-
           "invalid protocol [http]"
           ["http://example-1.com"] 422
 

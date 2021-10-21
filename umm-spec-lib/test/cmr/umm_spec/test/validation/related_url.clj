@@ -445,10 +445,10 @@
           "invalid url [ftp]"
           "ftp://example.com" #'some?
 
-          "unescaped JSON"
+          "unescaped JSON with space"
           "[\"s3://bad\", \"s3\"]" #'some?
 
-          "unescaped JSON"
+          "unescaped JSON without space"
           "[\"s3://bad\",\"s3\"]" #'some?
 
           "valid example 1"
