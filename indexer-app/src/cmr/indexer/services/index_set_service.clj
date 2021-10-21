@@ -167,7 +167,6 @@
   (validate-requested-index-set context index-set false)
   (let [index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
-        idx-name-of-index-sets (:index-name config/idx-cfg-for-index-sets)
         es-store (context->es-store context)]
 
     ;; rollback index-set creation if index creation fails
@@ -362,4 +361,3 @@
     ;; delete indices assoc with index-set
     (doseq [id index-set-ids]
       (delete-index-set context (str id)))))
-

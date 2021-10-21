@@ -5,11 +5,9 @@
    [clj-time.core :as t]
    [clojure.set :as set]
    [clojure.string :as str]
-   [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
@@ -33,22 +31,18 @@
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.concepts.service :as service]
    [cmr.indexer.data.concepts.spatial :as spatial]
-   [cmr.indexer.data.concepts.subscription :as subscription]
    [cmr.indexer.data.concepts.tag :as tag]
    [cmr.indexer.data.concepts.tool :as tool]
    [cmr.indexer.data.concepts.variable :as variable]
    [cmr.indexer.data.elasticsearch :as es]
-   [cmr.umm-spec.acl-matchers :as umm-matchers]
    [cmr.umm-spec.date-util :as date-util]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.models.umm-collection-models :as umm-collection]
    [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.related-url :as ru]
    [cmr.umm-spec.time :as spec-time]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.util :as su]
-   [cmr.umm.collection.entry-id :as eid]
-   [cmr.umm.umm-collection :as umm-c]))
+   [cmr.umm.collection.entry-id :as eid]))
 
 (defn spatial->elastic
   [collection]
@@ -176,7 +170,7 @@
 (defn- cloud-hosted?
   "Test if the collection meets the criteria for being cloud hosted"
   [collection tags]
-  (or (not (empty? (:DirectDistributionInformation collection)))
+  (or (not (empty? (:DirectDistributionInformation collection))) ;; coerce to boolean
       (tag/has-cloud-s3-tag? tags)))
 
 (defn- get-elastic-doc-for-full-collection
@@ -196,7 +190,7 @@
         s3-bucket-and-object-prefix-names (get-in collection [:DirectDistributionInformation :S3BucketAndObjectPrefixNames])
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (into [(util/safe-lowercase doi)]
-                        (mapv #(util/safe-lowercase (:DOI %)) (get collection :AssociatedDOIs)))
+                            (mapv #(util/safe-lowercase (:DOI %)) (get collection :AssociatedDOIs)))
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         spatial-keywords (lk/location-keywords->spatial-keywords-for-indexing
                           (:LocationKeywords collection))
@@ -308,7 +302,7 @@
             :doi-stored doi
             :doi-lowercase doi-lowercase
             :revision-id revision-id
-            :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+            :concept-seq-id-long (:sequence-number (concepts/parse-concept-id concept-id))
             :native-id native-id
             :native-id-lowercase (str/lower-case native-id)
             :user-id user-id
@@ -465,7 +459,7 @@
                                        context provider-id tombstone-umm)]
     {:concept-id concept-id
      :revision-id revision-id
-     :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+     :concept-seq-id-long (:sequence-number (concepts/parse-concept-id concept-id))
      :native-id native-id
      :native-id-lowercase (util/safe-lowercase native-id)
      :user-id user-id

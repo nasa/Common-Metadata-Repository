@@ -147,8 +147,8 @@
                                                [:SpatialExtent :GranuleSpatialRepresentation])]
     (merge {:concept-id concept-id
             :revision-id revision-id
-            :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
-            :concept-seq-id-doc-values (:sequence-number (concepts/parse-concept-id concept-id))
+            :concept-seq-id-long (:sequence-number (concepts/parse-concept-id concept-id))
+            :concept-seq-id-long-doc-values (:sequence-number (concepts/parse-concept-id concept-id))
             :collection-concept-id parent-collection-id
             :collection-concept-id-doc-values parent-collection-id
             :collection-concept-seq-id (:sequence-number (concepts/parse-concept-id parent-collection-id))
