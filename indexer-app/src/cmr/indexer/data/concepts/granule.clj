@@ -66,8 +66,7 @@
   (when-let [gsr (csk/->kebab-case-keyword (get-in parent-collection [:SpatialExtent :GranuleSpatialRepresentation]))]
     (cond
       (or (= gsr :geodetic) (= gsr :cartesian))
-      (let [_geometries (seq (get-in granule [:spatial-coverage :geometries]))]
-        (spatial/granule-spatial->elastic-docs gsr granule))
+      (spatial/granule-spatial->elastic-docs gsr granule)
 
       (= gsr :no-spatial)
       nil
