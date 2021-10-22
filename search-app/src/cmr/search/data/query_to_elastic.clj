@@ -91,6 +91,7 @@
   [_]
   (let [default-mappings {:provider :provider-id
                           :concept-seq-id :concept-seq-id-long
+                          :collection-concept-seq-id :collection-concept-seq-id-long
                           :native-id :native-id-stored
                           :revision-date :revision-date-stored-doc-values
                           :updated-since :revision-date-stored-doc-values
@@ -511,7 +512,7 @@
 
 (defmethod q2e/concept-type->sub-sort-fields :granule
   [_]
-  [{(q2e/query-field->elastic-field :concept-seq-id :granule) {:order "asc"}}])
+  [{(q2e/query-field->elastic-field :concept-seq-id-long :granule) {:order "asc"}}])
 
 ;; Collections will default to the keyword sort if they have no sort specified and search by keywords
 (defmethod q2e/query->sort-params :collection
