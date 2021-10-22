@@ -40,7 +40,6 @@
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
   (let [default-mappings {:author :authors
-                          :concept-seq-id :concept-seq-id-long
                           :data-center-h :organization-humanized
                           :doi :doi-stored
                           :granule-end-date :granule-end-date-stored
@@ -81,7 +80,7 @@
   does not include lowercase field mappings for doc-values fields."
   (into spatial-doc-values-field-mappings
         (for [field [:provider-id :concept-seq-id :collection-concept-id
-                     :collection-concept-seq-id-long :size :start-date :end-date :revision-date
+                     :collection-concept-seq-id :size :start-date :end-date :revision-date
                      :day-night :cloud-cover :orbit-start-clat :orbit-end-clat
                      :orbit-asc-crossing-lon :access-value :start-coordinate-1
                      :end-coordinate-1 :start-coordinate-2 :end-coordinate-2]]
@@ -90,8 +89,6 @@
 (defmethod q2e/concept-type->field-mappings :granule
   [_]
   (let [default-mappings {:provider :provider-id
-                          :concept-seq-id :concept-seq-id-long
-                          :collection-concept-seq-id :collection-concept-seq-id-long
                           :native-id :native-id-stored
                           :revision-date :revision-date-stored-doc-values
                           :updated-since :revision-date-stored-doc-values
@@ -116,7 +113,6 @@
 (defmethod q2e/concept-type->field-mappings :variable
   [_]
   {:provider :provider-id
-   :concept-seq-id :concept-seq-id-long
    :name :variable-name})
 
 (defmethod q2e/concept-type->field-mappings :service
@@ -512,7 +508,7 @@
 
 (defmethod q2e/concept-type->sub-sort-fields :granule
   [_]
-  [{(q2e/query-field->elastic-field :concept-seq-id-long :granule) {:order "asc"}}])
+  [{(q2e/query-field->elastic-field :concept-seq-id :granule) {:order "asc"}}])
 
 ;; Collections will default to the keyword sort if they have no sort specified and search by keywords
 (defmethod q2e/query->sort-params :collection

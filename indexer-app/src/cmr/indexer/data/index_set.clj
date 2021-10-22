@@ -327,12 +327,9 @@
           :permitted-group-ids m/string-field-mapping
           :concept-id   m/string-field-mapping
           :revision-id m/int-field-mapping
-          
-          ;; DEPRECATED integer type is no longer sufficient for this field
+          ;; This is used explicitly for sorting. The values take up less space in the
+          ;; fielddata cache.
           :concept-seq-id m/int-field-mapping
-
-          ;; This is used explicitly for sorting. The values take up less space in the fielddata cache.
-          :concept-seq-id-long m/unsigned-long-field-mapping
           :entry-id           m/string-field-mapping
           :entry-id-lowercase m/string-field-mapping
           :doi           m/string-field-mapping
@@ -551,24 +548,17 @@
     :native-id-lowercase (m/doc-values m/string-field-mapping)
     :native-id-stored (m/doc-values m/string-field-mapping)
 
-    ;; DEPRECATED integer type is no longer sufficient for this field
+    ;; This is used explicitly for sorting. The values take up less space in the
+    ;; fielddata cache.
     :concept-seq-id m/int-field-mapping
     :concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
-    
-    ;; This is used explicitly for sorting. The values take up less space in the fielddata cache.
-    :concept-seq-id-long m/unsigned-long-field-mapping
-    :concept-seq-id-long-doc-values (m/doc-values m/unsigned-long-field-mapping)
 
     :collection-concept-id m/string-field-mapping
     :collection-concept-id-doc-values (m/doc-values m/string-field-mapping)
 
-    ;; DEPRECATED integer type is no longer sufficient for this field
+    ;; Used for aggregations. It takes up less space in the field data cache.
     :collection-concept-seq-id m/int-field-mapping
     :collection-concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
-    
-    ;; Used for aggregations. It takes up less space in the field data cache.
-    :collection-concept-seq-id-long m/unsigned-long-field-mapping
-    :collection-concept-seq-id-long-doc-values (m/doc-values m/unsigned-long-field-mapping)
 
     ;; fields added for atom
     :entry-title (m/not-indexed m/string-field-mapping)
@@ -726,12 +716,9 @@
   fields that will be stored in an Elasticsearch document."
   {:concept-id (m/doc-values m/string-field-mapping)
    :revision-id (m/doc-values m/int-field-mapping)
-   
-   ;; DEPRECATED integer type is no longer sufficient for this field
+   ;; This is used explicitly for sorting. The values take up less space in the
+   ;; fielddata cache.
    :concept-seq-id (m/doc-values m/int-field-mapping)
-   
-   ;; This is used explicitly for sorting. The values take up less space in the fielddata cache.
-   :concept-seq-id-long (m/doc-values m/unsigned-long-field-mapping)
    :native-id (m/doc-values m/string-field-mapping)
    :native-id-lowercase (m/doc-values m/string-field-mapping)
    :provider-id (m/doc-values m/string-field-mapping)

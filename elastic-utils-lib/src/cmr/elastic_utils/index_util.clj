@@ -65,12 +65,7 @@
   {:type "float"})
 
 (def int-field-mapping
-  "A signed 32-bit integer with a minimum value of -2^31 and a maximum value of 2^31-1."
   {:type "integer"})
-
-(def unsigned-long-field-mapping
-  "An unsigned 64-bit integer with a minimum value of 0 and a maximum value of 2^64-1."
-  {:type "unsigned_long"})
 
 (def bool-field-mapping
   {:type "boolean"})

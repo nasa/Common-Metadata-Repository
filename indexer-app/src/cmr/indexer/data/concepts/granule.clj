@@ -66,7 +66,8 @@
   (when-let [gsr (csk/->kebab-case-keyword (get-in parent-collection [:SpatialExtent :GranuleSpatialRepresentation]))]
     (cond
       (or (= gsr :geodetic) (= gsr :cartesian))
-      (spatial/granule-spatial->elastic-docs gsr granule)
+      (let [geometries (seq (get-in granule [:spatial-coverage :geometries]))]
+        (spatial/granule-spatial->elastic-docs gsr granule))
 
       (= gsr :no-spatial)
       nil
@@ -136,8 +137,8 @@
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ocsd-json (granule->ocsd-json umm-granule)
         ;; not empty is used below to get a real true false value
-        downloadable (boolean (seq (ru/downloadable-urls related-urls)))
-        browsable (boolean (seq (ru/browse-urls related-urls)))
+        downloadable (not (empty? (ru/downloadable-urls related-urls)))
+        browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (get-in umm-granule [:data-provider-timestamps :update-time])
         update-time (index-util/date->elastic update-time)
         track (get-in umm-granule [:spatial-coverage :track])
@@ -146,12 +147,12 @@
                                                [:SpatialExtent :GranuleSpatialRepresentation])]
     (merge {:concept-id concept-id
             :revision-id revision-id
-            :concept-seq-id-long (:sequence-number (concepts/parse-concept-id concept-id))
-            :concept-seq-id-long-doc-values (:sequence-number (concepts/parse-concept-id concept-id))
+            :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+            :concept-seq-id-doc-values (:sequence-number (concepts/parse-concept-id concept-id))
             :collection-concept-id parent-collection-id
             :collection-concept-id-doc-values parent-collection-id
-            :collection-concept-seq-id-long (:sequence-number (concepts/parse-concept-id parent-collection-id))
-            :collection-concept-seq-id-long-doc-values (:sequence-number (concepts/parse-concept-id parent-collection-id))
+            :collection-concept-seq-id (:sequence-number (concepts/parse-concept-id parent-collection-id))
+            :collection-concept-seq-id-doc-values (:sequence-number (concepts/parse-concept-id parent-collection-id))
 
             :entry-title EntryTitle
             :entry-title-lowercase (string/lower-case EntryTitle)
