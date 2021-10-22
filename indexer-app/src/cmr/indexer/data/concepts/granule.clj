@@ -151,9 +151,9 @@
             :concept-seq-id-long-doc-values (:sequence-number (concepts/parse-concept-id concept-id))
             :collection-concept-id parent-collection-id
             :collection-concept-id-doc-values parent-collection-id
-            :collection-concept-seq-id (when (< es/MAX_INT collection-concept-seq-id) collection-concept-seq-id)
+            :collection-concept-seq-id (if (< es/MAX_INT collection-concept-seq-id) collection-concept-seq-id 0)
             :collection-concept-seq-id-long collection-concept-seq-id
-            :collection-concept-seq-id-long-doc-values (when (< es/MAX_INT collection-concept-seq-id) collection-concept-seq-id)
+            :collection-concept-seq-id-doc-values (if (< es/MAX_INT collection-concept-seq-id) collection-concept-seq-id 0)
             :collection-concept-seq-id-long-doc-values collection-concept-seq-id
 
             :entry-title EntryTitle
