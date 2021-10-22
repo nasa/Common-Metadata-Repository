@@ -461,4 +461,7 @@
           "cumulus-test-sandbox-protected-2/*" #'nil?
 
           "valid example 4"
-          "cumulus-sandbox-public/__1" #'nil?)))
+          "cumulus-sandbox-public/__1" #'nil?
+
+          "valid example 5"
+          "s3://ornl-cumulus-prod-protected/above/Historical_Lake_Shorelines_AK/" #'nil?)))

@@ -48,6 +48,7 @@
 
           "invalid protocol [ftp]"
           ["ftp://example-3.com"] 422
-
+          
           "valid entry"
-          ["s3://aws.example-1.com" "podaac-ops-cumulus-public/JASON_CS_S6A_L2_ALT_LR_STD_OST_NRT_F"] 201)))
+          ["s3://lp-prod-public/HLSL30.020" 
+           "podaac-ops-cumulus-public/JASON_CS_S6A_L2_ALT_LR_STD_OST_NRT_F"] 201)))
