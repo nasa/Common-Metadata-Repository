@@ -20,3 +20,10 @@ Feature: CMR Search Parameters
       | has_granules | result     |
       | false        | is "0"     |
       | true         | is not "0" |
+
+  @Search
+  Scenario: I am mimicking the EDSC search
+    Given I am searching for "collections"
+    When I add query param "has_granules_or_cwic=true"
+    And I submit a "GET" request
+    Then the response status code is 200
