@@ -62,6 +62,7 @@
    :processing-level-id-h :humanizer
    :project :string
    :project-h :humanizer
+   :consortium :string
    :provider :string
    :revision-date :multi-date-range
    :science-keywords :science-keywords

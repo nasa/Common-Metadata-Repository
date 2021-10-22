@@ -40,6 +40,7 @@
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
   (let [default-mappings {:author :authors
+                          :consortium :consortiums
                           :data-center-h :organization-humanized
                           :doi :doi-stored
                           :granule-end-date :granule-end-date-stored
@@ -140,6 +141,7 @@
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
   {:authors :author
+   :consortiums :consortium
    :doi-stored :doi
    :granule-end-date-stored :granule-end-date
    :granule-start-date-stored :granule-start-date
@@ -193,6 +195,7 @@
    :variable-native-id "variable-native-ids-lowercase"
    :measurement "measurements-lowercase"
    :author "authors-lowercase"
+   :consortium "consortiums-lowercase"
    :service-name "service-names-lowercase"
    :service-type "service-types-lowercase"
    :tool-name "tool-names-lowercase"

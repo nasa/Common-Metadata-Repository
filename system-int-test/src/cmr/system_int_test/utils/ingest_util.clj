@@ -765,7 +765,7 @@
   ([provider-map]
    (create-provider provider-map {}))
   ([provider-map options]
-   (let [{:keys [provider-guid provider-id short-name small cmr-only]} provider-map
+   (let [{:keys [provider-guid provider-id short-name small cmr-only consortiums]} provider-map
          short-name (or short-name (:short-name options) provider-id)
          cmr-only (if (some? cmr-only) cmr-only (get options :cmr-only true))
          small (if (some? small) small (get options :small false))
@@ -775,7 +775,8 @@
      (create-mdb-provider {:provider-id provider-id
                            :short-name short-name
                            :cmr-only cmr-only
-                           :small small})
+                           :small small
+                           :consortiums consortiums})
      ;; Create provider in mock echo with the guid set to the ID to make things easier to sync up
      (echo-util/create-providers (s/context) {provider-id provider-id})
 
@@ -814,9 +815,10 @@
          (merge reset-fixture-default-options options)
          providers (if (sequential? providers)
                        providers
-                       (for [[provider-guid provider-id] providers]
+                       (for [[provider-guid provider-id consortiums] providers]
                          {:provider-guid provider-guid
-                          :provider-id provider-id}))]
+                          :provider-id provider-id
+                          :consortiums consortiums}))]
       (doseq [provider-map providers]
         (create-provider
          provider-map

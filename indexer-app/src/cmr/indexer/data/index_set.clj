@@ -404,6 +404,9 @@
           :authors                        (m/doc-values m/string-field-mapping)
           :authors-lowercase              (m/doc-values m/string-field-mapping)
 
+          :consortiums                    m/string-field-mapping
+          :consortiums-lowercase          m/string-field-mapping
+
           ;; Mappings for nested fields used for searching and
           ;; hierarchical facets
           :science-keywords science-keywords-field-mapping

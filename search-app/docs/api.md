@@ -48,6 +48,7 @@ CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens 
     * [Data center](#c-data-center)
     * [Temporal](#c-temporal)
     * [Project](#c-project)
+    * [Consortium](#c-consortium)
     * [Updated since](#c-updated-since)
     * [Revision date](#c-revision-date)
     * [Created at](#c-created-at)
@@ -1464,6 +1465,22 @@ Find collections matching any of the 'project' param values
 Find collections that match all of the 'project' param values
 
      curl "%CMR-ENDPOINT%/collections?project\[\]=ESI&project\[\]=EVI&project\[\]=EPI&options\[project\]\[and\]=true"
+
+#### <a name="c-consortium"></a> Find collections by consortium
+
+This supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'consortium' param value
+CWIC, FEDEO, CEOS, EOSDIS
+     curl "%CMR-ENDPOINT%/collections?consortium\[\]=CWIC"
+
+Find collections matching any of the 'consortium' param values
+
+     curl "%CMR-ENDPOINT%/collections?consortium\[\]=CWIC&consortium\[\]=FEDEO&consortium\[\]=CEOS"
+
+Find collections that match all of the 'consortium' param values
+
+     curl "%CMR-ENDPOINT%/collections?consortium\[\]=CWIC&consortium\[\]=FEDEO&consortium\[\]=CEOS&options\[consortium\]\[and\]=true"
 
 #### <a name="c-updated-since"></a> Find collections by updated_since
 
