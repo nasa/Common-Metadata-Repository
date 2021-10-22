@@ -302,13 +302,15 @@
                                              [:SpatialExtent
                                               :HorizontalSpatialDomain
                                               :ResolutionAndCoordinateSystem
-                                              :HorizontalDataResolution]))]
+                                              :HorizontalDataResolution]))
+        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))]
 
     (merge {:concept-id concept-id
             :doi-stored doi
             :doi-lowercase doi-lowercase
             :revision-id revision-id
-            :concept-seq-id-long (:sequence-number (concepts/parse-concept-id concept-id))
+            :concept-seq-id (when (< es/MAX_INT concept-seq-id) concept-seq-id)
+            :concept-seq-id-long concept-seq-id
             :native-id native-id
             :native-id-lowercase (str/lower-case native-id)
             :user-id user-id
@@ -462,10 +464,12 @@
         tombstone-umm (umm-collection/map->UMM-C {:EntryTitle entry-title})
         tombstone-umm (merge {:concept-id concept-id} tombstone-umm)
         tombstone-permitted-group-ids (collection-util/get-coll-permitted-group-ids
-                                       context provider-id tombstone-umm)]
+                                       context provider-id tombstone-umm)
+        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))]
     {:concept-id concept-id
      :revision-id revision-id
-     :concept-seq-id-long (:sequence-number (concepts/parse-concept-id concept-id))
+     :concept-seq-id (when (< es/MAX_INT concept-seq-id) concept-seq-id)
+     :concept-seq-id-long concept-seq-id
      :native-id native-id
      :native-id-lowercase (util/safe-lowercase native-id)
      :user-id user-id
