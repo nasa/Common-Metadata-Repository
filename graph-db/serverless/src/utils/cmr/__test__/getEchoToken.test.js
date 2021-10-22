@@ -43,4 +43,18 @@ describe('getEchoToken', () => {
 
     expect(token).toEqual(null)
   })
+
+  test('Error fetching ECHO Token', async () => {
+    process.env.IS_LOCAL = 'false'
+    process.env.CMR_TOKEN_KEY = 'SIT_TOKEN'
+
+    const consoleError = jest.spyOn(console, 'error')
+    jest.spyOn(getSecureParam, 'getSecureParam').mockImplementationOnce(() => {
+      throw new Error('Oh no! We couldn\'t get a token')
+    })
+
+    await getEchoToken()
+
+    expect(consoleError).toHaveBeenCalledTimes(1)
+  })
 })

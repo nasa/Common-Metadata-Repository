@@ -2,7 +2,7 @@ import nock from 'nock'
 
 import indexCmrCollection from '../handler'
 
-import { updateCollection, deleteCollection } from '../../testUtil/indexCollection'
+import { updateCollection, deleteCollection, deleteCollectionWithError } from '../../testUtil/indexCollection'
 
 import { verifyCollectionPropertiesInGraphDb } from '../../testUtil/verifyCollection'
 
@@ -343,5 +343,7 @@ describe('indexCmrCollection handler', () => {
       { platform: newPlatform, instruments: [newInstrument] })
     await verifyRelatedUrlExistInGraphDb(anothercollectionTitle, keptDocUrl)
     await verifyRelatedUrlExistInGraphDb(anothercollectionTitle, newDocUrl)
+
+    await deleteCollectionWithError()
   })
 })
