@@ -109,22 +109,25 @@
       "image/jpeg")))
 
 (defn- get-browse-type
-  "Returns the STAC browse type for the given link. The browse type is determined by:
+  "Returns the STAC browse type for the given link mime-type and href.
+  The browse type is determined by:
   if MimeType exists in the browse link and is valid, use it; otherwise deduce from the URL suffix."
-  [link]
-  (let [{:keys [mime-type href]} link]
-    (if (some #{mime-type} ["image/png" "image/tiff" "image/raw" "image/jpeg"])
+  [mime-type href]
+  (if (some #{mime-type} ["image/png" "image/tiff" "image/raw" "image/jpeg"])
       mime-type
-      (href->browse-type href))))
+      (href->browse-type href)))
 
 (defn- atom-link->asset
   "Returns the STAC asset value of the given atom link"
   [link]
   (when link
-    (util/remove-nil-keys
-     {:title (:title link)
-      :href (:href link)
-      :type (:mime-type link)})))
+    (let [{:keys [title href link-type mime-type]} link]
+      (util/remove-nil-keys
+       {:title title
+        :href href
+        :type (if (= "browse" link-type)
+                (get-browse-type mime-type href)
+                mime-type)}))))
 
 (defn- indexed-link->asset
   "Returns the STAC asset value of the given index and link"
@@ -151,17 +154,12 @@
   (let [data-links (filter #(= (:link-type %) "data") atom-links)
         browse-links (filter #(= (:link-type %) "browse") atom-links)
         opendap-links (filter #(= (:link-type %) "service") atom-links)
-        first-browse-link (first browse-links)
-        first-opendap-link (first opendap-links)]
+        assets {:metadata {:href metadata-link
+                           :type "application/xml"}
+                :browse (atom-link->asset (first browse-links))
+                :opendap (atom-link->asset (first opendap-links))}]
     (util/remove-nil-keys
-     (merge {:metadata {:href metadata-link
-                        :type "application/xml"}
-             :browse (when first-browse-link
-                       (util/remove-nil-keys
-                        {:title (:title first-browse-link)
-                         :href (:href first-browse-link)
-                         :type (get-browse-type first-browse-link)}))
-             :opendap (atom-link->asset first-opendap-link)}
+     (merge assets
             (data-links->assets data-links)))))
 
 (defmulti stac-reference->json
