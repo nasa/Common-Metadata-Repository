@@ -10,7 +10,9 @@
    [cmr.system-int-test.utils.search-util :as search]))
 
 
-(deftest collection-author-search-test
+(deftest collection-consortium-search-test
+  (ingest/delete-provider "PROV1")
+  (ingest/delete-provider "PROV2")
   (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1" :consortiums "cst11 cst12"})
   (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2" :consortiums "cst21 cst22"})
 
