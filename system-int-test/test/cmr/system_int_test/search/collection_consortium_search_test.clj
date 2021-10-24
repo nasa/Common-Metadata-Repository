@@ -11,17 +11,19 @@
 
 
 (deftest collection-consortium-search-test
-  (ingest/create-provider {:provider-guid "provguid_cst1" :provider-id "PROV_CST1" :consortiums "cst11 cst12"})
-  (ingest/create-provider {:provider-guid "provguid_cst2" :provider-id "PROV_CST2" :consortiums "cst21 cst22"})
+  (ingest/delete-provider "PROV1")
+  (ingest/delete-provider "PROV2")
+  (ingest/create-provider {:provider-guid "provguid_cst1" :provider-id "PROV1" :consortiums "cst11 cst12"})
+  (ingest/create-provider {:provider-guid "provguid_cst2" :provider-id "PROV2" :consortiums "cst21 cst22"})
 
   (let [coll1 (d/ingest-umm-spec-collection
-               "PROV_CST1"
+               "PROV1"
                (umm-c/collection 1
                                  {:CollectionCitations [{:Creator "K. Hilburn"}
                                                         {:Creator "Nelkin"}]})
                {:format :umm-json})
         coll2 (d/ingest-umm-spec-collection
-               "PROV_CST2"
+               "PROV2"
                (umm-c/collection 2
                                  {:CollectionCitations [{:Creator "K. Hilburn, J. Ardizzone, and S. Gao"
                                                          :OtherCitationDetails "Sounder PEATE (Product Evaluation and Test Element) Team/Ruth Monarrez, JPL"}]})
