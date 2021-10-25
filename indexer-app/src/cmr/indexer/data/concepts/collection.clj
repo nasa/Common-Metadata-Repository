@@ -309,7 +309,7 @@
             :doi-stored doi
             :doi-lowercase doi-lowercase
             :revision-id revision-id
-            :concept-seq-id (if (< es/MAX_INT concept-seq-id) concept-seq-id 0)
+            :concept-seq-id (min es/MAX_INT concept-seq-id)
             :concept-seq-id-long concept-seq-id
             :native-id native-id
             :native-id-lowercase (str/lower-case native-id)
@@ -468,7 +468,7 @@
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))]
     {:concept-id concept-id
      :revision-id revision-id
-     :concept-seq-id (if (< es/MAX_INT concept-seq-id) concept-seq-id 0)
+     :concept-seq-id (min es/MAX_INT concept-seq-id)
      :concept-seq-id-long concept-seq-id
      :native-id native-id
      :native-id-lowercase (util/safe-lowercase native-id)
