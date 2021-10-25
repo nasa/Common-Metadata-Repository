@@ -66,8 +66,7 @@
   (when-let [gsr (csk/->kebab-case-keyword (get-in parent-collection [:SpatialExtent :GranuleSpatialRepresentation]))]
     (cond
       (or (= gsr :geodetic) (= gsr :cartesian))
-      (let [geometries (seq (get-in granule [:spatial-coverage :geometries]))]
-        (spatial/granule-spatial->elastic-docs gsr granule))
+      (spatial/granule-spatial->elastic-docs gsr granule)
 
       (= gsr :no-spatial)
       nil
@@ -111,7 +110,7 @@
   "Create a json string from the orbitial calculated spatial domains."
   [umm-granule]
   (map #(json/generate-string
-          (ocsd-map->vector %))
+         (ocsd-map->vector %))
        (ocsd/ocsds->elastic-docs umm-granule)))
 
 (defn- granule->elastic-doc
@@ -144,15 +143,21 @@
         track (get-in umm-granule [:spatial-coverage :track])
         {:keys [ShortName Version EntryTitle]} parent-collection
         granule-spatial-representation (get-in parent-collection
-                                               [:SpatialExtent :GranuleSpatialRepresentation])]
+                                               [:SpatialExtent :GranuleSpatialRepresentation])
+        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+        collection-concept-seq-id (:sequence-number (concepts/parse-concept-id parent-collection-id))]
     (merge {:concept-id concept-id
             :revision-id revision-id
-            :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
-            :concept-seq-id-doc-values (:sequence-number (concepts/parse-concept-id concept-id))
+            :concept-seq-id (min es/MAX_INT concept-seq-id)
+            :concept-seq-id-doc-values (min es/MAX_INT concept-seq-id)
+            :concept-seq-id-long concept-seq-id
+            :concept-seq-id-long-doc-values concept-seq-id
             :collection-concept-id parent-collection-id
             :collection-concept-id-doc-values parent-collection-id
-            :collection-concept-seq-id (:sequence-number (concepts/parse-concept-id parent-collection-id))
-            :collection-concept-seq-id-doc-values (:sequence-number (concepts/parse-concept-id parent-collection-id))
+            :collection-concept-seq-id (min es/MAX_INT collection-concept-seq-id)
+            :collection-concept-seq-id-long collection-concept-seq-id
+            :collection-concept-seq-id-doc-values (min es/MAX_INT collection-concept-seq-id)
+            :collection-concept-seq-id-long-doc-values collection-concept-seq-id
 
             :entry-title EntryTitle
             :entry-title-lowercase (string/lower-case EntryTitle)

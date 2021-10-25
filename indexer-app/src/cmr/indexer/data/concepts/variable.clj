@@ -48,7 +48,8 @@
       ;; Regular deleted variables would have gone through the index-service/delete-concept path.
       {:concept-id concept-id
        :revision-id revision-id
-       :concept-seq-id concept-seq-id
+       :concept-seq-id (min es/MAX_INT concept-seq-id)
+       :concept-seq-id-long concept-seq-id
        :deleted deleted
        :variable-name variable-name
        :variable-name-lowercase (string/lower-case variable-name)
@@ -63,7 +64,8 @@
        :revision-date revision-date}
       {:concept-id concept-id
        :revision-id revision-id
-       :concept-seq-id concept-seq-id
+       :concept-seq-id (min es/MAX_INT concept-seq-id)
+       :concept-seq-id-long concept-seq-id
        :deleted deleted
        :variable-name variable-name
        :variable-name-lowercase (string/lower-case variable-name)
