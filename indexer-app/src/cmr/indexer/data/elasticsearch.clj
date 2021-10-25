@@ -21,6 +21,10 @@
    [cmr.indexer.services.index-set-service :as index-set-svc]
    [cmr.umm.umm-core :as umm]))
 
+(def MAX_INT
+  "The maximum `integer` type value supported by Elasticsearch, 2^31 - 1"
+  2147483647)
+
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
   100)
