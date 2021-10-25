@@ -13,7 +13,7 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest elasticsearch-indexes-handle-large-numbers
-  ;; :concept-seq-id is derived from the serialization of the numeric portion or a :concept-id
+  ;; :concept-seq-id is derived from the serialization of the numeric portion of a :concept-id
   ;; original elasticsearch indexes stored the value as a signed integer, now it is stored as an unsigned_long
   (testing "whether concepts can be indexed with values larger than 2^31 - 1 as concept-seq-id"
     (let [preserved-values (atom [])]
