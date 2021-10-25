@@ -4,6 +4,7 @@
    [clojure.test :refer [deftest testing is use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -25,12 +26,11 @@
                                                      :ShortName (str "sn_" concept-id)
                                                      :concept-id concept-id}))]
          (swap! preserved-values conj concept)
-
          (index/wait-until-indexed)
          (is (= concept-id (:concept-id concept)))
+         (is (= 201 (:status concept)))
 
-            ;; TODO enable when searching is re-enabled
-         #_(d/refs-match? [concept] (search/find-refs :collection {:concept-id concept-id})))
+         (d/refs-match? [concept] (search/find-refs :collection {:concept-id concept-id})))
 
        "in-range integer value concept-seq-id"
        "C1200382534-PROV1"
@@ -44,15 +44,36 @@
        "concept-seq-id an order of magnitude larger than supported integer max"
        "C99999999999-PROV1")
 
-      (clojure.pprint/pprint @preserved-values)
-
-      (testing "whether existing searches will work with new field in place"
+      (testing "basic search still returns values"
         (d/refs-match? @preserved-values
-                       (search/find-refs :collection
-                                         {:provider "PROV1"})))
+                       (search/find-refs :collection {:provider "PROV1"})))))
 
-      (testing "whether queries that utilize concept-seq-id continue to work"
-        (d/refs-match? @preserved-values
-                       (search/find-refs :collection
-                                         {:provider "PROV1"
-                                          :has_granules_or_cwic true}))))))
+  (testing "whether queries that utilize concept-seq-id continue to work"
+    (let [c1 (d/ingest-umm-spec-collection "PROV1"
+                                           (data-umm-c/collection
+                                            {:EntryTitle (str "lucky_sevens")
+                                             :Version "1.0"
+                                             :ShortName (str "sn_lucky")
+                                             :concept-id "C1200382535-PROV1"}))
+          c2 (d/ingest-umm-spec-collection "PROV1"
+                                           (data-umm-c/collection
+                                            {:EntryTitle (str "lonely_eights")
+                                             :Version "1.0"
+                                             :ShortName (str "sn_lonely")
+                                             :concept-id "C8888888888-PROV1"}))
+          _g1_c1 (d/ingest "PROV1"
+                           (dg/granule-with-umm-spec-collection
+                            c1
+                            (:concept-id c1)
+                            {:granule-ur "Granule1_1"}))
+
+          _g1_c2 (d/ingest "PROV1"
+                           (dg/granule-with-umm-spec-collection
+                            c2
+                            (:concept-id c2)
+                            {:granule-ur "Granule1_2"}))]
+      (index/wait-until-indexed)
+      (testing "a 200 status and some results are returned"
+        (is (pos? (count (search/find-refs :collection
+                                           {:provider "PROV1"
+                                            :has_granules_or_cwic true}))))))))
