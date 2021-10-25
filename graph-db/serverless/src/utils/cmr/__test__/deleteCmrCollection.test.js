@@ -15,34 +15,39 @@ describe('cmr#deleteLinkedVerticies', () => {
 })
 
 describe('cmr#deleteCmrCollection', () => {
-  test('handles unsucessful linked vertex deletion', async () => {
-    const vertexDeleteMock = jest.spyOn(dv, 'deleteLinkedVertices')
+  const vertexDeleteMock = jest.spyOn(dv, 'deleteLinkedVertices')
 
-    // test first call to deleteLinkedVertices
+  test('handles first unsucessful linked vertex deletion', async () => {
     vertexDeleteMock.mockResolvedValueOnce(false)
+
     const deleteSuccess = await d.deleteCmrCollection('C123000001-CMR', 'connection placeholder')
+
     expect(deleteSuccess).toEqual(false)
     expect(vertexDeleteMock).toHaveBeenCalledTimes(1)
+  })
 
-    // test second call to deleteLinkedVertices
+  test('handles second unsucessful linked vertex deletion', async () => {
     vertexDeleteMock.mockResolvedValueOnce(() => true)
       .mockResolvedValueOnce(() => false)
-    const deleteSuccess2 = await d.deleteCmrCollection('C123000001-CMR', 'connection placeholder')
-    expect(deleteSuccess2).toEqual(false)
-    expect(vertexDeleteMock).toHaveBeenCalledTimes(2)
 
-    // test third call to deleteLinkedVertices
+    const deleteSuccess2 = await d.deleteCmrCollection('C123000001-CMR', 'connection placeholder')
+
+    expect(deleteSuccess2).toEqual(false)
+    expect(vertexDeleteMock).toHaveBeenCalledTimes(3)
+  })
+
+  test('handles third unsucessful linked vertex deletion', async () => {
     vertexDeleteMock.mockResolvedValueOnce(() => true)
       .mockResolvedValueOnce(() => true)
       .mockResolvedValueOnce(() => false)
+
     const deleteSuccess3 = await d.deleteCmrCollection('C123000001-CMR', 'connection placeholder')
+
     expect(deleteSuccess3).toEqual(false)
     expect(vertexDeleteMock).toHaveBeenCalledTimes(3)
   })
 
   test('handles gremlin error after vertex deletions', async () => {
-    const vertexDeleteMock = jest.spyOn(dv, 'deleteLinkedVertices')
-
     vertexDeleteMock.mockResolvedValueOnce(() => true)
       .mockResolvedValueOnce(() => true)
       .mockResolvedValueOnce(() => true)
