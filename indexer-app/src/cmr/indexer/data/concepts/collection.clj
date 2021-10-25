@@ -38,7 +38,7 @@
    [cmr.indexer.data.concepts.tool :as tool]
    [cmr.indexer.data.concepts.variable :as variable]
    [cmr.indexer.data.elasticsearch :as es]
-   [cmr.transmit.metadata-db :as meta-db]
+   [cmr.transmit.metadata-db :as metadata-db]
    [cmr.umm.collection.entry-id :as eid]
    [cmr.umm-spec.acl-matchers :as umm-matchers]
    [cmr.umm-spec.date-util :as date-util]
@@ -187,9 +187,9 @@
                 created-at revision-date deleted format extra-fields tag-associations
                 variable-associations service-associations tool-associations]} concept
         consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
-                              (meta-db/get-providers context))
+                              (metadata-db/get-providers context))
         consortiums (when consortiums-str
-                      (remove #(= "" %) (str/split consortiums-str #" ")))
+                      (remove empty? (str/split consortiums-str #" ")))
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
