@@ -154,9 +154,9 @@
             :concept-seq-id-long-doc-values concept-seq-id
             :collection-concept-id parent-collection-id
             :collection-concept-id-doc-values parent-collection-id
-            :collection-concept-seq-id (min es/MAX_INT collection-concept-seq-id collection-concept-seq-id)
+            :collection-concept-seq-id (min es/MAX_INT collection-concept-seq-id)
             :collection-concept-seq-id-long collection-concept-seq-id
-            :collection-concept-seq-id-doc-values (min es/MAX_INT collection-concept-seq-id collection-concept-seq-id)
+            :collection-concept-seq-id-doc-values (min es/MAX_INT collection-concept-seq-id)
             :collection-concept-seq-id-long-doc-values collection-concept-seq-id
 
             :entry-title EntryTitle

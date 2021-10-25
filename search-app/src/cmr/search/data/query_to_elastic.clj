@@ -40,7 +40,6 @@
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
   (let [default-mappings {:author :authors
-                          :concept-seq-id :concept-seq-id-long
                           :data-center-h :organization-humanized
                           :doi :doi-stored
                           :granule-end-date :granule-end-date-stored
