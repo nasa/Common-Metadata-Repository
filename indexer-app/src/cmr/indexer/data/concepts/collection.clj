@@ -38,6 +38,8 @@
    [cmr.indexer.data.concepts.tool :as tool]
    [cmr.indexer.data.concepts.variable :as variable]
    [cmr.indexer.data.elasticsearch :as es]
+   [cmr.transmit.metadata-db :as metadata-db]
+   [cmr.umm.collection.entry-id :as eid]
    [cmr.umm-spec.acl-matchers :as umm-matchers]
    [cmr.umm-spec.date-util :as date-util]
    [cmr.umm-spec.location-keywords :as lk]
@@ -47,7 +49,6 @@
    [cmr.umm-spec.time :as spec-time]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.util :as su]
-   [cmr.umm.collection.entry-id :as eid]
    [cmr.umm.umm-collection :as umm-c]))
 
 (defn spatial->elastic
@@ -185,6 +186,10 @@
   (let [{:keys [concept-id revision-id provider-id user-id native-id
                 created-at revision-date deleted format extra-fields tag-associations
                 variable-associations service-associations tool-associations]} concept
+        consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
+                              (metadata-db/get-providers context))
+        consortiums (when consortiums-str
+                      (remove empty? (str/split consortiums-str #" ")))
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
@@ -376,6 +381,8 @@
             :sensor-sn-lowercase  (map str/lower-case sensor-short-names)
             :authors authors
             :authors-lowercase (map str/lower-case authors)
+            :consortiums consortiums
+            :consortiums-lowercase (map util/safe-lowercase consortiums)
             :project-sn project-short-names
             :project-sn-lowercase  (map str/lower-case project-short-names)
             :two-d-coord-name two-d-coord-names

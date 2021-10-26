@@ -35,7 +35,7 @@
                     :include-facets :hierarchical-facets :include-highlights :include-tags
                     :all-revisions :shapefile :simplify-shapefile}
     :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
-                      :collection-data-type :project :project-h :entry-id :version :provider
+                      :collection-data-type :consortium :project :project-h :entry-id :version :provider
                       :entry-title :doi :native-id :platform :platform-h :processing-level-id
                       :processing-level-id-h :sensor :data-center-h :measurement :variable-name
                       :variable-concept-id :variable-native-id :author :service-name :service-type
@@ -150,6 +150,7 @@
    :polygon cpv/and-or-option
    :project cpv/string-plus-and-options
    :project-h cpv/string-plus-and-options
+   :consortium cpv/string-plus-and-options
    :provider cpv/string-param-options
    :revision-date cpv/and-option
    :science-keywords cpv/string-plus-or-options
