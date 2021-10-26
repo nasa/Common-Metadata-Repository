@@ -15,6 +15,7 @@ browse-scaler/src/node_modules
 .lsp
 .cider-repl-history
 **/ignore.*
+.calva*
 
 ###############################
 ### Test Files

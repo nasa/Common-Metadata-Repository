@@ -56,7 +56,8 @@
    :ScienceKeywords (v/every science-keyword-validations)
    :SpatialExtent s/spatial-extent-validation
    :MetadataAssociations (vu/unique-by-name-validator metadata-association-name)
-   :TilingIdentificationSystems tiling-identification-system-validations})
+   :TilingIdentificationSystems tiling-identification-system-validations
+   :DirectDistributionInformation {:S3BucketAndObjectPrefixNames (v/every url/s3-bucket-validation)}})
 
 (def collection-validation-warnings
  "Defines validations for collections that we want to return as warnings and not

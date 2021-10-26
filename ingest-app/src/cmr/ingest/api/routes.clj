@@ -1,18 +1,15 @@
 (ns cmr.ingest.api.routes
   "Defines the HTTP URL routes for the ingest API."
   (:require
-   [clojure.stacktrace :refer [print-stack-trace]]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
-   [cmr.common.api.errors :as api-errors]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer [info]]
    [cmr.ingest.api.bulk :as bulk]
    [cmr.ingest.api.collections :as collections]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.api.granules :as granules]
-   [cmr.ingest.api.multipart :as mp]
    [cmr.ingest.api.provider :as provider-api]
    [cmr.ingest.api.services :as services]
    [cmr.ingest.api.subscriptions :as subscriptions]

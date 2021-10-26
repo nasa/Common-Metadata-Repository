@@ -2,35 +2,33 @@
   "This has tests for UMM Related URL validations."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.services.errors :as e]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.models.umm-collection-models :as coll]
-   [cmr.umm-spec.models.umm-common-models :as c]
-   [cmr.umm-spec.related-url :as url]
+   [cmr.umm-spec.validation.related-url :as related-url]
    [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]
    [cmr.umm-spec.util :as su]
-   [cmr.umm-spec.validation.umm-spec-validation-core :as v]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as echo10-url]))
 
 (deftest collection-related-urls-validation
   (testing "Valid related urls"
     (h/assert-warnings-valid
      (coll/map->UMM-C
-                     {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
-                                     :URLContentType "DistributionURL"
-                                     :Description "Description"
-                                     :Type "GET DATA"
-                                     :Subtype "Earthdata Search"}
-                                    {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
-                                     :URLContentType "PublicationURL"
-                                     :Description "Description"
-                                     :Type "VIEW RELATED INFORMATION"
-                                     :Subtype "USER'S GUIDE"}
-                                    {:URL "http://www.google.com"
-                                     :URLContentType "VisualizationURL"
-                                     :Description "Description"
-                                     :Type "GET RELATED VISUALIZATION"
-                                     :Subtype "MAP"}]})))
+      {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
+                      :URLContentType "DistributionURL"
+                      :Description "Description"
+                      :Type "GET DATA"
+                      :Subtype "Earthdata Search"}
+                     {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
+                      :URLContentType "PublicationURL"
+                      :Description "Description"
+                      :Type "VIEW RELATED INFORMATION"
+                      :Subtype "USER'S GUIDE"}
+                     {:URL "http://www.google.com"
+                      :URLContentType "VisualizationURL"
+                      :Description "Description"
+                      :Type "GET RELATED VISUALIZATION"
+                      :Subtype "MAP"}]})))
 
   (testing "Multiple invalid related urls"
     (h/assert-warnings-multiple-invalid
@@ -97,16 +95,16 @@
   (testing "Valid related urls"
     (h/assert-warnings-valid
      (coll/map->UMM-C
-                     {:DataCenters
-                      [{:ContactInformation
-                        {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
-                                        :URLContentType "DataCenterURL"
-                                        :Description "Description"
-                                        :Type "HOME PAGE"}
-                                       {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
-                                        :URLContentType "DataCenterURL"
-                                        :Description "Description"
-                                        :Type "HOME PAGE"}]}}]})))
+      {:DataCenters
+       [{:ContactInformation
+         {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
+                         :URLContentType "DataCenterURL"
+                         :Description "Description"
+                         :Type "HOME PAGE"}
+                        {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
+                         :URLContentType "DataCenterURL"
+                         :Description "Description"
+                         :Type "HOME PAGE"}]}}]})))
   (testing "Multiple invalid related urls"
     (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
@@ -148,17 +146,17 @@
   (testing "Contact Persons valid related urls"
     (h/assert-warnings-valid
      (coll/map->UMM-C
-                     {:DataCenters
-                      [{:ContactPersons
-                        [{:ContactInformation
-                          {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
-                                          :URLContentType "DataContactURL"
-                                          :Description "Description"
-                                          :Type "HOME PAGE"}
-                                         {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
-                                          :URLContentType "DataContactURL"
-                                          :Description "Description"
-                                          :Type "HOME PAGE"}]}}]}]})))
+      {:DataCenters
+       [{:ContactPersons
+         [{:ContactInformation
+           {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
+                           :URLContentType "DataContactURL"
+                           :Description "Description"
+                           :Type "HOME PAGE"}
+                          {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
+                           :URLContentType "DataContactURL"
+                           :Description "Description"
+                           :Type "HOME PAGE"}]}}]}]})))
   (testing "Contact Persons multiple invalid related urls"
     (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
@@ -200,17 +198,17 @@
   (testing "Contact Groups valid related urls"
     (h/assert-warnings-valid
      (coll/map->UMM-C
-                     {:DataCenters
-                      [{:ContactGroups
-                        [{:ContactInformation
-                          {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
-                                          :URLContentType "DataContactURL"
-                                          :Description "Description"
-                                          :Type "HOME PAGE"}
-                                         {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
-                                          :URLContentType "DataContactURL"
-                                          :Description "Description"
-                                          :Type "HOME PAGE"}]}}]}]})))
+      {:DataCenters
+       [{:ContactGroups
+         [{:ContactInformation
+           {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
+                           :URLContentType "DataContactURL"
+                           :Description "Description"
+                           :Type "HOME PAGE"}
+                          {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
+                           :URLContentType "DataContactURL"
+                           :Description "Description"
+                           :Type "HOME PAGE"}]}}]}]})))
   (testing "Contact Groups multiple invalid related urls"
     (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
@@ -255,16 +253,16 @@
   (testing "Valid related urls"
     (h/assert-warnings-valid
      (coll/map->UMM-C
-                     {:ContactPersons
-                      [{:ContactInformation
-                        {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
-                                        :URLContentType "DataContactURL"
-                                        :Description "Description"
-                                        :Type "HOME PAGE"}
-                                       {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
-                                        :URLContentType "DataContactURL"
-                                        :Description "Description"
-                                        :Type "HOME PAGE"}]}}]})))
+      {:ContactPersons
+       [{:ContactInformation
+         {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
+                         :URLContentType "DataContactURL"
+                         :Description "Description"
+                         :Type "HOME PAGE"}
+                        {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
+                         :URLContentType "DataContactURL"
+                         :Description "Description"
+                         :Type "HOME PAGE"}]}}]})))
   (testing "Multiple invalid related urls"
     (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
@@ -309,16 +307,16 @@
   (testing "Valid related urls"
     (h/assert-warnings-valid
      (coll/map->UMM-C
-                     {:ContactGroups
-                      [{:ContactInformation
-                        {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
-                                        :URLContentType "DataContactURL"
-                                        :Description "Description"
-                                        :Type "HOME PAGE"}
-                                       {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
-                                        :URLContentType "DataContactURL"
-                                        :Description "Description"
-                                        :Type "HOME PAGE"}]}}]})))
+      {:ContactGroups
+       [{:ContactInformation
+         {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
+                         :URLContentType "DataContactURL"
+                         :Description "Description"
+                         :Type "HOME PAGE"}
+                        {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"
+                         :URLContentType "DataContactURL"
+                         :Description "Description"
+                         :Type "HOME PAGE"}]}}]})))
   (testing "Multiple invalid related urls"
     (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
@@ -377,9 +375,9 @@
   (testing "Valid related urls"
     (h/assert-warnings-valid
      (coll/map->UMM-C
-                     {:CollectionCitations
-                      [{:OnlineResource {:Linkage "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"}}
-                       {:OnlineResource {:Linkage "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"}}]})))
+      {:CollectionCitations
+       [{:OnlineResource {:Linkage "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"}}
+        {:OnlineResource {:Linkage "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"}}]})))
   (testing "Multiple invalid related urls"
     (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
@@ -395,9 +393,9 @@
   (testing "Valid related urls"
     (h/assert-warnings-valid
      (coll/map->UMM-C
-                     {:PublicationReferences
-                      [{:OnlineResource {:Linkage "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"}}
-                       {:OnlineResource {:Linkage "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"}}]})))
+      {:PublicationReferences
+       [{:OnlineResource {:Linkage "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"}}
+        {:OnlineResource {:Linkage "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=%09&accession=FNG-GCEM-0401"}}]})))
   (testing "Multiple invalid related urls"
     (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
@@ -410,19 +408,60 @@
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}])))
 
 (deftest dif-valid-url-types
- (testing "DIF hard-coded conversion table contains valid combinations"
-  (doseq [url-type (vals dif-util/dif-url-content-type->umm-url-types)]
-   (h/assert-warnings-valid
-    (coll/map->UMM-C {:RelatedUrls [(merge
-                                     url-type
-                                     {:URL "https://www.foo.com"
-                                      :Description "Description"})]})))))
+  (testing "DIF hard-coded conversion table contains valid combinations"
+    (doseq [url-type (vals dif-util/dif-url-content-type->umm-url-types)]
+      (h/assert-warnings-valid
+       (coll/map->UMM-C {:RelatedUrls [(merge
+                                        url-type
+                                        {:URL "https://www.foo.com"
+                                         :Description "Description"})]})))))
 
 (deftest echo10-valid-url-types
- (testing "ECHO10 hard-coded conversion table contains valid combinations"
-  (doseq [url-type (vals echo10-url/online-resource-type->related-url-types)]
-   (h/assert-warnings-valid
-    (coll/map->UMM-C {:RelatedUrls [(merge
-                                     url-type
-                                     {:URL "https://www.foo.com"
-                                      :Description "Description"})]})))))
+  (testing "ECHO10 hard-coded conversion table contains valid combinations"
+    (doseq [url-type (vals echo10-url/online-resource-type->related-url-types)]
+      (h/assert-warnings-valid
+       (coll/map->UMM-C {:RelatedUrls [(merge
+                                        url-type
+                                        {:URL "https://www.foo.com"
+                                         :Description "Description"})]})))))
+
+(deftest bucket-validation
+  (testing "S3 bucket validation"
+    (are3 [s3-value comparitor]
+          (is (comparitor (related-url/s3-bucket-validation "S3BucketAndObjectPrefix" s3-value)))
+
+          "valid prefix"
+          "s3prefix" #'nil?
+
+          "valid url [s3]"
+          "s3://example.com" #'nil?
+
+          "invalid url [http]"
+          "http://example.com" #'some?
+
+          "invalid url [https]"
+          "https://example.com" #'some?
+
+          "invalid url [ftp]"
+          "ftp://example.com" #'some?
+
+          "unescaped JSON with space"
+          "[\"s3://bad\", \"s3\"]" #'some?
+
+          "unescaped JSON without space"
+          "[\"s3://bad\",\"s3\"]" #'some?
+
+          "valid example 1"
+          "podaac-ops-cumulus-protected/GOES16-OSISAF-L3C-v1.0/" #'nil?
+
+          "valid example 2"
+          "cumulus-test-sandbox-protected#part/*" #'nil?
+
+          "valid example 3"
+          "cumulus-test-sandbox-protected-2/*" #'nil?
+
+          "valid example 4"
+          "cumulus-sandbox-public/__1" #'nil?
+
+          "valid example 5"
+          "s3://ornl-cumulus-prod-protected/above/Historical_Lake_Shorelines_AK/" #'nil?)))
