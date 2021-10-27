@@ -40,6 +40,7 @@
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
   (let [default-mappings {:author :authors
+                          :concept-seq-id :concept-seq-id-long
                           :consortium :consortiums
                           :data-center-h :organization-humanized
                           :doi :doi-stored
@@ -90,6 +91,8 @@
 (defmethod q2e/concept-type->field-mappings :granule
   [_]
   (let [default-mappings {:provider :provider-id
+                          :concept-seq-id :concept-seq-id-long
+                          :collection-concept-seq-id :collection-concept-seq-id-long
                           :native-id :native-id-stored
                           :revision-date :revision-date-stored-doc-values
                           :updated-since :revision-date-stored-doc-values
@@ -114,6 +117,7 @@
 (defmethod q2e/concept-type->field-mappings :variable
   [_]
   {:provider :provider-id
+   :concept-seq-id :concept-seq-id-long
    :name :variable-name})
 
 (defmethod q2e/concept-type->field-mappings :service
