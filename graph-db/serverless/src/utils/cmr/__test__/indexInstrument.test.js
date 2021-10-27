@@ -1,6 +1,6 @@
 import { updateCollection } from '../../../testUtil/indexCollection'
 import { indexInstrument } from '../indexInstrument'
-import { verifyPlatformInstrumentsExistInGraphDb, verifyPlatformInstrumentsNotExistInGraphDb } from '../../../testUtil/verifyPlatformInstrument'
+import { verifyPlatformInstrumentsExistInGraphDb } from '../../../testUtil/verifyPlatformInstrument'
 
 describe('indexInstrument', () => {
   describe('when the provided instrument is correct', () => {
@@ -16,22 +16,6 @@ describe('indexInstrument', () => {
       )
 
       verifyPlatformInstrumentsExistInGraphDb('Vulputate Mollis Commodo', 'uke')
-    })
-  })
-
-  describe('when the provided instrument is missing a ShortName', () => {
-    test('it does not index the instrument', async () => {
-      const instrument = { LongName: 'ukulele' }
-
-      await updateCollection(
-        'C100000-CMR',
-        'Vulputate Mollis Commodo',
-        {
-          instruments: instrument.LongName
-        }
-      )
-
-      verifyPlatformInstrumentsNotExistInGraphDb('Vulpate Mollis Commodo')
     })
   })
 
