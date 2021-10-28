@@ -1,7 +1,7 @@
 import gremlin from 'gremlin'
 
-const gremlinStatistics = gremlin.process.statics
-const { P: { lte } } = gremlin.process
+const { statics: gremlinStatistics, P } = gremlin.process
+const { lte } = P
 
 /**
  * Delete the collection with the given concept id from graph db

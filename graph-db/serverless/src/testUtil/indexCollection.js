@@ -112,14 +112,3 @@ export const deleteCollection = async (conceptId) => {
   expect(body).toBe('Successfully indexed 1 collection(s).')
   expect(statusCode).toBe(200)
 }
-
-export const deleteCollectionWithError = async () => {
-  const event = { Records: [{ body: '{"concept-id": "console.log(\'i think i broke it\')", "action": "concept-delete" }' }] }
-
-  const indexed = await indexCmrCollection(event)
-
-  const { body, statusCode } = indexed
-
-  expect(body).toBe('Successfully indexed 0 collection(s).')
-  expect(statusCode).toBe(200)
-}

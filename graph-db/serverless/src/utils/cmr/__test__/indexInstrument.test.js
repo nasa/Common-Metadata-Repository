@@ -20,7 +20,7 @@ describe('indexInstrument', () => {
   })
 
   describe('when the gremlin connection is broken', () => {
-    test('it handles the thrown errors', async () => {
+    test('it handles the thrown errors, and throws a new one to halt indexing', async () => {
       const consoleError = jest.spyOn(console, 'error')
       let instrumentError
 

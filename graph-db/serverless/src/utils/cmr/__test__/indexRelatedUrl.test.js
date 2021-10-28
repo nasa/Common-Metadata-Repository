@@ -44,7 +44,7 @@ describe('indexRelatedUrl', () => {
     })
   })
 
-  describe('when an exceptionn is thrown', () => {
+  describe('when an exception is thrown', () => {
     test('it is caught and a new one is thrown', async () => {
       let errorMessage
       const consoleError = jest.spyOn(console, 'error')

@@ -1,6 +1,6 @@
 import { indexProject } from '../indexProject'
 
-describe('utils#indexPlatform', () => {
+describe('utils#indexProject', () => {
   test('function handles errors', async () => {
     let indexError
     const consoleError = jest.spyOn(console, 'error')
