@@ -444,6 +444,20 @@
   ([concept-type params options]
    (find-concepts-umm-json-common concept-type params mime-types/legacy-umm-json options)))
 
+(defn find-concepts-stac
+  "Returns the response of a search in stac format"
+  ([concept-type params]
+   (find-concepts-stac concept-type params {}))
+  ([concept-type params options]
+   (let [response (get-search-failure-data
+                   (find-concepts-in-format mime-types/stac concept-type params options))
+         {:keys [status headers body]} response]
+     (if (= status 200)
+         {:status status
+          :headers headers
+          :results (json/decode body true)}
+         response))))
+
 (defn find-metadata
   "Returns the response of concept search in a specific metadata XML format."
   ([concept-type format-key params]

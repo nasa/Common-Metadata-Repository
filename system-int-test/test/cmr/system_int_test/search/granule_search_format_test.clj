@@ -20,6 +20,7 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.kml :as dk]
+   [cmr.system-int-test.data2.stac :as stac]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
@@ -702,6 +703,88 @@
       (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
             response (search/find-metadata :granule :echo10 {:granule-ur "Granule3"})]
         (is (string/includes? response "s3://aws.com"))))))
+
+(deftest search-granule-stac
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
+                                                :beginning-date-time "1970-01-01T12:00:00Z"
+                                                :spatial-coverage (dc/spatial {:gsr :geodetic})}))
+        coll-concept-id (:concept-id coll1)
+        gran-spatial (dg/spatial (m/mbr 10 30 20 0))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+                                                   :beginning-date-time "2010-01-01T12:00:00.000Z"
+                                                   :ending-date-time "2010-01-11T12:00:00.000Z"
+                                                   :spatial-coverage gran-spatial
+                                                   :cloud-cover 10.0}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"
+                                                   :beginning-date-time "2011-02-01T12:00:00.000Z"
+                                                   :ending-date-time "2011-02-11T12:00:00.000Z"
+                                                   :spatial-coverage gran-spatial
+                                                   :cloud-cover 20.0}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"
+                                                   :beginning-date-time "2012-01-01T12:00:00.000Z"
+                                                   :ending-date-time "2012-01-11T12:00:00.000Z"
+                                                   :spatial-coverage gran-spatial
+                                                   :cloud-cover 30.0}))]
+
+    (index/wait-until-indexed)
+
+    (util/are3 [params result-map]
+      (let [response (search/find-concepts-stac :granule
+                                                (merge params {:collection-concept-id coll-concept-id}))
+            full-result-map (merge result-map
+                                   {:coll-concept-id coll-concept-id
+                                    :matched 3
+                                    :geometry {:type "Polygon"
+                                               :coordinates
+                                               [[[10.0 0.0]
+                                                 [20.0 0.0]
+                                                 [20.0 30.0]
+                                                 [10.0 30.0]
+                                                 [10.0 0.0]]]}
+                                    :bbox [10.0 0.0 20.0 30.0]})]
+        (is (search/mime-type-matches-response? response mt/stac))
+        (is (= 200 (:status response)))
+        (is (= (stac/result-map->expected-stac full-result-map)
+               (:results response))))
+
+      "default page-size and page-num"
+      nil
+      {:granules [gran1 gran2 gran3]
+       :query-string (format "collection_concept_id=%s" coll-concept-id)
+       :page-num 1}
+
+      "specific page-size"
+      {:page-size 1}
+      {:granules [gran1]
+       :query-string (format "page_size=1&collection_concept_id=%s" coll-concept-id)
+       :page-num 1
+       :next-num 2}
+
+      "specific page-size and page-num"
+      {:page-size 1 :page-num 2}
+      {:granules [gran2]
+       :query-string (format "page_size=1&collection_concept_id=%s" coll-concept-id)
+       :page-num 2
+       :prev-num 1
+       :next-num 3}
+
+      "specific page-size and page-num, no next page"
+      {:page-size 2 :page-num 2}
+      {:granules [gran3]
+       :query-string (format "page_size=2&collection_concept_id=%s" coll-concept-id)
+       :page-num 2
+       :prev-num 1})
+
+    (testing "stac as extension"
+      (let [params {:collection-concept-id coll-concept-id}
+            response (search/find-concepts-stac :granule
+                                                params
+                                                {:url-extension "stac"})]
+        (is (search/mime-type-matches-response? response mt/stac))
+        (is (= (select-keys (search/find-concepts-stac :granule params)
+                            [:status :body])
+               (select-keys response
+                            [:status :body])))))))
 
 (deftest granule-concept-stac-retrieval-test
   (testing "retrieval of granule concept in STAC format"

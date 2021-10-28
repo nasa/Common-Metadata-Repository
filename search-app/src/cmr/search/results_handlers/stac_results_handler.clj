@@ -2,6 +2,7 @@
   "Handles the STAC results format and related functions"
   (:require
    [cheshire.core :as json]
+   [clojure.string :as string]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
@@ -17,6 +18,10 @@
 (def ^:private STAC_VERSION
   "Version of STAC specification supported by CMR"
   "1.0.0")
+
+(def ^:private MAX_RESULT_WINDOW
+  "Number of max results can be returned in an Elasticsearch query."
+  1000000)
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :stac]
  [concept-type query]
@@ -218,3 +223,63 @@
 (defmethod qs/single-result->response [:granule :stac]
   [context query results]
   (single-result->response context query results))
+
+(defn- get-fc-links
+  "Returns the links for feature collection"
+  [context query hits]
+  (let [{:keys [page-size offset]} query
+        page-num (if offset
+                   (inc (/ offset page-size))
+                   1)
+        item-count (if offset
+                     (+ offset page-size)
+                     page-size)
+        allowed-hits (min hits MAX_RESULT_WINDOW)
+        match-1 (str "page_num=" page-num)
+        match-2 (str "page-num=" page-num)
+        page-num-pattern (re-pattern (format "%s&|&%s|%s&|&%s" match-1 match-1 match-2 match-2))
+        base-query-string (-> context
+                              :query-string
+                              (string/replace page-num-pattern ""))
+        prev-num (when (> page-num 1)
+                   (dec page-num))
+        next-num (when (> allowed-hits item-count)
+                   (inc page-num))]
+    (remove nil?
+            [{:rel "self"
+              :href (url/stac-request-url context base-query-string page-num)}
+             {:rel "root"
+              :href (url/search-root context)}
+             (when prev-num
+               {:rel "prev"
+                :method "GET"
+                :href (url/stac-request-url context base-query-string prev-num)})
+             (when next-num
+               {:rel "next"
+                :method "GET"
+                :href (url/stac-request-url context base-query-string next-num)})])))
+
+(defn- results->json
+  [context query results]
+  (let [{:keys [hits items facets]} results
+        returned (count items)]
+    {:type "FeatureCollection"
+     :stac_version STAC_VERSION
+     :numberMatched hits
+     :numberReturned returned
+     :features (map (partial stac-reference->json context :granule) items)
+     :links (get-fc-links context query hits)
+     :context {:returned returned
+               :limit MAX_RESULT_WINDOW
+               :matched hits}}))
+
+(defn- search-results->response
+  [context query results]
+  (let [{:keys [concept-type echo-compatible? result-features]} query
+        include-facets? (boolean (some #{:facets} result-features))
+        response-results (results->json context query results)]
+    (json/generate-string response-results)))
+
+(defmethod qs/search-results->response [:granule :stac]
+  [context query results]
+  (search-results->response context query results))

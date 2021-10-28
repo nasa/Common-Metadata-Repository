@@ -41,3 +41,11 @@
         query-string (if (empty? query-string) "" (str "?" query-string))]
     (format "%s%ss.%s%s" (tconfig/application-public-root-url context)
             (name concept-type) (name result-format) query-string)))
+
+(defn stac-request-url
+  "Returns the stac request url based on search concept type with extension and query string"
+  [context query-string page-num]
+  (format "%sgranules.stac?%s&page_num=%s"
+          (tconfig/application-public-root-url context)
+          query-string
+          page-num))
