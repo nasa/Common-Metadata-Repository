@@ -63,6 +63,13 @@
   (format "Format [%s] was not a valid keyword."
           relatedurl-getdata-format))
 
+(defn mime-type-not-matches-kms-keywords
+  "Error message when relatedurl-mimetype is
+  not in the KMS."
+  [relatedurl-mime-type]
+  (format "Mime Type [%s] was not a valid keyword."
+          relatedurl-mime-type))
+
 (defn directory-name-not-matches-kms-keywords
    "Error msg when DirectoryName's ShortName is not in the KMS."
    [directory-name]

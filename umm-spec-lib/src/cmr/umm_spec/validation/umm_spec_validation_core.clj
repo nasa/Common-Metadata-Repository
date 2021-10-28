@@ -108,3 +108,13 @@
    (validation-errors->path-errors
     (v/validate (cons vv/variable-validation-warnings additional-validations)
                 variable))))
+
+(defn validate-variable-with-no-defaults
+  "Similar to validate-variables, however this one has no default rules
+  requiring all rules to be passed in.
+
+  Validates the UMM record returning a list of error maps containing a path
+  through the UMM model and a list of errors at that path. Returns an empty
+  sequence if it is valid."
+  [variable validations-rules]
+   (validation-errors->path-errors (v/validate validations-rules variable)))

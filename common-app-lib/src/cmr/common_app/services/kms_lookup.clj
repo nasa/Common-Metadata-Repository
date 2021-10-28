@@ -36,6 +36,7 @@
    :concepts [:short-name]
    :iso-topic-categories [:iso-topic-category]
    :granule-data-format [:format]
+   :mime-type [:mime-type]
    :related-urls [:url-content-type :type :subtype]})
 
 (def kms-scheme->fields-for-umm-var-lookup

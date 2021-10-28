@@ -12,6 +12,9 @@
    [cmr.umm-spec.versioning :as v]
    [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
+;;All migrations in this file will migrate variables in this way
+(def migrate-variable (partial vm/migrate-umm {} :variable))
+
 (def variable-concept-10
   {:Name "var1"
    :LongName "variable 1"
@@ -155,11 +158,11 @@
 
 (deftest migrate-10->11
   (is (= (dissoc variable-concept-10 :Services)
-         (vm/migrate-umm {} :variable "1.0" "1.1" variable-concept-10))))
+         (migrate-variable "1.0" "1.1" variable-concept-10))))
 
 (deftest migrate-11->10
   (is (= variable-concept-11
-         (vm/migrate-umm {} :variable "1.1" "1.0" variable-concept-11))))
+         (migrate-variable "1.1" "1.0" variable-concept-11))))
 
 (deftest migrate-11->12
   (is (= {:Name "var1"
@@ -179,7 +182,7 @@
                                    {:MeasurementSource "OTHER",
                                     :MeasurementName {:MeasurementObject "length"}}]}
 
-         (vm/migrate-umm {} :variable "1.1" "1.2" variable-concept-11))))
+         (migrate-variable "1.1" "1.2" variable-concept-11))))
 
 (deftest migrate-12->11
   (is (= {:Name "var1"
@@ -192,7 +195,7 @@
           :Offset 0
           :Measurements [{:MeasurementName "radiative_flux"
                           :MeasurementSource "BODC"}]}
-         (vm/migrate-umm {} :variable "1.2" "1.1" variable-concept-12))))
+         (migrate-variable "1.2" "1.1" variable-concept-12))))
 
 (deftest mgrate-12->13
   (is (= {:Dimensions [{:Name "x" :Size 0.0 :Type "DEPTH_DIMENSION"}]
@@ -212,7 +215,7 @@
                                     :MeasurementSource "BODC"}]
           :LongName "variable 1"
           :DataType "float"}
-         (vm/migrate-umm {} :variable "1.2" "1.3" variable-concept-12))))
+         (migrate-variable "1.2" "1.3" variable-concept-12))))
 
 (deftest migrate-13->12
   (is (= {:Dimensions [{:Name "x" :Size 0.0 :Type "DEPTH_DIMENSION"}]
@@ -233,7 +236,7 @@
                                     :MeasurementSource "BODC"}]
           :LongName "variable 1"
           :DataType "float"}
-         (vm/migrate-umm {} :variable "1.3" "1.2" (assoc-in variable-concept-13
+         (migrate-variable "1.3" "1.2" (assoc-in variable-concept-13
                                                             [:Characteristics]
                                                             {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
                                                              :IndexRanges {:LatRange [-45 45]
@@ -241,47 +244,47 @@
 
 (deftest migrate-13->14
   (is (= variable-concept-14
-         (vm/migrate-umm {} :variable "1.3" "1.4" variable-concept-13))))
+         (migrate-variable "1.3" "1.4" variable-concept-13))))
 
 (deftest migrate-13->14-without-compression
   (is (= variable-concept-14-without-compression
-         (vm/migrate-umm {} :variable "1.3" "1.4" variable-concept-13-without-compression))))
+         (migrate-variable "1.3" "1.4" variable-concept-13-without-compression))))
 
 (deftest migrate-13->14-only-ascii
   (is (= variable-concept-14-only-ascii
-         (vm/migrate-umm {} :variable "1.3" "1.4" variable-concept-13-only-ascii))))
+         (migrate-variable "1.3" "1.4" variable-concept-13-only-ascii))))
 
 (deftest migrate-13->14-only-netcdf-4
   (is (= variable-concept-14-only-netcdf-4
-         (vm/migrate-umm {} :variable "1.3" "1.4" variable-concept-13-only-netcdf-4))))
+         (migrate-variable "1.3" "1.4" variable-concept-13-only-netcdf-4))))
 
 (deftest migrate-14->13
   (is (= variable-concept-13
-         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14))))
+         (migrate-variable "1.4" "1.3" variable-concept-14))))
 
 (deftest migrate-14->13-without-compression
   (is (= variable-concept-13-without-compression
-         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-without-compression))))
+         (migrate-variable "1.4" "1.3" variable-concept-14-without-compression))))
 
 (deftest migrate-14->13-without-ascii-and-netcdf-4-compression
   (is (= variable-concept-13-without-compression
-         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-without-ascii-and-netcdf-4-compression))))
+         (migrate-variable "1.4" "1.3" variable-concept-14-without-ascii-and-netcdf-4-compression))))
 
 (deftest migrate-14->13-only-ascii
   (is (= variable-concept-13-only-ascii
-         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-only-ascii))))
+         (migrate-variable "1.4" "1.3" variable-concept-14-only-ascii))))
 
 (deftest migrate-14->13-only-netcdf-4
   (is (= variable-concept-13-only-netcdf-4
-         (vm/migrate-umm {} :variable "1.4" "1.3" variable-concept-14-only-netcdf-4))))
+         (migrate-variable "1.4" "1.3" variable-concept-14-only-netcdf-4))))
 
 (deftest migrate-14->15
   (is (= (assoc variable-concept-14 :AcquisitionSourceName "Not Provided")
-         (vm/migrate-umm {} :variable "1.4" "1.5" variable-concept-14))))
+         (migrate-variable "1.4" "1.5" variable-concept-14))))
 
 (deftest migrate-15->14
   (is (= variable-concept-14
-         (vm/migrate-umm {} :variable "1.5" "1.4"
+         (migrate-variable "1.5" "1.4"
                          (assoc variable-concept-14  :AcquisitionSourceName "OMI")))))
 
 (def variable-concept-15
@@ -318,7 +321,7 @@
                                          {:MeasurementContextMedium "not_specified"
                                           :MeasurementObject "not_specified"
                                           :MeasurementQuantities [{:Value "blinding"}]}])
-         (vm/migrate-umm {} :variable "1.5" "1.6" variable-concept-15))))
+         (migrate-variable "1.5" "1.6" variable-concept-15))))
 
 (deftest migrate-16->15
   (is (= (assoc variable-concept-15
@@ -327,7 +330,7 @@
                                           :MeasurementSource "OTHER"}
                                          {:MeasurementName {:MeasurementObject "radiative_flux"}
                                           :MeasurementSource "OTHER"}])
-         (vm/migrate-umm {} :variable "1.6" "1.5"
+         (migrate-variable "1.6" "1.5"
                          (assoc variable-concept-15
                                 :Dimensions [{:Name "x" :Size 0.0 :Type "DEPTH_DIMENSION"}
                                              {:Name "y" :Size 0.0 :Type "CROSS_TRACK_DIMENSION"}]
@@ -505,10 +508,46 @@
              (assoc :AdditionalIdentifiers [{:Identifier "CF_Standard_Description",
                                              :Description
                                              "The sea surface subskin temperature is the temperature at the base of the conductive laminar sub-layer of the ocean surface, that is, at a depth of approximately 1 - 1.5 millimeters below the air-sea interface. For practical purposes, this quantity can be well approximated to the measurement of surface temperature by a microwave radiometer operating in the 6 - 11 gigahertz frequency range, but the relationship is neither direct nor invariant to changing physical conditions or to the specific geometry of the microwave measurements. Measurements of this quantity are subject to a large potential diurnal cycle due to thermal stratification of the upper ocean layer in low wind speed high solar irradiance conditions.",}]))
-         (vm/migrate-umm {} :variable "1.7" "1.6" variable-concept-17))))
+         (migrate-variable "1.7" "1.6" variable-concept-17))))
 
 (deftest migrate-16->17
   (is (= (-> variable-concept-17
              (assoc :Name "sea_surface_temperature")
              (dissoc :AdditionalIdentifiers :StandardName))
-         (vm/migrate-umm {} :variable "1.6" "1.7" variable-concept-16))))
+         (migrate-variable "1.6" "1.7" variable-concept-16))))
+
+;; tests for umm-var 1.8 *******************************************************
+
+(def variable-concept-18
+  {:Name "/MODIS_Grid_Daily_1km_LST/Data_Fields/sea_surface_temperature"
+   :LongName "sea surface subskin temperature"
+   :Definition "sea surface subskin temperature in units of kelvin"
+   :RelatedURLs [{:URLContentType "DistributionURL"
+                  :Type "GET SERVICE"
+                  :Subtype "ECHO"
+                  :URL "https://example.gov"}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/variable/v1.8"
+                           :Name "UMM-Var"
+                           :Version "1.8"}})
+
+(deftest migrate-18->17
+  ;; Drop the related urls and metadata specification as these values were added
+  ;; in 1.8
+  (let [expected (dissoc variable-concept-18 :RelatedURLs :MetadataSpecification)
+        actual (migrate-variable "1.8" "1.7" variable-concept-18)]
+    (is (= expected actual) "Document Match")))
+
+(deftest migrate-17->18
+  ;; This version, 1.7, should not have any related urls or MetadataSpecification
+  ;; so simply check the specification number
+  (let [actual (migrate-variable "1.7" "1.8" variable-concept-17)]
+    (is (= "1.8" (get-in actual [:MetadataSpecification :Version])) "Version Check")))
+
+(deftest migrate-18->18
+  ;; Round trip the migration through the previous version to force the loss of
+  ;; related urls. This could not be done in the 17->18 test above.
+  (let [actual (->> variable-concept-18
+                    (migrate-variable "1.8" "1.7")
+                    (migrate-variable "1.7" "1.8"))]
+    (is (= "1.8" (get-in actual [:MetadataSpecification :Version])) "Version Check")
+    (is (nil? (:RelatedURLs actual)) "Lost Related URLs")))
