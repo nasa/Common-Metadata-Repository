@@ -138,3 +138,117 @@
        :opendap {:title "opendap link"
                  :href "https://f5eil01v.edn.ecs.nasa.gov/opendapurl"
                  :type "text/xml"}})))
+
+(defn- href
+  "Returns the href for the given base query string and page-num"
+  [base-string page-num]
+  (format "http://localhost:3003/granules.stac?%s&page_num=%s" base-string page-num))
+
+(defn- self-link
+  "Returns the self link with the given page-num"
+  [base-string page-num]
+  {:rel "self"
+   :href (href base-string page-num)})
+
+(def ^:private root-link
+  "Defines the root link"
+  {:rel "root"
+   :href "http://localhost:3003/"})
+
+(defn- prev-link
+  "Returns the prev-link with the given page-num"
+  [base-string page-num]
+  (when page-num
+    {:rel "prev"
+     :method "GET"
+     :href (href base-string page-num)}))
+
+(defn- next-link
+  "Returns the next-link with the given page-num"
+  [base-string page-num]
+ (when page-num
+   {:rel "next"
+   :method "GET"
+   :href (href base-string page-num)}))
+
+(deftest get-fc-links
+  (testing "Get feature colection links"
+    (are3 [query-string page-size page-num base-string expected-nav]
+      (let [context (merge {:system {:public-conf {:protocol "http"
+                                                   :host "localhost"
+                                                   :port "3003"}}}
+                                   {:query-string query-string})
+             query {:page-size page-size
+                    :offset (* (dec page-num) page-size)}
+             hits 30
+             [self-num prev-num next-num] expected-nav
+             expected-links (remove nil?
+                                    [(self-link base-string self-num)
+                                     root-link
+                                     (prev-link base-string prev-num)
+                                     (next-link base-string next-num)])]
+        (is (= expected-links
+               (#'stac-results-handler/get-fc-links context query hits))))
+
+      "default query string with no page-size or page-num"
+      "collection_concept_id=C111-PROV"
+      10
+      1
+      "collection_concept_id=C111-PROV"
+      [1 nil 2]
+
+      "query string with explicit page-num at the front of query string"
+      "page-num=1&collection_concept_id=C111-PROV"
+      10
+      1
+      "collection_concept_id=C111-PROV"
+      [1 nil 2]
+
+      "query string with explicit page_num at the front of query string"
+      "page_num=1&collection_concept_id=C111-PROV"
+      10
+      1
+      "collection_concept_id=C111-PROV"
+      [1 nil 2]
+
+      "query string with explicit page-num not at the front of query string"
+      "collection_concept_id=C111-PROV&page-num=1"
+      10
+      1
+      "collection_concept_id=C111-PROV"
+      [1 nil 2]
+
+      "query string with explicit page_num not at the front of query string"
+      "collection_concept_id=C111-PROV&page_num=1"
+      10
+      1
+      "collection_concept_id=C111-PROV"
+      [1 nil 2]
+
+      "query string with explicit page-size in query string"
+      "page_size=20&collection_concept_id=C111-PROV"
+      20
+      1
+      "page_size=20&collection_concept_id=C111-PROV"
+      [1 nil 2]
+
+      "query with both previous and next pages"
+      "page_size=2&page_num=5&collection_concept_id=C111-PROV"
+      2
+      5
+      "page_size=2&collection_concept_id=C111-PROV"
+      [5 4 6]
+
+      "query with no next page"
+      "page_size=10&page_num=3&collection_concept_id=C111-PROV"
+      10
+      3
+      "page_size=10&collection_concept_id=C111-PROV"
+      [3 2 nil]
+
+      "query with neither previous page nor next page"
+      "page_num=1&collection_concept_id=C111-PROV&page_size=30"
+      30
+      1
+      "collection_concept_id=C111-PROV&page_size=30"
+      [1 nil nil])))
