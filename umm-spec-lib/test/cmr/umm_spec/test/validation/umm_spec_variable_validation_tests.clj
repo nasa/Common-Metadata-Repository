@@ -17,8 +17,10 @@
           :IndexRanges
           :LongName
           :MeasurementIdentifiers
+          :MetadataSpecification
           :Name
           :Offset
+          :RelatedURLs
           :SamplingIdentifiers
           :Scale
           :ScienceKeywords
