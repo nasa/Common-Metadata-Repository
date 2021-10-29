@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.high-concept-number-test
   "Tests that check how the system handles concepts with high concept numbers."
   (:require
-   [clojure.test :refer [deftest testing use-fixtures]]
+   [clojure.test :refer [deftest testing is use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
