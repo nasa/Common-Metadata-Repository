@@ -8,10 +8,12 @@
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]))
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.variable-util :as variables]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
-                                           "provguid2 " "PROV2"}))
+                                           "provguid2" "PROV2"
+                                           "provguid3" "PROV3"}))
 
 (deftest elasticsearch-indexes-handle-large-numbers
   ;; :concept-seq-id is derived from the serialization of the numeric portion of a :concept-id
@@ -79,3 +81,54 @@
                        (search/find-refs :collection
                                          {:provider "PROV2"
                                           :has_granules_or_cwic true}))))))
+
+(deftest granules-with-high-concept-ids-test
+  (testing "granules with high concept-ids are searchable and indexed"
+    (let [coll (d/ingest-umm-spec-collection "PROV1"
+                                             (data-umm-c/collection
+                                              {:EntryTitle (str "gran")
+                                               :Version "1.0"
+                                               :ShortName (str "sn_gran")}))
+          g1_c1 (d/ingest "PROV1"
+                          (dg/granule-with-umm-spec-collection
+                           coll
+                           (:concept-id coll)
+                           {:granule-ur "Granule1_1"
+                            :concept-id "G55555555555555555-PROV1"}))]
+      (index/wait-until-indexed)
+      (d/refs-match? [g1_c1] (search/find-refs :granule {:concept-id (:concept-id g1_c1)})))))
+
+(deftest variable-with-high-concept-ids-test
+  (testing "variables with high concept-ids are searchable and indexed"
+    (let [coll (d/ingest-umm-spec-collection "PROV1"
+                                             (data-umm-c/collection
+                                              {:EntryTitle (str "normal")
+                                               :Version "1.0"
+                                               :ShortName (str "sn_normal")}))
+          _ (index/wait-until-indexed)
+          var-concept (variables/make-variable-concept
+                       {:Name "Variable-with-long-id"}
+                       {:native-id "var1"
+                        :provider-id "PROV1"
+                        :concept-id "V222222222222222222-PROV1"
+                        :coll-concept-id (:concept-id coll)})
+          variable (variables/ingest-variable-with-association var-concept)]
+      (index/wait-until-indexed)
+      (variables/assert-variable-search-order [variable] (variables/search {:provider "PROV1"}))))
+  
+  (testing "variable associations with high concept-id searches return as expected"
+    (let [coll (d/ingest-umm-spec-collection "PROV3"
+                                             (data-umm-c/collection
+                                              {:EntryTitle (str "nov_nines")
+                                               :Version "1.0"
+                                               :ShortName (str "sn_nines")
+                                               :concept-id "C999444999999999-PROV3"}))
+          _ (index/wait-until-indexed)
+          var-concept (variables/make-variable-concept
+                       {:Name "Variable2"}
+                       {:native-id "var2"
+                        :provider-id "PROV3"
+                        :coll-concept-id (:concept-id coll)})
+          variable (variables/ingest-variable-with-association var-concept)]
+      (index/wait-until-indexed)
+      (variables/assert-variable-search-order [variable] (variables/search {:provider "PROV3"})))))
