@@ -1,8 +1,7 @@
 (ns cmr.system-int-test.search.high-concept-number-test
   "Tests that check how the system handles concepts with high concept numbers."
   (:require
-   [clojure.test :refer [deftest testing is use-fixtures]]
-   [cmr.common.util :refer [are3]]
+   [clojure.test :refer [deftest testing use-fixtures]]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -10,7 +9,8 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
+                                           "provguid2 " "PROV2"}))
 
 (deftest elasticsearch-indexes-handle-large-numbers
   ;; :concept-seq-id is derived from the serialization of the numeric portion of a :concept-id
@@ -49,31 +49,32 @@
                        (search/find-refs :collection {:provider "PROV1"})))))
 
   (testing "whether queries that utilize concept-seq-id continue to work"
-    (let [c1 (d/ingest-umm-spec-collection "PROV1"
+    (let [c1 (d/ingest-umm-spec-collection "PROV2"
                                            (data-umm-c/collection
                                             {:EntryTitle (str "lucky_sevens")
                                              :Version "1.0"
                                              :ShortName (str "sn_lucky")
-                                             :concept-id "C1200382535-PROV1"}))
-          c2 (d/ingest-umm-spec-collection "PROV1"
+                                             :concept-id "C77777777777-PROV2"}))
+          c2 (d/ingest-umm-spec-collection "PROV2"
                                            (data-umm-c/collection
                                             {:EntryTitle (str "lonely_eights")
                                              :Version "1.0"
                                              :ShortName (str "sn_lonely")
-                                             :concept-id "C8888888888-PROV1"}))
-          _g1_c1 (d/ingest "PROV1"
+                                             :concept-id "C88888888888-PROV2"}))
+          _g1_c1 (d/ingest "PROV2"
                            (dg/granule-with-umm-spec-collection
                             c1
                             (:concept-id c1)
                             {:granule-ur "Granule1_1"}))
 
-          _g1_c2 (d/ingest "PROV1"
+          _g1_c2 (d/ingest "PROV2"
                            (dg/granule-with-umm-spec-collection
                             c2
                             (:concept-id c2)
                             {:granule-ur "Granule1_2"}))]
       (index/wait-until-indexed)
-      (testing "a 200 status and some results are returned"
-        (is (pos? (count (search/find-refs :collection
-                                           {:provider "PROV1"
-                                            :has_granules_or_cwic true}))))))))
+      (testing "refs are returned as expected"
+        (d/refs-match? [c2 c1]
+                       (search/find-refs :collection
+                                         {:provider "PROV2"
+                                          :has_granules_or_cwic true}))))))

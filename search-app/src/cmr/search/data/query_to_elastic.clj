@@ -81,11 +81,24 @@
   "Defines mappings for any query-fields to Elasticsearch doc-values field names. Note that this
   does not include lowercase field mappings for doc-values fields."
   (into spatial-doc-values-field-mappings
-        (for [field [:provider-id :concept-seq-id :collection-concept-id
-                     :collection-concept-seq-id :size :start-date :end-date :revision-date
-                     :day-night :cloud-cover :orbit-start-clat :orbit-end-clat
-                     :orbit-asc-crossing-lon :access-value :start-coordinate-1
-                     :end-coordinate-1 :start-coordinate-2 :end-coordinate-2]]
+        (for [field [:access-value
+                     :concept-seq-id-long
+                     :collection-concept-id
+                     :collection-concept-seq-id-long
+                     :provider-id
+                     :size
+                     :start-date
+                     :end-date
+                     :revision-date
+                     :day-night
+                     :cloud-cover
+                     :orbit-start-clat
+                     :orbit-end-clat
+                     :orbit-asc-crossing-lon
+                     :start-coordinate-1
+                     :end-coordinate-1
+                     :start-coordinate-2
+                     :end-coordinate-2]]
           [field (doc-values-field-name field)])))
 
 (defmethod q2e/concept-type->field-mappings :granule
