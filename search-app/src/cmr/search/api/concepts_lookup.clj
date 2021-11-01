@@ -92,7 +92,7 @@
                                  ;; We don't support Atom or JSON (yet) for lookups that include
                                  ;; revision-id due to limitations of the current transformer
                                  ;; implementation. This will be fixed with CMR-1935.
-                                 (disj concept-type-supported mt/atom mt/json)
+                                 (disj concept-type-supported mt/atom mt/json mt/stac)
                                  concept-type-supported)
           result-format (core-api/get-search-results-format
                          concept-type
