@@ -77,7 +77,7 @@
         (svc-errors/throw-service-error
          :bad-request "STAC result format is only supported for parameter searches")
         (do
-          (when-not (:collection_concept_id params)
+          (when-not (:collection-concept-id (util/map-keys->kebab-case params))
             (svc-errors/throw-service-error
              :bad-request "collection_concept_id is required for searching in STAC result format"))
           (when scroll

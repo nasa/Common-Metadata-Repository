@@ -927,21 +927,21 @@
             "CMR-Search-After header is not allowed with STAC result format"))))))
 
 (deftest granule-concept-stac-retrieval-test
-  (testing "retrieval of granule concept in STAC format"
-    (let [coll-metadata (slurp (io/resource "CMR-7794/C1299783579-LPDAAC_ECS.xml"))
-          {coll-concept-id :concept-id} (ingest/ingest-concept
-                                         (ingest/concept :collection "PROV1" "foo" :echo10 coll-metadata))
-          gran-metadata (slurp (io/resource "CMR-7794/G1327299284-LPDAAC_ECS.xml"))
-          {gran-concept-id :concept-id} (ingest/ingest-concept
-                                         (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))
-          expected (-> "CMR-7794/granule_stac.json"
-                       io/resource
-                       slurp
-                       (string/replace #"CollectionConceptId" coll-concept-id)
-                       (string/replace #"GranuleConceptId" gran-concept-id)
-                       (json/decode true))]
-      (index/wait-until-indexed)
+  (let [coll-metadata (slurp (io/resource "CMR-7794/C1299783579-LPDAAC_ECS.xml"))
+        {coll-concept-id :concept-id} (ingest/ingest-concept
+                                       (ingest/concept :collection "PROV1" "foo" :echo10 coll-metadata))
+        gran-metadata (slurp (io/resource "CMR-7794/G1327299284-LPDAAC_ECS.xml"))
+        {gran-concept-id :concept-id} (ingest/ingest-concept
+                                       (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))
+        expected (-> "CMR-7794/granule_stac.json"
+                     io/resource
+                     slurp
+                     (string/replace #"CollectionConceptId" coll-concept-id)
+                     (string/replace #"GranuleConceptId" gran-concept-id)
+                     (json/decode true))]
+    (index/wait-until-indexed)
 
+    (testing "retrieval of granule concept in STAC format"
       (util/are3 [options]
         (let [response (search/retrieve-concept gran-concept-id nil options)]
           (is (search/mime-type-matches-response? response mt/stac))
@@ -952,4 +952,22 @@
         {:accept "application/json; profile=stac-catalogue"}
 
         "retrieval by suffix"
-        {:url-extension "stac"}))))
+        {:url-extension "stac"}))
+
+    (testing "retrieval of granule concept revisions in STAC format is not supported"
+      (util/are3 [options err-msg]
+        (let [{:keys [status errors]} (search/get-search-failure-data
+                                       (search/retrieve-concept 
+                                        gran-concept-id
+                                        1
+                                        (merge options {:throw-exceptions true})))]
+          (is (= 400 status))
+          (is (= [err-msg] errors)))
+
+        "retrieval by accept header"
+        {:accept "application/json; profile=stac-catalogue"}
+        "The mime types specified in the accept header [application/json; profile=stac-catalogue] are not supported."
+
+        "retrieval by suffix"
+        {:url-extension "stac"}
+        "The URL extension [stac] is not supported."))))
