@@ -5,15 +5,10 @@ beforeEach(() => {
 })
 describe('util#createAcquiredByEdge', () => {
   test('catches errors', async () => {
-    let errorMessage
     const consoleError = jest.spyOn(console, 'error')
-    try {
-      await createAcquiredByEdge('basoon', 'this is not a gremlin connection', 'C123000001-CMR')
-    } catch (error) {
-      errorMessage = error.message
-    }
+    await createAcquiredByEdge('basoon', 'this is not a gremlin connection', 'C123000001-CMR')
 
-    expect(errorMessage).toEqual("Cannot read property 'value' of undefined")
+    expect(consoleError).toHaveBeenCalledWith('ERROR creating acquiredBy edge: TypeError: gremlinConnection.V is not a function')
     expect(consoleError).toHaveBeenCalledTimes(1)
   })
 })

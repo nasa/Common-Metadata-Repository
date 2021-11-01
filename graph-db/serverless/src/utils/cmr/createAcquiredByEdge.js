@@ -11,7 +11,7 @@ const gremlinStatistics = gremlin.process.statics
  */
 export const createAcquiredByEdge = async (piId, gremlinConnection, collection) => {
   // Create an edge between the given platform and the collection
-  let platformEdge
+  let platformEdge = null
   try {
     platformEdge = await gremlinConnection
       .V(piId).as('p')
@@ -21,12 +21,12 @@ export const createAcquiredByEdge = async (piId, gremlinConnection, collection) 
         gremlinConnection.addE('acquiredBy').to('p')
       )
       .next()
+
+    const { value: edgeValue = {} } = platformEdge
+    const { id: edgeId } = edgeValue
+
+    console.log(`acquiredBy edge [${edgeId}] indexed to point to collection [${collection}]`)
   } catch (error) {
     console.error(`ERROR creating acquiredBy edge: ${error}`)
   }
-
-  const { value: edgeValue = {} } = platformEdge
-  const { id: edgeId } = edgeValue
-
-  console.log(`acquiredBy edge [${edgeId}] indexed to point to collection [${collection}]`)
 }
