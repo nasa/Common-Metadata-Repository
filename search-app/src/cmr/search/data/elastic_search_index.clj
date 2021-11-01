@@ -230,7 +230,7 @@
                                                  :size 10000}
                                          :aggs {:by-collection-id
                                                 {:terms {:field (q2e/query-field->elastic-field
-                                                                  :collection-concept-seq-id
+                                                                  :collection-concept-seq-id-long
                                                                   :granule)
                                                          :size 10000}}}}}})
         results (common-esi/execute-query context query)
