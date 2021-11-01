@@ -8,7 +8,7 @@
 
 (def types
   "This is a mapping between collection symbol types to names found in metadata"
-  {:collection "UMM-C"  ; Currently does not have this node
+  {:collection "UMM-C"  ; Reserved: currently does not have this node
    :granule "UMM-G"
    :service "UMM-S"
    :tool "UMM-T"
@@ -16,7 +16,7 @@
    ;; UMM-V can not be used due to visualizations. Concept IDs start with V.
    :variable "UMM-Var"
 
-   ;; Currently not implimented but this name is reserved for future use.
+   ;; Currently not implemented but this name is reserved for future use.
    ;; Concept Ids are not defined.
    :visualization "UMM-Vis"})
 

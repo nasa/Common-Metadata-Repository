@@ -83,10 +83,10 @@
   "Similar to match-kms-keywords-validation, only it returns a checker for just
   one field and only does the work if there is a value"
   [kms-index keyword-scheme msg-fn]
-    (fn [field-path value]
-      (when value
-        (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index keyword-scheme value)
-          {field-path [(msg-fn value)]}))))
+  (fn [field-path value]
+    (when value
+      (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index keyword-scheme value)
+        {field-path [(msg-fn value)]}))))
 
 (defn match-related-url-kms-keywords-validations
   "Return the value from match-kms-keywords-validation but defaulted to the a
@@ -409,7 +409,7 @@
   true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
   [variable context warn?]
   (when-let [non-ignorable (seq (umm-spec-validation/validate-variable-with-no-defaults
-                      variable [(variable-keyword-validations-non-ignorable context)]))]
+                                 variable [(variable-keyword-validations-non-ignorable context)]))]
     (errors/throw-service-errors :invalid-data non-ignorable))
 
   (when-let [err-messages (seq (umm-spec-validation/validate-variable
