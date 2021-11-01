@@ -66,12 +66,42 @@
       (when scroll
         (svc-errors/throw-service-error :bad-request "scroll is not allowed with search-after")))))
 
+(defn- validate-stac-params
+  "Validate stac params, throws service error if failed."
+  [context headers params]
+  (when (= :stac (:result-format params))
+    (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))
+          {:keys [scroll-id search-after query-string]} context
+          {:keys [offset scroll]} params]
+      (if (and content-type-header query-string)
+        (svc-errors/throw-service-error
+         :bad-request "STAC result format is only supported for parameter searches")
+        (do
+          (when-not (:collection_concept_id params)
+            (svc-errors/throw-service-error
+             :bad-request "collection_concept_id is required for searching in STAC result format"))
+          (when scroll
+            (svc-errors/throw-service-error
+             :bad-request "scroll is not allowed with STAC result format"))
+          (when offset
+            (svc-errors/throw-service-error
+             :bad-request "offset is not allowed with STAC result format"))
+          (when scroll-id
+            (svc-errors/throw-service-error
+             :bad-request "CMR-Scroll-Id header is not allowed with STAC result format"))
+          (when search-after
+            (svc-errors/throw-service-error
+             :bad-request "CMR-Search-After header is not allowed with STAC result format")))))))
+
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return
   the response."
   [ctx path-w-extension params headers json-query]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
+        _ (when (= :stac (:result-format params))
+            (svc-errors/throw-service-error
+             :bad-request "search by JSON query is not allowed with STAC result format"))
         _ (validate-search-after-params ctx params)
         search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
         log-message (format "Searching for %ss from client %s in format %s with JSON %s and query parameters %s."
@@ -191,6 +221,7 @@
         result-format (:result-format params)
         _ (block-excessive-queries ctx concept-type result-format params)
         _ (validate-search-after-params ctx params)
+        _ (validate-stac-params ctx headers params)
         log-message (format "Searching for %ss from client %s in format %s with params %s"
                             (name concept-type) (:client-id ctx)
                             (rfh/printable-result-format result-format) (pr-str params))
@@ -247,6 +278,9 @@
   "Invokes query service to parse the AQL query, find results and returns the response"
   [ctx path-w-extension params headers aql]
   (let [params (core-api/process-params nil params path-w-extension headers mt/xml)
+        _ (when (= :stac (:result-format params))
+            (svc-errors/throw-service-error
+             :bad-request "search by JSON query is not allowed with STAC result format"))
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id ctx) (rfh/printable-result-format (:result-format params)) aql params))
         results (query-svc/find-concepts-by-aql ctx params aql)]
