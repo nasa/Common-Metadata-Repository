@@ -12,7 +12,7 @@
    [cmr.umm-spec.versioning :as v]
    [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
-;;All migrations in this file will migrate variables in this way
+;; All migrations in this file will migrate variables in this way
 (def migrate-variable (partial vm/migrate-umm {} :variable))
 
 (def variable-concept-10

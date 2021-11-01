@@ -195,18 +195,18 @@
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
     {:RelatedUrls {:related-urls (v/every {:format (match-kms-keywords-validation-single
-                                 kms-index
-                                 :granule-data-format
-                                 msg/getdata-format-not-matches-kms-keywords)})}
-     :DataGranule {:ArchiveAndDistributionInformation {
-                   :Format (match-kms-keywords-validation-single
+                                                    kms-index
+                                                    :granule-data-format
+                                                    msg/getdata-format-not-matches-kms-keywords)})}
+     :DataGranule {:ArchiveAndDistributionInformation
+                   {:Format (match-kms-keywords-validation-single
                              kms-index
                              :granule-data-format
                              msg/getdata-format-not-matches-kms-keywords)
-                   :Files (v/every {:Format (match-kms-keywords-validation-single
-                                             kms-index
-                                             :granule-data-format
-                                             msg/getdata-format-not-matches-kms-keywords)})}}
+                    :Files (v/every {:Format (match-kms-keywords-validation-single
+                                              kms-index
+                                              :granule-data-format
+                                              msg/getdata-format-not-matches-kms-keywords)})}}
 
       :data-granule {:format (match-kms-keywords-validation-single
                               kms-index
@@ -397,7 +397,7 @@
                                         :mime-type
                                         msg/mime-type-not-matches-kms-keywords)}])}))
 
-(defn- variable-keyword-validations-non-ignorable
+(defn- variable-keyword-validations-unignorable
   "Creates validations that check various collection fields to see if they match
   KMS keywords. These validatios must always pass regardless of the warn? flag."
   [context]
@@ -409,7 +409,8 @@
   true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
   [variable context warn?]
   (when-let [non-ignorable (seq (umm-spec-validation/validate-variable-with-no-defaults
-                                 variable [(variable-keyword-validations-non-ignorable context)]))]
+                                 variable
+                                 [(variable-keyword-validations-unignorable context)]))]
     (errors/throw-service-errors :invalid-data non-ignorable))
 
   (when-let [err-messages (seq (umm-spec-validation/validate-variable

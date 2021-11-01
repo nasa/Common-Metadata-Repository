@@ -216,12 +216,12 @@
 
 (defmethod interface/migrate-umm-version [:variable "1.7" "1.8"]
   [context umm-v & _]
-  ;insert a metadata specification
+  ;; insert a metadata specification
   (-> umm-v
       (m-spec/update-version :variable "1.8")))
 
 (defmethod interface/migrate-umm-version [:variable "1.8" "1.7"]
-  ;drop metadata specification and related urls
+  ;; drop metadata specification and related urls
   [context umm-v & _]
   (-> umm-v
       (dissoc :MetadataSpecification :RelatedURLs)))
