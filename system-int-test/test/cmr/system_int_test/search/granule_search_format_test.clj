@@ -30,7 +30,8 @@
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.umm.umm-core :as umm]
    [cmr.umm.umm-granule :as umm-g]
-   [cmr.umm.umm-spatial :as umm-s]))
+   [cmr.umm.umm-spatial :as umm-s]
+   [ring.util.codec :as codec]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -784,7 +785,146 @@
         (is (= (select-keys (search/find-concepts-stac :granule params)
                             [:status :body])
                (select-keys response
-                            [:status :body])))))))
+                            [:status :body])))))
+
+    (testing "stac search validation"
+      (testing "stac search without collection_concept_id"
+        (let [response (search/find-concepts-stac :granule {:provider "PROV1"})
+              ext-response (search/find-concepts-stac :granule
+                                                      {:provider "PROV1"}
+                                                      {:url-extension "stac"})]
+          (is (= 400
+                 (:status response)
+                 (:status ext-response)))
+          (is (= ["collection_concept_id is required for searching in STAC result format"]
+                 (:errors response)
+                 (:errors ext-response)))))
+
+      (testing "stac search with unsupported concept type"
+        (let [response (search/find-concepts-stac :subscription
+                                                  {:collection-concept-id coll-concept-id})
+              ext-response (search/find-concepts-stac :subscription
+                                                      {:collection-concept-id coll-concept-id}
+                                                      {:url-extension "stac"})]
+          (is (= 400
+                 (:status response)
+                 (:status ext-response)))
+          (is (= ["The mime type [application/json; profile=stac-catalogue] is not supported for subscriptions."]
+                 (:errors response)
+                 (:errors ext-response)))))
+
+      (testing "stac search with POST"
+        (let [response (client/post (url/search-url :granule)
+                                    {:accept "application/json; profile=stac-catalogue"
+                                     :content-type mt/form-url-encoded
+                                     :body (codec/form-encode {:collection-concept-id coll-concept-id})
+                                     :throw-exceptions false
+                                     :connection-manager (s/conn-mgr)})
+              ext-response (client/post (format "%s.stac" (url/search-url :granule))
+                                        {:content-type mt/form-url-encoded
+                                         :body (codec/form-encode {:collection-concept-id coll-concept-id})
+                                         :throw-exceptions false
+                                         :connection-manager (s/conn-mgr)})]
+          (is (= 400
+                 (:status response)
+                 (:status ext-response)))
+          (is (= ["STAC result format is only supported for parameter searches"]
+                 (:errors (json/decode (:body response) true))
+                 (:errors (json/decode (:body ext-response) true))))))
+
+      (testing "stac search with JSON query"
+        (let [response (client/post
+                        (url/search-url :granule)
+                        {:accept "application/json; profile=stac-catalogue"
+                         :content-type "application/json"
+                         :body (json/generate-string {:collection-concept-id coll-concept-id})
+                         :throw-exceptions false
+                         :connection-manager (s/conn-mgr)})
+              ext-response (client/post
+                            (format "%s.stac" (url/search-url :granule))
+                            {:content-type "application/json"
+                             :body (json/generate-string {:collection-concept-id coll-concept-id})
+                             :throw-exceptions false
+                             :connection-manager (s/conn-mgr)})]
+          (is (= 400
+                 (:status response)
+                 (:status ext-response)))
+          (is (= ["search by JSON query is not allowed with STAC result format"]
+                 (:errors (json/decode (:body response) true))
+                 (:errors (json/decode (:body ext-response) true))))))
+
+      (testing "stac search with AQL query"
+        (let [response (client/post (url/aql-url)
+                                    {:accept "application/json; profile=stac-catalogue"
+                                     :content-type "application/xml"
+                                     :body "<xml></xml>"
+                                     :throw-exceptions false
+                                     :connection-manager (s/conn-mgr)})
+              ext-response (client/post (format "%s.stac" (url/aql-url))
+                                        {:content-type "application/xml"
+                                         :body "<xml></xml>"
+                                         :throw-exceptions false
+                                         :connection-manager (s/conn-mgr)})]
+          (is (= 400
+                 (:status response)
+                 (:status ext-response)))
+          (is (= ["search by JSON query is not allowed with STAC result format"]
+                 (:errors (json/decode (:body response) true))
+                 (:errors (json/decode (:body ext-response) true))))))
+
+      (testing "stac search with invalid parameters"
+        (util/are3 [params err-message]
+          (let [response (search/find-concepts-stac
+                          :granule
+                          (merge params {:collection-concept-id coll-concept-id}))
+                ext-response (search/find-concepts-stac
+                              :granule
+                              (merge params {:collection-concept-id coll-concept-id})
+                              {:url-extension "stac"})]
+            (is (= 400
+                   (:status response)
+                   (:status ext-response)))
+            (is (= [err-message]
+                   (:errors response)
+                   (:errors ext-response))))
+
+          "scroll"
+          {:scroll true}
+          "scroll is not allowed with STAC result format"
+
+          "offset"
+          {:offset 100}
+          "offset is not allowed with STAC result format"))
+
+      (testing "stac search with invalid headers"
+        (let [{:keys [scroll-id]} (search/find-refs
+                                   :granule
+                                   {:provider "PROV1" :scroll true :page-size 1})]
+
+          (util/are3 [header-value err-message]
+            (let [response (search/find-concepts-stac
+                            :granule
+                            {:collection-concept-id coll-concept-id}
+                            {:headers header-value})
+                  ext-response (search/find-concepts-stac
+                                :granule
+                                {:collection-concept-id coll-concept-id}
+                                {:url-extension "stac"
+                                 :headers header-value})]
+              (is (= 400
+                     (:status response)
+                     (:status ext-response)))
+              (is (= [err-message]
+                     (:errors response)
+                     (:errors ext-response))))
+
+            "scroll-id"
+            {"CMR-Scroll-Id" scroll-id}
+            "CMR-Scroll-Id header is not allowed with STAC result format"
+
+            "search-after"
+            {"CMR-Search-After" "[0]"}
+            "CMR-Search-After header is not allowed with STAC result format"))))))
 
 (deftest granule-concept-stac-retrieval-test
   (testing "retrieval of granule concept in STAC format"
