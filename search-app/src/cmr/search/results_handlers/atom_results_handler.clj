@@ -67,6 +67,7 @@
                      "has-spatial-subsetting"
                      "has-temporal-subsetting"
                      "platforms"
+                     "consortiums"
                      "service-features-gzip-b64"
                      "associations-gzip-b64"
                      "_score"]
@@ -164,6 +165,7 @@
           has-spatial-subsetting :has-spatial-subsetting
           has-temporal-subsetting :has-temporal-subsetting
           platforms :platforms
+          consortiums :consortium
           service-features-gzip-b64 :service-features-gzip-b64
           associations-gzip-b64 :associations-gzip-b64} :_source} elastic-result
         start-date (acl-rhh/parse-elastic-datetime start-date)
@@ -196,6 +198,7 @@
             :archive-center archive-center
             :organizations (when (seq organizations) organizations)
             :platforms (map :short-name platforms)
+            :consortiums consortiums
             :start-date start-date
             :end-date end-date
             :atom-links atom-links
@@ -459,10 +462,11 @@
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters organizations tags has-variables has-formats has-transforms
-                has-spatial-subsetting has-temporal-subsetting]} reference
+                has-spatial-subsetting has-temporal-subsetting consortiums]} reference
         granule-count (get granule-counts-map id 0)]
     (x/element :entry {}
                (x/element :id {} id)
+               (map #(x/element :consortium {} %) consortiums)
                (x/element :title {:type "text"} title)
                (x/element :summary {:type "text"} summary)
                (x/element :updated {} updated)
