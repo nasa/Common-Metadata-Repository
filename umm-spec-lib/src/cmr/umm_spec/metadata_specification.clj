@@ -1,8 +1,7 @@
 (ns cmr.umm-spec.metadata-specification
   "Functions related to the MetadataSpecification node common to many of the umm
    models. Eventually all models will include this node, so a common set of
-   functions is needed.
-   "
+   functions is needed."
   (:require
    [cmr.umm-spec.versioning :as ver]))
 
