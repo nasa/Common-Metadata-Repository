@@ -8,28 +8,31 @@
     [cmr.common.util :as util]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-common :as dc]
+    [cmr.umm-spec.versioning :as ver]
     [cmr.umm-spec.additional-attribute :as aa]
+    [cmr.umm-spec.metadata-specification :as m-spec]
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
     [cmr.umm-spec.models.umm-variable-models :as umm-v]
     [cmr.umm-spec.temporal :as umm-spec-temporal]
     [cmr.umm-spec.util :as u]))
 
 (def sample-umm-var
-  {:Name "A-name"
-   :LongName "A long UMM-Var name"
-   :Definition "Defines the variable"
-   :Units "m"
-   :DataType "float32"
-   :Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land" :Size 3 :Type "OTHER"})]
-   :Sets [(umm-v/map->SetType {:Name "Data_Fields" :Type "Science" :Size 2 :Index 2})]
-   :Scale 1.0
-   :Offset 0.0
-   :FillValues [(umm-v/map->FillValueType {:Value -9999.0, :Type "SCIENCE_FILLVALUE"})]
-   :VariableType "SCIENCE_VARIABLE"
-   :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
-                      {:Category "sk-A"
-                       :Topic "sk-B"
-                       :Term "sk-C"})]})
+  (-> {:Name "A-name"
+       :LongName "A long UMM-Var name"
+       :Definition "Defines the variable"
+       :Units "m"
+       :DataType "float32"
+       :Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land" :Size 3 :Type "OTHER"})]
+       :Sets [(umm-v/map->SetType {:Name "Data_Fields" :Type "Science" :Size 2 :Index 2})]
+       :Scale 1.0
+       :Offset 0.0
+       :FillValues [(umm-v/map->FillValueType {:Value -9999.0, :Type "SCIENCE_FILLVALUE"})]
+       :VariableType "SCIENCE_VARIABLE"
+       :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
+                          {:Category "sk-A"
+                           :Topic "sk-B"
+                           :Term "sk-C"})]}
+      (m-spec/update-version :variable ver/current-variable-version)))
 
 (defn variable
   "Returns a UmmVar from the given attribute map."

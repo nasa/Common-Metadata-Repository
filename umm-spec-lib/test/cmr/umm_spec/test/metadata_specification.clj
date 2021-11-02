@@ -37,7 +37,10 @@
           :tool "0.1" "UMM-T" "/umm/tool/v0.1"
 
           "Variable"
-          :variable "0.1" "UMM-V" "/umm/variable/v0.1")))
+          :variable "0.1" "UMM-Var" "/umm/variable/v0.1"
+
+          "Visualization"
+          :visualization "0.1" "UMM-Vis" "/umm/visualization/v0.1")))
 
 (deftest update-version-test
   "Test the update-version function and make sure it can update metadata as expected"

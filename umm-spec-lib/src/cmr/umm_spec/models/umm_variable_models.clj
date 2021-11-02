@@ -59,6 +59,10 @@
    ;; QUALITY_VARIABLE, ANCILLARY_VARIABLE, OTHER.
    VariableType
 
+   ;; A described URL associated with the a web resource, or interface. e.g., the home page for the
+   ;; variable provider.
+   RelatedURLs
+
    ;; Specifies the sub type of a variable. These types can be either: SCIENCE_SCALAR,
    ;; SCIENCE_VECTOR, SCIENCE_ARRAY, SCIENCE_EVENTFLAG, OTHER.
    VariableSubType
@@ -68,6 +72,11 @@
 
    ;; The expanded or long name related to the variable Name.
    LongName
+
+   ;; Requires the client, or user, to add in schema information into every variable record. It
+   ;; includes the schema's name, version, and URL location. The information is controlled through
+   ;; enumerations at the end of this schema.
+   MetadataSpecification
 
    ;; This is the more formal or scientific name, .e.g., the CF Standard Name.
    StandardName
@@ -105,6 +114,21 @@
    Description
   ])
 (record-pretty-printer/enable-record-pretty-printing FillValueType)
+
+;; This object requires any metadata record that is validated by this schema to provide information
+;; about the schema.
+(defrecord MetadataSpecificationType
+  [
+   ;; This element represents the URL where the schema lives. The schema can be downloaded.
+   URL
+
+   ;; This element represents the name of the schema.
+   Name
+
+   ;; This element represents the version of the schema.
+   Version
+  ])
+(record-pretty-printer/enable-record-pretty-printing MetadataSpecificationType)
 
 ;; The elements of this section apply to a measurement.
 (defrecord SamplingIdentifierType
@@ -162,6 +186,45 @@
    CodeSystemIdentifierValue
   ])
 (record-pretty-printer/enable-record-pretty-printing ValidRangeType)
+
+;; Represents Internet sites that contain information related to the data, as well as related
+;; Internet sites such as project home pages, variable colormaps, metadata extensions, etc.
+(defrecord RelatedURLType
+  [
+   ;; Description of the web resource at this URL.
+   Description
+
+   ;; A keyword describing the distinct content type of the online resource to this resource. (e.g.,
+   ;; 'DATACENTER URL', 'DATA CONTACT URL', 'Visualization URL'). The valid values are contained in
+   ;; the KMS System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096
+   URLContentType
+
+   ;; A keyword describing the type of the online resource to this resource. This helps the GUI to
+   ;; know what to do with this resource. (e.g., 'COLORMAP', 'GET VISUALIZATION'). The valid values
+   ;; are contained in the KMS System and are dependent on the URLContentType:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096
+   Type
+
+   ;; A keyword describing the subtype of the online resource to this resource. This further helps
+   ;; the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP',
+   ;; 'OPENSEARCH', 'GITC', etc. ). The valid values are contained in the KMS System and are
+   ;; dependent on the Type:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096
+   Subtype
+
+   ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
+   ;; the URL of the colormap server, etc.).
+   URL
+
+   ;; The format of the data. The controlled vocabulary for formats is maintained in the Keyword
+   ;; Management System (KMS)
+   Format
+
+   ;; The mime type of the resource.
+   MimeType
+  ])
+(record-pretty-printer/enable-record-pretty-printing RelatedURLType)
 
 ;; The elements of this section allow authors to provide community sourced words or phrases to
 ;; further describe the variable data.

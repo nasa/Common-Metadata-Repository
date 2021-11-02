@@ -79,17 +79,13 @@
       (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index keyword-scheme value)
         {field-path [(msg-fn value)]}))))
 
-(defn match-getdata-format-kms-keywords-validation
-  "A validation that checks that the format matches granule-data-format  KMS field.
-  Takes the following arguments:
-
-  * kms-index - The keywords map as returned by kms-fetcher/get-kms-index
-  * msg-fn - A function taking the value and returning the error to return to the user if it doesn't
-  match."
-  [kms-index msg-fn]
+(defn match-kms-keywords-validation-single
+  "Similar to match-kms-keywords-validation, only it returns a checker for just
+  one field and only does the work if there is a value"
+  [kms-index keyword-scheme msg-fn]
   (fn [field-path value]
     (when value
-      (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index :granule-data-format value)
+      (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index keyword-scheme value)
         {field-path [(msg-fn value)]}))))
 
 (defn match-related-url-kms-keywords-validations
@@ -172,8 +168,9 @@
      :RelatedUrls
       [(match-related-url-kms-keywords-validations kms-index)
        (datacenter-url-validators kms-index)
-       (v/every {:GetData {:Format (match-getdata-format-kms-keywords-validation
+       (v/every {:GetData {:Format (match-kms-keywords-validation-single
                                     kms-index
+                                    :granule-data-format
                                     msg/getdata-format-not-matches-kms-keywords)}})]}))
 
 (defn bulk-granule-keyword-validations
@@ -183,11 +180,13 @@
     (let [kms-index (kms-fetcher/get-kms-index context)]
       {:DataGranule {:ArchiveAndDistributionInformation
                      (v/every
-                      {:Format (match-getdata-format-kms-keywords-validation
+                      {:Format (match-kms-keywords-validation-single
                                 kms-index
+                                :granule-data-format
                                 msg/getdata-format-not-matches-kms-keywords)
-                       :Files (v/every {:Format (match-getdata-format-kms-keywords-validation
+                       :Files (v/every {:Format (match-kms-keywords-validation-single
                                                 kms-index
+                                                :granule-data-format
                                                 msg/getdata-format-not-matches-kms-keywords)})})}}))
 
 (defn granule-keyword-validations
@@ -195,24 +194,28 @@
    granules are in the legacy format."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
-    {:RelatedUrls {:related-urls (v/every {:format (match-getdata-format-kms-keywords-validation
-                                 kms-index
-                                 msg/getdata-format-not-matches-kms-keywords)})}
-     :DataGranule {:ArchiveAndDistributionInformation {
-                   :Format (match-getdata-format-kms-keywords-validation
+    {:RelatedUrls {:related-urls (v/every {:format (match-kms-keywords-validation-single
+                                                    kms-index
+                                                    :granule-data-format
+                                                    msg/getdata-format-not-matches-kms-keywords)})}
+     :DataGranule {:ArchiveAndDistributionInformation
+                   {:Format (match-kms-keywords-validation-single
                              kms-index
+                             :granule-data-format
                              msg/getdata-format-not-matches-kms-keywords)
-                   :Files (v/every {:Format (match-getdata-format-kms-keywords-validation
-                                             kms-index
-                                             msg/getdata-format-not-matches-kms-keywords)})}}
+                    :Files (v/every {:Format (match-kms-keywords-validation-single
+                                              kms-index
+                                              :granule-data-format
+                                              msg/getdata-format-not-matches-kms-keywords)})}}
 
-      :data-granule {
-                   :format (match-getdata-format-kms-keywords-validation
-                             kms-index
-                             msg/getdata-format-not-matches-kms-keywords)
-                  :files (v/every {:format (match-getdata-format-kms-keywords-validation
-                                             kms-index
-                                             msg/getdata-format-not-matches-kms-keywords)})}}))
+      :data-granule {:format (match-kms-keywords-validation-single
+                              kms-index
+                              :granule-data-format
+                              msg/getdata-format-not-matches-kms-keywords)
+                     :files (v/every {:format (match-kms-keywords-validation-single
+                                               kms-index
+                                               :granule-data-format
+                                               msg/getdata-format-not-matches-kms-keywords)})}}))
 
 (defn- pad-zeros-to-version
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
@@ -383,12 +386,33 @@
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
     {:MeasurementIdentifiers (measurement-validation
-                              kms-index msg/measurements-not-matches-kms-keywords)}))
+                              kms-index msg/measurements-not-matches-kms-keywords)
+
+     :RelatedURLs (v/every [{:Format (match-kms-keywords-validation-single
+                                      kms-index
+                                      :granule-data-format
+                                      msg/getdata-format-not-matches-kms-keywords)}
+                            {:MimeType (match-kms-keywords-validation-single
+                                        kms-index
+                                        :mime-type
+                                        msg/mime-type-not-matches-kms-keywords)}])}))
+
+(defn- variable-keyword-validations-unignorable
+  "Creates validations that check various collection fields to see if they match
+  KMS keywords. These validatios must always pass regardless of the warn? flag."
+  [context]
+  (let [kms-index (kms-fetcher/get-kms-index context)]
+    {:RelatedURLs [(match-related-url-kms-keywords-validations kms-index)]}))
 
 (defn umm-spec-validate-variable
   "Validate variable through umm-spec validation functions. If warn? flag is
   true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
   [variable context warn?]
+  (when-let [non-ignorable (seq (umm-spec-validation/validate-variable-with-no-defaults
+                                 variable
+                                 [(variable-keyword-validations-unignorable context)]))]
+    (errors/throw-service-errors :invalid-data non-ignorable))
+
   (when-let [err-messages (seq (umm-spec-validation/validate-variable
                                 variable
                                 [(variable-keyword-validations context)]))]
