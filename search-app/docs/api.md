@@ -33,6 +33,7 @@ CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens 
     * [UMM JSON](#umm-json)
     * [KML](#kml)
     * [Open Data](#open-data)
+    * [STAC](#stac)
     * [XML Reference](#xml-reference)
   * [Temporal Range Searches](#temporal-range-searches)
   * [Facet Autocompletion](#autocomplete-facets)
@@ -368,6 +369,7 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `atom`      "application/atom+xml"
   * `opendata`  "application/opendata+json" (only supported for collections)
   * `kml`       "application/vnd.google-earth.kml+xml"
+  * `stac`      "application/json; profile=stac-catalogue"
   * `native`    "application/metadata+xml" (Returns search results in their individual native formats)
   * `umm-json`   "application/vnd.nasa.cmr.legacy_umm_results+json" (only supported for collections)
     * The UMM JSON format was originally used for an alpha version of UMM JSON search results. Currently it still returns data in that style to avoid breaking clients dependent on it. This will be changed in a future version to return the latest version of the UMM.
@@ -1186,6 +1188,109 @@ __Example__
 }
 ```
 
+#### <a name="stac"></a> STAC
+
+The STAC (SpatioTemporal Asset Catalog) Data format is a specification for describing geospatial data with JSON and GeoJSON. The related STAC-API specification defines an API for searching and browsing STAC catalogs. See the [STAC Specification](https://stacspec.org/) for details.
+
+CMR only supports STAC format for granule search and retrieval.
+
+__Example__
+
+```json
+{
+  "type": "FeatureCollection",
+  "stac_version": "1.0.0",
+  "numberReturned": 1,
+  "numberMatched": 3,
+  "features": [
+    {
+      "type": "Feature",
+      "stac_version": "1.0.0",
+      "id": "G1200000011-PROV1",
+      "collection": "C1200000009-PROV1",
+      "stac_extensions": [
+        "https://stac-extensions.github.io/eo/v1.0.0/schema.json"
+      ],
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [ 10, 0 ],
+            [ 20, 0 ],
+            [ 20, 30 ],
+            [ 10, 30 ],
+            [ 10, 0 ]
+          ]
+        ]
+      },
+      "properties": {
+        "eo:cloud_cover": 20,
+        "start_datetime": "2011-02-01T12:00:00.000Z",
+        "end_datetime": "2011-02-11T12:00:00.000Z",
+        "datetime": "2011-02-01T12:00:00.000Z"
+      },
+      "bbox": [ 10, 0, 20, 30 ],
+      "links": [
+        {
+          "rel": "self",
+          "href": "%CMR-ENDPOINT%/concepts/G1200000011-PROV1.stac"
+        },
+        {
+          "rel": "parent",
+          "href": "%CMR-ENDPOINT%/concepts/C1200000009-PROV1.stac"
+        },
+        {
+          "rel": "collection",
+          "href": "%CMR-ENDPOINT%/concepts/C1200000009-PROV1.stac"
+        },
+        {
+          "rel": "root",
+          "href": "%CMR-ENDPOINT%/"
+        },
+        {
+          "rel": "via",
+          "href": "%CMR-ENDPOINT%/concepts/G1200000011-PROV1.json"
+        },
+        {
+          "rel": "via",
+          "href": "%CMR-ENDPOINT%/concepts/G1200000011-PROV1.umm_json"
+        }
+      ],
+      "assets": {
+        "metadata": {
+          "type": "application/xml",
+          "href": "%CMR-ENDPOINT%/concepts/G1200000011-PROV1.xml"
+        }
+      }
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "%CMR-ENDPOINT%/granules.stac?collection-concept-id=C1200000009-PROV1&page_size=1&page_num=2"
+    },
+    {
+      "rel": "root",
+      "href": "%CMR-ENDPOINT%/"
+    },
+    {
+      "rel": "prev",
+      "method": "GET",
+      "href": "%CMR-ENDPOINT%/granules.stac?collection-concept-id=C1200000009-PROV1&page_size=1&page_num=1"
+    },
+    {
+      "rel": "next",
+      "method": "GET",
+      "href": "%CMR-ENDPOINT%/granules.stac?collection-concept-id=C1200000009-PROV1&page_size=1&page_num=3"
+    }
+  ],
+  "context": {
+    "limit": 1000000,
+    "returned": 1,
+    "matched": 3
+  }
+}
+```
 #### <a name="xml-reference"></a> XML
 
 The XML response format is used for returning references to search results. It consists of the following fields:
@@ -2584,6 +2689,10 @@ The following extensions and MIME types are supported by the `/concepts/` resour
   * `atom`      "application/atom+xml"
   * `umm_json`  "application/vnd.nasa.cmr.umm+json"
   * `stac`      "application/json; profile=stac-catalogue"
+
+`atom` and `json` formats are only supported for retrieval of the latest collection/granule revisions (i.e. without specifying a particular revision).
+
+`stac` format is only supported for retrieval of the latest granule revisions (i.e. without specifying a particular revision).
 
 The following extensions and MIME types are supported by the `/concepts/` resource for the variable, service, tool  and subscription concept types:
 
