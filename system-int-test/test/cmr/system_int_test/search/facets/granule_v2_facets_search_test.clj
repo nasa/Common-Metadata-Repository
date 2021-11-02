@@ -127,7 +127,11 @@
           (let [url-extension (if (#{:umm-json :umm-json-results} format-key)
                                 (umm-format->extension fmt)
                                 (name fmt))
-                response (search/find-concepts-in-format fmt :granule {:include-facets "v2"}
+                facet-params {:include-facets "v2"}
+                params (if (= :stac fmt)
+                         (merge facet-params {:collection-concept-id "C1-PROV1"})
+                         facet-params)
+                response (search/find-concepts-in-format fmt :granule params
                                                          {:url-extension url-extension
                                                           :throw-exceptions false})]
             (is (= {:status 400
