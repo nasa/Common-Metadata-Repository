@@ -412,6 +412,7 @@ The CMR Atom format provides search results in an XML file representing a feed o
 |            Field            |                                                Description                                                 |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | id                          | the CMR identifier for the result                                                                          |
+| consortiums (collections only)             | Consortiums the collection is associated to.                                                |
 | title                       | the UMM Entry Title                                                                                        |
 | summary  (collections only) | the summary of intentions with which this collection was developed. - corresponds to the UMM summary field |
 | updated                     | date/time of the last update to the associated metadata                                                     |
@@ -915,6 +916,7 @@ __Example__
       "has_temporal_subsetting": false,
       "online_access_flag": false,
       "platforms": ["Platform1"],
+      "consortiums" : [ "ESA", "FEDEO" ],
       "service_features": {
         "opendap": {
           "has_formats": false,
