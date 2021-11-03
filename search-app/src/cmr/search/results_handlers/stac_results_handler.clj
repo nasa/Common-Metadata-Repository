@@ -229,7 +229,7 @@
   [context query hits]
   (let [{:keys [page-size offset]} query
         page-num (if offset
-                   (inc (/ offset page-size))
+                   (inc (quot offset page-size))
                    1)
         item-count (if offset
                      (+ offset page-size)
