@@ -27,10 +27,24 @@
                (umm-c/collection 2
                                  {:CollectionCitations [{:Creator "K. Hilburn, J. Ardizzone, and S. Gao"
                                                          :OtherCitationDetails "Sounder PEATE (Product Evaluation and Test Element) Team/Ruth Monarrez, JPL"}]})
-               {:format :umm-json})]
+               {:format :umm-json})
+        id1 (:concept-id coll1)
+        id2 (:concept-id coll2)]
 
     (index/wait-until-indexed)
 
+    (testing "consortium returned in json and atom responses"
+      (let [consortiums-in-json (-> (search/find-concepts-json :collection {:concept-id id1})
+                                    (get-in [:results :entries])
+                                    first
+                                    :consortiums)
+            consortiums-in-atom (-> (search/find-concepts-atom :collection {:concept-id id2})
+                                    (get-in [:results :entries])
+                                    first
+                                    :consortiums)]
+        (is (= ["cst11" "cst12"] consortiums-in-json))
+        (is (= ["cst21" "cst22"] consortiums-in-atom))))
+     
     (testing "consortium parameter search"
       (are3 [items consortium options]
         (let [params (merge {:consortium consortium}

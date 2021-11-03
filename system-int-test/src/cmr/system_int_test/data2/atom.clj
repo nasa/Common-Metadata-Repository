@@ -139,6 +139,7 @@
   [concept-type entry-elem]
   (util/remove-nil-keys
     {:id (cx/string-at-path entry-elem [:id])
+     :consortiums (seq (cx/strings-at-path entry-elem [:consortium]))
      :title (cx/string-at-path entry-elem [:title])
      :updated (cx/string-at-path entry-elem [:updated])
      :dataset-id (cx/string-at-path entry-elem [:datasetId])

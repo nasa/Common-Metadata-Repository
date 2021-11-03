@@ -108,9 +108,10 @@
                 shapes points boxes polygons lines granule-count has-granules has-granules-or-cwic
                 has-variables has-formats has-transforms has-spatial-subsetting
                 has-temporal-subsetting orbit-parameters highlighted-summary-snippets
-                organizations service-features associations]} json-entry]
+                organizations service-features associations consortiums]} json-entry]
     (util/remove-nil-keys
       {:id id
+       :consortiums consortiums
        :title title
        :summary summary
        :updated updated
