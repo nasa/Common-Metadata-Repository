@@ -43,10 +43,10 @@
                             :Subtype subtype})))
 
 (deftest current-version-test
-  (testing "Check that ingest and config both use the lattest version"
+  (testing "Check that ingest and config both use the latest version"
     (let [expected (str spec-ver/current-variable-version)
           actual (ingest-config/ingest-accept-umm-version :variable)]
-      (is (= expected actual) "Ingest does not match lattest"))))
+      (is (= expected actual) "Ingest does not match latest"))))
 
 (deftest variable-ingest-test
   (let [{token :token} (variable-util/setup-update-acl
