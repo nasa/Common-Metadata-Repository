@@ -1190,9 +1190,9 @@ __Example__
 
 #### <a name="stac"></a> STAC
 
-The STAC (SpatioTemporal Asset Catalog) Data format is a specification for describing geospatial data with JSON and GeoJSON. The related STAC-API specification defines an API for searching and browsing STAC catalogs. See the [STAC Specification](https://stacspec.org/) for details.
+The STAC (SpatioTemporal Asset Catalog) result format is a specification for describing geospatial data with JSON and GeoJSON. The related STAC-API specification defines an API for searching and browsing STAC catalogs. See the [STAC Specification](https://stacspec.org/) for details.
 
-CMR only supports STAC format for granule search and retrieval.
+CMR only supports STAC result format for granule search and retrieval. Because STAC is based on paging by page number, parameters `offset`, `scroll`, and `CMR-Scroll-Id` and `CMR-Search-After` headers are not supported with STAC format.
 
 __Example__
 
