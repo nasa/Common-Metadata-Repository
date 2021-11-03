@@ -17,7 +17,8 @@
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.variable-util :as variable-util]
    [cmr.umm.umm-collection :as umm-c]
-   [cmr.umm-spec.models.umm-variable-models :as umm-v]))
+   [cmr.umm-spec.models.umm-variable-models :as umm-v]
+   [cmr.umm-spec.versioning :as spec-ver]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"}
@@ -40,6 +41,12 @@
    (c-util/remove-nil-keys {:URLContentType url-content-type
                             :Type type
                             :Subtype subtype})))
+
+(deftest current-version-test
+  (testing "Check that ingest and config both use the latest version"
+    (let [expected (str spec-ver/current-variable-version)
+          actual (ingest-config/ingest-accept-umm-version :variable)]
+      (is (= expected actual) "Ingest does not match latest"))))
 
 (deftest variable-ingest-test
   (let [{token :token} (variable-util/setup-update-acl
