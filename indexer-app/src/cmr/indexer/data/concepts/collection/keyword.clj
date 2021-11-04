@@ -43,13 +43,14 @@
                      :Version
                      :VersionDescription
                      :ArchiveAndDistributionInformation]
-        keywords (concat
-                  instrument-long-names
-                  platform-long-names
-                  [concept-id]
-                  [entry-id]
-                  [provider-id]
-                  (keyword-util/concept-keys->keywords collection schema-keys))
+        keywords (remove nil?
+                         (concat
+                          instrument-long-names
+                          platform-long-names
+                          [concept-id]
+                          [entry-id]
+                          [provider-id]
+                          (keyword-util/concept-keys->keywords collection schema-keys)))
         ;; split each keyword on special characters and extract out phrases surrounded by special characters.
         sp-phrases (mapcat #(str/split % keyword-util/keyword-phrase-separator-regex) keywords)
         ;; split each keyword on parens and brackets only and extract out the word/phrase inside that might contain
@@ -61,6 +62,7 @@
     ;; to help with partial keyword phrase matching: i.e. we don't need to distinguish if the match is at the beginning,
     ;; or in the middle or at the end of the keyword field, we just need to match using general expression "* phrase *".
     (->> keywords
+         (remove str/blank?)
          ;; need to index additional keyword phrases that are surrounded by special characters because "* phrase *"
          ;; won't find a match in keyword fields directly because of the extra space added to generalize the search.
          (concat (keep not-empty sp-phrases))
@@ -69,4 +71,5 @@
          (map #(str " " % " "))
          ;; The keyword-in-words here are used for unquoted keyword search. It's exactly the same as the existing
          ;; keyword index fields, without the need to go through a whitespace analyzer.
-         (concat keywords-in-words))))
+         (concat keywords-in-words)
+         distinct)))
