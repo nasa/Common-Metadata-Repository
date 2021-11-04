@@ -884,6 +884,8 @@
   [
    Description
 
+   FreeAndOpenData
+
    ;; This element holds the URL and associated information to access the License on the web. If
    ;; this element is used the LicenseText element cannot be used.
    LicenseURL
