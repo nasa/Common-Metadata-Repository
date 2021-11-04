@@ -3,11 +3,9 @@
   (:require
    [clojure.string :as str]
    [cmr.common.concepts :as concepts]
-   [cmr.common.util :as util]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]))
 
 (defn create-keywords-field
-  [concept-id collection other-fields]
   "Create a keyword field for keyword searches by concatenating 4 group of fields together:
   1. All the keyword fields, unprocessed, for general keyword phrase search.
   2. All the keyword fields, split on a set of special characters, for keyword phrase search when
@@ -16,6 +14,7 @@
      exists in the parents or brackets, but contains some other special characters.
   4. All the keyword fields, split into individual words, same as the original keyword search case.
   The new way of indexing support both quoted and unquoted keyword searches."
+  [concept-id collection other-fields]
   (let [{:keys [platform-long-names instrument-long-names entry-id]} other-fields
         provider-id (:provider-id (concepts/parse-concept-id concept-id))
         schema-keys [:Abstract
