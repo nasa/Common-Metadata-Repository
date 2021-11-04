@@ -177,7 +177,7 @@
       (let [context (merge {:system {:public-conf {:protocol "http"
                                                    :host "localhost"
                                                    :port "3003"}}}
-                                   {:query-string query-string})
+                           {:query-string query-string})
              query {:page-size page-size
                     :offset (* (dec page-num) page-size)}
              hits 30

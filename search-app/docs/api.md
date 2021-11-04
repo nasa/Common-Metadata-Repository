@@ -1192,7 +1192,7 @@ __Example__
 
 The STAC (SpatioTemporal Asset Catalog) result format is a specification for describing geospatial data with JSON and GeoJSON. The related STAC-API specification defines an API for searching and browsing STAC catalogs. See the [STAC Specification](https://stacspec.org/) for details.
 
-CMR only supports STAC result format for granule search and retrieval. Because STAC is based on paging by page number, parameters `offset`, `scroll`, and `CMR-Scroll-Id` and `CMR-Search-After` headers are not supported with STAC format.
+CMR only supports STAC result format for granule search and retrieval. Because STAC is based on paging by page number, parameters `offset`, `scroll`, and `CMR-Scroll-Id` and `CMR-Search-After` headers are not supported with STAC format. The maximum number of results returned in STAC result format is 1 million.
 
 __Example__
 
