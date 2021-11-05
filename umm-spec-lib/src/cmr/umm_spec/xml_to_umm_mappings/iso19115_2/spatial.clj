@@ -77,11 +77,10 @@
   "Parses the CoordinateSystem from the ISO XML document. If the value is a string that contains
    an EPSG code then that collection is GEODETIC."
   [doc]
-  (let [doc-coord-sys (value-of doc coordinate-system-xpath)]
-    (when doc-coord-sys
-      (if (string/includes? (string/lower-case doc-coord-sys) "epsg" )
-        "GEODETIC"
-        doc-coord-sys))))
+  (when-let [doc-coord-sys (value-of doc coordinate-system-xpath)]
+    (if (string/includes? (string/lower-case doc-coord-sys) "epsg" )
+      "GEODETIC"
+      doc-coord-sys))))
 
 (defn parse-geometry
   "Returns UMM GeometryType map from ISO XML document."
