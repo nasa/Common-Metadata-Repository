@@ -544,15 +544,21 @@
             sample-umm-collection-concept schema-keys)))))
 
 (deftest create-keywords-field-test
+
   (let [keywords (ckw/create-keywords-field
                   "C1576922113-SCIOPS"
                   sample-umm-collection-concept
-                  {})]
+                  {:platform-long-names []
+                   :instrument-long-names []
+                   :entry-id "entry-id"})]
     (testing "returns a list of strings"
       (is (coll? keywords))
       (is (every? string? keywords)))
     (testing "the list does not contain duplicates"
-      (is (empty? (for [[k freq] (frequencies keywords)
-                        :when (> freq 1)] k))))
+      (is (distinct? keywords)))
+    (testing "the list does not contain tabs"
+      (is (empty? (mapcat #(re-find #"\t" %) keywords))))
+    (testing "the list does not contain single characters"
+      (is (empty? (for [kw (map str/trim keywords) :when (= (count kw) 1)] kw))))
     (testing "the list does not contain empty strings"
       (is (not-any? str/blank? keywords)))))

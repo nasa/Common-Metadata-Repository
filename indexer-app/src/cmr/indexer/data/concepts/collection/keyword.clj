@@ -3,6 +3,7 @@
   (:require
    [clojure.string :as str]
    [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer [warn]]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]))
 
 (defn create-keywords-field
@@ -43,33 +44,35 @@
                      :Version
                      :VersionDescription
                      :ArchiveAndDistributionInformation]
-        keywords (remove nil?
-                         (concat
-                          instrument-long-names
-                          platform-long-names
-                          [concept-id]
-                          [entry-id]
-                          [provider-id]
-                          (keyword-util/concept-keys->keywords collection schema-keys)))
+
+        keywords (->> (concat
+                       instrument-long-names
+                       platform-long-names
+                       [concept-id]
+                       [entry-id]
+                       [provider-id]
+                       (keyword-util/concept-keys->keywords collection schema-keys))
+                      (remove str/blank?)
+                      distinct)
         ;; split each keyword on special characters and extract out phrases surrounded by special characters.
         sp-phrases (mapcat #(str/split % keyword-util/keyword-phrase-separator-regex) keywords)
-        ;; split each keyword on parens and brackets only and extract out the word/phrase inside that might contain
-        ;; other special characters like in "(merry-go-round)" where  "-" is considered special character.
-        paren-bracket-phrases (mapcat #(str/split % #"[(){}\[\]]") keywords)
         ;; the index needed for the original unquoted keyword search.
         keywords-in-words (keyword-util/field-values->individual-words keywords)]
     ;; Lower-case the keywords and add a space at the beginning and the end of each field
     ;; to help with partial keyword phrase matching: i.e. we don't need to distinguish if the match is at the beginning,
     ;; or in the middle or at the end of the keyword field, we just need to match using general expression "* phrase *".
     (->> keywords
-         (remove str/blank?)
          ;; need to index additional keyword phrases that are surrounded by special characters because "* phrase *"
          ;; won't find a match in keyword fields directly because of the extra space added to generalize the search.
          (concat (keep not-empty sp-phrases))
-         (concat (keep not-empty paren-bracket-phrases))
          (map #(str/lower-case %))
-         (map #(str " " % " "))
+         (map #(str (when-not (str/starts-with? " " %) " ")
+                    %
+                    (when-not (str/ends-with? " " %) " ")))
          ;; The keyword-in-words here are used for unquoted keyword search. It's exactly the same as the existing
          ;; keyword index fields, without the need to go through a whitespace analyzer.
          (concat keywords-in-words)
+         (remove str/blank?)
+         (remove #(= 1 (count (str/trim %)))) ;; exclude single characters
+         (remove #(re-matches #"^\W+$" %)) ;; exclude symbols only values
          distinct)))

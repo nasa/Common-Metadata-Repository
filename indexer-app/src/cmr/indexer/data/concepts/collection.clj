@@ -222,8 +222,12 @@
                               (map :short-name platforms))
         platform-short-names (->> (map :short-name platforms-nested)
                                   (map str/trim))
-        platform-long-names (->> (distinct (keep :long-name (concat platforms platforms-nested)))
-                                 (map str/trim))
+        platform-long-names (->> platforms-nested
+                                 (concat platforms)
+                                 (keep :long-name)
+                                 distinct
+                                 (map str/trim)
+                                 (remove str/blank?))
         instruments (mapcat :instruments platforms)
         instruments (concat instruments (mapcat :composed-of instruments))
         instruments-nested (map #(instrument/instrument-short-name->elastic-doc kms-index %)
@@ -232,9 +236,12 @@
                                     (map :short-name)
                                     distinct
                                     (map str/trim))
-        instrument-long-names (->> (distinct (keep :long-name
-                                                   (concat instruments instruments-nested)))
-                                   (map str/trim))
+        instrument-long-names (->> instruments-nested
+                                   (concat instruments)
+                                   (keep :long-name)
+                                   distinct
+                                   (map str/trim)
+                                   (remove str/blank?))
         sensors (mapcat :composed-of instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)

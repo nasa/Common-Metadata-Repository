@@ -233,6 +233,11 @@
 
   See `fields->fn-mapper`, below."
   {:DOI #(get-in % [:DOI :DOI])
+   :Abstract #(concat
+               ;; Capture all split on whitespace
+               (distinct (string/split (get % :Abstract "") #"\w"))
+               ;; Capture quote values and other groupings
+               (re-seq #"[\{\(\[\"“\:_].*?[_\:”\"\}\)\)]" (get % :Abstract "")))
    :AssociatedDOIs #(mapv :DOI (:AssociatedDOIs %))
    :ProcessingLevel #(get-in % [:ProcessingLevel :Id])
    ;; Simple multi-values data
