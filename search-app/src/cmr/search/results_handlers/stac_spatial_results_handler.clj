@@ -135,8 +135,9 @@
 (defn shapes->stac-bbox
   "Returns the STAC bbox representation of the given shapes"
   [shapes]
-  (let [mbrs (map shape->mbr shapes)
-        mbr (if (> (count shapes) 1)
-              (reduce m/union mbrs)
-              (first mbrs))]
-    (mbr->bbox mbr)))
+  (when shapes
+    (let [mbrs (map shape->mbr shapes)
+          mbr (if (> (count shapes) 1)
+                (reduce m/union mbrs)
+                (first mbrs))]
+      (mbr->bbox mbr))))
