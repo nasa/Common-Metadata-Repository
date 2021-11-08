@@ -17,7 +17,7 @@
     [cmr.umm-spec.util :as u]))
 
 (def sample-umm-var
-  (-> {:Name "A-name"
+  (-> {:Name "A newfangled, brand-new, immensely longer variable name, much larger than the old name so we can be sure that everything works as expected."
        :LongName "A long UMM-Var name"
        :Definition "Defines the variable"
        :Units "m"
