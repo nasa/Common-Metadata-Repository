@@ -458,3 +458,13 @@
   [context umm-s & _]
   (-> umm-s
       (dissoc :MetadataSpecification :RelatedURLs)))
+
+(defmethod interface/migrate-umm-version [:service "1.4" "1.4.1"]
+  [context umm-s & _]
+  (-> umm-s
+      (m-spec/update-version :service "1.4.1")))
+
+(defmethod interface/migrate-umm-version [:service "1.4.1" "1.4"]
+  [context umm-s & _]
+  (-> umm-s
+      (m-spec/update-version :service "1.4")))

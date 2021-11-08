@@ -609,17 +609,20 @@
    ;; A Description meant for the end user of the web page at this URL.
    Description
 
-   ;; A keyword describing the distinct group of web addresses e.g., 'PublicationURL'.
+   ;; A keyword describing the distinct content type of the online resource to this resource. This
+   ;; helps software present the information to the user. The valid values are contained in the KMS
+   ;; System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096/.
    URLContentType
 
    ;; A keyword describing the type of the online resource to this resource. This helps software
    ;; present the information to the user. The valid values are contained in the KMS System:
-   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096?gtm_keyword=Related%20URL%20Content%20Types&gtm_scheme=rucontenttype.
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096/.
    Type
 
    ;; A keyword describing the subtype of the online resource to this resource. This helps software
    ;; present the information to the user. The valid values are contained in the KMS System:
-   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096?gtm_keyword=Related%20URL%20Content%20Types&gtm_scheme=rucontenttype
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096/.
    Subtype
 
    ;; The web address for the relevant web page.
@@ -764,8 +767,7 @@
    ;; Description of the web page at this URL.
    Description
 
-   ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
-   ;; the URL of the collection landing page, the URL of the download site for the collection).
+   ;; The URL for the relevant online resource where you can directly access the back-end service.
    URLValue
   ])
 (record-pretty-printer/enable-record-pretty-printing URLType)

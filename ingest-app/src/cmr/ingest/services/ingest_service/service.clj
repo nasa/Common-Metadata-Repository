@@ -31,20 +31,20 @@
   (when (seq errors)
     (errors/throw-service-errors error-type errors)))
 
-(defn- match-kms-type-and-subtype
+(defn- match-kms-related-url-content-type-type-and-subtype
   "Create a kms match validator for use by validation-service"
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
     [{:RelatedURLs (validation/match-kms-keywords-validation
                     kms-index
                     :related-urls
-                    msg/related-url-type-subtype-not-matching-kms-keywords)}]))
+                    msg/related-url-content-type-type-subtype-not-matching-kms-keywords)}]))
 
 (defn- validate-all-fields
-  "Check all fields that need to be validated. Currently this is the Type and
+  "Check all fields that need to be validated. Currently this is the Related URL Content Type, Type, and
   Subtype fields. Throws an error if errors are found"
   [context service]
-  (let [errors (seq (umm-spec-validation/validate-service service (match-kms-type-and-subtype context)))]
+  (let [errors (seq (umm-spec-validation/validate-service service (match-kms-related-url-content-type-type-and-subtype context)))]
     (if-errors-throw :bad-request errors)))
 
 (defn-timed save-service

@@ -188,7 +188,7 @@
         (assert-invalid-keywords
          attribs
          ["RelatedUrls" 0]
-         [(msg/related-url-type-subtype-not-matching-kms-keywords
+         [(msg/related-url-content-type-type-subtype-not-matching-kms-keywords
            (first (:RelatedUrls attribs)))])
 
         "- Missmatched ContentType and Type/Subtype pair"

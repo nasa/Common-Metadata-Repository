@@ -95,12 +95,12 @@
   (match-kms-keywords-validation
    kms-index
    :related-urls
-   msg/related-url-type-subtype-not-matching-kms-keywords))
+   msg/related-url-content-type-type-subtype-not-matching-kms-keywords))
 
 (defn- related-url-validator
   "Return a validator that checks a ContentType, Type, and Subtype keywords for
    Related URL field which can be inside a ContactInformation or be a standalone
-   field. ContactInformation can themselfs be found in DataCenters, ContactGroups,
+   field. ContactInformation can themselves be found in DataCenters, ContactGroups,
    and ContactPersons meaning 4 different uses cases for this validator."
   [kms-index]
   {:RelatedUrls (match-related-url-kms-keywords-validations kms-index)})
@@ -112,7 +112,7 @@
 
 (defn- datacenter-contact-url-validator
   "Return a validator for the related urls inside the Contact information fields
-   belolonging to either a :ContactGroups or a ContactPersons."
+   belonging to either a :ContactGroups or a :ContactPersons."
   [kms-index contact-type]
   {contact-type (v/every {:ContactInformation (related-url-validator kms-index)})})
 

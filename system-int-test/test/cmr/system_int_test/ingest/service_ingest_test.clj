@@ -208,11 +208,11 @@
           (is (= 200 status))
           (is (= 3 revision-id)))))))
 
-(deftest related-url-type-and-subtype-check
+(deftest related-url-content-type-type-and-subtype-check
   (testing
-    "Check valid and invalid related type and subtypes. The first URL is good
-    while the second is bad. The error response should represent this showing
-    the second URL type failed to match a valid keyword."
+    "Check valid and invalid related urls url content type, type, and subtype.
+    The first URL is good while the second is bad. The error response should
+    represent this showing the second URL type failed to match a valid keyword."
     (let [related-urls [{"URL" "https://example.gov/good1"
                          "URLContentType" "PublicationURL"
                          "Type" "VIEW RELATED INFORMATION"
