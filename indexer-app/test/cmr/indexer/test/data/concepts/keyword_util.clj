@@ -343,7 +343,7 @@
     "Associated DOIs"
     :AssociatedDOIs
     ["Associated-DOI-1" "Associated-DOI-2"]
-    
+
     "DOI field"
     :DOI
     "Dummy-DOI"
