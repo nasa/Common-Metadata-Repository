@@ -333,128 +333,128 @@
                              "UTF-8")))))
 
   (are3 [field-key values]
-        (is (= values
-               ((#'keyword-util/field-extract-fn field-key) sample-umm-collection-concept)))
+   (is (= values
+          ((#'keyword-util/field-extract-fn field-key) sample-umm-collection-concept)))
 
-        "Abstract field"
-        :Abstract
-        "An abstract summary"
+   "Abstract field"
+   :Abstract
+   "An abstract summary"
 
-        "Associated DOIs"
-        :AssociatedDOIs
-        ["Associated-DOI-1" "Associated-DOI-2"]
+   "Associated DOIs"
+   :AssociatedDOIs
+   ["Associated-DOI-1" "Associated-DOI-2"]
 
-        "DOI field"
-        :DOI
-        "Dummy-DOI"
+   "DOI field"
+   :DOI
+   "Dummy-DOI"
 
-        "EntryTitle field"
-        :EntryTitle
-        "The collection entry title."
+   "EntryTitle field"
+   :EntryTitle
+   "The collection entry title."
 
-        "LongName field"
-        :LongName
-        "Visible Infrared Imaging Radiometer suite."
+   "LongName field"
+   :LongName
+   "Visible Infrared Imaging Radiometer suite."
 
-        "ProcessingLevel field"
-        :ProcessingLevel
-        "4"
+   "ProcessingLevel field"
+   :ProcessingLevel
+   "4"
 
-        "ShortName field"
-        :ShortName
-        "VIIRS"
+   "ShortName field"
+   :ShortName
+   "VIIRS"
 
-        "Version field"
-        :Version
-        "001"
+   "Version field"
+   :Version
+   "001"
 
-        "VersionDescription field"
-        :VersionDescription
-        "The beginning version of a sample collection."
+   "VersionDescription field"
+   :VersionDescription
+   "The beginning version of a sample collection."
 
-        "AdditionalAttributes field"
-        :AdditionalAttributes
-        ["ALBEDOFILEID" "ID of the kernel albedo table used."
-         "ASTERMapProjection" "The map projection of the granule"]
+   "AdditionalAttributes field"
+   :AdditionalAttributes
+   ["ALBEDOFILEID" "ID of the kernel albedo table used."
+    "ASTERMapProjection" "The map projection of the granule"]
 
-        "AncillaryKeywords field"
-        :AncillaryKeywords
-        ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC" "(TMPA-RT)" "(USGS_EROS)" "(TMPA-RT-MULTI-TERM)"]
+   "AncillaryKeywords field"
+   :AncillaryKeywords
+   ["LP DAAC" "EOSDIS" "USGS/EROS" "ESIP" "USGS" "LPDAAC" "(TMPA-RT)" "(USGS_EROS)" "(TMPA-RT-MULTI-TERM)"]
 
-        "CollectionCitations field"
-        :CollectionCitations
-        ["Bowen Island Forest and Water Management Society (BIFWMS)"
-         "U.S. Geological Survey, 1993, Digital Elevation Models--data users guide 5:[Reston, Virginia], U.S. Geological Survey, 48 p."
-         "Solanki, S.K., I.G. Usoskin, B. Kromer, M. Schussler and J. Beer"
-         "DOC/NOAA/NESDIS/NGDC > National Geophysical Data Center, NESDIS, NOAA, U.S. Department of Commerce"
-         "Dublin Transport Office"
-         "Full report in PDF is available online"]
+   "CollectionCitations field"
+   :CollectionCitations
+   ["Bowen Island Forest and Water Management Society (BIFWMS)"
+    "U.S. Geological Survey, 1993, Digital Elevation Models--data users guide 5:[Reston, Virginia], U.S. Geological Survey, 48 p."
+    "Solanki, S.K., I.G. Usoskin, B. Kromer, M. Schussler and J. Beer"
+    "DOC/NOAA/NESDIS/NGDC > National Geophysical Data Center, NESDIS, NOAA, U.S. Department of Commerce"
+    "Dublin Transport Office"
+    "Full report in PDF is available online"]
 
-        "CollectionDataType field"
-        :CollectionDataType
-        ["near_real_time" "nrt" "near real time","near-real time" "near-real-time" "near real-time"]
+   "CollectionDataType field"
+   :CollectionDataType
+   ["near_real_time" "nrt" "near real time","near-real time" "near-real-time" "near real-time"]
 
-        "ContactGroups field"
-        :ContactGroups
-        ["TEAM SPOCK" "SCIENCE CONTACT"]
+   "ContactGroups field"
+   :ContactGroups
+   ["TEAM SPOCK" "SCIENCE CONTACT"]
 
-        "ContactMechanisms field"
-        :ContactMechanisms
-        ["ncdc.orders at noaa.gov" "custserv at usgs.gov" "sample-email-one@anywhere.com" "sample-email-two@example.com"]
+   "ContactMechanisms field"
+   :ContactMechanisms
+   ["ncdc.orders at noaa.gov" "custserv at usgs.gov" "sample-email-one@anywhere.com" "sample-email-two@example.com"]
 
-        "ContactPersons field"
-        :ContactPersons
-        ["Alice" "Bob" "AUTHOR"]
+   "ContactPersons field"
+   :ContactPersons
+   ["Alice" "Bob" "AUTHOR"]
 
-        "DataCenters field"
-        :DataCenters
-        ["John" "Doe" "Technical Contact" "Science Contact" "White Marsh Institute of Health"
-         "Data Center Contact" "Technical Contact" "IRIS/PASSCAL"]
+   "DataCenters field"
+   :DataCenters
+   ["John" "Doe" "Technical Contact" "Science Contact" "White Marsh Institute of Health"
+    "Data Center Contact" "Technical Contact" "IRIS/PASSCAL"]
 
-        "ISOTopicCategories field"
-        :ISOTopicCategories
-        ["elevation" "GEOSCIENTIFIC INFORMATION" "OCEANS"]
+   "ISOTopicCategories field"
+   :ISOTopicCategories
+   ["elevation" "GEOSCIENTIFIC INFORMATION" "OCEANS"]
 
-        "LocationKeywords field"
-        :LocationKeywords
-        ["CONTINENT" "NORTH AMERICA" "UNITED STATES OF AMERICA" "MICHIGAN" "DETROIT" "MOUNTAIN"
-         "OCEAN" "ATLANTIC OCEAN" "NORTH ATLANTIC OCEAN" "GULF OF MEXICO" "WATER"]
+   "LocationKeywords field"
+   :LocationKeywords
+   ["CONTINENT" "NORTH AMERICA" "UNITED STATES OF AMERICA" "MICHIGAN" "DETROIT" "MOUNTAIN"
+    "OCEAN" "ATLANTIC OCEAN" "NORTH ATLANTIC OCEAN" "GULF OF MEXICO" "WATER"]
 
-        "CollectionPlatforms field"
-        :CollectionPlatforms
-        ["characteristic-name-one" "characteristic-description-one" "256" "characteristic-name-two"
-         "characteristic-description-two" "1024.5" "LIDAR" "WCMS" "SURFACE WATER WIER"]
+   "CollectionPlatforms field"
+   :CollectionPlatforms
+   ["characteristic-name-one" "characteristic-description-one" "256" "characteristic-name-two"
+    "characteristic-description-two" "1024.5" "LIDAR" "WCMS" "SURFACE WATER WIER"]
 
-        "Projects field"
-        :Projects
-        ["Earth Observing System Data Information System" "EOSDIS"
-         "Global Terrestrial Observing System" "GTOS"
-         "Environmental Sustainability Index" "ESI"]
+   "Projects field"
+   :Projects
+   ["Earth Observing System Data Information System" "EOSDIS"
+    "Global Terrestrial Observing System" "GTOS"
+    "Environmental Sustainability Index" "ESI"]
 
-        "RelatedUrls field"
-        :RelatedUrls
-        ["Related-url description." "EDG" "GET SERVICE" "related-url-example.com" "PublicationURL"
-         "A test related url." "GENERAL DOCUMENTATION" "HOME PAGE" "related-url-example-two.com"
-         "DataCenterURL"]
+   "RelatedUrls field"
+   :RelatedUrls
+   ["Related-url description." "EDG" "GET SERVICE" "related-url-example.com" "PublicationURL"
+    "A test related url." "GENERAL DOCUMENTATION" "HOME PAGE" "related-url-example-two.com"
+    "DataCenterURL"]
 
-        "ScienceKeywords field"
-        :ScienceKeywords
-        ["EARTH SCIENCE SERVICES" nil "GEOGRAPHIC INFORMATION SYSTEMS" "DATA ANALYSIS AND VISUALIZATION"
-         nil nil nil "ATMOSPHERE" "RADAR" "SURFACE WINDS" "ATMOSPHERIC WINDS" "SPECTRAL/ENGINEERING"
-         "MICROWAVE" "MICROWAVE IMAGERY" "SCIENCE CAT 3" nil "SCIENCE TERM 3" "SCIENCE TOPIC 3" nil nil nil]
+   "ScienceKeywords field"
+   :ScienceKeywords
+   ["EARTH SCIENCE SERVICES" nil "GEOGRAPHIC INFORMATION SYSTEMS" "DATA ANALYSIS AND VISUALIZATION"
+    nil nil nil "ATMOSPHERE" "RADAR" "SURFACE WINDS" "ATMOSPHERIC WINDS" "SPECTRAL/ENGINEERING"
+    "MICROWAVE" "MICROWAVE IMAGERY" "SCIENCE CAT 3" nil "SCIENCE TERM 3" "SCIENCE TOPIC 3" nil nil nil]
 
-        "TilingIdentificationSystems field"
-        :TilingIdentificationSystems
-        ["MISR" "CALIPSO"]
+   "TilingIdentificationSystems field"
+   :TilingIdentificationSystems
+   ["MISR" "CALIPSO"]
 
-        "TemporalKeywords field"
-        :TemporalKeywords
-        ["Composit" "Annual" "Day"]
+   "TemporalKeywords field"
+   :TemporalKeywords
+   ["Composit" "Annual" "Day"]
 
-        "Test getting the formats out of Archive and Distribution Information. The
+   "Test getting the formats out of Archive and Distribution Information. The
      ArchiveFileInformation is nil, so it is testing that too."
-        :ArchiveAndDistributionInformation
-        ["netCDF4", "PDF"]))
+   :ArchiveAndDistributionInformation
+   ["netCDF4", "PDF"]))
 
 (deftest concept-key->keywords
   (is (= ["Visible Infrared Imaging Radiometer suite."]
