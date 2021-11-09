@@ -45,7 +45,7 @@
                  [metosin/reitit-ring "0.3.9"]
                  [metosin/ring-http-response "0.9.1"]
                  [org.clojure/clojure "1.10.1"]
-                 [org.clojure/clojurescript "1.10.764"]
+                 [org.clojure/clojurescript "1.10.891"]
                  [org.clojure/core.async "0.4.500"]
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
