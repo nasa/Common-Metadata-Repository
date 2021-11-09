@@ -80,7 +80,7 @@
   (when-let [doc-coord-sys (value-of doc coordinate-system-xpath)]
     (if (string/includes? (string/lower-case doc-coord-sys) "epsg" )
       "GEODETIC"
-      doc-coord-sys))))
+      doc-coord-sys)))
 
 (defn parse-geometry
   "Returns UMM GeometryType map from ISO XML document."
