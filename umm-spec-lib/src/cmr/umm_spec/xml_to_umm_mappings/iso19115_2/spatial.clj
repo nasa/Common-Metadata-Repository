@@ -73,6 +73,15 @@
   [el]
   (empty? (select el "gmd:EX_GeographicDescription")))
 
+(defn parse-coordinate-system
+  "Parses the CoordinateSystem from the ISO XML document. If the value is a string that contains
+   an EPSG code then that collection is GEODETIC."
+  [doc]
+  (when-let [doc-coord-sys (value-of doc coordinate-system-xpath)]
+    (if (string/includes? (string/lower-case doc-coord-sys) "epsg" )
+      "GEODETIC"
+      doc-coord-sys)))
+
 (defn parse-geometry
   "Returns UMM GeometryType map from ISO XML document."
   [doc extent-info sanitize?]
@@ -87,7 +96,7 @@
         polygons (get-shapes "cmr.spatial.polygon.Polygon")
         has-shapes? (or (seq points) (seq bounding-rectangles) (seq lines) (seq polygons))]
     {:CoordinateSystem   (or (get extent-info "CoordinateSystem")
-                             (value-of doc coordinate-system-xpath)
+                             (parse-coordinate-system doc)
                              (when (and has-shapes? sanitize?) "CARTESIAN"))
      :Points             points
      :BoundingRectangles bounding-rectangles
