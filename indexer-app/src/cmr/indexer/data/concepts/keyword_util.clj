@@ -3,8 +3,10 @@
   to elasticsearch for indexing."
   (:require
    [clojure.string :as string]
+   [cmr.common.log :refer [warn]]
    [cmr.common.util :as util]
    [cmr.indexer.data.concepts.attribute :as attrib]
+   [cmr.indexer.data.elasticsearch :as es]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.util :as su]))
 
@@ -226,6 +228,19 @@
    :ToolKeywords #(mapcat tool-keyword->keywords (:ToolKeywords %))
    :Organizations #(mapcat organization->keywords (:Organizations %))})
 
+(defn limit-text-field-length
+  "Truncates strings if their length exceeds the given byte limit.
+   
+   Elasticsearch text field mappings have maximum supported sizes based
+   on their type. Some fields that are text-only should be truncated."
+  [field s max-bytes]
+  (when (string? s)
+    (if (> (count (.getBytes s "UTF-8")) max-bytes)
+      (do
+        (warn (format "Text size for %s exceeded the maximum bytes, using first %d characters" field max-bytes))
+        (subs s 0 max-bytes))
+      s)))
+
 (def ^:private collection-fields->fn-mapper
   "A data structure that maps UMM collection field names to functions that
   extract keyword data for those fields. Intended only to be used as part
@@ -233,11 +248,7 @@
 
   See `fields->fn-mapper`, below."
   {:DOI #(get-in % [:DOI :DOI])
-   :Abstract #(concat
-               ;; Capture all split on whitespace
-               (distinct (string/split (get % :Abstract "") #"\w"))
-               ;; Capture quote values and other groupings
-               (re-seq #"[\{\(\[\"“\:_].*?[_\:”\"\}\)\)]" (get % :Abstract "")))
+   :Abstract #(limit-text-field-length :Abstract (get % :Abstract "") es/MAX_TEXT_UTF8_ENCODING_BYTES)
    :AssociatedDOIs #(mapv :DOI (:AssociatedDOIs %))
    :ProcessingLevel #(get-in % [:ProcessingLevel :Id])
    ;; Simple multi-values data

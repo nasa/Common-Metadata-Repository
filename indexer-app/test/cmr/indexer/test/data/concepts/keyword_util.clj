@@ -5,7 +5,8 @@
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
    [cmr.indexer.data.concepts.collection.keyword :as ckw]
-   [cmr.indexer.data.concepts.keyword-util :as keyword-util]))
+   [cmr.indexer.data.concepts.keyword-util :as keyword-util]
+   [cmr.indexer.data.elasticsearch :as es]))
 
 (def sample-umm-collection-concept
   "This sample UMM Collection data is a mish-mash of several examples, done this
@@ -324,6 +325,13 @@
    :DataLanguage "eng"})
 
 (deftest extract-collection-field-values
+  (testing "very long Abstract strings are truncated"
+    (is (= es/MAX_TEXT_UTF8_ENCODING_BYTES
+           (count (.getBytes ((#'keyword-util/field-extract-fn :Abstract)
+                              {:Abstract (str/join (repeat (* 2 es/MAX_TEXT_UTF8_ENCODING_BYTES)
+                                                           "* "))})
+                             "UTF-8")))))
+
   (are3 [field-key values]
         (is (= values
                ((#'keyword-util/field-extract-fn field-key) sample-umm-collection-concept)))
@@ -544,7 +552,6 @@
             sample-umm-collection-concept schema-keys)))))
 
 (deftest create-keywords-field-test
-
   (let [keywords (ckw/create-keywords-field
                   "C1576922113-SCIOPS"
                   sample-umm-collection-concept

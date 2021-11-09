@@ -3,8 +3,16 @@
   (:require
    [clojure.string :as str]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer [warn]]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]))
+
+(defn split-large-keywords
+  "Split large keyword segments apart by whitespace into sizes ES can handle."
+  [keyword max-terms]
+  (let [terms (str/split keyword #"\s")]
+    (if (> (count terms) max-terms)
+      (map #(str/join " " %)
+           (partition-all max-terms terms))
+      keyword)))
 
 (defn create-keywords-field
   "Create a keyword field for keyword searches by concatenating 4 group of fields together:
@@ -56,6 +64,9 @@
                       distinct)
         ;; split each keyword on special characters and extract out phrases surrounded by special characters.
         sp-phrases (mapcat #(str/split % keyword-util/keyword-phrase-separator-regex) keywords)
+        ;; split each keyword on parens and brackets only and extract out the word/phrase inside that might contain
+        ;; other special characters like in "(merry-go-round)" where  "-" is considered special character.
+        paren-bracket-phrases (mapcat #(re-seq #"[\{\(\[\"“\:_].*?[_\:”\"\}\)\)]" %) keywords)
         ;; the index needed for the original unquoted keyword search.
         keywords-in-words (keyword-util/field-values->individual-words keywords)]
     ;; Lower-case the keywords and add a space at the beginning and the end of each field
@@ -65,6 +76,7 @@
          ;; need to index additional keyword phrases that are surrounded by special characters because "* phrase *"
          ;; won't find a match in keyword fields directly because of the extra space added to generalize the search.
          (concat (keep not-empty sp-phrases))
+         (concat (keep not-empty paren-bracket-phrases))
          (map #(str/lower-case %))
          (map #(str (when-not (str/starts-with? " " %) " ")
                     %
@@ -75,4 +87,5 @@
          (remove str/blank?)
          (remove #(= 1 (count (str/trim %)))) ;; exclude single characters
          (remove #(re-matches #"^\W+$" %)) ;; exclude symbols only values
+         (map #(split-large-keywords % 100)) ;; break apart very long values
          distinct)))
