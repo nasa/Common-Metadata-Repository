@@ -624,14 +624,17 @@
 (defn find-refs-with-multi-part-form-post
   "Returns the references that are found by searching through POST request with the input form.
   The form parameter should be a vector of maps (one for each field in the form)"
-  [concept-type form]
-  (get-search-failure-xml-data
-   (let [response (client/post (url/search-url concept-type)
-                               {:accept mime-types/xml
-                                :multipart form
-                                :throw-exceptions true
-                                :connection-manager (s/conn-mgr)})]
-     (parse-reference-response-with-headers false response))))
+  ([concept-type form]
+   (find-refs-with-multi-part-form-post concept-type form {}))
+  ([concept-type form options]
+   (get-search-failure-xml-data
+    (let [response (client/post (url/search-url concept-type)
+                                (merge {:accept mime-types/xml
+                                        :multipart form
+                                        :throw-exceptions true
+                                        :connection-manager (s/conn-mgr)}
+                                       options))]
+      (parse-reference-response-with-headers false response)))))
 
 (defn find-refs-with-json-query
   "Returns the references that are found by searching using a JSON request."

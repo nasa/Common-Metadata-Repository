@@ -116,8 +116,8 @@
           "Single Polygon box over North pole"
           "np_poly" [north-pole touches-np on-np whole-world very-tall-cart along-am-line]
 
-          "Single Polygon over Antartica"
-          "antartica" [south-pole touches-sp on-sp whole-world very-tall-cart]
+          "Single Polygon over Antarctica"
+          "antarctica" [south-pole touches-sp on-sp whole-world very-tall-cart]
 
           "Single Polygon over Southern Africa"
           "southern_africa" [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
