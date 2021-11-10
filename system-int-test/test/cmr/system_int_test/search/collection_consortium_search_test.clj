@@ -49,9 +49,9 @@
                                     (get-in [:results :entries])
                                     first
                                     :consortiums)]
-        (is (= ["cst11" "cst12"] consortiums-in-json))
-        (is (= ["cst21" "cst22"] consortiums-in-atom))))
-     
+        (is (= ["consortium11" "consortium12"] consortiums-in-json))
+        (is (= ["consortium21" "consortium22"] consortiums-in-atom))))
+
     (testing "consortium parameter search"
       (are3 [items consortium options]
         (let [params (merge {:consortium consortium}
