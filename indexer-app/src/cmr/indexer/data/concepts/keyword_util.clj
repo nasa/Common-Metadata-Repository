@@ -229,10 +229,9 @@
    :Organizations #(mapcat organization->keywords (:Organizations %))})
 
 (defn limit-text-field-length
-  "Truncates strings if their length exceeds the given byte limit.
-   
-   Elasticsearch text field mappings have maximum supported sizes based
-   on their type. Some fields that are text-only should be truncated."
+  "Truncates strings if their length exceeds the given byte limit.  
+  Elasticsearch text field mappings have maximum supported sizes based
+  on their type. Some fields that are text-only should be truncated."
   [field s max-bytes]
   (when (string? s)
     (if (> (count (.getBytes s "UTF-8")) max-bytes)
