@@ -82,8 +82,8 @@
    (format "ISO Topic Category [%s] was not a valid keyword."
            iso-topic-category))
 
-(defn related-url-type-subtype-not-matching-kms-keywords
-  "Error msg when Related URL Type and Subtype pair is not in KMS."
+(defn related-url-content-type-type-subtype-not-matching-kms-keywords
+  "Error msg when Related URL Content Type, Type, and Subtype do not match a valid set in KMS."
   [related-url]
   (format "Related URL Content Type, Type, and Subtype [%s>%s>%s] are not a valid set together."
           (:URLContentType related-url)

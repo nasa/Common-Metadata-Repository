@@ -572,7 +572,18 @@
 
    "Migration up from 1.3.4 to 1.4"
    "1.3.4" "v1.3.4/Service_v1.3.4-from-v1.3.3.json"
-   "1.4" "v1.4/Service_v1.4-from-v1.3.4.json"))
+   "1.4" "v1.4/Service_v1.4-from-v1.3.4.json"
+
+   ;; ---- 1.4.1 tests ----
+   "Migrating down from 1.4.1 to 1.4"
+   "1.4.1" "v1.4.1/Service_v1.4.1-to-v1.4.json"
+   "1.4" "v1.4/Service_v1.4-from-v1.3.4.json"
+
+   "Migrating up from 1.4 to 1.4.1"
+   "1.4" "v1.4/Service_v1.4-from-v1.3.4.json"
+   "1.4.1" "v1.4.1/Service_v1.4.1-from-v1.4.json"))
+
+
 
 (comment
 
