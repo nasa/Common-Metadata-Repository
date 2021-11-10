@@ -85,7 +85,6 @@
          ;; keyword index fields, without the need to go through a whitespace analyzer.
          (concat keywords-in-words)
          (remove str/blank?)
-         (remove #(= 1 (count (str/trim %)))) ;; exclude single characters
          (remove #(re-matches #"^\W+$" %)) ;; exclude symbols only values
-         (map #(split-large-keywords % 100)) ;; break apart very long values
+         (map #(split-large-keywords % 512)) ;; break apart very long values
          distinct)))
