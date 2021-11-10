@@ -2819,3 +2819,30 @@
     "Testing when no related urls exist, none should be added"
     {}
     {}))
+
+(deftest migrate-1-16-5-to-1-16-6
+  "Test the migration of collections from 1.16.5 to 1.16.6."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.5" "1.16.6" sample-collection)]
+      (is (= expected (:UseConstraints result))))
+
+    "Migrating license URL and description"
+    {:Description "desc"
+     :LicenseURL {:Linkage "https:some.com"}}
+    {:UseConstraints {:Description "desc"
+                      :LicenseURL {:Linkage "https:some.com"}}}))
+
+(deftest migrate-1-16-6-to-1-16-5
+  "Test the migration of collections from 1.16.6 to 1.16.5."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.6" "1.16.5" sample-collection)]
+      (is (= expected (:UseConstraints result))))
+
+    "Migrating license URL, FreeAndOpenData and description"
+    {:Description "desc"
+     :LicenseURL {:Linkage "https:some.com"}}
+    {:UseConstraints {:Description "desc"
+                      :FreeAndOpenData true
+                      :LicenseURL {:Linkage "https:some.com"}}}))

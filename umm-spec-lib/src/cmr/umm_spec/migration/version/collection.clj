@@ -465,3 +465,13 @@
   [context collection & _]
   ;; No need to migrate
   collection)
+
+(defmethod interface/migrate-umm-version [:collection "1.16.5" "1.16.6"]
+  [context collection & _]
+  ;; No need to migrate
+  collection)
+
+(defmethod interface/migrate-umm-version [:collection "1.16.6" "1.16.5"]
+  [context collection & _]
+  ;; Remove the FreeAndOpenData field in UseConstraints.
+  (update-in collection [:UseConstraints] dissoc :FreeAndOpenData))

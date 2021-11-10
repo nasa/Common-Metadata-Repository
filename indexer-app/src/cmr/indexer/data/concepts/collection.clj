@@ -180,6 +180,46 @@
   (or (not (empty? (:DirectDistributionInformation collection)))
       (tag/has-cloud-s3-tag? tags)))
 
+(def geoss-url-list
+  ["https://creativecommons.org/licenses/by/4.0/legalcode"
+   "http://creativecommons.org/licenses/by/4.0/"
+   "https://earthdata.nasa.gov/earth-observation-data/data-use-policy"
+   "https://science.nasa.gov/earth-science/earth-science-data/data-information-policy"
+   "https://asf.alaska.edu/data-sets/sar-data-sets/sentinel-1/sentinel-1-terms-conditions/"
+   "https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/sentinel3/terms-and-conditions/"])
+
+(defn- contains-geoss-url?
+  "Returns true if use-constraints fields contain urls in geoss-url-list."
+  [use-constraints]
+  (let [description (:Description use-constraints)
+        linkage (get-in use-constraints [:LicenseURL :Linkage])
+        license-text (:LicenseText use-constraints)]
+    (or (and description (some #(str/includes? description %) geoss-url-list))
+        (and linkage (some #(str/includes? linkage %) geoss-url-list))
+        (and license-text (some #(str/includes? license-text %) geoss-url-list)))))
+
+(defn- alter-consortiums
+  "Alter the consortiums list based on use-constraints.
+  GEOSS is added to the consortiums when:
+  1. FreeAndOpenData in UseConstraints is true, or
+  2. GEOSS url exists in UseConstraints, or
+  3. UseConstraints doesn't exist and collection is an EOSDIS record.
+  GEOSS is removed from the consortiums when:
+  1. FreeAndOpendata in UseConstraints is false."
+  [consortiums use-constraints]
+  (if use-constraints
+    (let [free-and-open (:FreeAndOpenData use-constraints)]
+      (case free-and-open
+        true (distinct (conj consortiums "GEOSS"))
+        false (remove #(= "GEOSS" (str/upper-case %)) consortiums)
+        nil (if (contains-geoss-url? use-constraints)
+              (distinct (conj consortiums "GEOSS"))
+              consortiums)))
+    (if (some #(= "EOSDIS" (str/upper-case %)) consortiums)
+      ;; provider's consortiums contains EOSDIS indicates the colleciton is an EOSDIS record.
+      (distinct (conj consortiums "GEOSS"))
+      consortiums)))
+
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
@@ -190,6 +230,7 @@
                               (metadata-db/get-providers context))
         consortiums (when consortiums-str
                       (remove empty? (str/split consortiums-str #" ")))
+        consortiums (alter-consortiums consortiums (:UseConstraints collection))
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
