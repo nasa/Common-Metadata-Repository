@@ -9,6 +9,26 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.search-util :as search]))
 
+(use-fixtures :each (ingest/reset-fixture
+                      [{:provider-guid "provguid1"
+                        :provider-id "PROV1"
+                        :short-name "Provider 1"}
+                       {:provider-guid "provguid2"
+                        :provider-id "PROV2"
+                        :short-name "PROVIDER 2"}
+                       {:provider-guid "provguid3"
+                        :provider-id "PROV3"
+                        :short-name "PROVIDER 3"}
+                       {:provider-guid "provguid4"
+                        :provider-id "PROV4"
+                        :short-name "PROVIDER 4"}
+                       {:provider-guid "provguid5"
+                        :provider-id "PROV5"
+                        :short-name "PROVIDER 5"}
+                       {:provider-guid "provguid6"
+                        :provider-id "PROV6"
+                        :short-name "PROVIDER 6"}]))
+
 (deftest collection-consortium-geoss-search-test
   (ingest/delete-provider "PROV1")
   (ingest/delete-provider "PROV2")

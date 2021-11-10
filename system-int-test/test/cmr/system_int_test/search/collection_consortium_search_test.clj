@@ -9,12 +9,19 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.search-util :as search]))
 
+(use-fixtures :each (ingest/reset-fixture
+                      [{:provider-guid "provguid1"
+                        :provider-id "PROV1"
+                        :short-name "Provider 1"}
+                       {:provider-guid "provguid2"
+                        :provider-id "PROV2"
+                        :short-name "PROVIDER 2"}]))
 
 (deftest collection-consortium-search-test
   (ingest/delete-provider "PROV1")
   (ingest/delete-provider "PROV2")
-  (ingest/create-provider {:provider-guid "provguid_cst1" :provider-id "PROV1" :consortiums "cst11 cst12"})
-  (ingest/create-provider {:provider-guid "provguid_cst2" :provider-id "PROV2" :consortiums "cst21 cst22"})
+  (ingest/create-provider {:provider-guid "provguid_consortium1" :provider-id "PROV1" :consortiums "consortium11 consortium12"})
+  (ingest/create-provider {:provider-guid "provguid_consortium2" :provider-id "PROV2" :consortiums "consortium21 consortium22"})
 
   (let [coll1 (d/ingest-umm-spec-collection
                "PROV1"
@@ -38,20 +45,20 @@
           (d/refs-match? items (search/find-refs :collection params)))
 
         "consortium search1"
-        [coll1] "cst11" nil
+        [coll1] "consortium11" nil
 
         "consortium search2 ignore case"
-        [coll2] "CsT21" nil
+        [coll2] "ConSortium21" nil
 
         "Pattern search"
-        [coll1 coll2] "*cst*" {"options[consortium][pattern]" "true"}
+        [coll1 coll2] "*consortium*" {"options[consortium][pattern]" "true"}
 
         "Pattern search, leading wildcard only"
-        [coll1] "*11" {"options[consortium][pattern]" "true"}
+        [coll1] "*sortium11" {"options[consortium][pattern]" "true"}
 
         "And search"
-        [coll1] ["*st11" "cst12"] {"options[consortium][pattern]" "true"
-                                   "options[consortium][and]" "true"}
+        [coll1] ["*sortium11" "consortium12"] {"options[consortium][pattern]" "true"
+                                               "options[consortium][and]" "true"}
 
         "Or search"
-        [coll1 coll2] ["cst11" "cst21"] nil))))
+        [coll1 coll2] ["consortium11" "consortium21"] nil))))
