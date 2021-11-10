@@ -565,7 +565,5 @@
       (is (distinct? keywords)))
     (testing "the list does not contain tabs"
       (is (empty? (mapcat #(re-find #"\t" %) keywords))))
-    (testing "the list does not contain single characters"
-      (is (empty? (for [kw (map str/trim keywords) :when (= (count kw) 1)] kw))))
     (testing "the list does not contain empty strings"
       (is (not-any? str/blank? keywords)))))
