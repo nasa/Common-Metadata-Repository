@@ -74,5 +74,15 @@
                             options)]
           (d/refs-match? items (search/find-refs :collection params)))
 
-        "consortium search"
-        [coll1 coll3 coll5] "geoss" nil))))
+        "geoss search"
+        [coll1 coll3 coll5] "geoss" nil
+
+        ;; More complete non geoss search is in collection_consortium_search_test.clj
+        "non geoss search1"
+        [coll2] "cstg21" nil
+
+        "non geoss search2"
+        [coll4] "cstg41" nil
+
+        "non geoss search3"
+        [coll6] "cstg61" nil))))

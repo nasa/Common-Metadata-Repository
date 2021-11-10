@@ -194,22 +194,29 @@
   (let [description (:Description use-constraints)
         linkage (get-in use-constraints [:LicenseURL :Linkage])
         license-text (:LicenseText use-constraints)]
-    (or (some #(str/includes? description %) geoss-url-list)
-        (some #(str/includes? linkage %) geoss-url-list)
-        (some #(str/includes? license-text %) geoss-url-list))))
+    (or (and description (some #(str/includes? description %) geoss-url-list))
+        (and linkage (some #(str/includes? linkage %) geoss-url-list))
+        (and license-text (some #(str/includes? license-text %) geoss-url-list)))))
 
 (defn- alter-consortiums
-  "Alter the consortiums list based on use-constraints."
+  "Alter the consortiums list based on use-constraints.
+  GEOSS is added to the consortiums when:
+  1. FreeAndOpenData in UseConstraints is true, or
+  2. GEOSS url exists in UseConstraints, or
+  3. UseConstraints doesn't exist and collection is an EOSDIS record.
+  GEOSS is removed from the consortiums when:
+  1. FreeAndOpendata in UseConstraints is false."
   [consortiums use-constraints]
   (if use-constraints
     (let [free-and-open (:FreeAndOpenData use-constraints)]
       (case free-and-open
         true (distinct (conj consortiums "GEOSS"))
-        false (remove #(= "GEOSS" %) consortiums)
+        false (remove #(= "GEOSS" (str/upper-case %)) consortiums)
         nil (if (contains-geoss-url? use-constraints)
               (distinct (conj consortiums "GEOSS"))
               consortiums)))
-    (if (some #(= "EOSDIS" %) consortiums)
+    (if (some #(= "EOSDIS" (str/upper-case %)) consortiums)
+      ;; provider's consortiums contains EOSDIS indicates the colleciton is an EOSDIS record.
       (distinct (conj consortiums "GEOSS"))
       consortiums)))
 
@@ -222,7 +229,7 @@
         consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
                               (metadata-db/get-providers context))
         consortiums (when consortiums-str
-                      (remove empty? (str/split (str/upper-case consortiums-str) #" ")))
+                      (remove empty? (str/split consortiums-str #" ")))
         consortiums (alter-consortiums consortiums (:UseConstraints collection))
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
         {short-name :ShortName version-id :Version entry-title :EntryTitle
