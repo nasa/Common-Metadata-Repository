@@ -66,7 +66,7 @@
         sp-phrases (mapcat #(str/split % keyword-util/keyword-phrase-separator-regex) keywords)
         ;; split each keyword on parens and brackets only and extract out the word/phrase inside that might contain
         ;; other special characters like in "(merry-go-round)" where  "-" is considered special character.
-        paren-bracket-phrases (mapcat #(re-seq #"[\{\(\[\"“\:_].*?[_\:”\"\}\)\)]" %) keywords)
+        paren-bracket-phrases (mapcat #(flatten (re-seq #"[\{\(\[\"“\:_](.*?)[_\:”\"\}\)\)]" %)) keywords)
         ;; the index needed for the original unquoted keyword search.
         keywords-in-words (keyword-util/field-values->individual-words keywords)]
     ;; Lower-case the keywords and add a space at the beginning and the end of each field
