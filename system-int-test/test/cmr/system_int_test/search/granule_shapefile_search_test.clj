@@ -2,6 +2,7 @@
   (:require
    [clojure.test :refer :all]
    [clojure.java.io :as io]
+   [cmr.common-app.api.routes :as routes]
    [cmr.common.log :refer [debug]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util :refer [are3]]
@@ -54,13 +55,13 @@
                                           (if (seq additional-params)
                                             (conj params additional-params)
                                             params)))))))
-                                  
+
         "All granules query"
         "box.zip" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
 
         "Corrupt zip file"
         "corrupt_file.zip" {:name "provider" :content "PROV1"} #"Error while uncompressing zip file: invalid END header \(bad central directory offset\)"
-        
+
         "Missing .shp file"
         "missing_shapefile_shp.zip" {:name "provider" :content "PROV1"} #"Incomplete shapefile: missing .shp file"
 
@@ -88,7 +89,7 @@
                                           (if (seq additional-params)
                                             (conj params additional-params)
                                             params)))))))
-                                  
+
         "All granules query"
         "polygon_with_hole.geojson" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
 
@@ -100,11 +101,11 @@
 
         "Shapefile has too many points"
         "too_many_points.geojson" {:name "provider" :content "PROV1"} #"Number of points in shapefile exceeds the limit of 50"
-        
+
         "Shapefile has no features"
         "no_features.geojson" {:name "provider" :content "PROV1"} #"Shapefile has no features"))
 
-      
+
     (testing "KML Failure cases"
       (are3 [shapefile additional-params regex]
         (is (re-find regex
@@ -116,7 +117,7 @@
                                           (if (seq additional-params)
                                             (conj params additional-params)
                                             params)))))))
-                                  
+
         "All granules query"
         "polygon_with_hole.kml" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
 
@@ -132,11 +133,11 @@
         "Shapefile has no features"
         "no_features.kml" {:name "provider" :content "PROV1"} #"Shapefile has no features"))
 
-        
+
     (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-size))
     (side/eval-form `(shapefile/set-max-shapefile-features! ~saved-shapefile-max-features))
     (side/eval-form `(shapefile/set-max-shapefile-points! ~saved-shapefile-max-points))))
-  
+
 (deftest granule-shapefile-search-test
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
   (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
@@ -223,8 +224,8 @@
           "Single Polygon box over North pole"
           "np_poly" [north-pole touches-np on-np whole-world very-tall-cart along-am-line]
 
-          "Single Polygon over Antartica"
-          "antartica" [south-pole touches-sp on-sp whole-world very-tall-cart]
+          "Single Polygon over Antarctica"
+          "antarctica" [south-pole touches-sp on-sp whole-world very-tall-cart]
 
           "Single Polygon over Southern Africa"
           "southern_africa" [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
@@ -248,4 +249,51 @@
           "dc_richmond_line" [whole-world very-wide-cart washington-dc richmond]
 
           "Single Point Washington DC"
-          "single_point_dc" [whole-world very-wide-cart washington-dc])))))
+          "single_point_dc" [whole-world very-wide-cart washington-dc]))
+
+      (testing (format "Scrolling with results on first page for %s shapefile" fmt)
+        (let [expected-items [whole-world touches-sp on-sp very-tall-cart south-pole]
+              {:keys [hits headers] :as initial-scroll-request}
+              (search/find-refs-with-multi-part-form-post
+                :granule
+                [{:name "shapefile"
+                  :content (io/file (io/resource (str "shapefiles/antarctica." extension)))
+                  :mime-type mime-type}
+                 {:name "provider"
+                   :content "PROV1"}
+                 {:name "scroll"
+                   :content "true"}
+                 {:name "page_size"
+                   :content "1"}])
+              scroll-id (:CMR-Scroll-Id headers)]
+          (d/assert-refs-match [(first expected-items)] initial-scroll-request)
+          (doseq [item (rest expected-items)
+                  :let [refs (search/find-refs
+                              :granule
+                              {:scroll true}
+                              {:headers {routes/SCROLL_ID_HEADER scroll-id}})]]
+            (d/assert-refs-match [item] refs))
+          (search/clear-scroll scroll-id)))
+
+      (testing (format "Deferred scrolling for %s shapefile" fmt)
+        (let [expected-items [whole-world very-wide-cart washington-dc richmond]
+              {:keys [hits headers]}
+              (search/find-refs-with-multi-part-form-post
+                :granule
+                [{:name "shapefile"
+                  :content (io/file (io/resource (str "shapefiles/box." extension)))
+                  :mime-type mime-type}
+                 {:name "provider"
+                   :content "PROV1"}
+                 {:name "scroll"
+                   :content "defer"}
+                 {:name "page_size"
+                   :content "1"}])
+              scroll-id (:CMR-Scroll-Id headers)]
+          (doseq [item expected-items
+                  :let [refs (search/find-refs
+                              :granule
+                              {:scroll true}
+                              {:headers {routes/SCROLL_ID_HEADER scroll-id}})]]
+            (d/assert-refs-match [item] refs))
+          (search/clear-scroll scroll-id))))))
