@@ -35,13 +35,15 @@
   [context scroll-id search-params]
   (when scroll-id
     (let [short-scroll-id (str (hash scroll-id))
-          id-cache (cache/context->cache context search/scroll-id-cache-key)]
+          id-cache (cache/context->cache context search/scroll-id-cache-key)
+          ;; The shapefile is not available and not needed for scrolling queries
+          search-params (dissoc search-params :shapefile)]
       (cache/set-value id-cache short-scroll-id {:scroll-id scroll-id :search-params search-params})
       short-scroll-id)))
 
 (defn get-scroll-id-and-search-params-from-cache
-  "Returns the full ES scroll-id and search-params from the cache using the short scroll-id as a key. Throws a
-  service error :not-found if the key does not exist in the cache."
+  "Returns the full ES scroll-id and search-params from the cache using the short scroll-id as a
+  key. Throws a service error :not-found if the key does not exist in the cache."
   [context short-scroll-id]
   (when short-scroll-id
     (if-let [scroll-id-and-search-params (-> context
@@ -63,7 +65,7 @@
 (defn path-w-extension->revision-id
   "Parses the path-w-extension to extract the revision id. URL path should
   be of the form :concept-id[/:revision-id][.:format], e.g.,
-  http://localohst:3003/concepts/C120000000-PROV1/2.xml."
+  http://localhost:3003/concepts/C120000000-PROV1/2.xml."
   [path-w-extension]
   (when-let [revision-id (nth (re-matches #"([^\.]+)/([^\.]+)(?:\..+)?" path-w-extension) 2)]
     (try
