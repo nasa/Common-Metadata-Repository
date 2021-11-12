@@ -1557,12 +1557,13 @@ History:
     | ECHO 10                | UMM                    | DIF 10.2                | Notes          |
     | ---------------------- | -----------------------| ----------------------- | -------------  |
     |UseConstraints          |UseConstraints          |Use_Constraints          | No change      |
-    | /Description           | /Description           | /Description            |
-    | /LicenseURL/URL        | /LicenseURL/Linkage    | /License_URL/URL        |
-    | /LicenseURL/Type       | /LicenseURL/Name       | /License_URL/Title      |
-    | /LicenseURL/Description| /LicenseURL/Description| /License_URL/Description|
-    | /LicenseURL/MimeType   | /LicenseURL/MimeType   | /License_URL/Mime_Type  |
-    | /LicenseText           | /LicenseText           | /License_Text           |
+    | /Description           | /Description           | /Description            |                |
+    | /FreeAndOpenData       | /FreeAndOpenData       | /Free_And_Open_Data     |                |
+    | /LicenseURL/URL        | /LicenseURL/Linkage    | /License_URL/URL        |                |
+    | /LicenseURL/Type       | /LicenseURL/Name       | /License_URL/Title      |                |
+    | /LicenseURL/Description| /LicenseURL/Description| /License_URL/Description|                |
+    | /LicenseURL/MimeType   | /LicenseURL/MimeType   | /License_URL/Mime_Type  |                |
+    | /LicenseText           | /LicenseText           | /License_Text           |                |
             </xs:documentation>
 
         </xs:annotation>
@@ -1577,6 +1578,11 @@ History:
                         <xs:maxLength value="4000" />
                     </xs:restriction>
                 </xs:simpleType>
+            </xs:element>
+            <xs:element name="Free_And_Open_Data" minOccurs="0" type="xs:boolean">
+                <xs:annotation>
+                    <xs:documentation>This sub-element if true, describes to end users and machines that this collection's data is free of charge and open for any use the user sees fit.</xs:documentation>
+                </xs:annotation>
             </xs:element>
             <xs:choice minOccurs="0">
               <xs:element name="License_URL">
