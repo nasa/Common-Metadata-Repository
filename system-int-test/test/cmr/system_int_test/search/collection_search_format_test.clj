@@ -1150,3 +1150,64 @@
         "UMM-JSON has an archive center and processing center"
         "S-UMM-JSON" ["TNRIS" "NSIDC" "LPDAAC" "Processing Center"])
      (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version)))))
+
+(deftest collection-concept-stac-retrieval-test
+  (let [coll-metadata (slurp (io/resource "stac-test/C1299783579-LPDAAC_ECS.xml"))
+        {coll-concept-id :concept-id} (ingest/ingest-concept
+                                       (ingest/concept :collection "PROV1" "foo" :echo10 coll-metadata))
+        expected (-> "stac-test/collection_stac.json"
+                     io/resource
+                     slurp
+                     (string/replace #"CollectionConceptId" coll-concept-id)
+                     (json/decode true))]
+    (index/wait-until-indexed)
+
+    (testing "retrieval of collection concept in STAC format"
+      (util/are3 [options]
+        (let [response (search/retrieve-concept coll-concept-id nil options)]
+          (is (search/mime-type-matches-response? response mt/stac))
+          (is (= expected
+                 (json/decode (:body response) true))))
+
+        "retrieval by accept header"
+        {:accept "application/json; profile=stac-catalogue"}
+
+        "retrieval by suffix"
+        {:url-extension "stac"}))
+
+    (testing "retrieval of granule concept revisions in STAC format is not supported"
+      (util/are3 [options err-msg]
+        (let [{:keys [status errors]} (search/get-search-failure-data
+                                       (search/retrieve-concept
+                                        coll-concept-id
+                                        1
+                                        (merge options {:throw-exceptions true})))]
+          (is (= 400 status))
+          (is (= [err-msg] errors)))
+
+        "retrieval by accept header"
+        {:accept "application/json; profile=stac-catalogue"}
+        "The mime types specified in the accept header [application/json; profile=stac-catalogue] are not supported."
+
+        "retrieval by suffix"
+        {:url-extension "stac"}
+        "The URL extension [stac] is not supported."))))
+
+(deftest search-collection-stac
+  (testing "stac search on collections is not supported"
+    (let [coll1 (d/ingest "PROV1"
+                          (dc/collection {:entry-title "Dataset1"
+                                          :beginning-date-time "1970-01-01T12:00:00Z"
+                                          :spatial-coverage (dc/spatial {:gsr :geodetic})}))
+          coll-concept-id (:concept-id coll1)
+          _ (index/wait-until-indexed)
+          response (search/find-concepts-stac :collection {:concept-id coll-concept-id})
+          ext-response (search/find-concepts-stac :collection
+                                                  {:concept-id coll-concept-id}
+                                                  {:url-extension "stac"})]
+      (is (= 400
+             (:status response)
+             (:status ext-response)))
+      (is (= ["STAC result format is only supported for granule searches"]
+             (:errors response)
+             (:errors ext-response))))))

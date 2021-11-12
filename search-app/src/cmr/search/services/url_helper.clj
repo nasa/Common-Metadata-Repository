@@ -24,6 +24,11 @@
   [context concept-id]
   (format "%s%s.xml" (reference-root context) concept-id))
 
+(defn concept-html-url
+  "Returns the html url for a given concept id"
+  [context concept-id]
+  (format "%s%s.html" (reference-root context) concept-id))
+
 (defn concept-json-url
   "Returns the JSON url for a given concept id"
   [context concept-id]
@@ -43,9 +48,13 @@
             (name concept-type) (name result-format) query-string)))
 
 (defn stac-request-url
-  "Returns the stac request url based on search concept type with extension and query string"
-  [context query-string page-num]
-  (format "%sgranules.stac?%s&page_num=%s"
-          (tconfig/application-public-root-url context)
-          query-string
-          page-num))
+  "Returns the request url for granule search in STAC format"
+  ([context coll-concept-id]
+   (format "%sgranules.stac?collection_concept_id=%s"
+           (tconfig/application-public-root-url context)
+           coll-concept-id))
+  ([context query-string page-num]
+   (format "%sgranules.stac?%s&page_num=%s"
+           (tconfig/application-public-root-url context)
+           query-string
+           page-num)))

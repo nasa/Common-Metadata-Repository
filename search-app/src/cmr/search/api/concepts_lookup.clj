@@ -29,7 +29,8 @@
                  mt/dif
                  mt/dif10
                  mt/umm-json
-                 mt/legacy-umm-json}
+                 mt/legacy-umm-json
+                 mt/stac}
    :granule #{mt/any
               mt/xml    ; allows retrieving native format
               mt/native ; retrieve in native format

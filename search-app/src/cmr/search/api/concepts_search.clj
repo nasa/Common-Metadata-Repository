@@ -68,8 +68,12 @@
 
 (defn- validate-stac-params
   "Validate stac params, throws service error if failed."
-  [context headers params]
+  [context concept-type headers params]
   (when (= :stac (:result-format params))
+    (when (not= :granule concept-type)
+      (svc-errors/throw-service-error
+       :bad-request "STAC result format is only supported for granule searches"))
+
     (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))
           {:keys [scroll-id search-after query-string]} context
           {:keys [offset scroll]} params]
@@ -221,7 +225,7 @@
         result-format (:result-format params)
         _ (block-excessive-queries ctx concept-type result-format params)
         _ (validate-search-after-params ctx params)
-        _ (validate-stac-params ctx headers params)
+        _ (validate-stac-params ctx concept-type headers params)
         log-message (format "Searching for %ss from client %s in format %s with params %s"
                             (name concept-type) (:client-id ctx)
                             (rfh/printable-result-format result-format) (pr-str params))

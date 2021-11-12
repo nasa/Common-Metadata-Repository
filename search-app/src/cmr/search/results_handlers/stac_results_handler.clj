@@ -23,6 +23,16 @@
   "Number of max results can be returned in an Elasticsearch query."
   1000000)
 
+(defmethod elastic-search-index/concept-type+result-format->fields [:collection :stac]
+ [concept-type query]
+  (let [stac-fields ["summary"
+                     "entry-title"
+                     "start-date"
+                     "end-date"
+                     "ords-info"
+                     "ords"]]
+   (distinct (concat stac-fields acl-rhh/collection-elastic-fields))))
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :stac]
  [concept-type query]
   (let [stac-fields ["granule-ur"
@@ -42,6 +52,25 @@
                      "ords-info"
                      "ords"]]
    (distinct (concat stac-fields acl-rhh/granule-elastic-fields))))
+
+(defn- collection-elastic-result->query-result-item
+  [elastic-result]
+  (let [{concept-id :_id
+         {summary :summary
+          entry-title :entry-title
+          start-date :start-date
+          end-date :end-date
+          ords-info :ords-info
+          ords :ords} :_source} elastic-result
+        start-date (acl-rhh/parse-elastic-datetime start-date)
+        end-date (acl-rhh/parse-elastic-datetime end-date)]
+    (merge {:id concept-id
+            :dataset-id entry-title
+            :summary summary
+            :start-date start-date
+            :end-date end-date
+            :shapes (srl/ords-info->shapes ords-info ords)}
+           (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn- granule-elastic-result->query-result-item
   [orbits-by-collection elastic-result]
@@ -87,16 +116,18 @@
   [context query elastic-results]
   (let [hits (er-to-qr/get-hits elastic-results)
         timed-out (er-to-qr/get-timedout elastic-results)
-        scroll-id (er-to-qr/get-scroll-id elastic-results)
-        search-after (er-to-qr/get-search-after elastic-results)
         elastic-matches (er-to-qr/get-elastic-matches elastic-results)
-        items (granule-elastic-results->query-result-items context query elastic-matches)]
+        items (if (= :granule (:concept-type query))
+                (granule-elastic-results->query-result-items context query elastic-matches)
+                (map collection-elastic-result->query-result-item elastic-matches))]
     (r/map->Results {:hits hits
                      :items items
                      :timed-out timed-out
-                     :result-format (:result-format query)
-                     :scroll-id scroll-id
-                     :search-after search-after})))
+                     :result-format (:result-format query)})))
+
+(defmethod er-to-qr/elastic-results->query-results [:collection :stac]
+  [context query elastic-results]
+  (elastic-results->query-results context query elastic-results))
 
 (defmethod er-to-qr/elastic-results->query-results [:granule :stac]
   [context query elastic-results]
@@ -174,8 +205,34 @@
 
 (defmethod stac-reference->json :collection
   [context concept-type reference]
-  ;; implement this when working on CMR-7719
-  )
+  (let [{:keys [id dataset-id summary start-date end-date shapes]} reference
+        metadata-link (url/concept-xml-url context id)
+        result {:id id
+                :stac_version STAC_VERSION
+                :license "not-provided"
+                :title dataset-id
+                :type "Collection"
+                :description summary
+                :links [{:rel "self"
+                         :href (url/concept-stac-url context id)}
+                        {:rel "root"
+                         :href (url/search-root context)}
+                        {:rel "items"
+                         :title "Granules in this collection"
+                         :type "application/json"
+                         :href (url/stac-request-url context id)}
+                        {:rel "about"
+                         :title "HTML metadata for collection"
+                         :type "text/html"
+                         :href (url/concept-html-url context id)}
+                        {:rel "via"
+                         :title "CMR JSON metadata for collection"
+                         :type "application/json"
+                         :href (url/concept-json-url context id)}]
+                :extent {:spatial {:bbox (ssrh/shapes->stac-bbox shapes)}
+                         :temporal {:interval [start-date end-date]}}}]
+    ;; remove entries with nil value
+    (util/remove-nil-keys result)))
 
 (defmethod stac-reference->json :granule
   [context concept-type reference]
@@ -220,9 +277,10 @@
                          (:concept-type query)
                          (first (:items results)))))
 
-(defmethod qs/single-result->response [:granule :stac]
-  [context query results]
-  (single-result->response context query results))
+(doseq [concept-type [:collection :granule]]
+  (defmethod qs/single-result->response [concept-type :stac]
+    [context query results]
+    (single-result->response context query results)))
 
 (defn- get-fc-links
   "Returns the links for feature collection"
