@@ -5,14 +5,18 @@
    [cmr.common.concepts :as concepts]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]))
 
-(defn split-large-keywords
-  "Split large keyword segments apart by whitespace into sizes ES can handle."
-  [keyword max-terms]
-  (let [terms (str/split keyword #"\s")]
+(def ^:private max-keyword-word-count
+  "Maximum keyword count that should be put into a keyword value."
+  64)
+
+(defn ^:private segment-keywords
+  "Segment large keyword phrases into chunks of a maximum size."
+  [keyword-phrase max-terms]
+  (let [terms (str/split keyword-phrase #"\s")]
     (if (> (count terms) max-terms)
       (map #(str/join " " %)
            (partition-all max-terms terms))
-      keyword)))
+      [keyword])))
 
 (defn create-keywords-field
   "Create a keyword field for keyword searches by concatenating 4 group of fields together:
@@ -52,7 +56,6 @@
                      :Version
                      :VersionDescription
                      :ArchiveAndDistributionInformation]
-
         keywords (->> (concat
                        instrument-long-names
                        platform-long-names
@@ -77,13 +80,11 @@
          ;; won't find a match in keyword fields directly because of the extra space added to generalize the search.
          (concat (keep not-empty sp-phrases))
          (concat (keep not-empty paren-bracket-phrases))
-         (map #(str/lower-case %))
-         (map #(str (when-not (str/starts-with? " " %) " ")
-                    %
-                    (when-not (str/ends-with? " " %) " ")))
+         (map (comp str/trim str/lower-case))
+         (map #(str " " % " "))
          ;; The keyword-in-words here are used for unquoted keyword search. It's exactly the same as the existing
          ;; keyword index fields, without the need to go through a whitespace analyzer.
          (concat keywords-in-words)
+         (mapcat #(segment-keywords % max-keyword-word-count))
          (remove str/blank?)
-         (map #(split-large-keywords % 512)) ;; break apart very long values
          distinct)))
