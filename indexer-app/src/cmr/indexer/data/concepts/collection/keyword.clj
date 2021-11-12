@@ -1,7 +1,7 @@
 (ns cmr.indexer.data.concepts.collection.keyword
   "Contains functions to create keyword fields"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.concepts :as concepts]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]))
 
@@ -12,14 +12,14 @@
 (defn ^:private segment-keywords
   "Segment large keyword phrases into chunks of a maximum size."
   [keyword-phrase max-terms]
-  (let [terms (str/split keyword-phrase #"\s")]
+  (let [terms (string/split keyword-phrase #"\s")]
     (if (> (count terms) max-terms)
-      (map #(str/join " " %)
+      (map #(string/join " " %)
            (partition-all max-terms terms))
       [keyword-phrase])))
 
 (def ^:private trim-and-lowercase
-  (comp str/lower-case str/trim))
+  (comp string/lower-case string/trim))
 
 (defn create-keywords-field
   "Create a keyword field for keyword searches by concatenating 4 group of fields together:
@@ -66,10 +66,10 @@
                        [entry-id]
                        [provider-id]
                        (keyword-util/concept-keys->keywords collection schema-keys))
-                      (remove str/blank?)
+                      (remove string/blank?)
                       distinct)
         ;; split each keyword on special characters and extract out phrases surrounded by special characters.
-        sp-phrases (mapcat #(str/split % keyword-util/keyword-phrase-separator-regex) keywords)
+        sp-phrases (mapcat #(string/split % keyword-util/keyword-phrase-separator-regex) keywords)
         ;; split each keyword on parens and brackets only and extract out the word/phrase inside that might contain
         ;; other special characters like in "(merry-go-round)" where  "-" is considered special character.
         paren-bracket-phrases (mapcat #(flatten (re-seq #"[\{\(\[\"“\:_](.*?)[_\:”\"\}\)\)]" %)) keywords)
@@ -89,5 +89,5 @@
          ;; keyword index fields, without the need to go through a whitespace analyzer.
          (concat keywords-in-words)
          (mapcat #(segment-keywords % max-keyword-word-count))
-         (remove str/blank?)
+         (remove string/blank?)
          distinct)))

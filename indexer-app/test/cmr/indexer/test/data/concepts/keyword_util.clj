@@ -1,7 +1,7 @@
 (ns cmr.indexer.test.data.concepts.keyword-util
   "Functions for testing cmr.indexer.data.concepts.keyword-util namespace."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
    [cmr.indexer.data.concepts.collection.keyword :as ckw]
@@ -328,7 +328,7 @@
   (testing "very long Abstract strings are truncated"
     (is (= es/MAX_TEXT_UTF8_ENCODING_BYTES
            (count (.getBytes ((#'keyword-util/field-extract-fn :Abstract)
-                              {:Abstract (str/join (repeat (* 2 es/MAX_TEXT_UTF8_ENCODING_BYTES)
+                              {:Abstract (string/join (repeat (* 2 es/MAX_TEXT_UTF8_ENCODING_BYTES)
                                                            "* "))})
                              "UTF-8")))))
   
@@ -566,4 +566,4 @@
     (testing "the list does not contain tabs"
       (is (empty? (mapcat #(re-find #"\t" %) keywords))))
     (testing "the list does not contain empty strings"
-      (is (not-any? str/blank? keywords)))))
+      (is (not-any? string/blank? keywords)))))
