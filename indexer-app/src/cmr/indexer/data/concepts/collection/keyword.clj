@@ -16,7 +16,10 @@
     (if (> (count terms) max-terms)
       (map #(str/join " " %)
            (partition-all max-terms terms))
-      [keyword])))
+      [keyword-phrase])))
+
+(def ^:private trim-and-lowercase
+  (comp str/lower-case str/trim))
 
 (defn create-keywords-field
   "Create a keyword field for keyword searches by concatenating 4 group of fields together:
@@ -80,7 +83,7 @@
          ;; won't find a match in keyword fields directly because of the extra space added to generalize the search.
          (concat (keep not-empty sp-phrases))
          (concat (keep not-empty paren-bracket-phrases))
-         (map (comp str/trim str/lower-case))
+         (map trim-and-lowercase)
          (map #(str " " % " "))
          ;; The keyword-in-words here are used for unquoted keyword search. It's exactly the same as the existing
          ;; keyword index fields, without the need to go through a whitespace analyzer.

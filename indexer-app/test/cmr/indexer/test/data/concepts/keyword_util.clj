@@ -555,9 +555,9 @@
   (let [keywords (ckw/create-keywords-field
                   "C1576922113-SCIOPS"
                   sample-umm-collection-concept
-                  {:platform-long-names []
-                   :instrument-long-names []
-                   :entry-id "entry-id"})]
+                  {:platform-long-names ["cc9.75"]
+                   :instrument-long-names ["rmbrall"]
+                   :entry-id "kw-fields-entry-id"})]
     (testing "returns a list of strings"
       (is (coll? keywords))
       (is (every? string? keywords)))
