@@ -632,6 +632,11 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
+      <xs:element name="FreeAndOpenData" minOccurs="0" type="xs:boolean">
+        <xs:annotation>
+          <xs:documentation>This sub-element if true, describes to end users and machines that this collection's data is free of charge and open for any use the user sees fit.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:choice minOccurs="0">
         <xs:element name="LicenseURL" type="OnlineResource"/>
         <xs:element name="LicenseText">
