@@ -25,6 +25,10 @@
   "The maximum `integer` type value supported by Elasticsearch, 2^31 - 1"
   2147483647)
 
+(def MAX_TEXT_UTF8_ENCODING_BYTES
+  "The maximum size in bytes that a string can be in Elasticsearch to be indexed as text"
+  32766)
+
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
   100)
