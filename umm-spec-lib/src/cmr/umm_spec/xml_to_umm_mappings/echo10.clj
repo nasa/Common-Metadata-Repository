@@ -163,6 +163,8 @@
   [doc]
   (when-let [use-constraints (first (select doc "Collection/UseConstraints"))]
     {:Description (value-of use-constraints "Description")
+     :FreeAndOpenData (when-let [free-and-open (value-of use-constraints "FreeAndOpenData")]
+                        (Boolean/valueOf free-and-open))
      :LicenseURL (when-let [url (value-of use-constraints "LicenseURL/URL")]
                    {:Linkage url
                     :Name (value-of use-constraints "LicenseURL/Type")
