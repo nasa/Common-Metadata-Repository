@@ -63,7 +63,14 @@
     (let [actual-data {:UseConstraints {:Description "Description"}}
           result (dif10/umm-c-to-dif10-xml actual-data)
           use-constraints (first (select result "/DIF/Use_Constraints"))]
-      (is (= "Description" (value-of use-constraints "Description")))))
+      (is (= "Description" (value-of use-constraints "Description")))
+      (is (= nil (value-of use-constraints "Free_And_Open_Data")))))
+
+  (testing "dif10 use constraints Free_And_Open_Data test"
+    (let [actual-data {:UseConstraints {:FreeAndOpenData true}}
+          result (dif10/umm-c-to-dif10-xml actual-data)
+          use-constraints (first (select result "/DIF/Use_Constraints"))]
+      (is (= true (Boolean/valueOf (value-of use-constraints "Free_And_Open_Data"))))))
 
   (testing "dif10 use constraints LicenseURL test"
     (let [actual-data {:UseConstraints {:LicenseURL {:Linkage "https://someurl.com"
