@@ -118,11 +118,17 @@
       (is (= "Description" (value-of echo-result "Description")))
       (is (= nil (value-of echo-result "FreeAndOpenData")))))
 
-  (testing "echo10 use constraints FreeAndOpenData test"
+  (testing "echo10 use constraints FreeAndOpenData test true"
     (let [actual-data {:UseConstraints {:FreeAndOpenData true}}
           result (echo10/umm-c-to-echo10-xml actual-data)
           echo-result (first (select result "/Collection/UseConstraints"))]
       (is (= true (Boolean/valueOf (value-of echo-result "FreeAndOpenData"))))))
+
+  (testing "echo10 use constraints FreeAndOpenData test false"
+    (let [actual-data {:UseConstraints {:FreeAndOpenData false}}
+          result (echo10/umm-c-to-echo10-xml actual-data)
+          echo-result (first (select result "/Collection/UseConstraints"))]
+      (is (= false (Boolean/valueOf (value-of echo-result "FreeAndOpenData"))))))
 
   (testing "echo10 use constraints LicenseURL test"
     (let [actual-data {:UseConstraints {:LicenseURL {:Linkage "https://someurl.com"
