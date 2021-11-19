@@ -335,8 +335,8 @@
     (when-let [use-constraints (get c :UseConstraints)]
       [:Use_Constraints
         [:Description (:Description use-constraints)]
-        (when-let [free-and-open (:FreeAndOpenData use-constraints)]
-          [:Free_And_Open_Data (boolean free-and-open)])
+        (when (some? (:FreeAndOpenData use-constraints))
+          [:Free_And_Open_Data (Boolean/valueOf (:FreeAndOpenData use-constraints))])
         (when-let [url (get-in use-constraints [:LicenseURL :Linkage])]
           [:License_URL
             [:URL url]

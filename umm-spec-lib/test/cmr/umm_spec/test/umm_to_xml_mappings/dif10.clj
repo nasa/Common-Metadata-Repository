@@ -66,11 +66,17 @@
       (is (= "Description" (value-of use-constraints "Description")))
       (is (= nil (value-of use-constraints "Free_And_Open_Data")))))
 
-  (testing "dif10 use constraints Free_And_Open_Data test"
+  (testing "dif10 use constraints Free_And_Open_Data test true"
     (let [actual-data {:UseConstraints {:FreeAndOpenData true}}
           result (dif10/umm-c-to-dif10-xml actual-data)
           use-constraints (first (select result "/DIF/Use_Constraints"))]
       (is (= true (Boolean/valueOf (value-of use-constraints "Free_And_Open_Data"))))))
+
+  (testing "dif10 use constraints Free_And_Open_Data test false"
+    (let [actual-data {:UseConstraints {:FreeAndOpenData false}}
+          result (dif10/umm-c-to-dif10-xml actual-data)
+          use-constraints (first (select result "/DIF/Use_Constraints"))]
+      (is (= false (Boolean/valueOf (value-of use-constraints "Free_And_Open_Data"))))))
 
   (testing "dif10 use constraints LicenseURL test"
     (let [actual-data {:UseConstraints {:LicenseURL {:Linkage "https://someurl.com"
