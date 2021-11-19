@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util
   (:require
-   [clojure.java.io :as io]
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as util]))

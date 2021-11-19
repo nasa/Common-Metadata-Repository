@@ -8,6 +8,7 @@
         value (get-in c [:AccessConstraints :Value])
         use-constraints (:UseConstraints c)
         uc-description (:Description use-constraints)
+        free-and-open (:FreeAndOpenData use-constraints)
         license-url (:LicenseURL use-constraints)
         license-text (:LicenseText use-constraints)]
     [:gmd:resourceConstraints
@@ -16,20 +17,28 @@
         (when uc-description
           [:gmd:useLimitation
             [:gco:CharacterString uc-description]])
-        (when description
-          [:gmd:useLimitation
-            [:gco:CharacterString (str "Restriction Comment: " description)]])
-        (when (or license-url license-text)
+        (when (or description value)
+          [:gmd:accessConstraints
+            [:gmd:MD_RestrictionCode
+              {:codeList "https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode"
+               :codeListValue "otherRestrictions"} "otherRestrictions"]])
+        (when (or license-url license-text (some? free-and-open))
           [:gmd:useConstraints
             [:gmd:MD_RestrictionCode
               {:codeList "https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode"
                :codeListValue "otherRestrictions"} "otherRestrictions"]])
+        (when description
+          [:gmd:otherConstraints
+            [:gco:CharacterString (str "Access Constraints Description:" description)]])
         (when license-url
           [:gmd:otherConstraints
             [:gco:CharacterString (str "LicenseUrl:" (:Linkage license-url))]])
         (when license-text
           [:gmd:otherConstraints
             [:gco:CharacterString (str "LicenseText:" license-text)]])
+        (when (some? free-and-open)
+          [:gmd:otherConstraints
+            [:gco:CharacterString (str "FreeAndOpenData:" free-and-open)]])
         (when value
           [:gmd:otherConstraints
-            [:gco:CharacterString (str "Restriction Flag:" value)]])])]))
+            [:gco:CharacterString (str "Access Constraints Value:" value)]])])]))

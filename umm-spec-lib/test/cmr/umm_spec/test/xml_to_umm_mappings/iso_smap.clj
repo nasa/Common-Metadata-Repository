@@ -7,7 +7,6 @@
    [clojure.test :refer :all]
    [cmr.common.util :as common-util :refer [are3]]
    [cmr.common.xml.simple-xpath :refer [select]]
-;   [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.umm-spec-core :as core]
    [cmr.umm-spec.umm-to-xml-mappings.iso-smap :as iso]
