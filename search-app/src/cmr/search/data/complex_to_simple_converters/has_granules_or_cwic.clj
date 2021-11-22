@@ -18,9 +18,15 @@
     (let [has-granules-or-cwic-map (has-granules-or-cwic-base/get-has-granules-or-cwic-map context)
           has-granules-map (has-granules-base/get-has-granules-map context)
           concept-ids (map key (filter val has-granules-map))
-          condition (cqm/string-conditions :concept-id concept-ids true)
+          condition (if (seq concept-ids)
+                      (cqm/string-conditions :concept-id concept-ids true)
+                      ;; when concept-ids are empty, string-conditions throw internal errors.
+                      ;; replace it with a non-existing concept-id to make sure nothing is returned using the condition..
+                      cqm/match-none)
           or-cwic-concept-ids (map key (filter val has-granules-or-cwic-map))
-          or-cwic-condition (cqm/string-conditions :concept-id or-cwic-concept-ids true)]
+          or-cwic-condition (if (seq or-cwic-concept-ids)
+                              (cqm/string-conditions :concept-id or-cwic-concept-ids true)
+                              cqm/match-none)]
       (if (:has-granules-or-cwic this)
         or-cwic-condition
         (cqm/negated-condition condition)))))

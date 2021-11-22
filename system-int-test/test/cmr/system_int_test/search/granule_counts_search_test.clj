@@ -553,6 +553,20 @@
           "granule count in opendata format"
           :opendata (search/find-concepts-opendata :collection {:include-has-granules true :include-granule-counts true}))))))
 
+(deftest search-collections-has-granules-or-cwic-test-without-collections
+  (testing "Search with has-granules-or-cwic feature without collections with granules."
+    (d/refs-match? []
+                   (search/find-refs :collection
+                                     {:has_granules_or_cwic true
+                                      :page-size 20}
+                                     {:snake-kebab? false}))
+
+    (d/refs-match? []
+                   (search/find-refs :collection
+                                     {:has_granules_or_cwic false
+                                      :page-size 20}
+                                     {:snake-kebab? false}))))
+
 (deftest search-collections-has-granules-or-cwic-test
   (let [coll1 (make-coll 1 m/whole-world nil)
         coll2 (make-coll 2 m/whole-world nil)
