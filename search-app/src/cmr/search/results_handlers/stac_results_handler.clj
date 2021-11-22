@@ -229,8 +229,12 @@
                          :title "CMR JSON metadata for collection"
                          :type "application/json"
                          :href (url/concept-json-url context id)}]
-                :extent {:spatial {:bbox (ssrh/shapes->stac-bbox shapes)}
-                         :temporal {:interval [start-date end-date]}}}]
+                ;; Note: the double array on bbox and interval values.
+                ;; Even though there will only be one value for bbox and interval,
+                ;; we still put them into array of arrays based on STAC specification:
+                ;; https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#spatial-extent-object
+                :extent {:spatial {:bbox [(ssrh/shapes->stac-bbox shapes)]}
+                         :temporal {:interval [[start-date end-date]]}}}]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
 
