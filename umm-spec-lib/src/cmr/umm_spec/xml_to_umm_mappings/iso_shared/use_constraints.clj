@@ -105,7 +105,7 @@
 
 (defn parse-ac
   "Parse the passed in ISO XML access constraints description and value using the
-   passed in xpath and regular expression in this function."
+  passed in xpath and regular expression in this function."
   [doc constraints-xpath add-xpath reg-ex]
   (regex-value doc (str constraints-xpath add-xpath "/gco:CharacterString") reg-ex))
 
@@ -138,7 +138,6 @@
                   (try (Double/parseDouble (string/trim value))
                     (catch Exception e
                       (warn (str "Exception thrown while trying to parse a non parsable ISO access "
-                                 "constraint value number. The document is " doc))
-                      nil)))}]
+                                 "constraint value number. The document is " doc)))))}]
     (when (seq (util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(su/with-default % sanitize?)))))
