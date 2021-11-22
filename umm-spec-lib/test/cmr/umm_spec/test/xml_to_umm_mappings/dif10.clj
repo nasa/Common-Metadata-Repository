@@ -210,7 +210,7 @@
                        </DIF>"
           result (parse/parse-dif10-xml actual-data options)
           umm-result (:UseConstraints result)]
-      (is (= true (:FreeAndOpenData umm-result)))))
+      (is (true? (:FreeAndOpenData umm-result)))))
 
   (testing "dif10 use constraints Free_And_Open_Data test false"
     (let [actual-data "<DIF>
@@ -221,7 +221,7 @@
                        </DIF>"
           result (parse/parse-dif10-xml actual-data options)
           umm-result (:UseConstraints result)]
-      (is (= false (:FreeAndOpenData umm-result)))))
+      (is (false? (:FreeAndOpenData umm-result)))))
 
   (testing "dif10 use constraints LicenseURL test"
     (let [actual-data "<DIF>
