@@ -22,11 +22,11 @@
                       (cqm/string-conditions :concept-id concept-ids true)
                       ;; when concept-ids are empty, string-conditions throw internal errors.
                       ;; replace it with a non-existing concept-id to make sure nothing is returned using the condition..
-                      (cqm/string-conditions :concept-id ["non-existing"] true))
+                      cqm/match-none)
           or-cwic-concept-ids (map key (filter val has-granules-or-cwic-map))
           or-cwic-condition (if (seq or-cwic-concept-ids)
                               (cqm/string-conditions :concept-id or-cwic-concept-ids true)
-                              (cqm/string-conditions :concept-id ["non-existing"] true))]
+                              cqm/match-none)]
       (if (:has-granules-or-cwic this)
         or-cwic-condition
         (cqm/negated-condition condition)))))
