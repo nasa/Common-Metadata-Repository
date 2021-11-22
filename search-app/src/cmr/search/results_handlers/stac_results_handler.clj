@@ -7,6 +7,7 @@
    [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.results-model :as r]
+   [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
    [cmr.search.models.query :as q]
    [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
@@ -206,6 +207,11 @@
 (defmethod stac-reference->json :collection
   [context concept-type reference]
   (let [{:keys [id dataset-id summary start-date end-date shapes]} reference
+        bbox (ssrh/shapes->stac-bbox shapes)
+        _ (when-not bbox
+            (svc-errors/throw-service-error
+             :bad-request
+             (format "Collection [%s] without spatial info is not supported in STAC" id)))
         metadata-link (url/concept-xml-url context id)
         result {:id id
                 :stac_version STAC_VERSION
@@ -233,7 +239,7 @@
                 ;; Even though there will only be one value for bbox and interval,
                 ;; we still put them into array of arrays based on STAC specification:
                 ;; https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#spatial-extent-object
-                :extent {:spatial {:bbox [(ssrh/shapes->stac-bbox shapes)]}
+                :extent {:spatial {:bbox [bbox]}
                          :temporal {:interval [[start-date end-date]]}}}]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
@@ -246,12 +252,17 @@
                          ;; cloud-cover requires the eo extension
                          ["https://stac-extensions.github.io/eo/v1.0.0/schema.json"]
                          [])
+        geometry (ssrh/shapes->stac-geometry shapes)
+        _ (when-not geometry
+            (svc-errors/throw-service-error
+             :bad-request
+             (format "Granule [%s] without spatial info is not supported in STAC" id)))
         result {:type "Feature"
                 :id id
                 :stac_version STAC_VERSION
                 :stac_extensions stac-extension
                 :collection collection-concept-id
-                :geometry (ssrh/shapes->stac-geometry shapes)
+                :geometry geometry
                 :bbox (ssrh/shapes->stac-bbox shapes)
                 :links [{:rel "self"
                          :href (url/concept-stac-url context id)}
