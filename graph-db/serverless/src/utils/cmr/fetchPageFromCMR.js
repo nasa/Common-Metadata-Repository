@@ -2,7 +2,7 @@ import AWS from 'aws-sdk'
 
 import 'array-foreach-async'
 
-import fetch from 'node-fetch'
+import axios from 'axios'
 
 import { chunkArray } from '../chunkArray'
 
@@ -48,16 +48,16 @@ export const fetchPageFromCMR = async ({
       sqs = new AWS.SQS({ apiVersion: '2012-11-05' })
     }
 
-    const cmrCollections = await fetch(fetchUrl, {
+    const cmrCollections = await axios({
+      url: fetchUrl,
       method: 'GET',
       headers: requestHeaders
     })
 
-    const cmrScrollId = cmrCollections.headers.get('cmr-scroll-id')
+    const { data, headers } = cmrCollections
+    const { 'cmr-scroll-id': cmrScrollId } = headers
 
-    const collectionsJson = await cmrCollections.json()
-
-    const { feed = {} } = collectionsJson
+    const { feed = {} } = data
     const { entry = [] } = feed
 
     const chunkedItems = chunkArray(entry, 10)
@@ -98,7 +98,7 @@ export const fetchPageFromCMR = async ({
 
     return cmrScrollId
   } catch (e) {
-    console.error(`Could not complete request due to error: ${e}`)
+    console.log(`Could not complete request due to error: ${e}`)
     return null
   }
 }

@@ -1,17 +1,9 @@
-import * as d from '../deleteCmrCollection'
+import { deleteCmrCollection } from '../deleteCmrCollection'
+
 import * as dv from '../deleteLinkedVertices'
 
 beforeEach(() => {
   jest.clearAllMocks()
-})
-describe('cmr#deleteLinkedVerticies', () => {
-  test('catches errors', async () => {
-    const consoleError = jest.spyOn(console, 'error')
-    const errorMessage = await dv.deleteLinkedVertices('C123000001-CMR', null, null, null)
-
-    expect(errorMessage).toEqual(false)
-    expect(consoleError).toHaveBeenCalledTimes(1)
-  })
 })
 
 describe('cmr#deleteCmrCollection', () => {
@@ -20,39 +12,39 @@ describe('cmr#deleteCmrCollection', () => {
   test('handles first unsucessful linked vertex deletion', async () => {
     vertexDeleteMock.mockResolvedValueOnce(false)
 
-    const deleteSuccess = await d.deleteCmrCollection('C123000001-CMR', 'connection placeholder')
+    const deleteSuccess = await deleteCmrCollection('C123000001-CMR', global.testGremlinConnection)
 
     expect(deleteSuccess).toEqual(false)
     expect(vertexDeleteMock).toHaveBeenCalledTimes(1)
   })
 
   test('handles second unsucessful linked vertex deletion', async () => {
-    vertexDeleteMock.mockResolvedValueOnce(() => true)
-      .mockResolvedValueOnce(() => false)
+    vertexDeleteMock.mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false)
 
-    const deleteSuccess2 = await d.deleteCmrCollection('C123000001-CMR', 'connection placeholder')
+    const deleteSuccess2 = await deleteCmrCollection('C123000001-CMR', global.testGremlinConnection)
 
     expect(deleteSuccess2).toEqual(false)
-    expect(vertexDeleteMock).toHaveBeenCalledTimes(3)
+    expect(vertexDeleteMock).toHaveBeenCalledTimes(2)
   })
 
   test('handles third unsucessful linked vertex deletion', async () => {
-    vertexDeleteMock.mockResolvedValueOnce(() => true)
-      .mockResolvedValueOnce(() => true)
-      .mockResolvedValueOnce(() => false)
+    vertexDeleteMock.mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false)
 
-    const deleteSuccess3 = await d.deleteCmrCollection('C123000001-CMR', 'connection placeholder')
+    const deleteSuccess3 = await deleteCmrCollection('C123000001-CMR', global.testGremlinConnection)
 
     expect(deleteSuccess3).toEqual(false)
     expect(vertexDeleteMock).toHaveBeenCalledTimes(3)
   })
 
   test('handles gremlin error after vertex deletions', async () => {
-    vertexDeleteMock.mockResolvedValueOnce(() => true)
-      .mockResolvedValueOnce(() => true)
-      .mockResolvedValueOnce(() => true)
+    vertexDeleteMock.mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(true)
 
-    const deleteSuccess = await d.deleteCmrCollection('C123000001-CMR', 'connection placeholder')
+    const deleteSuccess = await deleteCmrCollection('C123000001-CMR', null)
 
     expect(deleteSuccess).toEqual(false)
     expect(vertexDeleteMock).toHaveBeenCalledTimes(3)

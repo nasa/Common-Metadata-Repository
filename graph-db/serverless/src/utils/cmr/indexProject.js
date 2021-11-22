@@ -47,9 +47,13 @@ export const indexProject = async (project, gremlinConnection, collection, conce
 
     console.log(`project edge [${edgeId}] indexed to point to collection [${collection}]`)
   } catch (error) {
-    // Log specific error message, but throw error again to stop indexing
-    console.error(`ERROR indexing project for concept [${conceptId}] ${JSON.stringify(project)}: \n Error: ${error}`)
+    // Log useful information pertaining to the error
+    console.log(`Failed to index Project for concept [${conceptId}] ${JSON.stringify(project)}`)
 
+    // Log the error
+    console.log(error)
+
+    // Re-throw the error
     throw error
   }
 }

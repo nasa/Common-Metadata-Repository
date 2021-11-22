@@ -10,7 +10,7 @@ process.env.COLLECTION_INDEXING_QUEUE_URL = 'http://example.com/collectionIndexQ
 
 nock.cleanAll()
 nock.disableNetConnect()
-nock.enableNetConnect(/localhost/)
+nock.enableNetConnect(/local/)
 
 beforeAll(() => {
   global.testGremlinConnection = initializeGremlinConnection()

@@ -66,9 +66,13 @@ export const indexRelatedUrl = async (
 
     console.log(`RelatedUrl edge [${edgeId}] indexed to point to collection [${collection}]`)
   } catch (error) {
-    // Log specific error message, but throw error again to stop indexing
-    console.error(`ERROR indexing RelatedUrl for concept [${conceptId}] ${JSON.stringify(relatedUrl)}: \n Error: ${error}`)
+    // Log useful information pertaining to the error
+    console.log(`Failed to index RelatedUrl for concept [${conceptId}] ${JSON.stringify(relatedUrl)}`)
 
+    // Log the error
+    console.log(error)
+
+    // Re-throw the error
     throw error
   }
 }

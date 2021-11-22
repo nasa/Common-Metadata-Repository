@@ -30,14 +30,19 @@ export const indexInstrument = async (instrument, gremlinConnection, platformNam
       )
       .next()
   } catch (error) {
-    // Log specific error message, but throw error again to stop indexing
-    console.error(`ERROR indexing instrument: ${error}`)
+    // Log useful information pertaining to the error
+    console.log(`Failed to index Instrument for platform [${platformName}] ${JSON.stringify(instrument)}`)
 
+    // Log the error
+    console.log(error)
+
+    // Re-throw the error
     throw error
   }
 
   const { value: vertexValue = {} } = piVertex
   const { id: piId } = vertexValue
+
   console.log(`PlatformInstrument vertex [${piId}] indexed for collection [${collection}]`)
 
   await createAcquiredByEdge(piId, gremlinConnection, collection)

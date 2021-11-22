@@ -1,5 +1,10 @@
 import nock from 'nock'
+
 import { fetchCmrCollection } from '../fetchCmrCollection'
+
+beforeEach(() => {
+  jest.clearAllMocks()
+})
 
 describe('fetchCmrCollection', () => {
   test('returns collection metadata', async () => {
@@ -12,7 +17,10 @@ describe('fetchCmrCollection', () => {
       .reply(200, mockedBody)
 
     const result = await fetchCmrCollection('C1216257563-LPDAAC_TS1')
-    expect(result).toEqual(mockedBody)
+
+    const { data } = result
+
+    expect(data).toEqual(mockedBody)
   })
 
   test('returns collection metadata with a token', async () => {
@@ -26,11 +34,14 @@ describe('fetchCmrCollection', () => {
       .reply(200, mockedBody)
 
     const result = await fetchCmrCollection('C1216257563-LPDAAC_TS1', 'mock_token')
-    expect(result).toEqual(mockedBody)
+
+    const { data } = result
+
+    expect(data).toEqual(mockedBody)
   })
 
   test('logs an error', async () => {
-    const consoleMock = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const consoleMock = jest.spyOn(console, 'log').mockImplementation(() => {})
 
     nock(/local-cmr/)
       .get(/collections/)

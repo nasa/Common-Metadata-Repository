@@ -17,7 +17,7 @@ const bootstrapGremlinServer = async (event) => {
     gremlinConnection = initializeGremlinConnection()
   }
 
-  const { Records: bootstrapEvents = ['{}'] } = event
+  const { Records: bootstrapEvents } = event
 
   const { body } = bootstrapEvents[0]
 

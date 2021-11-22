@@ -27,7 +27,7 @@ const indexCmrCollections = async (event) => {
   let recordCount = 0
   let skipCount = 0
 
-  const { Records: updatedConcepts = [] } = event
+  const { Records: updatedConcepts } = event
 
   await updatedConcepts.forEachAsync(async (message) => {
     const { body } = message
@@ -45,7 +45,8 @@ const indexCmrCollections = async (event) => {
     if (getConceptType(conceptId) === 'collection' && action === updateActionType) {
       const collection = await fetchCmrCollection(conceptId, token)
 
-      const { items } = collection
+      const { data } = collection
+      const { items } = data
 
       if (items.length === 0) {
         console.log(`Skip indexing of collection [${conceptId}] as it is not found in CMR`)
