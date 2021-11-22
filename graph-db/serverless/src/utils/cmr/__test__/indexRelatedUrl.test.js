@@ -24,7 +24,7 @@ describe('indexRelatedUrl', () => {
         }
       )
 
-      verifyRelatedUrlExistInGraphDb('Vulputate Mollis Commodo', 'https://example.com/test.json')
+      await verifyRelatedUrlExistInGraphDb('Vulputate Mollis Commodo', 'https://example.com/test.json')
     })
   })
 
@@ -44,7 +44,7 @@ describe('indexRelatedUrl', () => {
         }
       )
 
-      verifyRelatedUrlExistInGraphDb('Vulputate Mollis Commodo', 'https://example.com/test.json')
+      await verifyRelatedUrlExistInGraphDb('Vulputate Mollis Commodo', 'https://example.com/test.json')
     })
   })
 
