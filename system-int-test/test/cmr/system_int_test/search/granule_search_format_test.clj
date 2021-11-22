@@ -971,3 +971,67 @@
         "retrieval by suffix"
         {:url-extension "stac"}
         "The URL extension [stac] is not supported."))))
+
+(deftest search-no-spatial-concept-stac
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
+                                                :beginning-date-time "1970-01-01T12:00:00Z"}))
+        coll-concept-id (:concept-id coll1)
+        gran-spatial (dg/spatial (m/mbr 10 30 20 0))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+                                                   :beginning-date-time "2010-01-01T12:00:00.000Z"
+                                                   :ending-date-time "2010-01-11T12:00:00.000Z"
+                                                   :cloud-cover 10.0}))
+        gran-concept-id (:concept-id gran1)
+        expected-gran-err-msg (format "Granule [%s] without spatial info is not supported in STAC"
+                                      gran-concept-id)]
+
+    (index/wait-until-indexed)
+
+    (testing "granule search in STAC returns error when there is granule without spatial info"
+      (let [response (search/find-concepts-stac
+                      :granule
+                      {:collection-concept-id coll-concept-id})
+            ext-response (search/find-concepts-stac
+                          :granule
+                          {:collection-concept-id coll-concept-id}
+                          {:url-extension "stac"})]
+        (is (= 400
+               (:status response)
+               (:status ext-response)))
+        (is (= [expected-gran-err-msg]
+               (:errors response)
+               (:errors ext-response)))))
+
+    (testing "granule retrieval in STAC returns error when granule has no spatial info"
+      (util/are3 [options]
+        (let [{:keys [status errors]} (search/get-search-failure-data
+                                       (search/retrieve-concept
+                                        gran-concept-id
+                                        nil
+                                        (merge options {:throw-exceptions true})))]
+          (is (= 400 status))
+          (is (= [expected-gran-err-msg] errors)))
+
+        "retrieval by accept header"
+        {:accept "application/json; profile=stac-catalogue"}
+
+        "retrieval by suffix"
+        {:url-extension "stac"}))
+
+    (testing "collection retrieval in STAC returns error when collection has no spatial info"
+      (util/are3 [options]
+        (let [expected-err-msg (format "Collection [%s] without spatial info is not supported in STAC"
+                                       coll-concept-id)
+              {:keys [status errors]} (search/get-search-failure-data
+                                       (search/retrieve-concept
+                                        coll-concept-id
+                                        nil
+                                        (merge options {:throw-exceptions true})))]
+          (is (= 400 status))
+          (is (= [expected-err-msg] errors)))
+
+        "retrieval by accept header"
+        {:accept "application/json; profile=stac-catalogue"}
+
+        "retrieval by suffix"
+        {:url-extension "stac"}))))
