@@ -8,6 +8,7 @@ import { deleteLinkedVertices } from './deleteLinkedVertices'
  */
 export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
   let success
+
   // drop all the project vertices that are connected to and only connected to the collection vertex
   success = await deleteLinkedVertices(conceptId, gremlinConnection, 'project', 'includedIn')
   if (success === false) {
@@ -34,7 +35,7 @@ export const deleteCmrCollection = async (conceptId, gremlinConnection) => {
       .drop()
       .next()
   } catch (error) {
-    console.error(`Error deleting collection vertex for collection [${conceptId}]: ${error.message}`)
+    console.log(`Error deleting collection vertex for collection [${conceptId}]: ${error.message}`)
 
     return false
   }

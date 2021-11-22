@@ -23,7 +23,7 @@ describe('bootstrapGremlinServer handler', () => {
         .post(/clear-scroll/, JSON.stringify({ scroll_id: '196827907' }))
         .reply(204)
 
-      jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => null)
+      jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => undefined)
 
       const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
         promise: jest.fn().mockResolvedValue()

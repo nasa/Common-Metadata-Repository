@@ -2,11 +2,18 @@ import nock from 'nock'
 
 import { clearScrollSession } from '../clearScrollSession'
 
+beforeEach(() => {
+  jest.clearAllMocks()
+})
+
 describe('clearScrollSession', () => {
   test('Blank scroll session', async () => {
-    nock(/local-cmr/).post(/search/).reply(204, {})
-
     const consoleOutput = jest.spyOn(console, 'warn')
+
+    nock(/local-cmr/)
+      .post(/search/)
+      .reply(204, {})
+
     const response = await clearScrollSession()
 
     expect(consoleOutput).toBeCalledTimes(0)
@@ -18,19 +25,24 @@ describe('clearScrollSession', () => {
       .post(/clear-scroll/, JSON.stringify({ scroll_id: 196827907 }))
       .reply(204)
 
-    await clearScrollSession('196827907')
-      .then((res) => expect(res).toEqual(204))
+    const response = await clearScrollSession('196827907')
+
+    expect(response.status).toEqual(204)
   })
 
   test('logs an error when the request fails', async () => {
-    const consoleMock = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const consoleMock = jest.spyOn(console, 'log').mockImplementation(() => {})
 
     nock(/local-cmr/)
-      .get(/clear-scroll/)
-      .reply(500)
+      .post(/clear-scroll/)
+      .reply(500, new Error('Fail'))
 
-    await clearScrollSession('196827907')
+    const sessionId = '196827907'
 
-    expect(consoleMock).toHaveBeenCalledTimes(1)
+    await clearScrollSession(sessionId)
+
+    expect(consoleMock).toHaveBeenCalledTimes(2)
+    expect(consoleMock.mock.calls[0][0]).toEqual(`Clearing scroll session with '${sessionId}'...`)
+    expect(consoleMock.mock.calls[1][0]).toContain(`Could not clear scroll session [${sessionId}] due to error`)
   })
 })

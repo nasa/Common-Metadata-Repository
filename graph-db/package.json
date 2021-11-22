@@ -14,33 +14,42 @@
   },
   "maintainers": [
     {
-      "name": "Mark Schmele",
-      "email": "mark.h.schmele@nasa.gov"
+      "name": "Ryan Abbott",
+      "email": "ryan@element84.com"
+    },
+    {
+      "name": "Matthew Crouch",
+      "email": "matthew@element84.com"
+    },
+    {
+      "name": "Trevor Lang",
+      "email": "trevor@element84.com"
+    },
+    {
+      "name": "Yonggang Liu",
+      "email": "yonggang_liu@raytheon.com"
     }
   ],
   "license": "ISC",
   "dependencies": {
     "array-foreach-async": "^1.0.1",
     "aws-sdk": "^2.891.0",
+    "axios": "^0.24.0",
     "gremlin": "^3.4.10",
     "lodash": "^4.17.21",
-    "node-fetch": "^2.6.1",
-    "serverless": "^2.59.0",
     "serverless-webpack": "^5.5.1",
+    "serverless": "^2.66.2",
     "webpack": "^5.39.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.14.5",
-    "eslint": "^7.28.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
-    "jest": "^26.6.3",
+    "eslint": "^7.28.0",
     "jest-junit": "^12.2.0",
-    "nock": "^13.1.1",
-    "serverless-offline": "^6.9.0",
+    "jest": "^27.3.1",
+    "nock": "^13.2.1",
+    "serverless-offline": "^8.3.0",
     "serverless-pseudo-parameters": "^2.5.0"
-  },
-  "resolutions": {
-    "ansi-regex": "^5.0.1"
   }
 }

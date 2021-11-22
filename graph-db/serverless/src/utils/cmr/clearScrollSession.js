@@ -1,4 +1,4 @@
-import fetch from 'node-fetch'
+import axios from 'axios'
 
 /**
  * Given a CMR Scroll Session ID, clear that session from memory, freeing up more CMR resources
@@ -6,24 +6,29 @@ import fetch from 'node-fetch'
  * @returns Status code response
  */
 export const clearScrollSession = async (scrollId) => {
+  // Take no action if no scroll id was provided
   if (!scrollId) return null
 
   console.log(`Clearing scroll session with '${scrollId}'...`)
 
-  const response = await fetch(`${process.env.CMR_ROOT}/search/clear-scroll`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ scroll_id: scrollId })
-  })
-    .then((res) => res.status)
-    .catch((error) => {
-      console.error(`Could not clear scroll session [${scrollId}] due to error: ${error}`)
-      return null
+  let response
+
+  try {
+    response = await axios({
+      method: 'post',
+      url: `${process.env.CMR_ROOT}/search/clear-scroll`,
+      data: JSON.stringify({ scroll_id: scrollId }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     })
 
-  console.log(`Cleared scroll session with id '${scrollId}'`)
+    console.log(`Cleared scroll session with id '${scrollId}'`)
+  } catch (error) {
+    console.log(`Could not clear scroll session [${scrollId}] due to error: ${error}`)
+
+    return null
+  }
 
   return response
 }

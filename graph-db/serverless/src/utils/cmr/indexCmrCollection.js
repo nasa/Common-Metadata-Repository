@@ -55,7 +55,7 @@ export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
       )
       .next()
   } catch (error) {
-    console.error(`Error indexing collection [${conceptId}]: ${error.message}`)
+    console.log(`Error indexing collection [${conceptId}]: ${error.message}`)
 
     return false
   }

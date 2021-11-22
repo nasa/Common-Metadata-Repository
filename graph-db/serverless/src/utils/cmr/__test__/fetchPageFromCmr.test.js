@@ -220,7 +220,7 @@ describe('fetchPageFromCMR', () => {
       }
     }, { 'cmr-scroll-id': 196827907 })
 
-    const consoleError = jest.spyOn(console, 'error')
+    const consoleMock = jest.spyOn(console, 'log')
     const errorResponse = jest.spyOn(chunkArray, 'chunkArray').mockImplementationOnce(() => {
       throw new Error('Oh no! I sure hope this exception is handled')
     })
@@ -232,7 +232,7 @@ describe('fetchPageFromCMR', () => {
       providerId: null
     })
 
-    expect(consoleError).toBeCalledWith('Could not complete request due to error: Error: Oh no! I sure hope this exception is handled')
+    expect(consoleMock).toBeCalledWith('Could not complete request due to error: Error: Oh no! I sure hope this exception is handled')
     expect(errorResponse).toBeCalledTimes(1)
     expect(page).toEqual(null)
   })

@@ -1,17 +1,26 @@
 import { indexProject } from '../indexProject'
 
+beforeEach(() => {
+  jest.clearAllMocks()
+})
+
 describe('utils#indexProject', () => {
-  test('function handles errors', async () => {
-    let indexError
-    const consoleError = jest.spyOn(console, 'error')
+  describe('when an exception is thrown', () => {
+    test('it is caught and a new one is thrown', async () => {
+      const consoleMock = jest.spyOn(console, 'log')
 
-    try {
-      await indexProject({ ShortName: 'nme' }, null, {}, 'C1000000234-PROV1')
-    } catch (error) {
-      indexError = error.message
-    }
+      const conceptId = 'C1000000-CMR'
 
-    expect(indexError).toEqual("Cannot read property 'V' of null")
-    expect(consoleError).toBeCalledTimes(1)
+      const project = { ShortName: 'nme' }
+
+      // Provide `null` for the gremlin connection to throw an error
+      await expect(
+        indexProject(project, null, {}, conceptId)
+      ).rejects.toThrow('Cannot read property \'V\' of null')
+
+      expect(consoleMock).toBeCalledTimes(2)
+      expect(consoleMock.mock.calls[0][0]).toEqual(`Failed to index Project for concept [${conceptId}] ${JSON.stringify(project)}`)
+      expect(consoleMock.mock.calls[1][0]).toEqual(Error('Cannot read property \'V\' of null'))
+    })
   })
 })

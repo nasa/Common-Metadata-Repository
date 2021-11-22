@@ -44,9 +44,13 @@ export const indexPlatform = async (platform, gremlinConnection, collection, con
       await createAcquiredByEdge(piId, gremlinConnection, collection)
     }
   } catch (error) {
-    // Log specific error message, but throw error again to stop indexing
-    console.error(`ERROR indexing Platform for concept [${conceptId}] ${JSON.stringify(platform)}: ${error}`)
+    // Log useful information pertaining to the error
+    console.log(`Failed to index Platform for concept [${conceptId}] ${JSON.stringify(platform)}`)
 
+    // Log the error
+    console.log(error)
+
+    // Re-throw the error
     throw error
   }
 }

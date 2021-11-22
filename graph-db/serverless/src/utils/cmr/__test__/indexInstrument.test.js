@@ -1,37 +1,52 @@
-import { updateCollection } from '../../../testUtil/indexCollection'
 import { indexInstrument } from '../indexInstrument'
+import { updateCollection } from '../../../testUtil/indexCollection'
 import { verifyPlatformInstrumentsExistInGraphDb } from '../../../testUtil/verifyPlatformInstrument'
+
+beforeEach(() => {
+  jest.clearAllMocks()
+})
 
 describe('indexInstrument', () => {
   describe('when the provided instrument is correct', () => {
     test('it indexes the instrument', async () => {
-      const instrument = { ShortName: 'uke' }
+      const platform1 = 'Platform One'
+      const instrument1 = 'Instrument One'
 
       await updateCollection(
         'C100000-CMR',
         'Vulputate Mollis Commodo',
         {
-          instruments: instrument.ShortName
+          platforms: [{
+            platform: platform1,
+            instruments: [instrument1]
+          }]
         }
       )
 
-      verifyPlatformInstrumentsExistInGraphDb('Vulputate Mollis Commodo', 'uke')
+      await verifyPlatformInstrumentsExistInGraphDb('Vulputate Mollis Commodo',
+        {
+          platform: platform1,
+          instruments: [instrument1]
+        })
     })
   })
 
   describe('when the gremlin connection is broken', () => {
     test('it handles the thrown errors, and throws a new one to halt indexing', async () => {
-      const consoleError = jest.spyOn(console, 'error')
-      let instrumentError
+      const consoleMock = jest.spyOn(console, 'log')
 
-      try {
-        await indexInstrument({ ShortName: 'violin' }, null, 'platformium', 'C100000-CMR')
-      } catch (error) {
-        instrumentError = error.message
-      }
+      const instrument = { ShortName: 'violin' }
 
-      expect(consoleError).toHaveBeenCalledTimes(1)
-      expect(instrumentError).toEqual("Cannot read property 'V' of null")
+      const conceptId = 'C100000-CMR'
+
+      // Provide `null` for the gremlin connection to throw an error
+      await expect(
+        indexInstrument(instrument, null, 'GPS', conceptId)
+      ).rejects.toThrow('Cannot read property \'V\' of null')
+
+      expect(consoleMock).toBeCalledTimes(2)
+      expect(consoleMock.mock.calls[0][0]).toEqual(`Failed to index Instrument for platform [GPS] ${JSON.stringify(instrument)}`)
+      expect(consoleMock.mock.calls[1][0]).toEqual(Error('Cannot read property \'V\' of null'))
     })
   })
 })

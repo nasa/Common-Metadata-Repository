@@ -27,6 +27,6 @@ export const createAcquiredByEdge = async (piId, gremlinConnection, collection) 
 
     console.log(`acquiredBy edge [${edgeId}] indexed to point to collection [${collection}]`)
   } catch (error) {
-    console.error(`ERROR creating acquiredBy edge: ${error}`)
+    console.log(`ERROR creating acquiredBy edge: ${error}`)
   }
 }

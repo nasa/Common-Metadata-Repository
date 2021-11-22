@@ -1,4 +1,4 @@
-import fetch from 'node-fetch'
+import axios from 'axios'
 
 /**
  * Fetch a single collection from CMR search
@@ -13,15 +13,19 @@ export const fetchCmrCollection = async (conceptId, token) => {
     requestHeaders['Echo-Token'] = token
   }
 
-  const response = await fetch(`${process.env.CMR_ROOT}/search/collections.umm_json?concept_id=${conceptId}`, {
-    method: 'GET',
-    headers: requestHeaders
-  })
-    .then((request) => request.json())
-    .catch((error) => {
-      console.error(`Could not complete request due to error: ${error}`)
-      return null
+  let response
+  try {
+    response = await axios({
+      url: `${process.env.CMR_ROOT}/search/collections.umm_json?concept_id=${conceptId}`,
+      method: 'GET',
+      headers: requestHeaders,
+      json: true
     })
+  } catch (error) {
+    console.log(`Could not complete request due to error: ${error}`)
+
+    return null
+  }
 
   return response
 }

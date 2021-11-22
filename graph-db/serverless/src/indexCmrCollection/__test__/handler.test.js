@@ -59,7 +59,10 @@ describe('indexCmrCollection handler', () => {
 
     await verifyProjectExistInGraphDb(collectionTitle, project1)
     await verifyPlatformInstrumentsExistInGraphDb(collectionTitle,
-      { platform: platform1, instruments: [instrument1] })
+      {
+        platform: platform1,
+        instruments: [instrument1]
+      })
     await verifyPlatformInstrumentsExistInGraphDb(collectionTitle, { platform: platform2 })
     await verifyRelatedUrlExistInGraphDb(collectionTitle, relatedUrl)
   })

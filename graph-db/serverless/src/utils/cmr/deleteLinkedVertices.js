@@ -22,7 +22,7 @@ export const deleteLinkedVertices = async (conceptId, gremlinConnection, vertexL
       .drop()
       .next()
   } catch (error) {
-    console.error(`Error deleting ${vertexLabel} vertices only linked to collection [${conceptId}]: ${error.message}`)
+    console.log(`Error deleting ${vertexLabel} vertices only linked to collection [${conceptId}]: ${error.message}`)
 
     return false
   }
