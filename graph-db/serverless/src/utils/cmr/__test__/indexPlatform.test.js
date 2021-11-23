@@ -1,7 +1,6 @@
 import 'array-foreach-async'
 
 import { indexPlatform } from '../indexPlatform'
-// import * as indexInstrument from '../indexInstrument'
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -16,10 +15,6 @@ describe('utils#indexPlatform', () => {
     const shortName = 'nme'
     const instruments = ['viola', 'cello', 'electric triangle']
     const platform = { ShortName: shortName, Instruments: instruments }
-
-    // jest.spyOn(indexInstrument, 'indexInstrument').mockImplementationOnce(async () => {
-    //   throw new Error('Ouch!')
-    // })
 
     // Provide `null` for the gremlin connection to throw an error
     await expect(
