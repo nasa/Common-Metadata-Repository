@@ -2109,9 +2109,9 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
     curl "%CMR-ENDPOINT%/collections?has_granules=true"
 
-#### <a name="c-has-granules-or-cwic"></a> Find collections with or without granules, or the collection is tagged with the configured CWIC tag.
+#### <a name="c-has-granules-or-cwic"></a> Find collections with or without granules, or the collection with CWIC consortium.
 
-The `has_granules_or_cwic` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with the configured CWIC tag.  When false, will return any collections without granules.
+The `has_granules_or_cwic` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with CWIC consortium.  When false, will return any collections without granules.
 
     curl "%CMR-ENDPOINT%/collections?has_granules_or_cwic=true"
 
@@ -2164,7 +2164,7 @@ One or more sort keys can be specified using the `sort_key[]` parameter. The ord
   * `revision_date`
   * `score` - document relevance score, defaults to descending. See [Document Scoring](#document-scoring).
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
-  * `has_granules_or_cwic` - Sorts collections by whether they have granules or they are tagged as a CWIC collection. Collections with granules or are CWIC tagged are sorted before collections without granules or a CWIC tag.
+  * `has_granules_or_cwic` - Sorts collections by whether they have granules or CWIC consortium. Collections with granules or CWIC consortium are sorted before collections without granules or a CWIC consortium.
   * `usage_score` - Sorts collection by usage. The usage score comes from the EMS metrics, which are ingested into the CMR.
   * `ongoing` - Sorts collection by fuzzy collection end-date in relation to ongoing-days configured. Any end-date after today, minus the configured ongoing-days (30 by default), is considered ongoing.  Any end-date before that is not ongoing.  
 

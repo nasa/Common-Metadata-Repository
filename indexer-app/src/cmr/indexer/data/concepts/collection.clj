@@ -211,11 +211,11 @@
     (let [free-and-open (:FreeAndOpenData use-constraints)]
       (case free-and-open
         true (distinct (conj consortiums "GEOSS"))
-        false (remove #(= "GEOSS" (str/upper-case %)) consortiums)
+        false (remove #(= "GEOSS" %) consortiums)
         nil (if (contains-geoss-url? use-constraints)
               (distinct (conj consortiums "GEOSS"))
               consortiums)))
-    (if (some #(= "EOSDIS" (str/upper-case %)) consortiums)
+    (if (some #(= "EOSDIS" %) consortiums)
       ;; provider's consortiums contains EOSDIS indicates the colleciton is an EOSDIS record.
       (distinct (conj consortiums "GEOSS"))
       consortiums)))
@@ -229,7 +229,7 @@
         consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
                               (metadata-db/get-providers context))
         consortiums (when consortiums-str
-                      (remove empty? (str/split consortiums-str #" ")))
+                      (remove empty? (str/split (str/upper-case consortiums-str) #" ")))
         consortiums (alter-consortiums consortiums (:UseConstraints collection))
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
         {short-name :ShortName version-id :Version entry-title :EntryTitle
@@ -357,7 +357,6 @@
                                               :ResolutionAndCoordinateSystem
                                               :HorizontalDataResolution]))
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))]
-
     (merge {:concept-id concept-id
             :doi-stored doi
             :doi-lowercase doi-lowercase
@@ -373,8 +372,7 @@
             :has-granules-or-cwic (or
                                    has-granules
                                    (some?
-                                    (some #(= (common-config/cwic-tag) %)
-                                          (map :tag-key-lowercase tags))))
+                                    (some #(= "CWIC" (str/upper-case %)) consortiums)))
             :granule-data-format granule-data-format
             :granule-data-format-lowercase (map str/lower-case granule-data-format)
             :entry-id entry-id
