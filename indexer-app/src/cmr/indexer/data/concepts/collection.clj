@@ -372,7 +372,7 @@
             :has-granules-or-cwic (or
                                    has-granules
                                    (some?
-                                    (some #(= "CWIC" (str/upper-case %)) consortiums)))
+                                    (some #(= "CWIC" %) consortiums)))
             :granule-data-format granule-data-format
             :granule-data-format-lowercase (map str/lower-case granule-data-format)
             :entry-id entry-id
