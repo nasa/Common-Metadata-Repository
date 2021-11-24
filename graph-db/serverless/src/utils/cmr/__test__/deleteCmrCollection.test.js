@@ -1,13 +1,13 @@
 import { deleteCmrCollection } from '../deleteCmrCollection'
 
-import * as dv from '../deleteLinkedVertices'
+import * as deleteLinkedVertices from '../deleteLinkedVertices'
 
 beforeEach(() => {
   jest.clearAllMocks()
 })
 
 describe('cmr#deleteCmrCollection', () => {
-  const vertexDeleteMock = jest.spyOn(dv, 'deleteLinkedVertices')
+  const vertexDeleteMock = jest.spyOn(deleteLinkedVertices, 'deleteLinkedVertices')
 
   test('handles first unsucessful linked vertex deletion', async () => {
     vertexDeleteMock.mockResolvedValueOnce(false)
