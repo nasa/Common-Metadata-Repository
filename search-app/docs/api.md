@@ -1578,7 +1578,7 @@ Find collections that match all of the 'project' param values
 This supports `pattern`, `ignore_case` and option `and`.
 
 Find collections matching 'consortium' param value
-CWIC, FEDEO, CEOS, EOSDIS
+     
      curl "%CMR-ENDPOINT%/collections?consortium\[\]=CWIC"
 
 Find collections matching any of the 'consortium' param values
