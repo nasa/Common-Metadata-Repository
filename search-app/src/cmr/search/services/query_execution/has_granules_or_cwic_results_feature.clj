@@ -10,7 +10,6 @@
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common-app.config :as common-config]
    [cmr.common.jobs :refer [defjob]]
    [cmr.search.data.elastic-search-index :as idx]))
 
@@ -30,7 +29,7 @@
 (defn get-cwic-collections
   "Returns the collection granule count by searching elasticsearch by aggregation"
   [context provider-ids]
-  (let [condition (nf/parse-nested-condition :tags {:tag-key (common-config/cwic-tag)} false false)
+  (let [condition (qm/string-conditions :consortiums ["CWIC"])
         query (qm/query {:concept-type :collection
                          :condition condition
                          :page-size :unlimited})

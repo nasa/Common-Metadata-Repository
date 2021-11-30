@@ -18,12 +18,16 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.tag-util :as tags]
    [cmr.umm.umm-spatial :as umm-spatial]))
 
-(use-fixtures :each (join-fixtures
-                      [(ingest/reset-fixture {"provguid1" "PROV1"})
-                       tags/grant-all-tag-fixture]))
+(use-fixtures :each (ingest/reset-fixture
+                      [{:provider-guid "provguid1"
+                        :provider-id "PROV1"
+                        :short-name "Provider 1"}
+                       {:provider-guid "provguid2"
+                        :provider-id "PROV2"
+                        :short-name "PROVIDER 2"}]))
+
 (defn temporal-range
   "Creates attributes for collection or granule defining a temporal range between start and stop
   which should be single digit integers."
@@ -42,6 +46,8 @@
   ([n shape temporal-attribs]
    (make-coll n shape temporal-attribs {}))
   ([n shape temporal-attribs other-attribs]
+   (make-coll n shape temporal-attribs other-attribs "PROV1"))
+  ([n shape temporal-attribs other-attribs provider]
    (let [spatial-attribs (when shape
                            {:spatial-coverage
                             (dc/spatial {:gsr :geodetic
@@ -51,7 +57,7 @@
                              spatial-attribs
                              temporal-attribs
                              other-attribs)]
-     (d/ingest "PROV1" (dc/collection coll-attribs)))))
+     (d/ingest provider (dc/collection coll-attribs)))))
 
 (defn- polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
@@ -61,10 +67,12 @@
 
 (defn make-gran
   "Creates a granule using a shape for the spatial metadata."
-  [coll shape temporal-attribs]
-  (let [spatial-attribs (when shape {:spatial-coverage (dg/spatial shape)})
-        gran-attribs (merge {} spatial-attribs temporal-attribs)]
-    (d/ingest "PROV1" (dg/granule coll gran-attribs))))
+  ([coll shape temporal-attribs]
+   (make-gran coll shape temporal-attribs "PROV1"))
+  ([coll shape temporal-attribs provider]
+   (let [spatial-attribs (when shape {:spatial-coverage (dg/spatial shape)})
+         gran-attribs (merge {} spatial-attribs temporal-attribs)]
+     (d/ingest provider (dg/granule coll gran-attribs)))))
 
 (defn- make-orbit-gran
   "Creates a granule which has spatial metadata defined by orbital parameters."
@@ -568,60 +576,53 @@
                                      {:snake-kebab? false}))))
 
 (deftest search-collections-has-granules-or-cwic-test
+  (ingest/delete-provider "PROV1")
+  (ingest/delete-provider "PROV2")
+  (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1" :consortiums "cst11 cst12"})
+  (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2" :consortiums "cWiC cst21"})
+ 
   (let [coll1 (make-coll 1 m/whole-world nil)
-        coll2 (make-coll 2 m/whole-world nil)
+        coll2 (make-coll 2 m/whole-world nil {} "PROV2")
         coll3 (make-coll 3 m/whole-world nil)
         coll4 (make-coll 4 m/whole-world nil)
         coll5 (make-coll 5 m/whole-world nil)
-        coll6 (make-coll 6 m/whole-world nil)
+        coll6 (make-coll 6 m/whole-world nil {} "PROV2")
 
         ;; Adding more collections to test internal query page size
-        coll7 (make-coll 7 m/whole-world nil)
-        coll8 (make-coll 8 m/whole-world nil)
-        coll9 (make-coll 9 m/whole-world nil)
-        coll10 (make-coll 10 m/whole-world nil)
-        coll11 (make-coll 11 m/whole-world nil)
-        coll12 (make-coll 12 m/whole-world nil)
-        coll13 (make-coll 13 m/whole-world nil)
-        coll14 (make-coll 14 m/whole-world nil)
-        coll15 (make-coll 15 m/whole-world nil)
-        coll16 (make-coll 16 m/whole-world nil)
-        coll17 (make-coll 17 m/whole-world nil)
-
-        _ (index/wait-until-indexed)
-        user1-token (e/login (s/context) "user1")
-        tag1 (tags/save-tag
-               user1-token
-               (tags/make-tag {:tag-key "NON-CWIC"})
-               [coll1 coll5])
-        tag2 (tags/save-tag
-               user1-token
-               (tags/make-tag {:tag-key (common-config/cwic-tag)})
-               [coll2 coll6 coll7 coll8 coll9 coll10 coll11 coll12 coll13 coll14
-                coll15 coll16 coll17])]
+        coll7 (make-coll 7 m/whole-world nil {} "PROV2")
+        coll8 (make-coll 8 m/whole-world nil {} "PROV2")
+        coll9 (make-coll 9 m/whole-world nil {} "PROV2")
+        coll10 (make-coll 10 m/whole-world nil {} "PROV2")
+        coll11 (make-coll 11 m/whole-world nil {} "PROV2")
+        coll12 (make-coll 12 m/whole-world nil {} "PROV2")
+        coll13 (make-coll 13 m/whole-world nil {} "PROV2")
+        coll14 (make-coll 14 m/whole-world nil {} "PROV2")
+        coll15 (make-coll 15 m/whole-world nil {} "PROV2")
+        coll16 (make-coll 16 m/whole-world nil {} "PROV2")
+        coll17 (make-coll 17 m/whole-world nil {} "PROV2")]
 
     (index/wait-until-indexed)
 
     ;; coll1
-    ;; non-cwic tagged with granule
+    ;; no cwic with granule
     (make-gran coll1 (p/point 0 0) nil)
 
     ;; coll2
-    ;; cwic tagged with granule
-    (make-gran coll2 (p/point 0 0) nil)
+    ;; cwic with granule
+    (make-gran coll2 (p/point 0 0) nil "PROV2")
 
     ;; coll 3
-    ;; no tag with granule
+    ;; no cwic with granule
     (make-gran coll3 (p/point 0 0) nil)
 
     ;; coll 4
-    ;; no tag without granule
+    ;; no cwic no granule
 
     ;; coll 5
-    ;; non-cwic tagged no granule
+    ;; no cwic  no granule
 
     ;; coll 6
-    ;; cwic tagged no granule
+    ;; cwic no granule
 
     (index/wait-until-indexed)
     (testing "Search with has-granules-or-cwic feature true"
@@ -667,26 +668,20 @@
 
 
 (deftest search-collections-has-granules-or-cwic-sort-test
+  (ingest/delete-provider "PROV1")
+  (ingest/delete-provider "PROV2")
+  (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1" :consortiums "cst11 cst12"})
+  (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2" :consortiums "CWIC cst21"})
+
   (let [coll1 (make-coll 1 m/whole-world nil)
         coll2 (make-coll 2 m/whole-world nil)
-        coll3 (make-coll 3 m/whole-world nil)
-        coll4 (make-coll 4 m/whole-world nil)
+        coll3 (make-coll 3 m/whole-world nil {} "PROV2")
+        coll4 (make-coll 4 m/whole-world nil {} "PROV2")
         coll5 (make-coll 5 m/whole-world nil)
         coll6 (make-coll 6 m/whole-world nil)
-
-        _ (index/wait-until-indexed)
-        user1-token (e/login (s/context) "user1")
-        tag1 (tags/save-tag
-              user1-token
-              (tags/make-tag {:tag-key "NON-CWIC"})
-              [coll1 coll2])
-        tag2 (tags/save-tag
-              user1-token
-              (tags/make-tag {:tag-key (common-config/cwic-tag)})
-              [coll3 coll4])]
-
+        _ (index/wait-until-indexed)]
     (make-gran coll1 (p/point 0 0) nil)
-    (make-gran coll3 (p/point 0 0) nil)
+    (make-gran coll3 (p/point 0 0) nil "PROV2")
     (make-gran coll5 (p/point 0 0) nil)
 
     (index/wait-until-indexed)
