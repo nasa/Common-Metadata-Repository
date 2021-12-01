@@ -1578,7 +1578,7 @@ Find collections that match all of the 'project' param values
 This supports `pattern`, `ignore_case` and option `and`.
 
 Find collections matching 'consortium' param value
-     
+
      curl "%CMR-ENDPOINT%/collections?consortium\[\]=CWIC"
 
 Find collections matching any of the 'consortium' param values
@@ -2732,7 +2732,7 @@ The response format is in JSON. Intervals are returned as tuples containing thre
 
 ### <a name="retrieve-provider-holdings"></a> Retrieve Provider Holdings
 
-Provider holdings can be retrieved as XML or JSON.
+Provider holdings can be retrieved as XML or JSON. It will show all CMR providers, collections and granule counts regardless of the user's ACL access.
 
 All provider holdings
 

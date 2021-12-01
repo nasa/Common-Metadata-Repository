@@ -334,7 +334,7 @@
                                    context query (qe/execute-query context query)))]
    {:results results :took execution-time :result-format mt/json}))
 
-(defn get-collections-by-providers
+(defn- get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"
   ([context skip-acls?]
    (get-collections-by-providers context nil skip-acls?))
@@ -375,7 +375,7 @@
                        provider-id
                        [provider-id])
         ;; get all collections limited by the list of providers in json format
-        collections (get-collections-by-providers context provider-ids false)
+        collections (get-collections-by-providers context provider-ids true)
         ;; get a mapping of collection to granule count
         collection-granule-count (idx/get-collection-granule-counts context provider-ids)
         ;; combine the granule count into collections to form provider holdings

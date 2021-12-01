@@ -136,11 +136,11 @@
                (set (:results response))))))
 
     (testing "Retrieving provider holdings from the search application in various formats"
-       
+
       (testing "Retrieve all provider holdings in unsupported format opendata"
-        (try 
+        (try
           (search/provider-holdings-in-format :opendata {:token user-token})
-          (catch clojure.lang.ExceptionInfo e 
+          (catch clojure.lang.ExceptionInfo e
             (is (= {:status 400
                     :body "{\"errors\":[\"Unsupported format: opendata on the provider holdings endpoint.\"]}"}
                    (select-keys (ex-data e) [:status :body]))))))
@@ -174,10 +174,10 @@
               (is (= expected-all-holdings
                      (set (:results response))))))
           (testing "Retrieve provider holdings applies acls"
-            ;; Guests only have access to provider 1
+            ;; Guests have access to all providers regardless of the ACLs
             (let [response (search/provider-holdings-in-format format {:token guest-token})]
               (is (= 200 (:status response)))
-              (is (= (set (get all-holdings "PROV1"))
+              (is (= expected-all-holdings
                      (set (:results response))))))
           (testing "Retrieve provider holdings with echo-compatible true"
             (let [response (search/provider-holdings-in-format
