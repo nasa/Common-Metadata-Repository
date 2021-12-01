@@ -65,7 +65,7 @@
                                  {:UseConstraints {:Description "PROV3" :FreeAndOpenData true}})
                {:format :umm-json})
 
-        ;; UseConstraint with FreeAndOpenData being false, GEOSS provder: geoss shouldbe removed from the consortiums list.
+        ;; UseConstraint with FreeAndOpenData being false, GEOSS provder: geoss should be removed from the consortiums list.
         coll4 (d/ingest-umm-spec-collection
                "PROV4"
                (umm-c/collection 1

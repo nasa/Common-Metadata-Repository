@@ -15,13 +15,18 @@
                         :short-name "Provider 1"}
                        {:provider-guid "provguid2"
                         :provider-id "PROV2"
-                        :short-name "PROVIDER 2"}]))
+                        :short-name "PROVIDER 2"}
+                       {:provider-guid "provguid3"
+                        :provider-id "PROV3"
+                        :short-name "PROVIDER 3"}]))
 
 (deftest collection-consortium-search-test
   (ingest/delete-provider "PROV1")
   (ingest/delete-provider "PROV2")
+  (ingest/delete-provider "PROV3")
   (ingest/create-provider {:provider-guid "provguid_consortium1" :provider-id "PROV1" :consortiums "consortium11 consortium12"})
   (ingest/create-provider {:provider-guid "provguid_consortium2" :provider-id "PROV2" :consortiums "consortium21 consortium22"})
+  (ingest/create-provider {:provider-guid "provguid_consortium2" :provider-id "PROV3" :consortiums "geoss"})
 
   (let [coll1 (d/ingest-umm-spec-collection
                "PROV1"
@@ -35,8 +40,14 @@
                                  {:CollectionCitations [{:Creator "K. Hilburn, J. Ardizzone, and S. Gao"
                                                          :OtherCitationDetails "Sounder PEATE (Product Evaluation and Test Element) Team/Ruth Monarrez, JPL"}]})
                {:format :umm-json})
+        coll3 (d/ingest-umm-spec-collection
+               "PROV3"
+               (umm-c/collection 3 
+                                 {:UseConstraints {:Description "PROV4" :FreeAndOpenData false}})
+               {:format :umm-json})
         id1 (:concept-id coll1)
-        id2 (:concept-id coll2)]
+        id2 (:concept-id coll2)
+        id3 (:concept-id coll3)]
 
     (index/wait-until-indexed)
 
@@ -48,9 +59,16 @@
             consortiums-in-atom (-> (search/find-concepts-atom :collection {:concept-id id2})
                                     (get-in [:results :entries])
                                     first
-                                    :consortiums)]
+                                    :consortiums)
+            consortiums-in-json3 (-> (search/find-concepts-json :collection {:concept-id id3})
+                                     (get-in [:results :entries])
+                                     first
+                                     :consortiums)]
         (is (= ["CONSORTIUM11" "CONSORTIUM12"] consortiums-in-json))
-        (is (= ["CONSORTIUM21" "CONSORTIUM22"] consortiums-in-atom))))
+        (is (= ["CONSORTIUM21" "CONSORTIUM22"] consortiums-in-atom))
+        ;; Fixed for CMR-7895. In this case, geoss is removed from coll3's consortiums,
+        ;; empty consortiums should not be shown as an empty list [] in the json response.
+        (is (= nil consortiums-in-json3))))
 
     (testing "consortium parameter search"
       (are3 [items consortium options]
