@@ -375,15 +375,6 @@
                                    has-granules
                                    (some?
                                     (some #(= "CWIC" %) consortiums)))
-            :has-granules-or-opensearch (or
-                                         has-granules
-                                         (some?
-                                          (some #(or (= "CWIC" %)
-                                                     (= "FEDEO" %)
-                                                     (= "GEOSS" %)
-                                                     (= "CEOS" %)
-                                                     (= "EOSDIS" %))
-                                                consortiums)))
             :granule-data-format granule-data-format
             :granule-data-format-lowercase (map str/lower-case granule-data-format)
             :entry-id entry-id
