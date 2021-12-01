@@ -119,6 +119,7 @@
                       context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       :has-granules-or-cwic-map (hgocrf/create-has-granules-or-cwic-map-cache)
+                      :has-granules-or-opensearch-map (hgocrf/create-has-granules-or-opensearch-map-cache)
                       coll-cache/cache-key (coll-cache/create-cache)
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
@@ -144,6 +145,7 @@
                           idx/refresh-index-names-cache-job
                           hgrf/refresh-has-granules-map-job
                           hgocrf/refresh-has-granules-or-cwic-map-job
+                          hgocrf/refresh-has-granules-or-opensearch-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           coll-cache/refresh-collections-cache-for-granule-acls-job
                           jvm-info/log-jvm-statistics-job
