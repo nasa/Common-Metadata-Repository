@@ -228,9 +228,10 @@
                 variable-associations service-associations tool-associations]} concept
         consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
                               (metadata-db/get-providers context))
-        consortiums (when consortiums-str
-                      (remove empty? (str/split (str/upper-case consortiums-str) #" ")))
-        consortiums (alter-consortiums consortiums (:UseConstraints collection))
+        original-consortiums (when consortiums-str
+                               (remove empty? (str/split (str/upper-case consortiums-str) #" ")))
+        altered-consortiums (alter-consortiums original-consortiums (:UseConstraints collection))
+        consortiums (seq altered-consortiums)
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
