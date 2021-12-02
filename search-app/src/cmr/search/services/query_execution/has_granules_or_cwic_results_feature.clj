@@ -4,7 +4,7 @@
   any granules at all as indicated by provider holdings."
   (:require
    [clojure.string :as str]
-   [cmr.common-app.services.ingest.opensearch-consortium-common :as opensearch-consortium-common]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.services.search.elastic-search-index :as common-esi]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
@@ -52,7 +52,7 @@
   "Returns the collection granule count by searching elasticsearch by aggregation"
   [context provider-ids]
   (let [condition (gc/or-conds (map #(qm/string-conditions :consortiums [%])
-                                    opensearch-consortium-common/opensearch-consortium-list))
+                                    (common-config/opensearch-consortiums)))
         query (qm/query {:concept-type :collection
                          :condition condition
                          :page-size :unlimited})

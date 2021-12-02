@@ -6,7 +6,7 @@
    [clojure.set :as set]
    [clojure.string :as str]
    [cmr.acl.acl-fetcher :as acl-fetcher]
-   [cmr.common-app.services.ingest.opensearch-consortium-common :as opensearch-consortium-common]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
@@ -377,7 +377,7 @@
                                          (not (empty?
                                                (set/intersection
                                                 (set consortiums)
-                                                (set opensearch-consortium-common/opensearch-consortium-list)))))
+                                                (set (common-config/opensearch-consortiums))))))
             :granule-data-format granule-data-format
             :granule-data-format-lowercase (map str/lower-case granule-data-format)
             :entry-id entry-id
