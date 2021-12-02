@@ -6,7 +6,7 @@
   "repository": "nasa/common-metadata-repository",
   "scripts": {
     "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
-    "test": "snyk test && jest -i",
+    "test": "jest -i",
     "test:watch": "jest -i --watchAll",
     "test-coverage": "jest --coverage",
     "ci-test": "jest -i --reporters=\"default\" --reporters=\"jest-junit\"",
