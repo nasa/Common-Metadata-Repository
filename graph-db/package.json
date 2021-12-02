@@ -6,7 +6,7 @@
   "repository": "nasa/common-metadata-repository",
   "scripts": {
     "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
-    "test": "jest -i",
+    "test": "snyk test && jest -i",
     "test:watch": "jest -i --watchAll",
     "test-coverage": "jest --coverage",
     "ci-test": "jest -i --reporters=\"default\" --reporters=\"jest-junit\"",
@@ -37,19 +37,20 @@
     "axios": "^0.24.0",
     "gremlin": "^3.4.10",
     "lodash": "^4.17.21",
+    "serverless": "^2.68.0",
     "serverless-webpack": "^5.5.1",
-    "serverless": "^2.67.0",
     "webpack": "^5.39.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.14.5",
+    "eslint": "^7.28.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
-    "eslint": "^7.28.0",
-    "jest-junit": "^12.2.0",
     "jest": "^27.3.1",
+    "jest-junit": "^12.2.0",
     "nock": "^13.2.1",
     "serverless-offline": "^8.3.0",
-    "serverless-pseudo-parameters": "^2.5.0"
+    "serverless-pseudo-parameters": "^2.5.0",
+    "snyk": "^1.782.0"
   }
 }
