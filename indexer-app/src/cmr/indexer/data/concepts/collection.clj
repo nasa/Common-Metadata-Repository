@@ -6,7 +6,7 @@
    [clojure.set :as set]
    [clojure.string :as str]
    [cmr.acl.acl-fetcher :as acl-fetcher]
-   [cmr.common-app.config :as common-config]
+   [cmr.common-app.services.ingest.opensearch-consortium-common :as opensearch-consortium-common]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
@@ -371,17 +371,13 @@
             :has-granules has-granules
             :has-granules-or-cwic (or
                                    has-granules
-                                   (some?
-                                    (some #(= "CWIC" %) consortiums)))
+                                   (contains? (set consortiums) "CWIC"))
             :has-granules-or-opensearch (or
                                          has-granules
-                                         (some?
-                                          (some #(or (= "CWIC" %)
-                                                     (= "FEDEO" %)
-                                                     (= "GEOSS" %)
-                                                     (= "CEOS" %)
-                                                     (= "EOSDIS" %))
-                                                consortiums)))
+                                         (not (empty?
+                                               (set/intersection
+                                                (set consortiums)
+                                                (set opensearch-consortium-common/opensearch-consortium-list)))))
             :granule-data-format granule-data-format
             :granule-data-format-lowercase (map str/lower-case granule-data-format)
             :entry-id entry-id

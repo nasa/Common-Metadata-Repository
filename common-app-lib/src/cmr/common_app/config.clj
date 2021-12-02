@@ -17,3 +17,7 @@
 (defconfig release-version
   "Contains the release version of CMR."
   {:default "dev"})
+
+(defconfig opensearch-consortiums
+  "Includes all the consortiums that opensearch contains."
+  {:default "CWIC FEDEO GEOSS CEOS EOSDIS"})

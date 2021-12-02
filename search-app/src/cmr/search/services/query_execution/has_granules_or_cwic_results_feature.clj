@@ -3,6 +3,8 @@
   When it is enabled collection search results will include a boolean flag indicating whether the collection has
   any granules at all as indicated by provider holdings."
   (:require
+   [clojure.string :as str]
+   [cmr.common-app.services.ingest.opensearch-consortium-common :as opensearch-consortium-common]
    [cmr.common-app.services.search.elastic-search-index :as common-esi]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
@@ -49,11 +51,8 @@
 (defn get-opensearch-collections
   "Returns the collection granule count by searching elasticsearch by aggregation"
   [context provider-ids]
-  (let [condition (gc/or-conds [(qm/string-conditions :consortiums ["CWIC"])
-                                (qm/string-conditions :consortiums ["FEDEO"])
-                                (qm/string-conditions :consortiums ["GEOSS"])
-                                (qm/string-conditions :consortiums ["CEOS"])
-                                (qm/string-conditions :consortiums ["EOSDIS"])])
+  (let [condition (gc/or-conds (map #(qm/string-conditions :consortiums [%])
+                                    opensearch-consortium-common/opensearch-consortium-list))
         query (qm/query {:concept-type :collection
                          :condition condition
                          :page-size :unlimited})
