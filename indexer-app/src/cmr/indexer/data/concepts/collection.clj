@@ -407,6 +407,7 @@
 
             ;; hierarchical fields
             :platforms platforms-nested
+            :platforms-humanized platforms-nested
             :instruments instruments-nested
             :archive-centers archive-centers
             :data-centers data-centers
