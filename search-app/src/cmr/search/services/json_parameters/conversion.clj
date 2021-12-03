@@ -40,6 +40,7 @@
    :processing-level-id :string
    :concept-id :string
    :platform :nested-condition
+   :platforms :nested-condition ;; used for v2 facet apply
    :instrument :nested-condition
    :sensor :string
    :project :string

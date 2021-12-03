@@ -15,7 +15,7 @@
   "Map of facet fields to their human readable label."
   {:data-center-h "Organizations"
    :project-h "Projects"
-   :platform-h "Platforms"
+   :platforms-h "Platforms"
    :instrument-h "Instruments"
    :processing-level-id-h "Processing Levels"
    :science-keywords-h "Keywords"

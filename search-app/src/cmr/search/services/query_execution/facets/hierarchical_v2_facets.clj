@@ -230,7 +230,7 @@
                              generate-links-fn
                              field
                              field-hierarchy
-                             elastic-aggregations)    
+                             elastic-aggregations)
     (let [buckets (or (get-in elastic-aggregations [field :buckets])
                       (get elastic-aggregations :buckets))]
       (map (fn [bucket]

@@ -49,7 +49,6 @@
   {:data-center (terms-facet :data-center)
    :archive-center (terms-facet :archive-center)
    :project (terms-facet :project-sn)
-   :platform (terms-facet :platform-sn)
    :instrument (terms-facet :instrument-sn)
    :sensor (terms-facet :sensor-sn)
    :two-d-coordinate-system-name (terms-facet :two-d-coord-name)
