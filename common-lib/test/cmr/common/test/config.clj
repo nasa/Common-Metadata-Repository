@@ -1,10 +1,10 @@
 (ns cmr.common.test.config
   (:require 
    [cheshire.core :as json]
+   [clojure.edn :as edn]
    [clojure.test :refer :all]
    [cmr.common.config :as c :refer [defconfig]]
-   [cmr.common.test.test-util :refer [with-env-vars]]
-   [clojure.edn :as edn]))
+   [cmr.common.test.test-util :refer [with-env-vars]]))
 
 (defn redefined-override-config-values-fixture
   "Replaces the override config values that are used when testing to avoid the test conflicting with
