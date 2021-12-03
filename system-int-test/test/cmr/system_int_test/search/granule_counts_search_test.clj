@@ -26,7 +26,10 @@
                         :short-name "Provider 1"}
                        {:provider-guid "provguid2"
                         :provider-id "PROV2"
-                        :short-name "PROVIDER 2"}]))
+                        :short-name "PROVIDER 2"}
+                       {:provider-guid "provguid3"
+                        :provider-id "PROV3" 
+                        :short-name "PROVIDER 3"}]))
 
 (defn temporal-range
   "Creates attributes for collection or granule defining a temporal range between start and stop
@@ -578,12 +581,14 @@
 (deftest search-collections-has-granules-or-cwic-test
   (ingest/delete-provider "PROV1")
   (ingest/delete-provider "PROV2")
-  (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1" :consortiums "cst11 cst12"})
+  (ingest/delete-provider "PROV3")
+  (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1" :consortiums "Geoss cst11"})
   (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2" :consortiums "cWiC cst21"})
+  (ingest/create-provider {:provider-guid "provguid3" :provider-id "PROV3" :consortiums "cst31 cst32"})
  
   (let [coll1 (make-coll 1 m/whole-world nil)
         coll2 (make-coll 2 m/whole-world nil {} "PROV2")
-        coll3 (make-coll 3 m/whole-world nil)
+        coll3 (make-coll 3 m/whole-world nil {} "PROV3")
         coll4 (make-coll 4 m/whole-world nil)
         coll5 (make-coll 5 m/whole-world nil)
         coll6 (make-coll 6 m/whole-world nil {} "PROV2")
@@ -604,25 +609,25 @@
     (index/wait-until-indexed)
 
     ;; coll1
-    ;; no cwic with granule
+    ;; no cwic, opensearch with granule
     (make-gran coll1 (p/point 0 0) nil)
 
     ;; coll2
-    ;; cwic with granule
+    ;; cwic, opensearch, with granule
     (make-gran coll2 (p/point 0 0) nil "PROV2")
 
     ;; coll 3
-    ;; no cwic with granule
-    (make-gran coll3 (p/point 0 0) nil)
+    ;; no cwic, no opensearch with granule
+    (make-gran coll3 (p/point 0 0) nil "PROV3")
 
     ;; coll 4
-    ;; no cwic no granule
+    ;; no cwic, opensearch, no granule
 
     ;; coll 5
-    ;; no cwic  no granule
+    ;; no cwic, opensearch,  no granule
 
-    ;; coll 6
-    ;; cwic no granule
+    ;; coll6 to coll17
+    ;; cwic, opensearch, no granule
 
     (index/wait-until-indexed)
     (testing "Search with has-granules-or-cwic feature true"
@@ -645,10 +650,9 @@
                                         :page-size 20}
                                        {:snake-kebab? false})))
 
-;as an alias, has-granules-or-opensearch should return the same results.
     (testing "Search with has-granules-or-opensearch feature true"
-      (d/refs-match? [coll1 coll3 coll6 coll2
-                      coll7 coll8 coll9 coll10
+      (d/refs-match? [coll1 coll2 coll3 coll4 coll5
+                      coll6 coll7 coll8 coll9 coll10
                       coll11 coll12 coll13 coll14
                       coll15 coll16 coll17]
                      (search/find-refs :collection
@@ -698,4 +702,13 @@
       (is (d/refs-match-order? [coll2 coll6 coll1 coll3 coll4 coll5]
                                (search/find-refs :collection {:page-size 20
                                                               :sort-key ["-has_granules_or_cwic"
+                                                                         "revision-date"]}))))
+    (testing "Sorting by has-granules-or-opensearch"
+      (is (d/refs-match-order? [coll1 coll3 coll4 coll5 coll2 coll6]
+                               (search/find-refs :collection {:page-size 20
+                                                              :sort-key ["has_granules_or_opensearch"
+                                                                         "revision-date"]})))
+      (is (d/refs-match-order? [coll2 coll6 coll1 coll3 coll4 coll5]
+                               (search/find-refs :collection {:page-size 20
+                                                              :sort-key ["-has_granules_or_opensearch"
                                                                          "revision-date"]}))))))

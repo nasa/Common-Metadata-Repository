@@ -1,8 +1,10 @@
 (ns cmr.common.test.config
-  (:require [clojure.test :refer :all]
-            [cmr.common.config :as c :refer [defconfig]]
-            [cmr.common.test.test-util :refer [with-env-vars]]
-            [clojure.edn :as edn]))
+  (:require 
+   [cheshire.core :as json]
+   [clojure.edn :as edn]
+   [clojure.test :refer :all]
+   [cmr.common.config :as c :refer [defconfig]]
+   [cmr.common.test.test-util :refer [with-env-vars]]))
 
 (defn redefined-override-config-values-fixture
   "Replaces the override config values that are used when testing to avoid the test conflicting with
@@ -47,6 +49,11 @@
   "This is a test configuration parameter with a custom parser"
   {:default {}
    :parser edn/read-string})
+
+(defconfig test-opensearch-consortiums
+  "Includes all the consortiums that opensearch contains."
+  {:default ["CWIC" "FEDEO" "GEOSS" "CEOS" "EOSDIS"]
+   :parser #(json/decode ^String %)})
 
 (defconfig test-edn
   "This is a test bool configuration parameter defaulting to false"
@@ -125,6 +132,21 @@
         (with-env-vars
           {"CMR_TEST_CUSTOM_PARSER" "[1 2 3]"}
           (is (= [1 2 3] (test-custom-parser)))))))
+
+  (testing "Custom parser opensearch-consortiums"
+    (testing "default value"
+      (is (= ["CWIC" "FEDEO" "GEOSS" "CEOS" "EOSDIS"] (test-opensearch-consortiums))))
+
+    (testing "Overriding the value"
+      (set-test-opensearch-consortiums! ["CWIC" "FEDEO"])
+      (is (= 2 (count (test-opensearch-consortiums))))
+      (is (= ["CWIC" "FEDEO"] (test-opensearch-consortiums)))
+      (testing "env variable value"
+        (with-env-vars
+          ;; Note: comma are needed for the parser to work
+          {"CMR_TEST_OPENSEARCH_CONSORTIUMS" "[\"CWIC\", \"FEDEO\", \"GEOSS\"]"}
+          (is (= 3 (count (test-opensearch-consortiums))))
+          (is (= ["CWIC" "FEDEO" "GEOSS"] (test-opensearch-consortiums)))))))
 
   (testing "EDN configs"
     (testing "default value"

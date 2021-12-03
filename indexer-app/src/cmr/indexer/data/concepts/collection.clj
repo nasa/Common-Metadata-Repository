@@ -372,8 +372,13 @@
             :has-granules has-granules
             :has-granules-or-cwic (or
                                    has-granules
-                                   (some?
-                                    (some #(= "CWIC" %) consortiums)))
+                                   (contains? (set consortiums) "CWIC"))
+            :has-granules-or-opensearch (or
+                                         has-granules
+                                         (not (empty?
+                                               (set/intersection
+                                                (set consortiums)
+                                                (set (common-config/opensearch-consortiums))))))
             :granule-data-format granule-data-format
             :granule-data-format-lowercase (map str/lower-case granule-data-format)
             :entry-id entry-id

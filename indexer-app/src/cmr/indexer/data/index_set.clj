@@ -372,6 +372,7 @@
 
           :has-granules m/bool-field-mapping
           :has-granules-or-cwic m/bool-field-mapping
+          :has-granules-or-opensearch m/bool-field-mapping
           :has-variables m/bool-field-mapping
           :has-formats m/bool-field-mapping
           :has-transforms m/bool-field-mapping

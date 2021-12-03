@@ -2119,7 +2119,7 @@ The `has_granules_or_cwic` parameter can be set to "true" or "false". When true,
 
 #### <a name="c-has-granules-or-opensearch"></a> Find collections with or without granules, or the collection is tagged with the configured OpenSearch tag.
 
-The `has_granules_or_opensearch` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with the configured OpenSearch tag.  When false, will return any collections without granules.
+The `has_granules_or_opensearch` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with any of the configured OpenSearch consortiums, which are CWIC,FEDEO,GEOSS,CEOS and EOSDIS.  When false, will return any collections without granules.
 
     curl "%CMR-ENDPOINT%/collections?has_granules_or_opensearch=true"
 
