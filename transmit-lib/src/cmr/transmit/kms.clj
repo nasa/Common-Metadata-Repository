@@ -13,6 +13,7 @@
   can be found in dev-system/resources/kms_examples."
   (:require
     [camel-snake-kebab.core :as csk]
+    [cheshire.core :as json]
     [clj-http.client :as client]
     [clojure.data.csv :as csv]
     [clojure.data.xml :as xml]
@@ -52,21 +53,30 @@
   the transition and should be deleted once in production."
  )
 
- (def production?
-   "Return true if CMR is not currently in production."
-   (= "prod" (System/getenv "ENVIRONMENT")))
+(def production?
+  "Return true if CMR is not currently in production."
+  (= "prod" (System/getenv "ENVIRONMENT")))
 
- (def frozen-platforms?
-   (= "true" (System/getenv "frozen_platforms")))
+(defn- scheme-overrides
+  "Allow for any KMS resource URL to be overriden by the system envirnmental
+   variables. The ENV is assumed to contain JSON"
+  ;; assume the value comes from an ENV
+  ([] (scheme-overrides (System/getenv "kms_scheme_overrides")))
 
+  ;; parse and return a map
+  ([json-string] (json/parse-string json-string true)))
 
-;; all of these should be overridable from configurations
+(comment
+ ;; testing with an env is not convenient, use this to diretly test what the
+ ;; function would do in the real world with a valid value
+ (scheme-overrides (str "{\"platforms\":\"file://frozen/platforms.csv\","
+                        "\"mime-type\":\"mimetype?format=csv&version=special\"}")))
+
+;; These are the default locations in KMS for all supported schemes
 (def keyword-scheme->gcmd-resource-name
   "Maps each keyword scheme to the GCMD resource name"
   {:providers "providers?format=csv"
-   :platforms (if production?
-                "platforms?format=csv"
-                "platforms?format=csv&version=draft")
+   :platforms "platforms?format=csv"
    :instruments "instruments?format=csv"
    :projects "projects?format=csv"
    :temporal-keywords "temporalresolutionrange?format=csv"
@@ -75,13 +85,28 @@
    :measurement-name "measurementname?format=csv"
    :concepts "idnnode?format=csv"
    :iso-topic-categories "isotopiccategory?format=csv"
-   :related-urls (if production?
-                   "rucontenttype?format=csv"
-                   "rucontenttype?format=csv&version=draft")
-   :granule-data-format (if production?
-                          "granuledataformat?format=csv"
-                          "granuledataformat?format=csv&version=draft")
+   :related-urls "rucontenttype?format=csv"
+   :granule-data-format "granuledataformat?format=csv"
    :mime-type "mimetype?format=csv"})
+
+(def keyword-scheme->alt-gcmd-resource-names
+  "These are scheme versions to use in SIT and UAT, but not PROD. These values
+   are merged with keyword-scheme->gcmd-resource-name. If any of the values
+   starts with `file://` then it is considered a local file and not an HTTP call"
+  {;:example "file://frozen/platforms.csv"
+   :platforms "platforms?format=csv&version=draft"
+   :related-urls "rucontenttype?format=csv&version=draft"
+   :granule-data-format "granuledataformat?format=csv&version=draft"})
+
+(defn- keyword-scheme->kms-resource
+  "This is the primary way to get KMS URL resource locations. This function will
+   first try to use the default values, but if not production the alt values will
+   be applied. Finally the ENV scheme overrides are applied. Any value starting
+   with `file://` will be assumed to be a local file."
+  [keyword-scheme]
+  (keyword-scheme (-> keyword-scheme->gcmd-resource-name
+                      (merge (when-not production? keyword-scheme->alt-gcmd-resource-names))
+                      (merge (scheme-overrides)))))
 
 (def keyword-scheme->field-names
   "Maps each keyword scheme to its subfield names. These values are also used to
@@ -203,23 +228,33 @@
   "Makes a get request to the GCMD KMS. Returns the controlled vocabulary map for the given
   keyword scheme."
   [context keyword-scheme]
-  ;; As a temprerary measure, allow platforms to be pulled from a static file
-  ;; while other teams work to promote this scheme to a new structure
-  (if (and (= :platforms keyword-scheme) frozen-platforms?)
-    (slurp (jio/file (jio/resource "frozen/platforms.csv")))
-    (let [conn (config/context->app-connection context :kms)
-          gcmd-resource-name (keyword-scheme keyword-scheme->gcmd-resource-name)
-          url (format "%s/%s" (conn/root-url conn) gcmd-resource-name)
-          params (merge
-                  (config/conn-params conn)
-                  {:headers {:accept-charset "utf-8"}
-                   :throw-exceptions true})
-          start (System/currentTimeMillis)
-          response (client/get url params)]
-      (debug
-       (format
-        "Completed KMS Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
-      (:body response))))
+
+  ;; From time to time KMS will not be ready to host a set of keywords as the
+  ;; population of that system happens on it's team's own schedule. In the case
+  ;; where a standard list is ready before the KMS sever is, load that list from
+  ;; a local file and not the service. GCMD resounce names prefixed the with
+  ;; value `file://` is how one tells that a local file is to be used. This
+  ;; process is driven by the System Environmental variable `kms_scheme_overrides`
+  ;; which contains JSON such as:
+  ;;     "{\"platforms\":\"file://frozen/platforms.csv\"}"
+  (let [gcmd-resource-name (keyword-scheme->kms-resource keyword-scheme)]
+    (if (str/starts-with? gcmd-resource-name "file://")
+      (->> (str/replace gcmd-resource-name #"^file://" "")
+           jio/resource
+           jio/file
+           slurp)
+      (let [conn (config/context->app-connection context :kms)
+            url (format "%s/%s" (conn/root-url conn) gcmd-resource-name)
+            params (merge
+                    (config/conn-params conn)
+                    {:headers {:accept-charset "utf-8"}
+                     :throw-exceptions true})
+            start (System/currentTimeMillis)
+            response (client/get url params)]
+        (debug
+         (format
+          "Completed KMS Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
+        (:body response)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
