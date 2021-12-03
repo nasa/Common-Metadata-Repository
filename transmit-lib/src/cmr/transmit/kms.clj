@@ -16,6 +16,7 @@
     [clj-http.client :as client]
     [clojure.data.csv :as csv]
     [clojure.data.xml :as xml]
+    [clojure.java.io :as jio]
     [clojure.set :as set]
     [clojure.string :as str]
     [cmr.common.log :as log :refer (debug info warn error)]
@@ -55,10 +56,17 @@
    "Return true if CMR is not currently in production."
    (= "prod" (System/getenv "ENVIRONMENT")))
 
+ (def frozen-platforms?
+   (= "true" (System/getenv "frozen_platforms")))
+
+
+;; all of these should be overridable from configurations
 (def keyword-scheme->gcmd-resource-name
   "Maps each keyword scheme to the GCMD resource name"
   {:providers "providers?format=csv"
-   :platforms "platforms?format=csv"
+   :platforms (if production?
+                "platforms?format=csv"
+                "platforms?format=csv&version=draft")
    :instruments "instruments?format=csv"
    :projects "projects?format=csv"
    :temporal-keywords "temporalresolutionrange?format=csv"
@@ -69,17 +77,17 @@
    :iso-topic-categories "isotopiccategory?format=csv"
    :related-urls (if production?
                    "rucontenttype?format=csv"
-                   "rucontenttype?format=csv&version=DRAFT")
+                   "rucontenttype?format=csv&version=draft")
    :granule-data-format (if production?
                           "granuledataformat?format=csv"
-                          "granuledataformat?format=csv&version=DRAFT")
+                          "granuledataformat?format=csv&version=draft")
    :mime-type "mimetype?format=csv"})
 
 (def keyword-scheme->field-names
   "Maps each keyword scheme to its subfield names. These values are also used to
   decide which concepts will be cached"
   {:providers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name :url :uuid]
-   :platforms [:category :series-entity :short-name :long-name :uuid]
+   :platforms [:basis :category :sub-category :short-name :long-name :uuid]
    :instruments [:category :class :type :subtype :short-name :long-name :uuid]
    :projects [:bucket :short-name :long-name :uuid]
    :temporal-keywords [:temporal-resolution-range :uuid]
@@ -195,19 +203,23 @@
   "Makes a get request to the GCMD KMS. Returns the controlled vocabulary map for the given
   keyword scheme."
   [context keyword-scheme]
-  (let [conn (config/context->app-connection context :kms)
-        gcmd-resource-name (keyword-scheme keyword-scheme->gcmd-resource-name)
-        url (format "%s/%s" (conn/root-url conn) gcmd-resource-name)
-        params (merge
-                 (config/conn-params conn)
-                 {:headers {:accept-charset "utf-8"}
-                  :throw-exceptions true})
-        start (System/currentTimeMillis)
-        response (client/get url params)]
-    (debug
-      (format
+  ;; As a temprerary measure, allow platforms to be pulled from a static file
+  ;; while other teams work to promote this scheme to a new structure
+  (if (and (= :platforms keyword-scheme) frozen-platforms?)
+    (slurp (jio/file (jio/resource "frozen/platforms.csv")))
+    (let [conn (config/context->app-connection context :kms)
+          gcmd-resource-name (keyword-scheme keyword-scheme->gcmd-resource-name)
+          url (format "%s/%s" (conn/root-url conn) gcmd-resource-name)
+          params (merge
+                  (config/conn-params conn)
+                  {:headers {:accept-charset "utf-8"}
+                   :throw-exceptions true})
+          start (System/currentTimeMillis)
+          response (client/get url params)]
+      (debug
+       (format
         "Completed KMS Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
-    (:body response)))
+      (:body response))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
@@ -231,4 +243,7 @@
     keywords))
 
 (comment
-  (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :measurement-name))
+ (def get-keywords-from-system
+   (partial get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)}))
+ (get-keywords-from-system :measurement-name)
+ (clojure.pprint/pprint (get-keywords-from-system :platforms)))

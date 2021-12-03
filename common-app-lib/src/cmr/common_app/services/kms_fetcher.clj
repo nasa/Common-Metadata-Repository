@@ -33,7 +33,8 @@
   the bottom."
   {:data-centers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name :url]
    :archive-centers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name :url]
-   :platforms [:category :series-entity :short-name :long-name]
+   :platform [:basis :category :sub-category :short-name :long-name]
+   :platforms [:basis :category :sub-category :short-name :long-name]
    :instruments [:category :class :type :subtype :short-name :long-name]
    :projects [:short-name :long-name]
    :temporal-keywords [:temporal-resolution-range]
