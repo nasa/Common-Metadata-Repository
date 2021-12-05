@@ -35,7 +35,7 @@
     "array-foreach-async": "^1.0.1",
     "aws-sdk": "^2.891.0",
     "axios": "^0.24.0",
-    "gremlin": "^3.4.10",
+    "gremlin": "^3.5.1",
     "lodash": "^4.17.21",
     "serverless": "^2.68.0",
     "serverless-webpack": "^5.5.1",
