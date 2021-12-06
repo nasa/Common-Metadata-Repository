@@ -28,7 +28,7 @@
   "Maps the KMS keyword scheme to the list of fields that should be matched when comparing fields
   between UMM-C and KMS."
   {:science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]
-   :platforms [:basis :category :sub-category :short-name :long-name]
+   :platforms [:category :short-name :long-name] ;; :basis and :sub-category are not in metadata
    :instruments [:short-name :long-name]
    :projects [:short-name :long-name]
    :providers [:short-name]

@@ -52,7 +52,7 @@
     (let [concept (data-umm-c/collection-concept
                        {:Platforms [(data-umm-cmn/platform {:ShortName "foo"
                                                             :LongName "Airbus A340-600"
-                                                            :Type "Aircraft"})]
+                                                            :Type "Jet"})]
                         :DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"]
                                                                  :ShortName "SomeCenter"})]})
 
@@ -60,7 +60,7 @@
       (is (= {:status 422
               :errors [{:path ["Platforms" 0]
                         :errors [(str "Platform short name [foo], long name [Airbus A340-600], "
-                                      "and type [Aircraft] was not a valid keyword combination.")]}
+                                      "and type [Jet] was not a valid keyword combination.")]}
                        {:path ["DataCenters" 0]
                         :errors [(str "Data center short name [SomeCenter] was not a valid "
                                       "keyword.")]}]}
@@ -272,7 +272,7 @@
                      short-name long-name type)])
 
           "Invalid short name"
-          "foo" "Airbus A340-600" "Aircraft"
+          "foo" "Airbus A340-600" "Jet"
 
           "Long name is nil in KMS"
           "AIRCRAFT" "Airbus A340-600" "Aircraft"
@@ -296,20 +296,20 @@
                                                  :LongName long-name
                                                  :Type type})]})
           "Exact match"
-          "A340-600" "Airbus A340-600" "Aircraft"
+          "A340-600" "Airbus A340-600" "Jet"
 
           "Case Insensitive"
-          "a340-600" "aiRBus A340-600" "aIrCrAfT"
+          "a340-600" "aiRBus A340-600" "jET"
 
           ;; Next three scenarios are for CMR-4400
           "Long name is in Platform and KMS"
-          "B-200" "Beechcraft King Air B-200" "Aircraft"
+          "B-200" "Beechcraft King Air B-200" "Propeller"
 
           "Long name is nil in Platform and nil in KMS"
-          "CESSNA 188" nil "Aircraft"
+          "CESSNA 188" nil "Propeller"
 
           "Long name is nil in Platform and not nil in KMS"
-          "DHC-3" nil "Aircraft"))
+          "DHC-3" nil "Propeller"))
 
   (testing "DataCenter keyword validation"
     (testing "Invalid short name"
@@ -394,7 +394,7 @@
              [(data-umm-cmn/platform
                 {:ShortName "A340-600"
                  :LongName "Airbus A340-600"
-                 :Type "Aircraft"
+                 :Type "Jet"
                  :Instruments [(data-umm-cmn/instrument {:ShortName short-name
                                                          :LongName long-name})]})]}
             ["Platforms" 0 "Instruments" 0]
@@ -419,7 +419,7 @@
              [(data-umm-cmn/platform
                 {:ShortName "A340-600"
                  :LongName "Airbus A340-600"
-                 :Type "Aircraft"
+                 :Type "Jet"
                  :Instruments [(data-umm-cmn/instrument {:ShortName short-name
                                                          :LongName long-name})]})]})
           "Exact match"

@@ -621,282 +621,284 @@
   "Expected value for the all-hierarchical-fields-test. This is using the version 1 hierarchical
   facets."
   [{:field "project", :value-counts [["PROJ2" 2] ["proj1" 2]]}
-   {:field "sensor",
-    :value-counts
-    [["FROM_KMS-p0-i0-s0" 2]
-     ["FROM_KMS-p0-i1-s0" 2]
-     ["FROM_KMS-p1-i0-s0" 2]
-     ["FROM_KMS-p1-i1-s0" 2]]}
-   {:field "two_d_coordinate_system_name",
-    :value-counts [["MISR" 2]]}
-   {:field "processing_level_id", :value-counts [["PL1" 2]]}
-   {:field "detailed_variable",
-    :value-counts [["DETAIL1" 2] ["UNIVERSAL" 2]]}
-   {:field "data_centers",
-    :subfields ["level_0"],
-    :level_0
-    [{:value "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES",
-      :count 2,
-      :subfields ["level_1"],
-      :level_1
-      [{:value "DOI",
-        :count 2,
-        :subfields ["level_2"],
-        :level_2
-        [{:value "USGS",
-          :count 2,
-          :subfields ["level_3"],
-          :level_3
-          [{:value "Added level 3 value",
-            :count 2,
-            :subfields ["short_name"],
-            :short_name
-            [{:value "DOI/USGS/CMG/WHSC",
-              :count 2,
-              :subfields ["long_name"],
-              :long_name
-              [{:value
-                "Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior",
-                :count 2}]}]}]}]}]}]}
-   {:field "archive_centers",
-    :subfields ["level_0"],
-    :level_0
-    [{:value "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES",
-      :count 2,
-      :subfields ["level_1"],
-      :level_1
-      [{:value "DOI",
-        :count 2,
-        :subfields ["level_2"],
-        :level_2
-        [{:value "USGS",
-          :count 2,
-          :subfields ["level_3"],
-          :level_3
-          [{:value "Added level 3 value",
-            :count 2,
-            :subfields ["short_name"],
-            :short_name
-            [{:value "DOI/USGS/CMG/WHSC",
-              :count 2,
-              :subfields ["long_name"],
-              :long_name
-              [{:value
-                "Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior",
-                :count 2}]}]}]}]}]}]}
-   {:field "platforms",
-    :subfields ["category"],
-    :category
-    [{:value "Earth Observation Satellites",
-      :count 2,
-      :subfields ["series_entity"],
-      :series_entity
-      [{:value "DIADEM",
-        :count 2,
-        :subfields ["short_name"],
-        :short_name
-        [{:value "DIADEM-1D",
-          :count 2,
-          :subfields ["long_name"],
-          :long_name [{:value "Not Provided", :count 2}]}]}
-       {:value
-        "DMSP (Defense Meteorological Satellite Program)",
-        :count 2,
-        :subfields ["short_name"],
-        :short_name
-        [{:value "DMSP 5B/F3",
-          :count 2,
-          :subfields ["long_name"],
-          :long_name
-          [{:value
-            "Defense Meteorological Satellite Program-F3",
-            :count 2}]}]}]}]}
-   {:field "instruments",
-    :subfields ["category"],
-    :category
-    [{:value "Earth Remote Sensing Instruments",
-      :count 2,
-      :subfields ["class"],
-      :class
-      [{:value "Active Remote Sensing",
-        :count 2,
-        :subfields ["type"],
-        :type
-        [{:value "Altimeters",
-          :count 2,
-          :subfields ["subtype"],
-          :subtype
-          [{:value "Lidar/Laser Altimeters",
-            :count 2,
-            :subfields ["short_name"],
-            :short_name
-            [{:value "ATM",
-              :count 2,
-              :subfields ["long_name"],
-              :long_name
-              [{:value "Airborne Topographic Mapper",
-                :count 2}]}
-             {:value "LVIS",
-              :count 2,
-              :subfields ["long_name"],
-              :long_name
-              [{:value "Land, Vegetation, and Ice Sensor",
-                :count 2}]}]}]}]}]}
-     {:value "Not Provided", ; Instruments now include sensors as child instruments
-      :count 2,
-      :subfields ["class"],
-      :class
-        [{:value "Not Provided",
-          :count 2,
-          :subfields ["type"],
-          :type
-          [{:value "Not Provided",
-            :count 2,
-            :subfields ["subtype"],
-            :subtype
-            [{:value "Not Provided",
-              :count 2,
-              :subfields ["short_name"],
-              :short_name
-              [{:value "FROM_KMS-p0-i0-s0",
+           {:field "sensor",
+            :value-counts
+            [["FROM_KMS-p0-i0-s0" 2]
+             ["FROM_KMS-p0-i1-s0" 2]
+             ["FROM_KMS-p1-i0-s0" 2]
+             ["FROM_KMS-p1-i1-s0" 2]]}
+           {:field "two_d_coordinate_system_name",
+            :value-counts [["MISR" 2]]}
+           {:field "processing_level_id", :value-counts [["PL1" 2]]}
+           {:field "detailed_variable",
+            :value-counts [["DETAIL1" 2] ["UNIVERSAL" 2]]}
+           {:subfields ["level_0"],
+            :level_0
+            [{:subfields ["level_1"],
+              :level_1
+              [{:subfields ["level_2"],
+                :level_2
+                [{:subfields ["level_3"],
+                  :level_3
+                  [{:subfields ["short_name"],
+                    :short_name
+                    [{:subfields ["long_name"],
+                      :long_name
+                      [{:count 2,
+                        :value
+                        "Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior"}],
+                      :count 2,
+                      :value "DOI/USGS/CMG/WHSC"}],
+                    :count 2,
+                    :value "Added level 3 value"}],
+                  :count 2,
+                  :value "USGS"}],
                 :count 2,
-                :subfields ["long_name"],
-                :long_name [{:count 2, :value "Not Provided"}]}
-               {:value "FROM_KMS-p0-i1-s0",
-                :count 2,
-                :subfields ["long_name"],
-                :long_name [{:count 2, :value "Not Provided"}]}
-               {:value "FROM_KMS-p1-i0-s0",
-                :count 2,
-                :subfields ["long_name"],
-                :long_name [{:count 2, :value "Not Provided"}]}
-               {:value "FROM_KMS-p1-i1-s0",
-                :count 2,
-                :subfields ["long_name"],
-                :long_name [{:count 2, :value "Not Provided"}]}]}]}]}]}]}
-   {:field "science_keywords",
-    :subfields ["category"],
-    :category
-    [{:value "HURRICANE",
-      :count 2,
-      :subfields ["topic"],
-      :topic
-      [{:value "POPULAR",
-        :count 2,
-        :subfields ["term"],
-        :term
-        [{:value "EXTREME",
-          :count 2,
-          :subfields ["variable_level_1"],
-          :variable_level_1
-          [{:value "LEVEL2-1",
-            :count 2,
-            :subfields ["variable_level_2"],
-            :variable_level_2
-            [{:value "LEVEL2-2",
+                :value "DOI"}],
               :count 2,
-              :subfields ["variable_level_3"],
-              :variable_level_3
-              [{:value "LEVEL2-3", :count 2}]}]}]}
-         {:value "UNIVERSAL", :count 2}]}
-       {:value "COOL",
-        :count 2,
-        :subfields ["term"],
-        :term
-        [{:value "TERM4",
-          :count 2,
-          :subfields ["variable_level_1"],
-          :variable_level_1
-          [{:value "UNIVERSAL", :count 2}]}]}]}
-     {:value "UPCASE",
-      :count 2,
-      :subfields ["topic"],
-      :topic
-      [{:value "COOL",
-        :count 2,
-        :subfields ["term"],
-        :term [{:value "MILD", :count 2}]}
-       {:value "POPULAR",
-        :count 2,
-        :subfields ["term"],
-        :term [{:value "MILD", :count 2}]}]}
-     {:value "CAT1",
-      :count 2,
-      :subfields ["topic"],
-      :topic
-      [{:value "TOPIC1",
-        :count 2,
-        :subfields ["term"],
-        :term
-        [{:value "TERM1",
-          :count 2,
-          :subfields ["variable_level_1"],
-          :variable_level_1
-          [{:value "LEVEL1-1",
-            :count 2,
-            :subfields ["variable_level_2"],
-            :variable_level_2
-            [{:value "LEVEL1-2",
+              :value "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES"}],
+            :field "data_centers"}
+           {:subfields ["level_0"],
+            :level_0
+            [{:subfields ["level_1"],
+              :level_1
+              [{:subfields ["level_2"],
+                :level_2
+                [{:subfields ["level_3"],
+                  :level_3
+                  [{:subfields ["short_name"],
+                    :short_name
+                    [{:subfields ["long_name"],
+                      :long_name
+                      [{:count 2,
+                        :value
+                        "Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior"}],
+                      :count 2,
+                      :value "DOI/USGS/CMG/WHSC"}],
+                    :count 2,
+                    :value "Added level 3 value"}],
+                  :count 2,
+                  :value "USGS"}],
+                :count 2,
+                :value "DOI"}],
               :count 2,
-              :subfields ["variable_level_3"],
-              :variable_level_3
-              [{:value "LEVEL1-3", :count 2}]}]}]}]}]}
-     {:value "TORNADO",
-      :count 2,
-      :subfields ["topic"],
-      :topic
-      [{:value "POPULAR",
-        :count 2,
-        :subfields ["term"],
-        :term [{:value "EXTREME", :count 2}]}]}]}
-   {:subfields ["category"],
-    :category
-    [{:subfields ["type"],
-      :type
-      [{:subfields ["subregion_1"],
-        :subregion_1
-        [{:subfields ["subregion_2"],
-          :subregion_2
-          [{:subfields ["subregion_3"],
-            :subregion_3 [{:count 2, :value "Not Provided"}],
-            :count 2,
-            :value "ANGOLA"}],
-          :count 2,
-          :value "CENTRAL AFRICA"}],
-        :count 2,
-        :value "AFRICA"}
-       {:subfields ["subregion_1"],
-        :subregion_1
-        [{:subfields ["subregion_2"],
-          :subregion_2
-          [{:subfields ["subregion_3"],
-            :subregion_3
-            [{:count 1, :value "GAZA STRIP"}],
-            :count 1,
-            :value "MIDDLE EAST"}],
-          :count 1,
-          :value "WESTERN ASIA"}],
-        :count 1,
-        :value "ASIA"}],
-      :count 2,
-      :value "CONTINENT"}
-     {:subfields ["type"],
-      :type
-      [{:subfields ["subregion_1"],
-        :subregion_1
-        [{:subfields ["subregion_2"],
-          :subregion_2
-          [{:subfields ["subregion_3"],
-            :subregion_3 [{:count 1, :value "Not Provided"}],
-            :count 1,
-            :value "Not Provided"}],
-          :count 1,
-          :value "Not Provided"}],
-        :count 1,
-        :value "NOT IN KMS"}],
-      :count 1,
-      :value "OTHER"}],
-    :field "location_keywords"}])
+              :value "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES"}],
+            :field "archive_centers"}
+           {:subfields ["basis"],
+            :basis
+            [{:subfields ["category"],
+              :category
+              [{:subfields ["sub_category"],
+                :sub_category
+                [{:subfields ["short_name"],
+                  :short_name
+                  [{:subfields ["long_name"],
+                    :long_name [{:count 2, :value "Not Provided"}],
+                    :count 2,
+                    :value "DIADEM-1D"}],
+                  :count 2,
+                  :value "DIADEM"}
+                 {:subfields ["short_name"],
+                  :short_name
+                  [{:subfields ["long_name"],
+                    :long_name
+                    [{:count 2,
+                      :value
+                      "Defense Meteorological Satellite Program-F3"}],
+                    :count 2,
+                    :value "DMSP 5B/F3"}],
+                  :count 2,
+                  :value
+                  "Defense Meteorological Satellite Program(DMSP)"}],
+                :count 2,
+                :value "Earth Observation Satellites"}],
+              :count 2,
+              :value "Space-based Platforms"}],
+            :field "platforms"}
+           {:subfields ["category"],
+            :category
+            [{:subfields ["class"],
+              :class
+              [{:subfields ["type"],
+                :type
+                [{:subfields ["subtype"],
+                  :subtype
+                  [{:subfields ["short_name"],
+                    :short_name
+                    [{:subfields ["long_name"],
+                      :long_name
+                      [{:count 2,
+                        :value "Airborne Topographic Mapper"}],
+                      :count 2,
+                      :value "ATM"}
+                     {:subfields ["long_name"],
+                      :long_name
+                      [{:count 2,
+                        :value "Land, Vegetation, and Ice Sensor"}],
+                      :count 2,
+                      :value "LVIS"}],
+                    :count 2,
+                    :value "Lidar/Laser Altimeters"}],
+                  :count 2,
+                  :value "Altimeters"}],
+                :count 2,
+                :value "Active Remote Sensing"}],
+              :count 2,
+              :value "Earth Remote Sensing Instruments"}
+             {:subfields ["class"],
+              :class
+              [{:subfields ["type"],
+                :type
+                [{:subfields ["subtype"],
+                  :subtype
+                  [{:subfields ["short_name"],
+                    :short_name
+                    [{:subfields ["long_name"],
+                      :long_name [{:count 2, :value "Not Provided"}],
+                      :count 2,
+                      :value "FROM_KMS-p0-i0-s0"}
+                     {:subfields ["long_name"],
+                      :long_name [{:count 2, :value "Not Provided"}],
+                      :count 2,
+                      :value "FROM_KMS-p0-i1-s0"}
+                     {:subfields ["long_name"],
+                      :long_name [{:count 2, :value "Not Provided"}],
+                      :count 2,
+                      :value "FROM_KMS-p1-i0-s0"}
+                     {:subfields ["long_name"],
+                      :long_name [{:count 2, :value "Not Provided"}],
+                      :count 2,
+                      :value "FROM_KMS-p1-i1-s0"}],
+                    :count 2,
+                    :value "Not Provided"}],
+                  :count 2,
+                  :value "Not Provided"}],
+                :count 2,
+                :value "Not Provided"}],
+              :count 2,
+              :value "Not Provided"}],
+            :field "instruments"}
+           {:subfields ["category"],
+            :category
+            [{:subfields ["topic"],
+              :topic
+              [{:subfields ["term"],
+                :term
+                [{:subfields ["variable_level_1"],
+                  :variable_level_1
+                  [{:subfields ["variable_level_2"],
+                    :variable_level_2
+                    [{:subfields ["variable_level_3"],
+                      :variable_level_3
+                      [{:count 2, :value "LEVEL2-3"}],
+                      :count 2,
+                      :value "LEVEL2-2"}],
+                    :count 2,
+                    :value "LEVEL2-1"}],
+                  :count 2,
+                  :value "EXTREME"}
+                 {:count 2, :value "UNIVERSAL"}],
+                :count 2,
+                :value "POPULAR"}
+               {:subfields ["term"],
+                :term
+                [{:subfields ["variable_level_1"],
+                  :variable_level_1 [{:count 2, :value "UNIVERSAL"}],
+                  :count 2,
+                  :value "TERM4"}],
+                :count 2,
+                :value "COOL"}],
+              :count 2,
+              :value "HURRICANE"}
+             {:subfields ["topic"],
+              :topic
+              [{:subfields ["term"],
+                :term [{:count 2, :value "MILD"}],
+                :count 2,
+                :value "COOL"}
+               {:subfields ["term"],
+                :term [{:count 2, :value "MILD"}],
+                :count 2,
+                :value "POPULAR"}],
+              :count 2,
+              :value "UPCASE"}
+             {:subfields ["topic"],
+              :topic
+              [{:subfields ["term"],
+                :term
+                [{:subfields ["variable_level_1"],
+                  :variable_level_1
+                  [{:subfields ["variable_level_2"],
+                    :variable_level_2
+                    [{:subfields ["variable_level_3"],
+                      :variable_level_3
+                      [{:count 2, :value "LEVEL1-3"}],
+                      :count 2,
+                      :value "LEVEL1-2"}],
+                    :count 2,
+                    :value "LEVEL1-1"}],
+                  :count 2,
+                  :value "TERM1"}],
+                :count 2,
+                :value "TOPIC1"}],
+              :count 2,
+              :value "CAT1"}
+             {:subfields ["topic"],
+              :topic
+              [{:subfields ["term"],
+                :term [{:count 2, :value "EXTREME"}],
+                :count 2,
+                :value "POPULAR"}],
+              :count 2,
+              :value "TORNADO"}],
+            :field "science_keywords"}
+           {:subfields ["category"],
+            :category
+            [{:subfields ["type"],
+              :type
+              [{:subfields ["subregion_1"],
+                :subregion_1
+                [{:subfields ["subregion_2"],
+                  :subregion_2
+                  [{:subfields ["subregion_3"],
+                    :subregion_3 [{:count 2, :value "Not Provided"}],
+                    :count 2,
+                    :value "ANGOLA"}],
+                  :count 2,
+                  :value "CENTRAL AFRICA"}],
+                :count 2,
+                :value "AFRICA"}
+               {:subfields ["subregion_1"],
+                :subregion_1
+                [{:subfields ["subregion_2"],
+                  :subregion_2
+                  [{:subfields ["subregion_3"],
+                    :subregion_3 [{:count 1, :value "GAZA STRIP"}],
+                    :count 1,
+                    :value "MIDDLE EAST"}],
+                  :count 1,
+                  :value "WESTERN ASIA"}],
+                :count 1,
+                :value "ASIA"}],
+              :count 2,
+              :value "CONTINENT"}
+             {:subfields ["type"],
+              :type
+              [{:subfields ["subregion_1"],
+                :subregion_1
+                [{:subfields ["subregion_2"],
+                  :subregion_2
+                  [{:subfields ["subregion_3"],
+                    :subregion_3 [{:count 1, :value "Not Provided"}],
+                    :count 1,
+                    :value "Not Provided"}],
+                  :count 1,
+                  :value "Not Provided"}],
+                :count 1,
+                :value "NOT IN KMS"}],
+              :count 1,
+              :value "OTHER"}],
+            :field "location_keywords"}])
 
 (def expected-v2-facets-apply-links-with-facets-size
   "Expected facets to be returned in the facets v2 response. The structure of the v2 facet response
