@@ -326,8 +326,7 @@
                              :value-counts [["Larc" 3] ["Dist" 1] ["GSFC" 1]]}
                             {:field "project"
                              :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
-                            {:field "platform"
-                             :value-counts [["A-p0" 2] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
+                            {:field "platform" :value-counts []}
                             {:field "instrument" ; Instruments now include sensors as child instruments
                              :value-counts [["A-p0-i0" 2]
                                             ["A-p0-i0-s0" 2]
@@ -415,8 +414,7 @@
                                :value-counts [["GSFC" 1] ["Larc" 1]]}
                               {:field "project"
                                :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
-                              {:field "platform"
-                               :value-counts [["A-p0" 1] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
+                              {:field "platform" :value-counts []}
                               {:field "instrument" ; Instruments now include sensors as child instruments
                                :value-counts [["A-p0-i0" 1]
                                               ["A-p0-i0-s0" 1]
@@ -470,7 +468,7 @@
                               {:field "archive_center"
                                :value-counts [["GSFC" 1]]}
                               {:field "project" :value-counts [["PROJ2" 1] ["proj3" 1]]}
-                              {:field "platform" :value-counts [["B-p0" 1] ["B-p1" 1]]}
+                              {:field "platform" :value-counts []}
                               {:field "instrument" ; Instruments now include sensors as child instruments
                                :value-counts [["B-p0-i0" 1]
                                               ["B-p0-i0-s0" 1]
@@ -573,38 +571,45 @@
   ;; Test that even with a nil series-entity the platform will still be returned, but with a
   ;; value of "Not Provided" for the series-entity
   (fu/make-coll 2 "PROV1" {:Platforms [(data-umm-spec/platform {:ShortName "A340-600"})]})
-  (let [expected-platforms [{:subfields ["category"],
-                             :field "platforms",
-                             :category
-                             [{:count 1,
-                               :value "Not Provided",
-                               :subfields ["series_entity"],
-                               :series_entity
-                               [{:count 1,
-                                 :value "Not Provided",
-                                 :subfields ["short_name"],
-                                 :short_name
-                                 [{:count 1,
-                                   :value "Platform-p0",
-                                   :subfields ["long_name"],
-                                   :long_name [{:count 1, :value "Not Provided"}]}
-                                  {:count 1,
-                                   :value "Platform-p1",
-                                   :subfields ["long_name"],
-                                   :long_name [{:count 1, :value "Not Provided"}]}]}]}
-                              {:value "Aircraft",
-                               :count 1,
-                               :subfields ["series_entity"],
-                               :series_entity
-                               [{:value "Not Provided",
-                                 :count 1,
-                                 :subfields ["short_name"],
-                                 :short_name
-                                 [{:value "A340-600",
-                                   :count 1,
-                                   :subfields ["long_name"],
-                                   :long_name
-                                   [{:value "Airbus A340-600", :count 1}]}]}]}]}]
+  (let [expected-platforms [{:subfields ["basis"],
+            :basis
+            [{:subfields ["category"],
+              :category
+              [{:subfields ["sub_category"],
+                :sub_category
+                [{:subfields ["short_name"],
+                  :short_name
+                  [{:subfields ["long_name"],
+                    :long_name [{:count 1, :value "Not Provided"}],
+                    :count 1,
+                    :value "Platform-p0"}
+                   {:subfields ["long_name"],
+                    :long_name [{:count 1, :value "Not Provided"}],
+                    :count 1,
+                    :value "Platform-p1"}],
+                  :count 1,
+                  :value "Not Provided"}],
+                :count 1,
+                :value "Not Provided"}],
+              :count 1,
+              :value "Not Provided"}
+             {:subfields ["category"],
+              :category
+              [{:subfields ["sub_category"],
+                :sub_category
+                [{:subfields ["short_name"],
+                  :short_name
+                  [{:subfields ["long_name"],
+                    :long_name [{:count 1, :value "Airbus A340-600"}],
+                    :count 1,
+                    :value "A340-600"}],
+                  :count 1,
+                  :value "Not Provided"}],
+                :count 1,
+                :value "Jet"}],
+              :count 1,
+              :value "Air-based Platforms"}],
+            :field "platforms"}]
         actual-platforms (->> (get-facet-results :hierarchical)
                               :json-facets
                               (filter #(= "platforms" (:field %))))]
@@ -825,9 +830,7 @@
                               :value-counts [["GSFC" 1] ["Larc" 1]]}
                              {:field "project",
                               :value-counts [["PROJ2" 3] ["proj3" 2] ["proj1" 1]]}
-                             {:field "platform",
-                              :value-counts
-                              [["A-p0" 2] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
+                             {:field "platform", :value-counts []}
                              {:field "instrument", ; Instruments now include sensors as child instruments
                               :value-counts
                               [["A-p0-i0" 1]
@@ -913,6 +916,6 @@
         facet-results (:facets (search/find-refs :collection {:include-facets true}))]
     (are [value-counts field]
       (= value-counts (:value-counts (first (filter #(= field (:field %)) facet-results))))
-      [["SMAP" 2]] "platform"
+      ;;[["SMAP" 2]] "platform" platform is no longer flat
       [["ATM" 2]]  "instrument"
       [["OR-STATE/EOARC" 2]] "archive_center")))
