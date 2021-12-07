@@ -94,7 +94,49 @@
                                           :concept-id "C1200000002-PROV1"}]}
                   (dissoc response :created-at))))
          "JSON" :json
-         "XML" :xml)))))
+         "XML" :xml))
+     (testing "Provider task status response sorting"
+       (let [response-json4 (ingest/parse-bulk-update-body :json
+                             (ingest/bulk-update-collections "PROV1"
+                              (assoc bulk-update-body :name "TEST NAME 4")
+                              {:accept-format :json :raw? true}))
+             response-json5 (ingest/parse-bulk-update-body :json
+                             (ingest/bulk-update-collections "PROV1"
+                              (assoc bulk-update-body :name "TEST NAME 5")
+                              {:accept-format :json :raw? true}))
+             response-json6 (ingest/parse-bulk-update-body :json
+                             (ingest/bulk-update-collections "PROV1"
+                              (assoc bulk-update-body :name "TEST NAME 6")
+                              {:accept-format :json :raw? true}))
+             response-json7 (ingest/parse-bulk-update-body :json
+                             (ingest/bulk-update-collections "PROV1"
+                              (assoc bulk-update-body :name "TEST NAME 7")
+                              {:accept-format :json :raw? true}))
+             response-json8 (ingest/parse-bulk-update-body :json
+                             (ingest/bulk-update-collections "PROV1"
+                              (assoc bulk-update-body :name "TEST NAME 8")
+                              {:accept-format :json :raw? true}))
+             response-json9 (ingest/parse-bulk-update-body :json
+                             (ingest/bulk-update-collections "PROV1"
+                              (assoc bulk-update-body :name "TEST NAME 9")
+                              {:accept-format :json :raw? true}))
+             response-json10 (ingest/parse-bulk-update-body :json
+                             (ingest/bulk-update-collections "PROV1"
+                              (assoc bulk-update-body :name "TEST NAME 10")
+                              {:accept-format :json :raw? true}))
+             response-json11 (ingest/parse-bulk-update-body :json
+                             (ingest/bulk-update-collections "PROV1"
+                              (assoc bulk-update-body :name "TEST NAME 11")
+                              {:accept-format :json :raw? true}))
+             _ (println "response-json10: " response-json11)
+             response (ingest/bulk-update-provider-status
+                       "PROV1"
+                       {:accept-format :json})
+             {:keys [status tasks]} response]
+         (is (= 200 status))
+         (is (= ["11" "10" "9" "8" "7" "6" "5" "4" "3" "2" "1"]
+                (map :task-id tasks)))))
+)))
 
 (deftest bulk-update-invalid-concept-id
   (let [bulk-update-body {:concept-ids ["C1200000100-PROV1" "C111-PROV2"]
