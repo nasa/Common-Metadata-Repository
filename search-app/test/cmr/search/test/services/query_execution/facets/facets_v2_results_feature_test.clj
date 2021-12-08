@@ -75,17 +75,6 @@
                   {:priority
                    {:avg
                     {:field :processing-level-id-humanized.priority}}}}}},
-              :platform-h
-               {:nested {:path :platform-sn-humanized},
-                :aggs
-                {:values
-                 {:terms
-                  {:field :platform-sn-humanized.value,
-                   :size 50,
-                   :order [{:priority :desc} {:_count :desc}]},
-                  :aggs
-                  {:priority
-                   {:avg {:field :platform-sn-humanized.priority}}}}}},
               :granule-data-format-h
                {:nested {:path :granule-data-format-humanized},
                 :aggs
@@ -132,7 +121,35 @@
                   :aggs
                   {:priority
                    {:avg
-                    {:field :horizontal-data-resolutions.priority}}},}}}
+                    {:field :horizontal-data-resolutions.priority}}}}}},
+              :platforms-h
+              {:nested {:path :platforms-humanized},
+               :aggs
+               {:basis
+                {:terms {:field "platforms-humanized.basis", :size 50},
+                 :aggs
+                 {:coll-count
+                  {:reverse_nested {},
+                   :aggs
+                   {:concept-id {:terms {:field :concept-id, :size 1}}}},
+                  :category
+                  {:terms
+                   {:field "platforms-humanized.category", :size 50},
+                   :aggs
+                   {:coll-count
+                    {:reverse_nested {},
+                     :aggs
+                     {:concept-id
+                      {:terms {:field :concept-id, :size 1}}}},
+                    :sub-category
+                    {:terms
+                     {:field "platforms-humanized.sub-category", :size 50},
+                     :aggs
+                     {:coll-count
+                      {:reverse_nested {},
+                       :aggs
+                       {:concept-id
+                        {:terms {:field :concept-id, :size 1}}}}}}}}}}}},
               :two-d-coordinate-system-name-h
                {:terms {:field :two-d-coord-name, :size 50}},
               :variables-h
