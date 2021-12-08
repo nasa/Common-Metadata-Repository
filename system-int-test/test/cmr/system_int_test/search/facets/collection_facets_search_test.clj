@@ -326,7 +326,8 @@
                              :value-counts [["Larc" 3] ["Dist" 1] ["GSFC" 1]]}
                             {:field "project"
                              :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
-                            {:field "platform" :value-counts []}
+                            {:field "platform"
+                             :value-counts [["A-p0" 2] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
                             {:field "instrument" ; Instruments now include sensors as child instruments
                              :value-counts [["A-p0-i0" 2]
                                             ["A-p0-i0-s0" 2]
@@ -414,7 +415,8 @@
                                :value-counts [["GSFC" 1] ["Larc" 1]]}
                               {:field "project"
                                :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
-                              {:field "platform" :value-counts []}
+                              {:field "platform"
+                               :value-counts [["A-p0" 1] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
                               {:field "instrument" ; Instruments now include sensors as child instruments
                                :value-counts [["A-p0-i0" 1]
                                               ["A-p0-i0-s0" 1]
@@ -468,7 +470,7 @@
                               {:field "archive_center"
                                :value-counts [["GSFC" 1]]}
                               {:field "project" :value-counts [["PROJ2" 1] ["proj3" 1]]}
-                              {:field "platform" :value-counts []}
+                              {:field "platform" :value-counts [["B-p0" 1] ["B-p1" 1]]}
                               {:field "instrument" ; Instruments now include sensors as child instruments
                                :value-counts [["B-p0-i0" 1]
                                               ["B-p0-i0-s0" 1]
@@ -830,7 +832,8 @@
                               :value-counts [["GSFC" 1] ["Larc" 1]]}
                              {:field "project",
                               :value-counts [["PROJ2" 3] ["proj3" 2] ["proj1" 1]]}
-                             {:field "platform", :value-counts []}
+                             {:field "platform", :value-counts
+                              [["A-p0" 2] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
                              {:field "instrument", ; Instruments now include sensors as child instruments
                               :value-counts
                               [["A-p0-i0" 1]
@@ -916,6 +919,6 @@
         facet-results (:facets (search/find-refs :collection {:include-facets true}))]
     (are [value-counts field]
       (= value-counts (:value-counts (first (filter #(= field (:field %)) facet-results))))
-      ;;[["SMAP" 2]] "platform" platform is no longer flat
+      [["SMAP" 2]] "platform"
       [["ATM" 2]]  "instrument"
       [["OR-STATE/EOARC" 2]] "archive_center")))
