@@ -158,8 +158,8 @@
            "Search collections by platform using JSON query test13"
            [coll1 coll2 coll9] {:platform {:category "EARTH OBSERVATION SATELLITES"
                                            :ignore_case true}}
-           "Search collections by platform using JSON query test14"
-           [coll1 coll9] {:platform {:series_entity "DMSP (Defense Meteorological Satellite Program)"}}
+           ;"Search collections by platform using JSON query test14"
+           ;[coll1 coll9] {:platform {:series_entity "DMSP (Defense Meteorological Satellite Program)"}}
            ;; Short name uses KMS case rather than metadata case
            "Search collections by platform using JSON query test15"
            [] {:platform {:short_name "diaDEM-1d" :ignore_case false}}
