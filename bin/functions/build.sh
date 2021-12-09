@@ -83,7 +83,6 @@ function build_uberjars {
 function build_all {
     cd $CMR_DIR && \
     cmr install jars,docs && \
-    cmr install coll-renderer-gems && \
     cmr install orbits-gems && \
     cmr install local spatial_plugin && \
     mv ./es-spatial-plugin/target/cmr-es-spatial-plugin-*-SNAPSHOT.zip . && \
