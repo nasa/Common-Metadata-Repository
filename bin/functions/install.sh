@@ -29,24 +29,6 @@ Notes on the ENV variables:
 
 EOH
 
-function install_coll_renderer_gems () {
-    # The library is reinstalled after installing gems so that it will contain
-    # the gem code.
-    echo "Timestamp:" `date`
-    echo "Installing collection renderer gems and reinstalling library ..."
-    if [ "$CMR_INTERNAL_NEXUS_REPO" = "true" ]; then
-        (cd $CMR_DIR/collection-renderer-lib && \
-            lein with-profile +internal-repos do install-gems, install, clean)
-    else
-        (cd $CMR_DIR/collection-renderer-lib \
-            && lein do install-gems, install, clean)
-    fi
-    if [ $? -ne 0 ]; then
-        echo "Failed to install gems" >&2
-        exit 1
-    fi
-}
-
 function install_docs () {
     echo "Timestamp:" `date`
     echo "Generating API documentation ..."

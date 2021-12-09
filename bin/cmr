@@ -170,9 +170,6 @@ case "$COMMAND" in
         ;;
     install)
         case "$SUBCOMMAND" in
-            coll-renderer-gems)
-                install_coll_renderer_gems
-                ;;
             docs)
                 install_docs
                 ;;

@@ -22,7 +22,6 @@
                  [commons-codec/commons-codec "1.11"]
                  [commons-io/commons-io "2.6"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]

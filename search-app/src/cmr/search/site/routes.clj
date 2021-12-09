@@ -2,7 +2,6 @@
   "This namespace is the one responsible for the routes intended for human
   consumption (via a web browser)."
   (:require
-   [cmr.collection-renderer.api.routes :as collection-renderer-routes]
    [cmr.common-app.static :as static]
    [cmr.search.site.pages :as pages]
    [cmr.search.services.content-service :as content-service]
@@ -96,6 +95,4 @@
         (ring-swagger-ui/swagger-ui
          "/swagger_ui"
          :swagger-docs (str relative-root-url "/site/swagger.json")
-         :validator-url nil)
-        ;; Routes for collection html resources such as css, js, etc.
-        (collection-renderer-routes/resource-routes system)))))
+         :validator-url nil)))))

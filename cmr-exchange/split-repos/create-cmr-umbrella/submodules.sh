@@ -30,7 +30,7 @@ echo "$MSG"
 
 prune-repo `pwd`
 
-LIBS="collection-renderer-lib orbits-lib oracle-lib elastic-utils-lib common-app-lib message-queue-lib acl-lib spatial-lib umm-spec-lib common-lib transmit-lib umm-lib"
+LIBS="orbits-lib oracle-lib elastic-utils-lib common-app-lib message-queue-lib acl-lib spatial-lib umm-spec-lib common-lib transmit-lib umm-lib"
 APPS="mock-echo-app metadata-db-app indexer-app search-relevancy-test virtual-product-app access-control-app ingest-app bootstrap-app search-app"
 OTHERS="search-relevancy-test system-int-test es-spatial-plugin vdd-spatial-viz dev-system"
 git submodule add git@github.com:nasa-cmr/cli.git bin

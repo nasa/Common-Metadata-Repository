@@ -3,7 +3,6 @@
    [clojure.core.cache :as clj-cache]
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
-   [cmr.collection-renderer.services.collection-renderer :as collection-renderer]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
@@ -88,7 +87,6 @@
   "Defines the order to start the components."
   [:log
    :caches
-   collection-renderer/system-key
    orbits-runtime/system-key
    :search-index
    :scheduler
@@ -135,7 +133,6 @@
                       hrs/report-cache-key (hrs/create-report-cache)
                       hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)}
              :public-conf (public-conf)
-             collection-renderer/system-key (collection-renderer/create-collection-renderer)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
              ;; Note that some of these jobs only need to run on one node, but we are currently
              ;; running all jobs on all nodes
