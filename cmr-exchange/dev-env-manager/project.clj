@@ -147,7 +147,6 @@
                                         "libs/transmit-lib/src"]}
              :search {:main cmr.search.runner
                       :source-paths ["apps/search-app/src"
-                                     "libs/collection-renderer-lib/src"
                                      "libs/common-app-lib/src"
                                      "libs/elastic-utils-lib/src"
                                      "libs/message-queue-lib/src"
