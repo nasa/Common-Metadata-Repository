@@ -8,6 +8,7 @@
    [cmr.common.services.errors :as svc-errors]
    [cmr.search.api.core :as core-api]
    [cmr.search.services.query-service :as query-svc]
+   [cmr.search.site.pages :as pages]
    [compojure.core :refer :all]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -103,9 +104,13 @@
                          mt/native)
           ;; XML means native in this case
           result-format (if (= result-format :xml) :native result-format)]
-      (if revision-id
-        (find-concept-by-concept-id* ctx result-format concept-id revision-id)
-        (find-concept-by-concept-id* ctx result-format concept-id)))))
+      (if (= :html result-format)
+        (core-api/search-response ctx
+                                  {:results (:body (pages/collection-page ctx concept-id))
+                                   :result-format :html})
+        (if revision-id
+          (find-concept-by-concept-id* ctx result-format concept-id revision-id)
+          (find-concept-by-concept-id* ctx result-format concept-id))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions

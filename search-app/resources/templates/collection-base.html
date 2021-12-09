@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>{{ concept-id }}</title>
+    <script defer src="{{ preview-root }}/plugin/metadata-preview.{{ preview-version }}.js"></script>
+    <link href="{{ preview-root }}/plugin/metadata-preview.{{ preview-version }}.min.css" rel="stylesheet" type="text/css">
+  </head>
+
+  <body>
+    <div id="metadata-preview">
+      <p> this div will be replaced by collection info </p>
+    </div>
+
+    <script>
+      // Ensure scripts have loaded before initializing the preview plugin
+      document.addEventListener("DOMContentLoaded", function() {
+        // Get the element where the content should be displayed
+        const element = document.getElementById('metadata-preview');
+
+        // Initialize the preview plugin with `.init(config, element)`
+        const config = {
+          conceptId: "{{ concept-id }}",
+          conceptType: 'collection'
+        }
+
+        MetadataPreview.init(config, element);
+      });
+    </script>
+  </body>
+</html>
