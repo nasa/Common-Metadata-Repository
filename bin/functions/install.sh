@@ -5,7 +5,6 @@ Usage: cmr install [SUBCOMMANDS]
 
 Defined subcommands:
 
-    coll-renderer-gems - Install Collection Renderer Gem files.
     docs               - Generate documentation and static content.
     help               - Show this message.
     jars               - Install CMR JAR files to local ~/.m2 repository.
