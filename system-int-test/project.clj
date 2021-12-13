@@ -84,8 +84,7 @@
              :internal-repos {}
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
-                                     [lambdaisland/kaocha-junit-xml "0.0.76"]
-                                     [org.apache.logging.log4j/log4j-core "2.15.0"]]}}
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
 
