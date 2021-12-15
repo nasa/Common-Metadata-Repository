@@ -123,10 +123,10 @@
                    {:avg
                     {:field :horizontal-data-resolutions.priority}}}}}},
               :platforms-h
-              {:nested {:path :platforms-humanized},
+              {:nested {:path :platforms2-humanized},
                :aggs
                {:basis
-                {:terms {:field "platforms-humanized.basis", :size 50},
+                {:terms {:field "platforms2-humanized.basis", :size 50},
                  :aggs
                  {:coll-count
                   {:reverse_nested {},
@@ -134,7 +134,7 @@
                    {:concept-id {:terms {:field :concept-id, :size 1}}}},
                   :category
                   {:terms
-                   {:field "platforms-humanized.category", :size 50},
+                   {:field "platforms2-humanized.category", :size 50},
                    :aggs
                    {:coll-count
                     {:reverse_nested {},
@@ -143,7 +143,7 @@
                       {:terms {:field :concept-id, :size 1}}}},
                     :sub-category
                     {:terms
-                     {:field "platforms-humanized.sub-category", :size 50},
+                     {:field "platforms2-humanized.sub-category", :size 50},
                      :aggs
                      {:coll-count
                       {:reverse_nested {},

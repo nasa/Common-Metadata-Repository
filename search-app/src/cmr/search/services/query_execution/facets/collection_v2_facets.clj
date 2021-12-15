@@ -16,7 +16,7 @@
   "Defines the mapping of the base search parameters for the v2 facets fields to
    its field names in elasticsearch."
   {:science-keywords :science-keywords-humanized
-   :platforms :platforms-humanized
+   :platforms :platforms2-humanized
    :instrument :instrument-sn-humanized
    :data-center :organization-humanized
    :project :project-sn-humanized

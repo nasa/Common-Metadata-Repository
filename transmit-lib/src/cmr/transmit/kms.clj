@@ -268,8 +268,9 @@
 
   Example response:
   {\"ETALON-2\"
-  {:uuid \"c9c07cf0-49eb-4c7f-aeff-2e95caae9500\", :short-name \"ETALON-2\",
-  :series-entity \"ETALON\", :category \"Earth Observation Satellites\"} ..."
+  {:uuid \"c9c07cf0-49eb-4c7f-aeff-2e95caae9500\", :long-name \"Etalan two\",
+   :short-name \"ETALON-2\", :sub-category \"ETALON\",
+   :category \"Earth Observation Satellites\" :basis \"Space-based Platforms\"} ..."
   [context keyword-scheme]
   {:pre (some? (keyword-scheme keyword-scheme->field-names))}
   (let [keywords

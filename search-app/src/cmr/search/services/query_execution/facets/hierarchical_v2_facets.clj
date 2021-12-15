@@ -22,6 +22,7 @@
       "variables" nested-field/variable-subfields
       "temporal-facet" nested-field/temporal-facet-subfields
       "passes" nested-field/cycle-passes-subfields
+      "platforms2" (kms-fetcher/nested-fields-mappings :platforms2)
       ;; else
       (kms-fetcher/nested-fields-mappings (keyword stripped-field)))))
 

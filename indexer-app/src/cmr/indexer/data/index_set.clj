@@ -169,14 +169,28 @@
    :variable-lowercase m/string-field-mapping
    :originator-id-lowercase m/string-field-mapping})
 
+;;DEPRECATED see :platforms2
 (defnestedmapping platform-hierarchical-mapping
+  "Defines hierarchical mappings for platforms."
+  {:category m/string-field-mapping
+   :category-lowercase m/string-field-mapping
+   :series-entity m/string-field-mapping
+   :series-entity-lowercase m/string-field-mapping
+   :short-name m/string-field-mapping
+   :short-name-lowercase m/string-field-mapping
+   :long-name m/string-field-mapping
+   :long-name-lowercase m/string-field-mapping
+   :uuid m/string-field-mapping
+   :uuid-lowercase m/string-field-mapping})
+
+(defnestedmapping platform2-hierarchical-mapping
   "Defines hierarchical mappings for platforms."
   {:basis m/string-field-mapping
    :basis-lowercase m/string-field-mapping
    :category m/string-field-mapping
    :category-lowercase m/string-field-mapping
-   :sub-category m/string-field-mapping ;; formally :series-entity
-   :sub-category-lowercase m/string-field-mapping ;; formally :series-entity-lowercase
+   :sub-category m/string-field-mapping
+   :sub-category-lowercase m/string-field-mapping
    :short-name m/string-field-mapping
    :short-name-lowercase m/string-field-mapping
    :long-name m/string-field-mapping
@@ -314,7 +328,8 @@
 
 (defmapping collection-mapping :collection
   "Defines the elasticsearch mapping for storing collections. These are the
-  fields that will be stored in an Elasticsearch document."
+  fields that will be stored in an Elasticsearch document. Note, fields can only
+  be added to Elasticsearch, not removed or renamed."
   (merge {:deleted m/bool-field-mapping ; deleted=true is a tombstone
           :native-id m/string-field-mapping
           :native-id-lowercase m/string-field-mapping
@@ -422,8 +437,11 @@
           :granule-data-format-lowercase        m/string-field-mapping
           :granule-data-format-humanized        prioritized-humanizer-mapping
 
+          ;;DEPRECATED see :platforms2
           :platforms platform-hierarchical-mapping
-          :platforms-humanized platform-hierarchical-mapping
+          :platforms2 platform2-hierarchical-mapping
+          :platforms2-humanized platform2-hierarchical-mapping
+
           :instruments instrument-hierarchical-mapping
           :archive-centers data-center-hierarchical-mapping
           :location-keywords location-keywords-hierarchical-mapping
@@ -736,7 +754,7 @@
 
    ;; DEPRECATED integer type is no longer sufficient for this field
    :concept-seq-id (m/doc-values m/int-field-mapping)
-   
+
    ;; This is used explicitly for sorting. The values take up less space in the fielddata cache.
    :concept-seq-id-long (m/doc-values m/unsigned-long-field-mapping)
    :native-id (m/doc-values m/string-field-mapping)

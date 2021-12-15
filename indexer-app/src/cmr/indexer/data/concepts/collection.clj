@@ -261,7 +261,9 @@
         platforms (map util/map-keys->kebab-case platforms)
         kms-index (kf/get-kms-index context)
         platforms-nested (map #(platform/platform-short-name->elastic-doc kms-index %)
-                              (map :short-name platforms))
+                              (map :short-name platforms)) ;; DEPRECATED : see platforms2-nested
+        platforms2-nested (map #(platform/platform2-nested-fields->elastic-doc kms-index %)
+                               (map :short-name platforms))
         platform-short-names (->> (map :short-name platforms-nested)
                                   (map str/trim))
         platform-long-names (->> platforms-nested
@@ -407,7 +409,8 @@
 
             ;; hierarchical fields
             :platforms platforms-nested
-            :platforms-humanized platforms-nested
+            :platforms2 platforms2-nested
+            :platforms2-humanized platforms2-nested
             :instruments instruments-nested
             :archive-centers archive-centers
             :data-centers data-centers

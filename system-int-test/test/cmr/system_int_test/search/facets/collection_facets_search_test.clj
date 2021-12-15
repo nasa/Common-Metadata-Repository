@@ -570,8 +570,8 @@
   ;; Test that if the platforms do not exist in KMS, they will still be returned, but with a value
   ;; of "Not Provided" for all of the values in the hierarchy other than short name.
   (fu/make-coll 1 "PROV1" (fu/platforms "Platform" 2 2 1))
-  ;; Test that even with a nil series-entity the platform will still be returned, but with a
-  ;; value of "Not Provided" for the series-entity
+  ;; Test that even with a nil sub-category the platform will still be returned, but with a
+  ;; value of "Not Provided" for the sub-category
   (fu/make-coll 2 "PROV1" {:Platforms [(data-umm-spec/platform {:ShortName "A340-600"})]})
   (let [expected-platforms [{:subfields ["basis"],
             :basis
