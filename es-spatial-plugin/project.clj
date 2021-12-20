@@ -34,7 +34,7 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                        [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
-                                       [org.elasticsearch/elasticsearch "7.10.0"]]}
+                                       [org.elasticsearch/elasticsearch "7.16.2"]]}
              :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
                                        :exclusions [[com.dadrox/quiet-slf4j]
@@ -64,7 +64,7 @@
                    :dependencies [[criterium "0.4.4"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
-                                  [org.elasticsearch/elasticsearch "7.10.0"]
+                                  [org.elasticsearch/elasticsearch "7.16.2"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [org.clojure/tools.namespace "0.2.11"]]

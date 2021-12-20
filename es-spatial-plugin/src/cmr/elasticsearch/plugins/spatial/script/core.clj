@@ -7,7 +7,7 @@
    (org.apache.lucene.index LeafReaderContext)
    (org.elasticsearch.search.lookup FieldLookup
                                     LeafDocLookup
-                                    LeafFieldsLookup
+                                    LeafStoredFieldsLookup
                                     LeafSearchLookup
                                     SearchLookup))
   (:gen-class
@@ -20,7 +20,7 @@
                   [java.util.Map
                    org.elasticsearch.search.lookup.SearchLookup
                    org.apache.lucene.index.LeafReaderContext]}
-   :methods [[getFields [] org.elasticsearch.search.lookup.LeafFieldsLookup]]
+   :methods [[getFields [] org.elasticsearch.search.lookup.LeafStoredFieldsLookup]]
    :init init
    :state data))
 
@@ -29,14 +29,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- get-from-fields
-  [^LeafFieldsLookup lookup key]
+  [^LeafStoredFieldsLookup lookup key]
   (when (and lookup key (.containsKey lookup key))
     (when-let [^FieldLookup field-lookup (.get lookup key)]
       (seq (.getValues field-lookup)))))
 
 (defn doc-intersects?
   "Returns true if the doc contains a ring that intersects the ring passed in."
-  [^LeafFieldsLookup lookup intersects-fn]
+  [^LeafStoredFieldsLookup lookup intersects-fn]
   ;; Must explicitly return true or false or elastic search will complain
   (if-let [ords-info (get-from-fields lookup "ords-info")]
     (let [ords (get-from-fields lookup "ords")
@@ -60,7 +60,7 @@
 
 (import 'cmr.elasticsearch.plugins.SpatialScript)
 
-(defn ^LeafFieldsLookup -getFields
+(defn ^LeafStoredFieldsLookup -getFields
   [^SpatialScript this]
   (-> this .data :search-lookup .fields))
 
