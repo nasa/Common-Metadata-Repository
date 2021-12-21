@@ -636,7 +636,7 @@
             tester (partial find-facet-field facets-result)]
         (assert-facet-field facets-result "Keywords" "Topic1" 2)
         (assert-facet-field facets-result "Keywords" "Topic2" 2)
-        (is (tester (get-in sample-platforms [:diadem :basis]) 1));;
+        (is (tester (get-in sample-platforms [:diadem :basis]) 1))
         (is (not (tester (get-in sample-platforms [:dmsp :short-name]))))
         (is (not (tester (get-in sample-platforms [:smap :short-name]))))))
 

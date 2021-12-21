@@ -28,8 +28,8 @@
   [:contextmedium :object :quantity])
 
 (defn get-subfield-names
-  "Returns all of the subfields for the provided nested field. All nested field queries also support
-  'any'."
+  "Returns all of the subfields for the provided nested field. All nested field
+  queries also support 'any'."
   [parent-field]
   ;; Remove any modifiers from parent field, e.g. :science-keyword-humanized -> :science-keyword
   ;; and :science-keywords-h to :science-keywords
@@ -44,6 +44,7 @@
       :temporal-facet temporal-facet-subfields
       :passes pass-subfields
       :measurement-identifiers measurement-identifier-subfields
+      :platforms2 (conj (:platforms kms/keyword-scheme->field-names) :any)
       ;; else
       (conj (kms/keyword-scheme->field-names
              (kms/translate-keyword-scheme-to-gcmd base-parent-field))

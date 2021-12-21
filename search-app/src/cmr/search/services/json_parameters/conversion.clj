@@ -10,6 +10,7 @@
             [cmr.common.date-time-parser :as parser]
             [cmr.common.validations.json-schema :as js]
             [cmr.common-app.services.search.query-model :as cqm]
+            [cmr.common-app.services.search.query-to-elastic :as q2e]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.params :as common-params]
             [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
@@ -39,7 +40,7 @@
    :version :string
    :processing-level-id :string
    :concept-id :string
-   :platform :nested-condition
+   :platform :nested-condition  ;; keep supporting the old parameter
    :platforms :nested-condition ;; used for v2 facet apply
    :instrument :nested-condition
    :sensor :string
@@ -175,9 +176,13 @@
 (defmethod parse-json-condition :nested-condition
   [concept-type condition-name value]
   (validate-nested-condition condition-name value)
-  (nf/parse-nested-condition (inf/plural condition-name) value
-                             (case-sensitive-field? concept-type condition-name value)
-                             (:pattern value)))
+  (let [elastic-field-name (-> condition-name
+                               (inf/plural)
+                               (q2e/query-field->elastic-field concept-type))]
+    (nf/parse-nested-condition elastic-field-name
+                               value
+                               (case-sensitive-field? concept-type condition-name value)
+                               (:pattern value))))
 
 (defmethod parse-json-condition :bounding-box
   [concept-type _ value]
