@@ -1,7 +1,10 @@
 (ns cmr.ingest.api.routes
   "Defines the HTTP URL routes for the ingest API."
   (:require
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
+   [cmr.common.date-time-parser :as date-time-parser]
+   [cmr.common.date-time-range-parser :as date-time-range-parser]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
@@ -13,6 +16,7 @@
    [cmr.ingest.api.provider :as provider-api]
    [cmr.ingest.api.services :as services]
    [cmr.ingest.api.subscriptions :as subscriptions]
+   [cmr.ingest.services.subscriptions-helper :as subscriptions-helper]
    [cmr.ingest.api.tools :as tools]
    [cmr.ingest.api.translation :as translation-api]
    [cmr.ingest.api.variables :as variables]
@@ -35,6 +39,18 @@
           "-c"
           "config.ingest-migrate-config/app-migrate-config")))
       {:status 204}))
+
+(defn date-time-string-to-map 
+  [date-time-string] 
+  (if (string/includes? date-time-string "/")
+    (let [[iso-range start-day end-day] (map string/trim (string/split date-time-string #","))
+          date-time-range (when-not (string/blank? iso-range)
+                            (date-time-range-parser/parse-datetime-range iso-range))]
+      date-time-range)
+    (let [[start-date end-date start-day end-day] (map string/trim (string/split date-time-string #","))
+          start-date (when-not (string/blank? start-date) (date-time-parser/parse-datetime start-date))
+          end-date (when-not (string/blank? end-date) (date-time-parser/parse-datetime end-date))]
+      {:start-date start-date :end-date end-date})))
 
 (def job-management-routes
   (common-routes/job-api-routes
@@ -67,7 +83,7 @@
             ctx)
            {:status 200})
      (POST "/trigger-partial-collection-granule-aggregate-cache-refresh"
-           {ctx :request-context}
+           {ctx :request-context params :params}
            (acl/verify-ingest-management-permission ctx :update)
            (jobs/trigger-partial-refresh-collection-granule-aggregation-cache
             ctx)
@@ -76,7 +92,16 @@
            {ctx :request-context}
            (acl/verify-ingest-management-permission ctx :update)
            (jobs/trigger-bulk-granule-update-task-table-cleanup ctx)
-           {:status 200}))))
+           {:status 200})
+     (POST "/trigger-email-subscription-processing-job"
+       {ctx :request-context params :params}
+       (let [time-range (get-in params [:time-range :content])
+             context (when (string? time-range)
+                       (-> time-range
+                         (date-time-string-to-map)
+                         (merge ctx)
+                         (subscriptions-helper/email-subscription-processing)))]
+         {:status 200 :body (keys context)})))))
 
 (def ingest-routes
   (routes
