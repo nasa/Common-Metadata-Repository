@@ -47,6 +47,7 @@
                                                     [joda-time]
                                                     [org.ow2.asm/asm]
                                                     [org.ow2.asm/asm-all]
+                                                    [net.jpountz.lz4/lz4]
                                                     [org.locationtech.jts/jts-core]
                                                     [org.locationtech.jts.JTSVersion]
                                                     [org.slf4j/slf4j-api]]]
