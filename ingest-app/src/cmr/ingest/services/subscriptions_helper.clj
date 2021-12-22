@@ -152,10 +152,12 @@
    the input when sending the subscription emails."
   [context subscriptions]
   (for [raw-subscription subscriptions
-        :let [time-constraint (subscription->time-constraint
-                               raw-subscription
-                               (t/now)
-                               (email-subscription-processing-lookback))
+        :let [time-constraint (if (every? context [:start-date :end-date])
+                                (str (:start-date context) "," (:end-date context))
+                                (subscription->time-constraint
+                                 raw-subscription
+                                 (t/now)
+                                 (email-subscription-processing-lookback)))
               subscription (add-updated-since raw-subscription time-constraint)
               subscriber-id (get-in subscription [:extra-fields :subscriber-id])
               sub-id (get subscription :concept-id)
