@@ -2717,7 +2717,7 @@ You can also make a query.xml file that contains the query request, then use a c
     temporal[]=2000-01-01T10:00:00Z/2010-03-10T12:00:00Z&include_has_granules=true&include_granule_counts=true&include_facets=true&hierarchical_facets=true
 
 #### Example Request:
-   curl -v -XPOST -i -d @query.xml "https://cmr.uat.earthdata.nasa.gov/search/collections.echo10"
+    curl -v -XPOST -i -d @query.xml "https://cmr.uat.earthdata.nasa.gov/search/collections.echo10"
 
 
 You can also use JSON query language with a POST method.
