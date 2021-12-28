@@ -2710,11 +2710,11 @@ Search collections or granules with query parameters encoded form in POST reques
 You can also make a query.xml file that contains the query request, then use a curl search request using the -XPOST command.
 
 #### Example query.xml:
-  *	pretty=true&
-  *	page_size=1&
-  *	page_num=3&
-  *  sort_key[]=platform&platform[]=AQUA&platform[]=AURA&revision_date[]=2015-07-01T01:00:00Z,2016-01-01T01:00:00Z&revision_date[]=2014-01-01T01:00:00Z,2014-06-01T01:00:00Z&
-  *  temporal[]=2000-01-01T10:00:00Z/2010-03-10T12:00:00Z&include_has_granules=true&include_granule_counts=true&include_facets=true&hierarchical_facets=true
+  	pretty=true&
+  	page_size=1&
+  	page_num=3&
+    sort_key[]=platform&platform[]=AQUA&platform[]=AURA&revision_date[]=2015-07-01T01:00:00Z,2016-01-01T01:00:00Z&revision_date[]=2014-01-01T01:00:00Z,2014-06-01T01:00:00Z&
+    temporal[]=2000-01-01T10:00:00Z/2010-03-10T12:00:00Z&include_has_granules=true&include_granule_counts=true&include_facets=true&hierarchical_facets=true
 
 #### Example Request:
    curl -v -XPOST -i -d @query.xml "https://cmr.uat.earthdata.nasa.gov/search/collections.echo10"
