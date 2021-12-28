@@ -2722,15 +2722,15 @@ You can also make a query.xml file that contains the query request, then use a c
 
 You can also use JSON query language with a POST method.
 
-CMR providex a JSON RESTful interface. This interface is only applicable to collection searches. See the JSON scheme here: https://cmr.uat.earthdata.nasa.gov/search/site/JSONQueryLanguage.json.
+CMR provides a JSON RESTful interface. This interface is only applicable to collection searches. See the JSON scheme here: https://cmr.uat.earthdata.nasa.gov/search/site/JSONQueryLanguage.json.
 
 #### Example JSON Request:
-  * curl -XPOST -H "Content-Type: application/json" -H "Client-Id: GCMD" https://cmr.uat.earthdata.nasa.gov/search/collections
-  * -d '{"condition": { "and": [{ "not": { "or": [{ "provider": "TEST" },
-  * { "and": [{ "project": "test-project",
-  * "platform": "mars-satellite" }]}]}},
-  * { "bounding_box": [-45,15,0,25],
-  * "science_keywords": { "category": "EARTH SCIENCE" }}]}}'
+    curl -XPOST -H "Content-Type: application/json" -H "Client-Id: GCMD" https://cmr.uat.earthdata.nasa.gov/search/collections
+    -d '{"condition": { "and": [{ "not": { "or": [{ "provider": "TEST" },
+    { "and": [{ "project": "test-project",
+    "platform": "mars-satellite" }]}]}},
+    { "bounding_box": [-45,15,0,25],
+    "science_keywords": { "category": "EARTH SCIENCE" }}]}}'
 
 ### <a name="search-response-as-granule-timeline"></a> Search Response as Granule Timeline
 
