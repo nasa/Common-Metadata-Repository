@@ -2707,6 +2707,31 @@ Search collections or granules with query parameters encoded form in POST reques
 
     curl -i -XPOST %CMR-ENDPOINT%/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
 
+You can also make a query.xml file that contains the query request, then use a curl search request using the -XPOST command.
+
+Example query.xml:
+  	pretty=true&
+  	page_size=1&
+  	page_num=3&
+    sort_key[]=platform&platform[]=AQUA&platform[]=AURA&revision_date[]=2015-07-01T01:00:00Z,2016-01-01T01:00:00Z&revision_date[]=2014-01-01T01:00:00Z,2014-06-01T01:00:00Z&
+    temporal[]=2000-01-01T10:00:00Z/2010-03-10T12:00:00Z&include_has_granules=true&include_granule_counts=true&include_facets=true&hierarchical_facets=true
+
+Example earch command with query.xml:
+   	curl -v -XPOST -i -d @query.xml "https://cmr.uat.earthdata.nasa.gov/search/collections.echo10"
+
+
+You can also use JSON query language with a POST method.
+
+CMR providex a JSON RESTful interface. This interface is only applicable to collection searches. See the JSON scheme here: https://cmr.uat.earthdata.nasa.gov/search/site/JSONQueryLanguage.json.
+
+Example
+  curl -XPOST -H "Content-Type: application/json" -H "Client-Id: GCMD" https://cmr.uat.earthdata.nasa.gov/search/collections
+  -d '{"condition": { "and": [{ "not": { "or": [{ "provider": "TEST" },
+  { "and": [{ "project": "test-project",
+  "platform": "mars-satellite" }]}]}},
+  { "bounding_box": [-45,15,0,25],
+  "science_keywords": { "category": "EARTH SCIENCE" }}]}}'
+
 ### <a name="search-response-as-granule-timeline"></a> Search Response as Granule Timeline
 
 Granule timeline queries allow clients to find time intervals with continuous granule coverage per collection. The intervals are listed per collection and contain the number of granules within each interval. A timeline search can be performed by sending a `GET` request with query parameters or a `POST` request with query parameters form encoded in request body to the `granules/timeline` route. The utility of this feature for clients is in building interactive timelines. Clients need to display on the timeline where there is granule data and where there is none.
