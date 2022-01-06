@@ -225,7 +225,8 @@
   it on the delimiters, which can be anything other than letters, numbers and underscores."
   [consortiums-str]
   (when consortiums-str
-    ;; replace all possible delimiters with spaces. same as [^A-Za-z0-9_]
+    ;; replace all possible delimiters with spaces - i.e. replace all the non-alphanumeric characters,
+    ;; excluding underscores, with spaces. Same as [^A-Za-z0-9_].
     (let [space-delimited-cst (str/replace consortiums-str #"\W" " ")]
       ;; split space delimited consortium on space.
       (remove empty? (str/split (str/upper-case space-delimited-cst) #" ")))))
