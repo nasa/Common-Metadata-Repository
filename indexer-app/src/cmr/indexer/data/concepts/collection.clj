@@ -220,6 +220,16 @@
       (distinct (conj consortiums "GEOSS"))
       consortiums)))
 
+(defn- convert-consortiums-str
+  "Convert consortiums-str into a list of consortium values by splitting
+  it on the delimiters, which can be anything other than letters, numbers and underscores."
+  [consortiums-str]
+  (when consortiums-str
+    ;; replace all possible delimiters with spaces. same as [^A-Za-z0-9_]
+    (let [space-delimited-cst (str/replace consortiums-str #"\W" " ")]
+      ;; split space delimited consortium on space.
+      (remove empty? (str/split (str/upper-case space-delimited-cst) #" ")))))
+
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
@@ -228,8 +238,7 @@
                 variable-associations service-associations tool-associations]} concept
         consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
                               (metadata-db/get-providers context))
-        original-consortiums (when consortiums-str
-                               (remove empty? (str/split (str/upper-case consortiums-str) #" ")))
+        original-consortiums (convert-consortiums-str consortiums-str)
         altered-consortiums (alter-consortiums original-consortiums (:UseConstraints collection))
         consortiums (seq altered-consortiums)
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
