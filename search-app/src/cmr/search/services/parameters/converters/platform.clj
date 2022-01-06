@@ -1,7 +1,7 @@
 (ns cmr.search.services.parameters.converters.platform
   "Contains functions for converting hierarchical platforms query parameters to
-  conditions. This process is modeled after science_keyword.clj"
-  (:require [clojure.string :as str]
+   conditions. This process is modeled after science_keyword.clj"
+  (:require [clojure.string :as string]
             [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.params :as p]))
@@ -14,8 +14,8 @@
         group-operation (p/group-operation param options :and)
         target-field (-> param
                          (name)
-                         (str/replace #"^platforms" "platforms2") ;; index now lives here
-                         (str/replace #"-h$" "-humanized")
+                         (string/replace #"^platforms" "platforms2") ;; index now lives here
+                         (string/replace #"-h$" "-humanized")
                          (keyword))]
     (if (map? (first (vals value)))
       ;; If multiple platforms are passed in like the following

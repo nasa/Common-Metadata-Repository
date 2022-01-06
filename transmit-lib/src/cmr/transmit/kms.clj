@@ -279,7 +279,7 @@
     keywords))
 
 (comment
- (def get-keywords-from-system
-   (partial get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)}))
- (get-keywords-from-system :measurement-name)
- (clojure.pprint/pprint (get-keywords-from-system :platforms)))
+  (def get-keywords-from-system
+    (partial get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)}))
+  (get-keywords-from-system :measurement-name)
+  (clojure.pprint/pprint (get-keywords-from-system :platforms)))
