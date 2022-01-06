@@ -25,6 +25,60 @@
                        hu/save-sample-humanizers-fixture
                        variable-util/grant-all-variable-fixture]))
 
+(defn- platform-map
+  "Create a platform map using the supplied values. Values are an array"
+  [values]
+  (zipmap [:basis :category :sub-category :short-name :long-name] values))
+
+; organized by a common name followed by a map
+(def sample-platforms
+  {:diadem (platform-map ["Space-based Platforms"
+                          "Earth Observation Satellites"
+                          "DIADEM"
+                          "DIADEM-1D"
+                          "Dee Iee Aee Dee Eee Mee Dash One Dee"])
+   :dmsp (platform-map ["Space-based Platforms"
+                        "Earth Observation Satellites"
+                        "Defense Meteorological Satellite Program(DMSP)"
+                        "DMSP 5B/F3"
+                        "Defense Meteorological Satellite Program-F3"])
+   :smap (platform-map ["Space-based Platforms"
+                        "Earth Observation Satellites"
+                        "SMAP-like"
+                        "SMAP"
+                        "Soil Moisture Active and Passive Observatory"])})
+
+(defn- sample-platform-full
+  "Build a platform map which can be used in search queries for the platforms-s
+  property. Supply the 'name' from one of the values in sample-platforms"
+  [name]
+  {:basis (get-in sample-platforms [name :basis])
+   :category (get-in sample-platforms [name :category])
+   :sub-category (get-in sample-platforms [name :sub-category])
+   :short-name (get-in sample-platforms [name :short-name])})
+
+(defn- find-facet-field
+  "Recursively search facet-results looking for a title. When found, that title
+  will either be reported back as existing or have it's count value checked based
+  on how many parameters are passed in."
+
+  ;; report back if the field in question exists
+  ([facet-result field]
+   (find-facet-field facet-result field nil (fn [_] true)))
+
+  ;; report back if the field exists and has a count maching value
+  ([facet-result field value]
+   (find-facet-field facet-result field value (fn [x] (= (:count facet-result) x))))
+
+  ;; performs a field chacke looking for a value that matches the checker function
+  ([facet-result field value checker]
+   (if (= field (:title facet-result))
+     (checker value)
+     (if (contains? facet-result :children)
+       (some? (get (group-by #(find-facet-field % field value) (:children facet-result)) true))
+       false))))
+
+
 (def sk1 (umm-spec-common/science-keyword {:Category "Earth science"
                                            :Topic "Topic1"
                                            :Term "Term1"
@@ -118,16 +172,18 @@
     (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets))))
   (testing "Facets size applied for facets"
     (is (= fr/expected-v2-facets-apply-links-with-facets-size
-           (search-and-return-v2-facets {:facets-size {:platform 1}}))))
+           (search-and-return-v2-facets {:facets-size {:platforms 1}}))))
   (testing "Facets size applied for facets, with selecting facet that exists, but outside of the facets size range."
     (is (= fr/expected-v2-facets-apply-links-with-selecting-facet-outside-of-facets-size
-           (search-and-return-v2-facets {:facets-size {:platform 1} :platform-h ["diadem-1D"]}))))
+           (search-and-return-v2-facets {:facets-size {:platforms 1}
+                                         :platforms-h {:0 {:short-name "diadem-1D"}}}))))
   (testing "Facets size applied for facets, with selecting facet that exists, without specifying facets size."
     (is (= fr/expected-v2-facets-apply-links-with-selecting-facet-without-facets-size
-           (search-and-return-v2-facets {:platform-h ["diadem-1D"]}))))
+           (search-and-return-v2-facets {:platforms {:0 {:short-name "diadem-1D"}}}))))
   (testing "Facets size applied for facets, with selecting facet that doesn't exist."
     (is (= fr/expected-v2-facets-apply-links-with-facets-size-and-non-existing-selecting-facet
-           (search-and-return-v2-facets {:facets-size {:platform 1} :platform-h ["Non-Exist"]}))))
+           (search-and-return-v2-facets {:facets-size {:platforms 1}
+                                         :platforms-h {:0 {:short-name "Non-Exist"}}}))))
   (testing "Empty facets size applied for facets"
     (is (= [(str facets-size-error-msg " but was [{:instrument \"\"}].")]
            (search-and-return-v2-facets-errors {:facets-size {:instrument ""}}))))
@@ -144,7 +200,7 @@
                                                 :variable-level-2 "Level1-2"
                                                 :variable-level-3 "Level1-3"}}
                        :project-h ["proj1"]
-                       :platform-h ["DIADEM-1D"]
+                       :platforms-h {:0 {:short-name "DIADEM-1D"}}
                        :instrument-h ["ATM"]
                        :processing-level-id-h ["PL1"]
                        :data-center-h "DOI/USGS/CMG/WHSC"
@@ -154,8 +210,8 @@
       (is (= fr/expected-v2-facets-remove-links (search-and-return-v2-facets search-params))))
     (testing "Some fields not applied for facets"
       (let [response (search-and-return-v2-facets
-                      (dissoc search-params :platform-h :project-h :data-center-h :granule-data-format-h :coordinate-system))]
-        (is (not (fu/applied? response :platform-h)))
+                      (dissoc search-params :platforms-h :project-h :data-center-h :granule-data-format-h :coordinate-system))]
+        (is (not (fu/applied? response :platforms-h)))
         (is (not (fu/applied? response :project-h)))
         (is (not (fu/applied? response :data-center-h)))
         (is (fu/applied? response :science-keywords-h))
@@ -204,17 +260,12 @@
   (fu/make-coll 4 "PROV1" (fu/platforms "low" 55) (fu/science-keywords sk2 sk5))
 
   (testing "Platform sorting behavior"
-    (let [response (search-and-return-v2-facets)]
-      (testing "high priority items appear regardless of count"
-        (is (fu/facet-included? response :platform-h "Terra")))
 
-      (testing "same-priority items appear based on highest count"
-        (is (not-any? #(= "low" (subs % 0 3)) (fu/facet-values response :platform-h))))
-
-      (testing "items are sorted alphabetically"
-        (let [index (partial fu/facet-index response :platform-h)]
-          (is (< (index "default-p2") (index "default-p10")))
-          (is (< (index "default-p0") (index "Terra"))))))
+    (testing "Platforms are sorted alphabetically"
+      (let [response (search-and-return-v2-facets
+                      {:platforms-h {:0 {:short-name "Terra"}}})
+            platforms (-> (:children response) first :children)]
+        (verify-nested-facets-ordered-alphabetically platforms)))
 
     (testing "Science keywords are sorted alphabetically"
       (let [response (search-and-return-v2-facets
@@ -223,9 +274,18 @@
         (verify-nested-facets-ordered-alphabetically science-keywords)))))
 
 (deftest remove-facets-without-collections
-  ;; (fu/platforms "ASTER" 1) will create platform with ShortName ASTER-p0, not ASTER
-  (fu/make-coll 1 "PROV1" (fu/science-keywords sk1) (fu/platforms "ASTER" 1))
-  (fu/make-coll 1 "PROV1" (fu/science-keywords sk1) (fu/platforms "MODIS" 1))
+  (fu/make-coll 1
+                "PROV1"
+                (fu/science-keywords sk1)
+                {:Platforms [{:Instruments [{:ShortName "ATM"}]
+                              :ShortName "SMAP",
+                              :LongName "Soil Moisture Active and Passive Observatory"}]})
+  (fu/make-coll 1
+                "PROV1"
+                (fu/science-keywords sk1)
+                {:Platforms [{:Instruments []
+                              :ShortName "DMSP 5B/F3"
+                              :LongName "Defense Meteorological Satellite Program-F3"}]})
   (testing (str "When searching against faceted fields which do not match any matching collections,"
                 " a link should be provided so that the user can remove the term from their search"
                 " for all fields except for science keywords category.")
@@ -236,7 +296,10 @@
                                                   :variable-level-2 "Level1-2"
                                                   :variable-level-3 "Level1-3"}}
                          :project-h ["proj1"]
-                         :platform-h ["ASTER-p0"]
+                         :platforms-h {:0 {:basis "Space-based Platforms"
+                                           :category "Earth Observation Satellites"
+                                           :sub-category "DIADEM"
+                                           }}
                          :instrument-h ["ATM"]
                          :processing-level-id-h ["PL1"]
                          :data-center-h "DOI/USGS/CMG/WHSC"
@@ -245,8 +308,15 @@
       (is (= fr/expected-facets-with-no-matching-collections response))))
   (testing "Facets with multiple facets applied, some with matching collections, some without"
     (is (= fr/expected-facets-modis-and-aster-no-results-found
-           (search-and-return-v2-facets {:platform-h ["moDIS-p0", "ASTER-p0"]
-                                         :keyword "MODIS"})))))
+           (search-and-return-v2-facets {:platforms-h {:0 {:basis "Space-based Platforms"
+                                                           :category "Earth Observation Satellites"
+                                                           :sub-category "fake"
+                                                           :short-name "moDIS-p0"}
+                                                       :1 {:basis "Space-based Platforms"
+                                                           :category "Earth Observation Satellites"
+                                                           :sub-category "SMAP-like"
+                                                           :short-name "SMAP"}}
+                                         :keyword "DMSP 5B/F3"})))))
 
 (deftest appropriate-hierarchical-depth
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2))
@@ -418,25 +488,29 @@
   "Assert the given facet field with name and count matches the facets result"
   [facets-result field value count]
   (let [field-match-value (get-facet-field facets-result field value)]
-    (is (= count (:count field-match-value)))))
+    (is (= count (:count field-match-value))
+        (format "Failed test: Field [%s] did not have a value of '%s' with a count of %d." field value count))))
 
 (deftest platform-facets-v2-test
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll1"
                                                       :ShortName "S1"
                                                       :VersionId "V1"
-                                                      :Platforms (data-umm-spec/platforms "P1")}))
+                                                      :Platforms (data-umm-spec/platforms
+                                                                  (get-in sample-platforms [:diadem :short-name]))}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
                                                       :VersionId "V2"
-                                                      :Platforms (data-umm-spec/platforms "P1" "P2")}))
+                                                      :Platforms (data-umm-spec/platforms
+                                                                  (get-in sample-platforms [:diadem :short-name])
+                                                                  (get-in sample-platforms [:dmsp :short-name]))}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
                                                       :VersionId "V3"
                                                       :Platforms [(data-umm-spec/platform
-                                                                   {:ShortName "P2"
+                                                                   {:ShortName (get-in sample-platforms [:dmsp :short-name])
                                                                     :Instruments [(data-umm-spec/instrument {:ShortName "I3"})]})]
                                                       :Projects (umm-spec-common/projects "proj3")}))
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
@@ -444,32 +518,40 @@
                                                       :ShortName "S4"
                                                       :VersionId "V4"
                                                       :Platforms [(data-umm-spec/platform
-                                                                   {:ShortName "P4"
+                                                                   {:ShortName (get-in sample-platforms [:smap :short-name])
                                                                     :Instruments [(data-umm-spec/instrument {:ShortName "I4"})]})]
                                                       :Projects (umm-spec-common/projects "proj4")}))]
     (testing "search by platform parameter filters the other facets, but not platforms facets"
-      (let [facets-result (search-and-return-v2-facets {:platform-h ["P4"]})]
-        (assert-facet-field facets-result "Platforms" "P1" 2)
-        (assert-facet-field facets-result "Platforms" "P2" 2)
-        (assert-facet-field facets-result "Platforms" "P4" 1)
+      (let [facets-result (search-and-return-v2-facets
+                           {:platforms-h {:0 (sample-platform-full :smap)}})
+            tester (partial find-facet-field facets-result)]
+        (is (tester (get-in sample-platforms [:smap :basis]) 4))
+        (is (tester (get-in sample-platforms [:smap :category]) 4))
+        (is (tester (get-in sample-platforms [:smap :sub-category]) 1))
+        (is (tester (get-in sample-platforms [:smap :short-name]) 1))
+        (is (tester (get-in sample-platforms [:smap :long-name]) 1))
+        (is (tester (get-in sample-platforms [:dmsp :sub-category]) 2))
+        (is (tester (get-in sample-platforms [:diadem :sub-category]) 2))
         (assert-facet-field facets-result "Instruments" "I4" 1)
         (assert-facet-field facets-result "Projects" "proj4" 1)
         (assert-facet-field-not-exist facets-result "Instruments" "I3")
         (assert-facet-field-not-exist facets-result "Projects" "proj3")))
 
     (testing "search by multiple platforms"
-      (let [facets-result (search-and-return-v2-facets {:platform-h ["P1" "P2"]})]
-        (assert-facet-field facets-result "Platforms" "P1" 2)
-        (assert-facet-field facets-result "Platforms" "P2" 2)
-        (assert-facet-field facets-result "Platforms" "P4" 1)
-        (assert-facet-field facets-result "Instruments" "I3" 1)
-        (assert-facet-field facets-result "Projects" "proj3" 1)
+      (let [facets-result (search-and-return-v2-facets {:platforms-h {:0 (sample-platform-full :smap)
+                                                                     :1 (sample-platform-full :dmsp)}})
+            tester (partial find-facet-field facets-result)]
+        (is (tester (get-in sample-platforms [:diadem :sub-category]) 2))
+        (is (tester (get-in sample-platforms [:dmsp :short-name]) 2))
+        (is (tester (get-in sample-platforms [:smap :short-name]) 1))
+        ;(assert-facet-field facets-result "Instruments" "I3" 1)
+        ;(assert-facet-field facets-result "Projects" "proj3" 1)
         (assert-facet-field-not-exist facets-result "Instruments" "I4")
         (assert-facet-field-not-exist facets-result "Projects" "proj4")))
 
     (testing "search by params other than platform"
       (let [facets-result (search-and-return-v2-facets {:instrument-h ["I4"]})]
-        (assert-facet-field facets-result "Platforms" "P4" 1)
+        (assert-facet-field facets-result "Platforms" "Space-based Platforms" 1)
         (assert-facet-field facets-result "Instruments" "I3" 1)
         (assert-facet-field facets-result "Instruments" "I4" 1)
         (assert-facet-field facets-result "Projects" "proj4" 1)
@@ -479,23 +561,25 @@
 
     (testing "search by both facet field param and regular param"
       (let [facets-result (search-and-return-v2-facets {:short-name "S1"
-                                                        :platform-h ["P4"]})]
-        (assert-facet-field facets-result "Platforms" "P1" 1)
-        (assert-facet-field facets-result "Platforms" "P4" 0)
-        (assert-facet-field-not-exist facets-result "Platforms" "P2")
+                                                        :platforms-h {:0 (sample-platform-full :smap)}})
+            tester (partial find-facet-field facets-result)]
+        (is (tester (get-in sample-platforms [:diadem :sub-category]) 1))
+        (is (tester (get-in sample-platforms [:smap :short-name]) 0))
+        (is (not (tester (get-in sample-platforms [:dmsp :short-name]))))
         (assert-facet-field-not-exist facets-result "Instruments" "I3")
         (assert-facet-field-not-exist facets-result "Instruments" "I4")
         (assert-facet-field-not-exist facets-result "Projects" "proj3")
         (assert-facet-field-not-exist facets-result "Projects" "proj4")))
 
     (testing "search by more than one facet field params"
-      (let [facets-result (search-and-return-v2-facets {:platform-h ["P4"]
-                                                        :instrument-h ["I4"]})]
-        (assert-facet-field facets-result "Platforms" "P4" 1)
+      (let [facets-result (search-and-return-v2-facets {:platforms-h {:0 (sample-platform-full :smap)}
+                                                        :instrument-h ["I4"]})
+            tester (partial find-facet-field facets-result)]
+        (is (tester (get-in sample-platforms [:smap :short-name]) 1))
         (assert-facet-field facets-result "Instruments" "I4" 1)
         (assert-facet-field facets-result "Projects" "proj4" 1)
-        (assert-facet-field-not-exist facets-result "Platforms" "P1")
-        (assert-facet-field-not-exist facets-result "Platforms" "P2")
+        (is (not (tester (get-in sample-platforms [:diadem :short-name]))))
+        (is (not (tester (get-in sample-platforms [:dmsp :short-name]))))
         (assert-facet-field-not-exist facets-result "Instruments" "I3")
         (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
 
@@ -504,7 +588,8 @@
                                                      {:EntryTitle "coll1"
                                                       :ShortName "S1"
                                                       :VersionId "V1"
-                                                      :Platforms (data-umm-spec/platforms "P1")
+                                                      :Platforms (data-umm-spec/platforms
+                                                                  (get-in sample-platforms [:diadem :short-name]))
                                                       :ScienceKeywords [(umm-spec-common/science-keyword
                                                                           {:Category "Earth Science"
                                                                            :Topic "Topic1"
@@ -517,7 +602,8 @@
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
                                                       :VersionId "V2"
-                                                      :Platforms (data-umm-spec/platforms "P2")
+                                                      :Platforms (data-umm-spec/platforms
+                                                                  (get-in sample-platforms [:dmsp :short-name]))
                                                       :ScienceKeywords [(umm-spec-common/science-keyword
                                                                           {:Category "Earth Science"
                                                                            :Topic "Topic2"
@@ -528,7 +614,8 @@
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
                                                       :VersionId "V3"
-                                                      :Platforms (data-umm-spec/platforms "P3")
+                                                      :Platforms (data-umm-spec/platforms
+                                                                  (get-in sample-platforms [:smap :short-name]))
                                                       :ScienceKeywords [(umm-spec-common/science-keyword
                                                                           {:Category "Earth Science"
                                                                            :Topic "Topic1"
@@ -545,41 +632,46 @@
                                                      :term "Term1"
                                                      :variable-level-1 "Level1-1"
                                                      :variable-level-2 "Level1-2"
-                                                     :variable-level-3 "Level1-3"}}})]
+                                                     :variable-level-3 "Level1-3"}}})
+            tester (partial find-facet-field facets-result)]
         (assert-facet-field facets-result "Keywords" "Topic1" 2)
         (assert-facet-field facets-result "Keywords" "Topic2" 2)
-        (assert-facet-field facets-result "Platforms" "P1" 1)
-        (assert-facet-field-not-exist facets-result "Platforms" "P2")
-        (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+        (is (tester (get-in sample-platforms [:diadem :basis]) 1))
+        (is (not (tester (get-in sample-platforms [:dmsp :short-name]))))
+        (is (not (tester (get-in sample-platforms [:smap :short-name]))))))
 
     (testing "search by both science-keywords param and regular param"
       (let [facets-result (search-and-return-v2-facets
                            {:short-name "S1"
-                            :science-keywords-h {:0 {:topic "Topic1"}}})]
+                            :science-keywords-h {:0 {:topic "Topic1"}}})
+            tester (partial find-facet-field facets-result)]
         (assert-facet-field facets-result "Keywords" "Topic1" 1)
-        (assert-facet-field facets-result "Platforms" "P1" 1)
+        (assert-facet-field facets-result "Platforms" (get-in sample-platforms [:diadem :basis]) 1)
         (assert-facet-field-not-exist facets-result "Keywords" "Topic2")
-        (assert-facet-field-not-exist facets-result "Platforms" "P2")
-        (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+        (is (not (tester (get-in sample-platforms [:dmsp :short-name]))))
+        (is (not (tester (get-in sample-platforms [:smap :short-name]))))))
     (testing "search by both science-keywords param and a facet field param, with science keywords match a collection"
       (let [facets-result (search-and-return-v2-facets
-                           {:platform-h "P1"
+                           {:platforms-h {:0 (sample-platform-full :diadem)}
                             :science-keywords-h {:0 {:topic "Topic1"
-                                                     :term "Term1"}}})]
-        (assert-facet-field facets-result "Keywords" "Topic1" 1)
-        (assert-facet-field facets-result "Platforms" "P1" 1)
-        (assert-facet-field-not-exist facets-result "Keywords" "Topic2")
-        (assert-facet-field-not-exist facets-result "Platforms" "P2")
-        (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+                                                     :term "Term1"}}})
+            tester (partial find-facet-field facets-result)]
+        (is (tester "Topic1" 1))
+        (is (tester (get-in sample-platforms [:diadem :basis]) 1))
+        (is (not (tester "Topic2")))
+        (is (not (tester (get-in sample-platforms [:dmsp :short-name]))))
+        (is (not (tester (get-in sample-platforms [:smap :short-name]))))))
     (testing "search by both science-keywords param and a facet field param, with science keywords match two collections"
       (let [facets-result (search-and-return-v2-facets
-                           {:platform-h "P3"
-                            :science-keywords-h {:0 {:topic "Topic1"}}})]
-        (assert-facet-field facets-result "Keywords" "Topic1" 1)
-        (assert-facet-field facets-result "Keywords" "Topic2" 1)
-        (assert-facet-field facets-result "Platforms" "P1" 1)
-        (assert-facet-field facets-result "Platforms" "P3" 1)
-        (assert-facet-field-not-exist facets-result "Platforms" "P2")))))
+                           {:platforms-h {:0 (sample-platform-full :smap)}
+                            :science-keywords-h {:0 {:topic "Topic1"}}})
+            tester (partial find-facet-field facets-result)]
+        (is (tester "Topic1" 1))
+        (is (tester "Topic2" 1))
+        (is (tester (get-in sample-platforms [:diadem :basis]) 2))
+        (is (tester (get-in sample-platforms [:diadem :sub-category]) 1))
+        (is (tester (get-in sample-platforms [:smap :short-name]) 1))
+        (is (not (tester (get-in sample-platforms [:dmsp :short-name]))))))))
 
 (deftest organization-facets-v2-test
   (let [org1 (data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})
@@ -710,7 +802,7 @@
                              {:variables-h {:0 {:variable "Variable1"}}})]
           (assert-facet-field facets-result "Measurements" "Measurement1" 1)
           (assert-facet-field facets-result "Measurements" "Measurement2" 2)
-          (assert-facet-field facets-result "Platforms" "P1" 1)
+          (assert-facet-field facets-result "Platforms" "P1" nil)
           (assert-facet-field facets-result "Platforms" "P2" nil)
           (assert-facet-field-not-exist facets-result "Platforms" "P3")))
 
@@ -719,7 +811,7 @@
                              {:short-name "S1"
                               :variables-h {:0 {:variable "Variable1"}}})]
           (assert-facet-field facets-result "Measurements" "Measurement1" 1)
-          (assert-facet-field facets-result "Platforms" "P1" 1)
+          (assert-facet-field facets-result "Platforms" "P1" nil)
           (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
           (assert-facet-field-not-exist facets-result "Platforms" "P2")
           (assert-facet-field-not-exist facets-result "Platforms" "P3")))
@@ -729,7 +821,7 @@
                              {:platform-h "P1"
                               :variables-h {:0 {:variable "Variable1"}}})]
           (assert-facet-field facets-result "Measurements" "Measurement1" 1)
-          (assert-facet-field facets-result "Platforms" "P1" 1)
+          (assert-facet-field facets-result "Platforms" "P1" nil)
           (assert-facet-field facets-result "Platforms" "P2" nil)
           (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
           (assert-facet-field-not-exist facets-result "Platforms" "P3")))

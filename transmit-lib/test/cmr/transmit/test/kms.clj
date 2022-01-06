@@ -7,10 +7,10 @@
   "Sample KMS csv file"
   (str
     "\"This is a sample for testing.\"\n"
-    "Category,Series_Entity,Short_Name,Long_Name,UUID\n"
-    "\"field1 value, (with commas)\",\"field2\",\"First Entry\",\"\",\"abc-123\"\n"
-    "\"line with no short-name\",\"\",\"\",\"\",\"def-456\"\n"
-    "\"field1 value 2\",\"field2 v2\",\"Last Entry\",\"This is the Last Entry\",\"xyz-789\"\n"))
+    "Basis,Category,Sub_Category,Short_Name,Long_Name,UUID\n"
+    "\"B1\",\"field1 value, (with commas)\",\"field2\",\"First Entry\",\"\",\"abc-123\"\n"
+    "\"B1\",\"line with no short-name\",\"\",\"\",\"\",\"def-456\"\n"
+    "\"B2\",\"field1 value 2\",\"field2 v2\",\"Last Entry\",\"This is the Last Entry\",\"xyz-789\"\n"))
 
 (def sample-csv-mimetype
   "Sample KMS csv file for mimetype"
@@ -55,13 +55,15 @@
 
 (deftest parse-entries-from-csv-test
   (testing "Successful parsing for platforms"
-    (let [expected [{:short-name "First Entry"
-                     :series-entity "field2"
+    (let [expected [{:basis "B1"
+                     :short-name "First Entry"
+                     :sub-category "field2"
                      :category "field1 value, (with commas)"
                      :uuid "abc-123"}
-                    {:short-name "Last Entry"
+                    {:basis "B2"
+                     :short-name "Last Entry"
                      :long-name "This is the Last Entry"
-                     :series-entity "field2 v2"
+                     :sub-category "field2 v2"
                      :category "field1 value 2"
                      :uuid "xyz-789"}]
           actual (#'cmr.transmit.kms/parse-entries-from-csv :platforms sample-csv)]

@@ -68,7 +68,7 @@
   {:data-centers (nested-facet :data-centers)
    :archive-centers (nested-facet :archive-centers)
    :project (terms-facet :project-sn)
-   :platforms (nested-facet :platforms)
+   :platforms (nested-facet :platforms2)
    :instruments (nested-facet :instruments)
    :sensor (terms-facet :sensor-sn)
    :two-d-coordinate-system-name (terms-facet :two-d-coord-name)
