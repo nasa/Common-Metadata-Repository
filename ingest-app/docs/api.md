@@ -435,7 +435,6 @@ This shows how to validate a granule that references an existing collection in t
 ```
 curl -i -XPOST \
   -H "Content-type: application/echo10+xml" \
-  -H "Echo-Token: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/validate/granule/sampleGranuleNativeId33 \
   -d \
 "<Granule>
@@ -455,7 +454,7 @@ Granule validation also allows the parent collection to be sent along with the g
 
 Here's an example of validating a granule along with the parent collection using curl. The granule is in the granule.xml file and collection is in collection.xml.
 
-    curl -i -XPOST -H "Echo-Token: XXXX" \
+    curl -i -XPOST \
       -F "granule=<granule.xml;type=application/echo10+xml" \
       -F "collection=<collection.xml;type=application/echo10+xml" \
       "%CMR-ENDPOINT%/providers/PROV1/validate/granule/sampleGranuleNativeId33"
