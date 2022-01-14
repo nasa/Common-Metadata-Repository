@@ -61,7 +61,7 @@
   "Allow for any KMS resource URL to be overriden by the system envirnmental
    variables. The ENV is assumed to contain JSON"
   ;; assume the value comes from an ENV
-  ([] (scheme-overrides (config/kms-scheme-override-json)))
+  ([] (config/kms-scheme-override-json))
 
   ;; parse and return a map
   ([json-string] (json/parse-string json-string true)))
@@ -240,7 +240,7 @@
   (let [gcmd-resource-name (keyword-scheme->kms-resource keyword-scheme)]
     (if (str/starts-with? gcmd-resource-name "file://")
       (do
-        (warn (format "Loading static KMS resource from %s for %s."
+        (info (format "Loading static KMS resource from %s for %s."
                       gcmd-resource-name
                       (System/getenv "ENVIRONMENT")))
         (->> (str/replace gcmd-resource-name #"^file://" "")
@@ -255,7 +255,7 @@
                      :throw-exceptions true})
             start (System/currentTimeMillis)
             response (client/get url params)]
-        (warn
+        (info
          (format
           "Completed KMS Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
         (:body response)))))

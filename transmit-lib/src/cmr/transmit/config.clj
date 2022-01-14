@@ -13,6 +13,7 @@
   between public and private communications."
   (:require
    [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.util :as util]
    [cmr.transmit.connection :as conn]))
@@ -101,7 +102,8 @@
     server. SIT, UAT, and Production may all need to be changed to KMS schema
     versions needed for these specific envirnments to overcome this limitation
     and to present testing data as required."
-  "")
+  :default ""
+  :parser #(json/parse-string % true))
 
 (defconfig urs-username
   "Defines the username that is sent from the CMR to URS to authenticate the CMR."
