@@ -61,7 +61,7 @@
   "Allow for any KMS resource URL to be overriden by the system envirnmental
    variables. The ENV is assumed to contain JSON"
   ;; assume the value comes from an ENV
-  ([] (scheme-overrides (System/getenv "kms_scheme_overrides")))
+  ([] (config/kms-scheme-override-json))
 
   ;; parse and return a map
   ([json-string] (json/parse-string json-string true)))
@@ -239,10 +239,14 @@
   ;;     "{\"platforms\":\"file://frozen/platforms.csv\"}"
   (let [gcmd-resource-name (keyword-scheme->kms-resource keyword-scheme)]
     (if (str/starts-with? gcmd-resource-name "file://")
-      (->> (str/replace gcmd-resource-name #"^file://" "")
+      (do
+        (info (format "Loading static KMS resource from %s for %s."
+                      gcmd-resource-name
+                      (System/getenv "ENVIRONMENT")))
+        (->> (str/replace gcmd-resource-name #"^file://" "")
            jio/resource
            jio/file
-           slurp)
+           slurp))
       (let [conn (config/context->app-connection context :kms)
             url (format "%s/%s" (conn/root-url conn) gcmd-resource-name)
             params (merge
@@ -251,7 +255,7 @@
                      :throw-exceptions true})
             start (System/currentTimeMillis)
             response (client/get url params)]
-        (debug
+        (info
          (format
           "Completed KMS Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
         (:body response)))))

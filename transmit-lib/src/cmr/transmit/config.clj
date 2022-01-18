@@ -13,6 +13,7 @@
   between public and private communications."
   (:require
    [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.util :as util]
    [cmr.transmit.connection :as conn]))
@@ -91,6 +92,18 @@
 (def-app-conn-config search {:port 3003})
 (def-app-conn-config urs {:port 3008})
 (def-app-conn-config virtual-product {:port 3009})
+
+(defconfig kms-scheme-override-json
+  "Allow for KMS schema urls to be overriden by setting this value to a JSON
+   strings such as:
+   {\"platforms\":\"file://frozen/platforms.csv\",
+    \"mime-type\":\"mimetype?format=csv&version=special\"}
+    The reason this is needed is because CMR can only talk to the production KMS
+    server. SIT, UAT, and Production may all need to be changed to KMS schema
+    versions needed for these specific envirnments to overcome this limitation
+    and to present testing data as required."
+  {:default ""
+  :parser #(json/parse-string % true)})
 
 (defconfig urs-username
   "Defines the username that is sent from the CMR to URS to authenticate the CMR."
