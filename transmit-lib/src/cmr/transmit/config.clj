@@ -102,8 +102,7 @@
     server. SIT, UAT, and Production may all need to be changed to KMS schema
     versions needed for these specific envirnments to overcome this limitation
     and to present testing data as required."
-  {:default ""
-  :parser #(json/parse-string % true)})
+  {:default ""})
 
 (defconfig urs-username
   "Defines the username that is sent from the CMR to URS to authenticate the CMR."
