@@ -100,9 +100,12 @@
 
             "- two consortiums with an underscore"
             "PROV11" "S11" true true "Group2_1 Group2_3"
+            
+            "- consortiums with only spaces"
+            "PROV12" nil nil nil "    "
 
-            "- all blank"
-            "PROV12" nil nil nil nil))
+            "- consortiums with nil value"
+            "PROV13" nil nil nil nil))
 
   (testing "create provider with invalid consortiums. Fail with validation errors"
     (u/are3 [provider-id short-name cmr-only small consortiums]
@@ -161,6 +164,20 @@
 
     (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
              {:provider-id "PROV6" :short-name "S6" :cmr-only false :small false :consortiums "Consortium_6"}
+             {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
+             {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
+             {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
+           (set (ingest/get-ingest-providers))))
+
+   ;; Updating the consortiums to a string of spaces
+   (ingest/update-ingest-provider {:provider-id "PROV6"
+                                    :short-name "S6"
+                                    :cmr-only false
+                                    :small false
+                                    :consortiums "   "})
+
+    (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
+             {:provider-id "PROV6" :short-name "S6" :cmr-only false :small false :consortiums "   "}
              {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
              {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
              {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
