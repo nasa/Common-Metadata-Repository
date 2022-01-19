@@ -66,7 +66,6 @@
   ;; parse and return a map
   ([json-string] (json/parse-string json-string true)))
 
-
 (comment
  ;; testing with an env is not convenient, use this to diretly test what the
  ;; function would do in the real world with a valid value
