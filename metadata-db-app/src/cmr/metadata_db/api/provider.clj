@@ -47,7 +47,7 @@
   (when (re-find #"[^A-Za-z0-9_ ]" consortiums)
     (errors/throw-service-error
       :invalid-data
-      "Invalid consortiums: It contains non-alphanumeric, non-underscore and non-space characters.")))
+      (format "Invalid consortiums [%s]. %s" consortiums "Valid consortiums can only contain alphanumeric, underscore and space characters."))))
 
 (def provider-api-routes
   (context "/providers" []

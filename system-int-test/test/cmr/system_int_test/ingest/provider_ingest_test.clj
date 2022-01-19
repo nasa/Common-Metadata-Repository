@@ -118,8 +118,11 @@
                          :small small
                          :consortiums consortiums}
                response (ingest/create-ingest-provider provider)
-               {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})]
-           (is (= [422 ["Invalid consortiums: It contains non-alphanumeric, non-underscore and non-space characters."]]
+               {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})
+               err-msg (format "Invalid consortiums [%s]. %s"
+                               consortiums
+                               "Valid consortiums can only contain alphanumeric, underscore and space characters.")]
+           (is (= [422 [err-msg]]
                   [status errors])))
 
             "- consortiums with comma "
@@ -191,9 +194,11 @@
                                                    :short-name "S6"
                                                    :cmr-only false
                                                    :small false
-                                                   :consortiums "Invalid-Consortium_6"})
-          {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})]
-       (is (= [422 ["Invalid consortiums: It contains non-alphanumeric, non-underscore and non-space characters."]]
+                                                   :consortiums "Consortium-6"})
+          {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})
+          err-msg (format "Invalid consortiums [Consortium-6]. %s"
+                          "Valid consortiums can only contain alphanumeric, underscore and space characters.")]
+       (is (= [422 [err-msg]]
               [status errors]))))
 
   (testing "updating a non-existent provider fails"
