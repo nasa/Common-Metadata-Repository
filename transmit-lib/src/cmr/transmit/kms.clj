@@ -61,7 +61,7 @@
   "Allow for any KMS resource URL to be overriden by the system envirnmental
    variables. The ENV is assumed to contain JSON"
   ;; assume the value comes from an ENV
-  ([] (config/kms-scheme-override-json))
+  ([] (scheme-overrides (config/kms-scheme-override-json)))
 
   ;; parse and return a map
   ([json-string] (json/parse-string json-string true)))
@@ -238,6 +238,7 @@
   ;; which contains JSON such as:
   ;;     "{\"platforms\":\"file://frozen/platforms.csv\"}"
   (let [gcmd-resource-name (keyword-scheme->kms-resource keyword-scheme)]
+    (info (format "Loading KMS resource [%s]..." gcmd-resource-name))
     (if (str/starts-with? gcmd-resource-name "file://")
       (do
         (info (format "Loading static KMS resource from %s for %s."
