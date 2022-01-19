@@ -104,8 +104,11 @@
             "- consortiums with only spaces"
             "PROV12" nil nil nil "    "
 
+            "- consortiums with empty string"
+            "PROV13" nil nil nil ""
+
             "- consortiums with nil value"
-            "PROV13" nil nil nil nil))
+            "PROV14" nil nil nil nil))
 
   (testing "create provider with invalid consortiums. Fail with validation errors"
     (u/are3 [provider-id short-name cmr-only small consortiums]
