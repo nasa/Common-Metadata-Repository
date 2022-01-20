@@ -130,7 +130,7 @@
           (info "Execute ES query failed due to" body)
           (errors/throw-service-error
            :too-many-requests
-           "Trying to create too many scroll contexts.
+           "CMR is currently experiencing too many scroll searches to complete this request.
            Scroll is deprecated in CMR. Please consider switching your scroll requests to use search-after.
            See https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#search-after.
            This will make your workflow simpler (no more clear-scroll calls) and improve the stability of both your searches and CMR Elasticsearch cluster.
