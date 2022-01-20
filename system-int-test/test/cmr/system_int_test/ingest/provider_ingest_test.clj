@@ -119,9 +119,8 @@
                          :consortiums consortiums}
                response (ingest/create-ingest-provider provider)
                {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})
-               err-msg (format "Invalid consortiums [%s]. %s"
-                               consortiums
-                               "Valid consortiums can only contain alphanumeric, underscore and space characters.")]
+               err-msg (format "Invalid consortiums [%s]. Valid consortiums can only contain alphanumeric, underscore and space characters."
+                               consortiums)]
            (is (= [422 [err-msg]]
                   [status errors])))
 
@@ -196,8 +195,7 @@
                                                    :small false
                                                    :consortiums "Consortium-6"})
           {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})
-          err-msg (format "Invalid consortiums [Consortium-6]. %s"
-                          "Valid consortiums can only contain alphanumeric, underscore and space characters.")]
+          err-msg "Invalid consortiums [Consortium-6]. Valid consortiums can only contain alphanumeric, underscore and space characters."]
        (is (= [422 [err-msg]]
               [status errors]))))
 
