@@ -114,6 +114,7 @@
         (es-helper/search
          (context->conn context) (:index-name index-info) [(:type-name index-info)] query))
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
+
     (catch UnknownHostException e
       (info (format
              (str "Execute ES query failed due to UnknownHostException. Retry in %.3f seconds."
@@ -121,7 +122,21 @@
              (/ (es-config/elastic-unknown-host-retry-interval-ms) 1000.0)
              max-retries))
       (Thread/sleep (es-config/elastic-unknown-host-retry-interval-ms))
-      (do-send-with-retry context index-info query (- max-retries 1)))))
+      (do-send-with-retry context index-info query (- max-retries 1)))
+
+    (catch clojure.lang.ExceptionInfo e
+      (when-let [body (:body (ex-data e))]
+        (when (re-find #"Trying to create too many scroll contexts" body)
+          (info "Execute ES query failed due to" body)
+          (errors/throw-service-error
+           :too-many-requests
+           "Trying to create too many scroll contexts.
+           Scroll is deprecated in CMR. Please consider switching your scroll requests to use search-after.
+           See https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#search-after.
+           This will make your workflow simpler (no more clear-scroll calls) and improve the stability of both your searches and CMR Elasticsearch cluster.
+           Thank you!")))
+      ;; for other errors, rethrow the exception
+      (throw e))))
 
 (defn- do-send
   "Sends a query to ES, either normal or using a scroll query."
