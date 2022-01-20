@@ -87,7 +87,9 @@
                results (ingest/get-ingest-providers)
                test_candidate (first (filter #(= provider-id (:provider-id %)) results))]
            (is (= 201 status) "status check")
-           (is (= consortiums (:consortiums test_candidate)) "consortiums check"))
+           (is (= (when (> (count consortiums) 0)
+                    consortiums)
+                  (:consortiums test_candidate)) "consortiums check"))
 
             "- nil test"
             "PROV0A" "S0A" false false nil
