@@ -4878,8 +4878,8 @@ Content-Length: 944
     "provider_id" : "PROV1",
     "native_id" : "subscription-1",
     "name" : "someSub1",
-    "subscriber-id" : "someSubId1",
-    "collection-concept-id" : "C1200000001-PROV1"
+    "subscriber_id" : "someSubId1",
+    "collection_concept_id" : "C1200000001-PROV1"
   }, {
     "concept_id" : "SUB1200000006-PROV1",
     "revision_id" : 1,
