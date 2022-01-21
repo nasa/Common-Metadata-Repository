@@ -2,6 +2,16 @@ from unittest import TestCase, main, mock
 from Utils import *
 #python3 -m unittest discover -s ./ -p '*Test.py'
 class UtilsTest(TestCase):
+    def test_add_to_dict(self):
+        a = {}
+        b = set()
+        b.update([1,2])
+        c = set()
+        c.update(['a','b','c'])
+        add_to_dict(a,b,c)
+        self.assertEqual(len(a[1]), 3)
+        self.assertEqual(len(a[2]), 3)
+
     def test_get_env(self):
         env = 'sit'
         env = get_env(env)

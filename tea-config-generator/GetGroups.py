@@ -4,7 +4,6 @@ def get_groups(acl_url, token):
     headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
     try:
         response = requests.get(acl_url, headers=headers)
-        print(f'get_groups: response code={response.status_code}')
         if response.status_code == 200:
             json_data = response.json()
             if 'group_permissions' in json_data:
@@ -19,7 +18,6 @@ def get_group(env, group_id, token):
     headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
     try:
         response = requests.get(url, headers=headers)
-        print(f'get_group: response code={response.status_code}')
         if response.status_code == 200:
             json_data = response.json()
             return json_data
@@ -36,5 +34,5 @@ def get_group_names(acl_json, env, token):
                 group_json = get_group(env, group['group_id'], token)
                 group_name = group_json['name']
                 group_names.append(group_name)
-                print(f'Group name={group_name}')
+                print(f'Found non-CMR group: {group_name}')
     return group_names

@@ -5,25 +5,42 @@ from GetCollections import *
 
 class CreateTeaConfig:
     def __init__(self):
-        print('Object CreateTeaConfig created')
+        print('Creating TEA configuraton')
 
     def create_tea_config(self, env, provider, token):
         env = get_env(env)
+        all_s3_prefix_groups_dict = {}
         acls = get_acls(env, provider, token)
         for acl in acls:
             acl_url = acl['location']
+            print('---------------------')
+            print(f'Found ACL {acl_url}')
             acl_json = get_acl(acl_url, token)
             catalog_item_identity = acl_json['catalog_item_identity']
             if 'collection_identifier' in catalog_item_identity:
+                print('Getting group names for ACL')
+                group_names_set = set()
                 group_names = get_group_names(acl_json, env, token)
+                group_names_set.update(group_names)
                 concept_ids = catalog_item_identity['collection_identifier']['concept_ids']
-                all_s3_prefixes = set()
+                s3_prefixes_set = set()
                 for concept_id in concept_ids:
-                    print(f'concept id={concept_id}')
+                    print(f'Found concept id in ACL: {concept_id}')
                     collection = get_collection(env, token, concept_id)
                     col_s3_prefixes = get_s3_prefixes(collection)
-                    all_s3_prefixes.update(col_s3_prefixes)
-                print(all_s3_prefixes)
+                    if col_s3_prefixes:
+                        print(f'Found S3 prefixes: {col_s3_prefixes}')
+                        s3_prefixes_set.update(col_s3_prefixes)
+                    else:
+                        print(f'No S3 prefixes found for concept id {concept_id}')
+                if s3_prefixes_set:
+                    print(f'Found S3 prefixes for ACL: {s3_prefixes_set}')
+                    add_to_dict(all_s3_prefix_groups_dict, s3_prefixes_set, group_names_set)
+                else:
+                    print('No S3 prefixes found for ACL')
+            else:
+                print('ACL does not have concept ids assigned')
+        print(f'result mapping:\n{create_tea_config(all_s3_prefix_groups_dict)}')  
 
 #env = 'uat'
 #provider = 'SCIOPS'

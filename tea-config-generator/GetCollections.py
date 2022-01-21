@@ -5,7 +5,6 @@ def get_collection(env, token, concept_id):
     url = f'https://cmr.{env}earthdata.nasa.gov/search/concepts/{concept_id}.umm_json?pretty=true'
     try:
         response = requests.get(url, headers=headers)
-        print(f'get_collection: response code={response.status_code}')
         if response.status_code == 200:
             json_data = response.json()
             return json_data
