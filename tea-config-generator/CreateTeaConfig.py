@@ -25,9 +25,11 @@ class CreateTeaConfig:
                     all_s3_prefixes.update(col_s3_prefixes)
                 print(all_s3_prefixes)
 
-env = 'uat'
-provider = 'SCIOPS'
-token = 'EDL-XXX'
+#env = 'uat'
+#provider = 'SCIOPS'
+provider = input('Enter provider: ')
+env = input('Enter env (sit, uat or prod): ')
+token = input('Enter EDL token: ')
 
 processor = CreateTeaConfig()
 processor.create_tea_config(env, provider, token)
