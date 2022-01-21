@@ -2722,7 +2722,7 @@ The response format is in JSON. Intervals are returned as tuples containing thre
 
 #### Example Request:
 
-    curl -i "%CMR-ENDPOINT%/granules/timeline?concept_id=C1-PROV1&start_date=2000-01-01T00:00:00Z&end_date=2002-02-01T00:00:00.000Z&interval=month""
+    curl -i "%CMR-ENDPOINT%/granules/timeline?concept_id=C1-PROV1&start_date=2000-01-01T00:00:00Z&end_date=2002-02-01T00:00:00.000Z&interval=month"
 
 #### Example Response
 

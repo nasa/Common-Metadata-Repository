@@ -133,8 +133,14 @@
            "CMR is currently experiencing too many scroll searches to complete this request.
            Scroll is deprecated in CMR. Please consider switching your scroll requests to use search-after.
            See https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#search-after.
-           This will make your workflow simpler (no more clear-scroll calls) and improve the stability of both your searches and CMR Elasticsearch cluster.
-           Thank you!")))
+           This will make your workflow simpler (no more clear-scroll calls) and improve the stability of both your searches and CMR.
+           Thank you!"))
+
+        (when (re-find #"Trying to create too many buckets" body)
+          (info "Execute ES query failed due to" body)
+          (errors/throw-service-error
+           :payload-too-large
+           "The search is creating too many buckets than allowed by CMR. Please narrow your search so that the search results can be reasonable returned in one request.")))
       ;; for other errors, rethrow the exception
       (throw e))))
 
