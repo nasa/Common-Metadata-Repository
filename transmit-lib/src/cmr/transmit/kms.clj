@@ -59,7 +59,9 @@
 
 (defn- scheme-overrides
   "CMR will Allow for any KMS resource URL to be overriden by a config
-   variable (AWS parameter). The config is assumed to contain a string with JSON"
+   variable (AWS parameter). The config is assumed to contain a string with JSON.
+   Return value is the KMS schema override map as configured in AWS as
+   CMR_KMS_SCHEMA_OVERRIDE_JSON."
   []
   (json/parse-string (config/kms-scheme-override-json) true))
 

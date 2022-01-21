@@ -98,10 +98,14 @@
    strings such as:
    {\"platforms\":\"static\",
     \"mime-type\":\"mimetype?format=csv&version=special\"}
-    The reason this is needed is because CMR can only talk to the production KMS
-    server. SIT, UAT, and Production may all need to be changed to KMS schema
-    versions needed for these specific envirnments to overcome this limitation
-    and to present testing data as required."
+    The reason this setting is needed is because CMR can only talk to the
+    production KMS server. SIT, UAT, and Production may all need to be changed
+    to KMS schema versions needed for these specific environments.
+    Values can be set to either
+    * the partual URL for KMS starting with the scheme name and parameters
+    * fixed word 'static' which causes CMR to load an internal file
+    Internal files are stored under indexer-app/resources/static_kms_keywords/
+    "
   {:default ""})
 
 (defconfig urs-username
