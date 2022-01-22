@@ -7,7 +7,9 @@
    [clojure.string :as string]
    [cmr.common-app.services.search.params :as params]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.date-time-range-parser :as date-time-range-parser]
    [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
    [cmr.ingest.config :as ingest-config]
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as config]
@@ -23,8 +25,8 @@
 (def time-constraint-pattern (re-pattern (str date-rx "," date-rx)))
 
 (spec/def ::time-constraint (spec/and
-                              string?
-                              #(re-matches time-constraint-pattern %)))
+                             string?
+                             #(re-matches time-constraint-pattern %)))
 
 ;; Call the following to trigger a job, example below will fire an email subscription
 ;; UPDATE QRTZ_TRIGGERS
@@ -39,8 +41,8 @@
     (let [query-string-list (string/split query-string #"&")
           query-map-list (map #(let [a (string/split % #"=")]
                                  {(first a) (second a)})
-                               query-string-list)]
-       (apply merge query-map-list))))
+                              query-string-list)]
+      (apply merge query-map-list))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Jobs for refreshing the collection granule aggregation cache in the indexer. This is a singleton job
@@ -74,34 +76,34 @@
    :type Long})
 
 (defn email-granule-url-list
- "take a list of URLs and format them for an email"
- [gran-ref-location]
- (string/join "\n" (map #(str "* [" % "](" % ")") gran-ref-location)))
+  "take a list of URLs and format them for an email"
+  [gran-ref-location]
+  (string/join "\n" (map #(str "* [" % "](" % ")") gran-ref-location)))
 
 (defn create-email-content
- "Create an email body for subscriptions"
- [from-email-address to-email-address gran-ref-location subscription]
- (let [metadata (json/parse-string (:metadata subscription))
-       concept-id (get-in subscription [:extra-fields :collection-concept-id])
-       meta-query (get metadata "Query")
-       sub-start-time (:start-time subscription)]
-   {:from from-email-address
-    :to to-email-address
-    :subject "Email Subscription Notification"
-    :body [{:type "text/html"
-            :content (markdown/md-to-html-string
-                      (str "You have subscribed to receive notifications when data is added to the following query:\n\n"
-                           "`" concept-id "`\n\n"
-                           "`" meta-query "`\n\n"
-                           "Since this query was last run at "
-                           sub-start-time
-                           ", the following granules have been added or updated:\n\n"
-                           (email-granule-url-list gran-ref-location)
-                           "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at ["
-                           (ingest-config/cmr-support-email) 
-                           "](mailto:"
-                           (ingest-config/cmr-support-email) 
-                           ").\n"))}]}))
+  "Create an email body for subscriptions"
+  [from-email-address to-email-address gran-ref-location subscription]
+  (let [metadata (json/parse-string (:metadata subscription))
+        concept-id (get-in subscription [:extra-fields :collection-concept-id])
+        meta-query (get metadata "Query")
+        sub-start-time (:start-time subscription)]
+    {:from from-email-address
+     :to to-email-address
+     :subject "Email Subscription Notification"
+     :body [{:type "text/html"
+             :content (markdown/md-to-html-string
+                       (str "You have subscribed to receive notifications when data is added to the following query:\n\n"
+                            "`" concept-id "`\n\n"
+                            "`" meta-query "`\n\n"
+                            "Since this query was last run at "
+                            sub-start-time
+                            ", the following granules have been added or updated:\n\n"
+                            (email-granule-url-list gran-ref-location)
+                            "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at ["
+                            (ingest-config/cmr-support-email)
+                            "](mailto:"
+                            (ingest-config/cmr-support-email)
+                            ").\n"))}]}))
 
 (defn- add-updated-since
   "Pull out the start and end times from a time-constraint value and associate them to a map"
@@ -132,7 +134,6 @@
 (defn- subscription->time-constraint
   "Create a time-constraint from a subscriptions last-notified-at value or amount-in-sec from the end."
   [subscription end amount-in-sec]
-  {:post [(spec/valid? ::time-constraint %)]}
   (let [begin (if-let [start (get-in subscription [:extra-fields :last-notified-at])]
                 start
                 (t/minus end (t/seconds amount-in-sec)))]
@@ -152,8 +153,8 @@
    the input when sending the subscription emails."
   [context subscriptions]
   (for [raw-subscription subscriptions
-        :let [time-constraint (if (every? context [:start-date :end-date])
-                                (str (:start-date context) "," (:end-date context))
+        :let [time-constraint (if (contains? context :time-constraint)
+                                (:time-constraint context)
                                 (subscription->time-constraint
                                  raw-subscription
                                  (t/now)
@@ -172,10 +173,7 @@
                                         query-params)
               gran-refs (search-gran-refs-by-collection-id context search-by-revision sub-id)
               subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
-    (do
-      (when (seq subscriber-filtered-gran-refs)
-        (send-update-subscription-notification-time! context sub-id))
-      [sub-id subscriber-filtered-gran-refs subscriber-id subscription])))
+    [sub-id subscriber-filtered-gran-refs subscriber-id subscription]))
 
 (defn- send-subscription-emails
   "Takes processed processed subscription tuples and sends out emails if applicable."
@@ -191,6 +189,7 @@
           (postal-core/send-message email-settings email-content)
           (info (str "Successfully processed subscription [" sub-id "].
                       Sent subscription email to [" email-address "]."))
+          (send-update-subscription-notification-time! context sub-id)
           (catch Exception e
             (error "Exception caught in email subscription: " sub-id "\n\n"
                    (.getMessage e) "\n\n" e)))))))
@@ -203,3 +202,22 @@
                            (remove :deleted)
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
     (send-subscription-emails context (process-subscriptions context subscriptions))))
+
+(defn throw-error-if-one-sided-date-map
+  "Throws a service error if the provided map does not contain both keys :start-date and :end-date"
+  [date-map]
+  (when (not-every? date-map [:start-date :end-date])
+    (errors/throw-service-error :bad-request "One-sided date formats are not permitted. Please provide a start and end date."))
+  date-map)
+
+(defn trigger-email-subscription-processing
+  "Trigger subscription processing given the provided revision-date.  Revision date is passed through to
+   a Search query and should follow the same format as the CMR Search API."
+  [context params]
+  (let [revision-date (:revision-date params)]
+    (-> revision-date
+        (date-time-range-parser/parse-datetime-range)
+        (throw-error-if-one-sided-date-map)
+        ((fn dates-map->range-str [dates-map] (str (:start-date dates-map) "," (:end-date dates-map))))
+        (#(assoc context :time-constraint %))
+        (email-subscription-processing))))

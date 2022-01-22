@@ -98,3 +98,17 @@
             expected (str start "," now)
             actual (#'jobs/subscription->time-constraint data now -1234)]
         (is (= expected actual))))))
+
+(deftest throw-error-if-one-sided-date-map-test
+  (testing "map contains start-date and end-date keys"
+    (let [date-map {:start-date "2000-01-01T10:00:00Z" :end-date "2010-03-10T12:00:00Z"}]
+      (is (= date-map (jobs/throw-error-if-one-sided-date-map date-map)))))
+  (testing "map contains only start-date"
+    (let [date-map {:start-date "2000-01-01T10:00:00Z"}]
+      (is (thrown? clojure.lang.ExceptionInfo (jobs/throw-error-if-one-sided-date-map date-map)))))
+  (testing "map contains only end-date"
+    (let [date-map {:end-date "2000-01-01T10:00:00Z"}]
+      (is (thrown? clojure.lang.ExceptionInfo (jobs/throw-error-if-one-sided-date-map date-map)))))
+  (testing "an empty map"
+    (let [date-map {}]
+      (is (thrown? clojure.lang.ExceptionInfo (jobs/throw-error-if-one-sided-date-map date-map))))))

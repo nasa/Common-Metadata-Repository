@@ -7,6 +7,7 @@
    [cmr.common.mime-types :as mime-types]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-subscription :as data-umm-sub]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
@@ -16,12 +17,14 @@
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
    [cmr.transmit.search :as transmit-search]
-   [cmr.umm-spec.versioning :as versioning]))
+   [cmr.umm-spec.versioning :as versioning]
+   [cmr.umm.echo10.echo10-core :as echo10]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]))
 
 (def versioned-content-type
   "A versioned default content type used in the tests."
   (mime-types/with-version
-   mime-types/umm-json versioning/current-subscription-version))
+    mime-types/umm-json versioning/current-subscription-version))
 
 (def default-ingest-opts
   "Default HTTP client options for use when ingesting subscriptions using the functions below."
@@ -46,9 +49,9 @@
       (doseq [provider-map providers]
         ;; grant SUBSCRIPTION_MANAGEMENT permission for each provider.
         (echo-util/grant-all-subscription-sm (s/context)
-                                              (:provider-id provider-map)
-                                              guest-permissions
-                                              registered-permissions)))
+                                             (:provider-id provider-map)
+                                             guest-permissions
+                                             registered-permissions)))
     (f)))
 
 (defn update-subscription-notification
@@ -56,8 +59,8 @@
   [concept]
   (let [request-url (urls/mdb-subscription-notification-time concept)
         request (merge
-                  (config/conn-params (s/context))
-                  {:accept :xml :throw-exceptions false})
+                 (config/conn-params (s/context))
+                 {:accept :xml :throw-exceptions false})
         response (client/put request-url request)
         {:keys [headers body]} response
         status (int (:status response))]
@@ -116,9 +119,9 @@
   ([params options]
    (search/process-response
     (transmit-search/search-for-subscriptions
-      (s/context) params (merge options
-                                {:raw? true
-                                 :http-options {:accept :json}})))))
+     (s/context) params (merge options
+                               {:raw? true
+                                :http-options {:accept :json}})))))
 
 (defn subscription-result->xml-result
   [subscription]
@@ -133,8 +136,8 @@
                    []
                    [:location (format "%s/%s/%s" base-url id revision)])]
     (select-keys
-      (apply assoc subscription (concat [:id id] location))
-      [:id :revision-id :location :deleted])))
+     (apply assoc subscription (concat [:id id] location))
+     [:id :revision-id :location :deleted])))
 
 (def ^:private json-field-names
   "List of fields expected in a subscription JSON response."
@@ -159,11 +162,11 @@
   "For the given subscription return the expected subscription JSON."
   [subscription]
   (let [sub-json-fields (select-keys
-                          (assoc subscription
-                                 :name (extract-name-from-metadata subscription)
-                                 :subscriber-id (extract-subscriber-id-from-metadata subscription)
-                                 :collection-concept-id (extract-collection-concept-id-from-metadata subscription))
-                          json-field-names)]
+                         (assoc subscription
+                                :name (extract-name-from-metadata subscription)
+                                :subscriber-id (extract-subscriber-id-from-metadata subscription)
+                                :collection-concept-id (extract-collection-concept-id-from-metadata subscription))
+                         json-field-names)]
     sub-json-fields))
 
 (defn assert-subscription-search
@@ -195,3 +198,28 @@
         result (ingest-subscription subscription options)]
     (index/wait-until-indexed)
     result))
+
+(defn save-umm-granule
+  "Saves a umm-granule concept.  If provided, attributes are merged with the concept 
+   and passed to metadata-db/concepts endpoint."
+  ([provider-id umm-granule]
+   (save-umm-granule provider-id umm-granule {}))
+  ([provider-id umm-granule attributes]
+   (let [parent-collection-id (get umm-granule :collection-concept-id)
+         parent-entry-title (get-in umm-granule [:collection-ref :entry-title])
+         granule-ur (:granule-ur umm-granule)
+         xml (echo10/umm->echo10-xml umm-granule)
+         gran (mdb/save-concept (merge
+                                 {:concept-type :granule
+                                  :provider-id provider-id
+                                  :native-id granule-ur
+                                  :format "application/echo10+xml"
+                                  :metadata xml
+                                  :revision-date "2000-01-01T10:00:00Z"
+                                  :extra-fields {:parent-collection-id parent-collection-id
+                                                 :parent-entry-title parent-entry-title
+                                                 :granule-ur granule-ur}}
+                                 attributes))]
+     ;; Make sure the concept was saved successfully
+     (is (= 201 (:status gran)))
+     (merge umm-granule (select-keys gran [:concept-id :revision-id])))))

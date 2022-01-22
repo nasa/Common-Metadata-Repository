@@ -7,7 +7,9 @@
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.url-helper :as url]))
+   [cmr.system-int-test.utils.url-helper :as url]
+   [ring.util.codec :as codec]
+   [cmr.common.mime-types :as mt]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} {:grant-all-search? false
                                                                  :grant-all-ingest? false}))
@@ -20,7 +22,9 @@
   ([url method token body]
    (let [response (client/request {:url url
                                    :method method
-                                   :body body
+                                   :accept "application/json"
+                                   :content-type mt/form-url-encoded
+                                   :body (codec/form-encode body)
                                    :query-params {:token token}
                                    :connection-manager (s/conn-mgr)
                                    :throw-exceptions false})
@@ -42,15 +46,18 @@
         admin-update-token (e/login (s/context) "admin2" [admin-update-group-concept-id group3-concept-id])
         admin-read-update-token (e/login (s/context) "admin3" [admin-read-update-group-concept-id group3-concept-id])
         prov-admin-token (e/login (s/context) "prov-admin" [prov-admin-group-concept-id group3-concept-id])
-        check-all-permissions (fn [url method]
-                                (is
+        check-all-permissions (fn check-all-permissions-inline
+                                ([url method]
+                                 (check-all-permissions-inline url method nil))
+                                ([url method body]
+                                 (is
                                   (and
-                                   (not (has-action-permission? url method prov-admin-token))
-                                   (not (has-action-permission? url method guest-token))
-                                   (not (has-action-permission? url method user-token))
-                                   (not (has-action-permission? url method admin-read-token))
-                                   (has-action-permission? url method admin-update-token)
-                                   (has-action-permission? url method admin-read-update-token))))]
+                                   (not (has-action-permission? url method prov-admin-token body))
+                                   (not (has-action-permission? url method guest-token body))
+                                   (not (has-action-permission? url method user-token body))
+                                   (not (has-action-permission? url method admin-read-token body))
+                                   (has-action-permission? url method admin-update-token body)
+                                   (has-action-permission? url method admin-read-update-token body)))))]
 
     ;; Grant admin-group-guid admin permission
     (e/grant-group-admin (s/context) admin-read-group-concept-id :read)
@@ -112,4 +119,9 @@
         (url/cleanup-granule-bulk-update-task-url) :post
 
         "access-control-reindex-acls"
-        (url/access-control-reindex-acls-url) :post))))
+        (url/access-control-reindex-acls-url) :post))
+
+    (testing "Admin permissions test with body"
+      (check-all-permissions (url/email-subscription-processing)
+                             :post
+                             {:revision-date "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"}))))
