@@ -19,7 +19,6 @@
                     :throw-exceptions false
                     :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
-    (println "RESPONSE" response)
     (assoc body :status (:status response))))
 
 (defn provider-holdings
