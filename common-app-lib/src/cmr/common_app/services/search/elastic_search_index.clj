@@ -140,7 +140,7 @@
           (info "Execute ES query failed due to" body)
           (errors/throw-service-error
            :payload-too-large
-           "The search is creating too many buckets than allowed by CMR. Please narrow your search so that the search results can be reasonable returned in one request.")))
+           "The search is creating more buckets than allowed by CMR. Please narrow your search.")))
       ;; for other errors, rethrow the exception
       (throw e))))
 
