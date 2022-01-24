@@ -1,3 +1,4 @@
+import logging
 from GetAcls import *
 from Utils import *
 from GetGroups import *
@@ -5,7 +6,7 @@ from GetCollections import *
 
 class CreateTeaConfig:
     def __init__(self):
-        print('Creating TEA configuraton')
+        logging.info('Creating TEA configuraton')
 
     def create_tea_config(self, env, provider, token):
         env = get_env(env)
@@ -40,10 +41,11 @@ class CreateTeaConfig:
                     print('No S3 prefixes found for ACL')
             else:
                 print('ACL does not have concept ids assigned')
-        print(f'result mapping:\n{create_tea_config(all_s3_prefix_groups_dict)}')  
+        logging.info(f'result mapping:\n{create_tea_config(all_s3_prefix_groups_dict)}')
 
 #env = 'uat'
 #provider = 'SCIOPS'
+logging.basicConfig(filename='script.log', encoding='utf-8', level=logging.INFO)
 provider = input('Enter provider: ')
 env = input('Enter env (sit, uat or prod): ')
 token = input('Enter EDL token: ')
