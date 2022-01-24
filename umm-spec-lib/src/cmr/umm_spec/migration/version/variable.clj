@@ -230,12 +230,11 @@
 
 (defmethod interface/migrate-umm-version [:variable "1.8" "1.8.1"]
   [context umm-v & _]
-  ;; update the MetadataSpecification.i
+  ;; update the MetadataSpecification
   (-> umm-v
       (m-spec/update-version :variable "1.8.1")))
 
 (defmethod interface/migrate-umm-version [:variable "1.8.1" "1.8"]
-  ;; drop metadata specification and related urls
   [context umm-v & _]
   ;; Update the MetadataSpecification and Convert VariableType and VariableSubType
   (-> umm-v
