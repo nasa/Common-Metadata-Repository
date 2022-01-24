@@ -219,22 +219,22 @@
 (defn build-routes [system]
   (routes
     (context (get-in system [:public-conf :relative-root-url]) []
-      #'provider-api/provider-api-routes
+      provider-api/provider-api-routes
 
       ;; Add routes for translating metadata formats
-      #'translation-api/translation-routes
+      translation-api/translation-routes
 
       ;; Add routes to create, update, delete, & validate concepts
-      #'ingest-routes
+      ingest-routes
 
       ;; db migration route
       db-migration-routes
 
       ;; add routes for managing jobs
-      #'job-management-routes
+      job-management-routes
 
       ;; add routes for accessing caches
-      #'common-routes/cache-api-routes
+      common-routes/cache-api-routes
 
       ;; add routes for checking health of the application
       (common-health/health-api-routes ingest/health)

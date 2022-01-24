@@ -165,7 +165,7 @@
            (is (= (:concept-id coll1_granule2) (:concept-id (first result))))
            (is (= (:concept-id coll1_granule3) (:concept-id (second result))))))))))
 
-(deftest subscription-email-processing-time-constraint-test
+(deftest ^:oracle subscription-email-processing-time-constraint-test
   (system/only-with-real-database
    (with-redefs
     [jobs/send-subscription-emails mock-send-subscription-emails]
@@ -239,7 +239,7 @@
                      (map :concept-id)
                      count))))))))
 
-(deftest subscription-email-processing
+(deftest ^:oracle subscription-email-processing
   (system/only-with-real-database
    (with-redefs
     [jobs/send-subscription-emails mock-send-subscription-emails]

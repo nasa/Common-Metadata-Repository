@@ -175,7 +175,7 @@
               subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
     [sub-id subscriber-filtered-gran-refs subscriber-id subscription]))
 
-(defn ^:redef send-subscription-emails
+(defn- ^:redef send-subscription-emails
   "Takes processed processed subscription tuples and sends out emails if applicable."
   [context subscriber-filtered-gran-refs-list]
   (doseq [subscriber-filtered-gran-refs-tuple subscriber-filtered-gran-refs-list
