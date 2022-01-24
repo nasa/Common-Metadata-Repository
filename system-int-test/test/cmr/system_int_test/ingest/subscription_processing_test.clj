@@ -60,7 +60,7 @@
         (send-update-subscription-notification-time! context sub-id)))
     subscriber-filtered-gran-refs-list))
 
-(deftest  subscription-job-manual-time-constraint-test
+(deftest ^:oracle subscription-job-manual-time-constraint-test
   (system/only-with-real-database
    (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
          _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
@@ -173,7 +173,7 @@
          (is (= (:concept-id coll1_granule2) (:concept-id (first result))))
          (is (= (:concept-id coll1_granule3) (:concept-id (second result)))))))))
 
-(deftest subscription-email-processing-time-constraint-test
+(deftest ^:oracle subscription-email-processing-time-constraint-test
   (system/only-with-real-database
    (with-redefs
     [jobs/send-subscription-emails mock-send-subscription-emails]
@@ -243,10 +243,3 @@
                      flatten
                      (map :concept-id)
                      count))))))))
-
-
-(deftest redef-test
-  (testing "test1"
-    (with-redefs
-     [jobs/send-subscription-emails mock-send-subscription-emails]
-      (jobs/email-subscription-processing (system/context)))))
