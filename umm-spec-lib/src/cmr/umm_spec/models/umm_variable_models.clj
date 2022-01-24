@@ -55,16 +55,14 @@
    ;; The name of a variable.
    Name
 
-   ;; Specify basic type of a variable. These types can be either: SCIENCE_VARIABLE,
-   ;; QUALITY_VARIABLE, ANCILLARY_VARIABLE, OTHER.
+   ;; Specify basic type of a variable.
    VariableType
 
    ;; A described URL associated with the a web resource, or interface. e.g., the home page for the
    ;; variable provider.
    RelatedURLs
 
-   ;; Specifies the sub type of a variable. These types can be either: SCIENCE_SCALAR,
-   ;; SCIENCE_VECTOR, SCIENCE_ARRAY, SCIENCE_EVENTFLAG, OTHER.
+   ;; Specifies the sub type of a variable.
    VariableSubType
 
    ;; The measurement information of a variable.

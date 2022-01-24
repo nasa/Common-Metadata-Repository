@@ -225,3 +225,19 @@
   [context umm-v & _]
   (-> umm-v
       (dissoc :MetadataSpecification :RelatedURLs)))
+
+;; migrations for 1.8.1 **********************************************************
+
+(defmethod interface/migrate-umm-version [:variable "1.8" "1.8.1"]
+  [context umm-v & _]
+  ;; update the MetadataSpecification
+  (-> umm-v
+      (m-spec/update-version :variable "1.8.1")))
+
+(defmethod interface/migrate-umm-version [:variable "1.8.1" "1.8"]
+  [context umm-v & _]
+  ;; Update the MetadataSpecification and Convert VariableType and VariableSubType
+  (-> umm-v
+      (update :VariableType #(if (= "COORDINATE" %) "OTHER" %))
+      (update :VariableSubType #(if (or (= "LONGITUDE" %) (= "LATITUDE" %) (= "TIME" %)) "OTHER" %))
+      (m-spec/update-version :variable "1.8")))
