@@ -113,7 +113,7 @@
         end-time (last parts)]
     (assoc raw :start-time start-time :end-time end-time)))
 
-(defn- send-update-subscription-notification-time!
+(defn send-update-subscription-notification-time!
   "Fires off an http call to update the time which the subscription last was processed"
   [context sub-id]
   (debug "send-update-subscription-notification-time with" sub-id)
@@ -175,7 +175,7 @@
               subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
     [sub-id subscriber-filtered-gran-refs subscriber-id subscription]))
 
-(defn- send-subscription-emails
+(defn ^:redef send-subscription-emails
   "Takes processed processed subscription tuples and sends out emails if applicable."
   [context subscriber-filtered-gran-refs-list]
   (doseq [subscriber-filtered-gran-refs-tuple subscriber-filtered-gran-refs-list
