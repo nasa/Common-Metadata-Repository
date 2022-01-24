@@ -45,7 +45,7 @@ class CreateTeaConfig:
 
 #env = 'uat'
 #provider = 'SCIOPS'
-logging.basicConfig(filename='script.log', encoding='utf-8', level=logging.INFO)
+logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s', encoding='utf-8', level=logging.INFO)
 provider = input('Enter provider: ')
 env = input('Enter env (sit, uat or prod): ')
 token = input('Enter EDL token: ')
