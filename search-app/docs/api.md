@@ -4793,15 +4793,15 @@ The following parameters are supported when searching for subscriptions.
 
 These parameters will match fields within a subscription. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
-* name
-  * options: pattern, ignore_case
-* provider
-  * options: pattern, ignore_case
-* native_id
-  * options: pattern, ignore_case
-* concept_id
-* subscriber_id
-* collection_concept_id
+  * names
+    * options: pattern, ignore_case
+  * provider
+    * options: pattern, ignore_case
+  * native_id
+    * options: pattern, ignore_case
+  * concept_id
+  * subscriber_id
+  * collection_concept_id
 
 ##### <a name="subscription-search-response"></a> Subscription Search Response
 
@@ -4878,16 +4878,16 @@ Content-Length: 944
     "provider_id" : "PROV1",
     "native_id" : "subscription-1",
     "name" : "someSub1",
-    "subscriber-id" : "someSubId1",
-    "collection-concept-id" : "C1200000001-PROV1"
+    "subscriber_id" : "someSubId1",
+    "collection_concept_id" : "C1200000001-PROV1"
   }, {
     "concept_id" : "SUB1200000006-PROV1",
     "revision_id" : 1,
     "provider_id" : "PROV1",
     "native_id" : "subscription-2",
     "name" : "someSub2",
-    "subscriber-id" : "someSubId2",
-    "collection-concept-id" : "C1200000001-PROV1"
+    "subscriber_id" : "someSubId2",
+    "collection-concept_id" : "C1200000001-PROV1"
   } ]
 }
 ```

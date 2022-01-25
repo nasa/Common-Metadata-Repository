@@ -4,7 +4,6 @@
    [clojure.test :refer :all]
    [clojure.string :as string]
    [cmr.access-control.test.util :as ac-util]
-   [cmr.common.mime-types :as mime-types]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data2-core]
@@ -43,7 +42,7 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})
-        subscription (subscriptions/ingest-subscription (subscriptions/make-subscription-concept
+       subscription (subscriptions/ingest-subscription (subscriptions/make-subscription-concept
                                                          {:Name "test subscription"
                                                           :SubscriberId "subscriber"
                                                           :Query "platform=NOAA-7"
@@ -99,7 +98,7 @@
         (testing "JSON format"
           (subscriptions/assert-subscription-search expected-subscriptions (subscriptions/search-json query))))
 
-      "Find all returns nothing for guest"
+      "Find all returns nothing for guest" 
       [] {:token guest-token}
 
       "Find all returns all for registered user"
@@ -527,3 +526,31 @@
       "Sort by name then provider id descending order"
       ["-name" "-provider"]
       [subscription2 subscription1 subscription4 subscription3])))
+
+
+(deftest json-result-format-test
+  (let [collection (data2-core/ingest-umm-spec-collection
+                    "PROV1"
+                    (data-umm-c/collection
+                     {:ShortName "coll3"
+                      :EntryTitle "entry-title3"})
+                    {:token "mock-echo-system-token"})
+        subscription (subscriptions/ingest-subscription-with-attrs {:native-id "Sub1"
+                                                                    :Name "Subscription1"
+                                                                    :SubscriberId "SubId1"
+                                                                    :Query "platform=NOAA-6"
+                                                                    :CollectionConceptId (:concept-id collection)
+                                                                    :provider-id "PROV1"})
+        query {:name (:Name subscription)}
+        _ (index/wait-until-indexed)
+        response (first (:items (subscriptions/search-json-raw query)))]
+    (is (= #{:collection_concept_id
+             :concept_id
+             :name
+             :native_id
+             :provider_id
+             :revision_id
+             :subscriber_id}
+           (set (keys response))))
+    (is (= (:concept-id subscription) (:concept_id response)))))
+
