@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Ingest Bulk Update",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+      "concept_id": {
+          "type": "string",
+          "items": {
+              "type": "string"
+          },
+          "minItems": 1
+      },
+      "name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "collection_concept_id": {
+        "type": "string",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1
+      },
+      "native_id": {
+          "type": "string",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+      },
+      "provider_id": {
+          "type": "string",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+      },
+      "revision_id": {
+          "type": "number",
+          "items": {
+            "type": "number"
+          }  
+      },
+      "subscriber_id": {
+          "type": "string",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+      },
+
+  "required": ["concept_id", "revision_id", "name"]
+  }
+}
