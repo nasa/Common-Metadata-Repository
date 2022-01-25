@@ -180,6 +180,14 @@
          (acl/verify-subscription-management-permission
            context :update :provider-object provider-id))))))
 
+(defn check-valid-user
+  "Raise error if the user provided does not exist"
+  [context user-id]
+  (when-not (urs/user-exists? context user-id)
+    (errors/throw-service-error
+     :unauthorized
+     "The user-id must correspond to a valid EDL account.")))
+
 (defn generate-native-id
   "Generate a native-id for a subscription based on the name."
   [subscription]
@@ -249,6 +257,7 @@
           sub-with-native-id (assoc tmp-subscription :native-id native-id)
           final-sub (add-fields-if-missing request-context sub-with-native-id)
           subscriber-id (get-subscriber-id final-sub)]
+      (check-valid-user request-context subscriber-id)
       (check-ingest-permission request-context provider-id subscriber-id)
       (validate-query request-context final-sub)
       (check-duplicate-subscription request-context final-sub)
@@ -274,6 +283,7 @@
                             headers)
           final-sub (add-fields-if-missing request-context tmp-subscription)
           subscriber-id (get-subscriber-id final-sub)]
+      (check-valid-user request-context subscriber-id)
       (check-ingest-permission request-context provider-id subscriber-id)
       (validate-query request-context final-sub)
       (check-duplicate-subscription request-context final-sub)
@@ -303,6 +313,7 @@
                          (get-in original-subscription [:extra-fields :subscriber-id]))
         final-sub (add-fields-if-missing request-context tmp-subscription)
         new-subscriber (get-subscriber-id final-sub)]
+    (check-valid-user request-context new-subscriber)
     (check-ingest-permission request-context provider-id new-subscriber old-subscriber)
     (validate-query request-context final-sub)
     (check-duplicate-subscription request-context final-sub)

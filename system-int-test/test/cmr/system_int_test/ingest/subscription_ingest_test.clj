@@ -20,7 +20,10 @@
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.metadata-db :as mdb2]))
+   [cmr.transmit.metadata-db :as mdb2]
+   [cmr.mock-echo.data.urs-db :as urs-db]))
+
+(urs-db/create-users system/context '(user1 user2 user3 user4 admin-user post-user put-user sub-user))
 
 (use-fixtures :each
   (join-fixtures
@@ -921,3 +924,20 @@
                     coll2 "test_sub4_prov1" "sub-user" "platform=NOAA-11")]
         (is (not (:errors sub5)))
         (is (:errors sub4-2))))))
+
+(deftest subscription-ingest-invalid-subscriber-id-test
+  (let [coll1 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "coll-no-id"
+                 :EntryTitle "entry-title-no-id"})
+               {:token "mock-echo-system-token"})]
+    (testing "ingest on PROV1, with no subscriber-id supplied"
+      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
+                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                  :SubscriberId "invalid-user"
+                                                                  :EmailAddress "foo@example.com"})
+            user1-token (echo-util/login (system/context) "user1")
+            response (ingest/ingest-concept concept {:token user1-token})]
+        (is (= 401 (:status response)))
+        (is (= "The user-id [invalid-user] does not exist." (first (:errors response))))))))
