@@ -2707,6 +2707,31 @@ Search collections or granules with query parameters encoded form in POST reques
 
     curl -i -XPOST %CMR-ENDPOINT%/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
 
+You can also make a query.xml file that contains the query request, then use a curl search request using the -XPOST command.
+
+#### Example query.xml:
+  	pretty=true&
+  	page_size=1&
+  	page_num=3&
+    sort_key[]=platform&platform[]=AQUA&platform[]=AURA&revision_date[]=2015-07-01T01:00:00Z,2016-01-01T01:00:00Z&revision_date[]=2014-01-01T01:00:00Z,2014-06-01T01:00:00Z&
+    temporal[]=2000-01-01T10:00:00Z/2010-03-10T12:00:00Z&include_has_granules=true&include_granule_counts=true&include_facets=true&hierarchical_facets=true
+
+#### Example Request:
+    curl -v -XPOST -i -d @query.xml "https://cmr.uat.earthdata.nasa.gov/search/collections.echo10"
+
+
+You can also use JSON query language with a POST method.
+
+CMR provides a JSON RESTful interface. This interface is only applicable to collection searches. See the JSON scheme here: https://cmr.uat.earthdata.nasa.gov/search/site/JSONQueryLanguage.json.
+
+#### Example JSON Request:
+    curl -XPOST -H "Content-Type: application/json" -H "Client-Id: GCMD" https://cmr.uat.earthdata.nasa.gov/search/collections
+    -d '{"condition": { "and": [{ "not": { "or": [{ "provider": "TEST" },
+    { "and": [{ "project": "test-project",
+    "platform": "mars-satellite" }]}]}},
+    { "bounding_box": [-45,15,0,25],
+    "science_keywords": { "category": "EARTH SCIENCE" }}]}}'
+
 ### <a name="search-response-as-granule-timeline"></a> Search Response as Granule Timeline
 
 Granule timeline queries allow clients to find time intervals with continuous granule coverage per collection. The intervals are listed per collection and contain the number of granules within each interval. A timeline search can be performed by sending a `GET` request with query parameters or a `POST` request with query parameters form encoded in request body to the `granules/timeline` route. The utility of this feature for clients is in building interactive timelines. Clients need to display on the timeline where there is granule data and where there is none.
@@ -4784,15 +4809,15 @@ The following parameters are supported when searching for subscriptions.
 
 These parameters will match fields within a subscription. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
-* name
-  * options: pattern, ignore_case
-* provider
-  * options: pattern, ignore_case
-* native_id
-  * options: pattern, ignore_case
-* concept_id
-* subscriber_id
-* collection_concept_id
+  * names
+    * options: pattern, ignore_case
+  * provider
+    * options: pattern, ignore_case
+  * native_id
+    * options: pattern, ignore_case
+  * concept_id
+  * subscriber_id
+  * collection_concept_id
 
 ##### <a name="subscription-search-response"></a> Subscription Search Response
 
@@ -4869,16 +4894,16 @@ Content-Length: 944
     "provider_id" : "PROV1",
     "native_id" : "subscription-1",
     "name" : "someSub1",
-    "subscriber-id" : "someSubId1",
-    "collection-concept-id" : "C1200000001-PROV1"
+    "subscriber_id" : "someSubId1",
+    "collection_concept_id" : "C1200000001-PROV1"
   }, {
     "concept_id" : "SUB1200000006-PROV1",
     "revision_id" : 1,
     "provider_id" : "PROV1",
     "native_id" : "subscription-2",
     "name" : "someSub2",
-    "subscriber-id" : "someSubId2",
-    "collection-concept-id" : "C1200000001-PROV1"
+    "subscriber_id" : "someSubId2",
+    "collection-concept_id" : "C1200000001-PROV1"
   } ]
 }
 ```
