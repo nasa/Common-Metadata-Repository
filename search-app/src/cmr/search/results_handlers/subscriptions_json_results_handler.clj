@@ -29,8 +29,8 @@
                       :provider_id provider-id
                       :native_id native-id
                       :name subscription-name
-                      :subscriber-id subscriber-id
-                      :collection-concept-id collection-concept-id})]
+                      :subscriber_id subscriber-id
+                      :collection_concept_id collection-concept-id})]
     (if deleted
       (assoc result-item :deleted deleted)
       result-item)))
