@@ -1,11 +1,15 @@
 import requests
+import logging
+
+logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s', encoding='utf-8', level=logging.INFO)
 
 def get_groups(acl_url, token):
     headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
     try:
         response = requests.get(acl_url, headers=headers)
+        json_data = response.json()
+        logging.debug(f'get_groups: response={json_data}')
         if response.status_code == 200:
-            json_data = response.json()
             if 'group_permissions' in json_data:
                 items = json_data['group_permissions']
                 return items
@@ -18,8 +22,9 @@ def get_group(env, group_id, token):
     headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
     try:
         response = requests.get(url, headers=headers)
+        json_data = response.json()
+        logging.debug(f'get_group: response={json_data}')
         if response.status_code == 200:
-            json_data = response.json()
             return json_data
     except Exception as e:
         print(f'Error occurred in get_group: {e}')

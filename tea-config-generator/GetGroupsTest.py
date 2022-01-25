@@ -1,6 +1,6 @@
 from unittest import TestCase, main, mock
 from GetGroups import *
-#python3 -m unittest discover -s ./ -p '*Test.py'
+#python -m unittest discover -s ./ -p '*Test.py'
 class GetGroupsTest(TestCase):
     @mock.patch('GetGroups.requests.get')
     def test_get_groups(self, mock_get):

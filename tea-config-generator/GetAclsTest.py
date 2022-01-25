@@ -1,6 +1,6 @@
 from unittest import TestCase, main, mock
 from GetAcls import *
-#python3 -m unittest discover -s ./ -p '*Test.py'
+#python -m unittest discover -s ./ -p '*Test.py'
 class GetAclsTest(TestCase):
     @mock.patch('GetAcls.requests.get')
     def test_get_acls(self, mock_get):

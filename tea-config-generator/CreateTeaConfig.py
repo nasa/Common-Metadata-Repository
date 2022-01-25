@@ -41,7 +41,10 @@ class CreateTeaConfig:
                     print('No S3 prefixes found for ACL')
             else:
                 print('ACL does not have concept ids assigned')
-        logging.info(f'result mapping:\n{create_tea_config(all_s3_prefix_groups_dict)}')
+        if all_s3_prefix_groups_dict:
+            logging.info(f'result mapping:\n{create_tea_config(all_s3_prefix_groups_dict)}')
+        else:
+            logging.info('No S3 prefixes found')
 
 #env = 'uat'
 #provider = 'SCIOPS'

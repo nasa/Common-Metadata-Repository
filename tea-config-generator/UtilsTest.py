@@ -1,6 +1,6 @@
 from unittest import TestCase, main, mock
 from Utils import *
-#python3 -m unittest discover -s ./ -p '*Test.py'
+#python -m unittest discover -s ./ -p '*Test.py'
 class UtilsTest(TestCase):
     def test_add_to_dict(self):
         a = {}

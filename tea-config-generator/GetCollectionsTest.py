@@ -1,6 +1,6 @@
 from unittest import TestCase, main, mock
 from GetCollections import *
-#python3 -m unittest discover -s ./ -p '*Test.py'
+#python -m unittest discover -s ./ -p '*Test.py'
 class GetCollectionsTest(TestCase):
     @mock.patch('GetCollections.requests.get')
     def test_get_collections(self, mock_get):
