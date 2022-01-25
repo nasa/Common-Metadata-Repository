@@ -14,6 +14,7 @@
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as urls]
    [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]
    [cmr.transmit.search :as transmit-search]
    [cmr.umm-spec.versioning :as versioning]))
 
@@ -119,18 +120,6 @@
                                 {:raw? true
                                  :http-options {:accept :json}})))))
 
-(defn search-json-raw
-  "Searches for subscription using the given parameters without formatting."
-  ([]
-   (search-json-raw {}))
-  ([params]
-   (search-json-raw params {}))
-  ([params options]
-    (:body (transmit-search/search-for-subscriptions
-            (s/context) params (merge options
-                                      {:raw? true
-                                       :http-options {:accept :json}})))))
-
 (defn subscription-result->xml-result
   [subscription]
   (let [base-url (format "%s://%s:%s/concepts"
@@ -182,8 +171,8 @@
   [subscriptions response]
   (let [expected-items (-> (map get-expected-subscription-json subscriptions) seq set)
         expected-response {:status 200
-                            :hits (count subscriptions)
-                            :items expected-items}]
+                           :hits (count subscriptions)
+                           :items expected-items}]
     (is (:took response))
     (is (= expected-response
            (-> response
