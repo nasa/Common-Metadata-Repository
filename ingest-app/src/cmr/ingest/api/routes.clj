@@ -69,7 +69,7 @@
             ctx)
            {:status 200})
      (POST "/trigger-partial-collection-granule-aggregate-cache-refresh"
-           {ctx :request-context params :params}
+           {ctx :request-context}
            (acl/verify-ingest-management-permission ctx :update)
            (jobs/trigger-partial-refresh-collection-granule-aggregation-cache
             ctx)

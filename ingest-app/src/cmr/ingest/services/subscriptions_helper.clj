@@ -113,7 +113,7 @@
         end-time (last parts)]
     (assoc raw :start-time start-time :end-time end-time)))
 
-(defn send-update-subscription-notification-time!
+(defn- send-update-subscription-notification-time!
   "Fires off an http call to update the time which the subscription last was processed"
   [context sub-id]
   (debug "send-update-subscription-notification-time with" sub-id)

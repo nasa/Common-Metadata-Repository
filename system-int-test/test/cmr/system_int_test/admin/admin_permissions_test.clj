@@ -3,13 +3,13 @@
   (:require
    [clj-http.client :as client]
    [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url]
-   [ring.util.codec :as codec]
-   [cmr.common.mime-types :as mt]))
+   [ring.util.codec :as codec]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} {:grant-all-search? false
                                                                  :grant-all-ingest? false}))

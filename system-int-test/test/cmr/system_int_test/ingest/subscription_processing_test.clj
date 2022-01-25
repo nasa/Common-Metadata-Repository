@@ -239,7 +239,7 @@
                      (map :concept-id)
                      count))))))))
 
-(deftest ^:oracle subscription-email-processing
+(deftest ^:oracle subscription-email-processing-filtering
   (system/only-with-real-database
    (with-redefs
     [jobs/send-subscription-emails mock-send-subscription-emails]

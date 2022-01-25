@@ -12,14 +12,14 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as urls]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
    [cmr.transmit.search :as transmit-search]
-   [cmr.umm-spec.versioning :as versioning]
    [cmr.umm.echo10.echo10-core :as echo10]
-   [cmr.system-int-test.utils.metadata-db-util :as mdb]))
+   [cmr.umm-spec.versioning :as versioning]))
 
 (def versioned-content-type
   "A versioned default content type used in the tests."
