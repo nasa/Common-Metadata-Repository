@@ -53,7 +53,7 @@
   "Returns the facet query for the given facet field"
   [context concept-type facet-field size query-params]
   (case facet-field
-    (:science-keywords :variables)
+    (:platforms :science-keywords :variables)
     (let [hierarchical-field (keyword (str (name facet-field) "-h"))
           depth (hv2/get-depth-for-hierarchical-field query-params hierarchical-field)]
       (hv2/nested-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size depth))

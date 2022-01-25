@@ -17,15 +17,15 @@ const CMR_ROOT = process.env.CMR_ROOT
 const CMR_ROOT_URL = `http://${CMR_ROOT}`;
 
 /* CMR ENVIRONMENT VARIABLES */
-exports.CMR_ENVIRONMENT = `${process.env.CMR_ENVIRONMENT}`;
+exports.CMR_ENVIRONMENT = process.env.CMR_ENVIRONMENT;
 exports.CMR_ROOT = CMR_ROOT;
 exports.CMR_ROOT_URL = CMR_ROOT_URL;
 exports.CMR_COLLECTION_URL = `${CMR_ROOT_URL}/search/collections.json?concept_id=`;
 exports.CMR_GRANULE_URL = `${CMR_ROOT_URL}/search/granules.json?concept_id=`;
-exports.CMR_ECHO_TOKEN = `${process.env.CMR_ECHO_TOKEN}`;
+exports.CMR_ECHO_TOKEN = process.env.CMR_ECHO_TOKEN;
 
 /* AWS Config */
-exports.AWS_REGION = `${process.env.AWS_REGION}` || 'us-east-1'
+exports.AWS_REGION = process.env.AWS_REGION || 'us-east-1'
 
 /* REDIS config */
 // URL is incorrect and should be changed to HOST

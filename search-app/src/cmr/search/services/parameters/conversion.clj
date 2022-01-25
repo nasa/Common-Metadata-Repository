@@ -55,6 +55,8 @@
    :native-id :string
    :platform :string
    :platform-h :humanizer
+   :platforms :platforms ;; v2 facet support
+   :platforms-h :platforms ;; v2 facet support
    :point :point
    :polygon :polygon
    :circle :circle

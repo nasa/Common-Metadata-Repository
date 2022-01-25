@@ -318,7 +318,7 @@ These are query parameters that control what extra data is included with collect
   * `include_has_granules` - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats except opendata. To limit search results to collections with or without granules, see the [`has_granules`](#c-has-granules) parameter.
   * `include_granule_counts` - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats except opendata and kml.
   * `include_facets` There are 3 values allowed: "true", "false", or "v2". If this parameter is set to "true" or "v2" facets will be included in the collection results (not applicable to opendata results). Facets are described in detail below.
-  * `facets_size[field-name]` is used to customize the max number of values displayed for the facet. Values allowed: positive integer. Supported field-name are: science-keywords, platform, instrument, data-center, project, processing-level-id and variables.  
+  * `facets_size[field-name]` is used to customize the max number of values displayed for the facet. Values allowed: positive integer. Supported field-name are: science-keywords, platforms, instrument, data-center, project, processing-level-id and variables.
   * `hierarchical_facets` - If this parameter is set to "true" and the parameter `include_facets` is set to "true" the facets that are returned will be hierarchical. Hierarchical facets are described in the facets section below.
   * `include_highlights` - If this parameter is set to "true", the collection results will contain an additional field, 'highlighted_summary_snippets'. The field is an array of strings which contain a snippet of the summary which highlight any terms which match the terms provided in the keyword portion of a search. By default up to 5 snippets may be returned with each individual snippet being up to 100 characters, and keywords in the snippets are delineated with begin tag `<em>` and end tag `</em>`. This is configurable using `options[highlights][param]=value`. Supported option params are `begin_tag`, `end_tag`, `snippet_length` and `num_snippets`. The values for `snippet_length` and `num_snippets` must be integers greater than 0.
   * `include_tags` - If this parameter is set (e.g. `include_tags=gov.nasa.earthdata.search.*,gov.nasa.echo.*`), the collection results will contain an additional field 'tags' within each collection. The value of the tags field is a list of tag_keys that are associated with the collection. Only the tags with tag_key matching the values of `include_tags` parameter (with wildcard support) are included in the results. This parameter is supported in JSON, ATOM, ECHO10, DIF, DIF10, ISO19115 and native result formats.
@@ -2707,31 +2707,6 @@ Search collections or granules with query parameters encoded form in POST reques
 
     curl -i -XPOST %CMR-ENDPOINT%/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
 
-You can also make a query.xml file that contains the query request, then use a curl search request using the -XPOST command.
-
-#### Example query.xml:
-  	pretty=true&
-  	page_size=1&
-  	page_num=3&
-    sort_key[]=platform&platform[]=AQUA&platform[]=AURA&revision_date[]=2015-07-01T01:00:00Z,2016-01-01T01:00:00Z&revision_date[]=2014-01-01T01:00:00Z,2014-06-01T01:00:00Z&
-    temporal[]=2000-01-01T10:00:00Z/2010-03-10T12:00:00Z&include_has_granules=true&include_granule_counts=true&include_facets=true&hierarchical_facets=true
-
-#### Example Request:
-    curl -v -XPOST -i -d @query.xml "https://cmr.uat.earthdata.nasa.gov/search/collections.echo10"
-
-
-You can also use JSON query language with a POST method.
-
-CMR provides a JSON RESTful interface. This interface is only applicable to collection searches. See the JSON scheme here: https://cmr.uat.earthdata.nasa.gov/search/site/JSONQueryLanguage.json.
-
-#### Example JSON Request:
-    curl -XPOST -H "Content-Type: application/json" -H "Client-Id: GCMD" https://cmr.uat.earthdata.nasa.gov/search/collections
-    -d '{"condition": { "and": [{ "not": { "or": [{ "provider": "TEST" },
-    { "and": [{ "project": "test-project",
-    "platform": "mars-satellite" }]}]}},
-    { "bounding_box": [-45,15,0,25],
-    "science_keywords": { "category": "EARTH SCIENCE" }}]}}'
-
 ### <a name="search-response-as-granule-timeline"></a> Search Response as Granule Timeline
 
 Granule timeline queries allow clients to find time intervals with continuous granule coverage per collection. The intervals are listed per collection and contain the number of granules within each interval. A timeline search can be performed by sending a `GET` request with query parameters or a `POST` request with query parameters form encoded in request body to the `granules/timeline` route. The utility of this feature for clients is in building interactive timelines. Clients need to display on the timeline where there is granule data and where there is none.
@@ -2747,7 +2722,7 @@ The response format is in JSON. Intervals are returned as tuples containing thre
 
 #### Example Request:
 
-    curl -i "%CMR-ENDPOINT%/granules/timeline?concept_id=C1-PROV1&start_date=2000-01-01T00:00:00Z&end_date=2002-02-01T00:00:00.000Z&interval=month""
+    curl -i "%CMR-ENDPOINT%/granules/timeline?concept_id=C1-PROV1&start_date=2000-01-01T00:00:00Z&end_date=2002-02-01T00:00:00.000Z&interval=month"
 
 #### Example Response
 
@@ -2829,7 +2804,23 @@ Several fields including science keywords, data centers, platforms, instruments,
 
 #### <a name="facets-v2-response-format"></a> Version 2 Facets Response Format
 
-Version 2 facets are enabled by setting the `include_facets=v2` parameter in either collection or granule search requests in the JSON format. In order to request faceting on granule searches, the search must be limited in scope to a single collection (e.g. by specifying a single concept ID in the collection_concept_id parameter). The max number of values in each v2 facet can be set by using facets_size parameter (i.e. facets_size[platform]=10, facets_size[instrument]=20. Default size is 50.). facets_size is only supported for collection v2 facet search. The same fields apply in the v2 facets as for the flat facets with the addition of horizontal range facets. When calling the CMR with a query the V2 facets are returned. These facets include the apply field described in more detail a few paragraphs below that includes the search parameter and values that need to be sent back to the CMR.
+Version 2 facets are enabled by setting the `include_facets=v2` parameter in either collection or granule search requests in the JSON format. In order to request faceting on granule searches, the search must be limited in scope to a single collection (e.g. by specifying a single concept ID in the collection_concept_id parameter). The max number of values in each v2 facet can be set by using facets_size parameter (i.e. facets_size[platforms]=10, facets_size[instrument]=20. Default size is 50.). facets_size is only supported for collection v2 facet search. The same fields apply in the v2 facets as for the flat facets with the addition of horizontal range facets. When calling the CMR with a query the V2 facets are returned. These facets include the apply field described in more detail a few paragraphs below that includes the search parameter and values that need to be sent back to the CMR.
+
+##### Specifying facet fields
+
+Hierarchical Facet requests include any or all parts of the hierarchical structure using the `&parameter[set][subfield]=value` notation where:
+
+* **set**: Field group number denoting related hierachical subfields where all subfields for one facet use the same number. Values start with 0.
+* **subfield**: Field name in the hierarchical facet as defined by KMS. ie: Platforms uses Basis, Category, Sub_Category, Short_Name
+* **value**: facet value. ie Platform Basis has a `Air-based Platforms` value.
+
+Example: `science_keywords_h[0][topic]=Oceans`
+
+Example curl calls:
+
+    %CMR-ENDPOINT%/search/collections.json?include_facets=v2&hierarchical_facets=true&science_keywords_h%5B0%5D%5Btopic%5D=Oceans
+
+##### Responses
 
 With version 2 facets the CMR makes no guarantee of which facets will be present, whether the facets returned are hierarchical or flat in nature, how many values will be returned for each field, or that the same facets will be returned from release to release. The rules for processing v2 facets are as follows.
 
@@ -4793,15 +4784,15 @@ The following parameters are supported when searching for subscriptions.
 
 These parameters will match fields within a subscription. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
-  * names
-    * options: pattern, ignore_case
-  * provider
-    * options: pattern, ignore_case
-  * native_id
-    * options: pattern, ignore_case
-  * concept_id
-  * subscriber_id
-  * collection_concept_id
+* name
+  * options: pattern, ignore_case
+* provider
+  * options: pattern, ignore_case
+* native_id
+  * options: pattern, ignore_case
+* concept_id
+* subscriber_id
+* collection_concept_id
 
 ##### <a name="subscription-search-response"></a> Subscription Search Response
 
@@ -4878,16 +4869,16 @@ Content-Length: 944
     "provider_id" : "PROV1",
     "native_id" : "subscription-1",
     "name" : "someSub1",
-    "subscriber_id" : "someSubId1",
-    "collection_concept_id" : "C1200000001-PROV1"
+    "subscriber-id" : "someSubId1",
+    "collection-concept-id" : "C1200000001-PROV1"
   }, {
     "concept_id" : "SUB1200000006-PROV1",
     "revision_id" : 1,
     "provider_id" : "PROV1",
     "native_id" : "subscription-2",
     "name" : "someSub2",
-    "subscriber_id" : "someSubId2",
-    "collection-concept_id" : "C1200000001-PROV1"
+    "subscriber-id" : "someSubId2",
+    "collection-concept-id" : "C1200000001-PROV1"
   } ]
 }
 ```

@@ -260,11 +260,11 @@
         personnel (opendata/opendata-email-contact collection)
         platforms (map util/map-keys->kebab-case platforms)
         kms-index (kf/get-kms-index context)
-        platforms-nested (map #(platform/platform-short-name->elastic-doc kms-index %)
-                              (map :short-name platforms))
-        platform-short-names (->> (map :short-name platforms-nested)
+        platforms2-nested (map #(platform/platform2-nested-fields->elastic-doc kms-index %)
+                               (map :short-name platforms))
+        platform-short-names (->> (map :short-name platforms2-nested)
                                   (map str/trim))
-        platform-long-names (->> platforms-nested
+        platform-long-names (->> platforms2-nested
                                  (concat platforms)
                                  (keep :long-name)
                                  distinct
@@ -406,7 +406,9 @@
             :platform-sn-lowercase  (map str/lower-case platform-short-names)
 
             ;; hierarchical fields
-            :platforms platforms-nested
+            :platforms nil ;; DEPRECATED ; use :platforms2
+            :platforms2 platforms2-nested
+            :platforms2-humanized platforms2-nested
             :instruments instruments-nested
             :archive-centers archive-centers
             :data-centers data-centers

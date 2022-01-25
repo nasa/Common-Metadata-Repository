@@ -21,11 +21,15 @@
   [& project-names]
   {:Projects (apply data-umm-spec/projects project-names)})
 
-(def platform-short-names
+(def platform-names
   "List of platform short names that exist in the test KMS hierarchy. Note we are testing case
   insensivity of the short name. DIADEM-1D is the actual short-name value in KMS, but we expect
   diadem-1D to match."
-  ["diadem-1D" "DMSP 5B/F3" "A340-600" "SMAP"])
+  [{:short-name "diadem-1D" :long-name nil}
+   {:short-name "DMSP 5B/F3" :long-name "Defense Meteorological Satellite Program-F3"}
+   {:short-name "A340-600" :long-name nil}
+   {:short-name "SMAP" :long-name "Soil Moisture Active and Passive Observatory"}])
+
 
 (def instrument-short-names
   "List of instrument short names that exist in the test KMS hierarchy. Note we are testing case
@@ -49,9 +53,11 @@
           :let [platform-name (str prefix "-p" pn)]]
       (data-umm-spec/platform
         {:ShortName (if (= FROM_KMS prefix)
-                       (or (get platform-short-names pn) platform-name)
-                       platform-name)
-         :LongName platform-name
+                      (or (:short-name (get platform-names pn)) platform-name)
+                      platform-name)
+         :LongName (if (= FROM_KMS prefix)
+                     (or (:long-name (get platform-names pn)) platform-name)
+                     platform-name)
          :Instruments
            (for [instrument (range 0 num-instruments)
                  :let [instrument-name (str platform-name "-i" instrument)]]

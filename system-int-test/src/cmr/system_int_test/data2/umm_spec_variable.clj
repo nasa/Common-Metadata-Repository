@@ -27,7 +27,8 @@
        :Scale 1.0
        :Offset 0.0
        :FillValues [(umm-v/map->FillValueType {:Value -9999.0, :Type "SCIENCE_FILLVALUE"})]
-       :VariableType "SCIENCE_VARIABLE"
+       :VariableType "COORDINATE"
+       :VariableSubType "LONGITUDE"
        :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                           {:Category "sk-A"
                            :Topic "sk-B"

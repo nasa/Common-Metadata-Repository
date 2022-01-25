@@ -146,6 +146,8 @@
    :native-id cpv/string-param-options
    :platform cpv/string-plus-and-options
    :platform-h cpv/string-plus-and-options
+   :platforms cpv/string-plus-or-options ;; for facet v2 apply links
+   :platforms-h cpv/string-plus-or-options ;; for facet v2 apply links
    :point cpv/and-or-option
    :polygon cpv/and-or-option
    :project cpv/string-plus-and-options
@@ -933,6 +935,8 @@
   [(partial cpv/validate-map [:options])
    (partial cpv/validate-map [:options :entry-title])
    (partial cpv/validate-map [:options :platform])
+   (partial cpv/validate-map [:platforms]) ;; for facet v2 apply links
+   (partial cpv/validate-all-map-values cpv/validate-map [:platforms-h]) ;; for facet v2 apply links
    (partial cpv/validate-map [:options :instrument])
    (partial cpv/validate-map [:options :sensor])
    (partial cpv/validate-map [:options :project])
