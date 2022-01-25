@@ -24,7 +24,7 @@
 (def versioned-content-type
   "A versioned default content type used in the tests."
   (mime-types/with-version
-    mime-types/umm-json versioning/current-subscription-version))
+   mime-types/umm-json versioning/current-subscription-version))
 
 (def default-ingest-opts
   "Default HTTP client options for use when ingesting subscriptions using the functions below."
