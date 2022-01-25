@@ -38,3 +38,4 @@
 (defmethod qs/search-results->response [:subscription :json]
   [context query results]
   (json/generate-string (select-keys results [:hits :took :items])))
+
