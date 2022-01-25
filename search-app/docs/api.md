@@ -4793,7 +4793,7 @@ The following parameters are supported when searching for subscriptions.
 
 These parameters will match fields within a subscription. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
-  * names
+  * name
     * options: pattern, ignore_case
   * provider
     * options: pattern, ignore_case
