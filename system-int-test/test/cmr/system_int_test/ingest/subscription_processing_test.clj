@@ -216,7 +216,7 @@
 
        (dev-system/advance-time! 10)
 
-       (testing "Second run finds only collections created since the last notification"
+       (testing "Second run finds only granules created since the last notification"
          (let [gran2 (create-granule-and-index "PROV1" coll1 "Granule2")
                response (->> (system/context)
                              (jobs/email-subscription-processing)
