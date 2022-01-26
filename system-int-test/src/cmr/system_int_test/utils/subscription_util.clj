@@ -120,6 +120,18 @@
                                 {:raw? true
                                  :http-options {:accept :json}})))))
 
+(defn search-json-raw
+  "Searches for subscription using the given parameters without formatting."
+  ([]
+   (search-json-raw {}))
+  ([params]
+   (search-json-raw params {}))
+  ([params options]
+   (:body (transmit-search/search-for-subscriptions
+           (s/context) params (merge options
+                                     {:raw? true
+                                      :http-options {:accept :json}})))))
+
 (defn subscription-result->xml-result
   [subscription]
   (let [base-url (format "%s://%s:%s/concepts"
