@@ -36,7 +36,9 @@ class CreateTeaConfig:
                         print(f'No S3 prefixes found for concept id {concept_id}')
                 if s3_prefixes_set:
                     print(f'Found S3 prefixes for ACL: {s3_prefixes_set}')
-                    add_to_dict(all_s3_prefix_groups_dict, s3_prefixes_set, group_names_set)
+                    print(f'Found Group Name Set for ACL: {group_names_set}')
+                    if group_names_set:
+                        add_to_dict(all_s3_prefix_groups_dict, s3_prefixes_set, group_names_set)
                 else:
                     print('No S3 prefixes found for ACL')
             else:
