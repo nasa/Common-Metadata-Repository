@@ -222,9 +222,11 @@ UMM-C schema validation errors are returned as warnings in the response by defau
 
 Requests could fail for several reasons when communicating with the CMR as described in the [HTTP Status Codes](#http-status-codes).
 
+Ingest validation errors can take one of two forms in the following: 
+
 ##### <a name="general-errors"></a> General Errors
 
-Ingest validation errors can take one of two shapes. General error messages will be returned as a list of error messages like the following:
+General error messages will be returned as a list of error messages like the following:
 
 ```
 <errors>
