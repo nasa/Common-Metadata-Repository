@@ -21,9 +21,7 @@
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.metadata-db :as mdb2]
-   [cmr.mock-echo.data.urs-db :as urs-db]))
-
-(urs-db/create-users system/context '(user1 user2 user3 user4 admin-user post-user put-user sub-user))
+   [cmr.mock-echo.client.mock-urs-client :as mock-urs]))
 
 (use-fixtures :each
   (join-fixtures
@@ -38,6 +36,20 @@
                                                       [:read]
                                                       [:read :update])]))
 
+
+
+(defn create-users-fixture [fn]
+  (mock-urs/create-users (system/context) [{:username "user1" :password "user1pass"} 
+                                           {:username "user2" :password "user2pass"} 
+                                           {:username "user3" :password "user3pass"}
+                                           {:username "user4" :password "user4pass"}
+                                           {:username "admin-user" :password "admin-userpass"}
+                                           {:username "post-user" :password "post-userpass"}
+                                           {:username "put-user" :password "put-userpass"}
+                                           {:username "sub-user" :password "sub-userpass"}
+                                           {:username "someSubId" :password "someSubIdpass"}])
+  (fn))
+
 (defn- process-subscriptions
   "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
   []
@@ -45,6 +57,9 @@
                            (remove :deleted)
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
     (#'jobsub/process-subscriptions (system/context) subscriptions)))
+
+
+(use-fixtures :once create-users-fixture)
 
 
 (deftest subscription-ingest-no-subscriber-id-test
@@ -81,6 +96,7 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})]
+    (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
     (testing "ingest on PROV3, guest is not granted ingest permission for SUBSCRIPTION_MANAGEMENT ACL"
       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
                                                                   :CollectionConceptId (:concept-id coll1)})
@@ -91,7 +107,7 @@
       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
                                                                   :CollectionConceptId (:concept-id coll1)})
             user1-token (echo-util/login (system/context) "user1")
-            response (ingest/ingest-concept concept {:token user1-token})]
+            response (ingest/ingest-concept concept {:token user1-token :user-id "user1"})]
         (is (= 201 (:status response)))))))
 
 (deftest subscription-delete-on-prov3-test
@@ -101,6 +117,7 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})]
+    (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
     (testing "delete on PROV3, guest is not granted update permission for SUBSCRIPTION_MANAGEMENT ACL"
       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
                                                                   :CollectionConceptId (:concept-id coll1)})
@@ -123,6 +140,7 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})]
+    (mock-urs/create-users (system/context) "someSubId")
     (testing "ingest of a new subscription concept"
       (let [concept (subscription-util/make-subscription-concept
                      {:CollectionConceptId (:concept-id coll1)})
@@ -146,6 +164,7 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})]
+    (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
     (testing "json response"
       (let [response (ingest/ingest-concept
                       (subscription-util/make-subscription-concept
@@ -171,6 +190,7 @@
                (dissoc (ingest/parse-ingest-body :xml response) :body)))))))
 
 (deftest subscription-ingest-with-bad-query-error-test
+  (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
   (testing "ingest of a new subscription concept"
     (let [coll1 (data-core/ingest-umm-spec-collection
                   "PROV1"
@@ -192,6 +212,7 @@
 
 ;; Verify that the accept header works with returned errors
 (deftest subscription-ingest-with-errors-accept-header-test
+  (mock-urs/create-users (system/context) [{:username "" :password "Password"}])
   (testing "json response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -219,6 +240,11 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})]
+    (mock-urs/create-users (system/context) [{:username "user1" :password "Pass1"}
+                                             {:username "user2" :password "Pass2"}
+                                             {:username "user3" :password "Pass3"}
+                                             {:username "user4" :password "Pass4"}
+                                             {:username "someSubId" :password "somePass"}])
     (testing "ingest of new concept"
       (are3 [ingest-headers expected-user-id]
         (let [concept (subscription-util/make-subscription-concept {:CollectionConceptId (:concept-id coll1)})
@@ -277,6 +303,7 @@
                   :CollectionConceptId (:concept-id coll1)
                   :native-id "Atlantic-1"}
         concept (subscription-util/make-subscription-concept metadata)]
+    (mock-urs/create-users (system/context) [{:username "someSubId" :password "Pass"}])
     (testing "ingest of a new subscription concept with concept-id present"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
@@ -313,6 +340,7 @@
                     :CollectionConceptId (:concept-id coll1)
                     :native-id "Atlantic-1"}
           concept (subscription-util/make-subscription-concept metadata)]
+      (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
       (subscription-util/ingest-subscription concept)
       (testing "send an update event to an new subscription"
         (let [resp (subscription-util/update-subscription-notification supplied-concept-id)]
@@ -323,6 +351,8 @@
           (is (= 404 (:status resp))))))))
 
 (deftest subscription-ingest-schema-validation-test
+  (mock-urs/create-users (system/context) [{:username "" :password "Password"}])
+  (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
   (testing "ingest of subscription concept JSON schema validation missing field"
     (let [concept (subscription-util/make-subscription-concept {:SubscriberId ""})
           {:keys [status errors]} (ingest/ingest-concept concept)]
@@ -355,6 +385,7 @@
                    :Query "platform=NOAA-9"
                    :native-id "other"})
         _ (ingest/ingest-concept concept)]
+    (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
     (testing "update concept with a different concept-id is invalid"
       (let [{:keys [status errors]} (ingest/ingest-concept
                                      (assoc concept :Query "platform=NOAA-10" :concept-id "SUB1111-PROV1"))]
@@ -374,6 +405,7 @@
                [status errors]))))))
 
 (deftest delete-subscription-ingest-test
+  (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
   (testing "delete a subscription"
     (let [coll1 (data-core/ingest-umm-spec-collection
                  "PROV1"
@@ -546,6 +578,7 @@
 
 ;; case 5 test account 2 which does NOT match metadata user and account has prems ; this should be MMT's use case
 (deftest roll-your-own-subscription-and-have-acls-tests-with-acls
+  (mock-urs/create-users (system/context) [{:username "user1" :password "Password"}])
   (testing "Use an account which does not match matches the metadata and DOES have an ACL"
     (let [user2-token (echo-util/login (system/context) "user2")
           supplied-concept-id "SUB1000-PROV1"
@@ -832,7 +865,7 @@
               "PROV1"
               (data-umm-c/collection)
               {:token "mock-echo-system-token"})]
-
+    (mock-urs/create-users (system/context) [{:username "post-user" :password "Password"}])
     (testing "without native-id returns an error"
       (let [concept (dissoc (subscription-util/make-subscription-concept
                              {:SubscriberId "post-user"
@@ -852,8 +885,8 @@
                              :Name "a different subscription with native-id"
                              :CollectionConceptId (:concept-id coll)})
                            :native-id "another-native-id")
-            {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
-                                                                                  :method :put})]
+            {:keys [native-id concept-id status errors]} (ingest/ingest-concept concept {:token token
+                                                                                         :method :put})]
         (is (= 201 status))
         (is (not (nil? concept-id)))
         (is (= "another-native-id" native-id))
@@ -940,4 +973,4 @@
             user1-token (echo-util/login (system/context) "user1")
             response (ingest/ingest-concept concept {:token user1-token})]
         (is (= 401 (:status response)))
-        (is (= "The user-id [invalid-user] does not exist." (first (:errors response))))))))
+        (is (= "The user-id must correspond to a valid EDL account." (first (:errors response))))))))
