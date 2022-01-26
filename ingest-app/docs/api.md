@@ -226,11 +226,14 @@ Requests could fail for several reasons when communicating with the CMR as descr
 
 Ingest validation errors can take one of two shapes. General error messages will be returned as a list of error messages like the following:
 
-	<errors>
-   		<error>Parent collection for granule [SC:AE_5DSno.002:30500511] does not exist.</error>
-	</errors>
+```
+<errors>
+   <error>Parent collection for granule [SC:AE_5DSno.002:30500511] does not exist.</error>
+</errors>
 
-##### <a name="umm-ialidation-errors"></a> UMM Validation Errors
+```
+
+##### <a name="umm-validation-errors"></a> UMM Validation Errors
 
 UMM Validation errors will be returned with a path within the metadata to the failed item. For example the following errors would be returned if the first and second spatial areas were invalid. The path is a set of UMM fields in camel case separated by a `/`. Numeric indices are used to indicate the index of an item within a list that failed.
 
@@ -249,11 +252,18 @@ UMM Validation errors will be returned with a path within the metadata to the fa
       </errors>
    </error>
 </errors>
+
 ```
 
 Error messages can also be returned in JSON by setting the Accept header to application/json.
 
 ```
+General error case(schema errors, json syntax errors etc.) when path is not applicable:
+{
+  "errors" : [ "Invalid JSON: Expected a ',' or '}' at 3457 [character 7 line 91]" ]
+}
+
+UMM validation case:
 {
   "errors" : [ {
     "path" : [ "Platforms", 1, "Instruments", 1, "Composed Of" ],
