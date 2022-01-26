@@ -793,7 +793,7 @@ curl -i -XPUT \
   -H "Echo-Token: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/subscriptions/subscription123 \
   -d \
-"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"EmailAddress\": \"someaddress@gmail.com\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
+"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
 ```
 
 ```
@@ -802,7 +802,7 @@ curl -i -XPOST \
   -H "Echo-Token: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/subscriptions \
   -d \
-"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"EmailAddress\": \"someaddress@gmail.com\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
+"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
 ```
 
 #### Successful Response in XML
