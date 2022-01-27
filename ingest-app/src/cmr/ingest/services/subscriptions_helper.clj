@@ -205,26 +205,16 @@
                             (map #(select-keys % [:concept-id :extra-fields :metadata])))]
      (send-subscription-emails context (process-subscriptions context subscriptions revision-date-range)))))
 
-(defn- throw-error-if-one-sided-date-map
-  "Throws a service error if the provided map does not contain both keys :start-date and :end-date"
-  [date-map]
-  (when (not-every? date-map [:start-date :end-date])
-    (errors/throw-service-error :bad-request "One-sided date formats are not permitted. Please provide a start and end date.")))
-
-(defn- throw-error-if-start-date-after-end-date
-  "Throws a service error if the start date is after the end date"
-  [start-date end-date]
-  (when (t/after? start-date end-date)
-    (errors/throw-service-error :bad-request "The start date should occur before the end date.")))
-
 (defn- validate-revision-date-range
   "Throws service errors on invalid revision date ranges"
   [revision-date-range]
-  (let [revision-date-map (date-time-range-parser/parse-datetime-range revision-date-range)
-        _ (throw-error-if-one-sided-date-map revision-date-map)
-        start-date (:start-date revision-date-map)
-        end-date (:end-date revision-date-map)]
-    (throw-error-if-start-date-after-end-date start-date end-date)))
+  (let [{:keys [start-date end-date]} (date-time-range-parser/parse-datetime-range revision-date-range)]
+    (when-not start-date
+      (errors/throw-service-error :bad-request "Missing start date in revision-date-range."))
+    (when-not end-date
+      (errors/throw-service-error :bad-request "Missing end date in revision-date-range."))
+    (when-not (t/before? start-date end-date)
+      (errors/throw-service-error :bad-request "The start date should occur before the end date."))))
 
 (defn trigger-email-subscription-processing
   "Trigger subscription processing given the provided revision-date.  Revision date is passed through to

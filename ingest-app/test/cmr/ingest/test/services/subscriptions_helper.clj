@@ -100,25 +100,22 @@
             actual (#'jobs/subscription->time-constraint data now -1234)]
         (is (= expected actual))))))
 
-(deftest throw-error-if-one-sided-date-map-test
-  (testing "map contains start-date and end-date keys"
-    (let [date-map {:start-date "2000-01-01T10:00:00Z" :end-date "2010-03-10T12:00:00Z"}]
-      (is (nil? (#'jobs/throw-error-if-one-sided-date-map date-map)))))
-  (testing "map contains only start-date"
-    (let [date-map {:start-date "2000-01-01T10:00:00Z"}]
-      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/throw-error-if-one-sided-date-map date-map)))))
-  (testing "map contains only end-date"
-    (let [date-map {:end-date "2000-01-01T10:00:00Z"}]
-      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/throw-error-if-one-sided-date-map date-map)))))
-  (testing "an empty map"
-    (let [date-map {}]
-      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/throw-error-if-one-sided-date-map date-map))))))
-
-(deftest throw-error-if-start-date-after-end-date-test
-  (let [year-2000 (dtp/parse-datetime "2000-01-01T10:00:00Z")
-        year-2010 (dtp/parse-datetime "2010-01-01T10:00:00Z")]
-    (testing "start-date after end-date fails"
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (#'jobs/throw-error-if-start-date-after-end-date year-2010 year-2000))))
-    (testing "start-date before end-date succeeds"
-      (is (nil? (#'jobs/throw-error-if-start-date-after-end-date year-2000 year-2010))))))
+(deftest validate-revision-date-range-test
+  (testing "only start-date throws exception"
+    (let [revision-date-range "2000-01-01T10:00:00Z,"]
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range)))))
+  (testing "only end-date  throws exception"
+    (let [revision-date-range ",2010-03-10T12:00:00Z"]
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range)))))
+  (testing "start-date before end-date returns nil"
+    (let [revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"]
+      (is (nil? (#'jobs/validate-revision-date-range revision-date-range)))))
+  (testing "start-date equals end-date  throws exception"
+    (let [revision-date-range "2000-01-01T10:00:00Z,2000-01-01T10:00:00Z"]
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range)))))
+  (testing "start-date after end-date throws exception"
+    (let [revision-date-range "2010-01-01T10:00:00Z,2000-01-01T10:00:00Z"]
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range)))))
+  (testing "invalid format throws exception"
+    (let [revision-date-range "2000-01-01T10:00:Z,2010-01-01T10:00:00Z"]
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range))))))
