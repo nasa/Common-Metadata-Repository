@@ -41,6 +41,10 @@
     result))
 
 (defn- mock-send-subscription-emails
+  "This function is used along with with-redefs to avoid sending emails in
+   integration tests. If send-subscription-emails is called in tests without being mocked,
+   errors while be returned when attempting to connect to the mail server in 
+   postal-core/send-message."
   [context subscriber-filtered-gran-refs-list]
   (let
    [send-update-subscription-notification-time! #'jobs/send-update-subscription-notification-time!]
@@ -109,7 +113,7 @@
            _sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1_coll1" "user2" "day_night_flag=day")
            _sub2 (subscription-util/create-subscription-and-index coll2 "test_sub_prov1_coll2" "user2" "day_night_flag=day")]
 
-       (testing "given a valid time constraing, return the correct granules"
+       (testing "given a valid time constraint, return the correct granules"
          (let [time-constraint "2016-01-02T00:00:00Z,2016-01-04T00:00:00Z"
                system-context (system/context)
                result (->> (jobs/email-subscription-processing system-context time-constraint)
