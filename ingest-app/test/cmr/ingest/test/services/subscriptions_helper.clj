@@ -3,6 +3,7 @@
   (:require
    [clj-time.core :as t]
    [clojure.test :refer :all]
+   [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as u :refer [are3]]
    [cmr.ingest.config :as ingest-config]
    [cmr.ingest.services.subscriptions-helper :as jobs]))
@@ -25,7 +26,7 @@
 (deftest create-email-test
   "This tests the HTML output of the email generation"
   (let [actual (jobs/create-email-content
-                (ingest-config/cmr-support-email) 
+                (ingest-config/cmr-support-email)
                 "someone@gmail.com"
                 '("https://cmr.link/g1" "https://cmr.link/g2" "https://cmr.link/g3")
                 {:extra-fields {:collection-concept-id "C1200370131-EDF_DEV06"}
@@ -49,9 +50,9 @@
                 "<a href='https://cmr.link/g3'>https://cmr.link/g3</a></li></ul>"
                 "<p>To unsubscribe from these notifications, or if you have any questions, "
                 "please contact us at <a href='mailto:"
-                (ingest-config/cmr-support-email) 
+                (ingest-config/cmr-support-email)
                 "'>"
-                (ingest-config/cmr-support-email) 
+                (ingest-config/cmr-support-email)
                 "</a>.</p>")
            (:content (first (:body actual)))))))
 
@@ -102,13 +103,22 @@
 (deftest throw-error-if-one-sided-date-map-test
   (testing "map contains start-date and end-date keys"
     (let [date-map {:start-date "2000-01-01T10:00:00Z" :end-date "2010-03-10T12:00:00Z"}]
-      (is (= date-map (jobs/throw-error-if-one-sided-date-map date-map)))))
+      (is (nil? (#'jobs/throw-error-if-one-sided-date-map date-map)))))
   (testing "map contains only start-date"
     (let [date-map {:start-date "2000-01-01T10:00:00Z"}]
-      (is (thrown? clojure.lang.ExceptionInfo (jobs/throw-error-if-one-sided-date-map date-map)))))
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/throw-error-if-one-sided-date-map date-map)))))
   (testing "map contains only end-date"
     (let [date-map {:end-date "2000-01-01T10:00:00Z"}]
-      (is (thrown? clojure.lang.ExceptionInfo (jobs/throw-error-if-one-sided-date-map date-map)))))
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/throw-error-if-one-sided-date-map date-map)))))
   (testing "an empty map"
     (let [date-map {}]
-      (is (thrown? clojure.lang.ExceptionInfo (jobs/throw-error-if-one-sided-date-map date-map))))))
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/throw-error-if-one-sided-date-map date-map))))))
+
+(deftest throw-error-if-start-date-after-end-date-test
+  (let [year-2000 (dtp/parse-datetime "2000-01-01T10:00:00Z")
+        year-2010 (dtp/parse-datetime "2010-01-01T10:00:00Z")]
+    (testing "start-date after end-date fails"
+      (is (thrown? clojure.lang.ExceptionInfo
+                   (#'jobs/throw-error-if-start-date-after-end-date year-2010 year-2000))))
+    (testing "start-date before end-date succeeds"
+      (is (nil? (#'jobs/throw-error-if-start-date-after-end-date year-2000 year-2010))))))

@@ -50,7 +50,7 @@
         (send-update-subscription-notification-time! context sub-id)))
     subscriber-filtered-gran-refs-list))
 
-(deftest ^:oracle subscription-job-manual-time-constraint-test
+(deftest subscription-job-manual-time-constraint-test
   (system/only-with-real-database
    (with-redefs
     [jobs/send-subscription-emails mock-send-subscription-emails]
@@ -123,18 +123,16 @@
 
        (testing "given a time constraint with no granules..."
          (let [time-constraint "2016-01-07T00:00:00Z,2016-01-09T00:00:00Z"
-               system-context (merge (system/context) {:time-constraint time-constraint})
-               result (->> system-context
-                           (jobs/email-subscription-processing)
+               system-context (system/context)
+               result (->> (jobs/email-subscription-processing system-context time-constraint)
                            (first)
                            (second))]
            (is (= (count result) 0))))
 
        (testing "given a time constraint with only an end time, get all granules until the end time"
          (let [time-constraint ",2016-01-04T00:00:00Z"
-               system-context (merge (system/context) {:time-constraint time-constraint})
-               result (->> system-context
-                           (jobs/email-subscription-processing)
+               system-context (system/context)
+               result (->> (jobs/email-subscription-processing system-context time-constraint)
                            (first)
                            (second))]
            (is (= (count result) 3))
@@ -144,9 +142,8 @@
 
        (testing "given a time constraint with only a start time, get all granules from start time until now"
          (let [time-constraint "2016-01-02T00:00:00Z,"
-               system-context (merge (system/context) {:time-constraint time-constraint})
-               result (->> system-context
-                           (jobs/email-subscription-processing)
+               system-context (system/context)
+               result (->> (jobs/email-subscription-processing system-context time-constraint)
                            (first)
                            (second))]
            (is (= (count result) 3))
@@ -156,16 +153,15 @@
 
        (testing "given a time constraing with a start and end time, get the granules that fall within the time constraint"
          (let [time-constraint "2016-01-02T00:00:00Z,2016-01-04T00:00:00Z"
-               system-context (merge (system/context) {:time-constraint time-constraint})
-               result (->> system-context
-                           (jobs/email-subscription-processing)
+               system-context (system/context)
+               result (->> (jobs/email-subscription-processing system-context time-constraint)
                            (first)
                            (second))]
            (is (= (count result) 2))
            (is (= (:concept-id coll1_granule2) (:concept-id (first result))))
            (is (= (:concept-id coll1_granule3) (:concept-id (second result))))))))))
 
-(deftest ^:oracle subscription-email-processing-time-constraint-test
+(deftest subscription-email-processing-time-constraint-test
   (system/only-with-real-database
    (with-redefs
     [jobs/send-subscription-emails mock-send-subscription-emails]
@@ -239,7 +235,7 @@
                      (map :concept-id)
                      count))))))))
 
-(deftest ^:oracle subscription-email-processing-filtering
+(deftest subscription-email-processing-filtering
   (system/only-with-real-database
    (with-redefs
     [jobs/send-subscription-emails mock-send-subscription-emails]

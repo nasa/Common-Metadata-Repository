@@ -27,8 +27,7 @@
     (testing "returns 401 unauthorized when no auth token is provided"
       (let [response (client/post (url/email-subscription-processing)
                                   {:accept "application/json"
-                                   :content-type mt/form-url-encoded
-                                   :body (codec/form-encode {:revision-date "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"})
+                                   :body (codec/form-encode {:revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"})
                                    :connection-manager (system/conn-mgr)
                                    :throw-exceptions false})
             errors (:errors (json/decode (:body response) true))]
@@ -38,9 +37,7 @@
     (testing "returns 401 unauthorized when regular user token is provided"
       (let [response (client/post (url/email-subscription-processing)
                                   {:accept "application/json"
-                                   :content-type mt/form-url-encoded
-                                   :body (codec/form-encode {:revision-date "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"})
-                                   :query-params {:token non-admin-token}
+                                   :query-params {:token non-admin-token :revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"}
                                    :connection-manager (system/conn-mgr)
                                    :throw-exceptions false})
             errors (:errors (json/decode (:body response) true))]
@@ -50,9 +47,7 @@
     (testing "returns 200 with valid time range format"
       (let [response (client/post (url/email-subscription-processing)
                                   {:accept "application/json"
-                                   :content-type mt/form-url-encoded
-                                   :body (codec/form-encode {:revision-date "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"})
-                                   :query-params {:token admin-update-token}
+                                   :query-params {:token admin-update-token :revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"}
                                    :connection-manager (system/conn-mgr)
                                    :throw-exceptions false})]
         (is (= 200
@@ -62,8 +57,17 @@
       (let [response (client/post (url/email-subscription-processing)
                                   {:accept "application/json"
                                    :content-type mt/form-url-encoded
-                                   :body (codec/form-encode {:revision-date "2000-01-01T10:00:00Z,2010-03-10T12:00:"})
-                                   :query-params {:token admin-update-token}
+                                   :query-params {:token admin-update-token :revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:"}
+                                   :connection-manager (system/conn-mgr)
+                                   :throw-exceptions false})]
+        (is (= 422
+               (:status response)))))
+
+    (testing "returns 422 when the start time is before the end time"
+      (let [response (client/post (url/email-subscription-processing)
+                                  {:accept "application/json"
+                                   :content-type mt/form-url-encoded
+                                   :query-params {:token admin-update-token :revision-date-range "2010-01-01T10:00:00Z,2000-03-10T12:00:"}
                                    :connection-manager (system/conn-mgr)
                                    :throw-exceptions false})]
         (is (= 422
@@ -73,8 +77,7 @@
       (let [response (client/post (url/email-subscription-processing)
                                   {:accept "application/json"
                                    :content-type mt/form-url-encoded
-                                   :body (codec/form-encode {:revision-date "2000-01-01T10:00:00Z,"})
-                                   :query-params {:token admin-update-token}
+                                   :query-params {:token admin-update-token :revision-date-range "2000-01-01T10:00:00Z,"}
                                    :connection-manager (system/conn-mgr)
                                    :throw-exceptions false})]
         (is (= 400
@@ -84,8 +87,7 @@
       (let [response (client/post (url/email-subscription-processing)
                                   {:accept "application/json"
                                    :content-type mt/form-url-encoded
-                                   :body (codec/form-encode {:revision-date ",2010-03-10T12:00:00Z"})
-                                   :query-params {:token admin-update-token}
+                                   :query-params {:token admin-update-token :revision-date-range ",2010-03-10T12:00:00Z"} 
                                    :connection-manager (system/conn-mgr)
                                    :throw-exceptions false})]
         (is (= 400
