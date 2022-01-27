@@ -55,6 +55,11 @@
     subscriber-filtered-gran-refs-list))
 
 (deftest ^:oracle subscription-job-manual-time-constraint-test
+  "This test is used to validate that email-subscription-processing will use a
+   valid revision-date-range when one is provided.  To set this test up, several
+   granules are created on individual days and a subscription is created over
+   them.  This allows the test to verify that it is pulling only the correct
+   granules in a given time window."
   (system/only-with-real-database
    (with-redefs
     [jobs/send-subscription-emails mock-send-subscription-emails]
