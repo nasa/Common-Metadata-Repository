@@ -153,7 +153,7 @@
    the input when sending the subscription emails."
   [context subscriptions revision-date-range]
   (for [raw-subscription subscriptions
-        :let [time-constraint (if-not (nil? revision-date-range)
+        :let [time-constraint (if revision-date-range
                                 revision-date-range
                                 (subscription->time-constraint
                                  raw-subscription
