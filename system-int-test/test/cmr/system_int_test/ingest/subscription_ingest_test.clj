@@ -38,17 +38,7 @@
 
 
 
-(defn create-users-fixture [fn]
-  (mock-urs/create-users (system/context) [{:username "user1" :password "user1pass"} 
-                                           {:username "user2" :password "user2pass"} 
-                                           {:username "user3" :password "user3pass"}
-                                           {:username "user4" :password "user4pass"}
-                                           {:username "admin-user" :password "admin-userpass"}
-                                           {:username "post-user" :password "post-userpass"}
-                                           {:username "put-user" :password "put-userpass"}
-                                           {:username "sub-user" :password "sub-userpass"}
-                                           {:username "someSubId" :password "someSubIdpass"}])
-  (fn))
+
 
 (defn- process-subscriptions
   "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
@@ -59,9 +49,6 @@
     (#'jobsub/process-subscriptions (system/context) subscriptions)))
 
 
-(use-fixtures :once create-users-fixture)
-
-
 (deftest subscription-ingest-no-subscriber-id-test
   (let [coll1 (data-core/ingest-umm-spec-collection
                "PROV1"
@@ -69,6 +56,7 @@
                 {:ShortName "coll-no-id"
                  :EntryTitle "entry-title-no-id"})
                {:token "mock-echo-system-token"})]
+    (mock-urs/create-users (system/context) [{:username "user1" :password "Password"}])
     (testing "ingest on PROV1, with no subscriber-id supplied"
       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
                                                                   :CollectionConceptId (:concept-id coll1)
@@ -86,8 +74,8 @@
                                                                   :SubscriberId nil
                                                                   :EmailAddress "foo@example.com"})
             response (ingest/ingest-concept concept)]
-        (is (= 401 (:status response)))
-        (is (= "You do not have permission to perform that action." (first (:errors response))))))))
+        (is (= 400 (:status response)))
+        (is (= "INGEST FAILED - Please provide a SubscriberId or pass in a valid token." (first (:errors response))))))))
 
 (deftest subscription-ingest-on-prov3-test
   (let [coll1 (data-core/ingest-umm-spec-collection
@@ -140,7 +128,7 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})]
-    (mock-urs/create-users (system/context) "someSubId")
+    (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
     (testing "ingest of a new subscription concept"
       (let [concept (subscription-util/make-subscription-concept
                      {:CollectionConceptId (:concept-id coll1)})
@@ -212,7 +200,7 @@
 
 ;; Verify that the accept header works with returned errors
 (deftest subscription-ingest-with-errors-accept-header-test
-  (mock-urs/create-users (system/context) [{:username "" :password "Password"}])
+  ;(mock-urs/create-users (system/context) [{:username "" :password "Password"}])
   (testing "json response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -221,7 +209,7 @@
                     {:accept-format :json
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
-      (is (re-find #"required key \[Name\] not found" (first errors)))))
+      (is (= "INGEST FAILED - Please provide a SubscriberId or pass in a valid token." (first errors)))))
   (testing "xml response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -230,7 +218,7 @@
                     {:accept-format :xml
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-      (is (re-find #"required key \[Name\] not found" (first errors))))))
+      (is (= "INGEST FAILED - Please provide a SubscriberId or pass in a valid token." (first errors))))))
 
 ;; Verify that user-id is saved from User-Id or token header
 (deftest subscription-ingest-user-id-test
@@ -351,13 +339,12 @@
           (is (= 404 (:status resp))))))))
 
 (deftest subscription-ingest-schema-validation-test
-  (mock-urs/create-users (system/context) [{:username "" :password "Password"}])
   (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
   (testing "ingest of subscription concept JSON schema validation missing field"
     (let [concept (subscription-util/make-subscription-concept {:SubscriberId ""})
           {:keys [status errors]} (ingest/ingest-concept concept)]
       (is (= 400 status))
-      (is (= ["#/SubscriberId: expected minLength: 1, actual: 0"]
+      (is (= ["INGEST FAILED - Please provide a SubscriberId or pass in a valid token."]
              errors))))
   (testing "ingest of subscription concept JSON schema validation invalid field"
     (let [concept (subscription-util/make-subscription-concept {:InvalidField "xxx"})
@@ -384,8 +371,8 @@
                    :CollectionConceptId (:concept-id coll1)
                    :Query "platform=NOAA-9"
                    :native-id "other"})
+        _ (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
         _ (ingest/ingest-concept concept)]
-    (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
     (testing "update concept with a different concept-id is invalid"
       (let [{:keys [status errors]} (ingest/ingest-concept
                                      (assoc concept :Query "platform=NOAA-10" :concept-id "SUB1111-PROV1"))]
@@ -972,5 +959,5 @@
                                                                   :EmailAddress "foo@example.com"})
             user1-token (echo-util/login (system/context) "user1")
             response (ingest/ingest-concept concept {:token user1-token})]
-        (is (= 401 (:status response)))
-        (is (= "The user-id must correspond to a valid EDL account." (first (:errors response))))))))
+        (is (= 400 (:status response)))
+        (is (= "The user-id [invalid-user] must correspond to a valid EDL account." (first (:errors response))))))))

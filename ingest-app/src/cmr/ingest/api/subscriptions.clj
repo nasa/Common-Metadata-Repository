@@ -183,10 +183,16 @@
 (defn check-valid-user
   "Raise error if the user provided does not exist"
   [context user-id]
-  (when-not (urs/user-exists? context user-id)
+  (when (or (nil? user-id)
+                (= "" user-id))
     (errors/throw-service-error
-     :unauthorized
-     "The user-id must correspond to a valid EDL account.")))
+     :bad-request
+     "INGEST FAILED - Please provide a SubscriberId or pass in a valid token."))
+  (when-not (urs/user-exists? context user-id) 
+    (errors/throw-service-error
+     :bad-request
+     (format "The user-id [%s] must correspond to a valid EDL account." 
+             user-id))))
 
 (defn generate-native-id
   "Generate a native-id for a subscription based on the name."

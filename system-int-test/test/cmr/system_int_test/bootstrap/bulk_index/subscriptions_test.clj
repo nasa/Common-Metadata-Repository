@@ -13,7 +13,8 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.subscription-util :as subscription]
-   [cmr.umm-spec.versioning :as umm-version]))
+   [cmr.umm-spec.versioning :as umm-version]
+   [cmr.mock-echo.client.mock-urs-client :as mock-urs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Fixtures
@@ -42,6 +43,7 @@
 ;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest ^:oracle bulk-index-subscriptions-for-provider
+  (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
   (testing "Bulk index subscriptions for a single provider"
     (system/only-with-real-database
      ;; The following is saved, but not indexed due to the above call
@@ -104,6 +106,7 @@
            (is (= 4 (count refs)))))))))
 
 (deftest ^:oracle bulk-index-subscriptions
+  (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
   (testing "Bulk index subscriptions for multiple providers, explicitly"
     (system/only-with-real-database
 
@@ -156,6 +159,7 @@
            (is (= 6 (count refs)))))))))
 
 (deftest ^:oracle bulk-index-all-subscriptions
+  (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
   (testing "Bulk index subscriptions for multiple providers, implicitly"
     (system/only-with-real-database
      ;; The following are saved, but not indexed due to the above call
