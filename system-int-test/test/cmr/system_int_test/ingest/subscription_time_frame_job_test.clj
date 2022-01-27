@@ -37,24 +37,20 @@
       (are3 [query-params expected-status]
         (revision-date-range-query-with-response-status query-params expected-status)
 
-        "returns 401 unauthorized when no auth token is provided"
-        {:revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"} 401
-        
-        "returns 401 unauthorized when regular user token is provided"
-        {:token non-admin-token :revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"} 401
-
         "returns 200 with valid time range format"
         {:token admin-update-token :revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"} 200
-        
+
         "returns 422 with invalid time range format"
         {:token admin-update-token :revision-date-range "2000-01-01T10:00:Z,2010-03-10T12:00:00Z"} 422
 
-        "returns 422 when the start time is before the end time"
+        "returns 400 when the start time is after the end time"
         {:token admin-update-token :revision-date-range "2010-01-01T10:00:00Z,2000-03-10T12:00:00Z"} 400
+
+        "returns 400 when the start time equals the end time"
+        {:token admin-update-token :revision-date-range "2000-03-10T12:00:00Z,2000-03-10T12:00:00Z"} 400
 
         "returns 400 when only a start-date is provided"
         {:token admin-update-token :revision-date-range "2000-01-01T10:00:00Z,"} 400
 
         "returns 400 when only an end-date is provided"
-        {:token admin-update-token :revision-date-range ",2010-03-10T12:00:00Z"} 400
-        ))))
+        {:token admin-update-token :revision-date-range ",2010-03-10T12:00:00Z"} 400))))
