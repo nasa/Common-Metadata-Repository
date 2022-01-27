@@ -54,7 +54,9 @@
         {:revision-date-range revision-date-range} expected-status)
 
       "returns 200 with valid time range format"
-      "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z" 200
+      "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z" 
+      200
 
       "returns 422 with invalid time range format"
-      "2000-01-01T10:00:Z,2010-03-10T12:00:00Z" 422)))
+      "2000-01-01T10:00:Z,2010-03-10T12:00:00Z" 
+      422)))
