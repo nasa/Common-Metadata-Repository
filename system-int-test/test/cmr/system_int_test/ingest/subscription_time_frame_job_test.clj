@@ -25,11 +25,14 @@
 
 (deftest subscriptions-job-endpoint-test
   (testing "subscription-job-endpoint-test"
-    (are3 [query-params expected-status expected-msg]
-      (revision-date-range-query-with-response-status query-params expected-status expected-msg)
+    (are3 [revision-date-range expected-status expected-msg]
+      (revision-date-range-query-with-response-status 
+        {:revision-date-range revision-date-range} expected-status expected-msg)
 
       "returns 400 when the start time is after the end time"
-      {:revision-date-range "2010-01-01T10:00:00Z,2000-03-10T12:00:00Z"} 400 "The start date should occur before the end date."
+      "2010-01-01T10:00:00Z,2000-03-10T12:00:00Z"
+      400 
+      "The start date should occur before the end date."
 
       "returns 400 when the start time equals the end time"
       {:revision-date-range "2000-03-10T12:00:00Z,2000-03-10T12:00:00Z"} 400 "The start date should occur before the end date."
