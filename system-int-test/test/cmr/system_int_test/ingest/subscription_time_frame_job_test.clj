@@ -35,19 +35,26 @@
       "The start date should occur before the end date."
 
       "returns 400 when the start time equals the end time"
-      {:revision-date-range "2000-03-10T12:00:00Z,2000-03-10T12:00:00Z"} 400 "The start date should occur before the end date."
+      "2000-03-10T12:00:00Z,2000-03-10T12:00:00Z" 
+      400 
+      "The start date should occur before the end date."
 
       "returns 400 when only a start-date is provided"
-      {:revision-date-range "2000-01-01T10:00:00Z,"} 400 "Missing end date in revision-date-range."
+      "2000-01-01T10:00:00Z," 
+      400 
+      "Missing end date in revision-date-range."
 
       "returns 400 when only an end-date is provided"
-      {:revision-date-range ",2010-03-10T12:00:00Z"} 400 "Missing start date in revision-date-range.")
+      ",2010-03-10T12:00:00Z" 
+      400 
+      "Missing start date in revision-date-range.")
 
-    (are3 [query-params expected-status]
-      (revision-date-range-query-with-response-status query-params expected-status)
+    (are3 [revision-date-range expected-status]
+      (revision-date-range-query-with-response-status 
+        {:revision-date-range revision-date-range} expected-status)
 
       "returns 200 with valid time range format"
-      {:revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"} 200
+      "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z" 200
 
       "returns 422 with invalid time range format"
-      {:revision-date-range "2000-01-01T10:00:Z,2010-03-10T12:00:00Z"} 422)))
+      "2000-01-01T10:00:Z,2010-03-10T12:00:00Z" 422)))
