@@ -20,14 +20,22 @@
   ([url method token]
    (has-action-permission? url method token nil))
   ([url method token body]
-   (let [response (client/request {:url url
+   (has-action-permission? url method token body {}))
+  ([url method token body query-params]
+   (has-action-permission? url method token body query-params {}))
+  ([url method token body query-params options]
+   (let [options (merge options {:accept "application/json"
+                                 :content-type mt/form-url-encoded
+                                 :body-encoding codec/form-encode
+                                 :throw-exceptions false})
+         response (client/request {:url url
                                    :method method
-                                   :accept "application/json"
-                                   :content-type mt/form-url-encoded
-                                   :body (codec/form-encode body)
-                                   :query-params {:token token}
+                                   :accept (options :accept)
+                                   :content-type (options :content-type)
+                                   :body ((options :body-encoding) body)
+                                   :query-params (merge {:token token} query-params)
                                    :connection-manager (s/conn-mgr)
-                                   :throw-exceptions false})
+                                   :throw-exceptions (options :throw-exceptions)})
          status (:status response)]
       ;; Make sure the status returned is success or 401
      (is (some #{status} [200 201 204 401]))
@@ -48,16 +56,20 @@
         prov-admin-token (e/login (s/context) "prov-admin" [prov-admin-group-concept-id group3-concept-id])
         check-all-permissions (fn check-all-permissions-inline
                                 ([url method]
-                                 (check-all-permissions-inline url method nil))
+                                 (check-all-permissions-inline url method {}))
                                 ([url method body]
+                                 (check-all-permissions-inline url method body {}))
+                                ([url method body query-params]
+                                 (check-all-permissions-inline url method body query-params {}))
+                                ([url method body query-params options]
                                  (is
                                   (and
-                                   (not (has-action-permission? url method prov-admin-token body))
-                                   (not (has-action-permission? url method guest-token body))
-                                   (not (has-action-permission? url method user-token body))
-                                   (not (has-action-permission? url method admin-read-token body))
-                                   (has-action-permission? url method admin-update-token body)
-                                   (has-action-permission? url method admin-read-update-token body)))))]
+                                   (not (has-action-permission? url method prov-admin-token body query-params options))
+                                   (not (has-action-permission? url method guest-token body query-params options))
+                                   (not (has-action-permission? url method user-token body query-params options))
+                                   (not (has-action-permission? url method admin-read-token body query-params options))
+                                   (has-action-permission? url method admin-update-token body query-params options)
+                                   (has-action-permission? url method admin-read-update-token body query-params options)))))]
 
     ;; Grant admin-group-guid admin permission
     (e/grant-group-admin (s/context) admin-read-group-concept-id :read)
@@ -124,4 +136,5 @@
     (testing "Admin permissions test with body"
       (check-all-permissions (url/email-subscription-processing)
                              :post
-                             {:revision-date "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"}))))
+                             {}
+                             {:revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"}))))
