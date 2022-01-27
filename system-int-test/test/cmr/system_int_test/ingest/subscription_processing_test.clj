@@ -81,23 +81,17 @@
                                                        {:token "mock-echo-system-token"})
            coll1-concept-id (:concept-id coll1)
            c1g1 (data-granule/granule-with-umm-spec-collection
-                 coll1 coll1-concept-id {:day-night "DAY"})
+                 coll1 coll1-concept-id {:day-night "NIGHT"})
            c1g2 (data-granule/granule-with-umm-spec-collection
                  coll1 coll1-concept-id {:day-night "DAY"})
            c1g3 (data-granule/granule-with-umm-spec-collection
                  coll1 coll1-concept-id {:day-night "DAY"})
            c1g4 (data-granule/granule-with-umm-spec-collection
                  coll1 coll1-concept-id {:day-night "DAY"})
-           c1g5 (data-granule/granule-with-umm-spec-collection
-                 coll1 coll1-concept-id {:day-night "NIGHT"})
-           c1g6 (data-granule/granule-with-umm-spec-collection
-                 coll1 coll1-concept-id {:day-night "NIGHT"})
-           coll1_granule1 (subscription-util/save-umm-granule "PROV1" c1g1 {:revision-date "2016-01-01T10:00:00Z"})
+           _coll1_granule1 (subscription-util/save-umm-granule "PROV1" c1g1 {:revision-date "2016-01-01T10:00:00Z"})
            coll1_granule2 (subscription-util/save-umm-granule "PROV1" c1g2 {:revision-date "2016-01-02T10:00:00Z"})
            coll1_granule3 (subscription-util/save-umm-granule "PROV1" c1g3 {:revision-date "2016-01-03T10:00:00Z"})
-           coll1_granule4 (subscription-util/save-umm-granule "PROV1" c1g4 {:revision-date "2016-01-04T10:00:00Z"})
-           _coll1_granule5 (subscription-util/save-umm-granule "PROV1" c1g5 {:revision-date "2016-01-01T10:00:00Z"})
-           _coll1_granule6 (subscription-util/save-umm-granule "PROV1" c1g6 {:revision-date "2016-01-02T10:00:00Z"})
+           _coll1_granule4 (subscription-util/save-umm-granule "PROV1" c1g4 {:revision-date "2016-01-04T10:00:00Z"})
         ;;  Create coll2 granules
            coll2 (data-core/ingest-umm-spec-collection "PROV1"
                                                        (data-umm-c/collection {:ShortName "coll2"
@@ -107,51 +101,15 @@
            c2g1 (data-granule/granule-with-umm-spec-collection
                  coll2 coll2-concept-id {:day-night "DAY"})
            c2g2 (data-granule/granule-with-umm-spec-collection
-                 coll2 coll2-concept-id {:day-night "DAY"})
-           c2g3 (data-granule/granule-with-umm-spec-collection
-                 coll2 coll2-concept-id {:day-night "DAY"})
-           c2g4 (data-granule/granule-with-umm-spec-collection
-                 coll2 coll2-concept-id {:day-night "DAY"})
+                 coll2 coll2-concept-id {:day-night "NIGHT"})
            _coll2_granule1 (subscription-util/save-umm-granule "PROV1" c2g1 {:revision-date "2015-12-30T10:00:00Z"})
            _coll2_granule2 (subscription-util/save-umm-granule "PROV1" c2g2 {:revision-date "2015-12-31T10:00:00Z"})
-           _coll2_granule3 (subscription-util/save-umm-granule "PROV1" c2g3 {:revision-date "2016-01-05T10:00:00Z"})
-           _coll2_granule4 (subscription-util/save-umm-granule "PROV1" c2g4 {:revision-date "2016-01-06T10:00:00Z"})
            _ (index/wait-until-indexed)
          ;; Setup subscriptions
            _sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1_coll1" "user2" "day_night_flag=day")
            _sub2 (subscription-util/create-subscription-and-index coll2 "test_sub_prov1_coll2" "user2" "day_night_flag=day")]
 
-       (testing "given a time constraint with no granules..."
-         (let [time-constraint "2016-01-07T00:00:00Z,2016-01-09T00:00:00Z"
-               system-context (system/context)
-               result (->> (jobs/email-subscription-processing system-context time-constraint)
-                           (first)
-                           (second))]
-           (is (= (count result) 0))))
-
-       (testing "given a time constraint with only an end time, get all granules until the end time"
-         (let [time-constraint ",2016-01-04T00:00:00Z"
-               system-context (system/context)
-               result (->> (jobs/email-subscription-processing system-context time-constraint)
-                           (first)
-                           (second))]
-           (is (= (count result) 3))
-           (is (= (:concept-id coll1_granule1) (:concept-id (nth result 0))))
-           (is (= (:concept-id coll1_granule2) (:concept-id (nth result 1))))
-           (is (= (:concept-id coll1_granule3) (:concept-id (nth result 2))))))
-
-       (testing "given a time constraint with only a start time, get all granules from start time until now"
-         (let [time-constraint "2016-01-02T00:00:00Z,"
-               system-context (system/context)
-               result (->> (jobs/email-subscription-processing system-context time-constraint)
-                           (first)
-                           (second))]
-           (is (= (count result) 3))
-           (is (= (:concept-id coll1_granule2) (:concept-id (nth result 0))))
-           (is (= (:concept-id coll1_granule3) (:concept-id (nth result 1))))
-           (is (= (:concept-id coll1_granule4) (:concept-id (nth result 2))))))
-
-       (testing "given a time constraing with a start and end time, get the granules that fall within the time constraint"
+       (testing "given a valid time constraing, return the correct granules"
          (let [time-constraint "2016-01-02T00:00:00Z,2016-01-04T00:00:00Z"
                system-context (system/context)
                result (->> (jobs/email-subscription-processing system-context time-constraint)
