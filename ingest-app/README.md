@@ -79,7 +79,8 @@ This could happen because queueing the message times out, RabbitMQ has surpassed
     * [POST /jobs/reindex-all-collections - Runs to job to reindex all collections.](#reindex-all-collections)
     * [POST /jobs/reindex-autocomplete-suggestions - Runs to job to reindex all autocomplete suggestions.](#reindex-all-suggestions)
     * [POST /jobs/cleanup-expired-collections - Runs the job to remove expired collections.](#cleanup-expired-collections)
-    * [POST /jobs/trigger-granule-task-cleanup-job - Start cleanup of old granule bulk update tasks](#trigger-granule-task-cleanup-job)
+    * [POST /jobs/trigger-granule-task-cleanup-job - Start cleanup of old granule bulk update tasks.](#trigger-granule-task-cleanup-job)
+    * [POST /jobs/trigger-email-subscription-processing - Run the subscription job over a specified granule revision date range.](#trigger-email-subscription-processing)
   * /caches
     * [GET /caches - Gets a list of the caches in ingest.](#get-caches)
     * [GET /caches/\<cache-name> - Gets a list of the keys stored in the specific cache.](#get-cache-keys)
@@ -320,6 +321,12 @@ Removes bulk granule update tasks that are in COMPLETE state, and are at least 9
 curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/trigger-granule-task-cleanup-job
 ```
 
+### <a name="trigger-email-subscription-processing"></a> Run Subscription Job Over Granule Revision Date Range
+
+Sends subscription emails covering granules that were updated in the specified revision date range.
+```bash
+curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/trigger-email-subscription-processing?revision-date-range=2011-01-01T10:00:00Z,2012-01-01T10:00:00Z
+```
 ### Refresh Collection Granule Aggregate Cache
 
 The collection granule aggregate cache is used to cache information about all the granules within a collection that are indexed with that collection. That's currently limited to the granule temporal minimum and maximum. The cache is refreshed by a periodic job. The cache is located in the indexer but refresh scheduling is handled by Ingest so that singleton jobs can be used.
