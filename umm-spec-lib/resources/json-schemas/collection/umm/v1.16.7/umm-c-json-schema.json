@@ -83,7 +83,7 @@
       }
     },
     "CollectionDataType": {
-      "description": "Identifies the collection as a Science Quality collection or a non-science-quality collection such as a Near-Real-Time, LOW-LATENCY or EXPEDITED collection.",
+      "description": "This element is used to identify the collection's ready for end user consumption latency from when the data was acquired by an instrument. NEAR_REAL_TIME is defined to be ready for end user consumption 1 to 3 hours after data acquisition. LOW_LATENCY is defined to be ready for consumption 3 to 24 hours after data acquisition. EXPEDITED is defined to be 1 to 4 days after data acquisition. SCIENCE_QUALITY is defined to mean that a collection has been fully and completely processed which usually takes between 2 to 3 weeks after data acquisition. OTHER is defined for collection where the latency is between EXPEDITED and SCIENCE_QUALITY.",
       "$ref": "#/definitions/CollectionDataTypeEnum"
     },
     "ProcessingLevel": {
@@ -1151,9 +1151,9 @@
       }
     },
     "CollectionDataTypeEnum": {
-      "description": "This element is used to identify the collection as a Science Quality Collection or as a non-science-quality collection such as a Near Real Time, Low Latency and Expedited collection. If a collection does not contain this field, it will be assumed to be of science-quality.",
+      "description": "This element is used to identify the collection's ready for end user consumption latency from when the data was acquired by an instrument. NEAR_REAL_TIME is defined to be ready for end user consumption 1 to 3 hours after data acquisition. LOW_LATENCY is defined to be ready for consumption 3 to 24 hours after data acquisition. EXPEDITED is defined to be 1 to 4 days after data acquisition. SCIENCE_QUALITY is defined to mean that a collection has been fully and completely processed which usually takes between 2 to 3 weeks after data acquisition. OTHER is defined for collection where the latency is between EXPEDITED and SCIENCE_QUALITY.",
       "type": "string",
-      "enum": ["SCIENCE_QUALITY", "NEAR_REAL_TIME", "LOW_LATENCY", "EXPEDITED", "OTHER"]
+      "enum": ["NEAR_REAL_TIME", "LOW_LATENCY", "EXPEDITED", "SCIENCE_QUALITY", "OTHER"]
     },
     "CollectionProgressEnum": {
       "description": "This element describes the production status of the data set. There are five choices for Data Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. ACTIVE refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed. DEPRECATED refers to data sets that have been retired, but still can be retrieved. Usually newer products exist that replace the retired data set. NOT APPLICABLE refers to data sets in which a collection progress is not applicable such as a calibration collection. There is a sixth value of NOT PROVIDED that should not be used by a data provider. It is currently being used as a value when a correct translation cannot be done with the current valid values, or when the value is not provided by the data provider.",
