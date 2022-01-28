@@ -106,6 +106,3 @@ class UtilsTest(TestCase):
         s3_prefixes = get_s3_prefixes(collection)
         self.assertEqual(s3_prefixes[0], 'podaac-ops-cumulus-public/MUR-JPL-L4-GLOB-v4.1/')
         self.assertEqual(s3_prefixes[1], 'podaac-ops-cumulus-protected/MUR-JPL-L4-GLOB-v4.1/')
-
-if __name__ == '__main__':
-    main()

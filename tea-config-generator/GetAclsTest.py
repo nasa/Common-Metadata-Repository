@@ -77,6 +77,3 @@ class GetAclsTest(TestCase):
 
         self.assertEqual(response['group_permissions'][3]['group_id'], 'AG1236456866-CMR')
         self.assertEqual(response['group_permissions'][5]['group_id'], 'AG1216375422-SCIOPS')
-
-if __name__ == '__main__':
-    main()
