@@ -260,7 +260,7 @@ UMM Validation errors will be returned with a path within the metadata to the fa
 Error messages can also be returned in JSON by setting the Accept header to application/json.
 
 ```
-General error case(schema errors, json syntax errors etc.) when path is not applicable:
+General error case (schema errors, json syntax errors etc.) when path is not applicable:
 {
   "errors" : [ "Invalid JSON: Expected a ',' or '}' at 3457 [character 7 line 91]" ]
 }
