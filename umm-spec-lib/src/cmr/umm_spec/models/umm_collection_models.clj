@@ -168,7 +168,7 @@
    SpatialInformation
 
    ;; Identifies the collection as a Science Quality collection or a non-science-quality collection
-   ;; such as a Near-Real-Time collection.
+   ;; such as a Near-Real-Time, LOW-LATENCY or EXPEDITED collection.
    CollectionDataType
 
    ;; Designed to protect privacy and/or intellectual property by allowing the author to specify how

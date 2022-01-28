@@ -260,7 +260,27 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <xs:enumeration value="NEAR_REAL_TIME">
               <xs:annotation>
                 <xs:documentation> Data from the source that are
-                available for use within a time that is short in
+                available for use within a time that is short(1-3 hours) in
+                comparison to important time scales in the phenomena
+                being studied. This data is not science quality and
+                is not retained by EOSDIS once the SCIENCE_QUALITY
+                product is archived </xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="LOW_LATENCY">
+              <xs:annotation>
+                <xs:documentation> Data from the source that are
+                available for use within a time that is short(4-24 hours) in
+                comparison to important time scales in the phenomena
+                being studied. This data is not science quality and
+                is not retained by EOSDIS once the SCIENCE_QUALITY
+                product is archived </xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="EXPEDITED">
+              <xs:annotation>
+                <xs:documentation> Data from the source that are
+                available for use within a time that is short(1-4 days) in
                 comparison to important time scales in the phenomena
                 being studied. This data is not science quality and
                 is not retained by EOSDIS once the SCIENCE_QUALITY
@@ -271,7 +291,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
               <xs:annotation>
                 <xs:documentation> Any EOS and non-EOS data and data
                 products, that are not SCIENCE_QUALITY and do not
-                fall under NEAR_REAL_TIME holdings.</xs:documentation>
+                fall under NEAR_REAL_TIME, LOW_LATENCY and EXPEDITED holdings.</xs:documentation>
               </xs:annotation>
             </xs:enumeration>
           </xs:restriction>
