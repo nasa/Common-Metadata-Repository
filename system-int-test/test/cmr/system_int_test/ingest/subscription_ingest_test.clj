@@ -36,10 +36,6 @@
                                                       [:read]
                                                       [:read :update])]))
 
-
-
-
-
 (defn- process-subscriptions
   "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
   []
