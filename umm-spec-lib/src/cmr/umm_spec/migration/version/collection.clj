@@ -475,3 +475,16 @@
   [context collection & _]
   ;; Remove the FreeAndOpenData field in UseConstraints.
   (update-in collection [:UseConstraints] dissoc :FreeAndOpenData))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.6" "1.16.7"]
+  [context collection & _]
+  ;; No need to migrate
+  collection)
+
+(defmethod interface/migrate-umm-version [:collection "1.16.7" "1.16.6"]
+  [context collection & _]
+  ;; Change CollectionDataType to "NEAR_REAL_TIME" if its value is "LOW_LATENCY" or "EXPEDITED"
+  (let [CollectionDataType (:CollectionDataType collection)]
+    (if (or (= "LOW_LATENCY" CollectionDataType) (= "EXPEDITED" CollectionDataType))
+      (assoc collection :CollectionDataType "NEAR_REAL_TIME")
+      collection)))
