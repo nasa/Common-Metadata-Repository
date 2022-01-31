@@ -75,7 +75,7 @@
                                                                   :EmailAddress "foo@example.com"})
             response (ingest/ingest-concept concept)]
         (is (= 400 (:status response)))
-        (is (= "INGEST FAILED - Please provide a SubscriberId or pass in a valid token." (first (:errors response))))))))
+        (is (= "INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first (:errors response))))))))
 
 (deftest subscription-ingest-on-prov3-test
   (let [coll1 (data-core/ingest-umm-spec-collection
@@ -200,7 +200,6 @@
 
 ;; Verify that the accept header works with returned errors
 (deftest subscription-ingest-with-errors-accept-header-test
-  ;(mock-urs/create-users (system/context) [{:username "" :password "Password"}])
   (testing "json response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -209,7 +208,7 @@
                     {:accept-format :json
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
-      (is (= "INGEST FAILED - Please provide a SubscriberId or pass in a valid token." (first errors)))))
+      (is (= "INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first errors)))))
   (testing "xml response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -218,7 +217,7 @@
                     {:accept-format :xml
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-      (is (= "INGEST FAILED - Please provide a SubscriberId or pass in a valid token." (first errors))))))
+      (is (= "INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first errors))))))
 
 ;; Verify that user-id is saved from User-Id or token header
 (deftest subscription-ingest-user-id-test
@@ -344,7 +343,7 @@
     (let [concept (subscription-util/make-subscription-concept {:SubscriberId ""})
           {:keys [status errors]} (ingest/ingest-concept concept)]
       (is (= 400 status))
-      (is (= ["INGEST FAILED - Please provide a SubscriberId or pass in a valid token."]
+      (is (= ["INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token."]
              errors))))
   (testing "ingest of subscription concept JSON schema validation invalid field"
     (let [concept (subscription-util/make-subscription-concept {:InvalidField "xxx"})

@@ -183,11 +183,10 @@
 (defn check-valid-user
   "Raise error if the user provided does not exist"
   [context user-id]
-  (when (or (nil? user-id)
-                (= "" user-id))
+  (when (string/blank? user-id)
     (errors/throw-service-error
      :bad-request
-     "INGEST FAILED - Please provide a SubscriberId or pass in a valid token."))
+     "INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token."))
   (when-not (urs/user-exists? context user-id) 
     (errors/throw-service-error
      :bad-request
