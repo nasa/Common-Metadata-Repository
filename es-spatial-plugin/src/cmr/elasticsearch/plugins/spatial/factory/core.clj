@@ -2,9 +2,6 @@
   (:import
    (cmr.elasticsearch.plugins SpatialScriptLeafFactory)
    (java.util Map)
-   (org.apache.lucene.index LeafReaderContext)
-   (org.elasticsearch.common.settings Settings)
-   (org.elasticsearch.common.xcontent.support XContentMapValues)
    (org.elasticsearch.search.lookup SearchLookup))
   (:gen-class
    :name cmr.elasticsearch.plugins.SpatialScriptFactory
