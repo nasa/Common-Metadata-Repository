@@ -1,6 +1,10 @@
 (ns cmr.ingest.api.routes
   "Defines the HTTP URL routes for the ingest API."
   (:require
+   [cheshire.core :as json]
+   [clojurewerkz.quartzite.jobs :as qj]
+   [clojurewerkz.quartzite.scheduler :as qs]
+   [clojurewerkz.quartzite.triggers :as qt]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
@@ -82,7 +86,20 @@
            {ctx :request-context params :params}
            (acl/verify-ingest-management-permission ctx :update)
            (subscriptions-helper/trigger-email-subscription-processing ctx params)
-           {:status 200}))))
+           {:status 200})
+     (POST "/toggle-email-subscription-processing"
+       {ctx :request-context}
+       (acl/verify-ingest-management-permission ctx :update)
+       (let [qzsched (get-in ctx [:system :scheduler :qz-scheduler])
+             job-key-str jobs/EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
+             job-key (qj/key job-key-str)
+             trigger-key-str (str job-key-str ".trigger")
+             trigger-key (qt/key trigger-key-str)
+             trigger-state (str (. qzsched getTriggerState trigger-key))]
+         (if (= trigger-state "NORMAL")
+           (qs/pause-job qzsched job-key)
+           (qs/resume-job qzsched job-key))
+         {:status 200 :body (json/generate-string {:new-state (str (. qzsched getTriggerState trigger-key))})})))))
 
 (def ingest-routes
   (routes
