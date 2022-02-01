@@ -527,29 +527,3 @@
       "Sort by name then provider id descending order"
       ["-name" "-provider"]
       [subscription2 subscription1 subscription4 subscription3])))
-
-(deftest json-result-format-test
-  (let [collection (data2-core/ingest-umm-spec-collection
-                    "PROV1"
-                    (data-umm-c/collection
-                     {:ShortName "coll3"
-                      :EntryTitle "entry-title3"})
-                    {:token "mock-echo-system-token"})
-        subscription (subscriptions/ingest-subscription-with-attrs {:native-id "Sub1"
-                                                                    :Name "Subscription1"
-                                                                    :SubscriberId "SubId1"
-                                                                    :Query "platform=NOAA-6"
-                                                                    :CollectionConceptId (:concept-id collection)
-                                                                    :provider-id "PROV1"})
-        query {:name (:Name subscription)}
-        _ (index/wait-until-indexed)
-        response (first (:items (subscriptions/search-json-raw query)))]
-    (is (= #{:collection_concept_id
-             :concept_id
-             :name
-             :native_id
-             :provider_id
-             :revision_id
-             :subscriber_id}
-           (set (keys response))))
-    (is (= (:concept-id subscription) (:concept_id response)))))

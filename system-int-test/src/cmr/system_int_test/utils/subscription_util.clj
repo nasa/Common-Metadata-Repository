@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
+   [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mime-types]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -21,7 +22,7 @@
 (def versioned-content-type
   "A versioned default content type used in the tests."
   (mime-types/with-version
-   mime-types/umm-json versioning/current-subscription-version))
+    mime-types/umm-json versioning/current-subscription-version))
 
 (def default-ingest-opts
   "Default HTTP client options for use when ingesting subscriptions using the functions below."
@@ -46,9 +47,9 @@
       (doseq [provider-map providers]
         ;; grant SUBSCRIPTION_MANAGEMENT permission for each provider.
         (echo-util/grant-all-subscription-sm (s/context)
-                                              (:provider-id provider-map)
-                                              guest-permissions
-                                              registered-permissions)))
+                                             (:provider-id provider-map)
+                                             guest-permissions
+                                             registered-permissions)))
     (f)))
 
 (defn update-subscription-notification
@@ -56,8 +57,8 @@
   [concept]
   (let [request-url (urls/mdb-subscription-notification-time concept)
         request (merge
-                  (config/conn-params (s/context))
-                  {:accept :xml :throw-exceptions false})
+                 (config/conn-params (s/context))
+                 {:accept :xml :throw-exceptions false})
         response (client/put request-url request)
         {:keys [headers body]} response
         status (int (:status response))]
@@ -107,6 +108,20 @@
   ([params options]
    (search/find-refs :subscription params options)))
 
+(defn- validate-subscription-response-format
+  [subscription]
+  ;; verifying schema keys are included
+  (is (= #{:collection_concept_id
+           :concept_id
+           :name
+           :native_id
+           :provider_id
+           :revision_id
+           :subscriber_id}
+         (set (keys subscription))))
+  ;; verifying no dash in keys
+  (is (not-any? #(string/includes? % "-") (map name (keys subscription)))))
+
 (defn search-json
   "Searches for subscription using the given parameters and requesting the JSON format."
   ([]
@@ -114,23 +129,13 @@
   ([params]
    (search-json params {}))
   ([params options]
-   (search/process-response
-    (transmit-search/search-for-subscriptions
-      (s/context) params (merge options
-                                {:raw? true
-                                 :http-options {:accept :json}})))))
-
-(defn search-json-raw
-  "Searches for subscription using the given parameters without formatting."
-  ([]
-   (search-json-raw {}))
-  ([params]
-   (search-json-raw params {}))
-  ([params options]
-   (:body (transmit-search/search-for-subscriptions
-           (s/context) params (merge options
-                                     {:raw? true
-                                      :http-options {:accept :json}})))))
+   (let [response (transmit-search/search-for-subscriptions
+                   (s/context) params (merge options
+                                             {:raw? true
+                                              :http-options {:accept :json}}))]
+     (when-let [first-subscription (-> response :body :items first)]
+       (validate-subscription-response-format first-subscription))
+     (search/process-response response))))
 
 (defn subscription-result->xml-result
   [subscription]
@@ -145,8 +150,8 @@
                    []
                    [:location (format "%s/%s/%s" base-url id revision)])]
     (select-keys
-      (apply assoc subscription (concat [:id id] location))
-      [:id :revision-id :location :deleted])))
+     (apply assoc subscription (concat [:id id] location))
+     [:id :revision-id :location :deleted])))
 
 (def ^:private json-field-names
   "List of fields expected in a subscription JSON response."
@@ -171,11 +176,11 @@
   "For the given subscription return the expected subscription JSON."
   [subscription]
   (let [sub-json-fields (select-keys
-                          (assoc subscription
-                                 :name (extract-name-from-metadata subscription)
-                                 :subscriber-id (extract-subscriber-id-from-metadata subscription)
-                                 :collection-concept-id (extract-collection-concept-id-from-metadata subscription))
-                          json-field-names)]
+                         (assoc subscription
+                                :name (extract-name-from-metadata subscription)
+                                :subscriber-id (extract-subscriber-id-from-metadata subscription)
+                                :collection-concept-id (extract-collection-concept-id-from-metadata subscription))
+                         json-field-names)]
     sub-json-fields))
 
 (defn assert-subscription-search
