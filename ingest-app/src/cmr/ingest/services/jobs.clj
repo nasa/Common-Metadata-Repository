@@ -42,6 +42,10 @@
   "The number of seconds between jobs to cleanup expired collections"
   3600)
 
+(def EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
+  "Quartz job key for EmailSubscriptionProcessing job."
+  "email-subscription-processing")
+
 (defn acls->provider-id-hashes
   "Converts acls to a map of provider-ids to hashes of the ACLs."
   [acls]
@@ -258,6 +262,7 @@
     :interval (bulk-update-status-table-cleanup-interval)}
 
    {:job-type EmailSubscriptionProcessing
+    :job-key EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
     :interval (subscription/email-subscription-processing-interval)}
 
    {:job-type TriggerPartialRefreshCollectionGranuleAggregationCacheJob
