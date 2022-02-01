@@ -2,8 +2,7 @@
   (:import
    (cmr.elasticsearch.plugins SpatialScript)
    (java.util Map)
-   (org.apache.lucene.index LeafReaderContext)
-   (org.elasticsearch.common.settings Settings)
+   (org.elasticsearch.script DocReader) 
    (org.elasticsearch.common.xcontent.support XContentMapValues)
    (org.elasticsearch.search.lookup SearchLookup))
   (:require
@@ -81,13 +80,13 @@
   [[] {:params params
        :lookup lookup}])
 
-(defn -newInstance [^SpatialScriptLeafFactory this ^LeafReaderContext context]
+(defn -newInstance [^SpatialScriptLeafFactory this ^DocReader doc-reader]
   (let [^Map params (-> this .data :params)]
     (SpatialScript.
      ^Object (get-intersects-fn params)
      ^Map params
      ^SearchLookup (-> this .data :lookup)
-     ^LeafReaderContext context)))
+     ^DocReader doc-reader)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                    End leaf factory functions                             ;;

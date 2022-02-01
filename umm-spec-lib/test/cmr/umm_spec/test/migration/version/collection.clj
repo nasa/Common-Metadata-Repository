@@ -2846,3 +2846,29 @@
     {:UseConstraints {:Description "desc"
                       :FreeAndOpenData true
                       :LicenseURL {:Linkage "https:some.com"}}}))
+
+(deftest migrate-1-16-6-to-1-16-7
+  "Test the migration of collections from 1.16.6 to 1.16.7."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.6" "1.16.7" sample-collection)]
+      (is (= expected (:CollectionDataType result))))
+
+    "Migrating CollectionDataType-nothing to migrate"
+    "OTHER" 
+    {:CollectionDataType "OTHER"}))
+
+(deftest migrate-1-16-7-to-1-16-6
+  "Test the migration of collections from 1.16.7 to 1.16.6."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.7" "1.16.6" sample-collection)]
+      (is (= expected (:CollectionDataType result))))
+
+    "Migrating CollectionDataType"
+    "NEAR_REAL_TIME"
+    {:CollectionDataType "LOW_LATENCY"}
+
+    "Migrating CollectionDataType"
+    "NEAR_REAL_TIME"
+    {:CollectionDataType "EXPEDITED"}))

@@ -222,15 +222,20 @@ UMM-C schema validation errors are returned as warnings in the response by defau
 
 Requests could fail for several reasons when communicating with the CMR as described in the [HTTP Status Codes](#http-status-codes).
 
+Ingest validation errors can take one of two forms in the following: 
+
 ##### <a name="general-errors"></a> General Errors
 
-Ingest validation errors can take one of two shapes. General error messages will be returned as a list of error messages like the following:
+General error messages will be returned as a list of error messages like the following:
 
-	<errors>
-   		<error>Parent collection for granule [SC:AE_5DSno.002:30500511] does not exist.</error>
-	</errors>
+```
+<errors>
+   <error>Parent collection for granule [SC:AE_5DSno.002:30500511] does not exist.</error>
+</errors>
 
-##### <a name="umm-ialidation-errors"></a> UMM Validation Errors
+```
+
+##### <a name="umm-validation-errors"></a> UMM Validation Errors
 
 UMM Validation errors will be returned with a path within the metadata to the failed item. For example the following errors would be returned if the first and second spatial areas were invalid. The path is a set of UMM fields in camel case separated by a `/`. Numeric indices are used to indicate the index of an item within a list that failed.
 
@@ -249,11 +254,18 @@ UMM Validation errors will be returned with a path within the metadata to the fa
       </errors>
    </error>
 </errors>
+
 ```
 
 Error messages can also be returned in JSON by setting the Accept header to application/json.
 
 ```
+General error case (schema errors, json syntax errors etc.) when path is not applicable:
+{
+  "errors" : [ "Invalid JSON: Expected a ',' or '}' at 3457 [character 7 line 91]" ]
+}
+
+UMM validation case:
 {
   "errors" : [ {
     "path" : [ "Platforms", 1, "Instruments", 1, "Composed Of" ],
@@ -793,7 +805,7 @@ curl -i -XPUT \
   -H "Echo-Token: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/subscriptions/subscription123 \
   -d \
-"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"EmailAddress\": \"someaddress@gmail.com\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
+"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
 ```
 
 ```
@@ -802,7 +814,7 @@ curl -i -XPOST \
   -H "Echo-Token: XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/subscriptions \
   -d \
-"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"EmailAddress\": \"someaddress@gmail.com\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
+"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
 ```
 
 #### Successful Response in XML

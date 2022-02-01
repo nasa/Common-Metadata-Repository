@@ -8,15 +8,18 @@
    [cmr.common.mime-types :as mime-types]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-subscription :as data-umm-sub]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as urls]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
    [cmr.transmit.search :as transmit-search]
+   [cmr.umm.echo10.echo10-core :as echo10]
    [cmr.umm-spec.versioning :as versioning]))
 
 (def versioned-content-type
@@ -212,3 +215,28 @@
         result (ingest-subscription subscription options)]
     (index/wait-until-indexed)
     result))
+
+(defn save-umm-granule
+  "Saves a umm-granule concept.  If provided, attributes are merged with the concept 
+   and passed to metadata-db/concepts endpoint."
+  ([provider-id umm-granule]
+   (save-umm-granule provider-id umm-granule {}))
+  ([provider-id umm-granule attributes]
+   (let [parent-collection-id (get umm-granule :collection-concept-id)
+         parent-entry-title (get-in umm-granule [:collection-ref :entry-title])
+         granule-ur (:granule-ur umm-granule)
+         xml (echo10/umm->echo10-xml umm-granule)
+         gran (mdb/save-concept (merge
+                                 {:concept-type :granule
+                                  :provider-id provider-id
+                                  :native-id granule-ur
+                                  :format "application/echo10+xml"
+                                  :metadata xml
+                                  :revision-date "2000-01-01T10:00:00Z"
+                                  :extra-fields {:parent-collection-id parent-collection-id
+                                                 :parent-entry-title parent-entry-title
+                                                 :granule-ur granule-ur}}
+                                 attributes))]
+     ;; Make sure the concept was saved successfully
+     (is (= 201 (:status gran)))
+     (merge umm-granule (select-keys gran [:concept-id :revision-id])))))
