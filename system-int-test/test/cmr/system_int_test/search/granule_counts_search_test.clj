@@ -712,3 +712,48 @@
                                (search/find-refs :collection {:page-size 20
                                                               :sort-key ["-has_granules_or_opensearch"
                                                                          "revision-date"]}))))))
+
+(deftest collection-no-granule-count-test
+  (let [;; Create collections
+        ;; whole world, no temporal, and science keywords
+        coll1 (make-coll 1 m/whole-world nil)
+        ;; just like coll1
+        coll2 (make-coll 2 m/whole-world nil)]
+
+    ;; Ingest some granules for coll1 first, and leave coll2 for later
+    ;; Coll1 granules
+    (make-gran coll1 (p/point 0 0) nil)
+    (make-gran coll1 (p/point 0 90) nil)
+
+    (index/wait-until-indexed)
+
+    (testing "granule counts"
+      (testing "granule counts for all collections"
+        (let [refs (search/find-refs :collection {:include-granule-counts true})]
+          (is (gran-counts/granule-counts-match? :xml {coll1 2 coll2 0} refs)))))
+
+      (testing "granule_count"
+        (are3 [result-format results]
+              (let [expected-granule-count (util/map-keys :concept-id {coll1 nil coll2 nil})
+                    actual-granule-count (gran-counts/results->actual-granule-count result-format results)]
+                (is (= expected-granule-count actual-granule-count)))
+              "granule count in xml format"
+              :xml (search/find-refs :collection {:include-granule-counts false})
+
+              "granule count in echo10 format"
+              :echo10 (search/find-metadata :collection :echo10 {:include-granule-counts false})
+
+              "granule count in iso format"
+              :iso19115 (search/find-metadata :collection :iso19115 {:include-granule-counts false})
+
+              "granule count in umm_json format"
+              :umm_json (search/find-concepts-umm-json :collection {:include-granule-counts false})
+
+              "granule count in legacy-umm-json format"
+              :legacy-umm-json (search/find-concepts-legacy-umm-json :collection {:include-granule-counts false})
+
+              "granule count in atom format"
+              :atom (search/find-concepts-atom :collection {::include-granule-counts false})
+
+              "granule count in json format"
+              :atom (search/find-concepts-json :collection {:include-granule-counts false})))))
