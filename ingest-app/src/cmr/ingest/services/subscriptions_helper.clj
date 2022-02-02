@@ -5,7 +5,6 @@
    [clj-time.core :as t]
    [clojure.spec.alpha :as spec]
    [clojure.string :as string]
-   [cmr.common-app.services.search.params :as params]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.date-time-range-parser :as date-time-range-parser]
    [cmr.common.log :refer (debug info warn error)]

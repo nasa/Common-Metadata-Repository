@@ -14,7 +14,8 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
-   [cmr.transmit.access-control :as access-control]))
+   [cmr.transmit.access-control :as access-control]
+   [cmr.transmit.metadata-db :as mdb]))
 
 (use-fixtures :each
   (join-fixtures
@@ -28,6 +29,12 @@
                                                       [:read]
                                                       [:read :update])
     (dev-system/freeze-resume-time-fixture)]))
+
+(defn- get-subscriptions
+  []
+  (->> (mdb/find-concepts (system/context) {:latest true} :subscription)
+       (remove :deleted)
+       (map #(select-keys % [:concept-id :extra-fields :metadata]))))
 
 (defn- create-granule-and-index
   "A utility function to reduce common code in these tests, Create a test granule and then wait for it to be indexed."
@@ -127,6 +134,57 @@
            (is (= (count result) 2))
            (is (= (:concept-id coll1_granule2) (:concept-id (first result))))
            (is (= (:concept-id coll1_granule3) (:concept-id (second result))))))))))
+
+(deftest subscription-job-manual-test
+  "This test is used to validate that email-subscription-processing will use a
+   valid revision-date-range when one is provided.  To set this test up, several
+   granules are created on individual days and a subscription is created over
+   them.  This allows the test to verify that it is pulling only the correct
+   granules in a given time window."
+  (system/only-with-real-database
+   (with-redefs
+    [jobs/send-subscription-emails mock-send-subscription-emails]
+     (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
+           _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
+           _ (echo-util/ungrant (system/context)
+                                (-> (access-control/search-for-acls (system/context)
+                                                                    {:provider "PROV1"
+                                                                     :identity-type "catalog_item"}
+                                                                    {:token "mock-echo-system-token"})
+                                    :items
+                                    first
+                                    :concept_id))
+           _ (echo-util/grant (system/context)
+                              [{:group_id user2-group-id
+                                :permissions [:read]}]
+                              :catalog_item_identity
+                              {:provider_id "PROV1"
+                               :name "Provider collection/granule ACL"
+                               :collection_applicable true
+                               :granule_applicable true
+                               :granule_identifier {:access_value {:include_undefined_value true
+                                                                   :min_value 1 :max_value 50}}})
+        ;;  Create coll1 granules
+           coll1 (data-core/ingest-umm-spec-collection "PROV1"
+                                                       (data-umm-c/collection {:ShortName "coll1"
+                                                                               :EntryTitle "entry-title1"})
+                                                       {:token "mock-echo-system-token"})
+           coll1-concept-id (:concept-id coll1)
+           c1g1 (data-granule/granule-with-umm-spec-collection
+                 coll1 coll1-concept-id {:day-night "NIGHT"})
+           _coll1_granule1 (subscription-util/save-umm-granule "PROV1" c1g1 {:revision-date "2016-01-01T10:00:00Z"})
+         ;; Setup subscriptions
+           _sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1_coll1" "user2" "day_night_flag=day")]
+
+       (testing "does not update last-notified-at for subscriptions"
+         (let [prejob-subscriptions (get-subscriptions)
+               time-constraint "2016-01-02T00:00:00Z,2016-01-04T00:00:00Z"
+               system-context (system/context)
+               _ (jobs/email-subscription-processing system-context time-constraint)
+               postjob-subscriptions (get-subscriptions)]
+           (println prejob-subscriptions)
+           (println postjob-subscriptions)
+           ))))))
 
 (deftest ^:oracle subscription-email-processing-time-constraint-test
   (system/only-with-real-database
