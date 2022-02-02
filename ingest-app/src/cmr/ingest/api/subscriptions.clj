@@ -186,11 +186,11 @@
   (when (string/blank? user-id)
     (errors/throw-service-error
      :bad-request
-     "INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token."))
+     "Subscription creation failed - No ID was provided. Please provide a SubscriberId or pass in a valid token."))
   (when-not (urs/user-exists? context user-id) 
     (errors/throw-service-error
      :bad-request
-     (format "The user-id [%s] must correspond to a valid EDL account." 
+     (format "Subscription creation failed - The user-id [%s] must correspond to a valid EDL account." 
              user-id))))
 
 (defn generate-native-id
