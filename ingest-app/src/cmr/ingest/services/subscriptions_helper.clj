@@ -177,7 +177,7 @@
 
 (defn- ^:redef send-subscription-emails
   "Takes processed processed subscription tuples and sends out emails if applicable."
-  [context subscriber-filtered-gran-refs-list]
+  [context subscriber-filtered-gran-refs-list is-manual?]
   (doseq [subscriber-filtered-gran-refs-tuple subscriber-filtered-gran-refs-list
           :let [[sub-id subscriber-filtered-gran-refs subscriber-id subscription] subscriber-filtered-gran-refs-tuple]]
     (when (seq subscriber-filtered-gran-refs)
@@ -189,7 +189,7 @@
           (postal-core/send-message email-settings email-content)
           (info (str "Successfully processed subscription [" sub-id "].
                       Sent subscription email to [" email-address "]."))
-          (send-update-subscription-notification-time! context sub-id)
+          (when-not is-manual? (send-update-subscription-notification-time! context sub-id))
           (catch Exception e
             (error "Exception caught in email subscription: " sub-id "\n\n"
                    (.getMessage e) "\n\n" e)))))))
@@ -203,7 +203,7 @@
    (let [subscriptions (->> (mdb/find-concepts context {:latest true} :subscription)
                             (remove :deleted)
                             (map #(select-keys % [:concept-id :extra-fields :metadata])))]
-     (send-subscription-emails context (process-subscriptions context subscriptions revision-date-range)))))
+     (send-subscription-emails context (process-subscriptions context subscriptions revision-date-range) (some? revision-date-range)))))
 
 (defn- validate-revision-date-range
   "Throws service errors on invalid revision date ranges"
