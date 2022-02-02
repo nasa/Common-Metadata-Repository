@@ -1,18 +1,20 @@
 (ns cmr.common.api.errors
-  (:require [cmr.common.log :refer [error warn info debug]]
-            [cmr.common.services.errors :as errors]
-            [clojure.data.xml :as x]
-            [clojure.string :as str]
-            [camel-snake-kebab.core :as csk]
-            [cheshire.core :as json]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.config :as cfg]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
+   [clojure.data.xml :as x]
+   [clojure.string :as string]
+   [cmr.common.config :as cfg]
+   [cmr.common.log :refer [error warn info debug]]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]))
 
 (def type->http-status-code
   {:bad-request 400
    :unauthorized 401
    :not-found 404
    :conflict 409
+   :payload-too-large 413
    :invalid-content-type 415
    :invalid-data 422
    :too-many-requests 429
@@ -81,7 +83,7 @@
     (x/element
       :error {}
       (x/element
-        :path {} (str/join "/" (keyword-path->string-path path)))
+        :path {} (string/join "/" (keyword-path->string-path path)))
       (x/element
         :errors {} (for [error errors] (x/element :error {} error))))))
 
@@ -168,5 +170,5 @@
         (errors/throw-service-error
           :bad-request
           (str "Invalid URL encoding: "
-               (str/replace (.getMessage e) #"URLDecoder: " "")))))
+               (string/replace (.getMessage e) #"URLDecoder: " "")))))
     (f request)))

@@ -5,6 +5,7 @@
    [clojure.walk :as walk]
    [cmr.acl.core :as acl]
    [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.services.errors :as errors]
    [cmr.metadata-db.api.route-helpers :as rh]
    [cmr.metadata-db.services.provider-service :as provider-service]
    [compojure.core :refer :all]))
@@ -39,6 +40,15 @@
      :body (json/generate-string providers)
      :headers rh/json-header}))
 
+(defn- validate-consortiums
+  "Throws error if consortiums contain anything other than alphabet, numbers,
+  underscores and spaces. Spaces are used as delimiters."
+  [consortiums]
+  (when (re-find #"[^A-Za-z0-9_ ]" consortiums)
+    (errors/throw-service-error
+      :invalid-data
+      (format "Invalid consortiums [%s]. Valid consortiums can only contain alphanumeric, underscore and space characters." consortiums))))
+
 (def provider-api-routes
   (context "/providers" []
 
@@ -50,6 +60,8 @@
             cmr-only (get body "cmr-only")
             small (get body "small")
             consortiums (get body "consortiums")]
+        (when consortiums
+          (validate-consortiums consortiums))
         (save-provider request-context params
                        {:provider-id provider-id
                         :short-name (or short-name provider-id)
@@ -62,6 +74,8 @@
                           provider :body
                           request-context :request-context
                           headers :headers}
+      (when-let [consortiums (get provider "consortiums")]
+        (validate-consortiums consortiums))
       (let [provider (walk/keywordize-keys provider)]
         (acl/verify-ingest-management-permission request-context :update)
         (update-provider request-context params provider)))

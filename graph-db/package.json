@@ -52,5 +52,8 @@
     "serverless-offline": "^8.3.0",
     "serverless-pseudo-parameters": "^2.5.0",
     "snyk": "^1.782.0"
+  },
+  "resolutions": {
+    "ansi-regex": "^5.0.1"
   }
 }

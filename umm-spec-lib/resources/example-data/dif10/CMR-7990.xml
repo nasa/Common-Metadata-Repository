@@ -1,0 +1,318 @@
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+     xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>AMSR2-REMSS-L2P-v8a</Short_Name>
+        <Version>8a</Version>
+    </Entry_ID>
+    <Entry_Title>GHRSST Level 2P Global Subskin Sea Surface Temperature version 8a from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Remote Sensing Systems</Dataset_Creator>
+        <Dataset_Title>AMSR2 geolocated L2 swath SST data set</Dataset_Title>
+        <Dataset_Series_Name>GHRSST Level 2P Global Subskin Sea Surface Temperature from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite</Dataset_Series_Name>
+        <Dataset_Release_Date>2017-10-31T00:00:00.000Z</Dataset_Release_Date>
+        <Dataset_Release_Place>Santa Rosa, CA, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Remote Sensing Systems</Dataset_Publisher>
+        <Version>8a</Version>
+        <Other_Citation_Details>Remote Sensing Systems, Remote Sensing Systems, 2017-10-31, GHRSST Level 2P Global Subskin Sea Surface Temperature version 8a from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite, http://www.remss.com</Other_Citation_Details>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/GHAM2-2PR8A</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>http://www.remss.com</Online_Resource>
+    </Dataset_Citation>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN TEMPERATURE</Term>
+        <Variable_Level_1>SEA SURFACE TEMPERATURE</Variable_Level_1>
+        <Detailed_Variable>Sub-skin Sea Surface Temperature</Detailed_Variable>
+    </Science_Keywords>
+    <Ancillary_Keyword>GHRSST</Ancillary_Keyword>
+    <Ancillary_Keyword>sea surface temperature</Ancillary_Keyword>
+    <Ancillary_Keyword>L2P</Ancillary_Keyword>
+    <Ancillary_Keyword>SST</Ancillary_Keyword>
+    <Ancillary_Keyword>surface temperature</Ancillary_Keyword>
+    <Ancillary_Keyword>REMSS</Ancillary_Keyword>
+    <Ancillary_Keyword>AMSR2</Ancillary_Keyword>
+    <Ancillary_Keyword>GDS2</Ancillary_Keyword>
+    <Ancillary_Keyword>GCOM-W</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>GCOM-W1</Short_Name>
+        <Long_Name>Global Change Observation Mission 1st - Water (SHIZUKU)</Long_Name>
+        <Characteristics>
+            <Name>OrbitPeriod</Name>
+            <Description>Nominal period of a spacecraft’s single revolution on an orbital plane.</Description>
+            <DataType>FLOAT</DataType>
+            <Unit>Minutes</Unit>
+            <Value>100.0</Value>
+        </Characteristics>
+        <Characteristics>
+            <Name>InclinationAngle</Name>
+            <Description>Spacecraft angular distance from orbital plane relative to the Equator.</Description>
+            <DataType>FLOAT</DataType>
+            <Unit>Degrees</Unit>
+            <Value>98.19</Value>
+        </Characteristics>
+        <Instrument>
+            <Short_Name>AMSR2</Short_Name>
+            <Long_Name>Advanced Microwave Scanning Radiometer 2</Long_Name>
+            <Characteristics>
+                <Name>SwathWidth</Name>
+                <Description>Spacecraft angular distance from orbital plane relative to the Equator.</Description>
+                <DataType>FLOAT</DataType>
+                <Unit>Kilometers</Unit>
+                <Value>1450.0</Value>
+            </Characteristics>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2012-07-02T19:00:44.000Z</Beginning_Date_Time>
+        </Range_DateTime>
+        <Temporal_Info>
+            <Ancillary_Temporal_Keyword>12 Hour</Ancillary_Temporal_Keyword>
+        </Temporal_Info>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90</Southernmost_Latitude>
+                <Northernmost_Latitude>90</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+        <Orbit_Parameters>
+            <Swath_Width>1450.0</Swath_Width>
+            <Period>100.0</Period>
+            <Inclination_Angle>98.19</Inclination_Angle>
+            <Number_Of_Orbits>1</Number_Of_Orbits>
+        </Orbit_Parameters>
+        <Spatial_Info>
+            <Spatial_Coverage_Type>Not provided</Spatial_Coverage_Type>
+            <Horizontal_Coordinate_System>
+                <Geodetic_Model>
+                    <Horizontal_DatumName>World Geodetic System 1984</Horizontal_DatumName>
+                    <Ellipsoid_Name>WGS 84</Ellipsoid_Name>
+                    <Semi_Major_Axis>6378137</Semi_Major_Axis>
+                    <Denominator_Of_Flattening_Ratio>298.2572236</Denominator_Of_Flattening_Ratio>
+                </Geodetic_Model>
+                <Geographic_Coordinate_System>
+                    <GeographicCoordinateUnits>Meters</GeographicCoordinateUnits>
+                    <LatitudeResolution>25000</LatitudeResolution>
+                    <LongitudeResolution>25000</LongitudeResolution>
+                </Geographic_Coordinate_System>
+            </Horizontal_Coordinate_System>
+        </Spatial_Info>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Project>
+        <Short_Name>GHRSST</Short_Name>
+        <Long_Name>Group for High Resolution Sea Surface Temperature</Long_Name>
+    </Project>
+    <Dataset_Language>English</Dataset_Language>
+    <Organization>
+        <Organization_Type>PROCESSOR</Organization_Type>
+        <Organization_Name>
+            <Short_Name>Remote Sensing Systems</Short_Name>
+        </Organization_Name>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>Not provided</Last_Name>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/JPL/PODAAC</Short_Name>
+            <Long_Name>Remote Sensing Systems</Long_Name>
+        </Organization_Name>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <First_Name>Marty</First_Name>
+                <Middle_Name>none</Middle_Name>
+                <Last_Name>Brewer</Last_Name>
+                <Phone>
+                    <Number>001 707 545 2904</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Email>brewer@remss.com</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Format>NETCDF</Distribution_Format>
+    </Distribution>
+    <Reference>
+        <Other_Reference_Details>http://www.remss.com/missions/amsre</Other_Reference_Details>
+    </Reference>
+    <Summary>
+        <Abstract>The Advanced Microwave Scanning Radiometer 2 (AMSR2) was launched on 18 May 2012, onboard the Global Change Observation Mission - Water (GCOM-W) satellite developed by the Japan Aerospace Exploration Agency (JAXA). The GCOM-W mission aims to establish the global and long-term observation system to collect data, which is needed to understand mechanisms of climate and water cycle variations, and demonstrate its utilization. AMSR2 onboard the first generation of the GCOM-W satellite will continue Aqua/AMSR-E observations of water vapor, cloud liquid water, precipitation, SST, sea surface wind speed, sea ice concentration, snow depth, and soil moisture. AMSR2 is a remote sensing instrument for measuring weak microwave emission from the surface and the atmosphere of the Earth. From about 700 km above the Earth, AMSR2 will provide us highly accurate measurements of the intensity of microwave emission and scattering. The antenna of AMSR2 rotates once per 1.5 seconds and obtains data over a 1450 km swath. This conical scan mechanism enables AMSR2 to acquire a set of daytime and nighttime data with more than 99% coverage of the Earth every 2 days. Remote Sensing Systems (RSS, or REMSS), providers of these SST data for the Group for High Resolution Sea Surface Temperature (GHRSST) Project, performs a detailed processing of AMSR2 instrument data in two stages. The first stage produces a near-real-time (NRT) product (identified by "_rt_" within the file name) which is made as available as soon as possible. This is generally within 3 hours of when the data are recorded. Although suitable for many timely uses the NRT products are not intended to be archive quality. "Final" data (currently identified by "v08" within the file name) are processed when RSS receives the atmospheric model National Center for Environmental Prediction (NCEP) Final Analysis (FNL) Operational Global Analysis. The NCEP wind directions are particularly useful for retrieving more accurate SSTs and wind speeds. This dataset adheres to the GHRSST Data Processing Specification (GDS) version 2 format specifications.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>DIRECT DOWNLOAD</Subtype>
+        </URL_Content_Type>
+        <URL>https://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-GHAM2-2PR8A</URL>
+        <Description>(Search Granule)</Description>
+        <Mime_Type>application/xml</Mime_Type>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>http://suzaku.eorc.jaxa.jp/GCOM_W/w_amsr2/whats_amsr2.html</URL>
+        <Description>Full details of the AMSR2</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://podaac.jpl.nasa.gov/SeaSurfaceTemperature</URL>
+        <Description>Sea Surface Temperature measurement description.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL>http://podaac-tools.jpl.nasa.gov/hitide/</URL>
+        <Description>HIgh-level Tool for Interactive Data Extraction</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>DOWNLOAD SOFTWARE</Type>
+        </URL_Content_Type>
+        <URL>https://podaac-tools.jpl.nasa.gov/drive/files/allData/ghrsst/sw/generic_nc_readers/python/</URL>
+        <Description>Python read software</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://podaac-tools.jpl.nasa.gov/drive/files/OceanTemperature/ghrsst/docs/GDS20r5.pdf</URL>
+        <Description>Documentation on the GDS version 2 format specification</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET RELATED VISUALIZATION</Type>
+        </URL_Content_Type>
+        <URL>https://podaac.jpl.nasa.gov/Podaac/thumbnails/AMSR2-REMSS-L2P-v8a.jpg</URL>
+        <Description>Thumbnail</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>DOWNLOAD SOFTWARE</Type>
+        </URL_Content_Type>
+        <URL>https://podaac-tools.jpl.nasa.gov/drive/files/allData/ghrsst/sw/generic_nc_readers/R/</URL>
+        <Description>R read software</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://ghrsst.jpl.nasa.gov</URL>
+        <Description>Group for High Resolution Sea Surface Temperature Information</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>DOWNLOAD SOFTWARE</Type>
+        </URL_Content_Type>
+        <URL>https://podaac-tools.jpl.nasa.gov/drive/files/allData/ghrsst/sw/generic_nc_readers/IDL/</URL>
+        <Description>Interactive Data Language read software</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>http://www.remss.com/missions/amsr/</URL>
+        <Description>AMSR2 SSTs: algorithm description, browsing of data, and ftp of data</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>DOWNLOAD SOFTWARE</Type>
+        </URL_Content_Type>
+        <URL>https://podaac-tools.jpl.nasa.gov/drive/files/allData/ghrsst/sw/generic_nc_readers/matlab/</URL>
+        <Description>MATLAB read software</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>USE SERVICE API</Type>
+            <Subtype>OPENDAP DATA</Subtype>
+        </URL_Content_Type>
+        <URL>https://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L2P/AMSR2/REMSS/v8a/</URL>
+        <Description>The OPeNDAP base directory location for the collection.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>DIRECT DOWNLOAD</Subtype>
+        </URL_Content_Type>
+        <URL>https://podaac-tools.jpl.nasa.gov/drive/files/allData/ghrsst/data/GDS2/L2P/AMSR2/REMSS/v8a</URL>
+        <Description>PO.DAAC Drive</Description>
+        <Mime_Type>text/html</Mime_Type>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>DATA CITATION POLICY</Subtype>
+        </URL_Content_Type>
+        <URL>https://podaac.jpl.nasa.gov/CitingPODAAC</URL>
+        <Description>Data Use and Citation Policy </Description>
+    </Related_URL>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>1970-01-01</Metadata_Creation>
+        <Metadata_Last_Revision>2021-09-14</Metadata_Last_Revision>
+        <Data_Creation>2017-09-18T17:57:41.242Z</Data_Creation>
+        <Data_Last_Revision>2017-09-18T17:57:41.242Z</Data_Last_Revision>
+    </Metadata_Dates>
+    <Additional_Attributes>
+        <Name>earliest_granule_start_time</Name>
+        <DataType>DATETIME</DataType>
+        <Description>Earliest Granule Start Time for dataset.</Description>
+        <Value>2012-07-02T23:21:36.000Z</Value>
+    </Additional_Attributes>
+    <Additional_Attributes>
+        <Name>latest_granule_end_time</Name>
+        <DataType>DATETIME</DataType>
+        <Description>Latest Granule Stop/End Time for dataset.</Description>
+        <Value>2021-09-13T23:19:29.000Z</Value>
+    </Additional_Attributes>
+    <Additional_Attributes>
+        <Name>data_latency</Name>
+        <DataType>INT</DataType>
+        <Description>Dataset Latency</Description>
+        <Value>6</Value>
+    </Additional_Attributes>
+    <Additional_Attributes>
+        <Name>Series Name</Name>
+        <DataType>STRING</DataType>
+        <Description>Dataset citation series name</Description>
+        <Value>GHRSST Level 2P Global Subskin Sea Surface Temperature from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite</Value>
+    </Additional_Attributes>
+    <Additional_Attributes>
+        <Name>Persistent ID</Name>
+        <DataType>STRING</DataType>
+        <Description>Dataset Persistent ID</Description>
+        <Value>PODAAC-GHAM2-2PR8A</Value>
+    </Additional_Attributes>
+    <Collection_Data_Type>LOW_LATENCY</Collection_Data_Type>
+</DIF>
+

@@ -14,8 +14,12 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
+<<<<<<< HEAD
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.metadata-db :as mdb]))
+=======
+   [cmr.transmit.access-control :as access-control]))
+>>>>>>> master
 
 (use-fixtures :each
   (join-fixtures
@@ -30,12 +34,15 @@
                                                       [:read :update])
     (dev-system/freeze-resume-time-fixture)]))
 
+<<<<<<< HEAD
 (defn- get-subscriptions
   []
   (->> (mdb/find-concepts (system/context) {:latest true} :subscription)
        (remove :deleted)
        (map #(select-keys % [:concept-id :extra-fields :metadata]))))
 
+=======
+>>>>>>> master
 (defn- create-granule-and-index
   "A utility function to reduce common code in these tests, Create a test granule and then wait for it to be indexed."
   [provider collection granule-ur]
@@ -135,6 +142,7 @@
            (is (= (:concept-id coll1_granule2) (:concept-id (first result))))
            (is (= (:concept-id coll1_granule3) (:concept-id (second result))))))))))
 
+<<<<<<< HEAD
 (deftest subscription-job-manual-test
   "This test is used to validate that email-subscription-processing will use a
    valid revision-date-range when one is provided.  To set this test up, several
@@ -186,6 +194,8 @@
            (println postjob-subscriptions)
            ))))))
 
+=======
+>>>>>>> master
 (deftest ^:oracle subscription-email-processing-time-constraint-test
   (system/only-with-real-database
    (with-redefs

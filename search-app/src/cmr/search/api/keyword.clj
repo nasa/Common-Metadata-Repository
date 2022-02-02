@@ -20,7 +20,7 @@
   Commonly used parameters in this namespace are:
   keyword-scheme     The type of keyword. For example :platforms or :instruments.
   keyword-hierarchy  An ordered array of subfields for the given keyword scheme. For example,
-  [:category :series-entity :short-name :long-name] for the :platforms keyword scheme.
+  [:basis :category :sub-category :short-name :long-name] for the :platforms keyword scheme.
   keyword-map        A single GCMD keyword with each of its subfields as a key in a map. If the
                      keyword does not have a value for a subfield, that key will not be present in
                      the map."

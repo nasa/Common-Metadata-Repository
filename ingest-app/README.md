@@ -99,6 +99,7 @@ The providers that exist in the CMR are administered through the Ingest API. A p
  * `short-name` - A unique identifier of the provider. It is similar to `provider-id`, but more descriptive. It allows spaces and other special characters. The maximum length of `short-name` is 128 characters. `short-name` defaults to `provider-id`.
  * `cmr-only` - True or false value that indicates if this is a provider that ingests directly through the CMR Ingest API or the legacy ECHO Catalog REST Ingest API. A CMR Only provider will still have ACLs configured in ECHO and support ordering through ECHO. A CMR Only provider may even still have data in Catalog REST but it will not be kept in sync with the CMR. `cmr-only` defaults to false.
  * `small` - True or false value that indicates if this is a provider that has a small amount of data and its collections and granules will be ingested into the `SMALL_PROV` tables. `small` defaults to false.
+ * `consortiums` - An optional field consists of a string of space delimited consortiums, which are projects, efforts or tags that a provider is associated with. Consortium can only contain alphanumeric characters and underscores. For example: `CWIC EOSDIS GEOSS` is a valid value for consortiums.
 
 The provider API only supports requests and responses in JSON.
 

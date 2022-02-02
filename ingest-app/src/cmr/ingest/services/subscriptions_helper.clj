@@ -188,7 +188,11 @@
           (postal-core/send-message email-settings email-content)
           (info (str "Successfully processed subscription [" sub-id "].
                       Sent subscription email to [" email-address "]."))
+<<<<<<< HEAD
           (when-not is-manual? (send-update-subscription-notification-time! context sub-id))
+=======
+          (send-update-subscription-notification-time! context sub-id)
+>>>>>>> master
           (catch Exception e
             (error "Exception caught in email subscription: " sub-id "\n\n"
                    (.getMessage e) "\n\n" e)))))))
@@ -202,7 +206,11 @@
    (let [subscriptions (->> (mdb/find-concepts context {:latest true} :subscription)
                             (remove :deleted)
                             (map #(select-keys % [:concept-id :extra-fields :metadata])))]
+<<<<<<< HEAD
      (send-subscription-emails context (process-subscriptions context subscriptions revision-date-range) (some? revision-date-range)))))
+=======
+     (send-subscription-emails context (process-subscriptions context subscriptions revision-date-range)))))
+>>>>>>> master
 
 (defn- validate-revision-date-range
   "Throws service errors on invalid revision date ranges"

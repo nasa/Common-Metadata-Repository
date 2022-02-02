@@ -68,6 +68,7 @@
     cmr.search.services.parameters.converters.humanizer
     cmr.search.services.parameters.converters.orbit-number
     cmr.search.services.parameters.converters.pass
+    cmr.search.services.parameters.converters.platform
     cmr.search.services.parameters.converters.science-keyword
     cmr.search.services.parameters.converters.spatial
     cmr.search.services.parameters.converters.shapefile

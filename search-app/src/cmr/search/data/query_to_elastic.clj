@@ -37,6 +37,8 @@
                  :let [field (keyword (str shape "-" direction))]]
              [field (doc-values-field-name field)])))
 
+;; These mappings are for renames only, same name keys handled by default
+;; create a matching value in q2e/elastic-field->query-field-mappings
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
   (let [default-mappings {:author :authors
@@ -53,6 +55,7 @@
                           :measurement :measurements
                           :platform :platform-sn
                           :platform-h :platform-sn-humanized
+                          :platforms :platforms2 ;the old platforms has been depricated
                           :processing-level-id-h :processing-level-id-humanized
                           :project :project-sn
                           :project-h :project-sn-humanized
@@ -155,6 +158,8 @@
   {:value :value
    :type :type})
 
+;; These mappings are for renames only, same name keys handled by default
+;; create a matching value in q2e/concept-type->field-mappings
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
   {:authors :author
@@ -170,6 +175,7 @@
    :organization-humanized :data-center-h
    :platform-sn :platform
    :platform-sn-humanized :platform-h
+   :platforms2 :platforms
    :processing-level-id-humanized :processing-level-id-h
    :project-sn-humanized :project-h
    :sensor-sn :sensor
@@ -394,6 +400,7 @@
          {:query {:bool {:must (eq/match-all)
                          :filter core-query}}})))))
 
+;; this only needs to map overrides, defaults to one-to-one mappings
 (defmethod q2e/concept-type->sort-key-map :collection
   [_]
   {:short-name :short-name-lowercase
@@ -402,6 +409,7 @@
    :entry-id :entry-id-lowercase
    :provider :provider-id-lowercase
    :platform :platform-sn-lowercase
+   :platforms :platforms2 ; the old "platforms" has been depricated
    :instrument :instrument-sn-lowercase
    :sensor :sensor-sn-lowercase
    :score :_score
