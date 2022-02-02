@@ -573,11 +573,6 @@
   (format "http://localhost:%s/jobs/trigger-partial-collection-granule-aggregate-cache-refresh"
           (transmit-config/ingest-port)))
 
-(defn email-subscription-processing
-  []
-  (format "http://localhost:%s/jobs/trigger-email-subscription-processing"
-          (transmit-config/ingest-port)))
-
 (defn indexer-read-caches-url
   "URL to read the indexer caches."
   []
