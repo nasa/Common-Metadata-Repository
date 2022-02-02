@@ -107,6 +107,12 @@ The token can alternatively be specified using the `Authorization: Bearer` heade
 
 The `Accept` header specifies the format of the response message and defaults to XML for the normal Ingest APIs. `application/json` can be specified if the preferred responses is JSON.
 
+UMM JSON accepts an additional version parameter for `Accept` header. Like charset, it is appended with a semicolon (;). If no UMM JSON version is provided, the latest version will be used.
+
+For an example, the following means version 1.16.2 of the UMM JSON format:
+
+    application/vnd.nasa.cmr.umm+json;version=1.16.2
+
 #### <a name="cmr-pretty-header"></a> Cmr-Pretty Header
 
 The `Cmr-Pretty` Header set to `true` or using the alias `&pretty=true` URL parameter will tell CMR to format the output with new lines and spaces for better readability by humans.
