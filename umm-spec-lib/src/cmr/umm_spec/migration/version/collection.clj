@@ -419,3 +419,72 @@
                                   (assoc :Description {:Description (get use-constraints :Description)})
                                   (set/rename-keys {:LicenseURL :LicenseUrl})
                                   util/remove-nils-empty-maps-seqs))))
+
+;; Migrations related to 1.16.3 --------------
+
+(defmethod interface/migrate-umm-version [:collection "1.16.2" "1.16.3"]
+  [context c & _]
+  ;; No need to migrate
+  c)
+
+(defmethod interface/migrate-umm-version [:collection "1.16.3" "1.16.2"]
+  [context c & _]
+  ;; Remove the related urls that contain GET CAPABILITIES as the type as it is not valid in the
+  ;; lower versions.
+  (-> c
+      (update :RelatedUrls (fn [related-urls]
+                             (into []
+                               (remove #(= "GET CAPABILITIES" (:Type %)) related-urls))))
+      util/remove-nils-empty-maps-seqs))
+
+;; Migrations related to 1.16.4 --------------
+
+(defmethod interface/migrate-umm-version [:collection "1.16.3" "1.16.4"]
+  [context collection & _]
+  ;; No need to migrate
+  collection)
+
+(defmethod interface/migrate-umm-version [:collection "1.16.4" "1.16.5"]
+  [context collection & _]
+  ;; No need to migrate
+  collection)
+
+(defn- remove-1-16-4-urls
+  [related-urls]
+  (let [sans ["HITIDE", "SOTO", "Sub-Orbital Order Tool", "CERES Ordering Tool"]]
+    (into [] (remove #(some? (some #{(:Subtype %)} sans)) related-urls))))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.4" "1.16.3"]
+  [context collection & _]
+  ;; Remove the related urls that sub-types that were not valid in the lower versions.
+  (-> collection
+      (update :RelatedUrls remove-1-16-4-urls)
+      util/remove-nils-empty-maps-seqs))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.5" "1.16.4"]
+  [context collection & _]
+  ;; No need to migrate
+  collection)
+
+(defmethod interface/migrate-umm-version [:collection "1.16.5" "1.16.6"]
+  [context collection & _]
+  ;; No need to migrate
+  collection)
+
+(defmethod interface/migrate-umm-version [:collection "1.16.6" "1.16.5"]
+  [context collection & _]
+  ;; Remove the FreeAndOpenData field in UseConstraints.
+  (update-in collection [:UseConstraints] dissoc :FreeAndOpenData))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.6" "1.16.7"]
+  [context collection & _]
+  ;; No need to migrate
+  collection)
+
+(defmethod interface/migrate-umm-version [:collection "1.16.7" "1.16.6"]
+  [context collection & _]
+  ;; Change CollectionDataType to "NEAR_REAL_TIME" if its value is "LOW_LATENCY" or "EXPEDITED"
+  (let [CollectionDataType (:CollectionDataType collection)]
+    (if (or (= "LOW_LATENCY" CollectionDataType) (= "EXPEDITED" CollectionDataType))
+      (assoc collection :CollectionDataType "NEAR_REAL_TIME")
+      collection)))

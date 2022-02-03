@@ -7,7 +7,7 @@ if [[ ! -d "cmr-preped" ]]; then
 	$SCRIPT_DIR/prep-repos.sh
 fi
 
-PROJS="collection-renderer-lib orbits-lib mock-echo-app oracle-lib elastic-utils-lib common-app-lib metadata-db-app indexer-app search-relevancy-test virtual-product-app message-queue-lib access-control-app ingest-app acl-lib system-int-test es-spatial-plugin bootstrap-app search-app spatial-lib umm-spec-lib common-lib vdd-spatial-viz transmit-lib umm-lib dev-system"
+PROJS="orbits-lib mock-echo-app oracle-lib elastic-utils-lib common-app-lib metadata-db-app indexer-app search-relevancy-test virtual-product-app message-queue-lib access-control-app ingest-app acl-lib system-int-test es-spatial-plugin bootstrap-app search-app spatial-lib umm-spec-lib common-lib vdd-spatial-viz transmit-lib umm-lib dev-system"
 if [[ ! -d "cli" ]]; then
 	./extract-cli.sh -y
 fi

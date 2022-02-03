@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Granule>
+   <GranuleUR>7504BothSizeFields</GranuleUR>
+   <InsertTime>2016-06-17T12:37:02Z</InsertTime>
+   <LastUpdate>2016-06-17T12:37:02Z</LastUpdate>
+   <Collection>
+      <ShortName>OMSO2</ShortName>
+      <VersionId>003</VersionId>
+   </Collection>
+   <DataGranule>
+      <DataGranuleSizeInBytes>1024</DataGranuleSizeInBytes>
+      <SizeMBDataGranule>1.0</SizeMBDataGranule>
+      <Checksum>
+         <Value>0987654321</Value>
+         <Algorithm>MD5</Algorithm>
+      </Checksum>
+      <ProducerGranuleId>OMI-Aura_L2-OMSO2_2004m1001t2307-o01146_v003-2016m0615t191523.he5</ProducerGranuleId>
+      <DayNightFlag>DAY</DayNightFlag>
+      <ProductionDateTime>2016-06-15T19:15:23.000Z</ProductionDateTime>
+   </DataGranule>
+   <PGEVersionClass>
+      <PGEVersion>0.1.7</PGEVersion>
+   </PGEVersionClass>
+   <Temporal>
+      <RangeDateTime>
+         <BeginningDateTime>2004-10-01T23:07:20.000000Z</BeginningDateTime>
+         <EndingDateTime>2004-10-02T00:46:13.000000Z</EndingDateTime>
+      </RangeDateTime>
+   </Temporal>
+   <Spatial>
+      <HorizontalSpatialDomain>
+         <ZoneIdentifier>Text</ZoneIdentifier>
+         <Orbit>
+            <AscendingCrossing>-153.66</AscendingCrossing>
+            <StartLat>-77.975486</StartLat>
+            <StartDirection>D</StartDirection>
+            <EndLat>76.799534</EndLat>
+            <EndDirection>D</EndDirection>
+         </Orbit>
+      </HorizontalSpatialDomain>
+   </Spatial>
+   <OrbitCalculatedSpatialDomains>
+      <OrbitCalculatedSpatialDomain>
+         <OrbitNumber>1146</OrbitNumber>
+         <EquatorCrossingLongitude>-153.66</EquatorCrossingLongitude>
+         <EquatorCrossingDateTime>2004-10-01T23:56:44.000000Z</EquatorCrossingDateTime>
+      </OrbitCalculatedSpatialDomain>
+   </OrbitCalculatedSpatialDomains>
+   <MeasuredParameters>
+      <MeasuredParameter>
+         <ParameterName>Total Column Sulphur Dioxide</ParameterName>
+         <QAStats>
+            <QAPercentMissingData>-999</QAPercentMissingData>
+         </QAStats>
+         <QAFlags>
+            <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+            <AutomaticQualityFlagExplanation>Set to 'Failed' if processing error occurred,'Passed' otherwise</AutomaticQualityFlagExplanation>
+            <OperationalQualityFlag>Passed</OperationalQualityFlag>
+            <OperationalQualityFlagExplanation>This granule passed operational tests that were administered by the OMI SIPS.  QA metadata was extracted and the file was successfully read using standard HDF-EOS utilities.</OperationalQualityFlagExplanation>
+            <ScienceQualityFlag>Not Investigated</ScienceQualityFlag>
+            <ScienceQualityFlagExplanation>An updated science quality flag and explanation is put in the product .met file when a granule has been evaluated.  The flag value in this file, Not Investigated, is an automatic default that is put into every granule during production.</ScienceQualityFlagExplanation>
+         </QAFlags>
+      </MeasuredParameter>
+   </MeasuredParameters>
+   <OnlineAccessURLs>
+      <OnlineAccessURL>
+         <URL>http://aura.gesdisc.eosdis.nasa.gov/data//Aura_OMI_Level2/OMSO2.003/2004/275/OMI-Aura_L2-OMSO2_2004m1001t2307-o01146_v003-2016m0615t191523.he5</URL>
+      </OnlineAccessURL>
+   </OnlineAccessURLs>
+   <Orderable>false</Orderable>
+   <DataFormat>HDF-EOS5</DataFormat>
+</Granule>

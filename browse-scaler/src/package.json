@@ -9,15 +9,17 @@
     "aws-sdk": "^2.814.0",
     "node-fetch": "^2.6.1",
     "redis": "^2.8.0",
-    "sharp": "^0.24.1"
+    "sharp": "^0.28.3"
   },
   "scripts": {
+    "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
     "test": "jest --coverage",
     "ci-test": "jest --coverage --config jest.config.junit_output.js",
     "local-test": "jest --config jest.config.js",
     "lint": "./node_modules/.bin/eslint \"*.js\""
   },
   "devDependencies": {
+    "aws-sdk-mock": "^5.2.1",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.1",
     "eslint-config-prettier": "^4.3.0",
@@ -27,6 +29,11 @@
     "eslint-plugin-react": "^7.20.6",
     "jest": "^24.9.0",
     "jest-junit": "^6.4.0",
-    "prettier": "^1.19.1"
+    "nock": "^13.1.1",
+    "prettier": "^1.19.1",
+    "sinon": "^11.1.2"
+  },
+  "resolutions": {
+    "ansi-regex": "^5.0.1"
   }
 }

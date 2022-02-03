@@ -1,0 +1,56 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.22.1
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  SNYK-JS-ANSIREGEX-1583908:
+    - serverless > boxen > ansi-align > string-width > strip-ansi > ansi-regex:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.420Z'
+    - serverless > tabtab > inquirer > strip-ansi > ansi-regex:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.420Z'
+    - serverless > tabtab > inquirer > string-width > strip-ansi > ansi-regex:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.421Z'
+  SNYK-JS-DECOMPRESSTAR-559095:
+    - serverless > decompress > decompress-tar:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.421Z'
+    - serverless > decompress > decompress-tarbz2 > decompress-tar:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.422Z'
+    - serverless > decompress > decompress-targz > decompress-tar:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.422Z'
+    - serverless > @serverless/utils > decompress > decompress-tar:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.422Z'
+    - serverless > @serverless/utils > decompress > decompress-tarbz2 > decompress-tar:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.422Z'
+    - serverless > @serverless/utils > decompress > decompress-targz > decompress-tar:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.422Z'
+    - serverless > @serverless/dashboard-plugin > @serverless/utils > decompress > decompress-tar:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.422Z'
+    - serverless > @serverless/dashboard-plugin > @serverless/utils > decompress > decompress-tarbz2 > decompress-tar:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.422Z'
+    - serverless > @serverless/dashboard-plugin > @serverless/utils > decompress > decompress-targz > decompress-tar:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.422Z'
+  SNYK-JS-RAMDA-1582370:
+    - serverless > @serverless/cli > @serverless/core > ramda:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.422Z'
+    - serverless > @serverless/cli > @serverless/template > ramda:
+        reason: no patch available
+        expires: '2022-01-08T22:23:05.422Z'
+    - serverless > @serverless/cli > @serverless/template > @serverless/core > ramda:
+        reason: no patch available at this time
+        expires: '2022-01-01T15:38:22.712Z'
+    - serverless > @serverless/components > ramda:
+        reason: no patch available at this time
+        expires: '2022-01-01T15:38:22.712Z'
+patch: {}

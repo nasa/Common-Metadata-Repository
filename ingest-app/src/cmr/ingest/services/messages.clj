@@ -63,6 +63,13 @@
   (format "Format [%s] was not a valid keyword."
           relatedurl-getdata-format))
 
+(defn mime-type-not-matches-kms-keywords
+  "Error message when relatedurl-mimetype is
+  not in the KMS."
+  [relatedurl-mime-type]
+  (format "Mime Type [%s] was not a valid keyword."
+          relatedurl-mime-type))
+
 (defn directory-name-not-matches-kms-keywords
    "Error msg when DirectoryName's ShortName is not in the KMS."
    [directory-name]
@@ -74,6 +81,14 @@
    [iso-topic-category]
    (format "ISO Topic Category [%s] was not a valid keyword."
            iso-topic-category))
+
+(defn related-url-content-type-type-subtype-not-matching-kms-keywords
+  "Error msg when Related URL Content Type, Type, and Subtype do not match a valid set in KMS."
+  [related-url]
+  (format "Related URL Content Type, Type, and Subtype [%s>%s>%s] are not a valid set together."
+          (:URLContentType related-url)
+          (:Type related-url)
+          (:Subtype related-url)))
 
 (def science-keyword-attribute-order
   "The order of fields that should be displayed in the science keyword human readable list."

@@ -27,7 +27,9 @@
    [compojure.handler :as handler]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params]))
+   [ring.middleware.params :as params])
+  (:import
+   (org.json JSONException)))
 
 (defn- api-response
   "Creates a successful response with the given data response"
@@ -120,11 +122,14 @@
   [request-ctx headers body]
   (validate-content-type headers)
   (acl-schema/validate-acl-json body)
-  (->> (json/parse-string body)
-       util/map-keys->kebab-case
-       (acl-service/create-acl request-ctx)
-       util/map-keys->snake_case
-       api-response))
+  (try
+    (->> (json/parse-string body)
+         util/map-keys->kebab-case
+         (acl-service/create-acl request-ctx)
+         util/map-keys->snake_case
+         api-response)
+    (catch com.fasterxml.jackson.core.JsonParseException e
+      (errors/throw-service-error :bad-request (str "Json parsing error: " (.getMessage e))))))
 
 (defn- update-acl
   "Returns a Ring response with the result of trying to update the ACL with the given concept id
@@ -257,7 +262,7 @@
         (OPTIONS "/"
                  {params :params}
                  (pv/validate-standard-params params)
-                 common-routes/options-response)
+                 (common-routes/options-response))
 
         ;; Search for groups
         (GET "/"
@@ -276,7 +281,7 @@
                                 (:managing_group_id params))))
 
         (context "/:group-id" [group-id]
-          (OPTIONS "/" req common-routes/options-response)
+          (OPTIONS "/" req (common-routes/options-response))
           ;; Get a group
           (GET "/"
                {ctx :request-context params :params}
@@ -298,7 +303,7 @@
                (update-group ctx headers (slurp body) group-id))
 
           (context "/members" []
-            (OPTIONS "/" req common-routes/options-response)
+            (OPTIONS "/" req (common-routes/options-response))
             (GET "/"
                  {ctx :request-context params :params}
                  (pv/validate-group-route-params params)
@@ -320,7 +325,7 @@
         (OPTIONS "/"
                  {params :params}
                  (pv/validate-standard-params params)
-                 common-routes/options-response)
+                 (common-routes/options-response))
 
         ;; Search for ACLs with either GET or POST
         (GET "/"
@@ -339,7 +344,7 @@
               (create-acl ctx headers (slurp body)))
 
         (context "/:concept-id" [concept-id]
-          (OPTIONS "/" req common-routes/options-response)
+          (OPTIONS "/" req (common-routes/options-response))
 
           ;; Update an ACL
           (PUT "/"
@@ -359,20 +364,20 @@
                (get-acl ctx headers concept-id params))))
 
       (context "/permissions" []
-        (OPTIONS "/" [] common-routes/options-response)
+        (OPTIONS "/" [] (common-routes/options-response))
 
         (GET "/"
              {ctx :request-context params :params}
              (get-permissions ctx params)))
 
       (context "/current-sids" []
-        (OPTIONS "/" [] common-routes/options-response)
+        (OPTIONS "/" [] (common-routes/options-response))
 
         (GET "/" {:keys [request-context params]}
              (get-current-sids request-context params)))
 
       (context "/s3-buckets" []
-        (OPTIONS "/" [] common-routes/options-response)
+        (OPTIONS "/" [] (common-routes/options-response))
 
         (GET "/"
              {ctx :request-context params :params}

@@ -960,24 +960,19 @@
           #(string/replace % #"^CMR_" ""))
     #(string/starts-with? %1 "CMR_")))
 
-(defn get-index-or-nil
- "Get the index of the substring in the string. Return nil if the substring does not
- exist in the string"
- [^String s ^String substring]
- (when s
-  (let [index (.indexOf s substring)]
-   (when (>= index 0)
-    index))))
-
 (defn scrub-token
   "Scrub token:
-  1. When at least 15 chars long keep the first and the last 5 chars.
-  2. When at least 5 and no more than 14 chars long, remove last 5.
-  3. When less than 5 chars long, remove all chars.
-  4. Replace what's removed with XXX."
+  1. When at least 25 chars long keep the first 10 chars and the last 5 chars.
+  2. When at least 15 chars long keep the first and the last 5 chars.
+  3. When at least 5 and no more than 14 chars long, remove last 5.
+  4. When less than 5 chars long, remove all chars.
+  5. Replace what's removed with XXX."
   [token]
   (let [token-length (count token)]
     (cond
+      (>= token-length 25) (str (subs token 0 10)
+                                "XXX"
+                                (subs token (- token-length 5) token-length))
       (>= token-length 15) (str (subs token 0 5)
                                 "XXX"
                                 (subs token (- token-length 5) token-length))

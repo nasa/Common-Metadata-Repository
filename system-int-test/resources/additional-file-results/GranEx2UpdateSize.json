@@ -1,0 +1,86 @@
+{
+  "ArchiveAndDistributionInformation": [
+    {
+      "Name": "GranuleZipFile",
+      "SizeInBytes": 23000,
+      "Size": 23,
+      "SizeUnit": "KB",
+      "Format": "ZIP",
+      "MimeType": "application/zip",
+      "Checksum": {
+        "Value": "E51569BF48DD0FD0640C6503A46D4753",
+        "Algorithm": "MD5"
+      },
+      "Files": [
+        {
+          "Name": "GranuleFileName1",
+          "SizeInBytes": 20000,
+          "Size": 20,
+          "SizeUnit": "KB",
+          "Format": "NETCDF-4",
+          "FormatType": "Native",
+          "MimeType": "application/x-netcdf",
+          "Checksum": {
+            "Value": "E51569BF48DD0FD0640C6503A46D4754",
+            "Algorithm": "MD5"
+          }
+        },
+        {
+          "Name": "GranuleFileName2",
+          "SizeInBytes": 1000,
+          "Size": 1,
+          "SizeUnit": "KB",
+          "Format": "ASCII",
+          "MimeType": "text/plain",
+          "FormatType": "NA"
+        }
+      ]
+    },
+    {
+      "Name": "SupportedGranuleFileNotInPackage",
+      "SizeInBytes": 11000,
+      "Size": 11,
+      "SizeUnit": "KB",
+      "Format": "NETCDF-CF",
+      "FormatType": "Supported",
+      "MimeType": "application/x-netcdf",
+      "Checksum": {
+        "Value": "123foobar",
+        "Algorithm": "SHA-256"
+      }
+    },
+    {
+      "Name": "GranuleZipFile2",
+      "SizeInBytes": 23000,
+      "Size": 23,
+      "SizeUnit": "KB",
+      "Format": "ASCII",
+      "MimeType": "application/zip",
+      "Checksum": {
+        "Value": "E51569BF48DD0FD0640C6503A46D4753",
+        "Algorithm": "MD5"
+      },
+      "Files": [
+        {
+          "Name": "GranuleFileName3",
+          "SizeInBytes": 10000,
+          "Format": "NETCDF-4",
+          "MimeType": "application/x-netcdf",
+          "FormatType": "Native",
+          "Checksum": {
+            "Value": "E51569BF48DD0FD0640C6503A46D4754",
+            "Algorithm": "MD5"
+          }
+        },
+        {
+          "Name": "GranuleFileName4",
+          "SizeInBytes": 1000,
+          "Size": 1,
+          "SizeUnit": "KB",
+          "Format": "ASCII",
+          "MimeType": "text/plain",
+          "FormatType": "NA"
+        }
+      ]
+    }
+  ]

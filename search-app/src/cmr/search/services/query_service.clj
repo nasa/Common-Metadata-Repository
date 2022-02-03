@@ -68,6 +68,7 @@
     cmr.search.services.parameters.converters.humanizer
     cmr.search.services.parameters.converters.orbit-number
     cmr.search.services.parameters.converters.pass
+    cmr.search.services.parameters.converters.platform
     cmr.search.services.parameters.converters.science-keyword
     cmr.search.services.parameters.converters.spatial
     cmr.search.services.parameters.converters.shapefile
@@ -200,19 +201,24 @@
   [context concept-type params]
   (let [tag-data (make-concepts-tag-data params)
         [query-creation-time query] (u/time-execution
-                                      (make-concepts-query
-                                        context concept-type params tag-data))
+                                     (make-concepts-query
+                                      context concept-type params tag-data))
         [find-concepts-time results] (u/time-execution
-                                       (common-search/find-concepts
-                                         context concept-type query))
+                                      (common-search/find-concepts
+                                       context concept-type query))
         total-took (+ query-creation-time find-concepts-time)
-        short-scroll-id (str (hash (:scroll-id results)))
+        scroll-id (:scroll-id results)
+        search-after (:search-after context)
         log-message (format "Found %d %ss in %d ms from client %s in format %s with params %s"
-                      (:hits results) (name concept-type) total-took (:client-id context)
-                      (rfh/printable-result-format (:result-format query)) (pr-str params))]
-    (info (if (string/blank? short-scroll-id)
-              (format "%s." log-message)
-              (format "%s, scroll-id: %s." log-message short-scroll-id)))
+                            (:hits results) (name concept-type) total-took (:client-id context)
+                            (rfh/printable-result-format (:result-format query)) (pr-str params))]
+    (info (cond
+            scroll-id (format "%s, scroll-id: %s." log-message (str (hash scroll-id)))
+            search-after (format "%s, search-after: %s, new search-after: %s."
+                                 log-message
+                                 (json/encode search-after)
+                                 (:search-after results))
+            :else (format "%s." log-message)))
     (assoc results :took total-took)))
 
 (defn find-concepts-by-json-query
@@ -220,18 +226,26 @@
   concept id and native provider id along with hit count and timing info."
   [context concept-type params json-query]
   (let [[query-creation-time query] (u/time-execution
-                                      (jp/parse-json-query concept-type
-                                                           (common-params/sanitize-params params)
-                                                           json-query))
-
+                                     (jp/parse-json-query concept-type
+                                                          (common-params/sanitize-params params)
+                                                          json-query))
+        search-after (:search-after context)
+        query (merge query
+                     (when search-after {:search-after search-after}))
         [find-concepts-time results] (u/time-execution
-                                       (common-search/find-concepts context
-                                                                    concept-type
-                                                                    query))
-        total-took (+ query-creation-time find-concepts-time)]
-    (info (format "Found %d %ss in %d ms from client %s in format %s with JSON Query %s and query params %s."
-                  (:hits results) (name concept-type) total-took (:client-id context)
-                  (rfh/printable-result-format (:result-format query)) json-query (pr-str params)))
+                                      (common-search/find-concepts context
+                                                                   concept-type
+                                                                   query))
+        total-took (+ query-creation-time find-concepts-time)
+        log-message (format "Found %d %ss in %d ms from client %s in format %s with JSON Query %s and query params %s"
+                            (:hits results) (name concept-type) total-took (:client-id context)
+                            (rfh/printable-result-format (:result-format query)) json-query (pr-str params))]
+    (info (if search-after
+            (format "%s, search-after: %s, new search-after: %s."
+                    log-message
+                    (json/encode search-after)
+                    (:search-after results))
+            (format "%s." log-message)))
     (assoc results :took total-took)))
 
 (defn find-concepts-by-aql
@@ -271,7 +285,7 @@
 (defn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context result-format concept-id]
-  (if (contains? #{:atom :json} result-format)
+  (if (contains? #{:atom :json :stac} result-format)
     ;; do a query and use single-result->response
     (let [query (common-params/parse-parameter-query context
                                                      (cc/concept-id->type concept-id)
@@ -321,7 +335,7 @@
                                    context query (qe/execute-query context query)))]
    {:results results :took execution-time :result-format mt/json}))
 
-(defn get-collections-by-providers
+(defn- get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"
   ([context skip-acls?]
    (get-collections-by-providers context nil skip-acls?))
@@ -362,7 +376,7 @@
                        provider-id
                        [provider-id])
         ;; get all collections limited by the list of providers in json format
-        collections (get-collections-by-providers context provider-ids false)
+        collections (get-collections-by-providers context provider-ids true)
         ;; get a mapping of collection to granule count
         collection-granule-count (idx/get-collection-granule-counts context provider-ids)
         ;; combine the granule count into collections to form provider holdings

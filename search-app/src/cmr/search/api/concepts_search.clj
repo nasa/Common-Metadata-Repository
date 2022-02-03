@@ -49,15 +49,71 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Support Functions
 
+(defn- validate-search-after-params
+  "Validate search-after and params, throws service error if failed."
+  [context params]
+  (let [{:keys [scroll-id search-after]} context
+        {:keys [page-num page_num offset scroll]} params]
+    (when search-after
+      (when scroll-id
+        (svc-errors/throw-service-error :bad-request "scroll_id is not allowed with search-after"))
+      (when page-num
+        (svc-errors/throw-service-error :bad-request "page-num is not allowed with search-after"))
+      (when page_num
+        (svc-errors/throw-service-error :bad-request "page_num is not allowed with search-after"))
+      (when offset
+        (svc-errors/throw-service-error :bad-request "offset is not allowed with search-after"))
+      (when scroll
+        (svc-errors/throw-service-error :bad-request "scroll is not allowed with search-after")))))
+
+(defn- validate-stac-params
+  "Validate stac params, throws service error if failed."
+  [context concept-type headers params]
+  (when (= :stac (:result-format params))
+    (when (not= :granule concept-type)
+      (svc-errors/throw-service-error
+       :bad-request "STAC result format is only supported for granule searches"))
+
+    (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))
+          {:keys [scroll-id search-after query-string]} context
+          {:keys [offset scroll]} params]
+      (if (and content-type-header query-string)
+        (svc-errors/throw-service-error
+         :bad-request "STAC result format is only supported for parameter searches")
+        (do
+          (when-not (:collection-concept-id (util/map-keys->kebab-case params))
+            (svc-errors/throw-service-error
+             :bad-request "collection_concept_id is required for searching in STAC result format"))
+          (when scroll
+            (svc-errors/throw-service-error
+             :bad-request "scroll is not allowed with STAC result format"))
+          (when offset
+            (svc-errors/throw-service-error
+             :bad-request "offset is not allowed with STAC result format"))
+          (when scroll-id
+            (svc-errors/throw-service-error
+             :bad-request "CMR-Scroll-Id header is not allowed with STAC result format"))
+          (when search-after
+            (svc-errors/throw-service-error
+             :bad-request "CMR-Search-After header is not allowed with STAC result format")))))))
+
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return
   the response."
   [ctx path-w-extension params headers json-query]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
-        _ (info (format "Searching for %ss from client %s in format %s with JSON %s and query parameters %s."
-                        (name concept-type) (:client-id ctx)
-                        (rfh/printable-result-format (:result-format params)) json-query params))
+        _ (when (= :stac (:result-format params))
+            (svc-errors/throw-service-error
+             :bad-request "search by JSON query is not allowed with STAC result format"))
+        _ (validate-search-after-params ctx params)
+        search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
+        log-message (format "Searching for %ss from client %s in format %s with JSON %s and query parameters %s."
+                            (name concept-type) (:client-id ctx)
+                            (rfh/printable-result-format (:result-format params)) json-query params)
+        _ (info (if search-after
+                  (format "%s, search-after: %s." log-message search-after)
+                  (format "%s." log-message)))
         results (query-svc/find-concepts-by-json-query ctx concept-type params json-query)]
     (core-api/search-response ctx results)))
 
@@ -163,16 +219,20 @@
         scroll-id-and-search-params (core-api/get-scroll-id-and-search-params-from-cache ctx short-scroll-id)
         scroll-id (:scroll-id scroll-id-and-search-params)
         cached-search-params (:search-params scroll-id-and-search-params)
+        search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
         ctx (assoc ctx :query-string body :scroll-id scroll-id)
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (block-excessive-queries ctx concept-type result-format params)
+        _ (validate-search-after-params ctx params)
+        _ (validate-stac-params ctx concept-type headers params)
         log-message (format "Searching for %ss from client %s in format %s with params %s"
-                        (name concept-type) (:client-id ctx)
-                        (rfh/printable-result-format result-format) (pr-str params))
-        _ (info (if (string/blank? short-scroll-id)
-                  (format "%s." log-message)
-                  (format "%s, scroll-id: %s." log-message short-scroll-id)))
+                            (name concept-type) (:client-id ctx)
+                            (rfh/printable-result-format result-format) (pr-str params))
+        _ (info (cond
+                  short-scroll-id (format "%s, scroll-id: %s." log-message short-scroll-id)
+                  search-after (format "%s, search-after: %s." log-message search-after)
+                  :else (format "%s." log-message)))
         search-params (if cached-search-params
                         cached-search-params
                         (lp/process-legacy-psa params))
@@ -192,7 +252,9 @@
     in the way that we need, we have to make two queries here to support CMR
     Harvesting. This can later be generalized easily, should the need arise."
   [ctx path-w-extension params headers body]
-  (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))]
+  (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))
+        search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
+        ctx (assoc ctx :search-after (json/decode search-after))]
     (cond
       (= mt/json content-type-header)
       (find-concepts-by-json-query ctx path-w-extension params headers body)
@@ -220,6 +282,9 @@
   "Invokes query service to parse the AQL query, find results and returns the response"
   [ctx path-w-extension params headers aql]
   (let [params (core-api/process-params nil params path-w-extension headers mt/xml)
+        _ (when (= :stac (:result-format params))
+            (svc-errors/throw-service-error
+             :bad-request "search by JSON query is not allowed with STAC result format"))
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id ctx) (rfh/printable-result-format (:result-format params)) aql params))
         results (query-svc/find-concepts-by-aql ctx params aql)]
@@ -263,6 +328,16 @@
       (svc-errors/throw-service-error
        :invalid-content-type (str "Unsupported content type [" content-type-header "]")))))
 
+(defn- remove-scroll-results-from-cache
+  "Removes the first page of results from a scroll session (along with the original query
+  execution time) from the cache using the scroll-id as a key."
+  [context scroll-id]
+  (when scroll-id
+    ;; clear the cache entry
+    (-> context
+        (cache/context->cache search/scroll-first-page-cache-key)
+        (cache/set-value scroll-id nil))))
+
 (defn- clear-scroll
   "Invokes query service to clear the scroll context for the given scroll id.
    The concept type of the request must be JSON."
@@ -277,8 +352,10 @@
       (if-let [scroll-id (->> short-scroll-id
                               (core-api/get-scroll-id-and-search-params-from-cache context)
                               :scroll-id)]
-        ;; clear the scroll session for the scroll id
-        (query-svc/clear-scroll context scroll-id)
+        ;; clear the scroll session for the scroll id and the first page of results from the cache
+        (do
+          (query-svc/clear-scroll context scroll-id)
+          (remove-scroll-results-from-cache context scroll-id))
         (svc-errors/throw-service-error
          :invalid-data (format "scroll_id [%s] not found." short-scroll-id))))
     (svc-errors/throw-service-error
@@ -292,7 +369,7 @@
 (def search-routes
   "Routes for /search/granules, /search/collections, etc."
   (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services))(?:\..+)?"] [path-w-extension]
-    (OPTIONS "/" req common-routes/options-response)
+    (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}
       (find-concepts ctx path-w-extension params headers query-string))
@@ -304,7 +381,7 @@
 (def granule-timeline-routes
   "Routes for /search/granules/timeline."
   (context ["/granules/:path-w-extension" :path-w-extension #"(?:timeline)(?:\..+)?"] [path-w-extension]
-    (OPTIONS "/" req common-routes/options-response)
+    (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}
       (get-granules-timeline ctx path-w-extension params headers query-string))
@@ -315,13 +392,13 @@
   "Routes for finding deleted granules and collections."
   (routes
     (context ["/:path-w-extension" :path-w-extension #"(?:deleted-collections)(?:\..+)?"] [path-w-extension]
-      (OPTIONS "/" req common-routes/options-response)
+      (OPTIONS "/" req (common-routes/options-response))
       (GET "/"
         {params :params headers :headers ctx :request-context}
         (get-deleted-collections ctx path-w-extension params headers)))
 
     (context ["/:path-w-extension" :path-w-extension #"(?:deleted-granules)(?:\..+)?"] [path-w-extension]
-      (OPTIONS "/" req common-routes/options-response)
+      (OPTIONS "/" req (common-routes/options-response))
       (GET "/"
         {params :params headers :headers ctx :request-context}
         (get-deleted-granules ctx path-w-extension params headers)))))
@@ -329,7 +406,7 @@
 (def aql-search-routes
   "Routes for finding concepts using the ECHO Alternative Query Language (AQL)."
   (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
-    (OPTIONS "/" req common-routes/options-response)
+    (OPTIONS "/" req (common-routes/options-response))
     (POST "/"
       {params :params headers :headers ctx :request-context body :body-copy}
       (find-concepts-by-aql ctx path-w-extension params headers body))))

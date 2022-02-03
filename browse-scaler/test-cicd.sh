@@ -6,6 +6,9 @@ echo "Running tests..."
 
 # Cleanup image
 echo "Cleaning up image..."
+
+(cd src && docker-compose -f docker-compose.test.yml stop)
+
 docker rmi -f \
   $(docker inspect browse-scaler:test-cicd \
   | jq -r .[].Id \

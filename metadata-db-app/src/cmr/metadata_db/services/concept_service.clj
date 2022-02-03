@@ -1094,7 +1094,7 @@
                         (c/get-expired-concepts db provider concept-type)))]
     (loop []
       (when-let [expired-concepts (seq (get-expired))]
-        (info "Deleting expired" (name concept-type) "concepts:" (map :concept-id expired-concepts))
+        (info "Deleting expired" (name concept-type) "concepts:" (pr-str (map :concept-id expired-concepts)))
         (doseq [c expired-concepts]
           (let [tombstone (-> c
                               (update-in [:revision-id] inc)

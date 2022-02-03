@@ -113,7 +113,6 @@
            (search/find-refs :granule
                              {:line "0,0,1,1,2,2,1,1" :provider "PROV1"})))))
 
-
 (deftest spatial-search-test
   (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                                                                 :EntryTitle "E1"
@@ -456,6 +455,16 @@
                          bbox-refs))
       (is (d/refs-match? [across-am-poly whole-world]
                          anded-refs))))
+
+    (testing "ORed spatial search with other search params"
+      (is (d/refs-match? [am-point]
+                         (search/find-refs
+                          :granule
+                          {:provider "PROV1"
+                           :granule-ur "am-point"
+                           :circle "179.8,41,100000"
+                           :bounding-box "166.11,-19.14,-166.52,53.04"
+                           "options[spatial][or]" "true"}))))
 
     (testing "AQL spatial search"
       (are [type ords items]

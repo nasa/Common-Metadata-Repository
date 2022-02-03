@@ -19,6 +19,7 @@
    [cmr.umm.echo10.granule :as g]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-g]
+   [cmr.umm-spec.util :as umm-spec-util]
    [cmr.virtual-product.config]
    [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
@@ -39,7 +40,6 @@
   (def isc (vp/ingest-source-collections))
 
   (def vpc (vp/ingest-virtual-collections isc)))
-
 
 (deftest specific-granule-in-virtual-product-test
   (let [[ast-coll] (vp/ingest-source-collections
@@ -79,7 +79,8 @@
       (doseq [vp-coll vp-colls]
         (vp/assert-matching-granule-urs
           [(svm/generate-granule-ur
-             "LPDAAC_ECS" "AST_L1A" (get-in vp-coll [:product :short-name]) granule-ur)]
+             "LPDAAC_ECS" "AST_L1A" {:short-name (get-in vp-coll [:product :short-name])
+                                     :version-id (get-in vp-coll [:product :version-id])} granule-ur)]
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                       :page-size 50}))))
 
@@ -145,9 +146,11 @@
       (doseq [vp-coll vp-colls
               :let [{:keys [provider-id source-collection]} vp-coll
                     source-short-name (get-in source-collection [:product :short-name])
-                    vp-short-name (get-in vp-coll [:product :short-name])]]
+                    vp-short-name (get-in vp-coll [:product :short-name])
+                    vp-version-id (get-in vp-coll [:product :version-id])]]
         (vp/assert-matching-granule-urs
-          (map #(svm/generate-granule-ur provider-id source-short-name vp-short-name %)
+          (map #(svm/generate-granule-ur provider-id source-short-name {:short-name vp-short-name
+                                                                        :version-id vp-version-id} %)
                (svm/sample-source-granule-urs
                  [provider-id (:entry-title source-collection)]))
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
@@ -264,12 +267,12 @@
 
 (deftest omi-aura-configuration-test
   (let [[omi-coll] (vp/ingest-source-collections
-                     [(assoc
-                        (dc/collection
-                          {:entry-title (str "OMI/Aura Surface UVB Irradiance and Erythemal"
-                                             " Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC")
-                           :short-name "OMUVBd"})
-                        :provider-id "GES_DISC")])
+                    [(assoc
+                      (dc/collection
+                       {:entry-title (str "OMI/Aura Surface UVB Irradiance and Erythemal"
+                                          " Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC")
+                        :short-name "OMUVBd"})
+                      :provider-id "GES_DISC")])
         vp-colls (vp/ingest-virtual-collections [omi-coll])
         granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2015m0103_v003-2015m0107t093002.he5"
         [ur-prefix ur-suffix] (str/split granule-ur #":")
@@ -277,13 +280,13 @@
         opendap-file-path (str opendap-dir-path granule-ur)]
     (util/are2 [src-granule-ur source-related-urls expected-related-url-maps]
                (let [_ (vp/ingest-source-granule
-                         "GES_DISC"
-                         (dg/granule
-                           omi-coll {:granule-ur src-granule-ur
-                                     :related-urls source-related-urls
-                                     :data-granule {:day-night "UNSPECIFIED"
-                                                    :production-date-time "2013-07-27T07:43:14.000Z"
-                                                    :size 40}}))
+                        "GES_DISC"
+                        (dg/granule
+                         omi-coll {:granule-ur src-granule-ur
+                                   :related-urls source-related-urls
+                                   :data-granule {:day-night "UNSPECIFIED"
+                                                  :production-date-time "2013-07-27T07:43:14.000Z"
+                                                  :size 40}}))
                      _ (index/wait-until-indexed)
                      virt-gran-umm (first (get-virtual-granule-umms src-granule-ur))
                      expected-related-urls (map #(umm-c/map->RelatedURL %) expected-related-url-maps)]
@@ -296,7 +299,7 @@
                [{:url (str opendap-file-path ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
                  :type "USE SERVICE API"
                  :sub-type "OPENDAP DATA"
-                 :title "(GET DATA : OPENDAP DATA)"}]
+                 :title "(USE SERVICE API : OPENDAP DATA)"}]
 
                "Related urls with only one access url which matches the pattern, but is not
                an online resource url"
@@ -312,7 +315,7 @@
                [{:url (str opendap-file-path ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
                  :type "USE SERVICE API"
                  :sub-type "OPENDAP DATA"
-                 :title "(GET DATA : OPENDAP DATA)"}])))
+                 :title "(USE SERVICE API : OPENDAP DATA)"}])))
 
 (deftest ast-granule-umm-matchers-test
   (vp/assert-psa-granules-match index/wait-until-indexed))
@@ -361,9 +364,11 @@
         (doseq [vp-coll enabled-vp-colls
                 :let [{:keys [provider-id source-collection]} vp-coll
                       source-short-name (get-in source-collection [:product :short-name])
-                      vp-short-name (get-in vp-coll [:product :short-name])]]
+                      vp-short-name (get-in vp-coll [:product :short-name])
+                      vp-version-id (get-in vp-coll [:product :version-id])]]
           (vp/assert-matching-granule-urs
-            (map #(svm/generate-granule-ur provider-id source-short-name vp-short-name %)
+            (map #(svm/generate-granule-ur provider-id source-short-name {:short-name vp-short-name
+                                                                          :version-id vp-version-id} %)
                  (svm/sample-source-granule-urs
                    [provider-id (:entry-title source-collection)]))
             (search/find-refs :granule {:entry-title (:entry-title vp-coll)
@@ -383,7 +388,7 @@
                           (dc/collection
                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
                              :short-name "AST_L1A"
-                             :projects (dc/projects "proj1" "proj2" "proj3")})
+                             :projects (dc/projects "proj1" "proj2" "proj3" umm-spec-util/not-provided)})
                           :provider-id "LPDAAC_ECS")])
           vp-colls (vp/ingest-virtual-collections [ast-coll])
           granule-ur "SC:AST_L1A.003:2006227720"

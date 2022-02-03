@@ -110,13 +110,6 @@
     <sha1>37572f403a1bd512e76e40e4dc4d6f36528fd2bf</sha1>
     <cve>CVE-2012-5370</cve>
   </suppress>
-  <suppress>
-    <notes><![CDATA[
-    file name: cmr-collection-renderer-lib-0.1.0-SNAPSHOT.jar: jruby_cache_backend.jar
-    ]]></notes>
-    <sha1>993f3706b397773d989d6a02fa4e91a9ea8b0a24</sha1>
-    <cve>CVE-2012-5370</cve>
-  </suppress>
 
   <!-- Hash flood vulnerability fixed in jruby versions >= 1.6.5.1
   Source: https://www.jruby.org/2011/12/27/jruby-1-6-5-1.html -->
@@ -134,15 +127,8 @@
     <sha1>37572f403a1bd512e76e40e4dc4d6f36528fd2bf</sha1>
     <cve>CVE-2011-4838</cve>
   </suppress>
-  <suppress>
-    <notes><![CDATA[
-    file name: cmr-collection-renderer-lib-0.1.0-SNAPSHOT.jar: jruby_cache_backend.jar
-    ]]></notes>
-    <sha1>993f3706b397773d989d6a02fa4e91a9ea8b0a24</sha1>
-    <cve>CVE-2011-4838</cve>
-  </suppress>
 
-  <!-- JRuby-OpenSSL is not used collection-renderer-lib -->
+  <!-- JRuby-OpenSSL is not used -->
   <suppress>
      <notes><![CDATA[
      file name: jruby-complete-9.2.6.0.jar: jopenssl.jar
@@ -179,13 +165,6 @@
     file name: jruby-complete-9.2.6.0.jar: cparse-jruby.jar
     ]]></notes>
     <sha1>37572f403a1bd512e76e40e4dc4d6f36528fd2bf</sha1>
-    <cve>CVE-2010-1330</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-    file name: cmr-collection-renderer-lib-0.1.0-SNAPSHOT.jar: jruby_cache_backend.jar
-    ]]></notes>
-    <sha1>993f3706b397773d989d6a02fa4e91a9ea8b0a24</sha1>
     <cve>CVE-2010-1330</cve>
   </suppress>
 

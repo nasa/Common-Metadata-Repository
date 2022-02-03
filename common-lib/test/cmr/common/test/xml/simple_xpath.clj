@@ -218,7 +218,14 @@
                             "<author>Corets, Eva</author>"
                             "<author>Lucy, Steven</author>"
                             "<author>Corets, Eva</author>"
-                            "<author>Corets, Eva</author>"])))
+                            "<author>Corets, Eva</author>"])
+
+         "/catalog/book[contains(genre, 'anta')]/author"
+         (mapv x/parse-str ["<author>Ralls, Kim</author>"
+                            "<author>Corets, Eva</author>"
+                            "<author>Lucy, Steven</author>"
+                            "<author>Corets, Eva</author>"
+                            "<author>Corets, Eva</author>"]) ))
 
   (testing "xpaths within context"
     (let [xpath-context (sx/evaluate sample-xml (sx/parse-xpath "/catalog/book[1]"))]

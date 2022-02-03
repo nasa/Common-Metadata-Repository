@@ -353,27 +353,29 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       characteristics associated with a granule.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element minOccurs="0" name="DataGranuleSizeInBytes"
-      type="xs:unsignedLong">
+      <xs:element minOccurs="0" name="DataGranuleSizeInBytes" type="xs:unsignedLong">
         <xs:annotation>
-          <xs:documentation>The attribute will indicate the
-          volume of data in bytes contained in the
-          granule.</xs:documentation>
+          <xs:documentation>The size in Bytes of the volume of data contained in the granule.
+          Bytes are defined as eight bits. Please use this element instead of or inclusive
+          with the SizeMBDataGranule element. The issue with SizeMBDataGranule is that end
+          users don't know if the size was calculated by using 1000xE2 Bytes (MegaBytes) or
+          1024xE2 Bytes (mebibytes) and therefore there is no systematic way to know the
+          actual size of a granule by using the granule metadata record.</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" name="SizeMBDataGranule"
-      type="xs:double">
+      <xs:element minOccurs="0" name="SizeMBDataGranule" type="xs:double">
         <xs:annotation>
-          <xs:documentation>The size attribute will indicate the
-          volume of data contained in the
-          granule.</xs:documentation>
+          <xs:documentation>The size attribute will indicate the volume of data contained in
+            the granule. Please use DataGranuleSizeInBytes for the size of the granule. The issue
+            with this element is that end users don't know if the size was calculated by using
+            1000xE2 Bytes (MegaBytes) or 1024xE2 Bytes (mebibytes) and therefore there is no
+            systematic way to know the actual size of a granule by using the granule metadata
+            record. </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" name="Checksum"
-      type="Checksum">
+      <xs:element minOccurs="0" name="Checksum" type="ChecksumType">
         <xs:annotation>
-          <xs:documentation>This entity stores checksum value and algorithm for the
-          granule.</xs:documentation>
+          <xs:documentation>Allows the provider to provide the checksum value for the file.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" name="ReprocessingPlanned">
@@ -441,34 +443,93 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="AdditionalFile" type="AdditionalFileType">
+        <xs:annotation>
+          <xs:documentation>If a granule contains more than 1 data file,
+            the rest of the files can be described in this element.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
     </xs:sequence>
   </xs:complexType>
-  <xs:complexType name="Checksum">
+  <xs:complexType name="AdditionalFileType">
     <xs:annotation>
-      <xs:documentation>This entity stores checksum value and algorithm for the
-          granule.</xs:documentation>
+      <xs:documentation>Allows the provider to describe other granule files if more than 1 exists.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Name">
+        <xs:annotation>
+          <xs:documentation>This field describes the name of the actual file.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="1024"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="SizeInBytes" type="xs:unsignedLong">
+        <xs:annotation>
+          <xs:documentation>The size in Bytes of the volume of data contained in the granule.
+            Bytes are defined as eight bits.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="Format">
+        <xs:annotation>
+          <xs:documentation>The file format of the raw data (such
+            as HDF) for this granule.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="MimeType">
+        <xs:annotation>
+          <xs:documentation>The file mime-type of the raw data (such
+            as application/x-hdf) for this granule.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="Checksum" type="ChecksumType">
+        <xs:annotation>
+          <xs:documentation>Allows the provider to provide the checksum value for the file.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ChecksumType">
+    <xs:annotation>
+      <xs:documentation>Allows the provider to provide a checksum value and checksum algorithm
+        name to allow the user to calculate the checksum. If Checksum is used both the value and the algorithm are required.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:element name="Value">
         <xs:annotation>
-          <xs:documentation>The attribute will indicate the value of
-              the granule's checksum. </xs:documentation>
+          <xs:documentation>Describes the checksum value for a file.</xs:documentation>
         </xs:annotation>
         <xs:simpleType>
           <xs:restriction base="xs:string">
-            <xs:minLength value="1" />
+            <xs:minLength value="1"></xs:minLength>
             <xs:maxLength value="128"></xs:maxLength>
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
       <xs:element name="Algorithm">
         <xs:annotation>
-          <xs:documentation>The attribute will indicate the algorithm of
-              the granule's checksum. </xs:documentation>
+          <xs:documentation>The algorithm name by which the checksum was calulated. This allows
+            the user to re-calculate the checksum to verify the integrity of the downloaded
+            data.</xs:documentation>
         </xs:annotation>
         <xs:simpleType>
           <xs:restriction base="xs:string">
-            <xs:minLength value="1" />
+            <xs:minLength value="1"></xs:minLength>
             <xs:maxLength value="80"></xs:maxLength>
           </xs:restriction>
         </xs:simpleType>

@@ -123,7 +123,9 @@
     (let [json (umm-json/umm->json umm-c-record)
           _ (is (empty? (json-schema/validate-umm-json json :collection)))
           parsed (umm-json/json->umm {} :collection json)
-          parsed (remove-get-service-and-get-data-nils parsed)]
+          parsed (remove-get-service-and-get-data-nils parsed)
+          parsed (update-in parsed [:UseConstraints] util/remove-nil-keys)
+          umm-c-record (update-in parsed [:UseConstraints] util/remove-nil-keys)]
       (is (= umm-c-record parsed)))))
 
 (deftest all-umm-s-records

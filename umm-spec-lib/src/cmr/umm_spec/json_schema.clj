@@ -9,6 +9,7 @@
    [cmr.common.log :as log]
    [cmr.common.util :as util]
    [cmr.common.validations.json-schema :as js-validations]
+   [cmr.umm-spec.models.umm-common-models :as umm-cmn]
    [cmr.umm-spec.versioning :as ver]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -471,4 +472,11 @@
 
 (defn parse-umm-c
   [x]
-  (coerce umm-c-schema x))
+  ;; until oneOf with sub-element of object gets implemented in the coerce function, we need to
+  ;; wrap the LicenseURL as a defrecord. This supports a UMM-C schema change that was needed for
+  ;; MMT and preferred by the CMR in 1.16.2.
+  (let [coerced (coerce umm-c-schema x)
+        license-url (get-in coerced [:UseConstraints :LicenseURL])]
+    (if license-url
+      (assoc-in coerced [:UseConstraints :LicenseURL] (umm-cmn/map->OnlineResourceType license-url))
+      coerced)))

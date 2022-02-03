@@ -2,6 +2,20 @@ This directory contains sample files with controlled vocabulary definitions as p
 GCMD Keyword Management System (KMS). The files are used in integration tests in order to avoid
 an external dependency on the GCMD system in local testing as well as the CI environment.
 
-The files with _full designation are the full files from the GCMD system as of 11/6/18. In order
+The files with _full designation are the full files from the GCMD system as of 09/28/21. In order
 to speed up the integration tests we use only a few samples from each file. If you need to test
 against the full files you can copy the <type>_full to <type>
+
+To latest <type>_full files, use the following command:
+chmod 755 update.sh
+update.sh -e prod 
+or for individual scheme file:
+update.sh -e prod -s <type> 
+
+Note: KMS is supporting paging for some of the schemes, which you can pass page_size: 
+https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/mimetype?format=csv&page_size=10
+Default page_size is 2000.
+Currently CMR is not supporting paging, so the maximum records we can get is 2000 for the schemes
+that contain paging headers. As of 09/28/21, none of the scheme files supporting paging contain
+hits above 2000.
+

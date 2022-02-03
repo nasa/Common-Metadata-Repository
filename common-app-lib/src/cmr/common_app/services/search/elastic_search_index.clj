@@ -59,7 +59,7 @@
   and is stripped out before calling elastisch to determine whether a normal search call or a
   scroll call should be made."
   [query]
-  (let [{:keys [page-size offset concept-type aggregations highlights scroll scroll-id]} query
+  (let [{:keys [page-size offset concept-type aggregations highlights scroll scroll-id search-after]} query
         scroll-timeout (when scroll (es-config/elastic-scroll-timeout))
         search-type (if scroll
                         (es-config/elastic-scroll-search-type)
@@ -77,6 +77,7 @@
      :aggs aggregations
      :scroll scroll-timeout
      :scroll-id scroll-id
+     :search-after search-after
      :search_type search-type
      :highlight highlights}))
 
@@ -113,6 +114,7 @@
         (es-helper/search
          (context->conn context) (:index-name index-info) [(:type-name index-info)] query))
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
+
     (catch UnknownHostException e
       (info (format
              (str "Execute ES query failed due to UnknownHostException. Retry in %.3f seconds."
@@ -120,7 +122,27 @@
              (/ (es-config/elastic-unknown-host-retry-interval-ms) 1000.0)
              max-retries))
       (Thread/sleep (es-config/elastic-unknown-host-retry-interval-ms))
-      (do-send-with-retry context index-info query (- max-retries 1)))))
+      (do-send-with-retry context index-info query (- max-retries 1)))
+
+    (catch clojure.lang.ExceptionInfo e
+      (when-let [body (:body (ex-data e))]
+        (when (re-find #"Trying to create too many scroll contexts" body)
+          (info "Execute ES query failed due to" body)
+          (errors/throw-service-error
+           :too-many-requests
+           "CMR is currently experiencing too many scroll searches to complete this request.
+           Scroll is deprecated in CMR. Please consider switching your scroll requests to use search-after.
+           See https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#search-after.
+           This will make your workflow simpler (no more clear-scroll calls) and improve the stability of both your searches and CMR.
+           Thank you!"))
+
+        (when (re-find #"Trying to create too many buckets" body)
+          (info "Execute ES query failed due to" body)
+          (errors/throw-service-error
+           :payload-too-large
+           "The search is creating more buckets than allowed by CMR. Please narrow your search.")))
+      ;; for other errors, rethrow the exception
+      (throw e))))
 
 (defn- do-send
   "Sends a query to ES, either normal or using a scroll query."
@@ -149,6 +171,8 @@
         index-info (concept-type->index-info context concept-type query)
         query-map (-> elastic-query
                       (merge execution-params)
+                      ;; rename search-after to search_after for ES execution
+                      (set/rename-keys {:search-after :search_after})
                       util/remove-nil-keys)]
     (info "Executing against indexes [" (:index-name index-info) "] the elastic query:"
            (pr-str elastic-query)
@@ -157,6 +181,8 @@
            "and highlights" (pr-str highlights))
     (when-let [scroll-id (:scroll-id query-map)]
       (info "Using scroll-id" scroll-id))
+    (when-let [search-after (:search_after query-map)]
+      (info "Using search-after" search-after))
     (let [response (send-query context index-info query-map)]
       ;; Replace the Elasticsearch field names with their query model field names within the results
       (update-in response [:hits :hits]
@@ -220,8 +246,8 @@
         elapsed (- (System/currentTimeMillis) start)
         hits (get-in e-results [:hits :total :value])]
     (info "Elastic query took" (:took e-results) "ms. Connection elapsed:" elapsed "ms")
-    (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits])))
-               (errors/internal-error! "Failed to retrieve all hits.")))
+    (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits]))))
+      (errors/internal-error! "Failed to retrieve all hits."))
     e-results))
 
 (defn refresh

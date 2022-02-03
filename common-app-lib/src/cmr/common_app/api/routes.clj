@@ -34,6 +34,8 @@
 
 (def SCROLL_ID_HEADER "CMR-Scroll-Id")
 
+(def SEARCH_AFTER_HEADER "CMR-Search-After")
+
 (def CORS_ORIGIN_HEADER
   "This CORS header is to restrict access to the resource to be only from the defined origins,
   value of \"*\" means all request origins have access to the resource"
@@ -68,12 +70,14 @@
   dev-system/resources/cors_headers_test.html"
   [content-type results]
   (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
-          CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count, CMR-Shapefile-Simplified-Point-Count",
+          CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Search-After, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count, CMR-Shapefile-Simplified-Point-Count",
           CORS_ORIGIN_HEADER "*"}
          (when (:timed-out results) {TIMED_OUT_HEADER "true"})
          (when (:hits results) {HITS_HEADER (str (:hits results))})
          (when (:took results) {TOOK_HEADER (str (:took results))})
-         (when (:scroll-id results) {SCROLL_ID_HEADER (str (:scroll-id results))})))
+         (if (:scroll-id results)
+           {SCROLL_ID_HEADER (str (:scroll-id results))}
+           (when (:search-after results) {SEARCH_AFTER_HEADER (json/encode (:search-after results))}))))
 
 (defn search-response
   "Generate the response map for finding concepts"
@@ -86,13 +90,14 @@
              response)
    :body    results})
 
-(def options-response
+(defn options-response
   "Generate the response map when requesting options"
+  []
   {:status 200
    :headers {CONTENT_TYPE_HEADER "text/plain; charset=utf-8"
              CORS_ORIGIN_HEADER "*"
              CORS_METHODS_HEADER "POST, GET, OPTIONS"
-             CORS_CUSTOM_ALLOWED_HEADER "Echo-Token, Accept, Content-Type, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, Authorization"
+             CORS_CUSTOM_ALLOWED_HEADER (str (when (acl/allow-echo-token) "Echo-Token, ") "Accept, Content-Type, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Search-After, Authorization")
              ;; the value in seconds for how long the response to the preflight request can be cached
              ;; set to 30 days
              CORS_MAX_AGE_HEADER "2592000"}})
@@ -123,11 +128,19 @@
                                     headers :headers}
       (acl/verify-ingest-management-permission request-context :read)
       (let [cache-key (keyword cache-key)
+            ;; caches (get-in request-context [:system :caches])
+            ;; _ (println "CACHES")
+            ;; _ (clojure.pprint/pprint caches)
+            ;; _ (println "GETTING CACHE " (keyword cache-name))
             cache (cache/context->cache request-context (keyword cache-name))
+            ;; _ (when (nil? cache) (println "CACHE IS NIL"))
             result (cache/get-value cache cache-key)]
-        (when result
+        (if result
           {:status 200
-           :body (json/generate-string result)})))
+           :body (json/generate-string result)}
+           {:status 404
+            :body (json/generate-string
+                   {:error (format "missing key [%s] for cache [%s]" cache-key cache-name)})})))
 
     (POST "/clear-cache" {:keys [request-context params headers]}
       (acl/verify-ingest-management-permission request-context :update)

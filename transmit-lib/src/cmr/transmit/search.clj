@@ -20,9 +20,9 @@
 
 (defn-timed save-subscription-notification-time
  "make an http call to the database application"
- [context data]
+ [context sub-id]
  (let [conn (config/context->app-connection context :metadata-db)
-       request-url (str (conn/root-url conn) (format "/subscription/%s/notification-time" data))
+       request-url (str (conn/root-url conn) (format "/subscription/%s/notification-time" sub-id))
        response (client/put request-url
                             (merge
                               (config/conn-params conn)
@@ -88,6 +88,28 @@
       (parse-granule-response body)
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s" status body)))))
+
+(defn-timed validate-granule-search-params
+  "Attempts to search granules using given params via a POST request. If the response contains a
+  non-200 http code, returns the response body."
+  [context params]
+  (let [conn (config/context->app-connection context :search)
+        request-url (str (conn/root-url conn) "/granules.json")
+        request-body (-> params
+                         (dissoc :token)
+                         (assoc :page_size 0))
+        token (:token params)
+        header (ch/context->http-headers context)
+        response (client/post request-url
+                              (merge
+                                (config/conn-params conn)
+                                {:body (codec/form-encode request-body)
+                                 :content-type mt/form-url-encoded
+                                 :throw-exceptions false
+                                 :headers (if token (assoc header config/token-header token) header)}))
+        {:keys [status body]} response]
+    (when-not (= status 200)
+      body)))
 
 (h/defsearcher search-for-collections :search
   (fn [conn]

@@ -6,7 +6,7 @@
    [clojure.walk :refer [postwalk-replace]]))
 
 (def local-token "mock-echo-system-token")
-(def local-token-header {"echo-token" local-token})
+(def local-token-header {"authorization" local-token})
 
 (defn camel->
   [regex string-format string-data]

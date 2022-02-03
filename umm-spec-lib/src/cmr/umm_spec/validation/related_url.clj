@@ -74,6 +74,18 @@
        ;; Do the escape after the format here, so it doesn't get formatted out
        [(vu/escape-error-string (format "[%s] is not a valid URL" value))]})))
 
+(defn s3-bucket-validation
+  "Validate the S3 bucket url or prefix. Returns the field path and error if invalid, otherwise nil.
+   UrlValidator requires an extension e.g. .com, which many s3 links do not have, see [[url-validation]]"
+  [field-path value]
+  (let [url-pattern (re-pattern "^[\\w\\d]+:\\/\\/")]
+    (when (or (and (re-seq url-pattern value)
+                   (not (str/starts-with? value "s3")))
+              (= su/not-provided-url value)
+              (re-seq #"[\[\"\s,;]" value))
+      {field-path
+       [(vu/escape-error-string (format "[%s] is not a valid S3 bucket or prefix" value))]})))
+
 (defn description-validation
   "Validation that checks if description exists, when the URL is specified"
   [field-path value]

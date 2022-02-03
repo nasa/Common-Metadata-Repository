@@ -40,6 +40,18 @@
    ; Don't bother storing term positions or term frequencies in this field
    :index_options "docs"})
 
+(def text-field-keyword-mapping
+  "Used for analyzed text fields"
+  {:type "text"
+   ; Norms are metrics about fields that elastic can use to weigh certian fields more than
+   ; others when computing a document relevance. A typical example is field length - short
+   ; fields are weighted more heavily than long feilds. We don't need them for scoring.
+   :norms false
+   ; Don't analyze the text, index it as is.
+   :analyzer "keyword"
+   ; Storing term positions in order to run span phrase query with wildcard in this field
+   :index_options "offsets"})
+
 (def binary-field-mapping
   {:type "binary"})
 
@@ -53,7 +65,12 @@
   {:type "float"})
 
 (def int-field-mapping
+  "A signed 32-bit integer with a minimum value of -2^31 and a maximum value of 2^31-1."
   {:type "integer"})
+
+(def unsigned-long-field-mapping
+  "An unsigned 64-bit integer with a minimum value of 0 and a maximum value of 2^64-1."
+  {:type "unsigned_long"})
 
 (def bool-field-mapping
   {:type "boolean"})
@@ -90,9 +107,9 @@
    `(def ~mapping-name
       ~docstring
       (merge {:dynamic "strict"
-               :_source {:enabled true}
-               :properties ~properties}
-              ~mapping-settings))))
+              :_source {:enabled true}
+              :properties ~properties}
+             ~mapping-settings))))
 
 (defmacro defnestedmapping
   "Defines a new nested mapping type for an elasticsearch index. The argument after the
@@ -202,8 +219,8 @@
   ([elastic-store index-name type-name id version options]
    (let [elastic-options (merge {:version version
                                  :version_type "external_gte"}
-                                 (when (:refresh? options)
-                                   {:refresh "true"}))]
+                                (when (:refresh? options)
+                                  {:refresh "true"}))]
      (es-helper/delete (:conn elastic-store) index-name type-name id elastic-options))))
 
 (defn delete-by-query

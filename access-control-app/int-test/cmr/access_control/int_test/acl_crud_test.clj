@@ -5,6 +5,7 @@
     [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.access-control.int-test.fixtures :as fixtures]
+    [cmr.access-control.services.acl-validation :as acl-validation]
     [cmr.access-control.test.util :as test-util]
     [cmr.common.util :as util :refer [are3]]
     [cmr.mock-echo.client.echo-util :as echo-util]
@@ -403,7 +404,23 @@
                                   :access-control))
                                 {:body "{\"bad-json:"
                                  :headers {"Content-Type" "application/json"
-                                           "ECHO-Token" token}
+                                           "Authorization" token}
+                                 :throw-exceptions false})))))
+
+    (testing "Acceptance criteria: I receive an error if creating an ACL with JSON described in CMR-6026"
+      (is
+        (re-find #"Json parsing error:"
+                 (:body
+                   (client/post (access-control/acl-root-url
+                                 (transmit-config/context->app-connection
+                                  (test-util/conn-context)
+                                  :access-control))
+                                {:body "{\"group_permissions\": [ {\"user_type\": \"registered\",
+                                                                   \"permissions\": [\"read\"]}],
+                                         \"catalog_item_identity\": {\"name\": \"Example\",
+                                                                     \"provider_id\": \"prov-id\",}}"
+                                 :headers {"Content-Type" "application/json"
+                                           "Authorization" token}
                                  :throw-exceptions false})))))
 
     (testing "Acceptance criteria: I receive an error if creating an ACL with unsupported content type"
@@ -417,7 +434,7 @@
                        :access-control))
                      {:body (json/generate-string system-acl)
                       :headers {"Content-Type" "application/xml"
-                                "ECHO-Token" token}
+                                "Authorization" token}
                       :throw-exceptions false})))))))
 
 (deftest acl-catalog-item-identity-validation-test
@@ -992,7 +1009,7 @@
                        system-concept-id)
                      {:body "{\"bad-json:"
                       :headers {"Content-Type" "application/json"
-                                "ECHO-Token" token}
+                                "Authorization" token}
                       :throw-exceptions false})))))
 
     (testing "Acceptance criteria: I receive an error if updating an ACL with unsupported content type"
@@ -1005,7 +1022,7 @@
                        system-concept-id)
                      {:body (json/generate-string system-acl)
                       :headers {"Content-Type" "application/xml"
-                                "ECHO-Token" token}
+                                "Authorization" token}
                       :throw-exceptions false})))))))
 
 (deftest update-acl-invalid-data-test

@@ -37,9 +37,13 @@
                  :let [field (keyword (str shape "-" direction))]]
              [field (doc-values-field-name field)])))
 
+;; These mappings are for renames only, same name keys handled by default
+;; create a matching value in q2e/elastic-field->query-field-mappings
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
   (let [default-mappings {:author :authors
+                          :concept-seq-id :concept-seq-id-long
+                          :consortium :consortiums
                           :data-center-h :organization-humanized
                           :doi :doi-stored
                           :granule-end-date :granule-end-date-stored
@@ -51,6 +55,7 @@
                           :measurement :measurements
                           :platform :platform-sn
                           :platform-h :platform-sn-humanized
+                          :platforms :platforms2 ;the old platforms has been depricated
                           :processing-level-id-h :processing-level-id-humanized
                           :project :project-sn
                           :project-h :project-sn-humanized
@@ -68,7 +73,9 @@
                           :variable-concept-id :variable-concept-ids
                           :variable-name :variable-names
                           :variable-native-id :variable-native-ids
-                          :version :version-id}]
+                          :version :version-id
+                          :keyword :keyword2
+                          :keyword-phrase :keyword2}]
     (if (use-doc-values-fields)
       (merge default-mappings spatial-doc-values-field-mappings)
       default-mappings)))
@@ -77,16 +84,31 @@
   "Defines mappings for any query-fields to Elasticsearch doc-values field names. Note that this
   does not include lowercase field mappings for doc-values fields."
   (into spatial-doc-values-field-mappings
-        (for [field [:provider-id :concept-seq-id :collection-concept-id
-                     :collection-concept-seq-id :size :start-date :end-date :revision-date
-                     :day-night :cloud-cover :orbit-start-clat :orbit-end-clat
-                     :orbit-asc-crossing-lon :access-value :start-coordinate-1
-                     :end-coordinate-1 :start-coordinate-2 :end-coordinate-2]]
+        (for [field [:access-value
+                     :concept-seq-id-long
+                     :collection-concept-id
+                     :collection-concept-seq-id-long
+                     :provider-id
+                     :size
+                     :start-date
+                     :end-date
+                     :revision-date
+                     :day-night
+                     :cloud-cover
+                     :orbit-start-clat
+                     :orbit-end-clat
+                     :orbit-asc-crossing-lon
+                     :start-coordinate-1
+                     :end-coordinate-1
+                     :start-coordinate-2
+                     :end-coordinate-2]]
           [field (doc-values-field-name field)])))
 
 (defmethod q2e/concept-type->field-mappings :granule
   [_]
   (let [default-mappings {:provider :provider-id
+                          :concept-seq-id :concept-seq-id-long
+                          :collection-concept-seq-id :collection-concept-seq-id-long
                           :native-id :native-id-stored
                           :revision-date :revision-date-stored-doc-values
                           :updated-since :revision-date-stored-doc-values
@@ -111,6 +133,7 @@
 (defmethod q2e/concept-type->field-mappings :variable
   [_]
   {:provider :provider-id
+   :concept-seq-id :concept-seq-id-long
    :name :variable-name})
 
 (defmethod q2e/concept-type->field-mappings :service
@@ -135,9 +158,12 @@
   {:value :value
    :type :type})
 
+;; These mappings are for renames only, same name keys handled by default
+;; create a matching value in q2e/concept-type->field-mappings
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
   {:authors :author
+   :consortiums :consortium
    :doi-stored :doi
    :granule-end-date-stored :granule-end-date
    :granule-start-date-stored :granule-start-date
@@ -149,6 +175,7 @@
    :organization-humanized :data-center-h
    :platform-sn :platform
    :platform-sn-humanized :platform-h
+   :platforms2 :platforms
    :processing-level-id-humanized :processing-level-id-h
    :project-sn-humanized :project-h
    :sensor-sn :sensor
@@ -191,6 +218,7 @@
    :variable-native-id "variable-native-ids-lowercase"
    :measurement "measurements-lowercase"
    :author "authors-lowercase"
+   :consortium "consortiums-lowercase"
    :service-name "service-names-lowercase"
    :service-type "service-types-lowercase"
    :tool-name "tool-names-lowercase"
@@ -302,11 +330,58 @@
   (when-let [msg (get-validate-keyword-wildcards-msg keywords)]
     (errors/throw-service-errors :bad-request (vector msg))))
 
+(defn- remove-quotes-from-keyword-query-string
+  "When keyword query string is double quoted string in a condition, we want to remove the quotes,
+  add wildcard and change the field from :keyword to :keyword-phrase. Both :keyword and :keyword-phrase
+  search against the same index, but through different query types."
+  [condition]
+  (let [query-str (:query-str condition)
+        trimmed-query-str (when query-str
+                            (str/trim query-str))
+        ;;literal double quotes are passed in as \\\"
+        query-str-without-literal-quotes (when query-str
+                                           (str/replace trimmed-query-str #"\\\"" ""))
+        ;;\" is reserved for phrase boundaries.
+        count-of-double-quotes (if query-str
+                                 (count (re-seq #"\"" query-str-without-literal-quotes))
+                                 0)]
+
+    ;;We want to reject the query if it's a mix of keyword and keyword-phrase, or
+    ;;if it's a multiple keyword-phrase search, which are not supported.
+    ;;We also want to reject it if the keyword phrase contains only one \".
+    (when (and (= :keyword (:field condition))
+               (or (> count-of-double-quotes 2) ;;multi keyword-phrase case
+                   ;;mix of keyword and keyword-phrase case, including the case when one \" is missing.
+                   (and (str/includes? query-str-without-literal-quotes "\"")
+                        (not (and (str/starts-with? trimmed-query-str "\"")
+                                  (str/ends-with? trimmed-query-str "\""))))))
+      (errors/throw-service-errors
+       :bad-request
+       [(str "keyword phrase mixed with keyword, or another keyword-phrase are not supported. "
+             "keyword phrase has to be enclosed by two escaped double quotes.")]))
+
+    (if (and query-str
+             (= :keyword (:field condition))
+             (str/starts-with? trimmed-query-str "\"")
+             (str/ends-with? trimmed-query-str "\""))
+      (assoc condition :query-str (-> trimmed-query-str
+                                      (str/replace #"^\"" "* ")
+                                      (str/replace #"\"$" " *")
+                                      (str/replace #"\\\"" "\""))
+                       :field :keyword-phrase)
+      (if (and query-str
+               (str/includes? trimmed-query-str "\\\""))
+        (assoc condition :query-str (str/replace trimmed-query-str #"\\\"" "\""))
+        condition))))
+
 (defmethod q2e/query->elastic :collection
   [query]
-  (let [boosts (:boosts query)
-        {:keys [concept-type condition]} (query-expense/order-conditions query)
+  (let [unquoted-query (update-in query [:condition :conditions]
+                                  #(map remove-quotes-from-keyword-query-string %))
+        boosts (:boosts unquoted-query)
+        {:keys [concept-type condition]} (query-expense/order-conditions unquoted-query)
         core-query (q2e/condition->elastic condition concept-type)]
+    ;;Need the original query here because when the query-str is quoted, it's processed differently.
     (let [keywords (keywords-in-query query)]
       (if-let [all-keywords (seq (concat (:keywords keywords) (:field-keywords keywords)))]
        (do
@@ -325,6 +400,7 @@
          {:query {:bool {:must (eq/match-all)
                          :filter core-query}}})))))
 
+;; this only needs to map overrides, defaults to one-to-one mappings
 (defmethod q2e/concept-type->sort-key-map :collection
   [_]
   {:short-name :short-name-lowercase
@@ -333,6 +409,7 @@
    :entry-id :entry-id-lowercase
    :provider :provider-id-lowercase
    :platform :platform-sn-lowercase
+   :platforms :platforms2 ; the old "platforms" has been depricated
    :instrument :instrument-sn-lowercase
    :sensor :sensor-sn-lowercase
    :score :_score

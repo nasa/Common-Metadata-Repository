@@ -35,7 +35,7 @@
                     :include-facets :hierarchical-facets :include-highlights :include-tags
                     :all-revisions :shapefile :simplify-shapefile}
     :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
-                      :collection-data-type :project :project-h :entry-id :version :provider
+                      :collection-data-type :consortium :project :project-h :entry-id :version :provider
                       :entry-title :doi :native-id :platform :platform-h :processing-level-id
                       :processing-level-id-h :sensor :data-center-h :measurement :variable-name
                       :variable-concept-id :variable-native-id :author :service-name :service-type
@@ -146,10 +146,13 @@
    :native-id cpv/string-param-options
    :platform cpv/string-plus-and-options
    :platform-h cpv/string-plus-and-options
+   :platforms cpv/string-plus-or-options ;; for facet v2 apply links
+   :platforms-h cpv/string-plus-or-options ;; for facet v2 apply links
    :point cpv/and-or-option
    :polygon cpv/and-or-option
    :project cpv/string-plus-and-options
    :project-h cpv/string-plus-and-options
+   :consortium cpv/string-plus-and-options
    :provider cpv/string-param-options
    :revision-date cpv/and-option
    :science-keywords cpv/string-plus-or-options
@@ -311,6 +314,7 @@
     :score
     :has-granules
     :has-granules-or-cwic
+    :has-granules-or-opensearch
     :usage-relevancy-score
     :ongoing})
 
@@ -629,7 +633,7 @@
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
                                          :include-has-granules :has-granules :hierarchical-facets
                                          :include-highlights :all-revisions :has-opendap-url
-                                         :simplify-shapefile])]
+                                         :simplify-shapefile :cloud-hosted])]
     (mapcat
       (fn [[param value]]
         (when-not (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))
@@ -931,6 +935,8 @@
   [(partial cpv/validate-map [:options])
    (partial cpv/validate-map [:options :entry-title])
    (partial cpv/validate-map [:options :platform])
+   (partial cpv/validate-map [:platforms]) ;; for facet v2 apply links
+   (partial cpv/validate-all-map-values cpv/validate-map [:platforms-h]) ;; for facet v2 apply links
    (partial cpv/validate-map [:options :instrument])
    (partial cpv/validate-map [:options :sensor])
    (partial cpv/validate-map [:options :project])

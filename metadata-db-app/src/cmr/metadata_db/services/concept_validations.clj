@@ -47,7 +47,7 @@
    :tool {true #{}
           false #{:tool-name}}
    :subscription {true #{}
-                  false #{:subscription-name :subscriber-id :collection-concept-id}}
+                  false #{:subscription-name :subscriber-id :collection-concept-id :normalized-query}}
    :tag-association {true #{}
                      false #{:associated-concept-id :associated-revision-id}}
    :variable {true #{}

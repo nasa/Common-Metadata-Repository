@@ -2,6 +2,7 @@
   "CMR service ingest integration tests.
   For service permissions tests, see `provider-ingest-permissions-test`."
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :refer [are3]]
@@ -37,7 +38,7 @@
                        :raw? true})]
         (is (= {:revision-id 1
                 :concept-id supplied-concept-id}
-               (ingest/parse-ingest-body :json response)))))
+               (dissoc (ingest/parse-ingest-body :json response) :body)))))
 
     (testing "xml response"
       (let [response (ingest/ingest-concept
@@ -47,7 +48,7 @@
                        :raw? true})]
         (is (= {:revision-id 2
                 :concept-id supplied-concept-id}
-               (ingest/parse-ingest-body :xml response)))))))
+               (dissoc (ingest/parse-ingest-body :xml response) :body)))))))
 
 ;; Verify that the accept header works with returned errors
 (deftest service-ingest-with-errors-accept-header-test
@@ -206,3 +207,53 @@
               {:keys [status concept-id revision-id]} response]
           (is (= 200 status))
           (is (= 3 revision-id)))))))
+
+(deftest related-url-content-type-type-and-subtype-check
+  (testing
+    "Check valid and invalid related urls url content type, type, and subtype.
+    The first URL is good while the second is bad. The error response should
+    represent this showing the second URL type failed to match a valid keyword."
+    (let [related-urls [{"URL" "https://example.gov/good1"
+                         "URLContentType" "PublicationURL"
+                         "Type" "VIEW RELATED INFORMATION"
+                         "Subtype" "HOW-TO"}  ;this is the valid Related URL
+                        {"URL" "https://example.gov/bad1"
+                         "URLContentType" "PublicationURL"
+                         "Type" "USE SERVICE APIs"
+                         "Subtype" "Closed Search"}
+                        {"URL" "https://example.gov/bad2"
+                         "URLContentType" "PublicationURL"
+                         "Type" "USE SERVICE APIs"
+                         "Subtype" "Very Closed Search"}]
+          concept-src (service-util/make-service-concept)
+          concept-result (as-> concept-src intermediate
+                               (json/parse-string (:metadata intermediate))
+                               (assoc intermediate "RelatedURLs" related-urls)
+                               (json/generate-string intermediate)
+                               (assoc concept-src :metadata intermediate)
+                               (ingest/ingest-concept intermediate))
+          {:keys [status errors]} concept-result]
+      (is (= 400 status))
+      (is (= 2 (count errors)))
+
+      (are3 [expected-content expected-type expected-subtype index error-item]
+        (let [expected-msg (format "Related URL Content Type, Type, and Subtype [%s>%s>%s] are not a valid set together."
+                                   expected-content expected-type expected-subtype)
+              error-path (:path error-item)]
+          (is (= expected-msg (first (:errors error-item))))
+          (is (= "relatedurls" (clojure.string/lower-case (first error-path))))
+          (is (= index (second error-path))))
+
+        "First URL with bad keyword pair"
+        "PublicationURL"
+        "USE SERVICE APIs"
+        "Closed Search"
+        1
+        (first errors)
+
+        "Second URL with bad keyword pair"
+        "PublicationURL"
+        "USE SERVICE APIs"
+        "Very Closed Search"
+        2
+        (second errors)))))

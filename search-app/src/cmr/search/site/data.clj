@@ -17,6 +17,7 @@
    [cmr.common-app.services.search.query-model :as query-model]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common-app.site.data :as common-data]
+   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.doi :as doi]
    [cmr.common.log :refer [debug error]]
    [cmr.common.mime-types :as mt]
@@ -24,12 +25,20 @@
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.site.util :as util]
-   [cmr.transmit.config :as config]
+   [cmr.transmit.config :as transmit-config]
    [cmr.transmit.metadata-db :as mdb]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Data utility functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defconfig metadata-preview-root
+  "URL root of the metadata preview plugin"
+  {:default "https://access.sit.earthdata.nasa.gov"})
+
+(defconfig metadata-preview-version
+  "version of the metadata preview plugin"
+  {:default "0.0.25"})
 
 (defmulti get-providers
   "Get the providers, based on contextual data.
@@ -44,7 +53,7 @@
 (defmethod get-providers :cli
   [context]
   (let [providers-url (format "%sproviders"
-                              (config/application-public-root-url :ingest))]
+                              (transmit-config/application-public-root-url :ingest))]
     (util/endpoint-get providers-url {:accept mt/json})))
 
 (defmethod get-providers :default
@@ -63,7 +72,7 @@
 
 (defmethod collection-data :cli
   [context tag provider-id]
-  (as-> (config/application-public-root-url :search) data
+  (as-> (transmit-config/application-public-root-url :search) data
         (format "%scollections" data)
         (util/endpoint-get data {:accept mt/umm-json-results
                                  :query-params {:provider provider-id
@@ -175,7 +184,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Page data functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn app-url->stac-urls
   "Convert the search-app url into the stac related urls.
   The reason is we need to access cmr-stac endpoints from CMR search landing page.
@@ -188,7 +196,9 @@
                           (string/replace #"3003/?" "3000/"))]
     {:stac-url (str stac-base-url "stac")
      :cloudstac-url (str stac-base-url "cloudstac")
-     :stac-docs-url (str stac-base-url "stac/docs")
+     :stac-docs-url (if (string/includes? stac-base-url "3000")
+                      (str stac-base-url "stac/docs")
+                      (str stac-base-url "stac/docs/index.html"))
      :static-cloudstac-url (str stac-base-url "static-cloudstac")}))
 
 (defmulti base-page
@@ -217,6 +227,14 @@
                      :cloudstac-url cloudstac-url
                      :stac-docs-url stac-docs-url
                      :static-cloudstac-url static-cloudstac-url)))
+
+(defn get-collection
+  "Provide collection data that will be rendered on collection landing page."
+  [context concept-id]
+  (assoc (base-page context)
+         :concept-id concept-id
+         :preview-root (metadata-preview-root)
+         :preview-version (metadata-preview-version)))
 
 (defn get-directory-links
   "Provide the list of links that will be rendered on the top-level directory

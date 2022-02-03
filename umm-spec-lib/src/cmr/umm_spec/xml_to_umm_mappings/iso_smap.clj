@@ -119,7 +119,9 @@
   Category of each theme descriptive keyword to determine if it is a science keyword."
   [data-id-el sanitize?]
   (if-let [science-keywords (seq
-                              (->> (kws/parse-science-keywords data-id-el sanitize?)
+                              ;; kws/parse-science-keywords is shared by iso19115 and isosmap
+                              ;; "true" indicates it's isosmap case.
+                              (->> (kws/parse-science-keywords data-id-el sanitize? true)
                                    (filter #(.contains kws/science-keyword-categories (:Category %)))))]
     science-keywords
     (when sanitize?

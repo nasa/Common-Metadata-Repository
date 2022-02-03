@@ -239,3 +239,122 @@
                           "")
           (string/replace #"<Authority>https://doi.org/</Authority>\s+</DOI>"
                           "")))))
+
+(deftest echo10-use-constraints-test
+  "Testing the echo10 use constraint translation from echo10 to umm-c."
+  (let [base-record (slurp (io/resource "example-data/echo10/artificial_test_data.xml"))]
+
+    (testing "echo10 use constraints description test"
+      (let [actual-data (string/replace base-record
+                                        #"</RestrictionFlag>"
+                                        "</RestrictionFlag>
+                                         <UseConstraints>
+                                           <Description>Description</Description>
+                                         </UseConstraints>")
+            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            umm-result (:UseConstraints result)]
+        (is (= "Description" (:Description umm-result)))
+        (is (= nil (:FreeAndOpenData umm-result)))))
+
+    (testing "echo10 use constraints FreeAndOpenData test true"
+      (let [actual-data (string/replace base-record
+                                        #"</RestrictionFlag>"
+                                        "</RestrictionFlag>
+                                         <UseConstraints>
+                                           <FreeAndOpenData>true</FreeAndOpenData>
+                                           <LicenseURL>
+                                             <URL>https://someurl.com</URL>
+                                             <Description>License URL Description</Description>
+                                             <Type>License URL</Type>
+                                             <MimeType>text/html</MimeType>
+                                           </LicenseURL>
+                                         </UseConstraints>")
+            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            umm-result (:UseConstraints result)]
+        (is (= true (:FreeAndOpenData umm-result)))))
+
+    (testing "echo10 use constraints FreeAndOpenData test false"
+      (let [actual-data (string/replace base-record
+                                        #"</RestrictionFlag>"
+                                        "</RestrictionFlag>
+                                         <UseConstraints>
+                                           <FreeAndOpenData>false</FreeAndOpenData>
+                                           <LicenseURL>
+                                             <URL>https://someurl.com</URL>
+                                             <Description>License URL Description</Description>
+                                             <Type>License URL</Type>
+                                             <MimeType>text/html</MimeType>
+                                           </LicenseURL>
+                                         </UseConstraints>")
+            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            umm-result (:UseConstraints result)]
+        (is (= false (:FreeAndOpenData umm-result)))))
+
+    (testing "echo10 use constraints LicenseURL test"
+      (let [actual-data (string/replace base-record
+                                        #"</RestrictionFlag>"
+                                        "</RestrictionFlag>
+                                         <UseConstraints>
+                                           <LicenseURL>
+                                             <URL>https://someurl.com</URL>
+                                             <Description>License URL Description</Description>
+                                             <Type>License URL</Type>
+                                             <MimeType>text/html</MimeType>
+                                           </LicenseURL>
+                                         </UseConstraints>")
+            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            umm-result (:UseConstraints result)]
+        (is (and (= "https://someurl.com" (get-in umm-result [:LicenseURL :Linkage]))
+                 (= "License URL Description" (get-in umm-result [:LicenseURL :Description]))
+                 (= "License URL" (get-in umm-result [:LicenseURL :Name]))
+                 (= "text/html" (get-in umm-result [:LicenseURL :MimeType]))))))
+
+    (testing "echo10 use constraints License Text test"
+      (let [actual-data (string/replace base-record
+                                        #"</RestrictionFlag>"
+                                        "</RestrictionFlag>
+                                         <UseConstraints>
+                                           <LicenseText>License Text</LicenseText>
+                                         </UseConstraints>")
+            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            umm-result (:UseConstraints result)]
+        (is (= "License Text" (:LicenseText umm-result)))))
+
+    (testing "echo10 use constraints nil test"
+      (let [result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) base-record true)
+            umm-result (:UseConstraints result)]
+        (is (= nil umm-result))))
+
+    (testing "echo10 use constraints Description and LicenseURL test"
+      (let [actual-data (string/replace base-record
+                                        #"</RestrictionFlag>"
+                                        "</RestrictionFlag>
+                                         <UseConstraints>
+                                           <Description>Description</Description>
+                                           <LicenseURL>
+                                             <URL>https://someurl.com</URL>
+                                             <Description>License URL Description</Description>
+                                             <Type>License URL</Type>
+                                             <MimeType>text/html</MimeType>
+                                           </LicenseURL>
+                                         </UseConstraints>")
+            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            umm-result (:UseConstraints result)]
+        (is (and (= "Description" (:Description umm-result))
+                 (= "https://someurl.com" (get-in umm-result [:LicenseURL :Linkage]))
+                 (= "License URL Description" (get-in umm-result [:LicenseURL :Description]))
+                 (= "License URL" (get-in umm-result [:LicenseURL :Name]))
+                 (= "text/html" (get-in umm-result [:LicenseURL :MimeType]))))))
+
+    (testing "echo10 use constraints Description and License Text test"
+      (let [actual-data (string/replace base-record
+                                        #"</RestrictionFlag>"
+                                        "</RestrictionFlag>
+                                         <UseConstraints>
+                                           <Description>Description</Description>
+                                           <LicenseText>License Text</LicenseText>
+                                         </UseConstraints>")
+            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            umm-result (:UseConstraints result)]
+        (is (and (= "Description" (:Description umm-result))
+                 (= "License Text" (:LicenseText umm-result))))))))

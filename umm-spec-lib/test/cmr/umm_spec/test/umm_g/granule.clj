@@ -17,6 +17,13 @@
           metadata (core/generate-metadata {} granule :umm-json)]
       (is (empty? (core/validate-metadata :granule :umm-json metadata))))))
 
+(deftest generate-granule-is-valid-umm-g-test-with-seed
+  (checking-with-seed "umm-g validate metadata" 100 1634099338048
+    [granule (gen/no-shrink generators/umm-g-granules)]
+    (let [granule (sanitizer/sanitize-granule granule)
+          metadata (core/generate-metadata {} granule :umm-json)]
+      (is (empty? (core/validate-metadata :granule :umm-json metadata))))))
+
 (deftest generate-and-parse-umm-g-granule-test-seed
   (checking-with-seed "umm-g round tripping" 100 1601556014491
     [granule (gen/no-shrink generators/umm-g-granules)]
@@ -42,4 +49,5 @@
 
 (deftest parse-granule-test
   (testing "parse granule"
-    (is (= expected-util/expected-sample-granule (core/parse-metadata {} :granule :umm-json sample-umm-g-granule)))))
+    (is (= expected-util/expected-sample-granule
+           (core/parse-metadata {} :granule :umm-json sample-umm-g-granule)))))

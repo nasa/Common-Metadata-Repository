@@ -43,9 +43,11 @@
    :horizontal-data-resolution-range :range-facet
    :has-granules :has-granules
    :has-granules-or-cwic :has-granules-or-cwic
+   :has-granules-or-opensearch :has-granules-or-opensearch
    :has-granules-created-at :multi-date-range
    :has-granules-revised-at :multi-date-range
    :has-opendap-url :boolean
+   :cloud-hosted :boolean
    :instrument :string
    :instrument-h :humanizer
    :keyword :keyword
@@ -53,6 +55,8 @@
    :native-id :string
    :platform :string
    :platform-h :humanizer
+   :platforms :platforms ;; v2 facet support
+   :platforms-h :platforms ;; v2 facet support
    :point :point
    :polygon :polygon
    :circle :circle
@@ -60,6 +64,7 @@
    :processing-level-id-h :humanizer
    :project :string
    :project-h :humanizer
+   :consortium :string
    :provider :string
    :revision-date :multi-date-range
    :science-keywords :science-keywords
@@ -345,6 +350,10 @@
   [_ _ _ value _]
   (qm/->HasGranulesOrCwicCondition (= "true" (str/lower-case value))))
 
+(defmethod common-params/parameter->condition :has-granules-or-opensearch
+  [_ _ _ value _]
+  (qm/->HasGranulesOrOpenSearchCondition (= "true" (str/lower-case value))))
+
 (defn- collection-data-type-matches-science-quality?
   "Convert the collection-data-type parameter with wildcards to a regex. This function
   does not fully handle escaping special characters and is only intended for handling
@@ -407,7 +416,8 @@
           (fn [sort-keys]
             (seq (for [{:keys [field order] :as sort-key} sort-keys]
                    (if (or (= field :has-granules)
-                           (= field :has-granules-or-cwic))
+                           (= field :has-granules-or-cwic)
+                           (= field :has-granules-or-opensearch))
                      {:field field :order (if (= order :asc) :desc :asc)}
                      sort-key))))))
 

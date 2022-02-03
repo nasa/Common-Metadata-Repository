@@ -148,6 +148,7 @@ technical contact
             <xs:enumeration value="Navigation Platforms"/>
             <xs:enumeration value="Solar/Space Observation Satellites"/>
             <xs:enumeration value="Space Stations/Manned Spacecraft"/>
+            <xs:enumeration value="Space Stations/Crewed Spacecraft"/>
         </xs:restriction>
     </xs:simpleType>
     
@@ -211,6 +212,8 @@ technical contact
         <xs:restriction base="xs:string">
             <xs:enumeration value="SCIENCE_QUALITY"/>
             <xs:enumeration value="NEAR_REAL_TIME"/>
+            <xs:enumeration value="LOW_LATENCY"/>
+            <xs:enumeration value="EXPEDITED"/>
             <xs:enumeration value="ON_DEMAND"/>
             <xs:enumeration value="OTHER"/>
         </xs:restriction>

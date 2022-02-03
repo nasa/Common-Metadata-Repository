@@ -30,8 +30,8 @@
 
 (defconfig scrolling-enabled
   "Indicates whether or not scroll queries are allowed."
-   {:type Boolean
-    :default true})
+  {:type Boolean
+   :default true})
 
 (def basic-params-config
   "Defines a map of parameter validation types to a set of the parameters."
@@ -91,7 +91,7 @@
 
 (defn validate-boolean-param
   "Validates a boolean parameter has a value of true or false."
-  [param concept-type params]
+  [param _concept-type params]
   (when-let [value (get params param)]
     (when-not (contains? #{"true" "false"} value)
       [(format "Parameter %s must take value of true or false but was [%s]"
@@ -108,14 +108,14 @@
 
 (defn concept-id-validation
   "Validates the concept-id(s)"
-  [concept-type params]
+  [_concept-type params]
   ;; concept-ids can be either a vector or a single value.
   (when-let [concept-ids (util/seqify (:concept-id params))]
     (mapcat cc/concept-id-validation concept-ids)))
 
 (defn page-size-validation
   "Validates that the page-size (if present) is a number in the valid range."
-  [concept-type params]
+  [_concept-type params]
   (let [page-size-errors [(str "page_size must be a number between 0 and " max-page-size)]]
     (try
       (when-let [page-size-i (get-ivalue-from-params params :page-size)]
@@ -142,7 +142,7 @@
 
 (defn page-num-validation
   "Validates that the page-num (if present) is a number in the valid range."
-  [concept-type params]
+  [_concept-type params]
   (try
     (when-let [page-num-i (get-ivalue-from-params params :page-num)]
       (when (> 1 page-num-i)
@@ -152,7 +152,7 @@
 
 (defn paging-depth-validation
   "Validates that the paging depths (page-num * page-size) does not exceed a set limit."
-  [concept-type params]
+  [_concept-type params]
   (try
     (let [limit (search-paging-depth-limit)
           page-size (get-ivalue-from-params params :page-size)
@@ -175,21 +175,23 @@
       [])))
 
 (defn scroll-enabled-validation
-  "Validates that scrolling is enabled if the scroll parameter is true"
-  [concept-type params]
+  "Validates that scrolling is enabled if the scroll parameter is true or defer"
+  [_concept-type params]
   (when-let [scroll (:scroll params)]
-    (when (and (= "true" (string/lower-case scroll))
+    (when (and (contains? #{"true" "defer"} (string/lower-case scroll))
                (not (scrolling-enabled)))
       ["Scrolling is disabled."])))
 
 (defn scroll-validation
-  "Validates the the scroll parameter (if present) is boolean."
-  [concept-type params]
-  (validate-boolean-param :scroll concept-type params))
+  "Validates the the scroll parameter (if present) is 'true', 'false', or 'defer'."
+  [_concept-type params]
+  (when-let [value (:scroll params)]
+    (when-not (contains? #{"true" "false" "defer"} value)
+      [(format "Parameter scroll must take value of true, false, or defer but was [%s]" value)])))
 
 (defn scroll-excludes-page-num-validation
   "Validates that page-num is not present if scroll is true."
-  [concept-type params]
+  [_concept-type params]
   (let [{:keys [scroll page-num]} params]
     (when (and scroll
                page-num
@@ -198,7 +200,7 @@
 
 (defn scroll-excludes-offset-validation
   "Validates that offset is not present if scroll is true."
-  [concept-type params]
+  [_concept-type params]
   (let [{:keys [scroll offset]} params]
     (when (and scroll
                offset
@@ -218,10 +220,9 @@
   by-concept-type)
 
 (defn parameter-options-validation
-  [concept-type params]
   "Validates that no invalid parameter names in the options were supplied"
   [concept-type params]
-  (if-let [options (:options params)]
+  (when-let [options (:options params)]
     (let [always-case-sensitive-fields (specific-params-config
                                         concept-type :always-case-sensitive)
           valid-options (valid-parameter-options concept-type)]
@@ -239,7 +240,7 @@
                (when valid-options
                  (map #(msg/invalid-opt-for-param param %)
                       (set/difference (set (keys settings))
-                        valid-options)))))))
+                                      valid-options)))))))
        options))))
 
 (defmulti valid-sort-keys
@@ -259,16 +260,15 @@
       (mapcat (fn [sort-key]
                 (let [[_ field] (re-find #"[\-+]?(.*)" sort-key)]
                   (when-not (valid-keys (keyword field))
-                    [(msg/invalid-sort-key (csk/->snake_case_string field ) concept-type)])))
+                    [(msg/invalid-sort-key (csk/->snake_case_string field) concept-type)])))
               sort-keys))
     []))
-
 
 (def concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
   (memoize
    (fn [concept-type]
-    (set (keys (p/param-mappings concept-type))))))
+     (set (keys (p/param-mappings concept-type))))))
 
 (defmulti valid-query-level-params
   "Returns a set of parameter names that are valid at the query level"
@@ -291,7 +291,6 @@
                                   (concept-type->valid-param-names concept-type)
                                   (valid-query-level-params concept-type)))))
 
-
 (defmulti valid-query-level-options
   "Returns a set of query level options that are valid."
   by-concept-type)
@@ -304,7 +303,7 @@
   "Validates that no invalid parameters names in the options were supplied"
   [concept-type params]
   (if-let [options (:options params)]
-    (map #(str "Parameter [" (csk/->snake_case_string %)"] with option was not recognized.")
+    (map #(str "Parameter [" (csk/->snake_case_string %) "] with option was not recognized.")
          (set/difference (set (keys options))
                          (set/union (concept-type->valid-param-names concept-type)
                                     (valid-query-level-options concept-type))))
@@ -344,7 +343,7 @@
 (defn unrecognized-standard-query-params-validation
   "Validates that any query parameters passed to the AQL or JSON search endpoints are valid."
   [concept-type params]
-  (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
+  (map #(str "Parameter [" (csk/->snake_case_string %) "] was not recognized.")
        (set/difference (set (keys params))
                        (set/union standard-valid-params
                                   (valid-query-level-params concept-type)))))

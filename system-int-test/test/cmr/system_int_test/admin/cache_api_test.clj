@@ -15,9 +15,9 @@
    [cmr.system-int-test.utils.url-helper :as url]))
 
 (use-fixtures :each (ingest/reset-fixture
-                      {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"}))
+                     {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"}))
 
-(defn- list-caches-for-app
+(defn list-caches-for-app
   "Gets a list of the caches for the given url."
   [url token]
   (let [response (client/request {:url url
@@ -47,9 +47,10 @@
       (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
     (json/decode (:body response) true)))
 
-(defn- get-cache-value
-  "Gets the value for a given key from the given cache."
-  [url cache-name cache-key token]
+(defn get-cache-value
+  "Gets the value for a given key from the given cache. Checks that the retruend status code
+  matches the expected status code."
+  [url cache-name cache-key token expected-status]
   (let [full-url (str url "/" cache-name "/" cache-key)
         response (client/request {:url full-url
                                   :method :get
@@ -57,8 +58,8 @@
                                   :connection-manager (s/conn-mgr)
                                   :throw-exceptions false})
         status (:status response)]
-    ;; Make sure the status returned success
-    (when (not= status 200)
+    ;; Make sure the returend status matches the expected-status
+    (when (not= status expected-status)
       (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
     (json/decode (:body response) true)))
 
@@ -72,74 +73,71 @@
 
     (testing "list caches"
       (are [url caches]
-        (is (= (set caches) (set (list-caches-for-app url admin-read-token))))
+           (is (= (set caches) (set (list-caches-for-app url admin-read-token))))
         ;; XXX It would be better if we used the respective vars here instead
         ;; of string values. That way we can change cache names if needed
         ;; without updating tests.
-        (url/indexer-read-caches-url) [
-         "acls"
-         "collection-granule-aggregation-cache"
-         "health"
-         "humanizer-cache"
-         "indexer-index-set-cache"
-         "kms"
-         "token-imp"
-         "usage-metrics-cache"]
-        (url/mdb-read-caches-url) [
-         "health"
-         "token-imp"]
-        (url/ingest-read-caches-url) [
-         "acls"
-         "health"
-         "humanizer-alias-cache"
-         "xsl-transformer-templates"
-         "kms"
-         "providers"
-         "token-imp"
-         "token-smp"
-         "token-sid"
-         "token-user-id"
-         "token-user-ids"
-         "write-enabled"]
-        (url/access-control-read-caches-url) [
-         "acls"
-         "group-ids-guids"
-         "health"
-         "providers"
-         "write-enabled"]
-        (url/search-read-caches-url) [
-         "acls"
-         "collections-for-gran-acls"
-         "has-granules-map"
-         "has-granules-or-cwic-map"
-         "health"
-         "humanizer-range-facet-cache"
-         "humanizer-report-cache"
-         "index-names"
-         "kms"
-         "metadata-cache"
-         "scroll-id-cache"
-         "token-imp"
-         "token-sid"
-         "token-user-id"
-         "write-enabled"
-         "xsl-transformer-templates"])
+        (url/indexer-read-caches-url) ["acls"
+                                       "collection-granule-aggregation-cache"
+                                       "health"
+                                       "humanizer-cache"
+                                       "indexer-index-set-cache"
+                                       "kms"
+                                       "token-imp"
+                                       "usage-metrics-cache"]
+        (url/mdb-read-caches-url) ["health"
+                                   "token-imp"]
+        (url/ingest-read-caches-url) ["acls"
+                                      "health"
+                                      "humanizer-alias-cache"
+                                      "xsl-transformer-templates"
+                                      "kms"
+                                      "providers"
+                                      "token-imp"
+                                      "token-smp"
+                                      "token-sid"
+                                      "token-user-id"
+                                      "token-user-ids"
+                                      "write-enabled"]
+        (url/access-control-read-caches-url) ["acls"
+                                              "group-ids-guids"
+                                              "health"
+                                              "providers"
+                                              "write-enabled"]
+        (url/search-read-caches-url) ["acls"
+                                      "collections-for-gran-acls"
+                                      "has-granules-map"
+                                      "has-granules-or-cwic-map"
+                                      "has-granules-or-opensearch-map"
+                                      "health"
+                                      "humanizer-range-facet-cache"
+                                      "humanizer-report-cache"
+                                      "index-names"
+                                      "kms"
+                                      "metadata-cache"
+                                      "scroll-id-cache"
+                                      "first-page-cache"
+                                      "token-imp"
+                                      "token-sid"
+                                      "token-user-id"
+                                      "write-enabled"
+                                      "xsl-transformer-templates"])
       ;; CMR-4337 - bootstrap
       #_(s/only-with-real-database
-       (testing "list caches for bootstrap"
-         (let [response (list-caches-for-app (url/bootstrap-read-caches-url) admin-read-token)]
-           (is (= ["token-imp" "kms" "health"] response))))))
+         (testing "list caches for bootstrap"
+           (let [response (list-caches-for-app (url/bootstrap-read-caches-url) admin-read-token)]
+             (is (= ["token-imp" "kms" "health"] response))))))
 
     (testing "normal user cannot access cache list API"
       (are [url]
-        (let [response (client/request {:url url
-                                        :method :get
-                                        :query-params {:token normal-user-token}
-                                        :connection-manager (s/conn-mgr)
-                                        :throw-exceptions false})
-              errors (:errors (json/decode (:body response) true))]
-          (is (= 401 (:status response)))
-          (is (= ["You do not have permission to perform that action."] errors)))
+           (let [response (client/request {:url url
+                                           :method :get
+                                           :query-params {:token normal-user-token}
+                                           :connection-manager (s/conn-mgr)
+                                           :throw-exceptions false})
+                 errors (:errors (json/decode (:body response) true))]
+             (is (= 401 (:status response)))
+             (is (= ["You do not have permission to perform that action."] errors)))
         (url/indexer-read-caches-url)
         (url/mdb-read-caches-url)
         (url/ingest-read-caches-url)
@@ -167,14 +165,14 @@
 
     (testing "normal user cannot retrieve cache keys"
       (are [url]
-        (let [response (client/request {:url url
-                                        :method :get
-                                        :query-params {:token normal-user-token}
-                                        :connection-manager (s/conn-mgr)
-                                        :throw-exceptions false})
-              errors (:errors (json/decode (:body response) true))]
-          (is (= 401 (:status response)))
-          (is (= ["You do not have permission to perform that action."] errors)))
+           (let [response (client/request {:url url
+                                           :method :get
+                                           :query-params {:token normal-user-token}
+                                           :connection-manager (s/conn-mgr)
+                                           :throw-exceptions false})
+                 errors (:errors (json/decode (:body response) true))]
+             (is (= 401 (:status response)))
+             (is (= ["You do not have permission to perform that action."] errors)))
         (str (url/indexer-read-caches-url) "/acls")
         (str (url/mdb-read-caches-url) "/acls")
         (str (url/ingest-read-caches-url) "/acls")
@@ -193,8 +191,8 @@
 
     (testing "list cache keys"
       (are [url cache cache-keys]
-        (let [response (list-cache-keys url cache admin-read-token)]
-          (is (= (set cache-keys) (set response))))
+           (let [response (list-cache-keys url cache admin-read-token)]
+             (is (= (set cache-keys) (set response))))
 
         (url/indexer-read-caches-url) "acls" ["acls"]
         (url/indexer-read-caches-url) "indexer-index-set-cache" ["concept-indices" "concept-mapping-types"]
@@ -219,34 +217,31 @@
            (let [response (list-cache-keys (url/bootstrap-read-caches-url) "token-imp" admin-read-token)]
              (is (every? (set response)
                          [["ABC-1" "read"]
-                          ["ABC-2" "read"]]))))))
-
-
-    (testing "normal user cannot retrieve cache values"
-      (are [url]
-        (let [response (client/request {:url url
-                                        :method :get
-                                        :query-params {:token normal-user-token}
-                                        :connection-manager (s/conn-mgr)
-                                        :throw-exceptions false})
-              errors (:errors (json/decode (:body response) true))]
-          (is (= 401 (:status response)))
-          (is (= ["You do not have permission to perform that action."] errors)))
-        (str (url/indexer-read-caches-url) "/acls/acls")
-        (str (url/mdb-read-caches-url) "/acls/acls")
-        (str (url/access-control-read-caches-url) "/acls/acls")
-        (str (url/ingest-read-caches-url) "/acls/acls")
-        (str (url/search-read-caches-url) "/acls/acls"))
-      (s/only-with-real-database
-       (testing "normal user cannot retrieve cache values for bootstrap"
-         (let [response (client/request {:url (url/bootstrap-read-caches-url)
-                                         :method :get
-                                         :query-params {:token normal-user-token}
-                                         :connection-manager (s/conn-mgr)
-                                         :throw-exceptions false})
-               errors (:errors (json/decode (:body response) true))]
-           (is (= 401 (:status response)))
-           (is (= ["You do not have permission to perform that action."] errors))))))
+                          ["ABC-2" "read"]])))))) (testing "normal user cannot retrieve cache values"
+                                                    (are [url]
+                                                         (let [response (client/request {:url url
+                                                                                         :method :get
+                                                                                         :query-params {:token normal-user-token}
+                                                                                         :connection-manager (s/conn-mgr)
+                                                                                         :throw-exceptions false})
+                                                               errors (:errors (json/decode (:body response) true))]
+                                                           (is (= 401 (:status response)))
+                                                           (is (= ["You do not have permission to perform that action."] errors)))
+                                                      (str (url/indexer-read-caches-url) "/acls/acls")
+                                                      (str (url/mdb-read-caches-url) "/acls/acls")
+                                                      (str (url/access-control-read-caches-url) "/acls/acls")
+                                                      (str (url/ingest-read-caches-url) "/acls/acls")
+                                                      (str (url/search-read-caches-url) "/acls/acls"))
+                                                    (s/only-with-real-database
+                                                     (testing "normal user cannot retrieve cache values for bootstrap"
+                                                       (let [response (client/request {:url (url/bootstrap-read-caches-url)
+                                                                                       :method :get
+                                                                                       :query-params {:token normal-user-token}
+                                                                                       :connection-manager (s/conn-mgr)
+                                                                                       :throw-exceptions false})
+                                                             errors (:errors (json/decode (:body response) true))]
+                                                         (is (= 401 (:status response)))
+                                                         (is (= ["You do not have permission to perform that action."] errors))))))
 
     (testing "retrieval of value for non-existent key results in a 404"
       (let [response (client/request {:url (str (url/indexer-read-caches-url)
@@ -256,12 +251,13 @@
                                       :connection-manager (s/conn-mgr)
                                       :throw-exceptions false})]
         (is (= 404 (:status response)))
-        (is (= "Not Found" (:body response)))))
+        (is (= "{\"error\":\"missing key [:INVALID-CACHE-ABC] for cache [acls]\"}"
+               (:body response)))))
 
     (testing "lookup value for cache key"
       (are [url cache cache-key value]
-        (let [response (get-cache-value url cache cache-key admin-read-token)]
-          (is (= (set value) (set response))))
+           (let [response (get-cache-value url cache cache-key admin-read-token 200)]
+             (is (= (set value) (set response))))
         (url/indexer-read-caches-url)
         "indexer-index-set-cache"
         "concept-mapping-types"

@@ -20,12 +20,15 @@
 
    ;; The session-id to be used for subsequent scroll requests
    scroll-id
+   
+   ;; The search-after value for search-after requests
+   search-after
 
    ;; The number of milliseconds the search took
    took
 
    ;; Whether or not the Elasticsearch query timed out
-   timed-out 
+   timed-out
 
    ;; The result format requested by the user.
    result-format

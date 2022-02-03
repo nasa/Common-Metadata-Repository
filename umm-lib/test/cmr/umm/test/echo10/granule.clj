@@ -1,21 +1,23 @@
 (ns cmr.umm.test.echo10.granule
   "Tests parsing and generating ECHO10 Granule XML."
-  (:require [clojure.test :refer :all]
+  (:require
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
 
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [defspec]]
+   ; [clojure.test.check.clojure-test :refer [defspec]]
+   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+   [cmr.common.test.test-check-ext :refer [defspec]]
 
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [clojure.string :as s]
-            [cmr.umm.test.generators.granule :as gran-gen]
-            [cmr.common.date-time-parser :as p]
-            [cmr.umm.echo10.granule :as g]
-            [cmr.umm.echo10.echo10-core :as echo10]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.umm-granule :as umm-g]
-            [cmr.umm.test.echo10.echo10-collection-tests :as tc]))
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.xml :as cx]
+   [cmr.umm.echo10.granule :as g]
+   [cmr.umm.echo10.echo10-core :as echo10]
+   [cmr.umm.test.echo10.echo10-collection-tests :as tc]
+   [cmr.umm.test.generators.granule :as gran-gen]
+   [cmr.umm.umm-collection :as umm-c]
+   [cmr.umm.umm-granule :as umm-g]))
 
 (defn- data-granule->expected
   "Returns the expected data-granule for comparison with the parsed record."
@@ -214,6 +216,11 @@
         <Description>Some description.</Description>
         <Type>Browse</Type>
       </OnlineResource>
+      <OnlineResource>
+        <URL>https://dmr.s3.bucket.example.org</URL>
+        <Description>Some description about DMR buckets</Description>
+        <Type>EXTENDED METADATA : DMR++</Type>
+      </OnlineResource>
     </OnlineResources>
     <CloudCover>0.8</CloudCover>
     <AssociatedBrowseImageUrls>
@@ -348,6 +355,12 @@
                        :description "Some description."
                        :title "Some description. (Browse)"})
                     (umm-c/map->RelatedURL
+                      {:type "EXTENDED METADATA"
+                       :sub-type "DMR++"
+                       :url "https://dmr.s3.bucket.example.org"
+                       :title "Some description about DMR buckets (EXTENDED METADATA : DMR++)"
+                       :description "Some description about DMR buckets"})
+                    (umm-c/map->RelatedURL
                       {:type "GET RELATED VISUALIZATION"
                        :url "http://nasa.gov/1"
                        :description "A file 1"
@@ -434,4 +447,18 @@
             "Exception while parsing invalid XML: Line 3 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'InsertTime' is not valid."
             "Exception while parsing invalid XML: Line 4 - cvc-datatype-valid.1.2.1: 'XXXX-01-05T05:30:30.550-05:00' is not a valid value for 'dateTime'."
             "Exception while parsing invalid XML: Line 4 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'LastUpdate' is not valid."]
-           (g/validate-xml (s/replace valid-granule-xml-w-sn-ver "2010" "XXXX"))))))
+           (g/validate-xml (string/replace valid-granule-xml-w-sn-ver "2010" "XXXX"))))))
+
+(deftest generate-data-granule-test
+  (testing "Testing the generate-data-granule method when the size doesn't exist - making sure that
+            a null pointer exception isn't thrown. CMR-7605"
+    (let [granule-data (g/generate-data-granule
+                         (umm-g/map->DataGranule
+                           {:size-in-bytes 71938553
+                            :size-unit "KB"
+                            :producer-gran-id "0000000.0000001.hdf"
+                            :day-night "NIGHT"}))]
+      (is (= (cx/string-at-path granule-data [:DataGranuleSizeInBytes])
+             "71938553"))
+      (is (= (cx/string-at-path granule-data [:Size])
+             nil)))))

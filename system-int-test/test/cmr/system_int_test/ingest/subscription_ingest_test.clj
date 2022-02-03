@@ -153,7 +153,7 @@
         (is (= {:revision-id 1
                 :native-id "Name 0"
                 :concept-id supplied-concept-id}
-               (ingest/parse-ingest-body :json response)))))
+               (dissoc (ingest/parse-ingest-body :json response) :body)))))
 
     (testing "xml response"
       (let [response (ingest/ingest-concept
@@ -165,7 +165,27 @@
         (is (= {:revision-id 2
                 :native-id "Name 0"
                 :concept-id supplied-concept-id}
-               (ingest/parse-ingest-body :xml response)))))))
+               (dissoc (ingest/parse-ingest-body :xml response) :body)))))))
+
+(deftest subscription-ingest-with-bad-query-error-test
+  (testing "ingest of a new subscription concept"
+    (let [coll1 (data-core/ingest-umm-spec-collection
+                  "PROV1"
+                  (data-umm-c/collection
+                   {:ShortName "coll1"
+                    :EntryTitle "entry-title1"})
+                  {:token "mock-echo-system-token"})
+          metadata {:CollectionConceptId (:concept-id coll1)
+                    :Query "options%5Bspatial%5D%5Bor%5D=true&platform=MODIS"}
+          concept (subscription-util/make-subscription-concept metadata)
+          response (ingest/ingest-concept
+                    concept
+                    {:accept-format :json
+                     :raw? true})
+          {:keys [errors]} (ingest/parse-ingest-body :json response)
+          error (first errors)]
+      (is (re-find #"Subscription query validation failed with the following error" error))
+      (is (re-find #"Parameter \[options%_5_bspatial%_5_d%_5_bor%_5_d\] was not recognized." error)))))
 
 ;; Verify that the accept header works with returned errors
 (deftest subscription-ingest-with-errors-accept-header-test
@@ -324,11 +344,17 @@
         concept (subscription-util/make-subscription-concept
                  {:concept-id supplied-concept-id
                   :CollectionConceptId (:concept-id coll1)
+                  :Query "platform=NOAA-7"
                   :native-id "Atlantic-1"})
+        concept2 (subscription-util/make-subscription-concept
+                  {:concept-id supplied-concept-id
+                   :CollectionConceptId (:concept-id coll1)
+                   :Query "platform=NOAA-9"
+                   :native-id "other"})
         _ (ingest/ingest-concept concept)]
     (testing "update concept with a different concept-id is invalid"
       (let [{:keys [status errors]} (ingest/ingest-concept
-                                     (assoc concept :concept-id "SUB1111-PROV1"))]
+                                     (assoc concept :Query "platform=NOAA-10" :concept-id "SUB1111-PROV1"))]
         (is (= [409 [(str "A concept with concept-id [SUB1000-PROV1] and "
                           "native-id [Atlantic-1] already exists for "
                           "concept-type [:subscription] provider-id [PROV1]. "
@@ -336,8 +362,7 @@
                           "[Atlantic-1] would conflict with that one.")]]
                [status errors]))))
     (testing "update concept with a different native-id is invalid"
-      (let [{:keys [status errors]} (ingest/ingest-concept
-                                     (assoc concept :native-id "other"))]
+      (let [{:keys [status errors]} (ingest/ingest-concept concept2)]
         (is (= [409 [(str "A concept with concept-id [SUB1000-PROV1] and "
                           "native-id [Atlantic-1] already exists for "
                           "concept-type [:subscription] provider-id [PROV1]. "
@@ -373,105 +398,6 @@
               {:keys [status concept-id revision-id]} response]
           (is (= 200 status))
           (is (= 3 revision-id)))))))
-
-(deftest subscription-email-processing
-  (testing "Tests subscriber-id filtering in subscription email processing job"
-    (system/only-with-real-database
-     (let [user1-group-id (echo-util/get-or-create-group (system/context) "group1")
-           ;; User 1 is in group1
-           user1-token (echo-util/login (system/context) "user1" [user1-group-id])
-           _ (echo-util/ungrant (system/context)
-                                (-> (access-control/search-for-acls (system/context)
-                                                                    {:provider "PROV1"
-                                                                     :identity-type "catalog_item"}
-                                                                    {:token "mock-echo-system-token"})
-                                    :items
-                                    first
-                                    :concept_id))
-           _ (echo-util/ungrant (system/context)
-                                (-> (access-control/search-for-acls (system/context)
-                                                                    {:provider "PROV2"
-                                                                     :identity-type "catalog_item"}
-                                                                    {:token "mock-echo-system-token"})
-                                    :items
-                                    first
-                                    :concept_id))
-           _ (echo-util/grant (system/context)
-                              [{:group_id user1-group-id
-                                :permissions [:read]}]
-                              :catalog_item_identity
-                              {:provider_id "PROV1"
-                               :name "Provider collection/granule ACL"
-                               :collection_applicable true
-                               :granule_applicable true
-                               :granule_identifier {:access_value {:include_undefined_value true
-                                                                   :min_value 1 :max_value 50}}})
-           _ (echo-util/grant (system/context)
-                              [{:user_type :registered
-                                :permissions [:read]}]
-                              :catalog_item_identity
-                              {:provider_id "PROV2"
-                               :name "Provider collection/granule ACL registered users"
-                               :collection_applicable true
-                               :granule_applicable true
-                               :granule_identifier {:access_value {:include_undefined_value true
-                                                                   :min_value 100 :max_value 200}}})
-           _ (ac-util/wait-until-indexed)
-           ;; Setup collections
-           coll1 (data-core/ingest-umm-spec-collection "PROV1"
-                                                       (data-umm-c/collection {:ShortName "coll1"
-                                                                               :EntryTitle "entry-title1"})
-                                                       {:token "mock-echo-system-token"})
-           coll2 (data-core/ingest-umm-spec-collection "PROV2"
-                                                       (data-umm-c/collection {:ShortName "coll2"
-                                                                               :EntryTitle "entry-title2"})
-                                                       {:token "mock-echo-system-token"})
-           _ (index/wait-until-indexed)
-           ;; Setup subscriptions for each collection, for user1
-           _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
-                                                     {:Name "test_sub_prov1"
-                                                      :SubscriberId "user1"
-                                                      :EmailAddress "user1@nasa.gov"
-                                                      :CollectionConceptId (:concept-id coll1)
-                                                      :Query " "})
-                                                    {:token "mock-echo-system-token"})
-           _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
-                                                     {:provider-id "PROV2"
-                                                      :Name "test_sub_prov1"
-                                                      :SubscriberId "user1"
-                                                      :EmailAddress "user1@nasa.gov"
-                                                      :CollectionConceptId (:concept-id coll2)
-                                                      :Query " "})
-                                                    {:token "mock-echo-system-token"})
-           _ (index/wait-until-indexed)
-           ;; Setup granules, gran1 and gran3 with acl matched access-value
-           ;; gran 2 does not match, and should not be readable by user1
-           gran1 (data-core/ingest "PROV1"
-                                   (data-granule/granule-with-umm-spec-collection coll1
-                                                                                  (:concept-id coll1)
-                                                                                  {:granule-ur "Granule1"
-                                                                                   :access-value 33})
-                                   {:token "mock-echo-system-token"})
-           gran2 (data-core/ingest "PROV1"
-                                   (data-granule/granule-with-umm-spec-collection coll1
-                                                                                  (:concept-id coll1)
-                                                                                  {:granule-ur "Granule2"
-                                                                                   :access-value 66})
-                                   {:token "mock-echo-system-token"})
-           gran3 (data-core/ingest "PROV2"
-                                   (data-granule/granule-with-umm-spec-collection coll2
-                                                                                  (:concept-id coll2)
-                                                                                  {:granule-ur "Granule3"
-                                                                                   :access-value 133})
-                                   {:token "mock-echo-system-token"})
-           _ (index/wait-until-indexed)
-           expected (set [(:concept-id gran1) (:concept-id gran3)])
-           actual (->> (process-subscriptions)
-                       (map #(nth % 1))
-                       flatten
-                       (map :concept-id)
-                       set)]
-       (is (= expected actual))))))
 
 (deftest roll-your-own-subscription-tests
   ;; Use cases coming from EarthData Search wanting to allow their users to create
@@ -623,7 +549,7 @@
                                                                               :EntryTitle "entry-title1"})
                                                       {:token "mock-echo-system-token"})
           fake-concept (subscription-util/make-subscription-concept {:SubscriberId "user1"
-                                                                     :CollectionConceptId "FAKE"})
+                                                                     :CollectionConceptId "C1234-PROV1"})
           concept (subscription-util/make-subscription-concept {:SubscriberId "user1"
                                                                 :CollectionConceptId (:concept-id coll1)})]
       ;; adjust permissions
@@ -645,7 +571,7 @@
       (testing "non-existent collection concept-id"
         (let [{:keys [status errors]} (ingest/ingest-concept fake-concept {:token "mock-echo-system-token"})]
           (is (= 401 status))
-          (is (= [(format "Collection with concept id [FAKE] does not exist or subscriber-id [user1] does not have permission to view the collection.")]
+          (is (= [(format "Collection with concept id [C1234-PROV1] does not exist or subscriber-id [user1] does not have permission to view the collection.")]
                  errors))))
 
       (testing "user doesn't have permission to view collection"
@@ -758,6 +684,7 @@
                      {:SubscriberId "post-user"
                       :Name "a different subscription with native-id"
                       :native-id "another-native-id"
+                      :Query "instrument=POSEIDON-2"
                       :CollectionConceptId (:concept-id coll)})
             {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
                                                                                   :method :post})]
@@ -781,6 +708,7 @@
       (let [concept (dissoc (subscription-util/make-subscription-concept
                              {:SubscriberId "post-user"
                               :Name "unicode-test Großartiger Scott!"
+                              :Query "instrument=POSEIDON-2B"
                               :CollectionConceptId (:concept-id coll)})
                             :native-id)
             {:keys [status concept-id native-id revision-id]}
@@ -847,3 +775,50 @@
 
         (is (= (:native-id concept)
                (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))))
+
+(deftest query-uniqueness-test
+  (let [sub-user-group-id (echo-util/get-or-create-group (system/context) "sub-group")
+        sub-user-token (echo-util/login (system/context) "sub-user" [sub-user-group-id])
+        coll1 (data-core/ingest-umm-spec-collection "PROV1"
+                                                    (data-umm-c/collection {:ShortName "coll1"
+                                                                            :EntryTitle "entry-title1"})
+                                                    {:token "mock-echo-system-token"})
+        coll2 (data-core/ingest-umm-spec-collection "PROV1"
+                                                    (data-umm-c/collection {:ShortName "coll2"
+                                                                            :EntryTitle "entry-title2"})
+                                                    {:token "mock-echo-system-token"})
+
+        sub1 (subscription-util/create-subscription-and-index
+              coll1 "test_sub1_prov1" "sub-user" "instrument=POSEIDON-2&platform=NOAA-7")
+        ;;should fail, since normalized-query will be identical to sub1
+        sub2 (subscription-util/create-subscription-and-index
+              coll1 "test_sub2_prov1" "sub-user" "platform=NOAA-7&instrument=POSEIDON-2")
+        ;;should succeed - query the same, but different collection
+        sub3 (subscription-util/create-subscription-and-index
+              coll2 "test_sub3_prov1" "sub-user" "platform=NOAA-7&instrument=POSEIDON-2")
+        ;;Later on, we will delete this sub and supersede it
+        sub4 (subscription-util/create-subscription-and-index
+              coll2 "test_sub4_prov1" "sub-user" "platform=NOAA-11")
+        sub4-concept {:provider-id "PROV1" :concept-type :subscription :native-id "test_sub4_prov1"}]
+
+    (testing "check that only actual duplicate subscriptions failed"
+      (is (:errors sub2))
+      (is (not (:errors sub3))))
+    (testing "check that ability to un-tombstone is not blocked by uniqueness rules"
+      (let [sub3-concept {:provider-id "PROV1" :concept-type :subscription :native-id "test_sub3_prov1"}
+            ;;delete sub3, and reingest it as-is.
+            _ (ingest/delete-concept sub3-concept)
+            sub3-2 (subscription-util/create-subscription-and-index
+                    coll2 "test_sub3_prov1" "sub-user" "platform=NOAA-7&instrument=POSEIDON-2")]
+        (is (not (:errors sub3)))))
+    (testing "should be possible to replace a tombstoned concept with a new concept, with new native-id"
+      (ingest/delete-concept sub4-concept)
+      (let [;;We ingest sub5, which is identical to sub4 with a different native-id.
+            ;;Since sub4 is deleted, we should be able to ingest this without error.
+            sub5 (subscription-util/create-subscription-and-index
+                  coll2 "test_sub5_prov1" "sub-user" "platform=NOAA-11")
+            ;;attempt to un-tombstone should fail, since this unique combo has been taken sub5
+            sub4-2 (subscription-util/create-subscription-and-index
+                    coll2 "test_sub4_prov1" "sub-user" "platform=NOAA-11")]
+        (is (not (:errors sub5)))
+        (is (:errors sub4-2))))))

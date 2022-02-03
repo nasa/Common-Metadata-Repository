@@ -241,13 +241,17 @@
   ([concept-type query-params json-as-map]
    (find-with-json-query concept-type query-params json-as-map mime-types/xml))
   ([concept-type query-params json-as-map result-format]
-   (client/post (url/search-url concept-type)
-                {:accept result-format
-                 :content-type mime-types/json
-                 :body (json/generate-string {:condition json-as-map})
-                 :query-params query-params
-                 :throw-exceptions true
-                 :connection-manager (s/conn-mgr)})))
+   (find-with-json-query concept-type query-params json-as-map result-format {}))
+  ([concept-type query-params json-as-map result-format options]
+   (let [headers (get options :headers {})]
+     (client/post (url/search-url concept-type)
+                  {:accept result-format
+                   :content-type mime-types/json
+                   :headers headers
+                   :body (json/generate-string {:condition json-as-map})
+                   :query-params query-params
+                   :throw-exceptions true
+                   :connection-manager (s/conn-mgr)}))))
 
 (defn get-autocomplete-suggestions
   "Executes a query to the autocomplete endpoint with the given value and returns the results."
@@ -421,6 +425,7 @@
       {:status status
        :body body
        :scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
+       :search-after (get-in response [:headers routes/SEARCH_AFTER_HEADER])
        :content-type (get-in response [:headers "content-type"])
        :results (json/decode body true)}
       response)))
@@ -439,6 +444,20 @@
   ([concept-type params options]
    (find-concepts-umm-json-common concept-type params mime-types/legacy-umm-json options)))
 
+(defn find-concepts-stac
+  "Returns the response of a search in stac format"
+  ([concept-type params]
+   (find-concepts-stac concept-type params {}))
+  ([concept-type params options]
+   (let [response (get-search-failure-data
+                   (find-concepts-in-format mime-types/stac concept-type params options))
+         {:keys [status headers body]} response]
+     (if (= status 200)
+         {:status status
+          :headers headers
+          :results (json/decode body true)}
+         response))))
+
 (defn find-metadata
   "Returns the response of concept search in a specific metadata XML format."
   ([concept-type format-key params]
@@ -448,6 +467,7 @@
     (let [format-mime-type (mime-types/format->mime-type format-key)
           response (find-concepts-in-format format-mime-type concept-type params options)
           scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
+          search-after (get-in response [:headers routes/SEARCH_AFTER_HEADER])
           body (:body response)
           parsed (fx/parse-str body)
           hits (cx/long-at-path parsed [:hits])
@@ -477,7 +497,8 @@
       (util/remove-nil-keys {:items items
                              :facets facets
                              :hits hits
-                             :scroll-id scroll-id})))))
+                             :scroll-id scroll-id
+                             :search-after search-after})))))
 
 (defn find-metadata-tags
   "Search metadata, parse out the collection concept id to tags mapping from the search response
@@ -516,6 +537,7 @@
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
         scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
+        search-after (get-in response [:headers routes/SEARCH_AFTER_HEADER])
         refs (map (fn [ref-elem]
                     (util/remove-nil-keys
                      {:id (cx/string-at-path ref-elem [:id])
@@ -533,6 +555,7 @@
      {:refs refs
       :hits hits
       :scroll-id scroll-id
+      :search-after search-after
       :took took
       :facets facets})))
 
@@ -601,21 +624,27 @@
 (defn find-refs-with-multi-part-form-post
   "Returns the references that are found by searching through POST request with the input form.
   The form parameter should be a vector of maps (one for each field in the form)"
-  [concept-type form]
-  (get-search-failure-xml-data
-   (let [response (client/post (url/search-url concept-type)
-                               {:accept mime-types/xml
-                                :multipart form
-                                :throw-exceptions true
-                                :connection-manager (s/conn-mgr)})]
-     (parse-reference-response-with-headers false response))))
+  ([concept-type form]
+   (find-refs-with-multi-part-form-post concept-type form {}))
+  ([concept-type form options]
+   (get-search-failure-xml-data
+    (let [response (client/post (url/search-url concept-type)
+                                (merge {:accept mime-types/xml
+                                        :multipart form
+                                        :throw-exceptions true
+                                        :connection-manager (s/conn-mgr)}
+                                       options))]
+      (parse-reference-response-with-headers false response)))))
 
 (defn find-refs-with-json-query
   "Returns the references that are found by searching using a JSON request."
-  [concept-type query-params json-as-map]
-  (get-search-failure-xml-data
-   (let [response (find-with-json-query concept-type query-params json-as-map)]
-     (parse-reference-response (:echo-compatible query-params) response))))
+  ([concept-type query-params json-as-map]
+   (find-refs-with-json-query concept-type query-params json-as-map {}))
+  ([concept-type query-params json-as-map options]
+   (get-search-failure-xml-data
+    (let [response (find-with-json-query
+                    concept-type query-params json-as-map mime-types/xml options)]
+      (parse-reference-response (:echo-compatible query-params) response)))))
 
 (defn find-refs-with-aql-string
   ([aql]
@@ -733,15 +762,17 @@
 
 (defn get-keywords-by-keyword-scheme
   "Calls the CMR search endpoint to retrieve the controlled keywords for the given keyword scheme."
-  [keyword-scheme]
-  (get-search-failure-data
-   (let [response (client/get (url/search-keywords-url keyword-scheme)
-                              {:connection-manager (s/conn-mgr)})
-         {:keys [status body]} response]
-     (if (= 200 status)
-       {:status status
-        :results (json/decode body)}
-       response))))
+  ([keyword-scheme]
+   (get-keywords-by-keyword-scheme keyword-scheme ""))
+  ([keyword-scheme search-parameters]
+   (get-search-failure-data
+    (let [response (client/get (url/search-keywords-url keyword-scheme search-parameters)
+                               {:connection-manager (s/conn-mgr)})
+          {:keys [status body]} response]
+      (if (= 200 status)
+        {:status status
+         :results (json/decode body)}
+        response)))))
 
 (defn get-humanizers-report-raw
   "Returns the humanizers report."

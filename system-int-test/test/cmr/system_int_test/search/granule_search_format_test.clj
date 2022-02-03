@@ -1,7 +1,9 @@
 (ns cmr.system-int-test.search.granule-search-format-test
   "Integration tests for searching granules in various formats"
   (:require
+   [cheshire.core :as json]
    [clj-http.client :as client]
+   [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.concepts :as cu]
@@ -18,6 +20,7 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.kml :as dk]
+   [cmr.system-int-test.data2.stac :as stac]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
@@ -27,7 +30,8 @@
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.umm.umm-core :as umm]
    [cmr.umm.umm-granule :as umm-g]
-   [cmr.umm.umm-spatial :as umm-s]))
+   [cmr.umm.umm-spatial :as umm-s]
+   [ring.util.codec :as codec]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -37,6 +41,27 @@
     (dev-sys-util/reset)
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
     (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})))
+
+(deftest simple-search-test-for-gran-echo-1.6.3-schema
+  (let [coll-7340 (d/ingest-concept-with-metadata-file "CMR-7340/Coll-CMR-7340.echo10"
+                                                  {:provider-id "PROV1"
+                                                   :concept-type :collection
+                                                   :native-id "echo10-collection"
+                                                   :format-key :echo10})
+        ;; This granule contains additional file added in the new schema
+        gran-7340 (d/ingest-concept-with-metadata-file "CMR-7340/Gran-CMR-7340.echo10"
+                                                     {:provider-id "PROV1"
+                                                      :concept-type :granule
+                                                      :native-id "echo10-granule"
+                                                      :format-key :echo10})]
+    (index/wait-until-indexed)
+    (let [params {:concept-id (:concept-id gran-7340)}
+          options {:accept nil
+                   :url-extension "native"}
+          format-key :echo10
+          response (search/find-metadata :granule format-key params options)]
+      (is (= 1 (count (:items response))))
+      (is (= (:concept-id (first (:items response))) (:concept-id gran-7340))))))
 
 (deftest simple-search-test
   (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
@@ -641,7 +666,7 @@
         (is (= 200 (:status response)))
         (is (= (:rel gran-atom-links) (:rel response-links)))
         (is (= (:href gran-atom-links) (:href response-links)))
-        (is (some #(string/includes? % "cloud#") response-links)))
+        (is (some #(string/includes? % "s3#") response-links)))
 
       "testing echo10"
       gran-echo
@@ -668,7 +693,7 @@
                                (get :links))]
         (is (= 200 (:status response)))
         (is (= gran-atom-links response-links))
-        (is (not-any? #(string/includes? % "cloud#") response-links))))
+        (is (not-any? #(string/includes? % "s3#") response-links))))
 
     (testing "testing to ISO 19115."
       (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
@@ -679,3 +704,334 @@
       (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
             response (search/find-metadata :granule :echo10 {:granule-ur "Granule3"})]
         (is (string/includes? response "s3://aws.com"))))))
+
+(deftest search-granule-stac
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
+                                                :beginning-date-time "1970-01-01T12:00:00Z"
+                                                :spatial-coverage (dc/spatial {:gsr :geodetic})}))
+        coll-concept-id (:concept-id coll1)
+        gran-spatial (dg/spatial (m/mbr 10 30 20 0))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+                                                   :beginning-date-time "2010-01-01T12:00:00.000Z"
+                                                   :ending-date-time "2010-01-11T12:00:00.000Z"
+                                                   :spatial-coverage gran-spatial
+                                                   :cloud-cover 10.0}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"
+                                                   :beginning-date-time "2011-02-01T12:00:00.000Z"
+                                                   :ending-date-time "2011-02-11T12:00:00.000Z"
+                                                   :spatial-coverage gran-spatial
+                                                   :cloud-cover 20.0}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"
+                                                   :beginning-date-time "2012-01-01T12:00:00.000Z"
+                                                   :ending-date-time "2012-01-11T12:00:00.000Z"
+                                                   :spatial-coverage gran-spatial
+                                                   :cloud-cover 30.0}))]
+
+    (index/wait-until-indexed)
+
+    (util/are3 [params result-map]
+      (let [response (search/find-concepts-stac :granule
+                                                (merge params {:collection-concept-id coll-concept-id}))
+            full-result-map (merge result-map
+                                   {:coll-concept-id coll-concept-id
+                                    :matched 3
+                                    :geometry {:type "Polygon"
+                                               :coordinates
+                                               [[[10.0 0.0]
+                                                 [20.0 0.0]
+                                                 [20.0 30.0]
+                                                 [10.0 30.0]
+                                                 [10.0 0.0]]]}
+                                    :bbox [10.0 0.0 20.0 30.0]})]
+        (is (search/mime-type-matches-response? response mt/stac))
+        (is (= 200 (:status response)))
+        (is (= (stac/result-map->expected-stac full-result-map)
+               (:results response))))
+
+      "default page-size and page-num"
+      nil
+      {:granules [gran1 gran2 gran3]
+       :query-string (format "collection_concept_id=%s" coll-concept-id)
+       :page-num 1}
+
+      "specific page-size"
+      {:page-size 1}
+      {:granules [gran1]
+       :query-string (format "page_size=1&collection_concept_id=%s" coll-concept-id)
+       :page-num 1
+       :next-num 2}
+
+      "specific page-size and page-num"
+      {:page-size 1 :page-num 2}
+      {:granules [gran2]
+       :query-string (format "page_size=1&collection_concept_id=%s" coll-concept-id)
+       :page-num 2
+       :prev-num 1
+       :next-num 3}
+
+      "specific page-size and page-num, no next page"
+      {:page-size 2 :page-num 2}
+      {:granules [gran3]
+       :query-string (format "page_size=2&collection_concept_id=%s" coll-concept-id)
+       :page-num 2
+       :prev-num 1})
+
+    (testing "stac as extension"
+      (let [params {:collection-concept-id coll-concept-id}
+            response (search/find-concepts-stac :granule
+                                                params
+                                                {:url-extension "stac"})]
+        (is (search/mime-type-matches-response? response mt/stac))
+        (is (= (select-keys (search/find-concepts-stac :granule params)
+                            [:status :body])
+               (select-keys response
+                            [:status :body])))))
+
+    (testing "stac search validation"
+      (testing "stac search without collection_concept_id"
+        (let [response (search/find-concepts-stac :granule {:provider "PROV1"})
+              ext-response (search/find-concepts-stac :granule
+                                                      {:provider "PROV1"}
+                                                      {:url-extension "stac"})]
+          (is (= 400
+                 (:status response)
+                 (:status ext-response)))
+          (is (= ["collection_concept_id is required for searching in STAC result format"]
+                 (:errors response)
+                 (:errors ext-response)))))
+
+      (testing "stac search with unsupported concept type"
+        (let [response (search/find-concepts-stac :subscription
+                                                  {:collection-concept-id coll-concept-id})
+              ext-response (search/find-concepts-stac :subscription
+                                                      {:collection-concept-id coll-concept-id}
+                                                      {:url-extension "stac"})]
+          (is (= 400
+                 (:status response)
+                 (:status ext-response)))
+          (is (= ["STAC result format is only supported for granule searches"]
+                 (:errors response)
+                 (:errors ext-response)))))
+
+      (testing "stac search with POST"
+        (let [response (client/post (url/search-url :granule)
+                                    {:accept "application/json; profile=stac-catalogue"
+                                     :content-type mt/form-url-encoded
+                                     :body (codec/form-encode {:collection-concept-id coll-concept-id})
+                                     :throw-exceptions false
+                                     :connection-manager (s/conn-mgr)})
+              ext-response (client/post (format "%s.stac" (url/search-url :granule))
+                                        {:content-type mt/form-url-encoded
+                                         :body (codec/form-encode {:collection-concept-id coll-concept-id})
+                                         :throw-exceptions false
+                                         :connection-manager (s/conn-mgr)})]
+          (is (= 400
+                 (:status response)
+                 (:status ext-response)))
+          (is (= ["STAC result format is only supported for parameter searches"]
+                 (:errors (json/decode (:body response) true))
+                 (:errors (json/decode (:body ext-response) true))))))
+
+      (testing "stac search with JSON query"
+        (let [response (client/post
+                        (url/search-url :granule)
+                        {:accept "application/json; profile=stac-catalogue"
+                         :content-type "application/json"
+                         :body (json/generate-string {:collection-concept-id coll-concept-id})
+                         :throw-exceptions false
+                         :connection-manager (s/conn-mgr)})
+              ext-response (client/post
+                            (format "%s.stac" (url/search-url :granule))
+                            {:content-type "application/json"
+                             :body (json/generate-string {:collection-concept-id coll-concept-id})
+                             :throw-exceptions false
+                             :connection-manager (s/conn-mgr)})]
+          (is (= 400
+                 (:status response)
+                 (:status ext-response)))
+          (is (= ["search by JSON query is not allowed with STAC result format"]
+                 (:errors (json/decode (:body response) true))
+                 (:errors (json/decode (:body ext-response) true))))))
+
+      (testing "stac search with AQL query"
+        (let [response (client/post (url/aql-url)
+                                    {:accept "application/json; profile=stac-catalogue"
+                                     :content-type "application/xml"
+                                     :body "<xml></xml>"
+                                     :throw-exceptions false
+                                     :connection-manager (s/conn-mgr)})
+              ext-response (client/post (format "%s.stac" (url/aql-url))
+                                        {:content-type "application/xml"
+                                         :body "<xml></xml>"
+                                         :throw-exceptions false
+                                         :connection-manager (s/conn-mgr)})]
+          (is (= 400
+                 (:status response)
+                 (:status ext-response)))
+          (is (= ["search by JSON query is not allowed with STAC result format"]
+                 (:errors (json/decode (:body response) true))
+                 (:errors (json/decode (:body ext-response) true))))))
+
+      (testing "stac search with invalid parameters"
+        (util/are3 [params err-message]
+          (let [response (search/find-concepts-stac
+                          :granule
+                          (merge params {:collection-concept-id coll-concept-id}))
+                ext-response (search/find-concepts-stac
+                              :granule
+                              (merge params {:collection-concept-id coll-concept-id})
+                              {:url-extension "stac"})]
+            (is (= 400
+                   (:status response)
+                   (:status ext-response)))
+            (is (= [err-message]
+                   (:errors response)
+                   (:errors ext-response))))
+
+          "scroll"
+          {:scroll true}
+          "scroll is not allowed with STAC result format"
+
+          "offset"
+          {:offset 100}
+          "offset is not allowed with STAC result format"))
+
+      (testing "stac search with invalid headers"
+        (let [{:keys [scroll-id]} (search/find-refs
+                                   :granule
+                                   {:provider "PROV1" :scroll true :page-size 1})]
+
+          (util/are3 [header-value err-message]
+            (let [response (search/find-concepts-stac
+                            :granule
+                            {:collection-concept-id coll-concept-id}
+                            {:headers header-value})
+                  ext-response (search/find-concepts-stac
+                                :granule
+                                {:collection-concept-id coll-concept-id}
+                                {:url-extension "stac"
+                                 :headers header-value})]
+              (is (= 400
+                     (:status response)
+                     (:status ext-response)))
+              (is (= [err-message]
+                     (:errors response)
+                     (:errors ext-response))))
+
+            "scroll-id"
+            {"CMR-Scroll-Id" scroll-id}
+            "CMR-Scroll-Id header is not allowed with STAC result format"
+
+            "search-after"
+            {"CMR-Search-After" "[0]"}
+            "CMR-Search-After header is not allowed with STAC result format"))))))
+
+(deftest granule-concept-stac-retrieval-test
+  (let [coll-metadata (slurp (io/resource "stac-test/C1299783579-LPDAAC_ECS.xml"))
+        {coll-concept-id :concept-id} (ingest/ingest-concept
+                                       (ingest/concept :collection "PROV1" "foo" :echo10 coll-metadata))
+        gran-metadata (slurp (io/resource "stac-test/G1327299284-LPDAAC_ECS.xml"))
+        {gran-concept-id :concept-id} (ingest/ingest-concept
+                                       (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))
+        expected (-> "stac-test/granule_stac.json"
+                     io/resource
+                     slurp
+                     (string/replace #"CollectionConceptId" coll-concept-id)
+                     (string/replace #"GranuleConceptId" gran-concept-id)
+                     (json/decode true))]
+    (index/wait-until-indexed)
+
+    (testing "retrieval of granule concept in STAC format"
+      (util/are3 [options]
+        (let [response (search/retrieve-concept gran-concept-id nil options)]
+          (is (search/mime-type-matches-response? response mt/stac))
+          (is (= expected
+                 (json/decode (:body response) true))))
+
+        "retrieval by accept header"
+        {:accept "application/json; profile=stac-catalogue"}
+
+        "retrieval by suffix"
+        {:url-extension "stac"}))
+
+    (testing "retrieval of granule concept revisions in STAC format is not supported"
+      (util/are3 [options err-msg]
+        (let [{:keys [status errors]} (search/get-search-failure-data
+                                       (search/retrieve-concept
+                                        gran-concept-id
+                                        1
+                                        (merge options {:throw-exceptions true})))]
+          (is (= 400 status))
+          (is (= [err-msg] errors)))
+
+        "retrieval by accept header"
+        {:accept "application/json; profile=stac-catalogue"}
+        "The mime types specified in the accept header [application/json; profile=stac-catalogue] are not supported."
+
+        "retrieval by suffix"
+        {:url-extension "stac"}
+        "The URL extension [stac] is not supported."))))
+
+(deftest search-no-spatial-concept-stac
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
+                                                :beginning-date-time "1970-01-01T12:00:00Z"}))
+        coll-concept-id (:concept-id coll1)
+        gran-spatial (dg/spatial (m/mbr 10 30 20 0))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+                                                   :beginning-date-time "2010-01-01T12:00:00.000Z"
+                                                   :ending-date-time "2010-01-11T12:00:00.000Z"
+                                                   :cloud-cover 10.0}))
+        gran-concept-id (:concept-id gran1)
+        expected-gran-err-msg (format "Granule [%s] without spatial info is not supported in STAC"
+                                      gran-concept-id)]
+
+    (index/wait-until-indexed)
+
+    (testing "granule search in STAC returns error when there is granule without spatial info"
+      (let [response (search/find-concepts-stac
+                      :granule
+                      {:collection-concept-id coll-concept-id})
+            ext-response (search/find-concepts-stac
+                          :granule
+                          {:collection-concept-id coll-concept-id}
+                          {:url-extension "stac"})]
+        (is (= 400
+               (:status response)
+               (:status ext-response)))
+        (is (= [expected-gran-err-msg]
+               (:errors response)
+               (:errors ext-response)))))
+
+    (testing "granule retrieval in STAC returns error when granule has no spatial info"
+      (util/are3 [options]
+        (let [{:keys [status errors]} (search/get-search-failure-data
+                                       (search/retrieve-concept
+                                        gran-concept-id
+                                        nil
+                                        (merge options {:throw-exceptions true})))]
+          (is (= 400 status))
+          (is (= [expected-gran-err-msg] errors)))
+
+        "retrieval by accept header"
+        {:accept "application/json; profile=stac-catalogue"}
+
+        "retrieval by suffix"
+        {:url-extension "stac"}))
+
+    (testing "collection retrieval in STAC returns error when collection has no spatial info"
+      (util/are3 [options]
+        (let [expected-err-msg (format "Collection [%s] without spatial info is not supported in STAC"
+                                       coll-concept-id)
+              {:keys [status errors]} (search/get-search-failure-data
+                                       (search/retrieve-concept
+                                        coll-concept-id
+                                        nil
+                                        (merge options {:throw-exceptions true})))]
+          (is (= 400 status))
+          (is (= [expected-err-msg] errors)))
+
+        "retrieval by accept header"
+        {:accept "application/json; profile=stac-catalogue"}
+
+        "retrieval by suffix"
+        {:url-extension "stac"}))))

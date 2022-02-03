@@ -185,6 +185,11 @@
   (format "http://localhost:%s/jobs/cleanup-expired-collections"
           (transmit-config/ingest-port)))
 
+(defn cleanup-granule-bulk-update-task-url
+  []
+  (format "http://localhost:%s/jobs/trigger-granule-task-cleanup-job"
+          (transmit-config/ingest-port)))
+
 (defn translate-metadata-url
   [concept-type]
   (format "http://localhost:%s/translate/%s"
@@ -293,10 +298,13 @@
 
 (defn ingest-granule-bulk-update-task-status-url
   "Get the task and collection statuses by provider and task"
-  [task-id]
-  (format "http://localhost:%s/granule-bulk-update/status/%s"
-          (transmit-config/ingest-port)
-          task-id))
+  ([]
+   (format "http://localhost:%s/granule-bulk-update/status"
+           (transmit-config/ingest-port)))
+  ([task-id]
+   (format "http://localhost:%s/granule-bulk-update/status/%s"
+           (transmit-config/ingest-port)
+           task-id)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search URLs
@@ -377,8 +385,13 @@
 
 (defn search-keywords-url
   "Returns the URL for retrieving controlled keywords."
-  [keyword-scheme]
-  (format "http://localhost:%s/keywords/%s" (transmit-config/search-port) (name keyword-scheme)))
+  ([keyword-scheme]
+   (search-keywords-url keyword-scheme ""))
+  ([keyword-scheme search-parameters] 
+   (format "http://localhost:%s/keywords/%s%s"
+           (transmit-config/search-port)
+           (name keyword-scheme)
+           search-parameters)))
 
 (defn retrieve-concept-url
   ([type concept-id] (retrieve-concept-url type concept-id nil))
@@ -558,6 +571,11 @@
 (defn partial-refresh-collection-granule-aggregate-cache-url
   []
   (format "http://localhost:%s/jobs/trigger-partial-collection-granule-aggregate-cache-refresh"
+          (transmit-config/ingest-port)))
+
+(defn email-subscription-processing
+  []
+  (format "http://localhost:%s/jobs/trigger-email-subscription-processing"
           (transmit-config/ingest-port)))
 
 (defn indexer-read-caches-url

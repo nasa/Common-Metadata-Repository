@@ -64,7 +64,7 @@
 
 (defn parse-integer
   [^String v]
-  (when-not (str/blank? v) 
+  (when-not (str/blank? v)
     (Integer. v)))
 
 (defn- parse-orbit-parameters
@@ -104,12 +104,14 @@
         json-entry (util/map-keys->kebab-case json-entry)
         {:keys [id title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center time-start time-end
-                links dif-ids online-access-flag browse-flag coordinate-system score
+                links dif-ids online-access-flag browse-flag coordinate-system score platforms
                 shapes points boxes polygons lines granule-count has-granules has-granules-or-cwic
-                has-variables has-formats has-transforms has-spatial-subsetting has-temporal-subsetting
-                orbit-parameters highlighted-summary-snippets organizations associations]} json-entry]
+                has-variables has-formats has-transforms has-spatial-subsetting
+                has-temporal-subsetting orbit-parameters highlighted-summary-snippets
+                organizations service-features associations consortiums]} json-entry]
     (util/remove-nil-keys
       {:id id
+       :consortiums consortiums
        :title title
        :summary summary
        :updated updated
@@ -121,6 +123,7 @@
        :data-center data-center
        :archive-center archive-center
        :organizations organizations
+       :platforms platforms
        :processing-level-id processing-level-id
        :links (seq links)
        :start (some-> time-start dtp/parse-datetime)
@@ -141,6 +144,7 @@
        :orbit-parameters (parse-orbit-parameters orbit-parameters)
        :highlighted-summary-snippets highlighted-summary-snippets
        :tags (when (seq tags) tags)
+       :service-features service-features
        :associations (when (seq associations)
                        (util/map-values set associations))})))
 

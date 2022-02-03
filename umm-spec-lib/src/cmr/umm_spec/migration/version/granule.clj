@@ -2,6 +2,7 @@
   "Contains functions for migrating between versions of the UMM-G schema."
   (:require
    [cmr.common.util :as util]
+   [cmr.umm-spec.metadata-specification :as m-spec]
    [cmr.umm-spec.migration.version.interface :as interface]))
 
 (def ^:private v1-5-identifier-name-max-length
@@ -25,6 +26,15 @@
 (def ^:private v1-5-to-1-4-changed-url-subtype-enums
   "Defines a set of v1.5 RelatedUrlSubTypeEnums that need to be changed when migrate to v1.4"
   (set (keys v1-5-url-subtype-enum->v1-4-url-subtype-enum)))
+
+(def ^:private v1-6-3-data-format-enums
+  "These are the values that were in the DataFormatEnum definition which was
+   changed to a string of length 1-80 and validated against KMS."
+  ["ASCII" "BINARY" "BMP" "BUFR" "CSV" "GEOTIFF" "GIF" "GEOTIFFINT16"
+   "GEOTIFFFLOAT32" "GRIB" "GZIP" "HDF4" "HDF5" "HDF-EOS2" "HDF-EOS5" "HTML"
+   "ICARTT" "JPEG" "JSON" "KML" "NETCDF-3" "NETCDF-4" "NETCDF-CF" "PNG" "PNG24"
+   "TAR" "TIFF" "XLSX" "XML" "ZIP" "DMRPP" "Not provided"]
+)
 
 (defn- v1-4-related-url-subtype->v1-5-related-url-subtype
   "Migrate v1.4 related url Subtype to v1.5 related url Subtype"
@@ -203,3 +213,49 @@
       (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.2"
                                      :Name "UMM-G"
                                      :Version "1.6.2"})))
+
+(defn- drop-1-6-3-related-urls
+  "Drop the urls specific to v1.6.3"
+  [related-urls]
+  (remove #(and (= "EXTENDED METADATA" (:Type %))
+                (some #{(:Subtype %)} ["DMR++" "DMR++ MISSING DATA"]))
+          related-urls))
+
+;; v1.6.3 migrations
+
+(defmethod interface/migrate-umm-version [:granule "1.6.3" "1.6.2"]
+  [context g & _]
+  (-> g
+      (m-spec/update-version :granule "1.6.2")
+      (update :RelatedUrls drop-1-6-3-related-urls)))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.2" "1.6.3"]
+  [context g & _]
+  (-> g
+      (m-spec/update-version :granule "1.6.3")))
+
+;; v1.6.4 migrations
+
+(defn- map-1-6-4-format-keywords
+  "Collections 1.15.5->1.15.4 did not drop URLs with old formats but instead
+  moved the value to 'Not provided'. Doing the same here. This function will
+  take either an ArchiveAndDistributionInformation or a RelatedUrls"
+  [data]
+  (if (some #{(:Format data)} v1-6-3-data-format-enums)
+    data
+    (assoc data :Format "Not provided")))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.4" "1.6.3"]
+  ;; When downgrading metadata, preserve formats which are on the old SCHEMA list
+  ;; and set the others to 'Not provided'"
+  [context granule & _]
+  (-> granule
+      (util/update-in-each-vector [:RelatedUrls] map-1-6-4-format-keywords)
+      (util/update-in-each-vector [:DataGranule :ArchiveAndDistributionInformation]
+                                  map-1-6-4-format-keywords)
+      (m-spec/update-version :granule "1.6.3")))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.3" "1.6.4"]
+  [context granule & _]
+  (-> granule
+      (m-spec/update-version :granule "1.6.4")))

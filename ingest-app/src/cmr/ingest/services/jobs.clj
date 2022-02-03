@@ -10,8 +10,10 @@
    [cmr.common.jobs :as jobs :refer [def-stateful-job]]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.ingest.data.bulk-update :as bulk-update]
+   [cmr.ingest.data.granule-bulk-update :as granule-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.data.provider-acl-hash :as pah]
+   [cmr.ingest.services.granule-bulk-update-service :as gran-bulk-update-svc]
    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
    [cmr.ingest.services.subscriptions-helper :as subscription]
    [cmr.transmit.config :as config]
@@ -161,12 +163,22 @@
   {:default 86400 ;;24 hours
    :type Long})
 
+(defconfig bulk-granule-task-table-cleanup-interval
+  "Number of seconds between runs of cleanup job"
+  {:default 86400 ;;24 hours
+   :type Long})
+
+(defconfig bulk-update-task-status-update-poll-interval
+  "Number of seconds between runs bulk granule task status update jobs."
+  {:default 300 ;; 5 minutes
+   :type Long})
+
 (defn trigger-full-refresh-collection-granule-aggregation-cache
   "Triggers a refresh of the collection granule aggregation cache in the Indexer."
   [context]
   (ingest-events/publish-provider-event
-    context
-    (ingest-events/trigger-collection-granule-aggregation-cache-refresh nil)))
+   context
+   (ingest-events/trigger-collection-granule-aggregation-cache-refresh nil)))
 
 (defn trigger-partial-refresh-collection-granule-aggregation-cache
   "Triggers a partial refresh of the collection granule aggregation cache in the Indexer."
@@ -194,6 +206,13 @@
   [context]
   (bulk-update/cleanup-old-bulk-update-status context))
 
+(defn trigger-bulk-granule-update-task-table-cleanup
+  "Trigger cleanup of completed bulk granule update tasks that are older than the configured age"
+  [context]
+  (ingest-events/publish-gran-bulk-update-event
+   context
+   (ingest-events/granule-bulk-update-task-cleanup-event)))
+
 (defn trigger-autocomplete-suggestions-reindex
   "Triggers an autocomplete reindex for all providers followed by a prune to remove stale suggestions."
   [context]
@@ -212,6 +231,10 @@
   [_ system]
   (bulk-update-status-table-cleanup {:system system}))
 
+(def-stateful-job BulkGranUpdateTaskCleanup
+  [_ system]
+  (granule-bulk-update/cleanup-bulk-granule-tasks {:system system}))
+
 (def-stateful-job EmailSubscriptionProcessing
   [_ system]
   (subscription/email-subscription-processing {:system system}))
@@ -219,6 +242,10 @@
 (def-stateful-job ReindexAutocompleteSuggestions
   [_ system]
   (trigger-autocomplete-suggestions-reindex {:system system}))
+
+(def-stateful-job BulkGranTaskStatusUpdatePoll
+  [_ system]
+  (gran-bulk-update-svc/update-completed-task-status! {:system system}))
 
 (defn jobs
   "A list of jobs for ingest"
@@ -253,4 +280,10 @@
 
    {:job-type ReindexAutocompleteSuggestions
     ;; Run everyday at 13:20. Chosen to be offset from the last job
-    :daily-at-hour-and-minute [13 20]}])
+    :daily-at-hour-and-minute [13 20]}
+
+   {:job-type BulkGranUpdateTaskCleanup
+    :interval (bulk-granule-task-table-cleanup-interval)}
+
+   {:job-type BulkGranTaskStatusUpdatePoll
+    :interval (bulk-update-task-status-update-poll-interval)}])

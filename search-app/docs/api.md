@@ -3,6 +3,10 @@
 See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide) for a general guide to developing a client utilizing the CMR Search API.
 Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) to ask questions, make suggestions and discuss topics like future CMR capabilities.
 
+### ECHO-Token Deprecation Notice
+
+CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens and send them with the Authorization header. This document contains many mentions of ECHO-Tokens, which will soon be out of date. Instructions on how to generate an EDL token are [here](https://wiki.earthdata.nasa.gov/display/EL/How+to+Generate+a+User+Token)
+
 ### Table of Contents
 
   * [General Request Details](#general-request-details)
@@ -10,6 +14,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [CORS Header support](#cors-header-support)
     * [Query Parameters](#query-parameters)
     * [Paging Details](#paging-details)
+    * [Search After](#search-after)
     * [Scrolling Details](#scrolling-details)
     * [Parameter Options](#parameter-options)
     * [Collection Result Feature Parameters](#collection-result-features)
@@ -28,6 +33,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [UMM JSON](#umm-json)
     * [KML](#kml)
     * [Open Data](#open-data)
+    * [STAC](#stac)
     * [XML Reference](#xml-reference)
   * [Temporal Range Searches](#temporal-range-searches)
   * [Facet Autocompletion](#autocomplete-facets)
@@ -43,6 +49,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Data center](#c-data-center)
     * [Temporal](#c-temporal)
     * [Project](#c-project)
+    * [Consortium](#c-consortium)
     * [Updated since](#c-updated-since)
     * [Revision date](#c-revision-date)
     * [Created at](#c-created-at)
@@ -83,7 +90,9 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Author](#c-author)
     * [With/without granules](#c-has-granules)
     * [With/without granules Or Cwic](#c-has-granules-or-cwic)
+    * [With/without granules Or OpenSearch](#c-has-granules-or-opensearch)
     * [OPeNDAP service URL](#c-has-opendap-url)
+    * [Cloud Hosted](#c-cloud-hosted)
   * [Sorting Collection Results](#sorting-collection-results)
   * [Retrieving all Revisions of a Collection](#retrieving-all-revisions-of-a-collection)
   * [Granule Search By Parameters](#granule-search-by-parameters)
@@ -215,7 +224,7 @@ The Maximum URL Length supported by CMR is indirectly controlled by the Request 
 
 #### <a name="cors-header-support"></a> CORS Header support
 
-The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Echo-Token, Authorization, and Client-Id. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id and CMR-Scroll-Id.
+The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Echo-Token, Authorization, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id and CMR-Search-After. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Search-After, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count and CMR-Shapefile-Simplified-Point-Count.
 
 #### <a name="query-parameters"></a> Query Parameters
 
@@ -238,15 +247,56 @@ The CMR contains many more results than can be returned in a single response so 
 
 You can not page past the 1 millionth item. Please contact the CMR Team through the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) if you need to retrieve items in excess of 1 million from the CMR. Additionally granule queries which do not target a set of collections are limited to paging up to the 10000th item.
 
+#### <a name="search-after"></a> Search After
+
+Search After supersedes scrolling. Search After allows the retrieval of all results of a query in a stateless manner and is the recommended way for deep paging by Elasticsearch. It is supported through the `CMR-Search-After` header. Search After is primarily intended to support harvesting of metadata.
+
+Search After is only supported for parameter queries and JSON queries. All query parameters are available with the exception of the `page_num` and `offset` parameters.
+
+Search After is stateless, it is always resolved against the latest version of the data. Any search against CMR that has results not fully returned in the current request will return a `search-after` value in the `CMR-Search-After` header of the search response. User can then pass this returned value in the `CMR-Search-After` header of the following request to retrieve the next page of result based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` response header. Supplying the new `search-after` value in the following request's `CMR-Search-After` header will retrieve the next page. The `CMR-Hits` header is useful for determining the number of requests that will be needed to retrieve all the available results.
+
+When all the results have been returned, the subsequent search will return an empty result set and no `CMR-Search-After` header in the response.
+
+Different from scrolling requests, each search-after request needs to supply all the search parameters, and the `CMR-Search-After` header needs to be updated with the new value returned from the previous search to page through the whole result set. Although user can change the search parameters and still get results back as long as the sort order of the search is unchanged, it breaks the rationale of paging and offers no real use case. Thus user should always supply the same search parameters while using Search After requests to page through a large result set.
+
+__Example__
+
+```
+curl -i "%CMR-ENDPOINT%/granules?concept_id=C1-PROV1&page_size=200"
+```
+returns 200 granule references and the following info in the response header:
+```
+CMR-Hits: 408
+CMR-Search-After: ["aaa", 123, 456]
+```
+This tells us that there are total 408 granules matching our search and we can use the `CMR-Search-After: ["aaa", 123, 456]` header to get the next page of the result set. To do that, we run:
+```
+curl -i -H 'CMR-Search-After: ["aaa", 123, 456]' "%CMR-ENDPOINT%/granules?concept_id=C1-PROV1&page_size=200"
+```
+this returns the next 200 granules in the result set and the following info in the response header:
+```
+CMR-Hits: 408
+CMR-Search-After: ["xyz", 789, 999]
+```
+We can then use the new `CMR-Search-After: ["xyz", 789, 999]` header to get the next page of the result set.
+```
+curl -i -H 'CMR-Search-After: ["xyz", 789, 999]' "%CMR-ENDPOINT%/granules?concept_id=C1-PROV1&page_size=200"
+```
+Since there are only 8 granules left and nothing to search after, we will get the 8 granules back and there won't be a `CMR-Search-After` header in the response.
+
 #### <a name="scrolling-details"></a> Scrolling Details
+
+__NOTE:__ Scrolling is being deprecated in favor of [Search After](#search-after). Please switch your scroll based queries to [Search After](#search-after) which is more efficient and easier to use.
 
 Scrolling allows the retrieval of all results of a query in an efficient manner. This parameter is primarily intended to support harvesting of metadata. Scrolling is only supported for parameter queries, but all query parameters are available with the exception of the `page_num` and `offset` parameters. The response format for scrolling queries is identical to the response for normal parameter queries with the exception of the addition of the `CMR-Scroll-Id` header. The `CMR-Hits` header is useful for determining the number of requests that will be needed to retrieve all the available results.
 
-Scrolling is *session based*; the first search conducted with the `scroll` parameter set to `true` will return a session id in the form of a `CMR-Scroll-Id` header. This header should be included in subsequent searches until the desired number of results have been retrieved. Sessions time out after 10 minutes of inactivity; each new query before the timeout is reached with a given `CMR-Scroll-Id` header will reset the timeout to 10 minutes. Queries occurring after a session has timed out will result in an HTTP 404 status code and error message.
+Scrolling is *session based*; the first search conducted with the `scroll` parameter set to `true` or `defer` will return a session id in the form of a `CMR-Scroll-Id` header. This header should be included in subsequent searches until the desired number of results have been retrieved. Sessions time out after 10 minutes of inactivity; each new query before the timeout is reached with a given `CMR-Scroll-Id` header will reset the timeout to 10 minutes. Queries occurring after a session has timed out will result in an HTTP 404 status code and error message.
+
+Setting the `scroll` parameter to `defer` will not return any search results with the initial response. The second request passing in the `CMR-Scroll-Id` header will return the first page of results with subsequent requests returning subsequent pages. This is useful for staging a scrolling session and getting the total number of hits before beginning the process of retrieving results. `defer` works with `HEAD`, `GET`, and `POST` requests.
 
 When all the results have been returned subsequent calls using the same `CMR-Scroll-Id` header will return an empty list.
 
-Important note: Clients using scrolling (especially via programatic api or scripts) should explicitly invoke [`clear scroll session`] (#clear-scroll) to release the scroll session when they are finished. This will end the scroll session and free up system resources.
+Important note: Clients using scrolling (especially via programmatic api or scripts) should explicitly invoke [`clear scroll session`] (#clear-scroll) to release the scroll session when they are finished. This will end the scroll session and free up system resources.
 
 #### <a name="parameter-options"></a> Parameter Options
 
@@ -268,7 +318,7 @@ These are query parameters that control what extra data is included with collect
   * `include_has_granules` - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats except opendata. To limit search results to collections with or without granules, see the [`has_granules`](#c-has-granules) parameter.
   * `include_granule_counts` - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats except opendata and kml.
   * `include_facets` There are 3 values allowed: "true", "false", or "v2". If this parameter is set to "true" or "v2" facets will be included in the collection results (not applicable to opendata results). Facets are described in detail below.
-  * `facets_size[field-name]` is used to customize the max number of values displayed for the facet. Values allowed: positive integer. Supported field-name are: science-keywords, platform, instrument, data-center, project, processing-level-id and variables.  
+  * `facets_size[field-name]` is used to customize the max number of values displayed for the facet. Values allowed: positive integer. Supported field-name are: science-keywords, platforms, instrument, data-center, project, processing-level-id and variables.
   * `hierarchical_facets` - If this parameter is set to "true" and the parameter `include_facets` is set to "true" the facets that are returned will be hierarchical. Hierarchical facets are described in the facets section below.
   * `include_highlights` - If this parameter is set to "true", the collection results will contain an additional field, 'highlighted_summary_snippets'. The field is an array of strings which contain a snippet of the summary which highlight any terms which match the terms provided in the keyword portion of a search. By default up to 5 snippets may be returned with each individual snippet being up to 100 characters, and keywords in the snippets are delineated with begin tag `<em>` and end tag `</em>`. This is configurable using `options[highlights][param]=value`. Supported option params are `begin_tag`, `end_tag`, `snippet_length` and `num_snippets`. The values for `snippet_length` and `num_snippets` must be integers greater than 0.
   * `include_tags` - If this parameter is set (e.g. `include_tags=gov.nasa.earthdata.search.*,gov.nasa.echo.*`), the collection results will contain an additional field 'tags' within each collection. The value of the tags field is a list of tag_keys that are associated with the collection. Only the tags with tag_key matching the values of `include_tags` parameter (with wildcard support) are included in the results. This parameter is supported in JSON, ATOM, ECHO10, DIF, DIF10, ISO19115 and native result formats.
@@ -319,6 +369,7 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `atom`      "application/atom+xml"
   * `opendata`  "application/opendata+json" (only supported for collections)
   * `kml`       "application/vnd.google-earth.kml+xml"
+  * `stac`      "application/json; profile=stac-catalogue"
   * `native`    "application/metadata+xml" (Returns search results in their individual native formats)
   * `umm-json`   "application/vnd.nasa.cmr.legacy_umm_results+json" (only supported for collections)
     * The UMM JSON format was originally used for an alpha version of UMM JSON search results. Currently it still returns data in that style to avoid breaking clients dependent on it. This will be changed in a future version to return the latest version of the UMM.
@@ -363,6 +414,7 @@ The CMR Atom format provides search results in an XML file representing a feed o
 |            Field            |                                                Description                                                 |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | id                          | the CMR identifier for the result                                                                          |
+| consortiums (collections only)             | Consortiums the collection is associated to.                                                |
 | title                       | the UMM Entry Title                                                                                        |
 | summary  (collections only) | the summary of intentions with which this collection was developed. - corresponds to the UMM summary field |
 | updated                     | date/time of the last update to the associated metadata                                                     |
@@ -457,10 +509,19 @@ __Example__
 
 #### <a name="csv"></a> CSV
 
-The comma separated value (CSV) format is only supported for granules.
+The comma separated value (CSV) format is supported for collections and granules.
+Version and Processing Level are strings. When importing into the spreadsheet, please specify text as their column types. This will prevent version "004" to be displayed as "4" in the spreadsheet.
 
-__Example__
+__Examples__
 
+Collection response
+```csv
+Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Start Time,End Time
+PROV1,short-name,V1,dataset-id,L1,platform #1,1970-01-01T12:00:00.000Z,
+PROV2,very-short,v1,data-id,L3,platform2,2019-08-03T20:11:59.143Z,
+```
+
+Granule response
 ```csv
 Granule UR,Producer Granule ID,Start Time,End Time,Online Access URLs,Browse URLs,Cloud Cover,Day/Night,Size
 SC:SPL1AA.001:12345,SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5,,,,,,,
@@ -824,42 +885,80 @@ __Example__
 
 #### <a name="json"></a> JSON
 
-The JSON response contains all the fields in the ATOM response, plus the associations field, which contains the concept ids of variables and services that are associated with the collection.
+The JSON response contains all the fields in the ATOM response, plus the the following fields:
+
+* associations - a map of the concept ids of variables and services that are associated with the collection.
+* platforms - a list of platform short names of the collection.
+* service_features - a map of service features for OPeNDAP, ESI and Harmony services.
 
 __Example__
 
 ```json
 {
-  "feed" : {
-    "updated" : "2015-06-05T17:52:10.316Z",
-    "id" : "%CMR-ENDPOINT%/collections.json?pretty=true",
-    "title" : "ECHO dataset metadata",
-    "entry" : [ {
-      "version_id" : "v1",
-      "updated" : "2010-10-06T11:45:39.530Z",
-      "dataset_id" : "dataset-id",
-      "data_center" : "PROV1",
-      "short_name" : "short",
-      "title" : "dataset-id",
-      "summary" : "The AMSR-E/Aqua Level-3 5-day snow water equivalent (SWE) product includes global 5-day maximum SWE on Northern and Southern Hemisphere 25 km EASE-Grids, generated by the GSFC algorithm using Level-2A TBs.",
-      "orbit_parameters" : { },
-      "id" : "C1200000000-PROV1",
-      "original_format" : "ECHO10",
-      "browse_flag" : false,
-      "has_variables" : true,
-      "has_formats" : false,
-      "has_transforms" : false,
-      "has_spatial_subsetting" : false,
-      "has_temporal_subsetting" : false,
-      "online_access_flag" : false,
-      "tags" : {"tag1": {"data": {"score": 85, "status": "reviewed"}},
-                "tag2": {"data" : "cloud cover > 80"}},
-      "associations" : {
-        "variables" : [ "V1200000007-PROV1" ],
-        "services" : [ "S1200000008-PROV1", "S1200000009-PROV1", "S1200000010-PROV1" ]
-        "tools" : [ "TL1200000011-PROV1", "TL1200000012-PROV1", "TL1200000013-PROV1" ]
+  "feed": {
+    "updated": "2015-06-05T17:52:10.316Z",
+    "id": "%CMR-ENDPOINT%/collections.json?pretty=true",
+    "title": "ECHO dataset metadata",
+    "entry": [{
+      "version_id": "v1",
+      "updated": "2010-10-06T11:45:39.530Z",
+      "dataset_id": "dataset-id",
+      "data_center": "PROV1",
+      "short_name": "short",
+      "title": "dataset-id",
+      "summary": "The AMSR-E/Aqua Level-3 5-day snow water equivalent (SWE) product includes global 5-day maximum SWE on Northern and Southern Hemisphere 25 km EASE-Grids, generated by the GSFC algorithm using Level-2A TBs.",
+      "orbit_parameters": {},
+      "id": "C1200000000-PROV1",
+      "original_format": "ECHO10",
+      "browse_flag": false,
+      "has_variables": true,
+      "has_formats": false,
+      "has_transforms": false,
+      "has_spatial_subsetting": false,
+      "has_temporal_subsetting": false,
+      "online_access_flag": false,
+      "platforms": ["Platform1"],
+      "consortiums" : [ "ESA", "FEDEO" ],
+      "service_features": {
+        "opendap": {
+          "has_formats": false,
+          "has_variables": true,
+          "has_transforms": true,
+          "has_spatial_subsetting": true,
+          "has_temporal_subsetting": true
+        },
+        "esi": {
+          "has_formats": true,
+          "has_variables": false,
+          "has_transforms": true,
+          "has_spatial_subsetting": true,
+          "has_temporal_subsetting": true
+        },
+        "harmony": {
+          "has_formats": true,
+          "has_variables": true,
+          "has_transforms": false,
+          "has_spatial_subsetting": false,
+          "has_temporal_subsetting": false
+        }
+      },
+      "tags": {
+        "tag1": {
+          "data": {
+            "score": 85,
+            "status": "reviewed"
+          }
+        },
+        "tag2": {
+          "data": "cloud cover > 80"
+        }
+      },
+      "associations": {
+        "variables": ["V1200000007-PROV1"],
+        "services": ["S1200000008-PROV1", "S1200000009-PROV1", "S1200000010-PROV1"],
+        "tools": ["TL1200000011-PROV1", "TL1200000012-PROV1", "TL1200000013-PROV1"]
       }
-    } ]
+    }]
   }
 }
 ```
@@ -1091,6 +1190,109 @@ __Example__
 }
 ```
 
+#### <a name="stac"></a> STAC
+
+The STAC (SpatioTemporal Asset Catalog) result format is a specification for describing geospatial data with JSON and GeoJSON. The related STAC-API specification defines an API for searching and browsing STAC catalogs. See the [STAC Specification](https://stacspec.org/) for details.
+
+CMR supports STAC result format for collection/granule retrieval and granule searches. Because STAC search is based on paging by page number, parameters `offset`, `scroll`, and `CMR-Scroll-Id` and `CMR-Search-After` headers are not supported with STAC format. The maximum number of results returned in STAC result format is 1 million.
+
+__Granule Retrieval in STAC Format Response Example__
+
+```json
+{
+  "type": "FeatureCollection",
+  "stac_version": "1.0.0",
+  "numberReturned": 1,
+  "numberMatched": 3,
+  "features": [
+    {
+      "type": "Feature",
+      "stac_version": "1.0.0",
+      "id": "G1200000011-PROV1",
+      "collection": "C1200000009-PROV1",
+      "stac_extensions": [
+        "https://stac-extensions.github.io/eo/v1.0.0/schema.json"
+      ],
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [ 10, 0 ],
+            [ 20, 0 ],
+            [ 20, 30 ],
+            [ 10, 30 ],
+            [ 10, 0 ]
+          ]
+        ]
+      },
+      "properties": {
+        "eo:cloud_cover": 20,
+        "start_datetime": "2011-02-01T12:00:00.000Z",
+        "end_datetime": "2011-02-11T12:00:00.000Z",
+        "datetime": "2011-02-01T12:00:00.000Z"
+      },
+      "bbox": [ 10, 0, 20, 30 ],
+      "links": [
+        {
+          "rel": "self",
+          "href": "%CMR-ENDPOINT%/concepts/G1200000011-PROV1.stac"
+        },
+        {
+          "rel": "parent",
+          "href": "%CMR-ENDPOINT%/concepts/C1200000009-PROV1.stac"
+        },
+        {
+          "rel": "collection",
+          "href": "%CMR-ENDPOINT%/concepts/C1200000009-PROV1.stac"
+        },
+        {
+          "rel": "root",
+          "href": "%CMR-ENDPOINT%/"
+        },
+        {
+          "rel": "via",
+          "href": "%CMR-ENDPOINT%/concepts/G1200000011-PROV1.json"
+        },
+        {
+          "rel": "via",
+          "href": "%CMR-ENDPOINT%/concepts/G1200000011-PROV1.umm_json"
+        }
+      ],
+      "assets": {
+        "metadata": {
+          "type": "application/xml",
+          "href": "%CMR-ENDPOINT%/concepts/G1200000011-PROV1.xml"
+        }
+      }
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "%CMR-ENDPOINT%/granules.stac?collection-concept-id=C1200000009-PROV1&page_size=1&page_num=2"
+    },
+    {
+      "rel": "root",
+      "href": "%CMR-ENDPOINT%/"
+    },
+    {
+      "rel": "prev",
+      "method": "GET",
+      "href": "%CMR-ENDPOINT%/granules.stac?collection-concept-id=C1200000009-PROV1&page_size=1&page_num=1"
+    },
+    {
+      "rel": "next",
+      "method": "GET",
+      "href": "%CMR-ENDPOINT%/granules.stac?collection-concept-id=C1200000009-PROV1&page_size=1&page_num=3"
+    }
+  ],
+  "context": {
+    "limit": 1000000,
+    "returned": 1,
+    "matched": 3
+  }
+}
+```
 #### <a name="xml-reference"></a> XML
 
 The XML response format is used for returning references to search results. It consists of the following fields:
@@ -1247,6 +1449,7 @@ __Example Query__
      curl "%CMR-ENDPOINT%/autocomplete?q=ice&type[]=platform&type[]=project"
 
 __Example Result with Type Filter__
+
 ```
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
@@ -1401,6 +1604,22 @@ Find collections matching any of the 'project' param values
 Find collections that match all of the 'project' param values
 
      curl "%CMR-ENDPOINT%/collections?project\[\]=ESI&project\[\]=EVI&project\[\]=EPI&options\[project\]\[and\]=true"
+
+#### <a name="c-consortium"></a> Find collections by consortium
+
+This supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'consortium' param value
+
+     curl "%CMR-ENDPOINT%/collections?consortium\[\]=CWIC"
+
+Find collections matching any of the 'consortium' param values
+
+     curl "%CMR-ENDPOINT%/collections?consortium\[\]=CWIC&consortium\[\]=FEDEO&consortium\[\]=CEOS"
+
+Find collections that match all of the 'consortium' param values
+
+     curl "%CMR-ENDPOINT%/collections?consortium\[\]=CWIC&consortium\[\]=FEDEO&consortium\[\]=CEOS&options\[consortium\]\[and\]=true"
 
 #### <a name="c-updated-since"></a> Find collections by updated_since
 
@@ -1562,13 +1781,35 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
 #### <a name="c-keyword"></a> Find collections by keyword (free text) search
 
-Keyword searches are case insensitive and support wild cards ? and *.
-There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword
+Keyword searches are case insensitive and support wild cards ? and *, in which '\*' matches zero or more characters and '?' matches any single character. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword
 string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
+
+The following searches on "alpha", "beta" and "g?mma" individually and returns the collections that contain all these individual words
+in the keyword fields that are indexed. Note: these words don't have to exist in the same keyword field, but they have to exsit as a
+space (or one of special character delimiter CMR uses) delimited word.
 
     curl "%CMR-ENDPOINT%/collections?keyword=alpha%20beta%20g?mma"
 
-The following fields are indexed for keyword search:
+We also support keyword phrase search. The following searches on "alpha beta g?mma" as a phrase and returns the collections with
+one or more indexed keyword field values that contain the phrase.
+
+    curl "%CMR-ENDPOINT%/collections?keyword=\"alpha%20beta%20g?mma\""
+
+Note: Currently we only support either keyword, or single keyword phrase search. We don't support mix of keyword and keyword phrase search and we don't support multiple keyword phrase search. These searches like the following will be rejected with error: <error>keyword phrase mixed with keyword, or another keyword-phrase are not supported. keyword phrase has to be enclosed by two escaped double quotes.</error>
+
+   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one\"%20\"phrase%20two\"" (multiple phrase case)
+   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one\"%20\word2" (mix of phrase and word case)
+   curl "%CMR-ENDPOINT%/collections?keyword=\"phrase%20one" (missing one \" case)
+
+Also \" is reserved for phrase boundary. For literal double quotes, use \\\". For example, to search for 'alpha "beta" g?mma' phrase, do the following:
+
+    curl "%CMR-ENDPOINT%/collections?keyword=\"alpha%20\\\"beta\\\"%20g?mma\""
+
+To search on 'alpha', '"beta"', 'g?mma' individually, do the following:
+
+    curl "%CMR-ENDPOINT%/collections?keyword=alpha%20\\\"beta\\\"%20g?mma"
+
+The following fields are indexed for keyword and keyword phrase search:
 
 * Concept ID
 * DOI value
@@ -1651,11 +1892,11 @@ Find collections matching the given 'short\_name' and any of the 'version' param
 Collections can be found by searching for associated tags. The following tag parameters are supported.
 
 * tag_key
-  * options: pattern
+  supports options: `pattern`
 * tag_originator_id
-  * options: pattern
+  supports options: `pattern`
 * tag_data
-  * options: pattern
+  supports options: `pattern`
 
 `exclude` parameter can be used with tag_key to exclude any collections that are associated with the specified tag key from the search result.
 
@@ -1676,11 +1917,11 @@ Find collections with tag_data in the form of tag_data[tag_key]=tag_value. It fi
 Collections can be found by searching for associated variables. The following variable parameters are supported.
 
 * variable_name
-  * supports `pattern`, `ignore_case` and option `and`
+  supports options: `pattern`, `ignore_case` and `and`
 * variable_native_id
-  * supports `pattern`, `ignore_case` and option `and`
+  supports options: `pattern`, `ignore_case` and `and`
 * variable_concept_id
-  * supports option `and`
+  supports options: `and`
 
 Find collections matching variable name.
 
@@ -1711,19 +1952,19 @@ Find collections matching multiple 'variables-h' param values, default is :and
 Collections can be found by searching for associated services. The following service parameters are supported.
 
 * service_name
-  * supports `pattern`, `ignore_case` and option `and`
+  supports options: `pattern`, `ignore_case` and `and`
 * service_type
-  * supports `pattern` and `ignore_case`
+  supports options: `pattern` and `ignore_case`
 * service_concept_id
-  * supports option `and`
+  supports options: `and`
 
 Find collections matching service name.
 
     curl "%CMR-ENDPOINT%/collections?service_name=AtlasNorth"
 
-Find collections matching service type. In this example find all collections matching both service types of Harmony or OPeNDAP.
+Find collections matching service type. In this example, find all collections matching service type of Harmony or OPeNDAP.
 
-    curl "%CMR-ENDPOINT%/collections?service_type=Harmony&service_type=OPeNDAP"
+    curl "%CMR-ENDPOINT%/collections?service_type\[\]=Harmony&service_type\[\]=OPeNDAP"
 
 Find collections matching service concept id.
 
@@ -1734,19 +1975,19 @@ Find collections matching service concept id.
 Collections can be found by searching for associated tools. The following tool parameters are supported.
 
 * tool_name
-  * supports `pattern`, `ignore_case` and option `and`
+  supports options: `pattern`, `ignore_case` and `and`
 * tool_type
-  * supports `pattern` and `ignore_case`
+  supports options: `pattern` and `ignore_case`
 * tool_concept_id
-  * supports option `and`
+  supports options: `and`
 
 Find collections matching tool name.
 
     curl "%CMR-ENDPOINT%/collections?tool_name=NASA_GISS_Panoply"
 
-Find collections matching tool type. In this example find all collections matching both tool types of Downloadable Tool or Web User Interface.
+Find collections matching tool type. In this example, find all collections matching tool type of Downloadable Tool or Web User Interface.
 
-    curl "%CMR-ENDPOINT%/collections?tool_type=Downloadable%20Tool&tool_type=Web%20User%20Interface"
+    curl "%CMR-ENDPOINT%/collections?tool_type\[\]=Downloadable%20Tool&tool_type\[\]=Web%20User%20Interface"
 
 Find collections matching tool concept id.
 
@@ -1757,11 +1998,20 @@ Find collections matching tool concept id.
 ##### <a name="c-polygon"></a> Polygon
 
 Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.
-This parameter supports the and/or option as shown below.
+
+The polygon parameter could be either "polygon", for single polygon search:
+
+   curl "%CMR-ENDPOINT%/collections?polygon=10,10,30,10,30,20,10,20,10,10"
+
+or "polygon[]", for single or multiple polygon search. It supports the and/or option as shown below. Default option is "and", i.e. it will match both the first polygon and the second polygon.
 
     curl "%CMR-ENDPOINT%/collections?polygon[]=10,10,30,10,30,20,10,20,10,10"
 
+    curl "%CMR-ENDPOINT%/collections?polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11"
+
     curl "%CMR-ENDPOINT%/collections?polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11&options[polygon][or]=true"
+
+Note: if you use "polygon" for multiple polygon search, it won't work because only the last polyon parameter will take effect.
 
 ##### <a name="c-bounding-box"></a> Bounding Box
 
@@ -1816,17 +2066,17 @@ Shapefile upload is only supported using POST with `multipart/form-data` and the
 
 Examples:
 
-  **ESRI Shapefile**
+**ESRI Shapefile**
 
-  curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
+    curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
-  **GeoJSON**
+**GeoJSON**
 
-  curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.geojson;type=application/geo+json" -F "provider=PROV1"
+    curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.geojson;type=application/geo+json" -F "provider=PROV1"
 
-  **KML**
+**KML**
 
-  curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.kml;type=application/vnd.google-earth.kml+xml" -F "provider=PROV1"
+    curl -XPOST "%CMR-ENDPOINT%/collections" -F "shapefile=@box.kml;type=application/vnd.google-earth.kml+xml" -F "provider=PROV1"
 
 Internally a WGS 84 Coordinate Reference System (CRS) is used. The system will attempt to transform shapefile geometry that uses a different CRS, but this is not guaranteed to work and the request will be rejected if a suitable transformation is not found.
 
@@ -1837,7 +2087,7 @@ Shapefiles are limited to 5000 points by default. A user using a shapefile with 
 
 Example:
 
-  curl -XPOST "%CMR-ENDPOINT%/collections" -F "simplify-shapefile=true"  -F "shapefile=@africa.zip;type=application/shapefile+zip" -F "provider=PROV1"
+    curl -XPOST "%CMR-ENDPOINT%/collections" -F "simplify-shapefile=true"  -F "shapefile=@africa.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
 Note that the simplification process attempts to preserve topology, i.e., the relationship between polygon outer boundaries and holes. The process uses the [Douglas-Peucker algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm) and as such may result in geometries with less coverage than the original shapefile and potentially a loss of matching results.
 
@@ -1891,15 +2141,29 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
     curl "%CMR-ENDPOINT%/collections?has_granules=true"
 
-#### <a name="c-has-granules-or-cwic"></a> Find collections with or without granules, or the collection is tagged with the configured CWIC tag.
+#### <a name="c-has-granules-or-cwic"></a> Find collections with or without granules, or the collection with CWIC consortium.
 
-The `has_granules_or_cwic` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with the configured CWIC tag.  When false, results will be restricted to collections without granules.
+The `has_granules_or_cwic` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with CWIC consortium.  When false, will return any collections without granules.
 
     curl "%CMR-ENDPOINT%/collections?has_granules_or_cwic=true"
+
+**Note:** this parameter will soon be retired in favor of a replacement parameter found below, `have_granules_or_opensearch`.
+
+#### <a name="c-has-granules-or-opensearch"></a> Find collections with or without granules, or the collection is tagged with the configured OpenSearch tag.
+
+The `has_granules_or_opensearch` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with any of the configured OpenSearch consortiums, which are CWIC,FEDEO,GEOSS,CEOS and EOSDIS.  When false, will return any collections without granules.
+
+    curl "%CMR-ENDPOINT%/collections?has_granules_or_opensearch=true"
 
 #### <a name="c-has-opendap-url"></a> Find collections with or without an OPeNDAP service RelatedURL.
 
     curl "%CMR-ENDPOINT%/collections?has_opendap_url=true"
+
+#### <a name="c-cloud-hosted"></a> Find collections with data that is hosted in the cloud.
+
+The `cloud_hosted` parameter can be set to "true" or "false". When true, the results will be restricted to collections that have a `DirectDistributionInformation` element or have been tagged with `gov.nasa.earthdatacloud.s3`.
+
+    curl "%CMR-ENDPOINT%/collections?cloud_hosted=true"
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
@@ -1932,7 +2196,7 @@ One or more sort keys can be specified using the `sort_key[]` parameter. The ord
   * `revision_date`
   * `score` - document relevance score, defaults to descending. See [Document Scoring](#document-scoring).
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
-  * `has_granules_or_cwic` - Sorts collections by whether they have granules or they are tagged as a CWIC collection. Collections with granules or are CWIC tagged are sorted before collections without granules or a CWIC tag.
+  * `has_granules_or_cwic` - Sorts collections by whether they have granules or CWIC consortium. Collections with granules or CWIC consortium are sorted before collections without granules or a CWIC consortium.
   * `usage_score` - Sorts collection by usage. The usage score comes from the EMS metrics, which are ingested into the CMR.
   * `ongoing` - Sorts collection by fuzzy collection end-date in relation to ongoing-days configured. Any end-date after today, minus the configured ongoing-days (30 by default), is considered ongoing.  Any end-date before that is not ongoing.  
 
@@ -2053,8 +2317,22 @@ For granule additional attributes search, the default is searching for the attri
 The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
 
 ##### <a name="g-polygon"></a> Polygon
+Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon=10,10,30,10,30,20,10,20,10,10"
+The polygon parameter could be either "polygon", for single polygon search:
+
+   curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon=10,10,30,10,30,20,10,20,10,10"
+
+or "polygon[]", for single or multiple polygon search. It supports the and/or option as shown below. Default option is "and", i.e. it wi
+ll match both the first polygon and the second polygon.
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[]=10,10,30,10,30,20,10,20,10,10"
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11"
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11&options[polygon][or]=true"
+
+Note: if you use "polygon" for multiple polygon search, it won't work because only the last polyon parameter will take effect.
 
 ##### <a name="g-bounding-box"></a> Bounding Box
 
@@ -2076,7 +2354,7 @@ The parameters used for searching granules by spatial are the same as the spatia
 
 As with collections, a shapefile can be uploaded to find granules that overlap the shapefile's geometry. See [Find collections by shapefile](#c-shapefile) for more details.
 
-  curl -XPOST "%CMR-ENDPOINT%/granules" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
+    curl -XPOST "%CMR-ENDPOINT%/granules" -F "shapefile=@box.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
 **NOTE**: This is an experimental feature and may not be enabled in all environments.
 
@@ -2084,7 +2362,7 @@ As with collections, a shapefile can be uploaded to find granules that overlap t
 
 As with collections, an uplodaed shapefile can be simplified by setting the `simplfiy-shapefile` parameter to `true`. See [Simplifying shapefiles during collection search](#c-shapefile-simplification) for more details.
 
-  curl -XPOST "%CMR-ENDPOINT%/granules" -F "simplify-shapefile=true" -F "shapefile=@africa.zip;type=application/shapefile+zip" -F "provider=PROV1"
+    curl -XPOST "%CMR-ENDPOINT%/granules" -F "simplify-shapefile=true" -F "shapefile=@africa.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
 #### <a name="g-orbit-number"></a> Find granules by orbit number
 
@@ -2139,7 +2417,7 @@ Find granules which have revision date within the ranges of datetimes. The datet
 
  Find granules which were created within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
-   curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="g-production-date"></a> Find granules by production_date
 
@@ -2444,6 +2722,11 @@ The following extensions and MIME types are supported by the `/concepts/` resour
   * `dif10`     "application/dif10+xml"
   * `atom`      "application/atom+xml"
   * `umm_json`  "application/vnd.nasa.cmr.umm+json"
+  * `stac`      "application/json; profile=stac-catalogue"
+
+`atom` and `json` formats are only supported for retrieval of the latest collection/granule revisions (i.e. without specifying a particular revision).
+
+`stac` format is only supported for retrieval of the latest granule revisions (i.e. without specifying a particular revision).
 
 The following extensions and MIME types are supported by the `/concepts/` resource for the variable, service, tool  and subscription concept types:
 
@@ -2471,7 +2754,7 @@ The response format is in JSON. Intervals are returned as tuples containing thre
 
 #### Example Request:
 
-    curl -i "%CMR-ENDPOINT%/granules/timeline?concept_id=C1-PROV1&start_date=2000-01-01T00:00:00Z&end_date=2002-02-01T00:00:00.000Z&interval=month""
+    curl -i "%CMR-ENDPOINT%/granules/timeline?concept_id=C1-PROV1&start_date=2000-01-01T00:00:00Z&end_date=2002-02-01T00:00:00.000Z&interval=month"
 
 #### Example Response
 
@@ -2481,7 +2764,7 @@ The response format is in JSON. Intervals are returned as tuples containing thre
 
 ### <a name="retrieve-provider-holdings"></a> Retrieve Provider Holdings
 
-Provider holdings can be retrieved as XML or JSON.
+Provider holdings can be retrieved as XML or JSON. It will show all CMR providers, collections and granule counts regardless of the user's ACL access.
 
 All provider holdings
 
@@ -2553,7 +2836,23 @@ Several fields including science keywords, data centers, platforms, instruments,
 
 #### <a name="facets-v2-response-format"></a> Version 2 Facets Response Format
 
-Version 2 facets are enabled by setting the `include_facets=v2` parameter in either collection or granule search requests in the JSON format. In order to request faceting on granule searches, the search must be limited in scope to a single collection (e.g. by specifying a single concept ID in the collection_concept_id parameter). The max number of values in each v2 facet can be set by using facets_size parameter (i.e. facets_size[platform]=10, facets_size[instrument]=20. Default size is 50.). facets_size is only supported for collection v2 facet search. The same fields apply in the v2 facets as for the flat facets with the addition of horizontal range facets. When calling the CMR with a query the V2 facets are returned. These facets include the apply field described in more detail a few paragraphs below that includes the search parameter and values that need to be sent back to the CMR.
+Version 2 facets are enabled by setting the `include_facets=v2` parameter in either collection or granule search requests in the JSON format. In order to request faceting on granule searches, the search must be limited in scope to a single collection (e.g. by specifying a single concept ID in the collection_concept_id parameter). The max number of values in each v2 facet can be set by using facets_size parameter (i.e. facets_size[platforms]=10, facets_size[instrument]=20. Default size is 50.). facets_size is only supported for collection v2 facet search. The same fields apply in the v2 facets as for the flat facets with the addition of horizontal range facets. When calling the CMR with a query the V2 facets are returned. These facets include the apply field described in more detail a few paragraphs below that includes the search parameter and values that need to be sent back to the CMR.
+
+##### Specifying facet fields
+
+Hierarchical Facet requests include any or all parts of the hierarchical structure using the `&parameter[set][subfield]=value` notation where:
+
+* **set**: Field group number denoting related hierachical subfields where all subfields for one facet use the same number. Values start with 0.
+* **subfield**: Field name in the hierarchical facet as defined by KMS. ie: Platforms uses Basis, Category, Sub_Category, Short_Name
+* **value**: facet value. ie Platform Basis has a `Air-based Platforms` value.
+
+Example: `science_keywords_h[0][topic]=Oceans`
+
+Example curl calls:
+
+    %CMR-ENDPOINT%/search/collections.json?include_facets=v2&hierarchical_facets=true&science_keywords_h%5B0%5D%5Btopic%5D=Oceans
+
+##### Responses
 
 With version 2 facets the CMR makes no guarantee of which facets will be present, whether the facets returned are hierarchical or flat in nature, how many values will be returned for each field, or that the same facets will be returned from release to release. The rules for processing v2 facets are as follows.
 
@@ -2956,9 +3255,7 @@ Content-Type: application/json; charset=UTF-8
 
 The humanizers report provides a list of fields that have been humanized in CSV format. The report format is: provider, concept id, product short name, product version, original field value, humanized field value.
 
-```
-curl "%CMR-ENDPOINT%/humanizers/report"
-```
+    curl "%CMR-ENDPOINT%/humanizers/report"
 
 Note that this report is currently generated every 24 hours with the expectation that this more than satisfies weekly usage needs.
 
@@ -2995,7 +3292,7 @@ The keyword endpoint is used to retrieve the full list of keywords for each of t
 
 The keywords are returned in a hierarchical JSON format. The response format is such that the caller does not need to know the hierarchy, but it can be inferred from the results. Keywords are not guaranteed to have values for every subfield in the hierarchy, so the response will indicate the next subfield below the current field in the hierarchy which has a value. It is possible for the keywords to have multiple potential subfields below it for different keywords with the same value for the current field in the hierarchy. When this occurs the subfields property will include each of the subfields.
 
-Supported keywords include `platforms`, `instruments`, `projects`, `temporal_keywords`, `location_keywords`, `science_keywords`, `archive_centers`, `data_centers`, `granule-data-format`, and `measurement-name`. The endpoint also supports `providers` which is an alias to `data_centers` and `spatial_keywords` which is an alias to `location_keywords`.
+Supported keywords include `platforms`, `instruments`, `projects`, `temporal_keywords`, `location_keywords`, `science_keywords`, `archive_centers`, `data_centers`, `granule-data-format`, "mime-type` and `measurement-name`. The endpoint also supports `providers` which is an alias to `data_centers` and `spatial_keywords` which is an alias to `location_keywords`.
 
     curl -i "%CMR-ENDPOINT%/keywords/instruments?pretty=true"
 
@@ -3068,6 +3365,16 @@ __Example Response__
       } ]
     } ]
   } ]
+}
+```
+
+Note: Search parameter filtering are not supported - requests are rejected when there exist parameters other than pretty=true.
+
+    curl -i "%CMR-ENDPOINT%/keywords/instruments?platform=TRIMM&pretty=true"
+
+```
+{
+  "errors" : [ "Search parameter filters are not supported: [{:platform \"TRIMM\"}]" ]
 }
 ```
 
@@ -3537,7 +3844,10 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: ignore_case, or
 measurement_identifiers parameter is a nested parameter with subfields: contextmedium, object and quantity. Multiple measurement_identifiers can be specified via different indexes to search variables. The following example searches for variables that have at least one measurement_identifier with contextmedium of Med1, object of Object1 and quantity of Q1, and another measurement_identifier with contextmedium of Med2 and object of Obj2.
 
-    curl -g "%CMR-ENDPOINT%/variables?measurement_identifiers\[0\]\[contextmedium\]=Med1&measurement_identifiers\[0\]\[object\]=Object1&measurement_identifiers\[0\]\[quantity\]=Q1&measurement_identifiers\[1\]\[contextmedium\]=med2&measurement_identifiers\[2\]\[object\]=Obj2"
+
+````
+curl -g "%CMR-ENDPOINT%/variables?measurement_identifiers\[0\]\[contextmedium\]=Med1&measurement_identifiers\[0\]\[object\]=Object1&measurement_identifiers\[0\]\[quantity\]=Q1&measurement_identifiers\[1\]\[contextmedium\]=med2&measurement_identifiers\[2\]\[object\]=Obj2"
+````
 
 The multiple measurement_identifiers are ANDed by default. User can specify `options[measurement-identifiers][or]=true` to make the measurement_identifiers ORed together.
 
@@ -3573,6 +3883,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 | revision-id | the internal CMR version number for the result                                                                  |
 
 __Example__
+
 ```
 curl -i "%CMR-ENDPOINT%/variables?pretty=true&name=Variable1"
 
@@ -3608,6 +3919,7 @@ The JSON response includes the following fields.
   * long_name
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/variables.json?pretty=true&name=Var*&options[name][pattern]=true"
 
@@ -3639,6 +3951,7 @@ Content-Length: 292
 The UMM JSON response contains meta-metadata of the variable, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the variable and will list the collections that are associated with the variable.
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/variables.umm_json?name=Variable1234&pretty=true"
 HTTP/1.1 200 OK
@@ -3823,6 +4136,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 | revision-id | the internal CMR version number for the result                                                                  |
 
 __Example__
+
 ```
 curl -i "%CMR-ENDPOINT%/services?name=Service1&pretty=true"
 
@@ -3858,6 +4172,7 @@ The JSON response includes the following fields.
   * long_name
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/services.json?pretty=true"
 
@@ -3903,6 +4218,7 @@ Content-Length: 944
 The UMM JSON response contains meta-metadata of the service and the UMM fields.
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/services.umm_json?name=NSIDC_AtlasNorth&pretty=true"
 HTTP/1.1 200 OK
@@ -4177,6 +4493,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 | revision-id | the internal CMR version number for the result                                                                  |
 
 __Example__
+
 ```
 curl -i "%CMR-ENDPOINT%/tools?name=someTool1&pretty=true"
 
@@ -4212,6 +4529,7 @@ The JSON response includes the following fields.
   * long_name
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/tools.json?pretty=true"
 
@@ -4243,6 +4561,7 @@ Content-Length: 944
 The UMM JSON response contains meta-metadata of the tool and the UMM fields.
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/tools.umm_json?name=NSIDC_AtlasNorth&pretty=true"
 HTTP/1.1 200 OK
@@ -4528,6 +4847,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 | revision-id | the internal CMR version number for the result                                                                  |
 
 __Example__
+
 ```
 curl -i "%CMR-ENDPOINT%/subscriptions?name=someSub1&pretty=true"
 
@@ -4564,6 +4884,7 @@ The JSON response includes the following fields.
   * collection_concept_id
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/subscriptions.json?pretty=true"
 
@@ -4597,6 +4918,7 @@ Content-Length: 944
 The UMM JSON response contains meta-metadata of the subscription and the UMM fields.
 
 __Example__
+
 ```
 curl -g -i "%CMR-ENDPOINT%/subscriptions.umm_json?name=NSIDC_AtlasNorth&pretty=true"
 HTTP/1.1 200 OK

@@ -2,6 +2,7 @@
   "Tests to verify that ISO19115-2 is generated correctly."
   (:require
     [clojure.data.xml :as x]
+    [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.common.util :refer [are3]]
     [cmr.common.xml :as xml]
@@ -242,11 +243,14 @@
            <gmd:purpose gco:nilReason=\"missing\" />
            <gmd:resourceConstraints>
               <gmd:MD_LegalConstraints>
-                 <gmd:useLimitation>
-                    <gco:CharacterString>Restriction Comment: Dummy Comment</gco:CharacterString>
-                 </gmd:useLimitation>
+                 <gmd:accessConstraints>
+                   <gmd:MD_RestrictionCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode\" codeListValue=\"otherRestrictions\">otherRestrictions</gmd:MD_RestrictionCode>
+                 </gmd:accessConstraints>
                  <gmd:otherConstraints>
-                    <gco:CharacterString>Restriction Flag:0</gco:CharacterString>
+                    <gco:CharacterString>Access Constraints Description:Dummy Comment</gco:CharacterString>
+                 </gmd:otherConstraints>
+                 <gmd:otherConstraints>
+                    <gco:CharacterString>Access Constraints Value:0</gco:CharacterString>
                  </gmd:otherConstraints>
               </gmd:MD_LegalConstraints>
            </gmd:resourceConstraints>
@@ -523,7 +527,7 @@
 
 (deftest iso-constraints
   (testing "Use constraints"
-   (are3 [umm-map expected-iso]
+   (are3 [expected-iso umm-map]
      (let [expected-iso-parsed (x/parse-str expected-iso)
            expected-iso-constraints (xml/element-at-path expected-iso-parsed constraints-path)
            generated-iso (iso/umm-c-to-iso19115-2-xml (coll/map->UMM-C umm-map))
@@ -532,10 +536,28 @@
        (is (= expected-iso-constraints generated-iso-constraints)))
 
     "No use constraints"
-    {} iso-no-use-constraints
+    iso-no-use-constraints {}
 
-    "With use constraints"
-    {:AccessConstraints {:Description "Dummy Comment" :Value 0}} iso-with-use-constraints)))
+    "With access constraints"
+    iso-with-use-constraints {:AccessConstraints {:Description "Dummy Comment" :Value 0}}
+
+    "With use FreeAndOpenData flag constraints"
+    (string/replace iso-no-use-constraints
+                    #"<gmd:purpose gco:nilReason=\"missing\" />[ *|\n|\r]*<gmd:language>"
+                    "<gmd:purpose gco:nilReason=\"missing\" />
+                     <gmd:resourceConstraints>
+                       <gmd:MD_LegalConstraints>
+                         <gmd:useConstraints>
+                           <gmd:MD_RestrictionCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode\" codeListValue=\"otherRestrictions\">otherRestrictions</gmd:MD_RestrictionCode>
+                         </gmd:useConstraints>
+                         <gmd:otherConstraints>
+                           <gco:CharacterString>FreeAndOpenData:false</gco:CharacterString>
+                         </gmd:otherConstraints>
+                       </gmd:MD_LegalConstraints>
+                     </gmd:resourceConstraints>
+                    <gmd:language>")
+    {:UseConstraints {:FreeAndOpenData false}})))
+
 
 (deftest data-quality-info-additional-attributes
   (testing "additional attributes that should go to dataQualityInfo section are written out correctly"

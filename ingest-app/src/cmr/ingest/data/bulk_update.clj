@@ -77,7 +77,8 @@
     ;; Returns a list of bulk update statuses for the provider
     (let [stmt (su/build (su/select [:created-at :name :task-id :status :status-message :request-json-body]
                                     (su/from bulk_update_task_status)
-                                    (su/where `(= :provider-id ~provider-id))))
+                                    (su/where `(= :provider-id ~provider-id))
+                                    (su/order-by (su/desc `(+ :task-id 0)))))
           ;; Note: the column selected out of the database is created_at, instead of created-at.
           statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
                                (su/query conn stmt)))

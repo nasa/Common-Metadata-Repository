@@ -13,6 +13,7 @@
   between public and private communications."
   (:require
    [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.util :as util]
    [cmr.transmit.connection :as conn]))
@@ -39,10 +40,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def token-header
-  "echo-token")
-
-(def authorization-header
   "authorization")
+
+(def echo-token-header
+  "echo-token")
 
 (def revision-id-header
   "cmr-revision-id")
@@ -91,6 +92,21 @@
 (def-app-conn-config search {:port 3003})
 (def-app-conn-config urs {:port 3008})
 (def-app-conn-config virtual-product {:port 3009})
+
+(defconfig kms-scheme-override-json
+  "Allow for KMS schema urls to be overriden by setting this value to a JSON
+   strings such as:
+   {\"platforms\":\"static\",
+    \"mime-type\":\"mimetype?format=csv&version=special\"}
+    The reason this setting is needed is because CMR can only talk to the
+    production KMS server. SIT, UAT, and Production may all need to be changed
+    to KMS schema versions needed for these specific environments.
+    Values can be set to either
+    * the partual URL for KMS starting with the scheme name and parameters
+    * fixed word 'static' which causes CMR to load an internal file
+    Internal files are stored under indexer-app/resources/static_kms_keywords/
+    "
+  {:default ""})
 
 (defconfig urs-username
   "Defines the username that is sent from the CMR to URS to authenticate the CMR."

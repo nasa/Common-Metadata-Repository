@@ -11,12 +11,14 @@
 
 (def VALIDATE_KEYWORDS_HEADER "cmr-validate-keywords")
 (def ENABLE_UMM_C_VALIDATION_HEADER "cmr-validate-umm-c")
+(def TESTING_EXISTING_ERRORS_HEADER "cmr-test-existing-errors")
 
 (defn get-validation-options
   "Returns a map of validation options with boolean values"
   [headers]
   {:validate-keywords? (= "true" (get headers VALIDATE_KEYWORDS_HEADER))
-   :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))})
+   :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))
+   :test-existing-errors? (= "true" (get headers TESTING_EXISTING_ERRORS_HEADER))})
 
 (defn validate-collection
   [provider-id native-id request]
@@ -32,8 +34,8 @@
       (api-core/generate-validate-response
        headers
        (util/remove-nil-keys
-        (select-keys (api-core/format-and-contextualize-warnings validate-response)
-                     [:warnings]))))))
+        (select-keys (api-core/format-and-contextualize-warnings-existing-errors validate-response)
+                     [:warnings :existing-errors]))))))
 
 (defn ingest-collection
   [provider-id native-id request]
@@ -56,7 +58,7 @@
       (api-core/log-concept-with-metadata-size
         (assoc concept :entry-title (:entry-title save-collection-result)) request-context)
       (api-core/generate-ingest-response headers
-                                         (api-core/format-and-contextualize-warnings
+                                         (api-core/format-and-contextualize-warnings-existing-errors
                                           ;; entry-title is added just for the logging above.
                                           ;; dissoc it so that it remains the same as the
                                           ;; original code.

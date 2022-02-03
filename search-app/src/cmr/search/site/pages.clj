@@ -98,3 +98,11 @@
    context
    "templates/search-sitemap-provider-tag.xml"
    (data/get-provider-tag-sitemap-landing-links context provider-id tag)))
+
+(defn collection-page
+  "Prepare the collection landing page."
+  [context concept-id]
+  (common-pages/render-html
+   context
+   "templates/collection-base.html"
+   (data/get-collection context concept-id)))

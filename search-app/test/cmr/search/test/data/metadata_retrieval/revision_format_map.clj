@@ -6,7 +6,8 @@
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.revision-format-map :as r]
    [cmr.search.test.data.metadata-retrieval.test-metadata :as tm]
-   [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
+   [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+   [digest :as digest]))
 
 (use-fixtures :each tk/freeze-resume-time-fixture)
 
@@ -96,9 +97,20 @@
              (r/add-additional-format nil :echo10 rfm)))))
   (testing "Compressed"
     (let [rfm (r/compress
-                (r/concept->revision-format-map nil tm/dif10-concept #{:native}))]
-      (is (= (assoc rfm :echo10 (util/string->lz4-bytes (:metadata tm/echo10-concept)))
-             (r/add-additional-format nil :echo10 rfm))))))
+                (r/concept->revision-format-map nil tm/dif10-concept #{:native}))
+          expected (assoc rfm :echo10 (util/string->lz4-bytes (:metadata tm/echo10-concept)))
+          actual (r/add-additional-format nil :echo10 rfm)]
+
+      ; A test like (is(= expected actual)) does not work for everyone locally
+      ; as there seams to be some problem with testing byte arrays.
+      ; To get around this, a new test was come up with which drops the
+      ; compressed segment (byte array) which fails and tests that data sepratly
+      ; by doing a comparison on the md5 values
+
+      (is (= (util/dissoc-in expected [:echo10 :compressed])
+             (util/dissoc-in actual [:echo10 :compressed])))
+      (is (= (digest/md5 (String. (get-in expected [:echo10 :compressed]) "UTF-8"))
+             (digest/md5 (String. (get-in actual [:echo10 :compressed] )"UTF-8")))))))
 
 (defn test-rfm
   "Creates a revision format map with the specified formats."

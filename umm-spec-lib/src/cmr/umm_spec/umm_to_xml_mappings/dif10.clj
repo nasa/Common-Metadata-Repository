@@ -332,8 +332,19 @@
     (generate-projects (:Projects c))
     [:Quality (:Quality c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
-    (when-let [description (get-in c [:UseConstraints :Description])]
-      [:Use_Constraints description])
+    (when-let [use-constraints (get c :UseConstraints)]
+      [:Use_Constraints
+        [:Description (:Description use-constraints)]
+        (when (some? (:FreeAndOpenData use-constraints))
+          [:Free_And_Open_Data (Boolean/valueOf (:FreeAndOpenData use-constraints))])
+        (when-let [url (get-in use-constraints [:LicenseURL :Linkage])]
+          [:License_URL
+            [:URL url]
+            [:Title (get-in use-constraints [:LicenseURL :Name])]
+            [:Description (get-in use-constraints [:LicenseURL :Description])]
+            [:Mime_Type (get-in use-constraints [:LicenseURL :MimeType])]])
+        (when-let [license-text (:LicenseText use-constraints)]
+          [:License_Text license-text])])
     (dif-util/generate-dataset-language :Dataset_Language (:DataLanguage c))
     (center/generate-organizations c)
     (for [dist (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])]

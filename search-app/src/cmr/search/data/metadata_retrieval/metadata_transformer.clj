@@ -3,7 +3,6 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [cmr.collection-renderer.services.collection-renderer :as collection-renderer]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.cache :as cache]
    [cmr.common.log :as log :refer (debug info warn error)]
@@ -45,13 +44,6 @@
     (cache/context->cache context xsl-transformer-cache-name)
     f
     #(xslt/read-template f)))
-
-(defn- generate-html-response
-  "Returns an HTML representation of the collection concept."
-  [context concept]
-  (let [collection (umm-spec/parse-metadata
-                     context :collection (:format concept) (:metadata concept))]
-    (collection-renderer/render-collection context collection (:concept-id concept))))
 
 ;; dynamic is here only for testing purposes to test failure cases.
 (defn ^:dynamic transform-strategy
@@ -116,10 +108,6 @@
                         (xslt/transform metadata (get-template context xsl))))))
             {}
             target-formats)))
-
-(defmethod transform-with-strategy :html
-  [context concept _ _]
-  {:html (generate-html-response context concept)})
 
 (defmethod transform-with-strategy :umm-spec
   [context concept _ target-formats]

@@ -51,12 +51,17 @@
   "ersst.v2.readme.txt" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "READ-ME"}
   "EXTRACT_NETCDF4" {:URLContentType "DistributionURL", :Type "DOWNLOAD SOFTWARE"}
   "GENERAL DOCUMENTATION" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "GET CAPABILITIES" {:URLContentType "DistributionURL", :Type "GET CAPABILITIES"}
+  "GET CAPABILITIES : OpenSearch" {:URLContentType "DistributionURL", :Type "GET CAPABILITIES" :Subtype "OpenSearch"}
+  "GET CAPABILITIES : GIBS" {:URLContentType "DistributionURL", :Type "GET CAPABILITIES" :Subtype "GIBS"}
   "Get Data" {:URLContentType "DistributionURL", :Type "GET DATA"}
   "GET RELATED VISUALIZATION" {:URLContentType "VisualizationURL", :Type "GET RELATED VISUALIZATION"}
+  "GET RELATED VISUALIZATION : SOTO" {:URLContentType "VisualizationURL", :Type "GET RELATED VISUALIZATION" :Subtype "SOTO"}
   "GET SERVICE" {:URLContentType "DistributionURL", :Type "USE SERVICE API"}
   "Get Service" {:URLContentType "DistributionURL", :Type "USE SERVICE API"}
   "GHRSST Portal Home Page" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
   "GOTO WEB TOOL" {:URLContentType "DistributionURL", :Type "GOTO WEB TOOL"}
+  "GOTO WEB TOOL : HITIDE" {:URLContentType "DistributionURL", :Type "GOTO WEB TOOL" :Subtype "HITIDE"}
   "Guide" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
   "Guide Document" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
   "Home Page" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
@@ -149,11 +154,12 @@
       :Description description}
      (when (= "DistributionURL" (:URLContentType url-type))
        (case (:Type url-type)
-         "GET DATA" {:GetData (when (seq mime-type)
-                                {:Format (su/with-default nil sanitize?)
-                                 :MimeType mime-type
-                                 :Size 0.0
-                                 :Unit "KB"})}
+         (or "GET DATA"
+             "GET CAPABILITIES") {:GetData (when (seq mime-type)
+                                             {:Format (su/with-default nil sanitize?)
+                                              :MimeType mime-type
+                                              :Size 0.0
+                                              :Unit "KB"})}
          "USE SERVICE API" {:GetService (when-not (or (= "Not provided" mime-type)
                                                       (nil? mime-type))
                                           {:MimeType mime-type

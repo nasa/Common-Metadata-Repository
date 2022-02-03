@@ -206,7 +206,7 @@
                       (string/replace "%CMR-PROTOCOL%" public-protocol)
                       (string/replace "%CMR-HOST%" (headers "host"))
                       (string/replace "%CMR-BASE-PATH%" relative-root-url))
-            :headers (:headers cr/options-response)}
+            :headers (:headers (cr/options-response))}
            (route/not-found (site-resource "404.html"))))
        ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
        (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}

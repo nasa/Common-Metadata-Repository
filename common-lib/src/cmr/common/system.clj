@@ -36,7 +36,7 @@
   (try
     (->> component-order
          (reduce start-component {:system s :started-components []})
-        :system)
+         :system)
     (catch Exception e
       (.printStackTrace e)
       (throw e))))

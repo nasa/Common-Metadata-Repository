@@ -178,6 +178,10 @@
    description
    mime-type
 
+   ;; Format is validated against values in KMS
+   ;; https://cmr.sit.earthdata.nasa.gov/search/keywords/granule-data-format
+   format
+
    ;; Title is supposed to be a short description that is used for caption according to UMM-C doc,
    ;; but we construct it as either description (which could be really long)
    ;; or description plus resource-type. This is how catalog-rest does it too.

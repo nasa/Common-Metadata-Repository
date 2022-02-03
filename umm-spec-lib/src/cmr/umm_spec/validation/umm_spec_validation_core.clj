@@ -61,10 +61,32 @@
 (defn validate-granule
   "Validates the umm record returning a list of error maps containing a path through the
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
-  [collection granule]
-  (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
-    (validation-errors->path-errors
-     (v/validate vg/granule-validations granule-with-parent))))
+  ([collection granule]
+   (validate-granule collection granule nil))
+  ([collection granule additional-validations]
+   (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
+     (validation-errors->path-errors
+      (v/validate (cons vg/granule-validations additional-validations) granule-with-parent)))))
+
+(defn validate-granule-without-collection
+  "Validates the granule alone, without a collection, returning a list of error
+   maps containing a path through the UMM model and a list of errors at that
+   path. Returns an empty sequence if it is valid."
+  ([granule]
+   (validate-granule granule nil))
+  ([granule additional-validations]
+   (validation-errors->path-errors (v/validate additional-validations granule))))
+
+(defn validate-service
+  "Validates the UMM record returning a list of error maps containing a path
+  through the UMM model and a list of errors at that path. Returns an empty
+  sequence if it is valid."
+  ([service]
+   (validate-service service nil))
+  ([service additional-validations]
+   (validation-errors->path-errors
+    (v/validate (cons {} additional-validations)
+                service))))
 
 (defn validate-variable
   "Validates the UMM record returning a list of error maps containing a path
@@ -86,3 +108,13 @@
    (validation-errors->path-errors
     (v/validate (cons vv/variable-validation-warnings additional-validations)
                 variable))))
+
+(defn validate-variable-with-no-defaults
+  "Similar to validate-variables, however this one has no default rules
+  requiring all rules to be passed in.
+
+  Validates the UMM record returning a list of error maps containing a path
+  through the UMM model and a list of errors at that path. Returns an empty
+  sequence if it is valid."
+  [variable validations-rules]
+   (validation-errors->path-errors (v/validate validations-rules variable)))

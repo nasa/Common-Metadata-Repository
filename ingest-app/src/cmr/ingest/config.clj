@@ -7,8 +7,18 @@
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as conn]))
 
+(defconfig progressive-update-enabled
+  "Flag for whether or not collection progressive update is enabled."
+  {:default true :type Boolean})
+
 (defconfig bulk-update-cleanup-minimum-age
   "The minimum age(in days) of the rows in bulk-update-task-status table that can be cleaned up"
+  {:default 90
+   :type Long})
+
+(defconfig granule-bulk-cleanup-minimum-age
+  "The minimum age (in days) of the rows in granule_bulk_update_tasks and
+  bulk_update_gran_status that can be cleaned up"
   {:default 90
    :type Long})
 
@@ -23,22 +33,22 @@
 (defconfig granule-umm-version
   "Defines the latest granule umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.6.2"})
+  {:default "1.6.4"})
 
 (defconfig variable-umm-version
   "Defines the latest variable umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.7"})
+  {:default "1.8.1"})
 
 (defconfig service-umm-version
   "Defines the latest service umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.3.4"})
+  {:default "1.4.1"})
 
 (defconfig tool-umm-version
   "Defines the latest tool umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.0"})
+  {:default "1.1"})
 
 (defconfig subscription-umm-version
   "Defines the latest subscription umm version accepted by ingest - it's the latest official version.
@@ -64,6 +74,10 @@
 (defconfig ingest-password
   "Ingest database password"
   {})
+
+(defconfig cmr-support-email
+  "CMR support email address"
+  {:default "cmr-support@earthdata.nasa.gov"})
 
 (defn db-spec
   "Returns a db spec populated with config information that can be used to connect to oracle"

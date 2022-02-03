@@ -168,14 +168,16 @@
                                                 :url-extension "html"})]
         (is (= 200 (:status response)))
         (is (search/mime-type-matches-response? response mt/html))
-        (is (.contains ^String (:body response) (:entry-title umm-coll)))))
+        (is (.contains ^String (:body response) "https://access.sit.earthdata.nasa.gov/plugin/metadata-preview"))
+        (is (.contains ^String (:body response) (:concept-id coll1)))))
     (testing "retrieval of HTML with accept headers"
       (let [response (search/retrieve-concept
                        (:concept-id coll1) nil {:query-params {:token user1-token}
                                                 :accept "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"})]
         (is (= 200 (:status response)))
         (is (search/mime-type-matches-response? response mt/html))
-        (is (.contains ^String (:body response) (:entry-title umm-coll)))))
+        (is (.contains ^String (:body response) "https://access.sit.earthdata.nasa.gov/plugin/metadata-preview"))
+        (is (.contains ^String (:body response) (:concept-id coll1)))))
     (testing "retrieval of UMM JSON"
       (let [response (search/retrieve-concept
                        (:concept-id coll1) nil {:query-params {:token user1-token}
@@ -184,29 +186,6 @@
         (is (= 200 (:status response)))
         (is (search/mime-type-matches-response? response mt/umm-json))
         (is (= (:entry-title umm-coll) (:EntryTitle parsed-collection)))))))
-
-(defn- html-search-response-has-collection-granule-search?
-  "Returns true if html contains granule search option."
-  [coll]
-  (let [concept-id (:concept-id coll)
-        response (search/retrieve-concept concept-id nil {:url-extension "html"})]
-    (.contains ^String (:body response) (str "https://search.earthdata.nasa.gov/search/granules?p=" concept-id))))
-
-(deftest html-collection-granule-search-test
-  (testing "Test html search for collections with and without granules."
-    (testing "html response for collections with and without granules"
-      (e/grant-all (s/context) (e/coll-catalog-item-id "PROV1"))
-      (e/grant-all (s/context) (e/gran-catalog-item-id "PROV1"))
-      (let [coll-with-granules (d/ingest "PROV1" (dc/collection {:short-name "With granules"
-                                                                 :entry-title "With granules"
-                                                                 :version-id "V1"}))
-            coll-without-granules (d/ingest "PROV1" (dc/collection {:short-name "Without granules"
-                                                                    :entry-title "Without granules"
-                                                                    :version-id "V2"}))]
-        (d/ingest "PROV1" (dg/granule coll-with-granules))
-        (index/wait-until-indexed)
-        (is (html-search-response-has-collection-granule-search? coll-with-granules))
-        (is (not (html-search-response-has-collection-granule-search? coll-without-granules)))))))
 
 (defn- expected-umm-json
   "Returns the expected umm json in the expected-version for the given metadata whose umm
@@ -338,7 +317,7 @@
 
       (testing "json"
         (are [concept options]
-             (= (da/collection->expected-atom concept)
+             (= (da/collection->expected-json concept)
                 (dj/parse-json-collection (get-concept-by-id-helper concept options)))
              c1-echo {:url-extension "json"}
              c1-echo {:accept        "application/json"}

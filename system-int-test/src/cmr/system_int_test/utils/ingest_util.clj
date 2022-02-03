@@ -148,6 +148,13 @@
                               {:connection-manager (s/conn-mgr)})]
     (is (= 200 (:status response)))))
 
+(defn cleanup-bulk-granule-update-tasks
+  "Tells ingest to run the trigger-bulk-granule-task-cleanup job"
+  []
+  (let [response (client/post (url/cleanup-granule-bulk-update-task-url)
+                              {:connection-manager (s/conn-mgr)})]
+    (is (= 200 (:status response)))))
+
 (defn translate-metadata
   "Translates metadata using the ingest translation endpoint. Returns the response."
   ([concept-type input-format metadata output-format options]
@@ -219,7 +226,9 @@
          {:concept-id (cx/string-at-path xml-elem [:concept-id])
           :native-id (cx/string-at-path xml-elem [:native-id])
           :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))
-          :warnings (cx/string-at-path xml-elem [:warnings])})))
+          :warnings (cx/string-at-path xml-elem [:warnings])
+          :existing-errors (cx/string-at-path xml-elem [:existing-errors])
+          :body (:body response)})))
 
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
@@ -227,7 +236,7 @@
 (defmethod parse-ingest-body :json
   [response-format response]
   (try
-    (json/decode (:body response) true)
+    (assoc (json/decode (:body response) true) :body (:body response))
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response))) e)))))
 
@@ -335,7 +344,7 @@
                                         "Cmr-Revision-id" revision-id
                                         "Cmr-Validate-Keywords" validate-keywords
                                         "Cmr-Validate-Umm-C" validate-umm-c
-                                        "Echo-Token" token
+                                        "Authorization" token
                                         "User-Id" user-id
                                         "Client-Id" client-id
                                         "CMR-Request-Id" cmr-request-id
@@ -356,14 +365,15 @@
    (ingest-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         {:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id]} options
+         {:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id test-existing-errors]} options
          accept-format (:accept-format options)
          method (get options :method :put)
          headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
                                         "Cmr-Revision-id" revision-id
                                         "Cmr-Validate-Keywords" validate-keywords
                                         "Cmr-Validate-Umm-C" validate-umm-c
-                                        "Echo-Token" token
+                                        "Cmr-Test-Existing-Errors" test-existing-errors
+                                        "Authorization" token
                                         "User-Id" user-id
                                         "Client-Id" client-id
                                         "CMR-Request-Id" cmr-request-id
@@ -385,7 +395,7 @@
   ([concept options]
    (let [{:keys [provider-id concept-type native-id]} concept
          {:keys [token client-id accept-format revision-id user-id]} options
-         headers (util/remove-nil-keys {"Echo-Token" token
+         headers (util/remove-nil-keys {"Authorization" token
                                         "Client-Id" client-id
                                         "User-Id" user-id
                                         "Cmr-Revision-id" revision-id})
@@ -612,6 +622,17 @@
         response (client/request params)]
     (parse-bulk-update-provider-status-response response options)))
 
+(defn update-granule-bulk-update-task-statuses
+  "Force an unscheduled update of granule bulk update task status."
+  []
+  (let [params {:method :post
+                :url (url/ingest-granule-bulk-update-task-status-url)
+                :connection-manager (s/conn-mgr)
+                :throw-exceptions false
+                :headers {transmit-config/token-header
+                          (transmit-config/echo-system-token)}}]
+    (client/request params)))
+
 (defn bulk-update-provider-status
   "Get the tasks and statuses by provider"
   ([provider-id]
@@ -625,6 +646,11 @@
    (granule-bulk-update-tasks provider-id nil))
   ([provider-id options]
    (bulk-update-provider-status* :granule provider-id options)))
+
+(defn update-granule-bulk-update-tasks
+  "Updates the granule bulk update tasks by provider"
+  [provider-id options]
+  (bulk-update-provider-status* :granule provider-id options))
 
 (defmulti parse-bulk-update-task-status-body
   "Parse the bulk update task status response body as a given format"
@@ -673,6 +699,7 @@
   "Implementation function to get the bulk update task status for the given task id"
   [concept-type provider-id task-id options]
   (let [accept-format (get options :accept-format)
+        query-params (get options :query-params)
         token (:token options)
         task-status-url (if (= :collection concept-type)
                           (url/ingest-collection-bulk-update-task-status-url provider-id task-id)
@@ -681,6 +708,7 @@
                 :url task-status-url
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}
+        params (merge params (when query-params {:query-params query-params}))
         params (merge params (when accept-format {:accept accept-format}))
         params (merge params (when token {:headers {transmit-config/token-header token}}))
         default-result-format (if (= :collection concept-type) :xml :json)
@@ -737,7 +765,7 @@
   ([provider-map]
    (create-provider provider-map {}))
   ([provider-map options]
-   (let [{:keys [provider-guid provider-id short-name small cmr-only]} provider-map
+   (let [{:keys [provider-guid provider-id short-name small cmr-only consortiums]} provider-map
          short-name (or short-name (:short-name options) provider-id)
          cmr-only (if (some? cmr-only) cmr-only (get options :cmr-only true))
          small (if (some? small) small (get options :small false))
@@ -747,7 +775,8 @@
      (create-mdb-provider {:provider-id provider-id
                            :short-name short-name
                            :cmr-only cmr-only
-                           :small small})
+                           :small small
+                           :consortiums consortiums})
      ;; Create provider in mock echo with the guid set to the ID to make things easier to sync up
      (echo-util/create-providers (s/context) {provider-id provider-id})
 
@@ -786,9 +815,10 @@
          (merge reset-fixture-default-options options)
          providers (if (sequential? providers)
                        providers
-                       (for [[provider-guid provider-id] providers]
+                       (for [[provider-guid provider-id consortiums] providers]
                          {:provider-guid provider-guid
-                          :provider-id provider-id}))]
+                          :provider-id provider-id
+                          :consortiums consortiums}))]
       (doseq [provider-map providers]
         (create-provider
          provider-map

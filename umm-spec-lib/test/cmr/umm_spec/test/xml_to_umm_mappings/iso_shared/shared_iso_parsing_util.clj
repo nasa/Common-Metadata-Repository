@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util
   (:require
-   [clojure.java.io :as io]
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as util]))
@@ -24,7 +23,12 @@
       {"Checksum" "\"nil\"",
        "Description" "NASA's newest lawnmower ascii art: __\\.-.,,,,",
        "Type" "SELF PROPELLED",
-       "Subtype" "Earthdata Search"}))
+       "Subtype" "Earthdata Search"}
+
+      "String with No pattern match"
+      "This is just a plain description."
+      (re-pattern "URLContentType:|Description:|Type:|Subtype:|Checksum:")
+      {}))
 
   (testing "Parsing given string and converting it to a map where the key is a key and not a string"
     (are3 [string regex expected]

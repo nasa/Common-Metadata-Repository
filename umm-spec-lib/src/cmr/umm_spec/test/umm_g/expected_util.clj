@@ -10,6 +10,7 @@
    [cmr.spatial.polygon :as poly]
    [cmr.umm.umm-spatial :as umm-s]
    [cmr.umm-spec.umm-g.measured-parameters :as measured-parameters]
+   [cmr.umm-spec.util :as umm-spec-util]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-lib-g]))
 
@@ -63,6 +64,9 @@
       (as-> updated-umm (if (:data-granule updated-umm)
                           (update-in updated-umm [:data-granule :day-night] #(if % % "UNSPECIFIED"))
                           updated-umm))
+      (as-> updated-umm (if (:project-refs updated-umm)
+                          (update updated-umm :project-refs #(conj % umm-spec-util/not-provided))
+                          updated-umm))
       umm-lib-g/map->UmmGranule))
 
 (def expected-sample-granule
@@ -88,7 +92,25 @@
                                 {:value "E51569BF48DD0FD0640C6503A46D4753"
                                  :algorithm "MD5"})
                     :size-unit "MB"
-                    :size 0.023})
+                    :size 0.023
+                    :format "ZIP"
+                    :files [(umm-lib-g/map->File
+                             {:name "GranuleFileName1"
+                              :size 10
+                              :size-unit "KB"
+                              :format "NETCDF-4"
+                              :mime-type "application/x-netcdf"
+                              :format-type "Native"
+                              :checksum (umm-lib-g/map->Checksum
+                                         {:value "E51569BF48DD0FD0640C6503A46D4754"
+                                          :algorithm "MD5"})})
+                            (umm-lib-g/map->File
+                             {:name "GranuleFileName2"
+                              :size 1
+                              :size-unit "KB"
+                              :format "ASCII"
+                              :mime-type "text/plain"
+                              :format-type "NA"})]})
     :temporal (umm-lib-g/map->GranuleTemporal
                {:range-date-time (umm-c/map->RangeDateTime
                                   {:beginning-date-time (dtp/parse-datetime "2018-07-17T00:00:00.000Z")
@@ -118,7 +140,7 @@
                                             :value "250"})]})]
                          :operation-modes ["Mode1" "Mode2"]})]})]
     :cloud-cover 60.0
-    :project-refs ["Campaign1" "Campaign2" "Campaign3"]
+    :project-refs ["Project1" "Project2" "Campaign1" "Campaign2" "Campaign3"]
     :two-d-coordinate-system (umm-lib-g/map->TwoDCoordinateSystem
                               {:name "MODIS Tile EASE"
                                :start-coordinate-1 -100.0
@@ -175,6 +197,7 @@
                     {:type "GET DATA"
                      :url "https://daac.ornl.gov/daacdata/islscp_ii/vegetation/erbe_albedo_monthly_xdeg/data/erbe_albedo_1deg_1986.zip"
                      :description "This link provides direct download access to the granule."
+                     :format "ZIP"
                      :mime-type "application/zip"
                      :title "This link provides direct download access to the granule."
                      :size 395.673})
@@ -183,19 +206,31 @@
                      :sub-type "USER'S GUIDE"
                      :url "https://daac.ornl.gov/ISLSCP_II/guides/erbe_albedo_monthly_xdeg.html"
                      :description "ORNL DAAC Data Set Documentation"
+                     :format "HTML"
                      :mime-type "text/html"
                      :title "ORNL DAAC Data Set Documentation"})
                    (umm-c/map->RelatedURL
                     {:type "GET RELATED VISUALIZATION"
                      :url "https://webmap.ornl.gov/sdat/pimg/957_1.png"
                      :description "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
+                     :format "PNG"
                      :mime-type "image/png"
                      :title "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
                      :size 10})
                    (umm-c/map->RelatedURL
                     {:type "GET DATA VIA DIRECT ACCESS"
-                     :url "S3://aws.com/asdf/asdf/dataproduct.nc"
+                     :url "s3://aws.com/asdf/asdf/dataproduct.nc"
                      :description "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
+                     :format "NETCDF-4"
                      :mime-type "application/x-netcdf"
                      :title "ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990"
+                     :size 1000})
+                   (umm-c/map->RelatedURL
+                    {:type "EXTENDED METADATA"
+                     :sub-type "DMR++"
+                     :url "s3://aws.com/bucket-name/dataproduct.data"
+                     :description "DMR++ Description"
+                     :format "NETCDF-4"
+                     :mime-type "application/x-netcdf"
+                     :title "DMR++ Description"
                      :size 1000})]}))

@@ -73,9 +73,12 @@
 (def instrument-refs
   (ext-gen/model-gen g/->InstrumentRef
                      instrument-ref-short-names
-                     (ext-gen/nil-if-empty (gen/vector characteristic-refs 0 4))
-                     (ext-gen/nil-if-empty (gen/vector sensor-refs 0 4))
-                     (ext-gen/nil-if-empty (gen/vector operation-modes 0 4))))
+                     (ext-gen/nil-if-empty (gen/vector-distinct characteristic-refs
+                                                                {:min-elements 0 :max-elements 4}))
+                     (ext-gen/nil-if-empty (gen/vector-distinct sensor-refs
+                                                                {:min-elements 0 :max-elements 4}))
+                     (ext-gen/nil-if-empty (gen/vector-distinct operation-modes
+                                                                {:min-elements 0 :max-elements 4}))))
 
 (def platform-ref-short-names
   (ext-gen/string-ascii 1 10))
@@ -131,7 +134,7 @@
   (ext-gen/model-gen
     g/map->SpatialCoverage
     (gen/one-of
-      [(gen/hash-map :geometries (gen/vector spatial-gen/geometries 1 5))
+      [(gen/hash-map :geometries (gen/vector-distinct spatial-gen/geometries {:min-elements 1 :max-elements 5}))
        (gen/hash-map :orbit spatial-gen/orbits)])))
 
 (def data-provider-timestamps
@@ -152,7 +155,7 @@
                                           (gen/vector
                                             spatial-gen/orbit-calculated-spatial-domains 0 5))
       :platform-refs (ext-gen/nil-if-empty (gen/vector platform-refs 0 4))
-      :project-refs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 10) 0 3))
+      :project-refs (ext-gen/nil-if-empty (gen/vector-distinct (ext-gen/string-ascii 1 10) {:min-elements 0 :max-elements 3}))
       :cloud-cover (ext-gen/optional cloud-cover-values)
       :two-d-coordinate-system (ext-gen/optional two-d-coordinate-system)
       :related-urls (ext-gen/nil-if-empty (gen/vector c/related-url 0 5))

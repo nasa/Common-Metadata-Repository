@@ -1,0 +1,144 @@
+service: graphdb-indexer
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-east-1
+  role: IamRoleGraphLambdaExecution
+  stage: ${opt:stage, 'dev'}
+  deploymentBucket: graphdb-driver-deployment-bucket-${opt:stage}
+  vpc:
+    securityGroupIds:
+      - ${cf:${self:provider.stage}.servicesSecurityGroupId}
+    subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
+
+  environment:
+    CMR_ROOT: ${self:custom.variables.CMR_ROOT}
+    COLLECTION_INDEXING_QUEUE_URL:
+      Ref: CollectionIndexingQueue
+    ENVIRONMENT: ${self:custom.variables.ENVIRONMENT}
+    GREMLIN_URL: ${self:custom.variables.GREMLIN_URL}
+    PAGE_SIZE: ${self:custom.variables.PAGE_SIZE}
+
+plugins:
+  - serverless-offline
+  - serverless-pseudo-parameters
+  - serverless-webpack
+
+functions:
+  bootstrapGremlinServer:
+    timeout: 900
+    handler: serverless/src/bootstrapGremlinServer/handler.default
+
+  indexCmrCollection:
+    timeout: 20
+    handler: serverless/src/indexCmrCollection/handler.default
+    events:
+      - sqs:
+          batchSize: 10
+          arn:
+            Fn::GetAtt:
+              - CollectionIndexingQueue
+              - Arn
+
+resources:
+  Resources:
+    CollectionIndexingQueue:
+      Type: 'AWS::SQS::Queue'
+      Properties:
+        VisibilityTimeout: 300
+        DelaySeconds: 5
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - CollectionIndexingQueueDeadLetterQueue
+              - Arn
+          maxReceiveCount: 2 # Number of times a message will be tried before being dumped to the DLQ
+
+    SqsQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Sid: topic-subscription-${env:CMR_CONCEPT_SNS_TOPIC}
+              Effect: Allow
+              Principal:
+                AWS: "*"
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt CollectionIndexingQueue.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: ${env:CMR_CONCEPT_SNS_TOPIC}
+        Queues:
+          - !Ref CollectionIndexingQueue
+
+    CollectionIndexingQueueDeadLetterQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: graphdb-indexer-${self:provider.stage}-CollectionIndexingQueueDeadLetterQueue
+        MessageRetentionPeriod: 1209600
+
+    cmrSnsSubscription:
+      Type: 'AWS::SNS::Subscription'
+      Properties:
+        TopicArn: ${env:CMR_CONCEPT_SNS_TOPIC}
+        Endpoint: !GetAtt
+          - CollectionIndexingQueue
+          - Arn
+        Protocol: sqs
+        RawMessageDelivery: 'true'
+
+    IamRoleGraphLambdaExecution:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: cmrGraphRole-${self:provider.stage}
+        PermissionsBoundary: arn:aws:iam::#{AWS::AccountId}:policy/NGAPShRoleBoundary
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: 'Allow'
+              Principal:
+                Service:
+                  - 'lambda.amazonaws.com'
+              Action:
+                - 'sts:AssumeRole'
+
+    cmrGraphPolicy:
+      Type: AWS::IAM::Policy
+      Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Action:
+                - 'sqs:*'
+              Effect: 'Allow'
+              Resource: '*'
+        PolicyName: cmrGraphPolicy-${self:provider.stage}
+        Roles:
+          - Ref: IamRoleGraphLambdaExecution
+
+    cmrParamStorePolicy:
+      Type: AWS::IAM::Policy
+      Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Action:
+                - 'ssm:GetParameter*'
+                - 'secretsmanager:GetSecretValue'
+              Effect: 'Allow'
+              Resource:
+                - 'arn:aws:ssm:*:*:parameter/${opt:stage}/graph-db/*'
+        PolicyName: cmrParamStorePolicy-${opt:stage}
+        Roles:
+          - Ref: IamRoleGraphLambdaExecution
+custom:
+  variables:
+    # Default values for environment variables
+    CMR_ROOT: ${env:CMR_ROOT, 'https://cmr.sit.earthdata.nasa.gov'}
+    ENVIRONMENT: ${self:provider.stage}
+    GREMLIN_URL: ${env:GREMLIN_URL, 'wss://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'}
+    PAGE_SIZE: ${env:PAGE_SIZE, '1000'}

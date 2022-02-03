@@ -3,7 +3,6 @@
    [clojure.core.cache :as clj-cache]
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
-   [cmr.collection-renderer.services.collection-renderer :as collection-renderer]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
@@ -88,7 +87,6 @@
   "Defines the order to start the components."
   [:log
    :caches
-   collection-renderer/system-key
    orbits-runtime/system-key
    :search-index
    :scheduler
@@ -119,6 +117,7 @@
                       context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       :has-granules-or-cwic-map (hgocrf/create-has-granules-or-cwic-map-cache)
+                      :has-granules-or-opensearch-map (hgocrf/create-has-granules-or-opensearch-map-cache)
                       coll-cache/cache-key (coll-cache/create-cache)
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
@@ -127,13 +126,13 @@
                       ;; application will also pick up the updated KMS keywords.
                       kf/kms-cache-key (kf/create-kms-cache)
                       search/scroll-id-cache-key (search/create-scroll-id-cache)
+                      search/scroll-first-page-cache-key (search/create-scroll-first-page-cache)
                       metadata-cache/cache-key (metadata-cache/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       hrs/report-cache-key (hrs/create-report-cache)
                       hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)}
              :public-conf (public-conf)
-             collection-renderer/system-key (collection-renderer/create-collection-renderer)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
              ;; Note that some of these jobs only need to run on one node, but we are currently
              ;; running all jobs on all nodes
@@ -143,13 +142,14 @@
                           idx/refresh-index-names-cache-job
                           hgrf/refresh-has-granules-map-job
                           hgocrf/refresh-has-granules-or-cwic-map-job
+                          hgocrf/refresh-has-granules-or-opensearch-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           coll-cache/refresh-collections-cache-for-granule-acls-job
                           jvm-info/log-jvm-statistics-job
                           hrs/humanizer-report-generator-job])}]
     (transmit-config/system-with-connections
-      sys
-      [:indexer :echo-rest :metadata-db :kms :access-control])))
+     sys
+     [:indexer :echo-rest :metadata-db :kms :access-control])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

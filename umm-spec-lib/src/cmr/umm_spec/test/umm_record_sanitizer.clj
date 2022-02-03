@@ -126,13 +126,19 @@
                       defined for the " concept-type " concept-type."))))
 
 (defn- generate-valid-type-and-subtype-for-url-content-type
- "Generate a valid URLContentType, Type, and Subtype combo given the URLContentType"
+ "Generate a valid URLContentType, Type, and Subtype combo given the URLContentType.
+ when you can't get type and subtype from URLContentType, create a valid combo."
  [url-content-type concept-type]
- (let [valid-types (gen/elements (valid-types-for-url-content-type url-content-type concept-type))
-       types (gen/sample valid-types 1)
-       valid-subtypes (valid-subtypes-for-type url-content-type type concept-type)
-       subtypes (when valid-subtypes (gen/sample (gen/elements valid-subtypes) 1))]
-  {:Type (first types)
+ (let [valid-types (valid-types-for-url-content-type url-content-type concept-type)
+       url-content-type (if valid-types
+                          url-content-type
+                          "DataCenterURL")
+       valid-types (or valid-types (valid-types-for-url-content-type url-content-type concept-type))
+       types (when (seq valid-types) (gen/sample (gen/elements valid-types) 1))
+       valid-subtypes (valid-subtypes-for-type url-content-type (first types) concept-type)
+       subtypes (when (seq valid-subtypes) (gen/sample (gen/elements valid-subtypes) 1))]
+  {:URLContentType url-content-type
+   :Type (first types)
    :Subtype (first subtypes)}))
 
 (defn- sanitize-get-data
@@ -159,34 +165,18 @@
       sanitize-get-service
       sanitize-get-data))
 
-(defn- sanitize-related-url
-  "Returns a single sanitized RelatedUrl"
-  [entry concept-type]
-  (if-let [urls (get-in entry [:RelatedUrl :URL])]
-    (let [url-content-type (get-in entry [:RelatedUrl :URLContentType])
-          {:keys [Type Subtype]} (generate-valid-type-and-subtype-for-url-content-type url-content-type concept-type)]
-      (-> entry
-          (assoc-in [:RelatedUrl :URL] (gen/sample test/file-url-string 1))
-          (assoc-in [:RelatedUrl :Type] Type)
-          (assoc-in [:RelatedUrl :Subtype] Subtype)
-          ;; These two fields cannot ever exist in a CollectionCitations or
-          ;; PublicationReferences RelatedUrl
-          (update :RelatedUrl dissoc :GetData)
-          (update :RelatedUrl dissoc :GetService)))
-    entry))
-
 (defn- sanitize-related-urls
   "Returns a list of sanitized related urls"
   [related-urls concept-type]
   (when related-urls
    (for [ru related-urls
-         :let [type-subtype
+         :let [urlcontenttype-type-subtype
                (generate-valid-type-and-subtype-for-url-content-type (:URLContentType ru) concept-type)]]
     (merge
      (-> ru
          sanitize-get-service-and-get-data
          (assoc :URL (first (gen/sample test/file-url-string 1))))
-     type-subtype))))
+     urlcontenttype-type-subtype))))
 
 (defn- sanitize-contact-informations
   "Sanitize a record with ContactInformation"
@@ -228,13 +218,6 @@
     (update record key #(sanitize-contact-informations % concept-type))
     record))
 
-(defn- sanitize-umm-record-related-url
-  "Sanitize a single RelatedUrl in a collection if they key exists."
-  [collection key concept-type]
-  (if (seq (get collection key))
-    (update-in-each collection [key] #(sanitize-related-url % concept-type))
-    collection))
-
 (defn- sanitize-online-resource
   "Sanitize the OnlineResource Linkage (url)"
   [c]
@@ -250,9 +233,7 @@
       (sanitize-umm-record-related-urls concept-type)
       (sanitize-umm-record-data-centers concept-type)
       (sanitize-umm-record-contacts :ContactPersons concept-type)
-      (sanitize-umm-record-contacts :ContactGroups concept-type)
-      (sanitize-umm-record-related-url :CollectionCitations concept-type)
-      (sanitize-umm-record-related-url :PublicationReferences concept-type)))
+      (sanitize-umm-record-contacts :ContactGroups concept-type)))
 
 (defn- sanitize-umm-number-of-instruments
   "Sanitize all the instruments with the :NumberOfInstruments for its child instruments"
@@ -320,7 +301,10 @@
       ;; so here we just replace the generated value to eng to make it through the validation.
       (set-if-exist :DataLanguage "eng")
       (set-if-exist :CollectionProgress "COMPLETE")
-
+      ;; CMR-7779 will be adding the translations of FreeAndOpenData among different formats.
+      ;; For now, we will remove it from UseConstraints. When CMR-7779 is done, the line below
+      ;; should be removed.
+      (update-in [:UseConstraints] dissoc :FreeAndOpenData)
       ;; Figure out if we can define this in the schema
       sanitize-science-keywords
       (sanitize-umm-record-urls :collection)

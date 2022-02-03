@@ -93,15 +93,20 @@
     201
     200))
 
-(defn format-and-contextualize-warnings
-  "Format and add a message to warnings to make translation issues more clear to the user."
+(defn format-and-contextualize-warnings-existing-errors
+  "Format and add a message to warnings and existing-errors to make translation issues more clear to the user."
   [result]
-  (let [warning-context "After translating item to UMM-C the metadata had the following issue: "]
-   (update result
-           :warnings
-           (fn [warnings]
-             (when (not-empty warnings)
-               [(str warning-context (string/join ". " warnings))])))))
+  (let [warning-context "After translating item to UMM-C the metadata had the following issue(s): "
+        err-context "After translating item to UMM-C the metadata had the following existing error(s): "]
+    (-> result
+        (update :warnings
+                (fn [warnings]
+                  (when (not-empty warnings)
+                    [(str warning-context (string/join ". " warnings))])))
+        (update :existing-errors
+                (fn [existing-errors]
+                  (when (not-empty existing-errors)
+                    [(str err-context (string/join ". " existing-errors))]))))))
 
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"
@@ -252,9 +257,10 @@
   [concept request-context]
   (let [metadata-size-bytes (-> (:metadata concept) (.getBytes "UTF-8") alength)
         concept (assoc concept :metadata-size-bytes metadata-size-bytes)]
-    (info (format "Successfully ingested %s from client %s"
+    (info (format "Successfully ingested %s from client %s, token_type %s"
                   (concept->loggable-string concept)
-                  (:client-id request-context)))))
+                  (:client-id request-context)
+                  (lt-validation/get-token-type (:token request-context))))))
 
 (defn set-default-error-format [default-response-format handler]
   "Ring middleware to add a default format to the exception-info created during exceptions. This
@@ -285,7 +291,7 @@
     (info (format "Deleting %s %s from client %s"
                   (name concept-type) (pr-str concept-attribs) (:client-id request-context)))
     (generate-ingest-response headers
-                              (format-and-contextualize-warnings
+                              (format-and-contextualize-warnings-existing-errors
                                (ingest/delete-concept
                                 request-context
                                 concept-attribs)))))

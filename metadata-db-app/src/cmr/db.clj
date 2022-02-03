@@ -92,10 +92,10 @@
 
         (= "migrate" op)
         (drift/run
-         (conj
-          args
-          "-c"
-          "config.mdb-migrate-config/app-migrate-config"))
+          (conj
+           (vec args)
+           "-c"
+           "config.mdb_migrate_config/app-migrate-config"))
 
         :else
         (info "Unsupported operation: " op))

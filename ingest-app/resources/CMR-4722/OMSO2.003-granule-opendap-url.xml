@@ -70,7 +70,7 @@
    <OnlineResources>
       <OnlineResource>
          <URL>http://opendap-url.example.com</URL>
-         <Type>GET DATA : OPENDAP DATA</Type>
+         <Type>USE SERVICE API : OPENDAP DATA</Type>
       </OnlineResource>
    </OnlineResources>
    <Orderable>false</Orderable>

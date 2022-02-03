@@ -7,7 +7,8 @@
    [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm-spec.test.location-keywords-helper :as location-keywords-helper]
    [cmr.umm-spec.test.umm-g.expected-util :as expected-util]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]))
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.util :as umm-spec-util]))
 
 (def ^:private valid-input-formats
   [:umm-json
@@ -49,8 +50,13 @@
       (as-> updated-umm (if (get-in updated-umm [:data-granule :feature-ids])
                           (assoc-in updated-umm [:data-granule :feature-ids] nil)
                           updated-umm))
+      (as-> updated-umm (if (:project-refs updated-umm)
+                          (update updated-umm :project-refs #(set (distinct (conj % umm-spec-util/not-provided))))
+                          updated-umm))
       ;; RelatedUrls mapping between ECHO10 and UMM-G is different
-      (assoc :related-urls nil)))
+      (assoc :related-urls nil)
+      (assoc-in [:data-granule :format] nil)
+      (assoc-in [:data-granule :files] nil)))
 
 (defn- parsed-metadata-for-comparison
   "Returns the parsed granule metadata for comparison purpose."
@@ -90,7 +96,7 @@
           (is (= (:granule-ur expected) (:granule-ur actual-parsed)))
 
           :else
-          (is (= expected actual-parsed))))))
+          (is (= expected actual-parsed) "expected & actual failed")))))
 
   (testing "Failure cases"
     (testing "unsupported input format"

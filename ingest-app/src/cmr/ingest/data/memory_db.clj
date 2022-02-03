@@ -155,7 +155,8 @@
    (some->> @granule-status-atom
             (into [])
             (filter #(= (str task-id) (str (:task-id %))))
-            (map #(select-keys % [:granule-ur :status :status-message]))))
+            (map #(select-keys % [:granule-ur :status :status-message]))
+            (map util/remove-nil-keys)))
 
   (get-bulk-update-granule-status
    [this task-id granule-ur]
@@ -238,6 +239,7 @@
                                                                     (count failed-granules)
                                                                     (count skipped-granules)
                                                                     (count task-granules)))))))))))
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   (reset-bulk-update

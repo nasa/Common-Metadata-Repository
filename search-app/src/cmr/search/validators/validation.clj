@@ -23,15 +23,15 @@
 
 (defmethod cqv/supported-result-formats :collection
   [_]
-  (into #{:xml :json :legacy-umm-json :echo10 :dif :dif10 :atom :iso19115 :kml :opendata :native
+  (into #{:xml :json :legacy-umm-json :echo10 :dif :dif10 :atom :iso19115 :csv :kml :opendata :native
           ;; umm-json supported with and without versions
           :umm-json :umm-json-results}
         (umm-versioned-result-formats :collection)))
 
 (defmethod cqv/supported-result-formats :granule
   [_]
-  (into #{:xml, :json, :echo10, :atom, :iso19115, :csv, :kml, :native :timeline
-          :umm-json :umm-json-results}
+  (into #{:xml :json :echo10 :atom :iso19115 :csv :kml :native :timeline
+          :umm-json :umm-json-results :stac}
         (umm-versioned-result-formats :granule)))
 
 (defmethod cqv/supported-result-formats :variable
@@ -103,6 +103,7 @@
    all-granule-validation/no-all-granules-with-spatial
    all-granule-validation/all-granules-exceeds-page-depth-limit
    all-granule-validation/no-all-granules-with-scroll
+   all-granule-validation/no-all-granules-with-search-after
    validate-facets-v2-format])
 
 (extend-protocol cqv/Validator

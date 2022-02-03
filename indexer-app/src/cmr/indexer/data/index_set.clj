@@ -169,12 +169,28 @@
    :variable-lowercase m/string-field-mapping
    :originator-id-lowercase m/string-field-mapping})
 
+;;DEPRECATED see :platforms2
 (defnestedmapping platform-hierarchical-mapping
   "Defines hierarchical mappings for platforms."
   {:category m/string-field-mapping
    :category-lowercase m/string-field-mapping
    :series-entity m/string-field-mapping
    :series-entity-lowercase m/string-field-mapping
+   :short-name m/string-field-mapping
+   :short-name-lowercase m/string-field-mapping
+   :long-name m/string-field-mapping
+   :long-name-lowercase m/string-field-mapping
+   :uuid m/string-field-mapping
+   :uuid-lowercase m/string-field-mapping})
+
+(defnestedmapping platform2-hierarchical-mapping
+  "Defines hierarchical mappings for platforms."
+  {:basis m/string-field-mapping
+   :basis-lowercase m/string-field-mapping
+   :category m/string-field-mapping
+   :category-lowercase m/string-field-mapping
+   :sub-category m/string-field-mapping
+   :sub-category-lowercase m/string-field-mapping
    :short-name m/string-field-mapping
    :short-name-lowercase m/string-field-mapping
    :long-name m/string-field-mapping
@@ -312,7 +328,8 @@
 
 (defmapping collection-mapping :collection
   "Defines the elasticsearch mapping for storing collections. These are the
-  fields that will be stored in an Elasticsearch document."
+  fields that will be stored in an Elasticsearch document. Note, fields can only
+  be added to Elasticsearch, not removed or renamed."
   (merge {:deleted m/bool-field-mapping ; deleted=true is a tombstone
           :native-id m/string-field-mapping
           :native-id-lowercase m/string-field-mapping
@@ -327,9 +344,12 @@
           :permitted-group-ids m/string-field-mapping
           :concept-id   m/string-field-mapping
           :revision-id m/int-field-mapping
-          ;; This is used explicitly for sorting. The values take up less space in the
-          ;; fielddata cache.
+
+          ;; DEPRECATED integer type is no longer sufficient for this field
           :concept-seq-id m/int-field-mapping
+
+          ;; This is used explicitly for sorting. The values take up less space in the fielddata cache.
+          :concept-seq-id-long m/unsigned-long-field-mapping
           :entry-id           m/string-field-mapping
           :entry-id-lowercase m/string-field-mapping
           :doi           m/string-field-mapping
@@ -369,12 +389,14 @@
 
           :has-granules m/bool-field-mapping
           :has-granules-or-cwic m/bool-field-mapping
+          :has-granules-or-opensearch m/bool-field-mapping
           :has-variables m/bool-field-mapping
           :has-formats m/bool-field-mapping
           :has-transforms m/bool-field-mapping
           :has-spatial-subsetting m/bool-field-mapping
           :has-temporal-subsetting m/bool-field-mapping
           :has-opendap-url m/bool-field-mapping
+          :cloud-hosted m/bool-field-mapping
 
           :platform-sn                    m/string-field-mapping
           :platform-sn-lowercase          m/string-field-mapping
@@ -403,6 +425,9 @@
           :authors                        (m/doc-values m/string-field-mapping)
           :authors-lowercase              (m/doc-values m/string-field-mapping)
 
+          :consortiums                    m/string-field-mapping
+          :consortiums-lowercase          m/string-field-mapping
+
           ;; Mappings for nested fields used for searching and
           ;; hierarchical facets
           :science-keywords science-keywords-field-mapping
@@ -412,7 +437,11 @@
           :granule-data-format-lowercase        m/string-field-mapping
           :granule-data-format-humanized        prioritized-humanizer-mapping
 
+          ;;DEPRECATED see :platforms2
           :platforms platform-hierarchical-mapping
+          :platforms2 platform2-hierarchical-mapping
+          :platforms2-humanized platform2-hierarchical-mapping
+
           :instruments instrument-hierarchical-mapping
           :archive-centers data-center-hierarchical-mapping
           :location-keywords location-keywords-hierarchical-mapping
@@ -467,7 +496,7 @@
           :personnel m/string-field-mapping
 
           ;; analyzed field for keyword searches
-          :keyword m/text-field-mapping
+          :keyword2 m/text-field-keyword-mapping
           :long-name-lowercase m/string-field-mapping
           :project-ln-lowercase m/string-field-mapping
           :platform-ln-lowercase m/string-field-mapping
@@ -513,6 +542,9 @@
           :tool-types-lowercase (m/doc-values m/string-field-mapping)
           :tool-concept-ids (m/doc-values m/string-field-mapping)
 
+          ;; service features stored as EDN gzipped and base64 encoded for retrieving purpose
+          :service-features-gzip-b64 m/binary-field-mapping
+
           ;; associations with the collection stored as EDN gzipped and base64 encoded for retrieving purpose
           :associations-gzip-b64 m/binary-field-mapping
 
@@ -544,17 +576,24 @@
     :native-id-lowercase (m/doc-values m/string-field-mapping)
     :native-id-stored (m/doc-values m/string-field-mapping)
 
-    ;; This is used explicitly for sorting. The values take up less space in the
-    ;; fielddata cache.
+    ;; DEPRECATED integer type is no longer sufficient for this field
     :concept-seq-id m/int-field-mapping
     :concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
+
+    ;; This is used explicitly for sorting. The values take up less space in the fielddata cache.
+    :concept-seq-id-long m/unsigned-long-field-mapping
+    :concept-seq-id-long-doc-values (m/doc-values m/unsigned-long-field-mapping)
 
     :collection-concept-id m/string-field-mapping
     :collection-concept-id-doc-values (m/doc-values m/string-field-mapping)
 
-    ;; Used for aggregations. It takes up less space in the field data cache.
+    ;; DEPRECATED integer type is no longer sufficient for this field
     :collection-concept-seq-id m/int-field-mapping
     :collection-concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
+
+    ;; Used for aggregations. It takes up less space in the field data cache.
+    :collection-concept-seq-id-long m/unsigned-long-field-mapping
+    :collection-concept-seq-id-long-doc-values (m/doc-values m/unsigned-long-field-mapping)
 
     ;; fields added for atom
     :entry-title (m/not-indexed m/string-field-mapping)
@@ -712,9 +751,12 @@
   fields that will be stored in an Elasticsearch document."
   {:concept-id (m/doc-values m/string-field-mapping)
    :revision-id (m/doc-values m/int-field-mapping)
-   ;; This is used explicitly for sorting. The values take up less space in the
-   ;; fielddata cache.
+
+   ;; DEPRECATED integer type is no longer sufficient for this field
    :concept-seq-id (m/doc-values m/int-field-mapping)
+
+   ;; This is used explicitly for sorting. The values take up less space in the fielddata cache.
+   :concept-seq-id-long (m/doc-values m/unsigned-long-field-mapping)
    :native-id (m/doc-values m/string-field-mapping)
    :native-id-lowercase (m/doc-values m/string-field-mapping)
    :provider-id (m/doc-values m/string-field-mapping)

@@ -545,6 +545,12 @@
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :related-urls [ru3]
                                         :science-keywords [sk1 sk2]
+                                        :platforms [{:short-name "platform #1"
+                                                     :long-name "long platform #1"
+                                                     :type "good platform"}
+                                                    {:short-name "platform #2"
+                                                     :long-name "long platform #2"
+                                                     :type "very good platform"}]
                                         :spatial-coverage
                                         (dc/spatial {:sr :cartesian
                                                      :gsr :cartesian
@@ -624,14 +630,6 @@
         (let [results (search/find-concepts-kml :collection {:concept-id (:concept-id coll1)})]
           (dk/assert-collection-kml-results-match [coll1] results))))
 
-    (testing "csv is not supported"
-      (is (= {:errors ["The mime type [text/csv] is not supported for collections."],
-              :status 400}
-             (search/find-concepts-csv :collection {})))
-      (testing "as csv extension"
-        (is (= {:errors ["The mime type [text/csv] is not supported for collections."],
-                :status 400}
-               (search/find-concepts-csv :collection {} {:url-extension "csv"})))))
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
         (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll5-opendata coll6 coll7 coll8 coll9] results))
@@ -674,12 +672,12 @@
                 [:status :results])))))
 
     (testing "JSON"
-      (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset_id=Dataset1")
+      (let [coll-json (da/collections->expected-json [coll1] "collections.json?dataset_id=Dataset1")
             response (search/find-concepts-json :collection {:dataset-id "Dataset1"})
             {:keys [status results]} response]
         (is (= [200 coll-json] [status results])))
 
-      (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll5 coll6 coll7
+      (let [coll-json (da/collections->expected-json [coll1 coll2 coll3 coll5 coll6 coll7
                                                       coll8 coll9] "collections.json")
             response (search/find-concepts-json :collection {})
             {:keys [status results]} response]
@@ -694,6 +692,47 @@
                                            {:dataset-id "Dataset1"}
                                            {:url-extension "json"})
                 [:status :results])))))))
+
+(deftest search-collection-csv
+  (let [c1 (d/ingest "PROV1" (dc/collection {:short-name "shortie number 1"
+                                              :version-id "V1"
+                                              :long-name "lng nme"
+                                              :processing-level-id "L1"
+                                              :entry-title "I am #1"
+                                              :beginning-date-time "1970-01-01T12:00:00Z"
+                                              :platforms [{:short-name "platform #1"
+                                                           :long-name "platform #1"
+                                                           :type "t"}]}))
+        c2 (d/ingest "PROV2" (dc/collection {:short-name "world's shortest name: so short you won't believe your eyes!"
+                                              :version-id "V2"
+                                              :long-name "world's longest name"
+                                              :processing-level-id "L2"
+                                              :entry-title "lorem ipsum"
+                                              :beginning-date-time "2000-01-01T12:00:00Z"
+                                              :platforms [{:short-name "platform #21"
+                                                           :long-name "platform #21"
+                                                           :type "good platform"}
+                                                          {:short-name "platform #32"
+                                                           :long-name "platform #32"
+                                                           :type "very good platform"}]}))])
+  (index/wait-until-indexed)
+  (testing "csv"
+    (let [response (search/find-concepts-csv :collection {})]
+      (is (= 200 (:status response)))
+      (is (= (str "Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Start Time,End Time\n"
+                  "PROV1,shortie number 1,V1,I am #1,L1,platform #1,1970-01-01T12:00:00.000Z,\nPROV2,world's shortest name: so short you won't believe your eyes!,V2,lorem ipsum,L2,\"platform #21,platform #32\",2000-01-01T12:00:00.000Z,\n")
+             (:body response)))))
+  (testing "csv as extention"
+    (let [response (search/find-concepts-csv :collection {} {:url-extension "csv"})]
+      (is (= 200 (:status response)))
+      (is (= (str "Data Provider,Short Name,Version,Entry Title,Processing Level,Platforms,Start Time,End Time\n"
+                  "PROV1,shortie number 1,V1,I am #1,L1,platform #1,1970-01-01T12:00:00.000Z,\nPROV2,world's shortest name: so short you won't believe your eyes!,V2,lorem ipsum,L2,\"platform #21,platform #32\",2000-01-01T12:00:00.000Z,\n")
+             (:body response)))))
+  (testing "invalid with include-granule-counts"
+    (let [response (search/find-concepts-csv :collection {:include-granule-counts "true"})]
+      (is (= 400 (:status response)))
+      (is (= ["Collections search in csv format is not supported with include_granule_counts option"]
+             (:errors response))))))
 
 (deftest atom-json-link-service-rel-types
   (testing "Opendata search response"
@@ -724,7 +763,7 @@
                                       {:URL "http://example.com/opendap"
                                        :URLContentType "DistributionURL"
                                        :Subtype "OPENDAP DATA"
-                                       :Type "GET DATA"}]}
+                                       :Type "USE SERVICE API"}]}
           data-centers {:DataCenters
                         [(umm-spec-collection/data-center
                           {:Roles ["ARCHIVER"]
@@ -800,12 +839,12 @@
                                        :Subtype "VERTEX"
                                        :Type "GET DATA"}
                                       {:URL "http://example.com/html.html"
-                                       :URLContentType "VisualizationURL"
+                                       :URLContentType "DistributionURL"
                                        :Type "GET DATA"}
                                       {:URL "http://example.com/access-url"
                                        :Description "Test access URL"
-                                       :URLContentType "VisualizationURL"
-                                       :Type "GET DATA"}]}
+                                       :URLContentType "DistributionURL"
+                                       :Type "DOWNLOAD SOFTWARE"}]}
           data-centers {:DataCenters
                         [(umm-spec-collection/data-center
                           {:Roles ["ARCHIVER"]
@@ -853,6 +892,7 @@
 
           "accessURL in distribution no title"
           {:accessURL "http://example.com/access-url"
+           :title "Downloadable software applications"
            :description "Test access URL"} opendata-coll-umm
 
           "downloadURL and default title in distribution"
@@ -873,7 +913,8 @@
            :mediaType "text/csv"} opendata-coll-umm
 
           "accessURL for text mime type no title"
-          {:accessURL "http://example.com/html.html"} opendata-coll-umm))
+          {:accessURL "http://example.com/html.html"
+           :title "Download this dataset"} opendata-coll-umm))
       (testing "Opendata fields in response."
         (are3 [expected-result field-key opendata-test-collection]
           (is (= expected-result (field-key opendata-test-collection)))
@@ -1109,3 +1150,64 @@
         "UMM-JSON has an archive center and processing center"
         "S-UMM-JSON" ["TNRIS" "NSIDC" "LPDAAC" "Processing Center"])
      (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version)))))
+
+(deftest collection-concept-stac-retrieval-test
+  (let [coll-metadata (slurp (io/resource "stac-test/C1299783579-LPDAAC_ECS.xml"))
+        {coll-concept-id :concept-id} (ingest/ingest-concept
+                                       (ingest/concept :collection "PROV1" "foo" :echo10 coll-metadata))
+        expected (-> "stac-test/collection_stac.json"
+                     io/resource
+                     slurp
+                     (string/replace #"CollectionConceptId" coll-concept-id)
+                     (json/decode true))]
+    (index/wait-until-indexed)
+
+    (testing "retrieval of collection concept in STAC format"
+      (util/are3 [options]
+        (let [response (search/retrieve-concept coll-concept-id nil options)]
+          (is (search/mime-type-matches-response? response mt/stac))
+          (is (= expected
+                 (json/decode (:body response) true))))
+
+        "retrieval by accept header"
+        {:accept "application/json; profile=stac-catalogue"}
+
+        "retrieval by suffix"
+        {:url-extension "stac"}))
+
+    (testing "retrieval of granule concept revisions in STAC format is not supported"
+      (util/are3 [options err-msg]
+        (let [{:keys [status errors]} (search/get-search-failure-data
+                                       (search/retrieve-concept
+                                        coll-concept-id
+                                        1
+                                        (merge options {:throw-exceptions true})))]
+          (is (= 400 status))
+          (is (= [err-msg] errors)))
+
+        "retrieval by accept header"
+        {:accept "application/json; profile=stac-catalogue"}
+        "The mime types specified in the accept header [application/json; profile=stac-catalogue] are not supported."
+
+        "retrieval by suffix"
+        {:url-extension "stac"}
+        "The URL extension [stac] is not supported."))))
+
+(deftest search-collection-stac
+  (testing "stac search on collections is not supported"
+    (let [coll1 (d/ingest "PROV1"
+                          (dc/collection {:entry-title "Dataset1"
+                                          :beginning-date-time "1970-01-01T12:00:00Z"
+                                          :spatial-coverage (dc/spatial {:gsr :geodetic})}))
+          coll-concept-id (:concept-id coll1)
+          _ (index/wait-until-indexed)
+          response (search/find-concepts-stac :collection {:concept-id coll-concept-id})
+          ext-response (search/find-concepts-stac :collection
+                                                  {:concept-id coll-concept-id}
+                                                  {:url-extension "stac"})]
+      (is (= 400
+             (:status response)
+             (:status ext-response)))
+      (is (= ["STAC result format is only supported for granule searches"]
+             (:errors response)
+             (:errors ext-response))))))

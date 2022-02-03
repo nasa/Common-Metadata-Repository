@@ -11,17 +11,17 @@
                org.clojure/tools.reader
                org.eclipse.emf/org.eclipse.emf.common
                org.eclipse.emf/org.eclipse.emf.ecore
-               ring/ring-codec]
+               ring/ring-codec
+               org.mozilla/rhino]
   :dependencies [[cheshire "5.8.1"]
                  [clj-time "0.15.1"]
                  [com.fasterxml.jackson.core/jackson-annotations "2.12.0"]
                  [com.fasterxml.jackson.core/jackson-core "2.12.0"]
                  [com.fasterxml.jackson.core/jackson-databind "2.12.0"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]              
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io/commons-io "2.6"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
@@ -42,9 +42,10 @@
                  [org.geotools/gt-shapefile "23-RC"]
                  [org.geotools/gt-geojsondatastore "23-RC"]
                  [org.geotools.xsd/gt-xsd-kml "23-RC"]
-                 [ring/ring-codec "1.1.1"]
-                 [ring/ring-core "1.7.1"]
-                 [ring/ring-json "0.4.0"]
+                 [org.mozilla/rhino "1.7.12"]
+                 [ring/ring-codec "1.1.3"]
+                 [ring/ring-core "1.9.2"]
+                 [ring/ring-json "0.5.1"]
                  [selmer "1.12.5"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.

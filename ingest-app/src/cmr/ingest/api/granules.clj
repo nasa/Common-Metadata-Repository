@@ -29,7 +29,7 @@
     {:status 200}))
 
 (defn- multipart-param->concept
-  "Converts a multipart parameter "
+  "Converts a multipart parameter"
   [provider-id native-id concept-type {:keys [content-type content]}]
   {:metadata content
    :format (mt/keep-version content-type)
@@ -68,7 +68,7 @@
     (let [concept (api-core/body->concept! :granule provider-id native-id body content-type headers)
           ;; Log the ingest attempt
           _ (info (format "Ingesting granule %s from client %s"
-                          (api-core/concept->loggable-string concept) 
+                          (api-core/concept->loggable-string concept)
                           (:client-id request-context)))
           save-granule-result (ingest/save-granule request-context concept)]
       ;; Log the successful ingest, with the metadata size in bytes.

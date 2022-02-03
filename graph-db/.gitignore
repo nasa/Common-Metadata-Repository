@@ -1,0 +1,17 @@
+# OS Files
+.DS_Store
+
+# Project Build Files
+.serverless
+coverage
+dist
+node_modules
+tmp
+doc
+.webpack
+
+# VSCode Settings
+.vscode
+
+# CI Outputs
+junit.xml

@@ -2,6 +2,7 @@
   (:require
    [alex-and-georges.debug-repl]
    [clojure.java.io :as io]
+   [clojure.java.shell :as shell]
    [clojure.main]
    [clojure.pprint :refer [pp pprint]]
    [clojure.repl :refer :all]
@@ -174,6 +175,18 @@
   ;; bootstrapped CMR.
   (transmit-config/set-administrators-group-legacy-guid! "316520E041894014E050007F010038C4"))
 
+(defn banner
+  "Who doesn't like a banner?"
+  []
+  (println (slurp (io/resource "text/banner.txt")))
+  :ok)
+
+(defn network-purge
+  "Tell docker to purge the network"
+  []
+  (println "Purging the docker networks, this may take a minute...")
+  (shell/sh "docker" "network" "prune" "-f"))
+
 (defn start
   "Starts the current development system, taking optional keyword arguments for
   various run modes (see the docstring for `set-modes!` for more details).
@@ -248,14 +261,16 @@
                     (constantly
                       (system/start s))))
 
-  (d/touch-user-clj))
+  (d/touch-user-clj)
+  (banner))
 
 (defn stop
   "Shuts down and destroys the current development system."
   []
-  (alter-var-root #'system
-                  (fn [s]
-                    (when s (system/stop s)))))
+  (alter-var-root #'system (fn [s] (when s (system/stop s))))
+
+  ;; remove all the old connections from docker for the humans
+  (network-purge))
 
 (defn reset
   "Resets the development environment, taking optional keyword arguments for
@@ -332,10 +347,5 @@
      (ltest/run-suites)
      (set-logging-level! orig-log-level))))
 
-(defn banner
-  "Who doesn't like a banner?"
-  []
-  (println (slurp (io/resource "text/banner.txt")))
-  :ok)
 
 (info "Custom dev-system user.clj loaded.")

@@ -2,6 +2,7 @@
   "Provides functions to validate concept"
   (:require
     [cheshire.core :as json]
+    [clojure.data :as data]
     [clojure.string :as str]
     [cmr.common.util :as util :refer [defn-timed]]
     [cmr.common-app.services.kms-fetcher :as kms-fetcher]
@@ -14,6 +15,7 @@
     [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
     [cmr.ingest.services.messages :as msg]
     [cmr.ingest.validation.business-rule-validation :as bv]
+    [cmr.transmit.config :as transmit-config]
     [cmr.transmit.search :as transmit-search]
     [cmr.umm-spec.json-schema :as json-schema]
     [cmr.umm-spec.umm-json :as umm-json]
@@ -77,20 +79,65 @@
       (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index keyword-scheme value)
         {field-path [(msg-fn value)]}))))
 
-(defn match-getdata-format-kms-keywords-validation
-  "A validation that checks that the format matches granule-data-format  KMS field.
-  Takes the following arguments:
-
-  * kms-index - The keywords map as returned by kms-fetcher/get-kms-index
-  * msg-fn - A function taking the value and returning the error to return to the user if it doesn't
-  match."
-  [kms-index msg-fn]
+(defn match-kms-keywords-validation-single
+  "Similar to match-kms-keywords-validation, only it returns a checker for just
+  one field and only does the work if there is a value"
+  [kms-index keyword-scheme msg-fn]
   (fn [field-path value]
     (when value
-      (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index :granule-data-format value)
+      (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index keyword-scheme value)
         {field-path [(msg-fn value)]}))))
 
-(defn keyword-validations
+(defn match-related-url-kms-keywords-validations
+  "Return the value from match-kms-keywords-validation but defaulted to the a
+   related-url validator with message"
+  [kms-index]
+  (match-kms-keywords-validation
+   kms-index
+   :related-urls
+   msg/related-url-content-type-type-subtype-not-matching-kms-keywords))
+
+(defn- related-url-validator
+  "Return a validator that checks a ContentType, Type, and Subtype keywords for
+   Related URL field which can be inside a ContactInformation or be a standalone
+   field. ContactInformation can themselves be found in DataCenters, ContactGroups,
+   and ContactPersons meaning 4 different uses cases for this validator."
+  [kms-index]
+  {:RelatedUrls (match-related-url-kms-keywords-validations kms-index)})
+
+(defn- datacenter-url-validator
+  "Return a validater for datacenter contact information's related url"
+  [kms-index]
+  {:ContactInformation (related-url-validator kms-index)})
+
+(defn- datacenter-contact-url-validator
+  "Return a validator for the related urls inside the Contact information fields
+   belonging to either a :ContactGroups or a :ContactPersons."
+  [kms-index contact-type]
+  {contact-type (v/every {:ContactInformation (related-url-validator kms-index)})})
+
+(defn- datacenter-url-validators
+  "Return all the validators needed to check the related url valids in DataCenter"
+  [kms-index]
+  {:DataCenters
+   (v/every
+    [(datacenter-url-validator kms-index)
+     (datacenter-contact-url-validator kms-index :ContactGroups)
+     (datacenter-contact-url-validator kms-index :ContactPersons)])})
+
+(defn- minimum-keyword-validations
+  "The list of keywords which are validated if the optional validation is not
+   requested. This function is in contrast to expanded-keyword-validations which
+   represent the list of validations to use when reqesting all validations. Over
+   time, buisness rules will dictate adding more validations from that function
+   to this one as requirements become more strict and eventually getting rid of
+   the other function"
+  [context]
+  (let [kms-index (kms-fetcher/get-kms-index context)]
+    (-> (related-url-validator kms-index)
+        (merge (datacenter-url-validators kms-index)))))
+
+(defn- expanded-keyword-validations
   "Creates validations that check various collection fields to see if they match KMS keywords."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
@@ -119,9 +166,56 @@
        (match-kms-keywords-validation
         kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}
      :RelatedUrls
-      (v/every  {:GetData {:Format (match-getdata-format-kms-keywords-validation
+      [(match-related-url-kms-keywords-validations kms-index)
+       (datacenter-url-validators kms-index)
+       (v/every {:GetData {:Format (match-kms-keywords-validation-single
                                     kms-index
-                                    msg/getdata-format-not-matches-kms-keywords)}})}))
+                                    :granule-data-format
+                                    msg/getdata-format-not-matches-kms-keywords)}})]}))
+
+(defn bulk-granule-keyword-validations
+    "These are the keyword validation rules needed for bulk granule metadata.
+     Remember these granules are in the schema format."
+    [context]
+    (let [kms-index (kms-fetcher/get-kms-index context)]
+      {:DataGranule {:ArchiveAndDistributionInformation
+                     (v/every
+                      {:Format (match-kms-keywords-validation-single
+                                kms-index
+                                :granule-data-format
+                                msg/getdata-format-not-matches-kms-keywords)
+                       :Files (v/every {:Format (match-kms-keywords-validation-single
+                                                kms-index
+                                                :granule-data-format
+                                                msg/getdata-format-not-matches-kms-keywords)})})}}))
+
+(defn granule-keyword-validations
+  "These are the keyword validation rules needed for granule metadata. Remember
+   granules are in the legacy format."
+  [context]
+  (let [kms-index (kms-fetcher/get-kms-index context)]
+    {:RelatedUrls {:related-urls (v/every {:format (match-kms-keywords-validation-single
+                                                    kms-index
+                                                    :granule-data-format
+                                                    msg/getdata-format-not-matches-kms-keywords)})}
+     :DataGranule {:ArchiveAndDistributionInformation
+                   {:Format (match-kms-keywords-validation-single
+                             kms-index
+                             :granule-data-format
+                             msg/getdata-format-not-matches-kms-keywords)
+                    :Files (v/every {:Format (match-kms-keywords-validation-single
+                                              kms-index
+                                              :granule-data-format
+                                              msg/getdata-format-not-matches-kms-keywords)})}}
+
+      :data-granule {:format (match-kms-keywords-validation-single
+                              kms-index
+                              :granule-data-format
+                              msg/getdata-format-not-matches-kms-keywords)
+                     :files (v/every {:format (match-kms-keywords-validation-single
+                                               kms-index
+                                               :granule-data-format
+                                               msg/getdata-format-not-matches-kms-keywords)})}}))
 
 (defn- pad-zeros-to-version
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
@@ -178,21 +272,57 @@
         (warn "UMM-C JSON-Schema Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
 
+(defn keyword-validation-rules
+  "Return the list of keyword validations that fit the user's request, specificly
+  check the Cmr-Validate-Keywords parameter and return a different set of
+  validation rules for that use case."
+  [context validation-options]
+  [(if (:validate-keywords? validation-options)
+     (expanded-keyword-validations context)
+     (minimum-keyword-validations context))])
+
 (defn umm-spec-validate-collection
   "Validate collection through umm-spec validation functions. If warn? flag is
   true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
-  [collection validation-options context warn?]
-  (when-let [err-messages (seq (umm-spec-validation/validate-collection
-                                collection
-                                (when (:validate-keywords? validation-options)
-                                  [(keyword-validations context)])))]
-    (if (or (:validate-umm? validation-options)
-            (config/return-umm-spec-validation-errors)
-            (not warn?))
-      (errors/throw-service-errors :invalid-data err-messages)
-      (do
-        (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
-        err-messages))))
+  ([collection validation-options context warn?]
+   (umm-spec-validate-collection collection nil validation-options context warn?))
+  ([collection prev-collection validation-options context warn?]
+   (when-let [err-messages (seq (umm-spec-validation/validate-collection
+                                 collection
+                                 (keyword-validation-rules context validation-options)))]
+     (if (or (:validate-umm? validation-options)
+             (config/return-umm-spec-validation-errors)
+             (not warn?))
+       ;; whenever it's time to throw errors, we want to check if it's an collection update and
+       ;; it's not bulk-update and progressive-update-enabled is true. If so, we want to throw
+       ;; errors only when new errors are introduced, otherwise return all the existing errors as
+       ;; error-warnings.
+       (if (and (config/progressive-update-enabled)
+                (not (:bulk-update? validation-options))
+                prev-collection)
+         (let [prev-err-messages (if (and (:test-existing-errors? validation-options)
+                                          ;; double check to make sure only the local and ci tests can use the header.
+                                          (transmit-config/echo-system-token? context)
+                                          (= "mock-echo-system-token" (:token context)))
+                                   ;; We can't really test the case when the errors are existing errors
+                                   ;; because we can't ingest invalid collections into the system.
+                                   ;; We can only mimic the case when the validation errors for the updated
+                                   ;; collection are the same as the validation errors for the previous revision
+                                   ;; of the collection.
+                                   err-messages
+                                   (seq (umm-spec-validation/validate-collection
+                                       prev-collection
+                                       (keyword-validation-rules context validation-options))))
+               ;; get the newly introduced validation errors
+               new-err-messages (seq (first (data/diff (set err-messages) (set prev-err-messages))))]
+            (if new-err-messages
+              (errors/throw-service-errors :invalid-data new-err-messages)
+              ;; when there is no newly introduced errors, err-messages contains only existing errors.
+              err-messages))
+         (errors/throw-service-errors :invalid-data err-messages))
+       (do
+         (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+         err-messages)))))
 
 (defn umm-spec-validate-collection-warnings
   "Validate umm-spec collection validation warnings functions - errors that we want
@@ -215,7 +345,8 @@
                           (humanizer-alias-cache/update-collection-with-aliases context
                                                                                 collection
                                                                                 true)
-                          granule))]
+                          granule
+                          (granule-keyword-validations context)))]
     (if-errors-throw :invalid-data errors)))
 
 (defn validate-granule-umm
@@ -225,15 +356,18 @@
   (if-errors-throw :invalid-data (umm-spec-validation/validate-granule
                                   (humanizer-alias-cache/update-collection-with-aliases
                                    context collection false)
-                                  granule)))
+                                  granule
+                                  (granule-keyword-validations context))))
 
 (defn-timed validate-business-rules
   "Validates the concept against CMR ingest rules."
-  [context concept]
-  (if-errors-throw :invalid-data
-                   (mapcat #(% context concept)
-                           (bv/business-rule-validations
-                            (:concept-type concept)))))
+  ([context concept]
+   (validate-business-rules context concept nil))
+  ([context concept prev-concept]
+   (if-errors-throw :invalid-data
+                    (mapcat #(% context concept prev-concept)
+                            (bv/business-rule-validations
+                             (:concept-type concept))))))
 
 (defn- measurement-validation
   "A validation that checks that the measurement matches a known KMS field. Takes the following arguments:
@@ -252,12 +386,33 @@
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
     {:MeasurementIdentifiers (measurement-validation
-                              kms-index msg/measurements-not-matches-kms-keywords)}))
+                              kms-index msg/measurements-not-matches-kms-keywords)
+
+     :RelatedURLs (v/every [{:Format (match-kms-keywords-validation-single
+                                      kms-index
+                                      :granule-data-format
+                                      msg/getdata-format-not-matches-kms-keywords)}
+                            {:MimeType (match-kms-keywords-validation-single
+                                        kms-index
+                                        :mime-type
+                                        msg/mime-type-not-matches-kms-keywords)}])}))
+
+(defn- variable-keyword-validations-unignorable
+  "Creates validations that check various collection fields to see if they match
+  KMS keywords. These validatios must always pass regardless of the warn? flag."
+  [context]
+  (let [kms-index (kms-fetcher/get-kms-index context)]
+    {:RelatedURLs [(match-related-url-kms-keywords-validations kms-index)]}))
 
 (defn umm-spec-validate-variable
   "Validate variable through umm-spec validation functions. If warn? flag is
   true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
   [variable context warn?]
+  (when-let [non-ignorable (seq (umm-spec-validation/validate-variable-with-no-defaults
+                                 variable
+                                 [(variable-keyword-validations-unignorable context)]))]
+    (errors/throw-service-errors :invalid-data non-ignorable))
+
   (when-let [err-messages (seq (umm-spec-validation/validate-variable
                                 variable
                                 [(variable-keyword-validations context)]))]

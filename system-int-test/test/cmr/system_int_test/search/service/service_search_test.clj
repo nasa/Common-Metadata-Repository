@@ -588,8 +588,8 @@
         {:accept (mime-types/with-version mime-types/umm-json umm-version/current-service-version)}
 
         "explicit UMM JSON version through suffix"
-        "1.3.4"
-        {:url-extension "umm_json_v1_3_4"})))
+        "1.4.1"
+        {:url-extension "umm_json_v1_4_1"})))
 
   (testing "Searching with non-existent UMM JSON version"
     (are3 [options]

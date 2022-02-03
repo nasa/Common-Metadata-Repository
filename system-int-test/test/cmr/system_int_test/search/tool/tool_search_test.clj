@@ -555,7 +555,7 @@
             tool-associations (get-in meta [:associations :tools])]
 
         (is (= tool-associations [tool1-concept-id])))
-         
+
       ;; verify tool search UMM JSON response is correct and does not have
       ;; collection associations like variable search response does
       (are3 [umm-version options]
@@ -572,8 +572,8 @@
         {:accept (mime-types/with-version mime-types/umm-json umm-version/current-tool-version)}
 
         "explicit UMM JSON version through suffix"
-        "1.0"
-        {:url-extension "umm_json_v1_0"})))
+        "1.1"
+        {:url-extension "umm_json_v1_1"})))
 
   (testing "Searching with non-existent UMM JSON version"
     (are3 [options]

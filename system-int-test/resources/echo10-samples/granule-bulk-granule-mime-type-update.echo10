@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Granule>
+    <GranuleUR>mime-type-update-gran-ur</GranuleUR>
+    <InsertTime>2015-08-19T19:31:03.105Z</InsertTime>
+    <LastUpdate>2019-12-06T16:40:19.803Z</LastUpdate>
+    <Collection>
+        <ShortName>echo10-collection</ShortName>
+        <VersionId>1</VersionId>
+    </Collection>
+    <DataGranule>
+        <SizeMBDataGranule>331.33482456207275</SizeMBDataGranule>
+        <DayNightFlag>UNSPECIFIED</DayNightFlag>
+        <ProductionDateTime>2015-08-19T10:35:04.000Z</ProductionDateTime>
+    </DataGranule>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>2002-06-02T09:00:00.000Z</BeginningDateTime>
+            <EndingDateTime>2002-06-02T09:00:00.000Z</EndingDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Spatial>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-179.641</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>53.855</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>58.885</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-87.300</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+    </Spatial>
+    <OrbitCalculatedSpatialDomains>
+        <OrbitCalculatedSpatialDomain/>
+    </OrbitCalculatedSpatialDomains>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>https://podaac-tools.jpl.nasa.gov/drive/files/allData/ghrsst/data/GDS2/L4/GLOB/JPL/MUR/v4.1/2002/153/20020602090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc</URL>
+            <URLDescription>The HTTP location for the granule.</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>https://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L4/GLOB/JPL/MUR/v4.1/2002/153/20020602090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.html</URL>
+            <Description>The OPENDAP location for the granule.</Description>
+            <Type>OPENDAP</Type>
+            <MimeType>text/html</MimeType>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://link-1</URL>
+            <Description>a generic link with the wrong mime-type</Description>
+            <Type>documentation</Type>
+            <MimeType>text/error+csv</MimeType>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://link-2</URL>
+            <Description>another generic link</Description>
+            <Type>direct download</Type>
+            <MimeType>text/html</MimeType>
+        </OnlineResource>
+    </OnlineResources>
+    <DataFormat>NETCDF</DataFormat>
+</Granule>

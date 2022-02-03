@@ -38,6 +38,8 @@
    [cmr.indexer.data.concepts.tool :as tool]
    [cmr.indexer.data.concepts.variable :as variable]
    [cmr.indexer.data.elasticsearch :as es]
+   [cmr.transmit.metadata-db :as metadata-db]
+   [cmr.umm.collection.entry-id :as eid]
    [cmr.umm-spec.acl-matchers :as umm-matchers]
    [cmr.umm-spec.date-util :as date-util]
    [cmr.umm-spec.location-keywords :as lk]
@@ -47,7 +49,6 @@
    [cmr.umm-spec.time :as spec-time]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.util :as su]
-   [cmr.umm.collection.entry-id :as eid]
    [cmr.umm.umm-collection :as umm-c]))
 
 (defn spatial->elastic
@@ -173,12 +174,64 @@
        distinct
        (remove nil?)))
 
+(defn- cloud-hosted?
+  "Test if the collection meets the criteria for being cloud hosted"
+  [collection tags]
+  (or (not (empty? (:DirectDistributionInformation collection)))
+      (tag/has-cloud-s3-tag? tags)))
+
+(def geoss-url-list
+  ["https://creativecommons.org/licenses/by/4.0/legalcode"
+   "http://creativecommons.org/licenses/by/4.0/"
+   "https://earthdata.nasa.gov/earth-observation-data/data-use-policy"
+   "https://science.nasa.gov/earth-science/earth-science-data/data-information-policy"
+   "https://asf.alaska.edu/data-sets/sar-data-sets/sentinel-1/sentinel-1-terms-conditions/"
+   "https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/sentinel3/terms-and-conditions/"])
+
+(defn- contains-geoss-url?
+  "Returns true if use-constraints fields contain urls in geoss-url-list."
+  [use-constraints]
+  (let [description (:Description use-constraints)
+        linkage (get-in use-constraints [:LicenseURL :Linkage])
+        license-text (:LicenseText use-constraints)]
+    (or (and description (some #(str/includes? description %) geoss-url-list))
+        (and linkage (some #(str/includes? linkage %) geoss-url-list))
+        (and license-text (some #(str/includes? license-text %) geoss-url-list)))))
+
+(defn- alter-consortiums
+  "Alter the consortiums list based on use-constraints.
+  GEOSS is added to the consortiums when:
+  1. FreeAndOpenData in UseConstraints is true, or
+  2. GEOSS url exists in UseConstraints, or
+  3. UseConstraints doesn't exist and collection is an EOSDIS record.
+  GEOSS is removed from the consortiums when:
+  1. FreeAndOpendata in UseConstraints is false."
+  [consortiums use-constraints]
+  (if use-constraints
+    (let [free-and-open (:FreeAndOpenData use-constraints)]
+      (case free-and-open
+        true (distinct (conj consortiums "GEOSS"))
+        false (remove #(= "GEOSS" %) consortiums)
+        nil (if (contains-geoss-url? use-constraints)
+              (distinct (conj consortiums "GEOSS"))
+              consortiums)))
+    (if (some #(= "EOSDIS" %) consortiums)
+      ;; provider's consortiums contains EOSDIS indicates the colleciton is an EOSDIS record.
+      (distinct (conj consortiums "GEOSS"))
+      consortiums)))
+
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id native-id
                 created-at revision-date deleted format extra-fields tag-associations
                 variable-associations service-associations tool-associations]} concept
+        consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
+                              (metadata-db/get-providers context))
+        original-consortiums (when consortiums-str
+                               (remove empty? (str/split (str/upper-case consortiums-str) #" ")))
+        altered-consortiums (alter-consortiums original-consortiums (:UseConstraints collection))
+        consortiums (seq altered-consortiums)
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
@@ -190,7 +243,7 @@
         s3-bucket-and-object-prefix-names (get-in collection [:DirectDistributionInformation :S3BucketAndObjectPrefixNames])
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (into [(util/safe-lowercase doi)]
-                        (mapv #(util/safe-lowercase (:DOI %)) (get collection :AssociatedDOIs)))
+                            (mapv #(util/safe-lowercase (:DOI %)) (get collection :AssociatedDOIs)))
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         spatial-keywords (lk/location-keywords->spatial-keywords-for-indexing
                           (:LocationKeywords collection))
@@ -207,12 +260,16 @@
         personnel (opendata/opendata-email-contact collection)
         platforms (map util/map-keys->kebab-case platforms)
         kms-index (kf/get-kms-index context)
-        platforms-nested (map #(platform/platform-short-name->elastic-doc kms-index %)
-                              (map :short-name platforms))
-        platform-short-names (->> (map :short-name platforms-nested)
+        platforms2-nested (map #(platform/platform2-nested-fields->elastic-doc kms-index %)
+                               (map :short-name platforms))
+        platform-short-names (->> (map :short-name platforms2-nested)
                                   (map str/trim))
-        platform-long-names (->> (distinct (keep :long-name (concat platforms platforms-nested)))
-                                 (map str/trim))
+        platform-long-names (->> platforms2-nested
+                                 (concat platforms)
+                                 (keep :long-name)
+                                 distinct
+                                 (map str/trim)
+                                 (remove str/blank?))
         instruments (mapcat :instruments platforms)
         instruments (concat instruments (mapcat :composed-of instruments))
         instruments-nested (map #(instrument/instrument-short-name->elastic-doc kms-index %)
@@ -221,9 +278,12 @@
                                     (map :short-name)
                                     distinct
                                     (map str/trim))
-        instrument-long-names (->> (distinct (keep :long-name
-                                                   (concat instruments instruments-nested)))
-                                   (map str/trim))
+        instrument-long-names (->> instruments-nested
+                                   (concat instruments)
+                                   (keep :long-name)
+                                   distinct
+                                   (map str/trim)
+                                   (remove str/blank?))
         sensors (mapcat :composed-of instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
@@ -296,13 +356,14 @@
                                              [:SpatialExtent
                                               :HorizontalSpatialDomain
                                               :ResolutionAndCoordinateSystem
-                                              :HorizontalDataResolution]))]
-
+                                              :HorizontalDataResolution]))
+        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))]
     (merge {:concept-id concept-id
             :doi-stored doi
             :doi-lowercase doi-lowercase
             :revision-id revision-id
-            :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+            :concept-seq-id (min es/MAX_INT concept-seq-id)
+            :concept-seq-id-long concept-seq-id
             :native-id native-id
             :native-id-lowercase (str/lower-case native-id)
             :user-id user-id
@@ -311,9 +372,13 @@
             :has-granules has-granules
             :has-granules-or-cwic (or
                                    has-granules
-                                   (some?
-                                    (some #(= (common-config/cwic-tag) %)
-                                          (map :tag-key-lowercase tags))))
+                                   (contains? (set consortiums) "CWIC"))
+            :has-granules-or-opensearch (or
+                                         has-granules
+                                         (not (empty?
+                                               (set/intersection
+                                                (set consortiums)
+                                                (set (common-config/opensearch-consortiums))))))
             :granule-data-format granule-data-format
             :granule-data-format-lowercase (map str/lower-case granule-data-format)
             :entry-id entry-id
@@ -341,7 +406,9 @@
             :platform-sn-lowercase  (map str/lower-case platform-short-names)
 
             ;; hierarchical fields
-            :platforms platforms-nested
+            :platforms nil ;; DEPRECATED ; use :platforms2
+            :platforms2 platforms2-nested
+            :platforms2-humanized platforms2-nested
             :instruments instruments-nested
             :archive-centers archive-centers
             :data-centers data-centers
@@ -368,6 +435,8 @@
             :sensor-sn-lowercase  (map str/lower-case sensor-short-names)
             :authors authors
             :authors-lowercase (map str/lower-case authors)
+            :consortiums consortiums
+            :consortiums-lowercase (map util/safe-lowercase consortiums)
             :project-sn project-short-names
             :project-sn-lowercase  (map str/lower-case project-short-names)
             :two-d-coord-name two-d-coord-names
@@ -388,6 +457,7 @@
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
             :has-opendap-url (not (empty? (filter opendap-util/opendap-url? related-urls)))
+            :cloud-hosted (cloud-hosted? collection tags)
             :publication-references opendata-references
             :collection-citations (map json/generate-string opendata-citations)
             :update-time update-time
@@ -396,11 +466,11 @@
             :created-at created-at
             :coordinate-system coordinate-system
 
-            ;; fields added to support keyword searches
-            :keyword (k/create-keywords-field concept-id collection
-                                              {:platform-long-names platform-long-names
-                                               :instrument-long-names instrument-long-names
-                                               :entry-id entry-id})
+            ;; fields added to support keyword searches including the quoted string case.
+            :keyword2 (k/create-keywords-field concept-id collection
+                                               {:platform-long-names platform-long-names
+                                                :instrument-long-names instrument-long-names
+                                                :entry-id entry-id})
             :platform-ln-lowercase (map str/lower-case platform-long-names)
             :instrument-ln-lowercase (map str/lower-case instrument-long-names)
             :sensor-ln-lowercase (map str/lower-case sensor-long-names)
@@ -455,10 +525,12 @@
         tombstone-umm (umm-collection/map->UMM-C {:EntryTitle entry-title})
         tombstone-umm (merge {:concept-id concept-id} tombstone-umm)
         tombstone-permitted-group-ids (collection-util/get-coll-permitted-group-ids
-                                       context provider-id tombstone-umm)]
+                                       context provider-id tombstone-umm)
+        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))]
     {:concept-id concept-id
      :revision-id revision-id
-     :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+     :concept-seq-id (min es/MAX_INT concept-seq-id)
+     :concept-seq-id-long concept-seq-id
      :native-id native-id
      :native-id-lowercase (util/safe-lowercase native-id)
      :user-id user-id

@@ -282,5 +282,5 @@
                                                      :include-headers true})
               headers (:headers response)]
           (is (= "application/json;charset=utf-8" (get headers "Content-Type")))
-          (is (= "CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count, CMR-Shapefile-Simplified-Point-Count"
+          (is (= "CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Search-After, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count, CMR-Shapefile-Simplified-Point-Count"
                  (get headers "Access-Control-Expose-Headers"))))))))

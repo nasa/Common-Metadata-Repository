@@ -74,9 +74,13 @@
     ;; verify collection associated with services with one supported output formats that does not
     ;; match its input formats, has-formats true
     (service-util/assert-collection-search-result
-     coll1 {:has-formats true} [serv1-concept-id serv3-concept-id serv4-concept-id])
+     coll1
+     {:has-formats true :service-features {:opendap {:has-formats true}}}
+     [serv1-concept-id serv3-concept-id serv4-concept-id])
     (service-util/assert-collection-search-result
-     coll2 {:has-formats true} [serv1-concept-id serv3-concept-id serv4-concept-id])
+     coll2
+     {:has-formats true :service-features {:opendap {:has-formats true}}}
+     [serv1-concept-id serv3-concept-id serv4-concept-id])
 
     (testing "delete service affect collection search has-formats field"
       ;; Delete service4
@@ -93,13 +97,13 @@
       ;; before update service3, collections' has formats is false
       (service-util/assert-collection-search-result
        coll1
-       {:has-formats false :has-transforms false :has-spatial-subsetting false :has-temporal-subsetting false
-        :has-variables false}
+       {:has-formats false :has-transforms false :has-spatial-subsetting false
+        :has-temporal-subsetting false :has-variables false}
        [serv1-concept-id serv3-concept-id])
       (service-util/assert-collection-search-result
        coll2
-       {:has-formats false :has-transforms false :has-spatial-subsetting false :has-temporal-subsetting false
-        :has-variables false}
+       {:has-formats false :has-transforms false :has-spatial-subsetting false
+        :has-temporal-subsetting false :has-variables false}
        [serv1-concept-id serv3-concept-id])
 
       ;; update service3 to have two supported formats and spatial subsetting
@@ -116,8 +120,9 @@
       ;; the has-transforms is not affected by the SupportedInputFormats or SubsetTypes
       (service-util/assert-collection-search-result
        coll1
-       {:has-formats true :has-transforms false :has-spatial-subsetting true :has-temporal-subsetting false
-        :has-variables false}
+       {:has-formats true :has-transforms false :has-spatial-subsetting true
+        :has-temporal-subsetting false :has-variables false
+        :service-features {:opendap {:has-formats true :has-spatial-subsetting true}}}
        [serv1-concept-id serv3-concept-id])
 
       ;; update service3 to temporal subsetting and  also have InterpolationTypes
@@ -132,13 +137,17 @@
       ;; verify has-transforms is true after the service is updated with InterpolationTypes
       (service-util/assert-collection-search-result
        coll1
-       {:has-formats true :has-transforms true :has-spatial-subsetting false :has-temporal-subsetting true
-        :has-variables false}
+       {:has-formats true :has-transforms true :has-spatial-subsetting false
+        :has-temporal-subsetting true :has-variables false
+        :service-features {:opendap
+                           {:has-formats true :has-transforms true :has-temporal-subsetting true}}}
        [serv1-concept-id serv3-concept-id])
       (service-util/assert-collection-search-result
        coll2
-       {:has-formats true :has-transforms true :has-spatial-subsetting false :has-temporal-subsetting true
-        :has-variables false}
+       {:has-formats true :has-transforms true :has-spatial-subsetting false
+        :has-temporal-subsetting true :has-variables false
+        :service-features {:opendap
+                           {:has-formats true :has-transforms true :has-temporal-subsetting true}}}
        [serv1-concept-id serv3-concept-id]))
 
     (testing "variable associations together with service associations"
@@ -152,13 +161,23 @@
         ;; coll2 has-variables is still false
         (service-util/assert-collection-search-result
          coll1
-         {:has-formats true :has-transforms true :has-spatial-subsetting false :has-temporal-subsetting true
-          :has-variables true}
+         {:has-formats true :has-transforms true :has-spatial-subsetting false
+          :has-temporal-subsetting true :has-variables true
+          :service-features {:opendap
+                             {:has-formats true
+                              :has-transforms true
+                              :has-temporal-subsetting true
+                              ;; service level has-variables is not affected by variable association
+                              :has-variables false}}}
          [serv1-concept-id serv3-concept-id] [var-concept-id])
         (service-util/assert-collection-search-result
          coll2
-         {:has-formats true :has-transforms true :has-spatial-subsetting false :has-temporal-subsetting true
-          :has-variables false}
+         {:has-formats true :has-transforms true :has-spatial-subsetting false
+          :has-temporal-subsetting true :has-variables false
+          :service-features {:opendap
+                             {:has-formats true
+                              :has-transforms true
+                              :has-temporal-subsetting true}}}
          [serv1-concept-id serv3-concept-id])))))
 
 (deftest collection-service-search-has-transforms-and-service-deletion-test
@@ -188,10 +207,12 @@
             :Name "service3"
             :ServiceOptions {:SupportedInputProjections [{:ProjectionName "Sinusoidal"}]}})
 
+          ;; The service also test service features for Type not OPeNDAP, ESI or Harmony
           {serv4-concept-id :concept-id}
           (service-util/ingest-service-with-attrs
            {:native-id "serv4"
             :Name "Service4"
+            :Type "THREDDS"
             :ServiceOptions {:SupportedOutputProjections [{:ProjectionName "Mercator"}
                                                           {:ProjectionName "Sinusoidal"}]}})]
       ;; index the collections so that they can be found during service association
@@ -221,11 +242,14 @@
       (index/wait-until-indexed)
 
       ;; verify collection associated with services with two supported projections, has-transforms true
+      ;; And since Service 4 is not of Type OPeNDAP, ESI or Harmony, there is no service features
       (service-util/assert-collection-search-result
-       coll1 {:has-transforms true}
+       coll1
+       {:has-transforms true}
        [serv1-concept-id serv2-concept-id serv3-concept-id serv4-concept-id])
       (service-util/assert-collection-search-result
-       coll2 {:has-transforms true}
+       coll2
+       {:has-transforms true}
        [serv1-concept-id serv2-concept-id serv3-concept-id serv4-concept-id])))
 
   (let [token (e/login (s/context) "user1")
@@ -243,18 +267,21 @@
         (service-util/ingest-service-with-attrs
          {:native-id "serv8"
           :Name "service8"
+          :Type "OPeNDAP"
           :ServiceOptions {:Subset {:SpatialSubset {:BoundingBox {:AllowMultipleValues false}}}}})
 
         {serv9-concept-id :concept-id}
         (service-util/ingest-service-with-attrs
          {:native-id "serv9"
           :Name "service9"
+          :Type "ESI"
           :ServiceOptions {:InterpolationTypes ["Bilinear Interpolation"]}})
 
         ;; service for testing non-spatial SubsetType and service deletion
         serv10-concept (service-util/make-service-concept
                         {:native-id "serv10"
                          :Name "service10"
+                         :Type "Harmony"
                          :ServiceOptions {:Subset {:VariableSubset {:AllowMultipleValues false}}}})
         {serv10-concept-id :concept-id} (service-util/ingest-service serv10-concept)
 
@@ -269,7 +296,7 @@
         {serv11-concept-id :concept-id} (service-util/ingest-service serv11-concept)]
     (index/wait-until-indexed)
 
-    (testing "SubsetType does not affect has-transforms"
+    (testing "SubsetType does not affect has-transforms, also testing OPeNDAP service features"
       ;; sanity check before the association is made
       (service-util/assert-collection-search-result
        coll3 {:has-transforms false :has-spatial-subsetting false} [])
@@ -280,9 +307,13 @@
 
       ;; after service association is made, has-transforms is still false
       (service-util/assert-collection-search-result
-       coll3 {:has-transforms false :has-spatial-subsetting true} [serv8-concept-id]))
+       coll3
+       {:has-transforms false
+        :has-spatial-subsetting true
+        :service-features {:opendap {:has-spatial-subsetting true}}}
+       [serv8-concept-id]))
 
-    (testing "InterpolationTypes affects has-transforms"
+    (testing "InterpolationTypes affects has-transforms, also testing ESI service features"
       ;; sanity check before the association is made
       (service-util/assert-collection-search-result coll4 {:has-transforms false} [])
 
@@ -291,9 +322,13 @@
       (index/wait-until-indexed)
 
       ;; after service association is made, has-transforms is true
-      (service-util/assert-collection-search-result coll4 {:has-transforms true} [serv9-concept-id]))
+      (service-util/assert-collection-search-result
+       coll4
+       {:has-transforms true
+        :service-features {:esi {:has-transforms true}}}
+       [serv9-concept-id]))
 
-    (testing "Non-spatial SubsetType does not affect has-spatial-subsetting"
+    (testing "Non-spatial SubsetType does not affect has-spatial-subsetting, also testing Harmony service features"
       ;; sanity check before the association is made
       (service-util/assert-collection-search-result
        coll5 {:has-variables false :has-spatial-subsetting false :has-transforms false} [])
@@ -304,9 +339,14 @@
 
       ;; after service association is made, has variables is true and has-transforms is still false
       (service-util/assert-collection-search-result
-       coll5 {:has-variables true :has-spatial-subsetting false :has-transforms false} [serv10-concept-id])
+       coll5
+       {:has-variables true
+        :has-spatial-subsetting false
+        :has-transforms false
+        :service-features {:harmony {:has-variables true}}}
+       [serv10-concept-id])
 
-      (testing "deletion of service affects collection search service association fields"
+      (testing "deletion of service affects collection search service association fields, also testing mixed service features"
         ;; associate coll5 also with service11 to make other service related fields true
         (au/associate-by-concept-ids token serv11-concept-id [{:concept-id (:concept-id coll5)}])
         (index/wait-until-indexed)
@@ -314,7 +354,15 @@
         ;; sanity check that all service related fields are true and service associations are present
         (service-util/assert-collection-search-result
          coll5
-         {:has-variables true :has-formats true :has-transforms true :has-spatial-subsetting true}
+         {:has-variables true
+          :has-formats true
+          :has-transforms true
+          :has-spatial-subsetting true
+          :service-features {:harmony {:has-variables true}
+                             :opendap {:has-variables false
+                                       :has-formats true
+                                       :has-transforms true
+                                       :has-spatial-subsetting true}}}
          [serv10-concept-id serv11-concept-id])
 
         ;; Delete service11
@@ -324,7 +372,11 @@
         ;; verify the service related fields affected by service11 are set properly after deletion
         (service-util/assert-collection-search-result
          coll5
-         {:has-variables true :has-formats false :has-transforms false :has-spatial-subsetting false}
+         {:has-variables true
+          :has-formats false
+          :has-transforms false
+          :has-spatial-subsetting false
+          :service-features {:harmony {:has-variables true}}}
          [serv10-concept-id])
 
         ;; Delete service10

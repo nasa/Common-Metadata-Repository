@@ -8,6 +8,7 @@
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
@@ -20,13 +21,18 @@
 (def CURL_CLIENT_ID "curl")
 (def UNKNOWN_CLIENT_ID "unknown")
 
+(defconfig allow-echo-token
+  "Flag that indicates if we accept the 'Echo-Token' header."
+  {:default true :type Boolean})
+
 (defn get-token
   "Returns the token the user passed in the headers or parameters"
   [params headers]
   (let [non-empty-string #(when-not (str/blank? %) %)]
-    (or (non-empty-string (get headers tc/authorization-header))
+    (or (non-empty-string (get headers tc/token-header))
         (non-empty-string (:token params))
-        (non-empty-string (get headers tc/token-header)))))
+        (when (allow-echo-token) 
+          (non-empty-string (get headers tc/echo-token-header))))))
 
 (defn- get-client-id
   "Gets the client id passed by the client or tries to determine it from other headers"

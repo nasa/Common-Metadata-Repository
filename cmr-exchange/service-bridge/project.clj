@@ -20,7 +20,8 @@
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :exclusions [[org.clojure/clojurescript]]
+  :exclusions [[org.clojure/clojurescript]
+               [org.eclipse.emf/org.eclipse.emf.ecore]]
   :dependencies [[cheshire "5.10.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
@@ -44,16 +45,19 @@
                  [metosin/reitit-ring "0.3.9"]
                  [metosin/ring-http-response "0.9.1"]
                  [org.clojure/clojure "1.10.1"]
-                 [org.clojure/clojurescript "1.10.764"]
+                 [org.clojure/clojurescript "1.10.891"]
                  [org.clojure/core.async "0.4.500"]
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
+                 [org.geotools/gt-geometry "24.5"]
+                 [org.geotools/gt-referencing "24.5"]
                  [ring/ring-core "1.7.1"]
                  [ring/ring-codec "1.1.2"]
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.12.12"]
                  [tolitius/xml-in "0.1.0"]]
+  :repositories [["osgeo" "https://repo.osgeo.org/repository/release/"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]
@@ -102,6 +106,9 @@
                                      :integration :integration
                                      :system :system
                                      :default (complement :system)}}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
+                                     [lambdaisland/kaocha-cloverage "1.0.75"]
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}
              :docs {:dependencies [[gov.nasa.earthdata/codox-theme "1.0.0-SNAPSHOT"]]
                     :plugins [[lein-codox "0.10.7"]
                               [lein-marginalia "0.9.1"]]
@@ -158,11 +165,22 @@
             "yagni" ["with-profile" "+lint" "yagni"]
             "lint" ["do"
                     ["kibit"]]
-                    ;["eastwood"]
             "ltest" ["with-profile" "+test,+system,+local" "ltest"]
             "junit" ["with-profile" "+test,+system,+local" "test2junit"]
             "ltest-with-geo" ["with-profile" "+test,+system,+geo,+local" "ltest"]
             "junit-with-geo" ["with-profile" "+test,+system,+geo,+local" "test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "stest" ["kaocha" "--focus" ":system"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-stest" ["stest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]
+
             ;; Security
             "check-sec" ["with-profile" "+system,+geo,+local,+security" "do"
                          ["clean"]

@@ -18,7 +18,7 @@
                     :accept :json
                     :throw-exceptions false
                     :connection-manager (s/conn-mgr)
-                    :headers {"echo-token" token}})]
+                    :headers {"authorization" token}})]
     {:status (:status response)
      :body (json/decode (:body response) true)}))
 

@@ -167,8 +167,13 @@
    ;; etc.
    SpatialInformation
 
-   ;; Identifies the collection as a Science Quality collection or a non-science-quality collection
-   ;; such as a Near-Real-Time collection.
+   ;; This element is used to identify the collection's ready for end user consumption latency from
+   ;; when the data was acquired by an instrument. NEAR_REAL_TIME is defined to be ready for end
+   ;; user consumption 1 to 3 hours after data acquisition. LOW_LATENCY is defined to be ready for
+   ;; consumption 3 to 24 hours after data acquisition. EXPEDITED is defined to be 1 to 4 days after
+   ;; data acquisition. SCIENCE_QUALITY is defined to mean that a collection has been fully and
+   ;; completely processed which usually takes between 2 to 3 weeks after data acquisition. OTHER is
+   ;; defined for collection where the latency is between EXPEDITED and SCIENCE_QUALITY.
    CollectionDataType
 
    ;; Designed to protect privacy and/or intellectual property by allowing the author to specify how
@@ -883,6 +888,8 @@
 (defrecord UseConstraintsType
   [
    Description
+
+   FreeAndOpenData
 
    ;; This element holds the URL and associated information to access the License on the web. If
    ;; this element is used the LicenseText element cannot be used.

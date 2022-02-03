@@ -2,7 +2,7 @@
   (:require
    [clojure.edn :as edn]
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.access-control.data.access-control-index :as index]
    [cmr.access-control.data.acl-json-results-handler :as result-handler]
    [cmr.access-control.data.acl-schema :as schema]
@@ -14,8 +14,9 @@
    [cmr.access-control.services.messages :as msg]
    [cmr.access-control.services.parameter-validation :as pv]
    [cmr.acl.core :as acl]
-   [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.cache :as cache]
+   [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.services.search.elastic-search-index :as common-esi]
    [cmr.common-app.services.search.params :as cp]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
@@ -363,6 +364,24 @@
       (auth-util/get-sids context :guest)
       (auth-util/get-sids context (tokens/get-user-id context user-token)))))
 
+(defn- fix-single-string-with-multiple-values
+  "Check if string has embedded array, if not then return result conj'd with results,
+   if so then convert it into an array of strings and concat that with results."
+  [results result]
+  (let [result (string/trim result)]
+    (if (string/starts-with? result "[")
+      (as-> (string/replace result #"\[|\]|\\|\"" "") result
+            (string/split result #",")
+            (map string/trim result)
+            (concat results result))
+      (conj results result))))
+
+(defn- parse-single-string-multi-valued-bucket-lists
+  "Depending on how data is initially ingested, sometimes multiple values can be returned as a single string.
+   Here we attempt to parse out that single string value(of multiple values) into the proper format."
+  [results]
+  (reduce fix-single-string-with-multiple-values [] results))
+
 (defn- fetch-s3-buckets-by-sids
   "Fetch the list of S3 buckets available to the SIDs provided. Buckets
   associated with the list of providers will be returned. If no providers
@@ -389,7 +408,9 @@
          :items
          (map :s3-bucket-and-object-prefix-names)
          flatten
-         distinct)))
+         distinct
+         (remove nil?)
+         parse-single-string-multi-valued-bucket-lists)))
 
 (defn- get-and-cache-providers
   "Retrieves and caches the current providers in the database."
@@ -418,6 +439,16 @@
      (map msg/provider-does-not-exist invalid-providers)))
   providers)
 
+(defmethod common-esi/concept-type->index-info :collection
+  [context _ query]
+  ;; This function mirrors the multimethod definition in search.
+  ;; Search is not a dependency of access-control and this must be
+  ;; defined for collection search to work
+  {:index-name (if (:all-revisions? query)
+                 "1_all_collection_revisions"
+                 "collection_search_alias")
+   :type-name "collection"})
+
 (defn s3-buckets-for-user
   "Returns a list of s3 buckets and object prefix names by provider."
   [context user provider-ids]
@@ -427,8 +458,7 @@
      (msg/users-do-not-exist [user])))
 
   (let [sids (map name (auth-util/get-sids context user))
-        providers (if (empty? provider-ids)
-                    (map :provider-id (get-cached-providers context))
+        providers (when (seq provider-ids)
                     (validate-providers-exist context provider-ids))]
     (if (empty? sids)
       []

@@ -20,7 +20,7 @@
   Commonly used parameters in this namespace are:
   keyword-scheme     The type of keyword. For example :platforms or :instruments.
   keyword-hierarchy  An ordered array of subfields for the given keyword scheme. For example,
-  [:category :series-entity :short-name :long-name] for the :platforms keyword scheme.
+  [:basis :category :sub-category :short-name :long-name] for the :platforms keyword scheme.
   keyword-map        A single GCMD keyword with each of its subfields as a key in a map. If the
                      keyword does not have a value for a subfield, that key will not be present in
                      the map."
@@ -167,6 +167,13 @@
 (def keyword-api-routes
   (context "/keywords" []
     ;; Return a list of keywords for the given scheme
-    (GET "/:keyword-scheme" {{:keys [keyword-scheme]} :params
+    (GET "/:keyword-scheme" {params :params
                              request-context :request-context}
-      (get-hierarchical-keywords request-context keyword-scheme))))
+      (let [keyword-scheme (:keyword-scheme params)
+            search-params (dissoc params :keyword-scheme)
+            non-empty-search-params (util/remove-map-keys empty? search-params)]
+        (if (> (count (keys non-empty-search-params)) 0)
+          (errors/throw-service-error
+           :bad-request
+           (format "Search parameter filters are not supported: [%s]" non-empty-search-params))
+          (get-hierarchical-keywords request-context keyword-scheme))))))

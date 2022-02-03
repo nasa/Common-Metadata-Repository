@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.collection-translation-test
   (:require
     [clojure.java.io :as io]
+    [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.common.mime-types :as mime-types]
     [cmr.common.util :as util :refer [update-in-each]]
@@ -86,68 +87,93 @@
         ;; We can't modify the expected because we can't expect a changing current-time either.
         (if (and (= "dif" (name input-format)) (= "echo10" (name output-format)))
           (is (= expected (assoc parsed-umm-json :DataDates nil)))
-          (is (= expected parsed-umm-json)))))
+          (is (= expected parsed-umm-json))))))
 
-    (testing (format "Translating iso19115 to umm-json produces the right UseConstraints")
-      (let [input-format :iso19115
-            output-format :umm-json
-            options {:skip-sanitize-umm-c false}
-            input-xml (slurp (io/resource "CMR-4839-4651/iso19115_artificial_test_data.xml"))
-            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
-                                                                         output-format options)
-            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
-        (is (= (umm-c/map->UseConstraintsType
-                 {:Description "First Description"
-                  :LicenseURL (umm-cmn/map->OnlineResourceType
-                                {:Linkage " https://www.nasa.examplelicenseurl1.gov"})})
-               (:UseConstraints parsed-umm-json)))
-        (is (= 200 status))))
+  (testing (format "Translating iso19115 to umm-json produces the right UseConstraints")
+    (let [input-format :iso19115
+          output-format :umm-json
+          options {:skip-sanitize-umm-c false}
+          input-xml (slurp (io/resource "CMR-4839-4651/iso19115_artificial_test_data.xml"))
+          {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                       output-format options)
+          parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+      (is (= (umm-c/map->UseConstraintsType
+               {:Description "First Description"
+                :LicenseURL (umm-cmn/map->OnlineResourceType
+                              {:Linkage " https://www.nasa.examplelicenseurl1.gov"})})
+             (:UseConstraints parsed-umm-json)))
+      (is (= 200 status))))
 
-    (testing (format "Translating iso19115 to umm-json without skipping sanitizing makes use of default values")
-      (let [input-format :iso19115
-            output-format :umm-json
-            options {:skip-sanitize-umm-c false}
-            collection (assoc expected-conversion/example-collection-record :DataCenters nil)
-            input-xml (umm-spec/generate-metadata test-context collection input-format)
-            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
-                                                                         output-format options)
-            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
-        (is (= [(umm-cmn/map->DataCenterType {:Roles ["ARCHIVER"], :ShortName "Not provided"})]
-               (:DataCenters parsed-umm-json)))
-        (is (= 200 status))))
+  (testing (format "Translating iso19115 to umm-json produces the right DataCenters")
+    (let [input-format :iso19115
+          output-format :umm-json
+          options {:skip-sanitize-umm-c false}
+          input-xml (slurp (io/resource "CMR-7636/iso19115_test_data.xml"))
+          {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                       output-format options)
+          parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+      (is (= [(umm-cmn/map->DataCenterType
+               {:Roles ["ARCHIVER"] 
+                :ShortName "Not provided"})]
+             (:DataCenters parsed-umm-json)))
+      (is (= 200 status))))
 
-    (testing (format "Translating iso19115 to umm-json with skipping sanitizing and without skipping umm validation")
-      (let [input-format :iso19115
-            output-format :umm-json
-            options {:skip-sanitize-umm-c true}
-            collection (assoc expected-conversion/example-collection-record :DataCenters nil)
-            input-xml (umm-spec/generate-metadata test-context collection input-format)
-            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
-                                                                            output-format options)]
-        (is (= "{\"errors\":[\"#: required key [DataCenters] not found\"]}" body))
-        (is (= 422 status))))
+  (testing (format "Translating umm-json to iso19115 produces the right codelist")
+    (let [input-format :umm-json
+          output-format :iso19115
+          options {:skip-sanitize-umm-c false}
+          input-json (slurp (io/resource "CMR-7557/test_data.json"))
+          {:keys [status body]} (ingest/translate-metadata :collection input-format input-json
+                                                                       output-format options)]
+      (is (string/includes? body "codeList=\"http://data.noaa.gov/"))
+      (is (not (string/includes? body "codeList=\"http://www.ngdc.noaa.gov/")))
+      (is (= 200 status))))
 
-    (testing (format "Translating iso19115 to umm-json with skipping sanitizing and with skipping validation")
-      (let [input-format :iso19115
-            output-format :umm-json
-            options {:skip-sanitize-umm-c true :query-params {:skip_umm_validation true}}
-            collection (assoc expected-conversion/example-collection-record :DataCenters nil)
-            input-xml (umm-spec/generate-metadata test-context collection input-format)
-            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
-                                                                         output-format options)
-            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
-        (is (= nil (:DataCenters parsed-umm-json)))
-        (is (= 200 status))))
+  (testing (format "Translating iso19115 to umm-json without skipping sanitizing makes use of default values")
+    (let [input-format :iso19115
+          output-format :umm-json
+          options {:skip-sanitize-umm-c false}
+          collection (assoc expected-conversion/example-collection-record :DataCenters nil)
+          input-xml (umm-spec/generate-metadata test-context collection input-format)
+          {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                       output-format options)
+          parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+      (is (= [(umm-cmn/map->DataCenterType {:Roles ["ARCHIVER"], :ShortName "Not provided"})]
+             (:DataCenters parsed-umm-json)))
+      (is (= 200 status))))
 
-    (testing (format "Translating iso19115 to dif10 with skipping sanitizing")
-      (let [input-format :iso19115
-            output-format :dif10
-            options {:skip-sanitize-umm-c true}
-            input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
-            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
-                                                                         output-format options)]
-        (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>Skipping santization during translation is only supported when the target format is UMM-C</error></errors>" body))
-        (is (= 400 status)))))
+  (testing (format "Translating iso19115 to umm-json with skipping sanitizing and without skipping umm validation")
+    (let [input-format :iso19115
+          output-format :umm-json
+          options {:skip-sanitize-umm-c true}
+          collection (assoc expected-conversion/example-collection-record :DataCenters nil)
+          input-xml (umm-spec/generate-metadata test-context collection input-format)
+          {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                          output-format options)]
+      (is (= "{\"errors\":[\"#: required key [DataCenters] not found\"]}" body))
+      (is (= 422 status))))
+
+  (testing (format "Translating iso19115 to umm-json with skipping sanitizing and with skipping validation")
+    (let [input-format :iso19115
+          output-format :umm-json
+          options {:skip-sanitize-umm-c true :query-params {:skip_umm_validation true}}
+          collection (assoc expected-conversion/example-collection-record :DataCenters nil)
+          input-xml (umm-spec/generate-metadata test-context collection input-format)
+          {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                       output-format options)
+          parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+      (is (= nil (:DataCenters parsed-umm-json)))
+      (is (= 200 status))))
+
+  (testing (format "Translating iso19115 to dif10 with skipping sanitizing")
+    (let [input-format :iso19115
+          output-format :dif10
+          options {:skip-sanitize-umm-c true}
+          input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
+          {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                       output-format options)]
+      (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>Skipping santization during translation is only supported when the target format is UMM-C</error></errors>" body))
+      (is (= 400 status))))
 
   (testing "Failure cases"
     (testing "unsupported input format"

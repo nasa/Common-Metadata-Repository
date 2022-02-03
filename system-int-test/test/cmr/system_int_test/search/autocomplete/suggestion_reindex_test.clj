@@ -176,7 +176,7 @@
         _ (index/refresh-elastic-index)]
     (testing "Suggestions associated to collections with access constraints are returned"
       (compare-autocomplete-results
-       (get-in (search/get-autocomplete-json "q=From" {:headers {:echo-token user1-token}}) [:feed :entry])
+       (get-in (search/get-autocomplete-json "q=From" {:headers {:authorization user1-token}}) [:feed :entry])
        [{:type "project",
          :value "From whence you came!",
          :fields "From whence you came!"}]))

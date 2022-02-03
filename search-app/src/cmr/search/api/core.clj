@@ -27,6 +27,7 @@
     mt/opendata
     mt/csv
     mt/kml
+    mt/stac
     mt/native})
 
 (defn add-scroll-id-and-search-params-to-cache
@@ -34,19 +35,21 @@
   [context scroll-id search-params]
   (when scroll-id
     (let [short-scroll-id (str (hash scroll-id))
-          id-cache (cache/context->cache context search/scroll-id-cache-key)]
+          id-cache (cache/context->cache context search/scroll-id-cache-key)
+          ;; The shapefile is not available and not needed for scrolling queries
+          search-params (dissoc search-params :shapefile)]
       (cache/set-value id-cache short-scroll-id {:scroll-id scroll-id :search-params search-params})
       short-scroll-id)))
 
 (defn get-scroll-id-and-search-params-from-cache
-  "Returns the full ES scroll-id and search-params from the cache using the short scroll-id as a key. Throws a
-  service error :not-found if the key does not exist in the cache."
+  "Returns the full ES scroll-id and search-params from the cache using the short scroll-id as a
+  key. Throws a service error :not-found if the key does not exist in the cache."
   [context short-scroll-id]
   (when short-scroll-id
     (if-let [scroll-id-and-search-params (-> context
                                              (cache/context->cache search/scroll-id-cache-key)
                                              (cache/get-value short-scroll-id))]
-      scroll-id-and-search-params 
+      scroll-id-and-search-params
       (svc-errors/throw-service-error
        :not-found
        (format "Scroll session [%s] does not exist" short-scroll-id)))))
@@ -62,7 +65,7 @@
 (defn path-w-extension->revision-id
   "Parses the path-w-extension to extract the revision id. URL path should
   be of the form :concept-id[/:revision-id][.:format], e.g.,
-  http://localohst:3003/concepts/C120000000-PROV1/2.xml."
+  http://localhost:3003/concepts/C120000000-PROV1/2.xml."
   [path-w-extension]
   (when-let [revision-id (nth (re-matches #"([^\.]+)/([^\.]+)(?:\..+)?" path-w-extension) 2)]
     (try
@@ -70,8 +73,8 @@
         (Integer/parseInt revision-id))
       (catch NumberFormatException e
         (svc-errors/throw-service-error
-          :invalid-data
-          (format "Revision id [%s] must be an integer greater than 0." revision-id))))))
+         :invalid-data
+         (format "Revision id [%s] must be an integer greater than 0." revision-id))))))
 
 (defn get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension,
@@ -79,13 +82,13 @@
   it is a map in the format of {:format :umm-json :version \"1.2\"}"
   ([concept-type path-w-extension headers default-mime-type]
    (get-search-results-format
-     concept-type path-w-extension headers search-result-supported-mime-types default-mime-type))
+    concept-type path-w-extension headers search-result-supported-mime-types default-mime-type))
   ([concept-type path-w-extension headers valid-mime-types default-mime-type]
    (let [result-format (mt/mime-type->format
-                         (or (mt/path->mime-type path-w-extension valid-mime-types)
-                             (mt/extract-header-mime-type valid-mime-types headers "accept" true)
-                             (mt/extract-header-mime-type valid-mime-types headers "content-type" false))
-                         default-mime-type)]
+                        (or (mt/path->mime-type path-w-extension valid-mime-types)
+                            (mt/extract-header-mime-type valid-mime-types headers "accept" true)
+                            (mt/extract-header-mime-type valid-mime-types headers "content-type" false))
+                        default-mime-type)]
      (if (contains? #{:umm-json :umm-json-results} result-format)
        {:format result-format
         :version (or (mt/version-of (mt/get-header headers "accept"))
@@ -117,8 +120,8 @@
   ([context response]
    (search-response context response nil))
   ([context response search-params]
-   (let [short-scroll-id (add-scroll-id-and-search-params-to-cache 
-                           context (:scroll-id response) search-params)
+   (let [short-scroll-id (add-scroll-id-and-search-params-to-cache
+                          context (:scroll-id response) search-params)
          response (-> response
                       (update :result mt/format->mime-type)
                       (update :scroll-id (constantly short-scroll-id)))]

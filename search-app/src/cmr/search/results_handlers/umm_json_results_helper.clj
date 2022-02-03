@@ -3,7 +3,7 @@
   (:require
    [clojure.edn :as edn]
    [clojure.string :as string]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.results-model :as results]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
@@ -24,7 +24,8 @@
    "has-transforms"
    "has-spatial-subsetting"
    "has-temporal-subsetting"
-   "associations-gzip-b64"])
+   "associations-gzip-b64"
+   "s3-bucket-and-object-prefix-names"])
 
 (defn elastic-result->meta
   "Takes an elasticsearch result and returns a map of the meta fields for the response."
@@ -32,7 +33,7 @@
   (let [{:keys [concept-id revision-id native-id user-id provider-id metadata-format
                 revision-date deleted has-variables has-formats has-transforms
                 has-spatial-subsetting has-temporal-subsetting
-                associations-gzip-b64]} (:_source elastic-result)
+                associations-gzip-b64 s3-bucket-and-object-prefix-names]} (:_source elastic-result)
         revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))]
     (util/remove-nil-keys
      {:concept-type concept-type
@@ -49,6 +50,7 @@
       :has-transforms has-transforms
       :has-spatial-subsetting has-spatial-subsetting
       :has-temporal-subsetting has-temporal-subsetting
+      :s3-links s3-bucket-and-object-prefix-names
       :associations (some-> associations-gzip-b64
                             util/gzip-base64->string
                             edn/read-string)})))
@@ -57,7 +59,7 @@
   "Returns a tuple of concept id and revision id from the elastic result of the given concept type."
   [concept-type elastic-result]
   [(get-in elastic-result [:_source :concept-id])
-   (elastic-results/get-revision-id-from-elastic-result concept-type elastic-result)])
+   (er-to-qr/get-revision-id-from-elastic-result concept-type elastic-result)])
 
 (defmulti elastic-result+metadata->umm-json-item
   "Returns the UMM JSON item for the given concept type, elastic result and metadata."
@@ -68,10 +70,11 @@
   "Returns the query results for the given concept type, query and elastic results."
   [context concept-type query elastic-results]
   (let [{:keys [result-format]} query
-        hits (get-in elastic-results [:hits :total :value])
-        timed-out (:timed_out elastic-results)
-        scroll-id (:_scroll_id elastic-results)
-        elastic-matches (get-in elastic-results [:hits :hits])
+        hits (er-to-qr/get-hits elastic-results)
+        timed-out (er-to-qr/get-timedout elastic-results)
+        scroll-id (er-to-qr/get-scroll-id elastic-results)
+        search-after (er-to-qr/get-search-after elastic-results)
+        elastic-matches (er-to-qr/get-elastic-matches elastic-results)
         ;; Get concept metadata in specified UMM format and version
         tuples (mapv (partial elastic-result->tuple concept-type) elastic-matches)
         concepts (metadata-cache/get-formatted-concept-revisions
@@ -88,4 +91,5 @@
                            :timed-out timed-out
                            :items items
                            :result-format result-format
-                           :scroll-id scroll-id})))
+                           :scroll-id scroll-id
+                           :search-after search-after})))

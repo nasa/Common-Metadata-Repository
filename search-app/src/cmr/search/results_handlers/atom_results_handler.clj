@@ -8,7 +8,7 @@
    [clojure.set :as set]
    [clojure.walk :as walk]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.results-model :as r]
    [cmr.common.date-time-parser :as dtp]
@@ -66,6 +66,9 @@
                      "has-transforms"
                      "has-spatial-subsetting"
                      "has-temporal-subsetting"
+                     "platforms"
+                     "consortiums"
+                     "service-features-gzip-b64"
                      "associations-gzip-b64"
                      "_score"]
         atom-fields (if (contains? (set (:result-features query)) :tags)
@@ -104,6 +107,28 @@
                    orbit-swath-helper/orbit-elastic-fields
                    acl-rhh/granule-elastic-fields)))))
 
+(def base-has-features
+  "default has_* features in JSON format"
+  {:has-formats false
+   :has-variables false
+   :has-transforms false
+   :has-spatial-subsetting false
+   :has-temporal-subsetting false})
+
+(defn- gzip-b64-str->service-features
+  "Returns the service features in JSON format from the gzipped base64 string"
+  [service-features-gzip-b64]
+  (let [service-features (if service-features-gzip-b64
+                           (-> service-features-gzip-b64
+                               util/gzip-base64->string
+                               edn/read-string)
+                           {})]
+    (-> service-features
+        (update :opendap #(merge base-has-features %))
+        (update :esi #(merge base-has-features %))
+        (update :harmony #(merge base-has-features %))
+        util/map-keys->snake_case)))
+
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
   (let [{concept-id :_id
@@ -139,6 +164,9 @@
           has-transforms :has-transforms
           has-spatial-subsetting :has-spatial-subsetting
           has-temporal-subsetting :has-temporal-subsetting
+          platforms :platforms
+          consortiums :consortium
+          service-features-gzip-b64 :service-features-gzip-b64
           associations-gzip-b64 :associations-gzip-b64} :_source} elastic-result
         start-date (acl-rhh/parse-elastic-datetime start-date)
         end-date (acl-rhh/parse-elastic-datetime end-date)
@@ -169,6 +197,8 @@
             :data-center provider-id
             :archive-center archive-center
             :organizations (when (seq organizations) organizations)
+            :platforms (map :short-name platforms)
+            :consortiums consortiums
             :start-date start-date
             :end-date end-date
             :atom-links atom-links
@@ -188,6 +218,7 @@
             :has-transforms has-transforms
             :has-spatial-subsetting has-spatial-subsetting
             :has-temporal-subsetting has-temporal-subsetting
+            :service-features (gzip-b64-str->service-features service-features-gzip-b64)
             :associations (some-> associations-gzip-b64
                                   util/gzip-base64->string
                                   edn/read-string)}
@@ -265,23 +296,26 @@
 
 (defn- elastic-results->query-results
   [context query elastic-results]
-  (let [hits (get-in elastic-results [:hits :total :value])
-        scroll-id (:_scroll_id elastic-results)
-        elastic-matches (get-in elastic-results [:hits :hits])
+  (let [hits (er-to-qr/get-hits elastic-results)
+        timed-out (er-to-qr/get-timedout elastic-results)
+        scroll-id (er-to-qr/get-scroll-id elastic-results)
+        search-after (er-to-qr/get-search-after elastic-results)
+        elastic-matches (er-to-qr/get-elastic-matches elastic-results)
         items (if (= :granule (:concept-type query))
                 (granule-elastic-results->query-result-items context query elastic-matches)
                 (map collection-elastic-result->query-result-item elastic-matches))]
     (r/map->Results {:hits hits
                      :items items
-                     :timed-out (:timed_out elastic-results)
+                     :timed-out timed-out
                      :result-format (:result-format query)
-                     :scroll-id scroll-id})))
+                     :scroll-id scroll-id
+                     :search-after search-after})))
 
-(defmethod elastic-results/elastic-results->query-results [:collection :atom]
+(defmethod er-to-qr/elastic-results->query-results [:collection :atom]
   [context query elastic-results]
   (elastic-results->query-results context query elastic-results))
 
-(defmethod elastic-results/elastic-results->query-results [:granule :atom]
+(defmethod er-to-qr/elastic-results->query-results [:granule :atom]
   [context query elastic-results]
   (elastic-results->query-results context query elastic-results))
 
@@ -316,7 +350,8 @@
    :documentation "http://esipfed.org/ns/fedsearch/1.1/documentation#"
    :metadata "http://esipfed.org/ns/fedsearch/1.1/metadata#"
    :service "http://esipfed.org/ns/fedsearch/1.1/service#"
-   :cloud "http://esipfed.org/ns/fedsearch/1.1/cloud#"})
+   :s3 "http://esipfed.org/ns/fedsearch/1.1/s3#"
+   :search "http://esipfed.org/ns/fedsearch/1.1/search#"})
 
 (defn- add-attribs
   "Returns the attribs with the field-value pair added if there is a value"
@@ -427,10 +462,11 @@
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters organizations tags has-variables has-formats has-transforms
-                has-spatial-subsetting has-temporal-subsetting]} reference
+                has-spatial-subsetting has-temporal-subsetting consortiums]} reference
         granule-count (get granule-counts-map id 0)]
     (x/element :entry {}
                (x/element :id {} id)
+               (map #(x/element :consortium {} %) consortiums)
                (x/element :title {:type "text"} title)
                (x/element :summary {:type "text"} summary)
                (x/element :updated {} updated)

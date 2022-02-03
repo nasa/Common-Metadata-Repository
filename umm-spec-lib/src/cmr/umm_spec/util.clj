@@ -32,7 +32,9 @@
 
 (def valid-url-content-types-map
   {"DistributionURL" {"DOWNLOAD SOFTWARE" ["MOBILE APP"]
+                      "GET CAPABILITIES" ["OpenSearch" "GIBS"]
                       "GET DATA" ["APPEEARS"
+                                  "CERES Ordering Tool"
                                   "DATA COLLECTION BUNDLE"
                                   "DATA TREE"
                                   "DATACAST URL"
@@ -50,11 +52,13 @@
                                   "NOMADS"
                                   "Order"
                                   "PORTAL"
+                                  "Sub-Orbital Order Tool"
                                   "Subscribe"
                                   "USGS EARTH EXPLORER"
                                   "VERTEX"
                                   "VIRTUAL COLLECTION"]
-                      "GOTO WEB TOOL" ["LIVE ACCESS SERVER (LAS)"
+                      "GOTO WEB TOOL" ["HITIDE"
+                                       "LIVE ACCESS SERVER (LAS)"
                                        "MAP VIEWER"
                                        "SIMPLE SUBSET WIZARD (SSW)"
                                        "SUBSETTER"]
@@ -69,7 +73,7 @@
                                          "WEB FEATURE SERVICE (WFS)"
                                          "WEB MAP SERVICE (WMS)"
                                          "WEB MAP TILE SERVICE (WMTS)"]}
-   "VisualizationURL" {"GET RELATED VISUALIZATION" ["GIOVANNI" "MAP" "WORLDVIEW"]}
+   "VisualizationURL" {"GET RELATED VISUALIZATION" ["GIOVANNI" "MAP" "SOTO" "WORLDVIEW"]}
    "CollectionURL" {"DATA SET LANDING PAGE" []
                     "EXTENDED METADATA" []
                     "PROFESSIONAL HOME PAGE" []

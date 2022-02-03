@@ -2,7 +2,7 @@
 # cmr (sub)command-completion
 
 APPS='access-control bootstrap dev-system indexer ingest metadata-db search virtual-product'
-LIBS='acl-lib collection-renderer-lib common-app-lib common-lib elastic-utils-lib es-spatial-plugin message-queue-lib oracle-lib orbits-lib redis-lib spatial-lib transmit-lib umm-lib umm-spec-lib vdd-spatial-viz'
+LIBS='acl-lib common-app-lib common-lib elastic-utils-lib es-spatial-plugin message-queue-lib oracle-lib orbits-lib redis-lib spatial-lib transmit-lib umm-lib umm-spec-lib vdd-spatial-viz'
 APPS_LIBS="$APPS $LIBS"
 
 # Level 1

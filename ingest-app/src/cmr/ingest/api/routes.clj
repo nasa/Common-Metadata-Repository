@@ -1,21 +1,19 @@
 (ns cmr.ingest.api.routes
   "Defines the HTTP URL routes for the ingest API."
   (:require
-   [clojure.stacktrace :refer [print-stack-trace]]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
-   [cmr.common.api.errors :as api-errors]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer [info]]
    [cmr.ingest.api.bulk :as bulk]
    [cmr.ingest.api.collections :as collections]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.api.granules :as granules]
-   [cmr.ingest.api.multipart :as mp]
    [cmr.ingest.api.provider :as provider-api]
    [cmr.ingest.api.services :as services]
    [cmr.ingest.api.subscriptions :as subscriptions]
+   [cmr.ingest.services.subscriptions-helper :as subscriptions-helper]
    [cmr.ingest.api.tools :as tools]
    [cmr.ingest.api.translation :as translation-api]
    [cmr.ingest.api.variables :as variables]
@@ -74,6 +72,16 @@
            (acl/verify-ingest-management-permission ctx :update)
            (jobs/trigger-partial-refresh-collection-granule-aggregation-cache
             ctx)
+           {:status 200})
+     (POST "/trigger-granule-task-cleanup-job"
+           {ctx :request-context}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jobs/trigger-bulk-granule-update-task-table-cleanup ctx)
+           {:status 200})
+     (POST "/trigger-email-subscription-processing"
+           {ctx :request-context params :params}
+           (acl/verify-ingest-management-permission ctx :update)
+           (subscriptions-helper/trigger-email-subscription-processing ctx params)
            {:status 200}))))
 
 (def ingest-routes
@@ -96,10 +104,15 @@
     ;; granule bulk update status route
     (api-core/set-default-error-format
      :json
-     (context "/granule-bulk-update/status/:task-id" [task-id]
-       (GET "/"
+     (context "/granule-bulk-update/status" []
+       (POST "/"
          request
-         (bulk/get-granule-task-status task-id request))))
+         (bulk/update-completed-granule-task-statuses request)
+         {:status 200})
+       (context "/:task-id" [task-id]
+         (GET "/"
+           request
+           (bulk/get-granule-task-status request task-id)))))
     ;; Provider ingest routes
     (api-core/set-default-error-format
      :xml

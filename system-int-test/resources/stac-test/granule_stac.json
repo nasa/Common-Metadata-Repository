@@ -1,0 +1,69 @@
+{
+  "type": "Feature",
+  "id": "GranuleConceptId",
+  "stac_version": "1.0.0",
+  "stac_extensions": ["https://stac-extensions.github.io/eo/v1.0.0/schema.json"],
+  "collection": "CollectionConceptId",
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [137.636, -61.5733],
+        [138.7815, -61.7447],
+        [139.1569, -61.2115],
+        [138.0291, -61.043],
+        [137.636, -61.5733]
+      ]
+    ]
+  },
+  "bbox": [137.636, -61.7447, 139.1569, -61.043],
+  "links": [{
+    "rel": "self",
+    "href": "http://localhost:3003/concepts/GranuleConceptId.stac"
+  }, {
+    "rel": "parent",
+    "href": "http://localhost:3003/concepts/CollectionConceptId.stac"
+  }, {
+    "rel": "collection",
+    "href": "http://localhost:3003/concepts/CollectionConceptId.stac"
+  }, {
+    "rel": "root",
+    "href": "http://localhost:3003/"
+  }, {
+    "rel": "via",
+    "href": "http://localhost:3003/concepts/GranuleConceptId.json"
+  }, {
+    "rel": "via",
+    "href": "http://localhost:3003/concepts/GranuleConceptId.umm_json"
+  }],
+  "properties": {
+    "datetime": "2000-03-06T00:30:05.810Z",
+    "start_datetime": "2000-03-06T00:30:05.810Z",
+    "end_datetime": "2000-03-06T00:30:05.810Z",
+    "eo:cloud_cover": 100.0
+  },
+  "assets": {
+    "data": {
+      "href": "ftp://f5eil01v.edn.ecs.nasa.gov//FS1/ATLAS/ATL04.000/2015.10.27/ATL04_20151027T044311_00810302_000_01.h5",
+      "type": "application/x-hdfeos"
+    },
+    "data1": {
+      "href": "ftp://f5eil01v.edn.ecs.nasa.gov//FS1/ATLAS/ATL04.000/2015.10.27/ATL04_20151027T044311_00810303_000_01.hdf",
+      "type": "application/x-hdfeos"
+    },
+    "browse": {
+      "title": "This Browse file may be downloaded directly from this link",
+      "href": "https://e4ftl01.cr.usgs.gov//WORKING/BRWS/Browse.001/2008.02.16/Browse_00103062000003005_20080215152034_8089.1.VNIR.jpg",
+      "type": "image/jpeg"
+    },
+    "opendap": {
+      "title": "(OPENDAP DATA)",
+      "href": "https://f5eil01v.edn.ecs.nasa.gov/opendapurl",
+      "type": "text/xml"
+    },
+    "metadata": {
+      "href": "http://localhost:3003/concepts/GranuleConceptId.xml",
+      "type": "application/xml"
+    }
+  }
+}

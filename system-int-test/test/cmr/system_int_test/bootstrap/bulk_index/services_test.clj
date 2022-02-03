@@ -171,14 +171,16 @@
          coll1-concept-id (:concept-id coll1)
          token (e/login (s/context) "user1")
          {serv1-concept-id :concept-id} (service/ingest-service-with-attrs
-                                         {:native-id "serv1"
-                                          :Name "service1"})
+                                          {:native-id "serv1"
+                                           :Name "service1"
+                                           :Type "ESI"
+                                           :ServiceOptions {:InterpolationTypes ["Bilinear Interpolation"]}})
          {serv2-concept-id :concept-id} (service/ingest-service-with-attrs
-                                         {:native-id "serv2"
-                                          :Name "service2"})]
+                                          {:native-id "serv2"
+                                           :Name "service2"})]
      ;; index the collection and services so that they can be found during service association
      (index/wait-until-indexed)
-     
+
      (core/disable-automatic-indexing)
      (au/associate-by-concept-ids token serv1-concept-id [{:concept-id coll1-concept-id}])
      ;; service 2 is used to test service association tombstone is indexed correctly
@@ -191,4 +193,8 @@
      (index/wait-until-indexed)
 
      ;; verify collection is associated with service1, not service2
-     (service/assert-collection-search-result coll1 {:has-formats false} [serv1-concept-id]))))
+     (service/assert-collection-search-result
+       coll1
+       {:has-transforms true
+        :service-features {:esi {:has-transforms true}}}
+       [serv1-concept-id]))))

@@ -234,7 +234,7 @@
       :EntryTitle (char-string-value citation-el "gmd:title")
       :DOI (doi/parse-doi doc citation-base-xpath)
       :AssociatedDOIs (doi/parse-associated-dois doc associated-doi-xpath)
-      :Version (char-string-value citation-el "gmd:edition")
+      :Version (or (char-string-value citation-el "gmd:edition") "Not Applicable")
       :VersionDescription version-description
       :Abstract abstract
       :Purpose (su/truncate (char-string-value md-data-id-el "gmd:purpose") su/PURPOSE_MAX sanitize?)

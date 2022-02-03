@@ -3,8 +3,10 @@
   to elasticsearch for indexing."
   (:require
    [clojure.string :as string]
+   [cmr.common.log :refer [warn]]
    [cmr.common.util :as util]
    [cmr.indexer.data.concepts.attribute :as attrib]
+   [cmr.indexer.data.elasticsearch :as es]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.util :as su]))
 
@@ -16,21 +18,51 @@
   "Defines Regex to split strings with special characters into multiple words for keyword searches."
   #"[!@#$%^&()\-=_+{}\[\]|;'.,\\\"/:<>?`~* ]")
 
-(defn- prepare-keyword-field
+(def keyword-phrase-separator-regex
+  "Defines Regex to split strings with special characters into multiple phrases for keyword phrase searches."
+  #"[!@#$%^&()\-=_+{}\[\]|;'.,\\\"/:<>?`~*]")
+
+(defn- wrapped-keyword?
+  "Checks if the field-value about to be processed is a term surrounded by parens or brackets.
+   If it is, we want to add the usual keywords, but also add the unwrapped field-value on its own."
   [field-value]
+  (let [first-char (first field-value)
+        last-char (last field-value)]
+    (and (or (= \( first-char)
+             (= \{ first-char)
+             (= \[ first-char))
+         (or (= \) last-char)
+             (= \} last-char)
+             (= \] last-char)))))
+
+(defn- prepare-keyword-field
   "Convert a string to lowercase then separate it into keywords"
+  [field-value]
   (when field-value
     (let [field-value (string/lower-case field-value)]
-      (into [field-value] (string/split field-value keywords-separator-regex)))))
+      (if (wrapped-keyword? field-value)
+        (as-> (subs field-value 1 (dec (.length field-value))) trimmed-value
+              (into [field-value trimmed-value] (string/split field-value keywords-separator-regex)))
+        (into [field-value] (string/split field-value keywords-separator-regex))))))
 
 (defn field-values->keyword-text
   "Returns the keyword text for the given list of field values."
   [field-values]
   (->> field-values
+       (mapcat #(string/split % #" "))
        (mapcat prepare-keyword-field)
        (keep not-empty)
        (apply sorted-set)
        (string/join \space)))
+
+(defn field-values->individual-words
+  "Return a list of individual keyword words for the given list of field values."
+  [field-values]
+  (->> field-values
+       (mapcat #(string/split % #" "))
+       (mapcat prepare-keyword-field)
+       (keep not-empty)
+       (apply sorted-set)))
 
 (defn contact-group->keywords
   "Converts a contact group into a vector of terms for keyword searches."
@@ -196,6 +228,18 @@
    :ToolKeywords #(mapcat tool-keyword->keywords (:ToolKeywords %))
    :Organizations #(mapcat organization->keywords (:Organizations %))})
 
+(defn limit-text-field-length
+  "Truncates strings if their length exceeds the given byte limit.  
+  Elasticsearch text field mappings have maximum supported sizes based
+  on their type. Some fields that are text-only should be truncated."
+  [field s max-bytes]
+  (when (string? s)
+    (if (> (count (.getBytes s "UTF-8")) max-bytes)
+      (do
+        (warn (format "Text size for %s exceeded the maximum bytes, using first %d characters" field max-bytes))
+        (subs s 0 max-bytes))
+      s)))
+
 (def ^:private collection-fields->fn-mapper
   "A data structure that maps UMM collection field names to functions that
   extract keyword data for those fields. Intended only to be used as part
@@ -203,6 +247,7 @@
 
   See `fields->fn-mapper`, below."
   {:DOI #(get-in % [:DOI :DOI])
+   :Abstract #(limit-text-field-length :Abstract (get % :Abstract "") es/MAX_TEXT_UTF8_ENCODING_BYTES)
    :AssociatedDOIs #(mapv :DOI (:AssociatedDOIs %))
    :ProcessingLevel #(get-in % [:ProcessingLevel :Id])
    ;; Simple multi-values data

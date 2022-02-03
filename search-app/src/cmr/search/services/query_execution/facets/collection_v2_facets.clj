@@ -13,10 +13,10 @@
    [cmr.search.services.query-execution.facets.links-helper :as lh]))
 
 (def collection-facets-v2-params->elastic-fields
-  "Defines the mapping of the base search parameters for the v2 facets fields to its field names
-   in elasticsearch."
+  "Defines the mapping of the base search parameters for the v2 facets fields to
+   its field names in elasticsearch."
   {:science-keywords :science-keywords-humanized
-   :platform :platform-sn-humanized
+   :platforms :platforms2-humanized
    :instrument :instrument-sn-humanized
    :data-center :organization-humanized
    :project :project-sn-humanized
@@ -95,7 +95,7 @@
 
 (defmethod v2-facets/create-v2-facets-by-concept-type :collection
   [concept-type base-url query-params aggs facet-fields]
-  (let [flat-facet-fields (remove #{:science-keywords
+  (let [flat-facet-fields (remove #{:science-keywords :platforms
                                     :variables
                                     :horizontal-data-resolution-range} facet-fields)
         facet-fields-set (set facet-fields)
@@ -103,6 +103,11 @@
         science-keywords-facets (when (facet-fields-set :science-keywords)
                                   (hv2/create-hierarchical-v2-facets
                                    aggs base-url query-params :science-keywords-h))
+
+        platform-facets (when (facet-fields-set :platforms)
+                                  (hv2/create-hierarchical-v2-facets
+                                   aggs base-url query-params :platforms-h))
+
         variables-facets (when (and (facet-fields-set :variables) (include-variable-facets))
                            (hv2/create-hierarchical-v2-facets
                             aggs base-url query-params :variables-h))
@@ -113,6 +118,7 @@
                        (v2-facets/create-prioritized-v2-facets
                         :collection aggs [:horizontal-data-resolution-range] base-url query-params false))
         v2-facets (concat science-keywords-facets
+                          platform-facets
                           (v2-facets/create-prioritized-v2-facets
                            :collection aggs flat-facet-fields base-url query-params)
                           variables-facets

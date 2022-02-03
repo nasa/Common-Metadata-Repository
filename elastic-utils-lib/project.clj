@@ -1,4 +1,4 @@
-(def elastic-version "7.10.0")
+(def elastic-version "7.16.2")
 
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
@@ -6,6 +6,7 @@
   :exclusions [[cheshire]
                [commons-codec/commons-codec]
                [commons-io]
+               [org.apache.logging.log4j/log4j-api]
                [org.elasticsearch/elasticsearch]
                [potemkin]]
   :dependencies [[cheshire "5.10.0"]
@@ -16,6 +17,7 @@
                  [com.fasterxml.jackson.core/jackson-core "2.12.1"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+                 [org.apache.logging.log4j/log4j-api "2.15.0"]
                  [org.clojure/clojure "1.10.0"]
                  [org.elasticsearch/elasticsearch ~elastic-version]
                  [org.testcontainers/testcontainers "1.15.2"]

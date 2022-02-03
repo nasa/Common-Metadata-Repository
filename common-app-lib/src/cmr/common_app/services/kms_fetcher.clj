@@ -8,7 +8,7 @@
   use the last keyword values which were retrieved from the GCMD KMS before it became unavailable.
 
   The KMS keywords are all cached under a single :kms key. The structure looks like the following:
-  {:kms {:platforms [{:category \"C\" :series-entity \"S\"
+  {:kms {:platforms [{:category \"C\" :sub-category \"S\"
                       :short-name \"SN-1\" :long-name \"LN\"}
                      {...}]}
          :providers [...]}"
@@ -33,7 +33,8 @@
   the bottom."
   {:data-centers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name :url]
    :archive-centers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name :url]
-   :platforms [:category :series-entity :short-name :long-name]
+   :platforms [:basis :category :sub-category :short-name :long-name]
+   :platforms2 [:basis :category :sub-category :short-name :long-name]
    :instruments [:category :class :type :subtype :short-name :long-name]
    :projects [:short-name :long-name]
    :temporal-keywords [:temporal-resolution-range]
@@ -42,8 +43,9 @@
    :measurement-name [:context-medium :object :quantity]
    :concepts [:short-name]
    :iso-topic-categories [:iso-topic-category]
-   :related-urls [:type :subtype]
-   :granule-data-format [:short-name :uuid]})
+   :related-urls [:url-content-type :type :subtype]
+   :granule-data-format [:short-name :uuid]
+   :mime-type [:mime-type :uuid]})
 
 (def FIELD_NOT_PRESENT
   "A string to indicate that a field is not present within a KMS keyword."

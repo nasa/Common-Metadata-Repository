@@ -1,0 +1,37 @@
+{
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es2021": true,
+    "jest": true
+  },
+  "extends": [
+    "airbnb-base"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 12
+  },
+  "rules": {
+    // Disallow all semicolons on line endings
+    "semi": ["error", "never"],
+
+    // Allow console log messages
+    "no-console": "off",
+
+    // Disallow dangling commas
+    "comma-dangle": ["error", "never"],
+
+    // Allow named default exports
+    "import/no-named-as-default": "off",
+
+    // Allow files with no default export
+    "import/prefer-default-export": "off",
+
+    // Setting a max line-length
+    "max-len": [1, 100, 2, {
+      "ignoreComments": true,
+      "ignoreStrings": true,
+      "ignoreTemplateLiterals": true
+    }]
+  }
+}

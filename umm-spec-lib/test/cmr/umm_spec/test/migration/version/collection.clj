@@ -1698,7 +1698,7 @@
                                     :Size 10.0
                                     :Unit "MB"
                                     :Fees "fees"}}
-                         {:Description "Related url 3 description "
+                         {:Description "Related url 3 description"
                           :URL "http://www.foo.com"
                           :URLContentType "DistributionURL"
                           :Type "GET SERVICE"
@@ -1714,33 +1714,6 @@
                           :URLContentType "VisualizationURL"
                           :Type "GET RELATED VISUALIZATION"
                           :Subtype "GIBS"}])))
-
-(deftest migrate-1-10-to-1-11
-  (let [result (vm/migrate-umm {} :collection "1.10" "1.11" related-urls-UMM-1-10-example)]
-    (is (= exp-conv/example-collection-record
-           result))))
-
-(deftest migrate-1-10-to-1-11-no-related-urls
-  (let [collection (dissoc related-urls-UMM-1-10-example :RelatedUrls)
-        result (vm/migrate-umm {} :collection "1.10" "1.11" collection)]
-    (is (= (dissoc exp-conv/example-collection-record :RelatedUrls)
-           result))))
-
-(deftest migrate-1-11-to-1-10
-  (let [collection (assoc exp-conv/example-collection-record
-                          :DOI {:MissingReason "Not Applicable"
-                                :Explanation "This is an explanation."})
-        result (vm/migrate-umm {} :collection "1.11" "1.10" collection)]
-    (is (= (dissoc related-urls-UMM-1-10-example :DOI)
-           result))))
-
-(deftest migrate-1-11-down-to-1-10-no-related-urls
-  (let [collection (dissoc exp-conv/example-collection-record :RelatedUrls)
-        collection (assoc collection :DOI {:MissingReason "Not Applicable"
-                                           :Explanation "This is an explanation."})
-        result (vm/migrate-umm {} :collection "1.11" "1.10" collection)]
-    (is (= (dissoc related-urls-UMM-1-10-example :DOI :RelatedUrls)
-           result))))
 
 (def related-urls-UMM-1-11-example
   (js/parse-umm-c
@@ -1772,6 +1745,33 @@
                           :URLContentType "VisualizationURL"
                           :Type "GET RELATED VISUALIZATION"
                           :Subtype "WORLDVIEW"}])))
+
+(deftest migrate-1-10-to-1-11
+  (let [result (vm/migrate-umm {} :collection "1.10" "1.11" related-urls-UMM-1-10-example)]
+    (is (= related-urls-UMM-1-11-example
+           result))))
+
+(deftest migrate-1-10-to-1-11-no-related-urls
+  (let [collection (dissoc related-urls-UMM-1-10-example :RelatedUrls)
+        result (vm/migrate-umm {} :collection "1.10" "1.11" collection)]
+    (is (= (dissoc exp-conv/example-collection-record :RelatedUrls)
+           result))))
+
+(deftest migrate-1-11-to-1-10
+  (let [collection (assoc related-urls-UMM-1-11-example
+                          :DOI {:MissingReason "Not Applicable"
+                                :Explanation "This is an explanation."})
+        result (vm/migrate-umm {} :collection "1.11" "1.10" collection)]
+    (is (= (dissoc related-urls-UMM-1-10-example :DOI)
+           result))))
+
+(deftest migrate-1-11-down-to-1-10-no-related-urls
+  (let [collection (dissoc exp-conv/example-collection-record :RelatedUrls)
+        collection (assoc collection :DOI {:MissingReason "Not Applicable"
+                                           :Explanation "This is an explanation."})
+        result (vm/migrate-umm {} :collection "1.11" "1.10" collection)]
+    (is (= (dissoc related-urls-UMM-1-10-example :DOI :RelatedUrls)
+           result))))
 
 (def related-urls-UMM-1-12-example
   (js/parse-umm-c
@@ -2679,3 +2679,196 @@
     "Testing migrating when UseConstraints doesn't exist"
     nil
     {:UseConstraints nil}))
+
+(def related-urls-1-16-3
+  {:RelatedUrls [{:Description "Related url description"
+                  :URL "www.foobarbazquxquux.com"
+                  :URLContentType "DistributionURL"
+                  :Type "GET CAPABILITIES"
+                  :Subtype "OpenSearch"
+                  :GetData {:Format "ascii"
+                            :MimeType "application/opensearchdescription+xml"
+                            :Size 0
+                            :Unit "KB"}}
+                 {:Description "Related url description"
+                  :URL "www.foobarbazquxquux.com"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "ECHO"
+                  :GetData {:Format "binary"
+                            :Size 10.0
+                            :Unit "MB"
+                            :Fees "fees"}}
+                 {:Description "Related url description"
+                  :URL "www.foobarbazquxquux.com"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "ECHO"
+                  :GetData {:Format "Not provided"
+                            :Size 10.0
+                            :Unit "MB"
+                            :Fees "fees"}}]})
+
+(def expected-related-urls-1-16-3
+  {:RelatedUrls [{:Description "Related url description"
+                  :URL "www.foobarbazquxquux.com"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "ECHO"
+                  :GetData {:Format "binary"
+                            :Size 10.0
+                            :Unit "MB"
+                            :Fees "fees"}}
+                 {:Description "Related url description"
+                  :URL "www.foobarbazquxquux.com"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "ECHO"
+                  :GetData {:Format "Not provided"
+                            :Size 10.0
+                            :Unit "MB"
+                            :Fees "fees"}}]})
+
+(deftest migrate-1-16-3-to-1-16-2-test
+  "Test the migration of collections from 1.16.3 to 1.16.2."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.3" "1.16.2" sample-collection)]
+      (is (= expected result)))
+
+    "Testing removing The GET CAPABILITIES related urls"
+    expected-related-urls-1-16-3
+    related-urls-1-16-3
+
+    "Testing when no GET CAPABILITIES related urls exist."
+    expected-related-urls-1-16-3
+    expected-related-urls-1-16-3
+
+    "Testing when no related urls exist."
+    nil
+    {}))
+
+;; 1.16.4 related tests ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def expected-related-urls-1-16-4
+  {:RelatedUrls [{:Description "Related URL that should stay"
+                  :URL "https://example.gov/earthdata-link-01"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "ECHO"
+                  :GetData {:Format "binary" :Size 10.0 :Unit "MB" :Fees "fees"}}]})
+
+(def related-urls-1-16-4
+  {:RelatedUrls [{:Description "Related URL that should stay"
+                  :URL "https://example.gov/earthdata-link-01"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "ECHO"
+                  :GetData {:Format "binary" :Size 10.0 :Unit "MB" :Fees "fees"}}
+                 {:Description "HITIDE - 1.16.4 specific URL"
+                  :URL "https://example.gov/hitide"
+                  :URLContentType "DistributionURL"
+                  :Type "GOTO WEB TOOL"
+                  :Subtype "HITIDE"
+                  :GetData {:Format "binary" :Size 10.0 :Unit "MB" :Fees "fees"}}
+                 {:Description "SOTO - 1.16.4 specific URL"
+                  :URL "https://example.gov/vis-01.suto"
+                  :URLContentType "VisualizationURL"
+                  :Type "GET RELATED VISUALIZATION"
+                  :Subtype "SOTO"
+                  :GetData {:Format "binary" :Size 10.0 :Unit "MB" :Fees "fees"}}
+                 {:Description "Sub-Orbital - 1.16.4 specific URL"
+                  :URL "https://example.gov/suborbital_order_tool"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "Sub-Orbital Order Tool"
+                  :GetData {:Format "binary" :Size 10.0 :Unit "MB" :Fees "fees"}}
+                 {:Description "CERES - 1.16.4 specific URL"
+                  :URL "https://example.gov/ceres_ordering_tool"
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "CERES Ordering Tool"
+                  :GetData {:Format "Not provided" :Size 10.0 :Unit "MB" :Fees "fees"}}]})
+
+(deftest migrate-1-16-4-to-1-16-3
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.4" "1.16.3" sample-collection)]
+      (is (= expected result)))
+
+    "Testing removing the new related urls"
+    expected-related-urls-1-16-4
+    related-urls-1-16-4
+
+    "Testing when no new related urls exist."
+    expected-related-urls-1-16-4
+    expected-related-urls-1-16-4
+
+    "Testing when no related urls exist."
+    nil
+    {}))
+
+(deftest migrate-1-16-3-to-1-16-4
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.3" "1.16.4" sample-collection)]
+      (is (= expected result)))
+
+    "If new urls already exist, they should be unchanged by the move up"
+    related-urls-1-16-4
+    related-urls-1-16-4
+
+    "Testing when no related urls exist, none should be added"
+    {}
+    {}))
+
+(deftest migrate-1-16-5-to-1-16-6
+  "Test the migration of collections from 1.16.5 to 1.16.6."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.5" "1.16.6" sample-collection)]
+      (is (= expected (:UseConstraints result))))
+
+    "Migrating license URL and description"
+    {:Description "desc"
+     :LicenseURL {:Linkage "https:some.com"}}
+    {:UseConstraints {:Description "desc"
+                      :LicenseURL {:Linkage "https:some.com"}}}))
+
+(deftest migrate-1-16-6-to-1-16-5
+  "Test the migration of collections from 1.16.6 to 1.16.5."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.6" "1.16.5" sample-collection)]
+      (is (= expected (:UseConstraints result))))
+
+    "Migrating license URL, FreeAndOpenData and description"
+    {:Description "desc"
+     :LicenseURL {:Linkage "https:some.com"}}
+    {:UseConstraints {:Description "desc"
+                      :FreeAndOpenData true
+                      :LicenseURL {:Linkage "https:some.com"}}}))
+
+(deftest migrate-1-16-6-to-1-16-7
+  "Test the migration of collections from 1.16.6 to 1.16.7."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.6" "1.16.7" sample-collection)]
+      (is (= expected (:CollectionDataType result))))
+
+    "Migrating CollectionDataType-nothing to migrate"
+    "OTHER" 
+    {:CollectionDataType "OTHER"}))
+
+(deftest migrate-1-16-7-to-1-16-6
+  "Test the migration of collections from 1.16.7 to 1.16.6."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.7" "1.16.6" sample-collection)]
+      (is (= expected (:CollectionDataType result))))
+
+    "Migrating CollectionDataType"
+    "NEAR_REAL_TIME"
+    {:CollectionDataType "LOW_LATENCY"}
+
+    "Migrating CollectionDataType"
+    "NEAR_REAL_TIME"
+    {:CollectionDataType "EXPEDITED"}))

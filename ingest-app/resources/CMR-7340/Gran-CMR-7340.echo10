@@ -1,0 +1,88 @@
+        <Granule>
+            <GranuleUR>Erichs-Test-Granule-for-updated-echo10-multiple-files-addition</GranuleUR>
+            <InsertTime>2020-07-27T20:17:39.668Z</InsertTime>
+            <LastUpdate>2020-07-27T20:17:39.669Z</LastUpdate>
+            <Collection>
+                <ShortName>MODIS_A-JPL-L2P-v2019.0</ShortName>
+                <VersionId>2019.0</VersionId>
+            </Collection>
+            <DataGranule>
+                <SizeMBDataGranule>20.04075527191162</SizeMBDataGranule>
+                <DayNightFlag>UNSPECIFIED</DayNightFlag>
+                <ProductionDateTime>2020-07-27T16:24:41.000Z</ProductionDateTime>
+                <AdditionalFile>
+                  <Name>FileName1</Name>
+                  <SizeInBytes>1003</SizeInBytes>
+                  <Format>HDF5</Format>
+                  <MimeType>application/x-hdf5</MimeType>
+                  <Checksum>
+                    <Value>12344</Value>
+                    <Algorithm>SHA-512</Algorithm>
+                  </Checksum>
+                </AdditionalFile>
+                <AdditionalFile>
+                  <Name>FileName2</Name>
+                </AdditionalFile>
+                <AdditionalFile>
+                  <Name>FileName3</Name>
+                  <SizeInBytes>1004</SizeInBytes>
+                  <Format>HDF5</Format>
+                  <MimeType>application/x-hdf5</MimeType>
+                  <Checksum>
+                    <Value>12344</Value>
+                    <Algorithm>SHA-512</Algorithm>
+                  </Checksum>
+                </AdditionalFile>
+            </DataGranule>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2002-07-04T00:00:10.000Z</BeginningDateTime>
+                    <EndingDateTime>2002-07-04T00:04:58.000Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Spatial>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>15.016</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>47.471</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>46.31</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>26.685</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+            </Spatial>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://archive.podaac.uat.earthdata.nasa.gov/podaac-uat-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20020704000015-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc</URL>
+                    <URLDescription>The base directory location for the granule.</URLDescription>
+                </OnlineAccessURL>
+                <OnlineAccessURL>
+                    <URL>S3://aws.com/asdf/asdf/dataproduct.nc</URL>
+                    <URLDescription>ISLSCP II EARTH RADIATION BUDGET EXPERIMENT (ERBE) MONTHLY ALBEDO, 1986-1990</URLDescription>
+                    <MimeType>application/x-netcdf</MimeType>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://archive.podaac.uat.earthdata.nasa.gov/podaac-uat-cumulus-public/MODIS_A-JPL-L2P-v2019.0/20020704000015-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.cmr.json</URL>
+                    <Description>File to download</Description>
+                    <Type>USER SUPPORT</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://archive.podaac.uat.earthdata.nasa.gov/s3credentials</URL>
+                    <Description>api endpoint to retrieve temporary credentials valid for same-region direct s3 access</Description>
+                    <Type>USER SUPPORT</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://archive.podaac.uat.earthdata.nasa.gov/DMR++</URL>
+                    <Description>DMR++ FILE</Description>
+                    <Type>EXTENDED METADATA : DMR++</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://archive.podaac.uat.earthdata.nasa.gov/DMR++_MISSING_DATA</URL>
+                    <Description>DMR ++ MISSING DATA FILE</Description>
+                    <Type>EXTENDED METADATA : DMR++ MISSING DATA</Type>
+                </OnlineResource>
+            </OnlineResources>
+        </Granule>

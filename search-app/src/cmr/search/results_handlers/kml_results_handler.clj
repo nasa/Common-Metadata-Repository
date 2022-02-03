@@ -4,7 +4,7 @@
    [clojure.data.xml :as x]
    [clojure.string :as str]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.results-model :as r]
    [cmr.common.services.errors :as svc-errors]
@@ -66,16 +66,16 @@
 
 (defn- elastic-results->query-results
   [context query elastic-results]
-  (let [hits (get-in elastic-results [:hits :total :value])
-        timed-out (:timed_out elastic-results)
-        elastic-matches (get-in elastic-results [:hits :hits])
+  (let [hits (er-to-qr/get-hits elastic-results)
+        timed-out (er-to-qr/get-timedout elastic-results)
+        elastic-matches (er-to-qr/get-elastic-matches elastic-results)
         items (if (= :granule (:concept-type query))
                 (granule-elastic-results->query-result-items context query elastic-matches)
                 (map collection-elastic-result->query-result-item elastic-matches))]
     (r/map->Results {:hits hits :timed-out timed-out :items items :result-format (:result-format query)})))
 
 (doseq [concept-type [:granule :collection]]
-  (defmethod elastic-results/elastic-results->query-results [concept-type :kml]
+  (defmethod er-to-qr/elastic-results->query-results [concept-type :kml]
     [context query elastic-results]
     (elastic-results->query-results context query elastic-results)))
 

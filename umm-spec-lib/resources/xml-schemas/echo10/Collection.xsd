@@ -243,35 +243,33 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       </xs:element>
       <xs:element minOccurs="0" name="CollectionDataType">
         <xs:annotation>
-          <xs:documentation> An element to identify
-          non-science-quality products such as NRT data. If a
-          collection does not contain this field, it will be
-          assumed to be of science-quality.</xs:documentation>
+          <xs:documentation> This element is used to identify the collection's ready for end user consumption latency from when the data was acquired by an instrument. NEAR_REAL_TIME is defined to be ready for end user consumption 1 to 3 hours after data acquisition. LOW_LATENCY is defined to be ready for consumption 3 to 24 hours after data acquisition. EXPEDITED is defined to be 1 to 4 days after data acquisition. SCIENCE_QUALITY is defined to mean that a collection has been fully and completely processed which usually takes between 2 to 3 weeks after data acquisition. OTHER is defined for collection where the latency is between EXPEDITED and SCIENCE_QUALITY </xs:documentation>
         </xs:annotation>
         <xs:simpleType>
           <xs:restriction base="xs:string">
             <xs:enumeration value="SCIENCE_QUALITY">
               <xs:annotation>
-                <xs:documentation>All EOS and non-EOS data and
-                data products that are archived
-                by EOSDIS.</xs:documentation>
+                <xs:documentation> All data products that have been fully and completely processed which usually takes between 2 to 3 weeks after data acquisition </xs:documentation>
               </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="NEAR_REAL_TIME">
               <xs:annotation>
-                <xs:documentation> Data from the source that are
-                available for use within a time that is short in
-                comparison to important time scales in the phenomena
-                being studied. This data is not science quality and
-                is not retained by EOSDIS once the SCIENCE_QUALITY
-                product is archived </xs:documentation>
+                <xs:documentation> The data is ready for end user consumption 1 to 3 hours after data acquisition. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived </xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="LOW_LATENCY">
+              <xs:annotation>
+                <xs:documentation> The data is ready for end user consumption 3 to 24 hours after data acquisition. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived </xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="EXPEDITED">
+              <xs:annotation>
+                <xs:documentation> The data is ready for end user consumption 1 to 4 days after data acquisition. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived </xs:documentation>
               </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="OTHER">
               <xs:annotation>
-                <xs:documentation> Any EOS and non-EOS data and data
-                products, that are not SCIENCE_QUALITY and do not
-                fall under NEAR_REAL_TIME holdings.</xs:documentation>
+                <xs:documentation> The data is ready for end user consumption between the EXPEDITED and SCIENCE_QUALITY acquisition timeframes. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived </xs:documentation>
               </xs:annotation>
             </xs:enumeration>
           </xs:restriction>
@@ -464,6 +462,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
+      <xs:element name="UseConstraints" type="UseConstraintsType" minOccurs="0"/>
       <xs:element minOccurs="0" name="Price" type="DollarAmount">
         <xs:annotation>
           <xs:documentation>The price for ordering the
@@ -616,6 +615,40 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:complexType name="ListOfAssociatedDOIs">
     <xs:sequence>
       <xs:element name="AssociatedDOI" type="AssociatedDoiType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="UseConstraintsType">
+    <xs:sequence>
+      <xs:element name="Description" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>This sub-element either contains a license summary or free-text description that details the permitted use or limitation of this collection.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="4000" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="FreeAndOpenData" minOccurs="0" type="xs:boolean">
+        <xs:annotation>
+          <xs:documentation>This sub-element if true, describes to end users and machines that this collection's data is free of charge and open for any use the user sees fit.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:choice minOccurs="0">
+        <xs:element name="LicenseURL" type="OnlineResource"/>
+        <xs:element name="LicenseText">
+          <xs:annotation>
+            <xs:documentation>This element holds the actual license text. If this element is used the LicenseUrl element cannot be used.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1" />
+              <xs:maxLength value="20000" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+      </xs:choice>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="ListOfAlgorithmPackages">

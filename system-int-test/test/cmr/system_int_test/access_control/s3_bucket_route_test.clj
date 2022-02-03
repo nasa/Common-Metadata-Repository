@@ -54,6 +54,7 @@
                       :S3BucketAndObjectPrefixNames ["s3://aws.example-3.com" "s3"]
                       :S3CredentialsAPIEndpoint "http://api.example.com"
                       :S3CredentialsAPIDocumentationURL "http://docs.example.com"}}))
+
         ;; create all access group
         all-prov-group-id (echo-util/get-or-create-group
                            (system/context)
@@ -117,7 +118,8 @@
        "single provider filtering"
        {:user_id "user1"
         :provider ["PROV1"]}
-       ["s3" "s3://aws.example-1.com"]
+       ["s3"
+        "s3://aws.example-1.com"]
 
        "multiple provider filtering"
        {:user_id "user1"

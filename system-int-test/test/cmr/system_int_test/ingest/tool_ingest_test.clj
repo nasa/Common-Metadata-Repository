@@ -6,6 +6,7 @@
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -37,7 +38,7 @@
                        :raw? true})]
         (is (= {:revision-id 1
                 :concept-id supplied-concept-id}
-               (ingest/parse-ingest-body :json response)))))
+               (dissoc (ingest/parse-ingest-body :json response) :body)))))
 
     (testing "xml response"
       (let [response (ingest/ingest-concept
@@ -47,7 +48,7 @@
                        :raw? true})]
         (is (= {:revision-id 2
                 :concept-id supplied-concept-id}
-               (ingest/parse-ingest-body :xml response)))))))
+               (dissoc (ingest/parse-ingest-body :xml response) :body)))))))
 
 ;; Verify that the accept header works with returned errors
 (deftest tool-ingest-with-errors-accept-header-test
@@ -206,3 +207,13 @@
               {:keys [status concept-id revision-id]} response]
           (is (= 200 status))
           (is (= 3 revision-id)))))))
+
+(deftest old-version-tool-ingest-test
+  (testing "Ingest of an older version of Tool concept that requires migration"
+    (let [{:keys [status]} (d/ingest-concept-with-metadata-file
+                            "CMR-7610/umm_t_v_1_0.json"
+                            {:concept-type :tool
+                             :provider-id "PROV1"
+                             :native-id "tool_v_1.0"
+                             :format "application/vnd.nasa.cmr.umm+json; version=1.0"})]
+      (is (= 201 status)))))

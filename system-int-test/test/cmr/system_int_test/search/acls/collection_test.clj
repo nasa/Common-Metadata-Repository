@@ -238,11 +238,11 @@
 
     (testing "token can be sent through a header"
       (d/assert-refs-match [coll2 coll4]
-                           (search/find-refs :collection {} {:headers {"Echo-Token" user1-token}})))
+                           (search/find-refs :collection {} {:headers {"Authorization" user1-token}})))
     (testing "aql search parameter enforcement"
       (d/assert-refs-match [coll2 coll4]
                            (search/find-refs-with-aql
-                            :collection [] {} {:headers {"Echo-Token" user1-token}})))
+                            :collection [] {} {:headers {"Authorization" user1-token}})))
     (testing "Direct transformer retrieval acl enforcement"
       (testing "registered user"
         (d/assert-metadata-results-match
@@ -287,7 +287,7 @@
 
     (testing "JSON ACL enforcement"
       (testing "all items"
-        (let [coll-json (da/collections->expected-atom
+        (let [coll-json (da/collections->expected-json
                          guest-permitted-collections
                          (format "collections.json?token=%s&page_size=100" guest-token))]
           (is (= coll-json (:results (search/find-concepts-json :collection {:token guest-token
@@ -295,7 +295,7 @@
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-colls)
-              coll-json (da/collections->expected-atom
+              coll-json (da/collections->expected-json
                          guest-permitted-collections
                          (str "collections.json?token=" guest-token
                               "&page_size=100&concept_id="

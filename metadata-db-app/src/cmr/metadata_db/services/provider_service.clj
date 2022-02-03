@@ -23,11 +23,13 @@
     (providers/save-provider db provider)))
 
 (defn get-providers
-  "Get the list of providers. The special provider 'cmr' is not included in the returned list."
+  "Get the list of providers.
+  Returns a clojure.lang.APersistentMap$ValSeq; list of maps"
   [context]
   (info "Getting provider list.")
-  (let [db (mdb-util/context->db context)]
-    (providers/get-providers db)))
+  (let [db (mdb-util/context->db context)
+        providers (providers/get-providers db)]
+    (map util/remove-nil-keys providers)))
 
 (defn get-provider-by-id
   "Returns the provider with the given provider-id, raise error when provider does not exist based
@@ -74,4 +76,3 @@
   (info "Deleting all providers and concepts.")
   (let [db (mdb-util/context->db context)]
     (providers/reset-providers db)))
-

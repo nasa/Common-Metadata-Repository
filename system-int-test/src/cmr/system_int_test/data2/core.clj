@@ -3,6 +3,7 @@
   integration tests."
   (:require
    [cheshire.core :as json]
+   [clj-http.client :as client]
    [clj-time.core :as t]
    [clj-time.format :as f]
    [clojure.java.io :as io]
@@ -155,6 +156,7 @@
                                           :user-id
                                           :validate-keywords
                                           :validate-umm-c
+                                          :test-existing-errors
                                           :accept-format
                                           :warnings]))
          status (:status response)]
@@ -173,8 +175,22 @@
               :concept-id (:concept-id response)
               :revision-id (:revision-id response)
               :format-key format-key
-              :warnings (:warnings response))
+              :warnings (:warnings response)
+              :existing-errors (:existing-errors response)
+              :body (:body response))
        response))))
+
+(defn create-acl
+  "Posts to the ACL CRUD endpoint with the supplied ACL body"
+  [acl]
+  (let [body (json/generate-string acl)
+        params {:method :post
+                :url (url/access-control-acls-url)
+                :body body
+                :headers {:Authorization "mock-echo-system-token"}
+                :content-type "application/json"
+                :connection-manager (s/conn-mgr)}]
+    (client/request params)))
 
 (defn umm-var->concept
   "Returns a concept map from a UMM variable item or tombstone."
