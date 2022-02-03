@@ -1,4 +1,4 @@
-(def elastic-version "7.10.0")
+(def elastic-version "7.16.2")
 
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
