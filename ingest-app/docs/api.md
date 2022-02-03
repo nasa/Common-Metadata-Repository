@@ -781,7 +781,7 @@ Subscription concepts can be created by sending an HTTP POST or PUT with the met
 If a native-id is not provided it will be generated. This is only supported for POST requests.
 POST requests may only be used for creating subscriptions.
 
-If a SubscriberId is not provided, then the user ID associated with the token used to ingest the subscription will be used as the SubscriberId.
+If a SubscriberId is not provided, then the user ID associated with the token used to ingest the subscription will be used as the SubscriberId. An active EDL account must be associated with the ingest.
 
 EmailAddress was previously a required field, but this field is now deprecated. Instead, the email address associated with the SubscriberId's EarthData Login (URS) account will be used as the EmailAddress. If an EmailAddress is specified at subscription creation it will be ignored.
 
