@@ -174,28 +174,32 @@
               subscriber-filtered-gran-refs (filter-gran-refs-by-subscriber-id context gran-refs subscriber-id)]]
     [sub-id subscriber-filtered-gran-refs subscriber-id subscription]))
 
-(defn- ^:redef send-subscription-emails
+(defn- ^:redef send-email
+  [email-settings email-content]
+  (postal-core/send-message email-settings email-content))
+
+(defn- send-subscription-emails
   "Takes processed processed subscription tuples and sends out emails if applicable."
-  [context subscriber-filtered-gran-refs-list is-manual?]
-  (doseq [subscriber-filtered-gran-refs-tuple subscriber-filtered-gran-refs-list
-          :let [[sub-id subscriber-filtered-gran-refs subscriber-id subscription] subscriber-filtered-gran-refs-tuple]]
-    (when (seq subscriber-filtered-gran-refs)
-      (let [gran-ref-locations (map :location subscriber-filtered-gran-refs)
-            email-address (urs/get-user-email context subscriber-id)
-            email-content (create-email-content (mail-sender) email-address gran-ref-locations subscription)
-            email-settings {:host (email-server-host) :port (email-server-port)}]
-        (try
-          (postal-core/send-message email-settings email-content)
-          (info (str "Successfully processed subscription [" sub-id "].
+  ([context subscriber-filtered-gran-refs-list]
+   (send-subscription-emails context subscriber-filtered-gran-refs-list true))
+  ([context subscriber-filtered-gran-refs-list update-notification-time?]
+   (doseq [subscriber-filtered-gran-refs-tuple subscriber-filtered-gran-refs-list
+           :let [[sub-id subscriber-filtered-gran-refs subscriber-id subscription] subscriber-filtered-gran-refs-tuple]]
+     (when (seq subscriber-filtered-gran-refs)
+       (let [gran-ref-locations (map :location subscriber-filtered-gran-refs)
+             email-address (urs/get-user-email context subscriber-id)
+             email-content (create-email-content (mail-sender) email-address gran-ref-locations subscription)
+             email-settings {:host (email-server-host) :port (email-server-port)}]
+         (try
+           (send-email email-settings email-content)
+           (info (str "Successfully processed subscription [" sub-id "].
                       Sent subscription email to [" email-address "]."))
-<<<<<<< HEAD
-          (when-not is-manual? (send-update-subscription-notification-time! context sub-id))
-=======
-          (send-update-subscription-notification-time! context sub-id)
->>>>>>> master
-          (catch Exception e
-            (error "Exception caught in email subscription: " sub-id "\n\n"
-                   (.getMessage e) "\n\n" e)))))))
+           (when update-notification-time?
+             (send-update-subscription-notification-time! context sub-id))
+           (catch Exception e
+             (error "Exception caught in email subscription: " sub-id "\n\n"
+                    (.getMessage e) "\n\n" e))))))
+   subscriber-filtered-gran-refs-list))
 
 (defn email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
@@ -206,11 +210,7 @@
    (let [subscriptions (->> (mdb/find-concepts context {:latest true} :subscription)
                             (remove :deleted)
                             (map #(select-keys % [:concept-id :extra-fields :metadata])))]
-<<<<<<< HEAD
-     (send-subscription-emails context (process-subscriptions context subscriptions revision-date-range) (some? revision-date-range)))))
-=======
-     (send-subscription-emails context (process-subscriptions context subscriptions revision-date-range)))))
->>>>>>> master
+     (send-subscription-emails context (process-subscriptions context subscriptions revision-date-range) (nil? revision-date-range)))))
 
 (defn- validate-revision-date-range
   "Throws service errors on invalid revision date ranges"

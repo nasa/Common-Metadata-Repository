@@ -118,8 +118,4 @@
       (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range)))))
   (testing "invalid format throws exception"
     (let [revision-date-range "2000-01-01T10:00:Z,2010-01-01T10:00:00Z"]
-<<<<<<< HEAD
       (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range))))))
-=======
-      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range))))))
->>>>>>> master

@@ -2,6 +2,7 @@
   "CMR subscription processing tests."
   (:require
    [cheshire.core :as json]
+   [clj-time.core :as t]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
    [cmr.ingest.services.subscriptions-helper :as jobs]
@@ -14,12 +15,8 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
-<<<<<<< HEAD
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.metadata-db :as mdb]))
-=======
-   [cmr.transmit.access-control :as access-control]))
->>>>>>> master
 
 (use-fixtures :each
   (join-fixtures
@@ -34,15 +31,12 @@
                                                       [:read :update])
     (dev-system/freeze-resume-time-fixture)]))
 
-<<<<<<< HEAD
 (defn- get-subscriptions
   []
   (->> (mdb/find-concepts (system/context) {:latest true} :subscription)
        (remove :deleted)
        (map #(select-keys % [:concept-id :extra-fields :metadata]))))
 
-=======
->>>>>>> master
 (defn- create-granule-and-index
   "A utility function to reduce common code in these tests, Create a test granule and then wait for it to be indexed."
   [provider collection granule-ur]
@@ -54,19 +48,12 @@
     (index/wait-until-indexed)
     result))
 
-(defn- mock-send-subscription-emails
+(defn- mock-send-email
   "This function is used along with with-redefs to avoid sending emails in
-   integration tests. If send-subscription-emails is called in tests without being mocked,
+   integration tests. If send-subscription-emails is called in tests without send-email being mocked,
    errors while be returned when attempting to connect to the mail server in 
    postal-core/send-message."
-  [context subscriber-filtered-gran-refs-list]
-  (let
-   [send-update-subscription-notification-time! #'jobs/send-update-subscription-notification-time!]
-    (doseq [subscriber-filtered-gran-refs-tuple subscriber-filtered-gran-refs-list
-            :let [[sub-id subscriber-filtered-gran-refs subscriber-id subscription] subscriber-filtered-gran-refs-tuple]]
-      (when (seq subscriber-filtered-gran-refs)
-        (send-update-subscription-notification-time! context sub-id)))
-    subscriber-filtered-gran-refs-list))
+  [email-settings email-content])
 
 (deftest ^:oracle subscription-job-manual-time-constraint-test
   "This test is used to validate that email-subscription-processing will use a
@@ -76,7 +63,7 @@
    granules in a given time window."
   (system/only-with-real-database
    (with-redefs
-    [jobs/send-subscription-emails mock-send-subscription-emails]
+    [jobs/send-email mock-send-email]
      (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
            _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
            _ (echo-util/ungrant (system/context)
@@ -142,16 +129,14 @@
            (is (= (:concept-id coll1_granule2) (:concept-id (first result))))
            (is (= (:concept-id coll1_granule3) (:concept-id (second result))))))))))
 
-<<<<<<< HEAD
-(deftest subscription-job-manual-test
-  "This test is used to validate that email-subscription-processing will use a
-   valid revision-date-range when one is provided.  To set this test up, several
-   granules are created on individual days and a subscription is created over
-   them.  This allows the test to verify that it is pulling only the correct
-   granules in a given time window."
+(deftest ^:oracle subscription-job-manual-test
+  "When calling the subscription admin endpoint, we do not want to update 
+   the subscriptions last-notified-at field.  Setting last-notified-at to
+   a time that has already passed would result in duplicate emails when
+   the next subscription job runs."
   (system/only-with-real-database
    (with-redefs
-    [jobs/send-subscription-emails mock-send-subscription-emails]
+    [jobs/send-email mock-send-email]
      (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
            _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
            _ (echo-util/ungrant (system/context)
@@ -172,34 +157,28 @@
                                :granule_applicable true
                                :granule_identifier {:access_value {:include_undefined_value true
                                                                    :min_value 1 :max_value 50}}})
-        ;;  Create coll1 granules
+        ;; Setup collection
            coll1 (data-core/ingest-umm-spec-collection "PROV1"
                                                        (data-umm-c/collection {:ShortName "coll1"
                                                                                :EntryTitle "entry-title1"})
                                                        {:token "mock-echo-system-token"})
-           coll1-concept-id (:concept-id coll1)
-           c1g1 (data-granule/granule-with-umm-spec-collection
-                 coll1 coll1-concept-id {:day-night "NIGHT"})
-           _coll1_granule1 (subscription-util/save-umm-granule "PROV1" c1g1 {:revision-date "2016-01-01T10:00:00Z"})
+           gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
          ;; Setup subscriptions
-           _sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1_coll1" "user2" "day_night_flag=day")]
+           sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")]
 
-       (testing "does not update last-notified-at for subscriptions"
-         (let [prejob-subscriptions (get-subscriptions)
-               time-constraint "2016-01-02T00:00:00Z,2016-01-04T00:00:00Z"
-               system-context (system/context)
-               _ (jobs/email-subscription-processing system-context time-constraint)
+       (testing "Using the manual endpoint does not update last-notified-at for subscriptions"
+         (let [system-context (system/context)
+               _normal-job (jobs/email-subscription-processing system-context)
+               prejob-subscriptions (get-subscriptions)
+               params {:revision-date-range (str "2016-01-02T00:00:00Z," (t/now))}
+               _manual-endpoint (jobs/trigger-email-subscription-processing system-context params)
                postjob-subscriptions (get-subscriptions)]
-           (println prejob-subscriptions)
-           (println postjob-subscriptions)
-           ))))))
+           (is (= prejob-subscriptions postjob-subscriptions))))))))
 
-=======
->>>>>>> master
 (deftest ^:oracle subscription-email-processing-time-constraint-test
   (system/only-with-real-database
    (with-redefs
-    [jobs/send-subscription-emails mock-send-subscription-emails]
+    [jobs/send-email mock-send-email]
      (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
            _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
            _ (echo-util/ungrant (system/context)
@@ -273,7 +252,7 @@
 (deftest ^:oracle subscription-email-processing-filtering
   (system/only-with-real-database
    (with-redefs
-    [jobs/send-subscription-emails mock-send-subscription-emails]
+    [jobs/send-email mock-send-email]
      (testing "Tests subscriber-id filtering in subscription email processing job"
        (let [user1-group-id (echo-util/get-or-create-group (system/context) "group1")
            ;; User 1 is in group1
