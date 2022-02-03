@@ -63,7 +63,7 @@
   [context query results]
   (let [granule-counts-map (:granule-counts-map results)
         items (:items results)
-        results (assoc results :items (if (contains? (set (:result-features query)) :granule-counts)
+        results (assoc results :items (if (some #{:granule-counts} (:result-features query))
                                         (add-granule-count-to-items items granule-counts-map)
                                         items))]
     (json/generate-string (select-keys results [:hits :took :items]))))
@@ -103,7 +103,7 @@
   [context query results]
   (let [granule-counts-map (:granule-counts-map results)
         items (:items results)
-        results (assoc results :items (if (contains? (set (:result-features query)) :granule-counts)
+        results (assoc results :items (if (some #{:granule-counts} (:result-features query))
                                         (add-granule-count-to-items items granule-counts-map)
                                         items))]
     (json/generate-string (select-keys results [:hits :took :items]))))

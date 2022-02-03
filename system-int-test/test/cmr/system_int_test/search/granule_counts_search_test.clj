@@ -727,12 +727,7 @@
 
     (index/wait-until-indexed)
 
-    (testing "granule counts"
-      (testing "granule counts for all collections"
-        (let [refs (search/find-refs :collection {:include-granule-counts true})]
-          (is (gran-counts/granule-counts-match? :xml {coll1 2 coll2 0} refs)))))
-
-      (testing "granule_count"
+      (testing "test that the granule-count field doesn't exist when it it isn't requested"
         (are3 [result-format results]
               (let [expected-granule-count (util/map-keys :concept-id {coll1 nil coll2 nil})
                     actual-granule-count (gran-counts/results->actual-granule-count result-format results)]
