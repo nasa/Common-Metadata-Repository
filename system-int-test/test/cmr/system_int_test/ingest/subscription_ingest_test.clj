@@ -20,8 +20,7 @@
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.metadata-db :as mdb2]
-   [cmr.mock-echo.client.mock-urs-client :as mock-urs]))
+   [cmr.transmit.metadata-db :as mdb2]))
 
 (use-fixtures :each
   (join-fixtures
@@ -52,7 +51,6 @@
                 {:ShortName "coll-no-id"
                  :EntryTitle "entry-title-no-id"})
                {:token "mock-echo-system-token"})]
-    (mock-urs/create-users (system/context) [{:username "user1" :password "Password"}])
     (testing "ingest on PROV1, with no subscriber-id supplied"
       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
                                                                   :CollectionConceptId (:concept-id coll1)
@@ -70,8 +68,8 @@
                                                                   :SubscriberId nil
                                                                   :EmailAddress "foo@example.com"})
             response (ingest/ingest-concept concept)]
-        (is (= 400 (:status response)))
-        (is (= "INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first (:errors response))))))))
+        (is (= 401 (:status response)))
+        (is (= "You do not have permission to perform that action." (first (:errors response))))))))
 
 (deftest subscription-ingest-on-prov3-test
   (let [coll1 (data-core/ingest-umm-spec-collection
@@ -80,7 +78,6 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})]
-    (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
     (testing "ingest on PROV3, guest is not granted ingest permission for SUBSCRIPTION_MANAGEMENT ACL"
       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
                                                                   :CollectionConceptId (:concept-id coll1)})
@@ -91,7 +88,7 @@
       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
                                                                   :CollectionConceptId (:concept-id coll1)})
             user1-token (echo-util/login (system/context) "user1")
-            response (ingest/ingest-concept concept {:token user1-token :user-id "user1"})]
+            response (ingest/ingest-concept concept {:token user1-token})]
         (is (= 201 (:status response)))))))
 
 (deftest subscription-delete-on-prov3-test
@@ -101,7 +98,6 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})]
-    (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
     (testing "delete on PROV3, guest is not granted update permission for SUBSCRIPTION_MANAGEMENT ACL"
       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
                                                                   :CollectionConceptId (:concept-id coll1)})
@@ -124,7 +120,6 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})]
-    (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
     (testing "ingest of a new subscription concept"
       (let [concept (subscription-util/make-subscription-concept
                      {:CollectionConceptId (:concept-id coll1)})
@@ -148,7 +143,6 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})]
-    (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
     (testing "json response"
       (let [response (ingest/ingest-concept
                       (subscription-util/make-subscription-concept
@@ -174,7 +168,6 @@
                (dissoc (ingest/parse-ingest-body :xml response) :body)))))))
 
 (deftest subscription-ingest-with-bad-query-error-test
-  (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
   (testing "ingest of a new subscription concept"
     (let [coll1 (data-core/ingest-umm-spec-collection
                   "PROV1"
@@ -204,7 +197,7 @@
                     {:accept-format :json
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
-      (is (= "INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first errors)))))
+      (is (re-find #"required key \[Name\] not found" (first errors)))))
   (testing "xml response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -213,7 +206,7 @@
                     {:accept-format :xml
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-      (is (= "INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first errors))))))
+      (is (re-find #"required key \[Name\] not found" (first errors))))))
 
 ;; Verify that user-id is saved from User-Id or token header
 (deftest subscription-ingest-user-id-test
@@ -223,11 +216,6 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})]
-    (mock-urs/create-users (system/context) [{:username "user1" :password "Pass1"}
-                                             {:username "user2" :password "Pass2"}
-                                             {:username "user3" :password "Pass3"}
-                                             {:username "user4" :password "Pass4"}
-                                             {:username "someSubId" :password "somePass"}])
     (testing "ingest of new concept"
       (are3 [ingest-headers expected-user-id]
         (let [concept (subscription-util/make-subscription-concept {:CollectionConceptId (:concept-id coll1)})
@@ -286,7 +274,6 @@
                   :CollectionConceptId (:concept-id coll1)
                   :native-id "Atlantic-1"}
         concept (subscription-util/make-subscription-concept metadata)]
-    (mock-urs/create-users (system/context) [{:username "someSubId" :password "Pass"}])
     (testing "ingest of a new subscription concept with concept-id present"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
@@ -323,7 +310,6 @@
                     :CollectionConceptId (:concept-id coll1)
                     :native-id "Atlantic-1"}
           concept (subscription-util/make-subscription-concept metadata)]
-      (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
       (subscription-util/ingest-subscription concept)
       (testing "send an update event to an new subscription"
         (let [resp (subscription-util/update-subscription-notification supplied-concept-id)]
@@ -334,12 +320,11 @@
           (is (= 404 (:status resp))))))))
 
 (deftest subscription-ingest-schema-validation-test
-  (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
   (testing "ingest of subscription concept JSON schema validation missing field"
     (let [concept (subscription-util/make-subscription-concept {:SubscriberId ""})
           {:keys [status errors]} (ingest/ingest-concept concept)]
       (is (= 400 status))
-      (is (= ["INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token."]
+      (is (= ["#/SubscriberId: expected minLength: 1, actual: 0"]
              errors))))
   (testing "ingest of subscription concept JSON schema validation invalid field"
     (let [concept (subscription-util/make-subscription-concept {:InvalidField "xxx"})
@@ -366,7 +351,6 @@
                    :CollectionConceptId (:concept-id coll1)
                    :Query "platform=NOAA-9"
                    :native-id "other"})
-        _ (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
         _ (ingest/ingest-concept concept)]
     (testing "update concept with a different concept-id is invalid"
       (let [{:keys [status errors]} (ingest/ingest-concept
@@ -387,7 +371,6 @@
                [status errors]))))))
 
 (deftest delete-subscription-ingest-test
-  (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
   (testing "delete a subscription"
     (let [coll1 (data-core/ingest-umm-spec-collection
                  "PROV1"
@@ -461,7 +444,6 @@
 
 ;; case 5 test account 2 which does NOT match metadata user and account has prems ; this should be MMT's use case
 (deftest roll-your-own-subscription-and-have-acls-tests-with-acls
-  (mock-urs/create-users (system/context) [{:username "user1" :password "Password"}])
   (testing "Use an account which does not match matches the metadata and DOES have an ACL"
     (let [user2-token (echo-util/login (system/context) "user2")
           supplied-concept-id "SUB1000-PROV1"
@@ -748,7 +730,7 @@
               "PROV1"
               (data-umm-c/collection)
               {:token "mock-echo-system-token"})]
-    (mock-urs/create-users (system/context) [{:username "post-user" :password "Password"}])
+
     (testing "without native-id returns an error"
       (let [concept (dissoc (subscription-util/make-subscription-concept
                              {:SubscriberId "post-user"
@@ -768,8 +750,8 @@
                              :Name "a different subscription with native-id"
                              :CollectionConceptId (:concept-id coll)})
                            :native-id "another-native-id")
-            {:keys [native-id concept-id status errors]} (ingest/ingest-concept concept {:token token
-                                                                                         :method :put})]
+            {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
+                                                                                  :method :put})]
         (is (= 201 status))
         (is (not (nil? concept-id)))
         (is (= "another-native-id" native-id))
@@ -840,20 +822,3 @@
                     coll2 "test_sub4_prov1" "sub-user" "platform=NOAA-11")]
         (is (not (:errors sub5)))
         (is (:errors sub4-2))))))
-
-(deftest subscription-ingest-invalid-subscriber-id-test
-  (let [coll1 (data-core/ingest-umm-spec-collection
-               "PROV1"
-               (data-umm-c/collection
-                {:ShortName "coll-no-id"
-                 :EntryTitle "entry-title-no-id"})
-               {:token "mock-echo-system-token"})]
-    (testing "ingest on PROV1, with no subscriber-id supplied"
-      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
-                                                                  :CollectionConceptId (:concept-id coll1)
-                                                                  :SubscriberId "invalid-user"
-                                                                  :EmailAddress "foo@example.com"})
-            user1-token (echo-util/login (system/context) "user1")
-            response (ingest/ingest-concept concept {:token user1-token})]
-        (is (= 400 (:status response)))
-        (is (= "The user-id [invalid-user] must correspond to a valid EDL account." (first (:errors response))))))))
