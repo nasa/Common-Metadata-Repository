@@ -71,7 +71,7 @@
                                                                   :EmailAddress "foo@example.com"})
             response (ingest/ingest-concept concept)]
         (is (= 400 (:status response)))
-        (is (= "INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first (:errors response))))))))
+        (is (= "Subscription creation failed - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first (:errors response))))))))
 
 (deftest subscription-ingest-on-prov3-test
   (let [coll1 (data-core/ingest-umm-spec-collection
@@ -204,7 +204,7 @@
                     {:accept-format :json
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
-      (is (= "INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first errors)))))
+      (is (= "Subscription creation failed - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first errors)))))
   (testing "xml response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -213,7 +213,7 @@
                     {:accept-format :xml
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-      (is (= "INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first errors))))))
+      (is (= "Subscription creation failed - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first errors))))))
 
 ;; Verify that user-id is saved from User-Id or token header
 (deftest subscription-ingest-user-id-test
@@ -339,7 +339,7 @@
     (let [concept (subscription-util/make-subscription-concept {:SubscriberId ""})
           {:keys [status errors]} (ingest/ingest-concept concept)]
       (is (= 400 status))
-      (is (= ["INGEST FAILED - No ID was provided. Please provide a SubscriberId or pass in a valid token."]
+      (is (= ["Subscription creation failed - No ID was provided. Please provide a SubscriberId or pass in a valid token."]
              errors))))
   (testing "ingest of subscription concept JSON schema validation invalid field"
     (let [concept (subscription-util/make-subscription-concept {:InvalidField "xxx"})
@@ -955,4 +955,4 @@
             user1-token (echo-util/login (system/context) "user1")
             response (ingest/ingest-concept concept {:token user1-token})]
         (is (= 400 (:status response)))
-        (is (= "The user-id [invalid-user] must correspond to a valid EDL account." (first (:errors response))))))))
+        (is (= "Subscription creation failed - The user-id [invalid-user] must correspond to a valid EDL account." (first (:errors response))))))))
