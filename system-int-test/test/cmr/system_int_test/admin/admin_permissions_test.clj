@@ -131,7 +131,16 @@
         (url/cleanup-granule-bulk-update-task-url) :post
 
         "access-control-reindex-acls"
-        (url/access-control-reindex-acls-url) :post))
+        (url/access-control-reindex-acls-url) :post
+
+        "access-control-reindex-acls"
+        (url/enable-email-subscription-processing) :post
+
+        "access-control-reindex-acls"
+        (url/enable-email-subscription-processing) :post
+
+        "access-control-reindex-acls"
+        (url/email-subscription-processing-job-state) :get))
 
     (testing "Admin permissions test with body"
       (check-all-permissions (url/email-subscription-processing)

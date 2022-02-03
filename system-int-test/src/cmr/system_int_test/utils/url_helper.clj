@@ -578,6 +578,21 @@
   (format "http://localhost:%s/jobs/trigger-email-subscription-processing"
           (transmit-config/ingest-port)))
 
+(defn enable-email-subscription-processing
+  []
+  (format "http://localhost:%s/jobs/enable-email-subscription-processing-job"
+          (transmit-config/ingest-port)))
+
+(defn disable-email-subscription-processing
+  []
+  (format "http://localhost:%s/jobs/disable-email-subscription-processing-job"
+          (transmit-config/ingest-port)))
+
+(defn email-subscription-processing-job-state
+  []
+  (format "http://localhost:%s/jobs/email-subscription-processing-job-state"
+          (transmit-config/ingest-port)))
+
 (defn indexer-read-caches-url
   "URL to read the indexer caches."
   []
