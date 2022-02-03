@@ -13,6 +13,7 @@
    [cmr.ingest.api.provider :as provider-api]
    [cmr.ingest.api.services :as services]
    [cmr.ingest.api.subscriptions :as subscriptions]
+   [cmr.ingest.services.subscriptions-helper :as subscriptions-helper]
    [cmr.ingest.api.tools :as tools]
    [cmr.ingest.api.translation :as translation-api]
    [cmr.ingest.api.variables :as variables]
@@ -76,6 +77,11 @@
            {ctx :request-context}
            (acl/verify-ingest-management-permission ctx :update)
            (jobs/trigger-bulk-granule-update-task-table-cleanup ctx)
+           {:status 200})
+     (POST "/trigger-email-subscription-processing"
+           {ctx :request-context params :params}
+           (acl/verify-ingest-management-permission ctx :update)
+           (subscriptions-helper/trigger-email-subscription-processing ctx params)
            {:status 200}))))
 
 (def ingest-routes

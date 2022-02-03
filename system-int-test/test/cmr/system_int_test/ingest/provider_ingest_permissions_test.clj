@@ -18,8 +18,7 @@
    [cmr.system-int-test.utils.service-util :as service-util]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
    [cmr.system-int-test.utils.tool-util :as tool-util]
-   [cmr.system-int-test.utils.variable-util :as variable-util]
-   [cmr.mock-echo.client.mock-urs-client :as mock-urs]))
+   [cmr.system-int-test.utils.variable-util :as variable-util]))
 
 (use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
                                           {:grant-all-search? false
@@ -45,8 +44,7 @@
     (is (= 401 status))))
 
 (deftest ingest-provider-management-permissions-test
-  (let [_ (mock-urs/create-users (s/context) [{:username "someSubId" :password "Password"}])
-        prov-admin-read-group-concept-id (echo-util/get-or-create-group
+  (let [prov-admin-read-group-concept-id (echo-util/get-or-create-group
                                           (s/context) "prov-admin-read-group")
         prov-admin-update-group-concept-id (echo-util/get-or-create-group
                                             (s/context)

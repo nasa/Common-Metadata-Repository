@@ -50,27 +50,20 @@
   not ideal, it was decided to use the different 'version' capabilities in KMS
   to isolate production from the other two envirments. Specificly: rucontenttype
   is a three level tree in SIT, but not PROD. This process is only needed durring
-  the transition and should be deleted once in production."
+  the transition and should be deleted once in production.
+
+  To override the scheme KMS settings, set the config kms-scheme-override-json to:
+  {\"platforms\":\"static\",
+   \"mime-type\":\"mimetype?format=csv&version=special\"}"
  )
 
-(def production?
-  "Return true if CMR is not currently in production."
-  (= "prod" (System/getenv "ENVIRONMENT")))
-
 (defn- scheme-overrides
-  "Allow for any KMS resource URL to be overriden by the system envirnmental
-   variables. The ENV is assumed to contain JSON"
-  ;; assume the value comes from an ENV
-  ([] (scheme-overrides (System/getenv "kms_scheme_overrides")))
-
-  ;; parse and return a map
-  ([json-string] (json/parse-string json-string true)))
-
-(comment
- ;; testing with an env is not convenient, use this to diretly test what the
- ;; function would do in the real world with a valid value
- (scheme-overrides (str "{\"platforms\":\"file://frozen/platforms.csv\","
-                        "\"mime-type\":\"mimetype?format=csv&version=special\"}")))
+  "CMR will Allow for any KMS resource URL to be overriden by a config
+   variable (AWS parameter). The config is assumed to contain a string with JSON.
+   Return value is the KMS schema override map as configured in AWS as
+   CMR_KMS_SCHEMA_OVERRIDE_JSON."
+  []
+  (json/parse-string (config/kms-scheme-override-json) true))
 
 ;; These are the default locations in KMS for all supported schemes
 (def keyword-scheme->gcmd-resource-name
@@ -89,24 +82,13 @@
    :granule-data-format "granuledataformat?format=csv"
    :mime-type "mimetype?format=csv"})
 
-(def keyword-scheme->alt-gcmd-resource-names
-  "These are scheme versions to use in SIT and UAT, but not PROD. These values
-   are merged with keyword-scheme->gcmd-resource-name. If any of the values
-   starts with `file://` then it is considered a local file and not an HTTP call"
-  {;:example "file://frozen/platforms.csv"
-   :platforms "platforms?format=csv&version=draft"
-   :related-urls "rucontenttype?format=csv&version=draft"
-   :granule-data-format "granuledataformat?format=csv&version=draft"})
-
 (defn- keyword-scheme->kms-resource
   "This is the primary way to get KMS URL resource locations. This function will
    first try to use the default values, but if not production the alt values will
-   be applied. Finally the ENV scheme overrides are applied. Any value starting
-   with `file://` will be assumed to be a local file."
+   be applied. Finally the ENV scheme overrides are applied. Any value of
+    `static` will cause CMR to load a local file under ingest."
   [keyword-scheme]
-  (keyword-scheme (-> keyword-scheme->gcmd-resource-name
-                      (merge (when-not production? keyword-scheme->alt-gcmd-resource-names))
-                      (merge (scheme-overrides)))))
+  (keyword-scheme (merge keyword-scheme->gcmd-resource-name (scheme-overrides))))
 
 (def keyword-scheme->field-names
   "Maps each keyword scheme to its subfield names. These values are also used to
@@ -223,7 +205,6 @@
                     (:short-name entry) entry)))
     keyword-entries))
 
-
 (defn- get-by-keyword-scheme
   "Makes a get request to the GCMD KMS. Returns the controlled vocabulary map for the given
   keyword scheme."
@@ -232,17 +213,26 @@
   ;; From time to time KMS will not be ready to host a set of keywords as the
   ;; population of that system happens on it's team's own schedule. In the case
   ;; where a standard list is ready before the KMS sever is, load that list from
-  ;; a local file and not the service. GCMD resounce names prefixed the with
-  ;; value `file://` is how one tells that a local file is to be used. This
-  ;; process is driven by the System Environmental variable `kms_scheme_overrides`
-  ;; which contains JSON such as:
-  ;;     "{\"platforms\":\"file://frozen/platforms.csv\"}"
+  ;; a file internal to CMR and not the service. GCMD resource names with the
+  ;; value `frozen` will tell CMR that a local file is to be used. This
+  ;; process is driven by the config value `kms_scheme_overrides`
+  ;; which contains a string of JSON such as:
+  ;;     "{\"platforms\":\"static\"}"
   (let [gcmd-resource-name (keyword-scheme->kms-resource keyword-scheme)]
-    (if (str/starts-with? gcmd-resource-name "file://")
-      (->> (str/replace gcmd-resource-name #"^file://" "")
-           jio/resource
-           jio/file
-           slurp)
+    (info (format "Loading KMS resource [%s] for [%s]..." gcmd-resource-name keyword-scheme))
+    (if (= "static" gcmd-resource-name)
+      ;; load the static file from the resource directory under indexer
+      (let [gcmd-resource-path (str (format "static_kms_keywords/%s.csv" (name keyword-scheme)))
+            data (slurp (jio/resource gcmd-resource-path))
+            data-as-rows (str/split-lines (or data ""))
+            version-info (first (str/split (first data-as-rows) #","))
+            header (str/split-lines (second data-as-rows))]
+        (info (format "Loading static KMS resource from %s for %s. %s. Found keys [%s]."
+                      gcmd-resource-path
+                      gcmd-resource-name
+                      version-info
+                      header))
+        data)
       (let [conn (config/context->app-connection context :kms)
             url (format "%s/%s" (conn/root-url conn) gcmd-resource-name)
             params (merge
@@ -251,7 +241,7 @@
                      :throw-exceptions true})
             start (System/currentTimeMillis)
             response (client/get url params)]
-        (debug
+        (info
          (format
           "Completed KMS Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
         (:body response)))))
@@ -275,11 +265,14 @@
   {:pre (some? (keyword-scheme keyword-scheme->field-names))}
   (let [keywords
          (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
-    (debug (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))
+    (info (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))
     keywords))
 
 (comment
   (def get-keywords-from-system
     (partial get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)}))
   (get-keywords-from-system :measurement-name)
-  (clojure.pprint/pprint (get-keywords-from-system :platforms)))
+  (config/set-kms-scheme-override-json! "{\"platforms\": \"static\"}")
+  (first (get-keywords-from-system :platforms))
+  (parse-entries-from-csv :platforms (slurp (jio/resource "static_kms_keywords/platforms.csv")))
+  )

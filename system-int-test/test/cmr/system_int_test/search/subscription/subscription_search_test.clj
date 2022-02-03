@@ -13,8 +13,7 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.subscription-util :as subscriptions]
-   [cmr.mock-echo.client.mock-urs-client :as mock-urs]))
+   [cmr.system-int-test.utils.subscription-util :as subscriptions]))
 
 (use-fixtures :each
               (join-fixtures
@@ -78,8 +77,7 @@
   ;; SUBSCRIPTION_MANAGEMENT ACL grants only update permission for guest on PROV3,
   ;; so subscription for PROV3 can be ingested but can't be searched by guest.
   ;; but it's searchable by registered users because read permission is granted.
-  (let [_ (mock-urs/create-users (system/context) [{:username "SubId3" :password "Password"}])
-        coll1 (data2-core/ingest-umm-spec-collection "PROV3"
+  (let [coll1 (data2-core/ingest-umm-spec-collection "PROV3"
                (data-umm-c/collection
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
@@ -116,8 +114,7 @@
       [subscription3] {:name "Subscription3" :token user1-token})))
 
 (deftest search-for-subscriptions-group-read-permission-test
-  (let [_ (mock-urs/create-users (system/context) [{:username "SubId4" :password "Password"}])
-        coll1 (data2-core/ingest-umm-spec-collection "PROV4"
+  (let [coll1 (data2-core/ingest-umm-spec-collection "PROV4"
                (data-umm-c/collection
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
@@ -203,11 +200,7 @@
              nil :subscription {} {:url-extension "atom"}))))))
 
 (deftest search-for-subscriptions-test
-  (let [_ (mock-urs/create-users (system/context) [{:username "SubId1" :password "Password"}])
-        _ (mock-urs/create-users (system/context) [{:username "SubId2" :password "Password"}])
-        _ (mock-urs/create-users (system/context) [{:username "SubId3" :password "Password"}])
-        _ (mock-urs/create-users (system/context) [{:username "SubId4" :password "Password"}])
-        coll1 (data2-core/ingest-umm-spec-collection
+  (let [coll1 (data2-core/ingest-umm-spec-collection
                "PROV4"
                (data-umm-c/collection
                 {:ShortName "coll1"
@@ -471,8 +464,7 @@
       {:native-id "sub*" :provider "PROV2" "options[native-id][pattern]" true})))
 
 (deftest subscription-search-sort
-  (let [_ (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
-        coll1 (data2-core/ingest-umm-spec-collection "PROV4"
+  (let [coll1 (data2-core/ingest-umm-spec-collection "PROV4"
                (data-umm-c/collection
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})

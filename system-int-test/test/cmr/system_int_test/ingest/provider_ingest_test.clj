@@ -76,7 +76,7 @@
         (is (= 415 status))
         (is (re-find #"Creating or updating a provider requires a JSON content type" body)))))
 
-  (testing "create provider with consortiums and get providers through ingest app"
+  (testing "create provider with valid consortiums and get providers through ingest app"
     (u/are3 [provider-id short-name cmr-only small consortiums]
          (let [provider {:provider-id provider-id
                          :short-name short-name
@@ -87,7 +87,9 @@
                results (ingest/get-ingest-providers)
                test_candidate (first (filter #(= provider-id (:provider-id %)) results))]
            (is (= 201 status) "status check")
-           (is (= consortiums (:consortiums test_candidate)) "consortiums check"))
+           (is (= (when (> (count consortiums) 0)
+                    consortiums)
+                  (:consortiums test_candidate)) "consortiums check"))
 
             "- nil test"
             "PROV0A" "S0A" false false nil
@@ -96,13 +98,45 @@
             "PROV0F" "S0F" false true "Group1"
 
             "- two consortiums"
-            "PROV10" "S10" true true "Group2,Group3"
+            "PROV10" "S10" true true "Group2 Group3"
 
-            "- two consortiums with a space"
-            "PROV11" "S11" nil nil "Group2, Group3"
+            "- two consortiums with an underscore"
+            "PROV11" "S11" true true "Group2_1 Group2_3"
+            
+            "- consortiums with only spaces"
+            "PROV12" nil nil nil "    "
 
-            "- all blank"
-            "PROV12" nil nil nil nil)))
+            "- consortiums with empty string"
+            "PROV13" nil nil nil ""
+
+            "- consortiums with nil value"
+            "PROV14" nil nil nil nil))
+
+  (testing "create provider with invalid consortiums. Fail with validation errors"
+    (u/are3 [provider-id short-name cmr-only small consortiums]
+         (let [provider {:provider-id provider-id
+                         :short-name short-name
+                         :cmr-only cmr-only
+                         :small small
+                         :consortiums consortiums}
+               response (ingest/create-ingest-provider provider)
+               {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})
+               err-msg (format "Invalid consortiums [%s]. Valid consortiums can only contain alphanumeric, underscore and space characters."
+                               consortiums)]
+           (is (= [422 [err-msg]]
+                  [status errors])))
+
+            "- consortiums with comma "
+            "PROV0F" "S0F" false true "Group1, Group2"
+
+            "- consortiums with semicolon"
+            "PROV10" "S10" true true "Group2; Group3"
+
+            "- consortiums with dash"
+            "PROV11" "S11" true true "Group2-11 Group2-3"
+
+            "- consortiums with special characters"
+            "PROV12" "S12" true true "Group! Group$")))
 
 (deftest update-provider-test
   (testing "creating a provider and changing attributes"
@@ -133,14 +167,39 @@
                                     :short-name "S6"
                                     :cmr-only false
                                     :small false
-                                    :consortiums "Consortium-6"})
+                                    :consortiums "Consortium_6"})
 
     (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
-             {:provider-id "PROV6" :short-name "S6" :cmr-only false :small false :consortiums "Consortium-6"}
+             {:provider-id "PROV6" :short-name "S6" :cmr-only false :small false :consortiums "Consortium_6"}
              {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
              {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
              {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
-           (set (ingest/get-ingest-providers)))))
+           (set (ingest/get-ingest-providers))))
+
+   ;; Updating the consortiums to a string of spaces
+   (ingest/update-ingest-provider {:provider-id "PROV6"
+                                    :short-name "S6"
+                                    :cmr-only false
+                                    :small false
+                                    :consortiums "   "})
+
+    (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
+             {:provider-id "PROV6" :short-name "S6" :cmr-only false :small false :consortiums "   "}
+             {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
+             {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
+             {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
+           (set (ingest/get-ingest-providers))))
+
+    ;; Updating the consortiums to a value that includes non-alphanumeric, non-underscore and non-space characters will fail
+    (let [response (ingest/update-ingest-provider {:provider-id "PROV6"
+                                                   :short-name "S6"
+                                                   :cmr-only false
+                                                   :small false
+                                                   :consortiums "Consortium-6"})
+          {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})
+          err-msg "Invalid consortiums [Consortium-6]. Valid consortiums can only contain alphanumeric, underscore and space characters."]
+       (is (= [422 [err-msg]]
+              [status errors]))))
 
   (testing "updating a non-existent provider fails"
     (is (= 404 (:status (ingest/update-ingest-provider {:provider-id "PROV5"

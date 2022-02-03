@@ -91,7 +91,7 @@
       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
                                                                   :CollectionConceptId (:concept-id coll1)})
             user1-token (echo-util/login (system/context) "user1")
-            response (ingest/ingest-concept concept {:token user1-token :user-id "user1"})]
+            response (ingest/ingest-concept concept {:token user1-token})]
         (is (= 201 (:status response)))))))
 
 (deftest subscription-delete-on-prov3-test
@@ -415,105 +415,6 @@
               {:keys [status concept-id revision-id]} response]
           (is (= 200 status))
           (is (= 3 revision-id)))))))
-
-(deftest subscription-email-processing
-  (testing "Tests subscriber-id filtering in subscription email processing job"
-    (system/only-with-real-database
-     (let [user1-group-id (echo-util/get-or-create-group (system/context) "group1")
-           ;; User 1 is in group1
-           user1-token (echo-util/login (system/context) "user1" [user1-group-id])
-           _ (echo-util/ungrant (system/context)
-                                (-> (access-control/search-for-acls (system/context)
-                                                                    {:provider "PROV1"
-                                                                     :identity-type "catalog_item"}
-                                                                    {:token "mock-echo-system-token"})
-                                    :items
-                                    first
-                                    :concept_id))
-           _ (echo-util/ungrant (system/context)
-                                (-> (access-control/search-for-acls (system/context)
-                                                                    {:provider "PROV2"
-                                                                     :identity-type "catalog_item"}
-                                                                    {:token "mock-echo-system-token"})
-                                    :items
-                                    first
-                                    :concept_id))
-           _ (echo-util/grant (system/context)
-                              [{:group_id user1-group-id
-                                :permissions [:read]}]
-                              :catalog_item_identity
-                              {:provider_id "PROV1"
-                               :name "Provider collection/granule ACL"
-                               :collection_applicable true
-                               :granule_applicable true
-                               :granule_identifier {:access_value {:include_undefined_value true
-                                                                   :min_value 1 :max_value 50}}})
-           _ (echo-util/grant (system/context)
-                              [{:user_type :registered
-                                :permissions [:read]}]
-                              :catalog_item_identity
-                              {:provider_id "PROV2"
-                               :name "Provider collection/granule ACL registered users"
-                               :collection_applicable true
-                               :granule_applicable true
-                               :granule_identifier {:access_value {:include_undefined_value true
-                                                                   :min_value 100 :max_value 200}}})
-           _ (ac-util/wait-until-indexed)
-           ;; Setup collections
-           coll1 (data-core/ingest-umm-spec-collection "PROV1"
-                                                       (data-umm-c/collection {:ShortName "coll1"
-                                                                               :EntryTitle "entry-title1"})
-                                                       {:token "mock-echo-system-token"})
-           coll2 (data-core/ingest-umm-spec-collection "PROV2"
-                                                       (data-umm-c/collection {:ShortName "coll2"
-                                                                               :EntryTitle "entry-title2"})
-                                                       {:token "mock-echo-system-token"})
-           _ (index/wait-until-indexed)
-           ;; Setup subscriptions for each collection, for user1
-           _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
-                                                     {:Name "test_sub_prov1"
-                                                      :SubscriberId "user1"
-                                                      :EmailAddress "user1@nasa.gov"
-                                                      :CollectionConceptId (:concept-id coll1)
-                                                      :Query " "})
-                                                    {:token "mock-echo-system-token"})
-           _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
-                                                     {:provider-id "PROV2"
-                                                      :Name "test_sub_prov1"
-                                                      :SubscriberId "user1"
-                                                      :EmailAddress "user1@nasa.gov"
-                                                      :CollectionConceptId (:concept-id coll2)
-                                                      :Query " "})
-                                                    {:token "mock-echo-system-token"})
-           _ (index/wait-until-indexed)
-           ;; Setup granules, gran1 and gran3 with acl matched access-value
-           ;; gran 2 does not match, and should not be readable by user1
-           gran1 (data-core/ingest "PROV1"
-                                   (data-granule/granule-with-umm-spec-collection coll1
-                                                                                  (:concept-id coll1)
-                                                                                  {:granule-ur "Granule1"
-                                                                                   :access-value 33})
-                                   {:token "mock-echo-system-token"})
-           gran2 (data-core/ingest "PROV1"
-                                   (data-granule/granule-with-umm-spec-collection coll1
-                                                                                  (:concept-id coll1)
-                                                                                  {:granule-ur "Granule2"
-                                                                                   :access-value 66})
-                                   {:token "mock-echo-system-token"})
-           gran3 (data-core/ingest "PROV2"
-                                   (data-granule/granule-with-umm-spec-collection coll2
-                                                                                  (:concept-id coll2)
-                                                                                  {:granule-ur "Granule3"
-                                                                                   :access-value 133})
-                                   {:token "mock-echo-system-token"})
-           _ (index/wait-until-indexed)
-           expected (set [(:concept-id gran1) (:concept-id gran3)])
-           actual (->> (process-subscriptions)
-                       (map #(nth % 1))
-                       flatten
-                       (map :concept-id)
-                       set)]
-       (is (= expected actual))))))
 
 (deftest roll-your-own-subscription-tests
   ;; Use cases coming from EarthData Search wanting to allow their users to create
@@ -867,8 +768,8 @@
                              :Name "a different subscription with native-id"
                              :CollectionConceptId (:concept-id coll)})
                            :native-id "another-native-id")
-            {:keys [native-id concept-id status errors]} (ingest/ingest-concept concept {:token token
-                                                                                         :method :put})]
+            {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
+                                                                                  :method :put})]
         (is (= 201 status))
         (is (not (nil? concept-id)))
         (is (= "another-native-id" native-id))
