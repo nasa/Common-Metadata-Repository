@@ -4,7 +4,7 @@
    [camel-snake-kebab.core :as camel-snake-kebab]
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojure.string :as s]
+   [clojure.string :as string]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
@@ -203,9 +203,9 @@
           sk-strings (->> keyword-hierarchy
                           (map #(get science-keywords %))
                           util/remove-nil-tail)
-          keyword-string (s/join ":" sk-strings)
+          keyword-string (string/join ":" sk-strings)
           keyword-value (last sk-strings)
-          id (-> (s/lower-case keyword-string)
+          id (-> (string/lower-case keyword-string)
                  (str "_science_keywords")
                  hash)]
       {:_id id
@@ -222,14 +222,14 @@
   [index permissions key-name value-map]
   (let [values (->> value-map
                     seq
-                    (remove #(s/includes? (name (key %)) "-lowercase")))
+                    (remove #(string/includes? (name (key %)) "-lowercase")))
         sk-matcher (re-matcher #"science-keywords" key-name)
         public-collection? (if (some #(= % "guest") permissions)
                              true
                              false)
         permitted-group-ids (->> permissions
                                  (remove #(= "guest" %))
-                                 (s/join ",")
+                                 (string/join ",")
                                  not-empty)
         modified-date (str (t/now))]
     (if (seq (re-find sk-matcher))
@@ -242,8 +242,8 @@
              (let [v (val value)
                    type (-> key-name
                             camel-snake-kebab/->snake_case_keyword
-                            (s/replace #"_humanized|:" ""))
-                   id (-> (s/lower-case v)
+                            (string/replace #"_humanized|:" ""))
+                   id (-> (string/lower-case v)
                           (str "_" type)
                           hash)]
                {:type type
@@ -266,7 +266,7 @@
           :let [key (key humanized-field)
                 key-name (-> key
                              name
-                             (s/replace #"(\.humanized(_?2)?|-sn|-id)" ""))
+                             (string/replace #"(\.humanized(_?2)?|-sn|-id)" ""))
                 value-map (as-> humanized-field h
                                 (val h)
                                 (map util/remove-nil-keys h)
@@ -281,9 +281,8 @@
   This is case-insensitive"
   [term]
   (let [rx (re-pattern #"(none|not (provided|applicable))")]
-    (or (nil? term)
-        (empty? (s/trim term))
-        (some? (re-find rx (s/lower-case term))))))
+    (or (string/blank? term)
+        (some? (re-find rx (string/lower-case term))))))
 
 (defn anti-value-suggestion?
   "Returns whether an autocomplete suggestion has an anti-value as the :value

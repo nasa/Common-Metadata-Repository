@@ -186,7 +186,7 @@
        []))
     (testing "Suggestion associated to collections granted to registered users"
       (compare-autocomplete-results
-       (get-in (search/get-autocomplete-json "q=REGISTERED" {:headers {:echo-token user3-token}}) [:feed :entry])
+       (get-in (search/get-autocomplete-json "q=REGISTERED" {:headers {:authorization user3-token}}) [:feed :entry])
        [{:type "project" :value "REGISTERED" :fields "REGISTERED"}
         {:type "instrument" :value "REGISTERED-p0-i0" :fields "REGISTERED-p0-i0"}
         {:type "platform" :value "REGISTERED-p0" :fields "REGISTERED-p0"}
