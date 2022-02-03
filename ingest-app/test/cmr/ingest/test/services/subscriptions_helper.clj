@@ -43,7 +43,7 @@
     (is (= (str "<p>You have subscribed to receive notifications when data is added to the following query:</p>"
                 "<p><code>C1200370131-EDF&#95;DEV06</code></p>"
                 "<p><code>updated&#95;since&#91;&#93;=2020-05-04T12:51:36Z</code></p>"
-                "<p>Since this query was last run at 2020-05-04T12:51:36Z, the following granules have been "
+                "<p>Running the query with a time window from 2020-05-04T12:51:36Z to 2020-05-05T12:51:36Z, the following granules have been "
                 "added or updated:</p>"
                 "<ul><li><a href='https://cmr.link/g1'>https://cmr.link/g1</a></li><li>"
                 "<a href='https://cmr.link/g2'>https://cmr.link/g2</a></li><li>"
