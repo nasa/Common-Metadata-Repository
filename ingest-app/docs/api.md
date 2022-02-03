@@ -87,7 +87,7 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 | application/iso:smap+xml          | ISO 19115 SMAP    | collection, granule |
 | application/vnd.nasa.cmr.umm+json | UMM JSON          | collection, granule, variable, service, subscription, tool |
 
-Note: UMM JSON accepts an additional version parameter for both `Content-Type` and `Accept` headers. Like charset, it is appended with a semicolon (;). If no version is appended, the latest version is assumed.
+Note: UMM JSON accepts an additional version parameter for `Content-Type`. Like charset, it is appended with a semicolon (;). UMM JSON version is required.
 
 For an example, the following means version 1.16.2 of the UMM JSON format:
 
@@ -106,6 +106,12 @@ The token can alternatively be specified using the `Authorization: Bearer` heade
 #### <a name="accept-header"></a> Accept Header
 
 The `Accept` header specifies the format of the response message and defaults to XML for the normal Ingest APIs. `application/json` can be specified if the preferred responses is JSON.
+
+UMM JSON accepts an additional version parameter for `Accept` header. Like charset, it is appended with a semicolon (;). If no UMM JSON version is provided, the latest version will be used.
+
+For an example, the following means version 1.16.2 of the UMM JSON format:
+
+    application/vnd.nasa.cmr.umm+json;version=1.16.2
 
 #### <a name="cmr-pretty-header"></a> Cmr-Pretty Header
 
