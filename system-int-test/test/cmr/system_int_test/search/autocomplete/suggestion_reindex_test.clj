@@ -187,13 +187,13 @@
     (testing "Suggestion associated to collections granted to registered users"
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=REGISTERED" {:headers {:authorization user3-token}}) [:feed :entry])
-       [{:type "project" :value "REGISTERED" :fields "REGISTERED"}
-        {:type "instrument" :value "REGISTERED-p0-i0" :fields "REGISTERED-p0-i0"}
-        {:type "platform" :value "REGISTERED-p0" :fields "REGISTERED-p0"}
-        {:type "platform" :value "REGISTERED-p1" :fields "REGISTERED-p1"}
-        {:type "instrument" :value "REGISTERED-p0-i1" :fields "REGISTERED-p0-i1"}
-        {:type "instrument" :value "REGISTERED-p1-i0" :fields "REGISTERED-p1-i0"}
-        {:type "instrument" :value "REGISTERED-p1-i1" :fields "REGISTERED-p1-i1"}]))))
+       [{:score 4.5634737 :type "project" :value "REGISTERED" :fields "REGISTERED"}
+        {:score 3.2571084 :type "instrument" :value "REGISTERED-p0-i0" :fields "REGISTERED-p0-i0"}
+        {:score 3.187054 :type "platform" :value "REGISTERED-p0" :fields "REGISTERED-p0"}
+        {:score 3.187054 :type "platform" :value "REGISTERED-p1" :fields "REGISTERED-p1"}
+        {:score 3.136525 :type "instrument" :value "REGISTERED-p0-i1" :fields "REGISTERED-p0-i1"}
+        {:score 3.136525 :type "instrument" :value "REGISTERED-p1-i0" :fields "REGISTERED-p1-i0"}
+        {:score 3.136525 :type "instrument" :value "REGISTERED-p1-i1" :fields "REGISTERED-p1-i1"}]))))
 
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
