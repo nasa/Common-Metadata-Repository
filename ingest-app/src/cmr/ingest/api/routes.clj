@@ -101,30 +101,18 @@
        {ctx :request-context}
        (acl/verify-ingest-management-permission ctx :update)
        (let [qzsched (get-in ctx [:system :scheduler :qz-scheduler])
-             get-trigger-state #(str (. qzsched getTriggerState %))
              job-key-str jobs/EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
-             job-key (qj/key job-key-str)
-             trigger-key-str (str job-key-str ".trigger")
-             trigger-key (qt/key trigger-key-str)
-             trigger-state (get-trigger-state trigger-key)]
-         (if (= trigger-state "NORMAL")
-           (qs/pause-job qzsched job-key)
-           (qs/resume-job qzsched job-key))
-         {:status 200 :body (json/generate-string {:new-state (get-trigger-state trigger-key)})}))
+             job-key (qj/key job-key-str)]
+           (qs/resume-job qzsched job-key)
+         {:status 200}))
      (POST "/disable-email-subscription-processing-job"
        {ctx :request-context}
        (acl/verify-ingest-management-permission ctx :update)
        (let [qzsched (get-in ctx [:system :scheduler :qz-scheduler])
-             get-trigger-state #(str (. qzsched getTriggerState %))
              job-key-str jobs/EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
-             job-key (qj/key job-key-str)
-             trigger-key-str (str job-key-str ".trigger")
-             trigger-key (qt/key trigger-key-str)
-             trigger-state (get-trigger-state trigger-key)]
-         (if (= trigger-state "NORMAL")
+             job-key (qj/key job-key-str)]
            (qs/pause-job qzsched job-key)
-           (qs/resume-job qzsched job-key))
-         {:status 200 :body (json/generate-string {:new-state (get-trigger-state trigger-key)})})))))
+         {:status 200})))))
 
 (def ingest-routes
   (routes
