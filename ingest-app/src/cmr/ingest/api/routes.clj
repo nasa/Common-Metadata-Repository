@@ -2,9 +2,6 @@
   "Defines the HTTP URL routes for the ingest API."
   (:require
    [cheshire.core :as json]
-   [clojurewerkz.quartzite.jobs :as qj]
-   [clojurewerkz.quartzite.scheduler :as qs]
-   [clojurewerkz.quartzite.triggers :as qt]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
@@ -22,6 +19,7 @@
    [cmr.ingest.api.translation :as translation-api]
    [cmr.ingest.api.variables :as variables]
    [cmr.ingest.services.ingest-service :as ingest]
+   [cmr.ingest.services.job-management :as jm]
    [cmr.ingest.services.jobs :as jobs]
    [compojure.core :refer [DELETE GET POST PUT context routes]]
    [drift.execute :as drift]))
@@ -90,28 +88,24 @@
      (GET  "/email-subscription-processing-job-state"
        {ctx :request-context}
        (acl/verify-ingest-management-permission ctx :update)
-       (let [qzsched (get-in ctx [:system :scheduler :qz-scheduler])
-             get-trigger-state #(str (. qzsched getTriggerState %))
-             job-key-str jobs/EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
-             trigger-key-str (str job-key-str ".trigger")
-             trigger-key (qt/key trigger-key-str)
-             trigger-state (get-trigger-state trigger-key)]
+       (let [sched (jm/get-quartz-scheduler ctx)
+             job-key jobs/EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
+             trigger-key (str job-key ".trigger")
+             trigger-state (jm/get-trigger-state sched trigger-key)]
          {:status 200 :body (json/generate-string {:state trigger-state})}))
      (POST "/enable-email-subscription-processing-job"
        {ctx :request-context}
        (acl/verify-ingest-management-permission ctx :update)
-       (let [qzsched (get-in ctx [:system :scheduler :qz-scheduler])
-             job-key-str jobs/EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
-             job-key (qj/key job-key-str)]
-           (qs/resume-job qzsched job-key)
+       (let [sched (jm/get-quartz-scheduler ctx)
+             job-key jobs/EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY]
+           (jm/resume-job sched job-key)
          {:status 200}))
      (POST "/disable-email-subscription-processing-job"
        {ctx :request-context}
        (acl/verify-ingest-management-permission ctx :update)
-       (let [qzsched (get-in ctx [:system :scheduler :qz-scheduler])
-             job-key-str jobs/EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
-             job-key (qj/key job-key-str)]
-           (qs/pause-job qzsched job-key)
+       (let [sched (jm/get-quartz-scheduler ctx)
+             job-key jobs/EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY]
+           (jm/pause-job sched job-key)
          {:status 200})))))
 
 (def ingest-routes
