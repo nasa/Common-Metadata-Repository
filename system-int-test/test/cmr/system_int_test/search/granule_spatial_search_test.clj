@@ -113,6 +113,7 @@
            (search/find-refs :granule
                              {:line "0,0,1,1,2,2,1,1" :provider "PROV1"})))))
 
+
 (deftest spatial-search-test
   (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                                                                 :EntryTitle "E1"

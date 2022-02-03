@@ -58,13 +58,8 @@
   ([conn index mapping-type id]
    (delete conn index mapping-type id nil))
   ([conn index mapping-type id opts]
-   (-> (rest/record-url conn index "_doc" id)
-       (http/delete (merge {:throw-exceptions false}
-                           (.http-opts conn)
-                           {:content-type :json :query-params opts}
-                           {:accept :json}))
-       (:body)
-       (rest/parse-safely))))
+   (rest/delete
+    conn (rest/record-url conn index "_doc" id) {:content-type :json :query-params opts})))
 
 (defn delete-by-query
   "Performs a delete-by-query operation over one or more indexes and types.
