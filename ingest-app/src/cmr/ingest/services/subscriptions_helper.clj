@@ -85,7 +85,8 @@
   (let [metadata (json/parse-string (:metadata subscription))
         concept-id (get-in subscription [:extra-fields :collection-concept-id])
         meta-query (get metadata "Query")
-        sub-start-time (:start-time subscription)]
+        sub-start-time (:start-time subscription)
+        sub-end-time (:end-time subscription)]
     {:from from-email-address
      :to to-email-address
      :subject "Email Subscription Notification"
@@ -94,8 +95,7 @@
                        (str "You have subscribed to receive notifications when data is added to the following query:\n\n"
                             "`" concept-id "`\n\n"
                             "`" meta-query "`\n\n"
-                            "Since this query was last run at "
-                            sub-start-time
+                            "Running the query with a time window from " sub-start-time " to " sub-end-time
                             ", the following granules have been added or updated:\n\n"
                             (email-granule-url-list gran-ref-location)
                             "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at ["
