@@ -37,13 +37,7 @@
 (defn refresh
  "refresh an index"
   [conn index-name]
-  (-> (rest/index-refresh-url conn (join-names index-name))
-      (http/post (merge (.http-opts conn)
-                        nil
-                        {:accept :json
-                         :content-type :json}))
-      (:body)
-      (rest/parse-safely)))
+  (esi/refresh conn index-name))
 
 (defn delete
   "delete an index"
