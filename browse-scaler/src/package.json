@@ -7,9 +7,9 @@
   "main": "index.js",
   "dependencies": {
     "aws-sdk": "^2.814.0",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "redis": "^2.8.0",
-    "sharp": "^0.28.3"
+    "sharp": "^0.30.0"
   },
   "scripts": {
     "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
