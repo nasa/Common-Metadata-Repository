@@ -73,7 +73,7 @@
 (defn- mock-send-email
   "This function is used along with with-redefs to avoid sending emails in
    integration tests. If send-subscription-emails is called in tests without send-email being mocked,
-   errors while be returned when attempting to connect to the mail server in 
+   errors will be returned when attempting to connect to the mail server in 
    postal-core/send-message."
   [email-settings email-content])
 
