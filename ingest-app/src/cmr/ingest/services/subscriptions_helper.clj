@@ -175,11 +175,13 @@
     [sub-id subscriber-filtered-gran-refs subscriber-id subscription]))
 
 (defn- ^:redef send-email
+  "Wrapper for postal-core/send-message"
   [email-settings email-content]
   (postal-core/send-message email-settings email-content))
 
 (defn- send-subscription-emails
-  "Takes processed processed subscription tuples and sends out emails if applicable."
+  "Takes processed processed subscription tuples and sends out emails if applicable. If update-notification-time?
+   is true, the subscription last-notified-at value will be updated in metadata-db."
   ([context subscriber-filtered-gran-refs-list]
    (send-subscription-emails context subscriber-filtered-gran-refs-list true))
   ([context subscriber-filtered-gran-refs-list update-notification-time?]

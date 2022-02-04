@@ -1,7 +1,6 @@
 (ns cmr.system-int-test.ingest.subscription-processing-test
   "CMR subscription processing tests."
   (:require
-   [cheshire.core :as json]
    [clj-time.core :as t]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
@@ -16,7 +15,17 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
    [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.metadata-db :as mdb]))
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.transmit.config :as transmit-config]))
+
+(defn- urs-relative-root-url-fixture
+  "Need to ensure the relative root is set to /urs for mock-urs to be able to received
+  URS requests. This is set to \"\" by default when running from outside of dev-system."
+  [f]
+  (let [saved-relative-root-url (transmit-config/urs-relative-root-url)]
+    (transmit-config/set-urs-relative-root-url! "/urs")
+    (f)
+    (transmit-config/set-urs-relative-root-url! saved-relative-root-url)))
 
 (use-fixtures :each
   (join-fixtures
@@ -30,6 +39,8 @@
                                                       [:read]
                                                       [:read :update])
     (dev-system/freeze-resume-time-fixture)]))
+
+(use-fixtures :once urs-relative-root-url-fixture)
 
 (defn- get-subscriptions
   []
