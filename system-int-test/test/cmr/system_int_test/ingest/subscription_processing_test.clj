@@ -27,6 +27,17 @@
     (f)
     (transmit-config/set-urs-relative-root-url! saved-relative-root-url)))
 
+(def urs-context-atom
+  "An atom containing the cached connection context map."
+  (atom nil))
+
+(defn urs-context
+  "URS context with config needed for testing purposes."
+  []
+  (when-not @urs-context-atom
+    (reset! urs-context-atom {:system (system/create-system (system/get-component-type-map))}))
+  @urs-context-atom)
+
 (use-fixtures :each
   (join-fixtures
    [(ingest/reset-fixture
@@ -44,7 +55,7 @@
 
 (defn- get-subscriptions
   []
-  (->> (mdb/find-concepts (system/context) {:latest true} :subscription)
+  (->> (mdb/find-concepts (urs-context) {:latest true} :subscription)
        (remove :deleted)
        (map #(select-keys % [:concept-id :extra-fields :metadata]))))
 
@@ -75,17 +86,17 @@
   (system/only-with-real-database
    (with-redefs
     [jobs/send-email mock-send-email]
-     (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
-           _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
-           _ (echo-util/ungrant (system/context)
-                                (-> (access-control/search-for-acls (system/context)
+     (let [user2-group-id (echo-util/get-or-create-group (urs-context) "group2")
+           _user2-token (echo-util/login (urs-context) "user2" [user2-group-id])
+           _ (echo-util/ungrant (urs-context)
+                                (-> (access-control/search-for-acls (urs-context)
                                                                     {:provider "PROV1"
                                                                      :identity-type "catalog_item"}
                                                                     {:token "mock-echo-system-token"})
                                     :items
                                     first
                                     :concept_id))
-           _ (echo-util/grant (system/context)
+           _ (echo-util/grant (urs-context)
                               [{:group_id user2-group-id
                                 :permissions [:read]}]
                               :catalog_item_identity
@@ -132,7 +143,7 @@
 
        (testing "given a valid time constraint, return the correct granules"
          (let [time-constraint "2016-01-02T00:00:00Z,2016-01-04T00:00:00Z"
-               system-context (system/context)
+               system-context (urs-context)
                result (->> (jobs/email-subscription-processing system-context time-constraint)
                            (first)
                            (second))]
@@ -148,17 +159,17 @@
   (system/only-with-real-database
    (with-redefs
     [jobs/send-email mock-send-email]
-     (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
-           _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
-           _ (echo-util/ungrant (system/context)
-                                (-> (access-control/search-for-acls (system/context)
+     (let [user2-group-id (echo-util/get-or-create-group (urs-context) "group2")
+           _user2-token (echo-util/login (urs-context) "user2" [user2-group-id])
+           _ (echo-util/ungrant (urs-context)
+                                (-> (access-control/search-for-acls (urs-context)
                                                                     {:provider "PROV1"
                                                                      :identity-type "catalog_item"}
                                                                     {:token "mock-echo-system-token"})
                                     :items
                                     first
                                     :concept_id))
-           _ (echo-util/grant (system/context)
+           _ (echo-util/grant (urs-context)
                               [{:group_id user2-group-id
                                 :permissions [:read]}]
                               :catalog_item_identity
@@ -178,7 +189,7 @@
            sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")]
 
        (testing "Using the manual endpoint does not update last-notified-at for subscriptions"
-         (let [system-context (system/context)
+         (let [system-context (urs-context)
                _normal-job (jobs/email-subscription-processing system-context)
                prejob-subscriptions (get-subscriptions)
                params {:revision-date-range (str "2016-01-02T00:00:00Z," (t/now))}
@@ -190,10 +201,10 @@
   (system/only-with-real-database
    (with-redefs
     [jobs/send-email mock-send-email]
-     (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
-           _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
-           _ (echo-util/ungrant (system/context)
-                                (-> (access-control/search-for-acls (system/context)
+     (let [user2-group-id (echo-util/get-or-create-group (urs-context) "group2")
+           _user2-token (echo-util/login (urs-context) "user2" [user2-group-id])
+           _ (echo-util/ungrant (urs-context)
+                                (-> (access-control/search-for-acls (urs-context)
                                                                     {:provider "PROV1"
                                                                      :identity-type "catalog_item"}
                                                                     {:token "mock-echo-system-token"})
@@ -201,7 +212,7 @@
                                     first
                                     :concept_id))
 
-           _ (echo-util/grant (system/context)
+           _ (echo-util/grant (urs-context)
                               [{:group_id user2-group-id
                                 :permissions [:read]}]
                               :catalog_item_identity
@@ -228,7 +239,7 @@
 
        (testing "First query executed does not have a last-notified-at and looks back 24 hours"
          (let [gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
-               results (->> (system/context)
+               results (->> (urs-context)
                             (jobs/email-subscription-processing)
                             (map #(nth % 1))
                             flatten
@@ -239,7 +250,7 @@
 
        (testing "Second run finds only granules created since the last notification"
          (let [gran2 (create-granule-and-index "PROV1" coll1 "Granule2")
-               response (->> (system/context)
+               response (->> (urs-context)
                              (jobs/email-subscription-processing)
                              (map #(nth % 1))
                              flatten
@@ -253,7 +264,7 @@
            (ingest/delete-concept concept))
          (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")
          (is (= 2
-                (->> (system/context)
+                (->> (urs-context)
                      (jobs/email-subscription-processing)
                      (map #(nth % 1))
                      flatten
@@ -265,26 +276,26 @@
    (with-redefs
     [jobs/send-email mock-send-email]
      (testing "Tests subscriber-id filtering in subscription email processing job"
-       (let [user1-group-id (echo-util/get-or-create-group (system/context) "group1")
+       (let [user1-group-id (echo-util/get-or-create-group (urs-context) "group1")
            ;; User 1 is in group1
-             user1-token    (echo-util/login (system/context) "user1" [user1-group-id])
-             _              (echo-util/ungrant (system/context)
-                                               (-> (access-control/search-for-acls (system/context)
+             user1-token    (echo-util/login (urs-context) "user1" [user1-group-id])
+             _              (echo-util/ungrant (urs-context)
+                                               (-> (access-control/search-for-acls (urs-context)
                                                                                    {:provider      "PROV1"
                                                                                     :identity-type "catalog_item"}
                                                                                    {:token "mock-echo-system-token"})
                                                    :items
                                                    first
                                                    :concept_id))
-             _              (echo-util/ungrant (system/context)
-                                               (-> (access-control/search-for-acls (system/context)
+             _              (echo-util/ungrant (urs-context)
+                                               (-> (access-control/search-for-acls (urs-context)
                                                                                    {:provider      "PROV2"
                                                                                     :identity-type "catalog_item"}
                                                                                    {:token "mock-echo-system-token"})
                                                    :items
                                                    first
                                                    :concept_id))
-             _              (echo-util/grant (system/context)
+             _              (echo-util/grant (urs-context)
                                              [{:group_id    user1-group-id
                                                :permissions [:read]}]
                                              :catalog_item_identity
@@ -295,7 +306,7 @@
                                               :granule_identifier    {:access_value {:include_undefined_value true
                                                                                      :min_value               1
                                                                                      :max_value               50}}})
-             _              (echo-util/grant (system/context)
+             _              (echo-util/grant (urs-context)
                                              [{:user_type   :registered
                                                :permissions [:read]}]
                                              :catalog_item_identity
@@ -356,7 +367,7 @@
                                               {:token "mock-echo-system-token"})
              _              (index/wait-until-indexed)
              expected       (set [(:concept-id gran1) (:concept-id gran3)])
-             actual         (->> (system/context)
+             actual         (->> (urs-context)
                                  (jobs/email-subscription-processing)
                                  (map #(nth % 1))
                                  flatten
