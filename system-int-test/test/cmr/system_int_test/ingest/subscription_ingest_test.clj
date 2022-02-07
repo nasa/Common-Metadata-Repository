@@ -7,6 +7,7 @@
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
    [cmr.common.util :refer [are3]]
+   [cmr.common-app.test.side-api :as side]
    [cmr.ingest.services.subscriptions-helper :as jobsub]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
@@ -42,6 +43,58 @@
                            (remove :deleted)
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
     (#'jobsub/process-subscriptions (system/context) subscriptions)))
+
+(deftest subscription-count-exceeds-limit-test
+  (side/eval-form `(jobsub/set-subscriptions-limit! 1))
+  (let [coll1 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "coll-exceed-limit-1"
+                 :EntryTitle "entry-title-exceed-limit-1"})
+               {:token "mock-echo-system-token"})
+        coll2 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "coll-exceed-limit-2"
+                 :EntryTitle "entry-title-exceed-limit-2"})
+               {:token "mock-echo-system-token"})
+        coll3 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "coll-exceed-limit-3"
+                 :EntryTitle "entry-title-exceed-limit-3"})
+               {:token "mock-echo-system-token"})]
+     (testing "ingest on PROV1 with subscription request for subscriber-id below subscription limit"
+       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV1"
+                                                                   :Name "Sub1"
+                                                                   :CollectionConceptId (:concept-id coll1)
+                                                                   :SubscriberId "user1"
+                                                                   :EmailAddress "foo@example.com"})
+             user1-token (echo-util/login (system/context) "user1")
+             response (ingest/ingest-concept concept {:token user1-token})]
+         (is (= 201 (:status response)))
+         (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))
+     (testing "ingest on PROV1 with subscription request for subscriber-id already at subscription limit"
+       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV1"
+                                                                   :Name "Sub2"
+                                                                   :CollectionConceptId (:concept-id coll2)
+                                                                   :SubscriberId "user1"
+                                                                   :EmailAddress "foo@example.com"})
+             user1-token (echo-util/login (system/context) "user1")
+             response (ingest/ingest-concept concept {:token user1-token})]
+        (is (= 409 (:status response)))
+        (is (= "The subscriber-id [user1] has already reached the subscription limit." (first (:errors response))))))
+    (side/eval-form `(jobsub/set-subscriptions-limit! 100))
+    (testing "ingest on PROV1 with subscription request for subscriber-id below updated subscription limit"
+      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV1"
+                                                                  :Name "Sub3"
+                                                                  :CollectionConceptId (:concept-id coll3)
+                                                                  :SubscriberId "user1"
+                                                                  :EmailAddress "foo@example.com"})
+            user1-token (echo-util/login (system/context) "user1")
+            response (ingest/ingest-concept concept {:token user1-token})]
+        (is (= 201 (:status response)))
+        (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))))
 
 
 (deftest subscription-ingest-no-subscriber-id-test
