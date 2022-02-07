@@ -44,7 +44,7 @@
              :component-type-map component-type-map}]
     (transmit-config/system-with-connections sys [:echo-rest :search :access-control :urs :ingest :metadata-db])))
 
-(defn- get-component-type-map
+(defn get-component-type-map
   "Returns the component-type-map from dev-system."
   []
   (let [component-type-map (-> (client/get (url/dev-system-get-component-types-url))

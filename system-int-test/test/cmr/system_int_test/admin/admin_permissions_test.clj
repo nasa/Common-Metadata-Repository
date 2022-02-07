@@ -3,11 +3,13 @@
   (:require
    [clj-http.client :as client]
    [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.url-helper :as url]))
+   [cmr.system-int-test.utils.url-helper :as url]
+   [ring.util.codec :as codec]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} {:grant-all-search? false
                                                                  :grant-all-ingest? false}))
@@ -18,12 +20,22 @@
   ([url method token]
    (has-action-permission? url method token nil))
   ([url method token body]
-   (let [response (client/request {:url url
+   (has-action-permission? url method token body {}))
+  ([url method token body query-params]
+   (has-action-permission? url method token body query-params {}))
+  ([url method token body query-params options]
+   (let [options (merge options {:accept "application/json"
+                                 :content-type mt/form-url-encoded
+                                 :body-encoding codec/form-encode
+                                 :throw-exceptions false})
+         response (client/request {:url url
                                    :method method
-                                   :body body
-                                   :query-params {:token token}
+                                   :accept (options :accept)
+                                   :content-type (options :content-type)
+                                   :body ((options :body-encoding) body)
+                                   :query-params (merge {:token token} query-params)
                                    :connection-manager (s/conn-mgr)
-                                   :throw-exceptions false})
+                                   :throw-exceptions (options :throw-exceptions)})
          status (:status response)]
       ;; Make sure the status returned is success or 401
      (is (some #{status} [200 201 204 401]))
@@ -42,15 +54,22 @@
         admin-update-token (e/login (s/context) "admin2" [admin-update-group-concept-id group3-concept-id])
         admin-read-update-token (e/login (s/context) "admin3" [admin-read-update-group-concept-id group3-concept-id])
         prov-admin-token (e/login (s/context) "prov-admin" [prov-admin-group-concept-id group3-concept-id])
-        check-all-permissions (fn [url method]
-                                (is
+        check-all-permissions (fn check-all-permissions-inline
+                                ([url method]
+                                 (check-all-permissions-inline url method {}))
+                                ([url method body]
+                                 (check-all-permissions-inline url method body {}))
+                                ([url method body query-params]
+                                 (check-all-permissions-inline url method body query-params {}))
+                                ([url method body query-params options]
+                                 (is
                                   (and
-                                   (not (has-action-permission? url method prov-admin-token))
-                                   (not (has-action-permission? url method guest-token))
-                                   (not (has-action-permission? url method user-token))
-                                   (not (has-action-permission? url method admin-read-token))
-                                   (has-action-permission? url method admin-update-token)
-                                   (has-action-permission? url method admin-read-update-token))))]
+                                   (not (has-action-permission? url method prov-admin-token body query-params options))
+                                   (not (has-action-permission? url method guest-token body query-params options))
+                                   (not (has-action-permission? url method user-token body query-params options))
+                                   (not (has-action-permission? url method admin-read-token body query-params options))
+                                   (has-action-permission? url method admin-update-token body query-params options)
+                                   (has-action-permission? url method admin-read-update-token body query-params options)))))]
 
     ;; Grant admin-group-guid admin permission
     (e/grant-group-admin (s/context) admin-read-group-concept-id :read)
@@ -112,4 +131,10 @@
         (url/cleanup-granule-bulk-update-task-url) :post
 
         "access-control-reindex-acls"
-        (url/access-control-reindex-acls-url) :post))))
+        (url/access-control-reindex-acls-url) :post))
+
+    (testing "Admin permissions test with body"
+      (check-all-permissions (url/email-subscription-processing)
+                             :post
+                             {}
+                             {:revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"}))))
