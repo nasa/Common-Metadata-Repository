@@ -1,6 +1,7 @@
 (ns cmr.transmit.test.kms
   "Contains unit tests for verifying KMS retrieval functionality."
   (:require [clojure.test :refer :all]
+            [cmr.common.util :refer [are3]]
             [cmr.transmit.kms :as kms]))
 
 (def sample-csv
@@ -78,48 +79,50 @@
       (is (= expected actual))))
 
   (testing "Invalid subfield names in the CSV returns nothing"
-    (is nil? (#'cmr.transmit.kms/parse-entries-from-csv :platforms sample-csv))))
+    (is (nil? (#'cmr.transmit.kms/parse-entries-from-csv :instruments sample-csv)))))
 
 (deftest get-keywords-for-keyword-scheme-test
   (testing "Invalid keyword scheme requested throws an exception"
     (is (thrown? java.lang.AssertionError
           (kms/get-keywords-for-keyword-scheme nil :not-a-kms-scheme)))))
 
-(deftest validate-subfield-names-test
+(deftest subfield-names-valid-test
   (let [good-headers [:basis :category :sub-category :short-name :long-name :uuid]]
     (testing "good matches"
-      (is (true? (#'cmr.transmit.kms/validate-subfield-names :platforms good-headers))))
+      (is (true? (#'cmr.transmit.kms/subfield-names-valid? :platforms good-headers))))
   (testing "bad matches"
-    (is (false? (#'cmr.transmit.kms/validate-subfield-names :platforms [])) "empty list")
-    (is (false? (#'cmr.transmit.kms/validate-subfield-names :fake good-headers)) "known keyword"))))
+    (is (false? (#'cmr.transmit.kms/subfield-names-valid? :platforms [])) "empty list")
+    (is (false? (#'cmr.transmit.kms/subfield-names-valid? :fake good-headers)) "known keyword"))))
 
-(deftest scheme-overrides-test
-  (testing "Configured override to set two properties"
-    (cmr.transmit.config/set-kms-scheme-override-json!
-     "{\"platforms\": \"static\", \"mime-type\": \"mimetype?format=csv\"}")
-    (let [result (#'cmr.transmit.kms/scheme-overrides)]
-      (is (= {:platforms "static" :mime-type "mimetype?format=csv"} result))))
+(deftest scheme-overrides-test-3
+  (testing "Test scheme override JSON)"
+    (are3
+     [expected provided]
+     (do
+       (cmr.transmit.config/set-kms-scheme-override-json! provided)
+       (let [result (#'cmr.transmit.kms/scheme-overrides)]
+         (is (= expected result))))
 
-  (testing "Configured override to set one property"
-    (cmr.transmit.config/set-kms-scheme-override-json!
-     "{\"platforms\": \"static\"")
-    (let [result (#'cmr.transmit.kms/scheme-overrides)]
-      (is (= {:platforms "static"} result))))
+     "expected a static and a mimetype result"
+     {:platforms "static" :mime-type "mimetype?format=csv"}
+     "{\"platforms\": \"static\", \"mime-type\": \"mimetype?format=csv\"}"
 
-  (testing "Blank configuration should return a blank map"
-    (cmr.transmit.config/set-kms-scheme-override-json! "{}")
-    (let [result (#'cmr.transmit.kms/scheme-overrides)]
-      (is (= {} result))))
+     "expected a static result"
+     {:platforms "static"} "{\"platforms\": \"static\"}"
 
-  (testing "No configuration value should return nil"
-    ;; doing this test last so that the setting goes back to the default for
-    ;; tests that follow this call.
-    (cmr.transmit.config/set-kms-scheme-override-json! "")
-    (let [result (#'cmr.transmit.kms/scheme-overrides)]
-      (is (= nil result)))))
+     "expected an empty map"
+     {} "{}"
+
+     "bad JSON still returns something and not an exception"
+     nil "{bad JSON here}"
+
+     ;; Doing this test last will restore the default setting for the
+     ;; kms-schema-override-json property - cleanup
+     "expected a nil"
+     nil "")))
 
 
-(deftest scheme-overrides-test
+(deftest keyword-scheme->kms-resource-test
   (testing "Schema overrides change the gcmd resource"
     (cmr.transmit.config/set-kms-scheme-override-json!
      "{\"platforms\": \"static\", \"extra\": \"extra?format=csv\"}")
