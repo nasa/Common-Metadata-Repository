@@ -63,7 +63,12 @@
    Return value is the KMS schema override map as configured in AWS as
    CMR_KMS_SCHEMA_OVERRIDE_JSON."
   []
-  (json/parse-string (config/kms-scheme-override-json) true))
+  (try
+    (json/parse-string (config/kms-scheme-override-json) true)
+    (catch com.fasterxml.jackson.core.JsonParseException e
+      (error "Failed to parse Scheme Override JSON while loading KMS resource [%s]: %s",
+             (config/kms-scheme-override-json)
+             (.getMessage e)))))
 
 ;; These are the default locations in KMS for all supported schemes
 (def keyword-scheme->gcmd-resource-name
@@ -166,7 +171,7 @@
   "Number of lines which contain header information in csv files (not the actual keyword values)."
   2)
 
-(defn- validate-subfield-names
+(defn- subfield-names-valid?
   "Validates that the provided subfield names match the expected subfield names for the given
   keyword scheme. Returns true if they match, false otherwise."
   [keyword-scheme subfield-names]
@@ -192,7 +197,7 @@
   (let [all-lines (csv/read-csv csv-content)
         ;; Line 2 contains the subfield names
         kms-subfield-names (map csk/->kebab-case-keyword (second all-lines))]
-    (when (validate-subfield-names keyword-scheme kms-subfield-names)
+    (when (subfield-names-valid? keyword-scheme kms-subfield-names)
       (let [keyword-entries (->> all-lines
                                  (drop NUM_HEADER_LINES)
                                  ;; Create a map for each row using the subfield-names as keys
