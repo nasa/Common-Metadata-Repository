@@ -1,10 +1,6 @@
 
-def get_env(env):
-    if env is None or env=='' or env=='ops' or env=='prod' or env=='production':
-        env = ''
-    if env != '' and not env.endswith('.'):
-        env = env + '.'
-    return env
+def get_env(env: dict):
+    return env.get('cmr-url', 'https://cmr.earthdata.nasa.gov')
 
 def get_s3_prefixes(collection):
     if 'DirectDistributionInformation' in collection:

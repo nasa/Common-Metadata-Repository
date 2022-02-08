@@ -1,12 +1,13 @@
 import requests
 import logging
+import Utils as util
 
-logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s', encoding='utf-8', level=logging.INFO)
+#logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s', encoding='utf-8', level=logging.INFO)
 
-def get_collections_s3_prefixes_dict(env, token, provider, page_num, page_size):
+def get_collections_s3_prefixes_dict(env: dict, token, provider, page_num, page_size):
     all_collections_s3_prefixes_dict = {}
     json_data = get_collections(env, token, provider, page_num, page_size)
-    if json_data['hits'] == '0':
+    if not 'hits' in json_data or json_data['hits'] == '0':
         return {}
     hits = json_data['hits']
     logging.debug(f"Hits={hits}")
@@ -30,9 +31,10 @@ def get_collections_s3_prefixes_dict(env, token, provider, page_num, page_size):
 
     return all_collections_s3_prefixes_dict
 
-def get_collections(env, token, provider, page_num, page_size):
+def get_collections(env:dict, token, provider, page_num, page_size):
     headers = {'Authorization': f'Bearer {token}'}
-    url = f'https://cmr.{env}earthdata.nasa.gov/search/collections.umm-json?provider={provider}&sort_key=entry_title&pretty=true&page_num={page_num}&page_size={page_size}'
+    cmr_base = util.get_env(env)
+    url = f'{cmr_base}/search/collections.umm-json?provider={provider}&sort_key=entry_title&pretty=true&page_num={page_num}&page_size={page_size}'
     try:
         logging.debug(f'request url: {url}')
         response = requests.get(url, headers=headers)
@@ -44,9 +46,10 @@ def get_collections(env, token, provider, page_num, page_size):
         print(f'Error occurred in get_collections: {e}')
     return {}
 
-def get_collection(env, token, concept_id):
+def get_collection(env:dict, token, concept_id):
     headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
-    url = f'https://cmr.{env}earthdata.nasa.gov/search/concepts/{concept_id}.umm_json?pretty=true'
+    cmr_base = util.get_env(env)
+    url = f'{cmr_base}/search/concepts/{concept_id}.umm_json?pretty=true'
     try:
         response = requests.get(url, headers=headers)
         json_data = response.json()

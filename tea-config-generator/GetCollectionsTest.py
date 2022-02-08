@@ -1,5 +1,6 @@
 from unittest import TestCase, main, mock
 from GetCollections import *
+
 #python -m unittest discover -s ./ -p '*Test.py'
 class GetCollectionsTest(TestCase):
     @mock.patch('GetCollections.requests.get')
@@ -82,7 +83,7 @@ class GetCollectionsTest(TestCase):
         }
         mock_get.return_value = my_mock_response
 
-        env = 'XXX'
+        env = {'cmr-url': 'XXX'}
         token = 'EDL-XXX'
         concept_id = 'XXX'
         response = get_collection(env, token, concept_id)

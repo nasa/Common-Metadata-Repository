@@ -8,13 +8,12 @@ class CreateTeaConfig:
     def __init__(self):
         logging.info('Creating TEA configuraton')
 
-    def create_tea_config(self, env, provider, token):
-        env = get_env(env)
+    def create_tea_config(self, env:dict, provider:str, token:str):
+        #env = get_env(env)
         all_s3_prefix_groups_dict = {}
         all_collections_s3_prefixes_dict = get_collections_s3_prefixes_dict(env, token, provider, 1, 2000)
-        logging.info(f'length of all_collections_s3_prefixes_dict={len(all_collections_s3_prefixes_dict)}')
         if not all_collections_s3_prefixes_dict:
-            return {'statusCode': 200, 'body': 'No S3 prefixes found'}
+            return {'statusCode': 404, 'body': 'No S3 prefixes returned'}
         acls = get_acls(env, provider, token)
         for acl in acls:
             acl_url = acl['location']
@@ -52,12 +51,32 @@ class CreateTeaConfig:
             return {'statusCode': 200, 'body': tea_config_text}
 
         logging.info('No S3 prefixes found')
-        return {'statusCode': 200, 'body': 'No S3 prefixes found'}
+        return {'statusCode': 404, 'body': 'No S3 prefixes found'}
 
-logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s', encoding='utf-8', level=logging.INFO)
-provider = input('Enter provider: ')
-env = input('Enter env (sit, uat or prod): ')
-token = input('Enter EDL token: ')
+def main():
+    if len(logging.getLogger().handlers) > 0:
+        logging.getLogger.setLevel(logging.INFO)
+    else:
+        logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s', encoding='utf-8', level=logging.INFO)
 
-processor = CreateTeaConfig()
-result = processor.create_tea_config(env, provider, token)
+    provider = input('Enter provider: ')
+    if provider = None:
+        provider = 'POCLOUD'
+
+    env = input('Enter env (sit, uat or prod): ')
+    if env = None:
+        env = 'uat'
+
+    token = input('Enter EDL token: ')
+
+    cmrs = {'sit':'https://cmr.sit.earthdata.nasa.gov',
+        'uat':'https://cmr.uat.earthdata.nasa.gov',
+        'prod':'https://cmr.earthdata.nasa.gov'}
+
+    env = {'cmr-url': cmrs['cmr_env']}
+
+    processor = CreateTeaConfig()
+    result = processor.create_tea_config(env, provider, token)
+
+if __name__ == "__main__":
+    main()
