@@ -81,6 +81,9 @@ This could happen because queueing the message times out, RabbitMQ has surpassed
     * [POST /jobs/cleanup-expired-collections - Runs the job to remove expired collections.](#cleanup-expired-collections)
     * [POST /jobs/trigger-granule-task-cleanup-job - Start cleanup of old granule bulk update tasks.](#trigger-granule-task-cleanup-job)
     * [POST /jobs/trigger-email-subscription-processing - Run the subscription job over a specified granule revision date range.](#trigger-email-subscription-processing)
+    * [GET /jobs/email-subscription-processing-job-state - Get the current email-subscription-processing job state.](#email-subscription-processing-job-state)
+    * [POST /jobs/enable-email-subscription-processing-job - Enable the email-subscription-processing job.](#enable-email-subscription-processing-job)
+    * [POST /jobs/disable-email-subscription-processing-job - Disable the email-subscription-processing job.](#disable-email-subscription-processing-job)
   * /caches
     * [GET /caches - Gets a list of the caches in ingest.](#get-caches)
     * [GET /caches/\<cache-name> - Gets a list of the keys stored in the specific cache.](#get-cache-keys)
@@ -327,6 +330,28 @@ Sends subscription emails covering granules that were updated in the specified r
 ```bash
 curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/trigger-email-subscription-processing?revision-date-range=2011-01-01T10:00:00Z,2012-01-01T10:00:00Z
 ```
+
+### <a name="email-subscription-processing-job-state"></a> Run Subscription Job Over Granule Revision Date Range
+
+Returns a JSON response containing the current state of the email-subscription-processing job in the `state` attribute.  The state value corresponds with possible org.Quartz.Trigger.TriggerState values, with NORMAL being enabled and PAUSED being disabled.
+```bash
+curl -i -XGET -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/email-subscription-processing-job-state
+```
+
+### <a name="enable-email-subscription-processing-job"></a> Run Subscription Job Over Granule Revision Date Range
+
+Sets the email-subscription-processing job to an enabled state.  If it is already enabled, there is no change.
+```bash
+curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/enable-email-subscription-processing-job
+```
+
+### <a name="disable-email-subscription-processing-job"></a> Run Subscription Job Over Granule Revision Date Range
+
+Sets the email-subscription-processing job to an disabled state.  If it is already disabled, there is no change.
+```bash
+curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/disable-email-subscription-processing-job
+```
+
 ### Refresh Collection Granule Aggregate Cache
 
 The collection granule aggregate cache is used to cache information about all the granules within a collection that are indexed with that collection. That's currently limited to the granule temporal minimum and maximum. The cache is refreshed by a periodic job. The cache is located in the indexer but refresh scheduling is handled by Ingest so that singleton jobs can be used.
