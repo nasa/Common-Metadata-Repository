@@ -133,13 +133,13 @@
         "access-control-reindex-acls"
         (url/access-control-reindex-acls-url) :post
 
-        "access-control-reindex-acls"
+        "enable-email-subscription-processing"
         (url/enable-email-subscription-processing) :post
 
-        "access-control-reindex-acls"
-        (url/enable-email-subscription-processing) :post
+        "disable-email-subscription-processing"
+        (url/disable-email-subscription-processing) :post
 
-        "access-control-reindex-acls"
+        "email-subscription-processing-job-state"
         (url/email-subscription-processing-job-state) :get))
 
     (testing "Admin permissions test with body"
