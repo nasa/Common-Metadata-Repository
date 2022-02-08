@@ -129,9 +129,9 @@
                 (every? #(not= native-id (:native-id %)) active-duplicate-queries))
        (errors/throw-service-error
         :conflict
-        (format "The subscriber-id [%s] has already subscribed to the "
-                "collection with concept-id [%s] using the query [%s]. "
-                "Subscribers must use unique queries for each Collection."
+        (format "The subscriber-id [%s] has already subscribed to the 
+                collection with concept-id [%s] using the query [%s].
+                Subscribers must use unique queries for each Collection."
                 subscriber-id collection-id  normalized-query)))))
 
 (defn- get-subscriber-id
