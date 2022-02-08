@@ -37,7 +37,8 @@ def get_group_names(acl_json, env, token):
         for group in all_groups:
             if ('group_id' in group) and (not group['group_id'].endswith('-CMR')):
                 group_json = get_group(env, group['group_id'], token)
-                group_name = group_json['name']
-                group_names.append(group_name)
-                logging.info(f'Found non-CMR group: {group_name}')
+                if 'name' in group_json:
+                    group_name = group_json['name']
+                    group_names.append(group_name)
+                    logging.info(f'Found non-CMR group: {group_name}')
     return group_names
