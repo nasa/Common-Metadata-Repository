@@ -388,10 +388,15 @@ out will include the `CMR-Time-Out` header set to `true`.
 
 #### <a name="html"></a> HTML
 
-The HTML response format is supported for collections. It allows a single collection record to be viewed in a web browser. HTML is only supported for retrieving a single collection at a time with a URL of the format:
+The HTML response format is intended to be used only in a web browser to view a single collection record. The collection html representation can be viewed by putting the following in the web browser address bar.
 
 ```
 %CMR-ENDPOINT%/concepts/<concept-id>
+```
+For private collection, an EDL bearer token can be used to grant permission. e.g.
+
+```
+%CMR-ENDPOINT%/concepts/<concept-id>?token=EDL-xxxxxx
 ```
 
 #### <a name="atom"></a> Atom

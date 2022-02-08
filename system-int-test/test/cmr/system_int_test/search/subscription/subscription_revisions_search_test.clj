@@ -13,7 +13,8 @@
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.subscription-util :as subscription]
-   [cmr.umm-spec.versioning :as umm-version]))
+   [cmr.umm-spec.versioning :as umm-version]
+   [cmr.mock-echo.client.mock-urs-client :as mock-urs]))
 
 (use-fixtures :each
               (join-fixtures
@@ -22,7 +23,8 @@
                   {"provguid1" "PROV1" "provguid2" "PROV2"} [:read :update] [:read :update])]))
 
 (deftest search-subscription-all-revisions-after-cleanup
-  (let [coll1 (d/ingest-umm-spec-collection
+  (let [_ (mock-urs/create-users (s/context) [{:username "someSubId" :password "Password"}])
+        coll1 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection
                 {:ShortName "coll1"
@@ -62,7 +64,8 @@
                                        :page-size 20}))))
 
 (deftest search-subscription-all-revisions
-  (let [token (e/login (s/context) "user1")
+  (let [_ (mock-urs/create-users (s/context) [{:username "someSubId" :password "Password"}])
+        token (e/login (s/context) "user1")
         coll1 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection

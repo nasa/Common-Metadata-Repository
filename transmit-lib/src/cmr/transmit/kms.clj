@@ -63,7 +63,12 @@
    Return value is the KMS schema override map as configured in AWS as
    CMR_KMS_SCHEMA_OVERRIDE_JSON."
   []
-  (json/parse-string (config/kms-scheme-override-json) true))
+  (try
+    (json/parse-string (config/kms-scheme-override-json) true)
+    (catch com.fasterxml.jackson.core.JsonParseException e
+      (error "Failed to parse Scheme Override JSON while loading KMS resource [%s]: %s",
+             (config/kms-scheme-override-json)
+             (.getMessage e)))))
 
 ;; These are the default locations in KMS for all supported schemes
 (def keyword-scheme->gcmd-resource-name
@@ -166,17 +171,18 @@
   "Number of lines which contain header information in csv files (not the actual keyword values)."
   2)
 
-(defn- validate-subfield-names
+(defn- subfield-names-valid?
   "Validates that the provided subfield names match the expected subfield names for the given
-  keyword scheme. Throws an exception if they do not match."
+  keyword scheme. Returns true if they match, false otherwise."
   [keyword-scheme subfield-names]
-  (let [expected-subfield-names (keyword-scheme keyword-scheme->expected-field-names)]
-    (when-not (= expected-subfield-names subfield-names)
-      (throw (Exception.
-               (format "Expected subfield names for %s to be %s, but were %s."
-                       (name keyword-scheme)
-                       (pr-str expected-subfield-names)
-                       (pr-str subfield-names)))))))
+  (let [expected-subfield-names (keyword-scheme keyword-scheme->expected-field-names)
+        names-match-result (= expected-subfield-names subfield-names)]
+    (when-not names-match-result
+      (error (format "Expected subfield names for %s to be %s, but were %s."
+                     (name keyword-scheme)
+                     (pr-str expected-subfield-names)
+                     (pr-str subfield-names))))
+    names-match-result))
 
 (defn- parse-entries-from-csv
   "Parses the CSV returned by the GCMD KMS. It is expected that the CSV will be returned in a
@@ -184,26 +190,28 @@
   a breakdown of the subfields for the keyword scheme, and from the third line on are the actual
   values.
 
-  Returns a sequence of full hierarchy maps."
+  keyword-schede shoud be something like :platforms
+  csv-content is the raw text of the CSV file to parse
+  Returns a sequence of full hierarchy maps or nil if subfield names do not match expected."
   [keyword-scheme csv-content]
   (let [all-lines (csv/read-csv csv-content)
         ;; Line 2 contains the subfield names
-        kms-subfield-names (map csk/->kebab-case-keyword (second all-lines))
-        _ (validate-subfield-names keyword-scheme kms-subfield-names)
-        keyword-entries (->> all-lines
-                             (drop NUM_HEADER_LINES)
-                             ;; Create a map for each row using the subfield-names as keys
-                             (map #(zipmap (keyword-scheme keyword-scheme->field-names) %))
-                             (map remove-blank-keys)
-                             ;; Only keep entries which map to full valid keywords
-                             (filter (keyword-scheme->required-field keyword-scheme)))
-        leaf-field-name (keyword-scheme keyword-scheme->leaf-field-name)
-        invalid-entries (find-invalid-entries keyword-entries leaf-field-name)]
-    ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
-    (doseq [entry invalid-entries]
-      (warn (format "Found duplicate keywords for %s short-name [%s]: %s" (name keyword-scheme)
-                    (:short-name entry) entry)))
-    keyword-entries))
+        kms-subfield-names (map csk/->kebab-case-keyword (second all-lines))]
+    (when (subfield-names-valid? keyword-scheme kms-subfield-names)
+      (let [keyword-entries (->> all-lines
+                                 (drop NUM_HEADER_LINES)
+                                 ;; Create a map for each row using the subfield-names as keys
+                                 (map #(zipmap (keyword-scheme keyword-scheme->field-names) %))
+                                 (map remove-blank-keys)
+                                 ;; Only keep entries which map to full valid keywords
+                                 (filter (keyword-scheme->required-field keyword-scheme)))
+            leaf-field-name (keyword-scheme keyword-scheme->leaf-field-name)
+            invalid-entries (find-invalid-entries keyword-entries leaf-field-name)]
+        ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
+        (doseq [entry invalid-entries]
+          (warn (format "Found duplicate keywords for %s short-name [%s]: %s" (name keyword-scheme)
+                        (:short-name entry) entry)))
+        keyword-entries))))
 
 (defn- get-by-keyword-scheme
   "Makes a get request to the GCMD KMS. Returns the controlled vocabulary map for the given
@@ -220,7 +228,7 @@
   ;;     "{\"platforms\":\"static\"}"
   (let [gcmd-resource-name (keyword-scheme->kms-resource keyword-scheme)]
     (info (format "Loading KMS resource [%s] for [%s]..." gcmd-resource-name keyword-scheme))
-    (if (= "static" gcmd-resource-name)
+    (if (= "static" (str/lower-case gcmd-resource-name))
       ;; load the static file from the resource directory under indexer
       (let [gcmd-resource-path (str (format "static_kms_keywords/%s.csv" (name keyword-scheme)))
             data (slurp (jio/resource gcmd-resource-path))
