@@ -86,27 +86,20 @@
            (subscriptions-helper/trigger-email-subscription-processing ctx params)
            {:status 200})
      (GET  "/email-subscription-processing-job-state"
-       {ctx :request-context}
-       (acl/verify-ingest-management-permission ctx :update)
-       (let [sched (jm/get-quartz-scheduler ctx)
-             job-key jobs/EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
-             trigger-key (str job-key ".trigger")
-             trigger-state (jm/get-trigger-state sched trigger-key)]
-         {:status 200 :body (json/generate-string {:state trigger-state})}))
+           {ctx :request-context}
+           (acl/verify-ingest-management-permission ctx :update)
+           (let [trigger-state (jm/get-email-subscription-processing-job-state ctx)]
+             {:status 200 :body (json/generate-string {:state trigger-state})}))
      (POST "/enable-email-subscription-processing-job"
-       {ctx :request-context}
-       (acl/verify-ingest-management-permission ctx :update)
-       (let [sched (jm/get-quartz-scheduler ctx)
-             job-key jobs/EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY]
-           (jm/resume-job sched job-key)
-         {:status 200}))
+           {ctx :request-context}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jm/enable-email-subscription-processing-job ctx)
+           {:status 200})
      (POST "/disable-email-subscription-processing-job"
-       {ctx :request-context}
-       (acl/verify-ingest-management-permission ctx :update)
-       (let [sched (jm/get-quartz-scheduler ctx)
-             job-key jobs/EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY]
-           (jm/pause-job sched job-key)
-         {:status 200})))))
+           {ctx :request-context}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jm/disable-email-subscription-processing-job ctx)
+           {:status 200}))))
 
 (def ingest-routes
   (routes
