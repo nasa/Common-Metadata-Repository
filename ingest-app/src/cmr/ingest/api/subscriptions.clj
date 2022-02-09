@@ -91,7 +91,8 @@
         subscriber-id (:SubscriberId metadata)
         subscriptions (mdb/find-concepts
                        request-context
-                       {:subscriber-id (:SubscriberId metadata)}
+                       {:subscriber-id (:SubscriberId metadata)
+                        :latest true}
                        :subscription)
         active-subscriptions (remove :deleted subscriptions)]
      (when (>= (count active-subscriptions) (jobs/subscriptions-limit))
