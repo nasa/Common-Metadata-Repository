@@ -60,11 +60,11 @@ def main():
         logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s', encoding='utf-8', level=logging.INFO)
 
     provider = input('Enter provider: ')
-    if provider = None:
+    if provider is None:
         provider = 'POCLOUD'
 
     env = input('Enter env (sit, uat or prod): ')
-    if env = None:
+    if env is None:
         env = 'uat'
 
     token = input('Enter EDL token: ')

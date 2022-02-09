@@ -121,7 +121,7 @@ def main():
         provider = 'POCLOUD'
     
     which_cmr = input('Enter env such as sit, uat or prod (uat): ')
-    if which_cmr is None
+    if which_cmr is None:
         which_cmr = 'uat'
     
     token = input('Enter EDL token: ')
