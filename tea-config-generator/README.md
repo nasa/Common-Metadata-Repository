@@ -1,5 +1,5 @@
 # CMR TEA Configuration Generator
-A lambda project to generate Thin Egress App (TEA) configuration files using [Serverless][sls]
+A lambda project to generate [Thin Egress App][teacode] (TEA) configuration files using [Serverless][sls]
 
 ## Overrview
 A set of lambda functions to run under the CMR domain name which generate a TEA configuration.
@@ -48,4 +48,5 @@ of the National Aeronautics and Space Administration. All Rights Reserved.
 ----
 
 [tea]: https://nasa.github.io/cumulus/docs/deployment/thin_egress_app "Thin Egress App"
-[sls]: https://serverless.com
+[teacode]: https://github.com/asfadmin/thin-egress-app "TEA @ Github"
+[sls]: https://serverless.com "Serverless"
