@@ -233,6 +233,7 @@
   [context concept-id]
   (assoc (base-page context)
          :concept-id concept-id
+         :token (:token context)
          :preview-root (metadata-preview-root)
          :preview-version (metadata-preview-version)))
 

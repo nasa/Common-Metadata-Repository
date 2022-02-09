@@ -243,35 +243,33 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       </xs:element>
       <xs:element minOccurs="0" name="CollectionDataType">
         <xs:annotation>
-          <xs:documentation> An element to identify
-          non-science-quality products such as NRT data. If a
-          collection does not contain this field, it will be
-          assumed to be of science-quality.</xs:documentation>
+          <xs:documentation> This element is used to identify the collection's ready for end user consumption latency from when the data was acquired by an instrument. NEAR_REAL_TIME is defined to be ready for end user consumption 1 to 3 hours after data acquisition. LOW_LATENCY is defined to be ready for consumption 3 to 24 hours after data acquisition. EXPEDITED is defined to be 1 to 4 days after data acquisition. SCIENCE_QUALITY is defined to mean that a collection has been fully and completely processed which usually takes between 2 to 3 weeks after data acquisition. OTHER is defined for collection where the latency is between EXPEDITED and SCIENCE_QUALITY </xs:documentation>
         </xs:annotation>
         <xs:simpleType>
           <xs:restriction base="xs:string">
             <xs:enumeration value="SCIENCE_QUALITY">
               <xs:annotation>
-                <xs:documentation>All EOS and non-EOS data and
-                data products that are archived
-                by EOSDIS.</xs:documentation>
+                <xs:documentation> All data products that have been fully and completely processed which usually takes between 2 to 3 weeks after data acquisition </xs:documentation>
               </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="NEAR_REAL_TIME">
               <xs:annotation>
-                <xs:documentation> Data from the source that are
-                available for use within a time that is short in
-                comparison to important time scales in the phenomena
-                being studied. This data is not science quality and
-                is not retained by EOSDIS once the SCIENCE_QUALITY
-                product is archived </xs:documentation>
+                <xs:documentation> The data is ready for end user consumption 1 to 3 hours after data acquisition. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived </xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="LOW_LATENCY">
+              <xs:annotation>
+                <xs:documentation> The data is ready for end user consumption 3 to 24 hours after data acquisition. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived </xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="EXPEDITED">
+              <xs:annotation>
+                <xs:documentation> The data is ready for end user consumption 1 to 4 days after data acquisition. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived </xs:documentation>
               </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="OTHER">
               <xs:annotation>
-                <xs:documentation> Any EOS and non-EOS data and data
-                products, that are not SCIENCE_QUALITY and do not
-                fall under NEAR_REAL_TIME holdings.</xs:documentation>
+                <xs:documentation> The data is ready for end user consumption between the EXPEDITED and SCIENCE_QUALITY acquisition timeframes. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived </xs:documentation>
               </xs:annotation>
             </xs:enumeration>
           </xs:restriction>

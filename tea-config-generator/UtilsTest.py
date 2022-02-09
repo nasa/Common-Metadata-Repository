@@ -1,5 +1,6 @@
 from unittest import TestCase, main, mock
 from Utils import *
+
 #python -m unittest discover -s ./ -p '*Test.py'
 class UtilsTest(TestCase):
     def test_add_to_dict(self):
@@ -13,18 +14,18 @@ class UtilsTest(TestCase):
         self.assertEqual(len(a[2]), 3)
 
     def test_get_env(self):
-        env = 'sit'
-        env = get_env(env)
-        self.assertEqual(env,'sit.')
-        env = 'uat'
-        env = get_env(env)
-        self.assertEqual(env,'uat.')
-        env = 'production'
-        env = get_env(env)
-        self.assertEqual(env,'')
-        env = 'prod'
-        env = get_env(env)
-        self.assertEqual(env,'')
+        """
+        Test that the get_env variable is always able to get a URL out of the env
+        """
+        tester = lambda data,exp,desc : self.assertEqual(get_env(data), exp,desc)
+        same = lambda url,reason : tester({'cmr-url':url}, url, reason)
+
+        same('https://cmr.sit.earthdata.nasa.gov', 'sit')
+        same('https://cmr.uat.earthdata.nasa.gov', 'uat')
+        same('https://cmr.earthdata.nasa.gov', 'ops')
+        tester({'bad-key':'value'}, 'https://cmr.earthdata.nasa.gov', 'wrong key')
+        tester({}, 'https://cmr.earthdata.nasa.gov', 'empty')
+        tester({'cmr-url':None}, None, 'None value')
 
     def test_get_s3_prefixes(self):
         collection = {

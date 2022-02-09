@@ -388,10 +388,15 @@ out will include the `CMR-Time-Out` header set to `true`.
 
 #### <a name="html"></a> HTML
 
-The HTML response format is supported for collections. It allows a single collection record to be viewed in a web browser. HTML is only supported for retrieving a single collection at a time with a URL of the format:
+The HTML response format is intended to be used only in a web browser to view a single collection record. The collection html representation can be viewed by putting the following in the web browser address bar.
 
 ```
 %CMR-ENDPOINT%/concepts/<concept-id>
+```
+For private collection, an EDL bearer token can be used to grant permission. e.g.
+
+```
+%CMR-ENDPOINT%/concepts/<concept-id>?token=EDL-xxxxxx
 ```
 
 #### <a name="atom"></a> Atom
@@ -2722,7 +2727,7 @@ The response format is in JSON. Intervals are returned as tuples containing thre
 
 #### Example Request:
 
-    curl -i "%CMR-ENDPOINT%/granules/timeline?concept_id=C1-PROV1&start_date=2000-01-01T00:00:00Z&end_date=2002-02-01T00:00:00.000Z&interval=month""
+    curl -i "%CMR-ENDPOINT%/granules/timeline?concept_id=C1-PROV1&start_date=2000-01-01T00:00:00Z&end_date=2002-02-01T00:00:00.000Z&interval=month"
 
 #### Example Response
 
@@ -4784,16 +4789,16 @@ The following parameters are supported when searching for subscriptions.
 
 These parameters will match fields within a subscription. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
-* name
-  * options: pattern, ignore_case
-* provider
-  * options: pattern, ignore_case
-* native_id
-  * options: pattern, ignore_case
-* concept_id
-* subscriber_id
-* collection_concept_id
 
+  * name
+    * options: pattern, ignore_case
+  * provider
+    * options: pattern, ignore_case
+  * native_id
+    * options: pattern, ignore_case
+  * concept_id
+  * subscriber_id
+  * collection_concept_id
 ##### <a name="subscription-search-response"></a> Subscription Search Response
 
 ##### XML Reference

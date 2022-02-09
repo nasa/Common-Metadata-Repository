@@ -521,6 +521,8 @@
 (def variable-concept-18
   {:Name "/MODIS_Grid_Daily_1km_LST/Data_Fields/sea_surface_temperature"
    :LongName "sea surface subskin temperature"
+   :VariableType "SCIENCE_VARIABLE",
+   :VariableSubType "SCIENCE_ARRAY",
    :Definition "sea surface subskin temperature in units of kelvin"
    :RelatedURLs [{:URLContentType "DistributionURL"
                   :Type "GET SERVICE"
@@ -551,3 +553,32 @@
                     (migrate-variable "1.7" "1.8"))]
     (is (= "1.8" (get-in actual [:MetadataSpecification :Version])) "Version Check")
     (is (nil? (:RelatedURLs actual)) "Lost Related URLs")))
+
+;; tests for umm-var 1.8.1 *******************************************************
+
+(def variable-concept-18-1
+  {:Name "/MODIS_Grid_Daily_1km_LST/Data_Fields/sea_surface_temperature"
+   :LongName "sea surface subskin temperature"
+   :Definition "sea surface subskin temperature in units of kelvin"
+   :VariableType "COORDINATE"
+   :VariableSubType "LATITUDE"
+   :RelatedURLs [{:URLContentType "DistributionURL"
+                  :Type "GET SERVICE"
+                  :Subtype "ECHO"
+                  :URL "https://example.gov"}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1"
+                           :Name "UMM-Var"
+                           :Version "1.8.1"}})
+
+(deftest migrate-18-1->18
+  ;; Both VariableType and VariableSubType are converted to "OTHER".
+  ;; MetadataSpecification'version is converted.
+  (let [expected (assoc variable-concept-18 :VariableType "OTHER" :VariableSubType "OTHER")
+        actual (migrate-variable "1.8.1" "1.8" variable-concept-18-1)]
+    (is (= expected actual) "Document Match")))
+
+(deftest migrate-18->18-1
+  ;; Only MetadataSpecification's version is updated.
+  (let [expected (assoc variable-concept-18-1 :VariableType "SCIENCE_VARIABLE" :VariableSubType "SCIENCE_ARRAY")
+        actual (migrate-variable "1.8" "1.8.1" variable-concept-18)]
+    (is (= expected actual) "Document Match")))

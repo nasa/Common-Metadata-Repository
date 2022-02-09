@@ -16,7 +16,8 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.subscription-util :as subscription]))
+   [cmr.system-int-test.utils.subscription-util :as subscription]
+   [cmr.mock-echo.client.mock-urs-client :as mock-urs]))
 
 (use-fixtures
  :each
@@ -116,7 +117,8 @@
 
 (deftest retrieve-subscription-by-concept-id-various-read-permission
   ;; We support UMM JSON format; No format and any format are also accepted.
-  (let [coll1 (data-core/ingest-umm-spec-collection "PROV1"
+  (let [_ (mock-urs/create-users (s/context) [{:username "someSubId" :password "Password"}])
+        coll1 (data-core/ingest-umm-spec-collection "PROV1"
                (data-umm-c/collection
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
@@ -166,7 +168,8 @@
 
 (deftest retrieve-subscription-by-concept-id
   ;; We support UMM JSON format; No format and any format are also accepted.
-  (let [coll1 (data-core/ingest-umm-spec-collection "PROV1"
+  (let [_ (mock-urs/create-users (s/context) [{:username "someSubId" :password "Password"}])
+        coll1 (data-core/ingest-umm-spec-collection "PROV1"
                (data-umm-c/collection
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})

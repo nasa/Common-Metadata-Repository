@@ -488,8 +488,8 @@
   "Assert the given facet field with name and count matches the facets result"
   [facets-result field value count]
   (let [field-match-value (get-facet-field facets-result field value)]
-    (is (= count (:count field-match-value))
-        (format "Failed test: Field [%s] did not have a value of '%s' with a count of %d." field value count))))
+    (testing value
+     (is (= count (:count field-match-value))))))
 
 (deftest platform-facets-v2-test
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection

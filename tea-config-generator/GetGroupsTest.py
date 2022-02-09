@@ -1,5 +1,6 @@
 from unittest import TestCase, main, mock
 from GetGroups import *
+
 #python -m unittest discover -s ./ -p '*Test.py'
 class GetGroupsTest(TestCase):
     @mock.patch('GetGroups.requests.get')
@@ -61,7 +62,7 @@ class GetGroupsTest(TestCase):
             }
         mock_get.return_value = my_mock_response
 
-        env = 'XXX'
+        env = {'cmr-url': 'XXX'}
         group_id = 'XXX'
         token = 'EDL-XXX'
 

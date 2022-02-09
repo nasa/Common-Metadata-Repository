@@ -1,7 +1,8 @@
 import requests
 import logging
+import Utils as util
 
-logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s', encoding='utf-8', level=logging.INFO)
+#logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s', encoding='utf-8', level=logging.INFO)
 
 def get_groups(acl_url, token):
     headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
@@ -17,8 +18,9 @@ def get_groups(acl_url, token):
         print(f'Error occurred in get_groups: {e}')
     return []
 
-def get_group(env, group_id, token):
-    url = f'https://cmr.{env}earthdata.nasa.gov/access-control/groups/{group_id}?pretty=true'
+def get_group(env:dict, group_id, token):
+    cmr_base = util.get_env(env)
+    url = f'{cmr_base}/access-control/groups/{group_id}?pretty=true'
     headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
     try:
         response = requests.get(url, headers=headers)
