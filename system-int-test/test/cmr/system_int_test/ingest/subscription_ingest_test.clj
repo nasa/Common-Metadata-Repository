@@ -65,32 +65,27 @@
                  :EntryTitle "entry-title-exceed-limit-3"})
                {:token "mock-echo-system-token"})]
      (testing "ingest on PROV1 with subscription request for subscriber-id below subscription limit"
-       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV1"
-                                                                   :Name "Sub1"
+       (let [concept (subscription-util/make-subscription-concept {:Name "Sub1"
                                                                    :CollectionConceptId (:concept-id coll1)
-                                                                   :SubscriberId "user1"
-                                                                   :EmailAddress "foo@example.com"})
+                                                                   :SubscriberId "user1"})
+
              user1-token (echo-util/login (system/context) "user1")
              response (ingest/ingest-concept concept {:token user1-token})]
          (is (= 201 (:status response)))
          (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))
      (testing "ingest on PROV1 with subscription request for subscriber-id already at subscription limit"
-       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV1"
-                                                                   :Name "Sub2"
+       (let [concept (subscription-util/make-subscription-concept {:Name "Sub2"
                                                                    :CollectionConceptId (:concept-id coll2)
-                                                                   :SubscriberId "user1"
-                                                                   :EmailAddress "foo@example.com"})
+                                                                   :SubscriberId "user1"})
              user1-token (echo-util/login (system/context) "user1")
              response (ingest/ingest-concept concept {:token user1-token})]
         (is (= 409 (:status response)))
         (is (= "The subscriber-id [user1] has already reached the subscription limit." (first (:errors response))))))
     (side/eval-form `(jobsub/set-subscriptions-limit! 100))
     (testing "ingest on PROV1 with subscription request for subscriber-id below updated subscription limit"
-      (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV1"
-                                                                  :Name "Sub3"
+      (let [concept (subscription-util/make-subscription-concept {:Name "Sub3"
                                                                   :CollectionConceptId (:concept-id coll3)
-                                                                  :SubscriberId "user1"
-                                                                  :EmailAddress "foo@example.com"})
+                                                                  :SubscriberId "user1"})
             user1-token (echo-util/login (system/context) "user1")
             response (ingest/ingest-concept concept {:token user1-token})]
         (is (= 201 (:status response)))
