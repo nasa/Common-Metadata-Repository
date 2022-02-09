@@ -44,6 +44,40 @@
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
     (#'jobsub/process-subscriptions (system/context) subscriptions)))
 
+(deftest subscription-count-limit-ignores-old-subscriptions-test
+  (side/eval-form `(jobsub/set-subscriptions-limit! 2))
+  (let [coll1 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "coll-exceed-limit-1"
+                 :EntryTitle "entry-title-exceed-limit-1"})
+               {:token "mock-echo-system-token"})
+        user1-token (echo-util/login (system/context) "user1")]
+     (testing "ingest on PROV1 with subscription request for subscriber-id below subscription limit" ;zzz
+       (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-5"
+                                                                   :Name "sub1"
+                                                                   :CollectionConceptId (:concept-id coll1)
+                                                                   :SubscriberId "user1"})
+             response (ingest/ingest-concept concept {:token user1-token})]
+         (is (= 201 (:status response)))
+         (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))
+     (testing "ingest on PROV1 with subscription change for subscriber-id below subscription limit"
+       (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-6"
+                                                                   :Name "sub1"
+                                                                   :CollectionConceptId (:concept-id coll1)
+                                                                   :SubscriberId "user1"})
+             response (ingest/ingest-concept concept {:token user1-token})]
+        (is (= 200 (:status response)))
+        (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))
+     (testing "ingest on PROV1 with subscription request for subscriber-id below subscription limit"
+       (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-7"
+                                                                   :Name "sub2"
+                                                                   :CollectionConceptId (:concept-id coll1)
+                                                                   :SubscriberId "user1"})
+             response (ingest/ingest-concept concept {:token user1-token})]
+        (is (= 201 (:status response)))
+        (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))))
+
 (deftest subscription-count-exceeds-limit-test
   (side/eval-form `(jobsub/set-subscriptions-limit! 1))
   (let [coll1 (data-core/ingest-umm-spec-collection
@@ -58,7 +92,6 @@
                                                                    :Name "sub1"
                                                                    :CollectionConceptId (:concept-id coll1)
                                                                    :SubscriberId "user1"})
-
              response (ingest/ingest-concept concept {:token user1-token})]
          (is (= 201 (:status response)))
          (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))
