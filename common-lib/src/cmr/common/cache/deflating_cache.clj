@@ -45,7 +45,11 @@
     [this key value]
     (c/set-value delegate-cache
       key
-      (when-not (nil? value) (deflate-fn value)))))
+      (when-not (nil? value) (deflate-fn value))))
+  
+  (cache-size
+   [_]
+   (c/cache-size delegate-cache)))
 
 (record-pretty-printer/enable-record-pretty-printing DeflatingCache)
 

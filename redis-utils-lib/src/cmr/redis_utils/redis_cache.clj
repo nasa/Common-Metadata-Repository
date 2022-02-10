@@ -66,7 +66,12 @@
     ;; Store value in map to aid deserialization of numbers.
     (let [s-key (serialize key)]
       (wcar* (carmine/set s-key {:value value})
-             (when ttl (carmine/expire s-key ttl))))))
+             (when ttl (carmine/expire s-key ttl)))))
+  
+  (cache-size
+   [_]
+   ;; not relevant for redis
+   -1))
 
 (defn create-redis-cache
   "Creates an instance of the redis cache.

@@ -211,7 +211,7 @@
 
   (config/reset-config-values)
 
-  (jobs/set-default-job-start-delay! (* 3 3600))
+  #_(jobs/set-default-job-start-delay! (* 3 3600))
 
   ;; Prevent jobs from blocking calls to reset
   (humanizer-report-service/set-retry-count! 0)

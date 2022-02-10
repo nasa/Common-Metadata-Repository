@@ -6,7 +6,6 @@
   (:require
    [clojure.core.cache :as cc :refer [defcache]]
    [cmr.common.cache :as c]
-   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import
@@ -24,11 +23,11 @@
 
   c/CmrCache
   (get-keys
-    [this]
+    [_]
     (keys @cache-atom))
 
   (get-value
-    [this key]
+    [_ key]
     (-> cache-atom
         (swap! (fn [cache]
                  (if (cc/has? cache key)
@@ -41,7 +40,7 @@
         (get key)))
 
   (get-value
-    [this key lookup-fn]
+    [_ key lookup-fn]
     (-> cache-atom
         (swap! (fn [cache]
                  (if (cc/has? cache key)
@@ -50,12 +49,16 @@
         (get key)))
 
   (reset
-    [this]
+    [_]
     (reset! cache-atom initial-cache))
 
   (set-value
-    [this key value]
-    (swap! cache-atom assoc key value)))
+    [_ key value]
+    (swap! cache-atom assoc key value))
+  
+  (cache-size
+   [_]
+   (reduce + 0 (map (comp count str) (vals @cache-atom)))))
 
 (record-pretty-printer/enable-record-pretty-printing InMemoryCache)
 

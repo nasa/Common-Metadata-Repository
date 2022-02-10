@@ -135,6 +135,8 @@
   ([context concept-batches]
    (bulk-index context concept-batches nil))
   ([context concept-batches options]
+   (info (format "Bulk indexing [%d] batches of documents into Elasticsearch" 
+                 (count concept-batches)))
    (reduce (fn [num-indexed batch]
              (let [batch (prepare-batch context batch options)]
                (es/bulk-index-documents context batch options)
@@ -379,7 +381,7 @@
    ;; we want the latest humanizers on each of the Indexer instances that are processing these messages.
    (humanizer-fetcher/refresh-cache context)
    (metrics-fetcher/refresh-cache context)
-
+   
    (if refresh-acls?
      ;; Refresh the ACL cache.
      ;; We want the latest permitted groups to be indexed with the collections
