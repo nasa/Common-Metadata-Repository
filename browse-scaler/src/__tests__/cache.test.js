@@ -1,6 +1,8 @@
 const cache = require ('../cache');
 const { readFile } = require ('../util');
 
+beforeEach (async () => { await cache.clearToken() }) 
+
 describe ('cache tests', () => {
     test ('data round trip', async () => {
         const imgData = await readFile ('__tests__/stars.jpg');
@@ -24,4 +26,18 @@ describe ('cache tests', () => {
         const res = await cache.getImageFromCache ('idontexist');
         expect (res).toBe (null);
     });
+
+    test ('token does not exist', async () => {
+        const res = await cache.getTokenInCache();
+        expect (res).toBe (null);
+    });
+
+    test ('setting token in cache', async () => {
+        console.log("hi this is the test")
+        cache.setTokenInCache('token');
+        const res = await cache.getTokenInCache();
+        expect (res).toBe ('token');;
+    });
 });
+
+

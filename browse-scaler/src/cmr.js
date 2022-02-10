@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const { getSecureParam } = require('./util');
-
+const { getTokenInCache, setTokenInCache } = require('./cache')
 const config = require ('./config');
 
 /**
@@ -11,14 +11,20 @@ const config = require ('./config');
  */
 const getEchoToken = async () => {
   console.log('Fetching Echo-Token [' + config.CMR_ENVIRONMENT + '] from store');
-  const response = await getSecureParam(
-    `/${config.CMR_ENVIRONMENT}/browse-scaler/CMR_ECHO_SYSTEM_TOKEN`
-  );
+  let token = await getTokenInCache();
+  if (!token) {
+    token = await getSecureParam(
+      `/${config.CMR_ENVIRONMENT}/browse-scaler/CMR_ECHO_SYSTEM_TOKEN`
+    );
 
-  if (!response) {
-    throw new Error('ECHO Token not found. Please update config!');
+    if (!token) {
+      throw new Error('ECHO Token not found. Please update config!');
+    }
+
+    setTokenInCache(token);
   }
-  return response;
+  
+  return token;
 };
 
 exports.getEchoToken = getEchoToken;

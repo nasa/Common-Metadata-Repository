@@ -3,7 +3,8 @@ const redis = require('redis');
 const config = require ('./config');
 const { REDIS_URL,
     REDIS_PORT,
-    REDIS_KEY_EXPIRE_SECONDS } = require ('./config');
+    REDIS_KEY_EXPIRE_SECONDS, 
+    REDIS_TOKEN_KEY } = require ('./config');
 
 const { promisify } = require('util');
 
@@ -69,3 +70,36 @@ exports.getImageFromCache = async key => {
       return null;
     });
 };
+
+exports.getTokenInCache = async () => {
+  let client = Cache.getInstance();
+  return promisify(client.get).bind(client)(REDIS_TOKEN_KEY)
+    .catch(err => {
+      console.error(`Unable to retrieve token from Redis.`);
+      return null;
+    })
+    .then(token => {
+      if (token) {
+        console.debug(`got token from cache`);
+        return token.toString();
+      }
+      console.log(`token is not in cache`);
+      return null;
+    });
+};
+
+exports.setTokenInCache = async token => {
+  Cache.getInstance().set(REDIS_TOKEN_KEY, token, 'EX', REDIS_KEY_EXPIRE_SECONDS, err => {
+    if (err) {
+      console.error(`Unable to cache token: ${err}`);
+    }
+  });
+}
+
+exports.clearToken = async () => {
+  const client = Cache.getInstance()
+  return promisify(client.del).bind(client)(REDIS_TOKEN_KEY) 
+  .catch(err => {
+    console.log("could not delete token")
+  });
+}
