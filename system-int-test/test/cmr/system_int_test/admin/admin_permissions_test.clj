@@ -137,10 +137,7 @@
         (url/enable-email-subscription-processing) :post
 
         "disable-email-subscription-processing"
-        (url/disable-email-subscription-processing) :post
-
-        "email-subscription-processing-job-state"
-        (url/email-subscription-processing-job-state) :get))
+        (url/disable-email-subscription-processing) :post))
 
     (testing "Admin permissions test with body"
       (check-all-permissions (url/email-subscription-processing)
