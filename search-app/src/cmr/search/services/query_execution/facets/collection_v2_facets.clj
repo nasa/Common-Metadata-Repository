@@ -23,6 +23,7 @@
    :processing-level-id :processing-level-id-humanized
    :variables :variables
    :granule-data-format :granule-data-format-humanized
+   :latency :latency-priority
    :two-d-coordinate-system-name :two-d-coord-name
    :horizontal-data-resolution-range :horizontal-data-resolutions})
 
@@ -50,7 +51,8 @@
 (def collection-facet-fields->aggregation-fields
   "Defines the mapping between facet fields to aggregation fields."
   (into {}
-        (map (fn [field] [field (if (= field :horizontal-data-resolution-range)
+        (map (fn [field] [field (if (or (= field :horizontal-data-resolution-range)
+                                        (= field :latency))
                                   field
                                   (keyword (str (name field) "-h")))])
              collection-facets-v2-params)))
@@ -61,8 +63,8 @@
 
 (defmethod v2-facets/v2-facets-result-field-in-order :collection
   [_]
-  ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels"
-   "Measurements" "Output File Formats" "Reprojections" "Tiling System" "Horizontal Data Resolution"])
+  ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels" "Measurements"
+   "Output File Formats" "Reprojections" "Tiling System" "Horizontal Data Resolution" "Latency"])
 
 (defmethod v2-facets/v2-facets-root :collection
   [_]

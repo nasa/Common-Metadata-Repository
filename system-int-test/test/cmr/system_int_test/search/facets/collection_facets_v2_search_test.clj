@@ -491,6 +491,14 @@
     (testing value
      (is (= count (:count field-match-value))))))
 
+(defn- assert-latency-facet-field
+  "Assert the latency facet field with count and link match the facets result"
+  [facets-result value count link]
+  (let [field-match-value (get-facet-field facets-result "Latency" value)]
+    (testing value
+     (is (= count (:count field-match-value)))
+     (is (= link (:links field-match-value))))))
+
 (deftest platform-facets-v2-test
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll1"
@@ -874,6 +882,78 @@
                                  {:XDimension 0.007
                                   :YDimension 0.008
                                   :Unit "Statute Miles"}]}}}})
+
+(deftest latency-facet-v2-test
+  "Test the latency facets ingest, indexing, and search."
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll1"
+                                                      :ShortName "S1"
+                                                      :SpatialExtent spatial
+                                                      :CollectionDataType "NEAR_REAL_TIME"
+                                                      :Projects [{:ShortName "Proj1"
+                                                                  :LongName "Proj1 Long Name"}]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll2"
+                                                      :ShortName "S2"
+                                                      :CollectionDataType "LOW_LATENCY"
+                                                      :Projects [{:ShortName "Proj2"
+                                                                  :LongName "Proj2 Long Name"}]}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll3"
+                                                      :ShortName "S3"
+                                                      :CollectionDataType "EXPEDITED"
+                                                      :Projects [{:ShortName "Proj3"
+                                                                  :LongName "Proj3 Long Name"}]}))]
+
+    (testing "Latency v2 facets without search parameter" 
+      (let [facets-result1 (search-and-return-v2-facets {})
+            ;; search for collections with one of the valid latency values.
+            facets-result2 (search-and-return-v2-facets {:latency "1 to 4 days"})
+            ;; search for collections with an invalid latency value.
+            facets-result3 (search-and-return-v2-facets {:latency "1 to 5 days"})]
+        ;; Verify all 3 latency facets show up with the right links.
+        (assert-latency-facet-field facets-result1
+         "1 to 3 hours"
+         1
+         {:apply "http://localhost:3003/collections.json?page_size=0&include_facets=v2&latency%5B%5D=1+to+3+hours"})
+        (assert-latency-facet-field facets-result1
+         "3 to 24 hours"
+         1
+         {:apply "http://localhost:3003/collections.json?page_size=0&include_facets=v2&latency%5B%5D=3+to+24+hours"})
+        (assert-latency-facet-field facets-result1
+         "1 to 4 days"
+         1
+         {:apply "http://localhost:3003/collections.json?page_size=0&include_facets=v2&latency%5B%5D=1+to+4+days"})
+
+        ;; Verify all 3 latency facets show up with "1 to 4 days" links being marked as "remove". And the other two links
+        ;; have the "1 to 4 days" appended to the query.
+        (assert-latency-facet-field facets-result2
+         "1 to 3 hours"
+         1
+         {:apply "http://localhost:3003/collections.json?latency=1+to+4+days&page_size=0&include_facets=v2&latency%5B%5D=1+to+3+hours"})
+        (assert-latency-facet-field facets-result2
+         "3 to 24 hours"
+         1
+         {:apply "http://localhost:3003/collections.json?latency=1+to+4+days&page_size=0&include_facets=v2&latency%5B%5D=3+to+24+hours"})
+        (assert-latency-facet-field facets-result2
+         "1 to 4 days"
+         1
+         {:remove "http://localhost:3003/collections.json?page_size=0&include_facets=v2"})
+
+
+         ;; Verify all 3 latency facets show up and all have the "1 to 5 days" appended to their queries.
+         (assert-latency-facet-field facets-result3
+         "1 to 3 hours"
+         1
+         {:apply "http://localhost:3003/collections.json?latency=1+to+5+days&page_size=0&include_facets=v2&latency%5B%5D=1+to+3+hours"})
+        (assert-latency-facet-field facets-result3
+         "3 to 24 hours"
+         1
+         {:apply "http://localhost:3003/collections.json?latency=1+to+5+days&page_size=0&include_facets=v2&latency%5B%5D=3+to+24+hours"})
+        (assert-latency-facet-field facets-result3
+         "1 to 4 days"
+         1
+         {:apply "http://localhost:3003/collections.json?latency=1+to+5+days&page_size=0&include_facets=v2&latency%5B%5D=1+to+4+days"})))))
 
 (deftest horizontal-data-resolution-range-facet-v2-test
   "Test the horizontal data resolution facets ingest, indexing, and search."

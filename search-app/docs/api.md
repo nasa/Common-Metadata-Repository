@@ -50,6 +50,7 @@ CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens 
     * [Temporal](#c-temporal)
     * [Project](#c-project)
     * [Consortium](#c-consortium)
+    * [Latency](#c-latency)
     * [Updated since](#c-updated-since)
     * [Revision date](#c-revision-date)
     * [Created at](#c-created-at)
@@ -1589,6 +1590,18 @@ Find collections that match all of the 'consortium' param values
 
      curl "%CMR-ENDPOINT%/collections?consortium\[\]=CWIC&consortium\[\]=FEDEO&consortium\[\]=CEOS&options\[consortium\]\[and\]=true"
 
+#### <a name="c-latency"></a> Find collections by latency
+
+This supports `pattern` and `ignore_case`
+
+Find collections matching 'latency' param value
+
+     curl "%CMR-ENDPOINT%/collections?latency=1+to+4+days"
+
+Find collections matching any of the 'latency' param values
+
+     curl "%CMR-ENDPOINT%/collections?latency=1+to+3+hours&latency=1+to+4+days"
+
 #### <a name="c-updated-since"></a> Find collections by updated_since
 
   Find collections which have revision date starting at or after 'updated_since' param value
@@ -2804,7 +2817,7 @@ Several fields including science keywords, data centers, platforms, instruments,
 
 #### <a name="facets-v2-response-format"></a> Version 2 Facets Response Format
 
-Version 2 facets are enabled by setting the `include_facets=v2` parameter in either collection or granule search requests in the JSON format. In order to request faceting on granule searches, the search must be limited in scope to a single collection (e.g. by specifying a single concept ID in the collection_concept_id parameter). The max number of values in each v2 facet can be set by using facets_size parameter (i.e. facets_size[platforms]=10, facets_size[instrument]=20. Default size is 50.). facets_size is only supported for collection v2 facet search. The same fields apply in the v2 facets as for the flat facets with the addition of horizontal range facets. When calling the CMR with a query the V2 facets are returned. These facets include the apply field described in more detail a few paragraphs below that includes the search parameter and values that need to be sent back to the CMR.
+Version 2 facets are enabled by setting the `include_facets=v2` parameter in either collection or granule search requests in the JSON format. In order to request faceting on granule searches, the search must be limited in scope to a single collection (e.g. by specifying a single concept ID in the collection_concept_id parameter). The max number of values in each v2 facet can be set by using facets_size parameter (i.e. facets_size[platforms]=10, facets_size[instrument]=20. Default size is 50.). facets_size is only supported for collection v2 facet search. The same fields apply in the v2 facets as for the flat facets with the addition of horizontal range facets and latency facets. When calling the CMR with a query the V2 facets are returned. These facets include the apply field described in more detail a few paragraphs below that includes the search parameter and values that need to be sent back to the CMR.
 
 ##### Specifying facet fields
 
