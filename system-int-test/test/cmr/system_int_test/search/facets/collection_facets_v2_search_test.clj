@@ -38,6 +38,10 @@
                           "DIADEM"
                           "DIADEM-1D"
                           "Dee Iee Aee Dee Eee Mee Dash One Dee"])
+   :diadem-lower (platform-map ["Space-based Platforms"
+                                "Earth Observation Satellites"
+                                "DIADEM"
+                                "diadem-1D"])
    :dmsp (platform-map ["Space-based Platforms"
                         "Earth Observation Satellites"
                         "Defense Meteorological Satellite Program(DMSP)"
@@ -47,7 +51,11 @@
                         "Earth Observation Satellites"
                         "SMAP-like"
                         "SMAP"
-                        "Soil Moisture Active and Passive Observatory"])})
+                        "Soil Moisture Active and Passive Observatory"])
+   :non-existent (platform-map ["Space-based Platforms"
+                                "Earth Observation Satellites"
+                                "DIADEM"
+                                "Non-Exist"])})
 
 (defn- sample-platform-full
   "Build a platform map which can be used in search queries for the platforms-s
@@ -177,23 +185,14 @@
   (testing "Facets size applied for facets, with selecting facet that exists, but outside of the facets size range."
     (is (= fr/expected-v2-facets-apply-links-with-selecting-facet-outside-of-facets-size
            (search-and-return-v2-facets {:facets-size {:platforms 1}
-                                         :platforms-h {:0 {:basis "Space-based Platforms"
-                                                           :category "Earth Observation Satellites"
-                                                           :sub-category "DIADEM"
-                                                           :short-name "diadem-1D"}}}))))
+                                         :platforms-h {:0 (sample-platform-full :diadem-lower)}}))))
   (testing "Facets size applied for facets, with selecting facet that exists, without specifying facets size."
     (is (= fr/expected-v2-facets-apply-links-with-selecting-facet-without-facets-size
-           (search-and-return-v2-facets {:platforms-h {:0 {:basis "Space-based Platforms"
-                                                           :category "Earth Observation Satellites"
-                                                           :sub-category "DIADEM"
-                                                           :short-name "diadem-1D"}}}))))
+           (search-and-return-v2-facets {:platforms-h {:0 (sample-platform-full :diadem-lower)}}))))
   (testing "Facets size applied for facets, with selecting facet that doesn't exist."
     (is (= fr/expected-v2-facets-apply-links-with-facets-size-and-non-existing-selecting-facet
            (search-and-return-v2-facets {:facets-size {:platforms 1}
-                                         :platforms-h {:0 {:basis "Space-based Platforms"
-                                                           :category "Earth Observation Satellites"
-                                                           :sub-category "DIADEM"
-                                                           :short-name "Non-Exist"}}}))))
+                                         :platforms-h {:0 (sample-platform-full :non-existent)}}))))
   (testing "Empty facets size applied for facets"
     (is (= [(str facets-size-error-msg " but was [{:instrument \"\"}].")]
            (search-and-return-v2-facets-errors {:facets-size {:instrument ""}}))))
@@ -210,10 +209,7 @@
                                                 :variable-level-2 "Level1-2"
                                                 :variable-level-3 "Level1-3"}}
                        :project-h ["proj1"]
-                       :platforms-h {:0 {:basis "Space-based Platforms"
-                                         :category "Earth Observation Satellites"
-                                         :sub-category "DIADEM"
-                                         :short-name "DIADEM-1D"}}
+                       :platforms-h {:0 (sample-platform-full :diadem)}
                        :instrument-h ["ATM"]
                        :processing-level-id-h ["PL1"]
                        :data-center-h "DOI/USGS/CMG/WHSC"

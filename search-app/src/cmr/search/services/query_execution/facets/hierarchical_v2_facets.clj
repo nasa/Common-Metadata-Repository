@@ -228,16 +228,57 @@
         subfield (if (= (:base-field function-params) :science-keywords-h)
                    :detailed-variable
                    :short-name)
+        ;; the above gets the facet title (value), the facet count and sets the last
+        ;; possible facet hierarchy field that could have skipped values in between.
+        ;; below uses recursion to work on the next nested bucket. So the results are not processed
+        ;; until the all the buckets have been exhaused. For an example of what elastic
+        ;; search returns for aggregations (facets) look at
+        ;; cmr.search.test.services.query-execution.facets.hierarchical-v2-facets/science-keywords-full-search-aggregations
         sub-facets (recursive-parse-fn (rest field-hierarchy) value bucket)]
-    (if sub-facets
-      (finish-bucket-for-hierarchical-field sub-facets field-hierarchy has-siblings-fn generate-links-fn value count field)
-      (if (= field (last field-hierarchy))
-        (finish-bucket-for-hierarchical-field sub-facets field-hierarchy has-siblings-fn generate-links-fn value count field)
-        (when (or (= (:base-field function-params) :science-keywords-h)
-                  (= (:base-field function-params) :platforms-h))
-          (let [sf (recursive-parse-fn [subfield] value bucket)
-                field-hierarchy (conj nil (last field-hierarchy) (first field-hierarchy))]
-            (finish-bucket-for-hierarchical-field sf field-hierarchy has-siblings-fn generate-links-fn value count field)))))))
+    ;; Once the results come back from the recursion test the following:
+    ;; 1) if I have subfacets then I am unwinding the recursion to take the chilren sub facets and
+    ;;    create the V2 facet node.
+    ;; 2) If I don't and I am at the end of the facet hierarchy then create the last (inner most)
+    ;;    V2 facet node. This facet contains the full hierarchy.
+    ;; 3) I don't have any more facets down the normal path so check to see if the last hierarchy field
+    ;;    exists with the ending facet. For example if the last facet is variable-level-1 and
+    ;;    variable-level-2 doesn't exist check to see if detailed-variable exists. If it does then
+    ;;    follow the recursion to get it. Otherwise return nil (return value of cond if all tests fail.)
+    ;;    so that the recursion can unwind to create the parent V2 nodes.
+    (cond
+      (some? sub-facets) (finish-bucket-for-hierarchical-field
+                          sub-facets
+                          field-hierarchy
+                          has-siblings-fn
+                          generate-links-fn
+                          value
+                          count
+                          field)
+      (= field (last field-hierarchy)) (finish-bucket-for-hierarchical-field
+                                        sub-facets
+                                        field-hierarchy
+                                        has-siblings-fn
+                                        generate-links-fn
+                                        value
+                                        count
+                                        field)
+      (or (= (:base-field function-params) :science-keywords-h)
+          (= (:base-field function-params) :platforms-h)) (let [sf (recursive-parse-fn
+                                                                    [subfield]
+                                                                    value
+                                                                    bucket)
+                                                                field-hierarchy (conj
+                                                                                 nil
+                                                                                 (last field-hierarchy)
+                                                                                 (first field-hierarchy))]
+                                                            (finish-bucket-for-hierarchical-field
+                                                             sf
+                                                             field-hierarchy
+                                                             has-siblings-fn
+                                                             generate-links-fn
+                                                             value
+                                                             count
+                                                             field)))))
 
 (defn- generate-hierarchical-children
   "Generate children nodes for a hierarchical facet v2 response.
@@ -373,7 +414,7 @@
 
 (defn get-depth-of-field
   "Use recursion to walk through the facet hierarchy to find the passed in field and return its
-  position in the hierarchy. Returns a nested list of values. If its not found then return ni"
+  position in the hierarchy. Returns a nested list of values. If its not found then return nil."
   [facet field count]
   (if (not= (:field facet) field)
     (when (:children facet)
