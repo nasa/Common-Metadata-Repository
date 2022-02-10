@@ -13,7 +13,7 @@
   (get-in context [:system :scheduler :qz-scheduler]))
 
 (defn- trigger-key
-  "Accepts a string and returns an org.Quartz.JobKey object."
+  "Accepts a string and returns an org.Quartz.TriggerKey object."
   [key]
   (qt/key key))
 
@@ -23,13 +23,15 @@
   (qj/key key))
 
 (defn- pause-job
-  "Accepts the job key as a string."
+  "Accepts the job key as a string and pauses the specified job, 
+   returning nil."
   [scheduler key]
   (let [job-key (job-key key)]
     (qs/pause-job scheduler job-key)))
 
 (defn- resume-job
-  "Accepts the job key as a string."
+  "Accepts the job key as a string and resumes the specified job, 
+   returning nil."
   [scheduler key]
   (let [job-key (job-key key)]
     (qs/resume-job scheduler job-key)))
