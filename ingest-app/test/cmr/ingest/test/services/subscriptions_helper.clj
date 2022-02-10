@@ -3,6 +3,7 @@
   (:require
    [clj-time.core :as t]
    [clojure.test :refer :all]
+   [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as u :refer [are3]]
    [cmr.ingest.config :as ingest-config]
    [cmr.ingest.services.subscriptions-helper :as jobs]))
@@ -25,7 +26,7 @@
 (deftest create-email-test
   "This tests the HTML output of the email generation"
   (let [actual (jobs/create-email-content
-                (ingest-config/cmr-support-email) 
+                (ingest-config/cmr-support-email)
                 "someone@gmail.com"
                 '("https://cmr.link/g1" "https://cmr.link/g2" "https://cmr.link/g3")
                 {:extra-fields {:collection-concept-id "C1200370131-EDF_DEV06"}
@@ -42,16 +43,16 @@
     (is (= (str "<p>You have subscribed to receive notifications when data is added to the following query:</p>"
                 "<p><code>C1200370131-EDF&#95;DEV06</code></p>"
                 "<p><code>updated&#95;since&#91;&#93;=2020-05-04T12:51:36Z</code></p>"
-                "<p>Since this query was last run at 2020-05-04T12:51:36Z, the following granules have been "
+                "<p>Running the query with a time window from 2020-05-04T12:51:36Z to 2020-05-05T12:51:36Z, the following granules have been "
                 "added or updated:</p>"
                 "<ul><li><a href='https://cmr.link/g1'>https://cmr.link/g1</a></li><li>"
                 "<a href='https://cmr.link/g2'>https://cmr.link/g2</a></li><li>"
                 "<a href='https://cmr.link/g3'>https://cmr.link/g3</a></li></ul>"
                 "<p>To unsubscribe from these notifications, or if you have any questions, "
                 "please contact us at <a href='mailto:"
-                (ingest-config/cmr-support-email) 
+                (ingest-config/cmr-support-email)
                 "'>"
-                (ingest-config/cmr-support-email) 
+                (ingest-config/cmr-support-email)
                 "</a>.</p>")
            (:content (first (:body actual)))))))
 
@@ -98,3 +99,23 @@
             expected (str start "," now)
             actual (#'jobs/subscription->time-constraint data now -1234)]
         (is (= expected actual))))))
+
+(deftest validate-revision-date-range-test
+  (testing "only start-date throws exception"
+    (let [revision-date-range "2000-01-01T10:00:00Z,"]
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range)))))
+  (testing "only end-date  throws exception"
+    (let [revision-date-range ",2010-03-10T12:00:00Z"]
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range)))))
+  (testing "start-date before end-date returns nil"
+    (let [revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"]
+      (is (nil? (#'jobs/validate-revision-date-range revision-date-range)))))
+  (testing "start-date equals end-date  throws exception"
+    (let [revision-date-range "2000-01-01T10:00:00Z,2000-01-01T10:00:00Z"]
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range)))))
+  (testing "start-date after end-date throws exception"
+    (let [revision-date-range "2010-01-01T10:00:00Z,2000-01-01T10:00:00Z"]
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range)))))
+  (testing "invalid format throws exception"
+    (let [revision-date-range "2000-01-01T10:00:Z,2010-01-01T10:00:00Z"]
+      (is (thrown? clojure.lang.ExceptionInfo (#'jobs/validate-revision-date-range revision-date-range))))))

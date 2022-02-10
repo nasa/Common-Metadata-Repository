@@ -63,8 +63,10 @@
   [context query results]
   (let [granule-counts-map (:granule-counts-map results)
         items (:items results)
-        results (assoc results :items (add-granule-count-to-items items granule-counts-map))]
-   (json/generate-string (select-keys results [:hits :took :items]))))
+        results (assoc results :items (if (some #{:granule-counts} (:result-features query))
+                                        (add-granule-count-to-items items granule-counts-map)
+                                        items))]
+    (json/generate-string (select-keys results [:hits :took :items]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Collection Legacy UMM JSON
@@ -101,5 +103,7 @@
   [context query results]
   (let [granule-counts-map (:granule-counts-map results)
         items (:items results)
-        results (assoc results :items (add-granule-count-to-items items granule-counts-map))]
+        results (assoc results :items (if (some #{:granule-counts} (:result-features query))
+                                        (add-granule-count-to-items items granule-counts-map)
+                                        items))]
     (json/generate-string (select-keys results [:hits :took :items]))))

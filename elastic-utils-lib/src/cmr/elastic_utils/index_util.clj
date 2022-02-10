@@ -107,9 +107,9 @@
    `(def ~mapping-name
       ~docstring
       (merge {:dynamic "strict"
-               :_source {:enabled true}
-               :properties ~properties}
-              ~mapping-settings))))
+              :_source {:enabled true}
+              :properties ~properties}
+             ~mapping-settings))))
 
 (defmacro defnestedmapping
   "Defines a new nested mapping type for an elasticsearch index. The argument after the
@@ -219,8 +219,8 @@
   ([elastic-store index-name type-name id version options]
    (let [elastic-options (merge {:version version
                                  :version_type "external_gte"}
-                                 (when (:refresh? options)
-                                   {:refresh "true"}))]
+                                (when (:refresh? options)
+                                  {:refresh "true"}))]
      (es-helper/delete (:conn elastic-store) index-name type-name id elastic-options))))
 
 (defn delete-by-query
