@@ -1,14 +1,18 @@
-from unittest import TestCase, main, mock
-from GetCollections import *
+""" Test module """
+from unittest import TestCase, mock
+from GetCollections import get_collection
 
 #python -m unittest discover -s ./ -p '*Test.py'
 class GetCollectionsTest(TestCase):
+    """ Test class to test GetCollections """
     @mock.patch('GetCollections.requests.get')
     def test_get_collections(self, mock_get):
+        """ Tests get_collection """
         my_mock_response = mock.Mock(status_code=200)
         my_mock_response.json.return_value = {
           'DataLanguage' : 'eng',
-          'AncillaryKeywords' : [ 'GHRSST', 'sea surface temperature', 'Level 4', 'SST', 'surface temperature', ' MUR', ' foundation SST', ' SST anomaly', ' anomaly' ],
+          'AncillaryKeywords' : [ 'GHRSST', 'sea surface temperature', 'Level 4', \
+            'SST', 'surface temperature', ' MUR', ' foundation SST', ' SST anomaly', ' anomaly' ],
           'CollectionCitations' : [ {
             'Creator' : 'JPL MUR MEaSUREs Project',
             'OnlineResource' : {
@@ -17,7 +21,8 @@ class GetCollectionsTest(TestCase):
             'Publisher' : 'JPL NASA',
             'Title' : 'GHRSST Level 4 MUR Global Foundation Sea Surface Temperature Analysis',
             'SeriesName' : 'GHRSST Level 4 MUR Global Foundation Sea Surface Temperature Analysis',
-            'OtherCitationDetails' : 'JPL MUR MEaSUREs Project, JPL NASA, 2015-03-11, GHRSST Level 4 MUR Global Foundation Sea Surface Temperature Analysis (v4.1)',
+            'OtherCitationDetails' : 'JPL MUR MEaSUREs Project, JPL NASA, 2015-03-11, \
+                GHRSST Level 4 MUR Global Foundation Sea Surface Temperature Analysis (v4.1)',
             'ReleaseDate' : '2015-03-11T00:00:00.000Z',
             'Version' : '4.1',
             'ReleasePlace' : 'Jet Propulsion Laboratory'
@@ -56,7 +61,8 @@ class GetCollectionsTest(TestCase):
                 } ]
               },
               'ResolutionAndCoordinateSystem' : {
-                'Description' : 'Projection Type: Cylindrical Lat-Lon, Projection Detail: Geolocation information included for each pixel',
+                'Description' : 'Projection Type: Cylindrical Lat-Lon, Projection Detail: \
+                    Geolocation information included for each pixel',
                 'GeodeticModel' : {
                   'HorizontalDatumName' : 'World Geodetic System 1984',
                   'EllipsoidName' : 'WGS 84',
@@ -76,9 +82,11 @@ class GetCollectionsTest(TestCase):
           },
           'DirectDistributionInformation' : {
             'Region' : 'us-west-2',
-            'S3BucketAndObjectPrefixNames' : [ 'podaac-ops-cumulus-public/MUR-JPL-L4-GLOB-v4.1/', 'podaac-ops-cumulus-protected/MUR-JPL-L4-GLOB-v4.1/' ],
+            'S3BucketAndObjectPrefixNames' : [ 'podaac-ops-cumulus-public/MUR-JPL-L4-GLOB-v4.1/', \
+                'podaac-ops-cumulus-protected/MUR-JPL-L4-GLOB-v4.1/' ],
             'S3CredentialsAPIEndpoint' : 'https://archive.podaac.earthdata.nasa.gov/s3credentials',
-            'S3CredentialsAPIDocumentationURL' : 'https://archive.podaac.earthdata.nasa.gov/s3credentialsREADME'
+            'S3CredentialsAPIDocumentationURL' : \
+                'https://archive.podaac.earthdata.nasa.gov/s3credentialsREADME'
           }
         }
         mock_get.return_value = my_mock_response

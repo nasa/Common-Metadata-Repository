@@ -2,8 +2,8 @@
 ACL tests
 """
 
-from unittest import TestCase, main, mock
-from GetAcls import *
+from unittest import TestCase, mock
+from GetAcls import get_acl, get_acls
 
 #python -m unittest discover -s ./ -p '*Test.py'
 class GetAclsTest(TestCase):
