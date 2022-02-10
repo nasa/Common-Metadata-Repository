@@ -1,35 +1,41 @@
-from unittest import TestCase, main, mock
-from Utils import *
+""" Test module """
+from unittest import TestCase
+from Utils import add_to_dict, get_s3_prefixes, get_env
+
 #python -m unittest discover -s ./ -p '*Test.py'
 class UtilsTest(TestCase):
+    """ Test class to test Utils """
     def test_add_to_dict(self):
-        a = {}
-        b = set()
-        b.update([1,2])
-        c = set()
-        c.update(['a','b','c'])
-        add_to_dict(a,b,c)
-        self.assertEqual(len(a[1]), 3)
-        self.assertEqual(len(a[2]), 3)
+        """ Test add_to_dict """
+        dict_a = {}
+        set_b = set()
+        set_b.update([1,2])
+        set_c = set()
+        set_c.update(['a','b','c'])
+        add_to_dict(dict_a,set_b,set_c)
+        self.assertEqual(len(dict_a[1]), 3)
+        self.assertEqual(len(dict_a[2]), 3)
 
     def test_get_env(self):
-        env = 'sit'
-        env = get_env(env)
-        self.assertEqual(env,'sit.')
-        env = 'uat'
-        env = get_env(env)
-        self.assertEqual(env,'uat.')
-        env = 'production'
-        env = get_env(env)
-        self.assertEqual(env,'')
-        env = 'prod'
-        env = get_env(env)
-        self.assertEqual(env,'')
+        """
+        Test that the get_env variable is always able to get a URL out of the env
+        """
+        tester = lambda data,exp,desc : self.assertEqual(get_env(data), exp,desc)
+        same = lambda url,reason : tester({'cmr-url':url}, url, reason)
+
+        same('https://cmr.sit.earthdata.nasa.gov', 'sit')
+        same('https://cmr.uat.earthdata.nasa.gov', 'uat')
+        same('https://cmr.earthdata.nasa.gov', 'ops')
+        tester({'bad-key':'value'}, 'https://cmr.earthdata.nasa.gov', 'wrong key')
+        tester({}, 'https://cmr.earthdata.nasa.gov', 'empty')
+        tester({'cmr-url':None}, None, 'None value')
 
     def test_get_s3_prefixes(self):
+        """ Test get_s3_prefixes """
         collection = {
           'DataLanguage' : 'eng',
-          'AncillaryKeywords' : [ 'GHRSST', 'sea surface temperature', 'Level 4', 'SST', 'surface temperature', ' MUR', ' foundation SST', ' SST anomaly', ' anomaly' ],
+          'AncillaryKeywords' : [ 'GHRSST', 'sea surface temperature', 'Level 4', \
+            'SST', 'surface temperature', ' MUR', ' foundation SST', ' SST anomaly', ' anomaly' ],
           'CollectionCitations' : [ {
             'Creator' : 'JPL MUR MEaSUREs Project',
             'OnlineResource' : {
@@ -38,7 +44,8 @@ class UtilsTest(TestCase):
             'Publisher' : 'JPL NASA',
             'Title' : 'GHRSST Level 4 MUR Global Foundation Sea Surface Temperature Analysis',
             'SeriesName' : 'GHRSST Level 4 MUR Global Foundation Sea Surface Temperature Analysis',
-            'OtherCitationDetails' : 'JPL MUR MEaSUREs Project, JPL NASA, 2015-03-11, GHRSST Level 4 MUR Global Foundation Sea Surface Temperature Analysis (v4.1)',
+            'OtherCitationDetails' : 'JPL MUR MEaSUREs Project, JPL NASA, 2015-03-11, \
+                GHRSST Level 4 MUR Global Foundation Sea Surface Temperature Analysis (v4.1)',
             'ReleaseDate' : '2015-03-11T00:00:00.000Z',
             'Version' : '4.1',
             'ReleasePlace' : 'Jet Propulsion Laboratory'
@@ -77,7 +84,8 @@ class UtilsTest(TestCase):
                 } ]
               },
               'ResolutionAndCoordinateSystem' : {
-                'Description' : 'Projection Type: Cylindrical Lat-Lon, Projection Detail: Geolocation information included for each pixel',
+                'Description' : 'Projection Type: Cylindrical Lat-Lon, Projection Detail: \
+                    Geolocation information included for each pixel',
                 'GeodeticModel' : {
                   'HorizontalDatumName' : 'World Geodetic System 1984',
                   'EllipsoidName' : 'WGS 84',
@@ -97,9 +105,11 @@ class UtilsTest(TestCase):
           },
           'DirectDistributionInformation' : {
             'Region' : 'us-west-2',
-            'S3BucketAndObjectPrefixNames' : [ 'podaac-ops-cumulus-public/MUR-JPL-L4-GLOB-v4.1/', 'podaac-ops-cumulus-protected/MUR-JPL-L4-GLOB-v4.1/' ],
+            'S3BucketAndObjectPrefixNames' : [ 'podaac-ops-cumulus-public/MUR-JPL-L4-GLOB-v4.1/', \
+                'podaac-ops-cumulus-protected/MUR-JPL-L4-GLOB-v4.1/' ],
             'S3CredentialsAPIEndpoint' : 'https://archive.podaac.earthdata.nasa.gov/s3credentials',
-            'S3CredentialsAPIDocumentationURL' : 'https://archive.podaac.earthdata.nasa.gov/s3credentialsREADME'
+            'S3CredentialsAPIDocumentationURL' : \
+                'https://archive.podaac.earthdata.nasa.gov/s3credentialsREADME'
           }
         }
 

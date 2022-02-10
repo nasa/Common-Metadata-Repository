@@ -1,9 +1,13 @@
-from unittest import TestCase, main, mock
-from GetGroups import *
+""" Test module """
+from unittest import TestCase, mock
+from GetGroups import get_group, get_groups
+
 #python -m unittest discover -s ./ -p '*Test.py'
 class GetGroupsTest(TestCase):
+    """ Test class to test GetGroups """
     @mock.patch('GetGroups.requests.get')
     def test_get_groups(self, mock_get):
+        """ Tests get_groups """
         my_mock_response = mock.Mock(status_code=200)
         my_mock_response.json.return_value = {
           'group_permissions' : [ {
@@ -51,20 +55,23 @@ class GetGroupsTest(TestCase):
 
     @mock.patch('GetGroups.requests.get')
     def test_get_group(self, mock_get):
+        """ Tests get_group """
         my_mock_response = mock.Mock(status_code=200)
         my_mock_response.json.return_value = {
               'name' : 'Science Coordinators',
-              'description' : 'List of science coordinators for metadata curation in docBUILDER and CMR API',
+              'description' : 'List of science coordinators for metadata curation \
+                in docBUILDER and CMR API',
               'legacy_guid' : 'E825D79F-A110-A251-7110-97208B5C2987',
               'provider_id' : 'SCIOPS',
               'num_members' : 4
             }
         mock_get.return_value = my_mock_response
 
-        env = 'XXX'
+        env = {'cmr-url': 'XXX'}
         group_id = 'XXX'
         token = 'EDL-XXX'
 
         response = get_group(env, group_id, token)
         self.assertEqual(response['name'], 'Science Coordinators')
-        self.assertEqual(response['description'], 'List of science coordinators for metadata curation in docBUILDER and CMR API')
+        self.assertEqual(response['description'], 'List of science coordinators \
+            for metadata curation in docBUILDER and CMR API')

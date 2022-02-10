@@ -1,9 +1,17 @@
-from unittest import TestCase, main, mock
-from GetAcls import *
+"""
+ACL tests
+"""
+
+from unittest import TestCase, mock
+from GetAcls import get_acl, get_acls
+
 #python -m unittest discover -s ./ -p '*Test.py'
 class GetAclsTest(TestCase):
+    "Do all the ACL test"
+
     @mock.patch('GetAcls.requests.get')
     def test_get_acls(self, mock_get):
+        "Get ACL check"
         my_mock_response = mock.Mock(status_code=200)
         my_mock_response.json.return_value = {
           'hits' : 2,
@@ -13,26 +21,31 @@ class GetAclsTest(TestCase):
             'revision_id' : 9,
             'identity_type' : 'Catalog Item',
             'name' : 'All Collections',
-            'location' : 'https://cmr.uat.earthdata.nasa.gov:443/access-control/acls/ACL1218667606555-CMR'
+            'location' : 'https://cmr.uat.earthdata.nasa.gov:443/' +
+                'access-control/acls/ACL1218667606555-CMR'
           }, {
             'concept_id' : 'ACL1218667506777-CMR',
             'revision_id' : 9,
             'identity_type' : 'Catalog Item',
             'name' : 'All Granules',
-            'location' : 'https://cmr.uat.earthdata.nasa.gov:443/access-control/acls/ACL1218667506777-CMR'
+            'location' : 'https://cmr.uat.earthdata.nasa.gov:443/' +
+                'access-control/acls/ACL1218667506777-CMR'
           } ]}
         mock_get.return_value = my_mock_response
 
         provider = 'XXX'
-        env = 'XXX'
+        env = {'cmr-url': 'XXX'}
         token = 'EDL-XXX'
         response = get_acls(env,provider,token)
 
-        self.assertEqual(response[0]['location'], 'https://cmr.uat.earthdata.nasa.gov:443/access-control/acls/ACL1218667606555-CMR')
-        self.assertEqual(response[1]['location'], 'https://cmr.uat.earthdata.nasa.gov:443/access-control/acls/ACL1218667506777-CMR')
+        self.assertEqual(response[0]['location'],
+            'https://cmr.uat.earthdata.nasa.gov:443/access-control/acls/ACL1218667606555-CMR')
+        self.assertEqual(response[1]['location'],
+            'https://cmr.uat.earthdata.nasa.gov:443/access-control/acls/ACL1218667506777-CMR')
 
     @mock.patch('GetAcls.requests.get')
     def test_get_acl(self, mock_get):
+        "test getting one acl"
         my_mock_response = mock.Mock(status_code=200)
         my_mock_response.json.return_value = {
           'group_permissions' : [ {

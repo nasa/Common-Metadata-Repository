@@ -1,12 +1,10 @@
-
-def get_env(env):
-    if env is None or env=='' or env=='ops' or env=='prod' or env=='production':
-        env = ''
-    if env != '' and not env.endswith('.'):
-        env = env + '.'
-    return env
+""" Utility methods """
+def get_env(env: dict):
+    """ Returns CMR server URL, uses 'https://cmr.earthdata.nasa.gov' as default """
+    return env.get('cmr-url', 'https://cmr.earthdata.nasa.gov')
 
 def get_s3_prefixes(collection):
+    """ Returns array of S3 prefixes for given collection """
     if 'DirectDistributionInformation' in collection:
         direct_dist = collection['DirectDistributionInformation']
         if 'S3BucketAndObjectPrefixNames' in direct_dist:
@@ -14,6 +12,7 @@ def get_s3_prefixes(collection):
     return []
 
 def add_to_dict(all_s3_prefix_groups_dict, s3_prefixes_set, group_names_set):
+    """ Adds new elements to S3 prefixes groups dictionary """
     for s3_prefix in s3_prefixes_set:
         if s3_prefix in all_s3_prefix_groups_dict:
             existing_groups_set = all_s3_prefix_groups_dict[s3_prefix]
@@ -22,6 +21,7 @@ def add_to_dict(all_s3_prefix_groups_dict, s3_prefixes_set, group_names_set):
             all_s3_prefix_groups_dict[s3_prefix] = group_names_set
 
 def create_tea_config(all_s3_prefix_groups_dict):
+    """ For given S3 prefixes groups dicionary creates the result string"""
     result_string = ''
     for key, value in all_s3_prefix_groups_dict.items():
         result_string += key
