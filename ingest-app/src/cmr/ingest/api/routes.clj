@@ -87,7 +87,6 @@
            {:status 200})
      (GET  "/email-subscription-processing-job-state"
            {ctx :request-context}
-           (acl/verify-ingest-management-permission ctx :update)
            (let [trigger-state (jm/get-email-subscription-processing-job-state ctx)]
              {:status 200 :body (json/generate-string {:state trigger-state})}))
      (POST "/enable-email-subscription-processing-job"
