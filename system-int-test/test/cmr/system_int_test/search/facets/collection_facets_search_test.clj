@@ -92,6 +92,19 @@
                                            :VariableLevel1 "V-L1"
                                            :DetailedVariable "Detailed-No-Level2-or-3"}))
 
+(deftest science-keyword-hierarchical-fields-test
+  (grant-permissions)
+  (let [coll1 (fu/make-coll 1 "PROV1"
+                            (fu/science-keywords (umm-spec-common/science-keyword {:Category "Earth Science"
+                                                                                   :Topic "ATMOSPHERE"
+                                                                                   :Term "ATMOSPHERIC CHEMISTRY"
+                                                                                   :VariableLevel1 "CARBON AND HYDROCARBON COMPOUNDS"
+                                                                                   :VariableLevel2 "CARBON DIOXIDE"
+                                                                                   :DetailedVariable "CO2"})))
+        actual-facets (get-facet-results :hierarchical)]
+    (println coll1)
+    (:json-facets actual-facets)))
+
 (deftest all-hierarchical-fields-test
   (grant-permissions)
   (let [coll1 (fu/make-coll 1 "PROV1"
@@ -573,45 +586,12 @@
   ;; Test that even with a nil sub-category the platform will still be returned, but with a
   ;; value of "Not Provided" for the sub-category
   (fu/make-coll 2 "PROV1" {:Platforms [(data-umm-spec/platform {:ShortName "A340-600"})]})
-  (let [expected-platforms [{:subfields ["basis"],
-            :basis
-            [{:subfields ["category"],
-              :category
-              [{:subfields ["sub_category"],
-                :sub_category
-                [{:subfields ["short_name"],
-                  :short_name
-                  [{:subfields ["long_name"],
-                    :long_name [{:count 1, :value "Not Provided"}],
-                    :count 1,
-                    :value "Platform-p0"}
-                   {:subfields ["long_name"],
-                    :long_name [{:count 1, :value "Not Provided"}],
-                    :count 1,
-                    :value "Platform-p1"}],
-                  :count 1,
-                  :value "Not Provided"}],
-                :count 1,
-                :value "Not Provided"}],
-              :count 1,
-              :value "Not Provided"}
-             {:subfields ["category"],
-              :category
-              [{:subfields ["sub_category"],
-                :sub_category
-                [{:subfields ["short_name"],
-                  :short_name
-                  [{:subfields ["long_name"],
-                    :long_name [{:count 1, :value "Airbus A340-600"}],
-                    :count 1,
-                    :value "A340-600"}],
-                  :count 1,
-                  :value "Not Provided"}],
-                :count 1,
-                :value "Jet"}],
-              :count 1,
-              :value "Air-based Platforms"}],
-            :field "platforms"}]
+  (let [expected-platforms [{:basis [{:category [{:value "Jet", :count 1}],
+                                      :value "Air-based Platforms",
+                                      :subfields ["category"],
+                                      :count 1}],
+                             :field "platforms",
+                             :subfields ["basis"]}]
         actual-platforms (->> (get-facet-results :hierarchical)
                               :json-facets
                               (filter #(= "platforms" (:field %))))]
