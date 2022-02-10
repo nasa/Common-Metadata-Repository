@@ -50,7 +50,6 @@ CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens 
     * [Temporal](#c-temporal)
     * [Project](#c-project)
     * [Consortium](#c-consortium)
-    * [Latency](#c-latency)
     * [Updated since](#c-updated-since)
     * [Revision date](#c-revision-date)
     * [Created at](#c-created-at)
@@ -1589,21 +1588,6 @@ Find collections matching any of the 'consortium' param values
 Find collections that match all of the 'consortium' param values
 
      curl "%CMR-ENDPOINT%/collections?consortium\[\]=CWIC&consortium\[\]=FEDEO&consortium\[\]=CEOS&options\[consortium\]\[and\]=true"
-
-#### <a name="c-latency"></a> Find collections by latency
-Collection latency search is used to support the latency facets. latency only contains 3 values currently and they are mapped to
-CollectionDataType field as follows:  "1 to 3 hours" <=> "NEAR_REAL_TIME", "3 to 24 hours" <=> "LOW_LATENCY", and
-"1 to 4 days" <=> "EXPEDITED".
-
-This search supports `pattern` and `ignore_case`
-
-Find collections matching 'latency' param value
-
-     curl "%CMR-ENDPOINT%/collections?latency=1+to+4+days"
-
-Find collections matching any of the 'latency' param values
-
-     curl "%CMR-ENDPOINT%/collections?latency=1+to+3+hours&latency=1+to+4+days"
 
 #### <a name="c-updated-since"></a> Find collections by updated_since
 
