@@ -331,21 +331,21 @@ Sends subscription emails covering granules that were updated in the specified r
 curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/trigger-email-subscription-processing?revision-date-range=2011-01-01T10:00:00Z,2012-01-01T10:00:00Z
 ```
 
-### <a name="email-subscription-processing-job-state"></a> Run Subscription Job Over Granule Revision Date Range
+### <a name="email-subscription-processing-job-state"></a> Get the current state of the subscription job
 
 Returns a JSON response containing the current state of the email-subscription-processing job in the `state` attribute.  The state value corresponds with possible org.Quartz.Trigger.TriggerState values, with NORMAL being enabled and PAUSED being disabled.
 ```bash
 curl -i -XGET -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/email-subscription-processing-job-state
 ```
 
-### <a name="enable-email-subscription-processing-job"></a> Run Subscription Job Over Granule Revision Date Range
+### <a name="enable-email-subscription-processing-job"></a> Enable the subscription job
 
 Sets the email-subscription-processing job to an enabled state.  If it is already enabled, there is no change.
 ```bash
 curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/enable-email-subscription-processing-job
 ```
 
-### <a name="disable-email-subscription-processing-job"></a> Run Subscription Job Over Granule Revision Date Range
+### <a name="disable-email-subscription-processing-job"></a> Disable the subscription job
 
 Sets the email-subscription-processing job to an disabled state.  If it is already disabled, there is no change.
 ```bash
