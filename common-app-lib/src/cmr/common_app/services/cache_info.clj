@@ -9,12 +9,17 @@
 
 (defjob LogCacheSizesJob
   [_ system]
-  (doseq [[cache-key size] (cache/cache-sizes system)]
-    (info (format "Cache size [%s] [%d] bytes" cache-key size))))
+  (let [cache-map (cache/cache-sizes system)]
+    (doseq [[cache-key size] cache-map]
+      (when-not ((fnil neg? -1) size)
+        (info (format "in-memory-cache [%s] [%d] bytes" cache-key size))))
+    (info (format "Total in-memory-cache usage [%d] bytes"
+                  (reduce + 0 (filter (fnil pos? 0) (vals cache-map)))))))
 
 (defconfig log-cache-info-interval
   "Number of seconds between logging cache information."
-  {:default 300
+  {;; :default 900 ;; 15 minutes
+   :default 30
    :type Long})
 
 (def ^:private trim-and-lowercase (comp string/lower-case string/trim name))

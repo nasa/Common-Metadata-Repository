@@ -58,7 +58,16 @@
   
   (cache-size
    [_]
-   (reduce + 0 (map (comp count str) (vals @cache-atom)))))
+   (reduce + 0 (map #(case (type %)
+                       java.lang.String (count (.getBytes % "UTF-8"))
+                       java.lang.Integer java.lang.Integer/SIZE
+                       java.lang.Long java.lang.Long/SIZE
+                       java.lang.Double java.lang.Double/SIZE
+                       ;; estimate sizes for anything else
+                       :else (try (count (str %))
+                                  (catch Exception _
+                                    1)))
+                    (vals @cache-atom)))))
 
 (record-pretty-printer/enable-record-pretty-printing InMemoryCache)
 
