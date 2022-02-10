@@ -1591,8 +1591,11 @@ Find collections that match all of the 'consortium' param values
      curl "%CMR-ENDPOINT%/collections?consortium\[\]=CWIC&consortium\[\]=FEDEO&consortium\[\]=CEOS&options\[consortium\]\[and\]=true"
 
 #### <a name="c-latency"></a> Find collections by latency
+Collection latency search is used to support the latency facets. latency only contains 3 values currently and they are mapped to
+CollectionDataType field as follows:  "1 to 3 hours" <=> "NEAR_REAL_TIME", "3 to 24 hours" <=> "LOW_LATENCY", and
+"1 to 4 days" <=> "EXPEDITED".
 
-This supports `pattern` and `ignore_case`
+This search supports `pattern` and `ignore_case`
 
 Find collections matching 'latency' param value
 

@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.search.collection-latency-search-test
-  "Integration tests for collection consortium search"
+  "Integration tests for collection latency search"
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
