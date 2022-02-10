@@ -27,17 +27,15 @@ describe ('cache tests', () => {
         expect (res).toBe (null);
     });
 
-    test ('token does not exist', async () => {
+    test ('When I request a token from an empty cache, then it is null', async () => {
         const res = await cache.getTokenInCache();
         expect (res).toBe (null);
     });
 
-    test ('setting token in cache', async () => {
-        console.log("hi this is the test")
-        cache.setTokenInCache('token');
+    test ('When I set a token in cache, then I can retrieve it', async () => {
+        const mytoken = 'token'
+        await cache.setTokenInCache(mytoken);
         const res = await cache.getTokenInCache();
-        expect (res).toBe ('token');;
+        expect (res).toBe (mytoken);;
     });
 });
-
-
