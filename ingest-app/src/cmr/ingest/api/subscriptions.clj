@@ -94,17 +94,16 @@
                        {:subscriber-id (:SubscriberId metadata)
                         :latest true}
                        :subscription)
-        active-subscriptions (remove :deleted subscriptions)]
-     (def subscription-revision false)
-     (doseq [element active-subscriptions]
-      (if (and (= (:native-id element) (:native-id subscription))
-               (= (:provider-id element) (:provider-id subscription)))
-          (def subscription-revision true)))
-     (when (and (>= (count active-subscriptions) (jobs/subscriptions-limit)) (not subscription-revision))
-       (errors/throw-service-error
-        :conflict
-        (format "The subscriber-id [%s] has already reached the subscription limit."
-                subscriber-id)))))
+        active-subscriptions (remove :deleted subscriptions)
+        at-limit (>= (count active-subscriptions) (jobs/subscriptions-limit))]
+    (when at-limit
+      (let [pred #(and (= (:native-id %) (:native-id subscription)) (= (:provider-id %) (:provider-id subscription)))
+            is-not-revision (empty? (filter pred active-subscriptions))]
+        (when is-not-revision
+          (errors/throw-service-error
+           :conflict
+           (format "The subscriber-id [%s] has already reached the subscription limit."
+                   subscriber-id)))))))
 
 (defn- check-duplicate-subscription
   "The query used by a subscriber for a collection should be unique to prevent
