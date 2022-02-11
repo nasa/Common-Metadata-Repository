@@ -1,11 +1,11 @@
 """ Test module """
 from unittest import TestCase, mock
-from gen.get_groups import get_group, get_groups
+from tea.gen.get_groups import get_group, get_groups
 
 #python -m unittest discover -s ./ -p '*_test.py'
 class GetGroupsTest(TestCase):
     """ Test class to test GetGroups """
-    @mock.patch('gen.get_groups.requests.get')
+    @mock.patch('tea.gen.get_groups.requests.get')
     def test_get_groups(self, mock_get):
         """ Tests get_groups """
         my_mock_response = mock.Mock(status_code=200)
@@ -53,7 +53,7 @@ class GetGroupsTest(TestCase):
         self.assertEqual(response[2]['group_id'], 'AG1222486916-CMR')
         self.assertEqual(response[4]['group_id'], 'AG1216375421-SCIOPS')
 
-    @mock.patch('gen.get_groups.requests.get')
+    @mock.patch('tea.gen.get_groups.requests.get')
     def test_get_group(self, mock_get):
         """ Tests get_group """
         my_mock_response = mock.Mock(status_code=200)

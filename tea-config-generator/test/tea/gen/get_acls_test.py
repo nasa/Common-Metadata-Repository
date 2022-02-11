@@ -3,13 +3,13 @@ ACL tests
 """
 
 from unittest import TestCase, mock
-from gen.get_acls import get_acl, get_acls
+from tea.gen.get_acls import get_acl, get_acls
 
 #python -m unittest discover -s ./ -p '*_test.py'
 class GetAclsTest(TestCase):
     "Do all the ACL test"
 
-    @mock.patch('gen.get_acls.requests.get')
+    @mock.patch('tea.gen.get_acls.requests.get')
     def test_get_acls(self, mock_get):
         "Get ACL check"
         my_mock_response = mock.Mock(status_code=200)
@@ -43,7 +43,7 @@ class GetAclsTest(TestCase):
         self.assertEqual(response[1]['location'],
             'https://cmr.uat.earthdata.nasa.gov:443/access-control/acls/ACL1218667506777-CMR')
 
-    @mock.patch('gen.get_acls.requests.get')
+    @mock.patch('tea.gen.get_acls.requests.get')
     def test_get_acl(self, mock_get):
         "test getting one acl"
         my_mock_response = mock.Mock(status_code=200)

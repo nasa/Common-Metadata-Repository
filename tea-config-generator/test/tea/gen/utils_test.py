@@ -1,15 +1,38 @@
 """ Test module """
-from unittest import TestCase, mock
-from gen.get_collections import get_collection
+from unittest import TestCase
+from tea.gen.utils import add_to_dict, get_s3_prefixes, get_env
 
 #python -m unittest discover -s ./ -p '*_test.py'
-class GetCollectionsTest(TestCase):
-    """ Test class to test GetCollections """
-    @mock.patch('gen.get_collections.requests.get')
-    def test_get_collections(self, mock_get):
-        """ Tests get_collection """
-        my_mock_response = mock.Mock(status_code=200)
-        my_mock_response.json.return_value = {
+class UtilsTest(TestCase):
+    """ Test class to test Utils """
+    def test_add_to_dict(self):
+        """ Test add_to_dict """
+        dict_a = {}
+        set_b = set()
+        set_b.update([1,2])
+        set_c = set()
+        set_c.update(['a','b','c'])
+        add_to_dict(dict_a,set_b,set_c)
+        self.assertEqual(len(dict_a[1]), 3)
+        self.assertEqual(len(dict_a[2]), 3)
+
+    def test_get_env(self):
+        """
+        Test that the get_env variable is always able to get a URL out of the env
+        """
+        tester = lambda data,exp,desc : self.assertEqual(get_env(data), exp,desc)
+        same = lambda url,reason : tester({'cmr-url':url}, url, reason)
+
+        same('https://cmr.sit.earthdata.nasa.gov', 'sit')
+        same('https://cmr.uat.earthdata.nasa.gov', 'uat')
+        same('https://cmr.earthdata.nasa.gov', 'ops')
+        tester({'bad-key':'value'}, 'https://cmr.earthdata.nasa.gov', 'wrong key')
+        tester({}, 'https://cmr.earthdata.nasa.gov', 'empty')
+        tester({'cmr-url':None}, None, 'None value')
+
+    def test_get_s3_prefixes(self):
+        """ Test get_s3_prefixes """
+        collection = {
           'DataLanguage' : 'eng',
           'AncillaryKeywords' : [ 'GHRSST', 'sea surface temperature', 'Level 4', \
             'SST', 'surface temperature', ' MUR', ' foundation SST', ' SST anomaly', ' anomaly' ],
@@ -89,12 +112,7 @@ class GetCollectionsTest(TestCase):
                 'https://archive.podaac.earthdata.nasa.gov/s3credentialsREADME'
           }
         }
-        mock_get.return_value = my_mock_response
 
-        env = {'cmr-url': 'XXX'}
-        token = 'EDL-XXX'
-        concept_id = 'XXX'
-        response = get_collection(env, token, concept_id)
-
-        self.assertEqual(response['DataLanguage'], 'eng')
-        self.assertEqual(response['DirectDistributionInformation']['Region'], 'us-west-2')
+        s3_prefixes = get_s3_prefixes(collection)
+        self.assertEqual(s3_prefixes[0], 'podaac-ops-cumulus-public/MUR-JPL-L4-GLOB-v4.1/')
+        self.assertEqual(s3_prefixes[1], 'podaac-ops-cumulus-protected/MUR-JPL-L4-GLOB-v4.1/')
