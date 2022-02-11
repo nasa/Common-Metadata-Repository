@@ -150,7 +150,7 @@
                                 {}
                                 (partition-all 1000 concepts-tuples))
         cache (c/context->cache context cache-key)]
-    (reset! (:cache-atom cache) {})
+    (reset! (:cache-atom cache) new-cache-value)
     (info "Metadata cache refresh complete. Cache Size:" (c/cache-size cache))))
 
 (defn all-cached-revision-format-maps
