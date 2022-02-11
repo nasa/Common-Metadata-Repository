@@ -28,7 +28,7 @@
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-platform]
     {:basis basis
-     :basis-lowercase (when basis (string/lower-case basis))
+     :basis-lowercase (util/safe-lowercase basis)
      :category category
      :category-lowercase (util/safe-lowercase category)
      :sub-category sub-category
