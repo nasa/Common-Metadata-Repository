@@ -95,7 +95,12 @@
                         :latest true}
                        :subscription)
         active-subscriptions (remove :deleted subscriptions)]
-     (when (>= (count active-subscriptions) (jobs/subscriptions-limit))
+     (def subscription-revision false)
+     (doseq [element active-subscriptions]
+      (if (and (= (:native-id element) (:native-id subscription))
+               (= (:provider-id element) (:provider-id subscription)))
+          (def subscription-revision true)))
+     (when (and (>= (count active-subscriptions) (jobs/subscriptions-limit)) (not subscription-revision))
        (errors/throw-service-error
         :conflict
         (format "The subscriber-id [%s] has already reached the subscription limit."
