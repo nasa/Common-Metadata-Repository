@@ -15,28 +15,7 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
    [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.metadata-db :as mdb]
-   [cmr.transmit.config :as transmit-config]))
-
-(defn- urs-relative-root-url-fixture
-  "Need to ensure the relative root is set to /urs for mock-urs to be able to received
-  URS requests. This is set to \"\" by default when running from outside of dev-system."
-  [f]
-  (let [saved-relative-root-url (transmit-config/urs-relative-root-url)]
-    (transmit-config/set-urs-relative-root-url! "/urs")
-    (f)
-    (transmit-config/set-urs-relative-root-url! saved-relative-root-url)))
-
-(def urs-context-atom
-  "An atom containing the cached connection context map."
-  (atom nil))
-
-(defn urs-context
-  "URS context with config needed for testing purposes."
-  []
-  (when-not @urs-context-atom
-    (reset! urs-context-atom {:system (system/create-system (system/get-component-type-map))}))
-  @urs-context-atom)
+   [cmr.transmit.metadata-db :as mdb]))
 
 (use-fixtures :each
   (join-fixtures
@@ -51,11 +30,9 @@
                                                       [:read :update])
     (dev-system/freeze-resume-time-fixture)]))
 
-(use-fixtures :once urs-relative-root-url-fixture)
-
 (defn- get-subscriptions
   []
-  (->> (mdb/find-concepts (urs-context) {:latest true} :subscription)
+  (->> (mdb/find-concepts (system/context) {:latest true} :subscription)
        (remove :deleted)
        (map #(select-keys % [:concept-id :extra-fields :metadata]))))
 
@@ -86,10 +63,10 @@
   (system/only-with-real-database
    (with-redefs
     [jobs/send-email mock-send-email]
-     (let [user2-group-id (echo-util/get-or-create-group (urs-context) "group2")
-           _user2-token (echo-util/login (urs-context) "user2" [user2-group-id])
-           _ (echo-util/ungrant (urs-context)
-                                (-> (access-control/search-for-acls (urs-context)
+     (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
+           _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
+           _ (echo-util/ungrant (system/context)
+                                (-> (access-control/search-for-acls (system/context)
                                                                     {:provider "PROV1"
                                                                      :identity-type "catalog_item"}
                                                                     {:token "mock-echo-system-token"})
@@ -159,17 +136,17 @@
   (system/only-with-real-database
    (with-redefs
     [jobs/send-email mock-send-email]
-     (let [user2-group-id (echo-util/get-or-create-group (urs-context) "group2")
-           _user2-token (echo-util/login (urs-context) "user2" [user2-group-id])
-           _ (echo-util/ungrant (urs-context)
-                                (-> (access-control/search-for-acls (urs-context)
+     (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
+           _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
+           _ (echo-util/ungrant (system/context)
+                                (-> (access-control/search-for-acls (system/context)
                                                                     {:provider "PROV1"
                                                                      :identity-type "catalog_item"}
                                                                     {:token "mock-echo-system-token"})
                                     :items
                                     first
                                     :concept_id))
-           _ (echo-util/grant (urs-context)
+           _ (echo-util/grant (system/context)
                               [{:group_id user2-group-id
                                 :permissions [:read]}]
                               :catalog_item_identity
@@ -189,7 +166,7 @@
            sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")]
 
        (testing "Using the manual endpoint does not update last-notified-at for subscriptions"
-         (let [system-context (urs-context)
+         (let [system-context (system/context)
                _normal-job (jobs/email-subscription-processing system-context)
                prejob-subscriptions (get-subscriptions)
                params {:revision-date-range (str "2016-01-02T00:00:00Z," (t/now))}
@@ -202,10 +179,10 @@
   (system/only-with-real-database
    (with-redefs
     [jobs/send-email mock-send-email]
-     (let [user2-group-id (echo-util/get-or-create-group (urs-context) "group2")
-           _user2-token (echo-util/login (urs-context) "user2" [user2-group-id])
-           _ (echo-util/ungrant (urs-context)
-                                (-> (access-control/search-for-acls (urs-context)
+     (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
+           _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
+           _ (echo-util/ungrant (system/context)
+                                (-> (access-control/search-for-acls (system/context)
                                                                     {:provider "PROV1"
                                                                      :identity-type "catalog_item"}
                                                                     {:token "mock-echo-system-token"})
