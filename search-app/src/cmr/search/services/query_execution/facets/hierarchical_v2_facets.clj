@@ -85,9 +85,13 @@
                               (and (= field :science-keywords-humanized)
                                    (or (= subfield :term)
                                        (= subfield :variable-level-1)
-                                       (= subfield :variable-level-2))) (hierarchical-aggregation-builder field [:detailed-variable] size)
+                                       (= subfield :variable-level-2)))
+                              (hierarchical-aggregation-builder field [:detailed-variable] size)
+
                               (and (= field :platforms2-humanized)
-                                   (= subfield :category)) (hierarchical-aggregation-builder field [:short-name] size)
+                                   (= subfield :category))
+                              (hierarchical-aggregation-builder field [:short-name] size)
+
                               :else nil)
                             (hierarchical-aggregation-builder field (rest field-hierarchy) size))}}))
 
@@ -246,39 +250,32 @@
     ;;    follow the recursion to get it. Otherwise return nil (return value of cond if all tests fail.)
     ;;    so that the recursion can unwind to create the parent V2 nodes.
     (cond
-      (some? sub-facets) (finish-bucket-for-hierarchical-field
-                          sub-facets
-                          field-hierarchy
-                          has-siblings-fn
-                          generate-links-fn
-                          value
-                          count
-                          field)
-      (= field (last field-hierarchy)) (finish-bucket-for-hierarchical-field
-                                        sub-facets
-                                        field-hierarchy
-                                        has-siblings-fn
-                                        generate-links-fn
-                                        value
-                                        count
-                                        field)
+      (some? sub-facets)
+      (finish-bucket-for-hierarchical-field
+       sub-facets field-hierarchy has-siblings-fn generate-links-fn value count field)
+
+      (= field (last field-hierarchy))
+      (finish-bucket-for-hierarchical-field
+       sub-facets field-hierarchy has-siblings-fn generate-links-fn value count field)
+
       (or (= (:base-field function-params) :science-keywords-h)
-          (= (:base-field function-params) :platforms-h)) (let [sf (recursive-parse-fn
-                                                                    [subfield]
-                                                                    value
-                                                                    bucket)
-                                                                field-hierarchy (conj
-                                                                                 nil
-                                                                                 (last field-hierarchy)
-                                                                                 (first field-hierarchy))]
-                                                            (finish-bucket-for-hierarchical-field
-                                                             sf
-                                                             field-hierarchy
-                                                             has-siblings-fn
-                                                             generate-links-fn
-                                                             value
-                                                             count
-                                                             field)))))
+          (= (:base-field function-params) :platforms-h))
+      (let [sf (recursive-parse-fn
+                [subfield]
+                value
+                bucket)
+            field-hierarchy (conj
+                             nil
+                             (last field-hierarchy)
+                             (first field-hierarchy))]
+        (finish-bucket-for-hierarchical-field
+         sf
+         field-hierarchy
+         has-siblings-fn
+         generate-links-fn
+         value
+         count
+         field)))))
 
 (defn- generate-hierarchical-children
   "Generate children nodes for a hierarchical facet v2 response.
@@ -415,12 +412,12 @@
 (defn get-depth-of-field
   "Use recursion to walk through the facet hierarchy to find the passed in field and return its
   position in the hierarchy. Returns a nested list of values. If its not found then return nil."
-  [facet field count]
+  [facet field depth]
   (if (not= (:field facet) field)
     (when (:children facet)
       (for [child-facet (:children facet)]
-        (get-depth-of-field child-facet field (inc count))))
-    count))
+        (get-depth-of-field child-facet field (inc depth))))
+    depth))
 
 (defn- get-terms-for-subfield
   "Returns all of the terms for the provided subfield within a hierarchical facet response."
@@ -438,15 +435,20 @@
   "Recursively removes the passed in key, from maps and sequences"
   [k x]
   (cond
-    (map? x) (let [clean-map (dissoc
-                               (zipmap (keys x) (map #(remove-key-from-maps-seqs k %) (vals x)))
-                               k)]
-               (when (seq clean-map)
-                 clean-map))
-    (vector? x) (when (seq x)
-                  (into [] (keep #(remove-key-from-maps-seqs k %) x)))
-    (sequential? x) (when (seq x)
-                      (keep #(remove-key-from-maps-seqs k %) x))
+    (map? x)
+    (let [clean-map (dissoc
+                      (zipmap (keys x) (map #(remove-key-from-maps-seqs k %) (vals x)))
+                      k)]
+      (when (seq clean-map)
+        clean-map))
+
+    (vector? x)
+    (when (seq x)
+      (into [] (keep #(remove-key-from-maps-seqs k %) x)))
+
+    (sequential? x)
+    (when (seq x)
+      (keep #(remove-key-from-maps-seqs k %) x))
     :else x))
 
 (defn- get-missing-subfield-term-tuples

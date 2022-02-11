@@ -28,17 +28,17 @@
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-platform]
     {:basis basis
-     :basis-lowercase (when basis(string/lower-case basis))
+     :basis-lowercase (util/safe-lowercase basis)
      :category category
-     :category-lowercase (when category (string/lower-case category))
+     :category-lowercase (util/safe-lowercase category)
      :sub-category sub-category
-     :sub-category-lowercase (when sub-category (string/lower-case sub-category))
+     :sub-category-lowercase (util/safe-lowercase sub-category)
      :short-name short-name
-     :short-name-lowercase (when short-name (string/lower-case short-name))
+     :short-name-lowercase (util/safe-lowercase short-name)
      :long-name long-name
-     :long-name-lowercase (when long-name (string/lower-case long-name))
+     :long-name-lowercase (util/safe-lowercase long-name)
      :uuid uuid
-     :uuid-lowercase (when uuid (util/safe-lowercase uuid))}))
+     :uuid-lowercase (util/safe-lowercase uuid)}))
 
 ;; *****************************************************************************
 ;; version 1 platforms
