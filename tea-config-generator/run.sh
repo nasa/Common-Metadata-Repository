@@ -44,13 +44,13 @@ report_code_coverage()
 
 documentation()
 {
-  if command -v markdown &> /dev/null
+  if command -v markdown &> /dev/null ; then
     markdown -T public/api.md > public/api.html
   else
     echo "could not found markdown, try running the following"
     cprint $GREEN "brew install discount"
   fi
-  if command -v aws &> /dev/null
+  if command -v aws &> /dev/null ; then
     aws --endpoint http://localhost:7000 \
       s3 cp public/index.html s3://local-bucket/api.html \
       --profile s3local
@@ -61,11 +61,11 @@ documentation()
 
 help_doc()
 {
-    echo 'Script to manage the life cycle of the Tea Configuration code'
-    echo 'Usage:'
-    echo '  ./run.sh -[c|C] -t <token> -[hulre]'
-    echo '  ./run.sh -[o|I]'
-    echo
+  echo 'Script to manage the life cycle of the Tea Configuration code'
+  echo 'Usage:'
+  echo '  ./run.sh -[c|C] -t <token> -[hulre]'
+  echo '  ./run.sh -[o|I]'
+  echo
 
   format="%4s %-8s %10s | %s\n"
   printf "${format}" 'flag' 'value' 'name' 'Description'
