@@ -18,8 +18,7 @@
 
 (defconfig log-cache-info-interval
   "Number of seconds between logging cache information."
-  {;; :default 900 ;; 15 minutes
-   :default 30
+  {:default 900 ;; 15 minutes
    :type Long})
 
 (def ^:private trim-and-lowercase (comp string/lower-case string/trim name))
