@@ -42,6 +42,23 @@ report_code_coverage()
     coverage html
 }
 
+documentation()
+{
+  if command -v markdown &> /dev/null
+    markdown -T public/api.md > public/api.html
+  else
+    echo "could not found markdown, try running the following"
+    cprint $GREEN "brew install discount"
+  fi
+  if command -v aws &> /dev/null
+    aws --endpoint http://localhost:7000 \
+      s3 cp public/index.html s3://local-bucket/api.html \
+      --profile s3local
+  else
+    echo "aws command not found"
+  fi
+}
+
 help_doc()
 {
     echo 'Script to manage the life cycle of the Tea Configuration code'
@@ -56,6 +73,7 @@ help_doc()
   printf "${format}" '-h' '' 'Help' 'Print out a help document'
   printf "${format}" '-c' '' 'Color on' 'Turn color on (default)'
   printf "${format}" '-C' '' 'Color off' 'Turn color off'
+  printf "${format}" '-d' '' 'Documentation' 'Generate Documentation for AWS'
   printf "${format}" '-u' '' 'Unittest' 'Run python unit test'
   printf "${format}" '-l' '' 'Lint' 'Run pylint over all files'
   printf "${format}" '-t' '<token>' 'Token' 'Set token'
@@ -70,6 +88,7 @@ while getopts 'hcCult:oreIx' opt; do
     h) help_doc ;;
     c) color_mode='yes';;
     C) color_mode='no' ;;
+    d) documentation ;;
     u) python3 -m unittest discover -s ./ -p '*Test.py' ;;
     l) lint ;;
     t) token=${OPTARG} ;;

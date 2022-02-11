@@ -58,5 +58,3 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: local-bucket
-                
-# aws --endpoint http://localhost:7000 s3 cp public/index.html s3://local-bucket/index.html --profile s3local
