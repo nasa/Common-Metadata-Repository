@@ -39,13 +39,7 @@
     :connection-manager (system/conn-mgr)
     :throw-exceptions false}))
 
-(deftest subscription-email-processing-filtering
-  (testing "email-subscription-processing is enabled when system starts."
-    (let [response (get-email-subscription-processing-job-state)
-          response-status (:status response)
-          actual-job-status (:state (json/decode (:body response) true))]
-      (is (= 200 response-status))
-      (is (= "NORMAL" actual-job-status))))
+(deftest subscription-email-processing-job-management-test
   (testing "email-subscription-processing state is PAUSED after calling disable-endpoint"
     (let [response (disable-email-subscription-processing-job)
           response-status (:status response)
