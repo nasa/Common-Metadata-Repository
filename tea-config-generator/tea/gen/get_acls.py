@@ -3,7 +3,7 @@ Module contains functions to get ACLs
 """
 import logging
 import requests
-import gen.utils as util
+import tea.gen.utils as util
 
 if len(logging.getLogger().handlers)>0:
     logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s',

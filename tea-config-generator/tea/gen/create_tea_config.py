@@ -1,9 +1,9 @@
 """ Main module to create TEA config """
 import logging
-from gen.utils import add_to_dict, create_tea_config
-from gen.get_acls import get_acl, get_acls
-from gen.get_groups import get_group_names
-from gen.get_collections import get_collections_s3_prefixes_dict
+from tea.gen.utils import add_to_dict, create_tea_config
+from tea.gen.get_acls import get_acl, get_acls
+from tea.gen.get_groups import get_group_names
+from tea.gen.get_collections import get_collections_s3_prefixes_dict
 
 #pylint: disable=E1101 #No issue, just want number of handlers
 #pylint: disable=R0914 #We want parameters separated

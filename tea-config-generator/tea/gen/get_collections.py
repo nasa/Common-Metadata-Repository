@@ -1,7 +1,7 @@
 """ Module used to get Collections """
 import logging
 import requests
-import Utils as util
+import tea.gen.utils as util
 
 #logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s',
 #encoding='utf-8', level=logging.INFO)

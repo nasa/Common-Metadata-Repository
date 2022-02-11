@@ -8,7 +8,9 @@ import json
 import datetime
 import boto3
 
-import CreateTeaConfig as tea
+import tea.gen.create_tea_config as tea
+#import tea.gen.create_tea_config as tea
+
 
 #pylint: disable=W0613 # AWS requires event and context, but these are not always used
 
@@ -21,19 +23,23 @@ def finish_timer(start):
     sec = delta.total_seconds()
     return f"{sec:.6f}"
 
-def aws_return_message(event, status, body, start=None):
-    """ build a dictionary which AWS Lambda will accept as a return value """
-
+def pretty_indent(event):
     # look for pretty in both the header and query parameters
     indent = None # none means do not pretty print, a number is the tab count
-    pretty = 'false'
-    query_params = event.get('queryStringParameters')
-    if query_params:
-        pretty = query_params.get('pretty', "false")
-    if pretty=='false' and 'Cmr-Pretty' in event['headers']:
-        pretty = event['headers']['Cmr-Pretty']
-    if pretty.lower()=="true":
-        indent=1
+    if event:
+        pretty = 'false'
+        query_params = event.get('queryStringParameters')
+        if query_params:
+            pretty = query_params.get('pretty', "false")
+        if pretty=='false' and 'headers' in event and 'Cmr-Pretty' in event['headers']:
+            pretty = event['headers']['Cmr-Pretty']
+        if pretty.lower()=="true":
+            indent=1
+    return indent
+
+def aws_return_message(event, status, body, start=None):
+    """ build a dictionary which AWS Lambda will accept as a return value """
+    indent = pretty_indent(event)
 
     ret = {"statusCode": status, "body": json.dumps(body, indent=indent)}
     if start is not None:
@@ -87,9 +93,9 @@ def debug(event, context):
     body = {
         'context': context.get_remaining_time_in_millis(),
         'event': event,
-        'tea_config_cmr': parameter_read('aws_tea_config_cmr',
+        'tea_config_cmr': parameter_read('AWS_TEA_CONFIG_CMR',
             default_value='https://cmr.earthdata.nasa.gov'),
-        'tea_config_log_level': parameter_read('aws_tea_config_log_level',
+        'tea_config_log_level': parameter_read('AWS_TEA_CONFIG_LOG_LEVEL',
             default_value='INFO'),
     }
 
@@ -123,12 +129,15 @@ def generate_tea_config(event, context):
     if token is None or len(token)<1:
         return aws_return_message(event, 400, "Token is required", start)
 
-    cmr_config = parameter_read('aws_tea_config_cmr',
+    env = {}
+    env['cmr-url'] = cmr_config = parameter_read('AWS_TEA_CONFIG_CMR',
       default_value='https://cmr.earthdata.nasa.gov')
-    log_level = parameter_read('aws_tea_config_log_level',
+    env['logging-level'] = parameter_read('AWS_TEA_CONFIG_LOG_LEVEL',
       default_value='info')
-
-    env = {'cmr-url':cmr_config, 'logging-level': log_level}
+    if pretty_indent(event) is None:
+        env['pretty-print'] = False
+    else:
+        env['pretty-print'] = True
 
     processor = tea.CreateTeaConfig()
     result = processor.create_tea_config(env, provider, token)
@@ -136,61 +145,3 @@ def generate_tea_config(event, context):
 
     return result
 
-# ******************************************************************************
-#mark - command line functions
-
-def main():
-    """ Unit testing, collect variables needed to run generate_tea_config() """
-    #pylint: disable=C0415 # library is only needed for local execution, not AWS
-    import argparse
-
-    parser = argparse.ArgumentParser(description='Test handler')
-
-    aws_group = parser.add_argument_group()
-    aws_group.add_argument('-l', '--log-level', default='debug',
-        help="Set the python log level")
-    aws_group.add_argument('-p', '--provider', default='POCLOUD',
-        help="CMR Provider name such as POCLOUD")
-    aws_group.add_argument('-e', '--env', default='uat', help="sit, uat, ops")
-
-    token_ops = parser.add_mutually_exclusive_group()
-    token_ops.add_argument('-t', '--token', default='', help="EDL Token")
-    token_ops.add_argument('-tf', '--token-file', default='',
-        help="Path to a file holding an EDL Token")
-
-    args = parser.parse_args()
-
-    log_level = args.log_level.upper()
-    provider = args.provider
-    which_cmr = args.env
-
-    if args.token_file:
-        with open(args.token_file, encoding='utf8') as file_obj:
-            token = file_obj.readline().strip()
-    elif args.token:
-        token = args.token
-    else:
-        token = None
-
-    # Used to test functions locally
-    if len(logging.getLogger().handlers)>0:
-        logging.getLogger().setLevel(log_level)
-    else:
-        logging.basicConfig(filename='script.log',
-            format='%(asctime)s %(message)s',
-            level=log_level)
-
-    cmrs = {'sit':'https://cmr.sit.earthdata.nasa.gov',
-        'uat':'https://cmr.uat.earthdata.nasa.gov',
-        'ops':'https://cmr.earthdata.nasa.gov',
-        'prod':'https://cmr.earthdata.nasa.gov'}
-
-    os.environ['AWS_TEA_CONFIG_LOG_LEVEL'] = log_level
-    os.environ['AWS_TEA_CONFIG_LOG_CMR'] = cmrs[which_cmr]
-    event = {'headers': {'Cmr-Token': token}, 'pathParameters': {'id': provider}}
-    context = {}
-
-    print(generate_tea_config(event, context))
-
-if __name__ == "__main__":
-    main()
