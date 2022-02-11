@@ -1,24 +1,28 @@
+""" Main module to create TEA config """
 import logging
-from GetAcls import *
-from Utils import *
-from GetGroups import *
-from GetCollections import *
+from Utils import add_to_dict, create_tea_config
+from GetAcls import get_acl, get_acls
+from GetGroups import get_group_names
+from GetCollections import get_collections_s3_prefixes_dict
 
 class CreateTeaConfig:
+    """ Main class to create TEA config """
     def __init__(self):
         logging.info('Creating TEA configuraton')
 
     def create_tea_config(self, env:dict, provider:str, token:str):
+        """ Main method to retrieve data and create TEA config """
         #env = get_env(env)
         all_s3_prefix_groups_dict = {}
-        all_collections_s3_prefixes_dict = get_collections_s3_prefixes_dict(env, token, provider, 1, 2000)
+        all_collections_s3_prefixes_dict = \
+            get_collections_s3_prefixes_dict(env, token, provider, 1, 2000)
         if not all_collections_s3_prefixes_dict:
             return {'statusCode': 404, 'body': 'No S3 prefixes returned'}
         acls = get_acls(env, provider, token)
         for acl in acls:
             acl_url = acl['location']
             logging.info('---------------------')
-            logging.info(f'Found ACL {acl_url}')
+            logging.info('Found ACL %s', acl_url)
             acl_json = get_acl(acl_url, token)
             catalog_item_identity = acl_json['catalog_item_identity']
             if 'collection_identifier' in catalog_item_identity:
@@ -29,16 +33,16 @@ class CreateTeaConfig:
                 concept_ids = catalog_item_identity['collection_identifier']['concept_ids']
                 s3_prefixes_set = set()
                 for concept_id in concept_ids:
-                    logging.info(f'Found concept id in ACL: {concept_id}')
+                    logging.info('Found concept id in ACL: %s', concept_id)
                     if concept_id in all_collections_s3_prefixes_dict:
                         col_s3_prefixes = all_collections_s3_prefixes_dict[concept_id]
-                        logging.info(f'Found S3 prefixes: {col_s3_prefixes}')
+                        logging.info('Found S3 prefixes: %s', col_s3_prefixes)
                         s3_prefixes_set.update(col_s3_prefixes)
                     else:
-                        logging.info(f'No S3 prefixes found for concept id {concept_id}')
+                        logging.info('No S3 prefixes found for concept id %s', concept_id)
                 if s3_prefixes_set:
-                    logging.info(f'Number of S3 prefixes for ACL: {len(s3_prefixes_set)}')
-                    logging.info(f'Found Group Name Set for ACL: {group_names_set}')
+                    logging.info('Number of S3 prefixes for ACL: %d', len(s3_prefixes_set))
+                    logging.info('Found Group Name Set for ACL: %s', group_names_set)
                     if group_names_set:
                         add_to_dict(all_s3_prefix_groups_dict, s3_prefixes_set, group_names_set)
                 else:
@@ -47,17 +51,21 @@ class CreateTeaConfig:
                 logging.info('ACL does not have concept ids assigned')
         if all_s3_prefix_groups_dict:
             tea_config_text = create_tea_config(all_s3_prefix_groups_dict)
-            logging.info(f'result mapping:\n{tea_config_text}')
+            logging.info('result mapping:\n%s', tea_config_text)
             return {'statusCode': 200, 'body': tea_config_text}
 
         logging.info('No S3 prefixes found')
         return {'statusCode': 404, 'body': 'No S3 prefixes found'}
 
 def main():
+    """ Main method """
     if len(logging.getLogger().handlers) > 0:
         logging.getLogger.setLevel(logging.INFO)
     else:
-        logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s', encoding='utf-8', level=logging.INFO)
+        logging.basicConfig(filename='script.log', \
+            format='%(asctime)s %(message)s', \
+            encoding='utf-8', \
+            level=logging.INFO)
 
     provider = input('Enter provider: ')
     if provider is None:
@@ -76,7 +84,7 @@ def main():
     env = {'cmr-url': cmrs['cmr_env']}
 
     processor = CreateTeaConfig()
-    result = processor.create_tea_config(env, provider, token)
+    processor.create_tea_config(env, provider, token)
 
 if __name__ == "__main__":
     main()
