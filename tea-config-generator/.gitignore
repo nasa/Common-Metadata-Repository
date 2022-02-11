@@ -4,3 +4,5 @@ node_modules
 *.pyc
 *.log
 *.swp
+public/*.html
+package*.json
