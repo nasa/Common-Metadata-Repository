@@ -82,6 +82,14 @@
                              query-params)
         gran-refs (search-gran-refs-with-sub-params request-context search-params)]))
 
+(defn is-subscription-revision?
+  "True if the subscription is a revision, otherwise false."
+  [subscription active-subscriptions]
+  (let [pred #(and
+                (= (:native-id %) (:native-id subscription))
+                (= (:provider-id %) (:provider-id subscription)))]
+    (boolean (seq (filter pred active-subscriptions)))))
+
 (defn- check-subscription-limit
   "Given the  configuration for subscription limit, this valdiates that the
   user has less than the limit before we allow more subscriptions to be
@@ -95,15 +103,13 @@
                         :latest true}
                        :subscription)
         active-subscriptions (remove :deleted subscriptions)
-        at-limit (>= (count active-subscriptions) (jobs/subscriptions-limit))]
-    (when at-limit
-      (let [pred #(and (= (:native-id %) (:native-id subscription)) (= (:provider-id %) (:provider-id subscription)))
-            is-not-revision (empty? (filter pred active-subscriptions))]
-        (when is-not-revision
-          (errors/throw-service-error
-           :conflict
-           (format "The subscriber-id [%s] has already reached the subscription limit."
-                   subscriber-id)))))))
+        at-limit (>= (count active-subscriptions) (jobs/subscriptions-limit))
+        is-not-revision #(not (is-subscription-revision? subscription active-subscriptions))]
+    (when (and at-limit (is-not-revision))
+      (errors/throw-service-error
+       :conflict
+       (format "The subscriber-id [%s] has already reached the subscription limit."
+               subscriber-id)))))
 
 (defn- check-duplicate-subscription
   "The query used by a subscriber for a collection should be unique to prevent
