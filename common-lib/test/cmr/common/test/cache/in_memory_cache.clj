@@ -72,7 +72,7 @@
       "Integer"
       (int 1024) java.lang.Integer/SIZE
 
-      "clojure default Long"
+      "Long"
       1024 java.lang.Long/SIZE
 
       "Double"
@@ -81,8 +81,17 @@
       "String"
       "a string" 8
 
+      "keyword"
+      :key-as-value 13
+
       "empty collection"
       [] 2
 
+      "collection with entries"
+      ["a" "b" "c"] 13
+
       "empty map"
-      {} 2)))
+      {} 2
+
+      "map with data"
+      {:a "foo" :c 3} 16)))
