@@ -23,9 +23,7 @@ def finish_timer(start):
     sec = delta.total_seconds()
     return f"{sec:.6f}"
 
-def aws_return_message(event, status, body, start=None):
-    """ build a dictionary which AWS Lambda will accept as a return value """
-
+def pretty_indent(event):
     # look for pretty in both the header and query parameters
     indent = None # none means do not pretty print, a number is the tab count
     pretty = 'false'
@@ -36,6 +34,11 @@ def aws_return_message(event, status, body, start=None):
         pretty = event['headers']['Cmr-Pretty']
     if pretty.lower()=="true":
         indent=1
+    return indent
+
+def aws_return_message(event, status, body, start=None):
+    """ build a dictionary which AWS Lambda will accept as a return value """
+    indent = pretty_indent(event)
 
     ret = {"statusCode": status, "body": json.dumps(body, indent=indent)}
     if start is not None:
@@ -89,9 +92,9 @@ def debug(event, context):
     body = {
         'context': context.get_remaining_time_in_millis(),
         'event': event,
-        'tea_config_cmr': parameter_read('aws_tea_config_cmr',
+        'tea_config_cmr': parameter_read('AWS_TEA_CONFIG_CMR',
             default_value='https://cmr.earthdata.nasa.gov'),
-        'tea_config_log_level': parameter_read('aws_tea_config_log_level',
+        'tea_config_log_level': parameter_read('AWS_TEA_CONFIG_LOG_LEVEL',
             default_value='INFO'),
     }
 
@@ -125,12 +128,15 @@ def generate_tea_config(event, context):
     if token is None or len(token)<1:
         return aws_return_message(event, 400, "Token is required", start)
 
-    cmr_config = parameter_read('aws_tea_config_cmr',
+    env = {}
+    env['cmr-url'] = cmr_config = parameter_read('AWS_TEA_CONFIG_CMR',
       default_value='https://cmr.earthdata.nasa.gov')
-    log_level = parameter_read('aws_tea_config_log_level',
+    env['logging-level'] = parameter_read('AWS_TEA_CONFIG_LOG_LEVEL',
       default_value='info')
-
-    env = {'cmr-url':cmr_config, 'logging-level': log_level}
+    if pretty_indent(event) is None:
+        env['pretty-print'] = False
+    else:
+        env['pretty-print'] = True
 
     processor = tea.CreateTeaConfig()
     result = processor.create_tea_config(env, provider, token)
@@ -188,7 +194,7 @@ def main():
         'prod':'https://cmr.earthdata.nasa.gov'}
 
     os.environ['AWS_TEA_CONFIG_LOG_LEVEL'] = log_level
-    os.environ['AWS_TEA_CONFIG_LOG_CMR'] = cmrs[which_cmr]
+    os.environ['AWS_TEA_CONFIG_CMR'] = cmrs[which_cmr]
     event = {'headers': {'Cmr-Token': token}, 'pathParameters': {'id': provider}}
     context = {}
 
