@@ -1,8 +1,6 @@
 const cache = require ('../cache');
 const { readFile } = require ('../util');
 
-beforeEach (async () => { await cache.clearToken() }) 
-
 describe ('cache tests', () => {
     test ('data round trip', async () => {
         const imgData = await readFile ('__tests__/stars.jpg');
