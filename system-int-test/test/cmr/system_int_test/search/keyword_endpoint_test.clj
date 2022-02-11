@@ -146,74 +146,88 @@
                                   "uuid"
                                   "3e705ebc-c58f-460d-b5e7-1da05ee45cc1"}]}]}]}]}]}]}
    :platforms {"basis"
-            [{"value" "Space-based Platforms",
-              "subfields" ["category"],
-              "category"
-              [{"value" "Earth Observation Satellites",
-                "subfields" ["sub_category"],
-                "sub_category"
-                [{"value" "DIADEM",
-                  "subfields" ["short_name"],
-                  "short_name"
-                  [{"value" "DIADEM-1D",
-                    "uuid" "143a5181-7601-4cc7-96d1-2b1a04b08fa7"}]}
-                 {"value" "SMAP-like",
-                  "subfields" ["short_name"],
-                  "short_name"
-                  [{"value" "SMAP",
-                    "subfields" ["long_name"],
-                    "long_name"
-                    [{"value"
-                      "Soil Moisture Active and Passive Observatory",
-                      "uuid"
-                      "7ee03239-24ff-433e-ab7e-8be8b9b2636b"}]}]}
-                 {"value"
-                  "Defense Meteorological Satellite Program(DMSP)",
-                  "subfields" ["short_name"],
-                  "short_name"
-                  [{"value" "DMSP 5B/F3",
-                    "subfields" ["long_name"],
-                    "long_name"
-                    [{"value"
-                      "Defense Meteorological Satellite Program-F3",
-                      "uuid"
-                      "7ed12e98-95b1-406c-a58a-f4bbfa405269"}]}]}]}]}
-             {"value" "Air-based Platforms",
-              "subfields" ["category"],
-              "category"
-              [{"value" "Aircraft",
-                "subfields" ["short_name"],
-                "short_name"
-                [{"value" "AIRCRAFT",
-                  "uuid" "8bce0691-74e9-4363-8d1f-d453a318c62b"}]}
-               {"value" "Uncrewed Aerial Vehicles",
-                "subfields" ["short_name"],
-                "short_name"
-                [{"value" "ALTUS",
-                  "uuid" "46392889-f6e2-4b06-8f79-87f2ff9d4349"}]}
-               {"value" "Jet",
-                "subfields" ["short_name"],
-                "short_name"
-                [{"value" "A340-600",
-                  "subfields" ["long_name"],
-                  "long_name"
-                  [{"value" "Airbus A340-600",
-                    "uuid" "bab77f95-aa34-42aa-9a12-922d1c9fae63"}]}]}
-               {"value" "Propeller",
-                "subfields" ["short_name"],
-                "short_name"
-                [{"value" "B-200",
-                  "subfields" ["long_name"],
-                  "long_name"
-                  [{"value" "Beechcraft King Air B-200",
-                    "uuid" "d6aa2406-0323-43c1-b890-3509ee22784e"}]}
-                 {"value" "DHC-3",
-                  "subfields" ["long_name"],
-                  "long_name"
-                  [{"value" "DeHavilland DHC-3 Otter",
-                    "uuid" "aef364b1-6a71-49c0-b248-6dc1ecd4eaa3"}]}
-                 {"value" "CESSNA 188",
-                  "uuid" "80374e6d-fef6-4b11-bcc4-53568a3db220"}]}]}]}
+               [{"value" "Space-based Platforms",
+                 "subfields" ["category"],
+                 "category"
+                 [{"value" "Earth Observation Satellites",
+                   "subfields" ["short_name" "sub_category"],
+                   "short_name"
+                   [{"value" "Aqua",
+                     "subfields" ["long_name"],
+                     "long_name"
+                     [{"value" "Earth Observing System, Aqua",
+                       "uuid" "ea7fd15d-190d-43f3-bdd3-75f5d88dc3f8"}]}],
+                   "sub_category"
+                   [{"value" "DIADEM",
+                     "subfields" ["short_name"],
+                     "short_name"
+                     [{"value" "DIADEM-1D",
+                       "uuid" "143a5181-7601-4cc7-96d1-2b1a04b08fa7"}]}
+                    {"value" "SMAP-like",
+                     "subfields" ["short_name"],
+                     "short_name"
+                     [{"value" "SMAP",
+                       "subfields" ["long_name"],
+                       "long_name"
+                       [{"value"
+                         "Soil Moisture Active and Passive Observatory",
+                         "uuid"
+                         "7ee03239-24ff-433e-ab7e-8be8b9b2636b"}]}]}
+                    {"value"
+                     "Defense Meteorological Satellite Program(DMSP)",
+                     "subfields" ["short_name"],
+                     "short_name"
+                     [{"value" "DMSP 5B/F3",
+                       "subfields" ["long_name"],
+                       "long_name"
+                       [{"value"
+                         "Defense Meteorological Satellite Program-F3",
+                         "uuid"
+                         "7ed12e98-95b1-406c-a58a-f4bbfa405269"}]}]}
+                    {"value" "Aeros",
+                     "subfields" ["short_name"],
+                     "short_name"
+                     [{"value" "AEROS-1",
+                       "uuid"
+                       "6164d877-53a0-4ba2-b73a-9dfb363474c9"}]}]}]}
+                {"value" "Air-based Platforms",
+                 "subfields" ["category"],
+                 "category"
+                 [{"value" "Aircraft",
+                   "subfields" ["short_name"],
+                   "short_name"
+                   [{"value" "AIRCRAFT",
+                     "uuid" "8bce0691-74e9-4363-8d1f-d453a318c62b"}]}
+                  {"value" "Uncrewed Aerial Vehicles",
+                   "subfields" ["short_name"],
+                   "short_name"
+                   [{"value" "ALTUS",
+                     "uuid" "46392889-f6e2-4b06-8f79-87f2ff9d4349"}]}
+                  {"value" "Jet",
+                   "subfields" ["short_name"],
+                   "short_name"
+                   [{"value" "NASA S-3B VIKING",
+                     "uuid" "7f1568aa-e87e-4b83-a622-e8f8a03f75bd"}
+                    {"value" "A340-600",
+                     "subfields" ["long_name"],
+                     "long_name"
+                     [{"value" "Airbus A340-600",
+                       "uuid" "bab77f95-aa34-42aa-9a12-922d1c9fae63"}]}]}
+                  {"value" "Propeller",
+                   "subfields" ["short_name"],
+                   "short_name"
+                   [{"value" "B-200",
+                     "subfields" ["long_name"],
+                     "long_name"
+                     [{"value" "Beechcraft King Air B-200",
+                       "uuid" "d6aa2406-0323-43c1-b890-3509ee22784e"}]}
+                    {"value" "DHC-3",
+                     "subfields" ["long_name"],
+                     "long_name"
+                     [{"value" "DeHavilland DHC-3 Otter",
+                       "uuid" "aef364b1-6a71-49c0-b248-6dc1ecd4eaa3"}]}
+                    {"value" "CESSNA 188",
+                     "uuid" "80374e6d-fef6-4b11-bcc4-53568a3db220"}]}]}]}
    :instruments {"category"
                  [{"value" "Earth Remote Sensing Instruments",
                    "subfields" ["class"],

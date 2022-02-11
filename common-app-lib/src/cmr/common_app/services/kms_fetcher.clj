@@ -39,7 +39,7 @@
    :projects [:short-name :long-name]
    :temporal-keywords [:temporal-resolution-range]
    :location-keywords [:category :type :subregion-1 :subregion-2 :subregion-3]
-   :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]
+   :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable]
    :measurement-name [:context-medium :object :quantity]
    :concepts [:short-name]
    :iso-topic-categories [:iso-topic-category]

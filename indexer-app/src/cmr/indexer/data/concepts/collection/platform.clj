@@ -1,7 +1,7 @@
 (ns cmr.indexer.data.concepts.collection.platform
   "Contains functions for converting platform hierarchies into elastic documents"
   (:require
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.common-app.services.kms-fetcher :as kf]
     [cmr.common-app.services.kms-lookup :as kms-lookup]
     [cmr.common.util :as util]))
@@ -23,21 +23,20 @@
    not present."
   [kms-index short-name]
   (let [full-platform
-        (merge default-platform-values
-               (kms-lookup/lookup-by-short-name kms-index :platforms short-name))
+        (kms-lookup/lookup-by-short-name kms-index :platforms short-name)
         {:keys [basis category sub-category short-name long-name uuid]
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-platform]
     {:basis basis
-     :basis-lowercase (str/lower-case basis)
+     :basis-lowercase (util/safe-lowercase basis)
      :category category
-     :category-lowercase (str/lower-case category)
+     :category-lowercase (util/safe-lowercase category)
      :sub-category sub-category
-     :sub-category-lowercase (str/lower-case sub-category)
+     :sub-category-lowercase (util/safe-lowercase sub-category)
      :short-name short-name
-     :short-name-lowercase (str/lower-case short-name)
+     :short-name-lowercase (util/safe-lowercase short-name)
      :long-name long-name
-     :long-name-lowercase (str/lower-case long-name)
+     :long-name-lowercase (util/safe-lowercase long-name)
      :uuid uuid
      :uuid-lowercase (util/safe-lowercase uuid)}))
 
@@ -58,12 +57,12 @@
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-platform]
     {:category category
-     :category-lowercase (str/lower-case category)
+     :category-lowercase (string/lower-case category)
      :series-entity sub-category
-     :series-entity-lowercase (str/lower-case sub-category)
+     :series-entity-lowercase (string/lower-case sub-category)
      :short-name short-name
-     :short-name-lowercase (str/lower-case short-name)
+     :short-name-lowercase (string/lower-case short-name)
      :long-name long-name
-     :long-name-lowercase (str/lower-case long-name)
+     :long-name-lowercase (string/lower-case long-name)
      :uuid uuid
      :uuid-lowercase (util/safe-lowercase uuid)}))
