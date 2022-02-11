@@ -9,7 +9,7 @@ provider:
   timeout: 5  # seconds
   environment:
     AWS_TEA_CONFIG_CMR: https://cmr.uat.earthdata.nasa.gov
-    AWS_TEA_CONFIG_LOG_LEVEL: info
+    AWS_TEA_CONFIG_LOG_LEVEL: debug
 
 package:
 #  individually: true
@@ -22,8 +22,12 @@ functions:
     events:
       - http: GET ${self:custom.endPoint}/
       - http: GET ${self:custom.endPoint}/capabilities
+  debug:
+    handler: handler.debug
+    events:
+      - http: GET ${self:custom.endPoint}/debug
   status:
-    handler: handler.health
+    handler: handler.status
     events:
       - http: GET ${self:custom.endPoint}/status
   provider:
@@ -33,8 +37,22 @@ functions:
 
 plugins:
   - serverless-python-requirements
+  - serverless-s3-local
   - serverless-offline
 custom:
   endPoint: /configuration/tea
   pythonRequirements:
     pythonBin: /usr/bin/python3
+  s3:
+    port: 7000
+    host: localhost
+    directory: ./build
+
+resources:
+  Resources:
+    LocalBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: local-bucket
+                
+# aws --endpoint http://localhost:7000 s3 cp public/index.html s3://local-bucket/index.html --profile s3local
