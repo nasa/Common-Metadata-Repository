@@ -26,14 +26,15 @@ def finish_timer(start):
 def pretty_indent(event):
     # look for pretty in both the header and query parameters
     indent = None # none means do not pretty print, a number is the tab count
-    pretty = 'false'
-    query_params = event.get('queryStringParameters')
-    if query_params:
-        pretty = query_params.get('pretty', "false")
-    if pretty=='false' and 'Cmr-Pretty' in event['headers']:
-        pretty = event['headers']['Cmr-Pretty']
-    if pretty.lower()=="true":
-        indent=1
+    if event:
+        pretty = 'false'
+        query_params = event.get('queryStringParameters')
+        if query_params:
+            pretty = query_params.get('pretty', "false")
+        if pretty=='false' and 'headers' in event and 'Cmr-Pretty' in event['headers']:
+            pretty = event['headers']['Cmr-Pretty']
+        if pretty.lower()=="true":
+            indent=1
     return indent
 
 def aws_return_message(event, status, body, start=None):
