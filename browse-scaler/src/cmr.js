@@ -1,33 +1,35 @@
 const fetch = require('node-fetch');
 const { getSecureParam } = require('./util');
-const { getTokenInCache, setTokenInCache } = require('./cache')
 const config = require ('./config');
+const { setValue, getValue } = ('./in-memory-cache')
+var authorizationToken;
 
 /**
- * getEchoToken: Fetch token for CMR requests
+ * getAuthorizationToken: Fetch token for CMR requests
  * @returns {String} ECHO Token for CMR requests
  * @throws {Error} If no token is found. CMR will not return anything
  * if no token is supplied.
  */
-const getEchoToken = async () => {
+const getAuthorizationToken = async () => {
   console.log('Fetching Echo-Token [' + config.CMR_ENVIRONMENT + '] from store');
-  let token = await getTokenInCache();
-  if (!token) {
-    token = await getSecureParam(
+  let authorizationToken = getValue('CMR_ECHO_SYSTEM_TOKEN')
+  
+  if (!authorizationToken) {
+    authorizationToken = await getSecureParam(
       `/${config.CMR_ENVIRONMENT}/browse-scaler/CMR_ECHO_SYSTEM_TOKEN`
     );
 
-    if (!token) {
+    if (!authorizationToken) {
       throw new Error('ECHO Token not found. Please update config!');
     }
 
-    setTokenInCache(token);
+    setValue('CMR_ECHO_SYSTEM_TOKEN', authorizationToken);
   }
   
-  return token;
+  return authorizationToken;
 };
 
-exports.getEchoToken = getEchoToken;
+exports.getAuthorizationToken = getAuthorizationToken;
 
 /**
  * fetchConceptFromCMR: Given a concept id, fetch the metadata supplied by
@@ -37,11 +39,11 @@ exports.getEchoToken = getEchoToken;
  * @returns {JSON} the collection associated with the supplied id
  */
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
-  const token = config.CMR_ECHO_TOKEN || await getEchoToken();
+  const token = config.CMR_ECHO_TOKEN || await getAuthorizationToken();
   const response = await fetch(cmrEndpoint + conceptId, {
     method: 'GET',
     headers: {
-      'Echo-Token': token
+      'Authorization': token
     }
   })
       .then(res => res.json())
