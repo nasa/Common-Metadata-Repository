@@ -51,11 +51,11 @@
 
   c/CmrCache
   (get-keys
-    [_]
+    [this]
     (keys @cache-atom))
 
   (get-value
-    [_ key]
+    [this key]
     (-> cache-atom
         (swap! (fn [cache]
                  (if (cc/has? cache key)
@@ -68,7 +68,7 @@
         (get key)))
 
   (get-value
-    [_ key lookup-fn]
+    [this key lookup-fn]
     (-> cache-atom
         (swap! (fn [cache]
                  (if (cc/has? cache key)
@@ -77,11 +77,11 @@
         (get key)))
 
   (reset
-    [_]
+    [this]
     (reset! cache-atom initial-cache))
 
   (set-value
-    [_ key value]
+    [this key value]
     (swap! cache-atom assoc key value))
   
   (cache-size
