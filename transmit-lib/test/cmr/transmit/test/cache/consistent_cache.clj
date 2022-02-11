@@ -68,5 +68,5 @@
       
       (testing "when putting something into the cache"
         (cache/set-value consistent-cache "test-content-key" "test-content")
-        (is (= 22 (cache/cache-size consistent-cache))
+        (is (= 44 (cache/cache-size consistent-cache))
             "Then the cache size is the combined hash and content sizes")))))

@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [cmr.common.cache :as c]
             [cmr.common.cache.in-memory-cache :as mem-cache]
-            [cmr.common.cache.cache-spec :as cache-spec]))
+            [cmr.common.cache.cache-spec :as cache-spec]
+            [cmr.common.util :refer [are3]]))
 
 (deftest memory-cache-functions-as-cache-test
   (cache-spec/assert-cache (mem-cache/create-in-memory-cache)))
@@ -58,4 +59,30 @@
         ;; bar is not present
         (is (nil? (c/get-value cache :bar)))))))
 
+(deftest cache-size-test
+  (let [in-mem-cache (mem-cache/create-in-memory-cache)]
+    (testing "An empty cache has no size"
+      (is (zero? (c/cache-size in-mem-cache))))
 
+    (are3 [val expected-size]
+      (do (c/reset in-mem-cache)
+          (c/set-value in-mem-cache :key val)
+          (is (= expected-size (c/cache-size in-mem-cache))))
+
+      "Integer"
+      (int 1024) java.lang.Integer/SIZE
+
+      "clojure default Long"
+      1024 java.lang.Long/SIZE
+
+      "Double"
+      1024.0 java.lang.Double/SIZE
+
+      "String"
+      "a string" 8
+
+      "empty collection"
+      [] 2
+
+      "empty map"
+      {} 2)))

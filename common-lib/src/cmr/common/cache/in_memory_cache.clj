@@ -6,10 +6,38 @@
   (:require
    [clojure.core.cache :as cc :refer [defcache]]
    [cmr.common.cache :as c]
+   [cmr.common.log :refer [warn]]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import
    (clojure.core.cache CacheProtocol)))
+
+(defmulti size-in-bytes class)
+
+(defmethod size-in-bytes :default
+  [x]
+  (try (count (str x))
+       (catch Exception e
+         (warn (str "A problem occurred calculating cache size. "
+                    "Cache usage estimates may be incorrect. "
+                    (.getMessage e)))
+         1)))
+
+(defmethod size-in-bytes java.lang.String
+  [x]
+  (count (.getBytes x "UTF-8")))
+
+(defmethod size-in-bytes java.lang.Integer
+  [_]
+  java.lang.Integer/SIZE)
+
+(defmethod size-in-bytes java.lang.Long
+  [_]
+  java.lang.Long/SIZE)
+
+(defmethod size-in-bytes java.lang.Double
+  [_]
+  java.lang.Double/SIZE)
 
 ;; Implements the CmrCache protocol using an in memory cache store. The cache
 ;; data is saved in memory in a clojure.core.cache type in an atom
@@ -58,16 +86,7 @@
   
   (cache-size
    [_]
-   (reduce + 0 (map #(case (type %)
-                       java.lang.String (count (.getBytes % "UTF-8"))
-                       java.lang.Integer java.lang.Integer/SIZE
-                       java.lang.Long java.lang.Long/SIZE
-                       java.lang.Double java.lang.Double/SIZE
-                       ;; estimate sizes for anything else
-                       :else (try (count (str %))
-                                  (catch Exception _
-                                    1)))
-                    (vals @cache-atom)))))
+   (reduce + 0 (map size-in-bytes (vals @cache-atom)))))
 
 (record-pretty-printer/enable-record-pretty-printing InMemoryCache)
 
