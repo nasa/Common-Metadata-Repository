@@ -6,7 +6,7 @@ provider:
   name: aws
   runtime: python3.8
   memorySize: 128 # default was 1024, 512 would also be accepted
-  timeout: 5  # seconds
+  timeout: 10  # seconds
   environment:
     AWS_TEA_CONFIG_CMR: https://cmr.uat.earthdata.nasa.gov
     AWS_TEA_CONFIG_LOG_LEVEL: debug
