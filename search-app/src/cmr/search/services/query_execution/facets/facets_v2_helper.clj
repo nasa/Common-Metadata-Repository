@@ -112,12 +112,13 @@
 
 (defn generate-hierarchical-filter-node
   "Generates a filter node for a hierarchical field. Takes a title, count, links and sub-facets."
-  [title count links sub-facets]
+  [title count links sub-facets subfield]
   (merge sorted-facet-map
          {:has_children false
           :applied false}
          sub-facets
          {:title title
+          :field subfield
           :applied (or (= :remove (first (keys links)))
                        (any-facet-applied? (:children sub-facets)))
           :links links
