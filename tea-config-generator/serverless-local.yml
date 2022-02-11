@@ -26,8 +26,12 @@ functions:
     handler: handler.debug
     events:
       - http: GET ${self:custom.endPoint}/debug
+        request:
+          parameters:
+            querystrings:
+              pretty=false
   status:
-    handler: handler.status
+    handler: handler.health
     events:
       - http: GET ${self:custom.endPoint}/status
   provider:
