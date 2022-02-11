@@ -8,17 +8,14 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
-   [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.api.web-server :as web]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
-   [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.ingest.api.core :as ingest-api]
@@ -29,9 +26,7 @@
    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
    [cmr.ingest.services.jobs :as ingest-jobs]
    [cmr.ingest.services.providers-cache :as pc]
-   [cmr.message-queue.config :as queue-config]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
-   [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
    [cmr.transmit.config :as transmit-config]))
 
@@ -99,7 +94,8 @@
                            `system-holder :db
                            (conj (ingest-jobs/jobs)
                                  (af/refresh-acl-cache-job "ingest-acl-cache-refresh")
-                                 jvm-info/log-jvm-statistics-job))
+                                 jvm-info/log-jvm-statistics-job
+                                 (cache-info/create-log-cache-info-job "ingest")))
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        acl/token-smp-cache-key (acl/create-token-smp-cache)
                        ;; Caches a map of tokens to the security identifiers

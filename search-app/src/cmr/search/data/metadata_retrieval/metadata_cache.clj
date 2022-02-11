@@ -145,14 +145,13 @@
   "Refreshes the collection metadata cache"
   [context]
   (info "Refreshing metadata cache")
-  #_(let [concepts-tuples (fetch-collections-from-elastic context)
+  (let [concepts-tuples (fetch-collections-from-elastic context)
         new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
                                 {}
                                 (partition-all 1000 concepts-tuples))
         cache (c/context->cache context cache-key)]
     (reset! (:cache-atom cache) {})
-    (info "Metadata cache refresh complete. Cache Size:" (c/cache-size cache))
-    nil))
+    (info "Metadata cache refresh complete. Cache Size:" (c/cache-size cache))))
 
 (defn all-cached-revision-format-maps
   "Returns a sequence of all revision format maps in the cache sorted by concept id"
