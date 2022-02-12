@@ -404,8 +404,6 @@
             :processing-level-id-lowercase (util/safe-lowercase processing-level-id)
             :latency latency
             :latency-lowercase (util/safe-lowercase latency)
-            :latency-priority {:value latency
-                               :priority 0} 
             :collection-data-type collection-data-type
             :collection-data-type-lowercase (when collection-data-type
                                               (if (sequential? collection-data-type)

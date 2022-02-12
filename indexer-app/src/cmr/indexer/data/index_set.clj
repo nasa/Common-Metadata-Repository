@@ -276,11 +276,6 @@
   {:value m/float-field-mapping
    :priority m/int-field-mapping})
 
-(defnestedmapping string-prioritized-mapping
-  "Defines a string value and priority for use in boosting facets."
-  {:value m/string-field-mapping
-   :priority m/int-field-mapping})
-
 (defnestedmapping temporal-mapping
   "Defines mappings for TemporalExtents."
   {:start-date m/date-field-mapping
@@ -378,7 +373,6 @@
           :processing-level-id-humanized prioritized-humanizer-mapping
           :latency                        m/string-field-mapping
           :latency-lowercase              m/string-field-mapping
-          :latency-priority               string-prioritized-mapping
           :collection-data-type           m/string-field-mapping
           :collection-data-type-lowercase m/string-field-mapping
 

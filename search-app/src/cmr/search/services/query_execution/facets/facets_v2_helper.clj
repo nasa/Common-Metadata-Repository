@@ -22,7 +22,7 @@
    :variables-h "Measurements"
    :temporal "Temporal"
    :granule-data-format-h "Data Format"
-   :latency "Latency"
+   :latency-h "Latency"
    :two-d-coordinate-system-name-h "Tiling System"
    :horizontal-data-resolution-range "Horizontal Data Resolution"})
 
