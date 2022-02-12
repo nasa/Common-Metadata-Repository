@@ -905,12 +905,15 @@
                                                       :Projects [{:ShortName "Proj3"
                                                                   :LongName "Proj3 Long Name"}]}))]
 
-    (testing "Latency v2 facets without search parameter" 
-      (let [facets-result1 (search-and-return-v2-facets {})
+    (testing "Latency v2 facets"
+      (let [;; search for collections without latency parameter.
+            facets-result1 (search-and-return-v2-facets {})
             ;; search for collections with one of the valid latency values.
             facets-result2 (search-and-return-v2-facets {:latency "1 to 4 days"})
             ;; search for collections with an invalid latency value.
-            facets-result3 (search-and-return-v2-facets {:latency "1 to 5 days"})]
+            facets-result3 (search-and-return-v2-facets {:latency "1 to 5 days"})
+            ;; search for collections with all three valid latency values
+            facets-result4 (search-and-return-v2-facets {:latency ["1 to 4 days" "3 to 24 hours" "1 to 3 hours"]})]
         ;; Verify all 3 latency facets show up with the right links.
         (assert-latency-facet-field facets-result1
          "1 to 3 hours"
@@ -953,7 +956,21 @@
         (assert-latency-facet-field facets-result3
          "1 to 4 days"
          1
-         {:apply "http://localhost:3003/collections.json?latency=1+to+5+days&page_size=0&include_facets=v2&latency%5B%5D=1+to+4+days"})))))
+         {:apply "http://localhost:3003/collections.json?latency=1+to+5+days&page_size=0&include_facets=v2&latency%5B%5D=1+to+4+days"})
+
+        ;; Verify all 3 latency facets show up with the links marked as "remove".
+        (assert-latency-facet-field facets-result4
+         "1 to 3 hours"
+         1
+         {:remove "http://localhost:3003/collections.json?latency=1+to+4+days&latency=3+to+24+hours&page_size=0&include_facets=v2"})
+        (assert-latency-facet-field facets-result4
+         "3 to 24 hours"
+         1
+         {:remove "http://localhost:3003/collections.json?latency=1+to+4+days&latency=1+to+3+hours&page_size=0&include_facets=v2"})
+        (assert-latency-facet-field facets-result4
+         "1 to 4 days"
+         1
+         {:remove "http://localhost:3003/collections.json?latency=3+to+24+hours&latency=1+to+3+hours&page_size=0&include_facets=v2"})))))
 
 (deftest horizontal-data-resolution-range-facet-v2-test
   "Test the horizontal data resolution facets ingest, indexing, and search."

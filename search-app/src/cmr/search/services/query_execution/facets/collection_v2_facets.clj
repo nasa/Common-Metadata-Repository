@@ -51,8 +51,7 @@
 (def collection-facet-fields->aggregation-fields
   "Defines the mapping between facet fields to aggregation fields."
   (into {}
-        (map (fn [field] [field (if (or (= field :horizontal-data-resolution-range)
-                                        )
+        (map (fn [field] [field (if (= field :horizontal-data-resolution-range)
                                   field
                                   (keyword (str (name field) "-h")))])
              collection-facets-v2-params)))
