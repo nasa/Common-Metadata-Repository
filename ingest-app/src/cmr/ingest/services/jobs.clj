@@ -44,7 +44,7 @@
 
 (def EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
   "Quartz job key for EmailSubscriptionProcessing job."
-  "email-subscription-processing")
+  "EmailSubscriptionProcessing.job")
 
 (defn acls->provider-id-hashes
   "Converts acls to a map of provider-ids to hashes of the ACLs."
