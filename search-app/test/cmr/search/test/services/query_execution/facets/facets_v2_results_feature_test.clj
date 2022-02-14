@@ -75,6 +75,7 @@
                   {:priority
                    {:avg
                     {:field :processing-level-id-humanized.priority}}}}}},
+              :latency-h {:terms {:field :latency, :size 50}},
               :granule-data-format-h
                {:nested {:path :granule-data-format-humanized},
                 :aggs
