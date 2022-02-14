@@ -92,7 +92,7 @@
 
 (defn- check-subscription-limit
   "Given the  configuration for subscription limit, this valdiates that the
-  user has less than the limit before we allow more subscriptions to be
+  user has no more than the limit before we allow more subscriptions to be
   ingested by that user."
   [request-context subscription]
   (let [metadata (-> (:metadata subscription) (json/decode true))

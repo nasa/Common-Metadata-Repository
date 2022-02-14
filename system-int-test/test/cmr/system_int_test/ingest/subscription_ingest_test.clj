@@ -53,7 +53,7 @@
                  :EntryTitle "entry-title-exceed-limit-1"})
                {:token "mock-echo-system-token"})
         user1-token (echo-util/login (system/context) "user1")]
-     (testing "ingest on PROV1 succeeds when ingesting subscription for user below their subscription limit"
+     (testing "Succeeds when ingesting subscription for user below their subscription limit"
        (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-7"
                                                                    :Name "sub1"
                                                                    :CollectionConceptId (:concept-id coll1)
@@ -61,7 +61,7 @@
              response (ingest/ingest-concept concept {:token user1-token})]
          (is (= 201 (:status response)))
          (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))
-     (testing "ingest on PROV1 validating that subscription revisions are not included when calculating subscription count"
+     (testing "Validating that subscription revisions are not included when calculating subscription count"
        (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-5"
                                                                    :Name "sub1"
                                                                    :CollectionConceptId (:concept-id coll1)
@@ -69,7 +69,7 @@
              response (ingest/ingest-concept concept {:token user1-token})]
          (is (= 200 (:status response)))
          (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))
-     (testing "ingest on PROV1 fails with correct response when ingesting subscription for user beyond their subscription limit"
+     (testing "Fails with correct response when ingesting subscription for user beyond their subscription limit"
        (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-9"
                                                                    :Name "sub2"
                                                                    :CollectionConceptId (:concept-id coll1)
@@ -77,8 +77,23 @@
              response (ingest/ingest-concept concept {:token user1-token})]
         (is (= 409 (:status response)))
         (is (= "The subscriber-id [user1] has already reached the subscription limit." (first (:errors response))))))
+    (testing "Deleting a subscription to validate deleted subscriptions do not count towards subscription limit"
+      (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-9"
+                                                                  :Name "sub1"
+                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                  :SubscriberId "user1"})
+            user1-token (echo-util/login (system/context) "user1")
+            response (ingest/delete-concept concept {:token user1-token})]
+        (is (= 200 (:status response))))
+      (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-4"
+                                                                  :Name "sub3"
+                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                  :SubscriberId "user1"})
+            response (ingest/ingest-concept concept {:token user1-token})]
+        (is (= 201 (:status response)))
+        (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))
     (side/eval-form `(jobsub/set-subscriptions-limit! 100))
-    (testing "ingest on PROV1 succeeds when ingesting subscription for user below the updated subscription limit"
+    (testing "Succeeds when ingesting subscription for user below the updated subscription limit"
       (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-9"
                                                                   :Name "sub2"
                                                                   :CollectionConceptId (:concept-id coll1)
