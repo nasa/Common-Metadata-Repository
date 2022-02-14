@@ -73,7 +73,7 @@
 (defn- validate-query
   "Performs a granule search using subscription query parameters for purposes of validation"
   [request-context subscription]
-  (let [metadata (-> (:metadata subscription) (json/decode true))
+  (let [metadata (json/decode (:metadata subscription) true)
         collection-id (:CollectionConceptId metadata)
         query-string (:Query metadata)
         query-params (jobs/create-query-params query-string)
