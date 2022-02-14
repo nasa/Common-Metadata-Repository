@@ -3,7 +3,7 @@ const redis = require('redis');
 const config = require ('./config');
 const { REDIS_URL,
     REDIS_PORT,
-    REDIS_KEY_EXPIRE_SECONDS } = require ('./config');
+    REDIS_KEY_EXPIRE_SECONDS} = require ('./config');
 
 const { promisify } = require('util');
 
