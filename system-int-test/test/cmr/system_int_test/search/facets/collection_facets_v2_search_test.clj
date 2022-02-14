@@ -499,6 +499,22 @@
      (is (= count (:count field-match-value)))
      (is (= link (:links field-match-value))))))
 
+(defn- assert-field-in-hierarchy
+  [facets field value count]
+  (for [facet facets]
+    (let [finding (when (= value (:title facet)) facet)]
+      (if finding
+        finding
+        (when (:children facet)
+          (assert-field-in-hierarchy (:children facet) field value count))))))
+
+(defn- assert-facet-field-in-hierarchy
+  [facets-result field value count]
+  (let [field-facet (first (get (group-by :title (:children facets-result)) field))]
+    (first
+      (flatten
+        (assert-field-in-hierarchy (:children field-facet) field value count)))))
+
 (deftest platform-facets-v2-test
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll1"

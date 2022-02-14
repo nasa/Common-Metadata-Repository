@@ -248,11 +248,11 @@
         spatial-keywords (lk/location-keywords->spatial-keywords-for-indexing
                           (:LocationKeywords collection))
         access-value (get-in collection [:AccessConstraints :Value])
-        latency (cond
-                  (= "NEAR_REAL_TIME" collection-data-type) "1 to 3 hours"
-                  (= "LOW_LATENCY" collection-data-type) "3 to 24 hours"
-                  (= "EXPEDITED" collection-data-type) "1 to 4 days"
-                  :else nil)
+        latency (case collection-data-type
+                  "NEAR_REAL_TIME" "1 to 3 hours"
+                  "LOW_LATENCY" "3 to 24 hours"
+                  "EXPEDITED" "1 to 4 days"
+                  nil)
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] keyword-util/nrt-aliases)
