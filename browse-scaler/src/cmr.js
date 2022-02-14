@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const { getSecureParam } = require('./util');
 const config = require ('./config');
-const { setValue, getValue } = ('./in-memory-cache')
+const { setValue, getValue } = require ('./in-memory-cache')
 var authorizationToken;
 
 /**
