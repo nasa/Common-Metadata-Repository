@@ -2,7 +2,6 @@ const fetch = require('node-fetch');
 const { getSecureParam } = require('./util');
 const config = require ('./config');
 const { setValue, getValue } = require ('./in-memory-cache')
-var authorizationToken;
 
 /**
  * getAuthorizationToken: Fetch token for CMR requests

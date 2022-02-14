@@ -10,6 +10,6 @@ const InMemoryCache = (function(){
     };
   }());
 
-exports.setValue = (key, item) => { InMemoryCache.getInstance() [key] = item;}
+exports.setValue = (key, value) => { InMemoryCache.getInstance() [key] = value;}
 
-exports.getValue = (id) => { return InMemoryCache.getInstance() [id]}
+exports.getValue = (key) => { return InMemoryCache.getInstance() [key]}
