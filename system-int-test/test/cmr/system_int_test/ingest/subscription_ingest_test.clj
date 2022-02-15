@@ -7,6 +7,7 @@
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
    [cmr.common.util :refer [are3]]
+   [cmr.common-app.test.side-api :as side]
    [cmr.ingest.services.subscriptions-helper :as jobsub]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
@@ -44,6 +45,63 @@
                            (map #(select-keys % [:concept-id :extra-fields :metadata])))]
     (#'jobsub/process-subscriptions (system/context) subscriptions)))
 
+(deftest subscription-count-exceeds-limit-test
+  (side/eval-form `(jobsub/set-subscriptions-limit! 1))
+  (let [coll1 (data-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "coll-exceed-limit-1"
+                 :EntryTitle "entry-title-exceed-limit-1"})
+               {:token "mock-echo-system-token"})
+        user1-token (echo-util/login (system/context) "user1")]
+     (testing "Succeeds when ingesting subscription for user below their subscription limit"
+       (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-7"
+                                                                   :Name "sub1"
+                                                                   :CollectionConceptId (:concept-id coll1)
+                                                                   :SubscriberId "user1"})
+             response (ingest/ingest-concept concept {:token user1-token})]
+         (is (= 201 (:status response)))
+         (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))
+     (testing "Validating that subscription revisions are not included when calculating subscription count"
+       (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-5"
+                                                                   :Name "sub1"
+                                                                   :CollectionConceptId (:concept-id coll1)
+                                                                   :SubscriberId "user1"})
+             response (ingest/ingest-concept concept {:token user1-token})]
+         (is (= 200 (:status response)))
+         (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))
+     (testing "Fails with correct response when ingesting subscription for user beyond their subscription limit"
+       (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-9"
+                                                                   :Name "sub2"
+                                                                   :CollectionConceptId (:concept-id coll1)
+                                                                   :SubscriberId "user1"})
+             response (ingest/ingest-concept concept {:token user1-token})]
+        (is (= 409 (:status response)))
+        (is (= "The subscriber-id [user1] has already reached the subscription limit." (first (:errors response))))))
+    (testing "Deleting a subscription to validate deleted subscriptions do not count towards subscription limit"
+      (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-9"
+                                                                  :Name "sub1"
+                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                  :SubscriberId "user1"})
+            user1-token (echo-util/login (system/context) "user1")
+            response (ingest/delete-concept concept {:token user1-token})]
+        (is (= 200 (:status response))))
+      (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-4"
+                                                                  :Name "sub3"
+                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                  :SubscriberId "user1"})
+            response (ingest/ingest-concept concept {:token user1-token})]
+        (is (= 201 (:status response)))
+        (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))
+    (side/eval-form `(jobsub/set-subscriptions-limit! 100))
+    (testing "Succeeds when ingesting subscription for user below the updated subscription limit"
+      (let [concept (subscription-util/make-subscription-concept {:Query "platform=NOAA-9"
+                                                                  :Name "sub2"
+                                                                  :CollectionConceptId (:concept-id coll1)
+                                                                  :SubscriberId "user1"})
+            response (ingest/ingest-concept concept {:token user1-token})]
+        (is (= 201 (:status response)))
+        (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))))))
 
 (deftest subscription-ingest-no-subscriber-id-test
   (let [coll1 (data-core/ingest-umm-spec-collection
