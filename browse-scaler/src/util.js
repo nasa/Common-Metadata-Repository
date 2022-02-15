@@ -13,6 +13,7 @@ const ssm = new AWS.SSM();
  * @returns {JSON} server response object from Parameter Store
  */
 exports.getSecureParam = async param => {
+  console.log("Getting from parameter store")
   const request = await ssm
       .getParameter({
         Name: param,
