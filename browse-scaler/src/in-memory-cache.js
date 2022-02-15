@@ -12,6 +12,4 @@ const InMemoryCache = (function(){
 
 exports.setValue = (key, value) => { InMemoryCache.getInstance() [key] = value;}
 
-exports.getValue = (key) => { 
-  console.log("Getting authorization token from cache.")
-  return InMemoryCache.getInstance() [key]}
+exports.getValue = (key) => { return InMemoryCache.getInstance() [key]}
