@@ -515,34 +515,34 @@
 
 (defn- assert-facet-field
   "Assert the given facet field with name and count matches the facets result"
-  [facets-result field value count]
+  [facets-result field value facet-count]
   (let [field-match-value (get-facet-field facets-result field value)]
     (testing value
-     (is (= count (:count field-match-value))))))
+     (is (= facet-count (:count field-match-value))))))
 
 (defn- assert-latency-facet-field
    "Assert the latency facet field with count and link match the facets result"
-   [facets-result value count link]
+   [facets-result value facet-count link]
    (let [field-match-value (get-facet-field facets-result "Latency" value)]
      (testing value
-      (is (= count (:count field-match-value)))
+      (is (= facet-count (:count field-match-value)))
       (is (= link (:links field-match-value))))))
 
 (defn- assert-field-in-hierarchy
-  [facets field value count]
+  [facets field value facet-count]
   (for [facet facets]
     (let [finding (when (= value (:title facet)) facet)]
       (if finding
         finding
         (when (:children facet)
-          (assert-field-in-hierarchy (:children facet) field value count))))))
+          (assert-field-in-hierarchy (:children facet) field value facet-count))))))
 
 (defn- assert-facet-field-in-hierarchy
-  [facets-result field value count]
+  [facets-result field value facet-count]
   (let [field-facet (first (get (group-by :title (:children facets-result)) field))]
     (first
       (flatten
-        (assert-field-in-hierarchy (:children field-facet) field value count)))))
+        (assert-field-in-hierarchy (:children field-facet) field value facet-count)))))
 
 
 (deftest platform-facets-v2-test
