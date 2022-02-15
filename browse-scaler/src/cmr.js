@@ -75,8 +75,8 @@ exports.getBrowseImageFromConcept = async concept => {
     const imgRegex = /\b(browse#)$/;
     const imgurl = links.filter(link => imgRegex.test(link.rel))[0];
 
-    console.debug(`links from metadata ${JSON.stringify(links)}`);
-    console.debug(`image link from metadata ${JSON.stringify(imgurl)}`);
+    //console.debug(`links from metadata ${JSON.stringify(links)}`);
+    //console.debug(`image link from metadata ${JSON.stringify(imgurl)}`);
     if (imgurl && imgurl.href) {
       return imgurl.href;
     }
