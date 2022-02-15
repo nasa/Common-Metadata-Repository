@@ -64,6 +64,7 @@
    :processing-level-id-h :humanizer
    :project :string
    :project-h :humanizer
+   :latency :string
    :consortium :string
    :provider :string
    :revision-date :multi-date-range

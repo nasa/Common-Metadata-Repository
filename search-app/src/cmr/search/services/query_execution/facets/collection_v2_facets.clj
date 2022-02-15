@@ -23,6 +23,7 @@
    :processing-level-id :processing-level-id-humanized
    :variables :variables
    :granule-data-format :granule-data-format-humanized
+   :latency :latency
    :two-d-coordinate-system-name :two-d-coord-name
    :horizontal-data-resolution-range :horizontal-data-resolutions})
 
@@ -61,8 +62,8 @@
 
 (defmethod v2-facets/v2-facets-result-field-in-order :collection
   [_]
-  ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels"
-   "Measurements" "Output File Formats" "Reprojections" "Tiling System" "Horizontal Data Resolution"])
+  ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels" "Measurements"
+   "Output File Formats" "Reprojections" "Tiling System" "Horizontal Data Resolution" "Latency"])
 
 (defmethod v2-facets/v2-facets-root :collection
   [_]
@@ -74,9 +75,9 @@
   with EDSC in certain environments."
   {:type Boolean :default false})
 
-(defn create-two-d-v2-facets
+(defn create-terms-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for the
-   two-d-coordinate-system-name field."
+   terms field."
   [elastic-aggregations base-url query-params facet-field]
   (let [search-terms-from-query (lh/get-values-for-field query-params facet-field)
         value-counts (v2-facets/add-terms-with-zero-matching-collections
@@ -112,8 +113,11 @@
                            (hv2/create-hierarchical-v2-facets
                             aggs base-url query-params :variables-h))
         two-d-facets (when (facet-fields-set :two-d-coordinate-system-name)
-                       (create-two-d-v2-facets
+                       (create-terms-v2-facets
                          aggs base-url query-params :two-d-coordinate-system-name-h))
+        latency-facets (when (facet-fields-set :latency)
+                         (create-terms-v2-facets
+                           aggs base-url query-params :latency-h))
         range-facets (when (facet-fields-set :horizontal-data-resolution-range)
                        (v2-facets/create-prioritized-v2-facets
                         :collection aggs [:horizontal-data-resolution-range] base-url query-params false))
@@ -123,5 +127,6 @@
                            :collection aggs flat-facet-fields base-url query-params)
                           variables-facets
                           two-d-facets
+                          latency-facets
                           range-facets)]
     v2-facets))
