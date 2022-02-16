@@ -43,8 +43,8 @@
 
 (defn cache-sizes
   "Returns a map of caches and their sizes in bytes."
-  [system]
-  (let [system-caches (get-in system [:caches])]
-    (apply merge
-           (for [[cache-key cache] system-caches]
-             {cache-key (cache-size cache)}))))
+  [context]
+  (let [system-caches (get-in context [:system :caches])]
+    (into {}
+          (for [[cache-key cache] system-caches]
+            {cache-key (cache-size cache)}))))
