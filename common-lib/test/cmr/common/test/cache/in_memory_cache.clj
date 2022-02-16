@@ -3,7 +3,7 @@
             [cmr.common.cache :as c]
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.common.cache.cache-spec :as cache-spec]
-            [cmr.common.util :refer [are3]]))
+            [cmr.common.util :refer [are3 string->lz4-bytes]]))
 
 (deftest memory-cache-functions-as-cache-test
   (cache-spec/assert-cache (mem-cache/create-in-memory-cache)))
@@ -117,4 +117,8 @@
       "nested maps with lists"
       {:prov {:coll {:grans [umm-json]
                      :other :info}}}
-      1246)))
+      1246
+
+      "compressed strings"
+      (string->lz4-bytes umm-json)
+      79)))
