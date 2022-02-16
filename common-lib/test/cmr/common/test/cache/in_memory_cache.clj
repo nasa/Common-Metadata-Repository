@@ -59,6 +59,8 @@
         ;; bar is not present
         (is (nil? (c/get-value cache :bar)))))))
 
+(def ^:private umm-json "{\"RelatedUrls\":[{\"URL\":\"opendap-replace@example.com\",\"Type\":\"USE SERVICE API\",\"Subtype\":\"OPENDAP DATA\"}],\"SpatialExtent\":{\"HorizontalSpatialDomain\":{\"Geometry\":{\"BoundingRectangles\":[{\"WestBoundingCoordinate\":-180.0,\"EastBoundingCoordinate\":180.0,\"NorthBoundingCoordinate\":90.0,\"SouthBoundingCoordinate\":-60.0}]}}},\"ProviderDates\":[{\"Date\":\"2018-02-06T19:13:22.000Z\",\"Type\":\"Insert\"},{\"Date\":\"2018-02-06T19:13:22.000Z\",\"Type\":\"Update\"}],\"CollectionReference\":{\"ShortName\":\"GLDAS_CLSM025_D\",\"Version\":\"2.0\"},\"DataGranule\":{\"DayNightFlag\":\"Unspecified\",\"Identifiers\":[{\"Identifier\":\"GLDAS_CLSM025_D.A19480101.020.nc4\",\"IdentifierType\":\"ProducerGranuleId\"}],\"ProductionDateTime\":\"2018-02-06T19:13:22.000Z\",\"ArchiveAndDistributionInformation\":[{\"Name\":\"Not provided\",\"Size\":24.7237091064453,\"SizeUnit\":\"MB\"}]},\"TemporalExtent\":{\"RangeDateTime\":{\"BeginningDateTime\":\"1948-01-01T00:00:00.000Z\",\"EndingDateTime\":\"1948-01-01T23:59:59.000Z\"}},\"GranuleUR\":\"Bulk Gran Replace\",\"MetadataSpecification\":{\"URL\":\"https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4\",\"Name\":\"UMM-G\",\"Version\":\"1.6.4\"}}")
+
 (deftest cache-size-test
   (let [in-mem-cache (mem-cache/create-in-memory-cache)]
     (testing "An empty cache has no size"
@@ -94,4 +96,25 @@
       {} 2
 
       "map with data"
-      {:a "foo" :c 3} 16)))
+      {:a "foo" :c 3} 16
+
+      "umm_json"
+      {:granule-a umm-json}
+      1218
+
+      "list of values"
+      {:prov [umm-json]}
+      1215
+
+      "nested maps"
+      {:prov {:gran umm-json}}
+      1221
+
+      "nested maps with lists"
+      {:prov {:gran [umm-json]}}
+      1223
+
+      "nested maps with lists"
+      {:prov {:coll {:grans [umm-json]
+                     :other :info}}}
+      1246)))
