@@ -301,10 +301,6 @@
       ;; so here we just replace the generated value to eng to make it through the validation.
       (set-if-exist :DataLanguage "eng")
       (set-if-exist :CollectionProgress "COMPLETE")
-      ;; CMR-7779 will be adding the translations of FreeAndOpenData among different formats.
-      ;; For now, we will remove it from UseConstraints. When CMR-7779 is done, the line below
-      ;; should be removed.
-      (update-in [:UseConstraints] dissoc :FreeAndOpenData)
       ;; Figure out if we can define this in the schema
       sanitize-science-keywords
       (sanitize-umm-record-urls :collection)
