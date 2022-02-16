@@ -19,23 +19,36 @@
 
       "no unit specified"
       {:in-mem java.lang.Long/MAX_VALUE} nil
-      ["in-memory-cache [:in-mem] [9223372036854775807 bytes]"
-       "Total in-memory-cache usage [9223372036854775807 bytes]"]
+      ["in-memory-cache [:in-mem] [9223372036854776000.00 bytes]"
+       "Total in-memory-cache usage [9223372036854776000.00 bytes]"]
 
       "bytes"
       {:in-mem java.lang.Long/MAX_VALUE} :bytes
-      ["in-memory-cache [:in-mem] [9223372036854775807 bytes]"
-       "Total in-memory-cache usage [9223372036854775807 bytes]"]
+      ["in-memory-cache [:in-mem] [9223372036854776000.00 bytes]"
+       "Total in-memory-cache usage [9223372036854776000.00 bytes]"]
 
       "megabytes"
       {:in-mem java.lang.Long/MAX_VALUE} :mb
-      ["in-memory-cache [:in-mem] [9007199254740991 MB]"
-       "Total in-memory-cache usage [9007199254740991 MB]"]
+      ["in-memory-cache [:in-mem] [9007199254740992.00 MB]"
+       "Total in-memory-cache usage [9007199254740992.00 MB]"]
 
       "gigabytes"
       {:in-mem java.lang.Long/MAX_VALUE} :gb
-      ["in-memory-cache [:in-mem] [8796093022207 GB]"
-       "Total in-memory-cache usage [8796093022207 GB]"])))
+      ["in-memory-cache [:in-mem] [8796093022208.00 GB]"
+       "Total in-memory-cache usage [8796093022208.00 GB]"])))
+
+(deftest log-cache-sizes--exceeds-long-size--exception-handled
+  (let [stdout (atom [])
+        cache-size-map {:in-mem-1 java.lang.Long/MAX_VALUE
+                        :in-mem-2 java.lang.Long/MAX_VALUE}]
+    (with-redefs-fn {#'log/info (fn [s] (swap! stdout conj s))
+                     #'log/warn (fn [s] (swap! stdout conj s))}
+      #(do
+         (cache-info/log-cache-sizes cache-size-map)
+         (is (= ["in-memory-cache [:in-mem-1] [9223372036854776000.00 bytes]"
+                 "in-memory-cache [:in-mem-2] [9223372036854776000.00 bytes]"
+                 "In-memory-cache size calculation experienced a problem: integer overflow"]
+                @stdout))))))
 
 (deftest log-cache-sizes-job--basics--output-is-correct
   (let [imc-basic (mem-cache/create-in-memory-cache)
@@ -45,8 +58,8 @@
     (with-redefs-fn {#'log/info (fn [s] (swap! stdout conj s))}
       #(do
          (cache-info/log-cache-sizes (cache/cache-sizes ctx))
-         (is (= ["in-memory-cache [:in-mem-basic] [3 bytes]"
-                 "Total in-memory-cache usage [3 bytes]"]
+         (is (= ["in-memory-cache [:in-mem-basic] [3.00 bytes]"
+                 "Total in-memory-cache usage [3.00 bytes]"]
                 @stdout))))))
 
 (deftest log-cache-sizes-job--multiple-caches--output-is-correct
@@ -59,7 +72,7 @@
     (with-redefs-fn {#'log/info (fn [s] (swap! stdout conj s))}
       #(do
          (cache-info/log-cache-sizes (cache/cache-sizes ctx))
-         (is (= ["in-memory-cache [:in-mem-a] [3 bytes]"
-                 "in-memory-cache [:in-mem-b] [3 bytes]"
-                 "Total in-memory-cache usage [6 bytes]"]
+         (is (= ["in-memory-cache [:in-mem-a] [3.00 bytes]"
+                 "in-memory-cache [:in-mem-b] [3.00 bytes]"
+                 "Total in-memory-cache usage [6.00 bytes]"]
                 @stdout))))))

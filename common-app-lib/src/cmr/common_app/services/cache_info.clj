@@ -6,7 +6,7 @@
    [cmr.common.cache :as cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob]]
-   [cmr.common.log :refer [info]]))
+   [cmr.common.log :refer [info warn]]))
 
 (spec/def ::cache-size-map
   (spec/and map?
@@ -27,21 +27,24 @@
    (log-cache-sizes cache-size-map :bytes))
   ([cache-size-map units]
    (when-not (spec/valid? ::cache-size-map cache-size-map)
-     (throw (ex-info "Invalid cache-size-map" 
+     (throw (ex-info "Invalid cache-size-map"
                      (spec/explain-data ::cache-size-map cache-size-map))))
    (let [[unit unit-scaler] (case units
-                              :mb ["MB" 1024.0]
-                              :gb ["GB" 1048576.0]
-                              ["bytes" 1.0])
+                              :mb ["MB" 1024]
+                              :gb ["GB" 1048576]
+                              ["bytes" 1])
          safe-neg? (fnil neg? -1)
          safe-pos? (complement safe-neg?)]
      (doseq [[cache-key size] cache-size-map]
        ;; negatives denote external cache
        (when-not (safe-neg? size)
-         (info (format "in-memory-cache [%s] [%.2f %s]" cache-key (/ size unit-scaler) unit))))
-     (info (format "Total in-memory-cache usage [%.2f %s]"
-                   (/ (reduce + 0 (filter safe-pos? (vals cache-size-map))) unit-scaler)
-                   unit)))))
+         (info (format "in-memory-cache [%s] [%.2f %s]" cache-key (/ size (double unit-scaler)) unit))))
+     (try
+       (info (format "Total in-memory-cache usage [%.2f %s]"
+                     (/ (reduce + 0 (filter safe-pos? (vals cache-size-map))) (double unit-scaler))
+                     unit))
+       (catch java.lang.ArithmeticException e
+         (warn (str "In-memory-cache size calculation experienced a problem: " (.getMessage e))))))))
 
 (defjob LogCacheSizesJob
   [_ system]
