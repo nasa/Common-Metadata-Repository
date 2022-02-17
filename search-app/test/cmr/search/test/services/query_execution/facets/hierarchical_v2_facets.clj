@@ -1036,8 +1036,8 @@
           facets (#'hv2/parse-hierarchical-bucket-v2 base-field field-hierarchy base-url query-params elastic-aggs)]
       (is (= expected-science-keyword-skipped-sibling-search-facets facets)))))
 
-(deftest check-if-last-facet-accounted-for?-test
-  "This function tests the check-if-last-facet-accounted-for? function where it works its way
+(deftest last-facet-accounted-for?-test
+  "This function tests the last-facet-accounted-for? function where it works its way
   through the sub-facets and sees if the science-keyword detailed-variable field exists. Returns
   true if it does and nil if it doesn't."
   (let [x {:title "Snow/Ice",
@@ -1075,4 +1075,4 @@
                                     :field :variable-level-2}),
                        :field :variable-level-1}]
            :field :term}]
-    (is (= true (#'hv2/check-if-last-facet-accounted-for? x :detailed-variable)))))
+    (is (= true (#'hv2/last-facet-accounted-for? x :detailed-variable)))))

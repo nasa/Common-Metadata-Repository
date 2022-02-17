@@ -211,14 +211,14 @@
         links (generate-links-fn value has-siblings? children-values-to-remove)]
     [(v2h/generate-hierarchical-filter-node value count links sub-facets field)]))
 
-(defn- check-if-last-facet-accounted-for?
+(defn- last-facet-accounted-for?
   "This function uses recursion to work its way through the sub-facets to see if it can find the
   last field (subfield) for science_keywords which is :detailed-variable or platforms2 which is
   :short-name. If the field is found, true is returned, otherwise nil is returned."
   [sub-facets subfield]
   (if (:children sub-facets)
     (some true?
-      (map #(check-if-last-facet-accounted-for? % subfield) (:children sub-facets)))
+      (map #(last-facet-accounted-for? % subfield) (:children sub-facets)))
     (= (:field sub-facets) subfield)))
 
 (defn- finish-bucket-for-hierarchical-field
@@ -269,7 +269,7 @@
                      sub-facets field-hierarchy has-siblings-fn generate-links-fn value count field)]
         (if (or (= (:base-field function-params) :science-keywords-h)
                 (= (:base-field function-params) :platforms-h))
-          (if (check-if-last-facet-accounted-for? sub-facets subfield)
+          (if (last-facet-accounted-for? sub-facets subfield)
             v2-node
             (let [sf (recursive-parse-fn
                       [subfield]
