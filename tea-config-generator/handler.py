@@ -36,15 +36,20 @@ def pretty_indent(event):
             indent=1
     return indent
 
-def aws_return_message(event, status, body, start=None):
+def aws_return_message(event, status, body, headers=None, start=None):
     """ build a dictionary which AWS Lambda will accept as a return value """
     indent = pretty_indent(event)
 
-    ret = {"statusCode": status, "body": json.dumps(body, indent=indent)}
+    ret = {"statusCode": status,
+        "body": json.dumps(body, indent=indent),
+        'headers': {}}
     if start is not None:
-        if 'headers' not in ret:
-            ret['headers'] = {}
         ret['headers']['cmr-took'] = finish_timer(start)
+    if headers!=None:
+        for header in headers:
+            ret['headers'][header] = headers[header]
+    #if 'content-type' not in ret['headers']:
+    #    ret['headers']['content-type'] = 'application/json'
     return ret
 
 def parameter_read(pname, default_value=''):
@@ -131,7 +136,7 @@ def capabilities(event, context):
                 optionals(prov_head_in,std_headers_out,'YAML')),
         ]
     }
-    return aws_return_message(event, 200, body, start)
+    return aws_return_message(event, 200, body, start=start)
 
 def debug(event, context):
     """ Return debug information about AWS in general """
@@ -148,14 +153,16 @@ def debug(event, context):
     for env, value in os.environ.items():
         if env.startswith('AWS_'):
             body[env] = value
-    return aws_return_message(event, 200, body, start)
+    return aws_return_message(event, 200, body, start=start)
 
 def health(event, context):
     """
     Provide an endpoint for testing service availability and for complicance with
     RFC 7168
     """
-    return aws_return_message(event, 418, "I'm a teapot", datetime.datetime.now())
+    return aws_return_message(event, 418, "I'm a teapot",
+        headers={'content-type': 'text/plain'},
+        start=datetime.datetime.now())
 
 def generate_tea_config(event, context):
     """
@@ -169,10 +176,10 @@ def generate_tea_config(event, context):
 
     provider = event['pathParameters'].get('id')
     if provider is None or len(provider)<1:
-        return aws_return_message(event, 400, "Provider is required", start)
+        return aws_return_message(event, 400, "Provider is required", start=start)
     token = event['headers'].get('Cmr-Token')
     if token is None or len(token)<1:
-        return aws_return_message(event, 400, "Token is required", start)
+        return aws_return_message(event, 400, "Token is required", start=start)
 
     env = {}
     env['cmr-url'] = parameter_read('AWS_TEA_CONFIG_CMR',
@@ -186,6 +193,6 @@ def generate_tea_config(event, context):
 
     processor = tea.CreateTeaConfig()
     result = processor.create_tea_config(env, provider, token)
-    result['headers'] = {'cmr-took': finish_timer(start)}
+    result['headers'] = {'cmr-took': finish_timer(start), 'content-type': 'text/yaml'}
 
     return result
