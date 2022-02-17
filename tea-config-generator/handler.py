@@ -2,14 +2,13 @@
 AWS lambda functions for generating a TEA configuration.
 """
 
-import logging
+#import logging
 import os
 import json
 import datetime
 import boto3
 
 import tea.gen.create_tea_config as tea
-#import tea.gen.create_tea_config as tea
 
 
 #pylint: disable=W0613 # AWS requires event and context, but these are not always used
@@ -24,7 +23,7 @@ def finish_timer(start):
     return f"{sec:.6f}"
 
 def pretty_indent(event):
-    # look for pretty in both the header and query parameters
+    """ Look for pretty in both the header and query parameters """
     indent = None # none means do not pretty print, a number is the tab count
     if event:
         pretty = 'false'
@@ -61,13 +60,36 @@ def parameter_read(pname, default_value=''):
         return os.environ.get(pname.upper(), default_value)
     return default_value
 
-def capability(event, endpoint, name, description):
+def capability(event, endpoint, name, description, others=None):
     """
     A helper function to generate one capability line for the capabilities()
     """
     path = event['path']
-    prefix = path[0:path.rfind('/')]
-    return {'name': name, 'path': prefix+endpoint, 'description': description}
+    named_path_element = path.rfind('/capabilities')
+    if named_path_element>0:
+        prefix = path[0:named_path_element]
+    else:
+        prefix = path
+    ret = {'name': name, 'path': prefix+endpoint, 'description': description}
+
+    if others is not None:
+        for item in others:
+            if others[item] is not None:
+                ret[item] = others[item]
+    return ret
+
+def header_line(name, description, head_type=None, values=None):
+    """
+    A helper function to generate one header line for the capabilities()
+    """
+    ret = {'name': name, 'description': description}
+    if head_type is None:
+        ret['type'] = 'string'
+    else:
+        ret['type'] = head_type
+    if values is not None:
+        ret['values'] = values
+    return ret
 
 # ******************************************************************************
 #mark - AWS Lambda functions
@@ -75,14 +97,38 @@ def capability(event, endpoint, name, description):
 def capabilities(event, context):
     """ Return a static output stating the calls supported by this package """
     start = datetime.datetime.now()
+
+    std_headers_in = [header_line('Cmr-Pretty', 'format output with new lines',
+        'string', ['true', 'false'])]
+    std_headers_out = [header_line('Cmr-Took', 'number of seconds used to process request',
+        'real')]
+
+    cmr_token_header = [header_line('Cmr-Token', 'CMR Compatable access token')]
+    prov_head_in = std_headers_in + cmr_token_header
+
+    optionals = lambda i,o,r : {'headers-in':i,'headers-out':o,'response':r}
+
     body = {
         'urls': [
-            capability(event, '/', 'Root', 'Alias for capabilities'),
-            capability(event, '/capabilities', 'Capabilities',
-                'Show which endpoints exist on this service'),
-            capability(event, '/status', 'Status', 'Returns service status'),
-            capability(event, '/provider/<provider>', 'Generate',
-                'Generate a TEA config for provider'),
+            capability(event,
+                '/',
+                'Root',
+                'Alias for the Capabilities'),
+            capability(event,
+                '/capabilities',
+                'Capabilities',
+                'Show which endpoints exist on this service',
+                optionals(std_headers_in, std_headers_out,'JSON')),
+            capability(event,
+                '/status',
+                'Status',
+                'Returns service status',
+                optionals(None,std_headers_out,'418 I\'m a Teapot')),
+            capability(event,
+                '/provider/<provider>',
+                'Generate',
+                'Generate a TEA config for provider',
+                optionals(prov_head_in,std_headers_out,'YAML')),
         ]
     }
     return aws_return_message(event, 200, body, start)
@@ -111,7 +157,6 @@ def health(event, context):
     """
     return aws_return_message(event, 418, "I'm a teapot", datetime.datetime.now())
 
-
 def generate_tea_config(event, context):
     """
     Lambda function to return a TEA configuration. Requires that event contain
@@ -130,7 +175,7 @@ def generate_tea_config(event, context):
         return aws_return_message(event, 400, "Token is required", start)
 
     env = {}
-    env['cmr-url'] = cmr_config = parameter_read('AWS_TEA_CONFIG_CMR',
+    env['cmr-url'] = parameter_read('AWS_TEA_CONFIG_CMR',
       default_value='https://cmr.earthdata.nasa.gov')
     env['logging-level'] = parameter_read('AWS_TEA_CONFIG_LOG_LEVEL',
       default_value='info')
@@ -144,4 +189,3 @@ def generate_tea_config(event, context):
     result['headers'] = {'cmr-took': finish_timer(start)}
 
     return result
-

@@ -6,10 +6,10 @@ provider:
   name: aws
   runtime: python3.8
   memorySize: 128 # default was 1024, 512 would also be accepted
-  timeout: 10  # seconds
+  timeout: 15  # seconds
   environment:
-    AWS_TEA_CONFIG_CMR: https://cmr.uat.earthdata.nasa.gov
-    AWS_TEA_CONFIG_LOG_LEVEL: debug
+    AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.uat.earthdata.nasa.gov'}
+    AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_CMR, 'info'}
 
 package:
 #  individually: true

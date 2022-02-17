@@ -35,6 +35,7 @@ lint()
 # Run all the Unit Tests
 report_code_coverage()
 {
+    # https://docs.codecov.com/docs/codecov-uploader
     printf '*****************************************************************\n'
     printf 'Run the unit tests for all subdirectories\n'
     pip3 install coverage
@@ -52,7 +53,7 @@ documentation()
   fi
   if command -v aws &> /dev/null ; then
     aws --endpoint http://localhost:7000 \
-      s3 cp public/index.html s3://local-bucket/api.html \
+      s3 cp public/api.html s3://local-bucket/api.html \
       --profile s3local
   else
     echo "aws command not found"
@@ -103,20 +104,36 @@ while getopts 'hcCult:oreIx' opt; do
       
       echo
       cprintf $GREEN "Calling /tea"
-      curl -H 'Cmr-Token: token-value-here' "${baseEndPoint}/configuration/tea"
+      curl -s -H 'Cmr-Pretty: true' "${baseEndPoint}/configuration/tea"
+      echo
+      cprintf $GREEN '----'
+      read
       
       echo
       cprintf $GREEN 'Calling /tea/capabilities'
-      curl -s -H 'Cmr-Token: token-value-here' "${baseEndPoint}/configuration/tea/capabilities" | head
+      curl -s "${baseEndPoint}/configuration/tea/capabilities" | head
+      echo
+      cprintf $GREEN '----'
+      read
       
       echo
       cprintf $GREEN 'Calling /tea/status'
-      curl -i -H 'Cmr-Token: token-value-here' "${baseEndPoint}/configuration/tea/status"
+      curl -i "${baseEndPoint}/configuration/tea/status"
+      echo
+      cprintf $GREEN '----'
       
       echo
-      cprintf $GREEN 'Calling /tea/provider/POCLOUD'
-      curl -H 'Cmr-Token: token-value-here' "${baseEndPoint}/configuration/tea/provider/POCLOUD"
+      cprintf $GREEN 'Calling /tea/provider/POCLOUD, may take 7 seconds'
+      curl -H "Cmr-Token: ${token}" "${baseEndPoint}/configuration/tea/provider/POCLOUD"
+      echo
+      cprintf $GREEN '----'
 
+      echo
+      cprintf $GREEN 'Calling /tea/provider/POCLOUD again with just headers, may take 7 seconds'
+      curl -I -H "Cmr-Token: ${token}" "${baseEndPoint}/configuration/tea/provider/POCLOUD"
+      echo
+
+      #curl -s http://localhost:7000/local-bucket/index.html
       #curl -H 'Cmr-Token: token-value-here' '${baseEndPoint}/configuration/tea/debug'
       ;;
     I)
@@ -130,7 +147,6 @@ while getopts 'hcCult:oreIx' opt; do
   esac
 done
 
-
 # docker network create localstack
 # docker-compose up -d
 # curl -i http://localhost:4566/health
@@ -138,7 +154,3 @@ done
 # serverless plugin install -n serverless-python-requirements
 # serverless --config serverless-local.yml deploy --stage local
 # serverless deploy --config serverless-local.yml --stage local
-
-
-
-
