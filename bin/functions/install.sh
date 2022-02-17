@@ -97,7 +97,7 @@ function mvn_oralib_install () {
 function install_oracle_libs () {
     LIB_DIR=$CMR_DIR/oracle-lib/support
     EXIT=false
-    for JAR in $LIB_DIR/ojdbc7.jar $LIB_DIR/ons.jar $LIB_DIR/ucp.jar
+    for JAR in $LIB_DIR/ojdbc8.jar $LIB_DIR/ons.jar $LIB_DIR/ucp.jar
     do
         if ! [ -e "$JAR" ] ; then
             echo
@@ -116,7 +116,7 @@ function install_oracle_libs () {
         exit 127
     fi
     echo "Installing Oracle jars into local maven repository ..."
-    mvn_oralib_install $LIB_DIR/ojdbc7.jar ojdbc7 $ORACLE_VERSION
+    mvn_oralib_install $LIB_DIR/ojdbc8.jar ojdbc8 $ORACLE_VERSION
     mvn_oralib_install $LIB_DIR/ons.jar ons $ORACLE_VERSION
     mvn_oralib_install $LIB_DIR/ucp.jar ucp $ORACLE_VERSION
 }
