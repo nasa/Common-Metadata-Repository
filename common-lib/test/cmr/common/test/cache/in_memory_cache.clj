@@ -84,41 +84,48 @@
       "a string" 8
 
       "keyword"
-      :key-as-value 13
+      :key-as-value 12
 
       "empty collection"
-      [] 2
+      [] 0
 
       "collection with entries"
-      ["a" "b" "c"] 13
+      ["a" "b" "c"] 3
 
       "empty map"
-      {} 2
+      {} 0
+
+      "map with data (simple)"
+      {:a 1} 65
 
       "map with data"
-      {:a "foo" :c 3} 16
+      {:a "foo" :c 3} 69
+
+      "umm_json"
+      umm-json
+      1092
 
       "umm_json"
       {:granule-a umm-json}
-      1218
+      1092
 
       "list of values"
       {:prov [umm-json]}
-      1215
+      1087
 
       "nested maps"
       {:prov {:gran umm-json}}
-      1221
+      1091
 
       "nested maps with lists"
       {:prov {:gran [umm-json]}}
-      1223
+      1091
 
       "nested maps with lists"
       {:prov {:coll {:grans [umm-json]
                      :other :info}}}
-      1246
+      1105
 
       "compressed strings"
       (string->lz4-bytes umm-json)
-      79)))
+      72)))

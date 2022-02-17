@@ -13,43 +13,46 @@
             #(every? keyword? (keys %))
             #(every? number? (vals %))))
 
+(defn human-readable-bytes
+  [size]
+  (cond
+    (< size 1024)
+    (format "%d bytes" size)
+
+    (< size 1048576)
+    (format "%.2f KB" (double (/ size 1024)))
+
+    (< size 1073741824)
+    (format "%.2f MB" (double (/ size 1048576)))
+    
+    :else
+    (format "%.2f GB" (double (/ size 1073741824)))))
+
 (defn log-cache-sizes
   "Logs the contents of a map of caches and sizes.
-  Accepted units #{:bytes :mb :gb} defaults to :bytes
-
-  ```clojure
-  (log-cache-sizes (cache/cache-sizes system) :mb)
-  ```
 
   Supports sizes up to
   java.lang.Long/MAX_VALUE = 9223372036854775807 Bytes => 8192 Petabytes"
-  ([cache-size-map]
-   (log-cache-sizes cache-size-map :bytes))
-  ([cache-size-map units]
-   (when-not (spec/valid? ::cache-size-map cache-size-map)
-     (throw (ex-info "Invalid cache-size-map"
-                     (spec/explain-data ::cache-size-map cache-size-map))))
-   (let [[unit unit-scaler] (case units
-                              :mb ["MB" 1024]
-                              :gb ["GB" 1048576]
-                              ["bytes" 1])
-         safe-neg? (fnil neg? -1)
-         safe-pos? (complement safe-neg?)]
-     (doseq [[cache-key size] cache-size-map]
+  [cache-size-map]
+  (when-not (spec/valid? ::cache-size-map cache-size-map)
+    (throw (ex-info "Invalid cache-size-map"
+                    (spec/explain-data ::cache-size-map cache-size-map))))
+  (doseq [[cache-key size] cache-size-map]
        ;; negatives denote external cache
-       (when-not (safe-neg? size)
-         (info (format "in-memory-cache [%s] [%.2f %s]" cache-key (/ size (double unit-scaler)) unit))))
-     (try
-       (info (format "Total in-memory-cache usage [%.2f %s]"
-                     (/ (reduce + 0 (filter safe-pos? (vals cache-size-map))) (double unit-scaler))
-                     unit))
-       (catch java.lang.ArithmeticException e
-         (warn (str "In-memory-cache size calculation experienced a problem: " (.getMessage e))))))))
+    (when-not (neg? size)
+      (info (format "in-memory-cache [%s] [%s] [%d bytes]" cache-key (human-readable-bytes size) size))))
+  (try
+    (let [combined-size (reduce + 0 (filter pos? (vals cache-size-map)))]
+      (info (format "Total in-memory-cache usage [%s] [%d bytes]"
+                    (human-readable-bytes combined-size)
+                    combined-size)))
+    (catch java.lang.ArithmeticException e
+      (warn (str "In-memory-cache size calculation experienced a problem: " (.getMessage e))))))
 
 (defjob LogCacheSizesJob
   [_ system]
   (let [cache-size-map (cache/cache-sizes {:system system})]
-    (log-cache-sizes cache-size-map :mb)))
+    (log-cache-sizes cache-size-map)))
 
 (defconfig log-cache-info-interval
   "Number of seconds between logging cache information."

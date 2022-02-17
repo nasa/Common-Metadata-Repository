@@ -6,22 +6,28 @@
   (:require
    [clojure.core.cache :as cc :refer [defcache]]
    [cmr.common.cache :as c]
-   [cmr.common.log :refer [warn]]
+   [cmr.common.log :refer [debug warn]]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import
    (clojure.core.cache CacheProtocol)))
 
-(defmulti size-in-bytes class)
+(defmulti size-in-bytes class :hierarchy clojure.lang.Obj)
 
 (defmethod size-in-bytes :default
   [x]
-  (try (count (str x))
-       (catch Exception e
-         (warn (str "A problem occurred calculating cache size. "
-                    "Cache usage estimates may be incorrect. "
-                    (.getMessage e)))
-         1)))
+  (try
+    (debug "No handler found size-in-bytes for" (class x) x)
+    (size-in-bytes (str x))
+    (catch Exception e
+      (warn (str "A problem occurred calculating cache size. "
+                 "Cache usage estimates may be incorrect. "
+                 (.getMessage e)))
+      1)))
+
+(defmethod size-in-bytes clojure.lang.Keyword
+  [kw]
+  (count (.getBytes (name kw) "UTF-8")))
 
 (defmethod size-in-bytes java.lang.String
   [x]
@@ -38,6 +44,15 @@
 (defmethod size-in-bytes java.lang.Double
   [_]
   java.lang.Double/SIZE)
+
+(defmethod size-in-bytes clojure.lang.IPersistentMap
+  [m]
+  (+ (reduce + 0 (map (comp size-in-bytes name) (keys m)))
+     (reduce + 0 (map size-in-bytes (vals m)))))
+
+(defmethod size-in-bytes clojure.lang.IPersistentCollection
+  [coll]
+  (reduce + 0 (map size-in-bytes coll)))
 
 ;; Implements the CmrCache protocol using an in memory cache store. The cache
 ;; data is saved in memory in a clojure.core.cache type in an atom
