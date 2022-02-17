@@ -103,13 +103,21 @@ def capabilities(event, context):
     """ Return a static output stating the calls supported by this package """
     start = datetime.datetime.now()
 
-    std_headers_in = [header_line('Cmr-Pretty', 'format output with new lines',
-        'string', ['true', 'false'])]
-    std_headers_out = [header_line('Cmr-Took', 'number of seconds used to process request',
-        'real')]
+    h_pretty = header_line('Cmr-Pretty', 'format output with new lines',
+        'string', ['true', 'false'])
+    h_took = header_line('Cmr-Took', 'number of seconds used to process request', 'real'),
+    h_token = header_line('Cmr-Token', 'CMR Compatable access token')
+    h_type_json = header_line('content-type', 'content mime-type', None, 'application/json')
+    h_type_text = header_line('content-type', 'content mime-type', None, 'text/plain')
+    h_type_yaml = header_line('content-type', 'content mime-type', None, 'text/yaml')
 
-    cmr_token_header = [header_line('Cmr-Token', 'CMR Compatable access token')]
-    prov_head_in = std_headers_in + cmr_token_header
+    std_headers_in = [h_pretty]
+    std_headers_out = [h_took, h_type_json]
+
+    status_head_out = [h_took, h_type_text]
+
+    prov_head_in = std_headers_in + [h_token]
+    prov_head_out = [h_took, h_type_yaml]
 
     optionals = lambda i,o,r : {'headers-in':i,'headers-out':o,'response':r}
 
@@ -128,12 +136,12 @@ def capabilities(event, context):
                 '/status',
                 'Status',
                 'Returns service status',
-                optionals(None,std_headers_out,'418 I\'m a Teapot')),
+                optionals(None,status_head_out,'418 I\'m a Teapot')),
             capability(event,
                 '/provider/<provider>',
                 'Generate',
                 'Generate a TEA config for provider',
-                optionals(prov_head_in,std_headers_out,'YAML')),
+                optionals(prov_head_in,prov_head_out,'YAML')),
         ]
     }
     return aws_return_message(event, 200, body, start=start)
