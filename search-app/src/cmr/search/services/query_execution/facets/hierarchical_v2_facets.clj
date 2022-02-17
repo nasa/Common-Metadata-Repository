@@ -211,6 +211,16 @@
         links (generate-links-fn value has-siblings? children-values-to-remove)]
     [(v2h/generate-hierarchical-filter-node value count links sub-facets field)]))
 
+(defn- last-facet-accounted-for?
+  "This function uses recursion to work its way through the sub-facets to see if it can find the
+  last field (subfield) for science_keywords which is :detailed-variable or platforms2 which is
+  :short-name. If the field is found, true is returned, otherwise nil is returned."
+  [sub-facets subfield]
+  (if (:children sub-facets)
+    (some true?
+      (map #(last-facet-accounted-for? % subfield) (:children sub-facets)))
+    (= (:field sub-facets) subfield)))
+
 (defn- finish-bucket-for-hierarchical-field
   "Called from process-bucket-for-hierarchical-field to finish up creating
   the V2 facet node for a specific bucket and returns the V2 facet node."
@@ -241,7 +251,11 @@
         sub-facets (recursive-parse-fn (rest field-hierarchy) value bucket)]
     ;; Once the results come back from the recursion test the following:
     ;; 1) if I have subfacets then I am unwinding the recursion to take the chilren sub facets and
-    ;;    create the V2 facet node.
+    ;;    create the V2 facet node. I need to check and see if last facet is accounted for if the
+    ;;    middle fields were skipped. If it is accounted for then just return the current V2 node. If
+    ;;    not then do the recursion for the last element to see if it exists in the bucket at the
+    ;;    level of where I am at. If I found the last element then add it to the current sub facets
+    ;;    and build the current node, otherwise just return the current node.
     ;; 2) If I don't and I am at the end of the facet hierarchy then create the last (inner most)
     ;;    V2 facet node. This facet contains the full hierarchy.
     ;; 3) I don't have any more facets down the normal path so check to see if the last hierarchy field
@@ -251,8 +265,27 @@
     ;;    so that the recursion can unwind to create the parent V2 nodes.
     (cond
       (some? sub-facets)
-      (finish-bucket-for-hierarchical-field
-       sub-facets field-hierarchy has-siblings-fn generate-links-fn value count field)
+      (let [v2-node (finish-bucket-for-hierarchical-field
+                     sub-facets field-hierarchy has-siblings-fn generate-links-fn value count field)]
+        (if (or (= (:base-field function-params) :science-keywords-h)
+                (= (:base-field function-params) :platforms-h))
+          (if (last-facet-accounted-for? sub-facets subfield)
+            v2-node
+            (let [sf (recursive-parse-fn
+                      [subfield]
+                      value
+                      bucket)]
+              (if sf
+                (finish-bucket-for-hierarchical-field
+                 (update sub-facets :children #(conj % (first (:children sf))))
+                 field-hierarchy
+                 has-siblings-fn
+                 generate-links-fn
+                 value
+                 count
+                 field)
+                v2-node)))
+          v2-node))
 
       (= field (last field-hierarchy))
       (finish-bucket-for-hierarchical-field
