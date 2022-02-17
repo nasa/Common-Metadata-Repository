@@ -12,12 +12,12 @@
   (:import
    (clojure.core.cache CacheProtocol)))
 
-(defmulti size-in-bytes class :hierarchy clojure.lang.Obj)
+(defmulti size-in-bytes class)
 
 (defmethod size-in-bytes :default
   [x]
   (try
-    (debug "No handler found size-in-bytes for" (class x) x)
+    (debug "No handler found size-in-bytes for" (class x) " Using default on " x)
     (size-in-bytes (str x))
     (catch Exception e
       (warn (str "A problem occurred calculating cache size. "
@@ -44,6 +44,10 @@
 (defmethod size-in-bytes java.lang.Double
   [_]
   java.lang.Double/SIZE)
+
+(defmethod size-in-bytes (class (byte-array 1))
+  [b]
+  (count b))
 
 (defmethod size-in-bytes clojure.lang.IPersistentMap
   [m]

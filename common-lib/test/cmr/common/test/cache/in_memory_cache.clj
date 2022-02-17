@@ -103,7 +103,7 @@
 
       "umm_json"
       umm-json
-      1092
+      1083
 
       "umm_json"
       {:granule-a umm-json}
@@ -128,4 +128,4 @@
 
       "compressed strings"
       (string->lz4-bytes umm-json)
-      72)))
+      836)))
