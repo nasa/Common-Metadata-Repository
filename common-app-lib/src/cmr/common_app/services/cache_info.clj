@@ -38,7 +38,7 @@
     (throw (ex-info "Invalid cache-size-map"
                     (spec/explain-data ::cache-size-map cache-size-map))))
   (doseq [[cache-key size] cache-size-map]
-       ;; negatives denote external cache
+    ;; negatives denote external cache
     (when-not (neg? size)
       (info (format "in-memory-cache [%s] [%s] [%d bytes]" cache-key (human-readable-bytes size) size))))
   (try
