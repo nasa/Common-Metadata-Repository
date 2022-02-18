@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This script is made to be called from a CI/CD system and manages all the
+# docker commands the build process needs to perform.
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
@@ -46,8 +49,12 @@ while getopts 'hcCbrR' opt; do
     C) color_mode='no' ; docker_options='--progress plain' ;;
     b) docker build $docker_options --rm --tag=tea-config-gen . ;;
     r)
+      # -I install libraries
+      # -U unit test, write file
+      # -j junit output of tests
+      # -l lint report
       docker run --volume $(pwd):/build tea-config-gen \
-        sh -c "./run.sh -I ./run.sh -U -J -l"
+        sh -c "./run.sh -I ./run.sh -U -j -l"
       ;;
     R) docker run --volume $(pwd):/build -it tea-config-gen bash ;;
     *) cprintf $RED "option required" ;;
