@@ -46,6 +46,9 @@ while getopts 'hcCbrRa' opt; do
     C) color_mode='no' ; docker_options='--progress plain' ;;
     b) docker build $docker_options --rm --tag=tea-config-gen . ;;
     r)
+      pwd
+      ls
+      echo "starting docker run"
       docker run --volume $(pwd):/build tea-config-gen \
         sh -c "./run.sh -I ; ./run.sh -U ; ./run.sh -l"
       ;;
