@@ -228,6 +228,10 @@
   metadata. Then it lazily pulls back batches of those with metadata. This assumes every concept
   found can fit into memory without the metadata."
   [context concept-type batch-size params]
+  (info (format "Fetching batches of [%d] [%s] from metadata-db: %s"
+                batch-size
+                (name concept-type)
+                (str params)))
   (->> (find-concepts context (assoc params :exclude-metadata true) concept-type)
        (map #(vector (:concept-id %) (:revision-id %)))
        (partition-all batch-size)

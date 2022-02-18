@@ -1,0 +1,9 @@
+{:lint-as {cmr.common.config/defconfig clojure.core/def
+           cmr.common.jobs/defjob clojure.core/defn
+           cmr.common.jobs/def-stateful-job clojure.core/defn
+           cmr.common.util/are2 clojure.test/are
+           cmr.common.util/are3 clojure.test/are
+           cmr.common.util/defn-timed clojure.core/defn
+           cmr.elastic-utils.index-util/defnestedmapping clojure.core/def
+           cmr.elastic-utils.index-util/defmapping clojure.core/def}
+ :linters {:refer-all {:exclude [clojure.test]}}}

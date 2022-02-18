@@ -3,14 +3,11 @@
   (:require
     [cheshire.core :as json]
     [clojure.edn :as edn]
-    [clojure.string :as str]
     [cmr.common-app.services.search.query-execution :as qe]
     [cmr.common.api.context :as context-util]
-    [cmr.common.concepts :as concepts]
-    [cmr.common.log :as log :refer (debug info warn error)]
+    [cmr.common.log :as log :refer [debug info]]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
-    [cmr.common.services.messages :as cmsg]
     [cmr.common.util :as util]
     [cmr.metadata-db.services.concept-service :as mdb-cs]
     [cmr.metadata-db.services.search-service :as mdb-ss]
@@ -20,7 +17,6 @@
     [cmr.search.services.tagging.tag-validation :as tv]
     [cmr.search.services.tagging.tagging-service-messages :as msg]
     [cmr.search.services.messages.association-messages :as assoc-msg]
-    [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db :as mdb]))
 
 (def ^:private native-id-separator-character
@@ -54,6 +50,7 @@
   "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id
   of the saved tag."
   [context tag-json-str]
+  (info (format "Creating tag [%s]" tag-json-str))
   (let [user-id (context-util/context->user-id
                  context
                  msg/token-required-for-tag-modification)
@@ -101,6 +98,7 @@
 (defn update-tag
   "Updates an existing tag with the given concept id"
   [context tag-key tag-json-str]
+  (info (format "Updating tag [%s] to [%s]" (name tag-key) tag-json-str))
   (let [updated-tag (tv/update-tag-json->tag tag-json-str)
         existing-concept (fetch-tag-concept context tag-key)
         existing-tag (edn/read-string (:metadata existing-concept))]
@@ -120,6 +118,7 @@
 (defn delete-tag
   "Deletes a tag with the given concept id"
   [context tag-key]
+  (info (format "Deleting tag [%s]" (name tag-key)))
   (let [existing-concept (fetch-tag-concept context tag-key)]
     (mdb/save-concept
       context
