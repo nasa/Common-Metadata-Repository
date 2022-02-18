@@ -11,12 +11,13 @@ from tea.gen.get_collections import get_collections_s3_prefixes_dict
 #pylint: disable=R0903 #No point to add more public methods
 class CreateTeaConfig:
     """ Main class to create TEA config """
-    def __init__(self):
-        logging.info('Creating TEA configuraton')
+    def __init__(self, env):
+        logging.basicConfig(level=env['logging-level'],
+            format="%(name)s - %(module)s - %(message)s")
+        logging.debug('Creating TEA configuraton')
 
     def create_tea_config(self, env:dict, provider:str, token:str):
         """ Main method to retrieve data and create TEA config """
-        #env = get_env(env)
         all_s3_prefix_groups_dict = {}
         all_collections_s3_prefixes_dict = \
             get_collections_s3_prefixes_dict(env, token, provider, 1, 2000)

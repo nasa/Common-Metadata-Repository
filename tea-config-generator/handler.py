@@ -10,7 +10,6 @@ import boto3
 
 import tea.gen.create_tea_config as tea
 
-
 #pylint: disable=W0613 # AWS requires event and context, but these are not always used
 
 # ******************************************************************************
@@ -199,7 +198,7 @@ def generate_tea_config(event, context):
     else:
         env['pretty-print'] = True
 
-    processor = tea.CreateTeaConfig()
+    processor = tea.CreateTeaConfig(env)
     result = processor.create_tea_config(env, provider, token)
     result['headers'] = {'cmr-took': finish_timer(start), 'content-type': 'text/yaml'}
 

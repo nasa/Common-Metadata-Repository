@@ -29,7 +29,9 @@ lint()
     pylint *.py \
         --disable=duplicate-code \
         --extension-pkg-allow-list=math \
-        --ignore-patterns=".*\.md,.*\.sh,.*\.html,pylintrc,LICENSE,build,dist,tags,eo_metadata_tools_cmr.egg-info"
+        --ignore-patterns=".*\.md,.*\.sh,.*\.html,pylintrc,LICENSE,build,dist,tags,eo_metadata_tools_cmr.egg-info" \
+        > lint.results
+    cat lint.results
 }
 
 # Run all the Unit Tests
@@ -84,14 +86,16 @@ help_doc()
   printf "${format}" '-I' '' 'Install' 'Install dependent libraries'
 }
 
-while getopts 'hcCult:oreIx' opt; do
+while getopts 'hcCuUlLt:oreIx' opt; do
   case ${opt} in
     h) help_doc ;;
     c) color_mode='yes';;
     C) color_mode='no' ;;
     d) documentation ;;
     u) python3 -m unittest discover -s ./ -p '*Test.py' ;;
+    U) python3 -m unittest discover -s ./ -p '*Test.py' &> test.results ;;
     l) lint ;;
+    L) lint &> list.results ;;
     t) token=${OPTARG} ;;
     o) serverless offline ; exit ;;
     r) report_code_coverage ;;
@@ -138,7 +142,7 @@ while getopts 'hcCult:oreIx' opt; do
       ;;
     I)
       #npm install -g serverless
-      curl -o- -L https://slss.io/install | bash
+      #curl --silent -o- --location https://slss.io/install | bash
       pip3 install -r requirements.txt 
       serverless plugin install -n serverless-python-requirements
       serverless plugin install -n serverless-s3-local

@@ -48,8 +48,9 @@ def setup_logging(log_level):
         logging.getLogger().setLevel(log_level)
     else:
         logging.basicConfig(filename='script.log',
-            format='%(asctime)s %(message)s',
+            format="%(name)s - %(module)s - %(message)s",
             level=log_level)
+            #format='%(asctime)s %(message)s',
 
 def cmr_url_for_env(which_cmr):
     """ Return the environment specific URL for CMR """
