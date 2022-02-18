@@ -54,7 +54,7 @@ while getopts 'hcCbrR' opt; do
       # -j junit output of tests
       # -l lint report
       docker run --volume $(pwd):/build tea-config-gen \
-        sh -c "./run.sh -I ./run.sh -U -j -l"
+        sh -c "./run.sh -I -U -j -l"
       ;;
     R) docker run --volume $(pwd):/build -it tea-config-gen bash ;;
     *) cprintf $RED "option required" ;;
