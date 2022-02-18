@@ -30,8 +30,8 @@ lint()
         --disable=duplicate-code \
         --extension-pkg-allow-list=math \
         --ignore-patterns=".*\.md,.*\.sh,.*\.html,pylintrc,LICENSE,build,dist,tags,eo_metadata_tools_cmr.egg-info" \
-        > lint.results
-    cat lint.results
+        > lint.results.txt
+    cat lint.results.txt
 }
 
 # Run all the Unit Tests
@@ -93,7 +93,7 @@ while getopts 'hcCuUlLt:oreIx' opt; do
     C) color_mode='no' ;;
     d) documentation ;;
     u) python3 -m unittest discover -s ./ -p '*Test.py' ;;
-    U) python3 -m unittest discover -s ./ -p '*Test.py' &> test.results ;;
+    U) python3 -m unittest discover -s ./ -p '*Test.py' &> test.results.txt ;;
     l) lint ;;
     L) lint &> list.results ;;
     t) token=${OPTARG} ;;
