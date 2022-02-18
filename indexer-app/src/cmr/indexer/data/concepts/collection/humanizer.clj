@@ -5,6 +5,8 @@
    [clojure.string :as str]
    [cmr.common.util :as util]
    [cmr.common-app.humanizer :as humanizer]
+   [cmr.common-app.services.kms-fetcher :as kms-fetcher]
+   [cmr.indexer.data.concepts.collection.platform :as platform]
    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]))
 
@@ -40,10 +42,14 @@
   [context collection]
   (let [humanized (humanizer/umm-collection->umm-collection+humanizers
                     collection (humanizer-fetcher/get-humanizer-instructions context))
-        extract-fields (partial extract-humanized-elastic-fields humanized)]
+        extract-fields (partial extract-humanized-elastic-fields humanized)
+        kms-index (kms-fetcher/get-kms-index context)
+        platforms2-humanized (map #(platform/humanized-platform2-nested-fields->elastic-doc kms-index %)
+                                  (:Platforms humanized))]
     (merge
       {:science-keywords-humanized (map sk/humanized-science-keyword->elastic-doc
                                         (:ScienceKeywords humanized))}
+      {:platforms2-humanized platforms2-humanized}
       (extract-fields [:ArchiveAndDistributionInformation
                                         :FileDistributionInformation
                                         :cmr-humanized/Format]

@@ -415,7 +415,6 @@
             ;; hierarchical fields
             :platforms nil ;; DEPRECATED ; use :platforms2
             :platforms2 platforms2-nested
-            :platforms2-humanized platforms2-nested
             :instruments instruments-nested
             :archive-centers archive-centers
             :data-centers data-centers

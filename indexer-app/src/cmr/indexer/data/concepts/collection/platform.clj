@@ -40,6 +40,16 @@
      :uuid uuid
      :uuid-lowercase (util/safe-lowercase uuid)}))
 
+(defn humanized-platform2-nested-fields->elastic-doc
+  "Extracts humanized fields from the platform short name, then use KMS to look up the rest of the
+  values and places them into an elastic doc with the same shape/keys as
+  platform2-nested-fields->elastic-doc."
+  [kms-index platform]
+  (let [humanized-fields (filter #(-> % key namespace (= "cmr-humanized")) platform)
+        humanized-fields-with-raw-values (util/map-values :value humanized-fields)
+        ns-stripped-fields (util/map-keys->kebab-case humanized-fields-with-raw-values)]
+    (platform2-nested-fields->elastic-doc kms-index (:short-name ns-stripped-fields))))
+
 ;; *****************************************************************************
 ;; version 1 platforms
 

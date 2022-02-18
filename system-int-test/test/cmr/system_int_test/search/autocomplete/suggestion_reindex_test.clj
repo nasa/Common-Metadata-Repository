@@ -29,6 +29,7 @@
   - Items are ordered by score in descending order
   - Ensure that the other fields match"
   [actual expected]
+  (println "compare-autocomplete-results actual:" actual)
   ;; check score returns
   (when (seq actual)
     (is (scores-descending? actual) actual))
@@ -186,13 +187,15 @@
     (testing "Suggestion associated to collections granted to registered users"
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=REGISTERED" {:headers {:authorization user3-token}}) [:feed :entry])
-       [{:score 4.5634737 :type "project" :value "REGISTERED" :fields "REGISTERED"}
-        {:score 3.2571084 :type "instrument" :value "REGISTERED-p0-i0" :fields "REGISTERED-p0-i0"}
-        {:score 3.187054 :type "platform" :value "REGISTERED-p0" :fields "REGISTERED-p0"}
-        {:score 3.187054 :type "platform" :value "REGISTERED-p1" :fields "REGISTERED-p1"}
-        {:score 3.136525 :type "instrument" :value "REGISTERED-p0-i1" :fields "REGISTERED-p0-i1"}
-        {:score 3.136525 :type "instrument" :value "REGISTERED-p1-i0" :fields "REGISTERED-p1-i0"}
-        {:score 3.136525 :type "instrument" :value "REGISTERED-p1-i1" :fields "REGISTERED-p1-i1"}]))))
+       [{:score 5.646715, :type "platforms_2", :value "REGISTERED-p1", :fields "REGISTERED-p1"}
+        {:score 5.0706887, :type "platforms_2", :value "REGISTERED-p0", :fields "REGISTERED-p0"}
+        {:score 4.7307625, :type "project", :value "REGISTERED", :fields "REGISTERED"}
+        {:score 3.9446805, :type "platform", :value "REGISTERED-p0", :fields "REGISTERED-p0"}
+        {:score 3.9446805, :type "platform", :value "REGISTERED-p1", :fields "REGISTERED-p1"}
+        {:score 3.9229913, :type "instrument", :value "REGISTERED-p0-i1", :fields "REGISTERED-p0-i1"}
+        {:score 3.9229913, :type "instrument", :value "REGISTERED-p1-i0", :fields "REGISTERED-p1-i0"}
+        {:score 3.9229913, :type "instrument", :value "REGISTERED-p1-i1", :fields "REGISTERED-p1-i1"}
+        {:score 3.3396306, :type "instrument", :value "REGISTERED-p0-i0", :fields "REGISTERED-p0-i0"}]))))
 
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
@@ -209,8 +212,8 @@
 
       "shorter match"
       "q=solar"
-      [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]
+      [{:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
+       {:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}]
 
       "more complete match"
       "q=solar irradiation"
@@ -257,7 +260,7 @@
                      :Platforms (:Platforms (fu/platforms "old AND stale" 2 1 1))}))
            _ (index/wait-until-indexed)
            _ (dev-sys-util/clear-current-time!)
-           
+
            results (get-in (search/get-autocomplete-json (str "q=" query)) [:feed :entry])]
        (compare-autocomplete-results results expected))
      "None found"
