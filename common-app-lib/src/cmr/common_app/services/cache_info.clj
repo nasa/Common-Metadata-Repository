@@ -6,7 +6,7 @@
    [cmr.common.cache :as cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob]]
-   [cmr.common.log :refer [info warn]]))
+   [cmr.common.log :refer [info error]]))
 
 (spec/def ::cache-size-map
   (spec/and map?
@@ -47,7 +47,7 @@
                     (human-readable-bytes combined-size)
                     combined-size)))
     (catch java.lang.ArithmeticException e
-      (warn (str "In-memory-cache size calculation experienced a problem: " (.getMessage e))))))
+      (error (str "In-memory-cache size calculation experienced a problem: " (.getMessage e))))))
 
 (defjob LogCacheSizesJob
   [_ system]

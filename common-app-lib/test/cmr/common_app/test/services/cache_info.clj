@@ -65,11 +65,9 @@
          ["in-memory-cache [:in-mem] [2.00 GB] [2147483649 bytes]"
           "Total in-memory-cache usage [2.00 GB] [2147483649 bytes]"])))
 
-
-
   (deftest log-cache-sizes--exceeds-long-size--exception-handled
     (with-redefs-fn {#'log/info mock-log
-                     #'log/warn mock-log}
+                     #'log/error mock-log}
       #(let [cache-size-map {:in-mem-1 java.lang.Long/MAX_VALUE
                              :in-mem-2 java.lang.Long/MAX_VALUE}]
          (cache-info/log-cache-sizes cache-size-map)
@@ -77,7 +75,6 @@
                  "in-memory-cache [:in-mem-2] [8589934592.00 GB] [9223372036854775807 bytes]"
                  "In-memory-cache size calculation experienced a problem: integer overflow"]
                 @log-content)))))
-
 
   (deftest log-cache-sizes-job--basics--output-is-correct
     (with-redefs-fn {#'log/info mock-log}

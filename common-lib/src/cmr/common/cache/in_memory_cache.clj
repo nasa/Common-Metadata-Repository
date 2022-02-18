@@ -6,7 +6,7 @@
   (:require
    [clojure.core.cache :as cc :refer [defcache]]
    [cmr.common.cache :as c]
-   [cmr.common.log :refer [debug warn]]
+   [cmr.common.log :refer [debug error]]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import
@@ -20,7 +20,7 @@
     (debug "No handler found size-in-bytes for" (class x) " Using default on " x)
     (size-in-bytes (str x))
     (catch Exception e
-      (warn (str "A problem occurred calculating cache size. "
+      (error (str "A problem occurred calculating cache size. "
                  "Cache usage estimates may be incorrect. "
                  (.getMessage e)))
       1)))
