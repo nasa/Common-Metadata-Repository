@@ -86,7 +86,7 @@ help_doc()
   printf "${format}" '-I' '' 'Install' 'Install dependent libraries'
 }
 
-while getopts 'hcCuUlLt:oreIx' opt; do
+while getopts 'hcCuUlLjt:oreIx' opt; do
   case ${opt} in
     h) help_doc ;;
     c) color_mode='yes';;
@@ -96,6 +96,7 @@ while getopts 'hcCuUlLt:oreIx' opt; do
     U) python3 -m unittest discover -s ./ -p '*Test.py' &> test.results.txt ;;
     l) lint ;;
     L) lint &> list.results ;;
+    j) pip3 install pytest ; py.test --junitxml junit.xml ;;
     t) token=${OPTARG} ;;
     o) serverless offline ; exit ;;
     r) report_code_coverage ;;
