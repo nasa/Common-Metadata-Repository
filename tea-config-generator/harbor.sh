@@ -54,7 +54,7 @@ while getopts 'hcCbrRa' opt; do
       ;;
     a)
       docker run --volume $(pwd):/build tea-config-gen \
-        sh -c "./run.sh -U ; ./run.sh -l"
+        sh -c "./run.sh -U ; ./run.sh -j ; ./run.sh -l"
       ;;
     R) docker run --volume $(pwd):/build -it tea-config-gen bash ;;
     *) cprintf $RED "option required" ;;
