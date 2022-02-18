@@ -39,22 +39,15 @@ help_doc()
   printf "${format}" '-r' '' 'run' 'Run Docker Image tasks'
 }
 
-while getopts 'hcCbrRa' opt; do
+while getopts 'hcCbrR' opt; do
   case ${opt} in
     h) help_doc ;;
     c) color_mode='yes' ;;
     C) color_mode='no' ; docker_options='--progress plain' ;;
     b) docker build $docker_options --rm --tag=tea-config-gen . ;;
     r)
-      pwd
-      ls
-      echo "starting docker run"
       docker run --volume $(pwd):/build tea-config-gen \
-        sh -c "./run.sh -I ; ./run.sh -U ; ./run.sh -l"
-      ;;
-    a)
-      docker run --volume $(pwd):/build tea-config-gen \
-        sh -c "./run.sh -U ; ./run.sh -j ; ./run.sh -l"
+        sh -c "./run.sh -I ./run.sh -U -J -l"
       ;;
     R) docker run --volume $(pwd):/build -it tea-config-gen bash ;;
     *) cprintf $RED "option required" ;;
