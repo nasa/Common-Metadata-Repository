@@ -108,7 +108,7 @@
              :bad-request "search by JSON query is not allowed with STAC result format"))
         _ (validate-search-after-params ctx params)
         search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
-        log-message (format "Searching for %ss from client %s in format %s with JSON %s and query parameters %s."
+        log-message (format "Searching for %ss from client %s in format %s with JSON %s and query parameters %s"
                             (name concept-type) (:client-id ctx)
                             (rfh/printable-result-format (:result-format params)) json-query params)
         _ (info (if search-after
