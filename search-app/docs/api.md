@@ -1991,9 +1991,9 @@ Note: if you use "polygon" for multiple polygon search, it won't work because on
 Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude, lower left latitude, upper right longitude, upper right latitude.
 This parameter supports the and/or option as shown below.
 
-    curl "%CMR-ENDPOINT%/collections?bounding_box[]=-10,-5,10,5
+    curl "%CMR-ENDPOINT%/collections?bounding_box[]=-10,-5,10,5"
 
-    curl "%CMR-ENDPOINT%/collections?bounding_box[]=-10,-5,10,5&bounding_box[]=-11,-6,11,6&options[bounding_box][or]=true
+    curl "%CMR-ENDPOINT%/collections?bounding_box[]=-10,-5,10,5&bounding_box[]=-11,-6,11,6&options[bounding_box][or]=true"
 
 ##### <a name="c-point"></a> Point
 
@@ -2309,7 +2309,7 @@ Note: if you use "polygon" for multiple polygon search, it won't work because on
 
 ##### <a name="g-bounding-box"></a> Bounding Box
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&bounding_box=-10,-5,10,5
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&bounding_box=-10,-5,10,5"
 
 ##### <a name="g-point"></a> Point
 
@@ -2355,18 +2355,18 @@ Find granules with an exact equator crossing longitude of 90
 
 Find granules with an orbit equator crossing longitude in the range of 0 to 10
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_longitude=0,10
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_longitude=0,10"
 
 Find granules with an equator crossing longitude in the range from 170 to -170
   (across the anti-meridian)
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_longitude=170,-170
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_longitude=170,-170"
 
 #### <a name="g-orbit-equator-crossing-date"></a> Find granules by orbit equator crossing date
 
 Find granules with an orbit equator crossing date in the range of 2000-01-01T10:00:00Z to 2010-03-10T12:00:00Z
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
 The time interval in equator crossing date range searches can be specified in different ways including ISO 8601. See under [Temporal Range searches](#temporal-range-searches).
 
