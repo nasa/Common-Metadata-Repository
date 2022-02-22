@@ -140,4 +140,8 @@
 
       "map string->string"
       {"c" "d"}
-      2)))
+      2
+
+      "clojure.lang.PersistentVector as key"
+      {(vec [1]) :bar}
+      67)))
