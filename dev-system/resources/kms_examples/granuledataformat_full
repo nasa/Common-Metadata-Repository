@@ -1,4 +1,4 @@
-"Hits: 118","page_num: 1","page_size: 2000","Keyword Version: 11.1","Revision: 2021-09-08 10:40:02","Timestamp: 2021-09-28 01:08:28","Terms Of Use: https://cdn.earthdata.nasa.gov/conduit/upload/5182/KeywordsCommunityGuide_Baseline_v1_SIGNED_FINAL.pdf","The most up to date XML representations can be found here: https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/granuledataformat/?format=xml""Case native"
+"Hits: 118","page_num: 1","page_size: 2000","Keyword Version: 11.1","Revision: 2021-09-08 10:40:02","Timestamp: 2021-09-28 01:08:28","Terms Of Use: https://cdn.earthdata.nasa.gov/conduit/upload/5182/KeywordsCommunityGuide_Baseline_v1_SIGNED_FINAL.pdf","The most up to date XML representations can be found here: https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/dataformat/?format=xml""Case native"
 Short_Name,Long_Name,UUID
 "ACCDB","Microsoft Access ACCDB File Format Family","378d394c-8230-49f1-8ba0-8ee7e7abe316"
 "ADF","ArcInfo Binary Grid Format","81782805-cc0d-4325-8f35-aa0c8e439b16"
