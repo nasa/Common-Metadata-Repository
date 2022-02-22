@@ -29,7 +29,6 @@
   - Items are ordered by score in descending order
   - Ensure that the other fields match"
   [actual expected]
-  (println "compare-autocomplete-results actual:" actual)
   ;; check score returns
   (when (seq actual)
     (is (scores-descending? actual) actual))
