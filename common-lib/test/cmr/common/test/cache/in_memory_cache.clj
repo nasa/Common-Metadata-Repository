@@ -128,4 +128,20 @@
 
       "compressed strings"
       (string->lz4-bytes umm-json)
-      836)))
+      836
+
+      "clojure.lang.PersistentArrayMap as key"
+      {(array-map [1 2] [3 4 5]) :array-map}
+      329
+
+      "map keyword->keyword"
+      {:a :b}
+      2
+
+      "map string->string"
+      {"c" "d"}
+      2
+
+      "clojure.lang.PersistentVector as key"
+      {(vec [1]) :bar}
+      67)))

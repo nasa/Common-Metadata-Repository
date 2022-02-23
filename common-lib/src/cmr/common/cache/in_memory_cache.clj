@@ -51,7 +51,7 @@
 
 (defmethod size-in-bytes clojure.lang.IPersistentMap
   [m]
-  (+ (reduce + 0 (map (comp size-in-bytes name) (keys m)))
+  (+ (reduce + 0 (map size-in-bytes (keys m)))
      (reduce + 0 (map size-in-bytes (vals m)))))
 
 (defmethod size-in-bytes clojure.lang.IPersistentCollection
