@@ -62,6 +62,20 @@ documentation()
   fi
 }
 
+deploy()
+{
+  if [ -e ./credentials ] ; then
+    # only install credentials if they exist
+    if [ -d ~/.aws ] ; then
+      echo 'skipping, do not override'
+    else
+      mkdir ~/.aws/
+      cp ./credentials ~/.aws/.
+    fi
+  fi
+  serverless deploy
+}
+
 help_doc()
 {
   echo 'Script to manage the life cycle of the Tea Configuration code'
@@ -93,7 +107,7 @@ while getopts 'hcCuUlLjt:oreIxD' opt; do
     c) color_mode='yes';;
     C) color_mode='no' ;;
     d) documentation ;;
-    D) mkdir ~/.aws/ ; cp ./credentials ~/.aws/. ; serverless deploy
+    D) deploy ;;
     u) python3 -m unittest discover -s ./ -p '*Test.py' ;;
     U) python3 -m unittest discover -s ./ -p '*Test.py' &> test.results.txt ;;
     l) lint ;;
