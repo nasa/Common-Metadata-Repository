@@ -77,6 +77,7 @@ help_doc()
   printf "${format}" '-c' '' 'Color on' 'Turn color on (default)'
   printf "${format}" '-C' '' 'Color off' 'Turn color off'
   printf "${format}" '-d' '' 'Documentation' 'Generate Documentation for AWS'
+  printf "${format}" '-D' '' 'Deploy' 'Run deployment tasks'
   printf "${format}" '-u' '' 'Unittest' 'Run python unit test'
   printf "${format}" '-l' '' 'Lint' 'Run pylint over all files'
   printf "${format}" '-t' '<token>' 'Token' 'Set token'
@@ -86,12 +87,13 @@ help_doc()
   printf "${format}" '-I' '' 'Install' 'Install dependent libraries'
 }
 
-while getopts 'hcCuUlLjt:oreIx' opt; do
+while getopts 'hcCuUlLjt:oreIxD' opt; do
   case ${opt} in
     h) help_doc ;;
     c) color_mode='yes';;
     C) color_mode='no' ;;
     d) documentation ;;
+    D) mkdir ~/.aws/ ; cp ./credentials ~/.aws/. ; serverless deploy
     u) python3 -m unittest discover -s ./ -p '*Test.py' ;;
     U) python3 -m unittest discover -s ./ -p '*Test.py' &> test.results.txt ;;
     l) lint ;;

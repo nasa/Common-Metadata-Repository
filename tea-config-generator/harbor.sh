@@ -57,6 +57,12 @@ while getopts 'hcCbrR' opt; do
         sh -c "./run.sh -I -U -j -l"
       ;;
     R) docker run --volume $(pwd):/build -it tea-config-gen bash ;;
+    d) #deploy
+      docker run --rm \
+        --volume $(pwd):/build \
+        tea-config-gen \
+        sh -c "./run.sh -d"
+      ;;
     *) cprintf $RED "option required" ;;
   esac
 done
