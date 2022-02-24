@@ -877,3 +877,34 @@
     nil
     nil
     nil))
+
+(deftest remove-nil-tail-test
+  (util/are3 [input expected]
+    (is (= expected (util/remove-nil-tail input)))
+
+    "No nils"
+    [:a :b :c] [:a :b :c]
+
+    "Trailing nils"
+    [:a :b :c nil nil nil] [:a :b :c]
+
+    "Mixed nils"
+    [:a nil :b nil :c nil nil nil] [:a nil :b nil :c]
+
+    "Leading nils"
+    [nil :a :b] [nil :a :b]
+
+    "All nils"
+    [nil nil nil] []
+
+    "Single nil"
+    [nil] []
+
+    "Empty collection"
+    [] []
+
+    "List"
+    '(:a nil :b nil :c nil nil) '(:a nil :b nil :c)
+
+    "nil as input"
+    nil nil))

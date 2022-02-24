@@ -1373,6 +1373,64 @@ Auto-completion assistance for building queries. This functionality may be used 
 
 Collection facet autocompletion results are paged. See [Paging Details](#paging-details) for more information on how to page through autocomplete search results.
 
+#### Autocompletion of Science Keywords
+In the case of science keywords, the `fields` property may be used to determine the hierarchy of the term. The structure of the `fields` field is a colon (`:`) separated list in the following sequence:
+
+ * topic
+ * term
+ * variable-level-1
+ * variable-level-2
+ * varaible-level-3
+ * detailed-variable
+
+There may be gaps within the structure where no associated value exists.
+
+Example With variable-level-1 as the base term
+```
+{ :score 2.329206,
+  :type "science_keywords",
+  :value "Solar Irradiance",
+  :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"
+}
+```
+
+Example with detailed-variable as the base term, note the extra colons preserving the structure
+```
+{ :score 1.234588,
+  :type "science_keywords",
+  :value "Coronal Mass Ejection",
+  :fields "Sun-Earth Interactions:Solar Activity::::Coronal Mass Ejection
+}
+```
+
+#### Autocompletion of Platforms
+In the case of platforms, the `fields` property may be used to determine the hierarchy of the term. The structure of the `fields` field is a colon (`:`) separated list in the following sequence:
+
+ * basis
+ * category
+ * sub-category
+ * short-name
+
+There may be gaps within the structure where no associated value exists.
+
+Example With short-name as the base term
+```
+{ :score 2.329206,
+  :type "platforms",
+  :value "AEROS-1",
+  :fields "Space-based Platforms:Earth Observation Satellites:Aeros:AEROS-1"
+}
+```
+
+Example with short-name as the base term, but the sub-category is missing. Note the extra colons preserving the structure
+```
+{ :score 1.234588,
+  :type "platforms",
+  :value "Terra",
+  :fields "Space-based Platforms:Earth Observation Satellites::Terra
+}
+```
+
 #### Autocomplete Parameters
   * `q` The string on which to search. The term is case insensitive.
   * `type[]` Optional list of types to include in the search. This may be any number of valid facet types.
@@ -1393,27 +1451,26 @@ CMR-Hits: 15
       {
         "score": 9.115073,
         "type": "instrument",
+        "fields": "ICE AUGERS",
         "value": "ICE AUGERS"
       },
       {
         "score": 9.115073,
         "type": "instrument",
+        "fields": "ICECUBE",
         "value": "ICECUBE"
       },
       {
-        "score": 9.013778,
-        "type": "platform",
+        "score": 9.021176,
+        "type": "platforms",
+        "fields": "Space-based Platforms:Earth Observation Satellites:Ice, Cloud and Land Elevation Satellite (ICESat):ICESat-2",
         "value": "ICESat-2"
       },
       {
         "score": 8.921176,
-        "type": "platform",
-        "value": "Sea Ice Mass Balance Station"
-      },
-      {
-        "score": 8.921176,
-        "type": "platform",
-        "value": "ICEYE"
+        "type": "science_keywords",
+        "fields": "Atmosphere:Sun-Earth Interactions:Cloud Cover:Ice Reflectivity",
+        "value": "Ice Reflectivity"
       }
     ]
   }
@@ -1436,13 +1493,15 @@ CMR-Hits: 3
     "entry": [
       {
         "score": 9.013778,
-        "type": "platform",
-        "value": "ICESat-2"
+        "type": "platforms",
+        "value": "ICESat-2",
+        "fields": "Space-based Platforms:Earth Observation Satellites:Ice, Cloud and Land Elevation Satellite (ICESat):ICESat-2"
       },
       {
         "score": 8.921176,
-        "type": "platform",
-        "value": "Sea Ice Mass Balance Station"
+        "type": "platforms",
+        "value": "Sea Ice Mass Balance Station",
+        "fields": "Water-based Platforms:Fixed Platforms:Surface:Sea Ice Mass Balance Station"
       },
       {
         "score": 8.921176,

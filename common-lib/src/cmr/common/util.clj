@@ -1024,3 +1024,11 @@
     (= "Statute Miles" unit) (* value statute-miles->meters-conversion-factor)
     (= "Nautical Miles" unit) (* value nautical-miles->meters-conversion-factor)
     :else value))
+
+(defn remove-nil-tail
+  "Remove trailing nils from a list or vector."
+  [coll]
+  (loop [x coll]
+    (if (or (empty? x) (last x))
+      x
+      (recur (drop-last x)))))

@@ -152,7 +152,12 @@
                  [{"value" "Earth Observation Satellites",
                    "subfields" ["short_name" "sub_category"],
                    "short_name"
-                   [{"value" "Aqua",
+                   [{"value" "Terra",
+                     "subfields" ["long_name"],
+                     "long_name"
+                     [{"value" "Earth Observing System, Terra (AM-1)",
+                       "uuid" "80eca755-c564-4616-b910-a4c4387b7c54"}]}
+                    {"value" "Aqua",
                      "subfields" ["long_name"],
                      "long_name"
                      [{"value" "Earth Observing System, Aqua",

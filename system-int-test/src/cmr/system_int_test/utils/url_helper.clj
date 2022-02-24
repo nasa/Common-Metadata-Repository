@@ -164,7 +164,7 @@
   []
   (format "http://localhost:%s/disable-writes" (transmit-config/ingest-port)))
 
-(defn indexer-reindex-suggestions-url
+(defn reindex-suggestions-url
   "URL to reindex autocomplete suggestions"
   []
   (format "http://localhost:%s/jobs/reindex-autocomplete-suggestions"
@@ -387,7 +387,7 @@
   "Returns the URL for retrieving controlled keywords."
   ([keyword-scheme]
    (search-keywords-url keyword-scheme ""))
-  ([keyword-scheme search-parameters] 
+  ([keyword-scheme search-parameters]
    (format "http://localhost:%s/keywords/%s%s"
            (transmit-config/search-port)
            (name keyword-scheme)
