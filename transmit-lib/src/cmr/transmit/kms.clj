@@ -84,7 +84,7 @@
    :concepts "idnnode?format=csv"
    :iso-topic-categories "isotopiccategory?format=csv"
    :related-urls "rucontenttype?format=csv"
-   :granule-data-format "dataformat?format=csv"
+   :granule-data-format "granuledataformat?format=csv"
    :mime-type "mimetype?format=csv"})
 
 (defn- keyword-scheme->kms-resource
