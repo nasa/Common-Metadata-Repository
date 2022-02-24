@@ -23,10 +23,14 @@ functions:
     events:
       - http: GET ${self:custom.endPoint}/
       - http: GET ${self:custom.endPoint}/capabilities
-        cors:
-          origin: '*'
-          headers:
-            - Cmr-Pretty
+  debug:
+    handler: handler.debug
+    events:
+      - http: GET ${self:custom.endPoint}/debug
+        request:
+          parameters:
+            querystrings:
+              pretty=false
   status:
     handler: handler.health
     events:
