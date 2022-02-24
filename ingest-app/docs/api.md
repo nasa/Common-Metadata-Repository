@@ -149,7 +149,7 @@ The following fields are validated:
 * [Data Centers](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/providers?format=csv) - short name
 * [Directory Names](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/idnnode?format=csv) - short name
 * [ISO Topic Categories](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/isotopiccategory?format=csv) - iso topic category
-* [Data Format](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/granuledataformat?format=csv) - Archival and Distribution File Format, and GetData Format
+* [Data Format](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/dataformat?format=csv) - Archival and Distribution File Format, and GetData Format
 
 **Note**: that when multiple fields are present the combination of keywords are validated to match a known combination.
 
