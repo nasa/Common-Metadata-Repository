@@ -108,8 +108,8 @@ while getopts 'hcCuUlLjt:oreIxD' opt; do
     C) color_mode='no' ;;
     d) documentation ;;
     D) deploy ;;
-    u) python3 -m unittest discover -s ./ -p '*Test.py' ;;
-    U) python3 -m unittest discover -s ./ -p '*Test.py' &> test.results.txt ;;
+    u) python3 -m unittest discover -s ./ -p '*test.py' ;;
+    U) python3 -m unittest discover -s ./ -p '*test.py' &> test.results.txt ;;
     l) lint ;;
     L) lint &> list.results ;;
     j) pip3 install pytest ; py.test --junitxml junit.xml ;;

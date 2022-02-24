@@ -15,6 +15,14 @@ import tea.gen.create_tea_config as tea
 # ******************************************************************************
 #mark - Utility functions
 
+def lowercase_dictionary(dirty_dictionary):
+    """
+    Standardize the keys in a header to lower case to reduce the number of lookup
+    cases that need to be supported. Assumes that there are no duplicates, if
+    there are, the last one is saved.
+    """
+    return dict((key.lower(), value) for key,value in dirty_dictionary.items())
+
 def finish_timer(start):
     """ Calculate and format the number of seconds from start to 'now'. """
     delta = datetime.datetime.now() - start
@@ -26,11 +34,20 @@ def pretty_indent(event):
     indent = None # none means do not pretty print, a number is the tab count
     if event:
         pretty = 'false'
+
+        # look first at query
         query_params = event.get('queryStringParameters')
         if query_params:
             pretty = query_params.get('pretty', "false")
-        if pretty=='false' and 'headers' in event and 'Cmr-Pretty' in event['headers']:
-            pretty = event['headers']['Cmr-Pretty']
+
+        # next try the header
+        if pretty=='false' and 'headers' in event:
+            # standardize the keys to lowercase
+            headers = lowercase_dictionary(event['headers'])
+            if 'cmr-pretty' in headers:
+                pretty = headers['cmr-pretty']
+
+        # set the output
         if pretty.lower()=="true":
             indent=1
     return indent
@@ -44,7 +61,7 @@ def aws_return_message(event, status, body, headers=None, start=None):
         'headers': {}}
     if start is not None:
         ret['headers']['cmr-took'] = finish_timer(start)
-    if headers!=None:
+    if headers is not None:
         for header in headers:
             ret['headers'][header] = headers[header]
     #if 'content-type' not in ret['headers']:
@@ -104,21 +121,14 @@ def capabilities(event, context):
 
     h_pretty = header_line('Cmr-Pretty', 'format output with new lines',
         'string', ['true', 'false'])
-    h_took = header_line('Cmr-Took', 'number of seconds used to process request', 'real'),
+    h_took = header_line('Cmr-Took', 'number of seconds used to process request', 'real')
     h_token = header_line('Cmr-Token', 'CMR Compatable access token')
     h_type_json = header_line('content-type', 'content mime-type', None, 'application/json')
     h_type_text = header_line('content-type', 'content mime-type', None, 'text/plain')
     h_type_yaml = header_line('content-type', 'content mime-type', None, 'text/yaml')
 
-    std_headers_in = [h_pretty]
-    std_headers_out = [h_took, h_type_json]
-
-    status_head_out = [h_took, h_type_text]
-
-    prov_head_in = std_headers_in + [h_token]
-    prov_head_out = [h_took, h_type_yaml]
-
-    optionals = lambda i,o,r : {'headers-in':i,'headers-out':o,'response':r}
+    # optional return values
+    optionals = lambda r,i,o : {'headers-in':i,'headers-out':o,'response':r}
 
     body = {
         'urls': [
@@ -130,17 +140,23 @@ def capabilities(event, context):
                 '/capabilities',
                 'Capabilities',
                 'Show which endpoints exist on this service',
-                optionals(std_headers_in, std_headers_out,'JSON')),
+                optionals('JSON',
+                    [h_pretty],
+                    [h_took, h_type_json])),
             capability(event,
                 '/status',
                 'Status',
                 'Returns service status',
-                optionals(None,status_head_out,'418 I\'m a Teapot')),
+                optionals('418 I\'m a Teapot',
+                    None,
+                    [h_took, h_type_text])),
             capability(event,
                 '/provider/<provider>',
                 'Generate',
                 'Generate a TEA config for provider',
-                optionals(prov_head_in,prov_head_out,'YAML')),
+                optionals('YAML',
+                    [h_pretty] + [h_token],
+                    [h_took, h_type_yaml])),
         ]
     }
     return aws_return_message(event, 200, body, start=start)
@@ -159,7 +175,10 @@ def debug(event, context):
 
     for env, value in os.environ.items():
         if env.startswith('AWS_'):
-            body[env] = value
+            if env in ['AWS_SECRET_ACCESS_KEY', 'AWS_ACCESS_KEY_ID']:
+                body[env] = 'redacted'
+            else:
+                body[env] = value
     return aws_return_message(event, 200, body, start=start)
 
 def health(event, context):
@@ -184,7 +203,7 @@ def generate_tea_config(event, context):
     provider = event['pathParameters'].get('id')
     if provider is None or len(provider)<1:
         return aws_return_message(event, 400, "Provider is required", start=start)
-    token = event['headers'].get('Cmr-Token')
+    token = event['headers'].get('cmr-token')
     if token is None or len(token)<1:
         return aws_return_message(event, 400, "Token is required", start=start)
 
