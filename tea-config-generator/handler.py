@@ -167,6 +167,7 @@ def debug(event, context):
     body = {
         'context': context.get_remaining_time_in_millis(),
         'event': event,
+        'clean-header': lowercase_dictionary(event['headers']),
         'tea_config_cmr': parameter_read('AWS_TEA_CONFIG_CMR',
             default_value='https://cmr.earthdata.nasa.gov'),
         'tea_config_log_level': parameter_read('AWS_TEA_CONFIG_LOG_LEVEL',
@@ -207,7 +208,7 @@ def generate_tea_config(event, context):
     headers = lowercase_dictionary(event['headers'])
     token = headers.get('authorization')
     if token is None or len(token)<1:
-        token = headers.get('Authorization'):
+        token = headers.get('Authorization')
         if token is None or len(token)<1:
             return aws_return_message(event, 400, "Token is required", start=start)
 
