@@ -1,4 +1,4 @@
-service: aws-python-project
+service: tea-config-generator
 
 frameworkVersion: '2 || 3'
 

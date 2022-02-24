@@ -1,4 +1,4 @@
-service: aws-python-project
+service: tea-config-generator
 
 frameworkVersion: '2 || 3'
 
@@ -23,6 +23,10 @@ functions:
     events:
       - http: GET ${self:custom.endPoint}/
       - http: GET ${self:custom.endPoint}/capabilities
+        cors:
+          origin: '*'
+          headers:
+            - Cmr-Pretty
   status:
     handler: handler.health
     events:
@@ -42,5 +46,5 @@ custom:
     pythonBin: /usr/bin/python3
   # Prevent Serverless from attempting to modify the deployment bucket policy as
   # NGAP does not allow it
-  deploymentBucket:
-    skipPolicySetup: true
+  #deploymentBucket:
+  #  skipPolicySetup: true
