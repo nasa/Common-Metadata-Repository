@@ -122,7 +122,7 @@ def capabilities(event, context):
     h_pretty = header_line('Cmr-Pretty', 'format output with new lines',
         'string', ['true', 'false'])
     h_took = header_line('Cmr-Took', 'number of seconds used to process request', 'real')
-    h_token = header_line('Cmr-Token', 'CMR Compatable access token')
+    h_token = header_line('Authorization', 'CMR Compatable access token')
     h_type_json = header_line('content-type', 'content mime-type', None, 'application/json')
     h_type_text = header_line('content-type', 'content mime-type', None, 'text/plain')
     h_type_yaml = header_line('content-type', 'content mime-type', None, 'text/yaml')
@@ -203,7 +203,7 @@ def generate_tea_config(event, context):
     provider = event['pathParameters'].get('id')
     if provider is None or len(provider)<1:
         return aws_return_message(event, 400, "Provider is required", start=start)
-    token = event['headers'].get('cmr-token')
+    token = event['headers'].get('authorization')
     if token is None or len(token)<1:
         return aws_return_message(event, 400, "Token is required", start=start)
 
