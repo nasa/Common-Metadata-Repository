@@ -203,9 +203,13 @@ def generate_tea_config(event, context):
     provider = event['pathParameters'].get('id')
     if provider is None or len(provider)<1:
         return aws_return_message(event, 400, "Provider is required", start=start)
-    token = event['headers'].get('authorization')
+
+    headers = lowercase_dictionary(event['headers'])
+    token = headers.get('authorization')
     if token is None or len(token)<1:
-        return aws_return_message(event, 400, "Token is required", start=start)
+        token = headers.get('Authorization'):
+        if token is None or len(token)<1:
+            return aws_return_message(event, 400, "Token is required", start=start)
 
     env = {}
     env['cmr-url'] = parameter_read('AWS_TEA_CONFIG_CMR',
@@ -219,6 +223,6 @@ def generate_tea_config(event, context):
 
     processor = tea.CreateTeaConfig(env)
     result = processor.create_tea_config(env, provider, token)
-    result['headers'] = {'cmr-took': finish_timer(start), 'content-type': 'text/yaml'}
+    result['headers'] = {'cmr-took': finish_timer(start), 'content-type': 'text/yaml', 'auth': token}
 
     return result
