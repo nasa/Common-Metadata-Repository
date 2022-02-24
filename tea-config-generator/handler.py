@@ -187,7 +187,9 @@ def health(event, context):
     Provide an endpoint for testing service availability and for complicance with
     RFC 7168
     """
-    return aws_return_message(event, 418, "I'm a teapot",
+    return aws_return_message(event,
+        418,
+        "I'm a teapot",
         headers={'content-type': 'text/plain'},
         start=datetime.datetime.now())
 
@@ -203,14 +205,20 @@ def generate_tea_config(event, context):
 
     provider = event['pathParameters'].get('id')
     if provider is None or len(provider)<1:
-        return aws_return_message(event, 400, "Provider is required", start=start)
+        return aws_return_message(event,
+            400,
+            "Provider is required",
+            headers={'content-type': 'text/plain'},
+            start=start)
 
     headers = lowercase_dictionary(event['headers'])
     token = headers.get('authorization')
     if token is None or len(token)<1:
-        token = headers.get('Authorization')
-        if token is None or len(token)<1:
-            return aws_return_message(event, 400, "Token is required", start=start)
+        return aws_return_message(event,
+            400,
+            "Token is required",
+            headers={'content-type': 'text/plain'},
+            start=start)
 
     env = {}
     env['cmr-url'] = parameter_read('AWS_TEA_CONFIG_CMR',
@@ -224,6 +232,9 @@ def generate_tea_config(event, context):
 
     processor = tea.CreateTeaConfig(env)
     result = processor.create_tea_config(env, provider, token)
-    result['headers'] = {'cmr-took': finish_timer(start), 'content-type': 'text/yaml', 'auth': token}
+    result['headers'] = {'cmr-took': finish_timer(start),
+        'content-type': 'text/yaml',
+        'cmr-url': env['cmr-url'],
+        'cmr-auth': token}
 
     return result
