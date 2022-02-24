@@ -1399,7 +1399,7 @@ Example with detailed-variable as the base term, note the extra colons preservin
 { :score 1.234588,
   :type "science_keywords",
   :value "Coronal Mass Ejection",
-  :fields "Sun-Earth Interactions:Solar Activity:::Coronal Mass Ejection
+  :fields "Sun-Earth Interactions:Solar Activity::::Coronal Mass Ejection
 }
 ```
 
