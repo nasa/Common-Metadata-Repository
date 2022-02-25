@@ -52,6 +52,30 @@ module CmrRestfulHelper
     response
   end
 end
+
+# Module to handle URLs for local and production environments
+# rubocop:disable Metrics/MethodLength
+module CmrUrlHelper
+  def get_url(concept_type, cmr_root)
+    case concept_type.downcase
+    when /^acls?$/
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3011/#{concept_type}" : "#{cmr_root}/access-control/acls"
+    when /^groups?$/
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3011/#{concept_type}" : "#{cmr_root}/access-control/groups"
+    when /^permissions?$/
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3011/#{concept_type}" : "#{cmr_root}/access-control/permissions"
+    when /^s3-buckets?$/
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3011/#{concept_type}" : "#{cmr_root}/access-control/s3-buckets"
+    when /^(concept|collection|granule|service|tool|variable)s?$/
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3003/#{concept_type}" : "#{cmr_root}/search/#{concept_type}"
+    else
+      raise "#{concept_type} searching is not available in CMR"
+    end
+  end
+end
+# rubocop:enable Metrics/MethodLength
+
+World CmrUrlHelper
 World CmrRestfulHelper
 
 Given('I use/set the authorization token from/with/using environment variable/value {string}') do |variable|
@@ -82,20 +106,7 @@ Given('I am not logged in') do
 end
 
 Given(/^I am (searching|querying|looking) for (an? )?"([\w\d\-_ ]+)"$/) do |_, _, concept_type|
-  @resource_url = case concept_type.downcase
-                  when /^acls?$/
-                    "#{cmr_root}/access-control/acls"
-                  when /^groups?$/
-                    "#{cmr_root}/access-control/groups"
-                  when /^permissions?$/
-                    "#{cmr_root}/access-control/permissions"
-                  when /^s3-buckets?$/
-                    "#{cmr_root}/access-control/s3-buckets"
-                  when /^(concept|collection|granule|service|tool|variable)s?$/
-                    "#{cmr_root}/search/#{concept_type}"
-                  else
-                    raise "#{concept_type} searching is not available in CMR"
-                  end
+  @resource_url = get_url(concept_type, cmr_root)
 end
 
 Given('I clear/reset/remove/delete the extension') do
