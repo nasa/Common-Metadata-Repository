@@ -156,7 +156,7 @@
   "Takes a kms-index, the keyword scheme, and a short name and returns the full KMS hierarchy for
   that short name. Comparison is made case insensitively."
   [kms-index keyword-scheme short-name]
-  (get-in kms-index [:short-name-index keyword-scheme (str/lower-case short-name)]))
+  (get-in kms-index [:short-name-index keyword-scheme (util/safe-lowercase short-name)]))
 
 (defn lookup-by-location-string
   "Takes a kms-index and a location string and returns the full KMS hierarchy for that location
