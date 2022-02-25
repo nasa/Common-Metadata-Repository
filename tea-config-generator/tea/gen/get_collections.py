@@ -39,8 +39,11 @@ def get_collections(env:dict, token, provider, page_num, page_size):
     """ Method returns collections for given provider """
     headers = {'Authorization': f'Bearer {token}'}
     cmr_base = util.get_env(env)
-    url = f'{cmr_base}/search/collections.umm-json?provider={provider}&\
-        sort_key=entry_title&pretty=true&page_num={page_num}&page_size={page_size}'
+    url = (f'{cmr_base}/search/collections.umm-json'
+        f'?provider={provider}'
+        f'&sort_key=entry_title'
+        f'&page_num={page_num}'
+        f'&page_size={page_size}')
     try:
         logging.debug('request url: %s', url)
         response = requests.get(url, headers=headers)

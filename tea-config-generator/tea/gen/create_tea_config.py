@@ -1,5 +1,6 @@
 """ Main module to create TEA config """
 import logging
+import sys
 from tea.gen.utils import add_to_dict, create_tea_config
 from tea.gen.get_acls import get_acl, get_acls
 from tea.gen.get_groups import get_group_names
@@ -63,7 +64,7 @@ class CreateTeaConfig:
         return {'statusCode': 404, 'body': 'No S3 prefixes found'}
 
 def main():
-    """ Main method """
+    """ Main method - a direct unit test """
     if len(logging.getLogger().handlers) > 0:
         logging.getLogger.setLevel(logging.INFO)
     else:
@@ -76,19 +77,25 @@ def main():
     if provider is None:
         provider = 'POCLOUD'
 
-    env = input('Enter env (sit, uat or prod): ')
-    if env is None:
-        env = 'uat'
+    cmr_env = input('Enter env (sit, uat or prod): ')
+    if cmr_env is None:
+        cmr_env = 'uat'
 
     token = input('Enter EDL token: ')
+    if token is None:
+        print ('A CMR compatable token must be provided')
+        sys.exit()
 
     cmrs = {'sit':'https://cmr.sit.earthdata.nasa.gov',
         'uat':'https://cmr.uat.earthdata.nasa.gov',
+        'ops':'https://cmr.earthdata.nasa.gov',
         'prod':'https://cmr.earthdata.nasa.gov'}
 
-    env = {'cmr-url': cmrs['cmr_env']}
+    env = {'cmr-url': cmrs[cmr_env.lower()]}
+    env['logging-level'] = 'info'
+    env['pretty-print'] = True
 
-    processor = CreateTeaConfig()
+    processor = CreateTeaConfig(env)
     processor.create_tea_config(env, provider, token)
 
 if __name__ == "__main__":
