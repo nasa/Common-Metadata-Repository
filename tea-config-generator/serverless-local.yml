@@ -18,7 +18,7 @@ package:
 
 functions:
   capabilities:
-    handler: handler.capabilities
+    handler: capabilities.capabilities
     events:
       - http: GET ${self:custom.endPoint}/
       - http: GET ${self:custom.endPoint}/capabilities

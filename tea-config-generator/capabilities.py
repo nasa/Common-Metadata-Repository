@@ -52,7 +52,7 @@ def capabilities(event, context):
     h_pretty = header_line('Cmr-Pretty', 'format output with new lines',
         'string', ['true', 'false'])
     h_took = header_line('Cmr-Took', 'number of seconds used to process request', 'real')
-    h_token = header_line('Authorization', 'CMR Compatable access token')
+    h_token = header_line('Authorization', 'CMR Compatable Bearer token')
     h_type_json = header_line('content-type', 'content mime-type', None, 'application/json')
     h_type_text = header_line('content-type', 'content mime-type', None, 'text/plain')
     h_type_yaml = header_line('content-type', 'content mime-type', None, 'text/yaml')
