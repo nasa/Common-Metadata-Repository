@@ -29,12 +29,15 @@ lint()
     pylint *.py \
         --disable=duplicate-code \
         --extension-pkg-allow-list=math \
-        --ignore-patterns=".*\.md,.*\.sh,.*\.html,pylintrc,LICENSE,build,dist,tags,eo_metadata_tools_cmr.egg-info"
+        --ignore-patterns=".*\.md,.*\.sh,.*\.html,pylintrc,LICENSE,build,dist,tags,eo_metadata_tools_cmr.egg-info" \
+        > lint.results.txt
+    cat lint.results.txt
 }
 
 # Run all the Unit Tests
 report_code_coverage()
 {
+    # https://docs.codecov.com/docs/codecov-uploader
     printf '*****************************************************************\n'
     printf 'Run the unit tests for all subdirectories\n'
     pip3 install coverage
@@ -42,6 +45,7 @@ report_code_coverage()
     coverage html
 }
 
+# Generate documentation and copy it into a local S3 bucket for viewing
 documentation()
 {
   if command -v markdown &> /dev/null ; then
@@ -52,11 +56,26 @@ documentation()
   fi
   if command -v aws &> /dev/null ; then
     aws --endpoint http://localhost:7000 \
-      s3 cp public/index.html s3://local-bucket/api.html \
+      s3 cp public/api.html s3://local-bucket/api.html \
       --profile s3local
   else
     echo "aws command not found"
   fi
+}
+
+# Have serverless deploy, called from within the docker container
+deploy()
+{
+  if [ -e ./credentials ] ; then
+    # CI/CD creates this file, only install credentials if they exist
+    if [ -d ~/.aws ] ; then
+      echo 'skipping, do not override'
+    else
+      mkdir ~/.aws/
+      cp ./credentials ~/.aws/.
+    fi
+  fi
+  serverless deploy
 }
 
 help_doc()
@@ -74,8 +93,12 @@ help_doc()
   printf "${format}" '-c' '' 'Color on' 'Turn color on (default)'
   printf "${format}" '-C' '' 'Color off' 'Turn color off'
   printf "${format}" '-d' '' 'Documentation' 'Generate Documentation for AWS'
+  printf "${format}" '-D' '' 'Deploy' 'Run deployment tasks'
   printf "${format}" '-u' '' 'Unittest' 'Run python unit test'
+  printf "${format}" '-U' '' 'Unittest' 'Run python unit test and save results'
+  printf "${format}" '-j' '' 'JUnittest' 'Run python unit test and save junit results'
   printf "${format}" '-l' '' 'Lint' 'Run pylint over all files'
+  printf "${format}" '-L' '' 'Lint' 'Run pylint over all files and save results'
   printf "${format}" '-t' '<token>' 'Token' 'Set token'
   printf "${format}" '-r' '' 'Report' 'Generate code coverage report'
   printf "${format}" '-e' '' 'Example' 'Do curl examples'
@@ -83,14 +106,18 @@ help_doc()
   printf "${format}" '-I' '' 'Install' 'Install dependent libraries'
 }
 
-while getopts 'hcCult:oreIx' opt; do
+while getopts 'hcCuUlLjt:oreIxD' opt; do
   case ${opt} in
     h) help_doc ;;
     c) color_mode='yes';;
     C) color_mode='no' ;;
     d) documentation ;;
-    u) python3 -m unittest discover -s ./ -p '*Test.py' ;;
+    D) deploy ;;
+    u) python3 -m unittest discover -s ./ -p '*test.py' ;;
+    U) python3 -m unittest discover -s ./ -p '*test.py' &> test.results.txt ;;
     l) lint ;;
+    L) lint &> list.results ;;
+    j) pip3 install pytest ; py.test --junitxml junit.xml ;;
     t) token=${OPTARG} ;;
     o) serverless offline ; exit ;;
     r) report_code_coverage ;;
@@ -103,25 +130,41 @@ while getopts 'hcCult:oreIx' opt; do
       
       echo
       cprintf $GREEN "Calling /tea"
-      curl -H 'Cmr-Token: token-value-here' "${baseEndPoint}/configuration/tea"
+      curl -s -H 'Cmr-Pretty: true' "${baseEndPoint}/configuration/tea"
+      echo
+      cprintf $GREEN '----'
+      read
       
       echo
       cprintf $GREEN 'Calling /tea/capabilities'
-      curl -s -H 'Cmr-Token: token-value-here' "${baseEndPoint}/configuration/tea/capabilities" | head
+      curl -s "${baseEndPoint}/configuration/tea/capabilities" | head
+      echo
+      cprintf $GREEN '----'
+      read
       
       echo
       cprintf $GREEN 'Calling /tea/status'
-      curl -i -H 'Cmr-Token: token-value-here' "${baseEndPoint}/configuration/tea/status"
+      curl -i "${baseEndPoint}/configuration/tea/status"
+      echo
+      cprintf $GREEN '----'
       
       echo
-      cprintf $GREEN 'Calling /tea/provider/POCLOUD'
-      curl -H 'Cmr-Token: token-value-here' "${baseEndPoint}/configuration/tea/provider/POCLOUD"
+      cprintf $GREEN 'Calling /tea/provider/POCLOUD, may take 7 seconds'
+      curl -H "Cmr-Token: ${token}" "${baseEndPoint}/configuration/tea/provider/POCLOUD"
+      echo
+      cprintf $GREEN '----'
 
+      echo
+      cprintf $GREEN 'Calling /tea/provider/POCLOUD again with just headers, may take 7 seconds'
+      curl -I -H "Cmr-Token: ${token}" "${baseEndPoint}/configuration/tea/provider/POCLOUD"
+      echo
+
+      #curl -s http://localhost:7000/local-bucket/index.html
       #curl -H 'Cmr-Token: token-value-here' '${baseEndPoint}/configuration/tea/debug'
       ;;
     I)
       #npm install -g serverless
-      curl -o- -L https://slss.io/install | bash
+      #curl --silent -o- --location https://slss.io/install | bash
       pip3 install -r requirements.txt 
       serverless plugin install -n serverless-python-requirements
       serverless plugin install -n serverless-s3-local
@@ -130,7 +173,6 @@ while getopts 'hcCult:oreIx' opt; do
   esac
 done
 
-
 # docker network create localstack
 # docker-compose up -d
 # curl -i http://localhost:4566/health
@@ -138,7 +180,3 @@ done
 # serverless plugin install -n serverless-python-requirements
 # serverless --config serverless-local.yml deploy --stage local
 # serverless deploy --config serverless-local.yml --stage local
-
-
-
-

@@ -2,20 +2,25 @@
 AWS lambda functions for generating a TEA configuration.
 """
 
-import logging
 import os
 import json
 import datetime
 import boto3
 
 import tea.gen.create_tea_config as tea
-#import tea.gen.create_tea_config as tea
-
 
 #pylint: disable=W0613 # AWS requires event and context, but these are not always used
 
 # ******************************************************************************
 #mark - Utility functions
+
+def lowercase_dictionary(dirty_dictionary):
+    """
+    Standardize the keys in a header to lower case to reduce the number of lookup
+    cases that need to be supported. Assumes that there are no duplicates, if
+    there are, the last one is saved.
+    """
+    return dict((key.lower(), value) for key,value in dirty_dictionary.items())
 
 def finish_timer(start):
     """ Calculate and format the number of seconds from start to 'now'. """
@@ -24,28 +29,40 @@ def finish_timer(start):
     return f"{sec:.6f}"
 
 def pretty_indent(event):
-    # look for pretty in both the header and query parameters
+    """ Look for pretty in both the header and query parameters """
     indent = None # none means do not pretty print, a number is the tab count
     if event:
         pretty = 'false'
+
+        # look first at query
         query_params = event.get('queryStringParameters')
         if query_params:
             pretty = query_params.get('pretty', "false")
-        if pretty=='false' and 'headers' in event and 'Cmr-Pretty' in event['headers']:
-            pretty = event['headers']['Cmr-Pretty']
+
+        # next try the header
+        if pretty=='false' and 'headers' in event:
+            # standardize the keys to lowercase
+            headers = lowercase_dictionary(event['headers'])
+            if 'cmr-pretty' in headers:
+                pretty = headers['cmr-pretty']
+
+        # set the output
         if pretty.lower()=="true":
             indent=1
     return indent
 
-def aws_return_message(event, status, body, start=None):
+def aws_return_message(event, status, body, headers=None, start=None):
     """ build a dictionary which AWS Lambda will accept as a return value """
     indent = pretty_indent(event)
 
-    ret = {"statusCode": status, "body": json.dumps(body, indent=indent)}
+    ret = {"statusCode": status,
+        "body": json.dumps(body, indent=indent),
+        'headers': {}}
     if start is not None:
-        if 'headers' not in ret:
-            ret['headers'] = {}
         ret['headers']['cmr-took'] = finish_timer(start)
+    if headers is not None:
+        for header in headers:
+            ret['headers'][header] = headers[header]
     return ret
 
 def parameter_read(pname, default_value=''):
@@ -61,31 +78,8 @@ def parameter_read(pname, default_value=''):
         return os.environ.get(pname.upper(), default_value)
     return default_value
 
-def capability(event, endpoint, name, description):
-    """
-    A helper function to generate one capability line for the capabilities()
-    """
-    path = event['path']
-    prefix = path[0:path.rfind('/')]
-    return {'name': name, 'path': prefix+endpoint, 'description': description}
-
 # ******************************************************************************
 #mark - AWS Lambda functions
-
-def capabilities(event, context):
-    """ Return a static output stating the calls supported by this package """
-    start = datetime.datetime.now()
-    body = {
-        'urls': [
-            capability(event, '/', 'Root', 'Alias for capabilities'),
-            capability(event, '/capabilities', 'Capabilities',
-                'Show which endpoints exist on this service'),
-            capability(event, '/status', 'Status', 'Returns service status'),
-            capability(event, '/provider/<provider>', 'Generate',
-                'Generate a TEA config for provider'),
-        ]
-    }
-    return aws_return_message(event, 200, body, start)
 
 def debug(event, context):
     """ Return debug information about AWS in general """
@@ -93,6 +87,7 @@ def debug(event, context):
     body = {
         'context': context.get_remaining_time_in_millis(),
         'event': event,
+        'clean-header': lowercase_dictionary(event['headers']),
         'tea_config_cmr': parameter_read('AWS_TEA_CONFIG_CMR',
             default_value='https://cmr.earthdata.nasa.gov'),
         'tea_config_log_level': parameter_read('AWS_TEA_CONFIG_LOG_LEVEL',
@@ -101,16 +96,22 @@ def debug(event, context):
 
     for env, value in os.environ.items():
         if env.startswith('AWS_'):
-            body[env] = value
-    return aws_return_message(event, 200, body, start)
+            if env in ['AWS_SESSION_TOKEN', 'AWS_SECRET_ACCESS_KEY', 'AWS_ACCESS_KEY_ID']:
+                body[env] = '~redacted~'
+            else:
+                body[env] = value
+    return aws_return_message(event, 200, body, start=start)
 
 def health(event, context):
     """
     Provide an endpoint for testing service availability and for complicance with
     RFC 7168
     """
-    return aws_return_message(event, 418, "I'm a teapot", datetime.datetime.now())
-
+    return aws_return_message(event,
+        418,
+        "I'm a teapot",
+        headers={'content-type': 'text/plain'},
+        start=datetime.datetime.now())
 
 def generate_tea_config(event, context):
     """
@@ -124,13 +125,23 @@ def generate_tea_config(event, context):
 
     provider = event['pathParameters'].get('id')
     if provider is None or len(provider)<1:
-        return aws_return_message(event, 400, "Provider is required", start)
-    token = event['headers'].get('Cmr-Token')
+        return aws_return_message(event,
+            400,
+            "Provider is required",
+            headers={'content-type': 'text/plain'},
+            start=start)
+
+    headers = lowercase_dictionary(event['headers'])
+    token = headers.get('authorization')
     if token is None or len(token)<1:
-        return aws_return_message(event, 400, "Token is required", start)
+        return aws_return_message(event,
+            400,
+            "Token is required",
+            headers={'content-type': 'text/plain'},
+            start=start)
 
     env = {}
-    env['cmr-url'] = cmr_config = parameter_read('AWS_TEA_CONFIG_CMR',
+    env['cmr-url'] = parameter_read('AWS_TEA_CONFIG_CMR',
       default_value='https://cmr.earthdata.nasa.gov')
     env['logging-level'] = parameter_read('AWS_TEA_CONFIG_LOG_LEVEL',
       default_value='info')
@@ -139,9 +150,11 @@ def generate_tea_config(event, context):
     else:
         env['pretty-print'] = True
 
-    processor = tea.CreateTeaConfig()
+    processor = tea.CreateTeaConfig(env)
     result = processor.create_tea_config(env, provider, token)
-    result['headers'] = {'cmr-took': finish_timer(start)}
+    result['headers'] = {'cmr-took': finish_timer(start),
+        'content-type': 'text/yaml',
+        'cmr-url': env['cmr-url'],
+        'cmr-auth': token}
 
     return result
-

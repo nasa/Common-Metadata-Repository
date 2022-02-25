@@ -1,4 +1,4 @@
-service: aws-python-project
+service: tea-config-generator
 
 frameworkVersion: '2 || 3'
 
@@ -6,10 +6,11 @@ provider:
   name: aws
   runtime: python3.8
   memorySize: 128 # default was 1024, 512 would also be accepted
-  timeout: 10  # 7 seconds is the average run time currently
+  timeout: 15  # 7 seconds is the average run time currently
+  role: arn:aws:iam::862722526950:role/tea-config-sit-east-1-lambda-role
   environment:
-    AWS_TEA_CONFIG_CMR: https://cmr.uat.earthdata.nasa.gov
-    AWS_TEA_CONFIG_LOG_LEVEL: info
+    AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.uat.earthdata.nasa.gov'}
+    AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_CMR, 'info'}
 
 package:
 #  individually: true
@@ -17,11 +18,19 @@ package:
     - node_modules/**
 
 functions:
-  hello:
-    handler: handler.capabilities
+  capabilities:
+    handler: capabilities.capabilities
     events:
       - http: GET ${self:custom.endPoint}/
       - http: GET ${self:custom.endPoint}/capabilities
+  debug:
+    handler: handler.debug
+    events:
+      - http: GET ${self:custom.endPoint}/debug
+        request:
+          parameters:
+            querystrings:
+              pretty=false
   status:
     handler: handler.health
     events:

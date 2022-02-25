@@ -34,6 +34,15 @@ the following commands:
 5. Install locally: `serverless offline`
 6. Run some example URLS: `./run.sh -e`
 
+## Deploying to AWS
+
+1. Create a role with a title like `tea-config-<env>-<location>-lambda-role`
+	* env is sit, uat, prod
+	* location is east-1 or the like
+2. Include polities to allow for Full access to API Gateway
+3. Use the `NGAPShRoleBoundry`
+
+
 ## Testing
 Read the details in the ./run.sh script. There are functions which have all the
 predefined parameters for running pylint and unit testing:
