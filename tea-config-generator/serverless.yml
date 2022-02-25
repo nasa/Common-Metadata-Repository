@@ -18,7 +18,7 @@ package:
     - node_modules/**
 
 functions:
-  hello:
+  capabilities:
     handler: handler.capabilities
     events:
       - http: GET ${self:custom.endPoint}/

@@ -176,8 +176,8 @@ def debug(event, context):
 
     for env, value in os.environ.items():
         if env.startswith('AWS_'):
-            if env in ['AWS_SECRET_ACCESS_KEY', 'AWS_ACCESS_KEY_ID']:
-                body[env] = 'redacted'
+            if env in ['AWS_SESSION_TOKEN', 'AWS_SECRET_ACCESS_KEY', 'AWS_ACCESS_KEY_ID']:
+                body[env] = '~redacted~'
             else:
                 body[env] = value
     return aws_return_message(event, 200, body, start=start)
