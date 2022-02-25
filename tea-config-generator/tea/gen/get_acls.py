@@ -12,7 +12,7 @@ if len(logging.getLogger().handlers)>0:
 def get_acls(env,provider,token):
     """ Method used to get all ACLs for given provider """
     cmr_url = util.get_env(env)
-    headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+    headers = {'Authorization': token, 'Content-Type': 'application/json'}
     url = (f'{cmr_url}/access-control/acls'
             f'?provider={provider}'
             f'&identity_type=catalog_item')
@@ -30,7 +30,7 @@ def get_acls(env,provider,token):
 
 def get_acl(acl_url, token):
     """ Method retrieves ACL for given ACL URL """
-    headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+    headers = {'Authorization': token, 'Content-Type': 'application/json'}
     try:
         response = requests.get(acl_url, headers=headers)
         json_data = response.json()
