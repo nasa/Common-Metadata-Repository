@@ -43,12 +43,7 @@ functions:
 plugins:
   - serverless-python-requirements
   - serverless-offline
-  - serverless-s3-local
 custom:
   endPoint: /configuration/tea
   pythonRequirements:
     pythonBin: /usr/bin/python3
-  # Prevent Serverless from attempting to modify the deployment bucket policy as
-  # NGAP does not allow it
-  #deploymentBucket:
-  #  skipPolicySetup: true

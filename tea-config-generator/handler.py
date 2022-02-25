@@ -2,7 +2,6 @@
 AWS lambda functions for generating a TEA configuration.
 """
 
-#import logging
 import os
 import json
 import datetime
@@ -64,8 +63,6 @@ def aws_return_message(event, status, body, headers=None, start=None):
     if headers is not None:
         for header in headers:
             ret['headers'][header] = headers[header]
-    #if 'content-type' not in ret['headers']:
-    #    ret['headers']['content-type'] = 'application/json'
     return ret
 
 def parameter_read(pname, default_value=''):

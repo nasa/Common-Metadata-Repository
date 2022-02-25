@@ -40,7 +40,7 @@ function capabilities
 {
   url="$base_url/configuration/tea/capabilities"
   cprintf $GREEN "calling $url"
-  curl -is -H 'Cmr-Pretty: true' "$url"
+  curl -s -H 'Cmr-Pretty: true' "$url"
 }
 
 function status
@@ -100,7 +100,7 @@ while getopts 'ha:cdgst:' opt; do
     d) debug ;;
     g) generate ;;
     s) status ;;
-    t) token=$(grep -v '#' ${OPTARG}) ;;
+    t) token=$(grep -v '#' ${OPTARG} | head -n 1) ;;
     *) cprintf $RED "option required" ; help_doc ;;
   esac
 done

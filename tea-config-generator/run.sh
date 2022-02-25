@@ -45,6 +45,7 @@ report_code_coverage()
     coverage html
 }
 
+# Generate documentation and copy it into a local S3 bucket for viewing
 documentation()
 {
   if command -v markdown &> /dev/null ; then
@@ -62,10 +63,11 @@ documentation()
   fi
 }
 
+# Have serverless deploy, called from within the docker container
 deploy()
 {
   if [ -e ./credentials ] ; then
-    # only install credentials if they exist
+    # CI/CD creates this file, only install credentials if they exist
     if [ -d ~/.aws ] ; then
       echo 'skipping, do not override'
     else

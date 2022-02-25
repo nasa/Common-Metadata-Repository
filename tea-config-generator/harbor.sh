@@ -38,8 +38,12 @@ help_doc()
   printf "${format}" 'flag' 'value' 'name' 'Description'
   printf "${format}" '----' '--------' '------' '-------------------------'
   printf "${format}" '-h' '' 'Help' 'Print out a help document'
+  printf "${format}" '-c' '' 'Color' 'Turn color on (default)'
+  printf "${format}" '-C' '' 'no color' 'Turn color off'
   printf "${format}" '-b' '' 'build' 'Build Docker Image'
+  printf "${format}" '-d' '' 'run' 'Deploy serverless tasks'
   printf "${format}" '-r' '' 'run' 'Run Docker Image tasks'
+  printf "${format}" '-R' '' 'run' 'Run bash in Docker Image'
 }
 
 while getopts 'hcCbrR' opt; do
