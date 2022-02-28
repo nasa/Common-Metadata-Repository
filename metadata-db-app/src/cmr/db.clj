@@ -53,7 +53,6 @@
         catalog-rest-user (mdb-config/catalog-rest-db-username)
         metadata-db-user (mdb-config/metadata-db-username)
         metadata-db-password (mdb-config/metadata-db-password)]
-    (println db)
     (su/ignore-already-exists-errors "METADATA_DB user"
                                      (o/create-user db metadata-db-user
                                                     metadata-db-password))
