@@ -1,10 +1,7 @@
 """ Module used to get Collections """
-import logging
+
 import requests
 import tea.gen.utils as util
-
-#logging.basicConfig(filename='script.log', format='%(asctime)s %(message)s',
-#encoding='utf-8', level=logging.INFO)
 
 def get_collections_s3_prefixes_dict(env: dict, token, provider, page_num, page_size):
     """ Method returns a dictionary with concept_ids as keys and S3 prefixes array as values  """
@@ -13,7 +10,8 @@ def get_collections_s3_prefixes_dict(env: dict, token, provider, page_num, page_
     if 'hits' not in json_data or json_data['hits'] == '0':
         return {}
     hits = json_data['hits']
-    logging.debug('Hits=%d',hits)
+    logger = util.get_logger(env)
+    logger.debug('Hits=%d',hits)
     for item in json_data['items']:
         if 's3-links' in item['meta']:
             all_collections_s3_prefixes_dict[item['meta']['concept-id']] = item['meta']['s3-links']
@@ -37,6 +35,7 @@ def get_collections_s3_prefixes_dict(env: dict, token, provider, page_num, page_
 
 def get_collections(env:dict, token, provider, page_num, page_size):
     """ Method returns collections for given provider """
+    logger = util.get_logger(env)
     headers = {'Authorization': token}
     cmr_base = util.get_env(env)
     url = (f'{cmr_base}/search/collections.umm-json'
@@ -45,27 +44,28 @@ def get_collections(env:dict, token, provider, page_num, page_size):
         f'&page_num={page_num}'
         f'&page_size={page_size}')
     try:
-        logging.debug('request url: %s', url)
+        logger.debug('request url: %s', url)
         response = requests.get(url, headers=headers)
         json_data = response.json()
-        logging.debug('get_collections: response=%s', json_data)
+        logger.debug('get_collections: response=%s', json_data)
         if response.status_code == 200:
             return json_data
     except requests.exceptions.RequestException as error:
-        logging.error('Error occurred in get_collections: %s', error)
+        logger.error('Error occurred in get_collections: %s', error)
     return {}
 
 def get_collection(env:dict, token, concept_id):
     """ Method returns collection for given concept_id """
+    logger = util.get_logger(env)
     headers = {'Authorization': token, 'Content-Type': 'application/json'}
     cmr_base = util.get_env(env)
     url = f'{cmr_base}/search/concepts/{concept_id}.umm_json'
     try:
         response = requests.get(url, headers=headers)
         json_data = response.json()
-        logging.debug('get_collection: response=%s', json_data)
+        logger.debug('get_collection: response=%s', json_data)
         if response.status_code == 200:
             return json_data
     except requests.exceptions.RequestException as error:
-        logging.error('Error occurred in get_collection: %s', error)
+        logger.error('Error occurred in get_collection: %s', error)
     return {}

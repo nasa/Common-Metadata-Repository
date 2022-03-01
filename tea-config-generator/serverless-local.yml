@@ -9,7 +9,7 @@ provider:
   timeout: 15  # seconds
   environment:
     AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.uat.earthdata.nasa.gov'}
-    AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_CMR, 'info'}
+    AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_CMR, 'INFO'}
 
 package:
 #  individually: true

@@ -4,6 +4,7 @@ AWS lambda functions for generating a TEA configuration.
 
 import os
 import json
+import logging
 import datetime
 import boto3
 
@@ -78,11 +79,26 @@ def parameter_read(pname, default_value=''):
         return os.environ.get(pname.upper(), default_value)
     return default_value
 
+def init_logging():
+    """
+    Initialize the logging system using the logging level provided by the calling
+    'environment' and return a logger
+    """
+    level = parameter_read('AWS_TEA_CONFIG_LOG_LEVEL', default_value='INFO')
+    logging.basicConfig(format="%(name)s - %(module)s - %(message)s",level=level)
+    logger = logging.getLogger()
+    logger.setLevel(level)
+    return logger
+
 # ******************************************************************************
 #mark - AWS Lambda functions
 
 def debug(event, context):
     """ Return debug information about AWS in general """
+
+    logger = init_logging()
+    logger.info("Debug have been loaded")
+
     start = datetime.datetime.now()
     body = {
         'context': context.get_remaining_time_in_millis(),
@@ -107,6 +123,9 @@ def health(event, context):
     Provide an endpoint for testing service availability and for complicance with
     RFC 7168
     """
+    logger = init_logging()
+    logger.debug("health check has been requested")
+
     return aws_return_message(event,
         418,
         "I'm a teapot",
@@ -121,6 +140,9 @@ def generate_tea_config(event, context):
     * Path Parameter named 'id' with CMR provider name
     * HTTP Header named 'Cmr-Token' with a CMR compatible token
     """
+    logger = init_logging()
+    logger.debug("generate tea config started")
+
     start = datetime.datetime.now()
 
     provider = event['pathParameters'].get('id')

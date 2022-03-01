@@ -49,7 +49,7 @@ class GetGroupsTest(TestCase):
         acl_url = 'XXX'
         token = 'EDL-XXX'
 
-        response = get_groups(acl_url, token)
+        response = get_groups({}, acl_url, token)
         self.assertEqual(response[2]['group_id'], 'AG1222486916-CMR')
         self.assertEqual(response[4]['group_id'], 'AG1216375421-SCIOPS')
 
