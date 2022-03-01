@@ -36,7 +36,7 @@ def get_collections_s3_prefixes_dict(env: dict, token, provider, page_num, page_
 def get_collections(env:dict, token, provider, page_num, page_size):
     """ Method returns collections for given provider """
     logger = util.get_logger(env)
-    headers = {'Authorization': token}
+    headers = util.standard_headers({'Authorization': token})
     cmr_base = util.get_env(env)
     url = (f'{cmr_base}/search/collections.umm-json'
         f'?provider={provider}'
@@ -57,7 +57,7 @@ def get_collections(env:dict, token, provider, page_num, page_size):
 def get_collection(env:dict, token, concept_id):
     """ Method returns collection for given concept_id """
     logger = util.get_logger(env)
-    headers = {'Authorization': token, 'Content-Type': 'application/json'}
+    headers = util.standard_headers({'Authorization': token, 'Content-Type': 'application/json'})
     cmr_base = util.get_env(env)
     url = f'{cmr_base}/search/concepts/{concept_id}.umm_json'
     try:

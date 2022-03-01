@@ -10,7 +10,7 @@ import tea.gen.utils as util
 def get_groups(env:dict, acl_url, token):
     """ Method gets groups for given ACL URL """
     logger = util.get_logger(env)
-    headers = {'Authorization': token, 'Content-Type': 'application/json'}
+    headers = util.standard_headers({'Authorization': token, 'Content-Type': 'application/json'})
     try:
         response = requests.get(acl_url, headers=headers)
         json_data = response.json()
@@ -28,7 +28,7 @@ def get_group(env:dict, group_id, token):
     logger = util.get_logger({})
     cmr_base = util.get_env(env)
     url = f'{cmr_base}/access-control/groups/{group_id}'
-    headers = {'Authorization': token, 'Content-Type': 'application/json'}
+    headers = util.standard_headers({'Authorization': token, 'Content-Type': 'application/json'})
     try:
         response = requests.get(url, headers=headers)
         json_data = response.json()

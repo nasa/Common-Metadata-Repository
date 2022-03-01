@@ -2,6 +2,17 @@
 
 import logging
 
+def standard_headers(base:dict = None):
+    """
+    Return a dictionary containing the standard headers which should always be
+    used when communicating to CMR from this app. Append to an existing dictionary
+    if one exists.
+    """
+    if base is None:
+        base = {}
+    base['User-Agent'] = 'ESDIS TEA Config Generator'
+    return base
+
 def get_env(env: dict):
     """ Returns CMR server URL, uses 'https://cmr.earthdata.nasa.gov' as default """
     return env.get('cmr-url', 'https://cmr.earthdata.nasa.gov')

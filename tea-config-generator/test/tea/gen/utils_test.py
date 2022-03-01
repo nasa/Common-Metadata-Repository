@@ -1,10 +1,28 @@
 """ Test module """
 from unittest import TestCase
+import tea.gen.utils as util
 from tea.gen.utils import add_to_dict, get_s3_prefixes, get_env
 
 #python -m unittest discover -s ./ -p '*_test.py'
 class UtilsTest(TestCase):
     """ Test class to test Utils """
+
+    def test_standard_headers(self):
+        """
+        Test that the standard header function always returns the correct user agent
+        """
+        test = lambda e,p,m : self.assertEqual(e, p['User-Agent'], m)
+
+        expected='ESDIS TEA Config Generator'
+
+        test(expected, util.standard_headers(), 'dictionary not provided')
+        test(expected, util.standard_headers(None), 'none dictionary')
+        test(expected, util.standard_headers({'u':'you'}), 'dictionary provided')
+        test(expected, util.standard_headers({'User-Agent':'Wrong'}), 'overwrite check')
+
+        actual=util.standard_headers({'Other-Header':'Keep'})
+        self.assertEqual('Keep', actual['Other-Header'], 'other values')
+
     def test_add_to_dict(self):
         """ Test add_to_dict """
         dict_a = {}
