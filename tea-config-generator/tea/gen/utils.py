@@ -1,4 +1,18 @@
 """ Utility methods """
+
+import logging
+
+def standard_headers(base:dict = None):
+    """
+    Return a dictionary containing the standard headers which should always be
+    used when communicating to CMR from this app. Append to an existing dictionary
+    if one exists.
+    """
+    if base is None:
+        base = {}
+    base['User-Agent'] = 'ESDIS TEA Config Generator'
+    return base
+
 def get_env(env: dict):
     """ Returns CMR server URL, uses 'https://cmr.earthdata.nasa.gov' as default """
     return env.get('cmr-url', 'https://cmr.earthdata.nasa.gov')
@@ -27,7 +41,18 @@ def create_tea_config(all_s3_prefix_groups_dict):
         result_string += key
         result_string += ':\n'
         for group in value:
-            result_string += '  - '
+            result_string += '  - ' # space space dash space
             result_string += group
             result_string += '\n'
     return result_string
+
+def get_logger(envirnment):
+    """
+    Create a logger using the logging info from the calling environment, configure
+    that logger and return it for use by the code.
+    """
+    level = envirnment.get('logging-level', 'INFO')
+    logging.basicConfig(format="%(name)s - %(module)s - %(message)s",level=level)
+    logger = logging.getLogger()
+    logger.setLevel(level)
+    return logger

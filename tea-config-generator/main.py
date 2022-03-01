@@ -82,7 +82,7 @@ def main():
     # Setup environment and parameters
     os.environ['AWS_TEA_CONFIG_LOG_LEVEL'] = log_level
     os.environ['AWS_TEA_CONFIG_CMR'] = cmr_url
-    event = {'headers': {'Cmr-Token': token},
+    event = {'headers': {'authorization': token},
         'pathParameters': {'id': provider},
         'path': f'/configuration/tea/provider/{provider}'}
     context = {}

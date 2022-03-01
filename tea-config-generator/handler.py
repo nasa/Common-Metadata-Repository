@@ -4,6 +4,7 @@ AWS lambda functions for generating a TEA configuration.
 
 import os
 import json
+import logging
 import datetime
 import boto3
 
@@ -43,13 +44,34 @@ def pretty_indent(event):
         if pretty=='false' and 'headers' in event:
             # standardize the keys to lowercase
             headers = lowercase_dictionary(event['headers'])
-            if 'cmr-pretty' in headers:
-                pretty = headers['cmr-pretty']
+            pretty = headers.get('cmr-pretty', 'false')
 
         # set the output
         if pretty.lower()=="true":
             indent=1
     return indent
+
+def read_file(file_name):
+    """
+    Read version file content written by the CI/CD system, return None if it
+    does not exist
+    """
+    if os.path.exists(file_name):
+        with open(file_name, encoding='utf-8') as out_file:
+            return out_file.read()
+    return None
+
+def load_version():
+    """ Load version information from a file. This file is written by CI/CD """
+    if ver := read_file('ver.txt'):
+        return json.loads(ver)
+    return None
+
+def append_version(data:dict=None):
+    """ Append CI/CD version information to a dictionary if it exists. """
+    if data is not None:
+        if ver := load_version():
+            data['application'] = ver
 
 def aws_return_message(event, status, body, headers=None, start=None):
     """ build a dictionary which AWS Lambda will accept as a return value """
@@ -78,11 +100,26 @@ def parameter_read(pname, default_value=''):
         return os.environ.get(pname.upper(), default_value)
     return default_value
 
+def init_logging():
+    """
+    Initialize the logging system using the logging level provided by the calling
+    'environment' and return a logger
+    """
+    level = parameter_read('AWS_TEA_CONFIG_LOG_LEVEL', default_value='INFO')
+    logging.basicConfig(format="%(name)s - %(module)s - %(message)s",level=level)
+    logger = logging.getLogger()
+    logger.setLevel(level)
+    return logger
+
 # ******************************************************************************
 #mark - AWS Lambda functions
 
 def debug(event, context):
     """ Return debug information about AWS in general """
+
+    logger = init_logging()
+    logger.info("Debug have been loaded")
+
     start = datetime.datetime.now()
     body = {
         'context': context.get_remaining_time_in_millis(),
@@ -100,6 +137,8 @@ def debug(event, context):
                 body[env] = '~redacted~'
             else:
                 body[env] = value
+    append_version(body)
+
     return aws_return_message(event, 200, body, start=start)
 
 def health(event, context):
@@ -107,6 +146,9 @@ def health(event, context):
     Provide an endpoint for testing service availability and for complicance with
     RFC 7168
     """
+    logger = init_logging()
+    logger.debug("health check has been requested")
+
     return aws_return_message(event,
         418,
         "I'm a teapot",
@@ -121,6 +163,9 @@ def generate_tea_config(event, context):
     * Path Parameter named 'id' with CMR provider name
     * HTTP Header named 'Cmr-Token' with a CMR compatible token
     """
+    logger = init_logging()
+    logger.debug("generate tea config started")
+
     start = datetime.datetime.now()
 
     provider = event['pathParameters'].get('id')

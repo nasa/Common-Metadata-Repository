@@ -3,7 +3,6 @@ AWS lambda function for generating a TEA configuration capabilities file
 """
 
 import datetime
-
 import handler
 
 #pylint: disable=W0613 # AWS requires event and context, but these are not always used
@@ -47,6 +46,9 @@ def header_line(name, description, head_type=None, values=None):
 
 def capabilities(event, context):
     """ Return a static output stating the calls supported by this package """
+    logger = handler.init_logging()
+    logger.debug("capabilities have been loaded")
+
     start = datetime.datetime.now()
 
     h_pretty = header_line('Cmr-Pretty', 'format output with new lines',
@@ -60,8 +62,9 @@ def capabilities(event, context):
     # optional return values
     optionals = lambda r,i,o : {'headers-in':i,'headers-out':o,'response':r}
 
-    body = {
-        'urls': [
+    body = {}
+    handler.append_version(body)
+    body['urls'] = [
             capability(event,
                 '/',
                 'Root',
@@ -88,5 +91,5 @@ def capabilities(event, context):
                     [h_pretty] + [h_token],
                     [h_took, h_type_yaml])),
         ]
-    }
+
     return handler.aws_return_message(event, 200, body, start=start)
