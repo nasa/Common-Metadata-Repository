@@ -91,4 +91,5 @@ def capabilities(event, context):
                     [h_took, h_type_yaml])),
         ]
     }
+    handler.append_version(body)
     return handler.aws_return_message(event, 200, body, start=start)

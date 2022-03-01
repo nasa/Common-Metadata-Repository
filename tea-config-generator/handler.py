@@ -44,13 +44,34 @@ def pretty_indent(event):
         if pretty=='false' and 'headers' in event:
             # standardize the keys to lowercase
             headers = lowercase_dictionary(event['headers'])
-            if 'cmr-pretty' in headers:
-                pretty = headers['cmr-pretty']
+            pretty = headers.get('cmr-pretty', 'false')
 
         # set the output
         if pretty.lower()=="true":
             indent=1
     return indent
+
+def read_file(file_name):
+    """
+    Read version file content written by the CI/CD system, return None if it
+    does not exist
+    """
+    if os.path.exists(file_name):
+        with open(file_name, encoding='utf-8') as out_file:
+            return out_file.read()
+    return None
+
+def load_version():
+    """ Load version information from a file. This file is written by CI/CD """
+    if ver := read_file('ver.txt'):
+        return json.loads(ver)
+    return None
+
+def append_version(data:dict=None):
+    """ Append CI/CD version information to a dictionary if it exists. """
+    if data is not None:
+        if ver := load_version():
+            data['version'] = ver
 
 def aws_return_message(event, status, body, headers=None, start=None):
     """ build a dictionary which AWS Lambda will accept as a return value """
@@ -116,6 +137,8 @@ def debug(event, context):
                 body[env] = '~redacted~'
             else:
                 body[env] = value
+    append_version(body)
+
     return aws_return_message(event, 200, body, start=start)
 
 def health(event, context):

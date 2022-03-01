@@ -1,5 +1,6 @@
 """ Test module """
-from unittest import TestCase
+from unittest import TestCase, mock
+
 import handler as handler
 
 
@@ -58,3 +59,43 @@ class HandlerTest(TestCase):
 
         tester(1, env('', 'true'), "blank header")
         #tester(1, env('true', ''), "blank param")
+
+
+    @mock.patch('handler.read_file')
+    def test_get_group(self, mock_read):
+        """ test that the version can be read and parsesd """
+        mock_read.return_value = None
+        self.assertEqual(None, handler.load_version(), "file does not exist")
+
+        mock_read.return_value = '{"version":"1.2.3","release":"1.2.3","when":"2022-03-01"}'
+        self.assertEqual({"version":"1.2.3","release":"1.2.3","when":"2022-03-01"},
+            handler.load_version(),
+            "can read version and parse")
+
+    @mock.patch('handler.read_file')
+    def test_get_group(self, mock_read):
+        """ test that the version is appended when it needs to be """
+        mock_read.return_value = None
+
+        data = None
+        handler.append_version(data)
+        self.assertEqual(data, handler.append_version(data), "data does not exist")
+
+        data = {'fish':'food'}
+        handler.append_version(data)
+        self.assertEqual({'fish':'food'}, data, "have data, no file")
+
+        # ##############################
+
+        mock_read.return_value = '{"version":"1.2.3","release":"1.2.3","when":"2022-03-01"}'
+
+        data = None
+        handler.append_version(data)
+        self.assertEqual(None, data, "data and file")
+
+        data = {'fish':'food'}
+        handler.append_version(data)
+        expected = {'fish':'food',
+            'version':{"version":"1.2.3","release":"1.2.3","when":"2022-03-01"}}
+        self.assertEqual(expected, data, "data and file")
+
