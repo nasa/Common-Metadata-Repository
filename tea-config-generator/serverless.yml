@@ -43,6 +43,7 @@ functions:
 plugins:
   - serverless-python-requirements
   - serverless-offline
+
 custom:
   endPoint: /configuration/tea
   pythonRequirements:
