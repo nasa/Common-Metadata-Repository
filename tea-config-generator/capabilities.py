@@ -62,8 +62,9 @@ def capabilities(event, context):
     # optional return values
     optionals = lambda r,i,o : {'headers-in':i,'headers-out':o,'response':r}
 
-    body = {
-        'urls': [
+    body = {}
+    handler.append_version(body)
+    body['urls'] = [
             capability(event,
                 '/',
                 'Root',
@@ -90,6 +91,5 @@ def capabilities(event, context):
                     [h_pretty] + [h_token],
                     [h_took, h_type_yaml])),
         ]
-    }
-    handler.append_version(body)
+
     return handler.aws_return_message(event, 200, body, start=start)

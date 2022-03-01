@@ -71,7 +71,7 @@ def append_version(data:dict=None):
     """ Append CI/CD version information to a dictionary if it exists. """
     if data is not None:
         if ver := load_version():
-            data['version'] = ver
+            data['application'] = ver
 
 def aws_return_message(event, status, body, headers=None, start=None):
     """ build a dictionary which AWS Lambda will accept as a return value """

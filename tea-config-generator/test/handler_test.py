@@ -96,6 +96,6 @@ class HandlerTest(TestCase):
         data = {'fish':'food'}
         handler.append_version(data)
         expected = {'fish':'food',
-            'version':{"version":"1.2.3","release":"1.2.3","when":"2022-03-01"}}
+            'application':{"version":"1.2.3","release":"1.2.3","when":"2022-03-01"}}
         self.assertEqual(expected, data, "data and file")
 
