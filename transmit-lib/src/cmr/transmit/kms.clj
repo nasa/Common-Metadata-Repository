@@ -299,10 +299,11 @@
    :category \"Earth Observation Satellites\" :basis \"Space-based Platforms\"} ..."
   [context keyword-scheme]
   {:pre (some? (keyword-scheme keyword-scheme->field-names))}
-  (let [keywords
-         (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
-    (info (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))
-    keywords))
+  (when-not (= keyword-scheme :spatial-keywords-old)
+    (let [keywords
+           (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
+      (info (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))
+      keywords)))
 
 (comment
   (def get-keywords-from-system
