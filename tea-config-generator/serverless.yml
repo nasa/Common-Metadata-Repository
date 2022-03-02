@@ -44,7 +44,7 @@ resources:
       Type: AWS::IAM::Role
       Properties:
         RoleName: tea-config-generator-role-${self:custom.env}-${self:provider.region}
-        PermissionsBoundary: arn:aws:iam::${aws.accountId}:policy/NGAPShRoleBoundary
+        PermissionsBoundary: arn:aws:iam::${aws:accountId}:policy/NGAPShRoleBoundary
         ManagedPolicyArns:
           - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         AssumeRolePolicyDocument:
@@ -60,7 +60,6 @@ resources:
 plugins:
   - serverless-python-requirements
   - serverless-offline
-
 custom:
   env: ${opt:env, 'sit'}
   endPoint: /configuration/tea
