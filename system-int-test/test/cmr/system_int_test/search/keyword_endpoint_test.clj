@@ -600,21 +600,6 @@
                         "type"
                         [{"value" "ARCTIC",
                           "uuid" "d40d9651-aa19-4b2c-9764-7371bb64b9a7"}]}
-                       {"value" "OCEAN",
-                        "uuid" "ff03e9fc-9882-4a5e-ad0b-830d8f1186cb",
-                        "subfields" ["type"],
-                        "type"
-                        [{"value" "ATLANTIC OCEAN",
-                          "uuid" "cf249a36-2e82-4d32-84cd-23a4f40bb393",
-                          "subfields" ["subregion_1"],
-                          "subregion_1"
-                          [{"value" "NORTH ATLANTIC OCEAN",
-                            "uuid" "a4202721-0cba-4fa1-853f-890f146b04f9",
-                            "subfields" ["subregion_2"],
-                            "subregion_2"
-                            [{"value" "BALTIC SEA",
-                              "uuid"
-                              "41cd228c-4677-4900-9507-70144d8b50bc"}]}]}]}
                        {"value" "CONTINENT",
                         "uuid" "0a672f19-dad5-4114-819a-2eb55bdbb56a",
                         "subfields" ["type"],
@@ -641,7 +626,27 @@
                             "subregion_2"
                             [{"value" "ANGOLA",
                               "uuid"
-                              "9b0a194d-d617-4fed-9625-df176319892d"}]}]}]}]},
+                              "9b0a194d-d617-4fed-9625-df176319892d"}]}]}]}
+                       {"value" "OCEAN",
+                        "uuid" "ff03e9fc-9882-4a5e-ad0b-830d8f1186cb",
+                        "subfields" ["type"],
+                        "type"
+                        [{"value" "ATLANTIC OCEAN",
+                          "uuid" "cf249a36-2e82-4d32-84cd-23a4f40bb393",
+                          "subfields" ["subregion_1"],
+                          "subregion_1"
+                          [{"value" "NORTH ATLANTIC OCEAN",
+                            "uuid" "a4202721-0cba-4fa1-853f-890f146b04f9",
+                            "subfields" ["subregion_2"],
+                            "subregion_2"
+                            [{"value" "MEDITERRANEAN SEA",
+                              "subfields" ["subregion_3"],
+                              "subregion_3"
+                              [{"value" "ADRIATIC SEA",
+                                "uuid" "7b93c892-2fc4-417b-a4da-5c8a2fca361b"}]}
+                             {"value" "BALTIC SEA",
+                              "uuid"
+                              "41cd228c-4677-4900-9507-70144d8b50bc"}]}]}]}]}
    :location-keywords {"category"
                        [{"value" "GEOGRAPHIC REGION",
                          "uuid" "204270d9-8039-4768-851e-63635af5fb65",
@@ -917,7 +922,7 @@
   (testing "Invalid keyword scheme returns 400 error"
     (is (= {:status 400
             :errors [(str "The keyword scheme [foo] is not supported. Valid schemes are:"
-                          " providers, measurement_name, spatial_keywords, granule_data_format,"
+                          " providers, measurement_name, spatial_keywords, spatial_keywords_old, granule_data_format,"
                           " mime_type, related_urls, iso_topic_categories,"
                           " instruments, science_keywords, concepts, temporal_keywords, platforms,"
                           " archive_centers, data_centers, location_keywords, and projects.")]}
