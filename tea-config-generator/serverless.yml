@@ -48,7 +48,7 @@ resources:
         ManagedPolicyArns:
           - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         AssumeRolePolicyDocument:
-          Version: '2022-03-02'
+          Version: '2012-10-17'
           Statement:
             - Effect: 'Allow'
               Principal:
