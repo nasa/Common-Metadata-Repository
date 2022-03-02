@@ -183,7 +183,10 @@
                                    :subscription}
                                  concept-type))))
 
-(def REINDEX_BATCH_SIZE 2000)
+(defconfig REINDEX_BATCH_SIZE
+  "Batch size used for reindexing collections."
+  {:default 100
+   :type Long})
 
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
