@@ -29,7 +29,6 @@
    [cmr.transmit.metadata-db2 :as meta-db2]
    [cmr.transmit.search :as search]))
 
-
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
   cache fields will be used. This is a temporary configuration to toggle the feature off if there
