@@ -29,6 +29,7 @@
    [cmr.transmit.metadata-db2 :as meta-db2]
    [cmr.transmit.search :as search]))
 
+
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
   cache fields will be used. This is a temporary configuration to toggle the feature off if there
@@ -188,6 +189,7 @@
   {:default 100
    :type Long})
 
+
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
 
@@ -221,7 +223,7 @@
        (let [latest-collection-batches (meta-db/find-in-batches
                                         context
                                         :collection
-                                        REINDEX_BATCH_SIZE
+                                        (REINDEX_BATCH_SIZE)
                                         {:provider-id provider-id :latest true})]
          (bulk-index context latest-collection-batches {:all-revisions-index? false
                                                         :force-version? force-version?})))
@@ -233,7 +235,7 @@
        (let [all-revisions-batches (meta-db/find-in-batches
                                     context
                                     :collection
-                                    REINDEX_BATCH_SIZE
+                                    (REINDEX_BATCH_SIZE)
                                     {:provider-id provider-id})]
          (bulk-index context all-revisions-batches {:all-revisions-index? true
                                                     :force-version? force-version?}))))))
@@ -245,7 +247,7 @@
   (let [latest-tag-batches (meta-db/find-in-batches
                             context
                             :tag
-                            REINDEX_BATCH_SIZE
+                            (REINDEX_BATCH_SIZE)
                             {:latest true})]
     (bulk-index context latest-tag-batches)))
 
