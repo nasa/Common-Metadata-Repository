@@ -126,8 +126,9 @@
 
 (deftest make-sure-nested-fields-mappings-exist
   (testing "Making sure the nested-fields-mapping list contains the new valid keywords"
-    (let [valid-keywords (concat (keys kms/keyword-scheme->field-names)
-                                 (keys kms/cmr-to-gcmd-keyword-scheme-aliases))]
+    (let [valid-keywords (remove #{:spatial-keywords-old}
+                                 (concat (keys kms/keyword-scheme->field-names)
+                                         (keys kms/cmr-to-gcmd-keyword-scheme-aliases)))]
       (is
         (every?
            #(some? ((kms/translate-keyword-scheme-to-cmr %) kms-fetcher/nested-fields-mappings))
