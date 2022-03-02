@@ -189,7 +189,6 @@
   {:default 100
    :type Long})
 
-
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
 
