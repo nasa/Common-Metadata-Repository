@@ -34,6 +34,11 @@ the following commands:
 5. Install locally: `serverless offline`
 6. Run some example URLS: `./run.sh -e`
 
+### Docker
+
+The Dockerfile defines a node image which includes python3 and serverless for
+use as a build and deployment environment when running under a CI/CD system.
+
 ## Deploying to AWS
 
 1. Create a role with a title like `tea-config-<env>-<location>-lambda-role`

@@ -7,7 +7,8 @@ provider:
   runtime: python3.8
   memorySize: 128 # default was 1024, 512 would also be accepted
   timeout: 15  # 7 seconds is the average run time currently
-  role: ${env:AWS_TEA_CONFIG_IAM, 'arn:aws:iam::862722526950:role/tea-config-sit-east-1-lambda-role'}
+  role: IamRoleTeaLambdaExecution
+  #role: ${env:AWS_TEA_CONFIG_IAM, 'arn:aws:iam::862722526950:role/tea-config-sit-east-1-lambda-role'}
   environment:
     AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.uat.earthdata.nasa.gov'}
     AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_LOG, 'INFO'}
@@ -35,6 +36,25 @@ functions:
     handler: handler.generate_tea_config
     events:
       - http: GET ${self:custom.endPoint}/provider/{id}
+
+resources:
+  Resources:
+    IamRoleTeaLambdaExecution:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: tea-config-generator-role-${self:provider.stage}
+        PermissionsBoundary: arn:aws:iam::#{AWS::AccountId}:policy/NGAPShRoleBoundary
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        AssumeRolePolicyDocument:
+          Version: '2022-03-02'
+          Statement:
+            - Effect: 'Allow'
+              Principal:
+                Service:
+                  - 'lambda.amazonaws.com'
+              Action:
+                - 'sts:AssumeRole'
 
 plugins:
   - serverless-python-requirements
