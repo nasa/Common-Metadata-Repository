@@ -106,7 +106,7 @@ help_doc()
   printf "${format}" '-I' '' 'Install' 'Install dependent libraries'
 }
 
-while getopts 'hcCuUlLjt:oreIxD' opt; do
+while getopts 'hcCuUlLjt:orSeIxD' opt; do
   case ${opt} in
     h) help_doc ;;
     c) color_mode='yes';;
@@ -121,6 +121,7 @@ while getopts 'hcCuUlLjt:oreIxD' opt; do
     t) token=${OPTARG} ;;
     o) serverless offline ; exit ;;
     r) report_code_coverage ;;
+    S) serverless doctor &> doctor.txt ;;
     
     x) rm -rf build script.log ;;
 
