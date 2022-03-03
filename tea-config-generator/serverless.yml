@@ -2,6 +2,8 @@ service: tea-config-generator
 
 frameworkVersion: '2 || 3'
 
+variablesResolutionMode: 20210326
+
 provider:
   name: aws
   runtime: python3.8
@@ -9,7 +11,6 @@ provider:
   timeout: 15  # 7 seconds is the average run time currently
   region: us-east-1
   role: IamRoleTeaLambdaExecution
-  #role: ${env:AWS_TEA_CONFIG_IAM, 'arn:aws:iam::862722526950:role/tea-config-sit-east-1-lambda-role'}
   environment:
     AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.uat.earthdata.nasa.gov'}
     AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_LOG, 'INFO'}
@@ -25,10 +26,6 @@ functions:
     events:
       - http: GET ${self:custom.endPoint}/
       - http: GET ${self:custom.endPoint}/capabilities
-  debug:
-    handler: handler.debug
-    events:
-      - http: GET ${self:custom.endPoint}/debug
   status:
     handler: handler.health
     events:
@@ -44,7 +41,8 @@ resources:
       Type: AWS::IAM::Role
       Properties:
         RoleName: tea-config-generator-role-${self:custom.env}-${self:provider.region}
-        PermissionsBoundary: arn:aws:iam::${aws:accountId}:policy/NGAPShRoleBoundary
+        #PermissionsBoundary: arn:aws:iam::${aws:accountId,'default'}:policy/NGAPShRoleBoundary
+        PermissionsBoundary: arn:aws:iam:::policy/NGAPShRoleBoundary
         ManagedPolicyArns:
           - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         AssumeRolePolicyDocument:
@@ -60,6 +58,7 @@ resources:
 plugins:
   - serverless-python-requirements
   - serverless-offline
+  - serverless-s3-local
 custom:
   env: ${opt:env, 'sit'}
   endPoint: /configuration/tea
