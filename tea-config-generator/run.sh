@@ -124,45 +124,7 @@ while getopts 'hcCuUlLjt:orSeIxD' opt; do
     S) serverless doctor &> doctor.txt ;;
     
     x) rm -rf build script.log ;;
-
-    e)
-      baseEndPoint='http://localhost:3000/dev'
-      cprintf $YELLOW 'Example calls'
-      
-      echo
-      cprintf $GREEN "Calling /tea"
-      curl -s -H 'Cmr-Pretty: true' "${baseEndPoint}/configuration/tea"
-      echo
-      cprintf $GREEN '----'
-      read
-      
-      echo
-      cprintf $GREEN 'Calling /tea/capabilities'
-      curl -s "${baseEndPoint}/configuration/tea/capabilities" | head
-      echo
-      cprintf $GREEN '----'
-      read
-      
-      echo
-      cprintf $GREEN 'Calling /tea/status'
-      curl -i "${baseEndPoint}/configuration/tea/status"
-      echo
-      cprintf $GREEN '----'
-      
-      echo
-      cprintf $GREEN 'Calling /tea/provider/POCLOUD, may take 7 seconds'
-      curl -H "Cmr-Token: ${token}" "${baseEndPoint}/configuration/tea/provider/POCLOUD"
-      echo
-      cprintf $GREEN '----'
-
-      echo
-      cprintf $GREEN 'Calling /tea/provider/POCLOUD again with just headers, may take 7 seconds'
-      curl -I -H "Cmr-Token: ${token}" "${baseEndPoint}/configuration/tea/provider/POCLOUD"
-      echo
-
-      #curl -s http://localhost:7000/local-bucket/index.html
-      #curl -H 'Cmr-Token: token-value-here' '${baseEndPoint}/configuration/tea/debug'
-      ;;
+    e) curl -H "Authorization: ${token}" "${baseEndPoint}/configuration/tea/provider/POCLOUD" ;;
     I)
       #alternet ways to install serverless, enable as needed
       #npm install -g serverless

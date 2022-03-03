@@ -63,7 +63,8 @@ def read_file(file_name):
 
 def load_version():
     """ Load version information from a file. This file is written by CI/CD """
-    if ver := read_file('ver.txt'):
+    ver = read_file('ver.txt')
+    if ver is not None:
         return json.loads(ver)
     return None
 
