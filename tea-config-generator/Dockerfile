@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:16
 
 RUN apt-get update && \
     apt install -y \
@@ -10,8 +10,6 @@ RUN apt-get update && \
 WORKDIR /build
 
 RUN npm install -g serverless
-#RUN serverless plugin install -n serverless-python-requirements
-#RUN serverless plugin install -n serverless-s3-local
 RUN pip3 install pylint
 
 RUN echo "# Aliases" >> /etc/bash.bashrc

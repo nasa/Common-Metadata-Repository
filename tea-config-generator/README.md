@@ -9,12 +9,14 @@ See: [Cumulus thin egress app][tea]
 ## Usage
 
 The [run.sh](run.sh) command will execute many of the stages of the software needed
-get the application started. To see the options supported, run `./run.sh -h`. To start the application, run in one terminal window: `./run.sh -o`. This will install the lambda functions and start the offline server. In another terminal window try
+get the application started. To see the options supported, run `./run.sh -h`. To
+start the application, run in one terminal window: `./run.sh -o`. This will install
+the lambda functions and start the offline server. In another terminal window try
 the following commands:
 
     curl 'http://localhost:3000/dev/configuration/tea/capabilities'
     curl -I 'http://localhost:3000/dev/configuration/tea/status'
-    curl -H 'Cmr-Token: uat-token-value' 'http://localhost:3000/dev/configuration/tea/provider/POCLOUD'
+    curl -H 'Authorization: Bearer uat-token-value' 'http://localhost:3000/dev/configuration/tea/provider/POCLOUD'
 
 | Action       | URL                                       | Description |
 | ------------ | ----------------------------------------- | ----------- |

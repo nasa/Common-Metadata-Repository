@@ -164,6 +164,7 @@ while getopts 'hcCuUlLjt:orSeIxD' opt; do
       #curl -H 'Cmr-Token: token-value-here' '${baseEndPoint}/configuration/tea/debug'
       ;;
     I)
+      #alternet ways to install serverless, enable as needed
       #npm install -g serverless
       #curl --silent -o- --location https://slss.io/install | bash
       pip3 install -r requirements.txt 
@@ -173,11 +174,3 @@ while getopts 'hcCuUlLjt:orSeIxD' opt; do
     *) cprintf $RED "option required"
   esac
 done
-
-# docker network create localstack
-# docker-compose up -d
-# curl -i http://localhost:4566/health
-# awslocal s3 ls
-# serverless plugin install -n serverless-python-requirements
-# serverless --config serverless-local.yml deploy --stage local
-# serverless deploy --config serverless-local.yml --stage local
