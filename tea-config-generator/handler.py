@@ -163,7 +163,7 @@ def generate_tea_config(event, context):
     the following:
     * CMR must be configured with an env variable
     * Path Parameter named 'id' with CMR provider name
-    * HTTP Header named 'Cmr-Token' with a CMR compatible token
+    * HTTP Header named 'Authorization' with a CMR compatible token
     """
     logger = init_logging()
     logger.debug("generate tea config started")
