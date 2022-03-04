@@ -6,7 +6,7 @@
     [cmr.common-app.services.kms-lookup :as kms-lookup]
     [cmr.common.util :as util]))
 
-;
+;;
 ;; *****************************************************************************
 ;; version 2 platforms
 
@@ -43,12 +43,24 @@
 (defn humanized-platform2-nested-fields->elastic-doc
   "Extracts humanized fields from the platform short name, then use KMS to look up the rest of the
   values and places them into an elastic doc with the same shape/keys as
-  platform2-nested-fields->elastic-doc."
+  platform2-nested-fields->elastic-doc.  If the humanized short-name does not exist in KMS then
+  look up the original short name and fill out the doc if it exists. If it does exist just replace
+  the original short name with the humanized one.  If it doesn't then just return the humanized
+  platform."
   [kms-index platform]
   (let [humanized-fields (filter #(-> % key namespace (= "cmr-humanized")) platform)
         humanized-fields-with-raw-values (util/map-values :value humanized-fields)
-        ns-stripped-fields (util/map-keys->kebab-case humanized-fields-with-raw-values)]
-    (platform2-nested-fields->elastic-doc kms-index (:short-name ns-stripped-fields))))
+        ns-stripped-fields (util/map-keys->kebab-case humanized-fields-with-raw-values)
+        humanized-platform (platform2-nested-fields->elastic-doc kms-index
+                                                                 (:short-name ns-stripped-fields))]
+    (if (:basis humanized-platform)
+      humanized-platform
+      (let [original-field (:ShortName platform)
+            original-platform (platform2-nested-fields->elastic-doc kms-index original-field)]
+        (if (:basis original-platform)
+          (assoc original-platform :short-name (:short-name humanized-platform)
+                                   :short-name-lowercase (:short-name-lowercase humanized-platform))
+          humanized-platform)))))
 
 ;; *****************************************************************************
 ;; version 1 platforms
