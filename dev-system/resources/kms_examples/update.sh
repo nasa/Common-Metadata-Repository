@@ -14,13 +14,13 @@
 # service. You would do this if the content or structure of the data has changed
 # significently and new data is desired in tests.
 
-schemes_to_import="mimetype granuledataformat idnnode instruments isotopiccategory \
+schemes_to_import="mimetype dataformat idnnode instruments isotopiccategory \
   locations measurementname platforms projects providers rucontenttype \
   sciencekeywords temporalresolutionrange"
 
 # These types below will return Hits and page info in the headers:
 #
-# mimetype, granuledataformat, idnnode, isotopiccategory, measurmentname, rucontenttype,
+# mimetype, dataformat, idnnode, isotopiccategory, measurmentname, rucontenttype,
 # temporalresolutionrange
 #
 # however providers, sciencekeywords (and soon instruments) are past 2000 in

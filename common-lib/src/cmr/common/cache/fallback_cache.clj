@@ -70,12 +70,16 @@
   (set-value
     [this key value]
     (c/set-value backup-cache key value)
-    (c/set-value primary-cache key value)))
+    (c/set-value primary-cache key value))
+  
+  (cache-size
+   [_]
+   (+ (c/cache-size primary-cache)
+      (c/cache-size backup-cache))))
+
 (record-pretty-printer/enable-record-pretty-printing FallbackCache)
 
 (defn create-fallback-cache
   "Creates an instance of the fallback cache."
   [primary-cache backup-cache]
   (->FallbackCache primary-cache backup-cache))
-
-

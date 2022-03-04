@@ -149,7 +149,7 @@ The following fields are validated:
 * [Data Centers](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/providers?format=csv) - short name
 * [Directory Names](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/idnnode?format=csv) - short name
 * [ISO Topic Categories](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/isotopiccategory?format=csv) - iso topic category
-* [Data Format](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/granuledataformat?format=csv) - Archival and Distribution File Format, and GetData Format
+* [Data Format](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/dataformat?format=csv) - Archival and Distribution File Format, and GetData Format
 
 **Note**: that when multiple fields are present the combination of keywords are validated to match a known combination.
 
@@ -220,10 +220,20 @@ Note: X-Request-Id response header always contains the same value as the CMR-Req
 
 Successful ingest responses will return an HTTP Status code of 201 for create and 200 for update/delete, and a body containing the [CMR Concept Id](#concept-id) of the item that was created, updated or deleted along with the [revision id](#revision-id).
 
-UMM-C schema validation errors are returned as warnings in the response by default. When Cmr-Validate-Umm-C request header is set to true, the ingest request will fail when there are any UMM-C validation errors.
+    {"concept-id" : "C1200000005-PROV1",
+     "revision-id" : 1,
+     "warnings" : null,
+     "existing-errors" : null}
 
-    {"concept-id":"C12345-PROV","revision-id":1,"warnings":"object has missing required properties ([\"ProcessingLevel\"])"}
+When there are existing errors allowed for progressive update, the response looks like the following:
 
+    {"concept-id" : "C1200000005-PROV1",
+     "revision-id" : 2,
+     "warnings" : [ "After translating item to UMM-C the metadata had the following issue(s): [:TilingIdentificationSystems] Tiling Identification Systems must be unique. This contains duplicates named [MODIS Tile EASE, MISR].;; [:AdditionalAttributes 2] Value [6] is not a valid value for type [DATETIME].;; [:AdditionalAttributes 3] Value [GHRSST Level 2P Global Subskin Sea Surface Temperature from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite] is not a valid value for type [DATETIME]." ],
+     "existing-errors" : [ "After translating item to UMM-C the metadata had the following existing error(s): [:TilingIdentificationSystems] Tiling Identification Systems must be unique. This contains duplicates named [MODIS Tile EASE, MISR].;; [:AdditionalAttributes 2] Value [6] is not a valid value for type [DATETIME].;; [:AdditionalAttributes 3] Value [GHRSST Level 2P Global Subskin Sea Surface Temperature from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite] is not a valid value for type [DATETIME]." ]}
+
+Note: The delimiter for different warnings and existing-errors is ";; ".
+ 
 #### <a name="error-response"></a> Error Responses
 
 Requests could fail for several reasons when communicating with the CMR as described in the [HTTP Status Codes](#http-status-codes).

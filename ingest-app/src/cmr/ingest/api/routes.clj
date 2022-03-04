@@ -1,6 +1,7 @@
 (ns cmr.ingest.api.routes
   "Defines the HTTP URL routes for the ingest API."
   (:require
+   [cheshire.core :as json]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
@@ -18,6 +19,7 @@
    [cmr.ingest.api.translation :as translation-api]
    [cmr.ingest.api.variables :as variables]
    [cmr.ingest.services.ingest-service :as ingest]
+   [cmr.ingest.services.job-management :as jm]
    [cmr.ingest.services.jobs :as jobs]
    [compojure.core :refer [DELETE GET POST PUT context routes]]
    [drift.execute :as drift]))
@@ -82,6 +84,20 @@
            {ctx :request-context params :params}
            (acl/verify-ingest-management-permission ctx :update)
            (subscriptions-helper/trigger-email-subscription-processing ctx params)
+           {:status 200})
+     (GET  "/email-subscription-processing-job-state"
+           {ctx :request-context}
+           (let [trigger-state (jm/get-email-subscription-processing-job-state ctx)]
+             {:status 200 :body (json/generate-string {:state trigger-state})}))
+     (POST "/enable-email-subscription-processing-job"
+           {ctx :request-context}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jm/enable-email-subscription-processing-job ctx)
+           {:status 200})
+     (POST "/disable-email-subscription-processing-job"
+           {ctx :request-context}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jm/disable-email-subscription-processing-job ctx)
            {:status 200}))))
 
 (def ingest-routes

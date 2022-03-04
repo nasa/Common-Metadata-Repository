@@ -1373,6 +1373,64 @@ Auto-completion assistance for building queries. This functionality may be used 
 
 Collection facet autocompletion results are paged. See [Paging Details](#paging-details) for more information on how to page through autocomplete search results.
 
+#### Autocompletion of Science Keywords
+In the case of science keywords, the `fields` property may be used to determine the hierarchy of the term. The structure of the `fields` field is a colon (`:`) separated list in the following sequence:
+
+ * topic
+ * term
+ * variable-level-1
+ * variable-level-2
+ * varaible-level-3
+ * detailed-variable
+
+There may be gaps within the structure where no associated value exists.
+
+Example With variable-level-1 as the base term
+```
+{ :score 2.329206,
+  :type "science_keywords",
+  :value "Solar Irradiance",
+  :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"
+}
+```
+
+Example with detailed-variable as the base term, note the extra colons preserving the structure
+```
+{ :score 1.234588,
+  :type "science_keywords",
+  :value "Coronal Mass Ejection",
+  :fields "Sun-Earth Interactions:Solar Activity::::Coronal Mass Ejection
+}
+```
+
+#### Autocompletion of Platforms
+In the case of platforms, the `fields` property may be used to determine the hierarchy of the term. The structure of the `fields` field is a colon (`:`) separated list in the following sequence:
+
+ * basis
+ * category
+ * sub-category
+ * short-name
+
+There may be gaps within the structure where no associated value exists.
+
+Example With short-name as the base term
+```
+{ :score 2.329206,
+  :type "platforms",
+  :value "AEROS-1",
+  :fields "Space-based Platforms:Earth Observation Satellites:Aeros:AEROS-1"
+}
+```
+
+Example with short-name as the base term, but the sub-category is missing. Note the extra colons preserving the structure
+```
+{ :score 1.234588,
+  :type "platforms",
+  :value "Terra",
+  :fields "Space-based Platforms:Earth Observation Satellites::Terra
+}
+```
+
 #### Autocomplete Parameters
   * `q` The string on which to search. The term is case insensitive.
   * `type[]` Optional list of types to include in the search. This may be any number of valid facet types.
@@ -1393,27 +1451,26 @@ CMR-Hits: 15
       {
         "score": 9.115073,
         "type": "instrument",
+        "fields": "ICE AUGERS",
         "value": "ICE AUGERS"
       },
       {
         "score": 9.115073,
         "type": "instrument",
+        "fields": "ICECUBE",
         "value": "ICECUBE"
       },
       {
-        "score": 9.013778,
-        "type": "platform",
+        "score": 9.021176,
+        "type": "platforms",
+        "fields": "Space-based Platforms:Earth Observation Satellites:Ice, Cloud and Land Elevation Satellite (ICESat):ICESat-2",
         "value": "ICESat-2"
       },
       {
         "score": 8.921176,
-        "type": "platform",
-        "value": "Sea Ice Mass Balance Station"
-      },
-      {
-        "score": 8.921176,
-        "type": "platform",
-        "value": "ICEYE"
+        "type": "science_keywords",
+        "fields": "Atmosphere:Sun-Earth Interactions:Cloud Cover:Ice Reflectivity",
+        "value": "Ice Reflectivity"
       }
     ]
   }
@@ -1436,13 +1493,15 @@ CMR-Hits: 3
     "entry": [
       {
         "score": 9.013778,
-        "type": "platform",
-        "value": "ICESat-2"
+        "type": "platforms",
+        "value": "ICESat-2",
+        "fields": "Space-based Platforms:Earth Observation Satellites:Ice, Cloud and Land Elevation Satellite (ICESat):ICESat-2"
       },
       {
         "score": 8.921176,
-        "type": "platform",
-        "value": "Sea Ice Mass Balance Station"
+        "type": "platforms",
+        "value": "Sea Ice Mass Balance Station",
+        "fields": "Water-based Platforms:Fixed Platforms:Surface:Sea Ice Mass Balance Station"
       },
       {
         "score": 8.921176,
@@ -1991,9 +2050,9 @@ Note: if you use "polygon" for multiple polygon search, it won't work because on
 Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude, lower left latitude, upper right longitude, upper right latitude.
 This parameter supports the and/or option as shown below.
 
-    curl "%CMR-ENDPOINT%/collections?bounding_box[]=-10,-5,10,5
+    curl "%CMR-ENDPOINT%/collections?bounding_box[]=-10,-5,10,5"
 
-    curl "%CMR-ENDPOINT%/collections?bounding_box[]=-10,-5,10,5&bounding_box[]=-11,-6,11,6&options[bounding_box][or]=true
+    curl "%CMR-ENDPOINT%/collections?bounding_box[]=-10,-5,10,5&bounding_box[]=-11,-6,11,6&options[bounding_box][or]=true"
 
 ##### <a name="c-point"></a> Point
 
@@ -2309,7 +2368,7 @@ Note: if you use "polygon" for multiple polygon search, it won't work because on
 
 ##### <a name="g-bounding-box"></a> Bounding Box
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&bounding_box=-10,-5,10,5
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&bounding_box=-10,-5,10,5"
 
 ##### <a name="g-point"></a> Point
 
@@ -2355,18 +2414,18 @@ Find granules with an exact equator crossing longitude of 90
 
 Find granules with an orbit equator crossing longitude in the range of 0 to 10
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_longitude=0,10
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_longitude=0,10"
 
 Find granules with an equator crossing longitude in the range from 170 to -170
   (across the anti-meridian)
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_longitude=170,-170
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_longitude=170,-170"
 
 #### <a name="g-orbit-equator-crossing-date"></a> Find granules by orbit equator crossing date
 
 Find granules with an orbit equator crossing date in the range of 2000-01-01T10:00:00Z to 2010-03-10T12:00:00Z
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
 The time interval in equator crossing date range searches can be specified in different ways including ISO 8601. See under [Temporal Range searches](#temporal-range-searches).
 
@@ -2809,7 +2868,7 @@ Several fields including science keywords, data centers, platforms, instruments,
 
 #### <a name="facets-v2-response-format"></a> Version 2 Facets Response Format
 
-Version 2 facets are enabled by setting the `include_facets=v2` parameter in either collection or granule search requests in the JSON format. In order to request faceting on granule searches, the search must be limited in scope to a single collection (e.g. by specifying a single concept ID in the collection_concept_id parameter). The max number of values in each v2 facet can be set by using facets_size parameter (i.e. facets_size[platforms]=10, facets_size[instrument]=20. Default size is 50.). facets_size is only supported for collection v2 facet search. The same fields apply in the v2 facets as for the flat facets with the addition of horizontal range facets. When calling the CMR with a query the V2 facets are returned. These facets include the apply field described in more detail a few paragraphs below that includes the search parameter and values that need to be sent back to the CMR.
+Version 2 facets are enabled by setting the `include_facets=v2` parameter in either collection or granule search requests in the JSON format. In order to request faceting on granule searches, the search must be limited in scope to a single collection (e.g. by specifying a single concept ID in the collection_concept_id parameter). The max number of values in each v2 facet can be set by using facets_size parameter (i.e. facets_size[platforms]=10, facets_size[instrument]=20. Default size is 50.). facets_size is only supported for collection v2 facet search. The same fields apply in the v2 facets as for the flat facets with the addition of horizontal range facets and latency facets. When calling the CMR with a query the V2 facets are returned. These facets include the apply field described in more detail a few paragraphs below that includes the search parameter and values that need to be sent back to the CMR.
 
 ##### Specifying facet fields
 

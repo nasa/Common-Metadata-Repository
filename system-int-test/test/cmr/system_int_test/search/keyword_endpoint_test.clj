@@ -146,74 +146,93 @@
                                   "uuid"
                                   "3e705ebc-c58f-460d-b5e7-1da05ee45cc1"}]}]}]}]}]}]}
    :platforms {"basis"
-            [{"value" "Space-based Platforms",
-              "subfields" ["category"],
-              "category"
-              [{"value" "Earth Observation Satellites",
-                "subfields" ["sub_category"],
-                "sub_category"
-                [{"value" "DIADEM",
-                  "subfields" ["short_name"],
-                  "short_name"
-                  [{"value" "DIADEM-1D",
-                    "uuid" "143a5181-7601-4cc7-96d1-2b1a04b08fa7"}]}
-                 {"value" "SMAP-like",
-                  "subfields" ["short_name"],
-                  "short_name"
-                  [{"value" "SMAP",
-                    "subfields" ["long_name"],
-                    "long_name"
-                    [{"value"
-                      "Soil Moisture Active and Passive Observatory",
-                      "uuid"
-                      "7ee03239-24ff-433e-ab7e-8be8b9b2636b"}]}]}
-                 {"value"
-                  "Defense Meteorological Satellite Program(DMSP)",
-                  "subfields" ["short_name"],
-                  "short_name"
-                  [{"value" "DMSP 5B/F3",
-                    "subfields" ["long_name"],
-                    "long_name"
-                    [{"value"
-                      "Defense Meteorological Satellite Program-F3",
-                      "uuid"
-                      "7ed12e98-95b1-406c-a58a-f4bbfa405269"}]}]}]}]}
-             {"value" "Air-based Platforms",
-              "subfields" ["category"],
-              "category"
-              [{"value" "Aircraft",
-                "subfields" ["short_name"],
-                "short_name"
-                [{"value" "AIRCRAFT",
-                  "uuid" "8bce0691-74e9-4363-8d1f-d453a318c62b"}]}
-               {"value" "Uncrewed Aerial Vehicles",
-                "subfields" ["short_name"],
-                "short_name"
-                [{"value" "ALTUS",
-                  "uuid" "46392889-f6e2-4b06-8f79-87f2ff9d4349"}]}
-               {"value" "Jet",
-                "subfields" ["short_name"],
-                "short_name"
-                [{"value" "A340-600",
-                  "subfields" ["long_name"],
-                  "long_name"
-                  [{"value" "Airbus A340-600",
-                    "uuid" "bab77f95-aa34-42aa-9a12-922d1c9fae63"}]}]}
-               {"value" "Propeller",
-                "subfields" ["short_name"],
-                "short_name"
-                [{"value" "B-200",
-                  "subfields" ["long_name"],
-                  "long_name"
-                  [{"value" "Beechcraft King Air B-200",
-                    "uuid" "d6aa2406-0323-43c1-b890-3509ee22784e"}]}
-                 {"value" "DHC-3",
-                  "subfields" ["long_name"],
-                  "long_name"
-                  [{"value" "DeHavilland DHC-3 Otter",
-                    "uuid" "aef364b1-6a71-49c0-b248-6dc1ecd4eaa3"}]}
-                 {"value" "CESSNA 188",
-                  "uuid" "80374e6d-fef6-4b11-bcc4-53568a3db220"}]}]}]}
+               [{"value" "Space-based Platforms",
+                 "subfields" ["category"],
+                 "category"
+                 [{"value" "Earth Observation Satellites",
+                   "subfields" ["short_name" "sub_category"],
+                   "short_name"
+                   [{"value" "Terra",
+                     "subfields" ["long_name"],
+                     "long_name"
+                     [{"value" "Earth Observing System, Terra (AM-1)",
+                       "uuid" "80eca755-c564-4616-b910-a4c4387b7c54"}]}
+                    {"value" "Aqua",
+                     "subfields" ["long_name"],
+                     "long_name"
+                     [{"value" "Earth Observing System, Aqua",
+                       "uuid" "ea7fd15d-190d-43f3-bdd3-75f5d88dc3f8"}]}],
+                   "sub_category"
+                   [{"value" "DIADEM",
+                     "subfields" ["short_name"],
+                     "short_name"
+                     [{"value" "DIADEM-1D",
+                       "uuid" "143a5181-7601-4cc7-96d1-2b1a04b08fa7"}]}
+                    {"value" "SMAP-like",
+                     "subfields" ["short_name"],
+                     "short_name"
+                     [{"value" "SMAP",
+                       "subfields" ["long_name"],
+                       "long_name"
+                       [{"value"
+                         "Soil Moisture Active and Passive Observatory",
+                         "uuid"
+                         "7ee03239-24ff-433e-ab7e-8be8b9b2636b"}]}]}
+                    {"value"
+                     "Defense Meteorological Satellite Program(DMSP)",
+                     "subfields" ["short_name"],
+                     "short_name"
+                     [{"value" "DMSP 5B/F3",
+                       "subfields" ["long_name"],
+                       "long_name"
+                       [{"value"
+                         "Defense Meteorological Satellite Program-F3",
+                         "uuid"
+                         "7ed12e98-95b1-406c-a58a-f4bbfa405269"}]}]}
+                    {"value" "Aeros",
+                     "subfields" ["short_name"],
+                     "short_name"
+                     [{"value" "AEROS-1",
+                       "uuid"
+                       "6164d877-53a0-4ba2-b73a-9dfb363474c9"}]}]}]}
+                {"value" "Air-based Platforms",
+                 "subfields" ["category"],
+                 "category"
+                 [{"value" "Aircraft",
+                   "subfields" ["short_name"],
+                   "short_name"
+                   [{"value" "AIRCRAFT",
+                     "uuid" "8bce0691-74e9-4363-8d1f-d453a318c62b"}]}
+                  {"value" "Uncrewed Aerial Vehicles",
+                   "subfields" ["short_name"],
+                   "short_name"
+                   [{"value" "ALTUS",
+                     "uuid" "46392889-f6e2-4b06-8f79-87f2ff9d4349"}]}
+                  {"value" "Jet",
+                   "subfields" ["short_name"],
+                   "short_name"
+                   [{"value" "NASA S-3B VIKING",
+                     "uuid" "7f1568aa-e87e-4b83-a622-e8f8a03f75bd"}
+                    {"value" "A340-600",
+                     "subfields" ["long_name"],
+                     "long_name"
+                     [{"value" "Airbus A340-600",
+                       "uuid" "bab77f95-aa34-42aa-9a12-922d1c9fae63"}]}]}
+                  {"value" "Propeller",
+                   "subfields" ["short_name"],
+                   "short_name"
+                   [{"value" "B-200",
+                     "subfields" ["long_name"],
+                     "long_name"
+                     [{"value" "Beechcraft King Air B-200",
+                       "uuid" "d6aa2406-0323-43c1-b890-3509ee22784e"}]}
+                    {"value" "DHC-3",
+                     "subfields" ["long_name"],
+                     "long_name"
+                     [{"value" "DeHavilland DHC-3 Otter",
+                       "uuid" "aef364b1-6a71-49c0-b248-6dc1ecd4eaa3"}]}
+                    {"value" "CESSNA 188",
+                     "uuid" "80374e6d-fef6-4b11-bcc4-53568a3db220"}]}]}]}
    :instruments {"category"
                  [{"value" "Earth Remote Sensing Instruments",
                    "subfields" ["class"],
@@ -569,21 +588,6 @@
                         "type"
                         [{"value" "ARCTIC",
                           "uuid" "d40d9651-aa19-4b2c-9764-7371bb64b9a7"}]}
-                       {"value" "OCEAN",
-                        "uuid" "ff03e9fc-9882-4a5e-ad0b-830d8f1186cb",
-                        "subfields" ["type"],
-                        "type"
-                        [{"value" "ATLANTIC OCEAN",
-                          "uuid" "cf249a36-2e82-4d32-84cd-23a4f40bb393",
-                          "subfields" ["subregion_1"],
-                          "subregion_1"
-                          [{"value" "NORTH ATLANTIC OCEAN",
-                            "uuid" "a4202721-0cba-4fa1-853f-890f146b04f9",
-                            "subfields" ["subregion_2"],
-                            "subregion_2"
-                            [{"value" "BALTIC SEA",
-                              "uuid"
-                              "41cd228c-4677-4900-9507-70144d8b50bc"}]}]}]}
                        {"value" "CONTINENT",
                         "uuid" "0a672f19-dad5-4114-819a-2eb55bdbb56a",
                         "subfields" ["type"],
@@ -610,7 +614,27 @@
                             "subregion_2"
                             [{"value" "ANGOLA",
                               "uuid"
-                              "9b0a194d-d617-4fed-9625-df176319892d"}]}]}]}]},
+                              "9b0a194d-d617-4fed-9625-df176319892d"}]}]}]}
+                       {"value" "OCEAN",
+                        "uuid" "ff03e9fc-9882-4a5e-ad0b-830d8f1186cb",
+                        "subfields" ["type"],
+                        "type"
+                        [{"value" "ATLANTIC OCEAN",
+                          "uuid" "cf249a36-2e82-4d32-84cd-23a4f40bb393",
+                          "subfields" ["subregion_1"],
+                          "subregion_1"
+                          [{"value" "NORTH ATLANTIC OCEAN",
+                            "uuid" "a4202721-0cba-4fa1-853f-890f146b04f9",
+                            "subfields" ["subregion_2"],
+                            "subregion_2"
+                            [{"value" "MEDITERRANEAN SEA",
+                              "subfields" ["subregion_3"],
+                              "subregion_3"
+                              [{"value" "ADRIATIC SEA",
+                                "uuid" "7b93c892-2fc4-417b-a4da-5c8a2fca361b"}]}
+                             {"value" "BALTIC SEA",
+                              "uuid"
+                              "41cd228c-4677-4900-9507-70144d8b50bc"}]}]}]}]}
    :location-keywords {"category"
                        [{"value" "GEOGRAPHIC REGION",
                          "uuid" "204270d9-8039-4768-851e-63635af5fb65",
@@ -886,7 +910,7 @@
   (testing "Invalid keyword scheme returns 400 error"
     (is (= {:status 400
             :errors [(str "The keyword scheme [foo] is not supported. Valid schemes are:"
-                          " providers, measurement_name, spatial_keywords, granule_data_format,"
+                          " providers, measurement_name, spatial_keywords, spatial_keywords_old, granule_data_format,"
                           " mime_type, related_urls, iso_topic_categories,"
                           " instruments, science_keywords, concepts, temporal_keywords, platforms,"
                           " archive_centers, data_centers, location_keywords, and projects.")]}

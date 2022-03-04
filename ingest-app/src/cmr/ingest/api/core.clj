@@ -102,11 +102,11 @@
         (update :warnings
                 (fn [warnings]
                   (when (not-empty warnings)
-                    [(str warning-context (string/join ". " warnings))])))
+                    [(str warning-context (string/join ";; " warnings))])))
         (update :existing-errors
                 (fn [existing-errors]
                   (when (not-empty existing-errors)
-                    [(str err-context (string/join ". " existing-errors))]))))))
+                    [(str err-context (string/join ";; " existing-errors))]))))))
 
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"

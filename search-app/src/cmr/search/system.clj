@@ -1,22 +1,20 @@
 (ns cmr.search.system
   (:require
-   [clojure.core.cache :as clj-cache]
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
+   [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.search :as search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common.api.web-server :as web-server]
-   [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
-   [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer [info]]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.metadata-db.system :as mdb-system]
@@ -24,7 +22,6 @@
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
-   [cmr.search.models.query :as q]
    [cmr.search.routes :as routes]
    [cmr.search.services.acls.collections-cache :as coll-cache]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
@@ -145,6 +142,7 @@
                           hgocrf/refresh-has-granules-or-opensearch-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           coll-cache/refresh-collections-cache-for-granule-acls-job
+                          (cache-info/create-log-cache-info-job "search")
                           jvm-info/log-jvm-statistics-job
                           hrs/humanizer-report-generator-job])}]
     (transmit-config/system-with-connections

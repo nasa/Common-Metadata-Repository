@@ -164,7 +164,7 @@
   []
   (format "http://localhost:%s/disable-writes" (transmit-config/ingest-port)))
 
-(defn indexer-reindex-suggestions-url
+(defn reindex-suggestions-url
   "URL to reindex autocomplete suggestions"
   []
   (format "http://localhost:%s/jobs/reindex-autocomplete-suggestions"
@@ -387,7 +387,7 @@
   "Returns the URL for retrieving controlled keywords."
   ([keyword-scheme]
    (search-keywords-url keyword-scheme ""))
-  ([keyword-scheme search-parameters] 
+  ([keyword-scheme search-parameters]
    (format "http://localhost:%s/keywords/%s%s"
            (transmit-config/search-port)
            (name keyword-scheme)
@@ -576,6 +576,21 @@
 (defn email-subscription-processing
   []
   (format "http://localhost:%s/jobs/trigger-email-subscription-processing"
+          (transmit-config/ingest-port)))
+
+(defn enable-email-subscription-processing
+  []
+  (format "http://localhost:%s/jobs/enable-email-subscription-processing-job"
+          (transmit-config/ingest-port)))
+
+(defn disable-email-subscription-processing
+  []
+  (format "http://localhost:%s/jobs/disable-email-subscription-processing-job"
+          (transmit-config/ingest-port)))
+
+(defn email-subscription-processing-job-state
+  []
+  (format "http://localhost:%s/jobs/email-subscription-processing-job-state"
           (transmit-config/ingest-port)))
 
 (defn indexer-read-caches-url

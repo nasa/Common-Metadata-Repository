@@ -26,7 +26,11 @@
 
   (set-value
     [cache key value]
-    "Associates the value in the cache with the given key."))
+    "Associates the value in the cache with the given key.")
+  
+  (cache-size
+   [cache]
+   "Returns the size of the cache in bytes."))
 
 (defn reset-caches
   "Clear all caches found in the system, this includes the caches of embedded systems."
@@ -36,3 +40,11 @@
   ;; reset embedded systems caches
   (doseq [[_ v] (get-in context [:system :embedded-systems])]
     (reset-caches {:system v})))
+
+(defn cache-sizes
+  "Returns a map of caches and their sizes in bytes."
+  [context]
+  (let [system-caches (get-in context [:system :caches])]
+    (into {}
+          (for [[cache-key cache] system-caches]
+            {cache-key (cache-size cache)}))))

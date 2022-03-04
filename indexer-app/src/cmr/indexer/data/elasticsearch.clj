@@ -285,19 +285,17 @@
   "Logs any non-standard (not 409/404) errors found in the bulk index response."
   [response]
   ;; we don't care about version conflicts or deletes that aren't found
-  (let [bad-items  (filter (fn [item]
-                               (let [status (if (:index item)
-                                                (get-in item [:index :status])
-                                                (get-in item [:delete :status]))]
-                                 (and (not (nil? status))
-                                      (> status 399)
-                                      (not= 409 status)
-                                      (not= 404 status))))
-                           (:items response))]
+  (let [bad-items (filter (fn [item]
+                            (let [status (if (:index item)
+                                           (get-in item [:index :status])
+                                           (get-in item [:delete :status]))]
+                              (and (not (nil? status))
+                                   (> status 399)
+                                   (not= 409 status)
+                                   (not= 404 status))))
+                          (:items response))]
     (doseq [resp bad-items
-            :let [resp-data (if (:index resp)
-                                (:index resp)
-                                (:delete resp))
+            :let [resp-data (or (:index resp) (:delete resp))
                   {:keys [_id status error]} resp-data]]
          (log/error (format "[%s] failed bulk indexing with status [%d] and error [%s]" _id status error)))))
 

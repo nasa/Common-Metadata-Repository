@@ -11,7 +11,7 @@ browse-scaler/src/node_modules
 *.eastwood
 .tags
 .tags1
-.clj-kondo/
+.clj-kondo/.cache
 .lsp
 .cider-repl-history
 **/ignore.*
