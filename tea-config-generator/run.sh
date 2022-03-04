@@ -130,6 +130,7 @@ while getopts 'hcCuUlLjt:orSeIxD' opt; do
       #npm install -g serverless
       #curl --silent -o- --location https://slss.io/install | bash
       pip3 install -r requirements.txt 
+      serverless plugin install -n serverless-offline
       serverless plugin install -n serverless-python-requirements
       serverless plugin install -n serverless-s3-local
       ;;

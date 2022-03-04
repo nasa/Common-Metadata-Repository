@@ -43,12 +43,11 @@ use as a build and deployment environment when running under a CI/CD system.
 
 ## Deploying to AWS
 
-1. Create a role with a title like `tea-config-<env>-<location>-lambda-role`
-	* env is sit, uat, prod
-	* location is east-1 or the like
-2. Include polities to allow for Full access to API Gateway
-3. Use the `NGAPShRoleBoundry`
-
+The [serverless.yml](serverless.yml) file will create an IAM role for the lambda
+functions. It will use the following Role name:
+`tea-config-generator-role-${self:custom.env}-${self:provider.region}` and will
+use `arn:aws:iam::${aws:accountId}:policy/NGAPShRoleBoundary` for a Permissions
+Boundary.
 
 ## Testing
 Read the details in the ./run.sh script. There are functions which have all the

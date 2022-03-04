@@ -37,6 +37,8 @@ functions:
 
 resources:
   Resources:
+    # this property will not work locally till the following is fixed:
+    # https://github.com/dherault/serverless-offline/issues/1278
     IamRoleTeaLambdaExecution:
       Type: AWS::IAM::Role
       Properties:
