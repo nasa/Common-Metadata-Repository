@@ -203,8 +203,6 @@
          flatten
          (remove anti-value-suggestion?))))
 
-(def REINDEX_BATCH_SIZE 1)
-
 (defn-timed reindex-autocomplete-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
   [context provider-id]
@@ -212,7 +210,7 @@
   (let [latest-collection-batches (meta-db/find-in-batches
                                    context
                                    :collection
-                                   REINDEX_BATCH_SIZE
+                                   (service/determine-reindex-batch-size provider-id)
                                    {:provider-id provider-id :latest true})]
     (reduce (fn [num-indexed coll-batch]
               (let [batch (collections->suggestion-docs context coll-batch provider-id)]
