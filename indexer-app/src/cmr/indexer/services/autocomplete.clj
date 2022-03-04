@@ -203,7 +203,7 @@
          flatten
          (remove anti-value-suggestion?))))
 
-(def REINDEX_BATCH_SIZE 10)
+(def REINDEX_BATCH_SIZE 1)
 
 (defn-timed reindex-autocomplete-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
