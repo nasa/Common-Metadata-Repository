@@ -1,0 +1,58 @@
+service: tea-config-generator
+
+frameworkVersion: '2 || 3'
+
+provider:
+  name: aws
+  runtime: python3.8
+  memorySize: 128 # default was 1024, 512 would also be accepted
+  timeout: 15  # 7 seconds is the average run time currently
+  region: us-east-1
+  environment:
+    AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.uat.earthdata.nasa.gov'}
+    AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_CMR, 'INFO'}
+
+package:
+#  individually: true
+  exclude:
+    - node_modules/**
+
+functions:
+  capabilities:
+    handler: capabilities.capabilities
+    events:
+      - http: GET ${self:custom.endPoint}/
+      - http: GET ${self:custom.endPoint}/capabilities
+  debug:
+    handler: handler.debug
+    events:
+      - http: GET ${self:custom.endPoint}/debug
+  status:
+    handler: handler.health
+    events:
+      - http: GET ${self:custom.endPoint}/status
+  provider:
+    handler: handler.generate_tea_config
+    events:
+      - http: GET ${self:custom.endPoint}/provider/{id}
+
+plugins:
+  - serverless-python-requirements
+  - serverless-offline
+  - serverless-s3-local
+custom:
+  env: ${env:AWS_TEA_CONFIG_ENV, 'sit'}
+  endPoint: /configuration/tea
+  pythonRequirements:
+    pythonBin: /usr/bin/python3
+  s3:
+    port: 7000
+    host: localhost
+    directory: ./build
+
+resources:
+  Resources:
+    LocalBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: local-bucket
