@@ -112,7 +112,7 @@ while getopts 'hcCdDuUlLjt:orSeIx' opt; do
     c) color_mode='yes';;
     C) color_mode='no' ;;
     d) documentation ;;
-    D) deploy ; return $? ;;
+    D) deploy ; exit $? ;;
     u) python3 -m unittest discover -s ./ -p '*test.py' ;;
     U) python3 -m unittest discover -s ./ -p '*test.py' &> test.results.txt ;;
     l) lint ;;
