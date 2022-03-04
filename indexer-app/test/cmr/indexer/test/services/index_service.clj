@@ -23,7 +23,7 @@
       (is (= expected-size (index-svc/determine-reindex-batch-size provider)))
 
       "Testing a provider that has normal sized collections."
-      2000 "NSIDC"
+      (index-svc/collection-reindex-batch-size) "NSIDC"
 
       "Testing a provider that has large sized collections."
-      10 "GHRSSTCWIC")))
+      (index-svc/collection-large-file-providers-reindex-batch-size) "GHRSSTCWIC")))
