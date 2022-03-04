@@ -41,21 +41,30 @@ module CmrRestfulHelper
   # Send the query
   def submit_query(method, url, options)
     resource_uri = URI(url)
-
     case method.upcase
     when 'GET'
       response = HTTParty.get(resource_uri, options)
+    when 'PUT'
+      response = HTTParty.put(url, options)
+      sleep 1.75 # This sleep ensures data is done ingesting for other tests
+    when 'DELETE'
+      response = HTTParty.delete(resource_uri, options)
     else
       raise "#{method} is not supported yet"
     end
 
     response
   end
+
+  def update_body(body, key, value)
+    body = "#{body}<#{key}>#{value}</#{key}>"
+    body
+  end
 end
 
-# Module to handle URLs for local and production environments
-# rubocop:disable Metrics/MethodLength
+# Module to help build correct cmr_root urls
 module CmrUrlHelper
+  # Get correct URL for current environment
   def get_url(concept_type, cmr_root)
     case concept_type.downcase
     when /^acls?$/
@@ -68,12 +77,13 @@ module CmrUrlHelper
       cmr_root == 'http://localhost' ? "#{cmr_root}:3011/#{concept_type}" : "#{cmr_root}/access-control/s3-buckets"
     when /^(concept|collection|granule|service|tool|variable)s?$/
       cmr_root == 'http://localhost' ? "#{cmr_root}:3003/#{concept_type}" : "#{cmr_root}/search/#{concept_type}"
+    when /^(ingest)s?$/
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3002/" : "#{cmr_root}/ingest/#{concept_type}"
     else
       raise "#{concept_type} searching is not available in CMR"
     end
   end
 end
-# rubocop:enable Metrics/MethodLength
 
 World CmrUrlHelper
 World CmrRestfulHelper
@@ -103,6 +113,15 @@ Given('I am not logged in') do
 
   @headers ||= {}
   @headers.delete('Authorization')
+end
+
+Given(/^I am ingesting (a )?"([\w\d\-_ ]+)" on "([\w\d\-_ ]+)"$/) do |_, ingest_type, concept_type|
+  @resource_url = get_url(concept_type, cmr_root)
+  @ingest_type = ingest_type
+end
+
+Given(/^I am deleting on "([\w\d\-_ ]+)"$/) do |concept_type|
+  @resource_url = get_url(concept_type, cmr_root)
 end
 
 Given(/^I am (searching|querying|looking) for (an? )?"([\w\d\-_ ]+)"$/) do |_, _, concept_type|
@@ -155,6 +174,10 @@ Given('I reset/clear/delete/remove the query') do
   @query = nil
 end
 
+Given (/^I add (a )?body (param(eter)?|term) "([\w\d\-_+\[\]]+)=(.*)"$/) do |_, _, key, value|
+  @body = update_body(@body, key, value)
+end
+
 Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)=(.*)"$/) do |op, _, _, _, key, value|
   @query = if op == 'add'
              append_query(@query, key, value)
@@ -200,7 +223,9 @@ end
 
 When(/^I (submit|send) (a|another) "(\w+)" request$/) do |_, _, method|
   url = "#{@resource_url}#{@url_extension}"
+  @body = "<#{@ingest_type}>#{@body}</#{@ingest_type}>"
   options = { query: @query,
+              body: @body,
               headers: @headers }
 
   @response = submit_query(method, url, options)
