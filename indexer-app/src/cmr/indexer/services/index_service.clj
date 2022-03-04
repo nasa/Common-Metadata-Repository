@@ -191,12 +191,12 @@
 (defconfig collection-large-file-providers-reindex-batch-size
   "Batch size used for re-indexing collections from providers that have large collections. These
   are usually ISO collections."
-  {:default 10
+  {:default 20
    :type Long})
 
 (defconfig collection-large-file-provider-list
   "Includes all the providers that have large collections."
-  {:default ["GHRSSTCWIC"]
+  {:default ["GHRSSTCWIC" "NOAA_NCEI"]
    :parser #(json/decode ^String %)})
 
 (defn determine-reindex-batch-size
