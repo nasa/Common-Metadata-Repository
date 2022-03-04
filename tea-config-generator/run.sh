@@ -106,13 +106,13 @@ help_doc()
   printf "${format}" '-I' '' 'Install' 'Install dependent libraries'
 }
 
-while getopts 'hcCuUlLjt:orSeIxD' opt; do
+while getopts 'hcCdDuUlLjt:orSeIx' opt; do
   case ${opt} in
     h) help_doc ;;
     c) color_mode='yes';;
     C) color_mode='no' ;;
     d) documentation ;;
-    D) deploy ;;
+    D) deploy ; return $? ;;
     u) python3 -m unittest discover -s ./ -p '*test.py' ;;
     U) python3 -m unittest discover -s ./ -p '*test.py' &> test.results.txt ;;
     l) lint ;;
@@ -134,6 +134,6 @@ while getopts 'hcCuUlLjt:orSeIxD' opt; do
       serverless plugin install -n serverless-python-requirements
       serverless plugin install -n serverless-s3-local
       ;;
-    *) cprintf $RED "option required"
+    *) cprintf $RED "option required" ; exit 42 ;;
   esac
 done
