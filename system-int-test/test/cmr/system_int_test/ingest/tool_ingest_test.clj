@@ -2,6 +2,7 @@
   "CMR tool ingest integration tests.
   For tool permissions tests, see `provider-ingest-permissions-test`."
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :refer [are3]]
@@ -217,3 +218,50 @@
                              :native-id "tool_v_1.0"
                              :format "application/vnd.nasa.cmr.umm+json; version=1.0"})]
       (is (= 201 status)))))
+
+(deftest related-url-content-type-type-and-subtype-check
+  (testing
+    "Check valid and invalid related urls and url's url content type, type, and subtype.
+    The first RelatedURL is good while the second and the third are bad.
+    The first URL is bad while the second one is good. The error response should
+    represent this showing the the three bad ones failed to match a valid keyword."
+    (let [related-urls [{"URL" "https://example.gov/good1"
+                         "URLContentType" "PublicationURL"
+                         "Type" "VIEW RELATED INFORMATION"
+                         "Subtype" "HOW-TO"}  ;this is the valid Related URL
+                        {"URL" "https://example.gov/bad1"
+                         "URLContentType" "PublicationURL"
+                         "Type" "USE SERVICE APIs"
+                         "Subtype" "Closed Search"}
+                        {"URL" "https://example.gov/bad2"
+                         "URLContentType" "PublicationURL"
+                         "Type" "USE SERVICE APIs"
+                         "Subtype" "Very Closed Search"}]
+          url1 {"URLContentType" "PublicationURL"
+               "Type" "invalid"
+               "URLValue" "https://lpdaacsvc.cr.usgs.gov/appeears/bad3"}
+          url2 {"URLContentType" "PublicationURL"
+               "Type" "VIEW RELATED INFORMATION"
+               "URLValue" "https://lpdaacsvc.cr.usgs.gov/appeears/"}
+          concept-src1 (tool-util/make-tool-concept)
+          concept-result1 (as-> concept-src1 intermediate
+                                (json/parse-string (:metadata intermediate))
+                                (assoc intermediate "RelatedURLs" related-urls "URL" url1)
+                                (json/generate-string intermediate)
+                                (assoc concept-src1 :metadata intermediate)
+                                (ingest/ingest-concept intermediate))
+          concept-src2 (tool-util/make-tool-concept)
+          concept-result2 (as-> concept-src2 intermediate
+                                (json/parse-string (:metadata intermediate))
+                                (assoc intermediate "RelatedURLs" related-urls "URL" url2)
+                                (json/generate-string intermediate)
+                                (assoc concept-src2 :metadata intermediate)
+                                (ingest/ingest-concept intermediate))
+          status1 (:status concept-result1)
+          errors1 (:errors concept-result1)
+          status2 (:status concept-result2)
+          errors2 (:errors concept-result2)]
+      (is (= 400 status1))
+      (is (= 3 (count errors1)))
+      (is (= 400 status2))
+      (is (= 2 (count errors2))))))
