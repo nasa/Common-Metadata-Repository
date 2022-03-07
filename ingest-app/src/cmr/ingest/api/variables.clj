@@ -60,9 +60,10 @@
            _ (info (format "Ingesting variable %s from client %s"
                            (api-core/concept->loggable-string concept-with-user-id)
                            (:client-id request-context)))
-           save-variable-result (ingest/save-variable request-context concept-with-user-id)]
+           save-variable-result (ingest/save-variable request-context concept-with-user-id)
+           concept-to-log (api-core/concept-with-revision-id concept-with-user-id save-variable-result)]
        ;; Log the successful ingest, with the metadata size in bytes.
-       (api-core/log-concept-with-metadata-size concept-with-user-id request-context)
+       (api-core/log-concept-with-metadata-size concept-to-log request-context)
        (api-core/generate-ingest-response headers save-variable-result)))))
 
 (defn delete-variable
