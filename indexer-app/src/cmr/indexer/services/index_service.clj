@@ -2,9 +2,9 @@
   "Provide functions to index concept"
   (:require
    [camel-snake-kebab.core :as camel-snake-kebab]
+   [cheshire.core :as json]
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojure.string :as s]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
@@ -183,7 +183,31 @@
                                    :subscription}
                                  concept-type))))
 
-(def REINDEX_BATCH_SIZE 2000)
+(defconfig collection-reindex-batch-size
+  "Batch size used for re-indexing collections."
+  {:default 2000
+   :type Long})
+
+(defconfig collection-large-file-providers-reindex-batch-size
+  "Batch size used for re-indexing collections from providers that have large collections. These
+  are usually ISO collections."
+  {:default 10
+   :type Long})
+
+(defconfig collection-large-file-provider-list
+  "Includes all the providers that have large collections."
+  {:default ["GHRSSTCWIC" "NOAA_NCEI"]
+   :parser #(json/decode ^String %)})
+
+(defn determine-reindex-batch-size
+  "Few providers have really big collections and they force the metadata_db to run out of memory
+  when the batch sizes are reasonable for most other providers. This function will determine
+  the batch size to used based on providers to eliminate the out of memory exception. The values
+  used are defined in defconfigs above so that these values can be overriden in ops when necessary."
+  [provider]
+  (if (some #(= provider %) (collection-large-file-provider-list))
+    (collection-large-file-providers-reindex-batch-size)
+    (collection-reindex-batch-size)))
 
 (defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
@@ -218,7 +242,7 @@
        (let [latest-collection-batches (meta-db/find-in-batches
                                         context
                                         :collection
-                                        REINDEX_BATCH_SIZE
+                                        (determine-reindex-batch-size provider-id)
                                         {:provider-id provider-id :latest true})]
          (bulk-index context latest-collection-batches {:all-revisions-index? false
                                                         :force-version? force-version?})))
@@ -230,10 +254,15 @@
        (let [all-revisions-batches (meta-db/find-in-batches
                                     context
                                     :collection
-                                    REINDEX_BATCH_SIZE
+                                    (determine-reindex-batch-size provider-id)
                                     {:provider-id provider-id})]
          (bulk-index context all-revisions-batches {:all-revisions-index? true
                                                     :force-version? force-version?}))))))
+
+(defconfig non-collection-reindex-batch-size
+  "Batch size used for re-indexing other things besides collections."
+  {:default 2000
+   :type Long})
 
 (defn reindex-tags
   "Reindexes all the tags. Only the latest revisions will be indexed"
@@ -242,7 +271,7 @@
   (let [latest-tag-batches (meta-db/find-in-batches
                             context
                             :tag
-                            REINDEX_BATCH_SIZE
+                            (non-collection-reindex-batch-size)
                             {:latest true})]
     (bulk-index context latest-tag-batches)))
 
