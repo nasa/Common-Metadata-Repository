@@ -46,7 +46,6 @@ module CmrRestfulHelper
       response = HTTParty.get(resource_uri, options)
     when 'PUT'
       response = HTTParty.put(url, options)
-      sleep 1.75 # This sleep ensures data is done ingesting for other tests
     when 'DELETE'
       response = HTTParty.delete(resource_uri, options)
     else
@@ -56,9 +55,10 @@ module CmrRestfulHelper
     response
   end
 
-  def update_body(body, key, value)
-    body = "#{body}<#{key}>#{value}</#{key}>"
-    body
+  def check_provider(provider_name)
+    url = 'http://localhost:3002/providers'
+    response = HTTParty.get(url)
+    response.body.include? provider_name
   end
 end
 
@@ -115,9 +115,17 @@ Given('I am not logged in') do
   @headers.delete('Authorization')
 end
 
-Given(/^I am ingesting (a )?"([\w\d\-_ ]+)" on "([\w\d\-_ ]+)"$/) do |_, ingest_type, concept_type|
-  @resource_url = get_url(concept_type, cmr_root)
+Given(/^set body to the following XML "(.+)"$/) do |xml|
+  @body = xml
+end
+
+Given(/^I am ingesting (a )?"([\w\d\-_ ]+)"$/) do |_, ingest_type|
+  @resource_url = get_url('ingest', cmr_root)
   @ingest_type = ingest_type
+end
+
+Given(/^the provider "([\w\d\-_ ]+)" exists$/) do |provider_name|
+  pending("Need to create Provider #{provider_name}.") unless check_provider(provider_name)
 end
 
 Given(/^I am deleting on "([\w\d\-_ ]+)"$/) do |concept_type|
@@ -156,6 +164,14 @@ Given(/^I (set|add) header "([\w\d\-_+]+)=(.*)"$/) do |_, header, value|
   @headers[header] = value
 end
 
+Given(/^I wait "(\d+.?\d+?)" second(s)?(.*)$/) do |time, _, _|
+  sleep(time.to_i)
+end
+
+Given(/^I clear headers$/) do
+  @headers = {}
+end
+
 Given(/^I (set|add) header "([\w\d\-_+]+)" using environment ((variable|value) )?"(.*)"$/) do |_, header, _, env_key|
   pending("Need to set #{env_key} in environment or cucumber profile") unless ENV[env_key]
 
@@ -172,10 +188,6 @@ end
 
 Given('I reset/clear/delete/remove the query') do
   @query = nil
-end
-
-Given (/^I add (a )?body (param(eter)?|term) "([\w\d\-_+\[\]]+)=(.*)"$/) do |_, _, key, value|
-  @body = update_body(@body, key, value)
 end
 
 Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)=(.*)"$/) do |op, _, _, _, key, value|
@@ -223,7 +235,6 @@ end
 
 When(/^I (submit|send) (a|another) "(\w+)" request$/) do |_, _, method|
   url = "#{@resource_url}#{@url_extension}"
-  @body = "<#{@ingest_type}>#{@body}</#{@ingest_type}>"
   options = { query: @query,
               body: @body,
               headers: @headers }
@@ -233,6 +244,11 @@ end
 
 Then(/^the response (status( code)?) is (\d+)$/) do |_, status_code|
   expect(@response.code).to eq(status_code)
+end
+
+Then(/^the response (status( code)?) is in "((\d+,?(\d+)?))+"$/) do |_, status_codes|
+  values = status_codes.split(",")
+  expect((values.include? @response.code))
 end
 
 Then('the response Content-Type is {string}') do |content_type|
