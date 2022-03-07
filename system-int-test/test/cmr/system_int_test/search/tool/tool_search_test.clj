@@ -314,12 +314,12 @@
   (let [url1 (data-umm-cmn/related-url {:URL "http://data.space/downloads"
                                         :Description "Pertinent Data Source Page 1"
                                         :URLContentType "CollectionURL"
-                                        :Type "BROWSE"
-                                        :Subtype "CASE STUDY"})
+                                        :Type "EXTENDED METADATA"
+                                        :Subtype "DMR++"})
         url2 (data-umm-cmn/related-url {:URL "http://data.space/home"
                                         :Description "Pertinent Data Source Page 2"
                                         :URLContentType "PublicationURL"
-                                        :Type "EXTENDED METADATA"
+                                        :Type "VIEW RELATED INFORMATION"
                                         :Subtype "ALGORITHM DOCUMENTATION"})
         tl1 (tool/ingest-tool-with-attrs {:native-id "tl-1"
                                           :Name "Tool 1"
@@ -349,11 +349,11 @@
 
       "Type"
       [tl2]
-      "extended metadata"
+      "view related information"
 
       "Subtype"
       [tl1]
-      "CASE STUDY")))
+      "dmr++")))
 
 (deftest search-tool-contact-group-keywords-test
   (let [tl1 (tool/ingest-tool-with-attrs {:native-id "tl-1"
