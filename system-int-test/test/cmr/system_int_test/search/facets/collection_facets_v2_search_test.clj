@@ -597,8 +597,6 @@
         (is (tester (get-in sample-platforms [:diadem :sub-category]) 2))
         (is (tester (get-in sample-platforms [:dmsp :short-name]) 2))
         (is (tester (get-in sample-platforms [:smap :short-name]) 1))
-        ;(assert-facet-field facets-result "Instruments" "I3" 1)
-        ;(assert-facet-field facets-result "Projects" "proj3" 1)
         (assert-facet-field-not-exist facets-result "Instruments" "I4")
         (assert-facet-field-not-exist facets-result "Projects" "proj4")))
 
@@ -743,7 +741,16 @@
                                                       :Platforms [(umm-spec-common/platform
                                                                    {:ShortName "Aqua"
                                                                     :LongName "Earth Observing System, Aqua"
-                                                                    :Type "Earth Observation Satellites"})]}))]
+                                                                    :Type "Earth Observation Satellites"})]}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll4"
+                                                      :ShortName "S4"
+                                                      :VersionId "V1"
+                                                      :Platforms [(umm-spec-common/platform
+                                                                   {:ShortName "ISS"
+                                                                    :LongName "International Space Station"
+                                                                    :Type "Space Stations/Crewed Spacecraft"})]}))]
+
     (are3
      [query short-name]
      (let [facets-result (search-and-return-v2-facets query)]
@@ -766,7 +773,13 @@
      {:platforms-h {:0 {:basis "Space-based Platforms"
                         :category "Earth Observation Satellites"
                         :short-name "Aqua"}}}
-     "Aqua")))
+     "Aqua"
+
+     "Test that the hierarchy can be found when humanized value is not in KMS but the original is."
+     {:platforms-h {:0 {:basis "Space-based Platforms"
+                        :category "Space Stations/Crewed Spacecraft"
+                        :short-name "International Space Station"}}}
+     "International Space Station")))
 
 (deftest science-keywords-facets-v2-test
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection

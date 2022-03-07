@@ -72,6 +72,14 @@
         "order": 0
       },
       {
+        "type": "alias",
+        "field": "platform",
+        "source_value": "ISS",
+        "replacement_value": "International Space Station",
+        "reportable": true,
+        "order": 0
+      },
+      {
         "type": "ignore",
         "field": "instrument",
         "source_value": "NOT APPLICABLE",
