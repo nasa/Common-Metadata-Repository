@@ -78,7 +78,7 @@ module CmrUrlHelper
     when /^(concept|collection|granule|service|tool|variable)s?$/
       cmr_root == 'http://localhost' ? "#{cmr_root}:3003/#{concept_type}" : "#{cmr_root}/search/#{concept_type}"
     when /^(ingest)s?$/
-      cmr_root == 'http://localhost' ? "#{cmr_root}:3002/" : "#{cmr_root}/ingest/#{concept_type}"
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3002/" : "#{cmr_root}/ingest/"
     else
       raise "#{concept_type} searching is not available in CMR"
     end
