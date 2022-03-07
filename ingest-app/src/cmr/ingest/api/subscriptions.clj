@@ -167,9 +167,10 @@
                         (api-core/concept->loggable-string concept-with-user-id)
                         (:client-id request-context)))
         save-subscription-result (ingest/save-subscription request-context
-                                                           concept-with-user-id)]
+                                                           concept-with-user-id)
+        concept-to-log (api-core/concept-with-revision-id concept-with-user-id save-subscription-result)]
     ;; Log the successful ingest, with the metadata size in bytes.
-    (api-core/log-concept-with-metadata-size concept-with-user-id request-context)
+    (api-core/log-concept-with-metadata-size concept-to-log request-context)
     (api-core/generate-ingest-response headers save-subscription-result)))
 
 (defn- common-ingest-checks
@@ -216,10 +217,10 @@
     (errors/throw-service-error
      :bad-request
      "Subscription creation failed - No ID was provided. Please provide a SubscriberId or pass in a valid token."))
-  (when-not (urs/user-exists? context user-id) 
+  (when-not (urs/user-exists? context user-id)
     (errors/throw-service-error
      :bad-request
-     (format "Subscription creation failed - The user-id [%s] must correspond to a valid EDL account." 
+     (format "Subscription creation failed - The user-id [%s] must correspond to a valid EDL account."
              user-id))))
 
 (defn generate-native-id

@@ -53,10 +53,12 @@
           save-collection-result (ingest/save-collection
                                   request-context
                                   (api-core/set-user-id concept request-context headers)
-                                  validation-options)]
+                                  validation-options)
+          concept-to-log (-> concept
+                             (api-core/concept-with-revision-id save-collection-result)
+                             (assoc :entry-title (:entry-title save-collection-result)))]
       ;; Log the successful ingest, with the metadata size in bytes.
-      (api-core/log-concept-with-metadata-size
-        (assoc concept :entry-title (:entry-title save-collection-result)) request-context)
+      (api-core/log-concept-with-metadata-size concept-to-log request-context)
       (api-core/generate-ingest-response headers
                                          (api-core/format-and-contextualize-warnings-existing-errors
                                           ;; entry-title is added just for the logging above.
