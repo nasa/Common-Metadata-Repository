@@ -88,6 +88,16 @@
     (v/validate (cons {} additional-validations)
                 service))))
 
+(defn validate-tool
+  "Validates the UMM record returning a list of error maps containing a path
+  through the UMM model and a list of errors at that path. Returns an empty
+  sequence if it is valid."
+  ([tool]
+   (validate-tool tool nil))
+  ([tool additional-validations]
+   (validation-errors->path-errors
+    (v/validate additional-validations tool)))) 
+
 (defn validate-variable
   "Validates the UMM record returning a list of error maps containing a path
   through the UMM model and a list of errors at that path. Returns an empty

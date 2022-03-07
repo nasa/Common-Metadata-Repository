@@ -332,21 +332,23 @@
    ;; Description of the web page at this URL.
    Description
 
-   ;; A keyword describing the distinct content type of the online resource to this resource. (e.g.,
-   ;; 'VisualizationURL').
+   ;; A keyword describing the distinct content type of the online resource to this resource. This
+   ;; helps software present the information to the user. The valid values are contained in the KMS
+   ;; System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096/.
    URLContentType
 
-   ;; A keyword describing the type of the online resource to this resource. This helps the GUI to
-   ;; know what to do with this resource. (e.g., 'GET RELATED VISUALIZATION').
+   ;; A keyword describing the type of the online resource to this resource. This helps software
+   ;; present the information to the user. The valid values are contained in the KMS System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096/.
    Type
 
-   ;; A keyword describing the subtype of the online resource to this resource. This further helps
-   ;; the GUI to know what to do with this resource. (e.g., 'DATA RECIPE', 'SCIENCE DATA PRODUCT
-   ;; VALIDATION', 'GIOVANNI').
+   ;; A keyword describing the subtype of the online resource to this resource. This helps software
+   ;; present the information to the user. The valid values are contained in the KMS System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096/.
    Subtype
 
-   ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
-   ;; the URL of the collection landing page, the URL of the download site for the collection).
+   ;; The web address for the relevant web page.
    URL
   ])
 (record-pretty-printer/enable-record-pretty-printing RelatedURLType)
@@ -378,17 +380,20 @@
    ;; Description of online resource at this URL.
    Description
 
-   ;; A keyword describing the distinct content type of the online resource to this resource. (e.g.,
-   ;; 'DistributionURL').
+   ;; A keyword describing the distinct content type of the online resource to this resource. This
+   ;; helps software present the information to the user. The valid values are contained in the KMS
+   ;; System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096/.
    URLContentType
 
-   ;; A keyword describing the type of the online resource to this resource. This helps the GUI to
-   ;; know what to do with this resource. (e.g., 'DOWNLOAD SOFTWARE').
+   ;; A keyword describing the type of the online resource to this resource. This helps software
+   ;; present the information to the user. The valid values are contained in the KMS System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096/.
    Type
 
-   ;; A keyword describing the subtype of the online resource to this resource. This further helps
-   ;; the GUI to know what to do with this resource. (e.g., 'MAP VIEWER', 'SIMPLE SUBSET WIZARD
-   ;; (SSW)').
+   ;; A keyword describing the subtype of the online resource to this resource. This helps software
+   ;; present the information to the user. The valid values are contained in the KMS System:
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096/.
    Subtype
 
    ;; The URL for the relevant online resource where you can directly access the downloadable tool
