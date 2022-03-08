@@ -27,6 +27,12 @@ Then('the response body contains/includes {string}') do |body|
   expect(@response.body).to include(body)
 end
 
+Then('the response body is empty') do
+  pending('Need to set response type to json') unless @response_type == 'json'
+  json = JSON.parse(@response.body)
+  expect(json['feed']['entry'].length.zero?)
+end
+
 Then('saved value {string} is equal to saved value {string}') do |a, b|
   expect(@stashes[a]).to eq(@stashes[b])
 end
@@ -34,7 +40,6 @@ end
 Then('the response {string} count is at least {int}') do |json_key, length|
   path = JsonPath.new("$..#{json_key}")
   data = JSON.parse(@response.body)
-
   values = path.on(data)
   expect(values.length).to be >= length
 end

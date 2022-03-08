@@ -43,3 +43,11 @@ Feature: Basic Ingest API calls
     And I add extension "providers/PROV1/collections/TestColl1"
     When I submit a "DELETE" request
     Then the response status code is 200
+    And I wait "2.75" seconds for deletion to complete
+    Given I am searching for "collections"
+    And I clear the extension
+    And I want "json"
+    And I add a query param "short_name" of "TestColl1"
+    When I submit a "GET" request
+    Then the response status code is 200
+    And the response body is empty

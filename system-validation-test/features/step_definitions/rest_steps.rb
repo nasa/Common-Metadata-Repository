@@ -147,11 +147,14 @@ end
 Given(/^I (want|ask for|request) (an? )?"(\w+)"( (response|returned))?$/) do |_, _, format, _|
   @url_extension = case format.downcase
                    when 'json', 'xml', 'dif', 'dif10', 'echo10', 'atom', 'native', 'iso', 'iso19115'
+                     @response_type = format.downcase
                      ".#{format}"
                    when 'umm_json', 'umm'
+                     @response_type = format.downcase
                      # modern umm
                      '.umm_json'
                    when 'umm-json', 'legacy-umm-json', 'legacy-umm'
+                     @response_type = format.downcase
                      # legacy umm
                      '.umm-json'
                    else
