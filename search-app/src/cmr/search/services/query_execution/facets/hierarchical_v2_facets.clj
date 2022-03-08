@@ -213,8 +213,8 @@
 
 (defn- last-facet-accounted-for?
   "This function uses recursion to work its way through the sub-facets to see if it can find the
-  last field (subfield) for science_keywords which is :detailed-variable or platforms2 which is
-  :short-name. If the field is found, true is returned, otherwise nil is returned."
+  last named (title) field (subfield) for science_keywords which is :detailed-variable or platforms
+  which is :short-name. If the named field is found, true is returned, otherwise nil is returned."
   [sub-facets subfield title]
   (if (:children sub-facets)
     (some true?
