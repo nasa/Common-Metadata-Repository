@@ -215,11 +215,12 @@
   "This function uses recursion to work its way through the sub-facets to see if it can find the
   last field (subfield) for science_keywords which is :detailed-variable or platforms2 which is
   :short-name. If the field is found, true is returned, otherwise nil is returned."
-  [sub-facets subfield]
+  [sub-facets subfield title]
   (if (:children sub-facets)
     (some true?
-      (map #(last-facet-accounted-for? % subfield) (:children sub-facets)))
-    (= (:field sub-facets) subfield)))
+      (map #(last-facet-accounted-for? % subfield title) (:children sub-facets)))
+    (and (= (:field sub-facets) subfield)
+         (= (:title sub-facets) title))))
 
 (defn- finish-bucket-for-hierarchical-field
   "Called from process-bucket-for-hierarchical-field to finish up creating
@@ -232,6 +233,15 @@
         has-siblings? (has-siblings-fn value)
         links (generate-links-fn value has-siblings? children-values-to-remove)]
     (v2h/generate-hierarchical-filter-node value count links sub-facets field)))
+
+(defn- filter-out-accounted-for-facets
+  "Iterates over the new-facets and only keeps the leaf node (detailed-variable or short-name)
+  that doesn't already exists in the hierarchy that is represented by v2-node."
+  [sub-facets subfield new-facets]
+  (seq
+   (util/remove-nils-empty-maps-seqs
+    (map #(when-not (last-facet-accounted-for? sub-facets subfield (:title %)) %)
+         (:children new-facets)))))
 
 (defn- process-bucket-for-hierarchical-field
   "Takes an elasticsearch bucket for a hierarchical field and returns a V2 facets node for that
@@ -249,13 +259,15 @@
         ;; search returns for aggregations (facets) look at
         ;; cmr.search.test.services.query-execution.facets.hierarchical-v2-facets/science-keywords-full-search-aggregations
         sub-facets (recursive-parse-fn (rest field-hierarchy) value bucket)]
+
     ;; Once the results come back from the recursion test the following:
     ;; 1) if I have subfacets then I am unwinding the recursion to take the chilren sub facets and
-    ;;    create the V2 facet node. I need to check and see if last facet is accounted for if the
-    ;;    middle fields were skipped. If it is accounted for then just return the current V2 node. If
-    ;;    not then do the recursion for the last element to see if it exists in the bucket at the
-    ;;    level of where I am at. If I found the last element then add it to the current sub facets
-    ;;    and build the current node, otherwise just return the current node.
+    ;;    create the V2 facet node. If the field is a hierarchy field that can be skipped check to
+    ;;    see if the current level is just before the last.  If it is just pass back the node, because
+    ;;    the last level has already been taken care of.  If we are at a higher level in the facets
+    ;;    then check to see if any leaf nodes exist.  If they do then incorporate them in the current
+    ;;    node and remove any duplicate facets that have already been incorporated.  Otherwise just
+    ;;    pass back the current node.
     ;; 2) If I don't and I am at the end of the facet hierarchy then create the last (inner most)
     ;;    V2 facet node. This facet contains the full hierarchy.
     ;; 3) I don't have any more facets down the normal path so check to see if the last hierarchy field
@@ -269,21 +281,16 @@
                      sub-facets field-hierarchy has-siblings-fn generate-links-fn value count field)]
         (if (or (= (:base-field function-params) :science-keywords-h)
                 (= (:base-field function-params) :platforms-h))
-          (if (last-facet-accounted-for? sub-facets subfield)
+          (if (or (= field :sub-category)
+                  (= field :variable-level-3))
             v2-node
             (let [sf (recursive-parse-fn
                       [subfield]
                       value
                       bucket)]
-              (if sf
-                (finish-bucket-for-hierarchical-field
-                 (update sub-facets :children #(conj % (first (:children sf))))
-                 field-hierarchy
-                 has-siblings-fn
-                 generate-links-fn
-                 value
-                 count
-                 field)
+              (if-let [siblings (and sf
+                                     (filter-out-accounted-for-facets v2-node subfield sf))]
+                (update v2-node :children #(concat % siblings))
                 v2-node)))
           v2-node))
 
@@ -293,22 +300,15 @@
 
       (or (= (:base-field function-params) :science-keywords-h)
           (= (:base-field function-params) :platforms-h))
-      (let [sf (recursive-parse-fn
-                [subfield]
-                value
-                bucket)
-            field-hierarchy (conj
-                             nil
-                             (last field-hierarchy)
-                             (first field-hierarchy))]
-        (finish-bucket-for-hierarchical-field
-         sf
-         field-hierarchy
-         has-siblings-fn
-         generate-links-fn
-         value
-         count
-         field)))))
+      (let [sf (recursive-parse-fn [subfield] value bucket)
+            field-hierarchy (conj nil (last field-hierarchy) (first field-hierarchy))]
+        (finish-bucket-for-hierarchical-field sf
+                                              field-hierarchy
+                                              has-siblings-fn
+                                              generate-links-fn
+                                              value
+                                              count
+                                              field)))))
 
 (defn- generate-hierarchical-children
   "Generate children nodes for a hierarchical facet v2 response.
@@ -542,7 +542,7 @@
 
 (def earth-science-category-string
   "Constant for the string used for the Earth Science category within humanized science keywords."
-  "Earth Science")
+  "earth science")
 
 (defn- remove-non-earth-science-keywords
   "V2 facets only include science keyword facets which have a category of Earth Science. Removes
@@ -551,7 +551,9 @@
   (if (= :science-keywords-h field)
     (let [updated-facet (update hierarchical-facet :children
                                 (fn [children]
-                                  (filter #(= earth-science-category-string (:title %)) children)))]
+                                  (filter #(= earth-science-category-string
+                                              (util/safe-lowercase (:title %)))
+                                          children)))]
       (when-let [earth-science-facets (first (:children updated-facet))]
         ;; Do not return the Earth Science category facet itself, just return the topics below
         (assoc updated-facet :children (:children earth-science-facets))))

@@ -938,16 +938,7 @@
             "http://localhost:3003/collections.json?include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere&science_keywords_h%5B0%5D%5Bterm%5D=Snow%2FIce"},
            :has_children true,
            :children
-           [{:title "Rain",
-             :type :filter,
-             :applied false,
-             :count 1,
-             :links
-             {:apply
-              "http://localhost:3003/collections.json?include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere&science_keywords_h%5B0%5D%5Bterm%5D=Snow%2FIce&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Snow+Water+Equivalent&science_keywords_h%5B0%5D%5Bdetailed_variable%5D=Rain"},
-             :has_children false,
-             :field :detailed-variable}
-            {:title "Snow Water Equivalent",
+           [{:title "Snow Water Equivalent",
              :type :filter,
              :applied false,
              :count 1,
@@ -955,7 +946,16 @@
              {:apply
               "http://localhost:3003/collections.json?include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere&science_keywords_h%5B0%5D%5Bterm%5D=Snow%2FIce&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Snow+Water+Equivalent&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Snow+Water+Equivalent"},
              :has_children false,
-             :field :variable-level-2}],
+             :field :variable-level-2}
+            {:title "Rain",
+              :type :filter,
+              :applied false,
+              :count 1,
+              :links
+              {:apply
+               "http://localhost:3003/collections.json?include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere&science_keywords_h%5B0%5D%5Bterm%5D=Snow%2FIce&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Snow+Water+Equivalent&science_keywords_h%5B0%5D%5Bdetailed_variable%5D=Rain"},
+              :has_children false,
+              :field :detailed-variable}]
            :field :variable-level-1}],
          :field :term}],
        :field :topic}],
@@ -1036,43 +1036,177 @@
           facets (#'hv2/parse-hierarchical-bucket-v2 base-field field-hierarchy base-url query-params elastic-aggs)]
       (is (= expected-science-keyword-skipped-sibling-search-facets facets)))))
 
+(def v2-node
+  {:title "Snow/Ice",
+   :type :filter,
+   :applied true,
+   :count 1,
+   :links {:remove "http:"},
+   :has_children true,
+   :children [{:title "Snow Water Equivalent",
+               :type :filter,
+               :applied true,
+               :count 1,
+               :links {:remove "http:"},
+               :has_children true,
+               :children [{:title "Rain",
+                            :type :filter,
+                            :applied false,
+                            :count 1,
+                            :links {:apply "http"},
+                            :has_children false,
+                            :field :detailed-variable}
+                          {:title "Rain2",
+                                       :type :filter,
+                                       :applied false,
+                                       :count 1,
+                                       :links {:apply "http"},
+                                       :has_children false,
+                                       :field :detailed-variable}
+                          {:title "Snow Water Equivalent",
+                           :type :filter,
+                           :applied false,
+                           :count 1,
+                           :links {:apply "http:"},
+                           :has_children true,
+                           :children [{:title "Snow Water Equivalent",
+                                        :type :filter,
+                                        :applied false,
+                                        :count 1,
+                                        :links {:apply "http"},
+                                        :has_children false,
+                                        :field :detailed-variable}]
+                           :field :variable-level-2}]
+               :field :variable-level-1}]
+   :field :term})
+
 (deftest last-facet-accounted-for?-test
   "This function tests the last-facet-accounted-for? function where it works its way
   through the sub-facets and sees if the science-keyword detailed-variable field exists. Returns
   true if it does and nil if it doesn't."
-  (let [x {:title "Snow/Ice",
-           :type :filter,
-           :applied true,
-           :count 1,
-           :links {:remove "http://localhost:3003/collections.json?include_facets=v2&pretty=true&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere"},
-           :has_children true,
-           :children [{:title "Rain",
-                       :type :filter,
-                       :applied false,
-                       :count 1,
-                       :links {:apply "http://localhost:3003/collections.json?include_facets=v2&pretty=true&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere&science_keywords_h%5B0%5D%5Bterm%5D=Snow%2FIce&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Snow+Water+Equivalent&science_keywords_h%5B0%5D%5Bdetailed_variable%5D=Rain"},
-                       :has_children false,
-                       :field :detailed-variable1}
-                      {:title "Snow Water Equivalent",
-                       :type :filter,
-                       :applied true,
-                       :count 1,
-                       :links {:remove "http://localhost:3003/collections.json?include_facets=v2&pretty=true&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere&science_keywords_h%5B0%5D%5Bterm%5D=Snow%2FIce"},
-                       :has_children true,
-                       :children '({:title "Rain",
-                                    :type :filter,
-                                    :applied false,
-                                    :count 1,
-                                    :links {:apply "http://localhost:3003/collections.json?include_facets=v2&pretty=true&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere&science_keywords_h%5B0%5D%5Bterm%5D=Snow%2FIce&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Snow+Water+Equivalent&science_keywords_h%5B0%5D%5Bdetailed_variable%5D=Rain"},
-                                    :has_children false,
-                                    :field :detailed-variable}
-                                   {:title "Snow Water Equivalent",
-                                    :type :filter,
-                                    :applied false,
-                                    :count 1,
-                                    :links {:apply "http://localhost:3003/collections.json?include_facets=v2&pretty=true&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere&science_keywords_h%5B0%5D%5Bterm%5D=Snow%2FIce&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Snow+Water+Equivalent&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Snow+Water+Equivalent"},
-                                    :has_children false,
-                                    :field :variable-level-2}),
-                       :field :variable-level-1}]
-           :field :term}]
-    (is (= true (#'hv2/last-facet-accounted-for? x :detailed-variable)))))
+  (is (= true (#'hv2/last-facet-accounted-for? v2-node :detailed-variable "Rain"))))
+
+(deftest filter-out-accounted-for-facets-test
+  "Tests the filter-out-accounted-for-facets funtion. The function iterates over a list of sibling
+  facets and checks to see if they have already been accounted for. If they have not then the left
+  over facets are added into the current facet node."
+
+  (are3 [expected subfield new-facets]
+    (is (= expected (seq (#'hv2/filter-out-accounted-for-facets v2-node subfield new-facets))))
+
+    "Test if there are no new sibling sub-facets."
+    nil :detailed-variable {}
+
+    "Test if the new sub-facets are not included in the v2-node."
+    [{:title "Mud",
+      :type :filter,
+      :applied false,
+      :count 1,
+      :links {:apply "http:"},
+      :has_children false,
+      :field :detailed-variable}
+     {:title "Dirt",
+      :type :filter,
+      :applied false,
+      :count 1,
+      :links {:apply "http:"},
+      :has_children false,
+      :field :detailed-variable}]
+    :detailed-variable
+    {:title "Detailed_variable",
+       :type :group,
+       :applied true,
+       :has_children true,
+       :children [{:title "Mud",
+                   :type :filter,
+                   :applied false,
+                   :count 1,
+                   :links {:apply "http:"},
+                   :has_children false,
+                   :field :detailed-variable}
+                  {:title "Dirt",
+                   :type :filter,
+                   :applied false,
+                   :count 1,
+                   :links {:apply "http:"},
+                   :has_children false,
+                   :field :detailed-variable}]}
+
+    "Test if the 1 of the new sub-facets are not included in the v2-node, but the other is."
+    [{:title "Mud",
+      :type :filter,
+      :applied false,
+      :count 1,
+      :links {:apply "http:"},
+      :has_children false,
+      :field :detailed-variable}]
+    :detailed-variable
+    {:title "Detailed_variable",
+       :type :group,
+       :applied true,
+       :has_children true,
+       :children [{:title "Mud",
+                   :type :filter,
+                   :applied false,
+                   :count 1,
+                   :links {:apply "http:"},
+                   :has_children false,
+                   :field :detailed-variable}
+                  {:title "Rain",
+                   :type :filter,
+                   :applied false,
+                   :count 1,
+                   :links {:apply "http:"},
+                   :has_children false,
+                   :field :detailed-variable}]}
+
+    "Test if 2 of the new sub-facets are included in the v2-node in different parts of the facet structure."
+    nil
+    :detailed-variable
+    {:title "Detailed_variable",
+       :type :group,
+       :applied true,
+       :has_children true,
+       :children [{:title "Snow Water Equivalent",
+                   :type :filter,
+                   :applied false,
+                   :count 1,
+                   :links {:apply "http:"},
+                   :has_children false,
+                   :field :detailed-variable}
+                  {:title "Rain",
+                   :type :filter,
+                   :applied false,
+                   :count 1,
+                   :links {:apply "http:"},
+                   :has_children false,
+                   :field :detailed-variable}]}
+
+    "Test if the all of the new sub-facets are included in the v2-node."
+    nil
+    :detailed-variable
+    {:title "Detailed_variable",
+       :type :group,
+       :applied true,
+       :has_children true,
+       :children [{:title "Snow Water Equivalent",
+                   :type :filter,
+                   :applied false,
+                   :count 1,
+                   :links {:apply "http:"},
+                   :has_children false,
+                   :field :detailed-variable}
+                  {:title "Rain",
+                   :type :filter,
+                   :applied false,
+                   :count 1,
+                   :links {:apply "http:"},
+                   :has_children false,
+                   :field :detailed-variable}
+                  {:title "Rain2",
+                   :type :filter,
+                   :applied false,
+                   :count 1,
+                   :links {:apply "http"},
+                   :has_children false,
+                   :field :detailed-variable}]}))
