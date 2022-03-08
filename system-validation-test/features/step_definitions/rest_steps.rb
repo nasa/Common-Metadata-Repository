@@ -55,8 +55,8 @@ module CmrRestfulHelper
     response
   end
 
-  def check_provider(provider_name)
-    url = 'http://localhost:3002/providers'
+  def check_provider(provider_name, cmr_root)
+    url = "#{get_url('ingest', cmr_root)}providers"
     response = HTTParty.get(url)
     response.body.include? provider_name
   end
@@ -125,7 +125,7 @@ Given(/^I am ingesting (a )?"([\w\d\-_ ]+)"$/) do |_, ingest_type|
 end
 
 Given(/^the provider "([\w\d\-_ ]+)" exists$/) do |provider_name|
-  pending("Need to create Provider #{provider_name}.") unless check_provider(provider_name)
+  pending("Need to create Provider #{provider_name}.") unless check_provider(provider_name, cmr_root)
 end
 
 Given(/^I am deleting on "([\w\d\-_ ]+)"$/) do |concept_type|
