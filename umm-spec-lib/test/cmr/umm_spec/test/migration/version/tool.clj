@@ -69,6 +69,66 @@
                            :Name "UMM-T"
                            :Version "1.1"}})
 
+;; when migrate from 1.1 to 1.1.1 RelatedURL-1_1-1 is converted to RelatedURLs-1_1_1-1
+(def RelatedURLs-1_1-1
+  [{:URLContentType "VisualizationURL"
+    :Type "BROWSE"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"}])
+
+(def RelatedURLs-1_1_1-1
+  [{:URLContentType "VisualizationURL"
+    :Type "GET RELATED VISUALIZATION"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"}])
+
+;; when migrate from 1.1.1 to 1.1 RelatedURLs-1_1_1-2 is converted to RelatedURLs-1_1-2
+(def RelatedURLs-1_1_1-2
+  [{:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"
+    :Subtype "ALGORITHM DOCUMENTATION"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"
+    :Subtype "invalid"}
+   {:URLContentType "CollectionURL"
+    :Type "invalid"
+    :Subtype "invalid"}
+   {:URLContentType "DataCenterURL"
+    :Type "HOME PAGE"}])
+
+(def RelatedURLs-1_1-2
+  [{:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"
+    :Subtype "ALGORITHM DOCUMENTATION"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"}
+   {:URLContentType "CollectionURL"
+    :Type "DATA SET LANDING PAGE"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"
+    :Subtype "ALGORITHM DOCUMENTATION"}])
+
+;; when migrate from 1.1.1 to 1.1, URL-1_1_1-1 is converted to URL-1_1-1
+;; and URL-1_1_1-2 is converted to URL-1_1-2
+(def URL-1_1_1-1
+  {:URLContentType "DistributionURL"
+   :Type "DOWNLOAD SOFTWARE"
+   :SubType "MOBILE APP"})
+
+(def URL-1_1-1
+  {:URLContentType "DistributionURL"
+   :Type "DOWNLOAD SOFTWARE"
+   :SubType "MOBILE APP"}) 
+
+(def URL-1_1_1-2
+  {:URLContentType "PublicationURL"
+   :Type "VIEW RELATED INFORMATION"
+   :Subtype "ALGORITHM DOCUMENTATION"})
+
+(def URL-1_1-2
+  {:URLContentType "DistributionURL"
+   :Type "GOTO WEB TOOL"})
+
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions {:tool ["1.0" "1.1"]}}
     (is (= [] (#'vm/version-steps :tool "1.1" "1.1")))
@@ -92,3 +152,31 @@
   (is (= (dissoc tool-concept-1-0 :SearchAction)
          (vm/migrate-umm {} :tool "1.1" "1.0"
            tool-concept-1-1))))
+
+(deftest migrate-1_1-up-to-1_1_1
+  ;; RelatedURLs and MetadataSpecificationare migrated.
+  (is (= {:RelatedURLs RelatedURLs-1_1_1-1
+          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.1.1",
+                                  :Name "UMM-T",
+                                  :Version "1.1.1"}}
+         (vm/migrate-umm {} :tool "1.1" "1.1.1"
+           {:RelatedURLs RelatedURLs-1_1-1}))))
+
+(deftest migrate-1_1_1-down-to-1_1
+  ;; RelatedURLs, URL and MetadataSpecification are migrated.
+  (is (= {:RelatedURLs RelatedURLs-1_1-2
+          :URL URL-1_1-1
+          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.1",
+                                  :Name "UMM-T",
+                                  :Version "1.1"}} 
+         (vm/migrate-umm {} :tool "1.1.1" "1.1"
+           {:RelatedURLs RelatedURLs-1_1_1-2
+            :URL URL-1_1_1-1})))
+  (is (= {:RelatedURLs RelatedURLs-1_1-2
+          :URL URL-1_1-2
+          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.1",
+                                  :Name "UMM-T",
+                                  :Version "1.1"}}
+         (vm/migrate-umm {} :tool "1.1.1" "1.1"
+           {:RelatedURLs RelatedURLs-1_1_1-2
+            :URL URL-1_1_1-2}))))

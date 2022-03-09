@@ -1,9 +1,7 @@
 (ns cmr.ingest.services.ingest-service.service
   (:require
-   [cheshire.core :as json]
    [cmr.common.util :refer [defn-timed]]
    [cmr.common.services.errors :as errors]
-   [cmr.common.validations.core :as vcore]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.validation.validation :as validation]

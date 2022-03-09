@@ -90,6 +90,14 @@
           (:Type related-url)
           (:Subtype related-url)))
 
+(defn url-content-type-type-subtype-not-matching-kms-keywords
+  "Error msg when URL Content Type, Type, and Subtype do not match a valid set in KMS."
+  [url]
+  (format "URL Content Type, Type, and Subtype [%s>%s>%s] are not a valid set together."
+          (:URLContentType url)
+          (:Type url)
+          (:Subtype url)))
+
 (def science-keyword-attribute-order
   "The order of fields that should be displayed in the science keyword human readable list."
   [:Category :Topic :Term :VariableLevel1 :VariableLevel2 :VariableLevel3])
